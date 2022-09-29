@@ -30,10 +30,13 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/web_app_tabbed_utils.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
@@ -81,7 +84,9 @@ ui::WindowShowState DetermineWindowShowState() {
 }
 
 Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
-                                           Browser* target_browser) {
+                                           Browser* target_browser,
+                                           const AppId& app_id,
+                                           bool as_pinned_home_tab) {
   DCHECK(target_browser->is_type_app());
   Browser* source_browser = chrome::FindBrowserWithWebContents(contents);
 
@@ -92,14 +97,39 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
   service->TabClosing(contents);
 
   TabStripModel* source_tabstrip = source_browser->tab_strip_model();
+  TabStripModel* target_tabstrip = target_browser->tab_strip_model();
+
   // Avoid causing the existing browser window to close if this is the last tab
   // remaining.
   if (source_tabstrip->count() == 1)
     chrome::NewTab(source_browser);
-  target_browser->tab_strip_model()->AppendWebContents(
-      source_tabstrip->DetachWebContentsAtForInsertion(
-          source_tabstrip->GetIndexOfWebContents(contents)),
-      true);
+
+  if (as_pinned_home_tab) {
+    if (HasPinnedHomeTab(target_tabstrip)) {
+      // Insert the web contents into the pinned home tab and delete the
+      // existing home tab.
+      target_tabstrip->InsertWebContentsAt(
+          /*index=*/0,
+          source_tabstrip->DetachWebContentsAtForInsertion(
+              source_tabstrip->GetIndexOfWebContents(contents)),
+          (AddTabTypes::ADD_INHERIT_OPENER | AddTabTypes::ADD_ACTIVE |
+           AddTabTypes::ADD_PINNED));
+      target_tabstrip->DetachAndDeleteWebContentsAt(1);
+    } else {
+      target_tabstrip->InsertWebContentsAt(
+          /*index=*/0,
+          source_tabstrip->DetachWebContentsAtForInsertion(
+              source_tabstrip->GetIndexOfWebContents(contents)),
+          (AddTabTypes::ADD_INHERIT_OPENER | AddTabTypes::ADD_ACTIVE |
+           AddTabTypes::ADD_PINNED));
+    }
+  } else {
+    MaybeAddPinnedHomeTab(target_browser, app_id);
+    target_tabstrip->AppendWebContents(
+        source_tabstrip->DetachWebContentsAtForInsertion(
+            source_tabstrip->GetIndexOfWebContents(contents)),
+        true);
+  }
   target_browser->window()->Show();
 
   // The app window will be registered correctly, however the tab will not
@@ -182,10 +212,13 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
                 extensions::AppLaunchSource::kSourceReparenting, launch_url,
                 contents);
 
+  bool as_pinned_home_tab = IsPinnedHomeTabUrl(registrar, app_id, launch_url);
+
   if (registrar.IsTabbedWindowModeEnabled(app_id)) {
     for (Browser* browser : *BrowserList::GetInstance()) {
       if (AppBrowserController::IsForWebApp(browser, app_id))
-        return ReparentWebContentsIntoAppBrowser(contents, browser);
+        return ReparentWebContentsIntoAppBrowser(contents, browser, app_id,
+                                                 as_pinned_home_tab);
     }
   }
 
@@ -193,7 +226,8 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
       contents,
       Browser::Create(Browser::CreateParams::CreateForApp(
           GenerateApplicationNameFromAppId(app_id), true /* trusted_source */,
-          gfx::Rect(), profile, true /* user_gesture */)));
+          gfx::Rect(), profile, true /* user_gesture */)),
+      app_id, as_pinned_home_tab);
 }
 
 void SetWebContentsActingAsApp(content::WebContents* contents,
@@ -264,6 +298,23 @@ std::unique_ptr<AppBrowserController> MaybeCreateAppBrowserController(
   return controller;
 }
 
+void MaybeAddPinnedHomeTab(Browser* browser, const std::string& app_id) {
+  WebAppRegistrar& registrar =
+      WebAppProvider::GetForLocalAppsUnchecked(browser->profile())->registrar();
+  absl::optional<GURL> pinned_home_tab_url =
+      registrar.GetAppPinnedHomeTabUrl(app_id);
+
+  if (registrar.IsTabbedWindowModeEnabled(app_id) &&
+      !HasPinnedHomeTab(browser->tab_strip_model()) &&
+      pinned_home_tab_url.has_value()) {
+    NavigateParams home_tab_nav_params(browser, pinned_home_tab_url.value(),
+                                       ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+    home_tab_nav_params.disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
+    home_tab_nav_params.tabstrip_add_types |= AddTabTypes::ADD_PINNED;
+    Navigate(&home_tab_nav_params);
+  }
+}
+
 Browser* CreateWebApplicationWindow(Profile* profile,
                                     const std::string& app_id,
                                     WindowOpenDisposition disposition,
@@ -289,7 +340,9 @@ Browser* CreateWebApplicationWindow(Profile* profile,
   browser_params.can_resize = can_resize;
   browser_params.can_maximize = can_maximize;
   browser_params.are_tab_groups_enabled = false;
-  return Browser::Create(browser_params);
+  Browser* browser = Browser::Create(browser_params);
+  MaybeAddPinnedHomeTab(browser, app_id);
+  return browser;
 }
 
 content::WebContents* NavigateWebApplicationWindow(
@@ -304,6 +357,17 @@ content::WebContents* NavigateWebApplicationWindow(
 
 content::WebContents* NavigateWebAppUsingParams(const std::string& app_id,
                                                 NavigateParams& nav_params) {
+  WebAppRegistrar& registrar =
+      WebAppProvider::GetForLocalAppsUnchecked(nav_params.browser->profile())
+          ->registrar();
+
+  if (IsPinnedHomeTabUrl(registrar, app_id, nav_params.url)) {
+    // Navigations to the home tab URL in tabbed apps should happen in the home
+    // tab.
+    nav_params.browser->tab_strip_model()->ActivateTabAt(0);
+    nav_params.disposition = WindowOpenDisposition::CURRENT_TAB;
+  }
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   Browser* browser = nav_params.browser;
   const absl::optional<ash::SystemWebAppType> capturing_system_app_type =

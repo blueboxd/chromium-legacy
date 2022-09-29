@@ -75,8 +75,8 @@ class ArcVolumeMounterBridge
   // ash::disks::DiskMountManager::Observer overrides:
   void OnMountEvent(
       ash::disks::DiskMountManager::MountEvent event,
-      chromeos::MountError error_code,
-      const ash::disks::DiskMountManager::MountPointInfo& mount_info) override;
+      ash::MountError error_code,
+      const ash::disks::DiskMountManager::MountPoint& mount_info) override;
 
   // ConnectionObserver<mojom::VolumeMounterInstance> overrides:
   void OnConnectionClosed() override;
@@ -102,7 +102,7 @@ class ArcVolumeMounterBridge
       const std::string& mount_path,
       const std::string& fs_uuid,
       const std::string& device_label,
-      chromeos::DeviceType device_type,
+      ash::DeviceType device_type,
       bool visible);
 
   bool IsVisibleToAndroidApps(const std::string& uuid) const;

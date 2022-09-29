@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "base/test/scoped_feature_list.h"
-#include "components/autofill/core/browser/autofill_regex_constants.h"
-#include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/form_parsing/parsing_test_utils.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_regex_constants.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/form_field_data.h"
 
 namespace autofill {
@@ -221,18 +221,18 @@ TEST_P(NameFieldTest, HispanicLastNameRegexConverage) {
 
   for (const auto& string : first_last_name_strings) {
     SCOPED_TRACE(string);
-    EXPECT_TRUE(MatchesPattern(string, kNameLastFirstRe, nullptr));
+    EXPECT_TRUE(MatchesRegex<kNameLastFirstRe>(string));
   }
 
   for (const auto& string : second_last_name_strings) {
     SCOPED_TRACE(string);
-    EXPECT_TRUE(MatchesPattern(string, kNameLastSecondRe, nullptr));
+    EXPECT_TRUE(MatchesRegex<kNameLastSecondRe>(string));
   }
 
   for (const auto& string : neither_first_or_second_last_name_strings) {
     SCOPED_TRACE(string);
-    EXPECT_FALSE(MatchesPattern(string, kNameLastFirstRe, nullptr));
-    EXPECT_FALSE(MatchesPattern(string, kNameLastSecondRe, nullptr));
+    EXPECT_FALSE(MatchesRegex<kNameLastFirstRe>(string));
+    EXPECT_FALSE(MatchesRegex<kNameLastSecondRe>(string));
   }
 }
 

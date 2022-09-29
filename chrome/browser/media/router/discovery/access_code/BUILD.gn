@@ -19,8 +19,6 @@ static_library("access_code_cast_feature") {
   ]
   public_deps = [ "//base" ]
   deps = [
-    "//chrome/browser/media/router:media_router_feature",
-    "//chrome/browser/profiles:profile",
     "//chrome/common:channel_info",
     "//components/pref_registry:pref_registry",
     "//components/prefs:prefs",
@@ -69,6 +67,7 @@ if (!is_android) {
       "//components/signin/public/base:base",
       "//components/signin/public/identity_manager:identity_manager",
       "//components/user_manager:user_manager",
+      "//content/public/browser",
       "//services/preferences/public/cpp:cpp",
     ]
   }

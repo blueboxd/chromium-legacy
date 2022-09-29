@@ -114,28 +114,6 @@ class ExtensionPrefsLastPingDay : public ExtensionPrefsTest {
 };
 TEST_F(ExtensionPrefsLastPingDay, LastPingDay) {}
 
-// Tests the GetToolbarOrder/SetToolbarOrder functions.
-class ExtensionPrefsToolbarOrder : public ExtensionPrefsTest {
- public:
-  void Initialize() override {
-    list_.push_back(prefs_.AddExtensionAndReturnId("1"));
-    list_.push_back(prefs_.AddExtensionAndReturnId("2"));
-    list_.push_back(prefs_.AddExtensionAndReturnId("3"));
-    ExtensionIdList before_list = prefs()->GetToolbarOrder();
-    EXPECT_TRUE(before_list.empty());
-    prefs()->SetToolbarOrder(list_);
-  }
-
-  void Verify() override {
-    ExtensionIdList result = prefs()->GetToolbarOrder();
-    ASSERT_EQ(list_, result);
-  }
-
- private:
-  ExtensionIdList list_;
-};
-TEST_F(ExtensionPrefsToolbarOrder, ToolbarOrder) {}
-
 // Tests the IsExtensionDisabled/SetExtensionState functions.
 class ExtensionPrefsExtensionState : public ExtensionPrefsTest {
  public:
@@ -518,9 +496,10 @@ class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
   void VerifyIdleInfo(const std::string& id, int num) {
     std::unique_ptr<ExtensionInfo> info(prefs()->GetDelayedInstallInfo(id));
     ASSERT_TRUE(info);
-    std::string version;
-    ASSERT_TRUE(info->extension_manifest->GetString("version", &version));
-    ASSERT_EQ("1." + base::NumberToString(num), version);
+    const std::string* version =
+        info->extension_manifest->GetDict().FindString("version");
+    ASSERT_TRUE(version);
+    ASSERT_EQ("1." + base::NumberToString(num), *version);
     ASSERT_EQ(base::NumberToString(num),
               info->extension_path.BaseName().MaybeAsASCII());
   }
@@ -651,12 +630,15 @@ class ExtensionPrefsFinishDelayedInstallInfo : public ExtensionPrefsTest {
     const base::DictionaryValue* manifest;
     ASSERT_TRUE(prefs()->ReadPrefAsDictionary(id_, "manifest", &manifest));
     ASSERT_TRUE(manifest);
-    std::string value;
-    EXPECT_TRUE(manifest->GetString(manifest_keys::kName, &value));
-    EXPECT_EQ("test", value);
-    EXPECT_TRUE(manifest->GetString(manifest_keys::kVersion, &value));
-    EXPECT_EQ("0.2", value);
-    EXPECT_FALSE(manifest->GetString(manifest_keys::kBackgroundPage, &value));
+    ASSERT_TRUE(manifest->is_dict());
+    const base::Value::Dict& dict = manifest->GetDict();
+    const std::string* name = dict.FindString(manifest_keys::kName);
+    EXPECT_TRUE(name);
+    EXPECT_EQ("test", *name);
+    const std::string* version = dict.FindString(manifest_keys::kVersion);
+    EXPECT_TRUE(version);
+    EXPECT_EQ("0.2", *version);
+    EXPECT_FALSE(dict.FindString(manifest_keys::kBackgroundPage));
     const base::ListValue* scripts;
     ASSERT_TRUE(manifest->GetList(manifest_keys::kBackgroundScripts, &scripts));
     EXPECT_EQ(1u, scripts->GetListDeprecated().size());
@@ -1243,13 +1225,9 @@ TEST_F(ExtensionPrefsSimpleTest, MigrateToNewExternalUninstallBits) {
   TestExtensionPrefs prefs(base::ThreadTaskRunnerHandle::Get());
 
   auto has_extension_pref_entry = [&prefs](const std::string& id) {
-    const base::Value* extensions_dictionary =
-        prefs.pref_service()->GetDictionary(pref_names::kExtensions);
-    if (!extensions_dictionary) {
-      ADD_FAILURE() << "Extensions dictionary is missing!";
-      return false;
-    }
-    return extensions_dictionary->FindDictKey(id) != nullptr;
+    const base::Value::Dict& extensions_dictionary =
+        prefs.pref_service()->GetValueDict(pref_names::kExtensions);
+    return extensions_dictionary.FindDict(id) != nullptr;
   };
 
   std::string external_extension =
@@ -1329,11 +1307,12 @@ TEST_F(ExtensionPrefsSimpleTest, ProfileExtensionPrefsMapTest) {
   EXPECT_EQ(prefs.prefs()->GetPrefAsString(kTestStringPref), "foo");
   EXPECT_EQ(prefs.prefs()->GetPrefAsTime(kTestTimePref), time);
   EXPECT_EQ(prefs.prefs()->GetPrefAsGURL(kTestGURLPref), url);
-  std::string string_val = std::string();
-  prefs.prefs()
-      ->GetPrefAsDictionary(kTestDictPref)
-      ->GetString("key", &string_val);
-  EXPECT_EQ(string_val, "val");
+  const std::string* string_ptr = prefs.prefs()
+                                      ->GetPrefAsDictionary(kTestDictPref)
+                                      ->GetDict()
+                                      .FindString("key");
+  EXPECT_TRUE(string_ptr);
+  EXPECT_EQ(*string_ptr, "val");
 }
 
 TEST_F(ExtensionPrefsSimpleTest, ExtensionSpecificPrefsMapTest) {
@@ -1382,8 +1361,9 @@ TEST_F(ExtensionPrefsSimpleTest, ExtensionSpecificPrefsMapTest) {
 
   const base::DictionaryValue* dict_val = nullptr;
   prefs.prefs()->ReadPrefAsDictionary(extension_id, kTestDictPref, &dict_val);
-  dict_val->GetString("key", &string_value);
-  EXPECT_EQ(string_value, "val");
+  const std::string* string_ptr = dict_val->GetDict().FindString("key");
+  EXPECT_TRUE(string_ptr);
+  EXPECT_EQ(*string_ptr, "val");
 
   const base::ListValue* list_val = nullptr;
   prefs.prefs()->ReadPrefAsList(extension_id, kTestListPref, &list_val);

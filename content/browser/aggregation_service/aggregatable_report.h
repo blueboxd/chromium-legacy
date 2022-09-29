@@ -154,7 +154,7 @@ class CONTENT_EXPORT AggregatableReport {
     // correspond to `report_request.processing_urls`, which should be
     // sorted. Returns `absl::nullopt` if an error occurred during construction.
     virtual absl::optional<AggregatableReport> CreateFromRequestAndPublicKeys(
-        AggregatableReportRequest report_request,
+        const AggregatableReportRequest& report_request,
         std::vector<PublicKey> public_keys) const;
 
     // Sets whether to disable encryption of the payload(s). Should only be used
@@ -241,7 +241,8 @@ class CONTENT_EXPORT AggregatableReport {
 
  private:
   // This vector should have an entry for each processing URL specified in
-  // the original AggregatableReportRequest.
+  // the original AggregatableReportRequest. Might be empty for reports created
+  // for the WebUI if prior to assembly or if assembly failed.
   std::vector<AggregationServicePayload> payloads_;
 
   std::string shared_info_;

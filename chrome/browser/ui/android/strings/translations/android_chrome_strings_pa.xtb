@@ -105,7 +105,6 @@
 <translation id="1474893630593443211">ਤੁਹਾਨੂੰ ਦਿਸਣ ਵਾਲੇ ਵਿਗਿਆਪਨਾਂ 'ਤੇ ਤੁਹਾਡਾ ਜ਼ਿਆਦਾ ਕੰਟਰੋਲ</translation>
 <translation id="1477626028522505441">ਸਰਵਰ ਸਮੱਸਿਆਵਾਂ ਦੇ ਕਾਰਨ <ph name="FILE_NAME" /> ਡਾਊਨਲੋਡ ਅਸਫ਼ਲ ਰਿਹਾ।</translation>
 <translation id="148482509007564431">ਬੁੱਕਮਾਰਕ ਰੱਖਿਅਤ ਕਰਨ ਸੰਬੰਧੀ ਪ੍ਰਵਾਹ</translation>
-<translation id="1488775391433859242">ਤੁਸੀਂ ਇਸ QR ਕੋਡ ਨੂੰ ਦਿਖਾਉਣ ਵਾਲੇ ਕੰਪਿਊਟਰ 'ਤੇ ਸਾਈਨ-ਇਨ ਕਰਨ ਲਈ ਇਸ ਫ਼ੋਨ ਦੀ ਵਰਤੋਂ ਕਰ ਸਕਦੇ ਹੋ।</translation>
 <translation id="1492417797159476138">ਤੁਸੀਂ ਪਹਿਲਾਂ ਹੀ ਇਸ ਸਾਈਟ ਲਈ ਇਹ ਵਰਤੋਂਕਾਰ ਨਾਮ ਰੱਖਿਅਤ ਕਰ ਚੁੱਕੇ ਹੋ</translation>
 <translation id="1493287004536771723">ਤੁਸੀਂ <ph name="SITE_NAME" /> ਦਾ ਅਨੁਸਰਣ ਕਰ ਰਹੇ ਹੋ</translation>
 <translation id="1502010315804028179">ਆਪਣੇ ਪਾਸਵਰਡਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਨ ਲਈ, Google Play ਸੇਵਾਵਾਂ ਨੂੰ ਅੱਪਡੇਟ ਕਰੋ</translation>
@@ -235,6 +234,7 @@
 <translation id="2239812875700136898">'ਡਿਸਕਵਰ' ਬਟਨ ਲਈ 'ਵਿਕਲਪ' ਤੋਂ ਆਪਣੀਆਂ ਕਹਾਣੀਆਂ ਨੂੰ ਕੰਟਰੋਲ ਕਰੋ</translation>
 <translation id="2248941474044011069">Google ਪਾਸਵਰਡ ਪ੍ਰਬੰਧਕ 'ਤੇ ਰੱਖਿਅਤ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਤੁਹਾਡੇ ਪਾਸਵਰਡਾਂ ਨੂੰ ਤੁਹਾਡੇ ਡੀਵਾਈਸ 'ਤੇ ਇਨਕ੍ਰਿਪਟ ਕੀਤਾ ਜਾਂਦਾ ਹੈ</translation>
 <translation id="2259659629660284697">ਪਾਸਵਰਡ ਨਿਰਯਾਤ ਕਰੋ...</translation>
+<translation id="2276231040576210443">ਤੁਸੀਂ <ph name="BEGIN_LINK1" />ਸੈਟਿੰਗਾਂ<ph name="END_LINK1" /> ਵਿੱਚ ਇਹ ਕਿਸੇ ਵੀ ਵੇਲੇ ਚੁਣ ਸਕਦੇ ਹੋ ਕਿ ਕੀ ਸਿੰਕ ਕਰਨਾ ਹੈ। Google ਤੁਹਾਡੇ ਇਤਿਹਾਸ ਦੇ ਆਧਾਰ 'ਤੇ Search ਅਤੇ ਹੋਰ ਸੇਵਾਵਾਂ ਨੂੰ ਵਿਅਕਤੀਗਤ ਬਣਾ ਸਕਦਾ ਹੈ।</translation>
 <translation id="2276696007612801991">ਆਪਣੇ ਪਾਸਵਰਡਾਂ ਦੀ ਜਾਂਚ ਕਰਨ ਲਈ ਆਪਣੇ Google ਖਾਤੇ ਵਿੱਚ ਸਾਈਨ-ਇਨ ਕਰੋ</translation>
 <translation id="2278052315791335171">ਇਸ ਪਾਸਵਰਡ ਨੂੰ ਮਿਟਾਉਣ ਨਾਲ <ph name="SITE" /> 'ਤੇ ਤੁਹਾਡੇ ਖਾਤੇ ਨੂੰ ਮਿਟਾਇਆ ਨਹੀਂ ਜਾਵੇਗਾ</translation>
 <translation id="2279146068164892489">ਕੀ <ph name="APPNAME" /> ਲਈ ਐਪ ਨੂੰ ਖੋਲ੍ਹਣਾ ਹੈ?</translation>
@@ -282,7 +282,6 @@
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> ਆਈਟਮਾਂ ਮਿਟਾਈਆਂ ਗਈਆਂ</translation>
 <translation id="2536728043171574184">ਇਸ ਪੰਨੇ ਦੀ ਇੱਕ ਆਫ਼ਲਾਈਨ ਕਾਪੀ ਦੇਖ ਰਿਹਾ ਹੈ</translation>
 <translation id="2546283357679194313">ਕੁਕੀਜ਼ ਅਤੇ ਸਾਈਟ ਡਾਟਾ</translation>
-<translation id="2549516196460093976">ਤੁਸੀਂ ਇਸ QR ਕੋਡ ਨੂੰ ਦਿਖਾਉਣ ਵਾਲੇ ਟੈਬਲੈੱਟ 'ਤੇ ਸਾਈਨ-ਇਨ ਕਰਨ ਲਈ ਇਸ ਫ਼ੋਨ ਦੀ ਵਰਤੋਂ ਕਰ ਸਕਦੇ ਹੋ।</translation>
 <translation id="2558569818338050235">ਤੁਹਾਡਾ ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ ਤੁਹਾਨੂੰ ਦਿਸਣ ਵਾਲੇ ਵਿਗਿਆਪਨਾਂ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰਦਾ ਹੈ</translation>
 <translation id="2561519700418191927">ਵੀਡੀਓ ਦੀਆਂ ਪੂਰਵ-ਝਲਕਾਂ</translation>
 <translation id="2567385386134582609">ਇਮੇਜ</translation>
@@ -308,6 +307,7 @@
 <translation id="2702516483241149200">ਨਵਾਂ: ਇਸ ਲਿਖਤ ਤੱਕ ਸਕ੍ਰੋਲ ਕਰਨ ਵਾਲਾ ਲਿੰਕ ਸਾਂਝਾ ਕਰੋ</translation>
 <translation id="2704606927547763573">ਕਾਪੀ ਕੀਤਾ</translation>
 <translation id="2707726405694321444">ਪੰਨੇ ਰਿਫ੍ਰੈਸ਼ ਕਰੋ</translation>
+<translation id="2709516037105925701">ਆਟੋਫਿਲ</translation>
 <translation id="271033894570825754">ਨਵਾਂ</translation>
 <translation id="2711073837061989559">ਪਰਖਾਂ</translation>
 <translation id="2718352093833049315">ਕੇਵਲ ਵਾਈ-ਫਾਈ 'ਤੇ</translation>
@@ -396,6 +396,7 @@
 <translation id="3114507951000454849">ਅੱਜ ਦੀਆਂ ਖਬਰਾਂ ਪੜ੍ਹੋ <ph name="NEWS_ICON" /></translation>
 <translation id="311958134571892113">ਇਸ ਨਾਲ ਲਿੰਕ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="3123734510202723619">ਘੋਸ਼ਣਾਵਾਂ</translation>
+<translation id="3130863904455712965">ਇਤਿਹਾਸ ਅਤੇ ਹੋਰ ਚੀਜ਼ਾਂ</translation>
 <translation id="3134784203083076891">”</translation>
 <translation id="314939179385989105">Chrome ਦਾ ਹੋਮਪੇਜ</translation>
 <translation id="3166827708714933426">ਟੈਬ ਅਤੇ ਵਿੰਡੋ ਸ਼ਾਰਟਕੱਟ</translation>
@@ -587,7 +588,6 @@
 <translation id="4256782883801055595">ਖੁੱਲ੍ਹਾ ਸਰੋਤ ਲਾਇਸੰਸ</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />ਕਿਹੜਾ ਡਾਟਾ ਵਰਤਿਆ ਜਾਂਦਾ ਹੈ:<ph name="END_BOLD" /> ਤੁਹਾਡਾ ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ, ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਉਨ੍ਹਾਂ ਸਾਈਟਾਂ ਦਾ ਰਿਕਾਰਡ ਜਿਨ੍ਹਾਂ 'ਤੇ ਤੁਸੀਂ Chrome ਦੀ ਵਰਤੋਂ ਨਾਲ ਗਏ ਹੋ।</translation>
 <translation id="4263656433980196874">Assistant ਦੀ ਅਵਾਜ਼ੀ ਖੋਜ ਲਈ ਸਹਿਮਤੀ ਵਾਲਾ UI ਪੂਰੀ ਸਕ੍ਰੀਨ ਵਿੱਚ ਖੁੱਲ੍ਹਾ ਹੈ</translation>
-<translation id="4266054596873078491">ਆਪਣੇ Google ਖਾਤੇ ਨਾਲ ਇਸ ਸਾਈਟ ਅਤੇ Chrome ਵਿੱਚ ਸਾਈਨ-ਇਨ ਕਰੋ।</translation>
 <translation id="4269820728363426813">ਲਿੰਕ ਪਤਾ ਕਾਪੀ ਕਰੋ</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਸਕ੍ਰੀਨ ਲਾਕ ਚਾਲੂ ਕਰੋ<ph name="END_LINK" /></translation>
 <translation id="4293476595220860475">Chrome ਨੂੰ ਵਰਤ ਕੇ, ਤੁਸੀਂ <ph name="BEGIN_TOS_LINK" />Google ਦੇ ਸੇਵਾ ਦੇ ਨਿਯਮਾਂ<ph name="END_TOS_LINK" /> ਅਤੇ <ph name="BEGIN_ATOS_LINK" />Google Chrome ਅਤੇ ChromeOS ਦੇ ਵਧੀਕ ਸੇਵਾ ਦੇ ਨਿਯਮਾਂ<ph name="END_ATOS_LINK" /> ਨਾਲ ਸਹਿਮਤ ਹੁੰਦੇ ਹੋ। <ph name="BEGIN_PRIVACY_LINK" />ਪਰਦੇਦਾਰੀ ਨੀਤੀ<ph name="END_PRIVACY_LINK" /> ਵੀ ਲਾਗੂ ਹੁੰਦੀ ਹੈ।</translation>
@@ -750,7 +750,7 @@
 <translation id="5123685120097942451">ਇਨਕੋਗਨਿਟੋ ਟੈਬ</translation>
 <translation id="5126510351761255129">ਆਪਣੇ ਕਾਰਡ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ</translation>
 <translation id="5132942445612118989">ਸਾਰੇ ਡੀਵਾਈਸਾਂ 'ਤੇ ਤੁਹਾਡੇ ਪਾਸਵਰਡਾਂ, ਇਤਿਹਾਸ ਅਤੇ ਹੋਰ ਬਹੁਤ ਕੁਝ ਦਾ ਸਿੰਕ ਕਰੋ</translation>
-<translation id="5139940364318403933">Google Drive ਨੂੰ ਵਰਤਣ ਬਾਰੇ ਹੋਰ ਜਾਣੋ</translation>
+<translation id="5139940364318403933">Google ਡਰਾਈਵ ਨੂੰ ਵਰਤਣ ਬਾਰੇ ਹੋਰ ਜਾਣੋ</translation>
 <translation id="5142281402488957685">ਨਵੀਆਂ ਕਹਾਣੀਆਂ ਲਈ, ਰਿਫ੍ਰੈਸ਼ ਕਰਨ ਵਾਸਤੇ ਹੇਠਾਂ ਵੱਲ ਖਿੱਚੋ</translation>
 <translation id="5152843274749979095">ਕੋਈ ਸਮਰਥਿਤ ਐਪਾਂ ਸਥਾਪਤ ਨਹੀਂ ਹਨ</translation>
 <translation id="5161254044473106830">ਸਿਰਲੇਖ ਲਾਜ਼ਮੀ</translation>
@@ -1051,6 +1051,7 @@
 <translation id="6671495933530132209">ਚਿੱਤਰ ਕਾਪੀ ਕਰੋ</translation>
 <translation id="6674571176963658787">ਸਿੰਕ ਸ਼ੁਰੂ ਕਰਨ ਲਈ, ਆਪਣਾ ਪਾਸਫਰੇਜ਼ ਦਾਖਲ ਕਰੋ</translation>
 <translation id="6676840375528380067">ਕੀ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਤੁਹਾਡਾ Chrome ਡਾਟਾ ਕਲੀਅਰ ਕਰਨਾ ਹੈ?</translation>
+<translation id="6676927815633975364">ਇਸ ਸਾਈਟ ਅਤੇ Chrome ਵਿੱਚ ਸਾਈਨ-ਇਨ ਕਰੋ</translation>
 <translation id="6684809838922667136">Chrome ਨੂੰ ਬਿਹਤਰ ਬਣਾਓ</translation>
 <translation id="670498945988402717">ਬੀਤੇ ਕੱਲ੍ਹ ਜਾਂਚ ਕੀਤੀ ਗਈ</translation>
 <translation id="6710213216561001401">ਪਿਛਲਾ</translation>
@@ -1140,6 +1141,7 @@
 <translation id="7196215469483532480">ਪਰਦੇਦਾਰੀ ਗਾਈਡ ਵਿਆਖਿਆ ਨੂੰ ਪੂਰੀ ਸ੍ਰਕੀਨ 'ਤੇ ਖੋਲ੍ਹਿਆ ਗਿਆ</translation>
 <translation id="7207760545532569765"><ph name="TAB_COUNT" /> ਟੈਬਾਂ ਨੂੰ ਨਵੇਂ ਬੈਕਗ੍ਰਾਊਂਡ ਟੈਬਾਂ ਵਜੋਂ ਮੁੜ-ਬਹਾਲ ਕਰੋ।</translation>
 <translation id="7208109991155904980">ਪ੍ਰਤਿਕਿਰਿਆ ਨੂੰ ਲਿਜਾਇਆ ਗਿਆ</translation>
+<translation id="7217781228893594884">ਤੁਹਾਡੇ Chrome ਤੋਂ ਬਾਹਰ ਨਿਕਲਣ 'ਤੇ ਇਨਕੋਗਨਿਟੋ ਟੈਬਾਂ ਲਾਕ ਹੋ ਜਾਣਗੀਆਂ</translation>
 <translation id="7222235798733126207">ਸਾਈਟਾਂ ਵਿਚਕਾਰ ਸੀਮਤ ਸਾਂਝਾਕਰਨ</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 ਡਾਊਨਲੋਡ ਵਿਚਾਰ-ਅਧੀਨ ਹੈ}one{# ਡਾਊਨਲੋਡ ਵਿਚਾਰ-ਅਧੀਨ ਹੈ}other{# ਡਾਊਨਲੋਡ ਵਿਚਾਰ-ਅਧੀਨ ਹਨ}}</translation>
 <translation id="7242755609445462077">ਸਟਾਈਲਬੱਧ ਹਾਈਲਾਈਟ <ph name="CURRENT_DATE" /></translation>
@@ -1300,6 +1302,7 @@
 <translation id="8037801708772278989">ਹੁਣੇ ਹੀ ਜਾਂਚ ਕੀਤੀ ਗਈ</translation>
 <translation id="804335162455518893">SD ਕਾਰਡ ਨਹੀਂ ਮਿਲਿਆ</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> ਇਨਕੋਗਨਿਟੋ ਟੈਬ}one{<ph name="TAB_COUNT_NORMAL" /> ਇਨਕੋਗਨਿਟੋ ਟੈਬ}other{<ph name="TAB_COUNT_NORMAL" /> ਇਨਕੋਗਨਿਟੋ ਟੈਬਾਂ}}</translation>
+<translation id="8048728378294435881">ਆਪਣੀ ਸਮੱਗਰੀ ਦਾ ਬੈਕਅੱਪ ਲਓ ਅਤੇ ਇਸਨੂੰ ਕਿਸੇ ਵੀ ਡੀਵਾਈਸ 'ਤੇ ਵਰਤੋ</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB ਉਪਲਬਧ ਹੈ</translation>
 <translation id="8058655154417507695">ਮਿਆਦ ਸਮਾਪਤੀ ਦਾ ਸਾਲ</translation>
 <translation id="8058746566562539958">ਨਵੀਂ Chrome ਟੈਬ ਵਿੱਚ ਖੋਲ੍ਹੋ</translation>

@@ -83,12 +83,20 @@ if (is_win && use_allocator_shim) {
 _is_brp_supported = (is_win || is_android || is_linux || is_mac ||
                      is_chromeos) && use_allocator == "partition"
 
+_is_mcp_supported = is_win && use_allocator == "partition"
+
+declare_args() {
+  # We jam MTECheckedPtr off by default, but can set it to
+  # `_is_mcp_supported` to activate it.
+  use_mte_checked_ptr = false
+}
+
 declare_args() {
   # Set use_backup_ref_ptr true to use BackupRefPtr (BRP) as the implementation
   # of raw_ptr<T>, and enable PartitionAlloc support for it.
-  use_backup_ref_ptr = _is_brp_supported
-
-  use_mte_checked_ptr = false
+  # We also disable BRP in the presence of MTECheckedPtr, which is almost
+  # never enabled.
+  use_backup_ref_ptr = _is_brp_supported && !use_mte_checked_ptr
 }
 
 assert(!(use_backup_ref_ptr && use_mte_checked_ptr),
@@ -106,11 +114,6 @@ declare_args() {
   put_ref_count_in_previous_slot = use_backup_ref_ptr
   enable_backup_ref_ptr_slow_checks = false
   enable_dangling_raw_ptr_checks = false
-
-  # Registers the binary for a fake binary A/B experiment. The binaries built
-  # with this flag have no behavior difference, except for setting a synthetic
-  # Finch.
-  use_fake_binary_experiment = false
 
   # The supported platforms are supposed to match `_is_brp_supported`, but we
   # enable the feature on Linux early because it's most widely used for security

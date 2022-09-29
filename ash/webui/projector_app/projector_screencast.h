@@ -7,39 +7,15 @@
 
 #include <string>
 
-namespace base {
-class Value;
-}  // namespace base
+#include "base/values.h"
 
 namespace ash {
 
 // The video object for screencast.
 struct ProjectorScreencastVideo {
-  base::Value ToValue() const;
-  // TODO(b/236857019): Add thumbnail link and video file id.
-  std::string src_url;
-};
-
-// Struct of screencast model.
-struct ProjectorScreencast {
-  ProjectorScreencast();
-  ProjectorScreencast(const ProjectorScreencast&);
-  ProjectorScreencast& operator=(const ProjectorScreencast&);
-  ~ProjectorScreencast();
-
-  base::Value ToValue() const;
-
-  // Only available for screencasts locate in DriveFs.
-  std::string container_folder_id;
-
-  std::string name;
-
-  ProjectorScreencastVideo video;
-
-  // TODO(b/236857019): 1 Implement following fields: status, metadata_file_id,
-  // metadata, is_editable, upload_progress.
-  //  2 Replace the PendingScreencast struct defined in ProjectorAppClient with
-  //  this struct.
+  base::Value::Dict ToValue() const;
+  std::string file_id;
+  std::string duration_millis;
 };
 
 }  // namespace ash

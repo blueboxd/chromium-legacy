@@ -34,7 +34,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.CpuUsageMilliPercent"
-    units="1/1000ths of %" expires_after="2022-11-27">
+    units="1/1000ths of %" expires_after="2023-01-29">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <summary>
@@ -166,7 +166,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.PeakTotalMemoryKb" units="KB"
-    expires_after="2022-11-22">
+    expires_after="2023-01-22">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>honglinyu@chromium.org</owner>
@@ -177,7 +177,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.ProcessError"
-    enum="MachineLearningServiceProcessError" expires_after="2022-12-11">
+    enum="MachineLearningServiceProcessError" expires_after="2023-02-12">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <owner>honglinyu@chromium.org</owner>
@@ -225,7 +225,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.TotalMemoryKb" units="KB"
-    expires_after="2022-11-22">
+    expires_after="2023-01-22">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>honglinyu@chromium.org</owner>
@@ -315,7 +315,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.WorkerProcessCleanUpTime"
-    units="microseconds" expires_after="2022-12-11">
+    units="microseconds" expires_after="2023-02-12">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>honglinyu@chromium.org</owner>

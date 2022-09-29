@@ -18,8 +18,8 @@ import 'chrome://resources/cr_components/chromeos/network/network_nameservers.m.
 import 'chrome://resources/cr_components/chromeos/network/network_property_list_mojo.m.js';
 import 'chrome://resources/cr_components/chromeos/network/network_siminfo.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
-import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_indicator.m.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
@@ -33,6 +33,7 @@ import './cellular_roaming_toggle_button.js';
 import './internet_shared_css.js';
 import './network_proxy_section.js';
 import './settings_traffic_counters.js';
+import './tether_connection_dialog.js';
 
 import {isActiveSim} from 'chrome://resources/cr_components/chromeos/network/cellular_utils.m.js';
 import {CrPolicyNetworkBehaviorMojo, CrPolicyNetworkBehaviorMojoInterface} from 'chrome://resources/cr_components/chromeos/network/cr_policy_network_behavior_mojo.m.js';

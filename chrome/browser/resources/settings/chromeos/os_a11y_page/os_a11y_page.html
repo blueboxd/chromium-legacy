@@ -16,6 +16,7 @@
     <settings-toggle-button id="optionsInMenuToggle"
         hidden="[[isKioskModeActive_]]"
         label="$i18n{optionsInMenuLabel}"
+        sub-label="$i18n{optionsInMenuDescription}"
         pref="{{prefs.settings.a11y.enable_menu}}"
         deep-link-focus-id$="[[Setting.kA11yQuickSettings]]">
     </settings-toggle-button>
@@ -28,24 +29,28 @@
           sub-label="$i18n{textToSpeechLinkDescription}"
           role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
+      <div class="hr"></div>
       <cr-link-row id="display-and-magnification-page-trigger"
           label="$i18n{displayAndMagnificationLinkTitle}"
           on-click="onDisplayAndMagnificationTap_"
           sub-label="$i18n{displayAndMagnificationLinkDescription}"
           role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
+      <div class="hr"></div>
       <cr-link-row id="keyboard-and-text-input-page-trigger"
           label="$i18n{keyboardAndTextInputLinkTitle}"
           on-click="onKeyboardAndTextInputTap_"
           sub-label="$i18n{keyboardAndTextInputLinkDescription}"
           role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
+      <div class="hr"></div>
       <cr-link-row id="cursor-and-touchpad-page-trigger"
           label="$i18n{cursorAndTouchpadLinkTitle}"
           on-click="onCursorAndTouchpadTap_"
           sub-label="$i18n{cursorAndTouchpadLinkDescription}"
           role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
+      <div class="hr"></div>
       <cr-link-row id="audio-and-captions-page-trigger"
           label="$i18n{audioAndCaptionsLinkTitle}"
           on-click="onAudioAndCaptionsTap_"
@@ -60,6 +65,20 @@
         sub-label="$i18n{moreFeaturesLinkDescription}"
         role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
+    </template>
+    <template is="dom-if"
+        if="[[shouldShowAdditionalFeaturesLink_(isKioskModeActive_, isGuest_)]]">
+      <a class="settings-box inherit-color no-outline" tabindex="-1"
+          id="additionalFeaturesLink" target="_blank"
+          href="https://chrome.google.com/webstore/category/collection/3p_accessibility_extensions">
+        <div class="start settings-box-text">
+          $i18n{additionalFeaturesTitle}
+        </div>
+        <cr-icon-button class="icon-external"
+            aria-label="$i18n{additionalFeaturesTitle}"
+            aria-describedby="moreFeaturesSecondary">
+        </cr-icon-button>
+      </a>
     </template>
   </div>
 

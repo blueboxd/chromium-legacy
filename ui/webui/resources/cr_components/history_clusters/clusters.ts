@@ -5,8 +5,8 @@
 import './cluster.js';
 import './history_clusters_shared_style.css.js';
 import '../../cr_elements/cr_button/cr_button.m.js';
-import '../../cr_elements/cr_dialog/cr_dialog.m.js';
-import '../../cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import '../../cr_elements/cr_dialog/cr_dialog.js';
+import '../../cr_elements/cr_lazy_render/cr_lazy_render.js';
 import '../../cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
@@ -17,8 +17,8 @@ import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-li
 import {IronScrollThresholdElement} from 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {CrDialogElement} from '../../cr_elements/cr_dialog/cr_dialog.m.js';
-import {CrLazyRenderElement} from '../../cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import {CrDialogElement} from '../../cr_elements/cr_dialog/cr_dialog.js';
+import {CrLazyRenderElement} from '../../cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {CrToastElement} from '../../cr_elements/cr_toast/cr_toast.js';
 import {assert} from '../../js/assert_ts.js';
 import {FocusOutlineManager} from '../../js/cr/ui/focus_outline_manager.m.js';
@@ -68,6 +68,15 @@ export class HistoryClustersElement extends HistoryClustersElementBase {
   static get properties() {
     return {
       /**
+       * Whether the clusters are in the side panel.
+       */
+      inSidePanel: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('inSidePanel'),
+        reflectToAttribute: true,
+      },
+
+      /**
        * The current query for which related clusters are requested and shown.
        */
       query: {
@@ -113,6 +122,7 @@ export class HistoryClustersElement extends HistoryClustersElementBase {
   // Properties
   //============================================================================
 
+  inSidePanel: boolean;
   query: string;
   private callbackRouter_: PageCallbackRouter;
   private headerText_: string;
@@ -228,16 +238,6 @@ export class HistoryClustersElement extends HistoryClustersElementBase {
   }
 
   /**
-   * Called when the value of the search field changes.
-   */
-  private onSearchChanged_(event: CustomEvent<string>) {
-    // Update the query based on the value of the search field, if necessary.
-    if (event.detail !== this.query) {
-      this.query = event.detail;
-    }
-  }
-
-  /**
    * Called when the scrollable area has been scrolled nearly to the bottom.
    */
   private onScrolledToBottom_() {
@@ -342,7 +342,9 @@ export class HistoryClustersElement extends HistoryClustersElementBase {
         // Prevent sending further load-more requests until this one finishes.
         this.set('result_.canLoadMore', false);
       }
-      this.pageHandler_.startQueryClusters(this.query.trim());
+      this.pageHandler_.startQueryClusters(
+          this.query.trim(),
+          new URLSearchParams(window.location.search).has('recluster'));
     });
   }
 

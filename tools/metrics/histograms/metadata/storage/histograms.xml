@@ -41,7 +41,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="API.StorageAccess.AllowedRequests2" enum="StorageAccessResult"
-    expires_after="2022-03-27">
+    expires_after="2023-03-12">
   <owner>mkwst@chromium.org</owner>
   <owner>brandm@microsoft.com</owner>
   <summary>
@@ -49,26 +49,35 @@ chromium-metrics-reviews@google.com.
     Storage Access API unblocked the request or not. Recorded whenever a
     decision to access storage like getting/setting cookies or opening an
     indexeddb connection is made in CookieSettings.
+
+    Warning: this histogram was expired from 2022-03-27 to 08-12-2022; data may
+    be missing.
   </summary>
 </histogram>
 
 <histogram name="API.StorageAccess.GrantIsImplicit" enum="BooleanAvailable"
-    expires_after="2020-11-27">
+    expires_after="2023-03-12">
   <owner>mkwst@chromium.org</owner>
   <owner>brandm@microsoft.com</owner>
   <summary>
     Records if a generated grant was implicit or explicit at the time it was
     created.
+
+    Warning: this histogram was expired from 2020-11-27 to 08-12-2022; data may
+    be missing.
   </summary>
 </histogram>
 
 <histogram name="API.StorageAccess.RequestStorageAccess"
-    enum="RequestStorageResult" expires_after="2020-11-27">
+    enum="RequestStorageResult" expires_after="2023-03-12">
   <owner>mkwst@chromium.org</owner>
   <owner>brandm@microsoft.com</owner>
   <summary>
     Records requests to use document.requestStorageAccess and reasons the
     request may be approved or rejected.
+
+    Warning: this histogram was expired from 2020-11-27 to 08-12-2022; data may
+    be missing.
   </summary>
 </histogram>
 
@@ -86,7 +95,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Clipboard.Read" enum="ClipboardFormatRead"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>huangdarwin@chromium.org</owner>
   <owner>src/ui/base/clipboard/OWNERS</owner>
   <summary>
@@ -114,7 +123,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Clipboard.TimeIntervalBetweenCommitAndRead" units="ms"
-    expires_after="2022-11-27">
+    expires_after="2023-02-12">
   <owner>dcheng@chromium.org</owner>
   <owner>src/ui/base/clipboard/OWNERS</owner>
   <summary>
@@ -127,7 +136,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Clipboard.Write" enum="ClipboardFormatWrite"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>huangdarwin@chromium.org</owner>
   <owner>src/ui/base/clipboard/OWNERS</owner>
   <summary>
@@ -157,17 +166,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="LevelDBEnv.IOError" enum="LevelDBIOErrorMethods"
-    expires_after="2022-08-01">
-  <owner>dmurph@chromium.org</owner>
-  <owner>pwnall@chromium.org</owner>
+    expires_after="2023-08-01">
+  <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>Methods where leveldb's Chromium environment has IO errors.</summary>
 </histogram>
 
 <histogram name="LevelDBEnv.MissingFiles" units="files"
-    expires_after="2022-08-01">
-  <owner>dmurph@chromium.org</owner>
-  <owner>pwnall@chromium.org</owner>
+    expires_after="2023-08-01">
+  <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
     Number of backup files found without corresponding ldb files. As measured by
@@ -177,7 +184,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="LevelDBWrapper.CommitDelay" units="ms"
     expires_after="2022-12-04">
-  <owner>mek@chromium.org</owner>
+  <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
     Delay between the browser process receiving changes and those changes being
@@ -186,9 +193,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MojoLevelDBEnv.IOError" enum="LevelDBIOErrorMethods"
-    expires_after="M87">
-  <owner>mek@chromium.org</owner>
-  <summary>Methods where leveldb's Mojo environment has IO errors.</summary>
+    expires_after="2023-08-01">
+  <owner>ayui@chromium.org</owner>
+  <owner>chrome-owp-storage@google.com</owner>
+  <summary>
+    Methods where leveldb's Mojo environment has IO errors. This histogram has
+    expired between M87-106.
+  </summary>
 </histogram>
 
 <histogram name="NativeFileSystemAPI.FileChooserResult.{Type}" units="units"
@@ -214,13 +225,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.BlacklistedImportantSites.Reason"
-    enum="ClearDataSiteBlacklistCrossedReason" expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
+    enum="ClearDataSiteBlacklistCrossedReason" expires_after="2023-08-01">
+  <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
-    This is recorded for every site that the user blacklists when they when they
+    This is recorded for every site that the user blocklists when they when they
     clear browsing data. It indicates which signals were used to show the given
-    site to the user that the user then chose to exclude from clearing.
+    site to the user that the user then chose to exclude from clearing. This
+    histogram has expired between M95-M106.
   </summary>
 </histogram>
 
@@ -320,53 +332,56 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.ImportantSites.CBDChosenReason"
-    enum="ImportantSitesReason" expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
+    enum="ImportantSitesReason" expires_after="2023-08-01">
+  <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
-    When a user chooses to blacklist one or more sites when they clear browsing
+    When a user chooses to blocklist one or more sites when they clear browsing
     data, this is recorded for every reason each chosen site was marked as
     important. It indicates which signals were used to show the given site to
-    the user that the user then chose to exclude from clearing.
+    the user that the user then chose to exclude from clearing. This histogram
+    has expired between M95-M106.
   </summary>
 </histogram>
 
 <histogram name="Storage.ImportantSites.CBDChosenReasonCount" units="count"
-    expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
+    expires_after="2023-08-01">
+  <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
     This records the number of reasons each important site had that the user
-    chose to blacklist when clearing browsing data.
+    chose to blocklist when clearing browsing data. This histogram has expired
+    between M95-M106.
   </summary>
 </histogram>
 
 <histogram name="Storage.ImportantSites.CBDIgnoredReason"
-    enum="ImportantSitesReason" expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
+    enum="ImportantSitesReason" expires_after="2023-08-01">
+  <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
-    When a user chooses to blacklist one or more sites when they clear browsing
+    When a user chooses to blocklist one or more sites when they clear browsing
     data, this is recorded for every reason each unchosen site was marked as
     important. It indicates which signals were used to show the given site to
-    the user, which the user then ignored and did not select to blacklist from
-    clearing data.
+    the user, which the user then ignored and did not select to blocklist from
+    clearing data. This histogram has expired between M95-M106.
   </summary>
 </histogram>
 
 <histogram name="Storage.ImportantSites.CBDIgnoredReasonCount" units="count"
-    expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
+    expires_after="2023-08-01">
+  <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
     This records the number of reasons each important site had that the user
-    chose to NOT blacklist when clearing browsing data.
+    chose to NOT blocklist when clearing browsing data. This histogram has
+    expired between M95-M106.
   </summary>
 </histogram>
 
 <histogram name="Storage.ImportantSites.GeneratedReason"
-    enum="ImportantSitesReason" expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
+    enum="ImportantSitesReason" expires_after="2023-08-01">
+  <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
     Recorded when we generate a list of important sites. This can happen when
@@ -374,49 +389,53 @@ chromium-metrics-reviews@google.com.
     tab in Site Settings on Android, or launches 'Manage Storage' from Android
     System Settings for Chrome. We record every reason each site was chosen in
     this metric. This means that we can report this metric multiple times for a
-    single site.
+    single site. This histogram has expired between M95-M106.
   </summary>
 </histogram>
 
 <histogram name="Storage.ImportantSites.GeneratedReasonCount" units="count"
-    expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
+    expires_after="2023-08-01">
+  <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
     This records the number of reasons qualifying a site for being 'important'.
     We record this for every site when we generate a list of important sites,
-    described in &quot;Storage.ImportantSites.GeneratedReason&quot;.
+    described in &quot;Storage.ImportantSites.GeneratedReason&quot;. This
+    histogram has expired between M95-M106.
   </summary>
 </histogram>
 
 <histogram name="Storage.ImportantSites.GenerationTime" units="ms"
-    expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
-  <owner>pwnall@chromium.org</owner>
+    expires_after="2023-08-01">
+  <owner>ayui@chromium.org</owner>
+  <owner>chrome-owp-storage@google.com</owner>
   <summary>
     The time it takes to generate the list of 'important' sites. This list is
     generated when the user enters the 'Clear Browsing Dialog' or the 'Manage
-    Space' screens for Chrome, both of which are on Android.
+    Space' screens for Chrome, both of which are on Android. This histogram has
+    expired between M95-M106.
   </summary>
 </histogram>
 
 <histogram name="Storage.IndexedDB.PutBlobSizeKB" units="KB"
-    expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
-  <owner>pwnall@chromium.org</owner>
+    expires_after="2023-08-01">
+  <owner>ayui@chromium.org</owner>
+  <owner>chrome-owp-storage@google.com</owner>
   <summary>
     Records the size of a blob used in an IndexedDB add/put operation. Recorded
-    for every put operation that contains a blob.
+    for every put operation that contains a blob. This histogram has expired
+    between M95-M106.
   </summary>
 </histogram>
 
 <histogram name="Storage.IndexedDB.PutValidBlob" enum="Boolean"
-    expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
-  <owner>pwnall@chromium.org</owner>
+    expires_after="2023-08-01">
+  <owner>ayui@chromium.org</owner>
+  <owner>chrome-owp-storage@google.com</owner>
   <summary>
     Records if a blob intended to be used in an IndexedDB add/put operation is a
-    valid blob. Recorded for every put operation that contains a blob.
+    valid blob. Recorded for every put operation that contains a blob. This
+    histogram has expired between M95-M106.
   </summary>
 </histogram>
 
@@ -465,12 +484,47 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SessionStorage.RendererAreaCacheHit"
-    enum="LocalStorageRendererAreaCacheHitEnum" expires_after="M97">
-  <owner>mek@chromium.org</owner>
+    enum="LocalStorageRendererAreaCacheHitEnum" expires_after="2023-08-01">
+  <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
     The renderer side cache hit rate metrics for new HTML5 SessionStorage DB
-    opened.
+    opened. This histogram has expired between M97-106.
+  </summary>
+</histogram>
+
+<histogram name="Storage.SharedStorage.AsyncIterator.EntriesQueuedCount"
+    units="Entries" expires_after="2023-07-31">
+  <owner>cammie@chromium.org</owner>
+  <owner>yaoxia@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Count of database entries queued to be sent to the async iterator. Recorded
+    in `SharedStorageIterator::DidReadEntries()`.
+  </summary>
+</histogram>
+
+<histogram name="Storage.SharedStorage.AsyncIterator.IteratedEntriesBenchmarks"
+    units="BenchmarksMet" expires_after="2023-07-31">
+  <owner>cammie@chromium.org</owner>
+  <owner>yaoxia@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    For each of a set of benchmark percentages, we record that benchmark when
+    the async iterator first iterates through at least that percentage of queued
+    entries. Recorded in `SharedStorageIterator::NextHelper()`.
+  </summary>
+</histogram>
+
+<histogram name="Storage.SharedStorage.AsyncIterator.ReceivedEntriesBenchmarks"
+    units="BenchmarksMet" expires_after="2023-07-31">
+  <owner>cammie@chromium.org</owner>
+  <owner>yaoxia@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    For each of a set of benchmark percentages, we record that benchmark when
+    the async iterator first receives from the database at least that percentage
+    of queued entries. Recorded in `SharedStorageIterator::DidReadEntries()`.
   </summary>
 </histogram>
 
@@ -540,6 +594,47 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Storage.SharedStorage.Worklet.DestroyedStatus"
+    enum="SharedStorageWorkletDestroyedStatus" expires_after="2023-07-31">
+  <owner>cammie@chromium.org</owner>
+  <owner>yaoxia@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Whether or not the worklet entered keep-alive phase before destruction, and
+    if it did enter keep-alive, whether the keep-alive was terminated by
+    operations finishing or due to timeout. Recorded in the destructor of
+    `SharedStorageWokletHost`.
+  </summary>
+</histogram>
+
+<histogram name="Storage.SharedStorage.Worklet.Error.Type"
+    enum="SharedStorageWorkletErrorType" expires_after="2023-07-31">
+  <owner>cammie@chromium.org</owner>
+  <owner>yaoxia@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Type of error encountered by the SharedStorageWorklet in either
+    `addModule()`, `run()`, or `selectURL()`. Recorded after an exception is
+    thrown, after a callback is run with `/*success=*/false`, after a call to
+    `ReportBadMessage()`, and/or just before the rejected promise is returned,
+    via the utility method `LogWorkletError()`.
+  </summary>
+</histogram>
+
+<histogram
+    name="Storage.SharedStorage.Worklet.Timing.KeepAliveEndedDueToOperationsFinished.KeepAliveDuration"
+    units="ms" expires_after="2023-07-31">
+  <owner>cammie@chromium.org</owner>
+  <owner>yaoxia@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Measures the time from entering keep alive until the start of the call to
+    `FinishKeepAlive()` for keep-alives that are terminated when operations end
+    (i.e. excludes worklets whose keep-alives are terminated via timeout).
+    Recorded in `SharedStorageWokletHost::FinishKeepAlive()`.
+  </summary>
+</histogram>
+
 <histogram name="Storage.StoragePressure.Bubble"
     enum="StoragePressureBubbleUserAction" expires_after="2023-03-09">
   <owner>ayui@chromium.org</owner>
@@ -555,8 +650,8 @@ chromium-metrics-reviews@google.com.
     expires_after="never">
 <!-- expires-never: core storage metric; consumed in separate dashboard (go/chrome-storage-dashboard) -->
 
-  <owner>dmurph@chromium.org</owner>
-  <owner>pwnall@chromium.org</owner>
+  <owner>ayui@chromium.org</owner>
+  <owner>chrome-owp-storage@google.com</owner>
   <summary>
     Counts the number of WebSQL databases opened for secure vs insecure origins.
   </summary>

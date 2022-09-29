@@ -111,7 +111,6 @@
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
-#import "ios/chrome/browser/ui/util/page_animation_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/url_with_title.h"
 #import "ios/chrome/browser/upgrade/upgrade_center.h"
@@ -235,8 +234,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - BVC
 
 // Note other delegates defined in the Delegates category header.
-@interface BrowserViewController () <CRWWebStateObserver,
-                                     FindBarPresentationDelegate,
+@interface BrowserViewController () <FindBarPresentationDelegate,
                                      FullscreenUIElement,
                                      MainContentUI,
                                      SideSwipeControllerDelegate,
@@ -312,14 +310,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Fake status bar view used to blend the toolbar into the status bar.
   UIView* _fakeStatusBarView;
-
-  // Forwards observer methods for all WebStates in the WebStateList to this
-  // BrowserViewController object.
-  std::unique_ptr<AllWebStateObservationForwarder>
-      _allWebStateObservationForwarder;
-
-  // Bridges C++ WebStateObserver methods to this BrowserViewController.
-  std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 
   std::unique_ptr<UrlLoadingObserverBridge> _URLLoadingObserverBridge;
 
@@ -513,12 +503,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     _footerFullscreenProgress = 1.0;
 
     _isOffTheRecord = browser->GetBrowserState()->IsOffTheRecord();
-
-    _webStateObserverBridge =
-        std::make_unique<web::WebStateObserverBridge>(self);
-    _allWebStateObservationForwarder =
-        std::make_unique<AllWebStateObservationForwarder>(
-            browser->GetWebStateList(), _webStateObserverBridge.get());
 
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
     browser->GetWebStateList()->AddObserver(_webStateListObserver.get());
@@ -1037,7 +1021,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   self.secondaryToolbarCoordinator = nil;
   _sideSwipeController = nil;
   _webStateListObserver.reset();
-  _allWebStateObservationForwarder = nullptr;
   [_voiceSearchController disconnect];
   _voiceSearchController = nil;
   _fullscreenDisabler = nullptr;
@@ -1303,7 +1286,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Update the toolbar visibility.
   // TODO(crbug.com/1329087): Move this update to the toolbar view
   // controller(s)?
-  [self updateToolbar];
+  [self.primaryToolbarCoordinator updateToolbar];
 
   // Update the tab strip visibility.
   if (self.tabStripView) {
@@ -2012,7 +1995,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
   // TODO(crbug.com/1329087): Move this update to the toolbar coordinator,
   // somehow.
-  [self updateToolbar];
+  [self.primaryToolbarCoordinator updateToolbar];
 
   // TODO(crbug.com/971364): The webState is not necessarily added to the view
   // hierarchy, even though the bookkeeping says that the WebState is visible.
@@ -2048,56 +2031,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 #pragma mark - Private Methods: UI Configuration, update and Layout
-
-// TODO(crbug.com/1329087): Move this update to primaryToolbarCoordinator,
-// triggered by mediators as apprpriate. Update the state of back and forward
-// buttons, hiding the forward button if there is nowhere to go. Assumes the
-// model's current tab is up to date.
-- (void)updateToolbar {
-  // If the BVC has been partially torn down for low memory, wait for the
-  // view rebuild to handle toolbar updates.
-  if (!self.browserState)
-    return;
-
-  web::WebState* webState = self.currentWebState;
-  if (!webState)
-    return;
-
-  // TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
-  BOOL isPrerendered =
-      (_prerenderService && _prerenderService->IsLoadingPrerender());
-
-  // Please note, this notion of isLoading is slightly different from WebState's
-  // IsLoading().
-  BOOL isToolbarLoading =
-      self.currentWebState && self.currentWebState->IsLoading() &&
-      !self.currentWebState->GetLastCommittedURL().SchemeIs(kChromeUIScheme);
-
-  if (isPrerendered && isToolbarLoading)
-    [self.primaryToolbarCoordinator showPrerenderingAnimation];
-
-  [self.dispatcher showFindUIIfActive];
-  [self.textZoomHandler showTextZoomUIIfActive];
-
-  BOOL hideToolbar = NO;
-  if (webState) {
-    // There are times when the NTP can be hidden but before the visibleURL
-    // changes.  This can leave the BVC in a blank state where only the bottom
-    // toolbar is visible. Instead, if possible, use the NewTabPageTabHelper
-    // IsActive() value rather than checking -IsVisibleURLNewTabPage.
-    NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(webState);
-    BOOL isNTP = NTPHelper && NTPHelper->IsActive();
-    // Hide the toolbar when displaying content suggestions without the tab
-    // strip, without the focused omnibox, and for UI Refresh, only when in
-    // split toolbar mode.
-    hideToolbar = isNTP && !_isOffTheRecord &&
-                  ![self.primaryToolbarCoordinator isOmniboxFirstResponder] &&
-                  ![self.primaryToolbarCoordinator showingOmniboxPopup] &&
-                  ![self canShowTabStrip] && IsSplitToolbarMode(self);
-  }
-  [self.primaryToolbarCoordinator.viewController.view setHidden:hideToolbar];
-}
 
 // Starts or stops broadcasting the toolbar UI and main content UI depending on
 // whether the BVC is visible and active.
@@ -2655,11 +2588,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (BOOL)isTabScrolledToTopForBubblePresenter:(BubblePresenter*)bubblePresenter {
   DCHECK(bubblePresenter == _bubblePresenter);
 
-  // If NTP exists, use NTP coordinator's scroll offset.
+  // If NTP exists, check if it is scrolled to top.
   if (self.isNTPActiveForCurrentWebState) {
-    NewTabPageCoordinator* coordinator = self.ntpCoordinator;
-    CGFloat scrolledToTopOffset = [coordinator contentInset].top;
-    return [coordinator contentOffset].y == scrolledToTopOffset;
+    return [self.ntpCoordinator isScrolledToTop];
   }
 
   CRWWebViewScrollViewProxy* scrollProxy =
@@ -2828,32 +2759,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [animationView animateFromCurrentView:snapshotView
                               toNewView:swipeView
                              inPosition:position];
-}
-
-#pragma mark - CRWWebStateObserver methods.
-
-// TODO(crbug.com/1329087): Move this logic to a mediator attached to the
-// primary toolbar coordinator (ToolbarMediator?
-- (void)webState:(web::WebState*)webState
-    didStartNavigation:(web::NavigationContext*)navigation {
-  if (webState == self.currentWebState)
-    [self updateToolbar];
-}
-
-// TODO(crbug.com/1329086): Move pageload logic to a TabEventsMediator
-- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
-  // If there is no first responder, try to make the webview or the NTP first
-  // responder to have it answer keyboard commands (e.g. space bar to scroll).
-  if (!GetFirstResponder() && self.currentWebState) {
-    NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(webState);
-    if (NTPHelper && NTPHelper->IsActive()) {
-      UIViewController* viewController = self.ntpCoordinator.viewController;
-      [viewController becomeFirstResponder];
-    } else {
-      [self.currentWebState->GetWebViewProxy() becomeFirstResponder];
-    }
-  }
 }
 
 #pragma mark - OmniboxPopupPresenterDelegate methods.
@@ -3247,31 +3152,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [_voiceSearchController prepareToAppear];
 }
 
-// TODO(crbug.com/1272498): Refactor this command away, and add a mediator to
-// observe the active web state closing and push updates into the BVC for UI
-// work.
-- (void)closeCurrentTab {
-  WebStateList* webStateList = self.browser->GetWebStateList();
-  if (!webStateList)
-    return;
-
-  int active_index = webStateList->active_index();
-  if (active_index == WebStateList::kInvalidIndex)
-    return;
-
-  UIView* snapshotView = [self.contentArea snapshotViewAfterScreenUpdates:NO];
-  snapshotView.frame = self.contentArea.frame;
-
-  webStateList->CloseWebStateAt(active_index, WebStateList::CLOSE_USER_ACTION);
-
-  if (![self canShowTabStrip]) {
-    [self.contentArea addSubview:snapshotView];
-    page_animation_util::AnimateOutWithCompletion(snapshotView, ^{
-      [snapshotView removeFromSuperview];
-    });
-  }
-}
-
 - (void)prepareForPopupMenuPresentation:(PopupMenuCommandType)type {
   DCHECK(self.browserState);
   DCHECK(self.visible || self.dismissingModal);
@@ -3288,12 +3168,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   if (type == PopupMenuCommandTypeToolsMenu) {
     [_bubblePresenter toolsMenuDisplayed];
-  }
-}
-
-- (void)focusFakebox {
-  if (self.isNTPActiveForCurrentWebState) {
-    [self.ntpCoordinator focusFakebox];
   }
 }
 
@@ -3645,7 +3519,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // TODO(crbug.com/1329087): Signal to the toolbar coordinator to perform this
   // update. Longer-term, make SideSwipeControllerDelegate observable instead of
   // delegating.
-  [self updateToolbar];
+  [self.primaryToolbarCoordinator updateToolbar];
 
   // Reset horizontal stack view.
   [sideSwipeView removeFromSuperview];
@@ -3684,7 +3558,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // TODO(crbug.com/1329087): Signal to the toolbar coordinator to perform
     // this update. Longer-term, make SideSwipeControllerDelegate observable
     // instead of delegating.
-    [self updateToolbar];
+    [self.primaryToolbarCoordinator updateToolbar];
   } else {
     // Hide UI accessories such as find bar and first visit overlays
     // for welcome page.

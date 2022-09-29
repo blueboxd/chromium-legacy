@@ -10,6 +10,7 @@
 #include <map>
 
 #include "base/compiler_specific.h"
+#include "base/files/file_error_or.h"
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -65,17 +66,16 @@ class SandboxQuotaObserver : public FileUpdateObserver,
   void UpdateUsageCacheFile(const base::FilePath& usage_file_path,
                             int64_t delta);
 
-  base::FilePath GetUsageCachePath(const FileSystemURL& url);
+  base::FileErrorOr<base::FilePath> GetUsageCachePath(const FileSystemURL& url);
 
   const scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
   const scoped_refptr<base::SequencedTaskRunner> update_notify_runner_;
 
   // Not owned; sandbox_file_util_ should have identical lifetime with this.
-  const raw_ptr<ObfuscatedFileUtil, DanglingUntriaged> sandbox_file_util_;
+  const raw_ptr<ObfuscatedFileUtil> sandbox_file_util_;
 
   // Not owned; file_system_usage_cache_ should have longer lifetime than this.
-  const raw_ptr<FileSystemUsageCache, DanglingUntriaged>
-      file_system_usage_cache_;
+  const raw_ptr<FileSystemUsageCache> file_system_usage_cache_;
 
   std::map<base::FilePath, int64_t> pending_update_notification_;
   base::OneShotTimer delayed_cache_update_helper_;

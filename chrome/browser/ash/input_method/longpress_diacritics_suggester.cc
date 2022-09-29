@@ -9,7 +9,9 @@
 
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/input_method/ui/assistive_delegate.h"
@@ -42,6 +44,26 @@ AssistiveWindowButton CreateButtonFor(size_t index,
   return button;
 }
 
+void RecordActionMetric(IMEPKLongpressDiacriticAction action) {
+  base::UmaHistogramEnumeration(
+      "InputMethod.PhysicalKeyboard.LongpressDiacritics.Action", action);
+}
+
+void RecordAcceptanceCharCodeMetric(const std::u16string diacritic) {
+  // Recording -1 as default value just in case there are issues with
+  // encoding in utf-16 that means some character isn't
+  // properly captured in one utf-16 char (for example if emojis are added in
+  // the future).
+  int char_code = -1;
+  if (diacritic.length() == 1) {
+    char_code = int(diacritic[0]);
+  }
+
+  base::UmaHistogramSparse(
+      "InputMethod.PhysicalKeyboard.LongpressDiacritics.AcceptedChar",
+      char_code);
+}
+
 }  // namespace
 
 LongpressDiacriticsSuggester::LongpressDiacriticsSuggester(
@@ -68,6 +90,7 @@ bool LongpressDiacriticsSuggester::TrySuggestOnLongpress(char key_character) {
         focused_context_id_.value(), properties, &error);
     if (error.empty()) {
       displayed_window_base_character_ = key_character;
+      RecordActionMetric(IMEPKLongpressDiacriticAction::kShowWindow);
       return true;
     }
     LOG(ERROR) << "Unable to suggest diacritics on longpress: " << error;
@@ -94,10 +117,18 @@ void LongpressDiacriticsSuggester::OnExternalSuggestionsUpdated(
 SuggestionStatus LongpressDiacriticsSuggester::HandleKeyEvent(
     const ui::KeyEvent& event) {
   ui::DomCode code = event.code();
+  // The diacritic suggester is not set up.
   if (focused_context_id_ == absl::nullopt ||
       displayed_window_base_character_ == absl::nullopt ||
-      !GetCurrentShownDiacritics().size())
+      !GetCurrentShownDiacritics().size()) {
     return SuggestionStatus::kNotHandled;
+  }
+  // The diacritic suggester is displaying, but its just the repeat key of the
+  // base character (probably because user is still holding down the key).
+  if (*displayed_window_base_character_ == event.GetCharacter() &&
+      event.is_repeat()) {
+    return SuggestionStatus::kNotHandled;
+  }
 
   size_t new_index = 0;
 
@@ -133,6 +164,26 @@ SuggestionStatus LongpressDiacriticsSuggester::HandleKeyEvent(
       highlighted_index_ = new_index;
       return SuggestionStatus::kBrowsing;
     default:
+      size_t key_number = 0;
+      // If the key value is a number then accept the corresponding suggestion.
+      if (base::StringToSizeT(std::u16string(1, event.GetCharacter()),
+                              &key_number)) {
+        // Ignore 0 values, make sure the key numbers are valid.
+        if (1 <= key_number && key_number <= 9 &&
+            key_number <= GetCurrentShownDiacritics().size()) {
+          // The "key" char value starts from 1.
+          // The actual index of the suggestions start at 0.
+          size_t index_to_accept = key_number - 1;
+          if (AcceptSuggestion(index_to_accept)) {
+            return SuggestionStatus::kAccept;
+          }
+        }
+      }
+
+      // Dismiss on any unexpected key events.
+      DismissSuggestion();
+      // NotHandled is passed so that the IME will let the key event pass
+      // through.
       return SuggestionStatus::kNotHandled;
   }
 }
@@ -171,7 +222,8 @@ bool LongpressDiacriticsSuggester::AcceptSuggestion(size_t index) {
     LOG(ERROR) << "Failed to accept suggestion. " << error;
     return false;
   }
-
+  RecordActionMetric(IMEPKLongpressDiacriticAction::kAccept);
+  RecordAcceptanceCharCodeMetric(current_suggestions[index]);
   Reset();
   return true;
 }
@@ -196,13 +248,13 @@ void LongpressDiacriticsSuggester::DismissSuggestion() {
     LOG(ERROR) << "Failed to dismiss suggestion. " << error;
     return;
   }
+  RecordActionMetric(IMEPKLongpressDiacriticAction::kDismiss);
   Reset();
   return;
 }
 
 AssistiveType LongpressDiacriticsSuggester::GetProposeActionType() {
-  // TODO(b/217560706): Should handle action.
-  return AssistiveType::kGenericAction;
+  return AssistiveType::kLongpressDiacritics;
 }
 
 bool LongpressDiacriticsSuggester::HasSuggestions() {

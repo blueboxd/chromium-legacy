@@ -81,6 +81,9 @@ struct FeedbackContext {
   // file, zipped, and then attached to the report.
   // Example value: "Failed to connect to wifi network.".
   string? extra_diagnostics;
+  // When a report is sent with bluetooth logs, the category_tag will be set
+  // to BluetoothReportWithLogs.
+  string? category_tag;
 };
 
 // Status of the sending of a feedback report.
@@ -123,6 +126,43 @@ struct Report {
   // Whether or not consent has been granted to Google for to contact user in
   // reference to report. See (go/feedback-user-consent-faq).
   bool contact_user_consent_granted;
+  // Whether or not the report has sendBluetoothLogs
+  // flag set true by internal google account only.
+  bool send_bluetooth_logs;
+};
+
+// The first action taken on the confirmation page.
+enum FeedbackAppPostSubmitAction {
+  // User send a new report.
+  kSendNewReport,
+  // User close app by clicking done button.
+  kClickDoneButton,
+  // User open explore app.
+  kOpenExploreApp,
+  // User open diagnostics app.
+  kOpenDiagnosticsApp,
+  // User open chromebook community link.
+  kOpenChromebookCommunity,
+  // User close app by clicking x button on the top right.
+  kCloseFeedbackApp
+
+  // NOTE: If you add any entries to this enum, you must also update the
+  // corresponding UMA FeedbackAppPostSubmitAction at
+  // tools/metrics/histograms/enums.xml.
+};
+
+// User actions before sending the feedback.
+enum FeedbackAppPreSubmitAction {
+  // User clicked the help content on search page.
+  kViewedHelpContent,
+  // User viewed the screenshot on share data page.
+  kViewedScreenshot,
+  // User viewed the selected image to be attached on share data page.
+  kViewedImage,
+  // User viewed the system and app info on share data page.
+  kViewedSystemAndAppInfo,
+  // User viewed the metrics on share data page.
+  kViewedMetrics
 };
 
 // Provides services needed by the feedback UI to display data and send reports.
@@ -146,4 +186,11 @@ interface FeedbackServiceProvider {
   // Open system info dialog (which displays the system logs
   // to be sent with the report if the user has opted in).
   OpenSystemInfoDialog();
+  // Open bluetooth logs info dialog (which displays the bluetooth logs
+  // to be sent with the report if the user has opted in).
+  OpenBluetoothLogsInfoDialog();
+  // Record the metrics of users' first action on confirmation page.
+  RecordPostSubmitAction(FeedbackAppPostSubmitAction action);
+  // Record metrics of users' action before sending the feedback.
+  RecordPreSubmitAction(FeedbackAppPreSubmitAction action);
 };

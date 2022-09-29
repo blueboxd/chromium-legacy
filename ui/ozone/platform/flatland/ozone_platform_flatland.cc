@@ -31,6 +31,7 @@
 #include "ui/ozone/platform/flatland/flatland_sysmem_buffer_collection.h"
 #include "ui/ozone/platform/flatland/flatland_window.h"
 #include "ui/ozone/platform/flatland/flatland_window_manager.h"
+#include "ui/ozone/platform/flatland/overlay_manager_flatland.h"
 #include "ui/ozone/platform/scenic/mojom/scenic_gpu_service.mojom.h"
 #include "ui/ozone/platform_selection.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
@@ -143,11 +144,12 @@ class OzonePlatformFlatland : public OzonePlatform,
   void InitScreen(PlatformScreen* screen) override {}
 
   std::unique_ptr<InputMethod> CreateInputMethod(
-      internal::InputMethodDelegate* delegate,
+      ImeKeyEventDispatcher* ime_key_event_dispatcher,
       gfx::AcceleratedWidget widget) override {
     return std::make_unique<InputMethodFuchsia>(
         window_manager_->GetWindow(widget)->virtual_keyboard_enabled(),
-        delegate, window_manager_->GetWindow(widget)->CloneViewRef());
+        ime_key_event_dispatcher,
+        window_manager_->GetWindow(widget)->CloneViewRef());
   }
 
   bool InitializeUI(const InitParams& params) override {
@@ -192,7 +194,7 @@ class OzonePlatformFlatland : public OzonePlatform,
       surface_factory_->Initialize(std::move(flatland_gpu_host_remote));
     }
 
-    // TODO(crbug.com/1146006): Add overlay manager.
+    overlay_manager_ = std::make_unique<OverlayManagerFlatland>();
   }
 
   const PlatformRuntimeProperties& GetPlatformRuntimeProperties() override {

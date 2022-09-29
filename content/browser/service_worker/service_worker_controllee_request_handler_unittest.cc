@@ -12,6 +12,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
@@ -172,8 +174,8 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
 
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, Basic) {
   // Prepare a valid version and registration.
-  version_->set_fetch_handler_existence(
-      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version_->set_fetch_handler_type(
+      ServiceWorkerVersion::FetchHandlerType::kNotSkippable);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   {
@@ -246,8 +248,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
       SetBrowserClientForTesting(&test_browser_client);
 
   // Store an activated worker.
-  version_->set_fetch_handler_existence(
-      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version_->set_fetch_handler_type(
+      ServiceWorkerVersion::FetchHandlerType::kNotSkippable);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   context()->registry()->StoreRegistration(registration_.get(), version_.get(),
@@ -275,8 +277,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InsecureContext) {
   SetUpWithHelper(/*is_parent_frame_secure=*/false);
 
   // Store an activated worker.
-  version_->set_fetch_handler_existence(
-      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version_->set_fetch_handler_type(
+      ServiceWorkerVersion::FetchHandlerType::kNotSkippable);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   context()->registry()->StoreRegistration(registration_.get(), version_.get(),
@@ -299,8 +301,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InsecureContext) {
 
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
   // Store a registration that is installed but not activated yet.
-  version_->set_fetch_handler_existence(
-      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version_->set_fetch_handler_type(
+      ServiceWorkerVersion::FetchHandlerType::kNotSkippable);
   version_->SetStatus(ServiceWorkerVersion::INSTALLED);
   registration_->SetWaitingVersion(version_);
   context()->registry()->StoreRegistration(registration_.get(), version_.get(),
@@ -328,8 +330,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
   // Create an installing registration.
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
-  version_->set_fetch_handler_existence(
-      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version_->set_fetch_handler_type(
+      ServiceWorkerVersion::FetchHandlerType::kNotSkippable);
   registration_->SetInstallingVersion(version_);
   context()->registry()->NotifyInstallingRegistration(registration_.get());
 
@@ -355,8 +357,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedContainerHost) {
   // Store a registration so the call to FindRegistrationForDocument will read
   // from the database.
-  version_->set_fetch_handler_existence(
-      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version_->set_fetch_handler_type(
+      ServiceWorkerVersion::FetchHandlerType::kNotSkippable);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   context()->registry()->StoreRegistration(registration_.get(), version_.get(),
@@ -382,8 +384,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedContainerHost) {
 
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, SkipServiceWorker) {
   // Store an activated worker.
-  version_->set_fetch_handler_existence(
-      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version_->set_fetch_handler_type(
+      ServiceWorkerVersion::FetchHandlerType::kNotSkippable);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   base::RunLoop loop;
@@ -425,8 +427,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, SkipServiceWorker) {
 // removed.
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, NullContext) {
   // Store an activated worker.
-  version_->set_fetch_handler_existence(
-      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version_->set_fetch_handler_type(
+      ServiceWorkerVersion::FetchHandlerType::kNotSkippable);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   base::RunLoop loop;
@@ -467,10 +469,94 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, NullContext) {
   EXPECT_EQ(GURL("https://host/scope/doc"), container_host_->url());
 }
 
+class ServiceWorkerSkipEmptyFetchHandlerTest
+    : public ServiceWorkerControlleeRequestHandlerTest {
+ public:
+  ServiceWorkerSkipEmptyFetchHandlerTest() {
+    scoped_feature_list_.InitFromCommandLine(
+        "ServiceWorkerSkipIgnorableFetchHandler:SkipEmptyFetchHandler/true",
+        "");
+  }
+  ~ServiceWorkerSkipEmptyFetchHandlerTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(ServiceWorkerSkipEmptyFetchHandlerTest, HasNotSkippedMetrics) {
+  base::HistogramTester tester;
+
+  version_->set_fetch_handler_type(
+      ServiceWorkerVersion::FetchHandlerType::kNotSkippable);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetWaitingVersion(version_);
+  base::RunLoop loop;
+  context()->registry()->StoreRegistration(
+      registration_.get(), version_.get(),
+      base::BindLambdaForTesting(
+          [&loop](blink::ServiceWorkerStatusCode status) { loop.Quit(); }));
+  loop.Run();
+
+  // Conduct a main resource load.
+  ServiceWorkerRequestTestResources test_resources(
+      this, GURL("https://host/scope/doc"),
+      network::mojom::RequestDestination::kDocument);
+  test_resources.MaybeCreateLoader();
+  EXPECT_FALSE(test_resources.loader());
+  EXPECT_FALSE(version_->HasControllee());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(test_resources.loader());
+  EXPECT_TRUE(version_->HasControllee());
+  tester.ExpectUniqueSample("ServiceWorker.FetchHandler.SkipReason",
+                            ServiceWorkerControlleeRequestHandler::
+                                FetchHandlerSkipReason::kNotSkipped,
+                            1);
+
+  test_resources.ResetHandler();
+}
+
+TEST_F(ServiceWorkerSkipEmptyFetchHandlerTest,
+       HasSkippedForEmptyFetchHandlerMetrics) {
+  base::HistogramTester tester;
+
+  version_->set_fetch_handler_type(
+      ServiceWorkerVersion::FetchHandlerType::kEmptyFetchHandler);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetWaitingVersion(version_);
+  base::RunLoop loop;
+  context()->registry()->StoreRegistration(
+      registration_.get(), version_.get(),
+      base::BindLambdaForTesting(
+          [&loop](blink::ServiceWorkerStatusCode status) { loop.Quit(); }));
+  loop.Run();
+
+  // Conduct a main resource load.
+  ServiceWorkerRequestTestResources test_resources(
+      this, GURL("https://host/scope/doc"),
+      network::mojom::RequestDestination::kDocument);
+  test_resources.MaybeCreateLoader();
+  EXPECT_FALSE(test_resources.loader());
+  EXPECT_FALSE(version_->HasControllee());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(test_resources.loader());
+  EXPECT_TRUE(version_->HasControllee());
+  tester.ExpectUniqueSample(
+      "ServiceWorker.FetchHandler.SkipReason",
+      ServiceWorkerControlleeRequestHandler::FetchHandlerSkipReason::
+          kSkippedForEmptyFetchHandler,
+      1);
+
+  test_resources.ResetHandler();
+}
+
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithOfflineHeader) {
-  version_->set_fetch_handler_existence(
-      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version_->set_fetch_handler_type(
+      ServiceWorkerVersion::FetchHandlerType::kNotSkippable);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   context()->registry()->StoreRegistration(registration_.get(), version_.get(),
@@ -491,8 +577,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithOfflineHeader) {
 }
 
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoOfflineHeader) {
-  version_->set_fetch_handler_existence(
-      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version_->set_fetch_handler_type(
+      ServiceWorkerVersion::FetchHandlerType::kNotSkippable);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   context()->registry()->StoreRegistration(registration_.get(), version_.get(),

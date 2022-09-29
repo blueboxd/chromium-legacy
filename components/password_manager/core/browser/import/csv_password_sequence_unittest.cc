@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/password_manager/core/browser/password_form.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -28,6 +27,14 @@ TEST(CSVPasswordSequenceTest, Constructions) {
 TEST(CSVPasswordSequenceTest, HeaderOnly) {
   static constexpr char kHeader[] =
       "Display Name,Login,Secret Question,Password,URL,Timestamp";
+  CSVPasswordSequence seq(kHeader);
+  EXPECT_EQ(CSVPassword::Status::kOK, seq.result());
+  EXPECT_EQ(seq.begin(), seq.end());
+}
+
+TEST(CSVPasswordSequenceTest, AllowSpacesInHeaderField) {
+  static constexpr char kHeader[] =
+      " Display Name ,  Login,Secret Question ,  Password,  URL,  Timestamp ";
   CSVPasswordSequence seq(kHeader);
   EXPECT_EQ(CSVPassword::Status::kOK, seq.result());
   EXPECT_EQ(seq.begin(), seq.end());
@@ -69,22 +76,18 @@ TEST(CSVPasswordSequenceTest, InvalidCSVHeader) {
   EXPECT_EQ(seq.begin(), seq.end());
 }
 
-TEST(CSVPasswordSequenceTest, InvalidCSV) {
-  static constexpr char kQuotes[] =
-      "Display Name,Login,Secret Question,Password,URL,Timestamp\n"
-      ":),Bob,ABCD!,odd,https://example.org,\"\n";
-  CSVPasswordSequence seq(kQuotes);
-  EXPECT_EQ(CSVPassword::Status::kOK, seq.result());
-  EXPECT_EQ(seq.begin(), seq.end());
-}
-
-TEST(CSVPasswordSequenceTest, MissingData) {
+TEST(CSVPasswordSequenceTest, SkipsEmptyLines) {
   static constexpr char kNoUrl[] =
       "Display Name,Login,Secret Question,Password,URL,Timestamp\n"
-      ":),Bob,ABCD!,odd\n";
+      "\n"
+      "\t\t\t\r\n"
+      "            \n"
+      "non_empty,pwd\n"
+      "non_empty,pwd\n"
+      "    ";
   CSVPasswordSequence seq(kNoUrl);
   EXPECT_EQ(CSVPassword::Status::kOK, seq.result());
-  EXPECT_EQ(seq.begin(), seq.end());
+  ASSERT_EQ(2, std::distance(seq.begin(), seq.end()));
 }
 
 TEST(CSVPasswordSequenceTest, Iteration) {
@@ -108,11 +111,10 @@ TEST(CSVPasswordSequenceTest, Iteration) {
   size_t order = 0;
   for (const CSVPassword& pwd : seq) {
     ASSERT_LT(order, std::size(kExpectedCredentials));
-    PasswordForm parsed = pwd.ToPasswordForm();
     const auto& expected = kExpectedCredentials[order];
-    EXPECT_EQ(GURL(expected.url), parsed.url);
-    EXPECT_EQ(base::ASCIIToUTF16(expected.username), parsed.username_value);
-    EXPECT_EQ(base::ASCIIToUTF16(expected.password), parsed.password_value);
+    EXPECT_EQ(GURL(expected.url), pwd.GetURL());
+    EXPECT_EQ(expected.username, pwd.GetUsername());
+    EXPECT_EQ(expected.password, pwd.GetPassword());
     ++order;
   }
 }
@@ -125,10 +127,10 @@ TEST(CSVPasswordSequenceTest, MissingEolAtEof) {
   EXPECT_EQ(CSVPassword::Status::kOK, seq.result());
 
   ASSERT_EQ(1, std::distance(seq.begin(), seq.end()));
-  PasswordForm parsed = seq.begin()->ToPasswordForm();
-  EXPECT_EQ(GURL("http://a.com"), parsed.url);
-  EXPECT_EQ(u"l", parsed.username_value);
-  EXPECT_EQ(u"p", parsed.password_value);
+  CSVPassword pwd = *seq.begin();
+  EXPECT_EQ(GURL("http://a.com"), pwd.GetURL());
+  EXPECT_EQ("l", pwd.GetUsername());
+  EXPECT_EQ("p", pwd.GetPassword());
 }
 
 }  // namespace password_manager

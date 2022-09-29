@@ -14,12 +14,15 @@
 #include "cc/input/scroll_snap_data.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace blink {
+
+class ClipPaintPropertyNode;
 
 using MainThreadScrollingReasons = uint32_t;
 
@@ -44,6 +47,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   struct PLATFORM_EXPORT State {
     gfx::Rect container_rect;
     gfx::Size contents_size;
+    scoped_refptr<const ClipPaintPropertyNode> overflow_clip_node;
     bool user_scrollable_horizontal = false;
     bool user_scrollable_vertical = false;
 
@@ -125,6 +129,10 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // same origin as ContainerRect().
   gfx::Rect ContentsRect() const {
     return gfx::Rect(state_.container_rect.origin(), state_.contents_size);
+  }
+
+  const ClipPaintPropertyNode* OverflowClipNode() const {
+    return state_.overflow_clip_node.get();
   }
 
   bool UserScrollableHorizontal() const {

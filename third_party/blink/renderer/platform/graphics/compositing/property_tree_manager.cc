@@ -60,11 +60,13 @@ void PropertyTreeManager::Finalize() {
 static void UpdateCcTransformLocalMatrix(
     cc::TransformNode& compositor_node,
     const TransformPaintPropertyNode& transform_node) {
-  if (transform_node.GetStickyConstraint()) {
+  if (transform_node.GetStickyConstraint() ||
+      transform_node.GetAnchorScrollContainersData()) {
     // The sticky offset on the blink transform node is pre-computed and stored
     // to the local matrix. Cc applies sticky offset dynamically on top of the
     // local matrix. We should not set the local matrix on cc node if it is a
     // sticky node because the sticky offset would be applied twice otherwise.
+    // Same for anchor positioning.
     DCHECK(compositor_node.local.IsIdentity());
     DCHECK_EQ(gfx::Point3F(), compositor_node.origin);
   } else if (transform_node.IsIdentityOr2DTranslation()) {
@@ -445,9 +447,6 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
     cc::StickyPositionNodeData& sticky_data =
         transform_tree_.EnsureStickyPositionData(id);
     sticky_data.constraints = *sticky_constraint;
-    // TODO(pdr): This could be a performance issue because it crawls up the
-    // transform tree for each pending layer. If this is on profiles, we should
-    // cache a lookup of transform node to scroll translation transform node.
     const auto& scroll_ancestor = transform_node.NearestScrollTranslationNode();
     sticky_data.scroll_ancestor = EnsureCompositorScrollNode(scroll_ancestor);
     const auto& scroll_ancestor_compositor_node =
@@ -467,6 +466,18 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
               shifting_containing_block_element_id))
         sticky_data.nearest_node_shifting_containing_block = node->id;
     }
+  }
+
+  if (const auto* anchor_scroll_data =
+          transform_node.GetAnchorScrollContainersData()) {
+    cc::AnchorScrollContainersData& compositor_data =
+        transform_tree_.EnsureAnchorScrollContainersData(id);
+    compositor_data.inner_most_scroll_container_id = EnsureCompositorScrollNode(
+        *anchor_scroll_data->inner_most_scroll_container);
+    compositor_data.outer_most_scroll_container_id = EnsureCompositorScrollNode(
+        *anchor_scroll_data->outer_most_scroll_container);
+    compositor_data.accumulated_scroll_origin =
+        anchor_scroll_data->accumulated_scroll_origin;
   }
 
   auto compositor_element_id = transform_node.GetCompositorElementId();
@@ -659,9 +670,6 @@ void PropertyTreeManager::EmitClipMaskLayer() {
       root_layer_.property_tree_sequence_number());
   mask_layer->SetTransformTreeIndex(
       EnsureCompositorTransformNode(*current_.transform));
-  // TODO(pdr): This could be a performance issue because it crawls up the
-  // transform tree for each pending layer. If this is on profiles, we should
-  // cache a lookup of transform node to scroll translation transform node.
   int scroll_id = EnsureCompositorScrollNode(
       current_.transform->NearestScrollTranslationNode());
   mask_layer->SetScrollTreeIndex(scroll_id);

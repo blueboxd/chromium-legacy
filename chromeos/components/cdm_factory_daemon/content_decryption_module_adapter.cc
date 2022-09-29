@@ -10,6 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
+#include "chromeos/components/cdm_factory_daemon/chromeos_cdm_factory.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/eme_constants.h"
@@ -239,12 +240,26 @@ void ContentDecryptionModuleAdapter::GetHwKeyDataInternal(
                                  std::move(callback));
 }
 
+void ContentDecryptionModuleAdapter::GetHwConfigData(
+    GetHwConfigDataCB callback) {
+  ChromeOsCdmFactory::GetHwConfigData(std::move(callback));
+}
+
+void ContentDecryptionModuleAdapter::GetScreenResolutions(
+    GetScreenResolutionsCB callback) {
+  ChromeOsCdmFactory::GetScreenResolutions(std::move(callback));
+}
+
 std::unique_ptr<media::CdmContextRef>
 ContentDecryptionModuleAdapter::GetCdmContextRef() {
   return std::make_unique<media::CdmContextRefImpl>(base::WrapRefCounted(this));
 }
 
 bool ContentDecryptionModuleAdapter::UsingArcCdm() const {
+  return false;
+}
+
+bool ContentDecryptionModuleAdapter::IsRemoteCdm() const {
   return false;
 }
 

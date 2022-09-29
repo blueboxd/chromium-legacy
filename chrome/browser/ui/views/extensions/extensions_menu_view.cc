@@ -38,6 +38,7 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
 
@@ -49,8 +50,6 @@ bool g_allow_testing_dialogs = false;
 ExtensionsMenuView* g_extensions_dialog = nullptr;
 
 constexpr int EXTENSIONS_SETTINGS_ID = 42;
-
-constexpr int kSettingsIconSize = 16;
 
 bool CompareExtensionMenuItemViews(const InstalledExtensionMenuItemView* a,
                                    const InstalledExtensionMenuItemView* b) {
@@ -170,25 +169,20 @@ void ExtensionsMenuView::Populate() {
       EXTENSIONS_SETTINGS_ID, l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS),
       base::BindRepeating(&chrome::ShowExtensions, browser_, std::string()));
 
-  // Extension icons are larger-than-favicon as they contain internal padding
-  // (space for badging). Add the same padding left and right of the icon to
-  // visually align the settings icon and text with extension menu items.
-  // TODO(pbos): Note that this code relies on CreateBubbleMenuItem() and
-  // InstalledExtensionMenuItemView using the same horizontal border size and
-  // image-label spacing. This dependency should probably be more explicit.
-  constexpr int kSettingsIconHorizontalPadding =
-      (InstalledExtensionMenuItemView::kIconSize.width() - kSettingsIconSize) /
-      2;
-
+  // TODO(emiliapaz): Note that `DISTANCE_EXTENSIONS_MENU_ICON_SPACING` relies
+  // on CreateBubbleMenuItem() using the same inset as
+  // `DISTANCE_EXTENSIONS_MENU_BUTTON_MARGIN`.
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  const int icon_spacing =
+      provider->GetDistanceMetric(DISTANCE_EXTENSIONS_MENU_ICON_SPACING);
   footer->SetBorder(views::CreateEmptyBorder(
-      footer->GetInsets() +
-      gfx::Insets::TLBR(0, kSettingsIconHorizontalPadding, 0, 0)));
-  footer->SetImageLabelSpacing(footer->GetImageLabelSpacing() +
-                               kSettingsIconHorizontalPadding);
-  footer->SetImageModel(
-      views::Button::STATE_NORMAL,
-      ui::ImageModel::FromVectorIcon(vector_icons::kSettingsIcon,
-                                     ui::kColorIcon, kSettingsIconSize));
+      footer->GetInsets() + gfx::Insets::TLBR(0, icon_spacing, 0, 0)));
+  footer->SetImageLabelSpacing(footer->GetImageLabelSpacing() + icon_spacing);
+  footer->SetImageModel(views::Button::STATE_NORMAL,
+                        ui::ImageModel::FromVectorIcon(
+                            vector_icons::kSettingsIcon, ui::kColorIcon,
+                            provider->GetDistanceMetric(
+                                DISTANCE_EXTENSIONS_MENU_BUTTON_ICON_SIZE)));
 
   manage_extensions_button_ = footer.get();
   AddChildView(std::move(footer));
@@ -224,7 +218,7 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
         auto header = std::make_unique<views::Label>(
             l10n_util::GetStringUTF16(section->header_string_id),
             ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL,
-            ChromeTextStyle::STYLE_EMPHASIZED);
+            views::style::STYLE_EMPHASIZED);
         header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         header->SetBorder(views::CreateEmptyBorder(
             gfx::Insets::TLBR(ChromeLayoutProvider::Get()->GetDistanceMetric(

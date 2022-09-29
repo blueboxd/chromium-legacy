@@ -67,8 +67,8 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/public/non_main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -112,15 +112,24 @@ bool PrecompileInlineScriptsEnabled() {
   return kEnabled;
 }
 
-Thread* GetPreloadScannerThread() {
+bool PretokenizeCSSEnabled() {
+  // Cache the feature value since checking for each parser regresses some micro
+  // benchmarks.
+  static const bool kEnabled =
+      base::FeatureList::IsEnabled(features::kPretokenizeCSS) &&
+      features::kPretokenizeInlineSheets.Get();
+  return kEnabled;
+}
+
+NonMainThread* GetPreloadScannerThread() {
   DCHECK(ThreadedPreloadScannerEnabled());
 
   // The preload scanner relies on parsing CSS, which requires creating garbage
   // collected objects. This means the thread the scanning runs on must be GC
   // enabled.
   DEFINE_STATIC_LOCAL(
-      std::unique_ptr<Thread>, preload_scanner_thread,
-      (Thread::CreateThread(
+      std::unique_ptr<NonMainThread>, preload_scanner_thread,
+      (NonMainThread::CreateThread(
           ThreadCreationParams(ThreadType::kPreloadScannerThread)
               .SetSupportsGC(true))));
   return preload_scanner_thread.get();
@@ -156,7 +165,10 @@ PreloadProcessingMode GetPreloadProcessingMode() {
           &features::kThreadedPreloadScanner, "preload-processing-mode",
           PreloadProcessingMode::kImmediate, &kPreloadProcessingModeOptions};
 
-  return kPreloadProcessingModeParam.Get();
+  // Cache the value to avoid parsing the param string more than once.
+  static const PreloadProcessingMode kPreloadProcessingModeValue =
+      kPreloadProcessingModeParam.Get();
+  return kPreloadProcessingModeValue;
 }
 
 bool IsPreloadScanningEnabled(Document* document) {
@@ -410,6 +422,19 @@ class ShouldCompleteScope {
   HTMLDocumentParserState* state_;
 };
 
+class FetchBatchScope {
+  STACK_ALLOCATED();
+
+ public:
+  explicit FetchBatchScope(HTMLDocumentParser* parser) : parser_(parser) {
+    parser_->StartFetchBatch();
+  }
+  ~FetchBatchScope() { parser_->EndFetchBatch(); }
+
+ private:
+  HTMLDocumentParser* const parser_;
+};
+
 // This is a direct transcription of step 4 from:
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-end.html#fragment-case
 static HTMLTokenizer::State TokenizerStateForContextElement(
@@ -440,32 +465,6 @@ static HTMLTokenizer::State TokenizerStateForContextElement(
     return HTMLTokenizer::kPLAINTEXTState;
   return HTMLTokenizer::kDataState;
 }
-
-class ScopedYieldTimer {
- public:
-  // This object is created at the start of a block of parsing, and will
-  // report the time since the last block yielded if known.
-  ScopedYieldTimer(std::unique_ptr<base::ElapsedTimer>* timer,
-                   HTMLParserMetrics* metrics_reporter)
-      : timer_(timer), reporting_metrics_(metrics_reporter) {
-    if (!reporting_metrics_ || !(*timer_))
-      return;
-
-    metrics_reporter->AddYieldInterval((*timer_)->Elapsed());
-    timer_->reset();
-  }
-
-  // The destructor creates a new timer, which will keep track of time until
-  // the next block starts.
-  ~ScopedYieldTimer() {
-    if (reporting_metrics_)
-      *timer_ = std::make_unique<base::ElapsedTimer>();
-  }
-
- private:
-  std::unique_ptr<base::ElapsedTimer>* timer_;
-  bool reporting_metrics_;
-};
 
 HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document,
                                        ParserSynchronizationPolicy sync_policy,
@@ -541,12 +540,6 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
         document.UkmSourceID(), document.UkmRecorder());
   }
 
-  if (GetDocument()->IsInOutermostMainFrame() &&
-      !task_runner_state_->IsSynchronous()) {
-    tokenizer_metrics_reporter_ =
-        std::make_unique<HTMLTokenizerMetricsReporter>(tokenizer_.get());
-  }
-
   // Don't create preloader for parsing clipboard content.
   if (content_policy == kDisallowScriptingAndPluginContent)
     return;
@@ -579,6 +572,9 @@ bool HTMLDocumentParser::HasPendingWorkScheduledForTesting() const {
 }
 
 void HTMLDocumentParser::Detach() {
+  // Unwind any nested batch operations before being detached
+  FlushFetchBatch();
+
   // Deschedule any pending tokenizer pumps.
   task_runner_state_->SetState(
       HTMLDocumentParserState::DeferredParserState::kNotScheduled);
@@ -593,8 +589,6 @@ void HTMLDocumentParser::Detach() {
   insertion_preload_scanner_.reset();
   background_script_scanner_.Reset();
   background_scanner_.Reset();
-  // `tokenizer_metrics_reporter_` has a reference to `tokenizer_`.
-  tokenizer_metrics_reporter_.reset();
   // Oilpan: It is important to clear token_ to deallocate backing memory of
   // HTMLToken::data_ and let the allocator reuse the memory for
   // HTMLToken::data_ of a next HTMLDocumentParser. We need to clear
@@ -747,7 +741,8 @@ void HTMLDocumentParser::RunScriptsForPausedTreeBuilder() {
   CheckIfBlockingStylesheetAdded();
 }
 
-HTMLDocumentParser::NextTokenStatus HTMLDocumentParser::CanTakeNextToken() {
+HTMLDocumentParser::NextTokenStatus HTMLDocumentParser::CanTakeNextToken(
+    base::TimeDelta& time_executing_script) {
   if (IsStopped())
     return kNoTokens;
 
@@ -755,8 +750,10 @@ HTMLDocumentParser::NextTokenStatus HTMLDocumentParser::CanTakeNextToken() {
   // continuing.
   auto ret = kHaveTokens;
   if (tree_builder_->HasParserBlockingScript()) {
+    base::ElapsedTimer timer;
     RunScriptsForPausedTreeBuilder();
     ret = kHaveTokensAfterScript;
+    time_executing_script += timer.Elapsed();
   }
   if (IsStopped() || IsPaused())
     return kNoTokens;
@@ -798,6 +795,8 @@ bool HTMLDocumentParser::PumpTokenizer() {
   // DidWriteHTML instead of WillWriteHTML.
   probe::ParseHTML probe(GetDocument(), this);
 
+  FetchBatchScope fetch_batch(this);
+
   bool should_yield = false;
   // If we've yielded more than 2 times, then set the budget to a very large
   // number, to attempt to consume all available tokens in one go. This
@@ -812,13 +811,15 @@ bool HTMLDocumentParser::PumpTokenizer() {
   if (TimedParserBudgetEnabled())
     timed_budget = GetTimedBudget(task_runner_state_->TimesYielded());
 
-  base::ElapsedTimer chunk_parsing_timer_;
+  base::ElapsedTimer chunk_parsing_timer;
   unsigned tokens_parsed = 0;
+  base::TimeDelta time_executing_script;
+  base::TimeDelta time_in_next_token;
   while (!should_yield) {
     if (task_runner_state_->ShouldProcessPreloads())
       FlushPendingPreloads();
 
-    const auto next_token_status = CanTakeNextToken();
+    const auto next_token_status = CanTakeNextToken(time_executing_script);
     if (next_token_status == kNoTokens) {
       // No tokens left to process in this pump, so break
       break;
@@ -829,7 +830,7 @@ bool HTMLDocumentParser::PumpTokenizer() {
       // mode. So reduce the budget back to at most the default.
       budget = std::min(budget, kDefaultMaxTokenizationBudget);
       if (TimedParserBudgetEnabled()) {
-        timed_budget = std::min(timed_budget, chunk_parsing_timer_.Elapsed() +
+        timed_budget = std::min(timed_budget, chunk_parsing_timer.Elapsed() +
                                                   GetDefaultTimedBudget());
       }
     }
@@ -837,10 +838,14 @@ bool HTMLDocumentParser::PumpTokenizer() {
       RUNTIME_CALL_TIMER_SCOPE(
           V8PerIsolateData::MainThreadIsolate(),
           RuntimeCallStats::CounterId::kHTMLTokenizerNextToken);
-      if (tokenizer_metrics_reporter_)
-        tokenizer_metrics_reporter_->WillProcessNextToken(input_.Current());
-
-      if (!tokenizer_->NextToken(input_.Current(), Token()))
+      absl::optional<base::ElapsedTimer> next_token_timer;
+      if (metrics_reporter_)
+        next_token_timer.emplace();
+      const bool has_next_token =
+          tokenizer_->NextToken(input_.Current(), Token());
+      if (next_token_timer)
+        time_in_next_token += next_token_timer->Elapsed();
+      if (!has_next_token)
         break;
       budget--;
       tokens_parsed++;
@@ -849,7 +854,7 @@ bool HTMLDocumentParser::PumpTokenizer() {
     if (!should_run_until_completion && !IsPaused()) {
       DCHECK_EQ(task_runner_state_->GetMode(), kAllowDeferredParsing);
       if (TimedParserBudgetEnabled())
-        should_yield = chunk_parsing_timer_.Elapsed() >= timed_budget;
+        should_yield = chunk_parsing_timer.Elapsed() >= timed_budget;
       else
         should_yield = budget <= 0;
       should_yield |= scheduler_->ShouldYieldForHighPriorityWork();
@@ -871,18 +876,25 @@ bool HTMLDocumentParser::PumpTokenizer() {
                      starting_bytes - input_.length());
   }
 
-  if (IsStopped() || IsParsingFragment()) {
-    if (metrics_reporter_ && tokens_parsed) {
-      metrics_reporter_->AddChunk(chunk_parsing_timer_.Elapsed(),
-                                  tokens_parsed);
-    }
-    return false;
+  const bool is_stopped_or_parsing_fragment =
+      IsStopped() || IsParsingFragment();
+
+  if (!is_stopped_or_parsing_fragment) {
+    // There should only be PendingText left since the tree-builder always
+    // flushes the task queue before returning. In case that ever changes,
+    // crash.
+    tree_builder_->Flush(kFlushAlways);
+    CHECK(!IsStopped());
   }
 
-  // There should only be PendingText left since the tree-builder always flushes
-  // the task queue before returning. In case that ever changes, crash.
-  tree_builder_->Flush(kFlushAlways);
-  CHECK(!IsStopped());
+  if (tokens_parsed && metrics_reporter_) {
+    metrics_reporter_->AddChunk(
+        chunk_parsing_timer.Elapsed() - time_executing_script, tokens_parsed,
+        time_in_next_token);
+  }
+
+  if (is_stopped_or_parsing_fragment)
+    return false;
 
   if (IsPaused()) {
     DCHECK_EQ(tokenizer_->GetState(), HTMLTokenizer::kDataState);
@@ -895,10 +907,6 @@ bool HTMLDocumentParser::PumpTokenizer() {
       }
       ScanAndPreload(preload_scanner_.get());
     }
-  }
-
-  if (metrics_reporter_ && tokens_parsed) {
-    metrics_reporter_->AddChunk(chunk_parsing_timer_.Elapsed(), tokens_parsed);
   }
 
   // should_run_until_completion implies that we should not yield
@@ -962,11 +970,6 @@ void HTMLDocumentParser::ConstructTreeFromHTMLToken() {
   // parser.
   Token().Clear();
 
-  if (tokenizer_metrics_reporter_) {
-    tokenizer_metrics_reporter_->WillConstructTreeFromToken(atomic_token,
-                                                            input_.Current());
-  }
-
   tree_builder_->ConstructTree(&atomic_token);
   CheckIfBlockingStylesheetAdded();
 }
@@ -981,14 +984,12 @@ bool HTMLDocumentParser::HasInsertionPoint() {
 }
 
 void HTMLDocumentParser::insert(const String& source) {
-  if (IsStopped())
+  // No need to do any processing if the supplied text is empty.
+  if (IsStopped() || source.IsEmpty())
     return;
 
   TRACE_EVENT2("blink", "HTMLDocumentParser::insert", "source_length",
                source.length(), "parser", (void*)this);
-
-  if (tokenizer_metrics_reporter_ && !source.IsEmpty())
-    tokenizer_metrics_reporter_->OnDocumentWrite(input_.Current());
 
   SegmentedString excluded_line_number_source(source);
   excluded_line_number_source.SetExcludeLineNumbers();
@@ -1064,8 +1065,6 @@ void HTMLDocumentParser::Append(const String& input_source) {
     }
   }
 
-  if (tokenizer_metrics_reporter_)
-    tokenizer_metrics_reporter_->WillAppend(input_source);
   input_.AppendToEnd(source);
   task_runner_state_->MarkSeenFirstByte();
 
@@ -1442,6 +1441,9 @@ void HTMLDocumentParser::ProcessPreloadData(
     HTMLMetaElement::ProcessMetaCH(*GetDocument(), value.value, value.type,
                                    value.is_doc_preloader);
   }
+
+  FetchBatchScope fetch_batch(this);
+
   // Make sure that the viewport is up-to-date, so that the correct viewport
   // dimensions will be fed to the preload scanner.
   if (GetDocument()->Loader() &&
@@ -1526,7 +1528,7 @@ void HTMLDocumentParser::ScanInBackground(const String& source) {
     return;
   }
 
-  if (!PrecompileInlineScriptsEnabled())
+  if (!PrecompileInlineScriptsEnabled() && !PretokenizeCSSEnabled())
     return;
 
   DCHECK(!background_scanner_);
@@ -1577,6 +1579,28 @@ void HTMLDocumentParser::FlushPendingPreloads() {
 
     for (auto& preload : preload_data)
       ProcessPreloadData(std::move(preload));
+  }
+}
+
+void HTMLDocumentParser::StartFetchBatch() {
+  GetDocument()->Fetcher()->StartBatch();
+  pending_batch_operations_++;
+}
+
+void HTMLDocumentParser::EndFetchBatch() {
+  if (!IsDetached() && pending_batch_operations_ > 0) {
+    pending_batch_operations_--;
+    GetDocument()->Fetcher()->EndBatch();
+  }
+}
+
+void HTMLDocumentParser::FlushFetchBatch() {
+  if (!IsDetached() && pending_batch_operations_ > 0) {
+    ResourceFetcher* fetcher = GetDocument()->Fetcher();
+    while (pending_batch_operations_ > 0) {
+      pending_batch_operations_--;
+      fetcher->EndBatch();
+    }
   }
 }
 

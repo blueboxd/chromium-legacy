@@ -20,17 +20,16 @@
 
 namespace content {
 #if BUILDFLAG(IS_WIN)
+std::string PpapiPluginSandboxedProcessLauncherDelegate::GetSandboxTag() {
+  return sandbox::policy::SandboxWin::GetSandboxTagForDelegate(
+      "ppapi", GetSandboxType());
+}
+
 bool PpapiPluginSandboxedProcessLauncherDelegate::PreSpawnTarget(
     sandbox::TargetPolicy* policy) {
   // The Pepper process is as locked-down as a renderer except that it can
   // create the server side of Chrome pipes.
   sandbox::ResultCode result;
-  result = policy->AddRule(sandbox::SubSystem::kNamedPipes,
-                           sandbox::Semantics::kNamedPipesAllowAny,
-                           L"\\\\.\\pipe\\chrome.*");
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
-
 #if !defined(NACL_WIN64)
   // We don't support PPAPI win32k lockdown prior to Windows 10.
   if (base::win::GetVersion() >= base::win::Version::WIN10) {
@@ -44,6 +43,15 @@ bool PpapiPluginSandboxedProcessLauncherDelegate::PreSpawnTarget(
   sandbox::MitigationFlags flags = policy->GetDelayedProcessMitigations();
   flags |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
   if (sandbox::SBOX_ALL_OK != policy->SetDelayedProcessMitigations(flags))
+    return false;
+
+  if (policy->GetConfig()->IsConfigured())
+    return true;
+
+  result = policy->GetConfig()->AddRule(sandbox::SubSystem::kNamedPipes,
+                                        sandbox::Semantics::kNamedPipesAllowAny,
+                                        L"\\\\.\\pipe\\chrome.*");
+  if (result != sandbox::SBOX_ALL_OK)
     return false;
 
   return true;

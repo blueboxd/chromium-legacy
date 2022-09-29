@@ -900,7 +900,8 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Tests that the "Never Translate this site" option dismisses the infobar and
 // updates the prefs accordingly.
-- (void)testInfobarNeverTranslateSite {
+// TODO(crbug.com/1352108): Re-enable
+- (void)DISABLED_testInfobarNeverTranslateSite {
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -1032,7 +1033,9 @@ void TestResponseProvider::GetLanguageResponse(
                      kTranslateInfobarModalTranslateTargetLanguageItemAXId)]
       performAction:grey_tap()];
   // Select "Dutch" from the table view.
-  [[[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Dutch")]
+  [[[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"Dutch"),
+                                          grey_sufficientlyVisible(), nil)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 300)
       onElementWithMatcher:grey_accessibilityID(
                                kTranslateInfobarLanguageSelectionTableViewAXId)]

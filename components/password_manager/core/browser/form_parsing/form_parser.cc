@@ -21,10 +21,10 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/autofill_regex_constants.h"
-#include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_regex_constants.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -85,24 +85,24 @@ AutocompleteFlag ExtractAutocompleteFlag(const std::string& attribute) {
 
 // Returns true if the |str| contains words related to CVC fields.
 bool StringMatchesCVC(const std::u16string& str) {
-  return autofill::MatchesPattern(str, autofill::kCardCvcRe);
+  return autofill::MatchesRegex<autofill::kCardCvcRe>(str);
 }
 
 // Returns true if the |str| contains words related to SSN fields.
 bool StringMatchesSSN(const std::u16string& str) {
-  return autofill::MatchesPattern(str, autofill::kSocialSecurityRe);
+  return autofill::MatchesRegex<autofill::kSocialSecurityRe>(str);
 }
 
 // Returns true if the |str| contains words related to one time password fields.
 bool StringMatchesOTP(const std::u16string& str) {
-  return autofill::MatchesPattern(str, autofill::kOneTimePwdRe);
+  return autofill::MatchesRegex<autofill::kOneTimePwdRe>(str);
 }
 
 // Returns true if the |str| consists of one repeated non alphanumeric symbol.
 // This is likely a result of website modifying the value, and such value should
 // not be saved.
 bool StringMatchesHiddenValue(const std::u16string& str) {
-  return autofill::MatchesPattern(str, autofill::kHiddenValueRe);
+  return autofill::MatchesRegex<autofill::kHiddenValueRe>(str);
 }
 
 // TODO(crbug.com/860700): Remove name and attribute checking once server-side
@@ -331,15 +331,12 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
         }
         break;
       case CredentialFieldType::kSingleUsername:
-        if (base::FeatureList::IsEnabled(
-                password_manager::features::kUsernameFirstFlowFilling)) {
-          processed_field = FindField(processed_fields, prediction);
-          if (processed_field) {
-            result->username = processed_field->field;
-            result->is_single_username = true;
-            result->ClearAllPasswordFields();
-            return;
-          }
+        processed_field = FindField(processed_fields, prediction);
+        if (processed_field) {
+          result->username = processed_field->field;
+          result->is_single_username = true;
+          result->ClearAllPasswordFields();
+          return;
         }
         break;
       case CredentialFieldType::kCurrentPassword:
@@ -423,6 +420,7 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
     if (!current_field)
       continue;
     if (prediction.type == autofill::CREDIT_CARD_VERIFICATION_CODE ||
+        prediction.type == autofill::CREDIT_CARD_NUMBER ||
         prediction.type == autofill::NOT_PASSWORD) {
       current_field->server_hints_not_password = true;
     } else if (prediction.type == autofill::NOT_USERNAME) {
@@ -815,41 +813,26 @@ void ParseUsingBaseHeuristics(
   return;
 }
 
-// Helper to get the platform specific identifier by which autofill and password
-// manager refer to a field. The fuzzing infrastructure doed not run on iOS, so
-// the iOS specific parts of PasswordForm are also built on fuzzer enabled
-// platforms. See http://crbug.com/896594
-std::u16string GetPlatformSpecificIdentifier(const FormFieldData& field) {
-#if BUILDFLAG(IS_IOS)
-  return field.unique_id;
-#else
-  return field.name;
-#endif
-}
-
 // Set username and password fields in |password_form| based on
 // |significant_fields| .
 void SetFields(const SignificantFields& significant_fields,
                PasswordForm* password_form) {
   if (significant_fields.username) {
-    password_form->username_element =
-        GetPlatformSpecificIdentifier(*significant_fields.username);
+    password_form->username_element = significant_fields.username->name;
     password_form->username_value = GetFieldValue(*significant_fields.username);
     password_form->username_element_renderer_id =
         significant_fields.username->unique_renderer_id;
   }
 
   if (significant_fields.password) {
-    password_form->password_element =
-        GetPlatformSpecificIdentifier(*significant_fields.password);
+    password_form->password_element = significant_fields.password->name;
     password_form->password_value = GetFieldValue(*significant_fields.password);
     password_form->password_element_renderer_id =
         significant_fields.password->unique_renderer_id;
   }
 
   if (significant_fields.new_password) {
-    password_form->new_password_element =
-        GetPlatformSpecificIdentifier(*significant_fields.new_password);
+    password_form->new_password_element = significant_fields.new_password->name;
     password_form->new_password_value =
         GetFieldValue(*significant_fields.new_password);
     password_form->new_password_element_renderer_id =
@@ -858,8 +841,7 @@ void SetFields(const SignificantFields& significant_fields,
 
   if (significant_fields.confirmation_password) {
     password_form->confirmation_password_element =
-        GetPlatformSpecificIdentifier(
-            *significant_fields.confirmation_password);
+        significant_fields.confirmation_password->name;
     password_form->confirmation_password_element_renderer_id =
         significant_fields.confirmation_password->unique_renderer_id;
   }

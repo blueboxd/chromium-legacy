@@ -109,7 +109,7 @@ test.util.sync.selectFile = (contentWindow, filename) => {
     test.util.sync.fakeKeyDown(
         contentWindow, '#file-list', 'ArrowDown', false, false, false);
   }
-  console.error('Failed to select file "' + filename + '"');
+  console.warn('Failed to select file "' + filename + '"');
   return false;
 };
 
@@ -473,8 +473,7 @@ test.util.sync.unload = contentWindow => {
  */
 test.util.sync.getBreadcrumbPath = contentWindow => {
   const doc = contentWindow.document;
-  const breadcrumb = doc.querySelector('#location-breadcrumbs bread-crumb') ||
-      doc.querySelector('#location-breadcrumbs xf-breadcrumb');
+  const breadcrumb = doc.querySelector('#location-breadcrumbs xf-breadcrumb');
 
   if (!breadcrumb) {
     return '';

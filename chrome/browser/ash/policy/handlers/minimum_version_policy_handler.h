@@ -40,10 +40,9 @@ namespace policy {
 // also calls UpdateRequiredNotification to show in-session notifications if an
 // update is required but it cannot be downloaded due to network limitations or
 // Auto Update Expiration.
-class MinimumVersionPolicyHandler
-    : public BuildStateObserver,
-      public chromeos::NetworkStateHandlerObserver,
-      public ash::UpdateEngineClient::Observer {
+class MinimumVersionPolicyHandler : public BuildStateObserver,
+                                    public ash::NetworkStateHandlerObserver,
+                                    public ash::UpdateEngineClient::Observer {
  public:
   static const char kRequirements[];
   static const char kChromeOsVersion[];
@@ -146,7 +145,7 @@ class MinimumVersionPolicyHandler
   void OnUpdate(const BuildState* build_state) override;
 
   // NetworkStateHandlerObserver:
-  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
+  void DefaultNetworkChanged(const ash::NetworkState* network) override;
   void OnShuttingDown() override;
 
   // UpdateEngineClient::Observer:
@@ -314,8 +313,8 @@ class MinimumVersionPolicyHandler
   // current network and time to reach the deadline.
   std::unique_ptr<ash::UpdateRequiredNotification> notification_handler_;
 
-  base::ScopedObservation<chromeos::NetworkStateHandler,
-                          chromeos::NetworkStateHandlerObserver>
+  base::ScopedObservation<ash::NetworkStateHandler,
+                          ash::NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
 
   // List of registered observers.

@@ -13,10 +13,10 @@
 #include "chromeos/ash/components/dbus/hermes/hermes_clients.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_euicc_client.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_clients.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
-#include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -79,7 +79,7 @@ class DeviceCommandResetEuiccJobTest : public ChromeAshTestBase {
 
   void SetUp() override {
     ChromeAshTestBase::SetUp();
-    helper_ = std::make_unique<chromeos::NetworkHandlerTestHelper>();
+    helper_ = std::make_unique<ash::NetworkHandlerTestHelper>();
     helper_->hermes_manager_test()->AddEuicc(
         dbus::ObjectPath(kTestEuiccPath), kTestEid,
         /*is_active=*/true, /*physical_slot=*/0);
@@ -115,7 +115,7 @@ class DeviceCommandResetEuiccJobTest : public ChromeAshTestBase {
   }
 
   base::HistogramTester histogram_tester_;
-  std::unique_ptr<chromeos::NetworkHandlerTestHelper> helper_;
+  std::unique_ptr<ash::NetworkHandlerTestHelper> helper_;
   base::TimeTicks test_start_time_ = base::TimeTicks::Now();
 };
 
@@ -148,7 +148,7 @@ TEST_F(DeviceCommandResetEuiccJobTest, ResetEuicc) {
 
 TEST_F(DeviceCommandResetEuiccJobTest, ResetEuiccFailure) {
   // Simulate a failure by removing the cellular device.
-  chromeos::ShillManagerClient::Get()->GetTestInterface()->ClearDevices();
+  ash::ShillManagerClient::Get()->GetTestInterface()->ClearDevices();
   TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
       std::make_unique<SystemNotificationHelper>());
   NotificationDisplayServiceTester tester(/*profile=*/nullptr);

@@ -93,14 +93,6 @@ bool ExternallyInstalledWebAppPrefs::HasAppId(const PrefService* pref_service,
 }
 
 // static
-// TODO(crbug.com/1236159): Can be removed after M99.
-void ExternallyInstalledWebAppPrefs::RemoveTerminalPWA(
-    PrefService* pref_service) {
-  DictionaryPrefUpdate update(pref_service, prefs::kWebAppsExtensionIDs);
-  update->RemoveKey("chrome-untrusted://terminal/html/pwa.html");
-}
-
-// static
 bool ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
     const PrefService* pref_service,
     const AppId& app_id,
@@ -177,8 +169,7 @@ absl::optional<AppId> ExternallyInstalledWebAppPrefs::LookupAppId(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const base::Value* v =
-      pref_service_->GetDictionary(prefs::kWebAppsExtensionIDs)
-          ->FindKey(url.spec());
+      pref_service_->GetValueDict(prefs::kWebAppsExtensionIDs).Find(url.spec());
   if (v && v->is_dict()) {
     v = v->FindKey(kExtensionId);
     if (v && v->is_string()) {
@@ -193,8 +184,7 @@ absl::optional<AppId> ExternallyInstalledWebAppPrefs::LookupPlaceholderAppId(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const base::Value* entry =
-      pref_service_->GetDictionary(prefs::kWebAppsExtensionIDs)
-          ->FindKey(url.spec());
+      pref_service_->GetValueDict(prefs::kWebAppsExtensionIDs).Find(url.spec());
   if (!entry)
     return absl::nullopt;
 
@@ -209,8 +199,8 @@ void ExternallyInstalledWebAppPrefs::SetIsPlaceholder(const GURL& url,
                                                       bool is_placeholder) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  DCHECK(pref_service_->GetDictionary(prefs::kWebAppsExtensionIDs)
-             ->FindKey(url.spec()));
+  DCHECK(pref_service_->GetValueDict(prefs::kWebAppsExtensionIDs)
+             .Find(url.spec()));
   DictionaryPrefUpdate update(pref_service_, prefs::kWebAppsExtensionIDs);
   base::Value* map = update.Get();
 

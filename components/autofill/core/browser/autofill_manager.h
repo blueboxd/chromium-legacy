@@ -58,23 +58,46 @@ class AutofillManager
     : public AutofillDownloadManager::Observer,
       public translate::TranslateDriver::LanguageDetectionObserver {
  public:
-  // An observer class used by browsertests that gets notified whenever
-  // particular actions occur.
+  // Observer of AutofillManager events.
+  //
+  // OnAfterFoo() is called, perhaps asynchronously (but on the UI thread),
+  // after OnBeforeFoo(). The only exceptions where OnBeforeFoo() may be called
+  // without a corresponding OnAfterFoo() call are:
+  // - if the number of cached forms exceeds `kAutofillManagerMaxFormCacheSize`;
+  // - if this AutofillManager has been destroyed or reset in the meantime.
+  //
+  // The main purpose are unit tests. New pairs of events may be added as
+  // needed.
   class Observer : public base::CheckedObserver {
    public:
-    virtual void OnFormParsed(){};
+    virtual void OnAutofillManagerDestroyed() {}
+    virtual void OnAutofillManagerReset() {}
 
-    // See |AutofillManager::OnTextFieldDidChange|.
-    virtual void OnTextFieldDidChange(){};
+    virtual void OnBeforeLanguageDetermined() {}
+    virtual void OnAfterLanguageDetermined() {}
 
-    // See |AutofillManager::OnTextFieldDidScroll|.
-    virtual void OnTextFieldDidScroll(){};
+    virtual void OnBeforeFormsSeen() {}
+    virtual void OnAfterFormsSeen() {}
 
-    // See |AutofillManager::OnSelectControlDidChange|.
-    virtual void OnSelectControlDidChange(){};
+    virtual void OnBeforeTextFieldDidChange() {}
+    virtual void OnAfterTextFieldDidChange() {}
 
-    // See |AutofillManager::OnFormSubmitted|.
-    virtual void OnFormSubmitted(){};
+    virtual void OnBeforeDidFillAutofillFormData() {}
+    virtual void OnAfterDidFillAutofillFormData() {}
+
+    virtual void OnBeforeAskForValuesToFill() {}
+    virtual void OnAfterAskForValuesToFill() {}
+
+    virtual void OnBeforeJavaScriptChangedAutofilledValue() {}
+    virtual void OnAfterJavaScriptChangedAutofilledValue() {}
+
+    // TODO(crbug.com/1330105): Clean up API: delete the events that don't
+    // follow the OnBeforeFoo() / OnAfterFoo() pattern.
+    virtual void OnFormParsed() {}
+    virtual void OnTextFieldDidChange() {}
+    virtual void OnTextFieldDidScroll() {}
+    virtual void OnSelectControlDidChange() {}
+    virtual void OnFormSubmitted() {}
   };
 
   using EnableDownloadManager =
@@ -164,9 +187,10 @@ class AutofillManager
   // Invoked when |form| has been submitted.
   // Processes the submitted |form|, saving any new Autofill data to the user's
   // personal profile.
-  void OnFormSubmitted(const FormData& form,
-                       bool known_success,
-                       mojom::SubmissionSource source);
+  // Virtual for testing.
+  virtual void OnFormSubmitted(const FormData& form,
+                               bool known_success,
+                               mojom::SubmissionSource source);
 
   void FillCreditCardForm(int query_id,
                           const FormData& form,

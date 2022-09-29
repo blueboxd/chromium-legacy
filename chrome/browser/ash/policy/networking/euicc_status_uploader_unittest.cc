@@ -10,12 +10,12 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/values_test_util.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "chromeos/ash/components/network/managed_cellular_pref_handler.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/components/network/network_ui_data.h"
 #include "chromeos/components/onc/onc_utils.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/browser_task_environment.h"
@@ -181,20 +181,21 @@ class EuiccStatusUploaderTest : public testing::Test {
     cloud_policy_client_.SetStatus(success);
   }
 
-  const base::Value* GetStoredPref() {
-    return local_state_.Get(EuiccStatusUploader::kLastUploadedEuiccStatusPref);
+  const base::Value& GetStoredPref() {
+    return local_state_.GetValue(
+        EuiccStatusUploader::kLastUploadedEuiccStatusPref);
   }
 
   std::string GetStoredPrefString() {
-    const base::Value* last_uploaded_pref = GetStoredPref();
+    const base::Value& last_uploaded_pref = GetStoredPref();
     std::string result;
     JSONStringValueSerializer sz(&result);
-    sz.Serialize(*last_uploaded_pref);
+    sz.Serialize(last_uploaded_pref);
     return result;
   }
 
   void UpdateUploader(EuiccStatusUploader* status_uploader) {
-    (static_cast<chromeos::NetworkPolicyObserver*>(status_uploader))
+    (static_cast<ash::NetworkPolicyObserver*>(status_uploader))
         ->PoliciesApplied(/*userhash=*/std::string());
     status_uploader->FireRetryTimerIfExistsForTesting();
   }
@@ -216,14 +217,14 @@ class EuiccStatusUploaderTest : public testing::Test {
       ash::HermesEuiccClient::Get()->GetTestInterface()->AddCarrierProfile(
           dbus::ObjectPath(test_profile.profile_path),
           dbus::ObjectPath(GetEuiccPath(/*euicc_id=*/0)), test_profile.iccid,
-          test_profile.guid, "service_provider", "activation_code",
+          test_profile.guid, "nickname", "service_provider", "activation_code",
           test_profile.service_path, test_profile.state,
           hermes::profile::ProfileClass::kOperational,
           ash::HermesEuiccClient::TestInterface::AddCarrierProfileBehavior::
               kAddProfileWithService);
 
       if (test_profile.managed) {
-        chromeos::NetworkHandler::Get()
+        ash::NetworkHandler::Get()
             ->managed_cellular_pref_handler()
             ->AddIccidSmdpPair(test_profile.iccid, test_profile.smdp_address);
       }
@@ -236,7 +237,7 @@ class EuiccStatusUploaderTest : public testing::Test {
   void ValidateUploadedStatus(const std::string& expected_status_str,
                               bool clear_profile_list) {
     base::Value expected_status = base::test::ParseJson(expected_status_str);
-    EXPECT_EQ(expected_status, *GetStoredPref());
+    EXPECT_EQ(expected_status, GetStoredPref());
     EXPECT_TRUE(cloud_policy_client_.GetLastRequest());
     EXPECT_TRUE(
         RequestsAreEqual(*EuiccStatusUploader::ConstructRequestFromStatus(
@@ -471,14 +472,14 @@ TEST_F(EuiccStatusUploaderTest, UnexpectedNetworkHandlerShutdown) {
 
   // NetworkHandler::Shutdown() has already been called before
   // EuiccStatusUploader is deleted
-  chromeos::NetworkHandler::Shutdown();
+  ash::NetworkHandler::Shutdown();
 
   // No requests made as NetworkHandler is not available.
   UpdateUploader(status_uploader.get());
   EXPECT_EQ(GetRequestCount(), 2);
 
   // Need to reinitialize before exiting test.
-  chromeos::NetworkHandler::Initialize();
+  ash::NetworkHandler::Initialize();
 }
 
 }  // namespace policy

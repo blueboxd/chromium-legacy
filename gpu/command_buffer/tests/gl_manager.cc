@@ -47,6 +47,7 @@
 #include "ui/gl/gl_image_ref_counted_memory.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/init/gl_factory.h"
 
 #if BUILDFLAG(IS_MAC)
@@ -71,10 +72,6 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
                       const gfx::Size& size,
                       gfx::BufferFormat format)
       : mapped_(false), bytes_(bytes), size_(size), format_(format) {}
-
-  static GpuMemoryBufferImpl* FromClientBuffer(ClientBuffer buffer) {
-    return reinterpret_cast<GpuMemoryBufferImpl*>(buffer);
-  }
 
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map() override {
@@ -109,9 +106,6 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     NOTREACHED();
     return gfx::GpuMemoryBufferHandle();
   }
-  ClientBuffer AsClientBuffer() override {
-    return reinterpret_cast<ClientBuffer>(this);
-  }
   void OnMemoryDump(
       base::trace_event::ProcessMemoryDump* pmd,
       const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
@@ -137,10 +131,6 @@ class IOSurfaceGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
 
   ~IOSurfaceGpuMemoryBuffer() override {
     CFRelease(iosurface_);
-  }
-
-  static IOSurfaceGpuMemoryBuffer* FromClientBuffer(ClientBuffer buffer) {
-    return reinterpret_cast<IOSurfaceGpuMemoryBuffer*>(buffer);
   }
 
   // Overridden from gfx::GpuMemoryBuffer:
@@ -174,9 +164,6 @@ class IOSurfaceGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
   gfx::GpuMemoryBufferHandle CloneHandle() const override {
     NOTREACHED();
     return gfx::GpuMemoryBufferHandle();
-  }
-  ClientBuffer AsClientBuffer() override {
-    return reinterpret_cast<ClientBuffer>(this);
   }
   void OnMemoryDump(
       base::trace_event::ProcessMemoryDump* pmd,
@@ -372,7 +359,8 @@ void GLManager::InitializeWithWorkaroundsImpl(
 
   command_buffer_->set_handler(decoder_.get());
 
-  surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
+  surface_ =
+      gl::init::CreateOffscreenGLSurface(gl::GetDefaultDisplay(), gfx::Size());
   ASSERT_TRUE(surface_.get() != nullptr)
       << "could not create offscreen surface";
 
@@ -441,7 +429,7 @@ void GLManager::SetupBaseContext() {
         new scoped_refptr<gl::GLShareGroup>(new gl::GLShareGroup);
     gfx::Size size(4, 4);
     base_surface_ = new scoped_refptr<gl::GLSurface>(
-        gl::init::CreateOffscreenGLSurface(size));
+        gl::init::CreateOffscreenGLSurface(gl::GetDefaultDisplay(), size));
     base_context_ = new scoped_refptr<gl::GLContext>(gl::init::CreateGLContext(
         base_share_group_->get(), base_surface_->get(),
         gl::GLContextAttribs()));

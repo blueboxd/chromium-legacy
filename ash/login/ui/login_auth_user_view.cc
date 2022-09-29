@@ -460,6 +460,8 @@ class LoginAuthUserView::FingerprintView : public views::View {
     label_->SetTextBasedOnState(state_, can_use_pin_);
   }
 
+  void ResetUIState() { DisplayCurrentState(); }
+
   void NotifyFingerprintAuthResult(bool success) {
     reset_state_.Stop();
     label_->SetTextBasedOnAuthAttempt(success);
@@ -1080,7 +1082,7 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
       callbacks.on_remove_warning_shown, callbacks.on_remove);
   user_view_ = user_view.get();
 
-  const LoginPalette palette = CreateDefaultLoginPalette();
+  const LoginPalette palette = CreateDefaultLoginPalette(GetColorProvider());
 
   auto password_view = std::make_unique<LoginPasswordView>(palette);
   password_view_ = password_view.get();
@@ -1634,6 +1636,7 @@ void LoginAuthUserView::UpdateForUser(const LoginUserInfo& user) {
                             user.basic_user_info.account_id;
   user_view_->UpdateForUser(user, true /*animate*/);
   if (user_changed) {
+    pin_input_view_->Reset();
     password_view_->Reset();
     password_view_->SetDisplayPasswordButtonVisible(
         user.show_display_password_button);
@@ -1649,6 +1652,16 @@ void LoginAuthUserView::SetFingerprintState(FingerprintState state) {
   } else {
     DCHECK(fingerprint_view_);
     fingerprint_view_->SetState(state);
+  }
+}
+
+void LoginAuthUserView::ResetFingerprintUIState() {
+  if (smart_lock_ui_revamp_enabled_) {
+    DCHECK(fingerprint_auth_factor_model_);
+    fingerprint_auth_factor_model_->ResetUIState();
+  } else {
+    DCHECK(fingerprint_view_);
+    fingerprint_view_->ResetUIState();
   }
 }
 
@@ -1713,7 +1726,7 @@ void LoginAuthUserView::OnGestureEvent(ui::GestureEvent* event) {
 
 void LoginAuthUserView::OnThemeChanged() {
   NonAccessibleView::OnThemeChanged();
-  const LoginPalette palette = CreateDefaultLoginPalette();
+  const LoginPalette palette = CreateDefaultLoginPalette(GetColorProvider());
   password_view_->UpdatePalette(palette);
   pin_input_view_->UpdatePalette(palette);
   pin_view_->UpdatePalette(palette);

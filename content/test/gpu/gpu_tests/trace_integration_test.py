@@ -6,7 +6,7 @@ import logging
 import os
 import posixpath
 import sys
-import typing
+from typing import Any, Dict, Iterator, List
 import unittest
 
 from gpu_tests import common_browser_args as cba
@@ -113,14 +113,16 @@ _SUPPORTED_WIN_AMD_GPUS_WITH_NV12_ROTATED_OVERLAYS = [0x7340]
 _HTML_CANVAS_NOTIFY_LISTENERS_CANVAS_CHANGED_EVENT_NAME =\
     'HTMLCanvasElement::NotifyListenersCanvasChanged'
 
+_STATIC_BITMAP_TO_VID_FRAME_CONVERT_EVENT_NAME =\
+    'StaticBitmapImageToVideoFrameCopier::Convert'
+
 
 class _TraceTestArguments():
   """Struct-like object for passing trace test arguments instead of dicts."""
 
   def __init__(  # pylint: disable=too-many-arguments
-      self, browser_args: typing.List[str], category: str,
-      test_harness_script: str, finish_js_condition: str,
-      success_eval_func: str, other_args: dict):
+      self, browser_args: List[str], category: str, test_harness_script: str,
+      finish_js_condition: str, success_eval_func: str, other_args: dict):
     self.browser_args = browser_args
     self.category = category
     self.test_harness_script = test_harness_script
@@ -194,6 +196,18 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
               success_eval_func='CheckRootSwapChainPath',
               other_args=p.other_args)
       ])
+
+    for p in namespace.VideoFromCanvasPages('WebGLCanvasCaptureTraceTest'):
+      yield (p.name, posixpath.join(gpu_data_relative_path, p.url), [
+          _TraceTestArguments(
+              browser_args=p.browser_args,
+              category='blink',
+              test_harness_script=basic_test_harness_script,
+              finish_js_condition='domAutomationController._finished',
+              success_eval_func='CheckWebGLCanvasCapture',
+              other_args=p.other_args)
+      ])
+
     for p in namespace.WebGPUCanvasCapturePages('WebGPUTraceTest'):
       yield (p.name, posixpath.join(gpu_data_relative_path, p.url), [
           _TraceTestArguments(
@@ -255,8 +269,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     cls.SetStaticServerDirs(data_paths)
 
   @classmethod
-  def GenerateBrowserArgs(cls, additional_args: typing.List[str]
-                          ) -> typing.List[str]:
+  def GenerateBrowserArgs(cls, additional_args: List[str]) -> List[str]:
     """Adds default arguments to |additional_args|.
 
     See the parent class' method documentation for additional information.
@@ -269,8 +282,8 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     ])
     return default_args
 
-  def _GetAndAssertOverlayBotConfig(self) -> typing.Dict[str, str]:
-    overlay_bot_config = self.GetOverlayBotConfig()
+  def _GetAndAssertOverlayBotConfig(self) -> Dict[str, str]:
+    overlay_bot_config = self._GetOverlayBotConfig()
     if overlay_bot_config is None:
       self.fail('Overlay bot config can not be determined')
     assert overlay_bot_config.get('direct_composition', False)
@@ -291,8 +304,8 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     return str(presentation_mode)
 
   @staticmethod
-  def _SwapChainPresentationModeListToStr(
-      presentation_mode_list: typing.List[str]) -> str:
+  def _SwapChainPresentationModeListToStr(presentation_mode_list: List[str]
+                                          ) -> str:
     list_str = None
     for mode in presentation_mode_list:
       mode_str = TraceIntegrationTest._SwapChainPresentationModeToStr(mode)
@@ -310,7 +323,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   # The test success evaluation functions
 
   def _EvaluateSuccess_CheckGLCategory(self, category: str,
-                                       event_iterator: typing.Iterator,
+                                       event_iterator: Iterator,
                                        other_args: dict) -> None:
     del other_args  # Unused in this particular success evaluation.
     for event in event_iterator:
@@ -386,7 +399,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     return expected
 
   def _EvaluateSuccess_CheckVideoPath(self, category: str,
-                                      event_iterator: typing.Iterator,
+                                      event_iterator: Iterator,
                                       other_args: dict) -> None:
     """Verifies Chrome goes down the code path as expected.
 
@@ -431,7 +444,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           'Events with name %s were not found' % _SWAP_CHAIN_PRESENT_EVENT_NAME)
 
   def _EvaluateSuccess_CheckOverlayMode(self, category: str,
-                                        event_iterator: typing.Iterator,
+                                        event_iterator: Iterator,
                                         other_args: dict) -> None:
     """Verifies video frames are promoted to overlays when supported."""
     os_name = self.browser.platform.GetOSName()
@@ -480,13 +493,13 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           ._SwapChainPresentationModeListToStr(presentation_mode_history))
 
   def _EvaluateSuccess_CheckSwapChainPath(self, category: str,
-                                          event_iterator: typing.Iterator,
+                                          event_iterator: Iterator,
                                           other_args: dict) -> None:
     """Verifies that swap chains are used as expected for low latency canvas."""
     os_name = self.browser.platform.GetOSName()
     assert os_name and os_name.lower() == 'win'
 
-    overlay_bot_config = self.GetOverlayBotConfig()
+    overlay_bot_config = self._GetOverlayBotConfig()
     if overlay_bot_config is None:
       self.fail('Overlay bot config can not be determined')
     assert overlay_bot_config.get('direct_composition', False)
@@ -515,13 +528,13 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           _PRESENT_TO_SWAP_CHAIN_EVENT_NAME)
 
   def _EvaluateSuccess_CheckRootSwapChainPath(self, category: str,
-                                              event_iterator: typing.Iterator,
+                                              event_iterator: Iterator,
                                               other_args: dict) -> None:
     """Verified that Chrome's main swap chain is presented with full damage."""
     os_name = self.browser.platform.GetOSName()
     assert os_name and os_name.lower() == 'win'
 
-    overlay_bot_config = self.GetOverlayBotConfig()
+    overlay_bot_config = self._GetOverlayBotConfig()
     if overlay_bot_config is None:
       self.fail('Overlay bot config can not be determined')
     assert overlay_bot_config.get('direct_composition', False)
@@ -559,34 +572,102 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                 (_PRESENT_ROOT_SWAP_CHAIN_EVENT_NAME,
                  'full damage' if expect_full_damage else 'partial damage'))
 
+  def _EvaluateSuccess_CheckWebGLCanvasCapture(self, category: str,
+                                               event_iterator: Iterator,
+                                               other_args: dict) -> None:
+    if other_args is None:
+      return
+    expected_one_copy = other_args.get('one_copy', None)
+    expected_accelerated_two_copy = other_args.get('accelerated_two_copy', None)
+    if expected_one_copy and expected_accelerated_two_copy:
+      self.fail('one_copy and accelerated_two_copy are mutually exclusive')
 
-  def _EvaluateSuccess_CheckWebGPUCanvasCapture(self, category: str,
-                                                event_iterator: typing.Iterator,
-                                                other_args: dict) -> None:
-    expected_one_copy = other_args.get('one_copy', False)
     found_one_copy_event = False
+    found_accelerated_two_copy_event = False
     # Verify expectations through captured trace events.
     for event in event_iterator:
       if event.category != category:
         continue
-      if event.name != _HTML_CANVAS_NOTIFY_LISTENERS_CANVAS_CHANGED_EVENT_NAME:
-        continue
-      detected_one_copy = event.args.get('OneCopyCanvasCapture', None)
-      if detected_one_copy is None:
-        detected_one_copy = False
-      else:
-        found_one_copy_event = True
 
-      if expected_one_copy != detected_one_copy:
-        self.fail('OneCopyCanvasCapture mismatch, expected %s got %s' %
-                  (expected_one_copy, detected_one_copy))
+      if (expected_one_copy is not None and event.name ==
+          _HTML_CANVAS_NOTIFY_LISTENERS_CANVAS_CHANGED_EVENT_NAME):
+        detected_one_copy = event.args.get('one_copy_canvas_capture', None)
 
-    if expected_one_copy and found_one_copy_event is False:
-      self.fail('%s events with OneCopyCanvasCapture were not found' %
+        if detected_one_copy is not None:
+          found_one_copy_event = True
+          if expected_one_copy != detected_one_copy:
+            self.fail('one_copy_canvas_capture mismatch, expected %s got %s' %
+                      (expected_one_copy, detected_one_copy))
+
+      elif (expected_accelerated_two_copy is not None
+            and event.name == _STATIC_BITMAP_TO_VID_FRAME_CONVERT_EVENT_NAME):
+        detected_accelerated_two_copy = event.args.get(
+            'accelerated_frame_pool_copy', None)
+
+        if detected_accelerated_two_copy is not None:
+          found_accelerated_two_copy_event = True
+          if expected_accelerated_two_copy != detected_accelerated_two_copy:
+            self.fail(
+                'accelerated_frame_pool_copy mismatch, expected %s got %s' %
+                (expected_accelerated_two_copy, detected_accelerated_two_copy))
+
+    if expected_one_copy is not None and found_one_copy_event is False:
+      self.fail('%s events with one_copy_canvas_capture were not found' %
                 _HTML_CANVAS_NOTIFY_LISTENERS_CANVAS_CHANGED_EVENT_NAME)
 
+    if (expected_accelerated_two_copy is not None
+        and found_accelerated_two_copy_event is False):
+      self.fail('%s events with accelerated_frame_pool_copy were not found' %
+                _STATIC_BITMAP_TO_VID_FRAME_CONVERT_EVENT_NAME)
+
+  def _EvaluateSuccess_CheckWebGPUCanvasCapture(self, category: str,
+                                                event_iterator: Iterator,
+                                                other_args: dict) -> None:
+    expected_one_copy = other_args.get('one_copy', None)
+    expected_accelerated_two_copy = other_args.get('accelerated_two_copy', None)
+    if expected_one_copy and expected_accelerated_two_copy:
+      self.fail('one_copy and accelerated_two_copy are mutually exclusive')
+
+    found_one_copy_event = False
+    found_accelerated_two_copy_event = False
+    # Verify expectations through captured trace events.
+    for event in event_iterator:
+      if event.category != category:
+        continue
+
+      if (expected_one_copy is not None and event.name ==
+          _HTML_CANVAS_NOTIFY_LISTENERS_CANVAS_CHANGED_EVENT_NAME):
+        detected_one_copy = event.args.get('one_copy_canvas_capture', None)
+
+        if detected_one_copy is not None:
+          found_one_copy_event = True
+          if expected_one_copy != detected_one_copy:
+            self.fail('one_copy_canvas_capture mismatch, expected %s got %s' %
+                      (expected_one_copy, detected_one_copy))
+
+      elif (expected_accelerated_two_copy is not None
+            and event.name == _STATIC_BITMAP_TO_VID_FRAME_CONVERT_EVENT_NAME):
+        detected_accelerated_two_copy = event.args.get(
+            'accelerated_frame_pool_copy', None)
+
+        if detected_accelerated_two_copy is not None:
+          found_accelerated_two_copy_event = True
+          if expected_accelerated_two_copy != detected_accelerated_two_copy:
+            self.fail(
+                'accelerated_frame_pool_copy mismatch, expected %s got %s' %
+                (expected_accelerated_two_copy, detected_accelerated_two_copy))
+
+    if expected_one_copy is not None and found_one_copy_event is False:
+      self.fail('%s events with one_copy_canvas_capture were not found' %
+                _HTML_CANVAS_NOTIFY_LISTENERS_CANVAS_CHANGED_EVENT_NAME)
+
+    if (expected_accelerated_two_copy is not None
+        and found_accelerated_two_copy_event is False):
+      self.fail('%s events with accelerated_frame_pool_copy were not found' %
+                _STATIC_BITMAP_TO_VID_FRAME_CONVERT_EVENT_NAME)
+
   @classmethod
-  def ExpectationsFiles(cls) -> typing.List[str]:
+  def ExpectationsFiles(cls) -> List[str]:
     return [
         os.path.join(
             os.path.dirname(os.path.abspath(__file__)), 'test_expectations',
@@ -604,7 +685,7 @@ class _VideoExpectations():
     self.presentation_mode = None  # str
 
 
-def load_tests(loader: unittest.TestLoader, tests: typing.Any,
-               pattern: typing.Any) -> unittest.TestSuite:
+def load_tests(loader: unittest.TestLoader, tests: Any,
+               pattern: Any) -> unittest.TestSuite:
   del loader, tests, pattern  # Unused.
   return gpu_integration_test.LoadAllTestsInModule(sys.modules[__name__])

@@ -17,12 +17,12 @@
 #include "ui/views/animation/ink_drop_state.h"
 
 namespace views {
-class DotIndicator;
 class ImageView;
 }  // namespace views
 
 namespace ash {
 struct ShelfItem;
+class DotIndicator;
 class ShelfView;
 
 // Button used for app shortcuts on the shelf..
@@ -73,6 +73,9 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
 
   // Retrieve the image to show proxy operations.
   gfx::ImageSkia GetImage() const;
+
+  // Gets the resized `icon_image_` without the shadow.
+  gfx::ImageSkia GetIconImage() const;
 
   // |state| is or'd into the current state.
   void AddState(State state);
@@ -162,6 +165,9 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   // Invoked when |ripple_activation_timer_| fires to activate the ink drop.
   void OnRippleTimer();
 
+  // Calculates the preferred size of the icon.
+  gfx::Size GetPreferredIconSize() const;
+
   // Scales up app icon if |scale_up| is true, otherwise scales it back to
   // normal size.
   void ScaleAppIcon(bool scale_up);
@@ -195,7 +201,7 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
 
   // Draws an indicator in the top right corner of the image to represent an
   // active notification.
-  views::DotIndicator* notification_indicator_ = nullptr;
+  DotIndicator* notification_indicator_ = nullptr;
 
   // The current application state, a bitfield of State enum values.
   int state_ = STATE_NORMAL;

@@ -41,7 +41,6 @@ class WebMockThreadScheduler : public WebThreadScheduler {
   MOCK_METHOD0(GetCurrentAgentGroupScheduler, WebAgentGroupScheduler*());
   MOCK_METHOD1(SetRendererHidden, void(bool));
   MOCK_METHOD1(SetRendererBackgrounded, void(bool));
-  MOCK_METHOD0(PauseRenderer, std::unique_ptr<RendererPauseHandle>());
 #if BUILDFLAG(IS_ANDROID)
   MOCK_METHOD0(PauseTimersForAndroidWebView, void());
   MOCK_METHOD0(ResumeTimersForAndroidWebView, void());
@@ -52,7 +51,6 @@ class WebMockThreadScheduler : public WebThreadScheduler {
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD0(VirtualTimePaused, void());
   MOCK_METHOD0(VirtualTimeResumed, void());
-  MOCK_METHOD1(SetTopLevelBlameContext, void(base::trace_event::BlameContext*));
   MOCK_METHOD1(SetRendererProcessType, void(WebRendererProcessType));
 };
 

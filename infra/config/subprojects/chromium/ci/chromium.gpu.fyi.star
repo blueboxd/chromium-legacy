@@ -185,6 +185,51 @@ ci.gpu.linux_builder(
 )
 
 ci.gpu.linux_builder(
+    name = "GPU Flake Finder",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
+    console_view_entry = consoles.console_view_entry(
+        short_name = "flk",
+    ),
+    executable = "recipe:chromium_expectation_files/expectation_file_scripts",
+    # This will eventually be set up to run on a schedule, but only support
+    # manual triggering for now until we get a successful build.
+    schedule = "triggered",
+    triggered_by = [],
+    service_account = "chromium-automated-expectation@chops-service-accounts.iam.gserviceaccount.com",
+    properties = {
+        "scripts": [
+            {
+                "step_name": "suppress_gpu_flakes",
+                "script": "content/test/gpu/suppress_flakes.py",
+                "script_type": "FLAKE_FINDER",
+                "submit_type": "MANUAL",
+                "reviewer_list": {
+                    "reviewer": ["bsheedy@chromium.org"],
+                },
+                "cl_title": "Suppress flaky GPU tests",
+                "args": [
+                    "--project",
+                    "chrome-unexpected-pass-data",
+                    "--no-prompt-for-user-input",
+                ],
+            },
+        ],
+    },
+)
+
+ci.gpu.linux_builder(
     name = "GPU FYI Android arm Builder",
     console_view_entry = consoles.console_view_entry(
         category = "Android|Builder",
@@ -485,20 +530,22 @@ ci.thin_tester(
         ),
         run_tests_serially = True,
     ),
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac|Apple",
-        short_name = "exp",
-    ),
+    # Uncomment this entry when this experimental tester is actually in use.
+    # console_view_entry = consoles.console_view_entry(
+    #     category = "Mac|Apple",
+    #     short_name = "exp",
+    # ),
     list_view = "chromium.gpu.experimental",
     triggered_by = ["GPU FYI Mac arm64 Builder"],
 )
 
 ci.thin_tester(
     name = "Mac FYI Experimental Release (Intel)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac|Intel",
-        short_name = "exp",
-    ),
+    # Uncomment this entry when this experimental tester is actually in use.
+    # console_view_entry = consoles.console_view_entry(
+    #     category = "Mac|Intel",
+    #     short_name = "exp",
+    # ),
     list_view = "chromium.gpu.experimental",
     triggered_by = ["GPU FYI Mac Builder"],
 )

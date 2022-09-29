@@ -112,6 +112,10 @@ The test verifies functionality of querying style information for document-trans
                                         name : left
                                         value : 0px
                                     }
+                                    [5] : {
+                                        name : pointer-events
+                                        value : none
+                                    }
                                 ]
                                 shorthandEntries : [
                                     [0] : {
@@ -172,6 +176,10 @@ The test verifies functionality of querying style information for document-trans
                                     [4] : {
                                         name : transform-origin
                                         value : left top
+                                    }
+                                    [5] : {
+                                        name : pointer-events
+                                        value : auto
                                     }
                                 ]
                                 shorthandEntries : [
@@ -270,6 +278,10 @@ The test verifies functionality of querying style information for document-trans
                                     [4] : {
                                         name : transform-origin
                                         value : left top
+                                    }
+                                    [5] : {
+                                        name : pointer-events
+                                        value : auto
                                     }
                                 ]
                                 shorthandEntries : [
@@ -797,6 +809,48 @@ The test verifies functionality of querying style information for document-trans
                                     [0] : {
                                         disabled : false
                                         implicit : false
+                                        longhandProperties : [
+                                            [0] : {
+                                                name : background-image
+                                                value : initial
+                                            }
+                                            [1] : {
+                                                name : background-position-x
+                                                value : initial
+                                            }
+                                            [2] : {
+                                                name : background-position-y
+                                                value : initial
+                                            }
+                                            [3] : {
+                                                name : background-size
+                                                value : initial
+                                            }
+                                            [4] : {
+                                                name : background-repeat-x
+                                                value : initial
+                                            }
+                                            [5] : {
+                                                name : background-repeat-y
+                                                value : initial
+                                            }
+                                            [6] : {
+                                                name : background-attachment
+                                                value : initial
+                                            }
+                                            [7] : {
+                                                name : background-origin
+                                                value : initial
+                                            }
+                                            [8] : {
+                                                name : background-clip
+                                                value : initial
+                                            }
+                                            [9] : {
+                                                name : background-color
+                                                value : red
+                                            }
+                                        ]
                                         name : background
                                         range : {
                                             endColumn : 54
@@ -1070,6 +1124,48 @@ The test verifies functionality of querying style information for document-trans
                                     [0] : {
                                         disabled : false
                                         implicit : false
+                                        longhandProperties : [
+                                            [0] : {
+                                                name : background-image
+                                                value : initial
+                                            }
+                                            [1] : {
+                                                name : background-position-x
+                                                value : initial
+                                            }
+                                            [2] : {
+                                                name : background-position-y
+                                                value : initial
+                                            }
+                                            [3] : {
+                                                name : background-size
+                                                value : initial
+                                            }
+                                            [4] : {
+                                                name : background-repeat-x
+                                                value : initial
+                                            }
+                                            [5] : {
+                                                name : background-repeat-y
+                                                value : initial
+                                            }
+                                            [6] : {
+                                                name : background-attachment
+                                                value : initial
+                                            }
+                                            [7] : {
+                                                name : background-origin
+                                                value : initial
+                                            }
+                                            [8] : {
+                                                name : background-clip
+                                                value : initial
+                                            }
+                                            [9] : {
+                                                name : background-color
+                                                value : red
+                                            }
+                                        ]
                                         name : background
                                         range : {
                                             endColumn : 54
@@ -1599,6 +1695,10 @@ Dumping styles for : ::page-transition with id undefined{
                                 name : left
                                 value : 0px
                             }
+                            [5] : {
+                                name : pointer-events
+                                value : none
+                            }
                         ]
                         shorthandEntries : [
                             [0] : {
@@ -1662,6 +1762,10 @@ Dumping styles for : ::page-transition-container with id root{
                             [4] : {
                                 name : transform-origin
                                 value : left top
+                            }
+                            [5] : {
+                                name : pointer-events
+                                value : auto
                             }
                         ]
                         shorthandEntries : [
@@ -2015,6 +2119,48 @@ Dumping styles for : ::page-transition-outgoing-image with id root{
                             [0] : {
                                 disabled : false
                                 implicit : false
+                                longhandProperties : [
+                                    [0] : {
+                                        name : background-image
+                                        value : initial
+                                    }
+                                    [1] : {
+                                        name : background-position-x
+                                        value : initial
+                                    }
+                                    [2] : {
+                                        name : background-position-y
+                                        value : initial
+                                    }
+                                    [3] : {
+                                        name : background-size
+                                        value : initial
+                                    }
+                                    [4] : {
+                                        name : background-repeat-x
+                                        value : initial
+                                    }
+                                    [5] : {
+                                        name : background-repeat-y
+                                        value : initial
+                                    }
+                                    [6] : {
+                                        name : background-attachment
+                                        value : initial
+                                    }
+                                    [7] : {
+                                        name : background-origin
+                                        value : initial
+                                    }
+                                    [8] : {
+                                        name : background-clip
+                                        value : initial
+                                    }
+                                    [9] : {
+                                        name : background-color
+                                        value : red
+                                    }
+                                ]
                                 name : background
                                 range : {
                                     endColumn : 54
@@ -2308,6 +2454,10 @@ Dumping styles for : ::page-transition-container with id shared{
                             [4] : {
                                 name : transform-origin
                                 value : left top
+                            }
+                            [5] : {
+                                name : pointer-events
+                                value : auto
                             }
                         ]
                         shorthandEntries : [
@@ -2741,6 +2891,48 @@ Dumping styles for : ::page-transition-outgoing-image with id shared{
                             [0] : {
                                 disabled : false
                                 implicit : false
+                                longhandProperties : [
+                                    [0] : {
+                                        name : background-image
+                                        value : initial
+                                    }
+                                    [1] : {
+                                        name : background-position-x
+                                        value : initial
+                                    }
+                                    [2] : {
+                                        name : background-position-y
+                                        value : initial
+                                    }
+                                    [3] : {
+                                        name : background-size
+                                        value : initial
+                                    }
+                                    [4] : {
+                                        name : background-repeat-x
+                                        value : initial
+                                    }
+                                    [5] : {
+                                        name : background-repeat-y
+                                        value : initial
+                                    }
+                                    [6] : {
+                                        name : background-attachment
+                                        value : initial
+                                    }
+                                    [7] : {
+                                        name : background-origin
+                                        value : initial
+                                    }
+                                    [8] : {
+                                        name : background-clip
+                                        value : initial
+                                    }
+                                    [9] : {
+                                        name : background-color
+                                        value : red
+                                    }
+                                ]
                                 name : background
                                 range : {
                                     endColumn : 54

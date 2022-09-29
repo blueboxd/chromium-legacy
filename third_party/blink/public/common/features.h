@@ -18,11 +18,27 @@ namespace blink {
 namespace features {
 
 BLINK_COMMON_EXPORT extern const base::Feature kAutomaticLazyFrameLoadingToAds;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kTimeoutMillisForLazyAds;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kSkipFrameCountForLazyAds;
 BLINK_COMMON_EXPORT extern const base::Feature
     kAutomaticLazyFrameLoadingToEmbeds;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kTimeoutMillisForLazyEmbeds;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kSkipFrameCountForLazyEmbeds;
 BLINK_COMMON_EXPORT extern const base::Feature
     kAutomaticLazyFrameLoadingToEmbedUrls;
+enum class AutomaticLazyFrameLoadingToEmbedLoadingStrategy {
+  kAllowList,
+  kNonAds,
+};
+BLINK_COMMON_EXPORT extern const base::FeatureParam<
+    AutomaticLazyFrameLoadingToEmbedLoadingStrategy>
+    kAutomaticLazyFrameLoadingToEmbedLoadingStrategyParam;
 BLINK_COMMON_EXPORT extern const base::Feature kBackForwardCacheDedicatedWorker;
+BLINK_COMMON_EXPORT extern const base::Feature kBatchFetchRequests;
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlockingDownloadsInAdFrameWithoutUserActivation;
 BLINK_COMMON_EXPORT extern const base::Feature kCSSContainerQueries;
@@ -130,6 +146,10 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
 // Enables the Prerender2 feature: https://crbug.com/1126305
 // But see comments in the .cc file also.
 BLINK_COMMON_EXPORT extern const base::Feature kPrerender2;
+// The number of prerenderings that can run concurrently. This only applies for
+// prerenderings triggered by speculation rules.
+BLINK_COMMON_EXPORT extern const char
+    kPrerender2MaxNumOfRunningSpeculationRules[];
 // Enables restrictions on how much memory is required on a device to use
 // Prerender2. This is a separate feature from kPrerender2 so that the
 // restrictions can be disabled entirely to allow bots to run the tests without
@@ -140,6 +160,11 @@ BLINK_COMMON_EXPORT extern const base::Feature kPrerender2MemoryControls;
 // device to use Prerender2. If the device's physical memory does not exceed
 // this value, pages will not be prerendered even when kPrerender2 is enabled.
 BLINK_COMMON_EXPORT extern const char kPrerender2MemoryThresholdParamName[];
+// A field trial param that controls how much physical memory is allowed to be
+// used by Chrome. If the current memory usage in Chrome exceeds this percent,
+// pages will not be prerendered even when kPrerender2 is enabled.
+BLINK_COMMON_EXPORT extern const char
+    kPrerender2MemoryAcceptablePercentOfSystemMemoryParamName[];
 // Returns true when Prerender2 feature is enabled.
 BLINK_COMMON_EXPORT bool IsPrerender2Enabled();
 
@@ -224,9 +249,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kForceDarkForegroundLightnessThresholdParam;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kForceDarkBackgroundLightnessThresholdParam;
-BLINK_COMMON_EXPORT extern const base::FeatureParam<
-    ForceDarkIncreaseTextContrast>
-    kForceDarkIncreaseTextContrastParam;
 
 // Returns true when PlzDedicatedWorker is enabled.
 BLINK_COMMON_EXPORT bool IsPlzDedicatedWorkerEnabled();
@@ -270,9 +292,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // TODO(crbug.com/920069): Remove OffsetParentNewSpecBehavior after the feature
 // is in stable with no issues.
 BLINK_COMMON_EXPORT extern const base::Feature kOffsetParentNewSpecBehavior;
-
-BLINK_COMMON_EXPORT extern const base::Feature
-    kCancelFormSubmissionInDefaultHandler;
 
 BLINK_COMMON_EXPORT extern const base::Feature
     kAlignFontDisplayAutoTimeoutWithLCPGoal;
@@ -377,8 +396,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableDarkMode;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableLaunchHandler;
-
-BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableLaunchHandlerV1API;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableManifestId;
 
@@ -491,12 +508,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 BLINK_COMMON_EXPORT extern const base::Feature
     kBrowsingTopicsBypassIPIsPubliclyRoutableCheck;
 
-// When <dialog>s are closed, this focuses the "previously focused" element
-// which had focus when the <dialog> was first opened.
-// TODO(crbug.com/649162): Remove DialogFocusNewSpecBehavior after
-// the feature is in stable with no issues.
-BLINK_COMMON_EXPORT extern const base::Feature kDialogFocusNewSpecBehavior;
-
 // Makes autofill look across shadow boundaries when collecting form controls to
 // fill.
 BLINK_COMMON_EXPORT extern const base::Feature kAutofillShadowDOM;
@@ -513,8 +524,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kUsePageViewportInLCP;
 // other sinks connected do not use alpha.
 BLINK_COMMON_EXPORT extern const base::Feature kAllowDropAlphaForMediaStream;
 
-BLINK_COMMON_EXPORT extern const base::Feature kThirdPartyStoragePartitioning;
-
 BLINK_COMMON_EXPORT extern const base::Feature kDesktopPWAsSubApps;
 
 // Suppresses console errors for CORS problems which report an associated
@@ -524,6 +533,13 @@ BLINK_COMMON_EXPORT extern const base::Feature kCORSErrorsIssueOnly;
 // Makes Persistent quota the same as Temporary quota.
 BLINK_COMMON_EXPORT
 extern const base::Feature kPersistentQuotaIsTemporaryQuota;
+BLINK_COMMON_EXPORT bool IsPersistentQuotaIsTemporaryQuota();
+
+// Gates the non-standard legacy quota API `window.webkitStorageInfo`
+// which is disabled starting M106.
+// TODO(crbug.com/695586): Cleanup on or after M108.
+BLINK_COMMON_EXPORT
+extern const base::Feature kPrefixedStorageInfo;
 
 // If enabled, the ResourceLoadScheculer will take the current network state
 // into consideration, when it plans to delay a low-priority throttleable
@@ -551,6 +567,9 @@ extern const base::FeatureParam<int> kMaxNumOfThrottleableRequestsInTightMode;
 // <param> urls within <object> elements. This feature is controlled by
 // blink::features::kHTMLParamElementUrlSupport.
 BLINK_COMMON_EXPORT extern const base::Feature kHTMLParamElementUrlSupport;
+
+// TODO(crbug.com/1307772): Enables the Pop-up API.
+BLINK_COMMON_EXPORT extern const base::Feature kHTMLPopupAttribute;
 
 // The HTTP RTT threshold: decide whether the
 // `kDelayLowPriorityRequestsAccordingToNetworkState` feature can take effect
@@ -618,8 +637,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kEarlyCodeCache;
 BLINK_COMMON_EXPORT extern const base::Feature
     kClientHintsMetaHTTPEquivAcceptCH;
 
-BLINK_COMMON_EXPORT extern const base::Feature kClientHintsMetaNameAcceptCH;
-
 BLINK_COMMON_EXPORT extern const base::Feature kClientHintsMetaEquivDelegateCH;
 
 // If enabled, an absent Origin-Agent-Cluster: header is interpreted as
@@ -639,8 +656,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kClientHintThirdPartyDelegation;
 #if BUILDFLAG(IS_ANDROID)
 BLINK_COMMON_EXPORT extern const base::Feature kPrefetchAndroidFonts;
 #endif
-
-BLINK_COMMON_EXPORT extern const base::Feature kCompositedCaret;
 
 // Allows pages that support App Install Banners to stay eligible for the
 // back/forward cache.
@@ -684,6 +699,10 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
 
 // If enabled, the platform and oscpu of the User-Agent string will be reduced.
 BLINK_COMMON_EXPORT extern const base::Feature kReduceUserAgentPlatformOsCpu;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kAllExceptLegacyWindowsPlatform;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kLegacyWindowsPlatform;
 
 // If enabled, we only report FCP if there’s a successful commit to the
 // compositor. Otherwise, FCP may be reported if first BeginMainFrame results in
@@ -739,10 +758,24 @@ enum class DelayAsyncScriptDelayType {
 };
 BLINK_COMMON_EXPORT extern const base::FeatureParam<DelayAsyncScriptDelayType>
     kDelayAsyncScriptExecutionDelayParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kDelayAsyncScriptExecutionCrossSiteOnlyParam;
+
+// If enabled, async scripts will be run on a lower priority task queue.
+// See https://crbug.com/1348467.
+BLINK_COMMON_EXPORT extern const base::Feature kLowPriorityAsyncScriptExecution;
+// The timeout value for kLowPriorityAsyncScriptExecution. Async scripts run on
+// lower priority queue until this timeout elapsed.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kTimeoutForLowPriorityAsyncScriptExecution;
 
 // If enabled, parser-blocking scripts are force-deferred.
 // https://crbug.com/1339112
 BLINK_COMMON_EXPORT extern const base::Feature kForceDeferScriptIntervention;
+
+// If enabled, parser-blocking scripts are loaded asynchronously but the
+// execution order is respected. See https://crbug.com/1344772
+BLINK_COMMON_EXPORT extern const base::Feature kForceInOrderScript;
 
 // If enabled, allows MediaStreamVideoSource objects to be restarted by a
 // successful source switch. Normally, switching the source would only allowed
@@ -772,6 +805,11 @@ BLINK_COMMON_EXPORT extern const base::Feature kPrefetchFontLookupTables;
 // If enabled, inline scripts will be stream compiled using a background HTML
 // scanner.
 BLINK_COMMON_EXPORT extern const base::Feature kPrecompileInlineScripts;
+
+// If enabled, CSS will be tokenized in a background thread when possible.
+BLINK_COMMON_EXPORT extern const base::Feature kPretokenizeCSS;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kPretokenizeInlineSheets;
 
 // TODO(accessibility): This flag is set to accommodate JAWS on Windows so they
 // can adjust to us not simulating click events on a focus action. It should be
@@ -811,9 +849,22 @@ BLINK_COMMON_EXPORT extern const base::Feature kTimedHTMLParserBudget;
 // CSSOverflowForReplacedElements, if necessary, due to compat issues.
 BLINK_COMMON_EXPORT extern const base::Feature kCSSOverflowForReplacedElements;
 
+// Whether to enable scroll update optimizations. See crbug.com/1346789,
+// It controls RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled().
+BLINK_COMMON_EXPORT extern const base::Feature kScrollUpdateOptimizations;
+
 // Allows reading/writing unsanitized content from/to the clipboard. Currently,
 // it is only applicable to HTML format. See crbug.com/1268679.
 BLINK_COMMON_EXPORT extern const base::Feature kClipboardUnsanitizedContent;
+
+// If enabled, the WebRTC_* threads in peerconnection module will use
+// kResourceEfficient thread type.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kWebRtcThreadsUseResourceEfficientType;
+
+// If enabled, fine-grained UMA metrics for IntersectionObserver will only be
+// collected on 10% of animation frames.
+BLINK_COMMON_EXPORT extern const base::Feature kThrottleIntersectionObserverUMA;
 
 }  // namespace features
 }  // namespace blink

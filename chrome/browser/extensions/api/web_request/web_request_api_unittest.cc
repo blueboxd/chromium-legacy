@@ -58,11 +58,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-forward.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
-#include "components/crx_file/id_util.h"
-#endif
-
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;
 namespace web_request = extensions::api::web_request;
@@ -231,7 +226,6 @@ TEST_F(ExtensionWebRequestTest, BrowserContextShutdown) {
   // created and destroyed. Unfortunately, that doesn't work with test profiles,
   // so the test needs to simulate those calls
   event_router->OnOTRBrowserContextCreated(&profile_, otr_profile);
-  EXPECT_EQ(2u, event_router->cross_browser_context_map_.size());
   EXPECT_EQ(0u,
             event_router->GetListenerCountForTesting(otr_profile, kEventName));
   EXPECT_FALSE(event_router->HasAnyExtraHeadersListenerImpl(otr_profile));
@@ -252,7 +246,6 @@ TEST_F(ExtensionWebRequestTest, BrowserContextShutdown) {
 
   // Simulate the OTR being destroyed.
   event_router->OnOTRBrowserContextDestroyed(&profile_, otr_profile);
-  EXPECT_EQ(0u, event_router->cross_browser_context_map_.size());
   EXPECT_EQ(0u,
             event_router->GetListenerCountForTesting(otr_profile, kEventName));
   EXPECT_FALSE(event_router->HasAnyExtraHeadersListenerImpl(otr_profile));

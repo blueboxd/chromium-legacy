@@ -6,7 +6,6 @@
  * @fileoverview This file provides utility functions for position popups.
  */
 
-cr.define('cr.ui', function() {
   /**
    * Type def for rects as returned by getBoundingClientRect.
    * @typedef {{left: number, top: number, width: number, height: number,
@@ -18,7 +17,7 @@ cr.define('cr.ui', function() {
    * Enum for defining how to anchor a popup to an anchor element.
    * @enum {number}
    */
-  /* #export */ const AnchorType = {
+  export const AnchorType = {
     /**
      * The popup's right edge is aligned with the left edge of the anchor.
      * The popup's top edge is aligned with the top edge of the anchor.
@@ -48,7 +47,7 @@ cr.define('cr.ui', function() {
    * Helper function for positionPopupAroundElement and positionPopupAroundRect.
    * @param {!Rect} anchorRect The rect for the anchor.
    * @param {!HTMLElement} popupElement The element used for the popup.
-   * @param {cr.ui.AnchorType} type The type of anchoring to do.
+   * @param {AnchorType} type The type of anchoring to do.
    * @param {boolean=} opt_invertLeftRight Whether to invert the right/left
    *     alignment.
    */
@@ -211,11 +210,11 @@ cr.define('cr.ui', function() {
    * @param {!HTMLElement} anchorElement The element that the popup is anchored
    *     to.
    * @param {!HTMLElement} popupElement The popup element we are positioning.
-   * @param {cr.ui.AnchorType} type The type of anchoring we want.
+   * @param {AnchorType} type The type of anchoring we want.
    * @param {boolean=} opt_invertLeftRight Whether to invert the right/left
    *     alignment.
    */
-  /* #export */ function positionPopupAroundElement(
+  export function positionPopupAroundElement(
       anchorElement, popupElement, type, opt_invertLeftRight) {
     const anchorRect = anchorElement.getBoundingClientRect();
     positionPopupAroundRect(
@@ -227,22 +226,12 @@ cr.define('cr.ui', function() {
    * @param {number} x The client x position.
    * @param {number} y The client y position.
    * @param {!HTMLElement} popupElement The popup element we are positioning.
-   * @param {cr.ui.AnchorType=} opt_anchorType The type of anchoring we want.
+   * @param {AnchorType=} opt_anchorType The type of anchoring we want.
    */
-  /* #export */ function positionPopupAtPoint(
+  export function positionPopupAtPoint(
       x, y, popupElement, opt_anchorType) {
     const rect = {left: x, top: y, width: 0, height: 0, right: x, bottom: y};
 
     const anchorType = opt_anchorType || AnchorType.BELOW;
     positionPopupAroundRect(rect, popupElement, anchorType);
   }
-
-  // Export
-  // #cr_define_end
-  console.warn('crbug/1173575, non-JS module files deprecated.');
-  return {
-    AnchorType: AnchorType,
-    positionPopupAroundElement: positionPopupAroundElement,
-    positionPopupAtPoint: positionPopupAtPoint,
-  };
-});

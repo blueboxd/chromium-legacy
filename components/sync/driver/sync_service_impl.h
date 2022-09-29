@@ -146,7 +146,7 @@ class SyncServiceImpl : public SyncService,
   bool QueryDetailedSyncStatusForDebugging(SyncStatus* result) const override;
   base::Time GetLastSyncedTimeForDebugging() const override;
   SyncCycleSnapshot GetLastCycleSnapshotForDebugging() const override;
-  std::unique_ptr<base::Value> GetTypeStatusMapForDebugging() override;
+  std::unique_ptr<base::Value> GetTypeStatusMapForDebugging() const override;
   void GetEntityCountsForDebugging(
       base::OnceCallback<void(const std::vector<TypeEntitiesCount>&)> callback)
       const override;
@@ -156,8 +156,7 @@ class SyncServiceImpl : public SyncService,
   void AddProtocolEventObserver(ProtocolEventObserver* observer) override;
   void RemoveProtocolEventObserver(ProtocolEventObserver* observer) override;
   void GetAllNodesForDebugging(
-      base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback)
-      override;
+      base::OnceCallback<void(base::Value::List)> callback) override;
 
   // SyncEngineHost implementation.
   void OnEngineInitialized(bool success,
@@ -230,6 +229,7 @@ class SyncServiceImpl : public SyncService,
                                   create_http_post_provider_factory_cb);
 
   ModelTypeSet GetRegisteredDataTypesForTest() const;
+  bool HasAnyDatatypeErrorForTest() const;
 
   void GetThrottledDataTypesForTest(
       base::OnceCallback<void(ModelTypeSet)> cb) const;

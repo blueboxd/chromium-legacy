@@ -7,6 +7,7 @@
 <translation id="1258009455399840361">Girar 90 graus no sentido horário</translation>
 <translation id="1276998909102132017">Imagens da galeria</translation>
 <translation id="1300209025925956156">Digitalize seu documento</translation>
+<translation id="1309250603447638106">Fazendo o download de atualizações da digitalização de documentos</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Pressione "Pesquisa" + seta para a esquerda para acessar.</translation>
 <translation id="1393338179284529051">Quad HD</translation>
 <translation id="1430915738399379752">Imprimir</translation>
@@ -47,6 +48,7 @@
 <translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Visualização do espelhamento</translation>
 <translation id="2879583609344924966">A <ph name="CAMERA" /> foi conectada.</translation>
+<translation id="2904654629665923749">Digitalização de documentos disponível</translation>
 <translation id="2968794441791257519">As fotos e os vídeos capturados com a câmera serão movidos para a pasta "Downloads", e você poderá acessá-los no app Arquivos.
 
         Os apps com permissões de armazenamento terão acesso a seus vídeos e fotos.</translation>
@@ -72,7 +74,6 @@
 <translation id="3838931309141338733">Ler código de barras</translation>
 <translation id="3892148308691398805">Copiar texto</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> MP</translation>
-<translation id="4096701159033358951">Fazendo o download do recurso de digitalização de documentos</translation>
 <translation id="4118525110028899586">Pausar gravação</translation>
 <translation id="4121305183798804752">Documento detectado</translation>
 <translation id="414641094616694804">Esta câmera não pode mudar de resolução</translation>
@@ -94,7 +95,6 @@
 <translation id="5057360777601936059">Sua câmera está indisponível no momento.
         Verifique se ela está conectada corretamente.</translation>
 <translation id="5163387177077603948">Movendo para a direita</translation>
-<translation id="520537883758714667">A digitalização de documentos está disponível</translation>
 <translation id="5235304959032763950">16 por 9</translation>
 <translation id="5266635337630551423">Canto superior esquerdo do documento</translation>
 <translation id="5317780077021120954">Salvar</translation>

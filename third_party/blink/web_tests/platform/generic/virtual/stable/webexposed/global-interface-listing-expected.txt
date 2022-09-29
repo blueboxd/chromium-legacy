@@ -169,10 +169,11 @@ interface AudioData
     method close
     method constructor
     method copyTo
-interface AudioDecoder
+interface AudioDecoder : EventTarget
     static method isConfigSupported
     attribute @@toStringTag
     getter decodeQueueSize
+    getter ondequeue
     getter state
     method close
     method configure
@@ -180,6 +181,7 @@ interface AudioDecoder
     method decode
     method flush
     method reset
+    setter ondequeue
 interface AudioDestinationNode : AudioNode
     attribute @@toStringTag
     getter maxChannelCount
@@ -188,6 +190,7 @@ interface AudioEncoder : EventTarget
     static method isConfigSupported
     attribute @@toStringTag
     getter encodeQueueSize
+    getter ondequeue
     getter state
     method close
     method configure
@@ -195,6 +198,7 @@ interface AudioEncoder : EventTarget
     method encode
     method flush
     method reset
+    setter ondequeue
 interface AudioListener
     attribute @@toStringTag
     getter forwardX
@@ -1496,6 +1500,7 @@ interface Document : Node
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
+    getter onprerenderingchange
     getter onprogress
     getter onratechange
     getter onreadystatechange
@@ -1538,6 +1543,7 @@ interface Document : Node
     getter pictureInPictureEnabled
     getter plugins
     getter pointerLockElement
+    getter prerendering
     getter readyState
     getter referrer
     getter rootElement
@@ -1699,6 +1705,7 @@ interface Document : Node
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
+    setter onprerenderingchange
     setter onprogress
     setter onratechange
     setter onreadystatechange
@@ -1825,7 +1832,6 @@ interface Element : Node
     getter ariaValueNow
     getter ariaValueText
     getter assignedSlot
-    getter attributeStyleMap
     getter attributes
     getter childElementCount
     getter children
@@ -1835,6 +1841,7 @@ interface Element : Node
     getter clientLeft
     getter clientTop
     getter clientWidth
+    getter defaultOpen
     getter elementTiming
     getter firstElementChild
     getter id
@@ -1853,6 +1860,10 @@ interface Element : Node
     getter onwebkitfullscreenerror
     getter outerHTML
     getter part
+    getter popUp
+    getter popUpHideTarget
+    getter popUpShowTarget
+    getter popUpToggleTarget
     getter prefix
     getter previousElementSibling
     getter role
@@ -1888,6 +1899,7 @@ interface Element : Node
     method hasAttributeNS
     method hasAttributes
     method hasPointerCapture
+    method hidePopUp
     method insertAdjacentElement
     method insertAdjacentHTML
     method insertAdjacentText
@@ -1915,6 +1927,7 @@ interface Element : Node
     method setAttributeNodeNS
     method setHTML
     method setPointerCapture
+    method showPopUp
     method toggleAttribute
     method webkitMatchesSelector
     method webkitRequestFullScreen
@@ -1960,6 +1973,7 @@ interface Element : Node
     setter ariaValueText
     setter classList
     setter className
+    setter defaultOpen
     setter elementTiming
     setter id
     setter innerHTML
@@ -1973,6 +1987,10 @@ interface Element : Node
     setter onwebkitfullscreenerror
     setter outerHTML
     setter part
+    setter popUp
+    setter popUpHideTarget
+    setter popUpShowTarget
+    setter popUpToggleTarget
     setter role
     setter scrollLeft
     setter scrollTop
@@ -2693,6 +2711,7 @@ interface HTMLDocument : Document
 interface HTMLElement : Element
     attribute @@toStringTag
     getter accessKey
+    getter attributeStyleMap
     getter autocapitalize
     getter autofocus
     getter contentEditable
@@ -4701,10 +4720,12 @@ interface MediaSession
     setter metadata
     setter playbackState
 interface MediaSource : EventTarget
+    static getter canConstructInDedicatedWorker
     static method isTypeSupported
     attribute @@toStringTag
     getter activeSourceBuffers
     getter duration
+    getter handle
     getter onsourceclose
     getter onsourceended
     getter onsourceopen
@@ -4720,6 +4741,9 @@ interface MediaSource : EventTarget
     setter onsourceclose
     setter onsourceended
     setter onsourceopen
+interface MediaSourceHandle
+    attribute @@toStringTag
+    method constructor
 interface MediaStream : EventTarget
     attribute @@toStringTag
     getter active
@@ -5532,6 +5556,7 @@ interface PerformanceNavigation
     method toJSON
 interface PerformanceNavigationTiming : PerformanceResourceTiming
     attribute @@toStringTag
+    getter activationStart
     getter domComplete
     getter domContentLoadedEventEnd
     getter domContentLoadedEventStart
@@ -6386,6 +6411,7 @@ interface SVGDescElement : SVGElement
     method constructor
 interface SVGElement : Element
     attribute @@toStringTag
+    getter attributeStyleMap
     getter autofocus
     getter className
     getter dataset
@@ -8218,10 +8244,11 @@ interface VideoColorSpace
     getter transfer
     method constructor
     method toJSON
-interface VideoDecoder
+interface VideoDecoder : EventTarget
     static method isConfigSupported
     attribute @@toStringTag
     getter decodeQueueSize
+    getter ondequeue
     getter state
     method close
     method configure
@@ -8229,10 +8256,12 @@ interface VideoDecoder
     method decode
     method flush
     method reset
+    setter ondequeue
 interface VideoEncoder : EventTarget
     static method isConfigSupported
     attribute @@toStringTag
     getter encodeQueueSize
+    getter ondequeue
     getter state
     method close
     method configure
@@ -8240,6 +8269,7 @@ interface VideoEncoder : EventTarget
     method encode
     method flush
     method reset
+    setter ondequeue
 interface VideoFrame
     attribute @@toStringTag
     getter codedHeight

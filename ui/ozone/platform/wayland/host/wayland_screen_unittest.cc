@@ -93,11 +93,6 @@ class WaylandScreenTest : public WaylandTest {
 
     WaylandTest::SetUp();
 
-    // Initializing the MockZAuraShell gives ownership to the wl_display.
-    // TODO(fangzhoug): Investigate resulting memory leak.
-    mock_zaura_shell_ = new wl::MockZAuraShell();
-    mock_zaura_shell_->Initialize(server_.display());
-
     output_->SetRect({kOutputWidth, kOutputHeight});
     output_->SetScale(1);
     output_->Flush();
@@ -132,7 +127,6 @@ class WaylandScreenTest : public WaylandTest {
     EXPECT_EQ(display_for_widget.id(), expected_display_id);
   }
 
-  raw_ptr<wl::MockZAuraShell> mock_zaura_shell_ = nullptr;
   raw_ptr<wl::TestOutput> output_ = nullptr;
   raw_ptr<WaylandOutputManager> output_manager_ = nullptr;
 
@@ -300,178 +294,6 @@ TEST_P(WaylandScreenTest, MultipleOutputsAddedAndRemoved) {
   platform_screen_->RemoveObserver(&observer);
 }
 
-TEST_P(WaylandScreenTest, OutputPropertyChanges) {
-  TestDisplayObserver observer;
-  platform_screen_->AddObserver(&observer);
-
-  const gfx::Rect physical_bounds{800, 600};
-  output_->SetRect(physical_bounds);
-  output_->Flush();
-
-  Sync();
-
-  uint32_t changed_values = display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
-                            display::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
-  EXPECT_EQ(observer.GetAndClearChangedMetrics(), changed_values);
-  const gfx::Rect expected_bounds{800, 600};
-  EXPECT_EQ(observer.GetDisplay().bounds(), expected_bounds);
-  const gfx::Size expected_size_in_pixels{800, 600};
-  EXPECT_EQ(observer.GetDisplay().GetSizeInPixel(), expected_size_in_pixels);
-  EXPECT_EQ(observer.GetDisplay().work_area(), expected_bounds);
-
-  // Test work area.
-  const gfx::Rect new_work_area{10, 20, 700, 500};
-  const gfx::Insets expected_inset = expected_bounds.InsetsFrom(new_work_area);
-  ASSERT_TRUE(output_->GetAuraOutput());
-  output_->GetAuraOutput()->SetInsets(expected_inset);
-  output_->Flush();
-
-  Sync();
-
-  changed_values = display::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
-  EXPECT_EQ(observer.GetAndClearChangedMetrics(), changed_values);
-  // Bounds should be unchanged.
-  EXPECT_EQ(observer.GetDisplay().bounds(), expected_bounds);
-  EXPECT_EQ(observer.GetDisplay().GetSizeInPixel(), expected_size_in_pixels);
-  // Work area should have new value.
-  EXPECT_EQ(observer.GetDisplay().work_area(), new_work_area);
-
-  // Test scaling.
-  const int32_t new_scale_value = 2;
-  output_->SetScale(new_scale_value);
-  output_->Flush();
-
-  Sync();
-
-  changed_values =
-      display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
-      display::DisplayObserver::DISPLAY_METRIC_WORK_AREA |
-      display::DisplayObserver::DISPLAY_METRIC_BOUNDS;
-  EXPECT_EQ(observer.GetAndClearChangedMetrics(), changed_values);
-  EXPECT_EQ(observer.GetDisplay().device_scale_factor(), new_scale_value);
-  // Logical bounds should shrink due to scaling.
-  const gfx::Rect scaled_bounds{400, 300};
-  EXPECT_EQ(observer.GetDisplay().bounds(), scaled_bounds);
-  // Size in pixel should stay unscaled.
-  EXPECT_EQ(observer.GetDisplay().GetSizeInPixel(), expected_size_in_pixels);
-  gfx::Rect scaled_work_area(scaled_bounds);
-  scaled_work_area.Inset(expected_inset);
-  EXPECT_EQ(observer.GetDisplay().work_area(), scaled_work_area);
-
-  // Test rotation.
-  output_->SetTransform(WL_OUTPUT_TRANSFORM_90);
-  output_->Flush();
-
-  Sync();
-
-  changed_values = display::DisplayObserver::DISPLAY_METRIC_WORK_AREA |
-                   display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
-                   display::DisplayObserver::DISPLAY_METRIC_ROTATION;
-  EXPECT_EQ(observer.GetAndClearChangedMetrics(), changed_values);
-  // Logical bounds should now be rotated to portrait.
-  const gfx::Rect rotated_bounds{300, 400};
-  EXPECT_EQ(observer.GetDisplay().bounds(), rotated_bounds);
-  // Size in pixel gets rotated too, but stays unscaled.
-  const gfx::Size rotated_size_in_pixels{600, 800};
-  EXPECT_EQ(observer.GetDisplay().GetSizeInPixel(), rotated_size_in_pixels);
-  gfx::Rect rotated_work_area(rotated_bounds);
-  rotated_work_area.Inset(expected_inset);
-  EXPECT_EQ(observer.GetDisplay().work_area(), rotated_work_area);
-  EXPECT_EQ(observer.GetDisplay().panel_rotation(),
-            display::Display::Rotation::ROTATE_270);
-  EXPECT_EQ(observer.GetDisplay().rotation(),
-            display::Display::Rotation::ROTATE_270);
-
-  platform_screen_->RemoveObserver(&observer);
-}
-
-// Regression test for crbug.com/1310981.
-// Some devices use display panels built in portrait orientation, but are used
-// in landscape orientation. Thus their physical bounds are in portrait
-// orientation along with an offset transform, which differs from the usual
-// landscape oriented bounds.
-TEST_P(WaylandScreenTest, OutputPropertyChangesWithPortraitPanelRotation) {
-  TestDisplayObserver observer;
-  platform_screen_->AddObserver(&observer);
-
-  // wl_output.geometry origin is set in DIP screen coordinates.
-  const gfx::Point origin(50, 70);
-  // wl_output.mode size is sent in physical coordinates, so it has portrait
-  // dimensions for a display panel with portrait natural orientation.
-  const gfx::Size physical_size(1200, 1600);
-  output_->SetRect({origin, physical_size});
-
-  // Inset is sent in logical coordinates.
-  const gfx::Insets insets = gfx::Insets::TLBR(10, 20, 30, 40);
-  ASSERT_TRUE(output_->GetAuraOutput());
-  output_->GetAuraOutput()->SetInsets(insets);
-
-  // Display panel's natural orientation is in portrait, so it needs a transform
-  // of 90 degrees to be in landscape.
-  output_->SetTransform(WL_OUTPUT_TRANSFORM_90);
-  // Begin with the logical transform at 0 degrees.
-  output_->GetAuraOutput()->SetLogicalTransform(WL_OUTPUT_TRANSFORM_NORMAL);
-
-  output_->SetScale(2);
-  output_->Flush();
-
-  Sync();
-
-  uint32_t changed_values =
-      display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
-      display::DisplayObserver::DISPLAY_METRIC_WORK_AREA |
-      display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
-      display::DisplayObserver::DISPLAY_METRIC_ROTATION;
-  EXPECT_EQ(observer.GetAndClearChangedMetrics(), changed_values);
-
-  // Logical bounds should be in landscape.
-  const gfx::Rect expected_bounds(origin, gfx::Size(800, 600));
-  EXPECT_EQ(observer.GetDisplay().bounds(), expected_bounds);
-  const gfx::Size expected_size_in_pixels(1600, 1200);
-  EXPECT_EQ(observer.GetDisplay().GetSizeInPixel(), expected_size_in_pixels);
-
-  gfx::Rect expected_work_area(expected_bounds);
-  expected_work_area.Inset(insets);
-  EXPECT_EQ(observer.GetDisplay().work_area(), expected_work_area);
-
-  // Panel rotation and display rotation should have an offset.
-  EXPECT_EQ(observer.GetDisplay().panel_rotation(),
-            display::Display::Rotation::ROTATE_270);
-  EXPECT_EQ(observer.GetDisplay().rotation(),
-            display::Display::Rotation::ROTATE_0);
-
-  // Further rotate the display to logical portrait orientation, which is 180
-  // with the natural orientation offset.
-  output_->SetTransform(WL_OUTPUT_TRANSFORM_180);
-  output_->GetAuraOutput()->SetLogicalTransform(WL_OUTPUT_TRANSFORM_90);
-  output_->Flush();
-
-  Sync();
-
-  changed_values = display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
-                   display::DisplayObserver::DISPLAY_METRIC_WORK_AREA |
-                   display::DisplayObserver::DISPLAY_METRIC_ROTATION;
-  EXPECT_EQ(observer.GetAndClearChangedMetrics(), changed_values);
-
-  // Logical bounds should now be portrait.
-  const gfx::Rect portrait_bounds(origin, gfx::Size(600, 800));
-  EXPECT_EQ(observer.GetDisplay().bounds(), portrait_bounds);
-  const gfx::Size portrait_size_in_pixels(1200, 1600);
-  EXPECT_EQ(observer.GetDisplay().GetSizeInPixel(), portrait_size_in_pixels);
-
-  gfx::Rect portrait_work_area(portrait_bounds);
-  portrait_work_area.Inset(insets);
-  EXPECT_EQ(observer.GetDisplay().work_area(), portrait_work_area);
-
-  // Panel rotation and display rotation should still have an offset.
-  EXPECT_EQ(observer.GetDisplay().panel_rotation(),
-            display::Display::Rotation::ROTATE_180);
-  EXPECT_EQ(observer.GetDisplay().rotation(),
-            display::Display::Rotation::ROTATE_270);
-
-  platform_screen_->RemoveObserver(&observer);
-}
-
 TEST_P(WaylandScreenTest, OutputPropertyChangesMissingLogicalSize) {
   TestDisplayObserver observer;
   platform_screen_->AddObserver(&observer);
@@ -572,15 +394,15 @@ TEST_P(WaylandScreenTest, GetAcceleratedWidgetAtScreenPoint) {
 
   // Getting a widget at a screen point outside its bounds, must result in a
   // null widget.
-  const gfx::Rect window_bounds = window_->GetBoundsInPixels();
+  const gfx::Rect window_bounds = window_->GetBoundsInDIP();
   widget_at_screen_point = platform_screen_->GetAcceleratedWidgetAtScreenPoint(
       gfx::Point(window_bounds.width() + 1, window_bounds.height() + 1));
   EXPECT_EQ(widget_at_screen_point, gfx::kNullAcceleratedWidget);
 
   MockWaylandPlatformWindowDelegate delegate;
   auto menu_window_bounds =
-      gfx::Rect(window_->GetBoundsInPixels().width() - 10,
-                window_->GetBoundsInPixels().height() - 10, 100, 100);
+      gfx::Rect(window_->GetBoundsInDIP().width() - 10,
+                window_->GetBoundsInDIP().height() - 10, 100, 100);
   std::unique_ptr<WaylandWindow> menu_window =
       CreateWaylandWindowWithProperties(menu_window_bounds,
                                         PlatformWindowType::kMenu,
@@ -593,8 +415,8 @@ TEST_P(WaylandScreenTest, GetAcceleratedWidgetAtScreenPoint) {
   SetPointerFocusedWindow(menu_window.get());
 
   widget_at_screen_point = platform_screen_->GetAcceleratedWidgetAtScreenPoint(
-      gfx::Point(menu_window->GetBoundsInPixels().x() + 1,
-                 menu_window->GetBoundsInPixels().y() + 1));
+      gfx::Point(menu_window->GetBoundsInDIP().x() + 1,
+                 menu_window->GetBoundsInDIP().y() + 1));
   EXPECT_EQ(widget_at_screen_point, menu_window->GetWidget());
 
   // Whenever a mouse pointer leaves the menu window, the accelerated widget
@@ -615,10 +437,8 @@ TEST_P(WaylandScreenTest, GetAcceleratedWidgetAtScreenPoint) {
 
   Sync();
 
-  auto menu_bounds_px = menu_window->GetBoundsInPixels();
-  // Translate the point to dip.
-  auto point_in_screen =
-      gfx::ScaleToRoundedPoint(menu_bounds_px.origin(), 1.f / 2);
+  auto menu_bounds = menu_window->GetBoundsInDIP();
+  auto point_in_screen = menu_bounds.origin();
   SetPointerFocusedWindow(menu_window.get());
   widget_at_screen_point =
       platform_screen_->GetAcceleratedWidgetAtScreenPoint(point_in_screen);
@@ -818,6 +638,7 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
   uint32_t time = 1002;
   wl_pointer_send_enter(pointer->resource(), ++serial, surface->resource(), 0,
                         0);
+  wl_pointer_send_frame(pointer->resource());
   wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(10),
                          wl_fixed_from_int(20));
 
@@ -831,8 +652,10 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
   ASSERT_TRUE(second_surface);
   // Now, leave the first surface and enter second one.
   wl_pointer_send_leave(pointer->resource(), ++serial, surface->resource());
+  wl_pointer_send_frame(pointer->resource());
   wl_pointer_send_enter(pointer->resource(), ++serial,
                         second_surface->resource(), 0, 0);
+  wl_pointer_send_frame(pointer->resource());
   wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(20),
                          wl_fixed_from_int(10));
 
@@ -844,16 +667,17 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
   // Clear pointer focus.
   wl_pointer_send_leave(pointer->resource(), ++serial,
                         second_surface->resource());
+  wl_pointer_send_frame(pointer->resource());
 
   Sync();
 
   // WaylandScreen must return a point, which is located outside of bounds of
   // any window. Basically, it means that it takes the largest window and adds
   // 10 pixels to its width and height, and returns the value.
-  const gfx::Rect second_window_bounds = second_window->GetBoundsInPixels();
+  const gfx::Rect second_window_bounds = second_window->GetBoundsInDIP();
   // A second window has largest bounds. Thus, these bounds must be taken as a
   // ground for the point outside any of the surfaces.
-  ASSERT_TRUE(window_->GetBoundsInPixels() < second_window_bounds);
+  ASSERT_TRUE(window_->GetBoundsInDIP() < second_window_bounds);
   EXPECT_EQ(gfx::Point(second_window_bounds.width() + 10,
                        second_window_bounds.height() + 10),
             platform_screen_->GetCursorScreenPoint());
@@ -874,6 +698,7 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
 
   wl_pointer_send_enter(pointer->resource(), ++serial, menu_surface->resource(),
                         0, 0);
+  wl_pointer_send_frame(pointer->resource());
   wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(2),
                          wl_fixed_from_int(1));
 
@@ -889,8 +714,10 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
   // Leave the menu window and enter the top level window.
   wl_pointer_send_leave(pointer->resource(), ++serial,
                         menu_surface->resource());
+  wl_pointer_send_frame(pointer->resource());
   wl_pointer_send_enter(pointer->resource(), ++serial,
                         second_surface->resource(), 0, 0);
+  wl_pointer_send_frame(pointer->resource());
   wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(1912),
                          wl_fixed_from_int(1071));
 
@@ -902,11 +729,12 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
 
   wl_pointer_send_leave(pointer->resource(), ++serial,
                         second_surface->resource());
+  wl_pointer_send_frame(pointer->resource());
 
   // Now, create a nested menu window and make sure that the cursor screen point
   // still has been correct. The location of the window is on the right side of
   // the main menu window.
-  const gfx::Rect menu_window_bounds = menu_window->GetBoundsInPixels();
+  const gfx::Rect menu_window_bounds = menu_window->GetBoundsInDIP();
   std::unique_ptr<WaylandWindow> nested_menu_window =
       CreateWaylandWindowWithProperties(
           gfx::Rect(menu_window_bounds.x() + menu_window_bounds.width(),
@@ -921,6 +749,7 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
 
   wl_pointer_send_enter(pointer->resource(), ++serial,
                         nested_menu_surface->resource(), 0, 0);
+  wl_pointer_send_frame(pointer->resource());
   wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(2),
                          wl_fixed_from_int(3));
 
@@ -932,8 +761,10 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
   // point still must be reported correctly.
   wl_pointer_send_leave(pointer->resource(), ++serial,
                         nested_menu_surface->resource());
+  wl_pointer_send_frame(pointer->resource());
   wl_pointer_send_enter(pointer->resource(), ++serial, menu_surface->resource(),
                         0, 0);
+  wl_pointer_send_frame(pointer->resource());
   wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(2),
                          wl_fixed_from_int(1));
 
@@ -994,6 +825,7 @@ TEST_P(WaylandScreenTest, SetWindowScale) {
 TEST_P(WaylandScreenTest, SetWindowScaleWithoutEnteredOutput) {
   // Test pre-conditions: single output setup whereas |output_| is the primary
   // output managed by |output_manager_|, with initial scale == 1.
+  ASSERT_EQ(1u, output_manager_->GetAllOutputs().size());
   ASSERT_TRUE(output_);
   ASSERT_EQ(1, output_->GetScale());
 
@@ -1115,8 +947,200 @@ TEST_P(LazilyConfiguredScreenTest, DualOutput) {
   EXPECT_EQ(2u, screen_->GetAllDisplays().size());
 }
 
+// Tests that use aura-shell extension should use wl::ShellVersion::kStable.
+class WaylandAuraShellScreenTest : public WaylandScreenTest {
+ public:
+  WaylandAuraShellScreenTest() = default;
+  WaylandAuraShellScreenTest(const WaylandAuraShellScreenTest&) = delete;
+  WaylandAuraShellScreenTest& operator=(const WaylandAuraShellScreenTest&) =
+      delete;
+  ~WaylandAuraShellScreenTest() override = default;
+
+  void SetUp() override {
+    ASSERT_EQ(GetParam().shell_version, wl::ShellVersion::kStable);
+    WaylandScreenTest::SetUp();
+  }
+};
+
+TEST_P(WaylandAuraShellScreenTest, OutputPropertyChanges) {
+  TestDisplayObserver observer;
+  platform_screen_->AddObserver(&observer);
+
+  const gfx::Rect physical_bounds{800, 600};
+  output_->SetRect(physical_bounds);
+  output_->Flush();
+
+  Sync();
+
+  uint32_t changed_values = display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+                            display::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
+  EXPECT_EQ(observer.GetAndClearChangedMetrics(), changed_values);
+  const gfx::Rect expected_bounds{800, 600};
+  EXPECT_EQ(observer.GetDisplay().bounds(), expected_bounds);
+  const gfx::Size expected_size_in_pixels{800, 600};
+  EXPECT_EQ(observer.GetDisplay().GetSizeInPixel(), expected_size_in_pixels);
+  EXPECT_EQ(observer.GetDisplay().work_area(), expected_bounds);
+
+  // Test work area.
+  const gfx::Rect new_work_area{10, 20, 700, 500};
+  const gfx::Insets expected_inset = expected_bounds.InsetsFrom(new_work_area);
+  ASSERT_TRUE(output_->GetAuraOutput());
+  output_->GetAuraOutput()->SetInsets(expected_inset);
+  output_->Flush();
+
+  Sync();
+
+  changed_values = display::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
+  EXPECT_EQ(observer.GetAndClearChangedMetrics(), changed_values);
+  // Bounds should be unchanged.
+  EXPECT_EQ(observer.GetDisplay().bounds(), expected_bounds);
+  EXPECT_EQ(observer.GetDisplay().GetSizeInPixel(), expected_size_in_pixels);
+  // Work area should have new value.
+  EXPECT_EQ(observer.GetDisplay().work_area(), new_work_area);
+
+  // Test scaling.
+  const int32_t new_scale_value = 2;
+  output_->SetScale(new_scale_value);
+  output_->Flush();
+
+  Sync();
+
+  changed_values =
+      display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
+      display::DisplayObserver::DISPLAY_METRIC_WORK_AREA |
+      display::DisplayObserver::DISPLAY_METRIC_BOUNDS;
+  EXPECT_EQ(observer.GetAndClearChangedMetrics(), changed_values);
+  EXPECT_EQ(observer.GetDisplay().device_scale_factor(), new_scale_value);
+  // Logical bounds should shrink due to scaling.
+  const gfx::Rect scaled_bounds{400, 300};
+  EXPECT_EQ(observer.GetDisplay().bounds(), scaled_bounds);
+  // Size in pixel should stay unscaled.
+  EXPECT_EQ(observer.GetDisplay().GetSizeInPixel(), expected_size_in_pixels);
+  gfx::Rect scaled_work_area(scaled_bounds);
+  scaled_work_area.Inset(expected_inset);
+  EXPECT_EQ(observer.GetDisplay().work_area(), scaled_work_area);
+
+  // Test rotation.
+  output_->SetTransform(WL_OUTPUT_TRANSFORM_90);
+  output_->Flush();
+
+  Sync();
+
+  changed_values = display::DisplayObserver::DISPLAY_METRIC_WORK_AREA |
+                   display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+                   display::DisplayObserver::DISPLAY_METRIC_ROTATION;
+  EXPECT_EQ(observer.GetAndClearChangedMetrics(), changed_values);
+  // Logical bounds should now be rotated to portrait.
+  const gfx::Rect rotated_bounds{300, 400};
+  EXPECT_EQ(observer.GetDisplay().bounds(), rotated_bounds);
+  // Size in pixel gets rotated too, but stays unscaled.
+  const gfx::Size rotated_size_in_pixels{600, 800};
+  EXPECT_EQ(observer.GetDisplay().GetSizeInPixel(), rotated_size_in_pixels);
+  gfx::Rect rotated_work_area(rotated_bounds);
+  rotated_work_area.Inset(expected_inset);
+  EXPECT_EQ(observer.GetDisplay().work_area(), rotated_work_area);
+  EXPECT_EQ(observer.GetDisplay().panel_rotation(),
+            display::Display::Rotation::ROTATE_270);
+  EXPECT_EQ(observer.GetDisplay().rotation(),
+            display::Display::Rotation::ROTATE_270);
+
+  platform_screen_->RemoveObserver(&observer);
+}
+
+// Regression test for crbug.com/1310981.
+// Some devices use display panels built in portrait orientation, but are used
+// in landscape orientation. Thus their physical bounds are in portrait
+// orientation along with an offset transform, which differs from the usual
+// landscape oriented bounds.
+TEST_P(WaylandAuraShellScreenTest,
+       OutputPropertyChangesWithPortraitPanelRotation) {
+  TestDisplayObserver observer;
+  platform_screen_->AddObserver(&observer);
+
+  // wl_output.geometry origin is set in DIP screen coordinates.
+  const gfx::Point origin(50, 70);
+  // wl_output.mode size is sent in physical coordinates, so it has portrait
+  // dimensions for a display panel with portrait natural orientation.
+  const gfx::Size physical_size(1200, 1600);
+  output_->SetRect({origin, physical_size});
+
+  // Inset is sent in logical coordinates.
+  const gfx::Insets insets = gfx::Insets::TLBR(10, 20, 30, 40);
+  ASSERT_TRUE(output_->GetAuraOutput());
+  output_->GetAuraOutput()->SetInsets(insets);
+
+  // Display panel's natural orientation is in portrait, so it needs a transform
+  // of 90 degrees to be in landscape.
+  output_->SetTransform(WL_OUTPUT_TRANSFORM_90);
+  // Begin with the logical transform at 0 degrees.
+  output_->GetAuraOutput()->SetLogicalTransform(WL_OUTPUT_TRANSFORM_NORMAL);
+
+  output_->SetScale(2);
+  output_->Flush();
+
+  Sync();
+
+  uint32_t changed_values =
+      display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+      display::DisplayObserver::DISPLAY_METRIC_WORK_AREA |
+      display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
+      display::DisplayObserver::DISPLAY_METRIC_ROTATION;
+  EXPECT_EQ(observer.GetAndClearChangedMetrics(), changed_values);
+
+  // Logical bounds should be in landscape.
+  const gfx::Rect expected_bounds(origin, gfx::Size(800, 600));
+  EXPECT_EQ(observer.GetDisplay().bounds(), expected_bounds);
+  const gfx::Size expected_size_in_pixels(1600, 1200);
+  EXPECT_EQ(observer.GetDisplay().GetSizeInPixel(), expected_size_in_pixels);
+
+  gfx::Rect expected_work_area(expected_bounds);
+  expected_work_area.Inset(insets);
+  EXPECT_EQ(observer.GetDisplay().work_area(), expected_work_area);
+
+  // Panel rotation and display rotation should have an offset.
+  EXPECT_EQ(observer.GetDisplay().panel_rotation(),
+            display::Display::Rotation::ROTATE_270);
+  EXPECT_EQ(observer.GetDisplay().rotation(),
+            display::Display::Rotation::ROTATE_0);
+
+  // Further rotate the display to logical portrait orientation, which is 180
+  // with the natural orientation offset.
+  output_->SetTransform(WL_OUTPUT_TRANSFORM_180);
+  output_->GetAuraOutput()->SetLogicalTransform(WL_OUTPUT_TRANSFORM_90);
+  output_->Flush();
+
+  Sync();
+
+  changed_values = display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+                   display::DisplayObserver::DISPLAY_METRIC_WORK_AREA |
+                   display::DisplayObserver::DISPLAY_METRIC_ROTATION;
+  EXPECT_EQ(observer.GetAndClearChangedMetrics(), changed_values);
+
+  // Logical bounds should now be portrait.
+  const gfx::Rect portrait_bounds(origin, gfx::Size(600, 800));
+  EXPECT_EQ(observer.GetDisplay().bounds(), portrait_bounds);
+  const gfx::Size portrait_size_in_pixels(1200, 1600);
+  EXPECT_EQ(observer.GetDisplay().GetSizeInPixel(), portrait_size_in_pixels);
+
+  gfx::Rect portrait_work_area(portrait_bounds);
+  portrait_work_area.Inset(insets);
+  EXPECT_EQ(observer.GetDisplay().work_area(), portrait_work_area);
+
+  // Panel rotation and display rotation should still have an offset.
+  EXPECT_EQ(observer.GetDisplay().panel_rotation(),
+            display::Display::Rotation::ROTATE_180);
+  EXPECT_EQ(observer.GetDisplay().rotation(),
+            display::Display::Rotation::ROTATE_270);
+
+  platform_screen_->RemoveObserver(&observer);
+}
+
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandScreenTest,
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kStable}));
+INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
+                         WaylandAuraShellScreenTest,
                          Values(wl::ServerConfig{
                              .shell_version = wl::ShellVersion::kStable}));
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,

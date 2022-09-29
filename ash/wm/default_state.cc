@@ -401,14 +401,18 @@ void DefaultState::HandleTransitionEvents(WindowState* window_state,
     window_state->RecordAndResetWindowSnapActionSource(current_state_type,
                                                        next_state_type);
 
-    // TODO(crbug.com/1345508: Restore back to a snapped window with its
-    // previous snap ratio.)
+    // If a snapped window is being restored, use the saved restore snap ratio.
+    const bool is_restoring =
+        window_state->window()->GetProperty(aura::client::kIsRestoringKey) ||
+        type == WM_EVENT_RESTORE;
+
     EnterToNextState(
         window_state, next_state_type,
-        absl::make_optional(
-            event->IsSnapInfoAvailable()
-                ? static_cast<const WindowSnapWMEvent*>(event)->snap_ratio()
-                : WindowSnapWMEvent::SnapRatio::kDefaultSnapRatio));
+        event->IsSnapInfoAvailable()
+            ? absl::make_optional(GetFloatValueForSnapRatio(
+                  static_cast<const WindowSnapWMEvent*>(event)->snap_ratio()))
+            : (is_restoring ? window_state->snap_ratio()
+                            : absl::make_optional(kDefaultPositionRatio)));
     return;
   }
 
@@ -460,10 +464,9 @@ void DefaultState::SetBounds(WindowState* window_state,
   }
 }
 
-void DefaultState::EnterToNextState(
-    WindowState* window_state,
-    WindowStateType next_state_type,
-    absl::optional<WindowSnapWMEvent::SnapRatio> snap_ratio) {
+void DefaultState::EnterToNextState(WindowState* window_state,
+                                    WindowStateType next_state_type,
+                                    absl::optional<float> snap_ratio) {
   // Do nothing if  we're already in the same state.
   if (state_type_ == next_state_type)
     return;
@@ -514,11 +517,7 @@ void DefaultState::EnterToNextState(
     if (window_state->IsMaximizedOrFullscreenOrPinned())
       MoveToDisplayForRestore(window_state);
 
-    UpdateBoundsFromState(
-        window_state, previous_state_type,
-        snap_ratio.has_value()
-            ? absl::make_optional(GetFloatValueForSnapRatio(snap_ratio.value()))
-            : absl::nullopt);
+    UpdateBoundsFromState(window_state, previous_state_type, snap_ratio);
     UpdateMinimizedState(window_state, previous_state_type);
 
     // Normal state should have no restore bounds unless it's
@@ -660,7 +659,6 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
       break;
     }
     case WindowStateType::kInactive:
-    case WindowStateType::kAutoPositioned:
     case WindowStateType::kPip:
       return;
   }
@@ -671,7 +669,7 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
   if (IsMinimizedWindowStateType(previous_state_type) ||
       window_state->IsFullscreen() || window_state->IsPinned() ||
       window_state->bounds_animation_type() ==
-          WindowState::BoundsChangeAnimationType::IMMEDIATE) {
+          WindowState::BoundsChangeAnimationType::kNone) {
     window_state->SetBoundsDirect(bounds_in_parent);
   } else if (window_state->IsMaximized() ||
              IsMaximizedOrFullscreenOrPinnedWindowStateType(
@@ -720,7 +718,7 @@ void DefaultState::UpdateBoundsForDisplayOrWorkAreaBoundsChange(
     return;
 
   if (window_state->bounds_animation_type() ==
-      WindowState::BoundsChangeAnimationType::IMMEDIATE) {
+      WindowState::BoundsChangeAnimationType::kNone) {
     window_state->SetBoundsDirect(bounds);
   } else {
     window_state->SetBoundsDirectAnimated(bounds);

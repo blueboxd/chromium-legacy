@@ -5,14 +5,14 @@
 #ifndef ASH_SYSTEM_CAMERA_AUTOZOOM_FEATURE_POD_CONTROLLER_H_
 #define ASH_SYSTEM_CAMERA_AUTOZOOM_FEATURE_POD_CONTROLLER_H_
 
+#include "ash/system/camera/autozoom_observer.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
-#include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 
 namespace ash {
 
 // Controller of a feature pod button that toggles autozoom.
 class AutozoomFeaturePodController : public FeaturePodControllerBase,
-                                     public media::CameraActiveClientObserver {
+                                     public AutozoomObserver {
  public:
   AutozoomFeaturePodController();
 
@@ -28,19 +28,17 @@ class AutozoomFeaturePodController : public FeaturePodControllerBase,
   void OnLabelPressed() override;
   SystemTrayItemUmaType GetUmaType() const override;
 
+  // AutozoomObserver:
+  void OnAutozoomStateChanged(
+      cros::mojom::CameraAutoFramingState state) override;
+  void OnAutozoomControlEnabledChanged(bool enabled) override;
+
  private:
-  void OnToggled();
-  void UpdateButton();
+  void UpdateButton(cros::mojom::CameraAutoFramingState state);
 
   void UpdateButtonVisibility();
 
-  // CameraActiveClientObserver
-  void OnActiveClientChange(cros::mojom::CameraClientType type,
-                            bool is_active) override;
-
   FeaturePodButton* button_ = nullptr;
-
-  int active_camera_client_count_ = 0;
 };
 
 }  // namespace ash

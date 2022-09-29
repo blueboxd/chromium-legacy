@@ -267,7 +267,7 @@ FakeDriveFs::~FakeDriveFs() = default;
 
 void FakeDriveFs::RegisterMountingForAccountId(
     base::RepeatingCallback<std::string()> account_id_getter) {
-  static_cast<chromeos::FakeCrosDisksClient*>(chromeos::CrosDisksClient::Get())
+  static_cast<ash::FakeCrosDisksClient*>(ash::CrosDisksClient::Get())
       ->AddCustomMountPointCallback(base::BindRepeating(&MaybeMountDriveFs));
 
   GetRegisteredFakeDriveFsIntances().emplace_back(std::move(account_id_getter),
@@ -534,8 +534,15 @@ void FakeDriveFs::GetQuotaUsage(
 
 void FakeDriveFs::GetPooledQuotaUsage(
     drivefs::mojom::DriveFs::GetPooledQuotaUsageCallback callback) {
-  std::move(callback).Run(drive::FileError::FILE_ERROR_SERVICE_UNAVAILABLE,
-                          mojom::PooledQuotaUsage::New());
+  auto usage = mojom::PooledQuotaUsage::New();
+
+  usage->user_type = mojom::UserType::kUnmanaged;
+  usage->used_user_bytes = 1 * 1024 * 1024;
+  usage->total_user_bytes = 2 * 1024 * 1024;
+  usage->organization_limit_exceeded = false;
+  usage->organization_name = "Test Organization";
+
+  std::move(callback).Run(drive::FileError::FILE_ERROR_OK, std::move(usage));
 }
 
 void FakeDriveFs::ToggleMirroring(
@@ -557,11 +564,6 @@ void FakeDriveFs::ToggleSyncForPath(
     syncing_paths_.erase(element);
   }
   std::move(callback).Run(drive::FileError::FILE_ERROR_OK);
-}
-
-void FakeDriveFs::GetSyncingPaths(
-    drivefs::mojom::DriveFs::GetSyncingPathsCallback callback) {
-  std::move(callback).Run(drive::FILE_ERROR_OK, syncing_paths_);
 }
 
 void FakeDriveFs::PollHostedFilePinStates() {}

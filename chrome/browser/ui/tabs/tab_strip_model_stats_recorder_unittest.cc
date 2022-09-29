@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -36,13 +37,13 @@ TEST_F(TabStripModelStatsRecorderTest, BasicTabLifecycle) {
   std::unique_ptr<WebContents> contents1 = CreateTestWebContents();
   WebContents* raw_contents1 = contents1.get();
   tabstrip.InsertWebContentsAt(0, std::move(contents1),
-                               TabStripModel::ADD_ACTIVE);
+                               AddTabTypes::ADD_ACTIVE);
 
   // Deactivate the first tab by inserting new tab.
   std::unique_ptr<WebContents> contents2 = CreateTestWebContents();
   WebContents* raw_contents2 = contents2.get();
   tabstrip.InsertWebContentsAt(1, std::move(contents2),
-                               TabStripModel::ADD_ACTIVE);
+                               AddTabTypes::ADD_ACTIVE);
 
   tester.ExpectUniqueSample(
       "Tabs.StateTransfer.Target_Active",
@@ -69,8 +70,8 @@ TEST_F(TabStripModelStatsRecorderTest, BasicTabLifecycle) {
 
   // Close the inactive second tab.
   tabstrip.CloseWebContentsAt(tabstrip.GetIndexOfWebContents(raw_contents2),
-                              TabStripModel::CLOSE_USER_GESTURE |
-                                  TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+                              TabCloseTypes::CLOSE_USER_GESTURE |
+                                  TabCloseTypes::CLOSE_CREATE_HISTORICAL_TAB);
 
   tester.ExpectBucketCount(
       "Tabs.StateTransfer.Target_Inactive",
@@ -100,15 +101,15 @@ TEST_F(TabStripModelStatsRecorderTest, ObserveMultipleTabStrips) {
 
   // Create a tab in strip 1.
   tabstrip1.InsertWebContentsAt(0, CreateTestWebContents(),
-                                TabStripModel::ADD_ACTIVE);
+                                AddTabTypes::ADD_ACTIVE);
 
   // Create a tab in strip 2.
   tabstrip2.InsertWebContentsAt(0, CreateTestWebContents(),
-                                TabStripModel::ADD_ACTIVE);
+                                AddTabTypes::ADD_ACTIVE);
 
   // Create another tab in strip 1.
   tabstrip1.InsertWebContentsAt(1, CreateTestWebContents(),
-                                TabStripModel::ADD_ACTIVE);
+                                AddTabTypes::ADD_ACTIVE);
 
   tester.ExpectUniqueSample(
       "Tabs.StateTransfer.Target_Active",
@@ -116,7 +117,7 @@ TEST_F(TabStripModelStatsRecorderTest, ObserveMultipleTabStrips) {
 
   // Create another tab in strip 2.
   tabstrip2.InsertWebContentsAt(1, CreateTestWebContents(),
-                                TabStripModel::ADD_ACTIVE);
+                                AddTabTypes::ADD_ACTIVE);
 
   tester.ExpectUniqueSample(
       "Tabs.StateTransfer.Target_Active",
@@ -124,7 +125,7 @@ TEST_F(TabStripModelStatsRecorderTest, ObserveMultipleTabStrips) {
 
   // Move the first tab in strip 1 to strip 2
   tabstrip2.InsertWebContentsAt(2, tabstrip1.DetachWebContentsAtForInsertion(0),
-                                TabStripModel::ADD_ACTIVE);
+                                AddTabTypes::ADD_ACTIVE);
 
   tester.ExpectUniqueSample(
       "Tabs.StateTransfer.Target_Active",
@@ -171,12 +172,12 @@ TEST_F(TabStripModelStatsRecorderTest,
   std::unique_ptr<WebContents> contents0 = CreateTestWebContents();
   WebContents* raw_contents0 = contents0.get();
   tabstrip.InsertWebContentsAt(0, std::move(contents0),
-                               TabStripModel::ADD_ACTIVE);
+                               AddTabTypes::ADD_ACTIVE);
 
   // Add 9 more tabs and activate them
   for (int i = 1; i < 10; ++i) {
     tabstrip.InsertWebContentsAt(1, CreateTestWebContents(),
-                                 TabStripModel::ADD_ACTIVE);
+                                 AddTabTypes::ADD_ACTIVE);
   }
 
   // Reactivate the first tab
@@ -209,11 +210,11 @@ TEST_F(TabStripModelStatsRecorderTest,
   std::unique_ptr<WebContents> contents2 = CreateTestWebContents();
   WebContents* raw_contents2 = contents2.get();
   tabstrip.InsertWebContentsAt(0, std::move(contents0),
-                               TabStripModel::ADD_ACTIVE);
+                               AddTabTypes::ADD_ACTIVE);
   tabstrip.InsertWebContentsAt(1, std::move(contents1),
-                               TabStripModel::ADD_ACTIVE);
+                               AddTabTypes::ADD_ACTIVE);
   tabstrip.InsertWebContentsAt(2, std::move(contents2),
-                               TabStripModel::ADD_ACTIVE);
+                               AddTabTypes::ADD_ACTIVE);
 
   // Switch between tabs {0,1} for 5 times, then switch to tab 2
   for (int i = 0; i < 5; ++i) {

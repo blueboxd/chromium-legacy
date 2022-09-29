@@ -92,6 +92,7 @@ class WebAppBrowserController : public AppBrowserController,
   bool AppUsesWindowControlsOverlay() const override;
   bool IsWindowControlsOverlayEnabled() const override;
   void ToggleWindowControlsOverlayEnabled() override;
+  bool AppUsesBorderlessMode() const override;
   gfx::Rect GetDefaultBounds() const override;
   bool HasReloadButton() const override;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -101,6 +102,11 @@ class WebAppBrowserController : public AppBrowserController,
 #if BUILDFLAG(IS_CHROMEOS)
   bool ShouldShowCustomTabBar() const override;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_MAC)
+  bool AlwaysShowToolbarInFullscreen() const override;
+  void ToggleAlwaysShowToolbarInFullscreen() override;
+#endif
 
   // WebAppInstallManagerObserver:
   void OnWebAppUninstalled(const AppId& app_id) override;

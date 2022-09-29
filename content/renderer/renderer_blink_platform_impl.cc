@@ -85,7 +85,6 @@
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
-#include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
@@ -200,9 +199,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
   }
 #endif
 
-  top_level_blame_context_.Initialize();
-  main_thread_scheduler_->SetTopLevelBlameContext(&top_level_blame_context_);
-
   auto io_task_runner = GetIOTaskRunner();
   if (io_task_runner) {
     io_task_runner->PostTask(
@@ -220,13 +216,10 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
 }
 
 RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
-  main_thread_scheduler_->SetTopLevelBlameContext(nullptr);
-  {
-    base::ScopedAllowBaseSyncPrimitives allow;
-    // Ensure task posted to IO thread is finished because it contains
-    // pointers to fields of `this`.
-    io_thread_id_ready_event_.Wait();
-  }
+  base::ScopedAllowBaseSyncPrimitives allow;
+  // Ensure task posted to IO thread is finished because it contains
+  // pointers to fields of `this`.
+  io_thread_id_ready_event_.Wait();
 }
 
 void RendererBlinkPlatformImpl::Shutdown() {}
@@ -270,10 +263,6 @@ void RendererBlinkPlatformImpl::SetThreadType(base::PlatformThreadId thread_id,
   }
 }
 #endif
-
-blink::BlameContext* RendererBlinkPlatformImpl::GetTopLevelBlameContext() {
-  return &top_level_blame_context_;
-}
 
 blink::WebSandboxSupport* RendererBlinkPlatformImpl::GetSandboxSupport() {
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
@@ -476,20 +465,18 @@ base::TimeDelta RendererBlinkPlatformImpl::GetHungRendererDelay() {
 }
 
 std::unique_ptr<WebAudioDevice> RendererBlinkPlatformImpl::CreateAudioDevice(
-    unsigned input_channels,
-    unsigned channels,
+    unsigned output_channels,
     const blink::WebAudioLatencyHint& latency_hint,
-    WebAudioDevice::RenderCallback* callback,
-    const blink::WebString& input_device_id) {
-  // The |channels| does not exactly identify the channel layout of the
+    WebAudioDevice::RenderCallback* callback) {
+  // The |output_channels| does not exactly identify the channel layout of the
   // device. The switch statement below assigns a best guess to the channel
   // layout based on number of channels.
-  media::ChannelLayout layout = media::GuessChannelLayout(channels);
+  media::ChannelLayout layout = media::GuessChannelLayout(output_channels);
   if (layout == media::CHANNEL_LAYOUT_UNSUPPORTED)
     layout = media::CHANNEL_LAYOUT_DISCRETE;
 
   return RendererWebAudioDeviceImpl::Create(
-      layout, channels, latency_hint, callback,
+      layout, output_channels, latency_hint, callback,
       /*session_id=*/base::UnguessableToken());
 }
 

@@ -9,11 +9,12 @@ import './shimless_rma_shared_css.js';
 import './base_page.js';
 import './icons.js';
 
+import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
-import {ProvisioningError, ProvisioningObserverInterface, ProvisioningObserverReceiver, ProvisioningStatus, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
+import {ProvisioningError, ProvisioningObserverInterface, ProvisioningObserverReceiver, ProvisioningStatus, RmadErrorCode, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
 import {disableNextButton, enableNextButton, executeThenTransitionState} from './shimless_rma_util.js';
 
 /**
@@ -87,6 +88,14 @@ export class ReimagingProvisioningPage extends ReimagingProvisioningPageBase {
     const isErrorStatus = status === ProvisioningStatus.kFailedBlocking ||
         status === ProvisioningStatus.kFailedNonBlocking;
     const isWpError = isErrorStatus && error === ProvisioningError.kWpEnabled;
+
+    if (isErrorStatus && !isWpError) {
+      this.dispatchEvent(new CustomEvent('fatal-hardware-error', {
+        bubbles: true,
+        composed: true,
+        detail: RmadErrorCode.kProvisioningFailed,
+      }));
+    }
 
     this.status_ = status;
 

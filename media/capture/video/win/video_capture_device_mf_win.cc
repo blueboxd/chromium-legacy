@@ -606,6 +606,9 @@ HRESULT CopyTextureToGpuMemoryBuffer(ID3D11Texture2D* texture,
   return S_OK;
 }
 
+// Destruction helper. Can't use base::DoNothingAs<> since ComPtr isn't POD.
+void DestroyCaptureEngine(Microsoft::WRL::ComPtr<IMFCaptureEngine>) {}
+
 }  // namespace
 
 class MFVideoCallback final
@@ -944,6 +947,15 @@ VideoCaptureDeviceMFWin::~VideoCaptureDeviceMFWin() {
   if (video_callback_) {
     video_callback_->Shutdown();
   }
+
+  // In case there's about to be a new device created with a different config,
+  // defer destruction of the IMFCaptureEngine since it force unloads a bunch of
+  // DLLs which are expensive to reload.
+  if (engine_) {
+    main_thread_task_runner_->PostDelayedTask(
+        FROM_HERE, base::BindOnce(&DestroyCaptureEngine, std::move(engine_)),
+        base::Seconds(5));
+  }
 }
 
 bool VideoCaptureDeviceMFWin::Init() {
@@ -1174,14 +1186,21 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
 
 void VideoCaptureDeviceMFWin::StopAndDeAllocate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  HRESULT hr = E_FAIL;
   if (is_started_ && engine_) {
-    hr = engine_->StopPreview();
+    engine_->StopPreview();
   }
 
-  if (SUCCEEDED(hr)) {
-    WaitOnCaptureEvent(MF_CAPTURE_ENGINE_PREVIEW_STOPPED);
-  }
+  // Ideally, we should wait for MF_CAPTURE_ENGINE_PREVIEW_STOPPED event here.
+  // However, since |engine_| is not reused for video capture after here,
+  // we can safely ignore this event to reduce the delay.
+  // It's only important to ensure that incoming events after the capture has
+  // stopped shouldn't lead to any crashes.
+  // This is achieved by ensuring that the |video_callback_| is shutdown in the
+  // destructor which will stop it from trying to use potentially destroyed
+  // VideoCaptureDeviceMFWin instance.
+  // Also, the callback itself is ref counted and |engine_| holds the reference,
+  // so we can delete this class at any time without creating use-after-free
+  // situations.
 
   is_started_ = false;
   client_.reset();

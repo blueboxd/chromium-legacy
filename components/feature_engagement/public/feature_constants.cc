@@ -4,6 +4,7 @@
 
 #include "components/feature_engagement/public/feature_constants.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 
 namespace feature_engagement {
@@ -60,6 +61,9 @@ const base::Feature kIPHProfileSwitchFeature{"IPH_ProfileSwitch",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHIntentChipFeature{"IPH_IntentChip",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHWebUiHelpBubbleTestFeature(
+    "IPH_WebUiHelpBubbleTest",
+    base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 
@@ -108,21 +112,6 @@ const base::Feature kIPHChromeHomeExpandFeature{
     "IPH_ChromeHomeExpand", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHChromeHomePullToRefreshFeature{
     "IPH_ChromeHomePullToRefresh", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHContextualSearchTranslationEnableFeature{
-    "IPH_ContextualSearchTranslationEnable", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHContextualSearchWebSearchFeature{
-    "IPH_ContextualSearchWebSearch", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHContextualSearchPromoteTapFeature{
-    "IPH_ContextualSearchPromoteTap", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHContextualSearchPromotePanelOpenFeature{
-    "IPH_ContextualSearchPromotePanelOpen", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHContextualSearchOptInFeature{
-    "IPH_ContextualSearchOptIn", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHContextualSearchTappedButShouldLongpressFeature{
-    "IPH_ContextualSearchTappedButShouldLongpress",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHContextualSearchInPanelHelpFeature{
-    "IPH_ContextualSearchInPanelHelp", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadSettingsFeature{
     "IPH_DownloadSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadInfoBarDownloadContinuingFeature{
@@ -297,6 +286,8 @@ const base::Feature kIPHPasswordSuggestionsFeature{
     "IPH_PasswordSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHFollowWhileBrowsingFeature{
     "IPH_FollowWhileBrowsing", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHOverflowMenuTipFeature{
+    "IPH_OverflowMenuTip", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \

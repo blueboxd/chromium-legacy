@@ -213,6 +213,7 @@ gridTemplateAreas
 gridTemplateColumns
 gridTemplateRows
 height
+hyphenateCharacter
 hyphens
 imageOrientation
 imageRendering
@@ -324,6 +325,8 @@ placeContent
 placeItems
 placeSelf
 pointerEvents
+popUpHideDelay
+popUpShowDelay
 position
 prefix
 quotes

@@ -68,6 +68,8 @@ bool PhoneNumber::operator==(const PhoneNumber& other) const {
 void PhoneNumber::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
   supported_types->insert(PHONE_HOME_WHOLE_NUMBER);
   supported_types->insert(PHONE_HOME_NUMBER);
+  supported_types->insert(PHONE_HOME_NUMBER_PREFIX);
+  supported_types->insert(PHONE_HOME_NUMBER_SUFFIX);
   supported_types->insert(PHONE_HOME_CITY_CODE);
   supported_types->insert(PHONE_HOME_CITY_AND_NUMBER);
   supported_types->insert(PHONE_HOME_COUNTRY_CODE);
@@ -118,17 +120,6 @@ void PhoneNumber::GetMatchingTypes(const std::u16string& text,
   std::u16string stripped_text = text;
   base::RemoveChars(stripped_text, u" .()-", &stripped_text);
   FormGroup::GetMatchingTypes(stripped_text, app_locale, matching_types);
-
-  // For US numbers, also compare to the three-digit prefix and the four-digit
-  // suffix, since web sites often split numbers into these two fields.
-  std::u16string number = GetInfo(AutofillType(PHONE_HOME_NUMBER), app_locale);
-  if (GetRegion(*profile_, app_locale) == "US" &&
-      number.size() == (kPrefixLength + kSuffixLength)) {
-    std::u16string prefix = number.substr(kPrefixOffset, kPrefixLength);
-    std::u16string suffix = number.substr(kSuffixOffset, kSuffixLength);
-    if (text == prefix || text == suffix)
-      matching_types->insert(PHONE_HOME_NUMBER);
-  }
 
   // TODO(crbug.com/581391): Investigate the use of PhoneNumberUtil when
   // matching phone numbers for upload.
@@ -234,9 +225,10 @@ std::u16string PhoneNumber::GetInfoImpl(const AutofillType& type,
       // autocomplete="tel-local-suffix" corresponds to. In all countries using
       // this format that we are aware of (see unit tests), the suffix consists
       // of the last 4 digits, while the length of the prefix varies.
-      constexpr int kSuffixLength = 4;
-      DCHECK(number.size() >= kSuffixLength);
-      return number.substr(number.size() - kSuffixLength);
+      constexpr size_t kHomePhoneNumberSuffixLength = 4;
+      return number.size() >= kHomePhoneNumberSuffixLength
+                 ? number.substr(number.size() - kHomePhoneNumberSuffixLength)
+                 : number;
     }
 
     case PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX:
@@ -274,6 +266,8 @@ std::u16string PhoneNumber::GetInfoImpl(const AutofillType& type,
     }
 
     case PHONE_HOME_EXTENSION:
+      // Autofill doesn't support filling extensions, but some basic local
+      // heuristics classify them.
       return std::u16string();
 
     default:
@@ -306,6 +300,16 @@ bool PhoneNumber::SetInfoWithVerificationStatusImpl(
   // doesn't contain formatting marks.
   if (base::ContainsOnlyChars(number_, u"+0123456789")) {
     number_ = cached_parsed_phone_.GetFormattedNumber();
+  } else {
+    // Strip `number_` of extensions, e.g. "(123)-123 ext. 123" -> "(123)-123".
+    // In the if case, this is done by `GetFormattedNumber()` already. To
+    // preserve the formatting, everything after the last digit of the whole
+    // number is removed manually here. The whole number only consists of digits
+    // and has any extensions removed already.
+    size_t i = 0;
+    for (auto digit : cached_parsed_phone_.GetWholeNumber())
+      i = number_.find(digit, i) + 1;  // Skip `digit`.
+    number_ = number_.substr(0, i);
   }
   return true;
 }
@@ -336,12 +340,14 @@ bool PhoneNumber::PhoneCombineHelper::SetInfo(const AutofillType& type,
     return true;
   }
 
-  if (storable_type == PHONE_HOME_CITY_CODE) {
+  if (storable_type == PHONE_HOME_CITY_CODE ||
+      storable_type == PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX) {
     city_ = value;
     return true;
   }
 
-  if (storable_type == PHONE_HOME_CITY_AND_NUMBER) {
+  if (storable_type == PHONE_HOME_CITY_AND_NUMBER ||
+      storable_type == PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX) {
     phone_ = value;
     return true;
   }
@@ -351,7 +357,13 @@ bool PhoneNumber::PhoneCombineHelper::SetInfo(const AutofillType& type,
     return true;
   }
 
-  if (storable_type == PHONE_HOME_NUMBER) {
+  if (storable_type == PHONE_HOME_NUMBER ||
+      storable_type == PHONE_HOME_NUMBER_PREFIX) {
+    phone_ = value;
+    return true;
+  }
+
+  if (storable_type == PHONE_HOME_NUMBER_SUFFIX) {
     phone_.append(value);
     return true;
   }

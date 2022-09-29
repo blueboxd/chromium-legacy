@@ -164,6 +164,11 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
     expected_providers++;
   }
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
+  // MotherboardMetricProvider.
+  expected_providers++;
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   expected_providers++;  // ExtensionsMetricsProvider.
 #endif                   // defined(ENABLE_EXTENSIONS)
@@ -219,8 +224,8 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
         // BUILDFLAG(IS_CHROMEOS_LACROS))
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-  // DesktopSessionMetricsProvider and FamilyLinkUserMetricsProvider
-  expected_providers += 2;
+  // DesktopSessionMetricsProvider
+  expected_providers += 1;
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || (BUILDFLAG(IS_LINUX)
 
   std::unique_ptr<ChromeMetricsServiceClient> chrome_metrics_service_client =

@@ -15,7 +15,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 
-namespace chromeos {
+namespace ash {
 
 class NetworkState;
 
@@ -105,11 +105,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ProxyConfigServiceImpl
   base::WeakPtrFactory<ProxyConfigServiceImpl> pointer_factory_{this};
 };
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash {
-using ::chromeos::ProxyConfigServiceImpl;
-}
+}  // namespace ash
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_PROXY_PROXY_CONFIG_SERVICE_IMPL_H_

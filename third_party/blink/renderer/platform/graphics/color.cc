@@ -36,17 +36,12 @@
 
 namespace blink {
 
-// VS 2015 and above allow these definitions and in this case require them
-#if !defined(COMPILER_MSVC) || _MSC_VER >= 1900
-// FIXME: Use C++11 enum classes to avoid static data member initializer
-// definition problems.
-const RGBA32 Color::kBlack;
-const RGBA32 Color::kWhite;
-const RGBA32 Color::kDarkGray;
-const RGBA32 Color::kGray;
-const RGBA32 Color::kLightGray;
-const RGBA32 Color::kTransparent;
-#endif
+const Color Color::kBlack = Color(0xFF000000);
+const Color Color::kWhite = Color(0xFFFFFFFF);
+const Color Color::kDarkGray = Color(0xFF808080);
+const Color Color::kGray = Color(0xFFA0A0A0);
+const Color Color::kLightGray = Color(0xFFC0C0C0);
+const Color Color::kTransparent = Color(0x00000000);
 
 namespace {
 
@@ -65,46 +60,6 @@ int BlendComponent(int c, int a) {
   return static_cast<int>(c / alpha);
 }
 
-double CalcHue(double temp1, double temp2, double hue_val) {
-  if (hue_val < 0.0)
-    hue_val += 6.0;
-  else if (hue_val >= 6.0)
-    hue_val -= 6.0;
-  if (hue_val < 1.0)
-    return temp1 + (temp2 - temp1) * hue_val;
-  if (hue_val < 3.0)
-    return temp2;
-  if (hue_val < 4.0)
-    return temp1 + (temp2 - temp1) * (4.0 - hue_val);
-  return temp1;
-}
-
-// Explanation of this algorithm can be found in the CSS Color 4 Module
-// specification at https://drafts.csswg.org/css-color-4/#hsl-to-rgb with
-// further explanation available at http://en.wikipedia.org/wiki/HSL_color_space
-
-// Hue is in the range of 0.0 to 6.0, the remainder are in the range 0.0 to 1.0.
-// Out parameters r, g, and b are also returned in range 0.0 to 1.0.
-void HSLToRGB(double hue,
-              double saturation,
-              double lightness,
-              double& r,
-              double& g,
-              double& b) {
-  if (!saturation) {
-    r = g = b = lightness;
-  } else {
-    double temp2 = lightness <= 0.5
-                       ? lightness * (1.0 + saturation)
-                       : lightness + saturation - lightness * saturation;
-    double temp1 = 2.0 * lightness - temp2;
-
-    r = CalcHue(temp1, temp2, hue + 2.0);
-    g = CalcHue(temp1, temp2, hue);
-    b = CalcHue(temp1, temp2, hue - 2.0);
-  }
-}
-
 int ColorFloatToRGBAByte(float f) {
   return ClampTo(static_cast<int>(lroundf(255.0f * f)), 0, 255);
 }
@@ -113,7 +68,7 @@ int ColorFloatToRGBAByte(float f) {
 template <typename CharacterType>
 inline bool ParseHexColorInternal(const CharacterType* name,
                                   unsigned length,
-                                  RGBA32& rgb) {
+                                  Color& color) {
   if (length != 3 && length != 4 && length != 6 && length != 8)
     return false;
   if ((length == 8 || length == 4) &&
@@ -127,26 +82,28 @@ inline bool ParseHexColorInternal(const CharacterType* name,
     value |= ToASCIIHexValue(name[i]);
   }
   if (length == 6) {
-    rgb = 0xFF000000 | value;
+    color = Color::FromRGBA32(0xFF000000 | value);
     return true;
   }
   if (length == 8) {
     // We parsed the values into RGBA order, but the RGBA32 type
     // expects them to be in ARGB order, so we right rotate eight bits.
-    rgb = value << 24 | value >> 8;
+    color = Color::FromRGBA32(value << 24 | value >> 8);
     return true;
   }
   if (length == 4) {
     // #abcd converts to ddaabbcc in RGBA32.
-    rgb = (value & 0xF) << 28 | (value & 0xF) << 24 | (value & 0xF000) << 8 |
-          (value & 0xF000) << 4 | (value & 0xF00) << 4 | (value & 0xF00) |
-          (value & 0xF0) | (value & 0xF0) >> 4;
+    color = Color::FromRGBA32((value & 0xF) << 28 | (value & 0xF) << 24 |
+                              (value & 0xF000) << 8 | (value & 0xF000) << 4 |
+                              (value & 0xF00) << 4 | (value & 0xF00) |
+                              (value & 0xF0) | (value & 0xF0) >> 4);
     return true;
   }
   // #abc converts to #aabbcc
-  rgb = 0xFF000000 | (value & 0xF00) << 12 | (value & 0xF00) << 8 |
-        (value & 0xF0) << 8 | (value & 0xF0) << 4 | (value & 0xF) << 4 |
-        (value & 0xF);
+  color = Color::FromRGBA32(0xFF000000 | (value & 0xF00) << 12 |
+                            (value & 0xF00) << 8 | (value & 0xF0) << 8 |
+                            (value & 0xF0) << 4 | (value & 0xF) << 4 |
+                            (value & 0xF));
   return true;
 }
 
@@ -167,64 +124,15 @@ inline const NamedColor* FindNamedColor(const String& name) {
 
 }  // namespace
 
-RGBA32 MakeRGB(int r, int g, int b) {
-  return 0xFF000000 | ClampTo(r, 0, 255) << 16 | ClampTo(g, 0, 255) << 8 |
-         ClampTo(b, 0, 255);
-}
-
-RGBA32 MakeRGBA(int r, int g, int b, int a) {
-  return ClampTo(a, 0, 255) << 24 | ClampTo(r, 0, 255) << 16 |
-         ClampTo(g, 0, 255) << 8 | ClampTo(b, 0, 255);
-}
-
 RGBA32 MakeRGBA32FromFloats(float r, float g, float b, float a) {
   return ColorFloatToRGBAByte(a) << 24 | ColorFloatToRGBAByte(r) << 16 |
          ColorFloatToRGBAByte(g) << 8 | ColorFloatToRGBAByte(b);
 }
 
-SkColor4f Color::toSkColor4f() {
+SkColor4f Color::toSkColor4f() const {
   float r, g, b, a;
   GetRGBA(r, g, b, a);
   return SkColor4f{r, g, b, a};
-}
-
-// Hue is in the range of 0 to 6.0, the remainder are in the range 0 to 1.0
-RGBA32 MakeRGBAFromHSLA(double hue,
-                        double saturation,
-                        double lightness,
-                        double alpha) {
-  const double scale_factor = 255.0;
-  double r, g, b;
-  HSLToRGB(hue, saturation, lightness, r, g, b);
-
-  return MakeRGBA(static_cast<int>(round(r * scale_factor)),
-                  static_cast<int>(round(g * scale_factor)),
-                  static_cast<int>(round(b * scale_factor)),
-                  static_cast<int>(round(alpha * scale_factor)));
-}
-
-// Hue is in the range of 0 to 6.0, the remainder are in the range 0 to 1.0
-RGBA32 MakeRGBAFromHWBA(double hue, double white, double black, double alpha) {
-  const double scale_factor = 255.0;
-
-  if (white + black >= 1.0) {
-    int gray = static_cast<int>(round(white / (white + black) * scale_factor));
-    return MakeRGBA(gray, gray, gray,
-                    static_cast<int>(round(alpha * scale_factor)));
-  }
-
-  // Leverage HSL to RGB conversion to find HWB to RGB, see
-  // https://drafts.csswg.org/css-color-4/#hwb-to-rgb
-  double r, g, b;
-  HSLToRGB(hue, 1.0, 0.5, r, g, b);
-  r += white - (white + black) * r;
-  g += white - (white + black) * g;
-  b += white - (white + black) * b;
-
-  return MakeRGBA(static_cast<int>(round(r * scale_factor)),
-                  static_cast<int>(round(g * scale_factor)),
-                  static_cast<int>(round(b * scale_factor)),
-                  static_cast<int>(round(alpha * scale_factor)));
 }
 
 RGBA32 MakeRGBAFromCMYKA(float c, float m, float y, float k, float a) {
@@ -235,20 +143,20 @@ RGBA32 MakeRGBAFromCMYKA(float c, float m, float y, float k, float a) {
   return MakeRGBA(r, g, b, static_cast<float>(nextafter(256, 0) * a));
 }
 
-bool Color::ParseHexColor(const LChar* name, unsigned length, RGBA32& rgb) {
-  return ParseHexColorInternal(name, length, rgb);
+bool Color::ParseHexColor(const LChar* name, unsigned length, Color& color) {
+  return ParseHexColorInternal(name, length, color);
 }
 
-bool Color::ParseHexColor(const UChar* name, unsigned length, RGBA32& rgb) {
-  return ParseHexColorInternal(name, length, rgb);
+bool Color::ParseHexColor(const UChar* name, unsigned length, Color& color) {
+  return ParseHexColorInternal(name, length, color);
 }
 
-bool Color::ParseHexColor(const StringView& name, RGBA32& rgb) {
+bool Color::ParseHexColor(const StringView& name, Color& color) {
   if (name.IsEmpty())
     return false;
   if (name.Is8Bit())
-    return ParseHexColor(name.Characters8(), name.length(), rgb);
-  return ParseHexColor(name.Characters16(), name.length(), rgb);
+    return ParseHexColor(name.Characters8(), name.length(), color);
+  return ParseHexColor(name.Characters16(), name.length(), color);
 }
 
 int DifferenceSquared(const Color& c1, const Color& c2) {
@@ -262,8 +170,8 @@ bool Color::SetFromString(const String& name) {
   if (name[0] != '#')
     return SetNamedColor(name);
   if (name.Is8Bit())
-    return ParseHexColor(name.Characters8() + 1, name.length() - 1, color_);
-  return ParseHexColor(name.Characters16() + 1, name.length() - 1, color_);
+    return ParseHexColor(name.Characters8() + 1, name.length() - 1, *this);
+  return ParseHexColor(name.Characters16() + 1, name.length() - 1, *this);
 }
 
 String Color::Serialized() const {
@@ -309,8 +217,8 @@ Color::operator SkColor() const {
 
 Color Color::Light() const {
   // Hardcode this common case for speed.
-  if (color_ == kBlack)
-    return kLightenedBlack;
+  if (color_ == kBlack.color_)
+    return Color(kLightenedBlack);
 
   const float scale_factor = nextafterf(256.0f, 0.0f);
 
@@ -332,8 +240,8 @@ Color Color::Light() const {
 
 Color Color::Dark() const {
   // Hardcode this common case for speed.
-  if (color_ == kWhite)
-    return kDarkenedWhite;
+  if (color_ == kWhite.color_)
+    return Color(kDarkenedWhite);
 
   const float scale_factor = nextafterf(256.0f, 0.0f);
 
@@ -351,7 +259,7 @@ Color Color::Dark() const {
 Color Color::CombineWithAlpha(float other_alpha) const {
   RGBA32 rgb_only = Rgb() & 0x00FFFFFF;
   float override_alpha = (Alpha() / 255.f) * other_alpha;
-  return rgb_only | ColorFloatToRGBAByte(override_alpha) << 24;
+  return Color(rgb_only | ColorFloatToRGBAByte(override_alpha) << 24);
 }
 
 Color Color::Blend(const Color& source) const {
@@ -464,12 +372,12 @@ void Color::GetHWB(double& hue, double& white, double& black) const {
 Color ColorFromPremultipliedARGB(RGBA32 pixel_color) {
   int alpha = AlphaChannel(pixel_color);
   if (alpha && alpha < 255) {
-    return Color::CreateUnchecked(RedChannel(pixel_color) * 255 / alpha,
-                                  GreenChannel(pixel_color) * 255 / alpha,
-                                  BlueChannel(pixel_color) * 255 / alpha,
-                                  alpha);
-  } else
-    return Color(pixel_color);
+    return Color::FromRGBA(RedChannel(pixel_color) * 255 / alpha,
+                           GreenChannel(pixel_color) * 255 / alpha,
+                           BlueChannel(pixel_color) * 255 / alpha, alpha);
+  } else {
+    return Color::FromRGBA32(pixel_color);
+  }
 }
 
 RGBA32 PremultipliedARGBFromColor(const Color& color) {
@@ -477,13 +385,13 @@ RGBA32 PremultipliedARGBFromColor(const Color& color) {
 
   unsigned alpha = color.Alpha();
   if (alpha < 255) {
-    pixel_color =
-        Color::CreateUnchecked((color.Red() * alpha + 254) / 255,
-                               (color.Green() * alpha + 254) / 255,
-                               (color.Blue() * alpha + 254) / 255, alpha)
-            .Rgb();
-  } else
+    pixel_color = Color::FromRGBA((color.Red() * alpha + 254) / 255,
+                                  (color.Green() * alpha + 254) / 255,
+                                  (color.Blue() * alpha + 254) / 255, alpha)
+                      .Rgb();
+  } else {
     pixel_color = color.Rgb();
+  }
 
   return pixel_color;
 }

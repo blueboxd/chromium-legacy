@@ -33,8 +33,6 @@
 #include "content/renderer/mojo/blink_interface_registry_impl.h"
 #include "content/renderer/navigation_state.h"
 #include "content/renderer/render_frame_impl.h"
-#include "content/renderer/render_frame_proxy.h"
-#include "content/renderer/render_view_impl.h"
 #include "content/test/frame_host_test_interface.mojom.h"
 #include "content/test/test_render_frame.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -131,7 +129,7 @@ class RenderFrameImplTest : public RenderViewTest {
     frame_replication_state->unique_name = "frame-uniqueName";
 
     auto remote_frame_interfaces =
-        mojom::RemoteFrameInterfacesFromBrowser::New();
+        blink::mojom::RemoteFrameInterfacesFromBrowser::New();
     mojo::AssociatedRemote<blink::mojom::RemoteFrame> frame;
     remote_frame_interfaces->frame_receiver =
         frame.BindNewEndpointAndPassDedicatedReceiver();
@@ -140,7 +138,8 @@ class RenderFrameImplTest : public RenderViewTest {
     std::ignore = frame_host.BindNewEndpointAndPassDedicatedReceiver();
     remote_frame_interfaces->frame_host = frame_host.Unbind();
 
-    auto remote_main_frame_interfaces = mojom::RemoteMainFrameInterfaces::New();
+    auto remote_main_frame_interfaces =
+        blink::mojom::RemoteMainFrameInterfaces::New();
     mojo::AssociatedRemote<blink::mojom::RemoteMainFrame> main_frame;
     remote_main_frame_interfaces->main_frame =
         main_frame.BindNewEndpointAndPassDedicatedReceiver();
@@ -160,6 +159,7 @@ class RenderFrameImplTest : public RenderViewTest {
         *agent_scheduling_group_, blink::LocalFrameToken(), kSubframeRouteId,
         TestRenderFrame::CreateStubFrameReceiver(),
         TestRenderFrame::CreateStubBrowserInterfaceBrokerRemote(),
+        TestRenderFrame::CreateStubAssociatedInterfaceProviderRemote(),
         /*previous_frame_token=*/absl::nullopt,
         /*opener_frame_token=*/absl::nullopt,
         /*parent_frame_token=*/remote_child_token,
@@ -247,7 +247,7 @@ class RenderFrameTestObserver : public RenderFrameObserver {
   gfx::Rect last_viewport_rect_;
 };
 
-// Verify that a frame with a RenderFrameProxy as a parent has its own
+// Verify that a frame with a WebRemoteFrame as a parent has its own
 // RenderWidget.
 TEST_F(RenderFrameImplTest, SubframeWidget) {
   EXPECT_TRUE(frame_widget());

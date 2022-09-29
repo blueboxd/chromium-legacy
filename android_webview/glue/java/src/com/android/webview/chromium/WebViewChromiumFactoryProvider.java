@@ -331,7 +331,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             // WebView needs to make sure to always use the wrapped application context.
             ctx = ClassLoaderContextWrapperFactory.get(ctx);
             ContextUtils.initApplicationContext(ctx);
-            ContextUtils.setSdkSandboxProcess(isSdkSandboxProcess());
 
             // Find the package ID for the package that WebView's resources come from.
             // This will be the donor package if there is one, not our main package.
@@ -510,15 +509,13 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                 "Android.WebView.Startup.CreationTime.Stage1.FactoryInit",
                 SystemClock.uptimeMillis() - startTime);
 
-        /* TODO(torne): re-enable this once the API change is sorted out
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // TODO: Use the framework constants as indices in timestamps array.
-            startTime = mWebViewDelegate.getTimestamps()[0];
+            final long webviewLoadStart =
+                    mWebViewDelegate.getStartupTimestamps().getWebViewLoadStart();
             RecordHistogram.recordTimesHistogram(
                     "Android.WebView.Startup.CreationTime.TotalFactoryInitTime",
-                    SystemClock.uptimeMillis() - startTime);
+                    SystemClock.uptimeMillis() - webviewLoadStart);
         }
-        */
     }
 
     // These values are persisted to logs. Entries should not be renumbered and
@@ -876,16 +873,5 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     @Override
     public PacProcessor createPacProcessor() {
         return GlueApiHelperForR.createPacProcessor();
-    }
-
-    boolean shouldEnableSimplifiedDarkMode() {
-        // TODO: Put the downstream implementation inline and remove this method.
-        return false;
-    }
-
-    boolean isSdkSandboxProcess() {
-        // TODO: This shall be removed and ContextUtil.isSdkSandboxProcess() calls
-        // Process.isSdkSandbox() directly.
-        return false;
     }
 }

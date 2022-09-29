@@ -103,9 +103,9 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_pair(rgbkbd::RgbKeyboardCapabilities::kFourZoneTwelveLed,
                        ash::rgb_keyboard::metrics::RgbKeyboardCapabilityType::
                            kFourZoneTwelveLed),
-        std::make_pair(rgbkbd::RgbKeyboardCapabilities::kFourZoneFifteenLed,
+        std::make_pair(rgbkbd::RgbKeyboardCapabilities::kFourZoneFourLed,
                        ash::rgb_keyboard::metrics::RgbKeyboardCapabilityType::
-                           kFourZoneFifteenLed)));
+                           kFourZoneFourLed)));
 
 TEST_P(KeyboardCapabilityHistogramEmittedTest,
        KeyboardCapabilityHistogramEmitted) {
@@ -130,7 +130,7 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Values(rgbkbd::RgbKeyboardCapabilities::kIndividualKey,
                     rgbkbd::RgbKeyboardCapabilities::kFourZoneFortyLed,
                     rgbkbd::RgbKeyboardCapabilities::kFourZoneTwelveLed,
-                    rgbkbd::RgbKeyboardCapabilities::kFourZoneFifteenLed));
+                    rgbkbd::RgbKeyboardCapabilities::kFourZoneFourLed));
 
 TEST_P(RgbChangeTypeHistogramEmittedTest, RgbChangeTypeHistogramEmitted) {
   base::HistogramTester histogram_tester;
@@ -233,16 +233,6 @@ TEST_F(RgbKeyboardManagerTest, OnLoginCapsLock) {
   InitializeManagerWithCapability(
       rgbkbd::RgbKeyboardCapabilities::kIndividualKey);
   EXPECT_TRUE(client_->get_caps_lock_state());
-}
-
-TEST_F(RgbKeyboardManagerTest, DefaultState) {
-  const RgbColor& default_rgb_values = client_->recently_sent_rgb();
-
-  EXPECT_FALSE(client_->is_rainbow_mode_set());
-
-  EXPECT_EQ(SkColorGetR(kDefaultColor), std::get<0>(default_rgb_values));
-  EXPECT_EQ(SkColorGetG(kDefaultColor), std::get<1>(default_rgb_values));
-  EXPECT_EQ(SkColorGetB(kDefaultColor), std::get<2>(default_rgb_values));
 }
 
 // TODO(jimmyxgong): This is just a stub test, there is only one enum available

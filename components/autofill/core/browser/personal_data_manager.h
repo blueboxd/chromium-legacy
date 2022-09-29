@@ -202,11 +202,11 @@ class PersonalDataManager : public KeyedService,
       const std::vector<AutofillProfile*>& profiles);
 
   // Adds |iban| to the web database as a local Iban.
-  virtual void AddIban(const Iban& iban);
+  virtual void AddIBAN(const IBAN& iban);
 
   // Updates |iban| which already exists in the web database. This
   // can only be used on local ibans.
-  virtual void UpdateIban(const Iban& iban);
+  virtual void UpdateIBAN(const IBAN& iban);
 
   // Adds |credit_card| to the web database as a local card.
   virtual void AddCreditCard(const CreditCard& credit_card);
@@ -255,7 +255,7 @@ class PersonalDataManager : public KeyedService,
 
   // Returns the iban with the specified |guid|, or nullptr if there is no iban
   // with the specified |guid|.
-  virtual Iban* GetIbanByGUID(const std::string& guid);
+  virtual IBAN* GetIBANByGUID(const std::string& guid);
 
   // Returns the credit card with the specified |guid|, or nullptr if there is
   // no credit card with the specified |guid|.
@@ -293,7 +293,7 @@ class PersonalDataManager : public KeyedService,
   virtual std::vector<CreditCard*> GetCreditCards() const;
 
   // Returns local Ibans.
-  virtual std::vector<Iban*> GetIbans() const;
+  virtual std::vector<IBAN*> GetIBANs() const;
 
   // Returns the Payments customer data. Returns nullptr if no data is present.
   virtual PaymentsCustomerData* GetPaymentsCustomerData() const;
@@ -370,6 +370,7 @@ class PersonalDataManager : public KeyedService,
     variations_country_code_ = country_code;
   }
 
+#if BUILDFLAG(IS_IOS)
   // Returns the raw pointer to PersonalDataManagerCleaner used for testing
   // purposes.
   PersonalDataManagerCleaner* personal_data_manager_cleaner_for_testing()
@@ -377,7 +378,8 @@ class PersonalDataManager : public KeyedService,
     DCHECK(personal_data_manager_cleaner_);
     return personal_data_manager_cleaner_.get();
   }
-#endif
+#endif  // IOS
+#endif  // UNIT_TEST
 
   // Returns our best guess for the country a user is likely to use when
   // inputting a new address. The value is calculated once and cached, so it
@@ -433,6 +435,8 @@ class PersonalDataManager : public KeyedService,
   // Notifies observers that the waiting should be stopped.
   void NotifyPersonalDataObserver();
 
+  // TODO(crbug.com/1337392): Revisit the function when card upload feedback is
+  // to be added again. In the new proposal, we may not need to go through PDM.
   // Called when at least one (can be multiple) card was saved. |is_local_card|
   // indicates if the card is saved to local storage.
   void OnCreditCardSaved(bool is_local_card);
@@ -446,8 +450,8 @@ class PersonalDataManager : public KeyedService,
   // Returns the value of the AutofillCreditCardEnabled pref.
   virtual bool IsAutofillCreditCardEnabled() const;
 
-  // TODO(crbug.com/1340310): Add IsAutofillIbanEnabled after adding
-  // kAutofillIbanEnabled which is related to Enterprise prefs.
+  // Returns the value of the AutofillIBANEnabled pref.
+  virtual bool IsAutofillIBANEnabled() const;
 
   // Returns the value of the AutofillWalletImportEnabled pref.
   virtual bool IsAutofillWalletImportEnabled() const;
@@ -508,32 +512,6 @@ class PersonalDataManager : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, GetCreditCardByServerId);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            AddAndGetCreditCardArtImage);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           DedupeProfiles_ProfilesToDelete);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           DedupeProfiles_GuidsMergeMap);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           UpdateCardsBillingAddressReference);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           ApplyDedupingRoutine_CardsBillingAddressIdUpdated);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           ApplyDedupingRoutine_MergedProfileValues);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           ApplyDedupingRoutine_VerifiedProfileFirst);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           ApplyDedupingRoutine_VerifiedProfileLast);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           ApplyDedupingRoutine_MultipleVerifiedProfiles);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           ApplyDedupingRoutine_FeatureDisabled);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           ApplyDedupingRoutine_NopIfZeroProfiles);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           ApplyDedupingRoutine_NopIfOneProfile);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           ApplyDedupingRoutine_OncePerVersion);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           ApplyDedupingRoutine_MultipleDedupes);
   FRIEND_TEST_ALL_PREFIXES(
       PersonalDataManagerTest,
       ConvertWalletAddressesAndUpdateWalletCards_NewProfile);
@@ -553,9 +531,6 @@ class PersonalDataManager : public KeyedService,
                            DoNotConvertWalletAddressesInEphemeralStorage);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            DeleteDisusedCreditCards_DoNothingWhenDisabled);
-  FRIEND_TEST_ALL_PREFIXES(
-      PersonalDataManagerTest,
-      DeleteDisusedCreditCards_OnlyDeleteExpiredDisusedLocalCards);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            GetProfileSuggestions_ProfileAutofillDisabled);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
@@ -570,6 +545,8 @@ class PersonalDataManager : public KeyedService,
       PersonalDataManagerTest,
       GetCreditCardsToSuggest_NoCreditCardsAddedIfDisabled);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, LogStoredCreditCardMetrics);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerCleanerTest,
+                           UpdateCardsBillingAddressReference);
 
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::PersonalDataManagerCleaner;
@@ -619,7 +596,7 @@ class PersonalDataManager : public KeyedService,
   virtual void LoadCreditCardCloudTokenData();
 
   // Loads the saved IBANs from the web database.
-  virtual void LoadIbans();
+  virtual void LoadIBANs();
 
   // Loads the payments customer data from the web database.
   virtual void LoadPaymentsCustomerData();
@@ -684,7 +661,7 @@ class PersonalDataManager : public KeyedService,
   std::vector<std::unique_ptr<CreditCard>> server_credit_cards_;
 
   // Cached versions of the local Ibans.
-  std::vector<std::unique_ptr<Iban>> local_ibans_;
+  std::vector<std::unique_ptr<IBAN>> local_ibans_;
 
   // Cached UPI IDs.
   std::vector<std::string> upi_ids_;

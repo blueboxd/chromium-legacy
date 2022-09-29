@@ -21,112 +21,174 @@ group("sync") {
   }
 }
 
-group("test_support") {
+static_library("test_support") {
   testonly = true
+
+  sources = [
+    "base/model_type_test_util.cc",
+    "base/model_type_test_util.h",
+    "driver/data_type_manager_mock.cc",
+    "driver/data_type_manager_mock.h",
+    "driver/fake_data_type_controller.cc",
+    "driver/fake_data_type_controller.h",
+    "driver/fake_sync_api_component_factory.cc",
+    "driver/fake_sync_api_component_factory.h",
+    "driver/fake_sync_service.cc",
+    "driver/fake_sync_service.h",
+    "driver/mock_sync_service.cc",
+    "driver/mock_sync_service.h",
+    "driver/mock_trusted_vault_client.cc",
+    "driver/mock_trusted_vault_client.h",
+    "driver/sync_client_mock.cc",
+    "driver/sync_client_mock.h",
+    "driver/sync_service_impl_bundle.cc",
+    "driver/sync_service_impl_bundle.h",
+    "driver/sync_user_settings_mock.cc",
+    "driver/sync_user_settings_mock.h",
+    "driver/test_sync_service.cc",
+    "driver/test_sync_service.h",
+    "driver/test_sync_user_settings.cc",
+    "driver/test_sync_user_settings.h",
+    "engine/cycle/mock_debug_info_getter.cc",
+    "engine/cycle/mock_debug_info_getter.h",
+    "invalidations/mock_sync_invalidations_service.cc",
+    "invalidations/mock_sync_invalidations_service.h",
+    "nigori/nigori_test_utils.cc",
+    "nigori/nigori_test_utils.h",
+    "test/bookmark_entity_builder.cc",
+    "test/bookmark_entity_builder.h",
+    "test/entity_builder_factory.cc",
+    "test/entity_builder_factory.h",
+    "test/fake_cryptographer.cc",
+    "test/fake_cryptographer.h",
+    "test/fake_model_type_connector.cc",
+    "test/fake_model_type_connector.h",
+    "test/fake_model_type_controller_delegate.cc",
+    "test/fake_model_type_controller_delegate.h",
+    "test/fake_model_type_processor.cc",
+    "test/fake_model_type_processor.h",
+    "test/fake_model_type_sync_bridge.cc",
+    "test/fake_model_type_sync_bridge.h",
+    "test/fake_server.cc",
+    "test/fake_server.h",
+    "test/fake_server_http_post_provider.cc",
+    "test/fake_server_http_post_provider.h",
+    "test/fake_server_network_resources.cc",
+    "test/fake_server_network_resources.h",
+    "test/fake_server_nigori_helper.cc",
+    "test/fake_server_nigori_helper.h",
+    "test/fake_server_verifier.cc",
+    "test/fake_server_verifier.h",
+    "test/fake_sync_change_processor.cc",
+    "test/fake_sync_change_processor.h",
+    "test/fake_sync_encryption_handler.cc",
+    "test/fake_sync_encryption_handler.h",
+    "test/fake_sync_engine.cc",
+    "test/fake_sync_engine.h",
+    "test/fake_sync_manager.cc",
+    "test/fake_sync_manager.h",
+    "test/fake_sync_scheduler.cc",
+    "test/fake_sync_scheduler.h",
+    "test/forwarding_model_type_change_processor.cc",
+    "test/forwarding_model_type_change_processor.h",
+    "test/mock_connection_manager.cc",
+    "test/mock_connection_manager.h",
+    "test/mock_invalidation.cc",
+    "test/mock_invalidation.h",
+    "test/mock_invalidation_tracker.cc",
+    "test/mock_invalidation_tracker.h",
+    "test/mock_model_type_change_processor.cc",
+    "test/mock_model_type_change_processor.h",
+    "test/mock_model_type_processor.cc",
+    "test/mock_model_type_processor.h",
+    "test/mock_model_type_worker.cc",
+    "test/mock_model_type_worker.h",
+    "test/mock_nudge_handler.cc",
+    "test/mock_nudge_handler.h",
+    "test/mock_sync_engine.cc",
+    "test/mock_sync_engine.h",
+    "test/mock_update_handler.cc",
+    "test/mock_update_handler.h",
+    "test/model_type_store_test_util.cc",
+    "test/model_type_store_test_util.h",
+    "test/sessions_hierarchy.cc",
+    "test/sessions_hierarchy.h",
+    "test/single_type_mock_server.cc",
+    "test/single_type_mock_server.h",
+    "test/stub_model_type_sync_bridge.cc",
+    "test/stub_model_type_sync_bridge.h",
+    "test/sync_change_processor_wrapper_for_test.cc",
+    "test/sync_change_processor_wrapper_for_test.h",
+    "test/sync_engine_host_stub.cc",
+    "test/sync_engine_host_stub.h",
+    "test/sync_error_factory_mock.cc",
+    "test/sync_error_factory_mock.h",
+    "test/test_engine_components_factory.cc",
+    "test/test_engine_components_factory.h",
+    "test/test_matchers.h",
+    "test/test_model_type_store_service.cc",
+    "test/test_model_type_store_service.h",
+    "test/trackable_mock_invalidation.cc",
+    "test/trackable_mock_invalidation.h",
+  ]
 
   public_deps = [
     ":sync",
-    ":test_support_engine",
-    ":test_support_model",
-    "//components/sync/base:test_support",
-    "//components/sync/driver:test_support",
+    "//base",
+    "//components/sync/invalidations",
+    "//services/network:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/protobuf:protobuf_lite",
   ]
-  if (!is_android) {
-    public_deps += [ "//components/sync/trusted_vault:test_support" ]
-  }
-}
-
-static_library("test_support_engine") {
-  testonly = true
-  sources = [
-    "engine/cycle/mock_debug_info_getter.cc",
-    "engine/cycle/mock_debug_info_getter.h",
-    "test/engine/fake_cryptographer.cc",
-    "test/engine/fake_cryptographer.h",
-    "test/engine/fake_model_type_connector.cc",
-    "test/engine/fake_model_type_connector.h",
-    "test/engine/fake_model_type_processor.cc",
-    "test/engine/fake_model_type_processor.h",
-    "test/engine/fake_sync_engine.cc",
-    "test/engine/fake_sync_engine.h",
-    "test/engine/fake_sync_manager.cc",
-    "test/engine/fake_sync_manager.h",
-    "test/engine/fake_sync_scheduler.cc",
-    "test/engine/fake_sync_scheduler.h",
-    "test/engine/mock_connection_manager.cc",
-    "test/engine/mock_connection_manager.h",
-    "test/engine/mock_model_type_processor.cc",
-    "test/engine/mock_model_type_processor.h",
-    "test/engine/mock_model_type_worker.cc",
-    "test/engine/mock_model_type_worker.h",
-    "test/engine/mock_nudge_handler.cc",
-    "test/engine/mock_nudge_handler.h",
-    "test/engine/mock_sync_engine.cc",
-    "test/engine/mock_sync_engine.h",
-    "test/engine/mock_update_handler.cc",
-    "test/engine/mock_update_handler.h",
-    "test/engine/single_type_mock_server.cc",
-    "test/engine/single_type_mock_server.h",
-    "test/engine/sync_engine_host_stub.cc",
-    "test/engine/sync_engine_host_stub.h",
-    "test/engine/test_engine_components_factory.cc",
-    "test/engine/test_engine_components_factory.h",
-    "test/fake_sync_encryption_handler.cc",
-    "test/fake_sync_encryption_handler.h",
-  ]
-
-  public_deps = [ "//components/sync/base:test_support" ]
 
   deps = [
-    ":sync",
+    "//base",
+    "//base/test:test_support",
+    "//build:chromeos_buildflags",
+    "//components/bookmarks/browser",
+    "//components/invalidation/impl:test_support",
+    "//components/pref_registry",
+    "//components/prefs:test_support",
+    "//components/signin/public/base",
+    "//components/signin/public/identity_manager:test_support",
+    "//components/version_info",
+    "//components/version_info:generate_version_info",
+    "//google_apis",
+    "//net",
+    "//net:test_support",
     "//services/network:test_support",
+    "//services/network/public/cpp:cpp",
+    "//testing/gtest",
+    "//ui/gfx",
+    "//url",
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
-}
 
-static_library("test_support_model") {
-  testonly = true
-  sources = [
-    "test/model/fake_model_type_controller_delegate.cc",
-    "test/model/fake_model_type_controller_delegate.h",
-    "test/model/fake_model_type_sync_bridge.cc",
-    "test/model/fake_model_type_sync_bridge.h",
-    "test/model/fake_sync_change_processor.cc",
-    "test/model/fake_sync_change_processor.h",
-    "test/model/forwarding_model_type_change_processor.cc",
-    "test/model/forwarding_model_type_change_processor.h",
-    "test/model/mock_model_type_change_processor.cc",
-    "test/model/mock_model_type_change_processor.h",
-    "test/model/model_type_store_test_util.cc",
-    "test/model/model_type_store_test_util.h",
-    "test/model/stub_model_type_sync_bridge.cc",
-    "test/model/stub_model_type_sync_bridge.h",
-    "test/model/sync_change_processor_wrapper_for_test.cc",
-    "test/model/sync_change_processor_wrapper_for_test.h",
-    "test/model/sync_error_factory_mock.cc",
-    "test/model/sync_error_factory_mock.h",
-    "test/model/test_matchers.h",
-    "test/model/test_model_type_store_service.cc",
-    "test/model/test_model_type_store_service.h",
-  ]
+  if (!is_android) {
+    sources += [
+      "trusted_vault/fake_security_domains_server.cc",
+      "trusted_vault/fake_security_domains_server.h",
+    ]
+  }
 
-  public_deps = [ "//components/sync/base:test_support" ]
+  if (is_chromeos_lacros) {
+    sources += [
+      "chromeos/lacros/fake_sync_explicit_passphrase_client_ash.cc",
+      "chromeos/lacros/fake_sync_explicit_passphrase_client_ash.h",
+      "chromeos/lacros/fake_sync_mojo_service.cc",
+      "chromeos/lacros/fake_sync_mojo_service.h",
+      "chromeos/lacros/fake_sync_user_settings_client_ash.cc",
+      "chromeos/lacros/fake_sync_user_settings_client_ash.h",
+    ]
 
-  deps = [ ":sync" ]
-}
-
-static_library("test_support_nigori") {
-  testonly = true
-  sources = [
-    "nigori/nigori_test_utils.cc",
-    "nigori/nigori_test_utils.h",
-  ]
-
-  deps = [
-    ":sync",
-    "//testing/gtest",
-  ]
+    public_deps += [
+      "//chromeos/crosapi/mojom",
+      "//mojo/public/cpp/bindings",
+      "//testing/gmock",
+    ]
+  }
 }
 
 source_set("unit_tests") {
@@ -214,7 +276,6 @@ source_set("unit_tests") {
 
   if (!is_android) {
     sources += [
-      "trusted_vault/degraded_recoverability_scheduler_unittest.cc",
       "trusted_vault/download_keys_response_handler_unittest.cc",
       "trusted_vault/proto_string_bytes_conversion_unittest.cc",
       "trusted_vault/securebox_unittest.cc",
@@ -222,6 +283,7 @@ source_set("unit_tests") {
       "trusted_vault/trusted_vault_access_token_fetcher_frontend_unittest.cc",
       "trusted_vault/trusted_vault_connection_impl_unittest.cc",
       "trusted_vault/trusted_vault_crypto_unittest.cc",
+      "trusted_vault/trusted_vault_degraded_recoverability_handler_unittest.cc",
       "trusted_vault/trusted_vault_request_unittest.cc",
       "trusted_vault/trusted_vault_server_constants_unittest.cc",
     ]
@@ -240,9 +302,7 @@ source_set("unit_tests") {
 
   deps = [
     ":sync",
-    ":test_support_engine",
-    ":test_support_model",
-    ":test_support_nigori",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//build:chromeos_buildflags",
@@ -254,9 +314,6 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/signin/public/base:test_support",
     "//components/signin/public/identity_manager:test_support",
-    "//components/sync/base:test_support",
-    "//components/sync/driver:test_support",
-    "//components/sync/invalidations:test_support",
     "//components/variations:test_support",
     "//components/version_info",
     "//components/version_info:generate_version_info",

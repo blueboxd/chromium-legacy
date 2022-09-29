@@ -308,11 +308,15 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
     }
   }
 
-  // For PWAs with window-controls-overlay display override, see if we're in an
-  // app defined draggable region so we can return htcaption.
+  // For PWAs with window-controls-overlay or borderless display override, see
+  // if we're in an app defined draggable region so we can return htcaption.
   web_app::AppBrowserController* controller =
       browser_view_->browser()->app_controller();
-  if (browser_view_->IsWindowControlsOverlayEnabled() && controller &&
+  bool is_wco_or_borderless_mode =
+      browser_view_->IsWindowControlsOverlayEnabled() ||
+      browser_view_->IsBorderlessModeEnabled();
+
+  if (is_wco_or_borderless_mode && controller &&
       controller->draggable_region().has_value()) {
     // Draggable regions are defined relative to the web contents.
     gfx::Point point_in_contents_web_view_coords(point_in_browser_view_coords);
@@ -428,6 +432,10 @@ gfx::Size BrowserViewLayout::GetPreferredSize(const views::View* host) const {
   return gfx::Size();
 }
 
+int BrowserViewLayout::GetMinWebContentsWidthForTesting() const {
+  return GetMinWebContentsWidth();
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // BrowserViewLayout, private:
 
@@ -497,7 +505,8 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top, int browser_view_y) {
       loading_bar_->SetBounds(vertical_layout_rect_.x(), top - 2,
                               vertical_layout_rect_.width(),
                               separator_height + 2);
-      top_container_->ReorderChildView(loading_bar_, -1);
+      top_container_->ReorderChildView(loading_bar_,
+                                       top_container_->children().size());
     }
     top += separator_height;
   } else {
@@ -609,12 +618,6 @@ void BrowserViewLayout::LayoutSidePanelView(
   if (!side_panel || !side_panel->GetVisible())
     return;
 
-  // Side panel occupies some of the container's space. The side panel should
-  // never occupy more space than is available in the content window.
-  gfx::Rect side_panel_bounds = contents_container_bounds;
-  side_panel_bounds.set_width(std::min(side_panel->GetPreferredSize().width(),
-                                       contents_container_bounds.width()));
-
   DCHECK(side_panel == right_aligned_side_panel_ ||
          side_panel == side_search_side_panel_ ||
          side_panel == lens_side_panel_);
@@ -626,6 +629,18 @@ void BrowserViewLayout::LayoutSidePanelView(
                        : left_aligned_side_panel_separator_.get();
 
   DCHECK(side_panel_separator);
+
+  // Side panel occupies some of the container's space. The side panel should
+  // never occupy more space than is available in the content window, and
+  // should never force the web contents to be smaller than its intended
+  // minimum.
+  gfx::Rect side_panel_bounds = contents_container_bounds;
+
+  side_panel_bounds.set_width(
+      std::min(side_panel->GetPreferredSize().width(),
+               contents_container_bounds.width() - GetMinWebContentsWidth() -
+                   side_panel_separator->GetPreferredSize().width()));
+
   // Shrink container bounds to fit the side panel.
   contents_container_bounds.set_width(
       contents_container_bounds.width() - side_panel_bounds.width() -
@@ -748,6 +763,15 @@ int BrowserViewLayout::GetClientAreaTop() {
   return webui_tab_strip_ && webui_tab_strip_->GetVisible()
              ? webui_tab_strip_->y()
              : toolbar_->y();
+}
+
+int BrowserViewLayout::GetMinWebContentsWidth() const {
+  int min_width =
+      kMainBrowserContentsMinimumWidth -
+      right_aligned_side_panel_->GetMinimumSize().width() -
+      right_aligned_side_panel_separator_->GetPreferredSize().width();
+  DCHECK_GE(min_width, 0);
+  return min_width;
 }
 
 bool BrowserViewLayout::IsInfobarVisible() const {

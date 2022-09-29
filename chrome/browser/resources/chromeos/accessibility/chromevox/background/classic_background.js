@@ -5,13 +5,20 @@
 /**
  * @fileoverview Script that runs on the background page.
  */
+import {constants} from '../../common/constants.js';
+import {AbstractEarcons} from '../common/abstract_earcons.js';
 import {AbstractTts} from '../common/abstract_tts.js';
+import {NavBraille} from '../common/braille/nav_braille.js';
+import {BridgeConstants} from '../common/bridge_constants.js';
+import {BridgeHelper} from '../common/bridge_helper.js';
 import {CompositeTts} from '../common/composite_tts.js';
 import {ExtensionBridge} from '../common/extension_bridge.js';
 import {Msgs} from '../common/msgs.js';
+import {QueueMode, TtsInterface, TtsSpeechProperties} from '../common/tts_interface.js';
 
 import {BrailleBackground} from './braille/braille_background.js';
 import {BrailleCaptionsBackground} from './braille/braille_captions_background.js';
+import {ChromeVox} from './chromevox.js';
 import {ChromeVoxState} from './chromevox_state.js';
 import {ConsoleTts} from './console_tts.js';
 import {ChromeVoxEditableTextBase, TypingEcho} from './editing/editable_text_base.js';
@@ -165,7 +172,7 @@ export class ChromeVoxBackground {
         chrome.runtime.getManifest()['content_scripts'][0]['js'];
     const stageTwo = function(code) {
       for (let i = 0, tab; tab = tabs[i]; i++) {
-        window.console.log('Injecting into ' + tab.id, tab);
+        globalThis.console.log('Injecting into ' + tab.id, tab);
         let sawError = false;
 
         /**
@@ -185,23 +192,8 @@ export class ChromeVoxBackground {
           });
         };
 
-        // There is a scenario where two copies of the content script can get
-        // loaded into the same tab on browser startup - one automatically and
-        // one because the background page injects the content script into every
-        // tab on startup. To work around potential bugs resulting from this,
-        // ChromeVox exports a global function called disableChromeVox() that
-        // can be used here to disable any existing running instance before we
-        // inject a new instance of the content script into this tab.
-        //
-        // It's harmless if there wasn't a copy of ChromeVox already running.
-        //
-        // Also, set some variables so that Closure deps work correctly and so
-        // that ChromeVox knows not to announce feedback as if a page just
-        // loaded.
-        executeScript(
-            'try { window.disableChromeVox(); } catch(e) { }\n' +
-            'window.INJECTED_AFTER_LOAD = true;\n' +
-            'window.CLOSURE_NO_DEPS = true\n');
+        // Set a variable so that Closure deps work correctly.
+        executeScript('window.CLOSURE_NO_DEPS = true');
 
         // Now inject the ChromeVox content script code into the tab.
         listOfFiles.forEach(file => executeScript(code[file]));
@@ -228,7 +220,8 @@ export class ChromeVoxBackground {
 
       this.tts.speak(
           msg['text'],
-          /** QueueMode */ msg['queueMode'], msg['properties']);
+          /** QueueMode */ msg['queueMode'],
+          new TtsSpeechProperties(msg['properties']));
     } else if (msg['action'] === 'stop') {
       this.tts.stop();
     } else if (msg['action'] === 'increaseOrDecrease') {
@@ -287,7 +280,7 @@ export class ChromeVoxBackground {
   onIntroduceChromeVox() {
     ChromeVox.tts.speak(
         Msgs.getMsg('chromevox_intro'), QueueMode.QUEUE,
-        {doNotInterrupt: true});
+        new TtsSpeechProperties({doNotInterrupt: true}));
     ChromeVox.braille.write(NavBraille.fromText(Msgs.getMsg('intro_brl')));
   }
 

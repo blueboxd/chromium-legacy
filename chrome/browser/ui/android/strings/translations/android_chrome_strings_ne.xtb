@@ -105,7 +105,6 @@
 <translation id="1474893630593443211">तपाईंलाई कस्ता खालका विज्ञापन देखाइन्छ भन्ने कुरामा थप नियन्त्रण</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> डाउनलोड सर्भरको समस्याको कारण असफल भयो।</translation>
 <translation id="148482509007564431">बुकमार्क सेभ गर्ने फ्लो</translation>
-<translation id="1488775391433859242">तपाईं यो QR कोड देखिइरहेको कम्प्युटरमा साइन इन गर्न यो फोन प्रयोग गर्न सक्नुहुन्छ।</translation>
 <translation id="1492417797159476138">तपाईंले यो साइटका लागि यो युजरनेम सुरक्षित गरिसक्नुभएको छ</translation>
 <translation id="1493287004536771723">तपाईं <ph name="SITE_NAME" /> फलो गर्दै हुनुहुन्छ</translation>
 <translation id="1502010315804028179">तपाईं आफ्ना पासवर्डहरू व्यवस्थापन गर्न चाहनुहुन्छ भने Google Play services अपडेट गर्नुहोस्</translation>
@@ -235,6 +234,7 @@
 <translation id="2239812875700136898">Discover का विकल्पहरू नामक बटन प्रयोग गरी आफ्नो समाचार फिडमा देखिने सामग्री नियन्त्रण गर्नुहोस्</translation>
 <translation id="2248941474044011069">तपाईंका पासवर्डहरू तपाईंको डिभाइसमा इन्क्रिप्ट गरेपछि मात्र Google पासवर्ड म्यानेजरमा सेभ गरिन्छ</translation>
 <translation id="2259659629660284697">पासवर्डहरू निर्यात गर्नुहोस्…</translation>
+<translation id="2276231040576210443">तपाईं जुनसुकै बेला <ph name="BEGIN_LINK1" />सेटिङ<ph name="END_LINK1" />मा गई आफूले सिंक गर्न चाहेको डेटा छनौट गर्न सक्नुहुन्छ। Google ले तपाईंले गरेका गतिविधिको इतिहासका आधारमा Search र अन्य सेवाहरू पर्सनलाइज गर्न सक्छ।</translation>
 <translation id="2276696007612801991">आफ्ना पासवर्डहरू जाँच गर्न आफ्नो Google खातामा साइन इन गर्नुहोस्</translation>
 <translation id="2278052315791335171">तपाईंले यो पासवर्ड मेटाउनुभयो भने पनि <ph name="SITE" /> मा रहेको तपाईंको खाता मेटिने छैन</translation>
 <translation id="2279146068164892489"><ph name="APPNAME" /> एप खोल्ने हो?</translation>
@@ -282,7 +282,6 @@
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> वस्तुहरू मेटाइए</translation>
 <translation id="2536728043171574184">यो पृष्ठको एक अफलाइन प्रतिलिपि हेर्दै</translation>
 <translation id="2546283357679194313">कुकीहरू र साइट डाटा</translation>
-<translation id="2549516196460093976">तपाईं यो QR कोड देखिइरहेको कम्प्युटरमा साइन इन गर्न यो ट्याब्लेट प्रयोग गर्न सक्नुहुन्छ।</translation>
 <translation id="2558569818338050235">तपाईंको ब्राउजिङ इतिहासका कारण तपाईंलाई देखाइने विज्ञापनहरू फरक पर्न सक्छन्</translation>
 <translation id="2561519700418191927">भिडियोका प्रभ्युहरू</translation>
 <translation id="2567385386134582609">छवि</translation>
@@ -308,6 +307,7 @@
 <translation id="2702516483241149200">नयाँ: स्क्रोल गरी यो पाठसम्म लैजाने लिंक सेयर गर्नुहोस्</translation>
 <translation id="2704606927547763573">प्रतिलिपि गरियो</translation>
 <translation id="2707726405694321444">पृष्ठ ताजा गर्नुहोस्</translation>
+<translation id="2709516037105925701">स्वत:भर्नुहोस्</translation>
 <translation id="271033894570825754">नयाँ</translation>
 <translation id="2711073837061989559">ट्रायलहरू</translation>
 <translation id="2718352093833049315">Wi-Fi मा मात्र</translation>
@@ -396,6 +396,7 @@
 <translation id="3114507951000454849">आजको समाचार पढ्नुहोस् <ph name="NEWS_ICON" /></translation>
 <translation id="311958134571892113">लिंक गरिएको कार्ड:</translation>
 <translation id="3123734510202723619">घोषणाहरू</translation>
+<translation id="3130863904455712965">इतिहास र अन्य डेटा</translation>
 <translation id="3134784203083076891">”</translation>
 <translation id="314939179385989105">Chrome को गृहपृष्ठ</translation>
 <translation id="3166827708714933426">ट्याब र विन्डोका सर्टकटहरू</translation>
@@ -587,7 +588,6 @@
 <translation id="4256782883801055595">स्रोत इजाजतपत्रहरू खोल्नुहोस्</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />कस्ता खालका डेटा प्रयोग गरिन्छ:<ph name="END_BOLD" /> तपाईंको ब्राउजिङ इतिहास अर्थात् तपाईंले यो डिभाइसमा Chrome प्रयोग गरी खोलेका साइटहरूको रेकर्ड।</translation>
 <translation id="4263656433980196874">सहायकको प्रयोग गरी भ्वाइस सर्च गर्ने कुराको सहमति लिने UI पूर्ण उचाइमा खोलिएको छ</translation>
-<translation id="4266054596873078491">आफ्नो Google खाता प्रयोग गरी यो साइट र Chrome मा साइन इन गर्नुहोस्।</translation>
 <translation id="4269820728363426813">लिङ्क ठेगाना कपी गर्नुहोस्</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Android का सेटिङमा गई स्क्रिन लक अन गर्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="4293476595220860475">तपाईंले Chrome चलाउनुभयो भने तपाईं <ph name="BEGIN_TOS_LINK" />Google का सेवाका सर्त<ph name="END_TOS_LINK" /> र <ph name="BEGIN_ATOS_LINK" />Google Chrome तथा ChromeOS का सेवाका अतिरिक्त सर्तहरू<ph name="END_ATOS_LINK" />मा सहमति जनाउनुहुन्छ भन्ने अर्थ लाग्छ। यसका साथै, <ph name="BEGIN_PRIVACY_LINK" />गोपनीयता नीति<ph name="END_PRIVACY_LINK" /> पनि लागू हुन्छ।</translation>
@@ -1050,6 +1050,7 @@
 <translation id="6671495933530132209">छविको प्रतिलिपि गर्नुहोस्</translation>
 <translation id="6674571176963658787">सिंक गर्ने कार्य सुरु गर्न आफ्नो पासफ्रेज हाल्नुहोस्</translation>
 <translation id="6676840375528380067">यस डिभाइसबाट तपाईंको Chrome को डेटा हटाउने हो?</translation>
+<translation id="6676927815633975364">यो साइट र Chrome मा साइन इन गर्नुहोस्</translation>
 <translation id="6684809838922667136">Chrome मा सुधार गर्नुहोस्</translation>
 <translation id="670498945988402717">हिजो जाँच गरिएको</translation>
 <translation id="6710213216561001401">अघिल्लो</translation>
@@ -1139,6 +1140,7 @@
 <translation id="7196215469483532480">गोपनीयतासम्बन्धी मार्गदर्शनको वर्णन स्क्रिनको पूरा भाग ओगट्ने गरी खोलिएको छ</translation>
 <translation id="7207760545532569765"><ph name="TAB_COUNT" /> वटा ट्याब रिस्टोर गरी नयाँ ब्याकग्राउन्ड ट्याब समूह बनाउनुहोस्।</translation>
 <translation id="7208109991155904980">प्रतिक्रिया सारिएको छ</translation>
+<translation id="7217781228893594884">तपाईं Chrome बाट बाहिरिँदा इन्कोग्निटो ट्याबहरू लक गरिने छन्</translation>
 <translation id="7222235798733126207">साइटहरूका बिचमा सीमित जानकारीको आदानप्रदान</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{१ डाउनलोड विचारधीन छ}other{# डाउनलोडहरू विचारधीन छन्}}</translation>
 <translation id="7242755609445462077">शैलीबद्ध हाइलाइट <ph name="CURRENT_DATE" /></translation>
@@ -1299,6 +1301,7 @@
 <translation id="8037801708772278989">भर्खरै जाँच गरिएको</translation>
 <translation id="804335162455518893">SD कार्ड फेला परेन</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> इन्कोग्निटो ट्याब}other{<ph name="TAB_COUNT_NORMAL" /> वटा इन्कोग्निटो ट्याब}}</translation>
+<translation id="8048728378294435881">आफ्नो डेटा ब्याकअप गर्नुहोस् र जुनसुकै डिभाइसमा सो डेटा प्रयोग गर्नुहोस्</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> एम.बि.उपलब्ध छ</translation>
 <translation id="8058655154417507695">म्याद सकिने वर्ष</translation>
 <translation id="8058746566562539958">Chrome को नयाँ ट्याबमा खोल्नुहोस्</translation>

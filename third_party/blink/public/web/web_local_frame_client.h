@@ -42,6 +42,7 @@
 #include "media/mojo/mojom/audio_processing.mojom-shared.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
@@ -59,7 +60,6 @@
 #include "third_party/blink/public/mojom/loader/same_document_navigation_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/media/renderer_audio_input_stream_factory.mojom-shared.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-shared.h"
-#include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
@@ -127,12 +127,17 @@ class WebServiceWorkerProvider;
 class WebSocketHandshakeThrottle;
 class WebString;
 class WebURL;
+class WebURLRequest;
 class WebURLResponse;
+class WebView;
 struct FramePolicy;
+struct Impression;
 struct MobileFriendliness;
 struct WebConsoleMessage;
 struct ContextMenuData;
+struct WebPictureInPictureWindowOptions;
 struct WebPluginParams;
+struct WebWindowFeatures;
 
 enum class SyncCondition {
   kNotForced,  // Sync only if the value has changed since the last call.
@@ -216,9 +221,6 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Services ------------------------------------------------------------
 
-  // Returns a blame context for attributing work belonging to this frame.
-  virtual BlameContext* GetFrameBlameContext() { return nullptr; }
-
   // Returns a BrowserInterfaceBrokerProxy the frame can use to request
   // interfaces from the browser.
   virtual blink::BrowserInterfaceBrokerProxy* GetBrowserInterfaceBroker();
@@ -251,32 +253,8 @@ class BLINK_EXPORT WebLocalFrameClient {
   // client can complete its initialization making use of it.
   virtual void InitializeAsChildFrame(WebLocalFrame* parent) {}
 
-  // Request the creation of a new portal.
-  virtual std::pair<WebRemoteFrame*, PortalToken> CreatePortal(
-      CrossVariantMojoAssociatedReceiver<mojom::PortalInterfaceBase>
-          portal_endpoint,
-      CrossVariantMojoAssociatedRemote<mojom::PortalClientInterfaceBase>
-          client_endpoint,
-      const WebElement& portal_element) {
-    return std::pair<WebRemoteFrame*, PortalToken>(nullptr, PortalToken());
-  }
-
-  // Request the creation of a remote frame which corresponds to an existing
-  // portal.
-  virtual blink::WebRemoteFrame* AdoptPortal(const PortalToken& portal_token,
-                                             const WebElement& portal_element) {
-    return nullptr;
-  }
-
-  // Request the creation of a new fenced frame, and return the WebRemoteFrame*
-  // associated with it.
-  virtual WebRemoteFrame* CreateFencedFrame(
-      const WebElement& fenced_frame_element,
-      CrossVariantMojoAssociatedReceiver<
-          mojom::FencedFrameOwnerHostInterfaceBase> receiver,
-      blink::mojom::FencedFrameMode mode) {
-    return nullptr;
-  }
+  // Notification a new fenced frame was created.
+  virtual void DidCreateFencedFrame(const blink::RemoteFrameToken& token) {}
 
   // Called when Blink cannot find a frame with the given name in the frame's
   // browsing instance.  This gives the embedder a chance to return a frame
@@ -624,9 +602,6 @@ class BLINK_EXPORT WebLocalFrameClient {
     return nullptr;
   }
 
-  // WebRTC
-  virtual bool AllowRTCLegacyTLSProtocols() { return false; }
-
   // Encrypted Media -------------------------------------------------
 
   virtual WebEncryptedMediaClient* EncryptedMediaClient() { return nullptr; }
@@ -644,12 +619,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual absl::optional<UserAgentMetadata> UserAgentMetadataOverride() {
     return absl::nullopt;
   }
-
-  // Do not track ----------------------------------------------------
-
-  // Asks the embedder what value the network stack will send for the DNT
-  // header. An empty string indicates that no DNT header will be send.
-  virtual WebString DoNotTrackValue() { return WebString(); }
 
   //
   // Accessibility -------------------------------------------------------
@@ -797,6 +766,26 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Called when script in the frame (and it subframes) wishes to be printed via
   // a window.print() call.
   virtual void ScriptedPrint() {}
+
+  // Create a new related WebView.  This method must clone its session storage
+  // so any subsequent calls to createSessionStorageNamespace conform to the
+  // WebStorage specification.
+  // The request parameter is only for the client to check if the request
+  // could be fulfilled.  The client should not load the request.
+  // The policy parameter indicates how the new view will be displayed in
+  // LocalMainFrameHost::ShowCreatedWidget.
+  virtual WebView* CreateNewWindow(
+      const WebURLRequest& request,
+      const WebWindowFeatures& features,
+      const WebString& name,
+      WebNavigationPolicy policy,
+      network::mojom::WebSandboxFlags,
+      const SessionStorageNamespaceId& session_storage_namespace_id,
+      bool& consumed_user_gesture,
+      const absl::optional<Impression>&,
+      const absl::optional<WebPictureInPictureWindowOptions>& pip_options) {
+    return nullptr;
+  }
 };
 
 }  // namespace blink

@@ -6,43 +6,11 @@
           {
             "builder_id": {
               "bucket": "ci",
-              "builder": "Android arm Builder (dbg)",
+              "builder": "win10-32-on-64-updater-tester-dbg",
               "project": "chromium"
             },
             "builder_spec": {
-              "build_gs_bucket": "chromium-android-archive",
-              "builder_group": "chromium.android",
-              "execution_mode": "COMPILE_AND_TEST",
-              "legacy_android_config": {
-                "config": "main_builder_mb"
-              },
-              "legacy_chromium_config": {
-                "apply_configs": [
-                  "download_vr_test_apks"
-                ],
-                "build_config": "Debug",
-                "config": "android",
-                "target_bits": 32,
-                "target_platform": "android"
-              },
-              "legacy_gclient_config": {
-                "apply_configs": [
-                  "android",
-                  "enable_reclient"
-                ],
-                "config": "chromium"
-              }
-            }
-          },
-          {
-            "builder_id": {
-              "bucket": "ci",
-              "builder": "Marshmallow Tablet Tester",
-              "project": "chromium"
-            },
-            "builder_spec": {
-              "build_gs_bucket": "chromium-android-archive",
-              "builder_group": "chromium.android",
+              "builder_group": "chromium.updater",
               "execution_mode": "TEST",
               "legacy_android_config": {
                 "config": "main_builder_mb"
@@ -51,10 +19,10 @@
                 "apply_configs": [
                   "download_vr_test_apks"
                 ],
-                "build_config": "Debug",
-                "config": "android",
+                "build_config": "Release",
+                "config": "chromium",
                 "target_bits": 32,
-                "target_platform": "android"
+                "target_platform": "win"
               },
               "legacy_gclient_config": {
                 "apply_configs": [
@@ -64,10 +32,32 @@
               },
               "parent": {
                 "bucket": "ci",
-                "builder": "Android arm Builder (dbg)",
+                "builder": "win32-updater-builder-dbg",
                 "project": "chromium"
+              }
+            }
+          },
+          {
+            "builder_id": {
+              "bucket": "ci",
+              "builder": "win32-updater-builder-dbg",
+              "project": "chromium"
+            },
+            "builder_spec": {
+              "builder_group": "chromium.updater",
+              "execution_mode": "COMPILE_AND_TEST",
+              "legacy_chromium_config": {
+                "apply_configs": [
+                  "mb"
+                ],
+                "build_config": "Release",
+                "config": "chromium",
+                "target_bits": 64,
+                "target_platform": "win"
               },
-              "run_tests_serially": true
+              "legacy_gclient_config": {
+                "config": "chromium"
+              }
             }
           }
         ]
@@ -75,14 +65,8 @@
       "builder_ids": [
         {
           "bucket": "ci",
-          "builder": "Marshmallow Tablet Tester",
+          "builder": "win10-32-on-64-updater-tester-dbg",
           "project": "chromium"
-        }
-      ],
-      "mirroring_builder_group_and_names": [
-        {
-          "builder": "android_compile_dbg",
-          "group": "tryserver.chromium.android"
         }
       ]
     }
@@ -94,9 +78,6 @@
       "v.test_suite"
     ]
   },
-  "builder_group": "chromium.android",
-  "recipe": "chromium",
-  "sheriff_rotations": [
-    "chrome_browser_release"
-  ]
+  "builder_group": "chromium.updater",
+  "recipe": "chromium"
 }

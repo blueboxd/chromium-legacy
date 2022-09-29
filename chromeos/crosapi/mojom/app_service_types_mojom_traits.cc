@@ -9,6 +9,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace {
 
@@ -547,8 +548,8 @@ EnumTraits<crosapi::mojom::ConditionType, apps::ConditionType>::ToMojom(
       return crosapi::mojom::ConditionType::kScheme;
     case apps::ConditionType::kHost:
       return crosapi::mojom::ConditionType::kHost;
-    case apps::ConditionType::kPattern:
-      return crosapi::mojom::ConditionType::kPattern;
+    case apps::ConditionType::kPath:
+      return crosapi::mojom::ConditionType::kPath;
     case apps::ConditionType::kAction:
       return crosapi::mojom::ConditionType::kAction;
     case apps::ConditionType::kMimeType:
@@ -585,8 +586,8 @@ bool EnumTraits<crosapi::mojom::ConditionType, apps::ConditionType>::FromMojom(
     case crosapi::mojom::ConditionType::kHost:
       *output = apps::ConditionType::kHost;
       return true;
-    case crosapi::mojom::ConditionType::kPattern:
-      *output = apps::ConditionType::kPattern;
+    case crosapi::mojom::ConditionType::kPath:
+      *output = apps::ConditionType::kPath;
       return true;
     case crosapi::mojom::ConditionType::kAction:
       *output = apps::ConditionType::kAction;
@@ -608,8 +609,6 @@ crosapi::mojom::PatternMatchType
 EnumTraits<crosapi::mojom::PatternMatchType, apps::PatternMatchType>::ToMojom(
     apps::PatternMatchType input) {
   switch (input) {
-    case apps::PatternMatchType::kNone:
-      return crosapi::mojom::PatternMatchType::kNone;
     case apps::PatternMatchType::kLiteral:
       return crosapi::mojom::PatternMatchType::kLiteral;
     case apps::PatternMatchType::kPrefix:
@@ -634,8 +633,6 @@ bool EnumTraits<crosapi::mojom::PatternMatchType, apps::PatternMatchType>::
               apps::PatternMatchType* output) {
   switch (input) {
     case crosapi::mojom::PatternMatchType::kNone:
-      *output = apps::PatternMatchType::kNone;
-      return true;
     case crosapi::mojom::PatternMatchType::kLiteral:
       *output = apps::PatternMatchType::kLiteral;
       return true;
@@ -663,43 +660,43 @@ bool EnumTraits<crosapi::mojom::PatternMatchType, apps::PatternMatchType>::
   return false;
 }
 
-crosapi::mojom::UninstallSource EnumTraits<
-    crosapi::mojom::UninstallSource,
-    apps::mojom::UninstallSource>::ToMojom(apps::mojom::UninstallSource input) {
+crosapi::mojom::UninstallSource
+EnumTraits<crosapi::mojom::UninstallSource, apps::UninstallSource>::ToMojom(
+    apps::UninstallSource input) {
   switch (input) {
-    case apps::mojom::UninstallSource::kUnknown:
+    case apps::UninstallSource::kUnknown:
       return crosapi::mojom::UninstallSource::kUnknown;
-    case apps::mojom::UninstallSource::kAppList:
+    case apps::UninstallSource::kAppList:
       return crosapi::mojom::UninstallSource::kAppList;
-    case apps::mojom::UninstallSource::kAppManagement:
+    case apps::UninstallSource::kAppManagement:
       return crosapi::mojom::UninstallSource::kAppManagement;
-    case apps::mojom::UninstallSource::kShelf:
+    case apps::UninstallSource::kShelf:
       return crosapi::mojom::UninstallSource::kShelf;
-    case apps::mojom::UninstallSource::kMigration:
+    case apps::UninstallSource::kMigration:
       return crosapi::mojom::UninstallSource::kMigration;
   }
 
   NOTREACHED();
 }
 
-bool EnumTraits<crosapi::mojom::UninstallSource, apps::mojom::UninstallSource>::
+bool EnumTraits<crosapi::mojom::UninstallSource, apps::UninstallSource>::
     FromMojom(crosapi::mojom::UninstallSource input,
-              apps::mojom::UninstallSource* output) {
+              apps::UninstallSource* output) {
   switch (input) {
     case crosapi::mojom::UninstallSource::kUnknown:
-      *output = apps::mojom::UninstallSource::kUnknown;
+      *output = apps::UninstallSource::kUnknown;
       return true;
     case crosapi::mojom::UninstallSource::kAppList:
-      *output = apps::mojom::UninstallSource::kAppList;
+      *output = apps::UninstallSource::kAppList;
       return true;
     case crosapi::mojom::UninstallSource::kAppManagement:
-      *output = apps::mojom::UninstallSource::kAppManagement;
+      *output = apps::UninstallSource::kAppManagement;
       return true;
     case crosapi::mojom::UninstallSource::kShelf:
-      *output = apps::mojom::UninstallSource::kShelf;
+      *output = apps::UninstallSource::kShelf;
       return true;
     case crosapi::mojom::UninstallSource::kMigration:
-      *output = apps::mojom::UninstallSource::kMigration;
+      *output = apps::UninstallSource::kMigration;
       return true;
   }
 
@@ -1118,10 +1115,10 @@ bool EnumTraits<crosapi::mojom::TriState, apps::TriState>::FromMojom(
 crosapi::mojom::PermissionValueDataView::Tag UnionTraits<
     crosapi::mojom::PermissionValueDataView,
     apps::PermissionValuePtr>::GetTag(const apps::PermissionValuePtr& r) {
-  if (r->bool_value.has_value()) {
+  if (absl::holds_alternative<bool>(r->value)) {
     return crosapi::mojom::PermissionValueDataView::Tag::kBoolValue;
   }
-  if (r->tristate_value.has_value()) {
+  if (absl::holds_alternative<apps::TriState>(r->value)) {
     return crosapi::mojom::PermissionValueDataView::Tag::kTristateValue;
   }
   NOTREACHED();

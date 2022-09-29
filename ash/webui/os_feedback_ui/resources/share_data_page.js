@@ -5,16 +5,16 @@
 import './os_feedback_shared_css.js';
 import './file_attachment.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
-import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
+import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
 
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {FEEDBACK_LEGAL_HELP_URL, FEEDBACK_PRIVACY_POLICY_URL, FEEDBACK_TERMS_OF_SERVICE_URL} from './feedback_constants.js';
 import {FeedbackFlowState} from './feedback_flow.js';
-import {AttachedFile, FeedbackContext, FeedbackServiceProviderInterface, Report} from './feedback_types.js';
+import {AttachedFile, FeedbackAppPreSubmitAction, FeedbackContext, FeedbackServiceProviderInterface, Report} from './feedback_types.js';
 import {getFeedbackServiceProvider} from './mojo_interface_provider.js';
 
 /**
@@ -70,6 +70,12 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
      * @type {string}
      * @protected
      */
+    this.bluetoothLogsCheckboxLabel_;
+
+    /**
+     * @type {string}
+     * @protected
+     */
     this.privacyNote_;
 
     /** @private {!FeedbackServiceProviderInterface} */
@@ -80,10 +86,17 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
     super.ready();
     this.setPrivacyNote_();
     this.setSysInfoCheckboxLabelAndAttributes_();
-    this.$.screenshotCheckbox.ariaLabel =
+    this.setBluetoothLogsCheckboxLabelAndAttributes_();
+    // Set the aria description works the best for screen reader.
+    // It reads the description when the checkbox is focused, and when it is
+    // checked and unchecked.
+    this.$.screenshotCheckbox.ariaDescription =
         this.i18n('attachScreenshotCheckboxAriaLabel');
     this.$.imageButton.ariaLabel = this.i18n(
         'previewImageAriaLabel', this.$.screenshotCheckLabel.textContent);
+    // The default role is combobox. Set it in JS to avoid the JSCompiler
+    // error not recognizing the role property.
+    this.$.userEmailDropDown.role = 'listbox';
 
     // Set up event listener for email change to retarget |this| to be the
     // ShareDataPageElement's context.
@@ -111,6 +124,8 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
   handleScreenshotClick_() {
     this.$.screenshotDialog.showModal();
     this.$.closeDialogButton.focus();
+    this.feedbackServiceProvider_.recordPreSubmitAction(
+        FeedbackAppPreSubmitAction.kViewedScreenshot);
   }
 
   /** @protected */
@@ -161,6 +176,20 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
     e.preventDefault();
 
     this.feedbackServiceProvider_.openSystemInfoDialog();
+  }
+
+  /**
+   * @param {!Event} e
+   * @protected
+   */
+  handleOpenBluetoothLogsInfoDialog_(e) {
+    // The default behavior of clicking on an anchor tag
+    // with href="#" is a scroll to the top of the page.
+    // This link opens a dialog, so we want to prevent
+    // this default behavior.
+    e.preventDefault();
+
+    this.feedbackServiceProvider_.openBluetoothLogsInfoDialog();
   }
 
   /**
@@ -219,6 +248,7 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
           !!this.getElement_('#screenshotImage').src,
       contactUserConsentGranted:
           this.getElement_('#userConsentCheckbox').checked,
+      sendBluetoothLogs: this.getElement_('#bluetoothLogsCheckbox').checked,
     });
 
     report.attachedFile =
@@ -244,6 +274,10 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
         this.getElement_('#sysInfoCheckbox').checked) {
       report.feedbackContext.extraDiagnostics =
           this.feedbackContext.extraDiagnostics;
+    }
+
+    if (this.getElement_('#bluetoothLogsCheckbox').checked) {
+      report.feedbackContext.categoryTag = 'BluetoothReportWithLogs';
     }
 
     return report;
@@ -287,13 +321,32 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
     const sysInfoLink = this.shadowRoot.querySelector('#sysInfoLink');
     // Setting href causes <a> tag to display as link.
     sysInfoLink.setAttribute('href', '#');
-    sysInfoLink.addEventListener(
-        'click', (e) => void this.handleOpenSystemInfoDialog_(e));
+    sysInfoLink.addEventListener('click', (e) => {
+      this.handleOpenSystemInfoDialog_(e);
+      this.feedbackServiceProvider_.recordPreSubmitAction(
+          FeedbackAppPreSubmitAction.kViewedSystemAndAppInfo);
+    });
 
     const histogramsLink = this.shadowRoot.querySelector('#histogramsLink');
     histogramsLink.setAttribute('href', '#');
-    histogramsLink.addEventListener(
-        'click', (e) => void this.handleOpenMetricsDialog_(e));
+    histogramsLink.addEventListener('click', (e) => {
+      this.handleOpenMetricsDialog_(e);
+      this.feedbackServiceProvider_.recordPreSubmitAction(
+          FeedbackAppPreSubmitAction.kViewedMetrics);
+    });
+  }
+
+  /** @private */
+  setBluetoothLogsCheckboxLabelAndAttributes_() {
+    this.bluetoothLogsCheckboxLabel_ =
+        this.i18nAdvanced('bluetoothLogsInfo', {attrs: ['id']});
+
+    const bluetoothLogsLink =
+        this.shadowRoot.querySelector('#bluetoothLogsInfoLink');
+    // Setting href causes <a> tag to display as link.
+    bluetoothLogsLink.setAttribute('href', '#');
+    bluetoothLogsLink.addEventListener(
+        'click', (e) => void this.handleOpenBluetoothLogsInfoDialog_(e));
   }
 }
 

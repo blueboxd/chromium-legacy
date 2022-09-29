@@ -6,6 +6,11 @@
  * @fileoverview Store ChromeVox log.
  */
 
+import {BridgeConstants} from '../../common/bridge_constants.js';
+import {BridgeHelper} from '../../common/bridge_helper.js';
+import {BaseLog, LogType, TextLog, TreeLog} from '../../common/log_types.js';
+import {TreeDumper} from '../../common/tree_dumper.js';
+
 export class LogStore {
   constructor() {
     /**
@@ -154,4 +159,4 @@ BridgeHelper.registerHandler(
     () => LogStore.instance.clearLog());
 BridgeHelper.registerHandler(
     BridgeConstants.LogStore.TARGET, BridgeConstants.LogStore.Action.GET_LOGS,
-    () => LogStore.instance.getLogs());
+    () => LogStore.instance.getLogs().map(log => log.serialize()));

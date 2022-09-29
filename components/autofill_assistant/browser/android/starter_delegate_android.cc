@@ -15,6 +15,7 @@
 #include "components/autofill_assistant/browser/android/trigger_script_bridge_android.h"
 #include "components/autofill_assistant/browser/android/ui_controller_android_utils.h"
 #include "components/autofill_assistant/browser/assistant_field_trial_util.h"
+#include "components/autofill_assistant/browser/headless/client_headless.h"
 #include "components/autofill_assistant/browser/headless/headless_script_controller_impl.h"
 #include "components/autofill_assistant/browser/public/password_change/website_login_manager_impl.h"
 #include "components/autofill_assistant/browser/public/runtime_manager_impl.h"
@@ -200,7 +201,8 @@ void StarterDelegateAndroid::ShowOnboarding(
                               base::android::ConvertUTF8ToJavaString(
                                   env, trigger_context.GetExperimentIds()),
                               base::android::ToJavaArrayOfStrings(env, keys),
-                              base::android::ToJavaArrayOfStrings(env, values));
+                              base::android::ToJavaArrayOfStrings(env, values),
+                              trigger_context.GetIsExternallyTriggered());
 }
 
 void StarterDelegateAndroid::HideOnboarding() {
@@ -237,17 +239,6 @@ void StarterDelegateAndroid::SetProactiveHelpSettingEnabled(bool enabled) {
       base::android::AttachCurrentThread(), enabled);
 }
 
-bool StarterDelegateAndroid::GetMakeSearchesAndBrowsingBetterEnabled() const {
-  if (!java_object_) {
-    // Failsafe, should never happen.
-    NOTREACHED();
-    return false;
-  }
-
-  return Java_Starter_getMakeSearchesAndBrowsingBetterSettingEnabled(
-      base::android::AttachCurrentThread(), java_object_);
-}
-
 bool StarterDelegateAndroid::GetIsLoggedIn() {
   return !GetCommonDependencies()
               ->GetSignedInEmail(GetWebContents().GetBrowserContext())
@@ -256,6 +247,11 @@ bool StarterDelegateAndroid::GetIsLoggedIn() {
 
 bool StarterDelegateAndroid::GetIsSupervisedUser() {
   return GetCommonDependencies()->IsSupervisedUser(
+      GetWebContents().GetBrowserContext());
+}
+
+bool StarterDelegateAndroid::GetIsAllowedForMachineLearning() {
+  return GetCommonDependencies()->IsAllowedForMachineLearning(
       GetWebContents().GetBrowserContext());
 }
 
@@ -319,9 +315,17 @@ void StarterDelegateAndroid::Start(
       jinitial_url, GetIsCustomTab());
 
   if (trigger_context->GetScriptParameters().GetRunHeadless()) {
+    auto client = std::make_unique<ClientHeadless>(
+        &GetWebContents(), starter_->GetCommonDependencies(),
+        /* action_extension_delegate= */ nullptr, GetWebsiteLoginManager(),
+        base::DefaultTickClock::GetInstance(),
+        RuntimeManager::GetForWebContents(&GetWebContents())->GetWeakPtr(),
+        ukm::UkmRecorder::Get(),
+        starter_->GetCommonDependencies()->GetOrCreateAnnotateDomModelService(
+            GetWebContents().GetBrowserContext()));
     headless_script_controller_ =
         std::make_unique<HeadlessScriptControllerImpl>(
-            &GetWebContents(), /*action_extension_delegate=*/nullptr);
+            &GetWebContents(), starter_.get(), std::move(client));
 
     headless_script_controller_->StartScript(
         // Note: this ignores device-only parameters.

@@ -64,7 +64,7 @@ class SharedStorageManager;
 
 namespace content {
 
-class AggregationServiceImpl;
+class AggregationService;
 class AttributionManager;
 class BackgroundFetchContext;
 class BlobRegistryWrapper;
@@ -141,9 +141,12 @@ class CONTENT_EXPORT StoragePartitionImpl
       std::unique_ptr<SharedStorageWorkletHostManager>
           shared_storage_worklet_host_manager);
   void OverrideAggregationServiceForTesting(
-      std::unique_ptr<AggregationServiceImpl> aggregation_service);
+      std::unique_ptr<AggregationService> aggregation_service);
   void OverrideAttributionManagerForTesting(
       std::unique_ptr<AttributionManager> attribution_manager);
+  void OverridePrivateAggregationManagerForTesting(
+      std::unique_ptr<PrivateAggregationManagerImpl>
+          private_aggregation_manager);
 
   // Returns the StoragePartitionConfig that represents this StoragePartition.
   const StoragePartitionConfig& GetConfig();
@@ -153,8 +156,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   network::mojom::NetworkContext* GetNetworkContext() override;
   scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcess() override;
-  scoped_refptr<network::SharedURLLoaderFactory>
-  GetURLLoaderFactoryForBrowserProcessWithCORBEnabled() override;
   std::unique_ptr<network::PendingSharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcessIOThread() override;
   network::mojom::CookieManager* GetCookieManagerForBrowserProcess() override;
@@ -255,7 +256,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   void SetFontAccessManagerForTesting(
       std::unique_ptr<FontAccessManager> font_access_manager);
   std::string GetPartitionDomain();
-  AggregationServiceImpl* GetAggregationService();
+  AggregationService* GetAggregationService();
   FontAccessManager* GetFontAccessManager();
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   MediaLicenseManager* GetMediaLicenseManager();
@@ -291,7 +292,7 @@ class CONTENT_EXPORT StoragePartitionImpl
       const std::vector<url::Origin>& origins,
       OnCanSendReportingReportsCallback callback) override;
   void OnCanSendDomainReliabilityUpload(
-      const GURL& origin,
+      const url::Origin& origin,
       OnCanSendDomainReliabilityUploadCallback callback) override;
 #if BUILDFLAG(IS_ANDROID)
   void OnGenerateHttpNegotiateAuthToken(
@@ -423,6 +424,8 @@ class CONTENT_EXPORT StoragePartitionImpl
       const blink::StorageKey& storage_key,
       const std::string& namespace_id,
       mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
+
+  storage::QuotaManagerProxy* GetQuotaManagerProxy();
 
   class URLLoaderNetworkContext {
    public:
@@ -582,7 +585,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   bool is_in_memory() { return config_.in_memory(); }
 
   network::mojom::URLLoaderFactory*
-  GetURLLoaderFactoryForBrowserProcessInternal(bool corb_enabled);
+  GetURLLoaderFactoryForBrowserProcessInternal();
 
   // If `local_trust_token_fulfiller_` is bound, returns immediately.
   //
@@ -652,7 +655,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   std::unique_ptr<InterestGroupManagerImpl> interest_group_manager_;
   std::unique_ptr<BrowsingTopicsSiteDataManager>
       browsing_topics_site_data_manager_;
-  std::unique_ptr<AggregationServiceImpl> aggregation_service_;
+  std::unique_ptr<AggregationService> aggregation_service_;
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   std::unique_ptr<MediaLicenseManager> media_license_manager_;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -695,8 +698,6 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   scoped_refptr<URLLoaderFactoryForBrowserProcess>
       shared_url_loader_factory_for_browser_process_;
-  scoped_refptr<URLLoaderFactoryForBrowserProcess>
-      shared_url_loader_factory_for_browser_process_with_corb_;
 
   // URLLoaderFactory/CookieManager for use in the browser process only.
   // See the method comment for
@@ -705,9 +706,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   mojo::Remote<network::mojom::URLLoaderFactory>
       url_loader_factory_for_browser_process_;
   bool is_test_url_loader_factory_for_browser_process_ = false;
-  mojo::Remote<network::mojom::URLLoaderFactory>
-      url_loader_factory_for_browser_process_with_corb_;
-  bool is_test_url_loader_factory_for_browser_process_with_corb_ = false;
   mojo::Remote<network::mojom::CookieManager>
       cookie_manager_for_browser_process_;
 

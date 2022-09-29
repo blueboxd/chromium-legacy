@@ -70,8 +70,10 @@ class VariationsService;
 
 class ApplicationContext;
 class BrowserPolicyConnectorIOS;
+class PromosManager;
 class IOSChromeIOThread;
 class PrefService;
+class PushNotificationService;
 class SafeBrowsingService;
 @protocol SingleSignOnService;
 
@@ -162,6 +164,10 @@ class ApplicationContext {
   // system. May be |nullptr| if policy is not enabled.
   virtual BrowserPolicyConnectorIOS* GetBrowserPolicyConnector() = 0;
 
+  // Gets the Promos Manager. For v1, this will be a Fullscreen Promos Manager.
+  // May be |nullptr| if feature kFullscreenPromosManager is not enabled.
+  virtual PromosManager* GetPromosManager() = 0;
+
   // Returns the BreadcrumbPersistentStorageManager writing breadcrumbs to disk.
   // Will be null if breadcrumb collection is not enabled.
   virtual breadcrumbs::BreadcrumbPersistentStorageManager*
@@ -173,6 +179,10 @@ class ApplicationContext {
   // Returns the application's OTRWebStateObserver for segmentation platform.
   virtual segmentation_platform::OTRWebStateObserver*
   GetSegmentationOTRWebStateObserver() = 0;
+
+  // Returns the application's PushNotificationService that handles all
+  // interactions with the push notification server
+  virtual PushNotificationService* GetPushNotificationService() = 0;
 
  protected:
   // Sets the global ApplicationContext instance.

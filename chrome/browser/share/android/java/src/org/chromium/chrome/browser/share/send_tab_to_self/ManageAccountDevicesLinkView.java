@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.share.send_tab_to_self;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.Browser;
@@ -14,7 +15,7 @@ import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.IntentUtils;
@@ -32,15 +33,21 @@ import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
 /** View containing the sharing account's avatar, email and a link to manage its target devices. */
-public class ManageAccountDevicesLinkView extends FrameLayout {
+public class ManageAccountDevicesLinkView extends LinearLayout {
     private static final int ACCOUNT_AVATAR_SIZE_DP = 24;
 
-    public ManageAccountDevicesLinkView(Context context) {
-        this(context, null);
-    }
+    private final boolean mShowLink;
 
     public ManageAccountDevicesLinkView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        TypedArray attributes = context.getTheme().obtainStyledAttributes(
+                attrs, R.styleable.ManageAccountDevicesLinkView, 0, 0);
+        try {
+            mShowLink =
+                    attributes.getBoolean(R.styleable.ManageAccountDevicesLinkView_showLink, false);
+        } finally {
+            attributes.recycle();
+        }
         inflateIfVisible();
     }
 
@@ -80,20 +87,24 @@ public class ManageAccountDevicesLinkView extends FrameLayout {
                     accountAvatarSizePx / 2, accountAvatarSizePx / 2);
         }
 
-        // The link is opened in a new tab to avoid exiting the current page, which the user
-        // possibly wants to share (maybe they just clicked "Manage devices" by mistake).
-        SpannableString linkText = SpanApplier.applySpans(
-                getResources().getString(
-                        R.string.send_tab_to_self_manage_devices_link, account.getEmail()),
-                new SpanApplier.SpanInfo("<link>", "</link>",
-                        new NoUnderlineClickableSpan(
-                                getContext(), this::openManageDevicesPageInNewTab)));
         TextView linkView = findViewById(R.id.manage_devices_link);
-        linkView.setText(linkText);
-        linkView.setMovementMethod(LinkMovementMethod.getInstance());
+        if (mShowLink) {
+            SpannableString linkText = SpanApplier.applySpans(
+                    getResources().getString(
+                            R.string.send_tab_to_self_manage_devices_link, account.getEmail()),
+                    new SpanApplier.SpanInfo("<link>", "</link>",
+                            new NoUnderlineClickableSpan(
+                                    getContext(), this::openManageDevicesPageInNewTab)));
+            linkView.setText(linkText);
+            linkView.setMovementMethod(LinkMovementMethod.getInstance());
+        } else {
+            linkView.setText(account.getEmail());
+        }
     }
 
     private void openManageDevicesPageInNewTab(View unused) {
+        // The link is opened in a new tab to avoid exiting the current page, which the user
+        // possibly wants to share (maybe they just clicked "Manage devices" by mistake).
         Intent intent =
                 new Intent()
                         .setAction(Intent.ACTION_VIEW)

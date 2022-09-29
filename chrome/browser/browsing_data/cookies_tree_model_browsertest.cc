@@ -8,10 +8,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
-#include "third_party/blink/public/common/features.h"
 
 namespace {
 
@@ -111,7 +111,7 @@ class CookiesTreeModelBrowserTest : public InProcessBrowserTest {
 
   virtual void InitFeatures() {
     feature_list()->InitAndDisableFeature(
-        blink::features::kThirdPartyStoragePartitioning);
+        net::features::kThirdPartyStoragePartitioning);
   }
 
   base::test::ScopedFeatureList* feature_list() { return &feature_list_; }
@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(CookiesTreeModelBrowserTest, NoQuotaStorage) {
   observer.AwaitTreeModelEndBatch();
 
   // Quota storage has been accessed, but should not be present in the tree.
-  EXPECT_EQ(17, tree_model->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(17u, tree_model->GetRoot()->GetTotalNodeCount());
   auto node_counts = GetNodeTypeCounts(tree_model.get());
   EXPECT_EQ(16u, node_counts.size());
   EXPECT_EQ(0, node_counts[CookieTreeNode::DetailedInfo::TYPE_QUOTA]);
@@ -159,7 +159,7 @@ class CookiesTreeModelBrowserTestQuotaOnly
  public:
   void InitFeatures() override {
     feature_list()->InitAndEnableFeature(
-        blink::features::kThirdPartyStoragePartitioning);
+        net::features::kThirdPartyStoragePartitioning);
   }
 };
 
@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(CookiesTreeModelBrowserTestQuotaOnly, QuotaStorageOnly) {
 
   // Quota storage has been accessed, only quota nodes should be present for
   // quota managed storage types.
-  EXPECT_EQ(8, tree_model->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(8u, tree_model->GetRoot()->GetTotalNodeCount());
 
   auto node_counts = GetNodeTypeCounts(tree_model.get());
   EXPECT_EQ(7u, node_counts.size());

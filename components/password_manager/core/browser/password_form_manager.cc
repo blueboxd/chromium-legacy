@@ -80,9 +80,10 @@ uint32_t FindFormsDifferences(const FormData& lhs, const FormData& rhs) {
     if (lhs_field.form_control_type != rhs_field.form_control_type)
       differences_bitmask |= PasswordFormMetricsRecorder::kFormControlTypes;
 
-    if (lhs_field.autocomplete_attribute != rhs_field.autocomplete_attribute)
+    if (lhs_field.autocomplete_attribute != rhs_field.autocomplete_attribute) {
       differences_bitmask |=
           PasswordFormMetricsRecorder::kAutocompleteAttributes;
+    }
 
     if (lhs_field.name != rhs_field.name)
       differences_bitmask |= PasswordFormMetricsRecorder::kFormFieldNames;
@@ -99,10 +100,6 @@ bool FormContainsFieldWithName(const FormData& form,
       return true;
   }
   return false;
-}
-
-bool IsUsernameFirstFlowFeatureEnabled() {
-  return base::FeatureList::IsEnabled(features::kUsernameFirstFlow);
 }
 
 void LogUsingPossibleUsername(PasswordManagerClient* client,
@@ -749,8 +746,7 @@ bool PasswordFormManager::ProvisionallySave(
   votes_uploader_.clear_single_username_vote_data();
 
   // TODO(crbug.com/959776): Reset possible username after it's used.
-  if (IsUsernameFirstFlowFeatureEnabled() &&
-      parsed_submitted_form_->username_value.empty() &&
+  if (parsed_submitted_form_->username_value.empty() &&
       !parsed_submitted_form_->password_value.empty()) {
     if (IsPossibleSingleUsernameAvailable(possible_username)) {
       // Suggest the possible username value in a prompt if the server confirmed
@@ -869,11 +865,19 @@ void PasswordFormManager::Fill() {
     return;
 #endif
 
+  bool webauthn_suggestions_available = false;
+  WebAuthnCredentialsDelegate* delegate =
+      client_->GetWebAuthnCredentialsDelegate();
+  if (delegate && delegate->IsWebAuthnAutofillEnabled()) {
+    webauthn_suggestions_available =
+        delegate->GetWebAuthnSuggestions().size() > 0;
+  }
+
   SendFillInformationToRenderer(
       client_, driver_.get(), *observed_password_form.get(),
       form_fetcher_->GetBestMatches(), form_fetcher_->GetFederatedMatches(),
       form_fetcher_->GetPreferredMatch(), form_fetcher_->IsBlocklisted(),
-      metrics_recorder_.get());
+      metrics_recorder_.get(), webauthn_suggestions_available);
 }
 
 void PasswordFormManager::FillForm(
@@ -1001,9 +1005,10 @@ std::unique_ptr<PasswordForm> PasswordFormManager::ParseFormAndMakeLogging(
   if (password_manager_util::IsLoggingActive(client_)) {
     BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
     logger.LogFormData(Logger::STRING_FORM_PARSING_INPUT, form);
-    if (password_form)
+    if (password_form) {
       logger.LogPasswordForm(Logger::STRING_FORM_PARSING_OUTPUT,
                              *password_form);
+    }
   }
   return password_form;
 }

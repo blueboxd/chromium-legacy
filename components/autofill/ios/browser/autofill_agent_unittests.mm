@@ -143,7 +143,6 @@ TEST_F(AutofillAgentTests,
   field.name = u"number";
   field.name_attribute = field.name;
   field.id_attribute = u"number";
-  field.unique_id = field.id_attribute;
   field.value = u"number_value";
   field.is_autofilled = true;
   field.unique_renderer_id = FieldRendererId(2);
@@ -152,7 +151,6 @@ TEST_F(AutofillAgentTests,
   field.name = u"name";
   field.name_attribute = field.name;
   field.id_attribute = u"name";
-  field.unique_id = field.id_attribute;
   field.value = u"name_value";
   field.is_autofilled = true;
   field.unique_renderer_id = FieldRendererId(3);
@@ -161,7 +159,6 @@ TEST_F(AutofillAgentTests,
   field.name = u"expiry_month";
   field.name_attribute = field.name;
   field.id_attribute = u"expiry_month";
-  field.unique_id = field.id_attribute;
   field.value = u"01";
   field.is_autofilled = false;
   field.unique_renderer_id = FieldRendererId(4);
@@ -170,7 +167,6 @@ TEST_F(AutofillAgentTests,
   field.name = u"unknown";
   field.name_attribute = field.name;
   field.id_attribute = u"unknown";
-  field.unique_id = field.id_attribute;
   field.value = u"";
   field.is_autofilled = true;
   field.unique_renderer_id = FieldRendererId(5);
@@ -179,10 +175,10 @@ TEST_F(AutofillAgentTests,
       fillFormData:form
            inFrame:fake_web_state_.GetWebFramesManager()->GetMainWebFrame()];
   fake_web_state_.WasShown();
-  EXPECT_EQ(u"__gCrWeb.autofill.fillForm({\"fields\":{\"2\":{\"section\":\"\","
-            "\"value\":\"number_value\"},"
-            "\"3\":{\"section\":\"\",\"value\":\"name_value\"}},"
-            "\"formName\":\"CC form\",\"formRendererID\":1}, 0);",
+  EXPECT_EQ(u"__gCrWeb.autofill.fillForm({\"fields\":{\"2\":{\"section\":\"-"
+            u"default\",\"value\":\"number_value\"},\"3\":{\"section\":\"-"
+            u"default\",\"value\":\"name_value\"}},\"formName\":\"CC "
+            u"form\",\"formRendererID\":1}, 0);",
             fake_main_frame_->GetLastJavaScriptCall());
 }
 

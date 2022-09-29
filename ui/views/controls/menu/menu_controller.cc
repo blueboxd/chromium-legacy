@@ -336,7 +336,7 @@ static void RepostEventImpl(const ui::LocatedEvent* event,
   gfx::Point root_loc(screen_loc);
   spc->ConvertPointFromScreen(root, &root_loc);
 
-  std::unique_ptr<ui::Event> clone = ui::Event::Clone(*event);
+  std::unique_ptr<ui::Event> clone = event->Clone();
   std::unique_ptr<ui::LocatedEvent> located_event(
       static_cast<ui::LocatedEvent*>(clone.release()));
   located_event->set_location(root_loc);
@@ -938,7 +938,13 @@ void MenuController::OnGestureEvent(SubmenuView* source,
   } else if (event->type() == ui::ET_GESTURE_TAP) {
     if (!part.is_scroll() && part.menu &&
         !(part.should_submenu_show && part.menu->HasSubmenu())) {
-      if (part.menu->GetDelegate()->IsTriggerableEvent(part.menu, *event)) {
+      const int command = part.menu->GetCommand();
+      if (part.menu->GetDelegate()->ShouldExecuteCommandWithoutClosingMenu(
+              command, *event)) {
+        item_selected_by_touch_ = true;
+        part.menu->GetDelegate()->ExecuteCommand(command, 0);
+      } else if (part.menu->GetDelegate()->IsTriggerableEvent(part.menu,
+                                                              *event)) {
         item_selected_by_touch_ = true;
         Accept(part.menu, event->flags());
       }
@@ -1606,7 +1612,13 @@ bool MenuController::OnKeyPressed(const ui::KeyEvent& event) {
           handled_key_code = true;
           if (!SendAcceleratorToHotTrackedView(event.flags()) &&
               pending_state_.item->GetEnabled()) {
-            Accept(pending_state_.item, event.flags());
+            const int command = pending_state_.item->GetCommand();
+            if (pending_state_.item->GetDelegate()
+                    ->ShouldExecuteCommandWithoutClosingMenu(command, event)) {
+              pending_state_.item->GetDelegate()->ExecuteCommand(command, 0);
+            } else {
+              Accept(pending_state_.item, event.flags());
+            }
           }
         }
       }
@@ -3411,7 +3423,6 @@ void MenuController::SetAnchorParametersForItem(MenuItemView* item,
       anchor->anchor_gravity = ui::OwnedWindowAnchorGravity::kBottomRight;
       anchor->constraint_adjustment =
           ui::OwnedWindowConstraintAdjustment::kAdjustmentSlideX |
-          ui::OwnedWindowConstraintAdjustment::kAdjustmentSlideY |
           ui::OwnedWindowConstraintAdjustment::kAdjustmentFlipY |
           ui::OwnedWindowConstraintAdjustment::kAdjustmentRezizeY;
     } else {

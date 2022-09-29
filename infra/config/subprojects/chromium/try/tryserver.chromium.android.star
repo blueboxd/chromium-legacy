@@ -73,6 +73,16 @@ try_.compilator_builder(
 )
 
 try_.builder(
+    name = "android-12l-x86-rel",
+    mirrors = [
+        "ci/android-12l-x86-rel",
+    ],
+    tryjob = try_.job(
+        experiment_percentage = 2,
+    ),
+)
+
+try_.builder(
     name = "android-asan",
 )
 
@@ -108,6 +118,9 @@ try_.builder(
                 "validate_expectations",
             ],
         },
+    },
+    experiments = {
+        "enable_weetbix_queries": 100,
     },
     tryjob = try_.job(),
     ssd = True,
@@ -245,6 +258,10 @@ try_.orchestrator_builder(
     use_java_coverage = True,
     coverage_test_types = ["unit", "overall"],
     tryjob = try_.job(),
+    experiments = {
+        "remove_src_checkout_experiment": 100,
+        "enable_weetbix_queries": 100,
+    },
 )
 
 try_.compilator_builder(
@@ -272,6 +289,9 @@ try_.orchestrator_builder(
     use_java_coverage = True,
     coverage_test_types = ["unit", "overall"],
     tryjob = try_.job(),
+    experiments = {
+        "enable_weetbix_queries": 100,
+    },
 )
 
 try_.compilator_builder(
@@ -291,6 +311,9 @@ try_.builder(
 try_.builder(
     name = "android-nougat-x86-rel",
     mirrors = ["ci/android-nougat-x86-rel"],
+    tryjob = try_.job(
+        experiment_percentage = 5,
+    ),
 )
 
 try_.builder(
@@ -367,6 +390,9 @@ try_.orchestrator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(),
+    experiments = {
+        "enable_weetbix_queries": 100,
+    },
 )
 
 try_.compilator_builder(
@@ -380,6 +406,14 @@ try_.builder(
     name = "android-pie-x86-rel",
     mirrors = [
         "ci/android-pie-x86-rel",
+    ],
+    goma_jobs = goma.jobs.J150,
+)
+
+try_.builder(
+    name = "android-pie-x86-fyi-rel-reviver",
+    mirrors = [
+        "ci/android-pie-x86-fyi-rel-reviver",
     ],
     goma_jobs = goma.jobs.J150,
 )
@@ -602,6 +636,9 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
+    experiments = {
+        "enable_weetbix_queries": 100,
+    },
 )
 
 try_.builder(
@@ -629,6 +666,9 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
+    experiments = {
+        "enable_weetbix_queries": 100,
+    },
 )
 
 try_.builder(

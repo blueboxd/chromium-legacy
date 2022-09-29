@@ -30,6 +30,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.TimingMetric;
 import org.chromium.base.task.PostTask;
+import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
@@ -193,9 +194,12 @@ public class OmniboxSuggestionsDropdown extends RecyclerView {
         });
 
         final Resources resources = context.getResources();
+        int paddingSide = OmniboxFeatures.shouldShowModernizeVisualUpdate(context)
+                ? resources.getDimensionPixelOffset(R.dimen.omnibox_suggestion_list_padding_side)
+                : 0;
         int paddingBottom =
                 resources.getDimensionPixelOffset(R.dimen.omnibox_suggestion_list_padding_bottom);
-        ViewCompat.setPaddingRelative(this, 0, 0, 0, paddingBottom);
+        ViewCompat.setPaddingRelative(this, paddingSide, 0, paddingSide, paddingBottom);
 
         mStandardBgColor = ChromeColors.getDefaultThemeColor(context, false);
         mIncognitoBgColor = ChromeColors.getDefaultThemeColor(context, true);

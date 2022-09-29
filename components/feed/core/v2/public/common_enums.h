@@ -158,8 +158,13 @@ enum class FeedUserActionType {
   // Page load caused a Follow Recommendation IPH to be shown. User action not
   // reported here. iOS only.
   kFollowRecommendationIPHShown = 57,
-
-  kMaxValue = kFollowRecommendationIPHShown,
+  // User opened the article in a new tab in group from the back of card menu.
+  kTappedOpenInNewTabInGroup = 58,
+  // User selected the "Group by Publisher" Following feed sort type.
+  kFollowingFeedSelectedGroupByPublisher = 59,
+  // User selected the "Sort by Latest" Following feed sort type.
+  kFollowingFeedSelectedSortByLatest = 60,
+  kMaxValue = kFollowingFeedSelectedSortByLatest,
 };
 
 // For testing and debugging only.

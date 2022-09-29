@@ -18,7 +18,7 @@ from unexpected_passes_common import expectations as common_expectations
 from unexpected_passes_common import result_output
 
 
-def ParseArgs():
+def ParseArgs() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=(
         'Script for finding cases of stale expectations that can be '
         'removed/modified.'))
@@ -28,7 +28,7 @@ def ParseArgs():
     return args
 
 
-def main():
+def main() -> int:
     args = ParseArgs()
     # Set any custom data types.
     common_data_types.SetExpectationImplementation(
@@ -62,8 +62,14 @@ def main():
                                               try_builders))
     unused_expectations = test_expectation_map.FilterOutUnusedExpectations()
     stale, semi_stale, active = test_expectation_map.SplitByStaleness()
-    result_output.OutputResults(stale, semi_stale, active, unmatched,
-                                unused_expectations, args.output_format)
+    if args.result_output_file:
+        with open(args.result_output_file, 'w') as outfile:
+            result_output.OutputResults(stale, semi_stale, active, unmatched,
+                                        unused_expectations,
+                                        args.output_format, outfile)
+    else:
+        result_output.OutputResults(stale, semi_stale, active, unmatched,
+                                    unused_expectations, args.output_format)
 
     affected_urls = set()
     stale_message = ''
@@ -95,7 +101,12 @@ def main():
         print(stale_message)
     if affected_urls:
         orphaned_urls = expectations_instance.FindOrphanedBugs(affected_urls)
-        result_output.OutputAffectedUrls(affected_urls, orphaned_urls)
+        if args.bug_output_file:
+            with open(args.bug_output_file, 'w') as bug_outfile:
+                result_output.OutputAffectedUrls(affected_urls, orphaned_urls,
+                                                 bug_outfile)
+        else:
+            result_output.OutputAffectedUrls(affected_urls, orphaned_urls)
 
     return 0
 

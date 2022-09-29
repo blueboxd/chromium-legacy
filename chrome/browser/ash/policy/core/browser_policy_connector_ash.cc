@@ -8,12 +8,10 @@
 #include <string>
 #include <utility>
 
-#include "ash/components/attestation/attestation_flow_adaptive.h"
 #include "ash/components/cryptohome/system_salt_getter.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/cros_settings_provider.h"
 #include "ash/components/settings/timezone_settings.h"
-#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_paths.h"
 #include "base/bind.h"
 #include "base/check.h"
@@ -72,8 +70,10 @@
 #include "chrome/browser/policy/networking/device_network_configuration_updater_ash.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/attestation/attestation_flow_adaptive.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/upstart/upstart_client.h"
+#include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/ash/components/network/network_cert_loader.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/onc/onc_certificate_importer_impl.h"
@@ -251,14 +251,13 @@ void BrowserPolicyConnectorAsh::Init(
   device_network_configuration_updater_ =
       DeviceNetworkConfigurationUpdaterAsh::CreateForDevicePolicy(
           GetPolicyService(),
-          chromeos::NetworkHandler::Get()
-              ->managed_network_configuration_handler(),
-          chromeos::NetworkHandler::Get()->network_device_handler(),
+          ash::NetworkHandler::Get()->managed_network_configuration_handler(),
+          ash::NetworkHandler::Get()->network_device_handler(),
           ash::CrosSettings::Get(),
           DeviceNetworkConfigurationUpdaterAsh::DeviceAssetIDFetcher());
   // NetworkCertLoader may be not initialized in tests.
-  if (chromeos::NetworkCertLoader::IsInitialized()) {
-    chromeos::NetworkCertLoader::Get()->SetDevicePolicyCertificateProvider(
+  if (ash::NetworkCertLoader::IsInitialized()) {
+    ash::NetworkCertLoader::Get()->SetDevicePolicyCertificateProvider(
         device_network_configuration_updater_.get());
   }
 
@@ -279,7 +278,7 @@ void BrowserPolicyConnectorAsh::Init(
   device_dock_mac_address_source_handler_ =
       std::make_unique<DeviceDockMacAddressHandler>(
           ash::CrosSettings::Get(),
-          chromeos::NetworkHandler::Get()->network_device_handler());
+          ash::NetworkHandler::Get()->network_device_handler());
 
   device_wifi_allowed_handler_ =
       std::make_unique<DeviceWiFiAllowedHandler>(ash::CrosSettings::Get());
@@ -291,7 +290,7 @@ void BrowserPolicyConnectorAsh::Init(
   device_scheduled_update_checker_ =
       std::make_unique<DeviceScheduledUpdateChecker>(
           ash::CrosSettings::Get(),
-          chromeos::NetworkHandler::Get()->network_state_handler(),
+          ash::NetworkHandler::Get()->network_state_handler(),
           std::make_unique<ScheduledTaskExecutorImpl>(
               update_checker_internal::kUpdateCheckTimerTag));
 
@@ -345,9 +344,8 @@ void BrowserPolicyConnectorAsh::Shutdown() {
   system_proxy_handler_.reset();
 
   // NetworkCertLoader may be not initialized in tests.
-  if (chromeos::NetworkCertLoader::IsInitialized()) {
-    chromeos::NetworkCertLoader::Get()->SetDevicePolicyCertificateProvider(
-        nullptr);
+  if (ash::NetworkCertLoader::IsInitialized()) {
+    ash::NetworkCertLoader::Get()->SetDevicePolicyCertificateProvider(nullptr);
   }
   device_network_configuration_updater_.reset();
 

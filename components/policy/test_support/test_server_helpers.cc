@@ -25,9 +25,9 @@ namespace {
 // net::HttpStatusCode enum. To allow distinguishing standard HTTP status code
 // from custom ones, we define this array that will contain all standard codes.
 constexpr net::HttpStatusCode kStandardHttpStatusCodes[] = {
-#define HTTP_STATUS(label, code, reason) net::HttpStatusCode(code),
+#define HTTP_STATUS_ENUM_VALUE(label, code, reason) net::HttpStatusCode(code),
 #include "net/http/http_status_code_list.h"
-#undef HTTP_STATUS
+#undef HTTP_STATUS_ENUM_VALUE
 };
 
 }  // namespace
@@ -86,7 +86,9 @@ bool GetGoogleLoginFromRequest(const net::test_server::HttpRequest& request,
                                std::string* out) {
   return net::GetValueForKeyInQuery(request.GetURL(), "oauth_token", out) ||
          GetTokenFromAuthorization(
-             request, dm_protocol::kServiceTokenAuthHeaderPrefix, out);
+             request, dm_protocol::kServiceTokenAuthHeaderPrefix, out) ||
+         GetTokenFromAuthorization(request,
+                                   dm_protocol::kOAuthTokenHeaderPrefix, out);
 }
 
 std::unique_ptr<HttpResponse> CreateHttpResponse(net::HttpStatusCode code,

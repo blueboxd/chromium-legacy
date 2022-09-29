@@ -7,7 +7,7 @@ import '../pdf_viewer_shared_style.css.js';
 import './icons.html.js';
 import './viewer-document-outline.js';
 import './viewer-thumbnail-bar.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 
@@ -17,6 +17,12 @@ import {Bookmark} from '../bookmark_type.js';
 import {record, UserAction} from '../metrics.js';
 
 import {getTemplate} from './viewer-pdf-sidenav.html.js';
+
+export interface ViewerPdfSidenavElement {
+  $: {
+    icons: HTMLElement,
+  };
+}
 
 export class ViewerPdfSidenavElement extends PolymerElement {
   static get is() {
@@ -53,6 +59,12 @@ export class ViewerPdfSidenavElement extends PolymerElement {
   docLength: number;
   private thumbnailView_: boolean;
 
+  override ready() {
+    super.ready();
+
+    this.$.icons.addEventListener('keydown', this.onKeydown_.bind(this));
+  }
+
   private onThumbnailClick_() {
     record(UserAction.SELECT_SIDENAV_THUMBNAILS);
     this.thumbnailView_ = true;
@@ -77,6 +89,25 @@ export class ViewerPdfSidenavElement extends PolymerElement {
 
   private getAriaSelectedOutline_(): string {
     return this.thumbnailView_ ? 'false' : 'true';
+  }
+
+  private getTabIndexThumbnail_(): string {
+    return this.thumbnailView_ ? '0' : '-1';
+  }
+
+  private getTabIndexOutline_(): string {
+    return this.thumbnailView_ ? '-1' : '0';
+  }
+
+  private onKeydown_(e: KeyboardEvent) {
+    // Up and down arrows should toggle between thumbnail and outline
+    // when sidenav is open and an outline exists.
+    if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') &&
+        this.bookmarks.length > 0) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.thumbnailView_ = !this.thumbnailView_;
+    }
   }
 }
 

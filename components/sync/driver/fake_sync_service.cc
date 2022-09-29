@@ -112,7 +112,8 @@ SyncCycleSnapshot FakeSyncService::GetLastCycleSnapshotForDebugging() const {
   return SyncCycleSnapshot();
 }
 
-std::unique_ptr<base::Value> FakeSyncService::GetTypeStatusMapForDebugging() {
+std::unique_ptr<base::Value> FakeSyncService::GetTypeStatusMapForDebugging()
+    const {
   return nullptr;
 }
 
@@ -142,7 +143,7 @@ void FakeSyncService::RemoveProtocolEventObserver(
     ProtocolEventObserver* observer) {}
 
 void FakeSyncService::GetAllNodesForDebugging(
-    base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback) {}
+    base::OnceCallback<void(base::Value::List)> callback) {}
 
 void FakeSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
 

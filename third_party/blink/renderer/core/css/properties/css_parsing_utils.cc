@@ -944,6 +944,10 @@ CSSPrimitiveValue* ConsumeLength(CSSParserTokenRange& range,
         if (!RuntimeEnabledFeatures::CSSContainerRelativeUnitsEnabled())
           return nullptr;
         break;
+      case CSSPrimitiveValue::UnitType::kIcs:
+        if (!RuntimeEnabledFeatures::CSSIcUnitEnabled())
+          return nullptr;
+        break;
       default:
         return nullptr;
     }
@@ -1393,7 +1397,7 @@ static int ClampRGBComponent(const CSSPrimitiveValue& value) {
 
 static bool ParseRGBParameters(CSSParserTokenRange& range,
                                const CSSParserContext& context,
-                               RGBA32& result) {
+                               Color& result) {
   DCHECK(range.Peek().FunctionId() == CSSValueID::kRgb ||
          range.Peek().FunctionId() == CSSValueID::kRgba);
   CSSParserTokenRange args = ConsumeFunction(range);
@@ -1444,17 +1448,17 @@ static bool ParseRGBParameters(CSSParserTokenRange& range,
     // W3 standard stipulates a 2.55 alpha value multiplication factor.
     int alpha_component =
         static_cast<int>(lround(ClampTo<double>(alpha, 0.0, 1.0) * 255.0));
-    result = MakeRGBA(color_array[0], color_array[1], color_array[2],
-                      alpha_component);
+    result = Color::FromRGBA(color_array[0], color_array[1], color_array[2],
+                             alpha_component);
   } else {
-    result = MakeRGB(color_array[0], color_array[1], color_array[2]);
+    result = Color::FromRGB(color_array[0], color_array[1], color_array[2]);
   }
   return args.AtEnd();
 }
 
 static bool ParseHSLParameters(CSSParserTokenRange& range,
                                const CSSParserContext& context,
-                               RGBA32& result) {
+                               Color& result) {
   DCHECK(range.Peek().FunctionId() == CSSValueID::kHsl ||
          range.Peek().FunctionId() == CSSValueID::kHsla);
   CSSParserTokenRange args = ConsumeFunction(range);
@@ -1500,13 +1504,13 @@ static bool ParseHSLParameters(CSSParserTokenRange& range,
     alpha = ClampTo<double>(alpha, 0.0, 1.0);
   }
   result =
-      MakeRGBAFromHSLA(color_array[0], color_array[1], color_array[2], alpha);
+      Color::FromHSLA(color_array[0], color_array[1], color_array[2], alpha);
   return args.AtEnd();
 }
 
 static bool ParseHWBParameters(CSSParserTokenRange& range,
                                const CSSParserContext& context,
-                               RGBA32& result) {
+                               Color& result) {
   DCHECK(range.Peek().FunctionId() == CSSValueID::kHwb);
   CSSParserTokenRange args = ConsumeFunction(range);
   // Consume hue, an angle.
@@ -1540,12 +1544,12 @@ static bool ParseHWBParameters(CSSParserTokenRange& range,
     alpha = ClampTo<double>(alpha, 0.0, 1.0);
   }
 
-  result = MakeRGBAFromHWBA(hue, percentages[0], percentages[1], alpha);
+  result = Color::FromHWBA(hue, percentages[0], percentages[1], alpha);
   return args.AtEnd();
 }
 
 static bool ParseHexColor(CSSParserTokenRange& range,
-                          RGBA32& result,
+                          Color& result,
                           bool accept_quirky_colors) {
   const CSSParserToken& token = range.Peek();
   if (token.GetType() == kHashToken) {
@@ -1582,7 +1586,7 @@ static bool ParseHexColor(CSSParserTokenRange& range,
 
 static bool ParseColorFunction(CSSParserTokenRange& range,
                                const CSSParserContext& context,
-                               RGBA32& result) {
+                               Color& result) {
   CSSParserTokenRange color_range = range;
   switch (range.Peek().FunctionId()) {
     case CSSValueID::kRgb:
@@ -1709,8 +1713,8 @@ CSSValue* ConsumeColorContrast(CSSParserTokenRange& range,
                                          SK_ColorWHITE) >
                    color_utils::GetContrastRatio(resolved_background_color,
                                                  SK_ColorBLACK)
-               ? MakeGarbageCollected<cssvalue::CSSColor>(SK_ColorWHITE)
-               : MakeGarbageCollected<cssvalue::CSSColor>(SK_ColorBLACK);
+               ? MakeGarbageCollected<cssvalue::CSSColor>(Color::kWhite)
+               : MakeGarbageCollected<cssvalue::CSSColor>(Color::kBlack);
   }
 
   return MakeGarbageCollected<cssvalue::CSSColor>(
@@ -1737,7 +1741,7 @@ CSSValue* ConsumeColor(CSSParserTokenRange& range,
     CSSIdentifierValue* color = ConsumeIdent(range);
     return color;
   }
-  RGBA32 color = Color::kTransparent;
+  Color color = Color::kTransparent;
   if (!ParseHexColor(range, color, accept_quirky_colors) &&
       !ParseColorFunction(range, context, color)) {
     return ConsumeInternalLightDark(ConsumeColor, range, context,
@@ -5672,32 +5676,18 @@ CSSValue* ConsumeContainerType(CSSParserTokenRange& range) {
   if (CSSValue* value = ConsumeIdent<CSSValueID::kNormal>(range))
     return value;
 
-  CSSValue* style = nullptr;
-  CSSValue* size = nullptr;
-  while (!range.AtEnd()) {
-    if (!size) {
-      size = ConsumeIdent<CSSValueID::kSize, CSSValueID::kInlineSize>(range);
-      if (size)
-        continue;
-    }
-    if (RuntimeEnabledFeatures::CSSStyleQueriesEnabled()) {
-      if (!style) {
-        style = ConsumeIdent<CSSValueID::kStyle>(range);
-        if (style)
-          continue;
-      }
-    }
-    return nullptr;
+  if (CSSValue* value =
+          ConsumeIdent<CSSValueID::kSize, CSSValueID::kInlineSize>(range)) {
+    // Note that StyleBuilderConverter::ConvertFlags requires that values
+    // other than the ZeroValue appear in a CSSValueList, hence we return a list
+    // with one item here. Also note that the full grammar will require multiple
+    // list items in the future, if we add support for non-size container types.
+    CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+    list->Append(*value);
+    return list;
   }
-  if (!size && !style)
-    return nullptr;
 
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (style)
-    list->Append(*style);
-  if (size)
-    list->Append(*size);
-  return list;
+  return nullptr;
 }
 
 CSSValue* ConsumeSVGPaint(CSSParserTokenRange& range,

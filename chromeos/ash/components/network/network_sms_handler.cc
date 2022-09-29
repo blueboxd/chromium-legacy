@@ -15,10 +15,10 @@
 #include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chromeos/dbus/shill/modem_messaging_client.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/dbus/shill/sms_client.h"
+#include "chromeos/ash/components/dbus/shill/modem_messaging_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_device_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/sms_client.h"
 #include "components/device_event_log/device_event_log.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -30,7 +30,7 @@ const size_t kMaxReceivedMessages = 100;
 
 }  // namespace
 
-namespace chromeos {
+namespace ash {
 
 // static
 const char NetworkSmsHandler::kNumberKey[] = "number";
@@ -376,4 +376,4 @@ void NetworkSmsHandler::OnObjectPathChanged(const base::Value& object_path) {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -5,6 +5,7 @@
 #include "chrome/browser/apps/app_service/publishers/crostini_apps.h"
 
 #include <utility>
+#include <vector>
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_menu_constants.h"
@@ -12,23 +13,27 @@
 #include "chrome/browser/apps/app_service/app_icon/dip_px_util.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_package_service.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_shelf_utils.h"
-#include "chrome/browser/ash/crostini/crostini_terminal.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/ash/guest_os/guest_os_terminal.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
-#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/intent.h"
+#include "components/services/app_service/public/cpp/intent_filter.h"
+#include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "storage/browser/file_system/file_system_context.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -55,6 +60,26 @@ bool ShouldShowDisplayDensityMenuItem(const std::string& app_id,
   }
 
   return d.device_scale_factor() != 1.0;
+}
+
+// Create a file intent filter with mime type conditions for App Service.
+apps::IntentFilters CreateIntentFilterForCrostini(
+    const std::set<std::string>& mime_types) {
+  apps::IntentFilters intent_filters;
+
+  if (mime_types.empty()) {
+    return intent_filters;
+  }
+
+  std::vector<std::string> mime_types_vector(mime_types.begin(),
+                                             mime_types.end());
+  apps::IntentFilterPtr intent_filter = apps_util::CreateFileFilter(
+      {apps_util::kIntentActionView}, mime_types_vector, {},
+      // TODO(crbug/1349974): Remove activity_name when default file handling
+      // preferences for Files App are migrated.
+      /*activity_name=*/apps_util::kGuestOsActivityName);
+  intent_filters.push_back(std::move(intent_filter));
+  return intent_filters;
 }
 
 }  // namespace
@@ -118,6 +143,36 @@ void CrostiniApps::Launch(const std::string& app_id,
       window_info ? window_info->display_id : display::kInvalidDisplayId);
 }
 
+void CrostiniApps::LaunchAppWithIntent(
+    const std::string& app_id,
+    int32_t event_flags,
+    IntentPtr intent,
+    LaunchSource launch_source,
+    WindowInfoPtr window_info,
+    base::OnceCallback<void(bool)> callback) {
+  // Retrieve URLs from the files in the intent.
+  std::vector<crostini::LaunchArg> args;
+  if (intent && intent->files.size() > 0) {
+    args.reserve(intent->files.size());
+    storage::FileSystemContext* file_system_context =
+        file_manager::util::GetFileManagerFileSystemContext(profile_);
+    for (auto& file : intent->files) {
+      args.emplace_back(
+          file_system_context->CrackURLInFirstPartyContext(file->url));
+    }
+  }
+  crostini::LaunchCrostiniAppWithIntent(
+      profile_, app_id,
+      window_info ? window_info->display_id : display::kInvalidDisplayId,
+      std::move(intent), args,
+      base::BindOnce(
+          [](LaunchAppWithIntentCallback callback, bool success,
+             const std::string& failure_reason) {
+            std::move(callback).Run(success);
+          },
+          std::move(callback)));
+}
+
 void CrostiniApps::LaunchAppWithParams(AppLaunchParams&& params,
                                        LaunchCallback callback) {
   auto event_flags = apps::GetEventFlags(params.disposition,
@@ -135,6 +190,14 @@ void CrostiniApps::LaunchAppWithParams(AppLaunchParams&& params,
   }
   // TODO(crbug.com/1244506): Add launch return value.
   std::move(callback).Run(LaunchResult());
+}
+
+void CrostiniApps::Uninstall(const std::string& app_id,
+                             UninstallSource uninstall_source,
+                             bool clear_site_data,
+                             bool report_abuse) {
+  crostini::CrostiniPackageService::GetForProfile(profile_)
+      ->QueueUninstallApplication(app_id);
 }
 
 void CrostiniApps::Connect(
@@ -171,10 +234,21 @@ void CrostiniApps::LaunchAppWithIntent(const std::string& app_id,
                                        apps::mojom::LaunchSource launch_source,
                                        apps::mojom::WindowInfoPtr window_info,
                                        LaunchAppWithIntentCallback callback) {
+  // Retrieve URLs from the files in the intent.
+  std::vector<crostini::LaunchArg> args;
+  if (intent && intent->files.has_value()) {
+    storage::FileSystemContext* file_system_context =
+        file_manager::util::GetFileManagerFileSystemContext(profile_);
+    args.reserve(intent->files.value().size());
+    for (auto& file : intent->files.value()) {
+      args.emplace_back(
+          file_system_context->CrackURLInFirstPartyContext(file->url));
+    }
+  }
   crostini::LaunchCrostiniAppWithIntent(
       profile_, app_id,
       window_info ? window_info->display_id : display::kInvalidDisplayId,
-      ConvertMojomIntentToIntent(intent), /*args=*/{},
+      ConvertMojomIntentToIntent(intent), args,
       base::BindOnce(
           [](LaunchAppWithIntentCallback callback, bool success,
              const std::string& failure_reason) {
@@ -315,6 +389,9 @@ AppPtr CrostiniApps::CreateApp(
   app->allow_uninstall =
       crostini::IsUninstallable(profile_, registration.app_id());
 
+  app->handles_intents = show;
+  app->intent_filters = CreateIntentFilterForCrostini(registration.MimeTypes());
+
   // TODO(crbug.com/1253250): Add other fields for the App struct.
   return app;
 }
@@ -359,6 +436,10 @@ apps::mojom::AppPtr CrostiniApps::Convert(
       crostini::IsUninstallable(profile_, registration.app_id())
           ? apps::mojom::OptionalBool::kTrue
           : apps::mojom::OptionalBool::kFalse;
+
+  app->handles_intents = show;
+  app->intent_filters = ConvertIntentFiltersToMojomIntentFilters(
+      CreateIntentFilterForCrostini(registration.MimeTypes()));
 
   return app;
 }

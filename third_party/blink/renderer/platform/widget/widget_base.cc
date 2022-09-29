@@ -37,9 +37,9 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/compositor_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/widget_scheduler.h"
 #include "third_party/blink/renderer/platform/widget/compositing/categorized_worker_pool.h"
 #include "third_party/blink/renderer/platform/widget/compositing/layer_tree_settings.h"
@@ -202,7 +202,7 @@ void WidgetBase::InitializeCompositing(
   layer_tree_view_->Initialize(
       *settings, main_thread_compositor_task_runner_,
       compositing_thread_scheduler
-          ? compositing_thread_scheduler->CompositorTaskRunner()
+          ? compositing_thread_scheduler->DefaultTaskRunner()
           : nullptr,
       CategorizedWorkerPool::GetOrCreate());
 
@@ -255,9 +255,12 @@ void WidgetBase::InitializeNonCompositing() {
   initialized_ = true;
 }
 
-void WidgetBase::DidFirstVisuallyNonEmptyPaint() {
-  if (widget_input_handler_manager_)
-    widget_input_handler_manager_->DidFirstVisuallyNonEmptyPaint();
+void WidgetBase::DidFirstVisuallyNonEmptyPaint(
+    base::TimeTicks& first_paint_time) {
+  if (widget_input_handler_manager_) {
+    widget_input_handler_manager_->DidFirstVisuallyNonEmptyPaint(
+        first_paint_time);
+  }
 }
 
 void WidgetBase::Shutdown() {

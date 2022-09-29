@@ -37,6 +37,8 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/typed_macros.h"
+#include "base/tracing/protos/chrome_track_event.pbzero.h"
 #include "build/build_config.h"
 #include "components/favicon/core/favicon_backend.h"
 #include "components/history/core/browser/download_constants.h"
@@ -60,6 +62,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sql/error_delegate_util.h"
 #include "sql/sqlite_result_code.h"
+#include "sql/sqlite_result_code_values.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -1105,20 +1108,20 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     visit_info.originator_referring_visit = *originator_referring_visit;
   if (originator_opener_visit.has_value())
     visit_info.originator_opener_visit = *originator_opener_visit;
-  VisitID visit_id = db_->AddVisit(&visit_info, visit_source);
+  visit_info.visit_id = db_->AddVisit(&visit_info, visit_source);
 
   if (visit_info.visit_time < first_recorded_time_)
     first_recorded_time_ = visit_info.visit_time;
 
   // Broadcast a notification of the visit.
-  if (visit_id) {
-    NotifyURLVisited(transition, url_info, time);
+  if (visit_info.visit_id) {
+    NotifyURLVisited(url_info, visit_info);
   } else {
     DVLOG(0) << "Failed to build visit insert statement:  "
              << "url_id = " << url_id;
   }
 
-  return std::make_pair(url_id, visit_id);
+  return std::make_pair(url_id, visit_info.visit_id);
 }
 
 void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
@@ -1753,10 +1756,30 @@ std::vector<AnnotatedVisit> HistoryBackend::ToAnnotatedVisits(
   return ToAnnotatedVisits(visit_rows);
 }
 
+std::vector<ClusterVisit> HistoryBackend::ToClusterVisits(
+    const std::vector<VisitID>& visit_ids) {
+  auto annotated_visits = ToAnnotatedVisits(visit_ids);
+  std::vector<ClusterVisit> cluster_visits;
+  base::ranges::transform(annotated_visits, std::back_inserter(cluster_visits),
+                          [&](const auto& annotated_visit) {
+                            ClusterVisit cluster_visit = db_->GetClusterVisit(
+                                annotated_visit.visit_row.visit_id);
+                            cluster_visit.annotated_visit = annotated_visit;
+                            return cluster_visit;
+                          });
+  return cluster_visits;
+}
+
 base::Time HistoryBackend::FindMostRecentClusteredTime() {
-  // TODO(manukh): Implement. Since we don't have persisted clustered visits
-  //  yet, there are no visits to take the timestamp of.
-  return base::Time::Now() - base::Days(kExpireDaysThreshold);
+  TRACE_EVENT0("browser", "HistoryBackend::FindMostRecentClusteredTime");
+  if (!db_)
+    return base::Time::Min();
+  const auto clusters =
+      GetMostRecentClusters(base::Time::Min(), base::Time::Max(), 1, false);
+  return clusters.empty() ? base::Time::Min()
+                          : clusters[0]
+                                .GetMostRecentVisit()
+                                .annotated_visit.visit_row.visit_time;
 }
 
 void HistoryBackend::ReplaceClusters(
@@ -1773,38 +1796,30 @@ void HistoryBackend::ReplaceClusters(
 std::vector<Cluster> HistoryBackend::GetMostRecentClusters(
     base::Time inclusive_min_time,
     base::Time exclusive_max_time,
-    int max_clusters) {
+    int max_clusters,
+    bool include_keywords) {
   TRACE_EVENT0("browser", "HistoryBackend::GetMostRecentClusters");
   if (!db_)
     return {};
   const auto cluster_ids = db_->GetMostRecentClusterIds(
       inclusive_min_time, exclusive_max_time, max_clusters);
   std::vector<Cluster> clusters;
-  base::ranges::transform(
-      cluster_ids, std::back_inserter(clusters),
-      [&](const auto& cluster_id) { return GetCluster(cluster_id); });
+  base::ranges::transform(cluster_ids, std::back_inserter(clusters),
+                          [&](const auto& cluster_id) {
+                            return GetCluster(cluster_id, include_keywords);
+                          });
   return clusters;
 }
 
-Cluster HistoryBackend::GetCluster(int64_t cluster_id) {
+Cluster HistoryBackend::GetCluster(int64_t cluster_id, bool include_keywords) {
   TRACE_EVENT0("browser", "HistoryBackend::GetCluster");
   if (!db_)
     return {};
 
-  // TODO(manukh): `Cluster`s and `ClusterRow`s have more fields that should be
-  //  set here once we begin persisting them to DB.
-
-  Cluster cluster;
-  cluster.cluster_id = cluster_id;
-
-  const auto visit_ids = db_->GetVisitIdsInCluster(cluster_id);
-  const auto annotated_visits = ToAnnotatedVisits(visit_ids);
-  base::ranges::transform(annotated_visits, std::back_inserter(cluster.visits),
-                          [&](const auto& annotated_visit) {
-                            ClusterVisit cluster_visit;
-                            cluster_visit.annotated_visit = annotated_visit;
-                            return cluster_visit;
-                          });
+  Cluster cluster = db_->GetCluster(cluster_id);
+  cluster.visits = ToClusterVisits(db_->GetVisitIdsInCluster(cluster_id));
+  if (include_keywords)
+    cluster.keyword_to_data_map = db_->GetClusterKeywords(cluster_id);
   return cluster;
 }
 
@@ -2658,11 +2673,22 @@ void HistoryBackend::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
 }
 
 void HistoryBackend::DatabaseErrorCallback(int error, sql::Statement* stmt) {
-  // TODO(tommycli): `error` == SQLITE_ERROR is usually caused by a statement
-  // that doesn't match the schema. We need to add some logging to learn which
-  // is the problematic statement to have a hope of diagnosing this error.
-  if (!scheduled_kill_db_ && sql::IsErrorCatastrophic(error)) {
-    sql::UmaHistogramSqliteResult("History.DatabaseSqliteError", error);
+  // TODO(https://crbug.com/1321483): Remove this top block after we've debugged
+  // the problematic SQL statement, and have restored considering SQLITE_ERROR
+  // as catastrophic.
+  constexpr char kHistoryDatabaseSqliteErrorUma[] =
+      "History.DatabaseSqliteError";
+  if (sql::ToSqliteResultCode(error) == sql::SqliteResultCode::kError) {
+    sql::DatabaseDiagnostics diagnostics;
+    db_diagnostics_ = db_->GetDiagnosticInfo(error, stmt, &diagnostics);
+    TRACE_EVENT_INSTANT(
+        "history", "HistoryBackend::DatabaseErrorCallback",
+        perfetto::protos::pbzero::ChromeTrackEvent::kSqlDiagnostics,
+        diagnostics);
+
+    // Record UMA at the end because we want to use PREEMPTIVE_TRACING_MODE.
+    sql::UmaHistogramSqliteResult(kHistoryDatabaseSqliteErrorUma, error);
+  } else if (!scheduled_kill_db_ && sql::IsErrorCatastrophic(error)) {
     scheduled_kill_db_ = true;
 
     db_diagnostics_ = db_->GetDiagnosticInfo(error, stmt);
@@ -2676,6 +2702,8 @@ void HistoryBackend::DatabaseErrorCallback(int error, sql::Statement* stmt) {
     // (then it can be cleared immediately).
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&HistoryBackend::KillHistoryDatabase, this));
+
+    sql::UmaHistogramSqliteResult(kHistoryDatabaseSqliteErrorUma, error);
   }
 }
 
@@ -2723,13 +2751,12 @@ void HistoryBackend::NotifyFaviconsChanged(const std::set<GURL>& page_urls,
   delegate_->NotifyFaviconsChanged(page_urls, icon_url);
 }
 
-void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,
-                                      const URLRow& row,
-                                      base::Time visit_time) {
+void HistoryBackend::NotifyURLVisited(const URLRow& url_row,
+                                      const VisitRow& visit_row) {
   for (HistoryBackendObserver& observer : observers_)
-    observer.OnURLVisited(this, transition, row, visit_time);
+    observer.OnURLVisited(this, url_row, visit_row);
 
-  delegate_->NotifyURLVisited(transition, row, visit_time);
+  delegate_->NotifyURLVisited(url_row, visit_row);
 }
 
 void HistoryBackend::NotifyURLsModified(const URLRows& changed_urls,

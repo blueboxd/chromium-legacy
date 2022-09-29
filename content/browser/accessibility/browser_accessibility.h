@@ -191,9 +191,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // or multiple selection, returns the node that represents the container.
   BrowserAccessibility* PlatformGetSelectionContainer() const;
 
-  bool IsPreviousSiblingOnSameLine() const;
-  bool IsNextSiblingOnSameLine() const;
-
   // Returns nullptr if there are no children.
   BrowserAccessibility* PlatformDeepestFirstChild() const;
   // Returns nullptr if there are no children.
@@ -349,7 +346,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   ui::AXNodeID GetId() const;
   gfx::RectF GetLocation() const;
 
-  bool IsWebAreaForPresentationalIframe() const override;
+  // See `AXNode::IsRootWebAreaForPresentationalIframe()`.
+  bool IsRootWebAreaForPresentationalIframe() const override;
 
   // See AXNodeData::IsClickable().
   virtual bool IsClickable() const;
@@ -368,12 +366,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   // Returns true if the accessible name was explicitly set to "" by the author
   bool HasExplicitlyEmptyName() const;
-
-  // Get text to announce for a live region change, for ATs that do not
-  // implement this functionality.
-  //
-  // TODO(nektar): Replace with `AXNode::GetTextContentUTF16()`.
-  std::string GetLiveRegionText() const;
 
   // |offset| could only be a character offset. Depending on the platform, the
   // character offset could be either in the object's text content (Android and
@@ -657,11 +649,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
       const ui::AXClippingBehavior clipping_behavior,
       ui::AXOffscreenResult* offscreen_result = nullptr) const;
 
-  // Return the bounds of inline text in this node's coordinate system (which
-  // is relative to its container node specified in AXRelativeBounds).
-  gfx::RectF GetInlineTextRect(const int start_offset,
-                               const int end_offset,
-                               const int max_length) const;
+  // See `AXNode::GetTextContentRangeBoundsUTF16`.
+  gfx::RectF GetTextContentRangeBoundsUTF16(int start_offset,
+                                            int end_offset) const;
 
   // Recursive helper function for GetInnerTextRangeBounds.
   gfx::Rect GetInnerTextRangeBoundsRectInSubtree(

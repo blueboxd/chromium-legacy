@@ -16,6 +16,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/ui/export_progress_status.h"
+#include "components/password_manager/core/browser/ui/import_results.h"
 #include "components/password_manager/core/browser/ui/insecure_credentials_manager.h"
 #include "extensions/browser/extension_function.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -31,16 +32,18 @@ namespace extensions {
 // import/export) and to notify listeners when these values have changed.
 class PasswordsPrivateDelegate : public KeyedService {
  public:
+  using ImportResultsCallback =
+      base::OnceCallback<void(const api::passwords_private::ImportResults&)>;
+
   using PlaintextPasswordCallback =
       base::OnceCallback<void(absl::optional<std::u16string>)>;
+  using RequestCredentialDetailsCallback = base::OnceCallback<void(
+      absl::optional<api::passwords_private::PasswordUiEntry>)>;
 
   using RefreshScriptsIfNecessaryCallback = base::OnceClosure;
 
   using StartPasswordCheckCallback =
       base::OnceCallback<void(password_manager::BulkLeakCheckService::State)>;
-
-  using PlaintextInsecurePasswordCallback = base::OnceCallback<void(
-      absl::optional<api::passwords_private::InsecureCredential>)>;
 
   using StartAutomatedPasswordChangeCallback = base::OnceCallback<void(bool)>;
 
@@ -90,9 +93,8 @@ class PasswordsPrivateDelegate : public KeyedService {
   // |params|: The struct which holds the new username, password and note.
   // Returns the ids if the change was successful (can be the same ids if the
   // username and the password didn't change), nullopt otherwise.
-  virtual absl::optional<api::passwords_private::CredentialIds>
-  ChangeSavedPassword(
-      const std::vector<int>& ids,
+  virtual absl::optional<int> ChangeSavedPassword(
+      int id,
       const api::passwords_private::ChangeSavedPasswordParams& params) = 0;
 
   // Removes the saved password entry corresponding to the |id| in the
@@ -122,6 +124,20 @@ class PasswordsPrivateDelegate : public KeyedService {
       PlaintextPasswordCallback callback,
       content::WebContents* web_contents) = 0;
 
+  // Requests the full PasswordUiEntry (with filled password) with the given id.
+  // Returns the full PasswordUiEntry with |callback|. Returns |absl::nullopt|
+  // if no matching credential with |id| is found.
+  // |id| the id created when going over the list of saved passwords.
+  // |reason| The reason why the full PasswordUiEntry is requested.
+  // |callback| The callback that gets invoked with the PasswordUiEntry if it
+  // could be obtained successfully, or absl::nullopt otherwise.
+  // |web_contents| The web content object used as the UI; will be used to show
+  //     an OS-level authentication dialog if necessary.
+  virtual void RequestCredentialDetails(
+      int id,
+      RequestCredentialDetailsCallback callback,
+      content::WebContents* web_contents) = 0;
+
   // Moves a list of passwords currently stored on the device to being stored in
   // the signed-in, non-syncing Google Account. The result of any password is a
   // no-op if any of these is true: |id| is invalid; |id| corresponds to a
@@ -132,7 +148,13 @@ class PasswordsPrivateDelegate : public KeyedService {
 
   // Trigger the password import procedure, allowing the user to select a file
   // containing passwords to import.
-  virtual void ImportPasswords(content::WebContents* web_contents) = 0;
+  // |to_store|: destination store (Device or Account) for imported passwords.
+  // |results_callback|: Used to communicate the status and summary of the
+  // import process.
+  virtual void ImportPasswords(
+      api::passwords_private::PasswordStoreSet to_store,
+      ImportResultsCallback results_callback,
+      content::WebContents* web_contents) = 0;
 
   // Trigger the password export procedure, allowing the user to save a file
   // containing their passwords. |callback| will be called with an error
@@ -162,47 +184,27 @@ class PasswordsPrivateDelegate : public KeyedService {
   // Obtains information about compromised credentials. This includes the last
   // time a check was run, as well as all compromised credentials that are
   // present in the password store.
-  virtual std::vector<api::passwords_private::InsecureCredential>
+  virtual std::vector<api::passwords_private::PasswordUiEntry>
   GetCompromisedCredentials() = 0;
 
   // Obtains information about weak credentials.
-  virtual std::vector<api::passwords_private::InsecureCredential>
+  virtual std::vector<api::passwords_private::PasswordUiEntry>
   GetWeakCredentials() = 0;
-
-  // Requests the plaintext password for |credential| due to |reason|. If
-  // successful, |callback| gets invoked with the same |credential|, whose
-  // |password| field will be set.
-  virtual void GetPlaintextInsecurePassword(
-      api::passwords_private::InsecureCredential credential,
-      api::passwords_private::PlaintextReason reason,
-      content::WebContents* web_contents,
-      PlaintextInsecurePasswordCallback callback) = 0;
-
-  // Attempts to change the stored password of |credential| to |new_password|.
-  // Returns whether the change succeeded.
-  virtual bool ChangeInsecureCredential(
-      const api::passwords_private::InsecureCredential& credential,
-      base::StringPiece new_password) = 0;
-
-  // Attempts to remove |credential| from the password store. Returns whether
-  // the remove succeeded.
-  virtual bool RemoveInsecureCredential(
-      const api::passwords_private::InsecureCredential& credential) = 0;
 
   // Attempts to mute |credential| from the password store. Returns whether
   // the mute succeeded.
   virtual bool MuteInsecureCredential(
-      const api::passwords_private::InsecureCredential& credential) = 0;
+      const api::passwords_private::PasswordUiEntry& credential) = 0;
 
   // Attempts to unmute |credential| from the password store. Returns whether
   // the unmute succeeded.
   virtual bool UnmuteInsecureCredential(
-      const api::passwords_private::InsecureCredential& credential) = 0;
+      const api::passwords_private::PasswordUiEntry& credential) = 0;
 
   // Records that a change password flow was started for |credential| and
   // whether |is_manual_flow| applies to the flow.
   virtual void RecordChangePasswordFlowStarted(
-      const api::passwords_private::InsecureCredential& credential,
+      const api::passwords_private::PasswordUiEntry& credential,
       bool is_manual_flow) = 0;
 
   // Refreshes the cache for automatic password change scripts if that is stale
@@ -224,7 +226,7 @@ class PasswordsPrivateDelegate : public KeyedService {
   // whether the credential was changed successfully by calling `callback` with
   // a boolean parameter.
   virtual void StartAutomatedPasswordChange(
-      const api::passwords_private::InsecureCredential& credential,
+      const api::passwords_private::PasswordUiEntry& credential,
       StartAutomatedPasswordChangeCallback callback) = 0;
 
   // Returns a pointer to the current instance of InsecureCredentialsManager.

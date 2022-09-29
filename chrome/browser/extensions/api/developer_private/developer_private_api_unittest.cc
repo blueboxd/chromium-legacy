@@ -12,6 +12,7 @@
 #include "base/scoped_observation.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -154,6 +155,66 @@ void RemoveUserSpecifiedSites(Profile* profile,
                                         hosts.c_str());
   EXPECT_TRUE(api_test_utils::RunFunction(function.get(), args, profile))
       << function->GetError();
+}
+
+void AddExtensionAndGrantPermissions(Profile* profile,
+                                     ExtensionService* service,
+                                     const Extension& extension) {
+  PermissionsUpdater updater(profile);
+  updater.InitializePermissions(&extension);
+  updater.GrantActivePermissions(&extension);
+  service->AddExtension(&extension);
+}
+
+void RunAddHostPermission(Profile* profile,
+                          const Extension& extension,
+                          base::StringPiece host,
+                          bool should_succeed,
+                          const char* expected_error) {
+  SCOPED_TRACE(host);
+  scoped_refptr<ExtensionFunction> function =
+      base::MakeRefCounted<api::DeveloperPrivateAddHostPermissionFunction>();
+
+  std::string args = base::StringPrintf(R"(["%s", "%s"])",
+                                        extension.id().c_str(), host.data());
+  if (should_succeed) {
+    EXPECT_TRUE(api_test_utils::RunFunction(function.get(), args, profile))
+        << function->GetError();
+  } else {
+    EXPECT_EQ(expected_error, api_test_utils::RunFunctionAndReturnError(
+                                  function.get(), args, profile));
+  }
+}
+
+void GetMatchingExtensionsForSite(
+    Profile* profile,
+    const std::string& site,
+    std::vector<api::developer_private::MatchingExtensionInfo>* infos) {
+  scoped_refptr<ExtensionFunction> function = base::MakeRefCounted<
+      api::DeveloperPrivateGetMatchingExtensionsForSiteFunction>();
+  EXPECT_TRUE(api_test_utils::RunFunction(
+      function.get(), base::StringPrintf(R"(["%s"])", site.c_str()), profile))
+      << function->GetError();
+  const base::Value::List* results = function->GetResultList();
+  ASSERT_EQ(1u, results->size());
+  ASSERT_TRUE((*results)[0].is_list());
+
+  infos->clear();
+  for (const auto& value : (*results)[0].GetList()) {
+    infos->push_back(std::move(
+        *api::developer_private::MatchingExtensionInfo::FromValue(value)));
+  }
+}
+
+auto MatchMatchingExtensionInfo(
+    const std::string& extension_id,
+    const api::developer_private::HostAccess& host_access) {
+  return testing::AllOf(
+      testing::Field(&api::developer_private::MatchingExtensionInfo::id,
+                     extension_id),
+      testing::Field(
+          &api::developer_private::MatchingExtensionInfo::site_access,
+          host_access));
 }
 
 }  // namespace
@@ -515,10 +576,9 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivatePackFunction) {
   // Try to pack a final time when omitting (an existing) pem file. We should
   // get an error.
   base::DeleteFile(crx_path);
-  EXPECT_TRUE(pack_args.EraseListIter(pack_args.GetListDeprecated().begin() +
-                                      1u));  // Remove the pem key argument.
-  EXPECT_TRUE(pack_args.EraseListIter(pack_args.GetListDeprecated().begin() +
-                                      1u));  // Remove the flags argument.
+  // Remove the pem key and flags arguments.
+  pack_args.GetList().erase(pack_args.GetList().begin() + 1,
+                            pack_args.GetList().begin() + 3);
   EXPECT_TRUE(TestPackExtensionFunction(
       pack_args, api::developer_private::PACK_STATUS_ERROR, 0));
 }
@@ -1424,50 +1484,37 @@ TEST_F(DeveloperPrivateApiUnitTest, GrantHostPermission) {
   EXPECT_FALSE(modifier.HasWithheldHostPermissions());
   modifier.SetWithholdHostPermissions(true);
 
-  auto run_add_host_permission = [this, extension](base::StringPiece host,
-                                                   bool should_succeed,
-                                                   const char* expected_error) {
-    SCOPED_TRACE(host);
-    scoped_refptr<ExtensionFunction> function =
-        base::MakeRefCounted<api::DeveloperPrivateAddHostPermissionFunction>();
-
-    std::string args = base::StringPrintf(R"(["%s", "%s"])",
-                                          extension->id().c_str(), host.data());
-    if (should_succeed) {
-      EXPECT_TRUE(api_test_utils::RunFunction(function.get(), args, profile()))
-          << function->GetError();
-    } else {
-      EXPECT_EQ(expected_error, api_test_utils::RunFunctionAndReturnError(
-                                    function.get(), args, profile()));
-    }
-  };
-
   const GURL kExampleCom("https://example.com/");
   EXPECT_FALSE(modifier.HasGrantedHostPermission(kExampleCom));
-  run_add_host_permission("https://example.com/*", true, nullptr);
+  RunAddHostPermission(profile(), *extension, "https://example.com/*",
+                       /*should_succeed=*/true, nullptr);
   EXPECT_TRUE(modifier.HasGrantedHostPermission(kExampleCom));
 
   const GURL kGoogleCom("https://google.com");
   const GURL kMapsGoogleCom("https://maps.google.com/");
   EXPECT_FALSE(modifier.HasGrantedHostPermission(kGoogleCom));
   EXPECT_FALSE(modifier.HasGrantedHostPermission(kMapsGoogleCom));
-  run_add_host_permission("https://*.google.com/*", true, nullptr);
+  RunAddHostPermission(profile(), *extension, "https://*.google.com/*",
+                       /*should_succeed=*/true, nullptr);
   EXPECT_TRUE(modifier.HasGrantedHostPermission(kGoogleCom));
   EXPECT_TRUE(modifier.HasGrantedHostPermission(kMapsGoogleCom));
 
-  run_add_host_permission(kInvalidHost, false, kInvalidHostError);
+  RunAddHostPermission(profile(), *extension, kInvalidHost,
+                       /*should_succeed=*/false, kInvalidHostError);
   // Path of the pattern must exactly match "/*".
-  run_add_host_permission("https://example.com/", false, kInvalidHostError);
-  run_add_host_permission("https://example.com/foobar", false,
-                          kInvalidHostError);
-  run_add_host_permission("https://example.com/#foobar", false,
-                          kInvalidHostError);
-  run_add_host_permission("https://example.com/*foobar", false,
-                          kInvalidHostError);
+  RunAddHostPermission(profile(), *extension, "https://example.com/",
+                       /*should_succeed=*/false, kInvalidHostError);
+  RunAddHostPermission(profile(), *extension, "https://example.com/foobar",
+                       /*should_succeed=*/false, kInvalidHostError);
+  RunAddHostPermission(profile(), *extension, "https://example.com/#foobar",
+                       /*should_succeed=*/false, kInvalidHostError);
+  RunAddHostPermission(profile(), *extension, "https://example.com/*foobar",
+                       /*should_succeed=*/false, kInvalidHostError);
 
   // Cannot grant chrome:-scheme URLs.
   GURL chrome_host("chrome://settings/*");
-  run_add_host_permission(chrome_host.spec(), false, kInvalidHostError);
+  RunAddHostPermission(profile(), *extension, chrome_host.spec(),
+                       /*should_succeed=*/false, kInvalidHostError);
 
   EXPECT_FALSE(modifier.HasGrantedHostPermission(chrome_host));
 }
@@ -1969,7 +2016,7 @@ TEST_F(DeveloperPrivateApiUnitTest, OnUserSiteSettingsChanged) {
 }
 
 TEST_F(DeveloperPrivateApiUnitTest,
-       DeveloperPrivateGetUserAndExtensionSitesByEtld) {
+       DeveloperPrivateGetUserAndExtensionSitesByEtld_UserSites) {
   PermissionsManager* manager = PermissionsManager::Get(browser_context());
 
   // Add two sites under the eTLD+1 example.com, and one under eTLD+1 google.ca.
@@ -1984,46 +2031,289 @@ TEST_F(DeveloperPrivateApiUnitTest,
   EXPECT_TRUE(RunFunction(function, base::ListValue())) << function->GetError();
   const base::Value::List* results = function->GetResultList();
   ASSERT_EQ(1u, results->size());
-  ASSERT_TRUE((*results)[0].is_list());
-  const base::Value::List& list = (*results)[0].GetList();
-  ASSERT_EQ(2u, list.size());
 
-  auto site_info_matcher =
-      [](const std::string& site,
-         const api::developer_private::UserSiteSet& site_list) {
-        return testing::AllOf(
-            testing::Field(&api::developer_private::SiteInfo::site, site),
-            testing::Field(&api::developer_private::SiteInfo::site_list,
-                           site_list));
-      };
+  EXPECT_THAT((*results)[0], base::test::IsJson(R"([{
+    "etldPlusOne": "example.com",
+    "numExtensions": 0,
+    "sites": [{
+      "siteList": "PERMITTED",
+      "numExtensions": 0,
+      "site": "http://a.example.com",
+    }, {
+      "siteList": "RESTRICTED",
+      "numExtensions": 0,
+      "site": "http://b.example.com",
+    }]
+  }, {
+    "etldPlusOne": "google.ca",
+    "numExtensions": 0,
+    "sites": [{
+      "siteList": "RESTRICTED",
+      "numExtensions": 0,
+      "site": "http://google.ca",
+    }]
+  }])"));
+}
 
-  // There should be two SiteGroups for the two eTLD+1s.
-  std::unique_ptr<api::developer_private::SiteGroup> example_info =
-      api::developer_private::SiteGroup::FromValue(list[0]);
-  ASSERT_TRUE(example_info);
+TEST_F(DeveloperPrivateApiUnitTest,
+       DeveloperPrivateGetUserAndExtensionSitesByEtld_UserAndExtensionSites) {
+  PermissionsManager* manager = PermissionsManager::Get(browser_context());
+  manager->AddUserPermittedSite(
+      url::Origin::Create(GURL("http://images.google.com")));
+  manager->AddUserRestrictedSite(
+      url::Origin::Create(GURL("http://www.asdf.com")));
 
-  EXPECT_EQ("example.com", example_info->etld_plus_one);
-  EXPECT_THAT(
-      example_info->sites,
-      testing::UnorderedElementsAre(
-          site_info_matcher(
-              "http://a.example.com",
-              api::developer_private::UserSiteSet::USER_SITE_SET_PERMITTED),
-          site_info_matcher(
-              "http://b.example.com",
-              api::developer_private::UserSiteSet::USER_SITE_SET_RESTRICTED)));
+  scoped_refptr<const Extension> extension_1 =
+      ExtensionBuilder("test")
+          .AddPermission("https://*.google.com/")
+          .AddPermission("http://www.google.com/")
+          .AddPermission("http://images.google.com/")
+          .AddPermission("https://example.com/")
+          .Build();
 
-  std::unique_ptr<api::developer_private::SiteGroup> google_info =
-      api::developer_private::SiteGroup::FromValue(list[1]);
-  ASSERT_TRUE(google_info);
+  scoped_refptr<const Extension> extension_2 =
+      ExtensionBuilder("test_2")
+          .AddPermission("https://mail.google.com/")
+          .AddPermission("http://www.google.com/")
+          .AddPermission("http://www.asdf.com/")
+          .Build();
+  AddExtensionAndGrantPermissions(profile(), service(), *extension_1);
+  AddExtensionAndGrantPermissions(profile(), service(), *extension_2);
 
-  // Check the contents of the SiteInfo under google.ca.
-  EXPECT_EQ("google.ca", google_info->etld_plus_one);
-  EXPECT_THAT(
-      google_info->sites,
-      testing::UnorderedElementsAre(site_info_matcher(
-          "http://google.ca",
-          api::developer_private::UserSiteSet::USER_SITE_SET_RESTRICTED)));
+  scoped_refptr<ExtensionFunction> function = base::MakeRefCounted<
+      api::DeveloperPrivateGetUserAndExtensionSitesByEtldFunction>();
+  EXPECT_TRUE(RunFunction(function, base::ListValue())) << function->GetError();
+  const base::Value::List* results = function->GetResultList();
+  ASSERT_EQ(1u, results->size());
+
+  // asdf.com and http://www.asdf.com should not have any extensions counted
+  // because they are associated with user specified sites.
+  EXPECT_THAT((*results)[0], base::test::IsJson(R"([{
+    "etldPlusOne": "asdf.com",
+    "numExtensions": 0,
+    "sites": [{
+      "siteList": "RESTRICTED",
+      "numExtensions": 0,
+      "site": "http://www.asdf.com",
+    }]
+  }, {
+    "etldPlusOne": "example.com",
+    "numExtensions": 1,
+    "sites": [{
+      "numExtensions": 1,
+      "site": "https://example.com/*",
+    }]
+  }, {
+    "etldPlusOne": "google.com",
+    "numExtensions": 2,
+    "sites": [{
+      "siteList": "PERMITTED",
+      "numExtensions": 0,
+      "site": "http://images.google.com",
+    }, {
+      "numExtensions": 2,
+      "site": "http://www.google.com/*",
+    }, {
+      "numExtensions": 1,
+      "site": "https://*.google.com/*",
+    }, {
+      "numExtensions": 1,
+      "site": "https://mail.google.com/*",
+    }]
+  }])"));
+}
+
+TEST_F(DeveloperPrivateApiUnitTest,
+       DeveloperPrivateGetUserAndExtensionSitesByEtld_EffectiveAllHosts) {
+  PermissionsManager* manager = PermissionsManager::Get(browser_context());
+  manager->AddUserPermittedSite(
+      url::Origin::Create(GURL("http://images.google.ca")));
+
+  scoped_refptr<const Extension> extension_1 =
+      ExtensionBuilder("specific_hosts")
+          .AddPermission("https://*.google.ca/")
+          .AddPermission("http://www.example.com/")
+          .Build();
+
+  scoped_refptr<const Extension> extension_2 =
+      ExtensionBuilder("all_.com").AddPermission("*://*.com/*").Build();
+
+  scoped_refptr<const Extension> extension_3 =
+      ExtensionBuilder("all_urls").AddPermission("<all_urls>").Build();
+  AddExtensionAndGrantPermissions(profile(), service(), *extension_1);
+  AddExtensionAndGrantPermissions(profile(), service(), *extension_2);
+  AddExtensionAndGrantPermissions(profile(), service(), *extension_3);
+
+  scoped_refptr<ExtensionFunction> function = base::MakeRefCounted<
+      api::DeveloperPrivateGetUserAndExtensionSitesByEtldFunction>();
+  EXPECT_TRUE(RunFunction(function, base::ListValue())) << function->GetError();
+  const base::Value::List* results = function->GetResultList();
+  ASSERT_EQ(1u, results->size());
+
+  // `extension_2` should not be counted for https://*.google.ca/* as it cannot
+  // run on .ca sites.
+  EXPECT_THAT((*results)[0], base::test::IsJson(R"([{
+    "etldPlusOne": "example.com",
+    "numExtensions": 3,
+    "sites": [{
+      "numExtensions": 3,
+      "site": "http://www.example.com/*",
+    }]
+  }, {
+    "etldPlusOne": "google.ca",
+    "numExtensions": 2,
+    "sites": [{
+      "numExtensions": 0,
+      "site": "http://images.google.ca",
+      "siteList": "PERMITTED",
+    }, {
+      "numExtensions": 2,
+      "site": "https://*.google.ca/*",
+    }]
+  }])"));
+}
+
+TEST_F(DeveloperPrivateApiUnitTest,
+       DeveloperPrivateGetUserAndExtensionSitesByEtld_RuntimeGrantedHosts) {
+  scoped_refptr<const Extension> extension_1 =
+      ExtensionBuilder("runtime_hosts").AddPermission("<all_urls>").Build();
+  AddExtensionAndGrantPermissions(profile(), service(), *extension_1);
+
+  auto get_user_and_extension_sites = [this](const std::string& expected_json) {
+    scoped_refptr<ExtensionFunction> function = base::MakeRefCounted<
+        api::DeveloperPrivateGetUserAndExtensionSitesByEtldFunction>();
+    EXPECT_TRUE(RunFunction(function, base::ListValue()))
+        << function->GetError();
+    const base::Value::List* results = function->GetResultList();
+    ASSERT_EQ(1u, results->size());
+    EXPECT_THAT((*results)[0], base::test::IsJson(expected_json));
+  };
+
+  get_user_and_extension_sites(R"([])");
+
+  ScriptingPermissionsModifier modifier(profile(), extension_1.get());
+  EXPECT_FALSE(modifier.HasWithheldHostPermissions());
+  modifier.SetWithholdHostPermissions(true);
+
+  get_user_and_extension_sites(R"([])");
+
+  const std::string kExampleCom = "https://example.com/*";
+  RunAddHostPermission(profile(), *extension_1, kExampleCom,
+                       /*should_succeed=*/true, nullptr);
+
+  get_user_and_extension_sites(R"([{
+    "etldPlusOne": "example.com",
+    "numExtensions": 1,
+    "sites": [{
+      "numExtensions": 1,
+      "site": "https://example.com/*",
+    }]
+  }])");
+
+  scoped_refptr<const Extension> extension_2 =
+      ExtensionBuilder("test").AddPermission(kExampleCom).Build();
+  AddExtensionAndGrantPermissions(profile(), service(), *extension_2);
+
+  get_user_and_extension_sites(R"([{
+    "etldPlusOne": "example.com",
+    "numExtensions": 2,
+    "sites": [{
+      "numExtensions": 2,
+      "site": "https://example.com/*",
+    }]
+  }])");
+
+  RunUpdateHostAccess(*extension_1, "ON_ALL_SITES");
+  get_user_and_extension_sites(R"([{
+    "etldPlusOne": "example.com",
+    "numExtensions": 2,
+    "sites": [{
+      "numExtensions": 2,
+      "site": "https://example.com/*",
+    }]
+  }])");
+}
+
+TEST_F(DeveloperPrivateApiUnitTest,
+       DeveloperPrivateGetMatchingExtensionsForSite) {
+  namespace developer = api::developer_private;
+
+  scoped_refptr<const Extension> extension_1 =
+      ExtensionBuilder("test").AddPermission("*://mail.google.com/").Build();
+
+  scoped_refptr<const Extension> extension_2 =
+      ExtensionBuilder("test_2")
+          .AddPermission("*://images.google.com/")
+          .Build();
+  AddExtensionAndGrantPermissions(profile(), service(), *extension_1);
+  AddExtensionAndGrantPermissions(profile(), service(), *extension_2);
+
+  std::vector<developer::MatchingExtensionInfo> infos;
+  GetMatchingExtensionsForSite(profile(), "http://none.com/", &infos);
+  EXPECT_TRUE(infos.empty());
+
+  GetMatchingExtensionsForSite(profile(), "http://images.google.com/", &infos);
+
+  // "http://images.google.com/" should only match with `extension_2`.
+  EXPECT_THAT(infos, testing::UnorderedElementsAre(MatchMatchingExtensionInfo(
+                         extension_2->id(),
+                         developer::HostAccess::HOST_ACCESS_ON_ALL_SITES)));
+
+  service()->DisableExtension(extension_2->id(),
+                              disable_reason::DISABLE_USER_ACTION);
+  GetMatchingExtensionsForSite(profile(), "*://*.google.com/", &infos);
+
+  // "*://*.google.com/" should only match with both `extension_1` and
+  // `extension_2`.
+  EXPECT_THAT(infos, testing::UnorderedElementsAre(
+                         MatchMatchingExtensionInfo(
+                             extension_1->id(),
+                             developer::HostAccess::HOST_ACCESS_ON_ALL_SITES),
+                         MatchMatchingExtensionInfo(
+                             extension_2->id(),
+                             developer::HostAccess::HOST_ACCESS_ON_ALL_SITES)));
+}
+
+// Test that the host access returned by GetMatchingExtensionsForSite reflects
+// whether the extension has access to the queried site, or has withheld sites
+// in general.
+TEST_F(DeveloperPrivateApiUnitTest,
+       DeveloperPrivateGetMatchingExtensionsForSite_RuntimeGrantedHostAccess) {
+  namespace developer = api::developer_private;
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("test").AddPermission("<all_urls>").Build();
+  AddExtensionAndGrantPermissions(profile(), service(), *extension);
+
+  std::vector<developer::MatchingExtensionInfo> infos;
+  GetMatchingExtensionsForSite(profile(), "http://example.com/", &infos);
+
+  EXPECT_THAT(infos, testing::UnorderedElementsAre(MatchMatchingExtensionInfo(
+                         extension->id(),
+                         developer::HostAccess::HOST_ACCESS_ON_ALL_SITES)));
+
+  ScriptingPermissionsModifier modifier(profile(), extension.get());
+  EXPECT_FALSE(modifier.HasWithheldHostPermissions());
+  modifier.SetWithholdHostPermissions(true);
+
+  GetMatchingExtensionsForSite(profile(), "http://example.com/", &infos);
+  EXPECT_THAT(infos, testing::UnorderedElementsAre(MatchMatchingExtensionInfo(
+                         extension->id(),
+                         developer::HostAccess::HOST_ACCESS_ON_CLICK)));
+
+  RunAddHostPermission(profile(), *extension, "*://*.google.com/*",
+                       /*should_succeed=*/true, nullptr);
+
+  GetMatchingExtensionsForSite(profile(), "http://google.com/", &infos);
+  EXPECT_THAT(infos,
+              testing::UnorderedElementsAre(MatchMatchingExtensionInfo(
+                  extension->id(),
+                  developer::HostAccess::HOST_ACCESS_ON_SPECIFIC_SITES)));
+
+  GetMatchingExtensionsForSite(profile(), "http://example.com/", &infos);
+  EXPECT_THAT(infos, testing::UnorderedElementsAre(MatchMatchingExtensionInfo(
+                         extension->id(),
+                         developer::HostAccess::HOST_ACCESS_ON_CLICK)));
 }
 
 class DeveloperPrivateApiAllowlistUnitTest

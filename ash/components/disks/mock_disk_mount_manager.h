@@ -32,12 +32,12 @@ class MockDiskMountManager : public DiskMountManager {
   // DiskMountManager override.
   void AddObserver(DiskMountManager::Observer*) override;
   void RemoveObserver(DiskMountManager::Observer*) override;
-  MOCK_METHOD(const DiskMountManager::DiskMap&, disks, (), (const, override));
+  MOCK_METHOD(const DiskMountManager::Disks&, disks, (), (const, override));
   MOCK_METHOD(const Disk*,
               FindDiskBySourcePath,
               (const std::string&),
               (const, override));
-  MOCK_METHOD(const DiskMountManager::MountPointMap&,
+  MOCK_METHOD(const DiskMountManager::MountPoints&,
               mount_points,
               (),
               (const, override));
@@ -87,7 +87,7 @@ class MockDiskMountManager : public DiskMountManager {
   // Invokes specified mount event.
   void NotifyMountEvent(MountEvent event,
                         MountError error_code,
-                        const MountPointInfo& mount_info);
+                        const MountPoint& mount_info);
 
   // Sets up default results for mock methods.
   void SetupDefaultReplies();
@@ -97,7 +97,7 @@ class MockDiskMountManager : public DiskMountManager {
 
   // Creates a fake disk entry for the mounted device.
   void CreateDiskEntryForMountDevice(
-      const DiskMountManager::MountPointInfo& mount_info,
+      const DiskMountManager::MountPoint& mount_info,
       const std::string& device_id,
       const std::string& device_label,
       const std::string& vendor_name,
@@ -113,7 +113,7 @@ class MockDiskMountManager : public DiskMountManager {
   // Removes the fake disk entry associated with the mounted device. This
   // function is primarily for StorageMonitorTest.
   void RemoveDiskEntryForMountDevice(
-      const DiskMountManager::MountPointInfo& mount_info);
+      const DiskMountManager::MountPoint& mount_info);
 
  private:
   // Is used to implement AddObserver.
@@ -123,9 +123,9 @@ class MockDiskMountManager : public DiskMountManager {
   void RemoveObserverInternal(DiskMountManager::Observer* observer);
 
   // Is used to implement disks.
-  const DiskMountManager::DiskMap& disksInternal() const { return disks_; }
+  const DiskMountManager::Disks& disksInternal() const { return disks_; }
 
-  const DiskMountManager::MountPointMap& mountPointsInternal() const;
+  const DiskMountManager::MountPoints& mountPointsInternal() const;
 
   // Returns Disk object associated with the |source_path| or NULL on failure.
   const Disk* FindDiskBySourcePathInternal(
@@ -142,10 +142,10 @@ class MockDiskMountManager : public DiskMountManager {
   base::ObserverList<DiskMountManager::Observer> observers_;
 
   // The list of disks found.
-  DiskMountManager::DiskMap disks_;
+  DiskMountManager::Disks disks_;
 
   // The list of existing mount points.
-  DiskMountManager::MountPointMap mount_points_;
+  DiskMountManager::MountPoints mount_points_;
 };
 
 }  // namespace disks

@@ -315,8 +315,6 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://linux-proxy-config",
     "chrome://multidevice-setup",
     "chrome://network",
-    // TODO(crbug.com/1329058): Eliminate chrome://oobe/login
-    "chrome://oobe/login",
     "chrome://os-credits",
     "chrome://os-settings",
     "chrome://power",
@@ -337,7 +335,10 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://signin-email-confirmation",
 #endif
 #if !BUILDFLAG(IS_MAC)
+#if !BUILDFLAG(IS_WIN)
+    // Quite flaky on Windows: https://crbug.com/1353819
     "chrome://sandbox",
+#endif
     "chrome://nacl",
     // TODO(https://crbug.com/1219651): this test is flaky on mac.
     "chrome://bluetooth-internals",

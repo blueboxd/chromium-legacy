@@ -60,6 +60,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_tab.h"
 #include "chrome/browser/ui/startup/startup_types.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -195,6 +196,47 @@ class SessionRestoreTest : public InProcessBrowserTest {
       SessionStartupPref pref(SessionStartupPref::LAST);
       SessionStartupPref::SetStartupPref(browser()->profile(), pref);
     }
+  }
+
+  // Quit the supplied browser, restore it, then wait for any tabs whose URL is
+  // |target_page| to signal that their Javascript is running, via the DOM
+  // automation API.
+  //
+  // The implementation is a bit horrible: not all the WebContents created
+  // during session restore are of interest, so this function has to create
+  // DOMMessageQueues for all created WebContents, then decide after session
+  // restore is finished which of them it should actually look for messages
+  // from.
+  Browser* QuitBrowserRestoreAndWaitForTabJavascript(Browser* browser,
+                                                     const GURL& target_page,
+                                                     size_t expected_count) {
+    std::vector<std::unique_ptr<content::DOMMessageQueue>> queues;
+    auto subscription = content::RegisterWebContentsCreationCallback(
+        base::BindLambdaForTesting([&](content::WebContents* contents) {
+          queues.emplace_back(
+              std::make_unique<content::DOMMessageQueue>(contents));
+        }));
+
+    Browser* restored = QuitBrowserAndRestore(browser);
+    TabStripModel* tab_strip_model = restored->tab_strip_model();
+
+    // Deliberately skip over any WebContents that didn't load |target_page|.
+    size_t ready = 0;
+    for (int i = 0; i < tab_strip_model->count(); i++) {
+      auto* contents = tab_strip_model->GetWebContentsAt(i);
+      if (contents->GetLastCommittedURL() == target_page) {
+        std::string message;
+        if (!queues[i]->WaitForMessage(&message) || message != "\"READY\"") {
+          ADD_FAILURE() << "WaitForMessage() failed or didn't return READY";
+          return nullptr;
+        }
+        ready++;
+      }
+    }
+
+    EXPECT_EQ(expected_count, ready);
+
+    return restored;
   }
 
   Browser* QuitBrowserAndRestore(Browser* browser) {
@@ -434,22 +476,17 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
       browser(), test_page, WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
-  // Restart and session restore the tabs.
-  content::DOMMessageQueue message_queue;
-  Browser* restored = QuitBrowserAndRestore(browser());
-  for (int i = 0; i < 2; ++i) {
-    std::string message;
-    EXPECT_TRUE(message_queue.WaitForMessage(&message));
-    EXPECT_EQ("\"READY\"", message);
-  }
-
-  // There should be 3 restored tabs in the new browser.
+  // Restart and session restore the tabs. There should be three total tabs, two
+  // of which are the restored tabs from above and one of which is a new, blank
+  // tab.
+  Browser* restored =
+      QuitBrowserRestoreAndWaitForTabJavascript(browser(), test_page, 2);
+  ASSERT_TRUE(restored);
   TabStripModel* tab_strip_model = restored->tab_strip_model();
-  const int tabs = tab_strip_model->count();
-  ASSERT_EQ(3, tabs);
+  ASSERT_EQ(3, tab_strip_model->count());
 
   // The middle tab only should have visible disposition.
-  for (int i = 0; i < tabs; ++i) {
+  for (int i = 0; i < tab_strip_model->count(); ++i) {
     content::WebContents* contents = tab_strip_model->GetWebContentsAt(i);
     std::string document_visibility_state;
     const char kGetStateJS[] =
@@ -483,21 +520,14 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoredTabsHaveCorrectInitialSize) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Restart and session restore the tabs.
-  content::DOMMessageQueue message_queue;
-  Browser* restored = QuitBrowserAndRestore(browser());
-  for (int i = 0; i < 2; ++i) {
-    std::string message;
-    EXPECT_TRUE(message_queue.WaitForMessage(&message));
-    EXPECT_EQ("\"READY\"", message);
-  }
-
-  // There should be 3 restored tabs in the new browser.
+  Browser* restored =
+      QuitBrowserRestoreAndWaitForTabJavascript(browser(), test_page, 2);
+  ASSERT_TRUE(restored);
   TabStripModel* tab_strip_model = restored->tab_strip_model();
-  const int tabs = tab_strip_model->count();
-  ASSERT_EQ(3, tabs);
+  ASSERT_EQ(3, tab_strip_model->count());
 
   const gfx::Size contents_size = restored->window()->GetContentsSize();
-  for (int i = 0; i < tabs; ++i) {
+  for (int i = 0; i < tab_strip_model->count(); ++i) {
     content::WebContents* contents = tab_strip_model->GetWebContentsAt(i);
     int width = 0;
     const char kGetWidthJS[] =
@@ -601,7 +631,15 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NormalAndPopup) {
   EXPECT_EQ(Browser::TYPE_POPUP, active_browser_list_->get(1)->type());
 }
 
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
+// Flaky on Mac. https://crbug.com/1334914.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_RestoreIndividualTabFromWindow \
+  DISABLED_RestoreIndividualTabFromWindow
+#else
+#define MAYBE_RestoreIndividualTabFromWindow RestoreIndividualTabFromWindow
+#endif
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
+                       MAYBE_RestoreIndividualTabFromWindow) {
   GURL url1(ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(FILE_PATH_LITERAL("title1.html"))));
@@ -682,7 +720,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
 }
 
 // Flaky on Linux. https://crbug.com/537592.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+// Flaky on Mac. https://crbug.com/1334914.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
 #define MAYBE_WindowWithOneTab DISABLED_WindowWithOneTab
 #else
 #define MAYBE_WindowWithOneTab WindowWithOneTab
@@ -1599,7 +1638,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ActiveIndexUpdatedAtClose) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   browser()->tab_strip_model()->CloseWebContentsAt(
-      0, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+      0, TabCloseTypes::CLOSE_CREATE_HISTORICAL_TAB);
 
   Browser* new_browser = QuitBrowserAndRestore(browser());
 

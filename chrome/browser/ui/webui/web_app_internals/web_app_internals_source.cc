@@ -187,9 +187,10 @@ base::Value BuildPreinstalledWebAppConfigsJson(
 
 base::Value BuildExternallyManagedWebAppPrefsJson(Profile* profile) {
   base::Value root(base::Value::Type::DICTIONARY);
-  root.SetKey(
-      kExternallyManagedWebAppPrefs,
-      profile->GetPrefs()->GetDictionary(prefs::kWebAppsExtensionIDs)->Clone());
+  root.SetKey(kExternallyManagedWebAppPrefs,
+              base::Value(profile->GetPrefs()
+                              ->GetValueDict(prefs::kWebAppsExtensionIDs)
+                              .Clone()));
   return root;
 }
 
@@ -197,8 +198,8 @@ base::Value BuildPreinstalledAppsUninstalledByUserJson(Profile* profile) {
   base::Value::Dict root;
   root.Set(kPreinstalledAppsUninstalledByUserConfigs,
            profile->GetPrefs()
-               ->GetDictionary(prefs::kUserUninstalledPreinstalledWebAppPref)
-               ->Clone());
+               ->GetValueDict(prefs::kUserUninstalledPreinstalledWebAppPref)
+               .Clone());
   return base::Value(std::move(root));
 }
 
@@ -352,7 +353,7 @@ std::string WebAppInternalsSource::GetSource() {
   return chrome::kChromeUIWebAppInternalsHost;
 }
 
-std::string WebAppInternalsSource::GetMimeType(const std::string& path) {
+std::string WebAppInternalsSource::GetMimeType(const GURL& url) {
   return "application/json";
 }
 

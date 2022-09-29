@@ -29,32 +29,14 @@ class MockIdleDeadlineScheduler final : public ThreadScheduler {
   }
   void Shutdown() override {}
   bool ShouldYieldForHighPriorityWork() override { return true; }
-  bool CanExceedIdleDeadlineIfRequired() const override { return false; }
   void PostIdleTask(const base::Location&, Thread::IdleTask) override {}
   void PostDelayedIdleTask(const base::Location&,
                            base::TimeDelta,
                            Thread::IdleTask) override {}
   void PostNonNestableIdleTask(const base::Location&,
                                Thread::IdleTask) override {}
-  std::unique_ptr<scheduler::WebAgentGroupScheduler> CreateAgentGroupScheduler()
-      override {
-    NOTREACHED();
-    return nullptr;
-  }
-  scheduler::WebAgentGroupScheduler* GetCurrentAgentGroupScheduler() override {
-    return nullptr;
-  }
-  scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override {
-    return nullptr;
-  }
-  scoped_refptr<base::SingleThreadTaskRunner> NonWakingTaskRunner() override {
-    return nullptr;
-  }
   scoped_refptr<base::SingleThreadTaskRunner> DeprecatedDefaultTaskRunner()
       override {
-    return nullptr;
-  }
-  std::unique_ptr<RendererPauseHandle> PauseScheduler() override {
     return nullptr;
   }
 
@@ -65,14 +47,6 @@ class MockIdleDeadlineScheduler final : public ThreadScheduler {
   void AddTaskObserver(Thread::TaskObserver* task_observer) override {}
 
   void RemoveTaskObserver(Thread::TaskObserver* task_observer) override {}
-
-  void AddRAILModeObserver(RAILModeObserver*) override {}
-
-  void RemoveRAILModeObserver(RAILModeObserver const*) override {}
-
-  scheduler::NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override {
-    return nullptr;
-  }
 
   void SetV8Isolate(v8::Isolate* isolate) override {}
 };

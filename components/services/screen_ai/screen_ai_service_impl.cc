@@ -9,8 +9,10 @@
 #include "base/process/process.h"
 #include "components/services/screen_ai/proto/proto_convertor.h"
 #include "components/services/screen_ai/public/cpp/utilities.h"
+#include "components/services/screen_ai/screen_ai_ax_tree_serializer.h"
 #include "sandbox/policy/switches.h"
 #include "ui/accessibility/accessibility_features.h"
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace screen_ai {
@@ -18,12 +20,17 @@ namespace screen_ai {
 namespace {
 
 base::FilePath GetLibraryFilePath() {
-  base::FilePath library_path = GetPreloadedLibraryFilePath();
-  if (library_path.empty() && base::CommandLine::ForCurrentProcess()->HasSwitch(
-                                  sandbox::policy::switches::kNoSandbox)) {
-    library_path = GetLatestLibraryFilePath();
-    SetPreloadedLibraryFilePath(library_path);
-  }
+  base::FilePath library_path = GetStoredComponentBinaryPath();
+
+  if (!library_path.empty())
+    return library_path;
+
+  // Binary file path is set while setting the sandbox on Linux, or the first
+  // time this function is called. So in all other cases we need to look for
+  // the library binary in its component folder.
+  library_path = GetLatestComponentBinaryPath();
+  StoreComponentBinaryPath(library_path);
+
   return library_path;
 }
 
@@ -49,7 +56,8 @@ ScreenAIService::ScreenAIService(
           /*init_main_content_extraction = */
           features::IsReadAnythingWithScreen2xEnabled(),
           /*debug_mode = */ features::IsScreenAIDebugModeEnabled(),
-          /*models_path = */ GetLibraryFilePath().DirName().MaybeAsASCII())) {
+          /*models_path = */
+          GetLibraryFilePath().DirName().MaybeAsASCII().c_str())) {
     // TODO(https://crbug.com/1278249): Add UMA metrics to monitor failures.
     VLOG(0) << "Screen AI library initialization failed.";
     base::Process::TerminateCurrentProcessImmediately(-1);
@@ -77,13 +85,26 @@ void ScreenAIService::Annotate(const SkBitmap& image,
   VLOG(2) << "Screen AI library starting to process " << image.width() << "x"
           << image.height() << " snapshot.";
 
-  std::string annotation_text;
+  char* annotation_proto = nullptr;
+  uint32_t annotation_proto_length = 0;
   // TODO(https://crbug.com/1278249): Consider adding a signature that
   // verifies the data integrity and source.
-  if (annotate_function_(image, annotation_text)) {
+  if (annotate_function_(image, annotation_proto, annotation_proto_length)) {
+    DCHECK(annotation_proto);
+    std::string proto_as_string;
+    proto_as_string.resize(annotation_proto_length);
+    memcpy(static_cast<void*>(proto_as_string.data()), annotation_proto,
+           annotation_proto_length);
+    delete annotation_proto;
     gfx::Rect image_rect(image.width(), image.height());
     update =
-        ScreenAIVisualAnnotationToAXTreeUpdate(annotation_text, image_rect);
+        ScreenAIVisualAnnotationToAXTreeUpdate(proto_as_string, image_rect);
+    // TODO(nektar): Get the parent tree ID from the calling process (i.e.
+    // browser or renderer).
+    ScreenAIAXTreeSerializer serializer(
+        /* parent_tree_id */ ui::AXTreeID::CreateNewAXTreeID(),
+        std::move(update.nodes));
+    update = serializer.Serialize();
   } else {
     VLOG(1) << "Screen AI library could not process snapshot.";
   }
@@ -96,13 +117,23 @@ void ScreenAIService::ExtractMainContent(const ui::AXTreeUpdate& snapshot,
   std::string serialized_snapshot = Screen2xSnapshotToViewHierarchy(snapshot);
   std::vector<int32_t> content_node_ids;
 
-  if (!extract_main_content_function_(serialized_snapshot, content_node_ids)) {
+  int32_t* node_ids = nullptr;
+  uint32_t nodes_count = 0;
+  if (!extract_main_content_function_(serialized_snapshot.c_str(),
+                                      serialized_snapshot.length(), node_ids,
+                                      nodes_count)) {
     VLOG(1) << "Screen2x did not return main content.";
   } else {
+    content_node_ids.resize(nodes_count);
+    memcpy(content_node_ids.data(), node_ids, nodes_count * sizeof(int32_t));
+    delete[] node_ids;
+    node_ids = nullptr;
+
     VLOG(2) << "Screen2x returned " << content_node_ids.size() << " node ids:";
     for (int32_t i : content_node_ids)
       VLOG(2) << i;
   }
+
   std::move(callback).Run(content_node_ids);
 }
 

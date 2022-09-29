@@ -43,7 +43,7 @@ class LogManager {
 
   // Forward a DOM structured log entry to the LogRouter (if registered with
   // one).
-  virtual void LogEntry(const base::Value& entry) const = 0;
+  virtual void LogEntry(const base::Value::Dict& entry) const = 0;
 
   // Returns true if logs recorded via LogTextMessage will be displayed, and
   // false otherwise.
@@ -58,9 +58,6 @@ class LogManager {
 
   // This is the preferred way to submitting log entries.
   virtual LogBufferSubmitter Log() = 0;
-
-  // Returns a LogBufferSubmitter that ignores all input.
-  static LogBufferSubmitter DevNull();
 };
 
 inline LogBuffer::IsActive IsLoggingActive(LogManager* log_manager) {

@@ -32,12 +32,14 @@ AggregatableReportScheduler::AggregatableReportScheduler(
         on_scheduled_report_time_reached)
     : storage_context_(*storage_context),
       timer_delegate_(
-          *(new TimerDelegate(storage_context,
-                              std::move(on_scheduled_report_time_reached)))),
-      timer_(base::WrapUnique(&*timer_delegate_)) {
+          new TimerDelegate(storage_context,
+                            std::move(on_scheduled_report_time_reached))),
+      timer_(base::WrapUnique(timer_delegate_.get())) {
   DCHECK(storage_context);
 }
-AggregatableReportScheduler::~AggregatableReportScheduler() = default;
+AggregatableReportScheduler::~AggregatableReportScheduler() {
+  timer_delegate_ = nullptr;
+}
 
 void AggregatableReportScheduler::ScheduleRequest(
     AggregatableReportRequest request) {
@@ -104,8 +106,11 @@ void AggregatableReportScheduler::TimerDelegate::OnReportingTimeReached(
 
 void AggregatableReportScheduler::TimerDelegate::AdjustOfflineReportTimes(
     base::OnceCallback<void(absl::optional<base::Time>)> maybe_set_timer_cb) {
-  // TODO(crbug.com/1340042): Implement offline and startup handling
-  std::move(maybe_set_timer_cb).Run(absl::nullopt);
+  storage_context_->GetStorage()
+      .AsyncCall(&AggregationServiceStorage::AdjustOfflineReportTimes)
+      .WithArgs(base::Time::Now(), kOfflineReportTimeMinimumDelay,
+                kOfflineReportTimeMaximumDelay)
+      .Then(std::move(maybe_set_timer_cb));
 }
 
 void AggregatableReportScheduler::TimerDelegate::NotifyRequestCompleted(

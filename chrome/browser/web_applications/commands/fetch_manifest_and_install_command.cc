@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
 #include "chrome/browser/web_applications/commands/web_app_install_command.h"
+#include "chrome/browser/web_applications/locks/noop_lock.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -32,7 +33,7 @@ FetchManifestAndInstallCommand::FetchManifestAndInstallCommand(
     bool bypass_service_worker_check,
     WebAppInstallDialogCallback dialog_callback,
     OnceInstallCallback callback)
-    : WebAppCommand(WebAppCommandLock::CreateForNoOpLock()),
+    : lock_(std::make_unique<NoopLock>()),
       install_finalizer_(install_finalizer),
       registrar_(registrar),
       install_surface_(install_surface),
@@ -52,7 +53,7 @@ FetchManifestAndInstallCommand::FetchManifestAndInstallCommand(
     OnceInstallCallback callback,
     bool use_fallback,
     WebAppInstallFlow flow)
-    : WebAppCommand(WebAppCommandLock::CreateForNoOpLock()),
+    : lock_(std::make_unique<NoopLock>()),
       install_finalizer_(install_finalizer),
       registrar_(registrar),
       install_surface_(install_surface),
@@ -65,6 +66,10 @@ FetchManifestAndInstallCommand::FetchManifestAndInstallCommand(
       flow_(flow) {}
 
 FetchManifestAndInstallCommand::~FetchManifestAndInstallCommand() = default;
+
+Lock& FetchManifestAndInstallCommand::lock() const {
+  return *lock_;
+}
 
 void FetchManifestAndInstallCommand::Start() {
   if (IsWebContentsDestroyed()) {
@@ -184,11 +189,11 @@ void FetchManifestAndInstallCommand::OnDidPerformInstallableCheck(
   app_id_ = GenerateAppId(install_info_->manifest_id, install_info_->start_url);
 
   command_manager()->ScheduleCommand(std::make_unique<WebAppInstallCommand>(
-      app_id_, Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
-      install_finalizer_, std::move(data_retriever_), registrar_,
-      install_surface_, web_contents_, std::move(dialog_callback_),
-      std::move(install_callback_), std::move(install_info_),
-      std::move(opt_manifest), manifest_url, flow_));
+      app_id_, install_surface_, std::move(install_info_),
+      std::move(opt_manifest), manifest_url, flow_, std::move(dialog_callback_),
+      std::move(install_callback_),
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
+      install_finalizer_, std::move(data_retriever_), web_contents_));
   SignalCompletionAndSelfDestruct(CommandResult::kSuccess, base::DoNothing());
 }
 

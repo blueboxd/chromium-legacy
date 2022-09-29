@@ -37,7 +37,10 @@ std::string GetHistogramNameForId(SidePanelEntry::Id id) {
            {SidePanelEntry::Id::kFeed, "Feed"},
            {SidePanelEntry::Id::kSideSearch, "SideSearch"},
            {SidePanelEntry::Id::kLens, "Lens"},
-           {SidePanelEntry::Id::kAssistant, "Assistant"}});
+           {SidePanelEntry::Id::kAssistant, "Assistant"},
+           {SidePanelEntry::Id::kAboutThisSite, "AboutThisSite"},
+           {SidePanelEntry::Id::kCustomizeChrome, "CustomizeChrome"}});
+
   auto* i = id_to_histogram_name_map.find(id);
   DCHECK(i != id_to_histogram_name_map.cend());
   return {i->second};
@@ -105,6 +108,28 @@ void SidePanelUtil::RecordSidePanelClosed(base::TimeTicks opened_timestamp) {
 
   base::UmaHistogramLongTimes("SidePanel.OpenDuration",
                               base::TimeTicks::Now() - opened_timestamp);
+}
+
+void SidePanelUtil::RecordSidePanelResizeMetrics(SidePanelEntry::Id id,
+                                                 int side_panel_contents_width,
+                                                 int browser_window_width) {
+  std::string entry_name = GetHistogramNameForId(id);
+
+  // Metrics per-id and overall for side panel width after resize.
+  base::UmaHistogramCounts10000(
+      base::StrCat({"SidePanel.", entry_name, ".ResizedWidth"}),
+      side_panel_contents_width);
+  base::UmaHistogramCounts10000("SidePanel.ResizedWidth",
+                                side_panel_contents_width);
+
+  // Metrics per-id and overall for side panel width after resize as a
+  // percentage of browser width.
+  int width_percentage = side_panel_contents_width * 100 / browser_window_width;
+  base::UmaHistogramPercentage(
+      base::StrCat({"SidePanel.", entry_name, ".ResizedWidthPercentage"}),
+      width_percentage);
+  base::UmaHistogramPercentage("SidePanel.ResizedWidthPercentage",
+                               width_percentage);
 }
 
 void SidePanelUtil::RecordEntryShownMetrics(SidePanelEntry::Id id) {

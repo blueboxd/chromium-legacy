@@ -7,6 +7,7 @@
 <translation id="1258009455399840361">Rotér 90 grader med klokken</translation>
 <translation id="1276998909102132017">Galleribilder</translation>
 <translation id="1300209025925956156">Skann dokumentet</translation>
+<translation id="1309250603447638106">Laster ned oppdateringer for dokumentskanning</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Trykk på søketasten + venstrepil for å se dem.</translation>
 <translation id="1393338179284529051">Quad HD</translation>
 <translation id="1430915738399379752">Skriv ut</translation>
@@ -47,6 +48,7 @@
 <translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Forhåndsvisning av speiling</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> er koblet til.</translation>
+<translation id="2904654629665923749">Dokumentskanning er tilgjengelig</translation>
 <translation id="2968794441791257519">Bilder og videoer som er tatt med kameraet, flyttes til mappen Nedlastinger. Du har tilgang til dem i Filer.
 
 Apper med lagringstillatelser har tilgang til bildene og videoene dine.</translation>
@@ -72,7 +74,6 @@ Apper med lagringstillatelser har tilgang til bildene og videoene dine.</transla
 <translation id="3838931309141338733">Skann strekkoden</translation>
 <translation id="3892148308691398805">Kopiér teksten</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> MP</translation>
-<translation id="4096701159033358951">Laster ned funksjonen for dokumentskanning</translation>
 <translation id="4118525110028899586">Sett opptaket på pause</translation>
 <translation id="4121305183798804752">Et dokument er oppdaget</translation>
 <translation id="414641094616694804">Dette kameraet kan ikke endre oppløsning</translation>
@@ -94,7 +95,6 @@ Apper med lagringstillatelser har tilgang til bildene og videoene dine.</transla
 <translation id="5057360777601936059">Kameraet er ikke tilgjengelig akkurat nå.
         Sjekk om kameraet er koblet til riktig.</translation>
 <translation id="5163387177077603948">Beveger seg mot høyre</translation>
-<translation id="520537883758714667">Dokumentskanning er nå tilgjengelig</translation>
 <translation id="5235304959032763950">16 til 9</translation>
 <translation id="5266635337630551423">Dokumentets øvre venstre hjørne</translation>
 <translation id="5317780077021120954">Lagre</translation>

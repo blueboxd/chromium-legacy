@@ -47,6 +47,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/shell.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/wm_event.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -278,9 +279,8 @@ bool IsTestMode(content::BrowserContext* context) {
 std::string ConvertToString(message_center::NotificationType type) {
   switch (type) {
     case message_center::NOTIFICATION_TYPE_SIMPLE:
+    case message_center::DEPRECATED_NOTIFICATION_TYPE_BASE_FORMAT:
       return "simple";
-    case message_center::NOTIFICATION_TYPE_BASE_FORMAT:
-      return "base_format";
     case message_center::NOTIFICATION_TYPE_IMAGE:
       return "image";
     case message_center::NOTIFICATION_TYPE_MULTIPLE:
@@ -494,11 +494,11 @@ std::unique_ptr<bool> ConvertOptionalBool(absl::optional<bool> optional) {
                               : nullptr;
 }
 
-// Helper function to set whitelisted user pref based on |pref_name| with any
+// Helper function to set allowed user pref based on |pref_name| with any
 // specific pref validations. Returns error messages if any.
-std::string SetWhitelistedPref(Profile* profile,
-                               const std::string& pref_name,
-                               const base::Value& value) {
+std::string SetAllowedPref(Profile* profile,
+                           const std::string& pref_name,
+                           const base::Value& value) {
   // Special case for the preference that is stored in the "Local State"
   // profile.
   if (pref_name == prefs::kEnableAdbSideloadingRequested) {
@@ -572,7 +572,7 @@ std::string SetWhitelistedPref(Profile* profile,
   } else if (pref_name == quick_answers::prefs::kQuickAnswersConsentStatus) {
     DCHECK(value.is_int());
   } else {
-    return "The pref " + pref_name + " is not whitelisted.";
+    return "The pref " + pref_name + " is not allowed.";
   }
 
   // Set value for the specified user pref after validation.
@@ -1875,7 +1875,7 @@ AutotestPrivateSetPlayStoreEnabledFunction::Run() {
     }
     // kArcLocationServiceEnabled and kArcBackupRestoreEnabled are prefs that
     // set together with enabling ARC. That is why we set it here not using
-    // SetWhitelistedPref. At this moment, we don't distinguish the actual
+    // SetAllowedPref. At this moment, we don't distinguish the actual
     // values and set kArcLocationServiceEnabled to true and leave
     // kArcBackupRestoreEnabled unmodified, which is acceptable for autotests
     // currently.
@@ -1948,14 +1948,57 @@ AutotestPrivateIsLacrosPrimaryBrowserFunction::Run() {
 AutotestPrivateGetLacrosInfoFunction::~AutotestPrivateGetLacrosInfoFunction() =
     default;
 
+// static
+api::autotest_private::LacrosState
+AutotestPrivateGetLacrosInfoFunction::ToLacrosState(
+    crosapi::BrowserManager::State state) {
+  switch (state) {
+    case crosapi::BrowserManager::State::NOT_INITIALIZED:
+      return api::autotest_private::LACROS_STATE_NOTINITIALIZED;
+    case crosapi::BrowserManager::State::MOUNTING:
+      return api::autotest_private::LACROS_STATE_MOUNTING;
+    case crosapi::BrowserManager::State::UNAVAILABLE:
+      return api::autotest_private::LACROS_STATE_UNAVAILABLE;
+    case crosapi::BrowserManager::State::STOPPED:
+      return api::autotest_private::LACROS_STATE_STOPPED;
+    case crosapi::BrowserManager::State::CREATING_LOG_FILE:
+      return api::autotest_private::LACROS_STATE_CREATINGLOGFILE;
+    case crosapi::BrowserManager::State::STARTING:
+      return api::autotest_private::LACROS_STATE_STARTING;
+    case crosapi::BrowserManager::State::RUNNING:
+      return api::autotest_private::LACROS_STATE_RUNNING;
+    case crosapi::BrowserManager::State::TERMINATING:
+      return api::autotest_private::LACROS_STATE_TERMINATING;
+  }
+}
+
+// static
+api::autotest_private::LacrosMode
+AutotestPrivateGetLacrosInfoFunction::ToLacrosMode(
+    crosapi::browser_util::LacrosMode lacrosMode) {
+  switch (lacrosMode) {
+    case crosapi::browser_util::LacrosMode::kDisabled:
+      return api::autotest_private::LacrosMode::LACROS_MODE_DISABLED;
+    case crosapi::browser_util::LacrosMode::kSideBySide:
+      return api::autotest_private::LacrosMode::LACROS_MODE_SIDEBYSIDE;
+    case crosapi::browser_util::LacrosMode::kPrimary:
+      return api::autotest_private::LacrosMode::LACROS_MODE_PRIMARY;
+    case crosapi::browser_util::LacrosMode::kOnly:
+      return api::autotest_private::LacrosMode::LACROS_MODE_ONLY;
+  }
+}
+
 ExtensionFunction::ResponseAction AutotestPrivateGetLacrosInfoFunction::Run() {
   DVLOG(1) << "AutotestPrivateGetLacrosInfoFunction";
   auto* browser_manager = crosapi::BrowserManager::Get();
   auto result = std::make_unique<base::DictionaryValue>();
-  result->SetBoolKey("isRunning", browser_manager->IsRunning());
+  result->SetStringKey("state", api::autotest_private::ToString(
+                                    ToLacrosState(browser_manager->state_)));
   result->SetBoolKey("isKeepAlive", browser_manager->IsKeepAliveEnabled());
   result->SetStringKey("lacrosPath",
                        browser_manager->lacros_path().MaybeAsASCII());
+  result->SetStringKey("mode", api::autotest_private::ToString(ToLacrosMode(
+                                   crosapi::browser_util::GetLacrosMode())));
   return RespondNow(
       OneArgument(base::Value::FromUniquePtrValue(std::move(result))));
 }
@@ -3196,8 +3239,8 @@ AutotestPrivateSetAssistantEnabledFunction::Run() {
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
   const std::string& err_msg =
-      SetWhitelistedPref(profile, chromeos::assistant::prefs::kAssistantEnabled,
-                         base::Value(params->enabled));
+      SetAllowedPref(profile, chromeos::assistant::prefs::kAssistantEnabled,
+                     base::Value(params->enabled));
   if (!err_msg.empty())
     return RespondNow(Error(err_msg));
 
@@ -3274,8 +3317,8 @@ AutotestPrivateEnableAssistantAndWaitForReadyFunction::Run() {
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
   const std::string& err_msg =
-      SetWhitelistedPref(profile, chromeos::assistant::prefs::kAssistantEnabled,
-                         base::Value(true));
+      SetAllowedPref(profile, chromeos::assistant::prefs::kAssistantEnabled,
+                     base::Value(true));
   if (!err_msg.empty())
     return RespondNow(Error(err_msg));
 
@@ -3582,6 +3625,32 @@ AutotestPrivateIsArcPackageListInitialRefreshedFunction::Run() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetAllowedPrefFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetAllowedPrefFunction::
+    ~AutotestPrivateSetAllowedPrefFunction() = default;
+
+ExtensionFunction::ResponseAction AutotestPrivateSetAllowedPrefFunction::Run() {
+  DVLOG(1) << "AutotestPrivateSetAllowedPrefFunction";
+
+  std::unique_ptr<api::autotest_private::SetAllowedPref::Params> params(
+      api::autotest_private::SetAllowedPref::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const std::string& pref_name = params->pref_name;
+  const base::Value& value = *(params->value);
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  const std::string& err_msg = SetAllowedPref(profile, pref_name, value);
+
+  if (!err_msg.empty())
+    return RespondNow(Error(err_msg));
+
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateSetWhitelistedPrefFunction
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -3592,15 +3661,15 @@ ExtensionFunction::ResponseAction
 AutotestPrivateSetWhitelistedPrefFunction::Run() {
   DVLOG(1) << "AutotestPrivateSetWhitelistedPrefFunction";
 
-  std::unique_ptr<api::autotest_private::SetWhitelistedPref::Params> params(
-      api::autotest_private::SetWhitelistedPref::Params::Create(args()));
+  std::unique_ptr<api::autotest_private::SetAllowedPref::Params> params(
+      api::autotest_private::SetAllowedPref::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const std::string& pref_name = params->pref_name;
   const base::Value& value = *(params->value);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  const std::string& err_msg = SetWhitelistedPref(profile, pref_name, value);
+  const std::string& err_msg = SetAllowedPref(profile, pref_name, value);
 
   if (!err_msg.empty())
     return RespondNow(Error(err_msg));
@@ -4653,10 +4722,15 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstallManagerObserver
   PWAInstallManagerObserver(
       Profile* profile,
       base::OnceCallback<void(const web_app::AppId&)> callback)
-      : callback_(std::move(callback)) {
-    auto* provider = web_app::WebAppProvider::GetForWebApps(profile);
-    if (provider)
-      observation_.Observe(&provider->install_manager());
+      : provider_(web_app::WebAppProvider::GetForWebApps(profile)),
+        callback_(std::move(callback)) {
+    if (!provider_)
+      return;
+    provider_->on_registry_ready().Post(
+        FROM_HERE,
+        base::BindOnce(&AutotestPrivateInstallPWAForCurrentURLFunction::
+                           PWAInstallManagerObserver::OnProviderReady,
+                       weak_factory_.GetWeakPtr()));
   }
 
   PWAInstallManagerObserver(const PWAInstallManagerObserver&) = delete;
@@ -4664,6 +4738,10 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstallManagerObserver
       delete;
 
   ~PWAInstallManagerObserver() override {}
+
+  void OnProviderReady() {
+    observation_.Observe(&provider_->install_manager());
+  }
 
   void OnWebAppInstalled(const web_app::AppId& app_id) override {
     observation_.Reset();
@@ -4676,7 +4754,11 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstallManagerObserver
   base::ScopedObservation<web_app::WebAppInstallManager,
                           web_app::WebAppInstallManagerObserver>
       observation_{this};
+  web_app::WebAppProvider* provider_;
   base::OnceCallback<void(const web_app::AppId&)> callback_;
+  base::WeakPtrFactory<
+      AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstallManagerObserver>
+      weak_factory_{this};
 };
 
 AutotestPrivateInstallPWAForCurrentURLFunction::
@@ -4895,6 +4977,10 @@ AutotestPrivateRemoveActiveDeskFunction::Run() {
     return RespondNow(OneArgument(base::Value(false)));
   }
 
+  // In overview, the desk removal animation does
+  // not apply, so we should not wait for it.
+  if (ash::Shell::Get()->overview_controller()->InOverviewSession())
+    return RespondNow(OneArgument(base::Value(true)));
   return RespondLater();
 }
 
@@ -4934,6 +5020,20 @@ AutotestPrivateActivateAdjacentDesksToTargetIndexFunction::Run() {
 void AutotestPrivateActivateAdjacentDesksToTargetIndexFunction::
     OnAnimationComplete() {
   Respond(OneArgument(base::Value(true)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetDeskCountFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetDeskCountFunction::AutotestPrivateGetDeskCountFunction() =
+    default;
+AutotestPrivateGetDeskCountFunction::~AutotestPrivateGetDeskCountFunction() =
+    default;
+
+ExtensionFunction::ResponseAction AutotestPrivateGetDeskCountFunction::Run() {
+  return RespondNow(
+      OneArgument(base::Value(ash::AutotestDesksApi().GetDeskCount())));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

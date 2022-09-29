@@ -33,7 +33,8 @@ namespace device::fido::mac {
 // Credential represents a WebAuthn credential from the keychain.
 struct COMPONENT_EXPORT(DEVICE_FIDO) Credential {
   Credential(base::ScopedCFTypeRef<SecKeyRef> private_key,
-             std::vector<uint8_t> credential_id);
+             std::vector<uint8_t> credential_id,
+             CredentialMetadata metadata);
   Credential(const Credential&);
   Credential(Credential&& other);
   Credential& operator=(const Credential&);
@@ -50,6 +51,8 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) Credential {
   // metadata with a profile-specific metadata secret. See |CredentialMetadata|
   // for more information.
   std::vector<uint8_t> credential_id;
+
+  CredentialMetadata metadata;
 };
 
 // TouchIdCredentialStore allows operations on Touch ID platform authenticator
@@ -87,6 +90,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdCredentialStore
                    const PublicKeyCredentialUserEntity& user,
                    Discoverable discoverable) const;
 
+  // CreateCredentialLegacyCredentialForTesting inserts a credential for an old
+  // `CredentialMetadata::Version`. Such credentials can't be created anymore,
+  // but they still exist and we need to be able to exercise them.
+  absl::optional<std::pair<Credential, base::ScopedCFTypeRef<SecKeyRef>>>
+  CreateCredentialLegacyCredentialForTesting(
+      CredentialMetadata::Version version,
+      const std::string& rp_id,
+      const PublicKeyCredentialUserEntity& user,
+      Discoverable discoverable) const;
+
   // FindCredentialsFromCredentialDescriptorList returns all credentials that
   // match one of the given |descriptors| and belong to |rp_id|. A descriptor
   // matches a credential if its transports() set is either empty or contains
@@ -117,7 +130,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdCredentialStore
   // exists, and false if an error occurred.
   API_AVAILABLE(macosx(10.12.2))
   bool DeleteCredentialsForUserId(const std::string& rp_id,
-                                  base::span<const uint8_t> user_id) const;
+                                  const std::vector<uint8_t>& user_id) const;
 
   // PlatformCredentialStore:
   void DeleteCredentials(base::Time created_not_before,
@@ -135,14 +148,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdCredentialStore
                               base::Time created_not_after);
 
   // Returns all credentials for the given `rp_id` (resident and non-resident).
-  static std::vector<std::pair<Credential, CredentialMetadata>>
-  FindCredentialsForTesting(AuthenticatorConfig config, std::string rp_id);
+  static std::vector<Credential> FindCredentialsForTesting(
+      AuthenticatorConfig config,
+      std::string rp_id);
 
  private:
   API_AVAILABLE(macosx(10.12.2))
   absl::optional<std::list<Credential>> FindCredentialsImpl(
       const std::string& rp_id,
-      absl::optional<base::span<const uint8_t>> user_id,
       const std::set<std::vector<uint8_t>>& credential_ids) const;
 
   bool DeleteCredentialById(base::span<const uint8_t> credential_id) const;

@@ -21,6 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
@@ -347,6 +348,19 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
+    public void beforeHideTabSwitcherView_NullController() {
+        mMediator.prepareHideTabSwitcherView();
+        verifyZeroInteractions(mTabGridDialogController);
+    }
+
+    @Test
+    public void beforeHideTabSwitcherView_WithController() {
+        mMediator.setTabGridDialogController(mTabGridDialogController);
+        mMediator.prepareHideTabSwitcherView();
+        verify(mTabGridDialogController).hideDialog(eq(false));
+    }
+
+    @Test
     public void startedShowingPropagatesToObservers() {
         initAndAssertAllProperties();
         mModel.get(TabListContainerProperties.VISIBILITY_LISTENER).startedShowing(true);
@@ -590,12 +604,12 @@ public class TabSwitcherMediatorUnitTest {
         initAndAssertAllProperties();
         // Mock that mTab1 is not the only tab in the current tab model and it will be closed.
         doReturn(2).when(mTabModel).getCount();
-        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false);
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false, true);
         verify(mMessageItemsController, never()).removeAllAppendedMessage();
 
         // Mock that mTab1 is the only tab in the current tab model and it will be closed.
         doReturn(1).when(mTabModel).getCount();
-        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false);
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false, true);
         verify(mMessageItemsController).removeAllAppendedMessage();
     }
 
@@ -620,17 +634,17 @@ public class TabSwitcherMediatorUnitTest {
 
         doReturn(1).when(mTabModel).getCount();
         doReturn(TAB1_ID).when(mPriceMessageService).getBindingTabId();
-        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false);
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false, true);
         verify(mPriceWelcomeMessageController, times(0)).removePriceWelcomeMessage();
 
         doReturn(2).when(mTabModel).getCount();
         doReturn(TAB2_ID).when(mPriceMessageService).getBindingTabId();
-        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false);
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false, true);
         verify(mPriceWelcomeMessageController, times(0)).removePriceWelcomeMessage();
 
         doReturn(2).when(mTabModel).getCount();
         doReturn(TAB1_ID).when(mPriceMessageService).getBindingTabId();
-        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false);
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false, true);
         verify(mPriceWelcomeMessageController, times(1)).removePriceWelcomeMessage();
     }
 

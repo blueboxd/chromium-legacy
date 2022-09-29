@@ -48,6 +48,11 @@ class ZWPTextInputWrapperClient {
   // result of some composing (pre-edit).
   virtual void OnCommitString(base::StringPiece text) = 0;
 
+  // Called when the cursor position or selection should be modified. The new
+  // cursor position is applied on the next OnCommitString. |index| and |anchor|
+  // are measured in UTF-8 bytes.
+  virtual void OnCursorPosition(int32_t index, int32_t anchor) = 0;
+
   // Called when client needs to delete all or part of the text surrounding
   // the cursor. |index| and |length| are expected to be a byte offset of |text|
   // passed via ZWPTextInputWrapper::SetSurroundingText.
@@ -80,6 +85,11 @@ class ZWPTextInputWrapperClient {
   // Sets the autocorrect range in the text input client.
   // |range| is in UTF-16 code range.
   virtual void OnSetAutocorrectRange(const gfx::Range& range) = 0;
+
+  // Called when the virtual keyboard's occluded bounds is updated.
+  // The bounds are in screen DIP.
+  virtual void OnSetVirtualKeyboardOccludedBounds(
+      const gfx::Rect& screen_bounds) = 0;
 
   // Called when the visibility state of the input panel changed.
   // There's no detailed spec of |state|, and no actual implementor except

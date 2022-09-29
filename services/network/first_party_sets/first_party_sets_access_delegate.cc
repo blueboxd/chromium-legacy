@@ -6,7 +6,9 @@
 
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
+#include "base/time/time.h"
 #include "net/base/schemeful_site.h"
 #include "net/cookies/first_party_set_metadata.h"
 
@@ -25,7 +27,7 @@ FirstPartySetsAccessDelegate::FirstPartySetsAccessDelegate(
     mojom::FirstPartySetsAccessDelegateParamsPtr params,
     FirstPartySetsManager* const manager)
     : manager_(manager),
-      context_config_(FirstPartySetsContextConfig(IsEnabled(params))),
+      context_config_(net::FirstPartySetsContextConfig(IsEnabled(params))),
       pending_queries_(
           IsEnabled(params) && receiver.is_valid() && manager_->is_enabled()
               ? std::make_unique<base::circular_deque<base::OnceClosure>>()
@@ -50,6 +52,10 @@ FirstPartySetsAccessDelegate::ComputeMetadata(
     const std::set<net::SchemefulSite>& party_context,
     base::OnceCallback<void(net::FirstPartySetMetadata)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!context_config_.is_enabled()) {
+    return {net::FirstPartySetMetadata()};
+  }
   if (pending_queries_) {
     // base::Unretained() is safe because `this` owns `pending_queries_` and
     // `pending_queries_` will not run the enqueued callbacks after `this` is
@@ -65,49 +71,16 @@ FirstPartySetsAccessDelegate::ComputeMetadata(
                                    context_config_, std::move(callback));
 }
 
-absl::optional<FirstPartySetsAccessDelegate::SetsByOwner>
-FirstPartySetsAccessDelegate::Sets(
-    base::OnceCallback<void(FirstPartySetsAccessDelegate::SetsByOwner)>
-        callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (pending_queries_) {
-    // base::Unretained() is safe because `this` owns `pending_queries_` and
-    // `pending_queries_` will not run the enqueued callbacks after `this` is
-    // destroyed.
-    EnqueuePendingQuery(
-        base::BindOnce(&FirstPartySetsAccessDelegate::SetsAndInvoke,
-                       base::Unretained(this), std::move(callback)));
-    return absl::nullopt;
-  }
-
-  return manager_->Sets(context_config_, std::move(callback));
-}
-
-absl::optional<FirstPartySetsAccessDelegate::OwnerResult>
-FirstPartySetsAccessDelegate::FindOwner(
-    const net::SchemefulSite& site,
-    base::OnceCallback<void(FirstPartySetsAccessDelegate::OwnerResult)>
-        callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (pending_queries_) {
-    // base::Unretained() is safe because `this` owns `pending_queries_` and
-    // `pending_queries_` will not run the enqueued callbacks after `this` is
-    // destroyed.
-    EnqueuePendingQuery(
-        base::BindOnce(&FirstPartySetsAccessDelegate::FindOwnerAndInvoke,
-                       base::Unretained(this), site, std::move(callback)));
-    return absl::nullopt;
-  }
-
-  return manager_->FindOwner(site, context_config_, std::move(callback));
-}
-
 absl::optional<FirstPartySetsAccessDelegate::OwnersResult>
 FirstPartySetsAccessDelegate::FindOwners(
     const base::flat_set<net::SchemefulSite>& sites,
     base::OnceCallback<void(FirstPartySetsAccessDelegate::OwnersResult)>
         callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!context_config_.is_enabled())
+    return {{}};
+
   if (pending_queries_) {
     // base::Unretained() is safe because `this` owns `pending_queries_` and
     // `pending_queries_` will not run the enqueued callbacks after `this` is
@@ -127,6 +100,8 @@ void FirstPartySetsAccessDelegate::ComputeMetadataAndInvoke(
     const std::set<net::SchemefulSite>& party_context,
     base::OnceCallback<void(net::FirstPartySetMetadata)> callback) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(context_config_.is_enabled());
+
   std::pair<base::OnceCallback<void(net::FirstPartySetMetadata)>,
             base::OnceCallback<void(net::FirstPartySetMetadata)>>
       callbacks = base::SplitOnceCallback(std::move(callback));
@@ -140,42 +115,13 @@ void FirstPartySetsAccessDelegate::ComputeMetadataAndInvoke(
     std::move(callbacks.second).Run(std::move(sync_result.value()));
 }
 
-void FirstPartySetsAccessDelegate::SetsAndInvoke(
-    base::OnceCallback<void(FirstPartySetsAccessDelegate::SetsByOwner)>
-        callback) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::pair<base::OnceCallback<void(FirstPartySetsAccessDelegate::SetsByOwner)>,
-            base::OnceCallback<void(FirstPartySetsAccessDelegate::SetsByOwner)>>
-      callbacks = base::SplitOnceCallback(std::move(callback));
-
-  absl::optional<FirstPartySetsAccessDelegate::SetsByOwner> sync_result =
-      manager_->Sets(context_config_, std::move(callbacks.first));
-
-  if (sync_result.has_value())
-    std::move(callbacks.second).Run(std::move(sync_result.value()));
-}
-
-void FirstPartySetsAccessDelegate::FindOwnerAndInvoke(
-    const net::SchemefulSite& site,
-    base::OnceCallback<void(FirstPartySetsAccessDelegate::OwnerResult)>
-        callback) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::pair<base::OnceCallback<void(FirstPartySetsAccessDelegate::OwnerResult)>,
-            base::OnceCallback<void(FirstPartySetsAccessDelegate::OwnerResult)>>
-      callbacks = base::SplitOnceCallback(std::move(callback));
-
-  absl::optional<FirstPartySetsAccessDelegate::OwnerResult> sync_result =
-      manager_->FindOwner(site, context_config_, std::move(callbacks.first));
-
-  if (sync_result.has_value())
-    std::move(callbacks.second).Run(sync_result.value());
-}
-
 void FirstPartySetsAccessDelegate::FindOwnersAndInvoke(
     const base::flat_set<net::SchemefulSite>& sites,
     base::OnceCallback<void(FirstPartySetsAccessDelegate::OwnersResult)>
         callback) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(context_config_.is_enabled());
+
   std::pair<
       base::OnceCallback<void(FirstPartySetsAccessDelegate::OwnersResult)>,
       base::OnceCallback<void(FirstPartySetsAccessDelegate::OwnersResult)>>
@@ -190,6 +136,20 @@ void FirstPartySetsAccessDelegate::FindOwnersAndInvoke(
 
 void FirstPartySetsAccessDelegate::InvokePendingQueries() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  UmaHistogramTimes(
+      "Cookie.FirstPartySets.InitializationDuration."
+      "ContextReadyToServeQueries2",
+      construction_timer_.Elapsed());
+
+  base::UmaHistogramCounts10000(
+      "Cookie.FirstPartySets.ContextDelayedQueriesCount",
+      pending_queries_ ? pending_queries_->size() : 0);
+
+  base::UmaHistogramTimes("Cookie.FirstPartySets.ContextMostDelayedQueryDelta",
+                          first_async_query_timer_.has_value()
+                              ? first_async_query_timer_->Elapsed()
+                              : base::TimeDelta());
   if (!pending_queries_)
     return;
 
@@ -206,6 +166,9 @@ void FirstPartySetsAccessDelegate::EnqueuePendingQuery(
     base::OnceClosure run_query) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(pending_queries_);
+
+  if (!first_async_query_timer_.has_value())
+    first_async_query_timer_ = {base::ElapsedTimer()};
 
   pending_queries_->push_back(std::move(run_query));
 }

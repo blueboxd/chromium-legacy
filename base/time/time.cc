@@ -4,15 +4,6 @@
 
 #include "base/time/time.h"
 
-#include "build/build_config.h"
-
-#if BUILDFLAG(IS_LINUX)
-// time.h is a widely included header and its size impacts build time.
-// Try not to raise this limit unless necessary. See
-// https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
-#pragma clang max_tokens_here 490000
-#endif  // BUILDFLAG(IS_LINUX)
-
 #include <atomic>
 #include <cmath>
 #include <limits>
@@ -36,6 +27,8 @@ const char kWeekdayName[7][4] = {"Sun", "Mon", "Tue", "Wed",
 
 const char kMonthName[12][4] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
                                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+TimeTicks g_shared_time_ticks_at_unix_epoch;
 
 }  // namespace
 
@@ -333,12 +326,32 @@ TimeTicks TimeTicks::Now() {
 }
 
 // static
+// This method should be called once at process start and before
+// TimeTicks::UnixEpoch is accessed. It is intended to make the offset between
+// unix time and monotonic time consistent across processes.
+void TimeTicks::SetSharedUnixEpoch(TimeTicks ticks_at_epoch) {
+  DCHECK(g_shared_time_ticks_at_unix_epoch.is_null());
+  g_shared_time_ticks_at_unix_epoch = ticks_at_epoch;
+}
+
+// static
 TimeTicks TimeTicks::UnixEpoch() {
-  static const TimeTicks epoch([]() {
-    return subtle::TimeTicksNowIgnoringOverride() -
-           (subtle::TimeNowIgnoringOverride() - Time::UnixEpoch());
-  }());
-  return epoch;
+  struct StaticUnixEpoch {
+    StaticUnixEpoch()
+        : epoch(
+              g_shared_time_ticks_at_unix_epoch.is_null()
+                  ? subtle::TimeTicksNowIgnoringOverride() -
+                        (subtle::TimeNowIgnoringOverride() - Time::UnixEpoch())
+                  : g_shared_time_ticks_at_unix_epoch) {
+      // Prevent future usage of `g_shared_time_ticks_at_unix_epoch`.
+      g_shared_time_ticks_at_unix_epoch = TimeTicks::Max();
+    }
+
+    const TimeTicks epoch;
+  };
+
+  static StaticUnixEpoch static_epoch;
+  return static_epoch.epoch;
 }
 
 TimeTicks TimeTicks::SnappedToNextTick(TimeTicks tick_phase,

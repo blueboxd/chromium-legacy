@@ -5,7 +5,9 @@
 /**
  * @fileoverview ChromeVox options page.
  */
+import {constants} from '../../common/constants.js';
 import {AbstractTts} from '../common/abstract_tts.js';
+import {BackgroundBridge} from '../common/background_bridge.js';
 import {BrailleTable} from '../common/braille/braille_table.js';
 import {ExtensionBridge} from '../common/extension_bridge.js';
 import {Msgs} from '../common/msgs.js';
@@ -265,9 +267,7 @@ export class OptionsPage {
         select.innerHTML = '';
         // TODO(plundblad): voiceName can actually be omitted in the TTS engine.
         // We should generate a name in that case.
-        voices.forEach(function(voice) {
-          voice.voiceName = voice.voiceName || '';
-        });
+        voices.forEach(voice => voice.voiceName = voice.voiceName || '');
         voices.sort(function(a, b) {
           // Prefer Google tts voices over all others.
           if (a.extensionId === GOOGLE_TTS_EXTENSION_ID &&
@@ -289,9 +289,8 @@ export class OptionsPage {
           return 0;
         });
         addVoiceOption(Msgs.getMsg('system_voice'), constants.SYSTEM_VOICE);
-        voices.forEach(voice => {
-          addVoiceOption(voice.voiceName, voice.voiceName);
-        });
+        voices.forEach(
+            voice => addVoiceOption(voice.voiceName, voice.voiceName));
       });
     }
 
@@ -455,7 +454,7 @@ export class OptionsPage {
    * @return {boolean} True if the default action should occur.
    */
   static eventListener(event) {
-    window.setTimeout(function() {
+    setTimeout(function() {
       const target = event.target;
       if (target.id === 'brailleWordWrap') {
         chrome.storage.local.set({brailleWordWrap: target.checked});

@@ -13,10 +13,6 @@ namespace ash {
 
 struct NewScreencastPrecondition;
 
-// File extension of Projector metadata file. It is used to identify Projector
-// screencasts at processing pending screencasts and fetching screencast list.
-constexpr char kProjectorMetadataFileExtension[] = "projector";
-
 class ProjectorClient;
 
 // Enum class used to notify the ProjectorController on the availability of
@@ -31,7 +27,9 @@ enum class ASH_PUBLIC_EXPORT SpeechRecognitionAvailability {
   // SODA binary and language packs are downloading.
   kSodaInstalling,
   // SODA installation failed.
-  kSodaInstallationError,
+  kSodaInstallationErrorUnspecified,
+  // SODA installation error needs reboot
+  kSodaInstallationErrorNeedsReboot,
   // SODA is available to be used.
   kAvailable
 };

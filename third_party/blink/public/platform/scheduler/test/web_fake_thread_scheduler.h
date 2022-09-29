@@ -26,14 +26,11 @@ class WebFakeThreadScheduler : public WebThreadScheduler {
   WebAgentGroupScheduler* GetCurrentAgentGroupScheduler() override;
   void SetRendererHidden(bool hidden) override;
   void SetRendererBackgrounded(bool backgrounded) override;
-  std::unique_ptr<RendererPauseHandle> PauseRenderer() override;
 #if BUILDFLAG(IS_ANDROID)
   void PauseTimersForAndroidWebView() override;
   void ResumeTimersForAndroidWebView() override;
 #endif
   void Shutdown() override;
-  void SetTopLevelBlameContext(
-      base::trace_event::BlameContext* blame_context) override;
   void SetRendererProcessType(WebRendererProcessType type) override;
 };
 

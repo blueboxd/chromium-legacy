@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/fenced_frame/html_fenced_frame_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
@@ -195,8 +196,10 @@ String GetNodeString(Node* node) {
   }
 
   Element* element = DynamicTo<Element>(node);
-  if (!element)
-    return "<null>";
+  if (!element) {
+    return To<Document>(node)->IsLoadCompleted() ? "#document"
+                                                 : "#document (loading)";
+  }
 
   String string_builder = "<";
 
@@ -506,7 +509,7 @@ void TruncateAndAddStringAttribute(
     uint32_t max_len = kMaxStringAttributeLength) {
   if (value.IsEmpty())
     return;
-  std::string value_utf8 = value.Utf8();
+  std::string value_utf8 = value.Utf8(kStrictUTF8Conversion);
   if (value_utf8.size() > max_len) {
     std::string truncated;
     base::TruncateUTF8ToByteSize(value_utf8, max_len, &truncated);
@@ -610,6 +613,16 @@ int32_t ToAXHighlightType(const AtomicString& highlight_type) {
   return static_cast<int32_t>(result);
 }
 
+const AXObject* FindAncestorWithAriaHidden(const AXObject* start) {
+  for (const AXObject* object = start; object && !object->IsWebArea();
+       object = object->ParentObject()) {
+    if (object->AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden))
+      return object;
+  }
+
+  return nullptr;
+}
+
 // static
 unsigned AXObject::number_of_live_ax_objects_ = 0;
 
@@ -646,7 +659,6 @@ void AXObject::Init(AXObject* parent) {
   DCHECK(!is_initializing_);
   base::AutoReset<bool> reentrancy_protector(&is_initializing_, true);
 #endif  // DCHECK_IS_ON()
-
   // The role must be determined immediately.
   // Note: in order to avoid reentrancy, the role computation cannot use the
   // ParentObject(), although it can use the DOM parent.
@@ -655,6 +667,15 @@ void AXObject::Init(AXObject* parent) {
   DCHECK(IsValidRole(role_)) << "Illegal " << role_ << " for\n"
                              << GetNode() << '\n'
                              << GetLayoutObject();
+
+  HTMLOptGroupElement* optgroup = DynamicTo<HTMLOptGroupElement>(GetNode());
+  if (optgroup && optgroup->OwnerSelectElement()) {
+    // We do not currently create accessible objects for an <optgroup> inside of
+    // a <select size=1>.
+    // TODO(accessibility) Remove this once we refactor HTML <select> to use
+    // the shadow DOM and AXNodeObject instead of AXMenuList* classes.
+    DCHECK(!optgroup->OwnerSelectElement()->UsesMenuList());
+  }
 #endif  // DCHECK_IS_ON()
 
   // Determine the parent as soon as possible.
@@ -679,6 +700,9 @@ void AXObject::Init(AXObject* parent) {
     AXObjectCache().MaybeNewRelationTarget(*GetNode(), this);
 
   UpdateCachedAttributeValuesIfNeeded(false);
+
+  DCHECK(GetDocument()) << "All AXObjects must have a document: "
+                        << ToString(true, true);
 }
 
 void AXObject::Detach() {
@@ -885,13 +909,6 @@ AXObject* AXObject::ComputeAccessibleNodeParent(
     if (AXObject* parent = cache.Get(parent_accessible_node))
       return parent;
 
-    // If |accessible_node|'s parent is attached to a DOM element, we return the
-    // AXObject of the DOM element as the parent AXObject of |accessible_node|,
-    // since the accessible node directly attached to an element should not have
-    // its own AXObject.
-    if (Element* element = parent_accessible_node->element())
-      return cache.GetOrCreate(element);
-
     // Compute grandparent first, since constructing parent AXObject for
     // |accessible_node| requires grandparent to be provided.
     AXObject* grandparent_object =
@@ -967,7 +984,16 @@ AXObject* AXObject::ComputeNonARIAParent(AXObjectCacheImpl& cache,
   if (auto* document = DynamicTo<Document>(current_node)) {
     LocalFrame* frame = document->GetFrame();
     DCHECK(frame);
-    return cache.GetOrCreate(frame->PagePopupOwner());
+    Node* popup_owner = frame->PagePopupOwner();
+    if (!popup_owner)
+      return nullptr;
+    // TODO(accessibility) Remove this rule once we stop using AXMenuList*.
+    if (IsA<HTMLSelectElement>(popup_owner) &&
+        AXObjectCacheImpl::ShouldCreateAXMenuListFor(
+            popup_owner->GetLayoutObject())) {
+      return nullptr;
+    }
+    return cache.GetOrCreate(popup_owner);
   }
 
   // For <option> in <select size=1>, return the popup.
@@ -1377,8 +1403,11 @@ void AXObject::SerializeChildTreeID(ui::AXNodeData* node_data) {
   DCHECK_EQ(ChildCountIncludingIgnored(), 0)
       << "Children won't exist until the trees are stitched together in the "
          "browser process. A failure means that a child node was incorrectly "
-         "considered relevant by AXObjectCacheImpl. Element src = "
-      << GetAttribute(html_names::kSrcAttr);
+         "considered relevant by AXObjectCacheImpl."
+      << "\n* Parent: " << ToString(true)
+      << "\n* Frame owner: " << IsA<HTMLFrameOwnerElement>(GetNode())
+      << "\n* Element src: " << GetAttribute(html_names::kSrcAttr)
+      << "\n* First child: " << FirstChildIncludingIgnored()->ToString(true);
 
   ui::AXTreeID child_tree_id = ui::AXTreeID::FromToken(child_token.value());
   node_data->AddChildTreeId(child_tree_id);
@@ -2602,6 +2631,14 @@ bool AXObject::IsVisited() const {
 
 bool AXObject::AccessibilityIsIgnored() const {
   UpdateCachedAttributeValuesIfNeeded();
+#if defined(AX_FAIL_FAST_BUILD)
+  if (!cached_is_ignored_ && IsDetached()) {
+    NOTREACHED()
+        << "A detached node cannot be ignored: " << ToString(true)
+        << "\nThe Detach() method sets cached_is_ignored_ to true, but "
+           "something has recomputed it.";
+  }
+#endif
   return cached_is_ignored_;
 }
 
@@ -2716,14 +2753,6 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
 
   if (included_in_tree_changed) {
     if (AXObject* parent = CachedParentObject()) {
-      // TODO(aleventhal) Reenable DCHECK. It fails on PDF tests.
-      // DCHECK(!ax_object_cache_->IsFrozen())
-      // << "Attempting to change children on an ancestor is dangerous during "
-      //    "serialization, because the ancestor may have already been "
-      //    "visited. Reaching this line indicates that AXObjectCacheImpl did "
-      //    "not handle a signal and call ChilldrenChanged() earlier."
-      //     << "\nChild: " << ToString(true)
-      //     << "\nParent: " << parent->ToString(true);
       // Defers a ChildrenChanged() on the first included ancestor.
       // Must defer it, otherwise it can cause reentry into
       // UpdateCachedAttributeValuesIfNeeded() on |this|.
@@ -2745,9 +2774,9 @@ bool AXObject::AccessibilityIsIgnoredByDefault(
 AXObjectInclusion AXObject::DefaultObjectInclusion(
     IgnoredReasons* ignored_reasons) const {
   if (IsAriaHidden()) {
-    // Keep focusable elements that are aria-hidden in tree, so that they can
-    // still fire events such as focus and value changes.
-    if (!CanSetFocusAttribute()) {
+    // Keep keyboard focusable elements that are aria-hidden in tree, so that
+    // they can still fire events such as focus and value changes.
+    if (!IsKeyboardFocusable()) {
       if (ignored_reasons)
         ComputeIsAriaHidden(ignored_reasons);
       return kIgnoreObject;
@@ -2838,8 +2867,9 @@ bool AXObject::IsAriaHidden() const {
 }
 
 bool AXObject::ComputeIsAriaHidden(IgnoredReasons* ignored_reasons) const {
-  if (IsA<Document>(GetNode()))
-    return false;  // The root node cannot be aria-hidden.
+  // The root node of a document or popup document cannot be aria-hidden.
+  if (IsWebArea())
+    return false;
 
   // aria-hidden:true works a bit like display:none.
   // * aria-hidden=true affects entire subtree.
@@ -2910,14 +2940,7 @@ bool AXObject::IsVisible() const {
 }
 
 const AXObject* AXObject::AriaHiddenRoot() const {
-  if (!IsAriaHidden())
-    return nullptr;
-  for (const AXObject* object = this; object; object = object->ParentObject()) {
-    if (object->AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden))
-      return object;
-  }
-
-  return nullptr;
+  return IsAriaHidden() ? FindAncestorWithAriaHidden(this) : nullptr;
 }
 
 const AXObject* AXObject::InertRoot() const {
@@ -2927,6 +2950,9 @@ const AXObject* AXObject::InertRoot() const {
 
   while (object && !object->IsAXNodeObject())
     object = object->ParentObject();
+
+  DCHECK(object);
+
   Node* node = object->GetNode();
   auto* element = DynamicTo<Element>(node);
   if (!element)
@@ -3474,6 +3500,21 @@ bool AXObject::ComputeCanSetFocusAttribute() const {
   return false;
 }
 
+// We can't use `Element::IsKeyboardFocusable()` since the downstream
+// `Element::IsFocusableStyle()` call will reset the document lifecycle.
+bool AXObject::IsKeyboardFocusable() const {
+  if (!CanSetFocusAttribute())
+    return false;
+
+  Element* element = GetElement();
+  DCHECK(element) << "Cannot be focusable without an element: "
+                  << ToString(true, true);
+  // TODO(jarhar) Scrollable containers should return true here if
+  // `RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled()`
+  // is true.
+  return element->tabIndex() >= 0 || IsRootEditableElement(*element);
+}
+
 // From ARIA 1.1.
 // 1. The value of aria-activedescendant refers to an element that is either a
 // descendant of the element with DOM focus or is a logical descendant as
@@ -3791,10 +3832,6 @@ bool AXObject::IsHiddenViaStyle() const {
 // https://github.com/w3c/accname/issues/57
 bool AXObject::IsHiddenForTextAlternativeCalculation(
     const AXObject* aria_label_or_description_root) const {
-  // aria-hidden=false allows hidden contents to be used in name from contents.
-  if (AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty::kHidden))
-    return false;
-
   auto* node = GetNode();
   if (!node)
     return false;
@@ -3819,6 +3856,12 @@ bool AXObject::IsHiddenForTextAlternativeCalculation(
   if (IsA<SVGDescElement>(node))
     return false;
 
+  // Always contribute text nodes, because they don't have display-related
+  // properties of their own, only their parents do. Parents should have been
+  // checked for their contribution earlier in the process.
+  if (IsA<Text>(node))
+    return false;
+
   // Markers do not contribute to the accessible name.
   // TODO(accessibility): Chrome has never included markers, but that's
   // actually undefined behavior. We will have to revisit after this is
@@ -3832,8 +3875,28 @@ bool AXObject::IsHiddenForTextAlternativeCalculation(
   // are explicitly hidden or they inherited the hidden value, so we resort to
   // contributing them all. See also: https://github.com/w3c/accname/issues/57
   if (aria_label_or_description_root &&
-      aria_label_or_description_root->IsHiddenViaStyle())
+      !aria_label_or_description_root->IsVisible()) {
     return false;
+  }
+
+  // aria-hidden nodes are generally excluded, with the exception:
+  // when computing name/description through an aria-labelledby/describedby
+  // relation, if the target of the relation is hidden it will expose the entire
+  // subtree, including aria-hidden=true nodes. The exception was accounted in
+  // the previous if block, so we are safe to hide any node with
+  // aria-hidden=true at this point.
+  if (AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden)) {
+    // We only hide aria-hidden text if the node does not support focus as a
+    // bad authoring correction.
+    if (!CanSetFocusAttribute())
+      return true;
+  } else {
+    // When IsAriaHidden() returns false, we only know the node is not in an
+    // aria-hidden="true" subtree. We need to check for the case where
+    // aria-hidden="false" specifically.
+    if (AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty::kHidden))
+      return false;
+  }
 
   return IsHiddenViaStyle();
 }
@@ -5151,8 +5214,7 @@ void AXObject::ClearChildren() const {
     // at this time. However, do allow invalidations if an object changes its
     // display locking (content-visibility: auto) status, as this may be the
     // only chance to do that, and it's safe to do now.
-    AXObject* ax_child_from_node =
-        AXObjectCache().GetWithoutInvalidation(child_node, true);
+    AXObject* ax_child_from_node = AXObjectCache().SafeGet(child_node, true);
     if (ax_child_from_node &&
         ax_child_from_node->CachedParentObject() == this) {
       // Check current parent first. It may be owned by another node.
@@ -6098,11 +6160,6 @@ bool AXObject::OnNativeShowContextMenuAction() {
   return true;
 }
 
-void AXObject::SelectionChanged() {
-  if (AXObject* parent = ParentObject())
-    parent->SelectionChanged();
-}
-
 // static
 bool AXObject::IsARIAControl(ax::mojom::blink::Role aria_role) {
   return IsARIAInput(aria_role) ||
@@ -6598,6 +6655,18 @@ const AXObject* AXObject::LowestCommonAncestor(const AXObject& first,
   return common_ancestor;
 }
 
+void AXObject::PreSerializationConsistencyCheck() {
+#if defined(AX_FAIL_FAST_BUILD)
+  if (!AXObjectCache().IsFrozen())
+    return;  // Only perform checks if tree is frozen.
+  SANITIZER_CHECK(!IsDetached());
+  // Extra checks that only occur during serialization.
+  SANITIZER_CHECK_EQ(cached_is_aria_hidden_, !!FindAncestorWithAriaHidden(this))
+      << "IsAriaHidden() doesn't match existence of an aria-hidden ancestor: "
+      << ToString(true);
+#endif
+}
+
 String AXObject::ToString(bool verbose, bool cached_values_only) const {
   // Build a friendly name for debugging the object.
   // If verbose, build a longer name name in the form of:
@@ -6610,8 +6679,20 @@ String AXObject::ToString(bool verbose, bool cached_values_only) const {
   if (verbose) {
     string_builder = string_builder + " axid#" + String::Number(AXObjectID());
     // Add useful HTML element info, like <div.myClass#myId>.
-    if (GetNode())
+    if (GetNode()) {
       string_builder = string_builder + " " + GetNodeString(GetNode());
+      if (IsA<Document>(GetNode())) {
+        if (IsRoot())
+          string_builder = string_builder + " isRoot";
+        if (GetDocument()->GetFrame() &&
+            GetDocument()->GetFrame()->PagePopupOwner()) {
+          string_builder = string_builder + " isPopup";
+        }
+      }
+    }
+
+    if (!GetDocument())
+      string_builder = string_builder + " missingDocument";
 
     // Add properties of interest that often contribute to errors:
     if (HasARIAOwns(GetElement())) {
@@ -6669,12 +6750,17 @@ String AXObject::ToString(bool verbose, bool cached_values_only) const {
         string_builder = string_builder + " ariaHidden";
     } else if (IsAriaHidden()) {
       const AXObject* aria_hidden_root = AriaHiddenRoot();
-      DCHECK(aria_hidden_root);
-      string_builder = string_builder + " ariaHiddenRoot";
-      if (aria_hidden_root != this) {
-        string_builder =
-            string_builder + GetNodeString(aria_hidden_root->GetNode());
+      if (aria_hidden_root) {
+        string_builder = string_builder + " ariaHiddenRoot";
+        if (aria_hidden_root != this) {
+          string_builder =
+              string_builder + GetNodeString(aria_hidden_root->GetNode());
+        }
+      } else {
+        string_builder = string_builder + " ariaHiddenRootMissing";
       }
+    } else if (AriaHiddenRoot()) {
+      string_builder = string_builder + " ariaHiddenRootExtra";
     }
     if (cached_values_only ? cached_is_hidden_via_style : IsHiddenViaStyle())
       string_builder = string_builder + " isHiddenViaCSS";

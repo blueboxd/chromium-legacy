@@ -8,15 +8,13 @@
 // patterns. Use Web Components in any new code.
 
 // clang-format off
-// #import {loadTimeData} from '../../load_time_data.m.js';
-// #import {assert} from '../../assert.m.js';
-// #import {Command} from './command.m.js';
-// #import {define as crUiDefine, decorate, swallowDoubleClick} from '../ui.m.js';
-// #import {getPropertyDescriptor, PropertyKind} from '../../cr.m.js';
+import {loadTimeData} from '../../load_time_data.m.js';
+import {assert} from '../../assert.m.js';
+import {Command} from './command.js';
+import {define as crUiDefine, decorate, swallowDoubleClick} from '../ui.m.js';
+import {getPropertyDescriptor, PropertyKind} from '../../cr.m.js';
 // clang-format on
 
-cr.define('cr.ui', function() {
-  /* #ignore */ const Command = cr.ui.Command;
 
   /**
    * Creates a new menu item element.
@@ -25,14 +23,14 @@ cr.define('cr.ui', function() {
    * @extends {HTMLElement}
    * @implements {EventListener}
    */
-  /* #export */ const MenuItem = cr.ui.define('cr-menu-item');
+  export const MenuItem = crUiDefine('cr-menu-item');
 
   /**
    * Creates a new menu separator element.
-   * @return {!cr.ui.MenuItem} The new separator element.
+   * @return {!MenuItem} The new separator element.
    */
   MenuItem.createSeparator = function() {
-    const el = /** @type {!cr.ui.MenuItem} */ (document.createElement('hr'));
+    const el = /** @type {!MenuItem} */ (document.createElement('hr'));
     if (MenuItem.decorate) {
       MenuItem.decorate(el);
     }
@@ -74,7 +72,7 @@ cr.define('cr.ui', function() {
      * The command associated with this menu item. If this is set to a string
      * of the form "#element-id" then the element is looked up in the document
      * of the command.
-     * @type {cr.ui.Command}
+     * @type {Command}
      */
     command_: null,
     get command() {
@@ -90,7 +88,7 @@ cr.define('cr.ui', function() {
 
       if (typeof command === 'string' && command[0] === '#') {
         command = assert(this.ownerDocument.body.querySelector(command));
-        cr.ui.decorate(command, Command);
+        decorate(command, Command);
       }
 
       this.command_ = command;
@@ -229,7 +227,7 @@ cr.define('cr.ui', function() {
           const command = this.command;
           if (command) {
             command.execute(contextElement);
-            cr.ui.swallowDoubleClick(e);
+            swallowDoubleClick(e);
           }
         }
       }
@@ -273,14 +271,14 @@ cr.define('cr.ui', function() {
   MenuItem.prototype.disabled;
   Object.defineProperty(
       MenuItem.prototype, 'disabled',
-      cr.getPropertyDescriptor('disabled', cr.PropertyKind.BOOL_ATTR));
+      getPropertyDescriptor('disabled', PropertyKind.BOOL_ATTR));
 
   /**
    * Whether the menu item is hidden or not.
    */
   Object.defineProperty(
       MenuItem.prototype, 'hidden',
-      cr.getPropertyDescriptor('hidden', cr.PropertyKind.BOOL_ATTR));
+      getPropertyDescriptor('hidden', PropertyKind.BOOL_ATTR));
 
   /**
    * Whether the menu item is selected or not.
@@ -289,7 +287,7 @@ cr.define('cr.ui', function() {
   MenuItem.prototype.selected;
   Object.defineProperty(
       MenuItem.prototype, 'selected',
-      cr.getPropertyDescriptor('selected', cr.PropertyKind.BOOL_ATTR));
+      getPropertyDescriptor('selected', PropertyKind.BOOL_ATTR));
 
   /**
    * Whether the menu item is checked or not.
@@ -298,7 +296,7 @@ cr.define('cr.ui', function() {
   MenuItem.prototype.checked;
   Object.defineProperty(
       MenuItem.prototype, 'checked',
-      cr.getPropertyDescriptor('checked', cr.PropertyKind.BOOL_ATTR));
+      getPropertyDescriptor('checked', PropertyKind.BOOL_ATTR));
 
   /**
    * Whether the menu item is checkable or not.
@@ -307,9 +305,4 @@ cr.define('cr.ui', function() {
   MenuItem.prototype.checkable;
   Object.defineProperty(
       MenuItem.prototype, 'checkable',
-      cr.getPropertyDescriptor('checkable', cr.PropertyKind.BOOL_ATTR));
-
-  // Export
-  // #cr_define_end
-  return {MenuItem: MenuItem};
-});
+      getPropertyDescriptor('checkable', PropertyKind.BOOL_ATTR));

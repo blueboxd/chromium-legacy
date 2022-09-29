@@ -780,8 +780,12 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry with delayed web server.
-// TODO(crbug.com/1198411): Fix flakiness.
-- (void)DISABLED_testSavingToReadingListAndLoadBadNetwork {
+- (void)testSavingToReadingListAndLoadBadNetwork {
+  // TODO(crbug.com/1350732): Re-enable when flake fixed.
+  if (@available(iOS 16, *)) {
+    EARL_GREY_TEST_DISABLED(@"Test consistently failing on iOS16 iPhone 8.");
+  }
+
   [ReadingListAppInterface forceConnectionToWifi];
   GURL distillableURL = self.testServer->GetURL(kDistillableURL);
   // Open http://potato
@@ -1203,6 +1207,11 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 
 // Tests the Mark as Read/Unread context menu action for a reading list entry.
 - (void)testContextMenuMarkAsReadAndBack {
+  // TODO(crbug.com/1350732): Re-enable when flake fixed.
+  if (@available(iOS 16, *)) {
+    EARL_GREY_TEST_DISABLED(@"Test consistently failing on iOS16 iPhone 8.");
+  }
+
   AddEntriesAndOpenReadingList();
 
   AssertAllEntriesVisible();

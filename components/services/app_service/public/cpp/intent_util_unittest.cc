@@ -20,9 +20,9 @@ class IntentUtilTest : public testing::Test {
   apps::ConditionPtr CreateMultiConditionValuesCondition() {
     std::vector<apps::ConditionValuePtr> condition_values;
     condition_values.push_back(std::make_unique<apps::ConditionValue>(
-        "https", apps::PatternMatchType::kNone));
+        "https", apps::PatternMatchType::kLiteral));
     condition_values.push_back(std::make_unique<apps::ConditionValue>(
-        "http", apps::PatternMatchType::kNone));
+        "http", apps::PatternMatchType::kLiteral));
     auto condition = std::make_unique<apps::Condition>(
         apps::ConditionType::kScheme, std::move(condition_values));
     return condition;
@@ -31,9 +31,9 @@ class IntentUtilTest : public testing::Test {
   apps::mojom::ConditionPtr CreateMultiMojomConditionValuesCondition() {
     std::vector<apps::mojom::ConditionValuePtr> condition_values;
     condition_values.push_back(apps_util::MakeConditionValue(
-        "https", apps::mojom::PatternMatchType::kNone));
+        "https", apps::mojom::PatternMatchType::kLiteral));
     condition_values.push_back(apps_util::MakeConditionValue(
-        "http", apps::mojom::PatternMatchType::kNone));
+        "http", apps::mojom::PatternMatchType::kLiteral));
     auto condition = apps_util::MakeCondition(
         apps::mojom::ConditionType::kScheme, std::move(condition_values));
     return condition;
@@ -222,14 +222,14 @@ TEST_F(IntentUtilTest, NoneConditionValueMatch) {
 // TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
 TEST_F(IntentUtilTest, NoneMatchTypeMojom) {
   auto condition_value = apps_util::MakeConditionValue(
-      "https", apps::mojom::PatternMatchType::kNone);
+      "https", apps::mojom::PatternMatchType::kLiteral);
   EXPECT_TRUE(apps_util::ConditionValueMatches("https", condition_value));
   EXPECT_FALSE(apps_util::ConditionValueMatches("http", condition_value));
 }
 
 TEST_F(IntentUtilTest, NoneMatchType) {
   auto condition_value = std::make_unique<apps::ConditionValue>(
-      "https", apps::PatternMatchType::kNone);
+      "https", apps::PatternMatchType::kLiteral);
   EXPECT_TRUE(apps_util::ConditionValueMatches("https", condition_value));
   EXPECT_FALSE(apps_util::ConditionValueMatches("http", condition_value));
 }
@@ -428,7 +428,7 @@ TEST_F(IntentUtilTest, FilterMatchLevelMojom) {
   EXPECT_EQ(apps_util::GetFilterMatchLevel(filter_url),
             static_cast<int>(apps::IntentFilterMatchLevel::kScheme) +
                 static_cast<int>(apps::IntentFilterMatchLevel::kHost) +
-                static_cast<int>(apps::IntentFilterMatchLevel::kPattern));
+                static_cast<int>(apps::IntentFilterMatchLevel::kPath));
   EXPECT_EQ(apps_util::GetFilterMatchLevel(filter_scheme_and_host_only),
             static_cast<int>(apps::IntentFilterMatchLevel::kScheme) +
                 static_cast<int>(apps::IntentFilterMatchLevel::kHost));
@@ -461,7 +461,7 @@ TEST_F(IntentUtilTest, FilterMatchLevel) {
   EXPECT_EQ(filter_url->GetFilterMatchLevel(),
             static_cast<int>(apps::IntentFilterMatchLevel::kScheme) +
                 static_cast<int>(apps::IntentFilterMatchLevel::kHost) +
-                static_cast<int>(apps::IntentFilterMatchLevel::kPattern));
+                static_cast<int>(apps::IntentFilterMatchLevel::kPath));
   EXPECT_EQ(filter_scheme_and_host_only->GetFilterMatchLevel(),
             static_cast<int>(apps::IntentFilterMatchLevel::kScheme) +
                 static_cast<int>(apps::IntentFilterMatchLevel::kHost));

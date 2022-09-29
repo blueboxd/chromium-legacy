@@ -14,14 +14,14 @@
 #include "base/values.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_third_party_vpn_driver_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_third_party_vpn_observer.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_profile_handler.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_type_pattern.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_third_party_vpn_driver_client.h"
-#include "chromeos/dbus/shill/shill_third_party_vpn_observer.h"
 #include "crypto/sha2.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -127,7 +127,7 @@ class VpnConfigurationImpl
     pepper_vpn_proxy_observer_.Bind(std::move(pepper_vpn_proxy_observer));
   }
 
-  // chromeos::ShillThirdPartyVpnObserver:
+  // ash::ShillThirdPartyVpnObserver:
   void OnPacketReceived(const std::vector<char>& data) override;
   void OnPlatformMessage(uint32_t platform_message) override;
 
@@ -178,7 +178,7 @@ VpnServiceForExtensionAsh::VpnServiceForExtensionAsh(
     const std::string& extension_id)
     : extension_id_(extension_id) {
   network_configuration_observer_.Observe(
-      chromeos::NetworkHandler::Get()->network_configuration_handler());
+      ash::NetworkHandler::Get()->network_configuration_handler());
 }
 
 VpnServiceForExtensionAsh::~VpnServiceForExtensionAsh() = default;
@@ -208,8 +208,8 @@ void VpnServiceForExtensionAsh::CreateConfiguration(
 
   // Since the API is only designed to be used with the primary profile, it's
   // safe to get the hash of the primary profile here.
-  const chromeos::NetworkProfile* profile =
-      chromeos::NetworkHandler::Get()
+  const ash::NetworkProfile* profile =
+      ash::NetworkHandler::Get()
           ->network_profile_handler()
           ->GetProfileForUserhash(ash::ProfileHelper::GetUserIdHashFromProfile(
               ProfileManager::GetPrimaryUserProfile()));
@@ -232,7 +232,7 @@ void VpnServiceForExtensionAsh::CreateConfiguration(
   properties.Set(shill::kGuidProperty, base::GenerateGUID());
 
   auto [success, failure] = AdaptCallback(std::move(callback));
-  chromeos::NetworkHandler::Get()
+  ash::NetworkHandler::Get()
       ->network_configuration_handler()
       ->CreateShillConfiguration(
           base::Value(std::move(properties)),
@@ -274,7 +274,7 @@ void VpnServiceForExtensionAsh::DestroyConfiguration(
   DestroyConfigurationInternal(configuration);
 
   auto [success, failure] = AdaptCallback(std::move(callback));
-  chromeos::NetworkHandler::Get()
+  ash::NetworkHandler::Get()
       ->network_configuration_handler()
       ->RemoveConfiguration(
           *service_path,
@@ -296,7 +296,7 @@ void VpnServiceForExtensionAsh::SetParameters(base::Value::Dict parameters,
   }
 
   auto [success, failure] = AdaptCallback(std::move(callback));
-  chromeos::ShillThirdPartyVpnDriverClient::Get()->SetParameters(
+  ash::ShillThirdPartyVpnDriverClient::Get()->SetParameters(
       active_configuration_->object_path(), base::Value(std::move(parameters)),
       base::BindOnce(&RunWarningCallback, std::move(success)),
       std::move(failure));
@@ -317,7 +317,7 @@ void VpnServiceForExtensionAsh::SendPacket(const std::vector<uint8_t>& data,
   }
 
   auto [success, failure] = AdaptCallback(std::move(callback));
-  chromeos::ShillThirdPartyVpnDriverClient::Get()->SendPacket(
+  ash::ShillThirdPartyVpnDriverClient::Get()->SendPacket(
       active_configuration_->object_path(),
       std::vector<char>(data.begin(), data.end()), std::move(success),
       std::move(failure));
@@ -333,7 +333,7 @@ void VpnServiceForExtensionAsh::NotifyConnectionStateChanged(
   }
 
   auto [success, failure] = AdaptCallback(std::move(callback));
-  chromeos::ShillThirdPartyVpnDriverClient::Get()->UpdateConnectionState(
+  ash::ShillThirdPartyVpnDriverClient::Get()->UpdateConnectionState(
       active_configuration_->object_path(),
       connection_success
           ? api_vpn::VpnConnectionState::VPN_CONNECTION_STATE_CONNECTED
@@ -439,9 +439,8 @@ void VpnServiceForExtensionAsh::CreateConfigurationWithServicePath(
       CreateConfigurationInternal(configuration_name);
   configuration->set_service_path(service_path);
   service_path_to_configuration_map_[service_path] = configuration;
-  chromeos::ShillThirdPartyVpnDriverClient::Get()
-      ->AddShillThirdPartyVpnObserver(configuration->object_path(),
-                                      configuration);
+  ash::ShillThirdPartyVpnDriverClient::Get()->AddShillThirdPartyVpnObserver(
+      configuration->object_path(), configuration);
 }
 
 void VpnServiceForExtensionAsh::DispatchConfigRemovedEvent(
@@ -501,7 +500,7 @@ void VpnServiceForExtensionAsh::DestroyConfigurationInternal(
 
   if (const absl::optional<std::string>& service_path =
           configuration->service_path()) {
-    chromeos::ShillThirdPartyVpnDriverClient::Get()
+    ash::ShillThirdPartyVpnDriverClient::Get()
         ->RemoveShillThirdPartyVpnObserver(configuration->object_path());
     service_path_to_configuration_map_.erase(*service_path);
   }
@@ -514,9 +513,8 @@ void VpnServiceForExtensionAsh::OnCreateConfigurationSuccess(
     const std::string& guid) {
   configuration->set_service_path(service_path);
   service_path_to_configuration_map_[service_path] = configuration;
-  chromeos::ShillThirdPartyVpnDriverClient::Get()
-      ->AddShillThirdPartyVpnObserver(configuration->object_path(),
-                                      configuration);
+  ash::ShillThirdPartyVpnDriverClient::Get()->AddShillThirdPartyVpnObserver(
+      configuration->object_path(), configuration);
   std::move(callback).Run();
 }
 
@@ -546,12 +544,12 @@ void VpnServiceForExtensionAsh::SetActiveConfiguration(
 
 VpnServiceAsh::VpnServiceAsh() {
   // Can be false in unit tests.
-  if (!chromeos::NetworkHandler::IsInitialized()) {
+  if (!ash::NetworkHandler::IsInitialized()) {
     return;
   }
 
   network_state_handler_observer_.Observe(
-      chromeos::NetworkHandler::Get()->network_state_handler());
+      ash::NetworkHandler::Get()->network_state_handler());
 
   vpn_providers_observer_ = std::make_unique<VpnProvidersObserver>(this);
 }
@@ -589,11 +587,11 @@ void VpnServiceAsh::MaybeFailActiveConnectionAndDestroyConfigurations(
 }
 
 void VpnServiceAsh::NetworkListChanged() {
-  chromeos::NetworkStateHandler::NetworkStateList network_list;
+  ash::NetworkStateHandler::NetworkStateList network_list;
 
-  auto* network_handler = chromeos::NetworkHandler::Get();
+  auto* network_handler = ash::NetworkHandler::Get();
   network_handler->network_state_handler()->GetVisibleNetworkListByType(
-      chromeos::NetworkTypePattern::VPN(), &network_list);
+      ash::NetworkTypePattern::VPN(), &network_list);
 
   for (auto* network_state : network_list) {
     network_handler->network_configuration_handler()->GetShillProperties(

@@ -5,8 +5,10 @@
 /**
  * @fileoverview Handles automation events on the currently focused node.
  */
+import {constants} from '../../common/constants.js';
 import {CursorRange} from '../../common/cursors/range.js';
 import {ChromeVoxEvent} from '../common/custom_automation_event.js';
+import {QueueMode, TtsSpeechProperties} from '../common/tts_interface.js';
 
 import {BaseAutomationHandler} from './base_automation_handler.js';
 import {ChromeVoxState} from './chromevox_state.js';
@@ -119,7 +121,8 @@ export class FocusAutomationHandler extends BaseAutomationHandler {
     // allow interruption of this announcement which can occur in a slew of
     // events (e.g. typing).
     new Output()
-        .withInitialSpeechProperties({doNotInterrupt: true})
+        .withInitialSpeechProperties(
+            new TtsSpeechProperties({doNotInterrupt: true}))
         .formatForSpeech('@hint_details')
         .go();
   }

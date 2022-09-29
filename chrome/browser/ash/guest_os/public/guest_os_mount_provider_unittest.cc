@@ -82,15 +82,14 @@ class GuestOsMountProviderTest : public testing::Test {
       const std::string& source_format,
       const std::string& mount_label,
       const std::vector<std::string>& mount_options,
-      chromeos::MountType type,
-      chromeos::MountAccessMode access_mode,
+      ash::MountType type,
+      ash::MountAccessMode access_mode,
       ash::disks::DiskMountManager::MountPathCallback callback) {
     auto event = DiskMountManager::MountEvent::MOUNTING;
-    auto code = chromeos::MountError::MOUNT_ERROR_NONE;
-    auto info = DiskMountManager::MountPointInfo(
+    auto code = ash::MountError::kNone;
+    auto info = DiskMountManager::MountPoint{
         base::StringPrintf("sftp://%d:%d", cid_, port_),
-        "/media/fuse/" + kMountName, chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-        ash::disks::MOUNT_CONDITION_NONE);
+        "/media/fuse/" + kMountName, ash::MountType::kNetworkStorage};
     disk_manager_->NotifyMountEvent(event, code, info);
     std::move(callback).Run(code, info);
   }
@@ -100,8 +99,8 @@ class GuestOsMountProviderTest : public testing::Test {
     EXPECT_CALL(*disk_manager_,
                 MountPath(base::StringPrintf("sftp://%d:%d", cid_, port_), "",
                           kMountName, default_mount_options,
-                          chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-                          chromeos::MOUNT_ACCESS_MODE_READ_WRITE, _))
+                          ash::MountType::kNetworkStorage,
+                          ash::MountAccessMode::kReadWrite, _))
         .Times(n)
         .WillRepeatedly(
             Invoke(this, &GuestOsMountProviderTest::NotifyMountEvent));
@@ -170,7 +169,7 @@ TEST_F(GuestOsMountProviderTest, CanRemountAfterUnmount) {
           [this](const std::string& mount_path,
                  DiskMountManager::UnmountPathCallback callback) {
             EXPECT_EQ(mount_path, "/media/fuse/" + kMountName);
-            std::move(callback).Run(chromeos::MOUNT_ERROR_NONE);
+            std::move(callback).Run(ash::MountError::kNone);
           }));
 
   provider_->Mount(

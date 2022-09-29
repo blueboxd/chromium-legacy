@@ -9,6 +9,9 @@
  */
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+// <if expr="is_chromeos">
+import '../controls/password_prompt_dialog.js';
+// </if>
 import '../prefs/prefs.js';
 import '../settings_page/settings_animated_pages.js';
 import '../settings_page/settings_subpage.js';
@@ -23,12 +26,13 @@ import {routes} from '../route.js';
 import {Router} from '../router.js';
 
 import {getTemplate} from './autofill_page.html.js';
-import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {PasswordCheckMixin} from './password_check_mixin.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
+import {PasswordRequestorMixin} from './password_requestor_mixin.js';
+import {PasswordViewPageInteractions, PasswordViewPageRequestedEvent, PasswordViewPageUrlParams, recordPasswordViewInteraction} from './password_view.js';
 
-const SettingsAutofillPageElementBase =
-    PrefsMixin(PasswordCheckMixin(BaseMixin(PolymerElement)));
+const SettingsAutofillPageElementBase = PrefsMixin(
+    PasswordCheckMixin(PasswordRequestorMixin(BaseMixin(PolymerElement))));
 
 export class SettingsAutofillPageElement extends
     SettingsAutofillPageElementBase {
@@ -43,6 +47,7 @@ export class SettingsAutofillPageElement extends
   static get properties() {
     return {
       passwordFilter_: String,
+      passkeyFilter_: String,
 
       focusConfig_: {
         type: Object,
@@ -84,10 +89,21 @@ export class SettingsAutofillPageElement extends
   }
 
   private passwordFilter_: string;
+  private passkeyFilter_: string;
   private focusConfig_: Map<string, string>;
   private passwordManagerSubLabel_: string;
   private enablePasswordViewPage_: string;
-  credential: MultiStorePasswordUiEntry|null;
+  credential: chrome.passwordsPrivate.PasswordUiEntry|null;
+
+  // <if expr="is_chromeos">
+  override onPasswordPromptClose(event: CloseEvent) {
+    super.onPasswordPromptClose(event);
+    if (!this.tokenObtained &&
+        Router.getInstance().getCurrentRoute() === routes.PASSWORD_VIEW) {
+      Router.getInstance().navigateTo(routes.PASSWORDS);
+    }
+  }
+  // </if>
 
   /**
    * Shows the manage addresses sub page.
@@ -117,6 +133,36 @@ export class SettingsAutofillPageElement extends
   private computePasswordManagerSubLabel_(): string {
     return this.leakedPasswords.length > 0 ? this.compromisedPasswordsCount :
                                              '';
+  }
+
+  private onPasswordViewPageRequested_(event: PasswordViewPageRequestedEvent):
+      void {
+    const id = event.detail.entry.id;
+
+    this.requestCredentialDetails(id)
+        .then((passwordUiEntry: chrome.passwordsPrivate.PasswordUiEntry) => {
+          this.credential = passwordUiEntry;
+          recordPasswordViewInteraction(
+              PasswordViewPageInteractions.CREDENTIAL_FOUND);
+          if (Router.getInstance().getCurrentRoute() !== routes.PASSWORD_VIEW) {
+            // If the current route is not |routes.PASSWORD_VIEW|, then the
+            // credential is requested due to a row click in passwords list.
+            // Route to the view page to display the credential.
+            const params = new URLSearchParams();
+            params.set(PasswordViewPageUrlParams.ID, String(id));
+            Router.getInstance().navigateTo(routes.PASSWORD_VIEW, params);
+          }
+        })
+        .catch(() => {
+          if (Router.getInstance().getCurrentRoute() === routes.PASSWORD_VIEW) {
+            // If the credential is requested from the view page and is not
+            // retrieved, return to |routes.PASSWORDS|. There is nothing to show
+            // in |routes.PASSWORD_VIEW|.
+            recordPasswordViewInteraction(
+                PasswordViewPageInteractions.CREDENTIAL_NOT_FOUND);
+            Router.getInstance().navigateTo(routes.PASSWORDS);
+          }
+        });
   }
 }
 

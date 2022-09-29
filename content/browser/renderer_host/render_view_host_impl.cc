@@ -289,7 +289,6 @@ RenderViewHostImpl::RenderViewHostImpl(
     RenderViewHostDelegate* delegate,
     int32_t routing_id,
     int32_t main_frame_routing_id,
-    bool swapped_out,
     bool has_initialized_audio_host,
     scoped_refptr<BrowsingContextState> main_browsing_context_state)
     : render_widget_host_(std::move(widget)),
@@ -371,10 +370,6 @@ RenderViewHostImpl::~RenderViewHostImpl() {
 
   // Destroy the RenderWidgetHost.
   GetWidget()->ShutdownAndDestroyWidget(false);
-  if (IsRenderViewLive()) {
-    // Destroy the RenderView, which will also destroy the RenderWidget.
-    GetAgentSchedulingGroup().DestroyView(GetRoutingID());
-  }
 
   ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
 
@@ -441,7 +436,6 @@ bool RenderViewHostImpl::CreateRenderView(
   params->renderer_preferences = delegate_->GetRendererPrefs();
   RenderViewHostImpl::GetPlatformSpecificPrefs(&params->renderer_preferences);
   params->web_preferences = delegate_->GetOrCreateWebPreferences();
-  params->view_id = GetRoutingID();
   params->opener_frame_token = opener_frame_token;
   params->replication_state =
       frame_tree_node->current_replication_state().Clone();
@@ -459,6 +453,9 @@ bool RenderViewHostImpl::CreateRenderView(
     main_rfh->SetMojomFrameRemote(std::move(pending_frame_remote));
     main_rfh->BindBrowserInterfaceBrokerReceiver(
         local_frame_params->interface_broker.InitWithNewPipeAndPassReceiver());
+    main_rfh->BindAssociatedInterfaceProviderReceiver(
+        local_frame_params->associated_interface_provider_remote
+            .InitWithNewEndpointAndPassReceiver());
 
     local_frame_params->is_on_initial_empty_document =
         main_rfh->frame_tree_node()->is_on_initial_empty_document();
@@ -505,9 +502,6 @@ bool RenderViewHostImpl::CreateRenderView(
   bool is_guest_view = delegate_->IsGuest();
   bool is_fenced_frame = frame_tree_->type() == FrameTree::Type::kFencedFrame;
 
-  // GuestViews in the same StoragePartition need to find each other's frames.
-  params->renderer_wide_named_frame_lookup = is_guest_view;
-
   if (is_fenced_frame) {
     params->type = mojom::ViewWidgetType::kFencedFrame;
 
@@ -528,13 +522,12 @@ bool RenderViewHostImpl::CreateRenderView(
   params->blink_page_broadcast =
       page_broadcast_.BindNewEndpointAndPassReceiver();
 
-  // The renderer process's `RenderView` is owned by this `RenderViewHost`. This
-  // call must, therefore, be accompanied by a `DestroyView()` [see destructor]
-  // or else there will be a leak in the renderer process.
+  // The renderer process's `blink::WebView` is owned by this lifecycle of
+  // the `page_broadcast_` channel.
   GetAgentSchedulingGroup().CreateView(std::move(params));
 
-  // Set the bit saying we've made the RenderView in the renderer and notify
-  // content public observers.
+  // Set the bit saying we've made the `blink::WebView` in the renderer and
+  // notify content public observers.
   RenderViewCreated(main_rfh);
 
   // This must be posted after the RenderViewHost is marked live, with
@@ -547,9 +540,9 @@ void RenderViewHostImpl::SetMainFrameRoutingId(int routing_id) {
   main_frame_routing_id_ = routing_id;
   GetWidget()->UpdatePriority();
   // TODO(crbug.com/419087): If a local main frame is no longer attached to this
-  // RenderView then the RenderWidgetHostImpl owned by this class should be
-  // informed that its renderer widget is no longer created. The RenderViewHost
-  // will need to track its own live-ness then.
+  // `blink::WebView` then the RenderWidgetHostImpl owned by this class should
+  // be informed that its renderer widget is no longer created. The
+  // RenderViewHost will need to track its own live-ness then.
 }
 
 void RenderViewHostImpl::SetFrameTree(FrameTree& frame_tree) {
@@ -686,8 +679,8 @@ void RenderViewHostImpl::RenderViewCreated(
   renderer_view_created_ = true;
   if (local_main_frame) {
     // If there is a main frame in this RenderViewHost, then the renderer-side
-    // main frame will be created along with the RenderView. The RenderFrameHost
-    // initializes its RenderWidgetHost as well, if it exists.
+    // main frame will be created along with the `blink::WebView`. The
+    // RenderFrameHost initializes its RenderWidgetHost as well, if it exists.
     local_main_frame->RenderFrameCreated();
   }
 }

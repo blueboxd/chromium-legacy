@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/as_const.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -22,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -81,7 +83,7 @@
 #include "components/sync/engine/sync_scheduler_impl.h"
 #include "components/sync/invalidations/fcm_handler.h"
 #include "components/sync/invalidations/sync_invalidations_service_impl.h"
-#include "components/sync/test/fake_server/fake_server_network_resources.h"
+#include "components/sync/test/fake_server_network_resources.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -97,7 +99,6 @@
 #include "url/url_constants.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/account_manager/account_manager_factory.h"
 #include "ash/components/arc/test/arc_util_test_support.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
@@ -105,6 +106,7 @@
 #include "chrome/browser/sync/test/integration/sync_arc_package_helper.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
+#include "chromeos/ash/components/account_manager/account_manager_factory.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -248,9 +250,13 @@ class SyncTest::ClosedBrowserObserver : public BrowserListObserver {
 SyncTest::SyncTest(TestType test_type)
     : test_type_(test_type),
       test_construction_time_(base::Time::Now()),
+      sync_run_loop_timeout(FROM_HERE, TestTimeouts::action_max_timeout()),
       server_type_(SERVER_TYPE_UNDECIDED),
       previous_profile_(nullptr),
       num_clients_(-1) {
+  // Any RunLoop timeout will by default result in test failure.
+  sync_run_loop_timeout.SetAddGTestFailureOnTimeout();
+
   sync_datatype_helper::AssociateWithTest(this);
   switch (test_type_) {
     case SINGLE_CLIENT: {
@@ -514,6 +520,13 @@ void SyncTest::OnBrowserRemoved(Browser* browser) {
   for (size_t i = 0; i < browsers_.size(); ++i) {
     if (browsers_[i] == browser) {
       browsers_[i] = nullptr;
+      // Remove a corresponding SyncServiceHarness if exists since SyncService
+      // may be destroyed soon. It may not exist for browsers added during
+      // tests using AddBrowser().
+      if (i < clients_.size()) {
+        CheckForDataTypeFailures(/*client_index=*/i);
+        clients_[i].reset();
+      }
       break;
     }
   }
@@ -528,6 +541,11 @@ void SyncTest::OnBrowserRemoved(Browser* browser) {
 #endif
 
 SyncServiceImplHarness* SyncTest::GetClient(int index) {
+  return const_cast<SyncServiceImplHarness*>(
+      base::as_const(*this).GetClient(index));
+}
+
+const SyncServiceImplHarness* SyncTest::GetClient(int index) const {
   if (clients_.empty()) {
     LOG(FATAL) << "SetupClients() has not yet been called.";
   }
@@ -546,7 +564,8 @@ std::vector<SyncServiceImplHarness*> SyncTest::GetSyncClients() {
 }
 
 SyncServiceImpl* SyncTest::GetSyncService(int index) const {
-  return SyncServiceFactory::GetAsSyncServiceImplForProfile(GetProfile(index));
+  return SyncServiceFactory::GetAsSyncServiceImplForProfileForTesting(
+      GetProfile(index));
 }
 
 syncer::UserSelectableTypeSet SyncTest::GetRegisteredSelectableTypes(
@@ -686,7 +705,8 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
   // SyncServiceImplHarness - some tests expect the SyncServiceImpl to
   // already exist.
   SyncServiceImpl* sync_service_impl =
-      SyncServiceFactory::GetAsSyncServiceImplForProfile(GetProfile(index));
+      SyncServiceFactory::GetAsSyncServiceImplForProfileForTesting(
+          GetProfile(index));
 
   if (server_type_ == IN_PROCESS_FAKE_SERVER) {
     sync_service_impl->OverrideNetworkForTest(
@@ -941,6 +961,16 @@ bool SyncTest::SetupSync(SetupSyncMode setup_mode) {
 }
 
 void SyncTest::TearDownOnMainThread() {
+  // Verify that there are no data type failures after the test.
+  for (size_t client_index = 0; client_index < clients_.size();
+       ++client_index) {
+    if (!GetClient(client_index)) {
+      // This may happen if the last tab and hence a browser has been closed.
+      continue;
+    }
+    CheckForDataTypeFailures(client_index);
+  }
+
   // Workaround for https://crbug.com/801569: |prefs::kProfileLastUsed| stores
   // the profile path relative to the user dir, but our testing profiles are
   // outside the user dir (see CreateProfile). So code trying to access the last
@@ -1191,9 +1221,6 @@ void SyncTest::ReadPasswordFile() {
 
 void SyncTest::SetupMockGaiaResponses() {
   test_url_loader_factory_.AddResponse(
-      GaiaUrls::GetInstance()->get_user_info_url().spec(),
-      "email=user@gmail.com\ndisplayEmail=user@gmail.com");
-  test_url_loader_factory_.AddResponse(
       GaiaUrls::GetInstance()->oauth2_token_url().spec(),
       R"({
             "refresh_token": "rt1",
@@ -1360,4 +1387,15 @@ bool SyncTest::WaitForAsyncChangesToBeCommitted(size_t profile_index) const {
   }
 
   return true;
+}
+
+void SyncTest::CheckForDataTypeFailures(size_t client_index) const {
+  DCHECK(GetClient(client_index));
+  if (GetClient(client_index)->service()->HasAnyDatatypeErrorForTest()) {
+    ADD_FAILURE() << "Data types failed during tests: "
+                  << GetClient(client_index)
+                         ->service()
+                         ->GetTypeStatusMapForDebugging()
+                         ->DebugString();
+  }
 }

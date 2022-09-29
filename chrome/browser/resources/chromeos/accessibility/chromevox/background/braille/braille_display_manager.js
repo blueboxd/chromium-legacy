@@ -5,6 +5,9 @@
 /**
  * @fileoverview Puts text on a braille display.
  */
+import {BrailleDisplayState, BrailleKeyCommand, BrailleKeyEvent} from '../../common/braille/braille_key_types.js';
+import {NavBraille} from '../../common/braille/nav_braille.js';
+
 import {BrailleCaptionsBackground} from './braille_captions_background.js';
 import {BrailleTranslatorManager} from './braille_translator_manager.js';
 import {ExpandingBrailleTranslator} from './expanding_braille_translator.js';
@@ -264,7 +267,7 @@ export class BrailleDisplayManager {
    */
   refresh_() {
     if (this.blinkerId_ !== undefined) {
-      window.clearInterval(this.blinkerId_);
+      clearInterval(this.blinkerId_);
     }
 
     // If there's no cursor, don't schedule blinking.
@@ -277,7 +280,7 @@ export class BrailleDisplayManager {
     }
 
     let showCursor = false;
-    this.blinkerId_ = window.setInterval(() => {
+    this.blinkerId_ = setInterval(() => {
       this.refreshInternal_(showCursor);
       showCursor = !showCursor;
     }, BrailleDisplayManager.CURSOR_BLINK_TIME_MS);

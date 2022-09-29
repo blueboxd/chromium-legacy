@@ -40,6 +40,7 @@
 #include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
@@ -173,6 +174,7 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChildWithPolicy(
       GetProcess()->GetNextRoutingID(), CreateStubFrameRemote(),
       CreateStubBrowserInterfaceBrokerReceiver(),
       CreateStubPolicyContainerBindParams(),
+      CreateStubAssociatedInterfaceProviderReceiver(),
       blink::mojom::TreeScopeType::kDocument, frame_name, frame_unique_name,
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::FramePolicy({network::mojom::WebSandboxFlags::kNone, allow, {}}),
@@ -180,6 +182,15 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChildWithPolicy(
       blink::FrameOwnerElementType::kIframe);
   return static_cast<TestRenderFrameHost*>(
       child_creation_observer_.last_created_frame());
+}
+
+TestRenderFrameHost* TestRenderFrameHost::AppendAnonymousChild(
+    const std::string& frame_name) {
+  TestRenderFrameHost* rfh = AppendChildWithPolicy(frame_name, {});
+  auto attributes = blink::mojom::IframeAttributes::New();
+  attributes->anonymous = true;
+  rfh->frame_tree_node()->SetAttributes(std::move(attributes));
+  return rfh;
 }
 
 void TestRenderFrameHost::Detach() {
@@ -268,20 +279,20 @@ void TestRenderFrameHost::SimulateManifestURLUpdate(const GURL& manifest_url) {
 
 TestRenderFrameHost* TestRenderFrameHost::AppendFencedFrame(
     blink::mojom::FencedFrameMode mode) {
-  fenced_frames_.push_back(
-      std::make_unique<FencedFrame>(weak_ptr_factory_.GetSafeRef(), mode));
+  fenced_frames_.push_back(std::make_unique<FencedFrame>(
+      weak_ptr_factory_.GetSafeRef(), mode, base::UnguessableToken::Create()));
   FencedFrame* fenced_frame = fenced_frames_.back().get();
   // Create stub RemoteFrameInterfaces.
   auto remote_frame_interfaces =
-      mojom::RemoteFrameInterfacesFromRenderer::New();
+      blink::mojom::RemoteFrameInterfacesFromRenderer::New();
   remote_frame_interfaces->frame_host_receiver =
       mojo::AssociatedRemote<blink::mojom::RemoteFrameHost>()
           .BindNewEndpointAndPassDedicatedReceiver();
   mojo::AssociatedRemote<blink::mojom::RemoteFrame> frame;
   std::ignore = frame.BindNewEndpointAndPassDedicatedReceiver();
   remote_frame_interfaces->frame = frame.Unbind();
-  fenced_frame->CreateProxyAndAttachToOuterFrameTree(
-      std::move(remote_frame_interfaces));
+  fenced_frame->InitInnerFrameTreeAndReturnProxyToOuterFrameTree(
+      std::move(remote_frame_interfaces), blink::RemoteFrameToken());
   return static_cast<TestRenderFrameHost*>(fenced_frame->GetInnerRoot());
 }
 
@@ -546,6 +557,13 @@ TestRenderFrameHost::CreateWebBluetoothServiceForTesting() {
   return RenderFrameHostImpl::GetWebBluetoothServiceForTesting();
 }
 
+#if !BUILDFLAG(IS_ANDROID)
+void TestRenderFrameHost::CreateHidServiceForTesting(
+    mojo::PendingReceiver<blink::mojom::HidService> receiver) {
+  RenderFrameHostImpl::GetHidService(std::move(receiver));
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 void TestRenderFrameHost::SendCommitNavigation(
     mojom::NavigationClient* navigation_client,
     NavigationRequest* navigation_request,
@@ -684,12 +702,23 @@ TestRenderFrameHost::CreateStubFrameRemote() {
       frame_remote.BindNewEndpointAndPassDedicatedReceiver();
   return frame_remote.Unbind();
 }
+
 // static
 blink::mojom::PolicyContainerBindParamsPtr
 TestRenderFrameHost::CreateStubPolicyContainerBindParams() {
   return blink::mojom::PolicyContainerBindParams::New(
       mojo::PendingAssociatedRemote<blink::mojom::PolicyContainerHost>()
           .InitWithNewEndpointAndPassReceiver());
+}
+
+// static
+mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterfaceProvider>
+TestRenderFrameHost::CreateStubAssociatedInterfaceProviderReceiver() {
+  mojo::AssociatedReceiver<blink::mojom::AssociatedInterfaceProvider> receiver(
+      nullptr);
+  mojo::PendingAssociatedRemote<blink::mojom::AssociatedInterfaceProvider>
+      pending_remote = receiver.BindNewEndpointAndPassDedicatedRemote();
+  return receiver.Unbind();
 }
 
 void TestRenderFrameHost::SimulateLoadingCompleted(

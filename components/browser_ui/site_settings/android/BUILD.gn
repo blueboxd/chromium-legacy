@@ -51,6 +51,7 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/site_settings/ContentSettingsResources.java",
     "java/src/org/chromium/components/browser_ui/site_settings/ForwardingManagedPreferenceDelegate.java",
     "java/src/org/chromium/components/browser_ui/site_settings/FourStateCookieSettingsPreference.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/GroupedWebsitesSettings.java",
     "java/src/org/chromium/components/browser_ui/site_settings/LocalStorageInfo.java",
     "java/src/org/chromium/components/browser_ui/site_settings/LocationCategory.java",
     "java/src/org/chromium/components/browser_ui/site_settings/NfcCategory.java",
@@ -70,6 +71,8 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/site_settings/TriStateSiteSettingsPreference.java",
     "java/src/org/chromium/components/browser_ui/site_settings/Website.java",
     "java/src/org/chromium/components/browser_ui/site_settings/WebsiteAddress.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/WebsiteGroup.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/WebsiteGroupPreference.java",
     "java/src/org/chromium/components/browser_ui/site_settings/WebsitePermissionsFetcher.java",
     "java/src/org/chromium/components/browser_ui/site_settings/WebsitePreference.java",
     "java/src/org/chromium/components/browser_ui/site_settings/WebsitePreferenceBridge.java",
@@ -113,13 +116,17 @@ android_library("java") {
 
 android_library("javatests") {
   testonly = true
-  sources = [ "javatests/src/org/chromium/components/browser_ui/site_settings/WebsiteAddressTest.java" ]
+  sources = [
+    "javatests/src/org/chromium/components/browser_ui/site_settings/WebsiteAddressTest.java",
+    "javatests/src/org/chromium/components/browser_ui/site_settings/WebsiteGroupTest.java",
+  ]
   deps = [
     ":java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/junit",
+    "//url:gurl_java",
   ]
 }
 
@@ -173,6 +180,7 @@ android_resources("java_resources") {
     "java/res/values/ids.xml",
     "java/res/xml/all_site_preferences.xml",
     "java/res/xml/all_site_preferences_v2.xml",
+    "java/res/xml/grouped_websites_preferences.xml",
     "java/res/xml/single_website_preferences.xml",
     "java/res/xml/site_settings_preferences.xml",
     "java/res/xml/website_preferences.xml",

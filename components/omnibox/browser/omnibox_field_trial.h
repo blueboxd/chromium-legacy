@@ -355,6 +355,10 @@ int KeywordScoreForSufficientlyCompleteMatch();
 
 // Returns true if the fuzzy URL suggestions feature is enabled.
 bool IsFuzzyUrlSuggestionsEnabled();
+// Indicates whether fuzzy match behavior is counterfactual.
+extern const base::FeatureParam<bool> kFuzzyUrlSuggestionsCounterfactual;
+// Indicates whether to bypass fuzzy processing when `IsLowEndDevice` is true.
+extern const base::FeatureParam<bool> kFuzzyUrlSuggestionsLowEndBypass;
 
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
@@ -477,9 +481,12 @@ extern const char kOmniboxUIUnelideURLOnHoverThresholdMsParam[];
 // preserves the default.
 extern const base::FeatureParam<bool>
     kAutocompleteStabilityPreserveDefaultAfterTransfer;
-// Whether to preserve the default suggestion during sync updates.
-extern const base::FeatureParam<bool>
-    kAutocompleteStabilityPreserveDefaultForSyncUpdates;
+// The minimum input length for which to preserve the default suggestion during
+// sync updates. If 0, all sync updates preserve the default suggestion,
+// regardless of input length. If <0, no sync updates preserve the default
+// suggestion; i.e. control behavior.
+extern const base::FeatureParam<int>
+    kAutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength;
 // Whether to preserve the default suggestion during async updates. It doesn't
 // make too much sense to enable preservation for sync but not async
 // updates. True by default.
@@ -494,6 +501,14 @@ extern const base::FeatureParam<bool>
 // happen in parallel. This effects only the search, history_url, document, and
 // on device head providers.
 extern const base::FeatureParam<bool> kAutocompleteStabilityAsyncProvidersFirst;
+// Limit how frequently `AutocompleteController::UpdateResult()` will be
+// invoked. See the comments at `AutocompleteController::update_debouncer_`.
+extern const base::FeatureParam<bool>
+    kAutocompleteStabilityUpdateResultDebounceFromLastRun;
+// See `kAutocompleteStabilityUpdateResultDebounceFromLastRun`. No debouncing
+// if set to 0.
+extern const base::FeatureParam<int>
+    kAutocompleteStabilityUpdateResultDebounceDelay;
 
 // Local history zero-prefix (aka zero-suggest) and prefix suggestions.
 
@@ -506,6 +521,9 @@ extern const base::FeatureParam<int> kLocalHistoryZeroSuggestRelevanceScore;
 // This is only checked on Android which uses ZeroSuggestPrefetcher by default,
 // which spins off a new throw-away AutocompleteController instance.
 bool UseSharedInstanceForZeroSuggestPrefetching();
+
+// Returns true if any of the zero-suggest prefetching features are enabled.
+bool IsZeroSuggestPrefetchingEnabled();
 
 // Whether duplicative visits should be ignored for local history zero-suggest.
 // A duplicative visit is a visit to the same search term in an interval smaller

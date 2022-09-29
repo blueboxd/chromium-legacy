@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 
 #import <Carbon/Carbon.h>
+#include "third_party/blink/public/mojom/input/input_handler.mojom-forward.h"
 
 #include <limits>
 #include <memory>
@@ -265,6 +266,8 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
   // destroying the associated bridge), and close the receiver (to allow it
   // to be re-bound). Note that |in_process_ns_view_bridge_| remains valid.
   remote_ns_view_client_receiver_.reset();
+  if (remote_ns_view_)
+    remote_ns_view_->Destroy();
   remote_ns_view_.reset();
 
   // Enable accessibility focus overriding for remote NSViews.
@@ -738,6 +741,8 @@ void RenderWidgetHostViewMac::Destroy() {
   ns_view_ = nullptr;
   in_process_ns_view_bridge_.reset();
   remote_ns_view_client_receiver_.reset();
+  if (remote_ns_view_)
+    remote_ns_view_->Destroy();
   remote_ns_view_.reset();
 
   // Delete the delegated frame state, which will reach back into
@@ -1354,7 +1359,8 @@ RenderWidgetHostViewMac::GetKeyboardLayoutMap() {
 
 void RenderWidgetHostViewMac::GestureEventAck(
     const WebGestureEvent& event,
-    blink::mojom::InputEventResultState ack_result) {
+    blink::mojom::InputEventResultState ack_result,
+    blink::mojom::ScrollResultDataPtr scroll_result_data) {
   ForwardTouchpadZoomEventIfNecessary(event, ack_result);
 
   // Stop flinging if a GSU event with momentum phase is sent to the renderer

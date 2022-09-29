@@ -73,11 +73,8 @@ class DataObserver : public bookmarks::BookmarkModelObserver,
 
   // HistoryServiceObserver implementation.
   void OnURLVisited(history::HistoryService* history_service,
-                    ui::PageTransition transition,
-                    const history::URLRow& row,
-                    base::Time visit_time) override;
-  void OnURLsModified(history::HistoryService* history_service,
-                      const history::URLRows& changed_urls) override;
+                    const history::URLRow& url_row,
+                    const history::VisitRow& new_visit) override;
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override;
   void HistoryServiceBeingDeleted(

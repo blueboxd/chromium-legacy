@@ -66,10 +66,6 @@ class SkBitmap;
 
 namespace base {
 class SingleThreadTaskRunner;
-
-namespace trace_event {
-class BlameContext;
-}  // namespace trace_event
 }  // namespace base
 
 namespace gfx {
@@ -134,7 +130,6 @@ class WebThemeEngine;
 class WebURLLoaderFactory;
 class WebVideoCaptureImplManager;
 struct WebContentSecurityPolicyHeader;
-using BlameContext = base::trace_event::BlameContext;
 
 namespace scheduler {
 class WebThreadScheduler;
@@ -205,21 +200,11 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual unsigned AudioHardwareOutputChannels() { return 0; }
   virtual base::TimeDelta GetHungRendererDelay() { return base::TimeDelta(); }
 
-  // SavableResource ----------------------------------------------------
-
-  virtual bool IsURLSavableForSavableResource(const WebURL& url) {
-    return false;
-  }
-
-  // Creates a device for audio I/O.
-  // Pass in (number_of_input_channels > 0) if live/local audio input is
-  // desired.
+  // Creates an audio output device platform interface for Web Audio API.
   virtual std::unique_ptr<WebAudioDevice> CreateAudioDevice(
-      unsigned number_of_input_channels,
-      unsigned number_of_channels,
+      unsigned number_of_output_channels,
       const WebAudioLatencyHint& latency_hint,
-      WebAudioDevice::RenderCallback*,
-      const WebString& device_id) {
+      WebAudioDevice::RenderCallback*) {
     return nullptr;
   }
 
@@ -330,6 +315,12 @@ class BLINK_PLATFORM_EXPORT Platform {
     return WebString();
   }
 
+  // SavableResource ----------------------------------------------------
+
+  virtual bool IsURLSavableForSavableResource(const WebURL& url) {
+    return false;
+  }
+
   // Threads -------------------------------------------------------
 
   // The two compositor-related functions below are called by the embedder.
@@ -356,10 +347,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // function is only called from the main thread.
   virtual void SetThreadType(base::PlatformThreadId, base::ThreadType) {}
 #endif
-
-  // Returns a blame context for attributing top-level work which does not
-  // belong to a particular frame scope.
-  virtual BlameContext* GetTopLevelBlameContext() { return nullptr; }
 
   // Resources -----------------------------------------------------------
 

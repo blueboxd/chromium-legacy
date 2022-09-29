@@ -37,11 +37,7 @@ class CORE_EXPORT ClassicScript final : public Script {
           ScriptStreamer::NotStreamingReason::kInlineScript,
       InlineScriptStreamer* = nullptr);
   static ClassicScript* CreateFromResource(ScriptResource*,
-                                           const KURL& base_url,
-                                           const ScriptFetchOptions&,
-                                           ResourceScriptStreamer*,
-                                           ScriptStreamer::NotStreamingReason,
-                                           ScriptCacheConsumer*);
+                                           const ScriptFetchOptions&);
 
   // For scripts not specified in the HTML spec.
   //
@@ -109,10 +105,14 @@ class CORE_EXPORT ClassicScript final : public Script {
       LocalDOMWindow*,
       int32_t world_id);
 
+  v8::ScriptOrigin CreateScriptOrigin(v8::Isolate* isolate) const;
+
  private:
   mojom::blink::ScriptType GetScriptType() const override {
     return mojom::blink::ScriptType::kClassic;
   }
+
+  v8::Local<v8::Data> CreateHostDefinedOptions(v8::Isolate* isolate) const;
 
   const ParkableString source_text_;
 

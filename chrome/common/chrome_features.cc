@@ -193,10 +193,6 @@ const base::Feature kCryptohomeUserDataAuthKillswitch{
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
-// Enables Privacy Hub for ChromeOS.
-const base::Feature kCrosPrivacyHub{"CrosPrivacyHub",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables parsing and enforcing Data Leak Prevention policy rules that
 // restricts usage of some system features, e.g.clipboard, screenshot, etc.
 // for confidential content.
@@ -204,7 +200,7 @@ const base::Feature kDataLeakPreventionPolicy{"DataLeakPreventionPolicy",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables starting of Data Leak Prevention Files Daemon by sending the
-// DLP policy there. The daemond might restrict access to some protected files.
+// DLP policy there. The daemon might restrict access to some protected files.
 const base::Feature kDataLeakPreventionFilesRestriction{
     "DataLeakPreventionFilesRestriction", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
@@ -214,7 +210,7 @@ const base::Feature kDataLeakPreventionFilesRestriction{
 // browser by default. Users can still enable link capturing for apps through
 // the intent picker or settings.
 const base::Feature kDefaultLinkCapturingInBrowser{
-    "DefaultLinkCapturingInBrowser", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DefaultLinkCapturingInBrowser", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -268,10 +264,6 @@ const base::Feature kDesktopPWAsElidedExtensionsMenu {
 // Whether to parse and enforce the WebAppSettings policy.
 const base::Feature kDesktopPWAsEnforceWebAppSettingsPolicy{
     "DesktopPWAsEnforceWebAppSettingsPolicy", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables showing a detailed install dialog for user installs.
-const base::Feature kDesktopPWAsDetailedInstallDialog{
-    "DesktopPWAsDetailedInstallDialog", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables Desktop PWAs to be auto-started on OS login.
 const base::Feature kDesktopPWAsRunOnOsLogin {
@@ -369,10 +361,6 @@ const base::Feature kElidePrioritizationOfPreNativeBootstrapTasks = {
 const base::Feature kEnableRestrictedWebApis{"EnableRestrictedWebApis",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable web app uninstallation from Windows settings or control panel.
-const base::Feature kEnableWebAppUninstallFromOsSettings{
-    "EnableWebAppUninstallFromOsSettings", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if !BUILDFLAG(IS_ANDROID)
 // Enable WebHID on extension service workers.
 const base::Feature kEnableWebHidOnExtensionServiceWorker{
@@ -396,6 +384,12 @@ const base::Feature kExtensionWorkflowJustification{
 // default.
 const base::Feature kExternalExtensionDefaultButtonControl{
     "ExternalExtensionDefaultButtonControl", base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+COMPONENT_EXPORT(CHROME_FEATURES)
+const base::Feature kFileTransferEnterpriseConnector{
+    "FileTransferEnterpriseConnector", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Show Flash deprecation warning to users who have manually enabled Flash.
@@ -550,6 +544,15 @@ const base::Feature kHappinessTrackingPersonalizationScreensaver{
 const base::Feature kHappinessTrackingPersonalizationWallpaper{
     "HappinessTrackingPersonalizationWallpaper",
     base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables the Happiness Tracking System for Media App PDF survey.
+const base::Feature kHappinessTrackingMediaAppPdf{
+    "HappinessTrackingMediaAppPdf", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables or disables the Happiness Tracking System for Camera App survey.
+const base::Feature kHappinessTrackingSystemCameraApp{
+    "HappinessTrackingCameraApp", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables the Happiness Tracking System for Photos Experience survey.
+const base::Feature kHappinessTrackingPhotosExperience{
+    "HappinessTrackingPhotosExperience", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Hides the origin text from showing up briefly in WebApp windows.
@@ -587,12 +590,6 @@ const base::Feature kIncompatibleApplicationsWarning{
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
-// When enabled, keeps Incognito UI consistent regardless of any selected theme.
-const base::Feature kIncognitoBrandConsistencyForAndroid{
-    "IncognitoBrandConsistencyForAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
 // When enabled, users will see a warning when downloading from Incognito.
 const base::Feature kIncognitoDownloadsWarning{
     "IncognitoDownloadsWarning", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -601,6 +598,11 @@ const base::Feature kIncognitoDownloadsWarning{
 // When enabled, users will see updated UI in Incognito NTP
 const base::Feature kIncognitoNtpRevamp{"IncognitoNtpRevamp",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if BUILDFLAG(IS_CHROMEOS)
+const base::Feature kKioskEnableAppService("KioskEnableAppService",
+                                           base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // When enabled, removes any entry points to the history UI from Incognito mode.
 const base::Feature kUpdateHistoryEntryPointsInIncognito{
@@ -810,6 +812,12 @@ const base::Feature kRequestDesktopSiteForTablets{
     "RequestDesktopSiteForTablets", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if !BUILDFLAG(IS_ANDROID)
+// Enables permission modules on Safety Check.
+const base::Feature kSafetyCheckPermissions{"SafetyCheckPermissions",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable support for multiple scheduler configurations.
 const base::Feature kSchedulerConfiguration{"SchedulerConfiguration",
@@ -855,11 +863,6 @@ const base::FeatureParam<base::TimeDelta> kSCTLogMaxIngestionRandomDelay{
 // Controls whether the user is prompted when sites request attestation.
 const base::Feature kSecurityKeyAttestationPrompt{
     "SecurityKeyAttestationPrompt", base::FEATURE_ENABLED_BY_DEFAULT};
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-const base::Feature kSharesheetCopyToClipboard{
-    "SharesheetCopyToClipboard", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
 
 // Alternative to switches::kSitePerProcess, for turning on full site isolation.
 // Launch bug: https://crbug.com/810843.  This is a //chrome-layer feature to
@@ -1059,7 +1062,7 @@ const base::Feature kWebAppManifestPolicyAppIdentityUpdate{
 // policy, the Chrome app Kiosk session uses Lacros-chrome as the web browser to
 // launch Chrome apps. When disabled, the Ash-chrome will be used instead.
 const base::Feature kChromeKioskEnableLacros{"ChromeKioskEnableLacros",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When this feature flag is enabled together with the LacrosAvailability
 // policy, the web (PWA) Kiosk session uses Lacros-chrome as the web browser to
@@ -1096,13 +1099,6 @@ const base::Feature kWebShare{"WebShare", base::FEATURE_ENABLED_BY_DEFAULT};
 // Enables Web Share (navigator.share) for macOS
 const base::Feature kWebShare{"WebShare", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
-
-// Enables setting time limit for Chrome and PWA's on child user device.
-// Requires |kPerAppTimeLimits| to be enabled.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-const base::Feature kWebTimeLimits{"WebTimeLimits",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Whether to enable "dark mode" enhancements in Mac Mojave or Windows 10 for
 // UIs implemented with web technologies.

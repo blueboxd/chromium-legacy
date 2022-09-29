@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalMatchers.geq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -50,6 +51,7 @@ import org.mockito.junit.MockitoRule;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Promise;
@@ -59,6 +61,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.history_clusters.HistoryCluster.MatchPosition;
 import org.chromium.chrome.browser.history_clusters.HistoryClusterView.ClusterViewAccessibilityState;
 import org.chromium.chrome.browser.history_clusters.HistoryClustersItemProperties.ItemType;
+import org.chromium.chrome.browser.history_clusters.HistoryClustersMetricsLogger.VisitAction;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabCreator;
@@ -129,11 +132,15 @@ public class HistoryClustersMediatorTest {
     @Mock
     private TabCreator mTabCreator;
     @Mock
+    private TabCreator mIncognitoTabCreator;
+    @Mock
     private HistoryClustersMetricsLogger mMetricsLogger;
     @Mock
     private AccessibilityUtil mAccessibilityUtil;
     @Mock
     private Configuration mConfiguration;
+    @Mock
+    private Callback<String> mAnnounceCallback;
 
     private ClusterVisit mVisit1;
     private ClusterVisit mVisit2;
@@ -205,7 +212,7 @@ public class HistoryClustersMediatorTest {
 
             @Override
             public TabCreator getTabCreator(boolean isIncognito) {
-                return mTabCreator;
+                return isIncognito ? mIncognitoTabCreator : mTabCreator;
             }
 
             @Nullable
@@ -249,7 +256,7 @@ public class HistoryClustersMediatorTest {
 
         mMediator = new HistoryClustersMediator(mBridge, mLargeIconBridge, mContext, mResources,
                 mModelList, mToolbarModel, mHistoryClustersDelegate, mClock, mTemplateUrlService,
-                mSelectionDelegate, mMetricsLogger, mAccessibilityUtil);
+                mSelectionDelegate, mMetricsLogger, mAccessibilityUtil, mAnnounceCallback);
         mVisit1 = new ClusterVisit(1.0F, mGurl1, "Title 1", "url1.com/", new ArrayList<>(),
                 new ArrayList<>(), mGurl1, 123L, new ArrayList<>());
         mVisit2 = new ClusterVisit(1.0F, mGurl2, "Title 2", "url2.com/", new ArrayList<>(),
@@ -335,7 +342,7 @@ public class HistoryClustersMediatorTest {
         mConfiguration.keyboard = Configuration.KEYBOARD_12KEY;
         mMediator = new HistoryClustersMediator(mBridge, mLargeIconBridge, mContext, mResources,
                 mModelList, mToolbarModel, mHistoryClustersDelegate, mClock, mTemplateUrlService,
-                mSelectionDelegate, mMetricsLogger, mAccessibilityUtil);
+                mSelectionDelegate, mMetricsLogger, mAccessibilityUtil, mAnnounceCallback);
 
         Promise<HistoryClustersResult> promise = new Promise<>();
         doReturn(promise).when(mBridge).queryClusters("query");
@@ -646,13 +653,18 @@ public class HistoryClustersMediatorTest {
         mMediator.startQuery("query");
         fulfillPromise(promise, mHistoryClustersResultWithQuery);
         int initialSize = mModelList.size();
+        doReturn("multiple")
+                .when(mResources)
+                .getString(eq(R.string.multiple_history_items_deleted), anyInt());
+        Mockito.doAnswer(invocation -> "single " + invocation.getArgument(1).toString())
+                .when(mResources)
+                .getString(eq(R.string.delete_message), anyString());
 
         mMediator.deleteVisits(Arrays.asList(mVisit1, mVisit3));
         assertThat(mVisitsForRemoval, Matchers.containsInAnyOrder(mVisit1, mVisit3));
-        verify(mMetricsLogger)
-                .recordVisitAction(HistoryClustersMetricsLogger.VisitAction.DELETED, mVisit1);
-        verify(mMetricsLogger)
-                .recordVisitAction(HistoryClustersMetricsLogger.VisitAction.DELETED, mVisit3);
+        verify(mMetricsLogger).recordVisitAction(VisitAction.DELETED, mVisit1);
+        verify(mMetricsLogger).recordVisitAction(VisitAction.DELETED, mVisit3);
+        verify(mAnnounceCallback).onResult("multiple");
         // Deleting all of the visits in a cluster should also delete the ModelList entry for the
         // cluster itself.
         assertEquals(initialSize - 3, mModelList.size());
@@ -676,6 +688,7 @@ public class HistoryClustersMediatorTest {
                 relatedSearchesModel.get(HistoryClustersItemProperties.RELATED_SEARCHES));
 
         mMediator.deleteVisits(Arrays.asList(mVisit2));
+        verify(mAnnounceCallback).onResult("single " + mVisit2.getTitle());
         // Deleting the final visit should result in an entirely empty list.
         assertEquals(0, mModelList.size());
     }
@@ -703,6 +716,15 @@ public class HistoryClustersMediatorTest {
         verify(mTabCreator)
                 .createNewTab(argThat(hasSameUrl(mGurl2.getSpec())),
                         eq(TabLaunchType.FROM_CHROME_UI), eq(mTab2));
+
+        doReturn(mTab2).when(mIncognitoTabCreator).createNewTab(any(), anyInt(), any());
+        mMediator.openVisitsInNewTabs(Arrays.asList(mVisit1, mVisit2), true, false);
+        verify(mIncognitoTabCreator)
+                .createNewTab(argThat(hasSameUrl(mGurl1.getSpec())),
+                        eq(TabLaunchType.FROM_CHROME_UI), eq(null));
+        verify(mIncognitoTabCreator)
+                .createNewTab(argThat(hasSameUrl(mGurl2.getSpec())),
+                        eq(TabLaunchType.FROM_CHROME_UI), eq(mTab2));
     }
 
     @Test
@@ -724,7 +746,7 @@ public class HistoryClustersMediatorTest {
                         eq(TabLaunchType.FROM_CHROME_UI), eq(null));
         verify(mTabCreator)
                 .createNewTab(argThat(hasSameUrl(mGurl2.getSpec())),
-                        eq(TabLaunchType.FROM_CHROME_UI), eq(mTab2));
+                        eq(TabLaunchType.FROM_LONGPRESS_BACKGROUND_IN_GROUP), eq(mTab2));
     }
 
     @Test

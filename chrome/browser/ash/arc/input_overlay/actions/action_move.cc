@@ -248,7 +248,7 @@ ActionMove::~ActionMove() = default;
 bool ActionMove::ParseFromJson(const base::Value& value) {
   Action::ParseFromJson(value);
   if (parsed_input_sources_ == InputSource::IS_KEYBOARD) {
-    if (locations_.size() == 0) {
+    if (original_positions_.empty()) {
       LOG(ERROR) << "Require at least one location for key-bound move action: "
                  << name_ << ".";
       return false;
@@ -380,12 +380,11 @@ bool ActionMove::RewriteEvent(const ui::Event& origin,
 }
 
 gfx::PointF ActionMove::GetUICenterPosition(const gfx::RectF& content_bounds) {
-  if (locations().empty()) {
+  if (original_positions().empty()) {
     DCHECK(IsMouseBound(*current_binding_));
     return gfx::PointF(content_bounds.width() / 2, content_bounds.height() / 2);
   }
-  auto* position = locations().front().get();
-  return position->CalculatePosition(content_bounds);
+  return original_positions().front().CalculatePosition(content_bounds);
 }
 
 std::unique_ptr<ActionView> ActionMove::CreateView(
@@ -441,14 +440,15 @@ bool ActionMove::RewriteKeyEvent(const ui::KeyEvent* key_event,
   int index = it - keys.begin();
   DCHECK(index >= 0 && index < kActionMoveKeysSize);
 
-  auto pos = CalculateTouchPosition(content_bounds, rotation_transform);
-  DCHECK(pos);
+  DCHECK_LT(current_position_idx_, touch_down_positions_.size());
+  if (current_position_idx_ >= touch_down_positions_.size())
+    return false;
 
   if (key_event->type() == ui::ET_KEY_PRESSED) {
     if (!touch_id_) {
       // First key press generates touch press.
       touch_id_ = TouchIdManager::GetInstance()->ObtainTouchID();
-      last_touch_root_location_ = *pos;
+      last_touch_root_location_ = touch_down_positions_[current_position_idx_];
       rewritten_events.emplace_back(
           ui::EventType::ET_TOUCH_PRESSED, last_touch_root_location_,
           last_touch_root_location_, key_event->time_stamp(),
@@ -461,8 +461,8 @@ bool ActionMove::RewriteKeyEvent(const ui::KeyEvent* key_event,
       return false;
 
     // Generate touch move.
-    CalculateMoveVector(*pos, index, /*key_press=*/true, content_bounds,
-                        rotation_transform);
+    CalculateMoveVector(touch_down_positions_[current_position_idx_], index,
+                        /*key_press=*/true, content_bounds, rotation_transform);
     rewritten_events.emplace_back(
         ui::EventType::ET_TOUCH_MOVED, last_touch_root_location_,
         last_touch_root_location_, key_event->time_stamp(),
@@ -476,7 +476,8 @@ bool ActionMove::RewriteKeyEvent(const ui::KeyEvent* key_event,
 
     if (keys_pressed_.size() > 1) {
       // Generate new move.
-      CalculateMoveVector(*pos, index, /*key_press=*/false, content_bounds,
+      CalculateMoveVector(touch_down_positions_[current_position_idx_], index,
+                          /*key_press=*/false, content_bounds,
                           rotation_transform);
       rewritten_events.emplace_back(
           ui::EventType::ET_TOUCH_MOVED, last_touch_root_location_,
@@ -533,10 +534,8 @@ bool ActionMove::RewriteMouseEvent(
     DCHECK(touch_id_);
   if (!touch_id_) {
     touch_id_ = TouchIdManager::GetInstance()->ObtainTouchID();
-    auto touch_down_pos =
-        CalculateTouchPosition(content_bounds, rotation_transform);
-    if (touch_down_pos)
-      last_touch_root_location_ = *touch_down_pos;
+    if (current_position_idx_ < touch_down_positions_.size())
+      last_touch_root_location_ = touch_down_positions_[current_position_idx_];
     rewritten_events.emplace_back(
         ui::EventType::ET_TOUCH_PRESSED, last_touch_root_location_,
         last_touch_root_location_, mouse_event->time_stamp(),

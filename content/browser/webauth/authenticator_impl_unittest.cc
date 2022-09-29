@@ -1465,11 +1465,10 @@ TEST_F(AuthenticatorImplTest, NoSilentAuthenticationForCable) {
 
     if (is_cable_device) {
       virtual_device_factory_->SetTransport(
-          device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
+          device::FidoTransportProtocol::kHybrid);
       for (auto& cred : options->allow_credentials) {
         cred.transports.clear();
-        cred.transports.emplace(
-            device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
+        cred.transports.emplace(device::FidoTransportProtocol::kHybrid);
       }
     }
 
@@ -3418,7 +3417,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
       GetTestPublicKeyCredentialRequestOptions();
   std::vector<uint8_t> id(32u, 1u);
   base::flat_set<device::FidoTransportProtocol> transports{
-      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
+      device::FidoTransportProtocol::kHybrid};
   options->allow_credentials.clear();
   options->allow_credentials.emplace_back(device::CredentialType::kPublicKey,
                                           std::move(id), std::move(transports));
@@ -8310,8 +8309,7 @@ class TouchIdAuthenticatorImplTest : public AuthenticatorImplTest {
 
   void ResetVirtualDevice() override {}
 
-  std::vector<std::pair<Credential, CredentialMetadata>> GetCredentials(
-      const std::string& rp_id) {
+  std::vector<Credential> GetCredentials(const std::string& rp_id) {
     return device::fido::mac::TouchIdCredentialStore::FindCredentialsForTesting(
         config_, rp_id);
   }
@@ -8355,7 +8353,7 @@ TEST_F(TouchIdAuthenticatorImplTest, MakeCredential) {
             AuthenticatorStatus::SUCCESS);
   auto credentials = GetCredentials(kTestRelyingPartyId);
   EXPECT_EQ(credentials.size(), 1u);
-  const CredentialMetadata& metadata = credentials.at(0).second;
+  const CredentialMetadata& metadata = credentials.at(0).metadata;
   EXPECT_FALSE(metadata.is_resident);
   auto expected_user = GetTestPublicKeyCredentialUserEntity();
   expected_user.icon_url =
@@ -8377,8 +8375,7 @@ TEST_F(TouchIdAuthenticatorImplTest, MakeCredential_Resident) {
             AuthenticatorStatus::SUCCESS);
   auto credentials = GetCredentials(kTestRelyingPartyId);
   EXPECT_EQ(credentials.size(), 1u);
-  const CredentialMetadata& metadata = credentials.at(0).second;
-  EXPECT_TRUE(metadata.is_resident);
+  EXPECT_TRUE(credentials.at(0).metadata.is_resident);
 }
 
 TEST_F(TouchIdAuthenticatorImplTest, MakeCredential_Eviction) {
@@ -8391,11 +8388,11 @@ TEST_F(TouchIdAuthenticatorImplTest, MakeCredential_Eviction) {
   EXPECT_EQ(AuthenticatorMakeCredential().status, AuthenticatorStatus::SUCCESS);
   EXPECT_EQ(GetCredentials(kTestRelyingPartyId).size(), 1u);
   const std::vector<uint8_t> credential_id =
-      GetCredentials(kTestRelyingPartyId).at(0).first.credential_id;
+      GetCredentials(kTestRelyingPartyId).at(0).credential_id;
   touch_id_test_environment_.SimulateTouchIdPromptSuccess();
   EXPECT_EQ(AuthenticatorMakeCredential().status, AuthenticatorStatus::SUCCESS);
   EXPECT_EQ(GetCredentials(kTestRelyingPartyId).size(), 1u);
-  EXPECT_NE(GetCredentials(kTestRelyingPartyId).at(0).first.credential_id,
+  EXPECT_NE(GetCredentials(kTestRelyingPartyId).at(0).credential_id,
             credential_id);
 
   // A resident credential will overwrite the non-resident one.
@@ -8506,9 +8503,7 @@ class AuthenticatorCableV2Test
 
     std::vector<std::unique_ptr<device::FidoDiscoveryBase>> Create(
         device::FidoTransportProtocol transport) override {
-      if (transport !=
-              device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy ||
-          !discovery_) {
+      if (transport != device::FidoTransportProtocol::kHybrid || !discovery_) {
         return {};
       }
 
@@ -9000,7 +8995,7 @@ TEST_F(AuthenticatorCableV2AuthenticatorTest, GetAssertion) {
   PublicKeyCredentialRequestOptionsPtr options =
       GetTestPublicKeyCredentialRequestOptions();
   options->allow_credentials[0].transports.insert(
-      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
+      device::FidoTransportProtocol::kHybrid);
   ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
       options->allow_credentials[0].id, options->relying_party_id));
 
@@ -9019,7 +9014,7 @@ TEST_F(AuthenticatorCableV2AuthenticatorTest, MakeDiscoverableCredential) {
   ASSERT_TRUE(did_complete_);
   ASSERT_TRUE(error_.has_value());
   EXPECT_EQ(*error_, device::cablev2::authenticator::Platform::Error::
-                         AUTHENTICATOR_SELECTION_RECEIVED);
+                         DISCOVERABLE_CREDENTIALS_REQUEST);
 }
 
 TEST_F(AuthenticatorCableV2AuthenticatorTest, EmptyAllowList) {

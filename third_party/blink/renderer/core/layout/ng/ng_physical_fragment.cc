@@ -410,11 +410,7 @@ NGPhysicalFragment::OutOfFlowData* NGPhysicalFragment::OutOfFlowDataFromBuilder(
     if (!oof_data)
       oof_data = MakeGarbageCollected<OutOfFlowData>();
 
-    for (const auto& it : builder->anchor_query_.anchor_references) {
-      oof_data->anchor_query.anchor_references.Set(
-          it.key, MakeGarbageCollected<NGPhysicalAnchorReference>(
-                      converter.ToPhysical(it.value.rect), it.value.fragment));
-    }
+    oof_data->anchor_query.SetFromLogical(builder->anchor_query_, converter);
   }
 
   return oof_data;
@@ -523,6 +519,15 @@ bool NGPhysicalFragment::NeedsOOFPositionedInfoPropagation() const {
           (FragmentedOutOfFlowData() &&
            FragmentedOutOfFlowData()->NeedsOOFPositionedInfoPropagation()));
   return !!oof_data_;
+}
+
+void NGPhysicalFragment::ClearOutOfFlowData() {
+  if (!oof_data_)
+    return;
+  if (HasAnchorQuery())
+    oof_data_->oof_positioned_descendants.clear();
+  else
+    oof_data_ = nullptr;
 }
 
 NGPhysicalFragment::OutOfFlowData* NGPhysicalFragment::CloneOutOfFlowData()

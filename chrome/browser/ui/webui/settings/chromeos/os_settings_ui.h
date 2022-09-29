@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/webui/settings/ash/os_apps_page/mojom/app_notification_handler.mojom-forward.h"
 #include "chrome/browser/ui/webui/settings/ash/search/user_action_recorder.mojom-forward.h"
 #include "chrome/browser/ui/webui/webui_load_timer.h"
+#include "chromeos/ash/components/audio/public/mojom/cros_audio_config.mojom-forward.h"
 #include "chromeos/ash/services/auth_factor_config/public/mojom/auth_factor_config.mojom-forward.h"
 #include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-forward.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
@@ -59,6 +60,12 @@ class OSSettingsUI : public ui::MojoWebUIController {
   // passing the pending receiver that will be internally bound.
   void BindInterface(
       mojo::PendingReceiver<ash::cellular_setup::mojom::ESimManager> receiver);
+
+  // Instantiates implementor of the mojom::CrosAudioConfig mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<ash::audio_config::mojom::CrosAudioConfig>
+          receiver);
 
   // Instantiates implementor of the mojom::CrosNetworkConfig mojo interface
   // passing the pending receiver that will be internally bound.

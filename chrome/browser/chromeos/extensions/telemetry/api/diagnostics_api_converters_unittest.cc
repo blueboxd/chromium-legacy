@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/extensions/telemetry/api/diagnostics_api_converters.h"
-#include "ash/webui/telemetry_extension_ui/mojom/diagnostics_service.mojom.h"
 #include "chrome/common/chromeos/extensions/api/diagnostics.h"
+#include "chromeos/crosapi/mojom/diagnostics_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -12,13 +12,14 @@ namespace converters {
 
 namespace {
 
-using MojoRoutineCommandType = ash::health::mojom::DiagnosticRoutineCommandEnum;
-using MojoRoutineStatus = ::ash::health::mojom::DiagnosticRoutineStatusEnum;
-using MojoRoutineType = ::ash::health::mojom::DiagnosticRoutineEnum;
+using MojoRoutineCommandType = crosapi::mojom::DiagnosticsRoutineCommandEnum;
+using MojoRoutineStatus = ::crosapi::mojom::DiagnosticsRoutineStatusEnum;
+using MojoRoutineType = ::crosapi::mojom::DiagnosticsRoutineEnum;
 using MojoRoutineUserMessageType =
-    ash::health::mojom::DiagnosticRoutineUserMessageEnum;
-using MojoDiskReadRoutineType = ash::health::mojom::DiskReadRoutineTypeEnum;
-using MojoAcPowerStatusType = ash::health::mojom::AcPowerStatusEnum;
+    crosapi::mojom::DiagnosticsRoutineUserMessageEnum;
+using MojoDiskReadRoutineType =
+    crosapi::mojom::DiagnosticsDiskReadRoutineTypeEnum;
+using MojoAcPowerStatusType = crosapi::mojom::DiagnosticsAcPowerStatusEnum;
 
 using RoutineCommandType = ::chromeos::api::os_diagnostics::RoutineCommandType;
 using RoutineStatus = ::chromeos::api::os_diagnostics::RoutineStatus;

@@ -44,6 +44,7 @@ class ASH_EXPORT LoginPinInputView : public views::View {
 
     views::View* code_input();
     absl::optional<std::string> GetCode();
+    bool IsEmpty();
 
    private:
     LoginPinInputView* const view_;
@@ -67,6 +68,10 @@ class ASH_EXPORT LoginPinInputView : public views::View {
 
   // Updates the palette use by the view.
   void UpdatePalette(const LoginPalette& palette);
+
+  // Updates the view. This can be called when either the length or the
+  // palette is updated.
+  void UpdateView();
 
   // When set, hitting return will attempt an unlock with an empty PIN.
   // LoginAuthUserView interprets such attempts as a SmartLock unlock.

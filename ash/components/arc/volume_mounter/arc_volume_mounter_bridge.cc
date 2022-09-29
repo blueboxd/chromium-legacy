@@ -152,9 +152,10 @@ void ArcVolumeMounterBridge::SendAllMountEvents() {
 
   SendMountEventForMyFiles();
 
-  for (const auto& keyValue : DiskMountManager::GetInstance()->mount_points()) {
-    OnMountEvent(DiskMountManager::MountEvent::MOUNTING,
-                 chromeos::MountError::MOUNT_ERROR_NONE, keyValue.second);
+  for (const auto& mount_point :
+       DiskMountManager::GetInstance()->mount_points()) {
+    OnMountEvent(DiskMountManager::MountEvent::MOUNTING, ash::MountError::kNone,
+                 mount_point);
   }
 }
 
@@ -171,7 +172,7 @@ void ArcVolumeMounterBridge::SendMountEventForMyFiles() {
       l10n_util::GetStringUTF8(IDS_FILE_BROWSER_MY_FILES_ROOT_LABEL);
 
   // TODO(niwa): Add a new DeviceType enum value for MyFiles.
-  chromeos::DeviceType device_type = chromeos::DeviceType::DEVICE_TYPE_SD;
+  ash::DeviceType device_type = ash::DeviceType::kSD;
 
   // Conditionally set MyFiles to be visible for P and invisible for R. In R, we
   // use IsVisibleRead so this is not needed.
@@ -193,22 +194,22 @@ bool ArcVolumeMounterBridge::IsVisibleToAndroidApps(
 
 void ArcVolumeMounterBridge::OnVisibleStoragesChanged() {
   // Remount all external mount points when the list of visible storage changes.
-  for (const auto& key_value :
+  for (const auto& mount_point :
        DiskMountManager::GetInstance()->mount_points()) {
     OnMountEvent(DiskMountManager::MountEvent::UNMOUNTING,
-                 chromeos::MountError::MOUNT_ERROR_NONE, key_value.second);
+                 ash::MountError::kNone, mount_point);
   }
-  for (const auto& key_value :
+  for (const auto& mount_point :
        DiskMountManager::GetInstance()->mount_points()) {
-    OnMountEvent(DiskMountManager::MountEvent::MOUNTING,
-                 chromeos::MountError::MOUNT_ERROR_NONE, key_value.second);
+    OnMountEvent(DiskMountManager::MountEvent::MOUNTING, ash::MountError::kNone,
+                 mount_point);
   }
 }
 
 void ArcVolumeMounterBridge::OnMountEvent(
     DiskMountManager::MountEvent event,
-    chromeos::MountError error_code,
-    const DiskMountManager::MountPointInfo& mount_info) {
+    ash::MountError error_code,
+    const DiskMountManager::MountPoint& mount_info) {
   DCHECK(delegate_);
 
   // Skip mount events for volumes that are not shared with ARC (e.g., those
@@ -219,7 +220,7 @@ void ArcVolumeMounterBridge::OnMountEvent(
              << mount_info.mount_path;
     return;
   }
-  if (error_code != chromeos::MountError::MOUNT_ERROR_NONE) {
+  if (error_code != ash::MountError::kNone) {
     DVLOG(1) << "Error " << error_code << "occurs during MountEvent " << event;
     return;
   }
@@ -243,7 +244,7 @@ void ArcVolumeMounterBridge::OnMountEvent(
       DiskMountManager::GetInstance()->FindDiskBySourcePath(
           mount_info.source_path);
   std::string fs_uuid, device_label;
-  chromeos::DeviceType device_type = chromeos::DeviceType::DEVICE_TYPE_UNKNOWN;
+  ash::DeviceType device_type = ash::DeviceType::kUnknown;
   // There are several cases where disk can be null:
   // 1. The disk is removed physically before being ejected/unmounted.
   // 2. The disk is inserted, but then immediately removed physically. The
@@ -291,8 +292,8 @@ void ArcVolumeMounterBridge::OnMountEvent(
   }
 
   if (event == DiskMountManager::MountEvent::MOUNTING &&
-      (device_type == chromeos::DeviceType::DEVICE_TYPE_USB ||
-       device_type == chromeos::DeviceType::DEVICE_TYPE_SD)) {
+      (device_type == ash::DeviceType::kUSB ||
+       device_type == ash::DeviceType::kSD)) {
     // Record visibilities of the mounted devices only when they are removable
     // storages (e.g. USB sticks or SD cards).
     base::UmaHistogramBoolean("Arc.ExternalStorage.MountedMediaVisibility",
@@ -306,7 +307,7 @@ void ArcVolumeMounterBridge::SendMountEventForRemovableMedia(
     const std::string& mount_path,
     const std::string& fs_uuid,
     const std::string& device_label,
-    chromeos::DeviceType device_type,
+    ash::DeviceType device_type,
     bool visible) {
   mojom::VolumeMounterInstance* volume_mounter_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->volume_mounter(),

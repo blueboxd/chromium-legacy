@@ -7,7 +7,7 @@
 
 #include "chromeos/ash/components/network/network_test_helper_base.h"
 
-namespace chromeos {
+namespace ash {
 
 class NetworkDeviceHandler;
 class NetworkStateHandler;
@@ -49,12 +49,11 @@ class NetworkStateTestHelper : public NetworkTestHelperBase {
   std::unique_ptr<NetworkDeviceHandler> network_device_handler_;
 };
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when
-// //chromeos/network moved to ash
-namespace ash {
-using ::chromeos::NetworkStateTestHelper;
 }  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos {
+using ::ash::NetworkStateTestHelper;
+}
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_NETWORK_STATE_TEST_HELPER_H_

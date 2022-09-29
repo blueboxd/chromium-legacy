@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/debug/crash_logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
@@ -146,7 +147,8 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   gfx::RectF RelativeToTreeBounds(const AXNode* node,
                                   gfx::RectF node_bounds,
                                   bool* offscreen = nullptr,
-                                  bool clip_bounds = true) const;
+                                  bool clip_bounds = true,
+                                  bool skip_container_offset = false) const;
 
   // Get the bounds of a node in the coordinate space of the tree.
   // If set, updates |offscreen| boolean to be true if the node is offscreen
@@ -213,6 +215,14 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   // present in the cache.
   absl::optional<int> GetSetSize(const AXNode& node) override;
 
+  // Returns the part of the current selection that falls within this
+  // accessibility tree, if any.
+  Selection GetSelection() const override;
+
+  // Returns the part of the current selection that falls within this
+  // accessibility tree, if any, adjusting its endpoints to be within unignored
+  // nodes. (An "ignored" node is a node that is not exposed to platform APIs:
+  // See `AXNode::IsIgnored`.)
   Selection GetUnignoredSelection() const override;
 
   bool GetTreeUpdateInProgressState() const override;
@@ -246,7 +256,9 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
 
   // Accumulate errors as there can be more than one before Chrome is crashed
   // via AccessibilityFatalError();
-  void RecordError(std::string new_error);
+  // In an AX_FAIL_FAST_BUILD, will assert/crash immediately.
+  void RecordError(const AXTreeUpdateState& update_state,
+                   std::string new_error);
 
   // AXNode::OwnerTree override.
   //
@@ -384,10 +396,11 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
                                           gfx::RectF node_bounds,
                                           bool* offscreen,
                                           bool clip_bounds,
+                                          bool skip_container_offset,
                                           bool allow_recursion) const;
 
   base::ObserverList<AXTreeObserver> observers_;
-  raw_ptr<AXNode, DanglingUntriaged> root_ = nullptr;
+  raw_ptr<AXNode> root_ = nullptr;
   std::string error_;
   AXTreeData data_;
   base::flat_map<AXNodeID, std::unique_ptr<AXNode>> id_map_;

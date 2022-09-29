@@ -5,9 +5,13 @@
 /**
  * @fileoverview Handles gesture-based commands.
  */
+import {AutomationPredicate} from '../../common/automation_predicate.js';
 import {EventGenerator} from '../../common/event_generator.js';
+import {BridgeConstants} from '../common/bridge_constants.js';
+import {BridgeHelper} from '../common/bridge_helper.js';
 import {EventSourceType} from '../common/event_source_type.js';
 import {GestureCommandData, GestureGranularity} from '../common/gesture_command_data.js';
+import {QueueMode} from '../common/tts_interface.js';
 
 import {ChromeVoxState} from './chromevox_state.js';
 import {CommandHandlerInterface} from './command_handler_interface.js';

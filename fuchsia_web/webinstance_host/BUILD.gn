@@ -4,31 +4,36 @@
 
 assert(is_fuchsia)
 
-visibility = []
+visibility = [ ":*" ]
 
 source_set("webinstance_host") {
+  assert_no_deps = [
+    "//content/public/common",
+    "//media",
+    "//third_party/blink/common",
+  ]
+
   # Only WebInstance clients should use the host.
   visibility += [
     # WebEngine clients that instantiate WebInstances directly.
     "//fuchsia_web/runners/*",
-    "//fuchsia_web/shell:web_engine_shell_exec",
+    "//fuchsia_web/shell:*",
     "//fuchsia_web/webengine:context_provider",
-
-    # TODO(crbug.com/1081525): Move dependent tests into this directory and
-    # source_sets that have these deps.
-    "//fuchsia_web/webengine:web_engine_integration_tests__exec",
   ]
-  sources = [ "web_instance_host.cc" ]
+  sources = [
+    "fuchsia_web_debug_proxy.cc",
+    "fuchsia_web_debug_proxy.h",
+    "web_instance_host.cc",
+  ]
   public = [ "web_instance_host.h" ]
   deps = [
     "//base",
     "//base:base_static",
     "//components/fuchsia_component_support",
-    "//content/public/common",
     "//fuchsia_web/common",
     "//fuchsia_web/webengine:switches",
     "//gpu/command_buffer/service",
-    "//media",
+    "//gpu/config",
     "//services/network/public/cpp",
     "//third_party/fuchsia-sdk/sdk/pkg/async",
     "//third_party/fuchsia-sdk/sdk/pkg/fdio",
@@ -42,5 +47,20 @@ source_set("webinstance_host") {
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
     "//third_party/fuchsia-sdk/sdk/pkg/fidl",
+  ]
+}
+
+source_set("webinstance_host_integration_test") {
+  testonly = true
+  visibility += [ "//fuchsia_web/webengine/*" ]
+  sources = [ "web_instance_host_integration_test.cc" ]
+  deps = [
+    ":webinstance_host",
+    "//base",
+    "//fuchsia_web/common/test:test_support",
+    "//fuchsia_web/webengine:browsertest_core",
+    "//net:test_support",
+    "//testing/gtest",
+    "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
   ]
 }

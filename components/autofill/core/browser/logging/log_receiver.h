@@ -13,14 +13,14 @@ namespace autofill {
 // logs about progress of actions like saving a password.
 class LogReceiver {
  public:
-  LogReceiver() {}
+  LogReceiver() = default;
 
   LogReceiver(const LogReceiver&) = delete;
   LogReceiver& operator=(const LogReceiver&) = delete;
 
-  virtual ~LogReceiver() {}
+  virtual ~LogReceiver() = default;
 
-  virtual void LogEntry(const base::Value& entry) = 0;
+  virtual void LogEntry(const base::Value::Dict& entry) = 0;
 };
 
 }  // namespace autofill

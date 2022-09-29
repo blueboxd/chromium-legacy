@@ -292,6 +292,18 @@ void FrameCaptionButtonContainerView::OnWindowControlsOverlayEnabledChanged(
   }
 }
 
+void FrameCaptionButtonContainerView::UpdateBorderlessModeEnabled(
+    bool enabled) {
+  if (is_borderless_mode_enabled_ == enabled)
+    return;
+
+  // In borderless mode, the windowing controls will be drawn in web content,
+  // so similarly to hiding the title bar, also the caption button container
+  // containing them will be hidden.
+  is_borderless_mode_enabled_ = enabled;
+  SetVisible(enabled);
+}
+
 void FrameCaptionButtonContainerView::UpdateCaptionButtonState(bool animate) {
   bool size_button_visible =
       (model_->IsVisible(views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE) ||
@@ -340,6 +352,24 @@ void FrameCaptionButtonContainerView::UpdateSizeButtonTooltip(
   size_button_->SetTooltipText(
       use_restore_frame ? l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE)
                         : l10n_util::GetStringUTF16(IDS_APP_ACCNAME_RESTORE));
+}
+
+void FrameCaptionButtonContainerView::UpdateFloatButton() {
+  // This may be called during widget initialization.
+  if (!float_button_ || !GetWidget())
+    return;
+
+  const bool floated = GetWidget()->GetNativeWindow()->GetProperty(
+                           kWindowStateTypeKey) == WindowStateType::kFloated;
+  float_button_->SetTooltipText(
+      floated
+          // TODO(sammiequon|shidi): Update this to the correct string once UX
+          // writing has a decision.
+          ? l10n_util::GetStringUTF16(IDS_APP_ACCNAME_RESTORE)
+          : l10n_util::GetStringUTF16(IDS_APP_ACCNAME_FLOAT));
+  SetButtonImage(
+      views::CAPTION_BUTTON_ICON_FLOAT,
+      floated ? chromeos::kUnfloatButtonIcon : chromeos::kFloatButtonIcon);
 }
 
 void FrameCaptionButtonContainerView::SetButtonSize(const gfx::Size& size) {
@@ -530,22 +560,9 @@ void FrameCaptionButtonContainerView::FloatButtonPressed() {
   // Abort any animations of the button icons.
   SetButtonsToNormal(Animate::kNo);
   DCHECK(chromeos::wm::features::IsFloatWindowEnabled());
-  aura::Window* window = GetWidget()->GetNativeWindow();
-  WindowStateType old_state = window->GetProperty(kWindowStateTypeKey);
-  // Toggle float current window.
-  FloatControllerBase::Get()->ToggleFloat(window);
-  UpdateCaptionButtonState(true);
 
-  // Update the tooltip if float/unfloat has been successful.
-  WindowStateType new_state = window->GetProperty(kWindowStateTypeKey);
-  if (new_state != old_state) {
-    float_button_->SetTooltipText(
-        new_state == WindowStateType::kFloated
-            // TODO(sammiequon|shidi): Update this to the correct string once UX
-            // writing has a decision.
-            ? l10n_util::GetStringUTF16(IDS_APP_ACCNAME_RESTORE)
-            : l10n_util::GetStringUTF16(IDS_APP_ACCNAME_FLOAT));
-  }
+  // Toggle float current window.
+  FloatControllerBase::Get()->ToggleFloat(GetWidget()->GetNativeWindow());
 }
 
 bool FrameCaptionButtonContainerView::IsMinimizeButtonVisible() const {

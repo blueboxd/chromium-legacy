@@ -180,7 +180,7 @@ void WaylandBufferManagerHost::CreateShmBasedBuffer(mojo::PlatformHandle shm_fd,
 }
 
 void WaylandBufferManagerHost::CreateSolidColorBuffer(const gfx::Size& size,
-                                                      SkColor color,
+                                                      const SkColor4f& color,
                                                       uint32_t buffer_id) {
   DCHECK(base::CurrentUIThread::IsSet());
   DCHECK(error_message_.empty());
@@ -243,6 +243,18 @@ WaylandBufferHandle* WaylandBufferManagerHost::GetBufferHandle(
     return nullptr;
 
   return it->second->GetBufferHandle(requestor);
+}
+
+uint32_t WaylandBufferManagerHost::GetBufferFormat(WaylandSurface* requestor,
+                                                   uint32_t buffer_id) {
+  DCHECK(base::CurrentUIThread::IsSet());
+  DCHECK(requestor);
+
+  auto it = buffer_backings_.find(buffer_id);
+  if (it == buffer_backings_.end())
+    return DRM_FORMAT_INVALID;
+
+  return it->second.get()->format();
 }
 
 void WaylandBufferManagerHost::CommitOverlays(

@@ -608,6 +608,7 @@ void ServiceWorkerContainerHost::SendSetControllerServiceWorker(
   DCHECK_EQ(controller_registration_->active_version(), controller_.get());
 
   controller_info->mode = GetControllerMode();
+  controller_info->fetch_handler_type = controller()->fetch_handler_type();
 
   // Pass an endpoint for the client to talk to this controller.
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote =
@@ -1012,10 +1013,16 @@ bool ServiceWorkerContainerHost::AllowServiceWorker(const GURL& scope,
                                                     const GURL& script_url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(context_);
+  auto* browser_context = context_->wrapper()->browser_context();
+  // Check that the browser context is not nullptr.  It becomes nullptr
+  // when the service worker process manager is being shutdown.
+  if (!browser_context) {
+    return false;
+  }
   AllowServiceWorkerResult allowed =
       GetContentClient()->browser()->AllowServiceWorker(
           scope, site_for_cookies(), top_frame_origin(), script_url,
-          context_->wrapper()->browser_context());
+          browser_context);
   if (IsContainerForWindowClient()) {
     auto* rfh = RenderFrameHostImpl::FromID(GetRenderFrameHostId());
     auto* web_contents =

@@ -21,11 +21,13 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "ui/accessibility/ax_node.h"
-#include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "v8/include/v8-context.h"
 #include "v8/include/v8-microtask-queue.h"
+
+using read_anything::mojom::ReadAnythingTheme;
+using read_anything::mojom::ReadAnythingThemePtr;
 
 namespace {
 
@@ -39,20 +41,7 @@ void SetAXNodeDataChildIds(v8::Isolate* isolate,
                            ui::AXNodeData* ax_node_data) {
   v8::Local<v8::Value> v8_child_ids;
   v8_dict->Get("childIds", &v8_child_ids);
-  gin::Converter<std::vector<int32_t>>::FromV8(isolate, v8_child_ids,
-                                               &ax_node_data->child_ids);
-}
-
-void SetAXNodeDataHierarchicalLevel(v8::Isolate* isolate,
-                                    gin::Dictionary* v8_dict,
-                                    ui::AXNodeData* ax_node_data) {
-  v8::Local<v8::Value> v8_hierarchical_level;
-  v8_dict->Get("hierarchicalLevel", &v8_hierarchical_level);
-  int32_t hierarchical_level;
-  gin::Converter<int32_t>::FromV8(isolate, v8_hierarchical_level,
-                                  &hierarchical_level);
-  ax_node_data->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel,
-                                hierarchical_level);
+  gin::ConvertFromV8(isolate, v8_child_ids, &ax_node_data->child_ids);
 }
 
 void SetAXNodeDataId(v8::Isolate* isolate,
@@ -60,7 +49,7 @@ void SetAXNodeDataId(v8::Isolate* isolate,
                      ui::AXNodeData* ax_node_data) {
   v8::Local<v8::Value> v8_id;
   v8_dict->Get("id", &v8_id);
-  gin::Converter<int32_t>::FromV8(isolate, v8_id, &ax_node_data->id);
+  gin::ConvertFromV8(isolate, v8_id, &ax_node_data->id);
 }
 
 void SetAXNodeDataName(v8::Isolate* isolate,
@@ -69,7 +58,7 @@ void SetAXNodeDataName(v8::Isolate* isolate,
   v8::Local<v8::Value> v8_name;
   v8_dict->Get("name", &v8_name);
   std::string name;
-  gin::Converter<std::string>::FromV8(isolate, v8_name, &name);
+  gin::ConvertFromV8(isolate, v8_name, &name);
   ax_node_data->SetName(name);
   ax_node_data->SetNameFrom(ax::mojom::NameFrom::kContents);
 }
@@ -80,7 +69,7 @@ void SetAXNodeDataRole(v8::Isolate* isolate,
   v8::Local<v8::Value> v8_role;
   v8_dict->Get("role", &v8_role);
   std::string role_name;
-  gin::Converter<std::string>::FromV8(isolate, v8_role, &role_name);
+  gin::ConvertFromV8(isolate, v8_role, &role_name);
   if (role_name == "rootWebArea")
     ax_node_data->role = ax::mojom::Role::kRootWebArea;
   else if (role_name == "heading")
@@ -93,13 +82,24 @@ void SetAXNodeDataRole(v8::Isolate* isolate,
     ax_node_data->role = ax::mojom::Role::kStaticText;
 }
 
+void SetAXNodeDataHtmlTag(v8::Isolate* isolate,
+                          gin::Dictionary* v8_dict,
+                          ui::AXNodeData* ax_node_data) {
+  v8::Local<v8::Value> v8_url;
+  v8_dict->Get("htmlTag", &v8_url);
+  std::string html_tag;
+  gin::Converter<std::string>::FromV8(isolate, v8_url, &html_tag);
+  ax_node_data->AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag,
+                                   html_tag);
+}
+
 void SetAXNodeDataUrl(v8::Isolate* isolate,
                       gin::Dictionary* v8_dict,
                       ui::AXNodeData* ax_node_data) {
   v8::Local<v8::Value> v8_url;
   v8_dict->Get("url", &v8_url);
   std::string url;
-  gin::Converter<std::string>::FromV8(isolate, v8_url, &url);
+  gin::ConvertFromV8(isolate, v8_url, &url);
   ax_node_data->AddStringAttribute(ax::mojom::StringAttribute::kUrl, url);
 }
 
@@ -108,31 +108,33 @@ void SetAXTreeUpdateRootId(v8::Isolate* isolate,
                            ui::AXTreeUpdate* snapshot) {
   v8::Local<v8::Value> v8_root_id;
   v8_dict->Get("rootId", &v8_root_id);
-  gin::Converter<int32_t>::FromV8(isolate, v8_root_id, &snapshot->root_id);
+  gin::ConvertFromV8(isolate, v8_root_id, &snapshot->root_id);
 }
 
 ui::AXTreeUpdate GetSnapshotFromV8SnapshotLite(
     v8::Isolate* isolate,
     v8::Local<v8::Value> v8_snapshot_lite) {
   ui::AXTreeUpdate snapshot;
-  gin::Dictionary v8_snapshot_dict(
-      isolate, v8::Local<v8::Object>::Cast(v8_snapshot_lite));
+  gin::Dictionary v8_snapshot_dict(isolate);
+  if (!gin::ConvertFromV8(isolate, v8_snapshot_lite, &v8_snapshot_dict))
+    return snapshot;
   SetAXTreeUpdateRootId(isolate, &v8_snapshot_dict, &snapshot);
 
   v8::Local<v8::Value> v8_nodes;
   v8_snapshot_dict.Get("nodes", &v8_nodes);
   std::vector<v8::Local<v8::Value>> v8_nodes_vector;
-  gin::Converter<std::vector<v8::Local<v8::Value>>>::FromV8(isolate, v8_nodes,
-                                                            &v8_nodes_vector);
-
+  if (!gin::ConvertFromV8(isolate, v8_nodes, &v8_nodes_vector))
+    return snapshot;
   for (v8::Local<v8::Value> v8_node : v8_nodes_vector) {
+    gin::Dictionary v8_node_dict(isolate);
+    if (!gin::ConvertFromV8(isolate, v8_node, &v8_node_dict))
+      continue;
     ui::AXNodeData ax_node_data;
-    gin::Dictionary v8_node_dict(isolate, v8::Local<v8::Object>::Cast(v8_node));
     SetAXNodeDataId(isolate, &v8_node_dict, &ax_node_data);
+    SetAXNodeDataRole(isolate, &v8_node_dict, &ax_node_data);
     SetAXNodeDataName(isolate, &v8_node_dict, &ax_node_data);
     SetAXNodeDataChildIds(isolate, &v8_node_dict, &ax_node_data);
-    SetAXNodeDataRole(isolate, &v8_node_dict, &ax_node_data);
-    SetAXNodeDataHierarchicalLevel(isolate, &v8_node_dict, &ax_node_data);
+    SetAXNodeDataHtmlTag(isolate, &v8_node_dict, &ax_node_data);
     SetAXNodeDataUrl(isolate, &v8_node_dict, &ax_node_data);
     snapshot.nodes.push_back(ax_node_data);
   }
@@ -197,20 +199,15 @@ void ReadAnythingAppController::OnAXTreeDistilled(
   render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
 }
 
-void ReadAnythingAppController::OnFontNameChange(
-    const std::string& new_font_name) {
-  font_name_ = new_font_name;
+void ReadAnythingAppController::OnThemeChanged(ReadAnythingThemePtr new_theme) {
+  font_name_ = new_theme->font_name;
+  font_size_ = new_theme->font_size;
+  foreground_color_ = new_theme->foreground_color;
+  background_color_ = new_theme->background_color;
+
   // TODO(abigailbklein): Use v8::Function rather than javascript. If possible,
   // replace this function call with firing an event.
-  std::string script = "chrome.readAnything.updateFontName();";
-  render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
-}
-
-void ReadAnythingAppController::OnFontSizeChanged(const float new_font_size) {
-  font_size_ = new_font_size;
-
-  // TODO: Use v*::Function rather than javascript.
-  std::string script = "chrome.readAnything.updateFontSize();";
+  std::string script = "chrome.readAnything.updateTheme();";
   render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
 }
 
@@ -221,19 +218,19 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
       .SetProperty("contentNodeIds", &ReadAnythingAppController::ContentNodeIds)
       .SetProperty("fontName", &ReadAnythingAppController::FontName)
       .SetProperty("fontSize", &ReadAnythingAppController::FontSize)
+      .SetProperty("foregroundColor",
+                   &ReadAnythingAppController::ForegroundColor)
+      .SetProperty("backgroundColor",
+                   &ReadAnythingAppController::BackgroundColor)
       .SetMethod("getChildren", &ReadAnythingAppController::GetChildren)
-      .SetMethod("getHeadingLevel", &ReadAnythingAppController::GetHeadingLevel)
+      .SetMethod("getHtmlTag", &ReadAnythingAppController::GetHtmlTag)
       .SetMethod("getTextContent", &ReadAnythingAppController::GetTextContent)
       .SetMethod("getUrl", &ReadAnythingAppController::GetUrl)
-      .SetMethod("isHeading", &ReadAnythingAppController::IsHeading)
-      .SetMethod("isLink", &ReadAnythingAppController::IsLink)
-      .SetMethod("isParagraph", &ReadAnythingAppController::IsParagraph)
-      .SetMethod("isStaticText", &ReadAnythingAppController::IsStaticText)
       .SetMethod("onConnected", &ReadAnythingAppController::OnConnected)
       .SetMethod("setContentForTesting",
                  &ReadAnythingAppController::SetContentForTesting)
-      .SetMethod("setFontNameForTesting",
-                 &ReadAnythingAppController::SetFontNameForTesting);
+      .SetMethod("setThemeForTesting",
+                 &ReadAnythingAppController::SetThemeForTesting);
 }
 
 std::vector<ui::AXNodeID> ReadAnythingAppController::ContentNodeIds() {
@@ -246,6 +243,14 @@ std::string ReadAnythingAppController::FontName() {
 
 float ReadAnythingAppController::FontSize() {
   return font_size_;
+}
+
+SkColor ReadAnythingAppController::ForegroundColor() {
+  return foreground_color_;
+}
+
+SkColor ReadAnythingAppController::BackgroundColor() {
+  return background_color_;
 }
 
 std::vector<ui::AXNodeID> ReadAnythingAppController::GetChildren(
@@ -261,11 +266,11 @@ std::vector<ui::AXNodeID> ReadAnythingAppController::GetChildren(
   return child_ids;
 }
 
-uint32_t ReadAnythingAppController::GetHeadingLevel(ui::AXNodeID ax_node_id) {
+std::string ReadAnythingAppController::GetHtmlTag(ui::AXNodeID ax_node_id) {
   ui::AXNode* ax_node = GetAXNode(ax_node_id);
   if (!ax_node)
-    return -1;
-  return ax_node->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
+    return std::string();
+  return ax_node->GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
 }
 
 std::string ReadAnythingAppController::GetTextContent(ui::AXNodeID ax_node_id) {
@@ -282,34 +287,6 @@ std::string ReadAnythingAppController::GetUrl(ui::AXNodeID ax_node_id) {
   return ax_node->GetStringAttribute(ax::mojom::StringAttribute::kUrl);
 }
 
-bool ReadAnythingAppController::IsHeading(ui::AXNodeID ax_node_id) {
-  ui::AXNode* ax_node = GetAXNode(ax_node_id);
-  if (!ax_node)
-    return false;
-  return ui::IsHeading(ax_node->GetRole());
-}
-
-bool ReadAnythingAppController::IsLink(ui::AXNodeID ax_node_id) {
-  ui::AXNode* ax_node = GetAXNode(ax_node_id);
-  if (!ax_node)
-    return false;
-  return ui::IsLink(ax_node->GetRole());
-}
-
-bool ReadAnythingAppController::IsParagraph(ui::AXNodeID ax_node_id) {
-  ui::AXNode* ax_node = GetAXNode(ax_node_id);
-  if (!ax_node)
-    return false;
-  return ax_node->GetRole() == ax::mojom::Role::kParagraph;
-}
-
-bool ReadAnythingAppController::IsStaticText(ui::AXNodeID ax_node_id) {
-  ui::AXNode* ax_node = GetAXNode(ax_node_id);
-  if (!ax_node)
-    return false;
-  return ax_node->GetRole() == ax::mojom::Role::kStaticText;
-}
-
 void ReadAnythingAppController::OnConnected() {
   mojo::PendingReceiver<read_anything::mojom::PageHandlerFactory>
       page_handler_factory_receiver =
@@ -321,9 +298,12 @@ void ReadAnythingAppController::OnConnected() {
       std::move(page_handler_factory_receiver));
 }
 
-void ReadAnythingAppController::SetFontNameForTesting(
-    std::string new_font_name) {
-  OnFontNameChange(new_font_name);
+void ReadAnythingAppController::SetThemeForTesting(const std::string& font_name,
+                                                   float font_size,
+                                                   SkColor foreground_color,
+                                                   SkColor background_color) {
+  OnThemeChanged(ReadAnythingTheme::New(font_name, font_size, foreground_color,
+                                        background_color));
 }
 
 void ReadAnythingAppController::SetContentForTesting(

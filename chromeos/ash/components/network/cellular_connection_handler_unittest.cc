@@ -24,7 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-namespace chromeos {
+namespace ash {
 namespace {
 
 const char kTestCellularDevicePath[] = "cellular_path";
@@ -177,8 +177,8 @@ class CellularConnectionHandlerTest : public testing::Test {
     helper_.hermes_euicc_test()->AddCarrierProfile(
         dbus::ObjectPath(CreateTestProfilePath(profile_num)),
         dbus::ObjectPath(CreateTestEuiccPath(euicc_num)), iccid,
-        CreateTestName(profile_num), "service_provider", "activation_code",
-        CreateTestServicePath(profile_num), state,
+        CreateTestName(profile_num), "nickname", "service_provider",
+        "activation_code", CreateTestServicePath(profile_num), state,
         hermes::profile::ProfileClass::kOperational, add_profile_behavior);
 
     if (!add_service) {
@@ -513,4 +513,4 @@ TEST_F(CellularConnectionHandlerTest, NewProfile) {
       CellularConnectionHandler::PrepareCellularConnectionResult::kSuccess);
 }
 
-}  // namespace chromeos
+}  // namespace ash

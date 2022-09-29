@@ -8,7 +8,7 @@
  * security settings.
  */
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
@@ -44,10 +44,10 @@ import {SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_
 import {getTemplate} from './privacy_page.html.js';
 import {PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl} from './privacy_page_browser_proxy.js';
 
-type BlockAutoplayStatus = {
-  enabled: boolean,
-  pref: chrome.settingsPrivate.PrefObject,
-};
+interface BlockAutoplayStatus {
+  enabled: boolean;
+  pref: chrome.settingsPrivate.PrefObject;
+}
 
 export interface SettingsPrivacyPageElement {
   $: {

@@ -88,8 +88,22 @@ class StandaloneBrowserExtensionApps : public KeyedService,
               int32_t event_flags,
               LaunchSource launch_source,
               WindowInfoPtr window_info) override;
+  void LaunchAppWithFiles(const std::string& app_id,
+                          int32_t event_flags,
+                          LaunchSource launch_source,
+                          std::vector<base::FilePath> file_paths) override;
+  void LaunchAppWithIntent(const std::string& app_id,
+                           int32_t event_flags,
+                           IntentPtr intent,
+                           LaunchSource launch_source,
+                           WindowInfoPtr window_info,
+                           base::OnceCallback<void(bool)> callback) override;
   void LaunchAppWithParams(AppLaunchParams&& params,
                            LaunchCallback callback) override;
+  void Uninstall(const std::string& app_id,
+                 UninstallSource uninstall_source,
+                 bool clear_site_data,
+                 bool report_abuse) override;
 
   // apps::PublisherBase:
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,

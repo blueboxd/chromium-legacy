@@ -50,6 +50,7 @@
 #import "ios/web/security/crw_cert_verification_controller.h"
 #import "ios/web/security/crw_ssl_status_updater.h"
 #import "ios/web/text_fragments/text_fragments_manager_impl.h"
+#import "ios/web/web_state/crw_web_view.h"
 #import "ios/web/web_state/page_viewport_state.h"
 #import "ios/web/web_state/ui/crw_context_menu_controller.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
@@ -1101,7 +1102,20 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
             : [self currentURL];
     _userInteractionState.SetLastUserInteraction(
         std::make_unique<web::UserInteractionEvent>(mainDocumentURL));
+    [self hideMenu];
   }
+}
+
+#pragma mark - Context Menu
+
+- (void)showMenuWithItems:(NSArray<CRWContextMenuItem*>*)items
+                     rect:(CGRect)rect {
+  [_containerView showMenuWithItems:items rect:rect];
+}
+
+// Hides the context menu.
+- (void)hideMenu {
+  [[UIMenuController sharedMenuController] hideMenu];
 }
 
 #pragma mark - ** Private Methods **
@@ -1620,8 +1634,7 @@ CrFullscreenState CrFullscreenStateFromWKFullscreenState(
           requireGestureRecognizerToFail:swipeRecognizer];
     }
 
-    if (web::GetWebClient()->EnableLongPressUIContextMenu() &&
-        web::GetWebClient()->EnableLongPressAndForceTouchHandling()) {
+    if (web::GetWebClient()->EnableLongPressUIContextMenu()) {
       self.contextMenuController =
           [[CRWContextMenuController alloc] initWithWebView:self.webView
                                                    webState:self.webStateImpl];

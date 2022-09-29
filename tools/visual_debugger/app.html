@@ -113,12 +113,15 @@
   <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
   <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
 
   <link rel='stylesheet' href='style.css'>
   <script src='filter.js'></script>
   <script src='filter-ui.js'></script>
   <script src='frame.js'></script>
   <script src='connection.js'></script>
+  <script src='thread.js'></script>
+  <script src='thread-ui.js'></script>
 </head>
 
 <div id='connectionPanel'>
@@ -189,6 +192,17 @@
       <span class="mdc-button__label"><i class="material-icons-outlined">add_box</i> Add new filter</span>
     </button>
   </div>
+</div>
+
+<div class='panelSection'>
+  <div class='sectionTitle'>
+    <i class="material-symbols-outlined">
+      airwave
+    </i>
+    Threads
+  </div>
+
+  <div id='threads' class='section'></div>
 </div>
 
 <div class='panelSection'>
@@ -415,7 +429,7 @@
     });
 
     document.querySelector('#live').addEventListener('click', () => {
-      player.freezeFrame(DrawFrame.count());
+      player.freezeFrame(DrawFrame.frameBuffer.numFrames - 1);
       player.play();
       has_disconnected = false;
       live.setAttribute('style', 'visibility:hidden');

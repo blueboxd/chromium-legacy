@@ -51,6 +51,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -1349,10 +1350,10 @@ void FrameLoader::CommitDocumentLoader(DocumentLoader* document_loader,
     if (old_document_info->unload_timing_info.unload_timing.has_value()) {
       document_loader_->GetTiming().SetCanRequestFromPreviousDocument(
           old_document_info->unload_timing_info.unload_timing->can_request);
-      document_loader_->GetTiming().MarkUnloadEventStart(
+      document_loader_->GetTiming().SetUnloadEventStart(
           old_document_info->unload_timing_info.unload_timing
               ->unload_event_start);
-      document_loader_->GetTiming().MarkUnloadEventEnd(
+      document_loader_->GetTiming().SetUnloadEventEnd(
           old_document_info->unload_timing_info.unload_timing
               ->unload_event_end);
       document_loader_->GetTiming().MarkCommitNavigationEnd();

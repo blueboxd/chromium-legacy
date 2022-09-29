@@ -26,6 +26,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ash/bruschetta/bruschetta_util.h"
 #include "chrome/browser/ash/crostini/ansible/ansible_management_service.h"
 #include "chrome/browser/ash/crostini/crostini_engagement_metrics_service.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
@@ -45,11 +46,13 @@
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
+#include "chrome/browser/ash/guest_os/guest_os_session_tracker.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/guest_os/guest_os_stability_monitor.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service_factory.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_wayland_server.h"
+#include "chrome/browser/ash/guest_os/public/types.h"
 #include "chrome/browser/ash/policy/handlers/powerwash_requirements_checker.h"
 #include "chrome/browser/ash/scheduler_configuration_manager.h"
 #include "chrome/browser/browser_process.h"
@@ -73,6 +76,7 @@
 namespace crostini {
 
 namespace {
+const auto kStartVmTimeout = base::Seconds(300);
 
 ash::CiceroneClient* GetCiceroneClient() {
   return ash::CiceroneClient::Get();
@@ -295,7 +299,7 @@ class CrostiniManager::CrostiniRestarter
       {mojom::InstallerState::kInstallImageLoader,
        base::Hours(6)},  // May need to download DLC or component
       {mojom::InstallerState::kCreateDiskImage, base::Minutes(5)},
-      {mojom::InstallerState::kStartTerminaVm, base::Minutes(5)},
+      {mojom::InstallerState::kStartTerminaVm, kStartVmTimeout},
       {mojom::InstallerState::kStartLxd, base::Minutes(5)},
       // While CreateContainer may need to download a file, we get progress
       // messages that reset the countdown.
@@ -333,6 +337,15 @@ class CrostiniManager::CrostiniRestarter
 
   mojom::InstallerState stage_ = mojom::InstallerState::kStart;
 
+  base::ScopedObservation<chromeos::SchedulerConfigurationManagerBase,
+                          chromeos::SchedulerConfigurationManagerBase::Observer>
+      scheduler_configuration_manager_observation_{this};
+  base::ScopedObservation<CrostiniManager,
+                          ash::VmShutdownObserver,
+                          &CrostiniManager::AddVmShutdownObserver,
+                          &CrostiniManager::RemoveVmShutdownObserver>
+      vm_shutdown_observation_{this};
+
   base::WeakPtrFactory<CrostiniRestarter> weak_ptr_factory_{this};
 };
 
@@ -348,7 +361,6 @@ CrostiniManager::CrostiniRestarter::CrostiniRestarter(
 }
 
 CrostiniManager::CrostiniRestarter::~CrostiniRestarter() {
-  crostini_manager_->RemoveVmShutdownObserver(this);
   if (!requests_.empty()) {
     // This is triggered by logging out when restarts are in progress.
     LOG(WARNING) << "Destroying with outstanding requests.";
@@ -367,7 +379,7 @@ void CrostiniManager::CrostiniRestarter::Restart() {
     return;
   }
 
-  crostini_manager_->AddVmShutdownObserver(this);
+  vm_shutdown_observation_.Observe(crostini_manager_);
   // TODO(b/205650706): It is possible to invoke a CrostiniRestarter to install
   // Crostini without using the actual installer. We should handle these better.
   RestartSource restart_source = requests_[0].options.restart_source;
@@ -557,8 +569,10 @@ void CrostiniManager::CrostiniRestarter::StartLxdContainerFinished(
   // are finished. Also, a lot of unit tests don't inject a fake container so
   // it's possible in tests to end up here without a running container. Don't
   // try mounting sshfs in that case.
-  auto info = crostini_manager_->GetContainerInfo(container_id_);
-  if (container_id_ == DefaultContainerId() && info) {
+  bool running =
+      guest_os::GuestOsSessionTracker::GetForProfile(profile_)->IsRunning(
+          container_id_);
+  if (container_id_ == DefaultContainerId() && running) {
     crostini_manager_->MountCrostiniFiles(container_id_, base::DoNothing(),
                                           true);
   }
@@ -662,6 +676,8 @@ void CrostiniManager::CrostiniRestarter::LoadComponentFinished(
   }
   // Set the pref here, after we first successfully install something
   profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
+  // Register penguin so it will show in Terminal even on failure (b/221771751).
+  AddNewLxdContainerToPrefs(profile_, DefaultContainerId());
 
   // Allow concierge to choose an appropriate disk image size.
   int64_t disk_size_bytes = requests_[0].options.disk_size_bytes.value_or(0);
@@ -714,7 +730,8 @@ void CrostiniManager::CrostiniRestarter::CreateDiskImageFinished(
   if (!scheduler_configuration) {
     // Wait for the configuration to become available.
     LOG(WARNING) << "Scheduler configuration is not yet ready";
-    scheduler_configuration_manager->AddObserver(this);
+    scheduler_configuration_manager_observation_.Observe(
+        scheduler_configuration_manager);
     return;
   }
   OnConfigurationSet(scheduler_configuration->first,
@@ -725,13 +742,15 @@ void CrostiniManager::CrostiniRestarter::CreateDiskImageFinished(
 void CrostiniManager::CrostiniRestarter::OnConfigurationSet(
     bool success,
     size_t num_cores_disabled) {
+  if (ReturnEarlyIfNeeded()) {
+    return;
+  }
+
   // Note: On non-x86_64 devices, the configuration request to debugd always
   // fails. It is WAI, and to support that case, don't log anything even when
   // |success| is false. |num_cores_disabled| is always set regardless of
   // whether the call is successful.
-  g_browser_process->platform_part()
-      ->scheduler_configuration_manager()
-      ->RemoveObserver(this);
+  scheduler_configuration_manager_observation_.Reset();
   num_cores_disabled_ = num_cores_disabled;
 
   guest_os::GuestOsServiceFactory::GetForProfile(profile_)
@@ -1175,23 +1194,17 @@ void CrostiniManager::SetUncleanStartupForTesting(bool is_unclean_startup) {
   is_unclean_startup_ = is_unclean_startup;
 }
 
-absl::optional<ContainerInfo> CrostiniManager::GetContainerInfo(
-    const guest_os::GuestId& container_id) {
-  if (!IsVmRunning(container_id.vm_name)) {
-    return absl::nullopt;
-  }
-  auto range = running_containers_.equal_range(container_id.vm_name);
-  for (auto it = range.first; it != range.second; ++it) {
-    if (it->second.name == container_id.container_name) {
-      return it->second;
-    }
-  }
-  return absl::nullopt;
-}
-
 void CrostiniManager::AddRunningContainerForTesting(std::string vm_name,
                                                     ContainerInfo info) {
-  running_containers_.emplace(std::move(vm_name), info);
+  auto* tracker = guest_os::GuestOsSessionTracker::GetForProfile(profile_);
+  guest_os::GuestId id{guest_os::VmType::TERMINA, vm_name, info.name};
+  guest_os::GuestInfo guest_info{id,
+                                 0,
+                                 info.username,
+                                 info.homedir,
+                                 info.ipv4_address,
+                                 info.sftp_vsock_port};
+  tracker->AddGuestForTesting(id, guest_info);  // IN-TEST
 }
 
 void CrostiniManager::UpdateLaunchMetricsForEnterpriseReporting() {
@@ -1215,9 +1228,9 @@ CrostiniManager::CrostiniManager(Profile* profile)
   if (ash::AnomalyDetectorClient::Get()) {  // May be null in tests.
     ash::AnomalyDetectorClient::Get()->AddObserver(this);
   }
-  if (chromeos::NetworkHandler::IsInitialized()) {
+  if (ash::NetworkHandler::IsInitialized()) {
     network_state_handler_observer_.Observe(
-        chromeos::NetworkHandler::Get()->network_state_handler());
+        ash::NetworkHandler::Get()->network_state_handler());
   }
   if (chromeos::PowerManagerClient::Get()) {
     chromeos::PowerManagerClient::Get()->AddObserver(this);
@@ -1238,6 +1251,17 @@ CrostiniManager::CrostiniManager(Profile* profile)
   if (crostini::CrostiniFeatures::Get()->IsEnabled(profile_)) {
     for (const auto& container :
          guest_os::GetContainers(profile_, kCrostiniDefaultVmType)) {
+      // For a short while in M106 Bruschetta was getting added to prefs without
+      // a VM type, which meant it defaulted to Termina. If we've got it in
+      // prefs remove it instead of registering it. This'll break anyone who
+      // really has a vm named "bru" which is unfortunate, but we can't tell the
+      // difference between a correct and incorrect pref, so hopefully no one's
+      // done so.
+      // TODO(b/241043433): This code can be removed after M118.
+      if (container.vm_name == bruschetta::kBruschettaVmName) {
+        guest_os::RemoveContainerFromPrefs(profile, container);
+        continue;
+      }
       RegisterContainer(container);
     }
   }
@@ -1476,6 +1500,7 @@ void CrostiniManager::StartTerminaVm(std::string name,
   request.set_name(std::move(name));
   request.set_start_termina(true);
   request.set_owner_id(owner_id_);
+  request.set_timeout(static_cast<uint32_t>(kStartVmTimeout.InSeconds()));
   request.mutable_vm()->set_wayland_server(wayland_path.AsUTF8Unsafe());
   if (base::FeatureList::IsEnabled(chromeos::features::kCrostiniGpuSupport))
     request.set_enable_gpu(true);
@@ -2023,6 +2048,11 @@ void CrostiniManager::LaunchContainerApplication(
       files.begin(), files.end(),
       google::protobuf::RepeatedFieldBackInserter(request.mutable_files()));
 
+  std::vector<vm_tools::cicerone::ContainerFeature> container_features =
+      GetContainerFeatures();
+  request.mutable_container_features()->Add(container_features.begin(),
+                                            container_features.end());
+
   GetCiceroneClient()->LaunchContainerApplication(
       std::move(request),
       base::BindOnce(&CrostiniManager::OnLaunchContainerApplication,
@@ -2496,7 +2526,6 @@ void CrostiniManager::OnStartTerminaVm(
     LOG(ERROR) << "Failed to start VM: " << response->failure_reason();
     // If we thought vms and containers were running before, they aren't now.
     running_vms_.erase(vm_name);
-    running_containers_.erase(vm_name);
     std::move(callback).Run(/*success=*/false);
     return;
   }
@@ -2510,7 +2539,6 @@ void CrostiniManager::OnStartTerminaVm(
       VmInfo{VmState::STARTING, std::move(response->vm_info())};
   // If we thought a container was running for this VM, we're wrong. This can
   // happen if the vm was formerly running, then stopped via crosh.
-  running_containers_.erase(vm_name);
 
   if (wait_for_tremplin) {
     VLOG(1) << "Awaiting TremplinStartedSignal for " << owner_id_ << ", "
@@ -2630,7 +2658,6 @@ void CrostiniManager::OnVmStoppedCleanup(const std::string& vm_name) {
 
   // Remove from running_vms_, and other vm-keyed state.
   running_vms_.erase(vm_name);
-  running_containers_.erase(vm_name);
   InvokeAndErasePendingCallbacks(
       &export_lxd_container_callbacks_, vm_name,
       CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED, 0, 0);
@@ -2675,11 +2702,6 @@ void CrostiniManager::OnContainerStarted(
   }
 
   VLOG(1) << "Container " << signal.container_name() << " started";
-  running_containers_.emplace(
-      signal.vm_name(),
-      ContainerInfo(signal.container_name(), signal.container_username(),
-                    signal.container_homedir(), signal.ipv4_address(),
-                    signal.sftp_vsock_port()));
   InvokeAndErasePendingContainerCallbacks(
       &start_container_callbacks_, container_id, CrostiniResult::SUCCESS);
 
@@ -2730,7 +2752,7 @@ void CrostiniManager::OnContainerShutdown(
   }
   shutdown_container_callbacks_.erase(range_callbacks.first,
                                       range_callbacks.second);
-  RemoveStoppedContainer(container_id);
+  HandleContainerShutdown(container_id);
 }
 
 void CrostiniManager::OnInstallLinuxPackageProgress(
@@ -3012,7 +3034,7 @@ void CrostiniManager::OnStopLxdContainer(
       break;
 
     case vm_tools::cicerone::StopLxdContainerResponse::STOPPED:
-      RemoveStoppedContainer(container_id);
+      HandleContainerShutdown(container_id);
       std::move(callback).Run(CrostiniResult::SUCCESS);
       break;
 
@@ -3239,8 +3261,10 @@ void CrostiniManager::OnLxdContainerStarting(
       (version != ContainerOsVersion::kOtherOs &&
        version != ContainerOsVersion::kUnknown);
 
-  if (result == CrostiniResult::SUCCESS && !GetContainerInfo(container_id) &&
-      is_garcon_required) {
+  bool running =
+      guest_os::GuestOsSessionTracker::GetForProfile(profile_)->IsRunning(
+          container_id);
+  if (result == CrostiniResult::SUCCESS && !running && is_garcon_required) {
     VLOG(1) << "Awaiting ContainerStarted signal from Garcon, did not yet have "
                "information for container "
             << container_id.container_name;
@@ -3270,7 +3294,7 @@ void CrostiniManager::OnLxdContainerStopping(
       result = CrostiniResult::CONTAINER_STOP_CANCELLED;
       break;
     case vm_tools::cicerone::LxdContainerStoppingSignal::STOPPED:
-      RemoveStoppedContainer(container_id);
+      HandleContainerShutdown(container_id);
       result = CrostiniResult::SUCCESS;
       break;
     case vm_tools::cicerone::LxdContainerStoppingSignal::STOPPING:
@@ -3754,19 +3778,19 @@ void CrostiniManager::OnPendingAppListUpdates(
 
 // TODO(danielng): Consider handling instant tethering.
 void CrostiniManager::ActiveNetworksChanged(
-    const std::vector<const chromeos::NetworkState*>& active_networks) {
-  chromeos::NetworkStateHandler::NetworkStateList active_physical_networks;
-  chromeos::NetworkHandler::Get()
+    const std::vector<const ash::NetworkState*>& active_networks) {
+  ash::NetworkStateHandler::NetworkStateList active_physical_networks;
+  ash::NetworkHandler::Get()
       ->network_state_handler()
-      ->GetActiveNetworkListByType(chromeos::NetworkTypePattern::Physical(),
+      ->GetActiveNetworkListByType(ash::NetworkTypePattern::Physical(),
                                    &active_physical_networks);
   if (active_physical_networks.empty())
     return;
-  const chromeos::NetworkState* network = active_physical_networks.at(0);
+  const ash::NetworkState* network = active_physical_networks.at(0);
   if (!network)
     return;
-  const chromeos::DeviceState* device =
-      chromeos::NetworkHandler::Get()->network_state_handler()->GetDeviceState(
+  const ash::DeviceState* device =
+      ash::NetworkHandler::Get()->network_state_handler()->GetDeviceState(
           network->device_path());
   if (!device)
     return;
@@ -3782,7 +3806,6 @@ void CrostiniManager::OnShuttingDown() {
 
 void CrostiniManager::SuspendImminent(
     power_manager::SuspendImminent::Reason reason) {
-  auto info = GetContainerInfo(DefaultContainerId());
   if (!crostini_sshfs_->IsSshfsMounted(DefaultContainerId())) {
     return;
   }
@@ -3800,7 +3823,10 @@ void CrostiniManager::SuspendDone(base::TimeDelta sleep_duration) {
   // https://crbug.com/968060.  Sshfs is unmounted before suspend,
   // call RestartCrostini to force remount if container is running.
   guest_os::GuestId container_id = DefaultContainerId();
-  if (GetContainerInfo(container_id)) {
+  bool running =
+      guest_os::GuestOsSessionTracker::GetForProfile(profile_)->IsRunning(
+          container_id);
+  if (running) {
     // TODO(crbug/1142321): Double-check if anything breaks if we change this
     // to just remount the sshfs mounts, in particular check 9p mounts.
     RestartCrostini(container_id, base::DoNothing());
@@ -3929,21 +3955,13 @@ void CrostiniManager::CallRestarterStartLxdContainerFinishedForTesting(
   restarter_it->second->StartLxdContainerFinished(result);
 }
 
-void CrostiniManager::RemoveStoppedContainer(
+void CrostiniManager::HandleContainerShutdown(
     const guest_os::GuestId& container_id) {
   // Run all ContainerShutdown observers
   for (auto& observer : container_shutdown_observers_) {
     observer.OnContainerShutdown(container_id);
   }
-  // Remove from running containers multimap.
-  auto range_containers = running_containers_.equal_range(container_id.vm_name);
-  for (auto it = range_containers.first; it != range_containers.second; ++it) {
-    if (it->second.name == container_id.container_name) {
-      running_containers_.erase(it);
-      break;
-    }
-  }
-  if (running_containers_.empty()) {
+  if (!IsVmRunning(kCrostiniDefaultVmName)) {
     auto* engagement_metrics_service =
         CrostiniEngagementMetricsService::Factory::GetForProfile(profile_);
     // This is null in unit tests.

@@ -43,8 +43,6 @@ std::ostream& operator<<(std::ostream& os,
                          const ::i18n::phonenumbers::PhoneNumber& n) {
   os << "country_code: " << n.country_code() << " "
      << "national_number: " << n.national_number();
-  if (n.has_extension())
-    os << " extension: \"" << n.extension() << "\"";
   if (n.has_italian_leading_zero())
     os << " italian_leading_zero: " << n.italian_leading_zero();
   if (n.has_number_of_leading_zeros())
@@ -718,11 +716,6 @@ bool AutofillProfileComparator::MergePhoneNumbers(
       HasInternationalCountryCode(n1) ? n1.country_code() : n2.country_code());
   merged_number.set_national_number(
       std::max(n1.national_number(), n2.national_number()));
-  if (n1.has_extension() && !n1.extension().empty()) {
-    merged_number.set_extension(n1.extension());
-  } else if (n2.has_extension() && !n2.extension().empty()) {
-    merged_number.set_extension(n2.extension());
-  }
   if (n1.has_italian_leading_zero() || n2.has_italian_leading_zero()) {
     merged_number.set_italian_leading_zero(n1.italian_leading_zero() ||
                                            n2.italian_leading_zero());
@@ -1011,10 +1004,6 @@ bool AutofillProfileComparator::MergeAddresses(const AutofillProfile& p1,
 bool AutofillProfileComparator::MergeBirthdates(const AutofillProfile& p1,
                                                 const AutofillProfile& p2,
                                                 Birthdate& birthdate) const {
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillEnableCompatibilitySupportForBirthdates)) {
-    return true;
-  }
   DCHECK(HaveMergeableBirthdates(p1, p2));
 
   for (ServerFieldType component : Birthdate::GetRawComponents()) {
@@ -1475,10 +1464,6 @@ bool AutofillProfileComparator::HaveMergeableAddresses(
 bool AutofillProfileComparator::HaveMergeableBirthdates(
     const AutofillProfile& p1,
     const AutofillProfile& p2) const {
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillEnableCompatibilitySupportForBirthdates)) {
-    return true;
-  }
   return base::ranges::all_of(
       Birthdate::GetRawComponents(), [&](ServerFieldType component) {
         const std::u16string& component1 = p1.GetInfo(component, app_locale_);

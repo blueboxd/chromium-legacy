@@ -135,8 +135,8 @@ source_set("tests") {
 
   sources = [
     "battery/battery_status_service_unittest.cc",
+    "compute_pressure/platform_collector_unittest.cc",
     "compute_pressure/pressure_manager_impl_unittest.cc",
-    "compute_pressure/pressure_sampler_unittest.cc",
     "compute_pressure/pressure_test_support.cc",
     "compute_pressure/pressure_test_support.h",
     "generic_sensor/absolute_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_magnetometer_unittest.cc",
@@ -240,8 +240,8 @@ source_set("tests") {
     ]
     deps += [
       "//chromeos/ash/components/dbus/biod:test_support",
+      "//chromeos/ash/components/dbus/shill",
       "//chromeos/ash/components/network:test_support",
-      "//chromeos/dbus:test_support",
       "//services/device/bluetooth:bluetooth_system_tests",
       "//services/device/fingerprint",
       "//third_party/protobuf:protobuf_lite",
@@ -275,8 +275,7 @@ source_set("tests") {
     deps += [
       "//components/variations:test_support",
       "//services/device/battery",
-      "//services/device/hid:test_support",
-      "//services/device/public/cpp/hid",
+      "//services/device/hid",
       "//services/device/vibration",
     ]
 

@@ -76,24 +76,29 @@ class WaylandInputMethodContext : public LinuxInputMethodContext,
                        const std::vector<SpanStyle>& spans,
                        int32_t preedit_cursor) override;
   void OnCommitString(base::StringPiece text) override;
+  void OnCursorPosition(int32_t index, int32_t anchor) override;
   void OnDeleteSurroundingText(int32_t index, uint32_t length) override;
   void OnKeysym(uint32_t keysym, uint32_t state, uint32_t modifiers) override;
   void OnSetPreeditRegion(int32_t index,
                           uint32_t length,
                           const std::vector<SpanStyle>& spans) override;
-
   void OnClearGrammarFragments(const gfx::Range& range) override;
   void OnAddGrammarFragment(const GrammarFragment& fragment) override;
   void OnSetAutocorrectRange(const gfx::Range& range) override;
-
+  void OnSetVirtualKeyboardOccludedBounds(
+      const gfx::Rect& screen_bounds) override;
   void OnInputPanelState(uint32_t state) override;
   void OnModifiersMap(std::vector<std::string> modifiers_map) override;
 
  private:
-  void Focus();
-  void Blur();
+  void Focus(bool skip_virtual_keyboard_update);
+  void Blur(bool skip_virtual_keyboard_update);
   void UpdatePreeditText(const std::u16string& preedit_text);
-  void MaybeUpdateActivated();
+  // If |skip_virtual_keyboard_update| is true, no virtual keyboard show/hide
+  // requests will be sent. This is used to prevent flickering the virtual
+  // keyboard when it would be immediately reshown anyway, e.g. when changing
+  // focus from one text input to another.
+  void MaybeUpdateActivated(bool skip_virtual_keyboard_update);
 
   const raw_ptr<WaylandConnection>
       connection_;  // TODO(jani) Handle this better
@@ -124,6 +129,12 @@ class WaylandInputMethodContext : public LinuxInputMethodContext,
   std::string surrounding_text_;
   // The selection range in UTF-8 offsets in the |surrounding_text_|.
   gfx::Range selection_range_utf8_ = gfx::Range::InvalidRange();
+
+  // Whether the next CommitString should be treated as part of a
+  // ConfirmCompositionText operation which keeps the current selection. This
+  // allows ConfirmCompositionText to be implemented as an atomic operation
+  // using CursorPosition and CommitString.
+  bool pending_keep_selection_ = false;
 
   // Caches VirtualKeyboard visibility.
   bool virtual_keyboard_visible_ = false;

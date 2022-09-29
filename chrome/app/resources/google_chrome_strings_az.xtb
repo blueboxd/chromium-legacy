@@ -14,8 +14,6 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="1142745911746664600">Chrome'u güncəlləmək alınmadı</translation>
 <translation id="1152920704813762236">ChromeOS haqqında</translation>
 <translation id="1154147086299354128">&amp;Chrome'da açın</translation>
-<translation id="1178374936842835197">Ayar bu səhifədə göstərilməsə, <ph name="LINK_BEGIN" />
-      ChromeOS Flex ayarlarına<ph name="LINK_END" /> baxın</translation>
 <translation id="1203500561924088507">Quraşdırdığınız üçün təşəkkür edirik. <ph name="BUNDLE_NAME" /> istifadə etməzdən əvvəl brauzerinizi yenidən başlatmalısınız.</translation>
 <translation id="1278833599417554002">&amp;Chrome'u güncəlləmək üçün yenidən başladın</translation>
 <translation id="1302523850133262269">Chrome'un ən son sistem güncəlləşmələrini quraşdırmasını gözləyin.</translation>
@@ -121,7 +119,6 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="3080151273017101988">Google Chrome bağlı olduqda arxa fon tətbiqləri davam etdirilsin</translation>
 <translation id="3089968997497233615">Google Chrome'un yeni, güvənli versiyası əlçatandır.</translation>
 <translation id="3100998948628680988">Chrome profilinizə ad verin</translation>
-<translation id="3103390129666310801">Cihazınızın güncəl olub-olmadığına baxmaq üçün <ph name="LINK_BEGIN" />ChromeOS Flex Ayarlarına<ph name="LINK_END" /> keçin</translation>
 <translation id="3114643501466072395">Digər parollarınızın data pozuntuları və digər güvənlik məsələlərinə qarşı güvəndə olduğunu yoxlamaq üçün <ph name="BEGIN_LINK" />Chrome'a daxil olun<ph name="END_LINK" />.</translation>
 <translation id="3140883423282498090">Dəyişiklikləriniz gələn dəfə Google Chrome'u başlatdıqda qüvvəyə minəcək.</translation>
 <translation id="3149510190863420837">Chrome Tətbiqləri</translation>
@@ -213,7 +210,6 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5037581483200764584">Google Chrome güncəlləmələrini əldə etmək üçün macOS 10.13 və ya daha yeni versiya tələb olunur. Bu kompüter OS X 10.11 istifadə edir.</translation>
 <translation id="5098668839038261629">Aktiv olduqda, Chrome'dan da çıxacaqsınız</translation>
-<translation id="5112116809696021727">Cihazınızın güncəl olub-olmadığına baxmaq üçün <ph name="LINK_BEGIN" />ChromeOS Ayarlarına<ph name="LINK_END" /> keçin</translation>
 <translation id="5132929315877954718">Google Chrome üçün möhtəşəm tətbiqlər, artırmalar və temalar kəşf edin.</translation>
 <translation id="5139423532931106058">Chrome profilinizi fərdiləşdirin</translation>
 <translation id="5163087008893166964">Chrome'a xoş gəlmisiniz; yeni brauzer pəncərəsi açılıb</translation>
@@ -251,8 +247,6 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="5940385492829620908">Veb, əlfəcinlər və Chrome'a aid hər şeyiniz buradadır.</translation>
 <translation id="5941711191222866238">Minimallaşdırın</translation>
 <translation id="5941830788786076944">Google Chrome'u defolt brauzer edin</translation>
-<translation id="5959292945051687759">Hər hansı ayar bu səhifədə göstərilməsə, <ph name="LINK_BEGIN" />
-      ChromeOS ayarlarına<ph name="LINK_END" /> baxın</translation>
 <translation id="6003112304606738118">Endirilir... <ph name="HOURS" /> saat qalıb</translation>
 <translation id="6040143037577758943">Qapat</translation>
 <translation id="6070348360322141662">Əlavə təhlükəsizlik üçün Google Chrome datanı şifrələyəcək</translation>

@@ -5,8 +5,8 @@
 #include "ash/webui/projector_app/annotator_message_handler.h"
 
 #include "ash/public/cpp/projector/annotator_tool.h"
-#include "ash/public/cpp/test/mock_projector_client.h"
 #include "ash/public/cpp/test/mock_projector_controller.h"
+#include "ash/webui/projector_app/test/mock_app_client.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "content/public/test/test_web_ui.h"
@@ -48,16 +48,16 @@ class AnnotatorMessageHandlerTest : public testing::Test {
   }
 
   void SendUndoRedoAvailableChanged(bool undo_available, bool redo_available) {
-    base::ListValue list_args;
+    base::Value::List list_args;
     list_args.Append(base::Value(undo_available));
     list_args.Append(base::Value(redo_available));
-    web_ui().HandleReceivedMessage("onUndoRedoAvailabilityChanged", &list_args);
+    web_ui().HandleReceivedMessage("onUndoRedoAvailabilityChanged", list_args);
   }
 
   void SendCanvasInitialized(bool success) {
-    base::ListValue list_args;
+    base::Value::List list_args;
     list_args.Append(base::Value(success));
-    web_ui().HandleReceivedMessage("onCanvasInitialized", &list_args);
+    web_ui().HandleReceivedMessage("onCanvasInitialized", list_args);
   }
 
   content::TestWebUI& web_ui() { return web_ui_; }
@@ -70,7 +70,7 @@ class AnnotatorMessageHandlerTest : public testing::Test {
   std::unique_ptr<AnnotatorMessageHandler> message_handler_;
   content::TestWebUI web_ui_;
   MockProjectorController controller_;
-  MockProjectorClient client_;
+  MockAppClient client_;
 };
 
 TEST_F(AnnotatorMessageHandlerTest, SetTool) {

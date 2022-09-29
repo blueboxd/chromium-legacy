@@ -18,12 +18,6 @@ namespace aura {
 class Window;
 }  // namespace aura
 
-namespace chromeos {
-namespace assistant {
-class ScopedAssistantBrowserDelegate;
-}  // namespace assistant
-}  // namespace chromeos
-
 namespace views {
 class Textfield;
 class View;
@@ -31,6 +25,9 @@ class Widget;
 }  // namespace views
 
 namespace ash {
+namespace assistant {
+class ScopedAssistantBrowserDelegate;
+}
 
 class AppListView;
 class AssistantOnboardingSuggestionView;
@@ -43,11 +40,10 @@ class TestAshWebViewFactory;
 // Helper class to make testing the Assistant Ash UI easier.
 class AssistantAshTestBase : public AshTestBase {
  public:
-  using AssistantEntryPoint = chromeos::assistant::AssistantEntryPoint;
-  using AssistantExitPoint = chromeos::assistant::AssistantExitPoint;
-  using AssistantOnboardingMode =
-      chromeos::assistant::prefs::AssistantOnboardingMode;
-  using ConsentStatus = chromeos::assistant::prefs::ConsentStatus;
+  using AssistantEntryPoint = assistant::AssistantEntryPoint;
+  using AssistantExitPoint = assistant::AssistantExitPoint;
+  using AssistantOnboardingMode = assistant::prefs::AssistantOnboardingMode;
+  using ConsentStatus = assistant::prefs::ConsentStatus;
 
   AssistantAshTestBase();
   explicit AssistantAshTestBase(base::test::TaskEnvironment::TimeSource time);
@@ -223,8 +219,7 @@ class AssistantAshTestBase : public AshTestBase {
   std::vector<std::unique_ptr<aura::Window>> windows_;
   std::vector<std::unique_ptr<views::Widget>> widgets_;
 
-  std::unique_ptr<chromeos::assistant::ScopedAssistantBrowserDelegate>
-      delegate_;
+  std::unique_ptr<assistant::ScopedAssistantBrowserDelegate> delegate_;
 };
 
 }  // namespace ash

@@ -180,6 +180,7 @@ class ScriptExecutor : public ActionDelegate,
   void RetrieveElementFormAndFieldData(
       const Selector& selector,
       base::OnceCallback<void(const ClientStatus&,
+                              content::RenderFrameHost* rfh,
                               const autofill::FormData& form_data,
                               const autofill::FormFieldData& field_data)>
           callback) override;
@@ -286,6 +287,12 @@ class ScriptExecutor : public ActionDelegate,
       const ProcessedActionProto& processed_action) override;
   absl::optional<std::string> GetIntent() const override;
   const std::string GetLocale() const override;
+  bool IsXmlSigned(const std::string& xml_string) const override;
+  const std::vector<std::string> ExtractValuesFromSingleTagXml(
+      const std::string& xml_string,
+      const std::vector<std::string>& keys) const override;
+  void ReportProgress(const std::string& payload,
+                      base::OnceCallback<void(bool)> callback) override;
 
  private:
   // TODO(b/220079189): remove this friend declaration.
@@ -362,6 +369,12 @@ class ScriptExecutor : public ActionDelegate,
       const bool prompt,
       base::OnceCallback<void(const external::Result& result)> callback,
       const external::Result& result);
+  void OnResume();
+  void OnReportProgress(
+      base::OnceCallback<void(bool)> callback,
+      int http_status,
+      const std::string& response,
+      const ServiceRequestSender::ResponseInfo& response_info);
 
   // Maybe shows the message specified in a callout, depending on the current
   // state and client settings.
@@ -434,6 +447,7 @@ class ScriptExecutor : public ActionDelegate,
   int consecutive_slow_roundtrip_counter_ = 0;
 
   uint64_t run_id_ = 0;
+  std::string report_token_;
 
   base::WeakPtrFactory<ScriptExecutor> weak_ptr_factory_{this};
 };

@@ -12,11 +12,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
+#include "gpu/command_buffer/service/command_buffer_task_executor.h"
+#include "gpu/command_buffer/service/gpu_task_scheduler_helper.h"
 #include "gpu/command_buffer/service/scheduler.h"
-#include "gpu/ipc/command_buffer_task_executor.h"
-#include "gpu/ipc/gpu_task_scheduler_helper.h"
-#include "gpu/ipc/scheduler_sequence.h"
+#include "gpu/command_buffer/service/scheduler_sequence.h"
 #include "gpu/ipc/service/image_transport_surface.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/init/gl_factory.h"
 
 namespace viz {
@@ -107,10 +108,11 @@ scoped_refptr<gl::GLSurface> SkiaOutputSurfaceDependencyImpl::CreateGLSurface(
     base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub,
     gl::GLSurfaceFormat format) {
   if (IsOffscreen()) {
-    return gl::init::CreateOffscreenGLSurfaceWithFormat(gfx::Size(), format);
+    return gl::init::CreateOffscreenGLSurfaceWithFormat(gl::GetDefaultDisplay(),
+                                                        gfx::Size(), format);
   } else {
     return gpu::ImageTransportSurface::CreateNativeSurface(
-        stub, surface_handle_, format);
+        gl::GetDefaultDisplay(), stub, surface_handle_, format);
   }
 }
 

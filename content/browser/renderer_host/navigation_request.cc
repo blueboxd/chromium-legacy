@@ -24,6 +24,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
+#include "base/state_transitions.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -53,6 +54,7 @@
 #include "content/browser/origin_agent_cluster_isolation_state.h"
 #include "content/browser/preloading/prerender/prerender_host_registry.h"
 #include "content/browser/process_lock.h"
+#include "content/browser/reduce_accept_language/reduce_accept_language_utils.h"
 #include "content/browser/renderer_host/cookie_utils.h"
 #include "content/browser/renderer_host/debug_urls.h"
 #include "content/browser/renderer_host/frame_tree.h"
@@ -85,7 +87,6 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/debug_utils.h"
 #include "content/common/navigation_params_utils.h"
-#include "content/common/state_transitions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -96,6 +97,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/reduce_accept_language_controller_delegate.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/storage_partition.h"
@@ -144,6 +146,7 @@
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
+#include "third_party/blink/public/common/frame/fenced_frame_permissions_policies.h"
 #include "third_party/blink/public/common/frame/fenced_frame_sandbox_flags.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/navigation/navigation_params_mojom_traits.h"
@@ -152,6 +155,7 @@
 #include "third_party/blink/public/common/origin_trials/trial_token_result.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
+#include "third_party/blink/public/common/permissions_policy/policy_helper_public.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/security/address_space_feature.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
@@ -202,6 +206,7 @@ const char kIsolatedAppCSP[] =
     "object-src 'none';"
     "frame-src 'self' https:;"
     "connect-src 'self' https:;"
+    "script-src 'self' 'wasm-unsafe-eval';"
     "require-trusted-types-for 'script';";
 
 // Corresponds to the "NavigationURLScheme" histogram enumeration type in
@@ -1232,7 +1237,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           base::TimeTicks() /* commit_sent */, std::string() /* srcdoc_value */,
           false /* should_load_data_url */,
           /*ancestor_or_self_has_cspee=*/
-          frame_tree_node->AncestorOrSelfHasCSPEE());
+          frame_tree_node->AncestorOrSelfHasCSPEE(),
+          std::string() /* reduced_accept_language */);
 
   // CreateRendererInitiated() should only be triggered when the navigation is
   // initiated by a frame in the same process.
@@ -1360,7 +1366,8 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           base::TimeTicks() /* commit_sent */, std::string() /* srcdoc_value */,
           false /* should_load_data_url */,
           /*ancestor_or_self_has_cspee=*/
-          frame_tree_node->AncestorOrSelfHasCSPEE());
+          frame_tree_node->AncestorOrSelfHasCSPEE(),
+          std::string() /* reduced_accept_language */);
   blink::mojom::BeginNavigationParamsPtr begin_params =
       blink::mojom::BeginNavigationParams::New();
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -1562,10 +1569,7 @@ NavigationRequest::NavigationRequest(
   common_params_->referrer = Referrer::SanitizeForRequest(
       common_params_->url, *common_params_->referrer);
 
-  // TODO(crbug.com/1314749): With MPArch there may be multiple main frames and
-  // so IsMainFrame should not be used to identify subframes. Follow up to
-  // confirm correctness.
-  if (frame_tree_node_->IsOutermostMainFrame()) {
+  if (IsInPrimaryMainFrame()) {
     loading_mem_tracker_ =
         PeakGpuMemoryTracker::Create(PeakGpuMemoryTracker::Usage::PAGE_LOAD);
   }
@@ -1709,6 +1713,24 @@ NavigationRequest::NavigationRequest(
       headers.MergeFrom(client_hints_headers);
     }
 
+    // Add reduced accept language header.
+    if (auto reduce_accept_lang_utils =
+            ReduceAcceptLanguageUtils::Create(browser_context);
+        reduce_accept_lang_utils && !devtools_accept_language_override_) {
+      // Add the Accept-Language header with the reduce accept language value.
+      // Chromium network stack won't overwrite the value if Accept-Language
+      // header was already added in the request header.
+      net::HttpRequestHeaders accept_language_headers;
+      absl::optional<std::string> reduced_accept_language =
+          reduce_accept_lang_utils.value()
+              .AddNavigationRequestAcceptLanguageHeaders(
+                  url::Origin::Create(common_params_->url), frame_tree_node_,
+                  &accept_language_headers);
+      commit_params_->reduced_accept_language =
+          reduced_accept_language.value_or("");
+      headers.MergeFrom(accept_language_headers);
+    }
+
     headers.AddHeadersFromString(begin_params_->headers);
     AddAdditionalRequestHeaders(
         &headers, common_params_->url, common_params_->navigation_type,
@@ -1740,11 +1762,8 @@ NavigationRequest::NavigationRequest(
 #if BUILDFLAG(IS_ANDROID)
   RenderWidgetHostImpl* host = RenderWidgetHostImpl::From(
       frame_tree_node_->current_frame_host()->GetRenderWidgetHost());
-  // TODO(crbug.com/1314749): With MPArch there may be multiple main frames and
-  // so IsMainFrame should not be used to identify subframes. Follow up to
-  // confirm correctness.
   if (base::FeatureList::IsEnabled(features::kOptimizeEarlyNavigation) &&
-      NeedsUrlLoader() && frame_tree_node_->IsOutermostMainFrame() && host &&
+      NeedsUrlLoader() && IsInPrimaryMainFrame() && host &&
       !host->is_hidden() && host->GetView() &&
       host->GetView()->GetNativeView() &&
       host->GetView()->GetNativeView()->GetWindowAndroid()) {
@@ -2047,14 +2066,11 @@ bool NavigationRequest::NeedFencedFrameURLMapping() {
 }
 
 void NavigationRequest::OnFencedFrameURLMappingComplete(
-    absl::optional<GURL> mapped_url,
-    absl::optional<AdAuctionData> ad_auction_data,
-    absl::optional<FencedFrameURLMapping::PendingAdComponentsMap>
-        pending_ad_components_map,
-    ReportingMetadata& reporting_metadata) {
+    const absl::optional<FencedFrameURLMapping::FencedFrameProperties>&
+        properties) {
   is_deferred_on_fenced_frame_url_mapping_ = false;
 
-  if (mapped_url) {
+  if (properties) {
     // The URN mapping can happen on regular iframes if the feature
     // `AllowURNsInIframes` is enabled. We will ignore the leakage via iframe,
     // and will only track the shared storage budget for fenced frame.
@@ -2064,15 +2080,16 @@ void NavigationRequest::OnFencedFrameURLMappingComplete(
               common_params_->url);
     }
 
-    common_params_->url = mapped_url.value();
-    commit_params_->original_url = mapped_url.value();
-    ad_auction_data_ = std::move(ad_auction_data);
+    fenced_frame_properties_ = properties;
+    common_params_->url = properties->mapped_url;
+    commit_params_->original_url = properties->mapped_url;
+    ad_auction_data_ = properties->ad_auction_data;
     // TODO(crbug/1281643): move into commit_params_->ad_auction_components
     // directly.
-    pending_ad_components_map_ = std::move(pending_ad_components_map);
-    if (!reporting_metadata.metadata.empty()) {
+    pending_ad_components_map_ = properties->pending_ad_components_map;
+    if (!properties->reporting_metadata.metadata.empty()) {
       commit_params_->fenced_frame_reporting_metadata =
-          reporting_metadata.Clone();
+          properties->reporting_metadata.Clone();
     }
   } else {
     if (frame_tree_node_->IsFencedFrameRoot() &&
@@ -2377,8 +2394,8 @@ void NavigationRequest::StartNavigation() {
   modified_request_headers_.Clear();
   removed_request_headers_.clear();
 
-  throttle_runner_ =
-      base::WrapUnique(new NavigationThrottleRunner(this, navigation_id_));
+  throttle_runner_ = base::WrapUnique(new NavigationThrottleRunner(
+      this, navigation_id_, IsInPrimaryMainFrame()));
 
   // For prerendered page activation, CommitDeferringConditions have already run
   // at the beginning of the navigation, so we won't run them again.
@@ -2851,12 +2868,15 @@ base::SafeRef<NavigationHandle> NavigationRequest::GetSafeRef() {
 }
 
 void NavigationRequest::CheckForIsolationOptIn(const GURL& url) {
-  // Check whether an origin-keyed agent cluster is either explicitly requested
-  // or implied (i.e., on by default), before attempting to isolate it. If
-  // requested or implied, then we must check if the origin has been previously
+  // Check whether an origin-keyed agent cluster is explicitly requested, either
+  // opting in or out, before attempting to isolate it. If an explicit request
+  // was made, then we must check if the origin has been previously
   // encountered in order to remain consistent within the isolation context
-  // (BrowserContext).
-  if (!IsOptInIsolationRequested() && !IsIsolationImplied())
+  // (BrowserContext). Note: we only do the global walk for explicit opt-outs
+  // when OriginAgentCluster-by-default is enabled, but that check is made in
+  // IsOriginAgentClusterOptOutRequested().
+  if (!IsOriginAgentClusterOptInRequested() &&
+      !IsOriginAgentClusterOptOutRequested())
     return;
 
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
@@ -2865,67 +2885,66 @@ void NavigationRequest::CheckForIsolationOptIn(const GURL& url) {
       frame_tree_node_->navigator().controller().GetBrowserContext();
   if (policy->UpdateOriginIsolationOptInListIfNecessary(browser_context,
                                                         origin)) {
-    // This is a new request for isolating |origin|. Do a global walk of session
-    // history to find any existing instances of |origin|, so that those
-    // existing BrowsingInstances can avoid isolating it (which could break
-    // cross-frame scripting). Only new BrowsingInstances and ones that have not
-    // seen |origin| before will isolate it.
-    // We don't always have a value for render_frame_host_ at this point, so we
-    // map the global-walk call onto NavigatorDelegate to get it into
-    // WebContents. We definitely need to do the global walk prior to deciding
-    // on the render_frame_host_ to commit to.
+    // This is a new request for isolating |origin|, either by explicitly opting
+    // it in or out. Do a global walk of session history to find any existing
+    // instances of |origin|, so that those existing BrowsingInstances can give
+    // it default isolation. Only new BrowsingInstances and ones that have not
+    // seen |origin| before will honor the request. We don't always have a value
+    // for render_frame_host_ at this point, so we map the global-walk call onto
+    // NavigatorDelegate to get it into WebContents. We definitely need to do
+    // the global walk prior to deciding on the render_frame_host_ to commit to.
     // We must exclude ourselves from the global walk otherwise we may mark our
-    // origin as non-opt-in before it gets the change to register itself as
-    // opted-in.
+    // origin as having default isolation before it gets the change to register
+    // itself as opted-in/out.
     frame_tree_node_->navigator()
         .GetDelegate()
-        ->RegisterExistingOriginToPreventOptInIsolation(
+        ->RegisterExistingOriginAsHavingDefaultIsolation(
             origin, this /* navigation_request_to_exclude */);
   }
 }
 
-void NavigationRequest::AddSameProcessOriginAgentClusterOptInIfNecessary(
+void NavigationRequest::AddSameProcessOriginAgentClusterStateIfNecessary(
     const IsolationContext& isolation_context,
     const GURL& url) {
-  bool should_isolate_origin = false;
-  if (IsIsolationImplied()) {
-    // If OAC-by-default is enabled, then we can have origin-keyed agent
-    // clusters with site-keyed processes (when no header is present)
-    // alongside origin-keyed agent clusters with origin-keyed processes (when
-    // a header is present). For this case when the header is absent, try to
-    // register the origin in a site-keyed process below.
-    should_isolate_origin = true;
-  } else if (IsOptInIsolationRequested()) {
-    // If OAC-by-default is disabled and the origin requests isolation, we
-    // should only register it in a site-keyed process below if Site Isolation
-    // is disabled for OAC. Otherwise it will be handled when the origin's
-    // SiteInstance is created.
-    should_isolate_origin =
-        !SiteIsolationPolicy::IsProcessIsolationForOriginAgentClusterEnabled();
-  }
-  if (!should_isolate_origin)
+  // In this function we only handle opt-in requests for the cases where OAC
+  // process isolation is not enabled. Otherwise it will be handled when the
+  // origin's SiteInstance is created.
+  bool is_opt_in_requested =
+      IsOriginAgentClusterOptInRequested() &&
+      !SiteIsolationPolicy::IsProcessIsolationForOriginAgentClusterEnabled();
+
+  // Since opt-outs are asking not to have OAC or requires_origin_keyed_process,
+  // they don't get their own SiteInstance, and so we must register their
+  // opt-out here.
+  bool is_opt_out_requested = IsOriginAgentClusterOptOutRequested();
+
+  // We never register isolation state here unless it's explicitly requested.
+  if (!is_opt_in_requested && !is_opt_out_requested)
     return;
 
-  // Since site isolation is disabled, we can't rely on the newly created
-  // SiteInstance to add the origin as OAC, so we do it manually here.
+  bool should_isolate_origin = is_opt_in_requested;
+
+  // Note: we don't handle IsIsolationImplied() cases here, since those only
+  // occur when OAC-by-default is enabled, and in that case we only pro-actively
+  // record explicit opt-ins and opt-outs. Implicitly isolated origins only end
+  // up recorded if a future request from the same origin attempts to opt-in or
+  // opt-out, which would trigger a normal global walk and record that the
+  // origin has already been implicitly isolated in some BrowsingInstances.
+
+  // Since either site isolation is disabled, or we are requesting an opt-out,
+  // we can't rely on a newly created SiteInstance to add the origin as
+  // OAC/not-OAC, so we do it manually here.
   url::Origin origin = url::Origin::Create(url);
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  OriginAgentClusterIsolationState isolation_state =
-      policy->DetermineOriginAgentClusterIsolation(
-          isolation_context, origin,
-          OriginAgentClusterIsolationState::CreateForOriginAgentCluster(
-              false /* requires_origin_keyed_process */));
-
-  if (isolation_state.is_origin_agent_cluster() &&
-      !isolation_state.requires_origin_keyed_process()) {
-    policy->AddIsolatedOriginForBrowsingInstance(
-        isolation_context, origin, true /* is_origin_agent_cluster */,
-        false /* requires_origin_keyed_process */,
-        ChildProcessSecurityPolicy::IsolatedOriginSource::WEB_TRIGGERED);
-  }
+  // If there is already a state registered for `origin` in `isolation_context`,
+  // then the following call does nothing.
+  policy->AddOriginIsolationStateForBrowsingInstance(
+      isolation_context, origin,
+      should_isolate_origin /* is_origin_agent_cluster */,
+      false /* requires_origin_keyed_process */);
 }
 
-bool NavigationRequest::IsOptInIsolationRequested() {
+bool NavigationRequest::IsOriginAgentClusterOptInRequested() {
   // We explicitly do not honor Origin-Agent-Cluster headers in redirects and
   // may only consider them in final responses, according to spec.
   // https://crbug.com/1329061
@@ -2941,6 +2960,25 @@ bool NavigationRequest::IsOptInIsolationRequested() {
 
   return response_head_->parsed_headers->origin_agent_cluster ==
          network::mojom::OriginAgentClusterValue::kTrue;
+}
+
+bool NavigationRequest::IsOriginAgentClusterOptOutRequested() {
+  // We explicitly do not honor Origin-Agent-Cluster headers in redirects and
+  // may only consider them in final responses, according to spec.
+  // https://crbug.com/1329061
+  if (state_ < WILL_PROCESS_RESPONSE)
+    return false;
+
+  if (!response())
+    return false;
+
+  // We only allow explicit opt-outs when OAC-by-default is enabled. The
+  // following check will be false if IsOriginAgentClusterEnabled() is false.
+  if (!AreOriginAgentClustersEnabledByDefault())
+    return false;
+
+  return response_head_->parsed_headers->origin_agent_cluster ==
+         network::mojom::OriginAgentClusterValue::kFalse;
 }
 
 bool NavigationRequest::AreOriginAgentClustersEnabledByDefault() const {
@@ -2979,7 +3017,7 @@ void NavigationRequest::DetermineOriginAgentClusterEndResult() {
   const IsolationContext& isolation_context =
       render_frame_host_->GetSiteInstance()->GetIsolationContext();
 
-  bool is_requested = IsOptInIsolationRequested();
+  bool is_requested = IsOriginAgentClusterOptInRequested();
   bool expects_origin_agent_cluster = is_requested || IsIsolationImplied();
   bool requires_origin_keyed_process =
       is_requested &&
@@ -3212,9 +3250,9 @@ UrlInfo NavigationRequest::GetUrlInfo() {
   // An origin-keyed agent cluster is used if requested by header
   // (or possibly by default, if no opt-out is requested), while an
   // origin-keyed process is currently only used if requested by header.
-  if (IsOptInIsolationRequested() || IsIsolationImplied())
+  if (IsOriginAgentClusterOptInRequested() || IsIsolationImplied())
     isolation_flags |= UrlInfo::OriginIsolationRequest::kOriginAgentCluster;
-  if (IsOptInIsolationRequested() &&
+  if (IsOriginAgentClusterOptInRequested() &&
       SiteIsolationPolicy::IsProcessIsolationForOriginAgentClusterEnabled()) {
     isolation_flags |=
         UrlInfo::OriginIsolationRequest::kRequiresOriginKeyedProcess;
@@ -3229,42 +3267,10 @@ UrlInfo NavigationRequest::GetUrlInfo() {
   // Compute the WebExposedIsolationInfo that will be bundled into UrlInfo.
   auto web_exposed_isolation_info = ComputeWebExposedIsolationInfo();
 
-  // Determine if the request is for a sandboxed frame or not. If
-  // PolicyContainer::ComputePoliciesToCommit() has run
-  // `policy_container_builder_` will be valid, but even if it hasn't, we can
-  // speculatively take `commit_params_->frame_policy.sandbox_flags` if we
-  // haven't received the response yet and don't have the final
-  // `policy_container_builder_`, and if the state of the kOrigin flag changes,
-  // we'll detect the change and recompute the target SiteInstance elsewhere.
-  // Note: We don't try to process-isolate about:blank URLs since that would
-  // prevent the parent frame from interacting with them, and they would be
-  // stuck as empty content.
-  bool is_origin_restricted_sandbox = false;
-  if (SiteIsolationPolicy::AreIsolatedSandboxedIframesEnabled() &&
-      !GetURL().IsAboutBlank()) {
-    if (policy_container_builder_->HasComputedPolicies()) {
-      is_origin_restricted_sandbox =
-          (policy_container_builder_->FinalPolicies().sandbox_flags &
-           network::mojom::WebSandboxFlags::kOrigin) ==
-          network::mojom::WebSandboxFlags::kOrigin;
-    } else {
-      // Note: We'll end up here if this function is called before
-      // ComputePoliciesToCommit(), such as when computing a speculative
-      // RenderFrameHost's SiteInstance before receiving a response. In that
-      // event we use the sandbox flags in commit_params_ as a current "best
-      // estimate".
-      is_origin_restricted_sandbox =
-          (commit_params_->frame_policy.sandbox_flags &
-           network::mojom::WebSandboxFlags::kOrigin) ==
-          network::mojom::WebSandboxFlags::kOrigin;
-    }
-  }
-
   UrlInfoInit url_info_init(GetURL());
   url_info_init.WithOriginIsolationRequest(isolation_request)
       .WithWebExposedIsolationInfo(web_exposed_isolation_info)
-      .WithIsPdf(is_pdf_)
-      .WithSandbox(is_origin_restricted_sandbox);
+      .WithIsPdf(is_pdf_);
 
   // Navigations within guests should always stay in the guest's
   // StoragePartition.
@@ -3308,6 +3314,73 @@ UrlInfo NavigationRequest::GetUrlInfo() {
     // narrow cases which are handled explicitly above.  Please think very
     // carefully about any new cases that need to do this.
     DCHECK(!url_info_init.origin().has_value());
+  }
+
+  // Determine if the request is for a sandboxed frame or not, and if so whether
+  // the sandboxed frame should get a dedicated process. Setting
+  // `has_origin_restricted_sandbox_flag` to true indicates it should get
+  // process isolation, but only if the site/origin would have qualified for a
+  // dedicated process even without the sandbox flags.
+  //
+  // If PolicyContainer::ComputePoliciesToCommit() has run
+  // `policy_container_builder_` will be valid, but even if it hasn't, we can
+  // speculatively take `commit_params_->frame_policy.sandbox_flags` if we
+  // haven't received the response yet and don't have the final
+  // `policy_container_builder_`, and if the state of the kOrigin flag changes,
+  // we'll detect the change and recompute the target SiteInstance elsewhere.
+  // Note: We don't try to process-isolate about:blank URLs since that would
+  // prevent the parent frame from interacting with them, and they would be
+  // stuck as empty content.
+  if (SiteIsolationPolicy::AreIsolatedSandboxedIframesEnabled() &&
+      !GetURL().IsAboutBlank()) {
+    // Determine if the frame has the sandbox flag or not.
+    bool has_origin_restricted_sandbox_flag = false;
+    if (policy_container_builder_->HasComputedPolicies()) {
+      has_origin_restricted_sandbox_flag =
+          (policy_container_builder_->FinalPolicies().sandbox_flags &
+           network::mojom::WebSandboxFlags::kOrigin) ==
+          network::mojom::WebSandboxFlags::kOrigin;
+    } else {
+      // Note: We'll end up here if this function is called before
+      // ComputePoliciesToCommit(), such as when computing a speculative
+      // RenderFrameHost's SiteInstance before receiving a response. In that
+      // event we use the sandbox flags in commit_params_ as a current "best
+      // estimate".
+      has_origin_restricted_sandbox_flag =
+          (commit_params_->frame_policy.sandbox_flags &
+           network::mojom::WebSandboxFlags::kOrigin) ==
+          network::mojom::WebSandboxFlags::kOrigin;
+    }
+
+    if (has_origin_restricted_sandbox_flag) {
+      // If the URL under consideration wouldn't qualify for a dedicated process
+      // without the sandbox flags, then it shouldn't qualify even with the
+      // sandbox flag. This is most likely to occur when site isolation is only
+      // partial, as on Android.
+      //
+      // Ideally the IsolationContext would be the one used for the committed
+      // RenderFrameHost at the end of the navigation, since a different set of
+      // origins may require isolation if a BrowsingInstance swap occurs. This
+      // isn't known at the start of the navigation, though, so we use the
+      // current IsolationContext instead.
+      const IsolationContext& isolation_context =
+          current_instance->GetIsolationContext();
+      if (SiteInfo::Create(isolation_context, UrlInfo(url_info_init))
+              .RequiresDedicatedProcess(isolation_context)) {
+        url_info_init.WithSandbox(true);
+        // If an isolated sandbox is required, and the "per-document" grouping
+        // mode has been specified with kIsolateSandboxedIframes, then we use a
+        // unique document identifier, provided by `navigation_id_`, to
+        // guarantee that each sandboxed iframe gets its own SiteInstance, even
+        // if two or more such documents share a site/origin. Using
+        // navigation_id_ means that each new NavigationRequest (and thus each
+        // document) will get a different value.
+        if (features::kIsolateSandboxedIframesGroupingParam.Get() ==
+            features::IsolateSandboxedIframesGrouping::kPerDocument) {
+          url_info_init.WithUniqueSandboxId(navigation_id_);
+        }
+      }
+    }
   }
 
   return UrlInfo(url_info_init);
@@ -3695,7 +3768,7 @@ void NavigationRequest::OnResponseStarted(
     // will be handled by the existing pathway in
     // SiteInstanceImpl::SetSiteInfoInternal().
     const IsolationContext& isolation_context = instance->GetIsolationContext();
-    AddSameProcessOriginAgentClusterOptInIfNecessary(isolation_context,
+    AddSameProcessOriginAgentClusterStateIfNecessary(isolation_context,
                                                      GetURL());
 
     // TODO(wjmaclean): Once this is all working, consider combining the
@@ -3707,8 +3780,8 @@ void NavigationRequest::OnResponseStarted(
     // to use it here to get the correct |IsolationContext|.
     //
     // When loading a data URL with a base URL, use the base URL to calculate
-    // the origin; otherwise, `AddNonIsolatedOriginIfNeeded()` will simply do
-    // nothing as a data: URL has an opaque origin.
+    // the origin; otherwise, `AddDefaultIsolatedOriginIfNeeded()` will simply
+    // do nothing as a data: URL has an opaque origin.
     //
     // TODO(wjmaclean): this won't handle cases like about:blank (where it
     // inherits an origin we care about).  We plan to compute the origin
@@ -3718,8 +3791,10 @@ void NavigationRequest::OnResponseStarted(
         IsLoadDataWithBaseURL()
             ? url::Origin::Create(common_params_->base_url_for_data_url)
             : url::Origin::Create(common_params_->url);
-    ChildProcessSecurityPolicyImpl::GetInstance()->AddNonIsolatedOriginIfNeeded(
-        isolation_context, origin, false /* is_global_walk_or_frame_removal */);
+    ChildProcessSecurityPolicyImpl::GetInstance()
+        ->AddDefaultIsolatedOriginIfNeeded(
+            isolation_context, origin,
+            false /* is_global_walk_or_frame_removal */);
 
     // Replace the SiteInstance of the previously committed entry if it's for a
     // url that doesn't require a site assignment, if this new commit will be
@@ -3792,6 +3867,17 @@ void NavigationRequest::OnResponseStarted(
 
     // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
     // has destroyed the NavigationRequest.
+    return;
+  }
+
+  if (render_frame_host_ &&
+      !CheckPermissionsPoliciesForFencedFrames(GetOriginToCommit())) {
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(net::ERR_ABORTED),
+        false /*skip_throttles*/, absl::nullopt /*error_page_content*/,
+        false /*collapse_frame*/);
+    // DO NOT ADD CODE after this. The previous call to
+    // OnRequestFailedInternal has destroyed the NavigationRequest.
     return;
   }
 
@@ -4149,7 +4235,8 @@ void NavigationRequest::OnStartChecksComplete(
       devtools_accepted_stream_types;
   devtools_instrumentation::ApplyNetworkRequestOverrides(
       frame_tree_node_, begin_params_.get(), &report_raw_headers,
-      &devtools_accepted_stream_types, &devtools_user_agent_override_);
+      &devtools_accepted_stream_types, &devtools_user_agent_override_,
+      &devtools_accept_language_override_);
   devtools_instrumentation::OnNavigationRequestWillBeSent(*this);
 
   // Merge headers with embedder's headers.
@@ -4406,6 +4493,23 @@ void NavigationRequest::OnRedirectChecksComplete(
           ComputeUserAgentValue(modified_headers, GetUserAgentOverride(),
                                 browser_context));
     }
+  }
+
+  // Add reduced accept language header to the current request.
+  // If devtools has overridden the Accept-Language header, skip reduce
+  // Accept-Language header.
+  if (auto reduce_accept_lang_utils =
+          ReduceAcceptLanguageUtils::Create(browser_context);
+      reduce_accept_lang_utils && !devtools_accept_language_override_) {
+    net::HttpRequestHeaders accept_language_headers;
+    absl::optional<std::string> reduced_accept_language =
+        reduce_accept_lang_utils.value()
+            .AddNavigationRequestAcceptLanguageHeaders(
+                url::Origin::Create(common_params_->url), frame_tree_node_,
+                &accept_language_headers);
+    commit_params_->reduced_accept_language =
+        reduced_accept_language.value_or("");
+    modified_headers.MergeFrom(accept_language_headers);
   }
 
   net::HttpRequestHeaders cors_exempt_headers;
@@ -5856,6 +5960,7 @@ void NavigationRequest::WillStartRequest() {
 
   if (IsSelfReferentialURL()) {
     SetState(CANCELING);
+    DVLOG(1) << "Cancelling self-referential request for " << GetURL();
     if (complete_callback_for_testing_ &&
         std::move(complete_callback_for_testing_)
             .Run(NavigationThrottle::CANCEL)) {
@@ -5998,6 +6103,12 @@ void NavigationRequest::DidCommitNavigation(
   }
   previous_main_frame_url_ = previous_main_frame_url;
   navigation_type_ = navigation_type;
+
+  // When the embedder navigates a fenced frame root, the navigation
+  // installs a new set of inner fenced frame properties.
+  if (is_embedder_initiated_fenced_frame_navigation_) {
+    frame_tree_node()->set_fenced_frame_properties(fenced_frame_properties_);
+  }
 
   // Same-document navigations won't affect budget metadata.
   if (!DidEncounterError() && !IsSameDocument()) {
@@ -7354,6 +7465,38 @@ bool NavigationRequest::CoopCoepSanityCheck() {
   return true;
 }
 
+bool NavigationRequest::CheckPermissionsPoliciesForFencedFrames(
+    const url::Origin& origin) {
+  // These checks only apply to fenced frames.
+  if (!frame_tree_node_->IsFencedFrameRoot())
+    return true;
+
+  for (const blink::mojom::PermissionsPolicyFeature feature :
+       blink::kFencedFrameOpaqueAdsDefaultAllowedFeatures) {
+    // Only check if the feature is enabled for this origin if
+    // a policy was explicitly specified.
+    if (GetParentFrameOrOuterDocument()
+            ->permissions_policy()
+            ->GetAllowlistForFeatureIfExists(feature) &&
+        !GetParentFrameOrOuterDocument()
+             ->permissions_policy()
+             ->IsFeatureEnabledForOrigin(feature, origin)) {
+      const blink::PermissionsPolicyFeatureToNameMap& feature_to_name_map =
+          blink::GetPermissionsPolicyFeatureToNameMap();
+      const std::string feature_string(
+          (feature_to_name_map.find(feature))->second);
+      AddDeferredConsoleMessage(
+          blink::mojom::ConsoleMessageLevel::kError,
+          base::StringPrintf(
+              "Refused to frame '%s' as a fenced frame because permissions "
+              "policy '%s' is not allowed for the frame's origin.",
+              origin.Serialize().c_str(), feature_string.c_str()));
+      return false;
+    }
+  }
+  return true;
+}
+
 std::unique_ptr<PeakGpuMemoryTracker>
 NavigationRequest::TakePeakGpuMemoryTracker() {
   return std::move(loading_mem_tracker_);
@@ -7548,8 +7691,8 @@ void NavigationRequest::CheckStateTransition(NavigationState state) const {
   // See
   // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/navigation-request-navigation-state.png
   // clang-format off
-  static const base::NoDestructor<StateTransitions<NavigationState>>
-      transitions(StateTransitions<NavigationState>({
+  static const base::NoDestructor<base::StateTransitions<NavigationState>>
+      transitions(base::StateTransitions<NavigationState>({
           {NOT_STARTED, {
               WAITING_FOR_RENDERER_RESPONSE,
               WILL_START_NAVIGATION,

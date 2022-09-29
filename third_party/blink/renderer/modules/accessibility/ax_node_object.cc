@@ -1245,7 +1245,7 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   }
 
   if (GetNode()->HasTagName(html_names::kAddressTag))
-    return RoleFromLayoutObjectOrNode();
+    return ax::mojom::blink::Role::kGroup;
 
   if (IsA<HTMLDialogElement>(*GetNode()))
     return ax::mojom::blink::Role::kDialog;
@@ -2522,19 +2522,19 @@ RGBA32 AXNodeObject::ColorValue() const {
 RGBA32 AXNodeObject::BackgroundColor() const {
   LayoutObject* layout_object = GetLayoutObject();
   if (!layout_object)
-    return Color::kTransparent;
+    return Color::kTransparent.Rgb();
 
   if (IsWebArea()) {
     LocalFrameView* view = DocumentFrameView();
     if (view)
       return view->BaseBackgroundColor().Rgb();
     else
-      return Color::kWhite;
+      return Color::kWhite.Rgb();
   }
 
   const ComputedStyle* style = layout_object->Style();
   if (!style || !style->HasBackground())
-    return Color::kTransparent;
+    return Color::kTransparent.Rgb();
 
   return style->VisitedDependentColor(GetCSSPropertyBackgroundColor()).Rgb();
 }
@@ -2664,13 +2664,33 @@ ax::mojom::blink::InvalidState AXNodeObject::GetInvalidState() const {
   if (GetElement()) {
     ListedElement* form_control = ListedElement::From(*GetElement());
     if (form_control) {
-      if (form_control->IsNotCandidateOrValid())
-        return ax::mojom::blink::InvalidState::kFalse;
-      else
-        return ax::mojom::blink::InvalidState::kTrue;
+      return IsValidFormControl(form_control)
+                 ? ax::mojom::blink::InvalidState::kFalse
+                 : ax::mojom::blink::InvalidState::kTrue;
     }
   }
+
   return AXObject::GetInvalidState();
+}
+
+bool AXNodeObject::IsValidFormControl(ListedElement* form_control) const {
+  // If the control is marked with a custom error, the form control is invalid.
+  if (form_control->CustomError())
+    return false;
+
+  // If the form control checks for validity, and has passed the checks,
+  // then consider it valid.
+  if (form_control->IsNotCandidateOrValid())
+    return true;
+
+  // The control is invalid, as far as CSS is concerned.
+  // However, we ignore a failed check inside of an empty required text field,
+  // in order to avoid redundant verbalizations (screen reader already says
+  // required).
+  if (IsAtomicTextField() && IsRequired() && GetValueForControl().length() == 0)
+    return true;
+
+  return false;
 }
 
 int AXNodeObject::PosInSet() const {
@@ -3480,13 +3500,7 @@ String AXNodeObject::TextFromDescendants(
     if (visited.size() > kMaxDescendantsForTextAlternativeComputation)
       break;
 
-    // Don't recurse into children that are explicitly hidden.
-    // Note that we don't call IsInert()/IsAriaHidden because they would return
-    // true if any ancestor is hidden, but we need to be able to compute the
-    // accessible name of object inside hidden subtrees (for example, if
-    // aria-labelledby points to an object that's hidden).
-    if (child->AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden) ||
-        child->IsHiddenForTextAlternativeCalculation(
+    if (child->IsHiddenForTextAlternativeCalculation(
             aria_label_or_description_root)) {
       continue;
     }
@@ -4001,7 +4015,7 @@ bool AXNodeObject::CanAddLayoutChild(LayoutObject& child) {
   // https://crrev.com/c/chromium/src/+/3591572/9/third_party/blink/renderer/modules/accessibility/ax_node_object.cc#3973
   // TODO(accessibility) Remove this once legacy layout is completely removed,
   // as this problem will go away.
-  AXObject* ax_dom_parent = AXObjectCache().GetWithoutInvalidation(
+  AXObject* ax_dom_parent = AXObjectCache().SafeGet(
       LayoutTreeBuilderTraversal::Parent(*child.GetNode()));
   if (ax_dom_parent &&
       !ax_dom_parent->ShouldUseLayoutObjectTraversalForChildren()) {
@@ -4573,8 +4587,10 @@ bool AXNodeObject::OnNativeFocusAction() {
   // objects may have been deferred by display-locking.
   Document* document = GetDocument();
   Node* node = GetNode();
-  if (document && node)
-    document->UpdateStyleAndLayoutTreeForNode(node);
+  if (!document || !node)
+    return false;
+
+  document->UpdateStyleAndLayoutTreeForNode(node);
 
   if (!CanSetFocusAttribute())
     return false;
@@ -4746,23 +4762,6 @@ void AXNodeObject::SelectedOptions(AXObjectVector& options) const {
   for (const auto& obj : children) {
     if (obj->IsSelected() == kSelectedStateTrue)
       options.push_back(obj);
-  }
-}
-
-void AXNodeObject::SelectionChanged() {
-  // Post the selected text changed event on the first ancestor that's
-  // focused (to handle form controls, ARIA text boxes and contentEditable),
-  // or the web area if the selection is just in the document somewhere.
-  if (IsFocused() || IsWebArea()) {
-    AXObjectCache().PostNotification(
-        this, ax::mojom::blink::Event::kTextSelectionChanged);
-    if (GetDocument()) {
-      AXObject* document_object = AXObjectCache().GetOrCreate(GetDocument());
-      AXObjectCache().PostNotification(
-          document_object, ax::mojom::blink::Event::kDocumentSelectionChanged);
-    }
-  } else {
-    AXObject::SelectionChanged();  // Calls selectionChanged on parent.
   }
 }
 
@@ -5381,7 +5380,8 @@ String AXNodeObject::Description(
     const AXObject* datetime_ancestor = DatetimeAncestor();
     ax::mojom::blink::NameFrom datetime_ancestor_name_from;
     datetime_ancestor->GetName(datetime_ancestor_name_from, nullptr);
-    description_objects->clear();
+    if (description_objects)
+      description_objects->clear();
     String ancestor_description = DatetimeAncestor()->Description(
         datetime_ancestor_name_from, description_from, description_objects);
     if (!result.IsEmpty() && !ancestor_description.IsEmpty())

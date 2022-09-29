@@ -7,30 +7,26 @@
 // should only be used by legacy UIs that have not yet been updated to new
 // patterns. Use Web Components in any new code.
 
-// #import {assert} from '../../assert.m.js';
-// #import {isWindows} from '../../cr.m.js';
-// #import {EventTracker} from '../../event_tracker.m.js'
-// #import {define as crUiDefine, decorate} from '../ui.m.js';
-// #import {positionPopupAroundElement, AnchorType} from './position_util.m.js';
-// #import {Menu} from './menu.m.js';
-// #import {MenuItem} from './menu_item.m.js';
+import {assert} from '../../assert.m.js';
+import {isWindows} from '../../cr.m.js';
+import {EventTracker} from '../../event_tracker.m.js';
+import {define as crUiDefine, decorate} from '../ui.m.js';
+import {positionPopupAroundElement, AnchorType} from './position_util.js';
+import {Menu} from './menu.js';
+import {MenuItem} from './menu_item.js';
 
-cr.define('cr.ui', function() {
-  /* #ignore */ const Menu = cr.ui.Menu;
 
   /**
    * Enum for type of hide. Delayed is used when called by clicking on a
    * checkable menu item.
    * @enum {number}
    */
-  /* #export */ const HideType = {
+  export const HideType = {
     INSTANT: 0,
     DELAYED: 1,
   };
 
   /** @const */
-  /* #ignore */ const positionPopupAroundElement =
-      /* #ignore */ cr.ui.positionPopupAroundElement;
 
   /**
    * Creates a new menu button element.
@@ -39,7 +35,7 @@ cr.define('cr.ui', function() {
    * @extends {HTMLButtonElement}
    * @implements {EventListener}
    */
-  /* #export */ const MenuButton = cr.ui.define('button');
+  export const MenuButton = crUiDefine('button');
 
   MenuButton.prototype = {
     __proto__: HTMLButtonElement.prototype,
@@ -68,15 +64,15 @@ cr.define('cr.ui', function() {
 
       // An event tracker for events we only connect to while the menu is
       // displayed.
-      this.showingEvents_ = new cr.EventTracker();
+      this.showingEvents_ = new EventTracker();
 
-      this.anchorType = cr.ui.AnchorType.BELOW;
+      this.anchorType = AnchorType.BELOW;
       this.invertLeftRight = false;
     },
 
     /**
      * The menu associated with the menu button.
-     * @type {cr.ui.Menu}
+     * @type {Menu}
      */
     get menu() {
       return this.menu_;
@@ -84,7 +80,7 @@ cr.define('cr.ui', function() {
     set menu(menu) {
       if (typeof menu === 'string' && menu[0] === '#') {
         menu = assert(this.ownerDocument.getElementById(menu.slice(1)));
-        cr.ui.decorate(menu, Menu);
+        decorate(menu, Menu);
       }
 
       this.menu_ = menu;
@@ -181,7 +177,7 @@ cr.define('cr.ui', function() {
           break;
         case 'activate':
           const hideDelayed =
-              e.target instanceof cr.ui.MenuItem && e.target.checkable;
+              e.target instanceof MenuItem && e.target.checkable;
           const hideType = hideDelayed ? HideType.DELAYED : HideType.INSTANT;
           if (e.originalEvent instanceof MouseEvent ||
               e.originalEvent instanceof TouchEvent) {
@@ -260,8 +256,8 @@ cr.define('cr.ui', function() {
     /**
      * Hides the menu. If your menu can go out of scope, make sure to call this
      * first.
-     * @param {cr.ui.HideType=} opt_hideType Type of hide.
-     *     default: cr.ui.HideType.INSTANT.
+     * @param {HideType=} opt_hideType Type of hide.
+     *     default: HideType.INSTANT.
      */
     hideMenu(opt_hideType) {
       this.hideMenuInternal_(true, opt_hideType);
@@ -270,8 +266,8 @@ cr.define('cr.ui', function() {
     /**
      * Hides the menu. If your menu can go out of scope, make sure to call this
      * first.
-     * @param {cr.ui.HideType=} opt_hideType Type of hide.
-     *     default: cr.ui.HideType.INSTANT.
+     * @param {HideType=} opt_hideType Type of hide.
+     *     default: HideType.INSTANT.
      */
     hideMenuWithoutTakingFocus_(opt_hideType) {
       this.hideMenuInternal_(false, opt_hideType);
@@ -281,8 +277,8 @@ cr.define('cr.ui', function() {
      * Hides the menu. If your menu can go out of scope, make sure to call this
      * first.
      * @param {boolean} shouldTakeFocus Moves the focus to the button if true.
-     * @param {cr.ui.HideType=} opt_hideType Type of hide.
-     *     default: cr.ui.HideType.INSTANT.
+     * @param {HideType=} opt_hideType Type of hide.
+     *     default: HideType.INSTANT.
      */
     hideMenuInternal_(shouldTakeFocus, opt_hideType) {
       if (!this.isMenuShown()) {
@@ -309,7 +305,7 @@ cr.define('cr.ui', function() {
       // On windows we might hide the menu in a right mouse button up and if
       // that is the case we wait some short period before we allow the menu
       // to be shown again.
-      this.hideTimestamp_ = cr.isWindows ? Date.now() : 0;
+      this.hideTimestamp_ = isWindows ? Date.now() : 0;
     },
 
     /**
@@ -353,12 +349,3 @@ cr.define('cr.ui', function() {
       }
     },
   };
-
-  // Export
-  // #cr_define_end
-  console.warn('crbug/1173575, non-JS module files deprecated.');
-  return {
-    HideType: HideType,
-    MenuButton: MenuButton,
-  };
-});

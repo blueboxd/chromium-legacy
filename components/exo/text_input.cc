@@ -189,14 +189,12 @@ void TextInput::SetCompositionText(const ui::CompositionText& composition) {
   delegate_->SetCompositionText(composition);
 }
 
-uint32_t TextInput::ConfirmCompositionText(bool keep_selection) {
-  // TODO(b/134473433) Modify this function so that when keep_selection is
-  // true, the selection is not changed when text committed
-  if (keep_selection) {
-    NOTIMPLEMENTED_LOG_ONCE();
+size_t TextInput::ConfirmCompositionText(bool keep_selection) {
+  const size_t composition_text_length = composition_.text.length();
+  if (keep_selection && cursor_pos_.IsValid() &&
+      surrounding_text_.size() >= cursor_pos_.GetMax()) {
+    delegate_->SetCursor(surrounding_text_, cursor_pos_);
   }
-  const uint32_t composition_text_length =
-      static_cast<uint32_t>(composition_.text.length());
   delegate_->Commit(composition_.text);
   ResetCompositionTextCache();
   return composition_text_length;
@@ -267,7 +265,7 @@ gfx::Rect TextInput::GetSelectionBoundingBox() const {
   return gfx::Rect();
 }
 
-bool TextInput::GetCompositionCharacterBounds(uint32_t index,
+bool TextInput::GetCompositionCharacterBounds(size_t index,
                                               gfx::Rect* rect) const {
   return false;
 }
@@ -310,7 +308,13 @@ bool TextInput::GetEditableSelectionRange(gfx::Range* range) const {
 bool TextInput::SetEditableSelectionRange(const gfx::Range& range) {
   if (surrounding_text_.size() < range.GetMax())
     return false;
+
+  // Send a SetCursor followed by a Commit of the current composition text, or
+  // empty string if there is no composition text. This is necessary since
+  // SetCursor only takes effect on the following Commit.
   delegate_->SetCursor(surrounding_text_, range);
+  delegate_->Commit(composition_.text);
+  ResetCompositionTextCache();
   return true;
 }
 
@@ -356,7 +360,9 @@ void TextInput::ExtendSelectionAndDelete(size_t before, size_t after) {
                                    gfx::Range(utf16_start, utf16_end));
 }
 
-void TextInput::EnsureCaretNotInRect(const gfx::Rect& rect) {}
+void TextInput::EnsureCaretNotInRect(const gfx::Rect& rect) {
+  delegate_->OnVirtualKeyboardOccludedBoundsChanged(rect);
+}
 
 bool TextInput::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
   return false;
@@ -444,6 +450,7 @@ void TextInput::OnKeyboardVisible(const gfx::Rect& keyboard_rect) {
 }
 
 void TextInput::OnKeyboardHidden() {
+  delegate_->OnVirtualKeyboardOccludedBoundsChanged({});
   delegate_->OnVirtualKeyboardVisibilityChanged(false);
 }
 

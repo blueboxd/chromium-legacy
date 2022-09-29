@@ -4,11 +4,9 @@
 
 #include "chrome/browser/ash/login/wizard_controller.h"
 
-#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/components/geolocation/simple_geolocation_provider.h"
 #include "ash/components/settings/timezone_settings.h"
 #include "ash/components/timezone/timezone_request.h"
-#include "ash/components/tpm/stub_install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
@@ -89,14 +87,16 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/fake_shill_manager_client.h"
 #include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_install_attributes_client.h"
+#include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
-#include "chromeos/dbus/shill/fake_shill_manager_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/test/chromeos_test_utils.h"
@@ -1989,9 +1989,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   // Fast-forward by a bit more than that.
   task_runner->FastForwardBy(base::Seconds(45 + 1));
 
-  EXPECT_EQ(policy::AutoEnrollmentTypeChecker::CheckType::kNone,
+  EXPECT_EQ(policy::AutoEnrollmentTypeChecker::CheckType::
+                kUnknownDueToMissingSystemClockSync,
             auto_enrollment_controller()->auto_enrollment_check_type());
-  EXPECT_EQ(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
+  EXPECT_EQ(policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR,
             auto_enrollment_controller()->state());
 }
 
@@ -2547,6 +2548,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
   if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
     // If OobeConsolidatedConsent is enabled, the flow will be updated to:
     // Network -> Update -> Consolidated Consent -> Auto Enrollment.
+    EXPECT_CALL(*mock_update_screen_, ShowImpl()).Times(1);
     mock_demo_preferences_screen_->ExitScreen(
         DemoPreferencesScreen::Result::COMPLETED_CONSOLIDATED_CONSENT);
 
@@ -2794,12 +2796,12 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, ArcTosBackPressed) {
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
 
   EXPECT_CALL(*mock_arc_terms_of_service_screen_, HideImpl()).Times(1);
-  EXPECT_CALL(*mock_network_screen_, ShowImpl()).Times(1);
+  EXPECT_CALL(*mock_demo_preferences_screen_, ShowImpl()).Times(1);
 
   mock_arc_terms_of_service_screen_->ExitScreen(
       ArcTermsOfServiceScreen::Result::BACK);
 
-  CheckCurrentScreen(NetworkScreenView::kScreenId);
+  CheckCurrentScreen(DemoPreferencesScreenView::kScreenId);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
 }
 
@@ -2819,12 +2821,12 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
 
   EXPECT_CALL(*mock_consolidated_consent_screen_, HideImpl()).Times(1);
-  EXPECT_CALL(*mock_network_screen_, ShowImpl()).Times(1);
+  EXPECT_CALL(*mock_demo_preferences_screen_, ShowImpl()).Times(1);
 
   mock_consolidated_consent_screen_->ExitScreen(
       ConsolidatedConsentScreen::Result::BACK_DEMO);
 
-  CheckCurrentScreen(NetworkScreenView::kScreenId);
+  CheckCurrentScreen(DemoPreferencesScreenView::kScreenId);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
 }
 

@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_POLICY_POLICY_EARL_GREY_UTILS_H_
 #define IOS_CHROME_BROWSER_POLICY_POLICY_EARL_GREY_UTILS_H_
 
-#import <Foundation/Foundation.h>
 #import <string>
 
 namespace base {
@@ -13,6 +12,11 @@ class Value;
 }
 
 namespace policy_test_utils {
+
+// Returns a JSON-encoded representation of the value for the given
+// `policy_key`. Looks for the policy in the platform policy provider under the
+// CHROME policy namespace.
+std::string GetValueForPlatformPolicy(const std::string& policy_key);
 
 // Sets the value of the policy with the |policy_key| key to the given boolean
 // value.
@@ -38,6 +42,9 @@ void SetPolicy(const std::string& json_value, const std::string& policy_key);
 // Prefer using the other type-specific helpers instead of this generic helper
 // if possible.
 void SetPolicy(base::Value value, const std::string& policy_key);
+
+// Clears all policy values.
+void ClearPolicies();
 
 }  // namespace policy_test_utils
 

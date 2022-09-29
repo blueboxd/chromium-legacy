@@ -34,6 +34,34 @@ buildflag_header("buildflags") {
   ]
 }
 
+if (is_linux || is_chromeos) {
+  source_set("sandbox_support_linux") {
+    public = [
+      "zygote/zygote_commands_linux.h",
+      "zygote/zygote_communication_linux.h",
+    ]
+
+    sources = [
+      "zygote/sandbox_support_linux.cc",
+      "zygote/send_zygote_child_ping_linux.cc",
+      "zygote/zygote_communication_linux.cc",
+    ]
+
+    deps = [
+      "//base",
+      "//base:i18n",
+      "//content/public/common:content_descriptors",
+      "//content/public/common:result_codes",
+      "//content/public/common:sandbox_support_linux",
+      "//content/public/common:switches",
+      "//sandbox/policy",
+      "//third_party/icu",
+    ]
+
+    configs += [ "//content:content_implementation" ]
+  }
+}
+
 source_set("common") {
   # Targets external to content should always link to the public API.
   # In addition, targets outside of the content component (shell and tests)
@@ -120,12 +148,8 @@ source_set("common") {
     "origin_util.cc",
     "partition_alloc_support.cc",
     "partition_alloc_support.h",
-    "pepper_file_util.cc",
-    "pepper_file_util.h",
-    "pepper_plugin_list.cc",
-    "pepper_plugin_list.h",
-    "pepper_renderer_instance_data.cc",
-    "pepper_renderer_instance_data.h",
+    "private_aggregation_features.cc",
+    "private_aggregation_features.h",
     "process_type.cc",
     "process_visibility_tracker.cc",
     "process_visibility_tracker.h",
@@ -137,7 +161,6 @@ source_set("common") {
     "shared_file_util.h",
     "skia_utils.cc",
     "skia_utils.h",
-    "state_transitions.h",
     "thread_pool_util.cc",
     "thread_pool_util.h",
     "trace_utils.h",
@@ -157,6 +180,7 @@ source_set("common") {
     ":mojo_bindings",
     "//cc",
     "//cc/ipc",
+    "//content/public/common:switches",
     "//gpu/command_buffer/common",
     "//ipc",
     "//sandbox/policy",
@@ -333,14 +357,8 @@ source_set("common") {
   }
 
   if (is_linux || is_chromeos) {
-    sources += [
-      "zygote/sandbox_support_linux.cc",
-      "zygote/send_zygote_child_ping_linux.cc",
-      "zygote/zygote_commands_linux.h",
-      "zygote/zygote_communication_linux.cc",
-      "zygote/zygote_communication_linux.h",
-    ]
     deps += [
+      ":sandbox_support_linux",
       ":set_process_title_linux",
       "//third_party/fontconfig",
     ]
@@ -357,19 +375,18 @@ source_set("common") {
     sources -= [ "font_list_fontconfig.cc" ]
   }
 
-  if (enable_plugins) {
-    deps += [
-      "//ppapi/proxy:ipc",
-      "//ppapi/shared_impl",
-    ]
-  } else {
-    sources -= [
+  if (enable_ppapi) {
+    sources += [
       "pepper_file_util.cc",
       "pepper_file_util.h",
       "pepper_plugin_list.cc",
       "pepper_plugin_list.h",
       "pepper_renderer_instance_data.cc",
       "pepper_renderer_instance_data.h",
+    ]
+    deps += [
+      "//ppapi/proxy:ipc",
+      "//ppapi/shared_impl",
     ]
   }
 
@@ -395,6 +412,17 @@ source_set("common") {
   }
 }
 
+# This is used by content/shell as well, which we don't want to depend on the
+# entire content/common.
+component("main_frame_counter") {
+  defines = [ "IS_MAIN_FRAME_COUNTER_IMPL" ]
+  sources = [
+    "main_frame_counter.cc",
+    "main_frame_counter.h",
+  ]
+  deps = [ "//base:base" ]
+}
+
 if (is_linux || is_chromeos) {
   source_set("set_process_title_linux") {
     public = [ "set_process_title_linux.h" ]
@@ -405,7 +433,10 @@ if (is_linux || is_chromeos) {
 
 # See comment at the top of //content/BUILD.gn for how this works.
 group("for_content_tests") {
-  visibility = [ "//content/test/*" ]
+  visibility = [
+    "//content/services/auction_worklet:tests",
+    "//content/test/*",
+  ]
   if (!is_component_build) {
     public_deps = [ ":common" ]
   }
@@ -442,6 +473,7 @@ mojom("mojo_bindings") {
     "renderer.mojom",
     "renderer_host.mojom",
     "renderer_variations_configuration.mojom",
+    "shared_storage_worklet_service.mojom",
     "web_ui.mojom",
   ]
 
@@ -604,9 +636,9 @@ mojom("mojo_bindings") {
 
   public_deps = [
     "//cc/mojom",
+    "//components/services/storage/shared_storage/public/mojom",
     "//components/variations:variations_mojom",
     "//content/public/common:interfaces",
-    "//content/services/shared_storage_worklet/public/mojom:mojom",
     "//ipc:mojom",
     "//ipc:mojom_constants",
     "//media/capture/mojom:video_capture",

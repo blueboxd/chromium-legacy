@@ -169,6 +169,7 @@ static_library("web_test_browser") {
     "//components/download/public/background_service:public",
     "//components/download/public/common:public",
     "//components/network_session_configurator/common",
+    "//components/proxy_config",
     "//content/browser:for_content_tests",  # For non-component builds.
     "//content/public/browser",  # For component builds.
     "//content/shell:content_shell_lib",
@@ -203,7 +204,8 @@ static_library("web_test_browser") {
     "//url",
   ]
 
-  if (enable_plugins) {
+  # TODO(crbug.com/1103882): Blink test plugin must be migrated from PPAPI.
+  if (enable_ppapi) {
     deps += [
       "//content/ppapi_plugin",
       "//ppapi:blink_deprecated_test_plugin",

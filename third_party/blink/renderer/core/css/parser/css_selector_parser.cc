@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_observer.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_stream.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
@@ -273,16 +274,8 @@ CSSSelectorList CSSSelectorParser::ConsumeForgivingRelativeSelectorList(
   // not allowed after pseudo elements.
   // (e.g. '::slotted(:has(.a))', '::part(foo):has(:hover)')
   if (inside_compound_pseudo_ ||
-      restricting_pseudo_element_ != CSSSelector::kPseudoUnknown) {
-    return CSSSelectorList();
-  }
-
-  if (selector_list.IsEmpty()) {
-    // TODO(blee@igalia.com) Workaround to make :has() unforgiving to avoid
-    // JQuery :has() issue: https://github.com/w3c/csswg-drafts/issues/7676
-    // Should not fail with empty selector_list
-    failed_parsing_ = true;
-
+      restricting_pseudo_element_ != CSSSelector::kPseudoUnknown ||
+      selector_list.IsEmpty()) {
     return CSSSelectorList();
   }
 
@@ -401,11 +394,29 @@ CSSSelectorParser::ConsumePartialComplexSelector(
   return selector;
 }
 
+// static
 CSSSelector::PseudoType CSSSelectorParser::ParsePseudoType(
     const AtomicString& name,
-    bool has_arguments) {
+    bool has_arguments,
+    const Document* document) {
   CSSSelector::PseudoType pseudo_type =
-      CSSSelector::NameToPseudoType(name, has_arguments);
+      CSSSelector::NameToPseudoType(name, has_arguments, document);
+
+  if (!RuntimeEnabledFeatures::WebKitScrollbarStylingEnabled()) {
+    // Don't convert ::-webkit-scrollbar into webkit custom element pseudos -
+    // they should just be treated as unknown pseudos and not have the ability
+    // to style shadow/custom elements.
+    if (pseudo_type == CSSSelector::kPseudoResizer ||
+        pseudo_type == CSSSelector::kPseudoScrollbar ||
+        pseudo_type == CSSSelector::kPseudoScrollbarCorner ||
+        pseudo_type == CSSSelector::kPseudoScrollbarButton ||
+        pseudo_type == CSSSelector::kPseudoScrollbarThumb ||
+        pseudo_type == CSSSelector::kPseudoScrollbarTrack ||
+        pseudo_type == CSSSelector::kPseudoScrollbarTrackPiece) {
+      return CSSSelector::kPseudoUnknown;
+    }
+  }
+
   if (pseudo_type != CSSSelector::PseudoType::kPseudoUnknown)
     return pseudo_type;
 
@@ -419,6 +430,7 @@ CSSSelector::PseudoType CSSSelectorParser::ParsePseudoType(
   return CSSSelector::PseudoType::kPseudoUnknown;
 }
 
+// static
 PseudoId CSSSelectorParser::ParsePseudoElement(const String& selector_string,
                                                const Node* parent) {
   CSSTokenizer tokenizer(selector_string);
@@ -439,7 +451,8 @@ PseudoId CSSSelectorParser::ParsePseudoElement(const String& selector_string,
     CSSParserToken selector_name_token = range.Consume();
     PseudoId pseudo_id = CSSSelector::GetPseudoId(
         ParsePseudoType(selector_name_token.Value().ToAtomicString(),
-                        selector_name_token.GetType() == kFunctionToken));
+                        selector_name_token.GetType() == kFunctionToken,
+                        parent ? &parent->GetDocument() : nullptr));
 
     if (PseudoElement::IsWebExposed(pseudo_id, parent) &&
         ((PseudoElementHasArguments(pseudo_id) &&
@@ -454,6 +467,7 @@ PseudoId CSSSelectorParser::ParsePseudoElement(const String& selector_string,
   return kPseudoIdNone;
 }
 
+// static
 AtomicString CSSSelectorParser::ParsePseudoElementArgument(
     const String& selector_string) {
   CSSTokenizer tokenizer(selector_string);
@@ -953,13 +967,6 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
       std::unique_ptr<CSSSelectorList> selector_list =
           std::make_unique<CSSSelectorList>();
       *selector_list = ConsumeForgivingRelativeSelectorList(block);
-
-      // TODO(blee@igalia.com) Workaround to make :has() unforgiving to avoid
-      // JQuery :has() issue: https://github.com/w3c/csswg-drafts/issues/7676
-      // Should not check IsValid().
-      if (!selector_list->IsValid())
-        return nullptr;
-
       if (!block.AtEnd())
         return nullptr;
 
@@ -1064,6 +1071,40 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
       if (ident.GetType() != kIdentToken || !block.AtEnd())
         return nullptr;
       selector->SetArgument(ident.Value().ToAtomicString());
+      return selector;
+    }
+    case CSSSelector::kPseudoToggle: {
+      using State = ToggleRoot::State;
+
+      const CSSParserToken& name = block.ConsumeIncludingWhitespace();
+      if (name.GetType() != kIdentToken ||
+          !css_parsing_utils::IsCustomIdent(name.Id())) {
+        return nullptr;
+      }
+      std::unique_ptr<State> value;
+      if (!block.AtEnd()) {
+        const CSSParserToken& value_token = block.ConsumeIncludingWhitespace();
+        switch (value_token.GetType()) {
+          case kIdentToken:
+            if (!css_parsing_utils::IsCustomIdent(value_token.Id()))
+              return nullptr;
+            value =
+                std::make_unique<State>(value_token.Value().ToAtomicString());
+            break;
+          case kNumberToken:
+            if (value_token.GetNumericValueType() != kIntegerValueType ||
+                value_token.NumericValue() < 0) {
+              return nullptr;
+            }
+            value = std::make_unique<State>(value_token.NumericValue());
+            break;
+          default:
+            return nullptr;
+        }
+      }
+      if (!block.AtEnd())
+        return nullptr;
+      selector->SetToggle(name.Value().ToAtomicString(), std::move(value));
       return selector;
     }
     default:

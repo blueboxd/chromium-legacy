@@ -4,29 +4,25 @@
 
 #include "chromeos/ui/wm/features.h"
 
-namespace chromeos {
-namespace wm {
-namespace features {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/startup/browser_params_proxy.h"
+#endif
+
+namespace chromeos::wm::features {
 
 // Enables a window to float.
 // https://crbug.com/1240411
 const base::Feature kFloatWindow{"CrOSLabsFloatWindow",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables vertical snap for clamshell mode. This allows users to snap top and
-// bottom when the screen is in portrait orientation, while snap left and right
-// when the screen is in landscape orientation.
-const base::Feature kVerticalSnap{"VerticalSnap",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-
 bool IsFloatWindowEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return base::FeatureList::IsEnabled(kFloatWindow);
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  return chromeos::BrowserParamsProxy::Get()->IsFloatWindowEnabled();
+#else
+  return false;
+#endif
 }
 
-bool IsVerticalSnapEnabled() {
-  return base::FeatureList::IsEnabled(kVerticalSnap);
-}
-
-}  // namespace features
-}  // namespace wm
-}  // namespace chromeos
+}  // namespace chromeos::wm::features

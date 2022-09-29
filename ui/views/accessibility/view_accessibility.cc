@@ -13,7 +13,6 @@
 #include "build/chromeos_buildflags.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/accessibility/ax_tree_manager_map.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/base/buildflags.h"
@@ -100,7 +99,8 @@ void ViewAccessibility::AddVirtualChildViewAt(
                                                   "AXVirtualView parent. Call "
                                                   "RemoveChildView first.";
   virtual_view->set_parent_view(this);
-  auto insert_iterator = virtual_children_.begin() + index;
+  auto insert_iterator =
+      virtual_children_.begin() + static_cast<ptrdiff_t>(index);
   virtual_children_.insert(insert_iterator, std::move(virtual_view));
 }
 
@@ -113,7 +113,8 @@ std::unique_ptr<AXVirtualView> ViewAccessibility::RemoveVirtualChildView(
 
   std::unique_ptr<AXVirtualView> child =
       std::move(virtual_children_[cur_index.value()]);
-  virtual_children_.erase(virtual_children_.begin() + cur_index.value());
+  virtual_children_.erase(virtual_children_.begin() +
+                          static_cast<ptrdiff_t>(cur_index.value()));
   child->set_parent_view(nullptr);
   child->UnsetPopulateDataCallback();
   if (focused_virtual_child_ && child->Contains(focused_virtual_child_))
@@ -198,9 +199,13 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
     data->AddStringAttribute(ax::mojom::StringAttribute::kRole, "alertdialog");
   }
 
-  if (custom_data_.HasStringAttribute(ax::mojom::StringAttribute::kName)) {
-    data->SetName(
-        custom_data_.GetStringAttribute(ax::mojom::StringAttribute::kName));
+  std::string name;
+  if (custom_data_.GetStringAttribute(ax::mojom::StringAttribute::kName,
+                                      &name)) {
+    if (!name.empty())
+      data->SetName(name);
+    else
+      data->SetNameExplicitlyEmpty();
   }
 
   if (custom_data_.HasStringAttribute(
@@ -359,8 +364,18 @@ void ViewAccessibility::OverrideName(const std::string& name,
             name_from == ax::mojom::NameFrom::kAttributeExplicitlyEmpty)
       << "If the name is being removed to improve the user experience, "
          "|name_from| should be set to |kAttributeExplicitlyEmpty|.";
-  custom_data_.SetName(name);
+
+  // |AXNodeData::SetName| expects a valid role. Some Views call |OverrideRole|
+  // prior to overriding the name. For those that don't, see if we can get the
+  // default role from the View.
+  if (custom_data_.role == ax::mojom::Role::kUnknown) {
+    ui::AXNodeData data;
+    view_->GetAccessibleNodeData(&data);
+    custom_data_.role = data.role;
+  }
+
   custom_data_.SetNameFrom(name_from);
+  custom_data_.SetName(name);
 }
 
 void ViewAccessibility::OverrideName(const std::u16string& name,
@@ -388,17 +403,22 @@ void ViewAccessibility::OverrideLabelledBy(
   // the two sources.
   ui::AXNodeData label_data;
   const_cast<View*>(labelled_by_view)->GetAccessibleNodeData(&label_data);
-  custom_data_.SetName(
+  const std::string& label =
       label_data.GetStringAttribute(ax::mojom::StringAttribute::kName).empty()
           ? labelled_by_view->GetViewAccessibility()
                 .custom_data_.GetStringAttribute(
                     ax::mojom::StringAttribute::kName)
-          : label_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
+          : label_data.GetStringAttribute(ax::mojom::StringAttribute::kName);
+
+  // |OverrideName| includes logic to populate custom_data_.role with the
+  // View's default role in cases where |OverrideRole| was not called (yet).
+  // This ensures |AXNodeData::SetName| is not called with |Role::kUnknown|.
+  OverrideName(label, name_from);
+
   int32_t labelled_by_id =
       labelled_by_view->GetViewAccessibility().GetUniqueId().Get();
   custom_data_.AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
                                    {labelled_by_id});
-  custom_data_.SetNameFrom(name_from);
 }
 
 void ViewAccessibility::OverrideDescription(
@@ -603,7 +623,7 @@ ViewsAXTreeManager* ViewAccessibility::AXTreeManager() const {
         WidgetAXTreeIDMap::GetInstance().GetWidgetTreeID(widget);
     DCHECK_NE(tree_id, ui::AXTreeIDUnknown());
     manager = static_cast<views::ViewsAXTreeManager*>(
-        ui::AXTreeManagerMap::GetInstance().GetManager(tree_id));
+        ui::AXTreeManager::FromID(tree_id));
   }
 #endif
   return manager;

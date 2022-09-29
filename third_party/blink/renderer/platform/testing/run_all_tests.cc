@@ -37,9 +37,12 @@
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
-#include "skia/ext/test_fonts.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+
+#if BUILDFLAG(IS_FUCHSIA)
+#include "skia/ext/test_fonts.h"
+#endif
 
 namespace {
 
@@ -62,7 +65,7 @@ int main(int argc, char** argv) {
   // Some unittests depend on specific fonts provided by the system (e.g. some
   // tests load Arial). On Fuchsia the default font set contains only Roboto.
   // Load //third_party/test_fonts to make these tests pass on Fuchsia.
-  skia::ConfigureTestFont();
+  skia::InitializeSkFontMgrForTest();
 #endif
 
   {

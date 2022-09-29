@@ -18,6 +18,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "ui/base/ui_base_types.h"  // WindowShowState
@@ -35,14 +36,13 @@ namespace content {
 class BrowserContext;
 class RenderFrameHost;
 class WebContents;
-}
+}  // namespace content
 
 namespace extensions {
 
 class AppDelegate;
 class AppWebContentsHelper;
 class Extension;
-class NativeAppWindow;
 class PlatformAppBrowserTest;
 
 struct DraggableRegion;
@@ -221,19 +221,17 @@ class AppWindow : public content::WebContentsDelegate,
   // The constructor and Init methods are public for constructing a AppWindow
   // with a non-standard render interface (e.g.
   // lock_screen_apps::StateController, ChromeAppWindowClient). Normally
-  // AppWindow::Create should be used. Takes ownership of |app_delegate| and
-  // |delegate|.
+  // AppWindow::Create should be used.
   AppWindow(content::BrowserContext* context,
-            AppDelegate* app_delegate,
+            std::unique_ptr<AppDelegate> app_delegate,
             const Extension* extension);
 
   AppWindow(const AppWindow&) = delete;
   AppWindow& operator=(const AppWindow&) = delete;
 
   // Initializes the render interface, web contents, and native window.
-  // |app_window_contents| will become owned by AppWindow.
   void Init(const GURL& url,
-            AppWindowContents* app_window_contents,
+            std::unique_ptr<AppWindowContents> app_window_contents,
             content::RenderFrameHost* creator_frame,
             const CreateParams& params);
 
@@ -349,9 +347,7 @@ class AppWindow : public content::WebContentsDelegate,
     return app_window_contents_.get();
   }
 
-  int fullscreen_types_for_test() {
-    return fullscreen_types_;
-  }
+  int fullscreen_types_for_test() { return fullscreen_types_; }
 
   // Set whether the window should stay above other windows which are not
   // configured to be always-on-top.
@@ -387,6 +383,11 @@ class AppWindow : public content::WebContentsDelegate,
   void SetAppWindowContentsForTesting(
       std::unique_ptr<AppWindowContents> contents) {
     app_window_contents_ = std::move(contents);
+  }
+
+  void SetNativeAppWindowForTesting(
+      std::unique_ptr<NativeAppWindow> native_app_window) {
+    native_app_window_ = std::move(native_app_window);
   }
 
   bool DidFinishFirstNavigation() { return did_finish_first_navigation_; }

@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 
 // clang-format off
-import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
-import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 
-import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
-
+import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 // clang-format on
@@ -15,7 +14,10 @@ import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://w
 suite('cr-lazy-render', function() {
   let lazy: CrLazyRenderElement<HTMLElement>;
 
-  type BindData = {name: string, checked: boolean};
+  interface BindData {
+    name: string;
+    checked: boolean;
+  }
 
   let bind: HTMLElement&BindData;
 

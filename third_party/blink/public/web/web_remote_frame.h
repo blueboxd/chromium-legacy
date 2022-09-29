@@ -23,9 +23,7 @@ namespace mojom {
 enum class TreeScopeType;
 }
 class InterfaceRegistry;
-class WebElement;
 class WebLocalFrameClient;
-class WebRemoteFrameClient;
 class WebString;
 class WebView;
 struct FramePolicy;
@@ -34,33 +32,16 @@ struct WebFrameOwnerProperties;
 
 class WebRemoteFrame : public WebFrame {
  public:
-  // Factory methods for creating a WebRemoteFrame. The WebRemoteFrameClient
-  // argument must be non-null for all creation methods.
+  // Factory methods for creating a WebRemoteFrame.
   BLINK_EXPORT static WebRemoteFrame* Create(
       mojom::TreeScopeType,
-      WebRemoteFrameClient*,
       const RemoteFrameToken& frame_token);
 
   BLINK_EXPORT static WebRemoteFrame* CreateMainFrame(
       WebView*,
-      WebRemoteFrameClient*,
       const RemoteFrameToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,
       WebFrame* opener,
-      CrossVariantMojoAssociatedRemote<mojom::RemoteFrameHostInterfaceBase>
-          remote_frame_host,
-      CrossVariantMojoAssociatedReceiver<mojom::RemoteFrameInterfaceBase>
-          receiver,
-      mojom::FrameReplicationStatePtr replicated_state);
-
-  // Also performs core initialization to associate the created remote frame
-  // with the provided <portal> or <fencedframe> element.
-  BLINK_EXPORT static WebRemoteFrame* CreateForPortalOrFencedFrame(
-      mojom::TreeScopeType,
-      WebRemoteFrameClient*,
-      const RemoteFrameToken& frame_token,
-      const base::UnguessableToken& devtools_frame_token,
-      const WebElement& frame_owner,
       CrossVariantMojoAssociatedRemote<mojom::RemoteFrameHostInterfaceBase>
           remote_frame_host,
       CrossVariantMojoAssociatedReceiver<mojom::RemoteFrameInterfaceBase>
@@ -85,18 +66,6 @@ class WebRemoteFrame : public WebFrame {
       const LocalFrameToken& frame_token,
       WebFrame* opener,
       std::unique_ptr<WebPolicyContainer> policy_container) = 0;
-
-  virtual WebRemoteFrame* CreateRemoteChild(
-      mojom::TreeScopeType,
-      WebRemoteFrameClient*,
-      const RemoteFrameToken& frame_token,
-      const base::UnguessableToken& devtools_frame_token,
-      WebFrame* opener,
-      CrossVariantMojoAssociatedRemote<mojom::RemoteFrameHostInterfaceBase>
-          remote_frame_host,
-      CrossVariantMojoAssociatedReceiver<mojom::RemoteFrameInterfaceBase>
-          receiver,
-      mojom::FrameReplicationStatePtr replicated_state) = 0;
 
   // Returns the frame associated with the |frame_token|.
   BLINK_EXPORT static WebRemoteFrame* FromFrameToken(
@@ -124,7 +93,7 @@ class WebRemoteFrame : public WebFrame {
 
   // True if the frame is thought (heuristically) to be created for
   // advertising purposes.
-  bool IsAdSubframe() const override = 0;
+  bool IsAdFrame() const override = 0;
 
  protected:
   explicit WebRemoteFrame(mojom::TreeScopeType scope,

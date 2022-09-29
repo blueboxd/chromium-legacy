@@ -32,6 +32,7 @@ class AppListView;
 class AppListViewDelegate;
 class ContentsView;
 class ResultSelectionController;
+class SearchBoxViewDelegate;
 class SearchResultBaseView;
 
 // Subclass of SearchBoxViewBase. SearchBoxModel is its data model
@@ -58,6 +59,14 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
 
   ~SearchBoxView() override;
 
+  // Initializes the search box style for usage in bubble (clamshell mode)
+  // launcher.
+  void InitializeForBubbleLauncher();
+
+  // Initializes the search box style for usage in fullscreen (tablet mode)
+  // launcher.
+  void InitializeForFullscreenLauncher();
+
   // Must be called before the user interacts with the search box. Cannot be
   // part of Init() because the controller isn't available until after Init()
   // is called.
@@ -76,19 +85,14 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   void MaybeCreateFocusRing();
 
   // Overridden from SearchBoxViewBase:
-  void Init(const InitParams& params) override;
   void UpdateSearchTextfieldAccessibleNodeData(
       ui::AXNodeData* node_data) override;
-  void ClearSearch() override;
   void HandleSearchBoxEvent(ui::LocatedEvent* located_event) override;
   void UpdateKeyboardVisibility() override;
-  void UpdateModel(bool initiated_by_user) override;
-  void UpdateSearchIcon() override;
+  void HandleQueryChange(const std::u16string& query,
+                         bool initiated_by_user) override;
   void UpdatePlaceholderTextStyle() override;
   void UpdateSearchBoxBorder() override;
-  void SetupAssistantButton() override;
-  void SetupCloseButton() override;
-  void SetupBackButton() override;
   void RecordSearchBoxActivationHistogram(ui::EventType event_type) override;
   void OnSearchBoxActiveChanged(bool active) override;
   void UpdateSearchBoxFocusPaint() override;
@@ -129,6 +133,10 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   // Sets the autocomplete text if autocomplete conditions are met.
   void ProcessAutocomplete(SearchResultBaseView* first_result_view);
 
+  // Sets up prefix match autocomplete. Returns true if successful.
+  bool ProcessPrefixMatchAutocomplete(SearchResult* search_result,
+                                      const std::u16string& user_typed_text);
+
   // Removes all autocomplete text.
   void ClearAutocompleteText();
 
@@ -145,6 +153,10 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   void SetA11yActiveDescendant(
       const absl::optional<int32_t>& active_descendant);
 
+  // Refreshes the placeholder text with a fixed one rather than the one picked
+  // up randomly
+  void UseFixedPlaceholderTextForTest();
+
   void set_contents_view(ContentsView* contents_view) {
     contents_view_ = contents_view;
   }
@@ -156,6 +168,8 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   void set_highlight_range_for_test(const gfx::Range& range) {
     highlight_range_ = range;
   }
+
+  const std::u16string& current_query() const { return current_query_; }
 
   // Update search box view background when result container visibility changes.
   void OnResultContainerVisibilityChanged(bool visible);
@@ -169,6 +183,19 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
 
  private:
   class FocusRingLayer;
+
+  // Called when the close button within the search box gets pressed.
+  void CloseButtonPressed();
+
+  // Called when the assistant button within the search box gets pressed.
+  void AssistantButtonPressed();
+
+  // Updates the icon shown left of the search box texfield.
+  void UpdateSearchIcon();
+
+  // Whether 'autocomplete_text' is a valid candidate for classic highlighted
+  // autocomplete.
+  bool IsValidAutocompleteText(const std::u16string& autocomplete_text);
 
   // Updates the text field text color.
   void UpdateTextColor();
@@ -187,10 +214,11 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   // text to the autocomplete text and sets the text highlight.
   void SetAutocompleteText(const std::u16string& autocomplete_text);
 
+  // Returns the text shown in the text field when there is no text inputs.
+  SearchBoxView::PlaceholderTextType SelectPlaceholderText() const;
+
   // Overridden from views::TextfieldController:
   void OnBeforeUserAction(views::Textfield* sender) override;
-  void ContentsChanged(views::Textfield* sender,
-                       const std::u16string& new_contents) override;
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override;
   bool HandleMouseEvent(views::Textfield* sender,
@@ -199,7 +227,6 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
                           const ui::GestureEvent& gesture_event) override;
 
   // Overridden from SearchBoxModelObserver:
-  void Update() override;
   void SearchEngineChanged() override;
   void ShowAssistantChanged() override;
 
@@ -227,6 +254,7 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   // The key most recently pressed.
   ui::KeyboardCode last_key_pressed_ = ui::VKEY_UNKNOWN;
 
+  SearchBoxViewDelegate* const delegate_;
   AppListViewDelegate* const view_delegate_;
 
   // Owned by views hierarchy. May be null for bubble launcher.
@@ -264,6 +292,10 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   // user. Used in metrics. Metrics are only recorded for search model updates
   // that occur after a search has been initiated.
   base::TimeTicks user_initiated_model_update_time_;
+
+  // If true, `SelectPlaceholderText()` always returns a fixed placeholder text
+  // instead of the one picked randomly.
+  bool use_fixed_placeholder_text_for_test_ = false;
 
   base::ScopedObservation<SearchBoxModel, SearchBoxModelObserver>
       search_box_model_observer_{this};

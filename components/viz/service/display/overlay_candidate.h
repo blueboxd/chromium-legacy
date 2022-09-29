@@ -43,6 +43,9 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
     kSuccess,
     kFailNotOverlay,
     kFailNotAxisAligned,
+    kFailNotAxisAligned3dTransform,
+    kFailNotAxisAligned2dShear,
+    kFailNotAxisAligned2dRotation,
     kFailColorMatrix,
     kFailOpacity,
     kFailBlending,
@@ -158,11 +161,6 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   // The DDL for generating render pass overlay buffer with SkiaRenderer. This
   // is the recorded output of rendering the |rpdq|.
   sk_sp<SkDeferredDisplayList> ddl;
-
-  // The bounds in pixels of the rendered |rpdq|.
-  // TODO(petermcneeley) : Refactor the usage of this member to be compatible
-  // with |uv_rect| member in this class.
-  gfx::RectF bounds_rect;
 
   // Quad |shared_quad_state| opacity is ubiquitous for quad types
   // AggregateRenderPassDrawQuad, TileDrawQuad, SolidColorDrawQuad. A delegate

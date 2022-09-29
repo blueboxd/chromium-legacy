@@ -121,24 +121,21 @@ UpdateScreen::UpdateScreen(base::WeakPtr<UpdateView> view,
 
 UpdateScreen::~UpdateScreen() = default;
 
-bool UpdateScreen::MaybeSkip(WizardContext* context) {
-  if (context->enrollment_triggered_early) {
+bool UpdateScreen::MaybeSkip(WizardContext& context) {
+  if (context.enrollment_triggered_early) {
     LOG(WARNING) << "Skip OOBE Update because of enrollment request.";
     exit_callback_.Run(VersionUpdater::Result::UPDATE_SKIPPED);
     return true;
   }
 
-  const auto* skip_screen_key = context->configuration.FindKeyOfType(
-      configuration::kUpdateSkipUpdate, base::Value::Type::BOOLEAN);
-  const bool skip_screen = skip_screen_key && skip_screen_key->GetBool();
-
-  if (skip_screen) {
-    LOG(WARNING) << "Skip OOBE Update because of configuration.";
+  if (ash::IsRollbackFlow(context)) {
+    LOG(WARNING)
+        << "Skip OOBE Update because enterprise rollback just happened.";
     exit_callback_.Run(VersionUpdater::Result::UPDATE_SKIPPED);
     return true;
   }
 
-  if (!context->is_branded_build) {
+  if (!context.is_branded_build) {
     LOG(WARNING) << "Skip OOBE Update because of not branded build.";
     exit_callback_.Run(VersionUpdater::Result::UPDATE_SKIPPED);
     return true;
@@ -309,8 +306,10 @@ void UpdateScreen::UpdateInfoChanged(
       // Do nothing in these cases, we don't want to notify the user of the
       // check unless there is an update.
     case update_engine::Operation::ATTEMPTING_ROLLBACK:
+    case update_engine::Operation::CLEANUP_PREVIOUS_UPDATE:
     case update_engine::Operation::DISABLED:
     case update_engine::Operation::IDLE:
+    case update_engine::Operation::UPDATED_BUT_DEFERRED:
       break;
     case update_engine::Operation::UPDATE_AVAILABLE:
       if (view_)

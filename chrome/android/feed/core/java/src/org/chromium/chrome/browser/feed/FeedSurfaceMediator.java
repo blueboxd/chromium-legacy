@@ -44,7 +44,7 @@ import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.ui.native_page.TouchEnabledDelegate;
 import org.chromium.chrome.browser.ui.signin.PersonalizedSigninPromoView;
-import org.chromium.chrome.browser.ui.signin.SigninPromoController;
+import org.chromium.chrome.browser.ui.signin.SyncPromoController;
 import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger;
 import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger.StreamType;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
@@ -159,7 +159,7 @@ public class FeedSurfaceMediator
             // blocking the UI thread for several seconds if the accounts cache is not populated
             // yet.
             if (isVisible()) {
-                mSigninPromoController.setUpSyncPromoView(mProfileDataCache,
+                mSyncPromoController.setUpSyncPromoView(mProfileDataCache,
                         mCoordinator.getSigninPromoView().findViewById(
                                 R.id.signin_promo_view_container),
                         this::onDismissPromo);
@@ -637,9 +637,9 @@ public class FeedSurfaceMediator
      * @return Whether the SignPromo should be visible.
      */
     private boolean shouldShowSigninPromo() {
-        SigninPromoController.resetNTPSyncPromoLimitsIfHiddenForTooLong();
+        SyncPromoController.resetNTPSyncPromoLimitsIfHiddenForTooLong();
         if (!SignInPromo.shouldCreatePromo()
-                || !SigninPromoController.canShowSyncPromo(
+                || !SyncPromoController.canShowSyncPromo(
                         SigninAccessPoint.NTP_CONTENT_SUGGESTIONS)) {
             return false;
         }

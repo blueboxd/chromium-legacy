@@ -6,10 +6,10 @@
 // Please keep the sections alphabetically sorted.
 
 // COMMON SCREENS
-import './screens/common/adb_sideloading.m.js';
+import './screens/common/adb_sideloading.js';
 import './screens/common/app_downloading.m.js';
 import './screens/common/app_launch_splash.m.js';
-import './screens/common/arc_terms_of_service.m.js';
+import './screens/common/arc_terms_of_service.js';
 import './screens/common/assistant_optin.m.js';
 import './screens/common/autolaunch.m.js';
 import './screens/common/consolidated_consent.m.js';
@@ -43,7 +43,7 @@ import './screens/common/user_creation.m.js';
 import './screens/common/wrong_hwid.m.js';
 // SCREENS USED DURING THE LOGIN FLOW
 import './screens/login/active_directory_password_change.m.js';
-import './screens/login/encryption_migration.m.js';
+import './screens/login/encryption_migration.js';
 import './screens/login/gaia_password_changed.m.js';
 import './screens/login/lacros_data_migration.m.js';
 import './screens/login/management_transition.m.js';

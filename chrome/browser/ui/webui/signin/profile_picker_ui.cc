@@ -51,6 +51,9 @@ namespace {
 constexpr int kMinimumPickerSizePx = 620;
 
 bool IsBrowserSigninAllowed() {
+#if BUILDFLAG(IS_CHROMEOS)
+  return true;
+#else
   policy::PolicyService* policy_service = g_browser_process->policy_service();
   DCHECK(policy_service);
   const policy::PolicyMap& policies = policy_service->GetPolicies(
@@ -65,6 +68,7 @@ bool IsBrowserSigninAllowed() {
   return static_cast<policy::BrowserSigninMode>(
              browser_signin_value->GetInt()) !=
          policy::BrowserSigninMode::kDisabled;
+#endif
 }
 
 std::string GetManagedDeviceDisclaimer() {
@@ -161,6 +165,8 @@ void AddStrings(content::WebUIDataSource* html_source) {
     // Color picker.
     {"colorPickerLabel", IDS_NTP_CUSTOMIZE_COLOR_PICKER_LABEL},
     {"defaultThemeLabel", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
+    {"themesContainerLabel",
+     IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_LOCAL_PROFILE_CREATION_THEME_TEXT},
     {"thirdPartyThemeDescription", IDS_NTP_CUSTOMIZE_3PT_THEME_DESC},
     {"uninstallThirdPartyThemeButton", IDS_NTP_CUSTOMIZE_3PT_THEME_UNINSTALL},
 

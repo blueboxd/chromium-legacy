@@ -16,8 +16,8 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/task/thread_pool.h"
-#include "chrome/browser/ash/crostini/crostini_terminal.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
+#include "chrome/browser/ash/guest_os/guest_os_terminal.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
@@ -67,26 +67,26 @@ std::unique_ptr<base::ListValue> ReadExternalOrdinalFile(
   return ordinal_list_value;
 }
 
-std::string GetLocaleSpecificStringImpl(const base::DictionaryValue* root,
+std::string GetLocaleSpecificStringImpl(const base::Value::Dict& root,
                                         const std::string& locale,
                                         const std::string& dictionary_name,
                                         const std::string& entry_name) {
-  const base::DictionaryValue* dictionary_content = NULL;
-  if (!root || !root->GetDictionary(dictionary_name, &dictionary_content))
+  const base::Value::Dict* dict_content = root.FindDict(dictionary_name);
+  if (!dict_content)
     return std::string();
 
-  const base::DictionaryValue* locale_dictionary = NULL;
-  if (dictionary_content->GetDictionary(locale, &locale_dictionary)) {
-    std::string result;
-    if (locale_dictionary->GetString(entry_name, &result))
-      return result;
+  const base::Value::Dict* locale_dict = dict_content->FindDict(locale);
+  if (locale_dict) {
+    const std::string* result = locale_dict->FindString(entry_name);
+    if (result)
+      return *result;
   }
 
-  const base::DictionaryValue* default_dictionary = NULL;
-  if (dictionary_content->GetDictionary(kDefaultAttr, &default_dictionary)) {
-    std::string result;
-    if (default_dictionary->GetString(entry_name, &result))
-      return result;
+  const base::Value::Dict* default_dict = dict_content->FindDict(kDefaultAttr);
+  if (default_dict) {
+    const std::string* result = default_dict->FindString(entry_name);
+    if (result)
+      return *result;
   }
 
   return std::string();
@@ -173,16 +173,17 @@ void GetDefault(std::vector<std::string>* app_ids) {
     web_app::kCalculatorAppId,
     extension_misc::kCalculatorAppId,
 
+    web_app::kMediaAppId,
     web_app::kCursiveAppId,
     web_app::kCanvasAppId,
+
+    ash::kChromeUITrustedProjectorSwaAppId,
     extension_misc::kTextEditorAppId,
+    guest_os::kTerminalSystemAppId,
+
     web_app::kYoutubeTVAppId,
     web_app::kGoogleNewsAppId,
     extensions::kWebStoreAppId,
-
-    crostini::kTerminalSystemAppId,
-    web_app::kMediaAppId,
-    ash::kChromeUITrustedProjectorSwaAppId,
 
     arc::kLightRoomAppId,
     arc::kInfinitePainterAppId,
@@ -248,16 +249,15 @@ void ExternalLoader::Load() {
   if (ordinals_value) {
     std::string locale = g_browser_process->GetApplicationLocale();
     for (const base::Value& i : ordinals_value->GetListDeprecated()) {
-      const base::DictionaryValue* dict = nullptr;
       if (i.is_string()) {
         std::string app_id = i.GetString();
         app_ids_.push_back(app_id);
-      } else if (i.GetAsDictionary(&dict)) {
-        if (dict->FindBoolPath(kOemAppsFolderAttr).value_or(false)) {
+      } else if (i.is_dict()) {
+        const base::Value::Dict& dict = i.GetDict();
+        if (dict.FindBool(kOemAppsFolderAttr).value_or(false)) {
           oem_apps_folder_name_ = GetLocaleSpecificStringImpl(
               dict, locale, kLocalizedContentAttr, kNameAttr);
-        } else if (dict->FindBoolPath(kImportDefaultOrderAttr)
-                       .value_or(false)) {
+        } else if (dict.FindBool(kImportDefaultOrderAttr).value_or(false)) {
           GetDefault(&app_ids_);
         } else {
           LOG(ERROR) << "Invalid syntax in default_app_order.json";

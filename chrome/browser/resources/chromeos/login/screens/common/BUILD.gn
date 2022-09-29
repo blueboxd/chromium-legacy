@@ -5,6 +5,7 @@
 import("//chrome/test/base/js2gtest.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
+import("//tools/polymer/html_to_js.gni")
 import("//tools/polymer/polymer.gni")
 import("../../oobe_auto_imports.gni")
 
@@ -12,10 +13,8 @@ assert(is_chromeos, "OOBE UI is only available on ChromeOS builds")
 
 group("polymer3_elements") {
   public_deps = [
-    ":adb_sideloading_module",
     ":app_downloading_module",
     ":app_launch_splash_module",
-    ":arc_terms_of_service_module",
     ":assistant_optin_module",
     ":autolaunch_module",
     ":consolidated_consent_module",
@@ -61,10 +60,10 @@ js_type_check("closure_compile_local") {
   is_polymer3 = true
   closure_flags = default_closure_args
   deps = [
-    ":adb_sideloading.m",
+    ":adb_sideloading",
     ":app_downloading.m",
     ":app_launch_splash.m",
-    ":arc_terms_of_service.m",
+    ":arc_terms_of_service",
 
     #":assistant_optin.m",
     ":autolaunch.m",
@@ -110,8 +109,8 @@ js_type_check("closure_compile_multidevice_setup") {
 ###############################
 # Closure compiler libraries below
 
-js_library("adb_sideloading.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/adb_sideloading.m.js" ]
+js_library("adb_sideloading") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/adb_sideloading.js" ]
   deps = [
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:multi_step_behavior.m",
@@ -119,7 +118,7 @@ js_library("adb_sideloading.m") {
     "../../components/buttons:oobe_text_button.m",
     "../../components/dialogs:oobe_adaptive_dialog.m",
   ]
-  extra_deps = [ ":adb_sideloading_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("app_downloading.m") {
@@ -144,8 +143,8 @@ js_library("app_launch_splash.m") {
   extra_deps = [ ":app_launch_splash_module" ]
 }
 
-js_library("arc_terms_of_service.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/arc_terms_of_service.m.js" ]
+js_library("arc_terms_of_service") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/arc_terms_of_service.js" ]
   deps = [
     "../../:display_manager.m",
     "../../components:oobe_select.m",
@@ -164,7 +163,7 @@ js_library("arc_terms_of_service.m") {
     "$externs_path/chrome_extensions.js",
     "$externs_path/webview_tag.js",
   ]
-  extra_deps = [ ":arc_terms_of_service_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("assistant_optin.m") {
@@ -204,7 +203,7 @@ js_library("consolidated_consent.m") {
     "../../components/dialogs:oobe_loading_dialog.m",
     "../../components/dialogs:oobe_modal_dialog.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle.m",
+    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
   ]
   extra_deps = [ ":consolidated_consent_module" ]
   externs_list = [
@@ -261,9 +260,10 @@ js_library("fingerprint_setup.m") {
     "../../components/buttons:oobe_text_button.m",
     "../../components/dialogs:oobe_adaptive_dialog.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_fingerprint:cr_fingerprint_progress_arc.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
+  externs_list = [ "//ui/webui/resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc_externs.js" ]
+
   extra_deps = [ ":fingerprint_setup_module" ]
 }
 
@@ -317,7 +317,7 @@ js_library("guest_tos.m") {
     "../../components/dialogs:oobe_loading_dialog.m",
     "../../components/dialogs:oobe_modal_dialog.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle.m",
+    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
   ]
   extra_deps = [ ":guest_tos_module" ]
   externs_list = [
@@ -369,7 +369,7 @@ js_library("marketing_opt_in.m") {
     "../../components/behaviors:oobe_i18n_behavior.m",
     "../../components/dialogs:oobe_adaptive_dialog.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle.m",
+    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
   ]
   extra_deps = [ ":marketing_opt_in_module" ]
 }
@@ -402,8 +402,8 @@ js_library("offline_ad_login.m") {
     "../../components/buttons:oobe_next_button.m",
     "../../components/buttons:oobe_text_button.m",
     "../../components/dialogs:oobe_adaptive_dialog.m",
-    "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
-    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle.m",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input",
+    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
     "//ui/webui/resources/js:load_time_data.m",
   ]
   extra_deps = [ ":offline_ad_login_module" ]
@@ -439,7 +439,6 @@ js_library("oobe_reset.m") {
     "../../components/dialogs:oobe_adaptive_dialog.m",
     "../../components/dialogs:oobe_modal_dialog.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_checkbox:cr_checkbox.m",
     "//ui/webui/resources/js:util.m",
   ]
   extra_deps = [ ":oobe_reset_module" ]
@@ -490,7 +489,7 @@ js_library("os_trial.m") {
     "../../components/dialogs:oobe_adaptive_dialog.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_lottie:cr_lottie.m",
-    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle.m",
+    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
   ]
 
   externs_list = [ "$externs_path/webview_tag.js" ]
@@ -626,7 +625,8 @@ js_library("user_creation.m") {
     "../../components/behaviors:oobe_i18n_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_lottie:cr_lottie.m",
-    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle.m",
+    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
+    "//ui/webui/resources/js:cr.m",
   ]
   extra_deps = [ ":user_creation_module" ]
 }
@@ -660,33 +660,18 @@ js_library("error_message.m") {
   extra_deps = [ ":error_message_module" ]
 }
 
-polymer_modulizer("adb_sideloading") {
-  js_file = "adb_sideloading.js"
-  html_file = "adb_sideloading.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
 polymer_modulizer("app_downloading") {
   js_file = "app_downloading.js"
   html_file = "app_downloading.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
+  migrated_imports = oobe_migrated_imports
   namespace_rewrites = oobe_namespace_rewrites
 }
 
 polymer_modulizer("app_launch_splash") {
   js_file = "app_launch_splash.js"
   html_file = "app_launch_splash.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
-polymer_modulizer("arc_terms_of_service") {
-  js_file = "arc_terms_of_service.js"
-  html_file = "arc_terms_of_service.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
   namespace_rewrites = oobe_namespace_rewrites
@@ -713,6 +698,7 @@ polymer_modulizer("consolidated_consent") {
   html_file = "consolidated_consent.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
+  migrated_imports = oobe_migrated_imports
   namespace_rewrites = oobe_namespace_rewrites
 }
 
@@ -745,6 +731,7 @@ polymer_modulizer("fingerprint_setup") {
   html_file = "fingerprint_setup.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
+  migrated_imports = oobe_migrated_imports
   namespace_rewrites = oobe_namespace_rewrites
 }
 
@@ -769,6 +756,7 @@ polymer_modulizer("guest_tos") {
   html_file = "guest_tos.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
+  migrated_imports = oobe_migrated_imports
   namespace_rewrites = oobe_namespace_rewrites
 }
 
@@ -778,6 +766,7 @@ polymer_modulizer("hw_data_collection") {
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
   namespace_rewrites = oobe_namespace_rewrites
+  migrated_imports = oobe_migrated_imports
 }
 
 polymer_modulizer("managed_terms_of_service") {
@@ -792,7 +781,8 @@ polymer_modulizer("marketing_opt_in") {
   js_file = "marketing_opt_in.js"
   html_file = "marketing_opt_in.html"
   html_type = "dom-module"
-  auto_imports = oobe_auto_imports
+  auto_imports = oobe_auto_imports + [ "ui/webui/resources/cr_elements/cr_toggle/cr_toggle.html|CrToggleElement" ]
+  migrated_imports = oobe_migrated_imports
   namespace_rewrites = oobe_namespace_rewrites
 }
 
@@ -808,7 +798,8 @@ polymer_modulizer("offline_ad_login") {
   js_file = "offline_ad_login.js"
   html_file = "offline_ad_login.html"
   html_type = "dom-module"
-  auto_imports = oobe_auto_imports
+  auto_imports = oobe_auto_imports + [ "ui/webui/resources/cr_elements/cr_toggle/cr_toggle.html|CrToggleElement" ]
+  migrated_imports = oobe_migrated_imports
   namespace_rewrites = oobe_namespace_rewrites
 }
 
@@ -818,6 +809,7 @@ polymer_modulizer("oobe_eula") {
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
   namespace_rewrites = oobe_namespace_rewrites
+  migrated_imports = oobe_migrated_imports
 }
 
 polymer_modulizer("oobe_reset") {
@@ -826,6 +818,7 @@ polymer_modulizer("oobe_reset") {
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
   namespace_rewrites = oobe_namespace_rewrites
+  migrated_imports = oobe_migrated_imports
 }
 
 polymer_modulizer("os_install") {
@@ -857,6 +850,7 @@ polymer_modulizer("pin_setup") {
   html_file = "pin_setup.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
+  migrated_imports = oobe_migrated_imports
   namespace_rewrites = oobe_namespace_rewrites
 }
 
@@ -866,6 +860,7 @@ polymer_modulizer("recommend_apps") {
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
   namespace_rewrites = oobe_namespace_rewrites
+  migrated_imports = oobe_migrated_imports
 }
 
 polymer_modulizer("user_creation") {
@@ -873,6 +868,7 @@ polymer_modulizer("user_creation") {
   html_file = "user_creation.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
+  migrated_imports = oobe_migrated_imports
   namespace_rewrites = oobe_namespace_rewrites
 }
 
@@ -881,6 +877,7 @@ polymer_modulizer("saml_confirm_password") {
   html_file = "saml_confirm_password.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
+  migrated_imports = oobe_migrated_imports
   namespace_rewrites = oobe_namespace_rewrites
 }
 
@@ -904,8 +901,9 @@ polymer_modulizer("sync_consent") {
   js_file = "sync_consent.js"
   html_file = "sync_consent.html"
   html_type = "dom-module"
-  auto_imports = oobe_auto_imports
+  auto_imports = oobe_auto_imports + [ "ui/webui/resources/cr_elements/cr_checkbox/cr_checkbox.html|CrCheckboxElement" ]
   namespace_rewrites = oobe_namespace_rewrites
+  migrated_imports = oobe_migrated_imports
 }
 
 polymer_modulizer("theme_selection") {
@@ -938,4 +936,11 @@ polymer_modulizer("error_message") {
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
   namespace_rewrites = oobe_namespace_rewrites
+}
+
+html_to_js("web_components") {
+  js_files = [
+    "adb_sideloading.js",
+    "arc_terms_of_service.js",
+  ]
 }

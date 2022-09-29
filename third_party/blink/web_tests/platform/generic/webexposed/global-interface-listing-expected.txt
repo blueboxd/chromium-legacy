@@ -295,10 +295,11 @@ interface AudioData
     method close
     method constructor
     method copyTo
-interface AudioDecoder
+interface AudioDecoder : EventTarget
     static method isConfigSupported
     attribute @@toStringTag
     getter decodeQueueSize
+    getter ondequeue
     getter state
     method close
     method configure
@@ -306,6 +307,7 @@ interface AudioDecoder
     method decode
     method flush
     method reset
+    setter ondequeue
 interface AudioDestinationNode : AudioNode
     attribute @@toStringTag
     getter maxChannelCount
@@ -442,6 +444,12 @@ interface AuthenticatorResponse
     attribute @@toStringTag
     getter clientDataJSON
     method constructor
+interface BackForwardCacheRestoration : PerformanceEntry
+    attribute @@toStringTag
+    getter pageshowEventEnd
+    getter pageshowEventStart
+    method constructor
+    method toJSON
 interface BackgroundFetchManager
     attribute @@toStringTag
     method constructor
@@ -973,6 +981,12 @@ interface CSSStyleValue
     method constructor
     method toString
 interface CSSSupportsRule : CSSConditionRule
+    attribute @@toStringTag
+    method constructor
+interface CSSToggle
+    attribute @@toStringTag
+    method constructor
+interface CSSToggleMap
     attribute @@toStringTag
     method constructor
 interface CSSTransformComponent
@@ -1859,6 +1873,7 @@ interface Document : Node
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
+    getter onprerenderingchange
     getter onprogress
     getter onratechange
     getter onreadystatechange
@@ -1902,6 +1917,7 @@ interface Document : Node
     getter pictureInPictureEnabled
     getter plugins
     getter pointerLockElement
+    getter prerendering
     getter readyState
     getter referrer
     getter rootElement
@@ -2068,6 +2084,7 @@ interface Document : Node
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
+    setter onprerenderingchange
     setter onprogress
     setter onratechange
     setter onreadystatechange
@@ -2238,7 +2255,6 @@ interface Element : Node
     getter ariaValueText
     getter ariaVirtualContent
     getter assignedSlot
-    getter attributeStyleMap
     getter attributes
     getter childElementCount
     getter children
@@ -2283,6 +2299,7 @@ interface Element : Node
     getter shadowRoot
     getter slot
     getter tagName
+    getter toggles
     method after
     method animate
     method append
@@ -3175,6 +3192,7 @@ interface HTMLDocument : Document
 interface HTMLElement : Element
     attribute @@toStringTag
     getter accessKey
+    getter attributeStyleMap
     getter autocapitalize
     getter autofocus
     getter contentEditable
@@ -4766,7 +4784,7 @@ interface IIRFilterNode : AudioNode
     method constructor
     method getFrequencyResponse
 interface IdentityCredential : Credential
-    static method logoutRps
+    static method logoutRPs
     attribute @@toStringTag
     getter token
     method constructor
@@ -5131,6 +5149,7 @@ interface Magnetometer : Sensor
     method constructor
 interface MathMLElement : Element
     attribute @@toStringTag
+    getter attributeStyleMap
     getter autofocus
     getter dataset
     getter focusgroup
@@ -6404,6 +6423,26 @@ interface PaymentResponse : EventTarget
     method retry
     method toJSON
     setter onpayerdetailchange
+interface PendingBeacon
+    attribute @@toStringTag
+    getter backgroundTimeout
+    getter method
+    getter pending
+    getter timeout
+    getter url
+    method constructor
+    method deactivate
+    method sendNow
+    setter backgroundTimeout
+    setter timeout
+interface PendingGetBeacon : PendingBeacon
+    attribute @@toStringTag
+    method constructor
+    method setURL
+interface PendingPostBeacon : PendingBeacon
+    attribute @@toStringTag
+    method constructor
+    method setData
 interface Performance : EventTarget
     attribute @@toStringTag
     getter eventCounts
@@ -6481,6 +6520,7 @@ interface PerformanceNavigation
     method toJSON
 interface PerformanceNavigationTiming : PerformanceResourceTiming
     attribute @@toStringTag
+    getter activationStart
     getter domComplete
     getter domContentLoadedEventEnd
     getter domContentLoadedEventStart
@@ -6726,6 +6766,7 @@ interface PromiseRejectionEvent : Event
     getter reason
     method constructor
 interface PublicKeyCredential : Credential
+    static method isConditionalMediationAvailable
     static method isUserVerifyingPlatformAuthenticatorAvailable
     attribute @@toStringTag
     getter authenticatorAttachment
@@ -7356,6 +7397,7 @@ interface SVGDescElement : SVGElement
     method constructor
 interface SVGElement : Element
     attribute @@toStringTag
+    getter attributeStyleMap
     getter autofocus
     getter className
     getter dataset
@@ -8703,6 +8745,7 @@ interface Storage
 interface StorageBucket
     attribute @@toStringTag
     getter indexedDB
+    getter locks
     method constructor
     method durability
     method estimate
@@ -9324,10 +9367,11 @@ interface VideoColorSpace
     getter transfer
     method constructor
     method toJSON
-interface VideoDecoder
+interface VideoDecoder : EventTarget
     static method isConfigSupported
     attribute @@toStringTag
     getter decodeQueueSize
+    getter ondequeue
     getter state
     method close
     method configure
@@ -9335,6 +9379,7 @@ interface VideoDecoder
     method decode
     method flush
     method reset
+    setter ondequeue
 interface VideoEncoder : EventTarget
     static method isConfigSupported
     attribute @@toStringTag
@@ -11599,6 +11644,7 @@ namespace CSS
     attribute propertyNamesInGlobal
     attribute testRunner
     attribute textInputController
+    getter anonymouslyFramed
     getter caches
     getter clientInformation
     getter closed
@@ -11619,7 +11665,6 @@ namespace CSS
     getter indexedDB
     getter innerHeight
     getter innerWidth
-    getter isAnonymouslyFramed
     getter isSecureContext
     getter launchQueue
     getter length

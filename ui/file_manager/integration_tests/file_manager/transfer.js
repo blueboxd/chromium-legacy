@@ -170,8 +170,8 @@ async function transferBetweenVolumes(transferInfo) {
       'focus', appId, ['#file-list:not([hidden])']);
 
   // Select the source file.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [transferInfo.fileToTransfer.nameText]));
+  await remoteCall.waitUntilSelected(
+      appId, transferInfo.fileToTransfer.nameText);
 
   // Copy the file.
   const transferCommand = transferInfo.isMove ? 'cut' : 'copy';
@@ -925,6 +925,47 @@ testcase.transferDragAndDrop = async () => {
       {ignoreLastModifiedTime: true});
 };
 
+/**
+ * Tests that dropping a folder on a directory tree item (folder) copies the
+ * folder and also updates the directory tree.
+ */
+testcase.transferDragAndDropFolder = async () => {
+  // Note that directoryB is a child of directoryA.
+  const entries = [ENTRIES.directoryA, ENTRIES.directoryB, ENTRIES.directoryD];
+
+  // Open files app.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, entries, []);
+
+  // Expand Downloads to display folder "D" in the directory tree.
+  await expandTreeItem(appId, '#directory-tree [entry-label="Downloads"]');
+
+  // The drag has to start in the file list column "name" text, otherwise it
+  // starts a drag-selection instead of a drag operation.
+  const source =
+      `#file-list li[file-name="${ENTRIES.directoryA.nameText}"] .entry-name`;
+
+  // Wait for the source.
+  await remoteCall.waitForElement(appId, source);
+
+  // Wait for the directory tree target.
+  const target =
+      `#directory-tree [entry-label="${ENTRIES.directoryD.nameText}"]`;
+  await remoteCall.waitForElement(appId, target);
+
+  // Drag the source and drop it on the target.
+  const skipDrop = false;
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil(
+          'fakeDragAndDrop', appId, [source, target, skipDrop]),
+      'fakeDragAndDrop failed');
+
+  // Check: the dropped folder "A" should appear in the directory tree under
+  // the target folder "D" and be expandable (as folder "A" contains "B").
+  await expandTreeItem(appId, target);
+  await expandTreeItem(
+      appId, target + ` [entry-label="${ENTRIES.directoryA.nameText}"]`);
+};
+
 /*
  * Tests that dragging a file over a directory tree item (folder) navigates
  * the file list to that folder.
@@ -988,8 +1029,7 @@ testcase.transferDeletedFile = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
 
   // Select the file.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [entry.nameText]));
+  await remoteCall.waitUntilSelected(appId, entry.nameText);
 
   // Copy the file.
   chrome.test.assertTrue(
@@ -1044,8 +1084,7 @@ testcase.transferInfoIsRemembered = async () => {
   let appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
 
   // Select the file.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [entry.nameText]));
+  await remoteCall.waitUntilSelected(appId, entry.nameText);
 
   // Copy the file.
   chrome.test.assertTrue(
@@ -1095,8 +1134,7 @@ testcase.transferToUsbHasDestinationText = async () => {
   await remoteCall.waitForElement(appId, USB_VOLUME_QUERY);
 
   // Select the file.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [entry.nameText]));
+  await remoteCall.waitUntilSelected(appId, entry.nameText);
 
   // Copy the file.
   chrome.test.assertTrue(
@@ -1138,8 +1176,7 @@ testcase.transferDismissedErrorIsRemembered = async () => {
   let appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
 
   // Select a file to copy.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [entry.nameText]));
+  await remoteCall.waitUntilSelected(appId, entry.nameText);
 
   // Copy the file.
   chrome.test.assertTrue(

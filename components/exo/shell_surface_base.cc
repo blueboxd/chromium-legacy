@@ -37,10 +37,12 @@
 #include "build/chromeos_buildflags.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
+#include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "chromeos/ui/base/window_pin_type.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
+#include "chromeos/ui/frame/multitask_menu/float_controller_base.h"
 #include "components/app_restore/app_restore_info.h"
 #include "components/app_restore/app_restore_utils.h"
 #include "components/app_restore/window_properties.h"
@@ -652,6 +654,17 @@ void ShellSurfaceBase::SetRestoreInfoWithWindowIdSource(
     restore_window_id_source_.emplace(restore_window_id_source);
 }
 
+void ShellSurfaceBase::SetFloat() {
+  // TODO(crbug.com/1347534): This currently can unset float as well, but its
+  // necessary until configure request is ready otherwise the window will remain
+  // floated forever.
+  chromeos::FloatControllerBase::Get()->ToggleFloat(widget_->GetNativeWindow());
+}
+
+void ShellSurfaceBase::UnsetFloat() {
+  chromeos::FloatControllerBase::Get()->ToggleFloat(widget_->GetNativeWindow());
+}
+
 void ShellSurfaceBase::SetDisplay(int64_t display_id) {
   TRACE_EVENT1("exo", "ShellSurfaceBase::SetDisplay", "display_id", display_id);
 
@@ -1249,6 +1262,10 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.show_state = show_state;
+
+  if (initial_z_order_.has_value())
+    params.z_order = initial_z_order_.value();
+
   if (initial_workspace_.has_value()) {
     const std::string kToggleVisibleOnAllWorkspacesValue = "-1";
     if (initial_workspace_ == kToggleVisibleOnAllWorkspacesValue) {
@@ -1356,7 +1373,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   // is done. Without the fix, window_state can be null when  it is tooltip and
   // the parent window is menu, so add null check of `window_state` here.
   if (!is_menu_ && window_state)
-    InitializeWindowState(ash::WindowState::Get(window));
+    InitializeWindowState(window_state);
 
   SetShellUseImmersiveForFullscreen(window, immersive_implied_by_fullscreen_);
 
@@ -1405,12 +1422,21 @@ bool ShellSurfaceBase::IsResizing() const {
           ash::WindowResizer::kBoundsChange_Resizes);
 }
 
+gfx::Rect ShellSurfaceBase::ComputeAdjustedBounds(
+    const gfx::Rect& bounds) const {
+  return bounds;
+}
+
 void ShellSurfaceBase::UpdateWidgetBounds() {
   DCHECK(widget_);
 
   absl::optional<gfx::Rect> bounds = GetWidgetBounds();
-  if (bounds && overlay_widget_) {
-    gfx::Rect content_bounds(bounds->size());
+  if (!bounds)
+    return;
+  gfx::Rect adjusted_bounds = ComputeAdjustedBounds(*bounds);
+
+  if (overlay_widget_) {
+    gfx::Rect content_bounds(adjusted_bounds.size());
     int height = 0;
     if (!overlay_overlaps_frame_ && frame_enabled()) {
       auto* frame_view = static_cast<const ash::NonClientFrameViewAsh*>(
@@ -1441,8 +1467,7 @@ void ShellSurfaceBase::UpdateWidgetBounds() {
       return;
   }
 
-  if (bounds)
-    SetWidgetBounds(*bounds);
+  SetWidgetBounds(adjusted_bounds, adjusted_bounds != *bounds);
 }
 
 void ShellSurfaceBase::UpdateSurfaceBounds() {
@@ -1527,7 +1552,7 @@ void ShellSurfaceBase::UpdateCornerRadius() {
     ash::SetCornerRadius(
         window_state->window(), host_window()->layer(),
         window_state->IsPip()
-            ? base::ClampRound(GetScale() * ash::kPipRoundedCornerRadius)
+            ? base::ClampRound(GetScale() * chromeos::kPipRoundedCornerRadius)
             : 0);
   }
 }
@@ -1799,6 +1824,17 @@ void ShellSurfaceBase::SetOrientationLock(
 #else
   NOTREACHED();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+
+void ShellSurfaceBase::SetZOrder(ui::ZOrderLevel z_order) {
+  // If there is already a widget, we can immediately set its z order.
+  if (widget_) {
+    widget_->SetZOrderLevel(z_order);
+    return;
+  }
+
+  // Otherwise, we want to save `z_order` for when `widget_` is initialized.
+  initial_z_order_ = z_order;
 }
 
 }  // namespace exo

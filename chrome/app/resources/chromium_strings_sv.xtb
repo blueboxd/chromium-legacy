@@ -149,7 +149,6 @@ Behörigheter som du redan har gett webbplatser och appar kan gälla för det h�
 <translation id="4415566066719264597">Låt Chromium köras i bakgrunden</translation>
 <translation id="4423735387467980091">Anpassa och kontrollera Chromium</translation>
 <translation id="4427306783828095590">Förbättrat skydd är bättre på att blockera nätfiske och skadlig programvara</translation>
-<translation id="4440114195512068100">Om du vill se om enheten är uppdaterad öppnar du <ph name="LINK_BEGIN" />inställningarna för Chromium OS<ph name="LINK_END" /></translation>
 <translation id="452711251841752011">Välkommen till Chromium, ett nytt webbläsarfönster har öppnats</translation>
 <translation id="4544142686420020088">Ett fel uppstod och Chromium uppdaterades inte. <ph name="BEGIN_LINK" />Åtgärda uppdateringsproblem och misslyckade uppdateringar i Chromium<ph name="END_LINK" />.</translation>
 <translation id="454579500955453258">Vill du fortsätta med en ny Chromium-profil?</translation>
@@ -314,8 +313,6 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />Så här kan du hantera dina uppgifter:<ph name="END_BOLD" /> För att skydda din integritet raderar vi automatiskt intressen som är äldre än fyra veckor. Medan du surfar kan ett intresse dyka upp på listan igen. Du kan också ta bort intressen som du inte vill att Chromium ska inkludera.</translation>
 <translation id="7937630085815544518">Du var inloggad i Chromium som <ph name="USER_EMAIL_ADDRESS" />. Använd samma konto när du loggar in igen.</translation>
 <translation id="7975919845073681630">Det här är en sekundär installation av Chromium. Det går inte att göra den till standardwebbläsare.</translation>
-<translation id="7982481011030453202">Om en inställning saknas på den här sidan tittar du i <ph name="LINK_BEGIN" />
-      inställningarna för Chromium OS<ph name="LINK_END" /></translation>
 <translation id="7997934263947464652">Tillägg, appar och teman från okända källor kan skada enheten. Vi rekommenderar att du bara installerar dem från <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /></translation>
 <translation id="8013436988911883588">När du har gett Chromium åtkomst kan webbplatser begära att få åtkomst.</translation>
 <translation id="80471789339884597">Tack för att du installerat programmet. Du måste starta om alla webbläsare innan du använder <ph name="BUNDLE_NAME" />.</translation>

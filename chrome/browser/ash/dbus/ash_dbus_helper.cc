@@ -5,7 +5,6 @@
 #include "chrome/browser/ash/dbus/ash_dbus_helper.h"
 
 #include "ash/components/cryptohome/system_salt_getter.h"
-#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_paths.h"
 #include "ash/webui/shimless_rma/shimless_rma.h"
@@ -36,8 +35,11 @@
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/ash/components/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/ash/components/dbus/cups_proxy/cups_proxy_client.h"
+#include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
+#include "chromeos/ash/components/dbus/easy_unlock/easy_unlock_client.h"
 #include "chromeos/ash/components/dbus/federated/federated_client.h"
 #include "chromeos/ash/components/dbus/fusebox/fusebox_reverse_client.h"
+#include "chromeos/ash/components/dbus/fwupd/fwupd_client.h"
 #include "chromeos/ash/components/dbus/gnubby/gnubby_client.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_clients.h"
 #include "chromeos/ash/components/dbus/human_presence/human_presence_dbus_client.h"
@@ -57,6 +59,7 @@
 #include "chromeos/ash/components/dbus/runtime_probe/runtime_probe_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_clients.h"
 #include "chromeos/ash/components/dbus/smbprovider/smb_provider_client.h"
 #include "chromeos/ash/components/dbus/spaced/spaced_client.h"
 #include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
@@ -72,13 +75,11 @@
 #include "chromeos/ash/components/dbus/virtual_file_provider/virtual_file_provider_client.h"
 #include "chromeos/ash/components/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher_client.h"
 #include "chromeos/ash/components/hibernate/buildflags.h"  // ENABLE_HIBERNATE
+#include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
-#include "chromeos/dbus/easy_unlock/easy_unlock_client.h"
-#include "chromeos/dbus/fwupd/fwupd_client.h"
 #include "chromeos/dbus/init/initialize_dbus_client.h"
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
 #include "chromeos/dbus/missive/missive_client.h"
@@ -129,6 +130,8 @@ void InitializeDBus() {
   // Initialize Chrome dbus clients.
   dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
 
+  shill_clients::Initialize(bus);
+
   // NOTE: base::Feature is not initialized yet, so any non MultiProcessMash
   // dbus client initialization for Ash should be done in Shell::Init.
   InitializeDBusClient<AnomalyDetectorClient>(bus);
@@ -161,7 +164,7 @@ void InitializeDBus() {
   InitializeDBusClient<EasyUnlockClient>(bus);
   InitializeDBusClient<FederatedClient>(bus);
   InitializeDBusClient<FuseBoxReverseClient>(bus);
-  InitializeDBusClient<chromeos::FwupdClient>(bus);
+  InitializeDBusClient<FwupdClient>(bus);
   InitializeDBusClient<GnubbyClient>(bus);
   hermes_clients::Initialize(bus);
 #if BUILDFLAG(ENABLE_HIBERNATE)
@@ -295,7 +298,7 @@ void ShutdownDBus() {
 #endif
   hermes_clients::Shutdown();
   GnubbyClient::Shutdown();
-  chromeos::FwupdClient::Shutdown();
+  FwupdClient::Shutdown();
   FuseBoxReverseClient::Shutdown();
   FederatedClient::Shutdown();
   EasyUnlockClient::Shutdown();
@@ -325,6 +328,7 @@ void ShutdownDBus() {
   ArcAppfuseProviderClient::Shutdown();
   AnomalyDetectorClient::Shutdown();
 
+  shill_clients::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
   chromeos::SystemSaltGetter::Shutdown();
 }

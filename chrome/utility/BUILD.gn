@@ -79,6 +79,10 @@ static_library("utility") {
     ]
   }
 
+  if (!is_ios && !is_android) {
+    deps += [ "//components/password_manager/services/password_strength:lib" ]
+  }
+
   if (is_mac) {
     deps += [ "//chrome/services/mac_notifications" ]
   }
@@ -166,10 +170,13 @@ static_library("utility") {
       ldflags += [ "/DELAYLOAD:esent.dll" ]
 
       deps += [
-        "//chrome/services/system_signals/win",
         "//chrome/services/util_win:lib",
         "//components/device_signals/core/common/mojom",
       ]
+    }
+
+    if (is_win || is_mac || is_linux) {
+      deps += [ "//chrome/services/system_signals" ]
     }
   }
 

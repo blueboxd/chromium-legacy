@@ -8,8 +8,8 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,8 +37,7 @@ void OnGetProperties(bool* success_out,
 std::string GetAlwaysOnPackageName() {
   bool success = false;
   std::string package_name;
-  chromeos::ShillManagerClient* shill_manager =
-      chromeos::ShillManagerClient::Get();
+  ash::ShillManagerClient* shill_manager = ash::ShillManagerClient::Get();
   base::RunLoop run_loop;
   shill_manager->GetProperties(
       base::BindOnce(&OnGetProperties, base::Unretained(&success),
@@ -68,7 +67,7 @@ class AlwaysOnVpnManagerTest : public testing::Test {
 
  private:
   content::BrowserTaskEnvironment task_environment_;
-  chromeos::NetworkHandlerTestHelper network_handler_test_helper_;
+  ash::NetworkHandlerTestHelper network_handler_test_helper_;
   TestingPrefServiceSimple pref_service_;
 };
 

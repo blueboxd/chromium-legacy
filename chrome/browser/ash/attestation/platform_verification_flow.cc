@@ -7,8 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/components/attestation/attestation_flow.h"
-#include "ash/components/attestation/attestation_flow_adaptive.h"
 #include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
@@ -23,9 +21,11 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/ash/components/attestation/attestation_flow.h"
+#include "chromeos/ash/components/attestation/attestation_flow_adaptive.h"
+#include "chromeos/ash/components/dbus/attestation/attestation.pb.h"
 #include "chromeos/ash/components/dbus/attestation/attestation_client.h"
 #include "chromeos/ash/components/dbus/attestation/interface.pb.h"
-#include "chromeos/dbus/attestation/attestation.pb.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -305,7 +305,7 @@ void PlatformVerificationFlow::OnChallengeReady(
     ReportError(std::move(context).callback, INTERNAL_ERROR);
     return;
   }
-  chromeos::attestation::SignedData signed_data_pb;
+  SignedData signed_data_pb;
   if (reply.challenge_response().empty() ||
       !signed_data_pb.ParseFromString(reply.challenge_response())) {
     LOG(ERROR) << "PlatformVerificationFlow: Failed to parse response data.";

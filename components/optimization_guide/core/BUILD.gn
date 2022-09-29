@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD - style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
+
 if (is_android) {
   import("//build/config/android/rules.gni")
 }
@@ -77,6 +79,12 @@ static_library("model_executor") {
     "//net",
     "//url",
   ]
+}
+
+mojom("interfaces") {
+  sources = [ "optimization_guide_common.mojom" ]
+  webui_module_path = "/"
+  public_deps = [ "//mojo/public/mojom/base" ]
 }
 
 if (build_with_tflite_lib) {
@@ -173,6 +181,7 @@ static_library("core") {
     "prediction_model_fetcher.h",
     "prediction_model_fetcher_impl.cc",
     "prediction_model_fetcher_impl.h",
+    "push_notification_manager.cc",
     "push_notification_manager.h",
     "store_update_data.cc",
     "store_update_data.h",
@@ -212,6 +221,7 @@ static_library("core") {
     ":model_executor",
     "//components/leveldb_proto",
     "//components/optimization_guide:machine_learning_tflite_buildflags",
+    "//components/optimization_guide/core:interfaces",
     "//third_party/re2",
   ]
   if (build_with_tflite_lib) {
@@ -229,6 +239,7 @@ static_library("core") {
   deps = [
     ":bloomfilter",
     "//base",
+    "//components/optimization_guide/core:interfaces",
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/prefs",
     "//components/unified_consent",
@@ -368,6 +379,7 @@ source_set("unit_tests") {
     "prediction_manager_unittest.cc",
     "prediction_model_download_manager_unittest.cc",
     "prediction_model_fetcher_unittest.cc",
+    "push_notification_manager_unittest.cc",
     "store_update_data_unittest.cc",
     "url_pattern_with_wildcards_unittest.cc",
   ]

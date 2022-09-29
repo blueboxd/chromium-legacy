@@ -9,7 +9,7 @@
 #include "base/metrics/histogram_macros_local.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_url_loader_interceptor.h"
+#include "chrome/browser/preloading/prefetch/prefetch_proxy/prefetch_proxy_url_loader_interceptor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
@@ -62,6 +62,17 @@ PrefetchProxyPageLoadMetricsObserver::OnFencedFramesStart(
   // All observing events are preprocessed by PageLoadTracker so that the
   // outermost page's observer instance sees gathered information. So, the
   // instance for FencedFrames doesn't need to do anything.
+  return STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+PrefetchProxyPageLoadMetricsObserver::OnPrerenderStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  // Prefetch proxy is used for privacy preserrving prefetch, and the feature
+  // and prerendering are exclusive in speculationrules. So, prerendering
+  // doesn't use the proxy, and this class just stops observing here. It's just
+  // interested in primary main page's performance with the prefetch proxy.
   return STOP_OBSERVING;
 }
 

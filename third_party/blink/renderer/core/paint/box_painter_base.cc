@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/box_painter_base.h"
 
+#include "base/containers/adapters.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/css/background_color_paint_image_generator.h"
@@ -54,9 +55,8 @@ void BoxPainterBase::PaintFillLayers(const PaintInfo& paint_info,
   if (should_draw_background_in_separate_buffer)
     context.BeginLayer();
 
-  for (auto it = reversed_paint_list.rbegin(); it != reversed_paint_list.rend();
-       ++it) {
-    PaintFillLayer(paint_info, c, **it, rect, bleed, geometry);
+  for (auto* const paint : base::Reversed(reversed_paint_list)) {
+    PaintFillLayer(paint_info, c, *paint, rect, bleed, geometry);
   }
 
   if (should_draw_background_in_separate_buffer)
@@ -112,8 +112,8 @@ bool CanCompositeBackgroundColorAnimation(Node* node) {
   if (!generator)
     return false;
 
-  Animation* animation =
-      generator->GetAnimationIfCompositable(static_cast<Element*>(node));
+  Element* element = DynamicTo<Element>(node);
+  Animation* animation = generator->GetAnimationIfCompositable(element);
   if (!animation)
     return false;
 
@@ -172,11 +172,13 @@ void BoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
         style.UsedColorScheme());
     // DarkModeFilter::ApplyToFlagsIfNeeded does not apply dark mode to the draw
     // looper used for shadows so we need to apply dark mode to the color here.
-    const Color& shadow_color =
-        style.ForceDark() ? context.GetDarkModeFilter()->InvertColorIfNeeded(
-                                resolved_shadow_color.Rgb(),
-                                DarkModeFilter::ElementRole::kBackground)
-                          : resolved_shadow_color;
+    const Color shadow_color =
+        style.ForceDark()
+            ? Color::FromSkColor(
+                  context.GetDarkModeFilter()->InvertColorIfNeeded(
+                      SkColor(resolved_shadow_color),
+                      DarkModeFilter::ElementRole::kBackground))
+            : resolved_shadow_color;
 
     gfx::RectF fill_rect = border.Rect();
     fill_rect.Outset(shadow_spread);
@@ -323,10 +325,12 @@ void BoxPainterBase::PaintInsetBoxShadow(const PaintInfo& info,
     // DarkModeFilter::ApplyToFlagsIfNeeded does not apply dark mode to the draw
     // looper used for shadows so we need to apply dark mode to the color here.
     const Color& shadow_color =
-        style.ForceDark() ? context.GetDarkModeFilter()->InvertColorIfNeeded(
-                                resolved_shadow_color.Rgb(),
-                                DarkModeFilter::ElementRole::kBackground)
-                          : resolved_shadow_color;
+        style.ForceDark()
+            ? Color::FromSkColor(
+                  context.GetDarkModeFilter()->InvertColorIfNeeded(
+                      SkColor(resolved_shadow_color),
+                      DarkModeFilter::ElementRole::kBackground))
+            : resolved_shadow_color;
 
     gfx::RectF inner_rect = bounds.Rect();
     AdjustInnerRectForSideClipping(inner_rect, shadow, sides_to_include);
@@ -682,20 +686,17 @@ bool PaintBGColorWithPaintWorklet(const Document* document,
   switch (status) {
     case CompositedPaintStatus::kNotComposited:
       // Once an animation has been downgraded to run on the main thread, it
-      // cannot restart on the compositor without an pending animation update.
+      // cannot restart on the compositor without a pending animation update.
       return false;
 
     case CompositedPaintStatus::kNeedsRepaintOrNoAnimation:
+    case CompositedPaintStatus::kComposited:
       if (CanCompositeBackgroundColorAnimation(node)) {
         SetHasNativeBackgroundPainter(node, true);
       } else {
         SetHasNativeBackgroundPainter(node, false);
         return false;
       }
-      break;
-
-    case CompositedPaintStatus::kComposited:
-      DCHECK(CanCompositeBackgroundColorAnimation(node));
   }
 
   scoped_refptr<Image> paint_worklet_image =

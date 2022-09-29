@@ -5,8 +5,8 @@
 import './webui_command_extender.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {Command} from 'chrome://resources/js/cr/ui/command.m.js';
-import {contextMenuHandler} from 'chrome://resources/js/cr/ui/context_menu_handler.m.js';
+import {Command} from 'chrome://resources/js/cr/ui/command.js';
+import {contextMenuHandler} from 'chrome://resources/js/cr/ui/context_menu_handler.js';
 import {List} from 'chrome://resources/js/cr/ui/list.m.js';
 
 import {getHoldingSpaceState, startIOTask} from '../../common/js/api.js';
@@ -1180,6 +1180,12 @@ CommandHandler.deleteCommand_ = new (class extends FilesCommand {
     if (!permanentlyDelete &&
         fileManager.fileOperationManager.willUseTrash(
             fileManager.volumeManager, entries)) {
+      if (window.isSWA) {
+        chrome.fileManagerPrivate.startIOTask(
+            chrome.fileManagerPrivate.IOTaskType.TRASH, entries,
+            /*params=*/ {});
+        return;
+      }
       fileManager.fileOperationManager.deleteEntries(entries);
       return;
     }
@@ -1292,8 +1298,10 @@ CommandHandler.registerUndoDeleteToast = function(fileManager) {
     });
   };
 
-  util.addEventListenerToBackgroundComponent(
-      assert(fileManager.fileOperationManager), 'delete', onDeleted);
+  if (!window.isSWA) {
+    util.addEventListenerToBackgroundComponent(
+        assert(fileManager.fileOperationManager), 'delete', onDeleted);
+  }
 };
 
 /**
@@ -1307,6 +1315,18 @@ CommandHandler.COMMANDS_['restore-from-trash'] =
       execute(event, fileManager) {
         const entries =
             CommandUtil.getCommandEntries(fileManager, event.target);
+
+        if (window.isSWA) {
+          const infoEntries = entries.map(e => {
+            const entry = /** @type {!TrashEntry} */ (e);
+            return entry.infoEntry;
+          });
+          startIOTask(
+              chrome.fileManagerPrivate.IOTaskType.RESTORE, infoEntries,
+              /*params=*/ {});
+          return;
+        }
+
         fileManager.fileOperationManager.restoreDeleted(entries.map(e => {
           return /** @type {!TrashEntry} */ (e);
         }));
@@ -1994,6 +2014,53 @@ CommandHandler.COMMANDS_['get-info'] = new (class extends FilesCommand {
     event.command.setHidden(false);
   }
 })();
+
+/**
+ * Displays the Data Leak Prevention (DLP) Restriction details.
+ */
+CommandHandler.COMMANDS_['dlp-restriction-details'] =
+    new (class extends FilesCommand {
+      execute(event, fileManager) {
+        const entries = fileManager.getSelection().entries;
+
+        const metadata =
+            fileManager.metadataModel.getCache(entries, ['sourceUrl']);
+        if (!metadata || metadata.length !== 1) {
+          return;
+        }
+        // TODO(crbug.com/1346254): Get the details and show the modal with the
+        // returned information.
+      }
+
+      /** @override */
+      canExecute(event, fileManager) {
+        if (!util.isDlpEnabled()) {
+          event.canExecute = false;
+          event.command.setHidden(true);
+          return;
+        }
+
+        const entries = fileManager.getSelection().entries;
+
+        // Show this item only when one file is selected.
+        if (entries.length !== 1) {
+          event.canExecute = false;
+          event.command.setHidden(true);
+          return;
+        }
+
+        const metadata =
+            fileManager.metadataModel.getCache(entries, ['isDlpRestricted']);
+        if (!metadata || metadata.length !== 1) {
+          event.canExecute = false;
+          event.command.setHidden(true);
+        }
+
+        const isDlpRestricted = metadata[0].isDlpRestricted;
+        event.canExecute = isDlpRestricted;
+        event.command.setHidden(!isDlpRestricted);
+      }
+    })();
 
 /**
  * Focuses search input box.
@@ -3031,6 +3098,8 @@ CommandHandler.COMMANDS_['volume-storage'] = new (class extends FilesCommand {
             VolumeManagerCommon.VolumeType.DOWNLOADS ||
         currentVolumeInfo.volumeType ==
             VolumeManagerCommon.VolumeType.CROSTINI ||
+        currentVolumeInfo.volumeType ==
+            VolumeManagerCommon.VolumeType.GUEST_OS ||
         currentVolumeInfo.volumeType ==
             VolumeManagerCommon.VolumeType.ANDROID_FILES ||
         currentVolumeInfo.volumeType ==

@@ -110,6 +110,8 @@ enum class MessageIdentifier {
   OFFER_NOTIFICATION = 30,
   EXTERNAL_NAVIGATION = 31,
   FRAMEBUST_BLOCKED = 32,
+  DESKTOP_SITE_GLOBAL_DEFAULT_OPT_OUT = 33,
+  DESKTOP_SITE_GLOBAL_OPT_IN = 34,
 
   // Insert new values before this line.
   COUNT

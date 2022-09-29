@@ -26,6 +26,8 @@ aggregate_vector_icons("views_vector_icons") {
     "checkbox_active.icon",
     "checkbox_normal.icon",
     "close.icon",
+    "drag_general_selection.icon",
+    "drag_image_selection.icon",
     "ic_close.icon",
     "info.icon",
     "launch.icon",
@@ -500,7 +502,12 @@ component("views") {
   ]
 
   sources += get_target_outputs(":views_vector_icons")
-  configs += [ "//build/config:precompiled_headers" ]
+
+  configs += [
+    "//build/config:precompiled_headers",
+    "//build/config/compiler:prevent_unsafe_narrowing",
+  ]
+
   defines = [ "VIEWS_IMPLEMENTATION" ]
 
   deps = [
@@ -594,6 +601,7 @@ component("views") {
 
   if (is_mac) {
     public += [
+      "cocoa/immersive_mode_delegate_mac.h",
       "cocoa/native_widget_mac_ns_window_host.h",
       "controls/menu/menu_closure_animation_mac.h",
       "controls/menu/menu_cocoa_watcher_mac.h",
@@ -1098,6 +1106,7 @@ test("views_unittests") {
   use_xvfb = use_xvfb_in_this_config
 
   sources = [
+    "accessibility/accessibility_paint_checks_unittest.cc",
     "accessible_pane_view_unittest.cc",
     "animation/animation_builder_unittest.cc",
     "animation/bounds_animator_unittest.cc",
@@ -1335,15 +1344,15 @@ test("views_unittests") {
   }
 
   if (is_fuchsia) {
-    use_cfv2 = false
+    use_cfv1 = false
+
+    # These tests use SwiftShader (crbug.com/1022542), which uses JIT.
+    test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
+
     additional_manifest_fragments = [
-      "//build/config/fuchsia/test/font_capabilities.test-cmx",
-
-      # These tests use SwiftShader (crbug.com/1022542), which uses JIT.
-      "//build/config/fuchsia/test/jit_capabilities.test-cmx",
-
-      "//build/config/fuchsia/test/present_view_capabilities.test-cmx",
-      "//build/config/fuchsia/test/vulkan_capabilities.test-cmx",
+      "//build/config/fuchsia/test/fonts.shard.test-cml",
+      "//build/config/fuchsia/test/present_view.shard.test-cml",
+      "//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml",
     ]
   }
 

@@ -18,17 +18,17 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
-#include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
-#include "chromeos/dbus/shill/shill_ipconfig_client.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_clients.h"
+#include "chromeos/ash/components/dbus/shill/shill_device_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_ipconfig_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "dbus/object_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -86,7 +86,7 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
   void UpdateIPConfigProperties(ManagedState::ManagedType type,
                                 const std::string& path,
                                 const std::string& ip_config_path,
-                                const base::Value& properties) override {
+                                base::Value properties) override {
     AddPropertyUpdate(shill::kIPConfigsProperty, ip_config_path);
   }
 
@@ -632,4 +632,4 @@ TEST_F(ShillPropertyHandlerTest, RequestTrafficCounters) {
   run_loop.Run();
 }
 
-}  // namespace chromeos
+}  // namespace ash

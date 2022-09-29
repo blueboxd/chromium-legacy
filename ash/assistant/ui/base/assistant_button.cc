@@ -7,12 +7,15 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/base/assistant_button_listener.h"
 #include "ash/assistant/util/histogram_util.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
-#include "ash/public/cpp/style/color_provider.h"
 #include "ash/public/cpp/style/scoped_light_mode_as_default.h"
+#include "ash/style/ash_color_id.h"
+#include "ash/style/style_util.h"
 #include "base/bind.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -54,7 +57,6 @@ AssistantButton::AssistantButton(AssistantButtonListener* listener,
   SetHasInkDropActionOnClick(true);
   views::InkDrop::UseInkDropForFloodFillRipple(views::InkDrop::Get(this),
                                                /*highlight_on_hover=*/false);
-  UpdateInkDropColors();
   views::InstallCircleHighlightPathGenerator(this, gfx::Insets(kInkDropInset));
 
   // Image.
@@ -84,25 +86,29 @@ std::unique_ptr<AssistantButton> AssistantButton::Create(
         l10n_util::GetStringUTF16(params.tooltip_id.value()));
   }
 
-  ScopedAssistantLightModeAsDefault scoped_assistant_light_mode_as_default;
+  button->SetPreferredSize(gfx::Size(params.size_in_dip, params.size_in_dip));
+
   gfx::IconDescription icon_description(icon, params.icon_size_in_dip,
                                         gfx::kPlaceholderColor);
-  icon_description.color = params.icon_color_type.has_value()
-                               ? ColorProvider::Get()->GetContentLayerColor(
-                                     params.icon_color_type.value())
-                               : params.icon_color;
 
   if (params.icon_color_type.has_value()) {
+    // If we have an `icon_color_type`, that color needs to be resolved in
+    // OnThemeChanged(). Since we can't do anything else now, just set the data
+    // and return the button.
     button->icon_color_type_ = params.icon_color_type.value();
     // We cannot copy IconDescription as copy assignment operator of
     // IconDescription is deleted since it has a non-static reference member,
     // icon.
     button->icon_description_.emplace(icon_description);
+    return button;
   }
+
+  // `icon_color` does not change so we can set the color and icon for the
+  // button now.
+  icon_description.color = params.icon_color;
 
   button->SetImage(views::Button::STATE_NORMAL,
                    gfx::CreateVectorIcon(icon_description));
-  button->SetPreferredSize(gfx::Size(params.size_in_dip, params.size_in_dip));
   return button;
 }
 
@@ -133,8 +139,8 @@ void AssistantButton::OnPaintBackground(gfx::Canvas* canvas) {
   if (should_show_focus_ring) {
     cc::PaintFlags circle_flags;
     circle_flags.setAntiAlias(true);
-    circle_flags.setColor(ColorProvider::Get()->GetControlsLayerColor(
-        ColorProvider::ControlsLayerType::kFocusRingColor));
+    circle_flags.setColor(
+        GetColorProvider()->GetColor(cros_tokens::kFocusRingColor));
     circle_flags.setStyle(cc::PaintFlags::kStroke_Style);
     circle_flags.setStrokeWidth(kFocusRingStrokeWidth);
     canvas->DrawCircle(GetLocalBounds().CenterPoint(),
@@ -145,14 +151,24 @@ void AssistantButton::OnPaintBackground(gfx::Canvas* canvas) {
 void AssistantButton::OnThemeChanged() {
   views::View::OnThemeChanged();
 
-  UpdateInkDropColors();
+  // Updates inkdrop color and opacity.
+  const bool is_enabled = features::IsProductivityLauncherEnabled();
+  const bool base_color =
+      is_enabled ? GetColorProvider()->GetColor(kColorAshInkDropOpaqueColor)
+                 : SK_ColorBLACK;
+  const float opacity = is_enabled ? StyleUtil::GetInkDropOpacity()
+                                   : StyleUtil::kDarkInkDropOpacity;
+
+  auto* ink_drop = views::InkDrop::Get(this);
+  ink_drop->SetBaseColor(base_color);
+  ink_drop->SetVisibleOpacity(opacity);
 
   if (!icon_color_type_.has_value() || !icon_description_.has_value())
     return;
 
-  ScopedAssistantLightModeAsDefault scoped_assistant_light_mode_as_default;
-  icon_description_->color =
-      ColorProvider::Get()->GetContentLayerColor(icon_color_type_.value());
+  // This might be the first time the image is rendered since `icon_color_type_`
+  // may not resolvable until now.
+  icon_description_->color = GetColorProvider()->GetColor(*icon_color_type_);
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(icon_description_.value()));
 }
@@ -160,15 +176,6 @@ void AssistantButton::OnThemeChanged() {
 void AssistantButton::OnButtonPressed() {
   assistant::util::IncrementAssistantButtonClickCount(id_);
   listener_->OnButtonPressed(id_);
-}
-
-void AssistantButton::UpdateInkDropColors() {
-  ScopedAssistantLightModeAsDefault scoped_assistant_light_mode_as_default;
-
-  std::pair<SkColor, float> base_color_and_opacity =
-      ColorProvider::Get()->GetInkDropBaseColorAndOpacity();
-  views::InkDrop::Get(this)->SetBaseColor(base_color_and_opacity.first);
-  views::InkDrop::Get(this)->SetVisibleOpacity(base_color_and_opacity.second);
 }
 
 BEGIN_METADATA(AssistantButton, views::ImageButton)

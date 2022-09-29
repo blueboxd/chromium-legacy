@@ -32,12 +32,6 @@ typedef std::map<ServerFieldType, AutofillDataModel::ValidityState>
 
 class AutofillField : public FormFieldData {
  public:
-  enum PhonePart {
-    IGNORED = 0,
-    PHONE_PREFIX = 1,
-    PHONE_SUFFIX = 2,
-  };
-
   AutofillField();
   explicit AutofillField(const FormFieldData& field);
 
@@ -70,7 +64,6 @@ class AutofillField : public FormFieldData {
   const ServerFieldTypeValidityStatesMap& possible_types_validities() const {
     return possible_types_validities_;
   }
-  PhonePart phone_part() const { return phone_part_; }
   bool previously_autofilled() const { return previously_autofilled_; }
   const std::u16string& parseable_name() const { return parseable_name_; }
   const std::u16string& parseable_label() const { return parseable_label_; }
@@ -128,9 +121,9 @@ class AutofillField : public FormFieldData {
   // (i.e. overall_type_ != NO_SERVER_DATA ? overall_type_ : ComputedType())
   AutofillType Type() const;
 
-  // This function automatically chooses between server and heuristic autofill
-  // type, depending on the data available for this field alone.
-  // This type does not take into account the rationalization involving the
+  // This function automatically chooses among the Autofill server, heuristic
+  // and html type, depending on the data available for this field alone. This
+  // type does not take into account the rationalization involving the
   // surrounding fields.
   AutofillType ComputedType() const;
 
@@ -274,9 +267,6 @@ class AutofillField : public FormFieldData {
 
   // The set of possible types and their validity for this field.
   ServerFieldTypeValidityStatesMap possible_types_validities_;
-
-  // Used to track whether this field is a phone prefix or suffix.
-  PhonePart phone_part_ = IGNORED;
 
   // A low-entropy hash of the field's initial value before user-interactions or
   // automatic fillings. This field is used to detect static placeholders.

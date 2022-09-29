@@ -103,6 +103,15 @@ SkColor AppListColorProviderImpl::GetSearchBoxSecondaryTextColor(
   return default_color;
 }
 
+SkColor AppListColorProviderImpl::GetSearchBoxSuggestionTextColor(
+    SkColor default_color) const {
+  if (ShouldUseDarkLightColors()) {
+    return ash_color_provider_->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kTextColorSuggestion);
+  }
+  return default_color;
+}
+
 SkColor AppListColorProviderImpl::GetSuggestionChipBackgroundColor() const {
   if (ShouldUseDarkLightColors()) {
     if (IsTabletModeEnabled()) {
@@ -250,18 +259,6 @@ SkColor AppListColorProviderImpl::GetInkDropBaseColor(SkColor bg_color) const {
 
 float AppListColorProviderImpl::GetInkDropOpacity(SkColor bg_color) const {
   return ash_color_provider_->GetInkDropBaseColorAndOpacity(bg_color).second;
-}
-
-SkColor AppListColorProviderImpl::GetInvertedInkDropBaseColor(
-    SkColor bg_color) const {
-  return ash_color_provider_->GetInvertedInkDropBaseColorAndOpacity(bg_color)
-      .first;
-}
-
-float AppListColorProviderImpl::GetInvertedInkDropOpacity(
-    SkColor bg_color) const {
-  return ash_color_provider_->GetInvertedInkDropBaseColorAndOpacity(bg_color)
-      .second;
 }
 
 SkColor AppListColorProviderImpl::GetSearchResultViewHighlightColor() const {

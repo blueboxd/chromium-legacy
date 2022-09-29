@@ -108,42 +108,57 @@ WebAppProto::CaptureLinks CaptureLinksToProto(
   }
 }
 
-LaunchHandler::RouteTo ProtoToLaunchHandlerRouteTo(
-    const LaunchHandlerProto::RouteTo& route_to,
-    const LaunchHandlerProto::NavigateExistingClient&
-        navigate_existing_client) {
-  switch (route_to) {
-    case LaunchHandlerProto_RouteTo_UNSPECIFIED_ROUTE:
-    case LaunchHandlerProto_RouteTo_AUTO:
-      return LaunchHandler::RouteTo::kAuto;
-    case LaunchHandlerProto_RouteTo_NEW_CLIENT:
-      return LaunchHandler::RouteTo::kNewClient;
-    case LaunchHandlerProto_RouteTo_DEPRECATED_EXISTING_CLIENT:
-      // route_to: existing-client and navigate_existing_client were removed in
-      // favor of existing-client-navigate and existing-client-retain.
-      if (navigate_existing_client ==
-          LaunchHandlerProto_NavigateExistingClient_NEVER) {
-        return LaunchHandler::RouteTo::kExistingClientRetain;
+LaunchHandler::ClientMode ProtoLaunchHandlerToLaunchHandlerClientMode(
+    LaunchHandlerProto::DeprecatedRouteTo route_to,
+    LaunchHandlerProto::DeprecatedNavigateExistingClient
+        navigate_existing_client,
+    LaunchHandlerProto::ClientMode client_mode) {
+  switch (client_mode) {
+    case LaunchHandlerProto_ClientMode_AUTO:
+      return LaunchHandler::ClientMode::kAuto;
+    case LaunchHandlerProto_ClientMode_NAVIGATE_NEW:
+      return LaunchHandler::ClientMode::kNavigateNew;
+    case LaunchHandlerProto_ClientMode_NAVIGATE_EXISTING:
+      return LaunchHandler::ClientMode::kNavigateExisting;
+    case LaunchHandlerProto_ClientMode_FOCUS_EXISTING:
+      return LaunchHandler::ClientMode::kFocusExisting;
+    case LaunchHandlerProto_ClientMode_UNSPECIFIED_CLIENT_MODE: {
+      // route_to was removed in favor of client_mode, fall back to it if client
+      // mode is unset.
+      switch (route_to) {
+        case LaunchHandlerProto_DeprecatedRouteTo_UNSPECIFIED_ROUTE:
+        case LaunchHandlerProto_DeprecatedRouteTo_AUTO_ROUTE:
+          return LaunchHandler::ClientMode::kAuto;
+        case LaunchHandlerProto_DeprecatedRouteTo_NEW_CLIENT:
+          return LaunchHandler::ClientMode::kNavigateNew;
+        case LaunchHandlerProto_DeprecatedRouteTo_EXISTING_CLIENT:
+          // route_to: existing-client and navigate_existing_client were removed
+          // in favor of existing-client-navigate and existing-client-retain.
+          if (navigate_existing_client ==
+              LaunchHandlerProto_DeprecatedNavigateExistingClient_NEVER) {
+            return LaunchHandler::ClientMode::kFocusExisting;
+          }
+          return LaunchHandler::ClientMode::kNavigateExisting;
+        case LaunchHandlerProto_DeprecatedRouteTo_EXISTING_CLIENT_NAVIGATE:
+          return LaunchHandler::ClientMode::kNavigateExisting;
+        case LaunchHandlerProto_DeprecatedRouteTo_EXISTING_CLIENT_RETAIN:
+          return LaunchHandler::ClientMode::kFocusExisting;
       }
-      return LaunchHandler::RouteTo::kExistingClientNavigate;
-    case LaunchHandlerProto_RouteTo_EXISTING_CLIENT_NAVIGATE:
-      return LaunchHandler::RouteTo::kExistingClientNavigate;
-    case LaunchHandlerProto_RouteTo_EXISTING_CLIENT_RETAIN:
-      return LaunchHandler::RouteTo::kExistingClientRetain;
+    }
   }
 }
 
-LaunchHandlerProto::RouteTo LaunchHandlerRouteToToProto(
-    const LaunchHandler::RouteTo& route_to) {
-  switch (route_to) {
-    case LaunchHandler::RouteTo::kAuto:
-      return LaunchHandlerProto_RouteTo_AUTO;
-    case LaunchHandler::RouteTo::kNewClient:
-      return LaunchHandlerProto_RouteTo_NEW_CLIENT;
-    case LaunchHandler::RouteTo::kExistingClientNavigate:
-      return LaunchHandlerProto_RouteTo_EXISTING_CLIENT_NAVIGATE;
-    case LaunchHandler::RouteTo::kExistingClientRetain:
-      return LaunchHandlerProto_RouteTo_EXISTING_CLIENT_RETAIN;
+LaunchHandlerProto::ClientMode LaunchHandlerClientModeToProto(
+    LaunchHandler::ClientMode client_mode) {
+  switch (client_mode) {
+    case LaunchHandler::ClientMode::kAuto:
+      return LaunchHandlerProto_ClientMode_AUTO;
+    case LaunchHandler::ClientMode::kNavigateNew:
+      return LaunchHandlerProto_ClientMode_NAVIGATE_NEW;
+    case LaunchHandler::ClientMode::kNavigateExisting:
+      return LaunchHandlerProto_ClientMode_NAVIGATE_EXISTING;
+    case LaunchHandler::ClientMode::kFocusExisting:
+      return LaunchHandlerProto_ClientMode_FOCUS_EXISTING;
   }
 }
 
@@ -625,8 +640,8 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   local_data->set_is_storage_isolated(web_app.IsStorageIsolated());
 
   if (web_app.launch_handler()) {
-    local_data->mutable_launch_handler()->set_route_to(
-        LaunchHandlerRouteToToProto(web_app.launch_handler()->route_to));
+    local_data->mutable_launch_handler()->set_client_mode(
+        LaunchHandlerClientModeToProto(web_app.launch_handler()->client_mode));
   }
 
   if (web_app.parent_app_id_) {
@@ -692,11 +707,18 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     }
   }
 
+  if (web_app.current_os_integration_states().has_value()) {
+    local_data->mutable_current_os_integration_states();
+  }
+
   if (web_app.app_size_in_bytes().has_value())
     local_data->set_app_size_in_bytes(web_app.app_size_in_bytes().value());
 
   if (web_app.data_size_in_bytes().has_value())
     local_data->set_data_size_in_bytes(web_app.data_size_in_bytes().value());
+
+  local_data->set_always_show_toolbar_in_fullscreen(
+      web_app.always_show_toolbar_in_fullscreen());
 
   return local_data;
 }
@@ -1208,16 +1230,13 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   web_app->SetStorageIsolated(local_data.is_storage_isolated());
 
   if (local_data.has_launch_handler()) {
-    LaunchHandler launch_handler;
     const LaunchHandlerProto& launch_handler_proto =
         local_data.launch_handler();
-    if (launch_handler_proto.has_route_to()) {
-      launch_handler.route_to = ProtoToLaunchHandlerRouteTo(
-          launch_handler_proto.route_to(),
-          launch_handler_proto.navigate_existing_client());
-    }
-
-    web_app->SetLaunchHandler(std::move(launch_handler));
+    web_app->SetLaunchHandler(
+        LaunchHandler{ProtoLaunchHandlerToLaunchHandlerClientMode(
+            launch_handler_proto.route_to(),
+            launch_handler_proto.navigate_existing_client(),
+            launch_handler_proto.client_mode())});
   }
 
   if (local_data.has_parent_app_id()) {
@@ -1272,6 +1291,8 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     if (local_data.tab_strip().has_home_tab_visibility()) {
       tab_strip.home_tab = ProtoToTabStripVisibility(
           local_data.tab_strip().home_tab_visibility());
+    } else {
+      tab_strip.home_tab = blink::Manifest::HomeTabParams();
     }
 
     if (local_data.tab_strip().has_new_tab_button_visibility()) {
@@ -1288,12 +1309,22 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     web_app->SetTabStrip(std::move(tab_strip));
   }
 
+  if (local_data.has_current_os_integration_states()) {
+    web_app->SetCurrentOsIntegrationStates(
+        local_data.current_os_integration_states());
+  }
+
   if (local_data.has_app_size_in_bytes()) {
     web_app->SetAppSizeInBytes(local_data.app_size_in_bytes());
   }
 
   if (local_data.has_data_size_in_bytes()) {
     web_app->SetDataSizeInBytes(local_data.data_size_in_bytes());
+  }
+
+  if (local_data.has_always_show_toolbar_in_fullscreen()) {
+    web_app->SetAlwaysShowToolbarInFullscreen(
+        local_data.always_show_toolbar_in_fullscreen());
   }
 
   return web_app;
@@ -1410,6 +1441,8 @@ DisplayMode ToMojomDisplayMode(WebAppProto::DisplayMode display_mode) {
       return DisplayMode::kWindowControlsOverlay;
     case WebAppProto::TABBED:
       return DisplayMode::kTabbed;
+    case WebAppProto::BORDERLESS:
+      return DisplayMode::kBorderless;
   }
 }
 
@@ -1446,6 +1479,8 @@ WebAppProto::DisplayMode ToWebAppProtoDisplayMode(DisplayMode display_mode) {
       return WebAppProto::WINDOW_CONTROLS_OVERLAY;
     case DisplayMode::kTabbed:
       return WebAppProto::TABBED;
+    case DisplayMode::kBorderless:
+      return WebAppProto::BORDERLESS;
   }
 }
 

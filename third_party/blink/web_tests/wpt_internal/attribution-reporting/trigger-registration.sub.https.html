@@ -1,5 +1,6 @@
 <!doctype html>
 <meta charset=utf-8>
+<meta name=timeout content=long>
 <meta name=variant content="?method=fetch">
 <meta name=variant content="?method=fetch&eligible=trigger">
 <meta name=variant content="?method=img">
@@ -17,7 +18,6 @@
 <script>
 attribution_reporting_promise_test(async t => {
   await registerAttributionSrc(t, {source: {
-    source_event_id: '1',
     destination: `https://{{host}}`,
   }});
 

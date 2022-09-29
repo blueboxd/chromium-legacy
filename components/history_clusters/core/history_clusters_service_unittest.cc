@@ -248,7 +248,7 @@ class HistoryClustersServiceTestBase : public testing::Test {
     base::RunLoop loop;
     const auto task = history_clusters_service_->QueryClusters(
         ClusteringRequestSource::kJourneysPage,
-        /*begin_time=*/base::Time(), continuation_params,
+        /*begin_time=*/base::Time(), continuation_params, /*recluster=*/false,
         base::BindLambdaForTesting(
             [&](std::vector<history::Cluster> clusters_temp,
                 QueryClustersContinuationParams continuation_params_temp) {
@@ -290,7 +290,7 @@ class HistoryClustersServiceTestBase : public testing::Test {
         FROM_HERE,
         std::make_unique<GetAnnotatedVisitsToCluster>(
             IncompleteVisitMap{}, base::Time(), continuation_params,
-            recent_first, days_of_clustered_visits,
+            recent_first, days_of_clustered_visits, /*recluster=*/false,
             base::BindLambdaForTesting(
                 [&](std::vector<int64_t> old_clusters_temp,
                     std::vector<history::AnnotatedVisit> visits_temp,
@@ -355,6 +355,9 @@ class HistoryClustersServiceTest : public HistoryClustersServiceTestBase {
  public:
   HistoryClustersServiceTest() {
     scoped_feature_list_.InitAndEnableFeature(internal::kJourneys);
+    Config config;
+    config.persist_clusters_in_history_db = true;
+    SetConfigForTesting(config);
   }
 };
 
@@ -401,6 +404,7 @@ TEST_F(HistoryClustersServiceTest, HardCapOnVisitsFetchedFromHistory) {
   const auto task = history_clusters_service_->QueryClusters(
       ClusteringRequestSource::kKeywordCacheGeneration,
       /*begin_time=*/base::Time(), /*continuation_params=*/{},
+      /*recluster=*/false,
       base::DoNothing()  // Only need to verify the correct request is sent
   );
 
@@ -410,7 +414,7 @@ TEST_F(HistoryClustersServiceTest, HardCapOnVisitsFetchedFromHistory) {
   EXPECT_EQ(test_clustering_backend_->LastClusteredVisits().size(), 20U);
 }
 
-TEST_F(HistoryClustersServiceTest, QueryClustersIncompleteAndPersistedVisits) {
+TEST_F(HistoryClustersServiceTest, QueryClusters_IncompleteAndPersistedVisits) {
   // Create 5 persisted visits with visit times 2, 1, 1, 60, and 1 days ago.
   AddHardcodedTestDataToHistoryService();
 
@@ -463,7 +467,8 @@ TEST_F(HistoryClustersServiceTest, QueryClustersIncompleteAndPersistedVisits) {
   }
 }
 
-TEST_F(HistoryClustersServiceTest, QueryClustersPersistedClusters_NoMixedDays) {
+TEST_F(HistoryClustersServiceTest,
+       QueryClusters_PersistedClusters_NoMixedDays) {
   // Test the case where there are persisted clusters but none on a day also
   // containing unclustered visits.
 
@@ -545,7 +550,99 @@ TEST_F(HistoryClustersServiceTest, QueryClustersPersistedClusters_NoMixedDays) {
   }
 }
 
-TEST_F(HistoryClustersServiceTest, QueryClustersPersistedClusters_MixedDay) {
+TEST_F(HistoryClustersServiceTest,
+       QueryClusters_PersistedClusters_PersistenceDisabled) {
+  // Test the case where there are persisted clusters but persistence is
+  // disabled to check users who were in an enabled then disabled group
+  // don't encounter weirdness.
+
+  Config config;
+  config.persist_clusters_in_history_db = false;
+  SetConfigForTesting(config);
+
+  // Unclustered visit.
+  AddCompleteVisit(1, DaysAgo(1));
+
+  // Clustered visit; i.e. persisted cluster.
+  AddCompleteVisit(2, DaysAgo(2));
+  AddCluster({2});
+
+  QueryClustersContinuationParams continuation_params = {};
+  continuation_params.continuation_time = base::Time::Now();
+
+  // 2 queries should return the 2 visits and treat both as unclustered.
+  {
+    const auto [clusters, visits] = NextQueryClusters(continuation_params);
+    EXPECT_THAT(GetClusterIds(clusters), testing::ElementsAre());
+    EXPECT_THAT(GetVisitIds(visits), testing::ElementsAre(1));
+    EXPECT_FALSE(continuation_params.exhausted_unclustered_visits);
+    EXPECT_FALSE(continuation_params.exhausted_all_visits);
+  }
+  {
+    const auto [clusters, visits] = NextQueryClusters(continuation_params);
+    EXPECT_THAT(GetClusterIds(clusters), testing::ElementsAre());
+    EXPECT_THAT(GetVisitIds(visits), testing::ElementsAre(2));
+    EXPECT_FALSE(continuation_params.exhausted_unclustered_visits);
+    EXPECT_FALSE(continuation_params.exhausted_all_visits);
+  }
+  // 3rd query should consider history exhausted.
+  {
+    const auto [clusters, visits] =
+        NextQueryClusters(continuation_params, false);
+    EXPECT_THAT(GetClusterIds(clusters), testing::ElementsAre());
+    EXPECT_THAT(GetVisitIds(visits), testing::ElementsAre());
+    EXPECT_TRUE(continuation_params.exhausted_unclustered_visits);
+    EXPECT_TRUE(continuation_params.exhausted_all_visits);
+  }
+}
+
+TEST_F(HistoryClustersServiceTest, QueryClusters_PersistedClusters_Today) {
+  // Test the case where there is a persisted cluster today. The task rewinds
+  // the query bounds when it reaches a clustered visit, and this should be done
+  // correctly even if it's at the edge.
+
+  // Can't use `Now()`, as the task only searches [now-90, now).
+  const auto today = base::Time::Now() - base::Hours(1);
+
+  // A clustered and unclustered visit, both today.
+  AddCompleteVisit(1, today);
+  AddCompleteVisit(2, today);
+  AddCluster({2});
+
+  QueryClustersContinuationParams continuation_params = {};
+  continuation_params.continuation_time = base::Time::Now();
+
+  // 1st query should return the 1st unclustered visits only  and set
+  // `exhausted_unclustered_visits`.
+  {
+    const auto [clusters, visits] = NextQueryClusters(continuation_params);
+    EXPECT_THAT(GetClusterIds(clusters), testing::ElementsAre());
+    EXPECT_THAT(GetVisitIds(visits), testing::ElementsAre(1));
+    EXPECT_TRUE(continuation_params.exhausted_unclustered_visits);
+    EXPECT_FALSE(continuation_params.exhausted_all_visits);
+  }
+  // 2nd query should return the cluster.
+  {
+    const auto [clusters, visits] =
+        NextQueryClusters(continuation_params, false);
+    ASSERT_THAT(GetClusterIds(clusters), testing::ElementsAre(1));
+    EXPECT_THAT(GetVisitIds(clusters[0].visits), testing::ElementsAre(2));
+    EXPECT_THAT(GetVisitIds(visits), testing::ElementsAre());
+    EXPECT_TRUE(continuation_params.exhausted_unclustered_visits);
+    EXPECT_FALSE(continuation_params.exhausted_all_visits);
+  }
+  // The last query should set `exhausted_all_visits`.
+  {
+    const auto [clusters, visits] =
+        NextQueryClusters(continuation_params, false);
+    EXPECT_THAT(GetClusterIds(clusters), testing::ElementsAre());
+    EXPECT_THAT(GetVisitIds(visits), testing::ElementsAre());
+    EXPECT_TRUE(continuation_params.exhausted_unclustered_visits);
+    EXPECT_TRUE(continuation_params.exhausted_all_visits);
+  }
+}
+
+TEST_F(HistoryClustersServiceTest, QueryClusters_PersistedClusters_MixedDay) {
   // Test the case where there are persisted clusters on a day also containing
   // unclustered visits.
 
@@ -617,7 +714,7 @@ TEST_F(HistoryClustersServiceTest, QueryClustersPersistedClusters_MixedDay) {
   }
 }
 
-TEST_F(HistoryClustersServiceTest, QueryVisitsOldestFirst) {
+TEST_F(HistoryClustersServiceTest, QueryVisits_OldestFirst) {
   // Create 5 persisted visits with visit times 2, 1, 1, 60, and 1 days ago.
   AddHardcodedTestDataToHistoryService();
 
@@ -724,6 +821,7 @@ TEST_F(HistoryClustersServiceTest, EndToEndWithBackend) {
       ClusteringRequestSource::kJourneysPage,
       /*begin_time=*/base::Time(),
       /*continuation_params=*/{},
+      /*recluster=*/false,
       // This "expect" block is not run until after the fake response is
       // sent further down in this method.
       base::BindLambdaForTesting([&](std::vector<history::Cluster> clusters,

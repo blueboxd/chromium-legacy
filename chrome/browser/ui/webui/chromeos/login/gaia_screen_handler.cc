@@ -89,8 +89,8 @@
 #include "chromeos/components/security_token_pin/constants.h"
 #include "chromeos/components/security_token_pin/error_generator.h"
 #include "chromeos/constants/devicetype.h"
-#include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "chromeos/version/version_loader.h"
 #include "components/login/base_screen_handler_utils.h"
 #include "components/login/localized_values_builder.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -314,6 +314,7 @@ bool ShouldPrepareForRecovery(const AccountId& account_id) {
       ash::ReauthReason::INVALID_TOKEN_HANDLE,
       ash::ReauthReason::SYNC_FAILED,
       ash::ReauthReason::PASSWORD_UPDATE_SKIPPED,
+      ash::ReauthReason::FORGOT_PASSWORD,
   };
   user_manager::KnownUser known_user(g_browser_process->local_state());
   absl::optional<int> reauth_reason = known_user.FindReauthReason(account_id);
@@ -941,9 +942,15 @@ void GaiaScreenHandler::HandleSamlChallengeMachineKey(
   CreateSamlChallengeKeyHandler();
   saml_challenge_key_handler_->Run(
       Profile::FromWebUI(web_ui()),
-      base::BindOnce(&GaiaScreenHandler::ResolveJavascriptCallback,
+      base::BindOnce(&GaiaScreenHandler::HandleSamlChallengeMachineKeyResult,
                      weak_factory_.GetWeakPtr(), base::Value(callback_id)),
       GURL(url), challenge);
+}
+
+void GaiaScreenHandler::HandleSamlChallengeMachineKeyResult(
+    base::Value callback_id,
+    base::Value::Dict result) {
+  ResolveJavascriptCallback(callback_id, result);
 }
 
 void GaiaScreenHandler::HandleGaiaUIReady() {

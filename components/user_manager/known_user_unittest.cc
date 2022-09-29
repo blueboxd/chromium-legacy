@@ -173,9 +173,6 @@ TEST_F(KnownUserTest, FindPrefsMatchForAdAccountWithEmail) {
   EXPECT_TRUE(FindPrefs(AccountId::AdFromUserEmailObjGuid(kEmailB, "a")));
   // Finding by e-mail should also work even if the guid doesn't match.
   EXPECT_TRUE(FindPrefs(AccountId::AdFromUserEmailObjGuid(kEmailA, "b")));
-  // Finding by just AD guid  without any e-mail doesn't work (because the
-  // resulting AccountId is not considered valid).
-  EXPECT_FALSE(FindPrefs(AccountId::AdFromObjGuid("a")));
 
   // An unrelated AD AccountId with the same Account Type doesn't find
   // anything.
@@ -425,10 +422,10 @@ TEST_F(KnownUserTest, ChallengeResponseKeys) {
   KnownUser known_user(local_state());
   EXPECT_TRUE(known_user.GetChallengeResponseKeys(kDefaultAccountId).is_none());
 
-  base::Value challenge_response_keys(base::Value::Type::LIST);
-  challenge_response_keys.Append(base::Value("key1"));
-  known_user.SetChallengeResponseKeys(kDefaultAccountId,
-                                      challenge_response_keys.Clone());
+  base::Value::List challenge_response_keys;
+  challenge_response_keys.Append("key1");
+  known_user.SetChallengeResponseKeys(
+      kDefaultAccountId, base::Value(challenge_response_keys.Clone()));
 
   EXPECT_EQ(known_user.GetChallengeResponseKeys(kDefaultAccountId),
             challenge_response_keys);

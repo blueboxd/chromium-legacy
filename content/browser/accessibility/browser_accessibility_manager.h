@@ -16,7 +16,6 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "cc/base/rtree.h"
 #include "content/browser/accessibility/browser_accessibility.h"
@@ -27,7 +26,6 @@
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_action_handler_registry.h"
-#include "ui/accessibility/ax_event_generator.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_node_position.h"
@@ -139,8 +137,7 @@ struct BrowserAccessibilityFindInPageInfo {
 
 // Manages a tree of BrowserAccessibility objects.
 class CONTENT_EXPORT BrowserAccessibilityManager
-    : public ui::AXTreeObserver,
-      public ui::AXPlatformTreeManager,
+    : public ui::AXPlatformTreeManager,
       public WebContentsObserver {
  public:
   // Creates the platform-specific BrowserAccessibilityManager.
@@ -212,11 +209,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   // If this tree has a parent tree, return the parent node in that tree.
   BrowserAccessibility* GetParentNodeFromParentTree() const;
 
-  // Refreshes a parent node in a parent tree when it needs to be informed that
-  // this tree is ready or being destroyed. For example, an iframe object
-  // in a parent tree may need to link or unlink to this manager.
-  void ParentConnectionChanged(BrowserAccessibility* parent);
-
   // In general, there is only a single node with the role of kRootWebArea,
   // but if a popup is opened, a second nested "root" is created in the same
   // tree as the "true" root. This will keep track of the nested root node.
@@ -224,8 +216,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
 
   // Get the AXTreeData for this frame.
   const ui::AXTreeData& GetTreeData() const;
-
-  std::string ToString() const override;
 
   // Called to notify the accessibility manager that its associated native
   // view got focused.
@@ -329,8 +319,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   // Called when the renderer process has notified us of tree changes. Returns
   // false in fatal-error conditions, in which case the caller should destroy
   // the manager.
-  [[nodiscard]] virtual bool OnAccessibilityEvents(
-      const AXEventNotificationDetails& details);
+  virtual bool OnAccessibilityEvents(const AXEventNotificationDetails& details);
 
   // Allows derived classes to do event pre-processing
   virtual void BeforeAccessibilityEvents();
@@ -469,11 +458,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   // measure while the flatland migration is in progress (fxbug.dev/90502).
   virtual void UpdateDeviceScaleFactor();
 
-  // Accessors.
-  ui::AXTreeID ax_tree_id() const { return ax_tree_id_; }
-
   float device_scale_factor() const;
-  ui::AXTree* ax_tree() const { return tree_.get(); }
+
+  ui::AXSerializableTree* ax_serializable_tree() const {
+    return static_cast<ui::AXSerializableTree*>(ax_tree());
+  }
 
   // AXTreeObserver implementation.
   void OnTreeDataChanged(ui::AXTree* tree,
@@ -500,13 +489,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   ui::AXPlatformNode* GetPlatformNodeFromTree(
       const ui::AXNodeID node_id) const override;
   ui::AXPlatformNode* GetPlatformNodeFromTree(const ui::AXNode&) const override;
-  void AddObserver(ui::AXTreeObserver* observer) override;
-  void RemoveObserver(ui::AXTreeObserver* observer) override;
-  ui::AXTreeID GetTreeID() const override;
-  ui::AXTreeID GetParentTreeID() const override;
-  ui::AXNode* GetRootAsAXNode() const override;
   ui::AXNode* GetParentNodeFromParentTreeAsAXNode() const override;
-  void WillBeRemovedFromMap() override;
 
   BrowserAccessibilityDelegate* delegate() const { return delegate_; }
 
@@ -632,9 +615,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   // once when this subtree is first connected.
   bool connected_to_parent_tree_node_;
 
-  // The global ID of this accessibility tree.
-  ui::AXTreeID ax_tree_id_;
-
   // The device scale factor for the view associated with this frame,
   // cached each time there's any update to the accessibility tree.
   float device_scale_factor_;
@@ -689,10 +669,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager
 #endif  // DCHECK_IS_ON()
 
  private:
-  // Helper that calls AXTree::Unserialize(). On failure it populates crash data
-  // with error information.
-  bool Unserialize(const ui::AXTreeUpdate& tree_update);
-
   void BuildAXTreeHitTestCacheInternal(
       const BrowserAccessibility* node,
       std::vector<const BrowserAccessibility*>* storage);
@@ -701,6 +677,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   // root's parent is in another accessibility tree but it wasn't previously
   // connected, post the proper notifications on the parent.
   void EnsureParentConnectionIfNotRootManager();
+
+  // Refreshes a parent node in a parent tree when it needs to be informed that
+  // this tree is ready or being destroyed. For example, an iframe object
+  // in a parent tree may need to link or unlink to this manager.
+  void ParentConnectionChanged(BrowserAccessibility* parent);
 
   // If this BrowserAccessibilityManager is a child frame or guest frame,
   // returns the BrowserAccessibilityManager from the parent document in the
@@ -715,23 +696,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   BrowserAccessibility* AXTreeHitTest(
       const gfx::Point& blink_screen_point) const;
 
-  // The underlying tree of accessibility objects.
-  std::unique_ptr<ui::AXSerializableTree> tree_;
-
-  ui::AXEventGenerator event_generator_;
-
   // Only used on the root node for AXTree hit testing as an alternative to
   // ApproximateHitTest when used without a renderer.
   std::unique_ptr<cc::RTree<ui::AXNodeID>> cached_node_rtree_;
-
-  // Automatically stops observing notifications from the AXTree when this class
-  // is destructed.
-  //
-  // This member needs to be destructed before any observed AXTrees. Since
-  // destructors for non-static member fields are called in the reverse order of
-  // declaration, do not move this member above other members.
-  base::ScopedObservation<ui::AXTree, ui::AXTreeObserver> tree_observation_{
-      this};
 };
 
 }  // namespace content

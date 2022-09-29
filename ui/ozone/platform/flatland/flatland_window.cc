@@ -37,7 +37,7 @@ FlatlandWindow::FlatlandWindow(FlatlandWindowManager* window_manager,
       view_ref_(std::move(properties.view_ref_pair.view_ref)),
       view_controller_(std::move(properties.view_controller)),
       flatland_("Chromium FlatlandWindow"),
-      bounds_(properties.bounds) {
+      bounds_(delegate->ConvertRectToPixels(properties.bounds)) {
   if (view_controller_) {
     view_controller_.set_error_handler(
         fit::bind_member(this, &FlatlandWindow::OnViewControllerDisconnected));
@@ -328,11 +328,11 @@ void FlatlandWindow::UpdateSize() {
   const uint32_t width = view_properties_->width;
   const uint32_t height = view_properties_->height;
 
+  const gfx::Point old_origin = bounds_.origin();
   bounds_ = gfx::Rect(ceilf(width * device_pixel_ratio_),
                       ceilf(height * device_pixel_ratio_));
 
-  PlatformWindowDelegate::BoundsChange bounds;
-  bounds.bounds = bounds_;
+  PlatformWindowDelegate::BoundsChange bounds(old_origin != bounds_.origin());
   // TODO(fxbug.dev/93998): Calculate insets and update.
   window_delegate_->OnBoundsChanged(bounds);
 }

@@ -5,20 +5,19 @@
 #ifndef CHROME_BROWSER_PRIVACY_SANDBOX_PRIVACY_SANDBOX_SERVICE_H_
 #define CHROME_BROWSER_PRIVACY_SANDBOX_PRIVACY_SANDBOX_SERVICE_H_
 
+#include <set>
+
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/policy/core/common/policy_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/privacy_sandbox/canonical_topic.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings.h"
 #include "components/profile_metrics/browser_profile_type.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_service_observer.h"
+#include "net/base/schemeful_site.h"
 
 class Browser;
 class PrefService;
@@ -47,10 +46,7 @@ class BrowsingTopicsService;
 // preferences and content settings) by the PrivacySandboxSettings located in
 // components/privacy_sandbox/, which in turn makes them available to Privacy
 // Sandbox APIs.
-class PrivacySandboxService : public KeyedService,
-                              public policy::PolicyService::Observer,
-                              public syncer::SyncServiceObserver,
-                              public signin::IdentityManager::Observer {
+class PrivacySandboxService : public KeyedService {
  public:
   // Possible types of Privacy Sandbox prompts that may be shown to the user.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.privacy_sandbox
@@ -210,6 +206,26 @@ class PrivacySandboxService : public KeyedService,
   virtual void SetTopicAllowed(privacy_sandbox::CanonicalTopic topic,
                                bool allowed);
 
+  // Returns the first party sets recognised by the current profile. If FPS is
+  // disabled, or if sets have not been loaded yet, an empty map is returned.
+  // Virtual for mocking in tests.
+  // TODO (crbug.com/1350062): Reconsider whether ignoring async FPS information
+  // is appropriate.
+  virtual base::flat_map<net::SchemefulSite, net::SchemefulSite>
+  GetFirstPartySets();
+
+  // Returns the owner domain of the first party set that `site_url` is a member
+  // of, or absl::nullopt if `site_url` is not recognised as a member of an FPS.
+  // Virtual for mocking in tests.
+  virtual absl::optional<std::u16string> GetFpsOwnerForDisplay(
+      const GURL& site_url);
+
+  // Returns whether detailed FPS controls should be shown based on the current
+  // profile state. Detailed FPS controls are only shown when the user has FPS
+  // enabled, and is blocking 3PC.
+  // Virtual for mocking in tests.
+  virtual bool ShouldShowDetailedFpsControls();
+
  protected:
   friend class PrivacySandboxServiceTest;
   FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
@@ -339,6 +355,10 @@ class PrivacySandboxService : public KeyedService,
       profile_metrics::BrowserProfileType profile_type,
       privacy_sandbox::PrivacySandboxSettings* privacy_sandbox_settings,
       bool third_party_cookies_blocked);
+
+  // Checks to see if initialization of the user's FPS pref is required, and if
+  // so, sets the default value based on the user's current cookie settings.
+  void MaybeInitializeFirstPartySetsPref();
 
  private:
   raw_ptr<privacy_sandbox::PrivacySandboxSettings> privacy_sandbox_settings_;

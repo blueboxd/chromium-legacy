@@ -27,12 +27,12 @@
 #include "components/sync/nigori/nigori_test_utils.h"
 #import "components/sync/protocol/device_info_specifics.pb.h"
 #import "components/sync/protocol/sync_enums.pb.h"
-#include "components/sync/test/fake_server/entity_builder_factory.h"
-#include "components/sync/test/fake_server/fake_server.h"
-#include "components/sync/test/fake_server/fake_server_network_resources.h"
-#include "components/sync/test/fake_server/fake_server_nigori_helper.h"
-#include "components/sync/test/fake_server/fake_server_verifier.h"
-#include "components/sync/test/fake_server/sessions_hierarchy.h"
+#import "components/sync/test/entity_builder_factory.h"
+#import "components/sync/test/fake_server.h"
+#import "components/sync/test/fake_server_network_resources.h"
+#import "components/sync/test/fake_server_nigori_helper.h"
+#import "components/sync/test/fake_server_verifier.h"
+#import "components/sync/test/sessions_hierarchy.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_sync_service.h"
 #import "components/sync_device_info/device_info_util.h"
@@ -65,7 +65,8 @@ void OverrideSyncNetwork(const syncer::CreateHttpPostProviderFactory&
       chrome_test_util::GetOriginalBrowserState();
   DCHECK(browser_state);
   syncer::SyncServiceImpl* service =
-      SyncServiceFactory::GetAsSyncServiceImplForBrowserState(browser_state);
+      SyncServiceFactory::GetAsSyncServiceImplForBrowserStateForTesting(
+          browser_state);
   service->OverrideNetworkForTest(create_http_post_provider_factory_cb);
 }
 
@@ -109,7 +110,8 @@ void StartSync() {
       SyncSetupServiceFactory::GetForBrowserState(browser_state);
   sync_setup_service->SetSyncEnabled(true);
   syncer::SyncServiceImpl* sync_service =
-      SyncServiceFactory::GetAsSyncServiceImplForBrowserState(browser_state);
+      SyncServiceFactory::GetAsSyncServiceImplForBrowserStateForTesting(
+          browser_state);
   sync_service->TriggerPoliciesLoadedForTest();
 }
 
@@ -324,7 +326,7 @@ void AddTypedURLToClient(const GURL& url) {
 
   historyService->AddPage(url, base::Time::Now(), nullptr, 1, GURL(),
                           history::RedirectList(), ui::PAGE_TRANSITION_TYPED,
-                          history::SOURCE_BROWSED, false, false);
+                          history::SOURCE_BROWSED, false);
 }
 
 void AddTypedURLToFakeSyncServer(const std::string& url) {

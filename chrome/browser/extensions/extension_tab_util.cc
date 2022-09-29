@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -46,6 +47,7 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function.h"
@@ -278,10 +280,10 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(ExtensionFunction* function,
     index = *params.index;
   index = base::clamp(index, -1, browser->tab_strip_model()->count());
 
-  int add_types = active ? TabStripModel::ADD_ACTIVE : TabStripModel::ADD_NONE;
-  add_types |= TabStripModel::ADD_FORCE_INDEX;
+  int add_types = active ? AddTabTypes::ADD_ACTIVE : AddTabTypes::ADD_NONE;
+  add_types |= AddTabTypes::ADD_FORCE_INDEX;
   if (pinned)
-    add_types |= TabStripModel::ADD_PINNED;
+    add_types |= AddTabTypes::ADD_PINNED;
   NavigateParams navigate_params(browser, url, ui::PAGE_TRANSITION_LINK);
   navigate_params.disposition = active
                                     ? WindowOpenDisposition::NEW_FOREGROUND_TAB
@@ -289,7 +291,12 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(ExtensionFunction* function,
   navigate_params.tabstrip_index = index;
   navigate_params.user_gesture = false;
   navigate_params.tabstrip_add_types = add_types;
-  Navigate(&navigate_params);
+  base::WeakPtr<content::NavigationHandle> handle = Navigate(&navigate_params);
+  if (handle && params.bookmark_id) {
+    ChromeNavigationUIData* ui_data =
+        static_cast<ChromeNavigationUIData*>(handle->GetNavigationUIData());
+    ui_data->set_bookmark_id(*params.bookmark_id);
+  }
 
   // This happens in locked fullscreen mode.
   if (!navigate_params.navigated_or_inserted_contents) {

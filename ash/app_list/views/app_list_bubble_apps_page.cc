@@ -107,6 +107,37 @@ constexpr base::TimeDelta kShowPageAnimationTransformDuration =
 constexpr base::TimeDelta kShowPageAnimationOpacityDuration =
     base::Milliseconds(100);
 
+// A view that runs a click callback when clicked or tapped.
+class ClickableView : public views::View {
+ public:
+  explicit ClickableView(base::RepeatingClosure click_callback)
+      : click_callback_(click_callback) {}
+  ~ClickableView() override = default;
+
+  // views::View:
+  bool OnMousePressed(const ui::MouseEvent& event) override {
+    views::View::OnMousePressed(event);
+    // Return true so this object will receive a mouse released event.
+    return true;
+  }
+
+  void OnMouseReleased(const ui::MouseEvent& event) override {
+    views::View::OnMouseReleased(event);
+    click_callback_.Run();
+  }
+
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    views::View::OnGestureEvent(event);
+    if (event->type() == ui::ET_GESTURE_TAP) {
+      event->SetHandled();
+      click_callback_.Run();
+    }
+  }
+
+ private:
+  base::RepeatingClosure click_callback_;
+};
+
 }  // namespace
 
 AppListBubbleAppsPage::AppListBubbleAppsPage(
@@ -118,6 +149,8 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
     SearchBoxView* search_box)
     : view_delegate_(view_delegate),
       search_box_(search_box),
+      app_list_keyboard_controller_(
+          std::make_unique<AppListKeyboardController>(this)),
       app_list_nudge_controller_(std::make_unique<AppListNudgeController>()) {
   DCHECK(view_delegate);
   DCHECK(drag_and_drop_host);
@@ -184,8 +217,8 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   continue_section_->AddObserver(this);
 
   // Recent apps row.
-  recent_apps_ = scroll_contents->AddChildView(
-      std::make_unique<RecentAppsView>(this, view_delegate));
+  recent_apps_ = scroll_contents->AddChildView(std::make_unique<RecentAppsView>(
+      app_list_keyboard_controller_.get(), view_delegate));
   recent_apps_->UpdateAppListConfig(app_list_config);
   // Observe changes in continue section visibility, to keep separator
   // visibility in sync.
@@ -202,7 +235,8 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   if (features::IsLauncherAppSortEnabled()) {
     toast_container_ = scroll_contents->AddChildView(
         std::make_unique<AppListToastContainerView>(
-            app_list_nudge_controller_.get(), a11y_announcer, view_delegate,
+            app_list_nudge_controller_.get(),
+            app_list_keyboard_controller_.get(), a11y_announcer, view_delegate,
             /*delegate=*/this,
             /*tablet_mode=*/false));
   }
@@ -212,7 +246,7 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
       scroll_contents->AddChildView(std::make_unique<ScrollableAppsGridView>(
           a11y_announcer, view_delegate,
           /*folder_delegate=*/nullptr, scroll_view_, folder_controller,
-          /*focus_delegate=*/this));
+          app_list_keyboard_controller_.get()));
   scrollable_apps_grid_view_->SetDragAndDropHostOfCurrentAppList(
       drag_and_drop_host);
   scrollable_apps_grid_view_->Init();
@@ -227,9 +261,6 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   layout->SetFlexForView(scrollable_apps_grid_view_, 1);
 
   scroll_view_->SetContents(std::move(scroll_contents));
-
-  app_list_keyboard_controller_ = std::make_unique<AppListKeyboardController>(
-      this, recent_apps_, toast_container_, scrollable_apps_grid_view_);
 
   UpdateSuggestions();
   UpdateContinueSectionVisibility();
@@ -329,6 +360,7 @@ void AppListBubbleAppsPage::AnimateShowLauncher(bool is_side_shelf) {
 void AppListBubbleAppsPage::PrepareForHideLauncher() {
   // Remove the gradient mask from the scroll view to improve performance.
   gradient_helper_.reset();
+  scrollable_apps_grid_view_->EndDrag(/*cancel=*/true);
 }
 
 void AppListBubbleAppsPage::AnimateShowPage() {
@@ -360,9 +392,25 @@ void AppListBubbleAppsPage::AnimateShowPage() {
   gfx::Transform translate_down;
   translate_down.Translate(0, kShowPageAnimationVerticalOffset);
 
+  // Update view visibility when the animation is done. Needed to ensure
+  // the view has the correct opacity and transform when the animation is
+  // aborted.
+  auto set_visible_true = base::BindRepeating(
+      [](base::WeakPtr<AppListBubbleAppsPage> self) {
+        if (!self)
+          return;
+        self->SetVisible(true);
+        ui::Layer* layer = self->scroll_view()->contents()->layer();
+        layer->SetOpacity(1.f);
+        layer->SetTransform(gfx::Transform());
+      },
+      weak_factory_.GetWeakPtr());
+
   views::AnimationBuilder()
       .SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .OnEnded(set_visible_true)
+      .OnAborted(set_visible_true)
       .Once()
       .SetOpacity(scroll_contents, 0.f)
       .SetTransform(scroll_contents, translate_down)
@@ -445,6 +493,8 @@ void AppListBubbleAppsPage::AbortAllAnimations() {
 void AppListBubbleAppsPage::DisableFocusForShowingActiveFolder(bool disabled) {
   continue_section_->DisableFocusForShowingActiveFolder(disabled);
   recent_apps_->DisableFocusForShowingActiveFolder(disabled);
+  if (toast_container_)
+    toast_container_->DisableFocusForShowingActiveFolder(disabled);
   scrollable_apps_grid_view_->DisableFocusForShowingActiveFolder(disabled);
 }
 
@@ -575,22 +625,6 @@ void AppListBubbleAppsPage::OnViewVisibilityChanged(
     UpdateSeparatorVisibility();
 }
 
-void AppListBubbleAppsPage::MoveFocusUpFromRecents() {
-  app_list_keyboard_controller_->MoveFocusUpFromRecents();
-}
-
-void AppListBubbleAppsPage::MoveFocusDownFromRecents(int column) {
-  app_list_keyboard_controller_->MoveFocusDownFromRecents(column);
-}
-
-bool AppListBubbleAppsPage::MoveFocusUpFromToast(int column) {
-  return app_list_keyboard_controller_->MoveFocusUpFromToast(column);
-}
-
-bool AppListBubbleAppsPage::MoveFocusDownFromToast(int column) {
-  return app_list_keyboard_controller_->MoveFocusDownFromToast(column);
-}
-
 void AppListBubbleAppsPage::OnNudgeRemoved() {
   const gfx::Rect current_grid_bounds = scrollable_apps_grid_view_->bounds();
 
@@ -606,8 +640,20 @@ void AppListBubbleAppsPage::OnNudgeRemoved() {
                         gfx::Tween::ACCEL_40_DECEL_100_3, base::DoNothing());
 }
 
-bool AppListBubbleAppsPage::MoveFocusUpFromAppsGrid(int column) {
-  return app_list_keyboard_controller_->MoveFocusUpFromAppsGrid(column);
+ContinueSectionView* AppListBubbleAppsPage::GetContinueSectionView() {
+  return continue_section_;
+}
+
+RecentAppsView* AppListBubbleAppsPage::GetRecentAppsView() {
+  return recent_apps_;
+}
+
+AppListToastContainerView* AppListBubbleAppsPage::GetToastContainerView() {
+  return toast_container_;
+}
+
+AppsGridView* AppListBubbleAppsPage::GetAppsGridView() {
+  return scrollable_apps_grid_view_;
 }
 
 ui::Layer* AppListBubbleAppsPage::GetPageAnimationLayerForTest() {
@@ -619,8 +665,13 @@ ui::Layer* AppListBubbleAppsPage::GetPageAnimationLayerForTest() {
 
 void AppListBubbleAppsPage::InitContinueLabelContainer(
     views::View* scroll_contents) {
+  // The entire container view is clickable/tappable. The view is not focusable,
+  // but the toggle button is focusable, and that satisfies the user's need for
+  // an element with keyboard or accessibility focus.
   continue_label_container_ =
-      scroll_contents->AddChildView(std::make_unique<views::View>());
+      scroll_contents->AddChildView(std::make_unique<ClickableView>(
+          base::BindRepeating(&AppListBubbleAppsPage::OnToggleContinueSection,
+                              base::Unretained(this))));
   continue_label_container_->SetBorder(
       views::CreateEmptyBorder(kContinueLabelContainerPadding));
 
@@ -638,6 +689,8 @@ void AppListBubbleAppsPage::InitContinueLabelContainer(
   // Button should be right aligned, so flex label to fill empty space.
   layout->SetFlexForView(continue_label_, 1);
 
+  // The toggle button is clickable/tappable in addition to the container view.
+  // This ensures ink drop ripple effects play when the button is clicked.
   toggle_continue_section_button_ =
       continue_label_container_->AddChildView(std::make_unique<IconButton>(
           base::BindRepeating(&AppListBubbleAppsPage::OnToggleContinueSection,

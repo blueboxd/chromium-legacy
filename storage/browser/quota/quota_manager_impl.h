@@ -633,6 +633,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   // Methods for eviction logic.
   void StartEviction();
   void DeleteBucketFromDatabase(const BucketLocator& bucket,
+                                bool commit_immediately,
                                 base::OnceCallback<void(QuotaError)> callback);
 
   void DidBucketDataEvicted(mojom::BucketTableEntryPtr entry,
@@ -769,7 +770,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
 
   // QuotaManagerImpl creates `database_` and later schedules it for deletion on
   // `db_runner_`. Thus, `database_` may outlive `this`.
-  raw_ptr<QuotaDatabase, DanglingUntriaged> database_ = nullptr;
+  raw_ptr<QuotaDatabase> database_ = nullptr;
 
   bool is_bootstrapping_database_ = false;
   // Queued callbacks to QuotaDatabase that will run after database bootstrap is

@@ -12,8 +12,8 @@
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/prefetch/prefetch_prefs.h"
-#include "chrome/browser/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/preloading/chrome_preloading.h"
+#include "chrome/browser/preloading/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/preloading/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -75,7 +75,6 @@ class OmniboxPrerenderBrowserTest : public PlatformBrowserTest {
     test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
     ukm_entry_builder_ =
         std::make_unique<content::test::PreloadingAttemptUkmEntryBuilder>(
-            content::PreloadingType::kPrerender,
             ToPreloadingPredictor(
                 ChromePreloadingPredictor::kOmniboxDirectURLInput));
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -194,7 +193,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxPrerenderBrowserTest, DisableNetworkPrediction) {
     EXPECT_EQ(ukm_entries.size(), 1u);
 
     UkmEntry expected_entry = ukm_entry_builder().BuildEntry(
-        ukm_source_id, content::PreloadingEligibility::kPreloadingDisabled,
+        ukm_source_id, content::PreloadingType::kPrerender,
+        content::PreloadingEligibility::kPreloadingDisabled,
         content::PreloadingHoldbackStatus::kUnspecified,
         content::PreloadingTriggeringOutcome::kUnspecified,
         content::PreloadingFailureReason::kUnspecified,
@@ -233,7 +233,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxPrerenderBrowserTest, DisableNetworkPrediction) {
     EXPECT_EQ(ukm_entries.size(), 2u);
 
     UkmEntry expected_entry = ukm_entry_builder().BuildEntry(
-        ukm_source_id, content::PreloadingEligibility::kEligible,
+        ukm_source_id, content::PreloadingType::kPrerender,
+        content::PreloadingEligibility::kEligible,
         content::PreloadingHoldbackStatus::kAllowed,
         content::PreloadingTriggeringOutcome::kSuccess,
         content::PreloadingFailureReason::kUnspecified,
@@ -582,7 +583,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxSearchSuggestionExpiryBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
       "DefaultSearchEngine",
-      /*PrerenderHost::FinalStatus::kEmbedderTriggeredAndDestroyed*/ 35, 1);
+      /*PrerenderHost::FinalStatus::kTriggerDestroyed*/ 16, 1);
 
   // Select the prerender hint. The prerendered result has been deleted, so
   // browser loads the search result over again.
@@ -627,7 +628,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxSearchSuggestionExpiryBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
       "DefaultSearchEngine",
-      /*PrerenderHost::FinalStatus::kEmbedderTriggeredAndDestroyed*/ 35, 1);
+      /*PrerenderHost::FinalStatus::kTriggerDestroyed*/ 16, 1);
 
   // Nothing should be recorded. Because there is no new navigation nor new
   // search suggestion.

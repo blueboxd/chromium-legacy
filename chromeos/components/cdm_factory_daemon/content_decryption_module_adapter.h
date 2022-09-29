@@ -104,8 +104,11 @@ class COMPONENT_EXPORT(CDM_FACTORY_DAEMON) ContentDecryptionModuleAdapter
   void GetHwKeyData(const media::DecryptConfig* decrypt_config,
                     const std::vector<uint8_t>& hw_identifier,
                     GetHwKeyDataCB callback) override;
+  void GetHwConfigData(GetHwConfigDataCB callback) override;
+  void GetScreenResolutions(GetScreenResolutionsCB callback) override;
   std::unique_ptr<media::CdmContextRef> GetCdmContextRef() override;
   bool UsingArcCdm() const override;
+  bool IsRemoteCdm() const override;
 
   // cdm::mojom::ContentDecryptionModuleClient:
   void OnSessionMessage(const std::string& session_id,

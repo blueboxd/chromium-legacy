@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -155,7 +156,7 @@ bool OpenTabFromSourceIndex(int browser_index,
 void CloseTab(int browser_index, int tab_index) {
   TabStripModel* tab_strip =
       test()->GetBrowser(browser_index)->tab_strip_model();
-  tab_strip->CloseWebContentsAt(tab_index, TabStripModel::CLOSE_USER_GESTURE);
+  tab_strip->CloseWebContentsAt(tab_index, TabCloseTypes::CLOSE_USER_GESTURE);
 }
 
 void MoveTab(int from_browser_index, int to_browser_index, int tab_index) {
@@ -169,7 +170,7 @@ void MoveTab(int from_browser_index, int to_browser_index, int tab_index) {
       test()->GetBrowser(to_browser_index)->tab_strip_model();
   target_strip->InsertWebContentsAt(target_strip->count(),
                                     std::move(detached_contents),
-                                    TabStripModel::ADD_ACTIVE);
+                                    AddTabTypes::ADD_ACTIVE);
 }
 
 void NavigateTab(int browser_index, const GURL& url) {

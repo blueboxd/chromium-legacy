@@ -62,6 +62,7 @@
 namespace network {
 namespace {
 using base::StrCat;
+using QueryReason = CookieSettings::QueryReason;
 using testing::IsEmpty;
 using testing::UnorderedElementsAre;
 
@@ -2647,25 +2648,25 @@ TEST_F(CookieManagerTest, CloningAndClientDestructVisible) {
 TEST_F(CookieManagerTest, BlockThirdPartyCookies) {
   const GURL kThisURL = GURL("http://www.this.com");
   const GURL kThatURL = GURL("http://www.that.com");
-  EXPECT_TRUE(service()->cookie_settings().IsFullCookieAccessAllowed(kThisURL,
-                                                                     kThatURL));
+  EXPECT_TRUE(service()->cookie_settings().IsFullCookieAccessAllowed(
+      kThisURL, kThatURL, QueryReason::kCookies));
 
   // Set block third party cookies to true, cookie should now be blocked.
   cookie_service_client()->BlockThirdPartyCookies(true);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(service()->cookie_settings().IsFullCookieAccessAllowed(
-      kThisURL, kThatURL));
-  EXPECT_TRUE(service()->cookie_settings().IsFullCookieAccessAllowed(kThisURL,
-                                                                     kThisURL));
+      kThisURL, kThatURL, QueryReason::kCookies));
+  EXPECT_TRUE(service()->cookie_settings().IsFullCookieAccessAllowed(
+      kThisURL, kThisURL, QueryReason::kCookies));
 
   // Set block third party cookies back to false, cookie should no longer be
   // blocked.
   cookie_service_client()->BlockThirdPartyCookies(false);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(service()->cookie_settings().IsFullCookieAccessAllowed(kThisURL,
-                                                                     kThatURL));
+  EXPECT_TRUE(service()->cookie_settings().IsFullCookieAccessAllowed(
+      kThisURL, kThatURL, QueryReason::kCookies));
 }
 
 // A test class having cookie store with a persistent backing store.
@@ -2957,9 +2958,13 @@ class FPSPartitionedCookiesCookieManagerTest : public CookieManagerTest {
         non_member_partition_key_(
             net::CookiePartitionKey::FromURLForTesting(non_member_url_)) {
     delegate_ = std::make_unique<net::TestCookieAccessDelegate>();
-    first_party_sets_.insert(std::make_pair(
-        owner_site_,
-        std::set<net::SchemefulSite>({owner_site_, member_site_})));
+    first_party_sets_.insert(
+        {owner_site_,
+         net::FirstPartySetEntry(owner_site_, net::SiteType::kPrimary,
+                                 absl::nullopt)});
+    first_party_sets_.insert(
+        {member_site_,
+         net::FirstPartySetEntry(owner_site_, net::SiteType::kAssociated, 0)});
     delegate_->SetFirstPartySets(first_party_sets_);
     cookie_store()->SetCookieAccessDelegate(std::move(delegate_));
   }
@@ -2976,8 +2981,7 @@ class FPSPartitionedCookiesCookieManagerTest : public CookieManagerTest {
   const GURL non_member_url_;
   const net::CookiePartitionKey non_member_partition_key_;
 
-  base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>
-      first_party_sets_;
+  base::flat_map<net::SchemefulSite, net::FirstPartySetEntry> first_party_sets_;
   std::unique_ptr<net::TestCookieAccessDelegate> delegate_;
 };
 

@@ -45,6 +45,7 @@
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/remote_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/page/page.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
@@ -129,7 +130,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // All calls to Create() should be balanced with a call to Close(). This
   // synchronously destroys the WebViewImpl.
   void Close() override;
-
   static HashSet<WebViewImpl*>& AllInstances();
   // Returns true if popup menus should be rendered by the browser, false if
   // they should be rendered by WebKit (which is the default).
@@ -292,6 +292,14 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetHistoryOffsetAndLength(int32_t history_offset,
                                  int32_t history_length) override;
   void SetPageBaseBackgroundColor(absl::optional<SkColor> color) override;
+  void CreateRemoteMainFrame(
+      const RemoteFrameToken& frame_token,
+      const absl::optional<FrameToken>& opener_frame_token,
+      mojom::blink::FrameReplicationStatePtr replicated_state,
+      const base::UnguessableToken& devtools_frame_token,
+      mojom::blink::RemoteFrameInterfacesFromBrowserPtr remote_frame_interfaces,
+      mojom::blink::RemoteMainFrameInterfacesPtr remote_main_frame_interfaces)
+      override;
 
   void DispatchPageshow(base::TimeTicks navigation_start);
   void DispatchPagehide(mojom::blink::PagehideDispatch pagehide_dispatch);
@@ -324,11 +332,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Returns the currently focused Element or null if no element has focus.
   Element* FocusedElement() const;
 
-  WebViewClient* Client() { return web_view_client_; }
-
   // Returns the page object associated with this view. This may be null when
   // the page is shutting down, but will be valid at all other times.
   Page* GetPage() const { return page_.Get(); }
+
+  WebViewClient* Client() { return web_view_client_; }
 
   WebDevToolsAgentImpl* MainFrameDevToolsAgentImpl();
 
@@ -719,6 +727,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Callback when this widget window has been displayed by the browser.
   // Corresponds to a Show method call.
   void DidShowCreatedWindow();
+
+  // Called when mojo is disconnected.
+  void MojoDisconnected();
 
   // A value provided by the browser to state that all Widgets in this
   // WebView's frame tree will never be user-visible and thus never need to

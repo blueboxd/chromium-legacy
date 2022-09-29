@@ -19,7 +19,8 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authenticator_selection_criteria.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cable_authentication_data.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cable_registration_data.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_logout_rps_request.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_logout_r_ps_request.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_identity_provider.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_parameters.h"
@@ -49,6 +50,8 @@ using blink::mojom::blink::CableRegistrationPtr;
 using blink::mojom::blink::CredentialInfo;
 using blink::mojom::blink::CredentialInfoPtr;
 using blink::mojom::blink::CredentialType;
+using blink::mojom::blink::IdentityProvider;
+using blink::mojom::blink::IdentityProviderPtr;
 using blink::mojom::blink::LargeBlobSupport;
 using blink::mojom::blink::LogoutRpsRequest;
 using blink::mojom::blink::LogoutRpsRequestPtr;
@@ -177,8 +180,9 @@ TypeConverter<absl::optional<AuthenticatorTransport>, String>::Convert(
     return AuthenticatorTransport::NFC;
   if (transport == "ble")
     return AuthenticatorTransport::BLE;
-  if (transport == "cable")
-    return AuthenticatorTransport::CABLE;
+  // "cable" is the old name for "hybrid" and we accept either.
+  if (transport == "cable" || transport == "hybrid")
+    return AuthenticatorTransport::HYBRID;
   if (transport == "internal")
     return AuthenticatorTransport::INTERNAL;
   return absl::nullopt;
@@ -193,8 +197,8 @@ String TypeConverter<String, AuthenticatorTransport>::Convert(
     return "nfc";
   if (transport == AuthenticatorTransport::BLE)
     return "ble";
-  if (transport == AuthenticatorTransport::CABLE)
-    return "cable";
+  if (transport == AuthenticatorTransport::HYBRID)
+    return "hybrid";
   if (transport == AuthenticatorTransport::INTERNAL)
     return "internal";
   NOTREACHED();
@@ -320,8 +324,8 @@ TypeConverter<AuthenticatorSelectionCriteriaPtr,
 
 // static
 LogoutRpsRequestPtr
-TypeConverter<LogoutRpsRequestPtr, blink::IdentityCredentialLogoutRpsRequest>::
-    Convert(const blink::IdentityCredentialLogoutRpsRequest& request) {
+TypeConverter<LogoutRpsRequestPtr, blink::IdentityCredentialLogoutRPsRequest>::
+    Convert(const blink::IdentityCredentialLogoutRPsRequest& request) {
   auto mojo_request = LogoutRpsRequest::New();
 
   mojo_request->url = blink::KURL(request.url());
@@ -395,7 +399,7 @@ TypeConverter<PublicKeyCredentialDescriptorPtr,
   } else {
     mojo_descriptor->transports = {
         AuthenticatorTransport::USB, AuthenticatorTransport::BLE,
-        AuthenticatorTransport::NFC, AuthenticatorTransport::CABLE,
+        AuthenticatorTransport::NFC, AuthenticatorTransport::HYBRID,
         AuthenticatorTransport::INTERNAL};
   }
   return mojo_descriptor;
@@ -689,6 +693,18 @@ TypeConverter<RemoteDesktopClientOverridePtr,
   return RemoteDesktopClientOverride::New(
       blink::SecurityOrigin::CreateFromString(blink_value.origin()),
       blink_value.sameOriginWithAncestors());
+}
+
+// static
+IdentityProviderPtr
+TypeConverter<IdentityProviderPtr, blink::IdentityProvider>::Convert(
+    const blink::IdentityProvider& provider) {
+  auto mojo_provider = IdentityProvider::New();
+
+  mojo_provider->config_url = blink::KURL(provider.configURL());
+  mojo_provider->client_id = provider.clientId();
+  mojo_provider->nonce = provider.getNonceOr("");
+  return mojo_provider;
 }
 
 }  // namespace mojo

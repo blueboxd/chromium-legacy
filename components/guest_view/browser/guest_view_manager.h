@@ -71,33 +71,20 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
                            int guest_instance_id,
                            const base::Value::Dict& attach_params);
 
-  // Removes the association between |element_instance_id| and a guest instance
-  // ID if one exists.
-  void DetachGuest(GuestViewBase* guest);
-
   // Indicates whether the |guest| is owned by an extension or Chrome App.
   bool IsOwnedByExtension(GuestViewBase* guest);
 
   int GetNextInstanceID();
-  int GetGuestInstanceIDForElementID(
-      int owner_process_id,
-      int element_instance_id);
 
-  template <typename T>
-  void RegisterGuestViewType() {
-    // If the GuestView type |T| is already registered, then there is nothing
-    // more to do. If an existing entry in the registry was created by this
-    // function for type |T|, then registering again would have no effect, and
-    // if it was registered elsewhere, then we do not want to overwrite it. Note
-    // that it is possible for tests to have special test factory methods
-    // registered here.
-    if (guest_view_registry_.count(T::Type))
-      return;
-    auto registry_entry = std::make_pair(
-        T::Type, GuestViewData(base::BindRepeating(&T::Create),
-                               base::BindRepeating(&T::CleanUp)));
-    guest_view_registry_.insert(registry_entry);
-  }
+  using GuestViewCreateFunction = base::RepeatingCallback<GuestViewBase*(
+      content::WebContents* owner_web_contents)>;
+  using GuestViewCleanUpFunction =
+      base::RepeatingCallback<void(content::BrowserContext*,
+                                   int embedder_process_id,
+                                   int view_instance_id)>;
+  void RegisterGuestViewType(const std::string& type,
+                             GuestViewCreateFunction create_function,
+                             GuestViewCleanUpFunction cleanup_function);
 
   // Registers a callback to be called when the view identified by
   // |embedder_process_id| and |view_instance_id| is destroyed.
@@ -120,9 +107,6 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
   content::SiteInstance* GetGuestSiteInstance(
       const content::StoragePartitionConfig& storage_partition_config);
-
-  content::WebContents* GetGuestByInstanceID(int owner_process_id,
-                                             int element_instance_id);
 
   // BrowserPluginGuestManager implementation.
   void ForEachUnattachedGuest(
@@ -227,10 +211,6 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   using GuestInstanceIDReverseMap = std::map<int, ElementInstanceKey>;
   GuestInstanceIDReverseMap reverse_instance_id_map_;
 
-  using GuestViewCreateFunction =
-      base::RepeatingCallback<GuestViewBase*(content::WebContents*)>;
-  using GuestViewCleanUpFunction =
-      base::RepeatingCallback<void(content::BrowserContext*, int, int)>;
   struct GuestViewData {
     GuestViewData(const GuestViewCreateFunction& create_function,
                   const GuestViewCleanUpFunction& cleanup_function);
@@ -242,13 +222,13 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   using GuestViewMethodMap = std::map<std::string, GuestViewData>;
   GuestViewMethodMap guest_view_registry_;
 
-  int current_instance_id_;
+  int current_instance_id_ = 0;
 
   // Any instance ID whose number not greater than this was removed via
   // RemoveGuest.
   // This is used so that we don't have store all removed instance IDs in
   // |removed_instance_ids_|.
-  int last_instance_id_removed_;
+  int last_instance_id_removed_ = 0;
   // The remaining instance IDs that are greater than
   // |last_instance_id_removed_| are kept here.
   std::set<int> removed_instance_ids_;

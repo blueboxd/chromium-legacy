@@ -9,16 +9,16 @@
 
 #include "base/containers/id_map.h"
 #include "base/memory/safe_ref.h"
+#include "base/state_transitions.h"
 #include "base/supports_user_data.h"
 #include "content/browser/browser_interface_broker_impl.h"
 #include "content/common/agent_scheduling_group.mojom.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_export.h"
 #include "content/common/renderer.mojom-forward.h"
-#include "content/common/state_transitions.h"
+#include "content/common/shared_storage_worklet_service.mojom-forward.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/content_features.h"
-#include "content/services/shared_storage_worklet/public/mojom/shared_storage_worklet_service.mojom-forward.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
@@ -26,7 +26,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
-#include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_replication_state.mojom-forward.h"
 
@@ -60,9 +59,7 @@ class CONTENT_EXPORT AgentSchedulingGroupHost
     : public base::SupportsUserData,
       public RenderProcessHostObserver,
       public IPC::Listener,
-      public mojom::AgentSchedulingGroupHost,
-      public mojom::RouteProvider,
-      public blink::mojom::AssociatedInterfaceProvider {
+      public mojom::AgentSchedulingGroupHost {
  public:
   // Get the appropriate AgentSchedulingGroupHost for the given
   // `site_instance_group` and `process`. Depending on the value of
@@ -74,7 +71,7 @@ class CONTENT_EXPORT AgentSchedulingGroupHost
       const SiteInstanceGroup& site_instance_group,
       RenderProcessHost& process);
 
-  // Should not be called explicitly. Use `CreateIfNeeded()` instead.
+  // Should not be called explicitly. Use `GetOrCreate()` instead.
   explicit AgentSchedulingGroupHost(RenderProcessHost& process);
   ~AgentSchedulingGroupHost() override;
 
@@ -103,17 +100,6 @@ class CONTENT_EXPORT AgentSchedulingGroupHost
   mojom::RouteProvider* GetRemoteRouteProvider();
   void CreateFrame(mojom::CreateFrameParamsPtr params);
   void CreateView(mojom::CreateViewParamsPtr params);
-  void DestroyView(int32_t routing_id);
-  void CreateFrameProxy(
-      const blink::RemoteFrameToken& token,
-      const absl::optional<blink::FrameToken>& opener_frame_token,
-      int32_t view_routing_id,
-      const absl::optional<blink::RemoteFrameToken>& parent_frame_token,
-      blink::mojom::TreeScopeType tree_scope_type,
-      blink::mojom::FrameReplicationStatePtr replicated_state,
-      const base::UnguessableToken& devtools_frame_token,
-      mojom::RemoteFrameInterfacesFromBrowserPtr remote_frame_interfaces,
-      mojom::RemoteMainFrameInterfacesPtr remote_main_frame_interfaces);
   void CreateSharedStorageWorkletService(
       mojo::PendingReceiver<
           shared_storage_worklet::mojom::SharedStorageWorkletService> receiver);
@@ -144,7 +130,7 @@ class CONTENT_EXPORT AgentSchedulingGroupHost
     // kRenderProcessHostDestroyed is the terminal state of the state machine.
     kRenderProcessHostDestroyed,
   };
-  friend StateTransitions<LifecycleState>;
+  friend base::StateTransitions<LifecycleState>;
   friend std::ostream& operator<<(std::ostream& os, LifecycleState state);
 
   // IPC::Listener
@@ -153,18 +139,6 @@ class CONTENT_EXPORT AgentSchedulingGroupHost
   void OnAssociatedInterfaceRequest(
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle handle) override;
-
-  // mojom::RouteProvider
-  void GetRoute(
-      int32_t routing_id,
-      mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterfaceProvider>
-          receiver) override;
-
-  // blink::mojom::AssociatedInterfaceProvider
-  void GetAssociatedInterface(
-      const std::string& name,
-      mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterface>
-          receiver) override;
 
   // RenderProcessHostObserver:
   void RenderProcessExited(RenderProcessHost* host,
@@ -222,15 +196,6 @@ class CONTENT_EXPORT AgentSchedulingGroupHost
   // `blink::AssociatedInterfaceProvider` routes between this and the
   // renderer-side `AgentSchedulingGroup`.
   mojo::AssociatedRemote<mojom::RouteProvider> remote_route_provider_;
-  mojo::AssociatedReceiver<mojom::RouteProvider> route_provider_receiver_{this};
-
-  // The `blink::mojom::AssociatedInterfaceProvider` receiver set that *all*
-  // renderer-side `blink::AssociatedInterfaceProvider` objects own a remote to.
-  // `AgentSchedulingGroupHost` will be responsible for routing each associated
-  // interface request to the appropriate renderer host object.
-  mojo::AssociatedReceiverSet<blink::mojom::AssociatedInterfaceProvider,
-                              int32_t>
-      associated_interface_provider_receivers_;
 
   LifecycleState state_{LifecycleState::kNewborn};
 

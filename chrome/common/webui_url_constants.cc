@@ -155,6 +155,7 @@ const char kChromeUIOsUrlAppURL[] = "chrome://internal/";
 #endif
 const char kChromeUIPasswordManagerInternalsHost[] =
     "password-manager-internals";
+const char kChromeUIPasswordManagerHost[] = "password-manager";
 const char kChromeUIPolicyHost[] = "policy";
 const char kChromeUIPolicyURL[] = "chrome://policy/";
 const char kChromeUIPredictorsHost[] = "predictors";
@@ -250,6 +251,8 @@ const char kChromeUIBookmarksSidePanelURL[] =
     "chrome://bookmarks-side-panel.top-chrome/";
 const char kChromeUICustomizeChromeSidePanelHost[] =
     "customize-chrome-side-panel.top-chrome";
+const char kChromeUICustomizeChromeSidePanelURL[] =
+    "chrome://customize-chrome-side-panel.top-chrome";
 const char kChromeUIHistoryClustersSidePanelHost[] =
     "history-clusters-side-panel.top-chrome";
 const char kChromeUIHistoryClustersSidePanelURL[] =
@@ -300,8 +303,8 @@ const char kChromeUIBluetoothPairingURL[] = "chrome://bluetooth-pairing/";
 const char kChromeUICertificateManagerDialogURL[] =
     "chrome://certificate-manager/";
 const char kChromeUICertificateManagerHost[] = "certificate-manager";
-const char kChromeUICloudUploadHost[] = "cloud-upload-dialog";
-const char kChromeUICloudUploadURL[] = "chrome://cloud-upload-dialog/";
+const char kChromeUICloudUploadHost[] = "cloud-upload";
+const char kChromeUICloudUploadURL[] = "chrome://cloud-upload/";
 const char kChromeUIConfirmPasswordChangeHost[] = "confirm-password-change";
 const char kChromeUIConfirmPasswordChangeUrl[] =
     "chrome://confirm-password-change";
@@ -387,6 +390,7 @@ const char kOsUIAccountMigrationWelcomeURL[] = "os://account-migration-welcome";
 const char kOsUIAddSupervisionURL[] = "os://add-supervision";
 const char kOsUIAppDisabledURL[] = "os://app-disabled";
 const char kOsUIAppServiceInternalsURL[] = "os://app-service-internals";
+const char kOsUIBluetoothInternalsURL[] = "os://bluetooth-internals";
 const char kOsUICrashesURL[] = "os://crashes";
 const char kOsUICreditsURL[] = "os://credits";
 const char kOsUIDeviceLogURL[] = "os://device-log";
@@ -395,6 +399,7 @@ const char kOsUIEmojiPickerURL[] = "os://emoji-picker";
 const char kOsUIGpuURL[] = "os://gpu";
 const char kOsUIHistogramsURL[] = "os://histograms";
 const char kOsUIInvalidationsURL[] = "os://invalidations";
+const char kOsUILauncherInternalsURL[] = "os://launcher-internals";
 const char kOsUILockScreenNetworkURL[] = "os://lock-network";
 const char kOsUIMultiDeviceInternalsURL[] = "os://multidevice-internals";
 const char kOsUINearbyInternalsURL[] = "os://nearby-internals";
@@ -513,6 +518,7 @@ const char kChromeUIEnterpriseProfileWelcomeHost[] =
     "enterprise-profile-welcome";
 const char kChromeUIEnterpriseProfileWelcomeURL[] =
     "chrome://enterprise-profile-welcome/";
+const char kChromeUIIntroHost[] = "intro";
 const char kChromeUIProfileCustomizationHost[] = "profile-customization";
 const char kChromeUIProfileCustomizationURL[] =
     "chrome://profile-customization";
@@ -654,6 +660,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUIOmniboxHost,
     optimization_guide_internals::kChromeUIOptimizationGuideInternalsHost,
     kChromeUIPasswordManagerInternalsHost,
+    kChromeUIPasswordManagerHost,
     kChromeUIPolicyHost,
     kChromeUIPredictorsHost,
     kChromeUIPrefsInternalsHost,

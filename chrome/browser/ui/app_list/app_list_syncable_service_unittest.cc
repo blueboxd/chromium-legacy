@@ -44,9 +44,9 @@
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/protocol/app_list_specifics.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
-#include "components/sync/test/model/fake_sync_change_processor.h"
-#include "components/sync/test/model/sync_change_processor_wrapper_for_test.h"
-#include "components/sync/test/model/sync_error_factory_mock.h"
+#include "components/sync/test/fake_sync_change_processor.h"
+#include "components/sync/test/sync_change_processor_wrapper_for_test.h"
+#include "components/sync/test/sync_error_factory_mock.h"
 #include "extensions/common/constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -1687,10 +1687,10 @@ TEST_F(AppListSyncableServiceTest, EphemeralAppsNotSynced) {
   EXPECT_TRUE(sync_item->is_ephemeral);
 
   // Ephemeral sync items are not added to the local storage.
-  const base::Value* local_items =
-      profile_->GetPrefs()->GetDictionary(prefs::kAppListLocalState);
-  const base::Value* dict_item = local_items->FindKeyOfType(
-      ephemeral_app_id, base::Value::Type::DICTIONARY);
+  const base::Value::Dict& local_items =
+      profile_->GetPrefs()->GetValueDict(prefs::kAppListLocalState);
+
+  const base::Value::Dict* dict_item = local_items.FindDict(ephemeral_app_id);
   EXPECT_FALSE(dict_item);
 
   // Ephemeral sync items are not uploaded to sync data.
@@ -1739,10 +1739,10 @@ TEST_F(AppListSyncableServiceTest, EphemeralFoldersNotSynced) {
   EXPECT_TRUE(sync_item->is_ephemeral);
 
   // Ephemeral sync items are not added to the local storage.
-  const base::Value* local_items =
-      profile_->GetPrefs()->GetDictionary(prefs::kAppListLocalState);
-  const base::Value* dict_item = local_items->FindKeyOfType(
-      ephemeral_folder_id, base::Value::Type::DICTIONARY);
+  const base::Value::Dict& local_items =
+      profile_->GetPrefs()->GetValueDict(prefs::kAppListLocalState);
+  const base::Value::Dict* dict_item =
+      local_items.FindDict(ephemeral_folder_id);
   EXPECT_FALSE(dict_item);
 
   // Ephemeral sync items are not uploaded to sync data.

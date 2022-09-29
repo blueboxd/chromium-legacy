@@ -1363,6 +1363,10 @@ bool PDFiumEngine::OnRightMouseDown(const blink::WebMouseEvent& event) {
     return true;
   }
 
+  // Before examining the selection, first refresh the link. Due to keyboard
+  // events and possibly other events, the saved link info may be stale.
+  UpdateLinkUnderCursor(GetLinkAtPosition(point));
+
   // Handle the case when focus starts outside a form text area and stays
   // outside.
   if (selection_.empty())
@@ -1757,7 +1761,6 @@ void PDFiumEngine::StartFind(const std::string& text, bool case_sensitive) {
       character_to_start_searching_from = old_selection[0].char_index();
       last_page_to_search_ = next_page_to_search_;
     }
-    search_in_progress_ = true;
   }
 
   int current_page = next_page_to_search_;
@@ -1798,8 +1801,6 @@ void PDFiumEngine::StartFind(const std::string& text, bool case_sensitive) {
        (pages_.size() > 1 && current_page == next_page_to_search_));
 
   if (end_of_search) {
-    search_in_progress_ = false;
-
     // Send the final notification.
     client_->NotifyNumberOfFindResultsChanged(find_results_.size(), true);
     return;
@@ -2022,9 +2023,8 @@ bool PDFiumEngine::SelectFindResult(bool forward) {
     if ((forward && current_index >= last_index) ||
         (!forward && current_index == 0)) {
       current_find_index_.reset();
-      client_->NotifySelectedFindResultChanged(-1, /*final_result=*/false);
-      client_->NotifyNumberOfFindResultsChanged(find_results_.size(),
-                                                /*final_result=*/true);
+      client_->NotifySelectedFindResultChanged(-1);
+      client_->NotifyNumberOfFindResultsChanged(find_results_.size(), true);
       return true;
     }
     int increment = forward ? 1 : -1;
@@ -2070,8 +2070,7 @@ bool PDFiumEngine::SelectFindResult(bool forward) {
     }
   }
 
-  client_->NotifySelectedFindResultChanged(
-      current_find_index_.value(), /*final_result=*/!search_in_progress_);
+  client_->NotifySelectedFindResultChanged(current_find_index_.value());
   return true;
 }
 
@@ -2154,10 +2153,8 @@ void PDFiumEngine::SetReadOnly(bool enable) {
   selection_.clear();
 }
 
-void PDFiumEngine::SetTwoUpView(bool enable) {
-  desired_layout_options_.set_page_spread(
-      enable ? DocumentLayout::PageSpread::kTwoUpOdd
-             : DocumentLayout::PageSpread::kOneUp);
+void PDFiumEngine::SetDocumentLayout(DocumentLayout::PageSpread page_spread) {
+  desired_layout_options_.set_page_spread(page_spread);
   ProposeNextDocumentLayout();
 }
 

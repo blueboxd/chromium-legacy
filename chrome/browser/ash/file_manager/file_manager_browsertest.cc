@@ -171,6 +171,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& EnableVirtioBlkForData() {
+    options.enable_virtio_blk_for_data = true;
+    return *this;
+  }
+
   TestCase& EnableMirrorSync() {
     options.enable_mirrorsync = true;
     return *this;
@@ -331,6 +336,12 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
           .WillOnce(::testing::Return(policy::DlpRulesManager::Level::kWarn))
           .WillOnce(::testing::Return(policy::DlpRulesManager::Level::kAllow))
           .WillOnce(::testing::Return(policy::DlpRulesManager::Level::kNotSet))
+          .WillRepeatedly(
+              ::testing::Return(policy::DlpRulesManager::Level::kBlock));
+      return true;
+    }
+    if (name == "setIsRestrictedByAnyRuleBlocked") {
+      EXPECT_CALL(*mock_rules_manager_, IsRestrictedByAnyRule)
           .WillRepeatedly(
               ::testing::Return(policy::DlpRulesManager::Level::kBlock));
       return true;
@@ -674,6 +685,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkCutDisabledForReadOnlyDocument").FilesSwa(),
         TestCase("checkCutDisabledForReadOnlyFile"),
         TestCase("checkCutDisabledForReadOnlyFile").FilesSwa(),
+        TestCase("checkDlpRestrictionDetailsDisabledForNonDlpFiles"),
+        TestCase("checkDlpRestrictionDetailsDisabledForNonDlpFiles").FilesSwa(),
         TestCase("checkCutDisabledForReadOnlyFolder"),
         TestCase("checkCutDisabledForReadOnlyFolder").FilesSwa(),
         TestCase("checkPasteIntoFolderEnabledForReadWriteFolder"),
@@ -871,6 +884,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewUsb").FilesSwa(),
         TestCase("openQuickViewRemovablePartitions"),
         TestCase("openQuickViewRemovablePartitions").FilesSwa(),
+        TestCase("openQuickViewTrash").FilesSwa().EnableTrash(),
         TestCase("openQuickViewMtp"),
         TestCase("openQuickViewMtp").FilesSwa(),
         TestCase("openQuickViewTabIndexImage").MediaSwa(),
@@ -1124,6 +1138,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveClickFirstSearchResult").FilesSwa(),
         TestCase("drivePressEnterToSearch"),
         TestCase("drivePressEnterToSearch").FilesSwa(),
+        TestCase("driveSearchAlwaysDisplaysMyDrive"),
+        TestCase("driveSearchAlwaysDisplaysMyDrive").FilesSwa(),
+        TestCase("driveSearchAlwaysDisplaysMyDrive")
+            .FilesSwa()
+            .FilesExperimental(),
         TestCase("drivePressClearSearch"),
         TestCase("drivePressClearSearch").FilesSwa(),
         TestCase("drivePressCtrlAFromSearch"),
@@ -1244,6 +1263,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("transferDragFileListItemSelects").FilesSwa(),
         TestCase("transferDragAndDrop"),
         TestCase("transferDragAndDrop").FilesSwa(),
+        TestCase("transferDragAndDropFolder"),
+        TestCase("transferDragAndDropFolder").FilesSwa(),
         TestCase("transferDragAndHover"),
         TestCase("transferDragAndHover").FilesSwa(),
         TestCase("transferDropBrowserFile"),
@@ -1274,8 +1295,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DLP, /* dlp.js */
     DlpFilesAppBrowserTest,
-    ::testing::Values(TestCase("transferShowDlpToast").EnableDlp(),
-                      TestCase("dlpShowManagedIcon").EnableDlp()));
+    ::testing::Values(
+        TestCase("transferShowDlpToast").EnableDlp(),
+        TestCase("dlpShowManagedIcon").EnableDlp(),
+        TestCase("dlpContextMenuRestrictionDetails").EnableDlp()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     RestorePrefs, /* restore_prefs.js */
@@ -1639,10 +1662,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("enableDisableStorageSettingsLink").FilesSwa(),
         TestCase("showAvailableStorageMyFiles"),
         TestCase("showAvailableStorageMyFiles").FilesSwa(),
-        // Disabled until Drive quota can be properly displayed.
-        // crbug.com/1177203
-        // TestCase("showAvailableStorageDrive"),
-        // TestCase("showAvailableStorageDrive").FilesSwa(),
+        TestCase("showAvailableStorageDrive"),
+        TestCase("showAvailableStorageDrive").FilesSwa(),
         TestCase("showAvailableStorageSmbfs"),
         TestCase("showAvailableStorageSmbfs").FilesSwa(),
         TestCase("showAvailableStorageDocProvider")
@@ -1669,6 +1690,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("filesTooltipLabelChange").FilesSwa(),
         TestCase("filesTooltipMouseOver"),
         TestCase("filesTooltipMouseOver").FilesSwa(),
+        TestCase("filesTooltipMouseOverStaysOpen"),
+        TestCase("filesTooltipMouseOverStaysOpen").FilesSwa(),
         TestCase("filesTooltipClickHides"),
         TestCase("filesTooltipClickHides").FilesSwa(),
         TestCase("filesTooltipHidesOnWindowResize"),
@@ -1730,6 +1753,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("showMyFiles").EnableTrash().FilesSwa(),
         TestCase("myFilesDisplaysAndOpensEntries"),
         TestCase("myFilesDisplaysAndOpensEntries").FilesSwa(),
+        TestCase("myFilesDisplaysAndOpensEntries")
+            .FilesSwa()
+            .FilesExperimental(),
         TestCase("myFilesFolderRename"),
         TestCase("myFilesFolderRename").FilesSwa(),
         TestCase("myFilesUpdatesWhenAndroidVolumeMounts").DontMountVolumes(),
@@ -1742,6 +1768,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("myFilesAutoExpandOnce").FilesSwa(),
         TestCase("myFilesToolbarDelete"),
         TestCase("myFilesToolbarDelete").FilesSwa()));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    Navigation, /* navigation.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("navigateToParent")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     InstallLinuxPackageDialog, /* install_linux_package_dialog.js */
@@ -2027,16 +2058,15 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestCase("metricsRecordEnum"),
                       TestCase("metricsRecordEnum").FilesSwa(),
                       TestCase("metricsOpenSwa").FilesSwa(),
-                      TestCase("metricsRecordDirectoryListLoad")));
+                      TestCase("metricsRecordDirectoryListLoad"),
+                      TestCase("metricsRecordUpdateAvailableApps")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Breadcrumbs, /* breadcrumbs.js */
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("breadcrumbsNavigate"),
-        TestCase("breadcrumbsNavigate").FilesExperimental(),
         TestCase("breadcrumbsNavigate").FilesSwa(),
-        TestCase("breadcrumbsNavigate").FilesSwa().FilesExperimental(),
         TestCase("breadcrumbsDownloadsTranslation"),
         TestCase("breadcrumbsDownloadsTranslation").FilesSwa(),
         TestCase("breadcrumbsRenderShortPath"),
@@ -2045,7 +2075,6 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("breadcrumbsEliderButtonHidden").FilesSwa(),
         TestCase("breadcrumbsRenderLongPath"),
         TestCase("breadcrumbsRenderLongPath").FilesSwa(),
-        TestCase("breadcrumbsRenderLongPath").FilesSwa().FilesExperimental(),
         TestCase("breadcrumbsMainButtonClick"),
         TestCase("breadcrumbsMainButtonClick").FilesSwa(),
         TestCase("breadcrumbsMainButtonEnterKey"),
@@ -2129,6 +2158,19 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("trashDoubleClickOnFileInTrashRootShowsDialog").EnableTrash(),
         TestCase("trashDoubleClickOnFileInTrashRootShowsDialog")
             .EnableTrash()
+            .FilesSwa(),
+        TestCase("trashDragDropRootAcceptsEntries").EnableTrash().FilesSwa(),
+        TestCase("trashDragDropFromDisallowedRootsFails")
+            .EnableTrash()
+            .FilesSwa(),
+        TestCase("trashDragDropNonModifiableEntriesCantBeTrashed")
+            .EnableTrash()
+            .FilesSwa(),
+        TestCase("trashDragDropRootPerformsTrashAction")
+            .EnableTrash()
+            .FilesSwa(),
+        TestCase("trashTraversingFolderShowsDisallowedDialog")
+            .EnableTrash()
             .FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
@@ -2195,6 +2237,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fakesListed").EnableGuestOsFiles(),
         TestCase("listUpdatedWhenGuestsChanged").EnableGuestOsFiles(),
         TestCase("mountGuestSuccess").EnableGuestOsFiles(),
-        TestCase("notListedWithoutFlag")));
+        TestCase("notListedWithoutFlag"),
+        TestCase("mountAndroidVolumeSuccess")
+            .EnableGuestOsFiles()
+            .EnableVirtioBlkForData()));
 
 }  // namespace file_manager

@@ -86,15 +86,6 @@ const base::Feature kDynamicColorGamut{"DynamicColorGamut",
 const base::Feature kVizFrameSubmissionForWebView{
     "VizFrameSubmissionForWebView", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kUsePreferredIntervalForVideo{
-  "UsePreferredIntervalForVideo",
-#if BUILDFLAG(IS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
-
 // Whether we should use the real buffers corresponding to overlay candidates in
 // order to do a pageflip test rather than allocating test buffers.
 const base::Feature kUseRealBuffersForPageFlipTest{
@@ -140,7 +131,7 @@ const base::Feature kWebViewNewInvalidateHeuristic{
 // color space support in surface control. This controls if we want to use real
 // color space in DisplayCompositor.
 const base::Feature kUseRealVideoColorSpaceForDisplay{
-    "UseRealVideoColorSpaceForDisplay", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseRealVideoColorSpaceForDisplay", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Used by CC to throttle frame production of older surfaces. Used by the
@@ -222,10 +213,6 @@ bool IsDynamicColorGamutEnabled() {
 
 bool IsUsingVizFrameSubmissionForWebView() {
   return base::FeatureList::IsEnabled(kVizFrameSubmissionForWebView);
-}
-
-bool IsUsingPreferredIntervalForVideo() {
-  return base::FeatureList::IsEnabled(kUsePreferredIntervalForVideo);
 }
 
 bool ShouldUseRealBuffersForPageFlipTest() {

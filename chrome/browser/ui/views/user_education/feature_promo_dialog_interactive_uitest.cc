@@ -210,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(FeaturePromoDialogTest, InvokeUi_IPH_LiveCaption) {
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(FeaturePromoDialogTest, InvokeUi_IPH_ProfileSwitch) {
-  set_baseline("2936082");
+  set_baseline("3710120");
   ShowAndVerifyUi();
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -226,8 +226,9 @@ class FeaturePromoDialogSideSearchTest : public FeaturePromoDialogTest {
   FeaturePromoDialogSideSearchTest() {
     // Currently the IPH is only supported for the Google ChromeOS
     // configuration.
-    feature_list_.InitWithFeatures({features::kSideSearch},
-                                   {features::kSideSearchDSESupport});
+    feature_list_.InitWithFeatures(
+        {features::kSideSearch},
+        {features::kSideSearchDSESupport, features::kUnifiedSidePanel});
   }
 
   void SetUpOnMainThread() override {

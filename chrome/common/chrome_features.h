@@ -195,13 +195,7 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsFlashAppNameInsteadOfOrigin;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kDesktopPWAsDetailedInstallDialog;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsRunOnOsLogin;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kDesktopPWAsTabStripLinkCapturing;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsTabStripSettings;
@@ -254,9 +248,6 @@ extern const base::Feature kEnableAmbientAuthenticationInIncognito;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kEnableRestrictedWebApis;
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kEnableWebAppUninstallFromOsSettings;
-
 #if !BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kEnableWebHidOnExtensionServiceWorker;
@@ -277,6 +268,11 @@ extern const base::Feature kEnterpriseReportingInChromeOS;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kExternalExtensionDefaultButtonControl;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kFileTransferEnterpriseConnector;
+#endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -384,6 +380,15 @@ extern const base::Feature kHappinessTrackingPersonalizationScreensaver;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHappinessTrackingPersonalizationWallpaper;
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHappinessTrackingMediaAppPdf;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHappinessTrackingSystemCameraApp;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHappinessTrackingPhotosExperience;
+
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -410,16 +415,16 @@ extern const base::Feature kIncompatibleApplicationsWarning;
 
 #if BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kIncognitoBrandConsistencyForAndroid;
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kIncognitoDownloadsWarning;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kIncognitoNtpRevamp;
+
+#if BUILDFLAG(IS_CHROMEOS)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kKioskEnableAppService;
+#endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kUpdateHistoryEntryPointsInIncognito;
@@ -569,6 +574,11 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kRequestDesktopSiteForTablets;
 #endif
 
+#if !BUILDFLAG(IS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kSafetyCheckPermissions;
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSchedulerConfiguration;
@@ -587,11 +597,6 @@ extern const base::FeatureParam<base::TimeDelta> kSCTLogMaxIngestionRandomDelay;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSecurityKeyAttestationPrompt;
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kSharesheetCopyToClipboard;
-#endif
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kSitePerProcess;
 
@@ -759,11 +764,6 @@ extern const base::Feature kWebRtcRemoteEventLogGzipped;
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kWebShare;
 #endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kWebTimeLimits;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kWebUIDarkMode;
 

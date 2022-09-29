@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_PUBLIC_HEADLESS_SCRIPT_CONTROLLER_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_PUBLIC_HEADLESS_SCRIPT_CONTROLLER_H_
 
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/public/external_action.pb.h"
 #include "components/autofill_assistant/browser/public/runtime_observer.h"
 #include "components/autofill_assistant/browser/public/ui_state.h"
-#include "content/public/browser/web_contents.h"
 
 namespace autofill_assistant {
 
@@ -29,6 +29,14 @@ class HeadlessScriptController {
   virtual void StartScript(
       const base::flat_map<std::string, std::string>& script_parameters,
       base::OnceCallback<void(ScriptResult)> script_ended_callback) = 0;
+
+  // Adds parameters for using autofill assistant's onboarding before a script
+  // would run.
+  virtual void StartScript(
+      const base::flat_map<std::string, std::string>& script_parameters,
+      base::OnceCallback<void(ScriptResult)> script_ended_callback,
+      bool use_autofill_assistant_onboarding,
+      base::OnceCallback<void()> onboarding_successful_callback) = 0;
 
   virtual ~HeadlessScriptController() = default;
 };

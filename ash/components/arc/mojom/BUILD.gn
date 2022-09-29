@@ -26,7 +26,6 @@ mojom("mojom") {
     "clipboard.mojom",
     "compatibility_mode.mojom",
     "crash_collector.mojom",
-    "dark_theme.mojom",
     "digital_goods.mojom",
     "disk_quota.mojom",
     "enterprise_reporting.mojom",
@@ -237,7 +236,7 @@ mojom("mojom") {
       types = [
         {
           mojom = "arc.mojom.DeviceType"
-          cpp = "::chromeos::DeviceType"
+          cpp = "::ash::DeviceType"
         },
         {
           mojom = "arc.mojom.MountEvent"

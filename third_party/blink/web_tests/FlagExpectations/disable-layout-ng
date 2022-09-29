@@ -11,6 +11,14 @@
 # Tests that fail in legacy but pass in NG
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/browsers/windows/clear-window-name.https.html [ Timeout ]
+crbug.com/626703 external/wpt/custom-elements/throw-on-dynamic-markup-insertion-counter-construct-xml-parser.xhtml [ Crash ]
+crbug.com/626703 external/wpt/custom-elements/throw-on-dynamic-markup-insertion-counter-reactions-xml-parser.xhtml [ Crash ]
+crbug.com/626703 external/wpt/css/css-pseudo/highlight-currentcolor-root-explicit-default-002.html [ Failure ]
+crbug.com/626703 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-currentcolor-root-explicit-default-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/block-aspect-ratio-050.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/grid-aspect-ratio-040.html [ Crash ]
+crbug.com/626703 external/wpt/css/css-sizing/contain-intrinsic-size/contain-intrinsic-size-028.html [ Crash ]
 crbug.com/626703 external/wpt/css/cssom/caretPositionFromPoint-with-transformation.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/block-aspect-ratio-046.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/block-aspect-ratio-048.html [ Failure ]
@@ -309,6 +317,53 @@ crbug.com/829028 external/wpt/css/css-break/overflowed-block-with-no-room-after-
 crbug.com/829028 external/wpt/css/css-break/relpos-inline-hit-testing.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/relpos-inline.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/ruby-003.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/border-spacing-at-breaks.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/break-after-table-cell.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/break-after-table-cell-child.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/break-avoidance-001.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/break-avoidance-002.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/break-avoidance-003.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/break-avoidance-004.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/break-avoidance-005.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/break-avoidance-006.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/break-avoidance-007.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/break-avoidance-in-table-in-grid.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/break-before-expansion-001.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/break-before-expansion-002.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/break-before-table-cell.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/break-before-table-cell-child.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/caption-margin-002.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/abspos.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/abspos-in-monolithic.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/abspos-uncontained-text.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/abspos-uncontained.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/block-in-inline.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/captions.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/footer.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/header-after-break.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/header-footer.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/header.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/hit-test-relative-in-transform.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/hit-test-relative.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/hit-test.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/image.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/inline-block.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/multicol.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/multiple-row-groups.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/repeated-header-border-spacing.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/specified-block-size-007.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/table-border-005.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/table-border-006.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/table-cell-expansion-003.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/table-col-paint-htb-ltr.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/table-collapsed-borders-paint-at-boundary.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/table-collapsed-borders-paint-htb-ltr.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/table-collapsed-borders-paint-vlr-rtl.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/table-collapsed-borders-paint-vrl-ltr.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/table-parts-offsetheight.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/table-row-paint-vlr-rtl.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/table-row-paint-vrl-rtl.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/table-section-paint-vrl-rtl.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/tall-content-inside-constrained-block-000.tentative.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/tall-content-inside-constrained-block-001.tentative.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/tall-content-inside-constrained-block-002.tentative.html [ Failure ]
@@ -359,6 +414,8 @@ crbug.com/591099 external/wpt/css/css-flexbox/aspect-ratio-intrinsic-size-003.ht
 crbug.com/591099 external/wpt/css/css-flexbox/aspect-ratio-intrinsic-size-004.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/aspect-ratio-intrinsic-size-005.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/baseline-synthesis-001.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-flexbox/baseline-synthesis-003.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-flexbox/baseline-synthesis-004.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/dynamic-baseline-change.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/dynamic-baseline-change-nested.html [ Failure ]
 crbug.com/1132627 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-007.xht [ Failure ]
@@ -427,7 +484,10 @@ crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-alignment-implies-siz
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-alignment-implies-size-change-031.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-alignment-implies-size-change-035.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-alignment-implies-size-change-036.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-alignment-style-changes-003.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-alignment-style-changes-004.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-baseline-004.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-container-baseline-001.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-content-alignment-overflow-002.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-content-alignment-with-abspos-001.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-item-aspect-ratio-stretch-1.html [ Failure ]
@@ -581,6 +641,7 @@ crbug.com/829028 external/wpt/css/css-multicol/multicol-span-all-children-height
 crbug.com/874051 external/wpt/css/css-multicol/multicol-span-all-fieldset-001.html [ Failure ]
 crbug.com/874051 external/wpt/css/css-multicol/multicol-span-all-fieldset-002.html [ Failure ]
 crbug.com/874051 external/wpt/css/css-multicol/multicol-span-all-fieldset-003.html [ Failure ]
+crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-005.html [ Failure ]
 crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-006.html [ Failure ]
 crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-007.html [ Failure ]
 crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-009.html [ Failure ]
@@ -606,6 +667,8 @@ crbug.com/829028 external/wpt/css/css-multicol/spanner-fragmentation-001.html [ 
 crbug.com/829028 external/wpt/css/css-multicol/spanner-fragmentation-009.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/spanner-fragmentation-010.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/spanner-fragmentation-011.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-multicol/table/table-cell-multicol-nested-002.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-multicol/table/table-cell-multicol-nested-003.html [ Failure ]
 crbug.com/998423 external/wpt/css/css-multicol/with-custom-layout-on-same-element-crash.https.html [ Skip ]
 crbug.com/998423 external/wpt/css/css-multicol/with-custom-layout-on-same-element.https.html [ Skip ]
 
@@ -1011,6 +1074,41 @@ crbug.com/591099 fast/selectors/input-with-selection-pseudo-element.html [ Failu
 ### fast/writing-mode/
 crbug.com/591099 fast/writing-mode/flipped-blocks-inline-map-local-to-container.html [ Failure ]
 
+# fragmentation/
+crbug.com/1078927 fragmentation/break-in-second-table-section.html [ Failure ]
+crbug.com/1078927 fragmentation/break-in-tbody-after-caption.html [ Failure ]
+crbug.com/1078927 fragmentation/multi-line-cells.html [ Failure ]
+crbug.com/1078927 fragmentation/repeating-thead-exceeds-page-size.html [ Failure ]
+crbug.com/1078927 fragmentation/repeating-thead-no-room-for-content-row-on-first-page.html [ Failure ]
+crbug.com/1078927 fragmentation/repeating-thead-tfoot-different-fragment-height.html [ Failure ]
+crbug.com/1078927 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
+crbug.com/1078927 fragmentation/single-cells-multiple-tables-no-repeating-thead.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-in-multiple-table-sections.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-multiple-tables-caption-repeating-thead-tfoot-with-border-spacing-at-top-of-row-2.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-multiple-tables-caption-repeating-thead-tfoot-with-border-spacing-at-top-of-row-3.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-multiple-tables-caption-repeating-thead-tfoot-with-border-spacing-at-top-of-row-4.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-multiple-tables-caption-repeating-thead-tfoot-with-border-spacing-at-top-of-row.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-nested-repeating-thead-nested-repeating-tfoot.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-nested-repeating-thead-tfoot-2.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-nested-repeating-thead-tfoot-3.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-nested-repeating-thead-tfoot-4.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-nested-repeating-thead-tfoot.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-repeating-thead-cell-straddles-page.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-repeating-thead-cell-straddles-page-unsplittable-div.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-repeating-thead-starts-middle-of-page-break-after-avoid.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-repeating-thead-tfoot-starts-middle-of-page-break-after-avoid-2.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-repeating-thead-tfoot-starts-middle-of-page-break-after-avoid-3.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-repeating-thead-tfoot-starts-middle-of-page-break-after-avoid.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-repeating-thead-tfoot-starts-middle-of-page.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-repeating-thead-tfoot-with-border-spacing-at-top-of-row.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-repeating-thead-tfoot-with-caption.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-repeating-thead-tfoot-with-two-captions.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells-repeating-thead-tfoot.html [ Failure ]
+crbug.com/1078927 fragmentation/single-line-cells.html [ Failure ]
+crbug.com/1078927 fragmentation/table-row-dimensions-break-freely.html [ Failure ]
+crbug.com/1078927 fragmentation/table-row-dimensions-with-thead.html [ Failure ]
+crbug.com/1078927 fragmentation/table-row-page-break-collapsed-border.html [ Failure ]
+
 ### external/wpt/html/rendering
 crbug.com/591099 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-baseline.html [ Failure ]
 crbug.com/591099 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-block-size.html [ Failure ]
@@ -1076,9 +1174,6 @@ crbug.com/591099 virtual/dark-color-scheme/media/audio-focus-ring.html [ Failure
 
 ### virtual/gpu-rasterization/images/
 crbug.com/591099 virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Failure Slow ]
-
-### virtual/layout_ng_table_frag/
-virtual/layout_ng_table_frag/* [ Skip ]
 
 ### virtual/layout_ng_printing/
 virtual/layout_ng_printing/* [ Skip ]
@@ -1150,6 +1245,7 @@ crbug.com/591099 paint/invalidation/scroll/sticky/invalidate-after-composited-sc
 crbug.com/591099 virtual/compositor_threaded_scrollbar_scrolling/paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html [ Failure ]
 
 crbug.com/591099 external/wpt/css/css-flexbox/flexbox-min-width-auto-005.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-flexbox/flexbox-min-width-auto-006.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/flexbox_align-items-stretch-3.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/percentage-heights-006.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/percentage-heights-014.html [ Failure ]
@@ -1195,6 +1291,8 @@ crbug.com/1016759 paint/invalidation/svg/animated-path-inside-transformed-html.x
 
 # display-locking
 crbug.com/591099 wpt_internal/display-lock/css-content-visibility/matchable/content-visibility-matchable-005.html [ Failure ]
+wpt_internal/display-lock/css-content-visibility/hiddenuntilfound/hidden-until-found-005.html [ Failure ]
+crbug.com/1348475 external/wpt/css/css-contain/content-visibility/content-visibility-023.html [ Crash Pass ]
 
 # 10/02/2019 Mark tests as failing. Mostly shapes, slight image differences
 external/wpt/css/CSS2/text/white-space-bidirectionality-001.xht [ Failure ]
@@ -1367,6 +1465,8 @@ crbug.com/958381 external/wpt/css/CSS2/tables/table-backgrounds-bs-column-001.xh
 crbug.com/958381 external/wpt/css/CSS2/tables/table-backgrounds-bs-rowgroup-001.xht [ Failure ]
 
 ### external/wpt/css/css-align/baseline-rules/
+crbug.com/591099 external/wpt/css/css-align/baseline-rules/grid-item-input-type-number.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-align/baseline-rules/grid-item-input-type-text.html [ Failure ]
 crbug.com/799016 external/wpt/css/css-align/baseline-rules/synthesized-baseline-table-cell-001.html [ Failure ]
 
 ### external/wpt/css/css-flexbox/
@@ -1677,6 +1777,7 @@ crbug.com/591099 external/wpt/webcodecs/videoDecoder-codec-specific.https.any.wo
 crbug.com/591099 external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h264_avc [ Failure Timeout ]
 
 # Flaky only in legacy layout
+crbug.com/1349326 fast/table/percent-widths-total-less-than-one.html [ Failure Pass ]
 crbug.com/1231658 transforms/transformed-caret.html [ Failure Pass ]
 
 crbug.com/591099 fast/forms/time/time-appearance-basic.html [ Failure ]
@@ -1847,6 +1948,8 @@ crbug.com/1147859 external/wpt/css/css-highlight-api/painting/custom-highlight-p
 crbug.com/1147859 external/wpt/css/css-highlight-api/painting/custom-highlight-painting-text-shadow.tentative.html [ Failure ]
 crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-003.html [ Failure ]
 crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-currentcolor-004.html [ Failure ]
+crbug.com/1147859 external/wpt/css/css-pseudo/highlight-currentcolor-painting-properties-001.html [ Failure ]
+crbug.com/1147859 external/wpt/css/css-pseudo/highlight-currentcolor-painting-properties-002.html [ Failure ]
 crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-soft-hyphens-001.html [ Failure ]
 crbug.com/1147859 external/wpt/css/css-pseudo/highlight-paired-cascade-004.html [ Failure ]
 crbug.com/1147859 external/wpt/css/css-pseudo/target-text-001.html [ Failure ]
@@ -1920,7 +2023,6 @@ crbug.com/1147859 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/
 crbug.com/1147859 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/target-text-text-decoration-001.html [ Failure ]
 crbug.com/1147859 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/target-text-002.html [ Failure ]
 crbug.com/1147859 virtual/dark-mode-default/dark-mode/colors/selection.html [ Failure ]
-crbug.com/1147859 virtual/dark-mode-increase-text-contrast/dark-mode/colors/selection.html [ Failure ]
 crbug.com/1147859 wpt_internal/css/css-pseudo/target-text-002.html [ Failure ]
 
 # CSS Anchor Positioning is only implemented in ng.

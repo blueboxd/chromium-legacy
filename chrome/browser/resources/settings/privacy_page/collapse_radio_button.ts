@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
-import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button_style_css.m.js';
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
+import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button_style.css.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../settings_shared.css.js';
 
-import {CrExpandButtonElement} from 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
-import {CrRadioButtonBehavior} from 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button_behavior.m.js';
+import {CrExpandButtonElement} from 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
+import {CrRadioButtonBehavior} from 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button_behavior.js';
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './collapse_radio_button.html.js';

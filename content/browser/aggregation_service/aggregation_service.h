@@ -5,8 +5,12 @@
 #ifndef CONTENT_BROWSER_AGGREGATION_SERVICE_AGGREGATION_SERVICE_H_
 #define CONTENT_BROWSER_AGGREGATION_SERVICE_AGGREGATION_SERVICE_H_
 
+#include <vector>
+
+#include "base/callback_forward.h"
 #include "content/browser/aggregation_service/aggregatable_report_assembler.h"
 #include "content/browser/aggregation_service/aggregatable_report_sender.h"
+#include "content/browser/aggregation_service/aggregation_service_storage.h"
 #include "content/public/browser/storage_partition.h"
 
 class GURL;
@@ -18,6 +22,7 @@ class Value;
 
 namespace content {
 
+class AggregationServiceObserver;
 class AggregatableReport;
 class AggregatableReportRequest;
 class BrowserContext;
@@ -70,6 +75,24 @@ class AggregationService {
   // time. It is stored on disk (unless in incognito) until then. See the
   // `AggregatableReportScheduler` for details.
   virtual void ScheduleReport(AggregatableReportRequest report_request) = 0;
+
+  // Gets all pending report requests that are currently stored. Used for
+  // populating WebUI.
+  // TODO(linnan): Consider enforcing a limit on the number of requests
+  // returned.
+  virtual void GetPendingReportRequestsForWebUI(
+      base::OnceCallback<void(
+          std::vector<AggregationServiceStorage::RequestAndId>)> callback) = 0;
+
+  // Sends the given reports immediately, and runs `reports_sent_callback` once
+  // they have all been sent.
+  virtual void SendReportsForWebUI(
+      const std::vector<AggregationServiceStorage::RequestId>& ids,
+      base::OnceClosure reports_sent_callback) = 0;
+
+  virtual void AddObserver(AggregationServiceObserver* observer) = 0;
+
+  virtual void RemoveObserver(AggregationServiceObserver* observer) = 0;
 };
 
 }  // namespace content

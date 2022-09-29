@@ -13,6 +13,10 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 
+namespace ash::quick_start {
+
+class RandomSessionId;
+
 // FastPairAdvertiser broadcasts advertisements with the service UUID
 // 0xFE2C and model ID 0x41C0D9. When the remote device detects this
 // advertisement it will trigger a prompt to begin Quick Start.
@@ -45,18 +49,22 @@ class FastPairAdvertiser : public device::BluetoothAdvertisement::Observer {
 
   // Begin broadcasting Fast Pair advertisement.
   virtual void StartAdvertising(base::OnceClosure callback,
-                                base::OnceClosure error_callback);
+                                base::OnceClosure error_callback,
+                                const RandomSessionId& random_session_id);
 
   // Stop broadcasting Fast Pair advertisement.
   virtual void StopAdvertising(base::OnceClosure callback);
 
  private:
+  friend class FastPairAdvertiserTest;
+
   // device::BluetoothAdvertisement::Observer:
   void AdvertisementReleased(
       device::BluetoothAdvertisement* advertisement) override;
 
   void RegisterAdvertisement(base::OnceClosure callback,
-                             base::OnceClosure error_callback);
+                             base::OnceClosure error_callback,
+                             const RandomSessionId& random_session_id);
   void OnRegisterAdvertisement(
       base::OnceClosure callback,
       scoped_refptr<device::BluetoothAdvertisement> advertisement);
@@ -68,13 +76,16 @@ class FastPairAdvertiser : public device::BluetoothAdvertisement::Observer {
   void OnUnregisterAdvertisementError(
       device::BluetoothAdvertisement::ErrorCode error_code);
 
-  // Returns metadata in format [ fast_pair_code (2 bytes) ].
-  std::vector<uint8_t> GenerateManufacturerMetadata();
+  // Returns metadata in format [ random_session_id (16 bytes) ].
+  std::vector<uint8_t> GenerateManufacturerMetadata(
+      const RandomSessionId& random_session_id);
 
   scoped_refptr<device::BluetoothAdapter> adapter_;
   scoped_refptr<device::BluetoothAdvertisement> advertisement_;
   base::OnceClosure stop_callback_;
   base::WeakPtrFactory<FastPairAdvertiser> weak_ptr_factory_{this};
 };
+
+}  // namespace ash::quick_start
 
 #endif  // CHROMEOS_ASH_COMPONENTS_OOBE_QUICK_START_CONNECTIVITY_FAST_PAIR_ADVERTISER_H_

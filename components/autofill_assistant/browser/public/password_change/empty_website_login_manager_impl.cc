@@ -49,10 +49,15 @@ void EmptyWebsiteLoginManagerImpl::EditPasswordForLogin(
 }
 
 absl::optional<std::string> EmptyWebsiteLoginManagerImpl::GeneratePassword(
+    content::RenderFrameHost* rfh,
     autofill::FormSignature form_signature,
     autofill::FieldSignature field_signature,
     uint64_t max_length) {
   return absl::nullopt;
+}
+
+const std::string& EmptyWebsiteLoginManagerImpl::GetGeneratedPassword() {
+  return generated_password_;
 }
 
 void EmptyWebsiteLoginManagerImpl::PresaveGeneratedPassword(

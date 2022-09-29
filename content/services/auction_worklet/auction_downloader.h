@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/unguessable_token.h"
+#include "content/common/content_export.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
@@ -25,7 +26,7 @@ namespace auction_worklet {
 
 // Download utility for auction scripts and JSON data. Creates requests and
 // blocks responses.
-class AuctionDownloader {
+class CONTENT_EXPORT AuctionDownloader {
  public:
   // Mime type to use for Accept header. Any response without a matching
   // Content-Type header is rejected.
@@ -42,7 +43,7 @@ class AuctionDownloader {
                               scoped_refptr<net::HttpResponseHeaders> headers,
                               absl::optional<std::string> error)>;
 
-  // Starts loading the worklet script on construction. Callback will be invoked
+  // Starts loading `source_url` on construction. Callback will be invoked
   // asynchronously once the data has been fetched or an error has occurred.
   AuctionDownloader(network::mojom::URLLoaderFactory* url_loader_factory,
                     const GURL& source_url,

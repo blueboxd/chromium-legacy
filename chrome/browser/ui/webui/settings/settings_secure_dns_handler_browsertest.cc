@@ -92,18 +92,16 @@ net::DohProviderEntry::List GetDohProviderListForTesting() {
   return {&global1, &no_display, &ee_fr, &fr, &global2};
 }
 
-bool FindDropdownItem(const base::Value& resolvers,
+bool FindDropdownItem(const base::Value::List& resolvers,
                       const std::string& name,
                       const std::string& value,
                       const std::string& policy) {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetKey("name", base::Value(name));
-  dict.SetKey("value", base::Value(value));
-  dict.SetKey("policy", base::Value(policy));
+  base::Value::Dict dict;
+  dict.Set("name", name);
+  dict.Set("value", value);
+  dict.Set("policy", policy);
 
-  return std::find(resolvers.GetListDeprecated().begin(),
-                   resolvers.GetListDeprecated().end(),
-                   dict) != resolvers.GetListDeprecated().end();
+  return std::find(resolvers.begin(), resolvers.end(), dict) != resolvers.end();
 }
 
 }  // namespace
@@ -305,33 +303,28 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, OtherPoliciesSet) {
 
 // This test makes no assumptions about the country or underlying resolver list.
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, DropdownList) {
-  base::Value args(base::Value::Type::LIST);
+  base::Value::List args;
   args.Append(kWebUiFunctionName);
 
-  web_ui_.HandleReceivedMessage(kGetSecureDnsResolverList,
-                                &base::Value::AsListValue(args));
+  web_ui_.HandleReceivedMessage(kGetSecureDnsResolverList, args);
   const content::TestWebUI::CallData& call_data = *web_ui_.call_data().back();
   EXPECT_EQ("cr.webUIResponse", call_data.function_name());
   EXPECT_EQ(kWebUiFunctionName, call_data.arg1()->GetString());
   ASSERT_TRUE(call_data.arg2()->GetBool());
 
   // Check results.
-  base::Value::ConstListView resolver_list =
-      call_data.arg3()->GetListDeprecated();
+  const base::Value::List& resolver_list = call_data.arg3()->GetList();
   ASSERT_GE(resolver_list.size(), 1U);
-  EXPECT_TRUE(resolver_list[0].FindKey("value")->GetString().empty());
+  EXPECT_TRUE(resolver_list[0].GetDict().FindString("value")->empty());
 }
 
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, DropdownListContents) {
   const auto entries = GetDohProviderListForTesting();
   handler_->SetProvidersForTesting(entries);
-  const base::Value resolver_list = handler_->GetSecureDnsResolverList();
+  const base::Value::List resolver_list = handler_->GetSecureDnsResolverList();
 
-  EXPECT_EQ(entries.size() + 1, resolver_list.GetListDeprecated().size());
-  EXPECT_TRUE(resolver_list.GetListDeprecated()[0]
-                  .FindKey("value")
-                  ->GetString()
-                  .empty());
+  EXPECT_EQ(entries.size() + 1, resolver_list.size());
+  EXPECT_TRUE(resolver_list[0].GetDict().FindString("value")->empty());
   for (const auto* entry : entries) {
     EXPECT_TRUE(FindDropdownItem(resolver_list, entry->ui_name,
                                  entry->doh_server_config.server_template(),
@@ -343,11 +336,10 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, DropdownListChange) {
   handler_->SetProvidersForTesting(GetDohProviderListForTesting());
 
   base::HistogramTester histograms;
-  base::Value args(base::Value::Type::LIST);
+  base::Value::List args;
   args.Append(std::string() /* old_provider */);
   args.Append("https://global1.provider/dns-query{?dns}" /* new_provider */);
-  web_ui_.HandleReceivedMessage(kRecordUserDropdownInteraction,
-                                &base::Value::AsListValue(args));
+  web_ui_.HandleReceivedMessage(kRecordUserDropdownInteraction, args);
 
   const std::string kUmaBase = "Net.DNS.UI.DropdownSelectionEvent";
   histograms.ExpectTotalCount(kUmaBase + ".Ignored", 4u);
@@ -390,13 +382,12 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, SecureDnsTemplates) {
 }
 
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateValid) {
-  base::Value args(base::Value::Type::LIST);
+  base::Value::List args;
   args.Append(kWebUiFunctionName);
   args.Append("https://example.template/dns-query");
 
   base::HistogramTester histograms;
-  web_ui_.HandleReceivedMessage(kIsValidConfig,
-                                &base::Value::AsListValue(args));
+  web_ui_.HandleReceivedMessage(kIsValidConfig, args);
   const content::TestWebUI::CallData& call_data = *web_ui_.call_data().back();
   EXPECT_EQ("cr.webUIResponse", call_data.function_name());
   EXPECT_EQ(kWebUiFunctionName, call_data.arg1()->GetString());
@@ -409,13 +400,12 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateValid) {
 }
 
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateInvalid) {
-  base::Value args(base::Value::Type::LIST);
+  base::Value::List args;
   args.Append(kWebUiFunctionName);
   args.Append("invalid_template");
 
   base::HistogramTester histograms;
-  web_ui_.HandleReceivedMessage(kIsValidConfig,
-                                &base::Value::AsListValue(args));
+  web_ui_.HandleReceivedMessage(kIsValidConfig, args);
   const content::TestWebUI::CallData& call_data = *web_ui_.call_data().back();
   EXPECT_EQ("cr.webUIResponse", call_data.function_name());
   EXPECT_EQ(kWebUiFunctionName, call_data.arg1()->GetString());
@@ -429,12 +419,11 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateInvalid) {
 
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, MultipleTemplates) {
   base::HistogramTester histograms;
-  base::Value args_valid(base::Value::Type::LIST);
+  base::Value::List args_valid;
   args_valid.Append(kWebUiFunctionName);
   args_valid.Append(
       "https://example1.template/dns    https://example2.template/dns-query");
-  web_ui_.HandleReceivedMessage(kIsValidConfig,
-                                &base::Value::AsListValue(args_valid));
+  web_ui_.HandleReceivedMessage(kIsValidConfig, args_valid);
   const content::TestWebUI::CallData& call_data_valid =
       *web_ui_.call_data().back();
   EXPECT_EQ("cr.webUIResponse", call_data_valid.function_name());
@@ -446,11 +435,10 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, MultipleTemplates) {
   histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", false, 0);
   histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", true, 1);
 
-  base::Value args_invalid(base::Value::Type::LIST);
+  base::Value::List args_invalid;
   args_invalid.Append(kWebUiFunctionName);
   args_invalid.Append("invalid_template https://example.template/dns");
-  web_ui_.HandleReceivedMessage(kIsValidConfig,
-                                &base::Value::AsListValue(args_invalid));
+  web_ui_.HandleReceivedMessage(kIsValidConfig, args_invalid);
   const content::TestWebUI::CallData& call_data_invalid =
       *web_ui_.call_data().back();
   EXPECT_EQ("cr.webUIResponse", call_data_invalid.function_name());
@@ -475,11 +463,10 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateProbeSuccess) {
                           SingleResult>() /* google_config_result_list */);
   handler_->SetNetworkContextForTesting(network_context_.get());
   base::HistogramTester histograms;
-  base::Value args_valid(base::Value::Type::LIST);
+  base::Value::List args_valid;
   args_valid.Append(kWebUiFunctionName);
   args_valid.Append("https://example.template/dns-query https://example2/");
-  web_ui_.HandleReceivedMessage(kProbeConfig,
-                                &base::Value::AsListValue(args_valid));
+  web_ui_.HandleReceivedMessage(kProbeConfig, args_valid);
   base::RunLoop().RunUntilIdle();
 
   const content::TestWebUI::CallData& call_data_valid =
@@ -507,11 +494,10 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateProbeFailure) {
                           SingleResult>() /* google_config_result_list */);
   handler_->SetNetworkContextForTesting(network_context_.get());
   base::HistogramTester histograms;
-  base::Value args_valid(base::Value::Type::LIST);
+  base::Value::List args_valid;
   args_valid.Append(kWebUiFunctionName);
   args_valid.Append("https://example.template/dns-query");
-  web_ui_.HandleReceivedMessage(kProbeConfig,
-                                &base::Value::AsListValue(args_valid));
+  web_ui_.HandleReceivedMessage(kProbeConfig, args_valid);
   base::RunLoop().RunUntilIdle();
 
   const content::TestWebUI::CallData& call_data_valid =
@@ -540,13 +526,12 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateProbeDebounce) {
           std::vector<chrome_browser_net::FakeHostResolver::
                           SingleResult>() /* google_config_result_list */);
   base::HistogramTester histograms;
-  base::Value args_valid(base::Value::Type::LIST);
+  base::Value::List args_valid;
   args_valid.Append(kWebUiFunctionName);
   args_valid.Append("https://example.template/dns-query");
   // Request a probe that will hang.
   handler_->SetNetworkContextForTesting(network_context_hang.get());
-  web_ui_.HandleReceivedMessage(kProbeConfig,
-                                &base::Value::AsListValue(args_valid));
+  web_ui_.HandleReceivedMessage(kProbeConfig, args_valid);
   size_t responses = web_ui_.call_data().size();
   base::RunLoop().RunUntilIdle();
   // No response yet from the hanging probe.
@@ -554,8 +539,7 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateProbeDebounce) {
 
   // Request a probe that will fail.
   handler_->SetNetworkContextForTesting(network_context_fail.get());
-  web_ui_.HandleReceivedMessage(kProbeConfig,
-                                &base::Value::AsListValue(args_valid));
+  web_ui_.HandleReceivedMessage(kProbeConfig, args_valid);
   // The hanging response should now have arrived.
   EXPECT_EQ(responses + 1, web_ui_.call_data().size());
   const content::TestWebUI::CallData& first_response =

@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 
+#include <limits>
 #include <memory>
 #include <set>
 #include <utility>
@@ -54,6 +55,7 @@
 #include "content/public/common/page_visibility_state.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-forward.h"
 #include "third_party/blink/public/mojom/widget/record_content_to_visible_time_request.mojom.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/aura/aura_window_properties.h"
@@ -1013,7 +1015,8 @@ void RenderWidgetHostViewAura::DidOverscroll(
 
 void RenderWidgetHostViewAura::GestureEventAck(
     const blink::WebGestureEvent& event,
-    blink::mojom::InputEventResultState ack_result) {
+    blink::mojom::InputEventResultState ack_result,
+    blink::mojom::ScrollResultDataPtr scroll_result_data) {
   const blink::WebInputEvent::Type event_type = event.GetType();
   if (event_type == blink::WebGestureEvent::Type::kGestureScrollBegin ||
       event_type == blink::WebGestureEvent::Type::kGestureScrollEnd) {
@@ -1238,7 +1241,7 @@ void RenderWidgetHostViewAura::SetCompositionText(
   has_composition_text_ = !composition.text.empty();
 }
 
-uint32_t RenderWidgetHostViewAura::ConfirmCompositionText(bool keep_selection) {
+size_t RenderWidgetHostViewAura::ConfirmCompositionText(bool keep_selection) {
   if (text_input_manager_ && text_input_manager_->GetActiveWidget() &&
       has_composition_text_) {
     text_input_manager_->GetActiveWidget()->ImeFinishComposingText(
@@ -1247,7 +1250,7 @@ uint32_t RenderWidgetHostViewAura::ConfirmCompositionText(bool keep_selection) {
   has_composition_text_ = false;
   // TODO(crbug/1109604): Return the number of characters committed by this
   // function.
-  return UINT32_MAX;
+  return std::numeric_limits<size_t>::max();
 }
 
 void RenderWidgetHostViewAura::ClearCompositionText() {
@@ -1385,7 +1388,7 @@ gfx::Rect RenderWidgetHostViewAura::GetSelectionBoundingBox() const {
 }
 
 bool RenderWidgetHostViewAura::GetCompositionCharacterBounds(
-    uint32_t index,
+    size_t index,
     gfx::Rect* rect) const {
   DCHECK(rect);
 
@@ -1535,8 +1538,11 @@ void RenderWidgetHostViewAura::EnsureCaretNotInRect(
   keyboard_occluded_bounds_ = rect_in_screen;
 
   // If keyboard is disabled, reset the insets_.
-  if (keyboard_occluded_bounds_.IsEmpty())
-    insets_ = gfx::Insets();
+  if (keyboard_occluded_bounds_.IsEmpty()) {
+    SetInsets(gfx::Insets());
+  } else {
+    UpdateInsetsWithVirtualKeyboardEnabled();
+  }
 
   aura::Window* top_level_window = window_->GetToplevelWindow();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1871,8 +1877,12 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
   device_scale_factor_ = new_device_scale_factor;
   const display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
-  DCHECK_EQ(new_device_scale_factor, display.device_scale_factor());
-  current_cursor_.SetDisplayInfo(display);
+  // Sometimes GetDisplayNearestWindow returns the default monitor. We don't
+  // want to use that here.
+  if (display.is_valid()) {
+    DCHECK_EQ(new_device_scale_factor, display.device_scale_factor());
+    current_cursor_.SetDisplayInfo(display);
+  }
 }
 
 void RenderWidgetHostViewAura::OnWindowDestroying(aura::Window* window) {
@@ -2111,11 +2121,8 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, aura::WindowTreeHostObserver implementation:
 
-void RenderWidgetHostViewAura::OnHostMovedInPixels(
-    aura::WindowTreeHost* host,
-    const gfx::Point& new_origin_in_pixels) {
-  TRACE_EVENT1("ui", "RenderWidgetHostViewAura::OnHostMovedInPixels",
-               "new_origin_in_pixels", new_origin_in_pixels.ToString());
+void RenderWidgetHostViewAura::OnHostMovedInPixels(aura::WindowTreeHost* host) {
+  TRACE_EVENT0("ui", "RenderWidgetHostViewAura::OnHostMovedInPixels");
 
   UpdateScreenInfo();
 }
@@ -2456,11 +2463,11 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
 void RenderWidgetHostViewAura::UpdateInsetsWithVirtualKeyboardEnabled() {
   // Update insets if the keyboard is shown.
   if (!keyboard_occluded_bounds_.IsEmpty()) {
-    insets_ = gfx::Insets::TLBR(
+    SetInsets(gfx::Insets::TLBR(
         0, 0,
         gfx::IntersectRects(GetViewBounds(), keyboard_occluded_bounds_)
             .height(),
-        0);
+        0));
   }
 }
 

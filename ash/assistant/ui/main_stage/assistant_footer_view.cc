@@ -74,8 +74,8 @@ void AssistantFooterView::InitLayout() {
   // Initial view state is based on user consent state.
   const bool consent_given =
       AssistantState::Get()->consent_status().value_or(
-          chromeos::assistant::prefs::ConsentStatus::kUnknown) ==
-      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted;
+          assistant::prefs::ConsentStatus::kUnknown) ==
+      assistant::prefs::ConsentStatus::kActivityControlAccepted;
 
   // Suggestion container.
   suggestion_container_ =
@@ -87,7 +87,6 @@ void AssistantFooterView::InitLayout() {
   suggestion_container_->layer()->SetFillsBoundsOpaquely(false);
   suggestion_container_->layer()->SetOpacity(consent_given ? 1.f : 0.f);
   suggestion_container_->SetVisible(consent_given);
-
 
   // Opt in view.
   opt_in_view_ = AddChildView(std::make_unique<AssistantOptInView>(delegate_));
@@ -107,7 +106,7 @@ void AssistantFooterView::OnAssistantConsentStatusChanged(int consent_status) {
 
   const bool consent_given =
       consent_status ==
-      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted;
+      assistant::prefs::ConsentStatus::kActivityControlAccepted;
 
   // When the consent state changes, we need to hide/show the appropriate views.
   views::View* hide_view =
@@ -145,6 +144,10 @@ void AssistantFooterView::OnAssistantConsentStatusChanged(int consent_status) {
   animation_observer_->SetActive();
 }
 
+void AssistantFooterView::InitializeUIForBubbleView() {
+  suggestion_container_->InitializeUIForBubbleView();
+}
+
 void AssistantFooterView::OnAnimationStarted(
     const ui::CallbackLayerAnimationObserver& observer) {
   // Our views should not process events while animating.
@@ -156,8 +159,8 @@ bool AssistantFooterView::OnAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
   const bool consent_given =
       AssistantState::Get()->consent_status().value_or(
-          chromeos::assistant::prefs::ConsentStatus::kUnknown) ==
-      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted;
+          assistant::prefs::ConsentStatus::kUnknown) ==
+      assistant::prefs::ConsentStatus::kActivityControlAccepted;
 
   // Only the view relevant to our consent state should process events.
   suggestion_container_->SetCanProcessEventsWithinSubtree(consent_given);

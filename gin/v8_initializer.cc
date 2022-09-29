@@ -260,6 +260,12 @@ void SetFlags(IsolateHolder::ScriptMode mode,
   SetV8FlagsIfOverridden(features::kV8OffThreadFinalization,
                          "--finalize-streaming-on-background",
                          "--no-finalize-streaming-on-background");
+  if (base::FeatureList::IsEnabled(features::kV8DelayMemoryReducer)) {
+    SetV8FlagsFormatted(
+        "--gc-memory-reducer-start-delay-ms=%i",
+        static_cast<int>(
+            features::kV8MemoryReducerStartDelay.Get().InMilliseconds()));
+  }
   SetV8FlagsIfOverridden(features::kV8LazyFeedbackAllocation,
                          "--lazy-feedback-allocation",
                          "--no-lazy-feedback-allocation");
@@ -301,6 +307,15 @@ void SetFlags(IsolateHolder::ScriptMode mode,
   if (base::FeatureList::IsEnabled(features::kV8ConcurrentSparkplug)) {
     if (int max_threads = features::kV8ConcurrentSparkplugMaxThreads.Get()) {
       SetV8FlagsFormatted("--concurrent-sparkplug-max-threads=%i", max_threads);
+    }
+    SetV8FlagsIfOverridden(features::kV8ConcurrentSparkplugHighPriorityThreads,
+                           "--concurrent-sparkplug-high-priority-threads",
+                           "--no-concurrent-sparkplug-high-priority-threads");
+  }
+
+  if (base::FeatureList::IsEnabled(features::kV8FlushBytecode)) {
+    if (int old_age = features::kV8FlushBytecodeOldAge.Get()) {
+      SetV8FlagsFormatted("--bytecode-old-age=%i", old_age);
     }
   }
 

@@ -25,7 +25,7 @@ class LogManagerImpl : public LogManager {
   void OnLogRouterAvailabilityChanged(bool router_can_be_used) override;
   void SetSuspended(bool suspended) override;
   void LogTextMessage(const std::string& text) const override;
-  void LogEntry(const base::Value& entry) const override;
+  void LogEntry(const base::Value::Dict& entry) const override;
   bool IsLoggingActive() const override;
   LogBufferSubmitter Log() override;
 
@@ -83,7 +83,7 @@ void LogManagerImpl::LogTextMessage(const std::string& text) const {
   log_router_->ProcessLog(text);
 }
 
-void LogManagerImpl::LogEntry(const base::Value& entry) const {
+void LogManagerImpl::LogEntry(const base::Value::Dict& entry) const {
   if (!IsLoggingActive())
     return;
   log_router_->ProcessLog(entry);
@@ -105,11 +105,6 @@ std::unique_ptr<LogManager> LogManager::Create(
     base::RepeatingClosure notification_callback) {
   return std::make_unique<LogManagerImpl>(log_router,
                                           std::move(notification_callback));
-}
-
-// static
-LogBufferSubmitter LogManager::DevNull() {
-  return LogBufferSubmitter(nullptr, false);
 }
 
 }  // namespace autofill

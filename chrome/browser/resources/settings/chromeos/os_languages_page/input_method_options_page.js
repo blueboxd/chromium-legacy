@@ -7,7 +7,7 @@
  * to allow users to change options for each input method.
  */
 import 'chrome://resources/cr_elements/md_select_css.m.js';
-import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 import '../../settings_shared.css.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
@@ -136,7 +136,8 @@ class SettingsInputMethodOptionsPageElement extends
    */
   populateOptionSections_() {
     const options = generateOptions(
-        this.engineId_, loadTimeData.getBoolean('allowPredictiveWriting'));
+        this.engineId_, loadTimeData.getBoolean('allowPredictiveWriting'),
+        loadTimeData.getBoolean('allowDiacriticsOnPhysicalKeyboardLongpress'));
     const prefValue = this.getPref(this.PREFS_PATH).value;
     const prefix = this.getPrefsPrefix_();
     const currentSettings = prefix in prefValue ? prefValue[prefix] : {};

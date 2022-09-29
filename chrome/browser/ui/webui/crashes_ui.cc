@@ -38,7 +38,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
+#include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
 #endif
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -159,8 +159,7 @@ void CrashesDOMHandler::HandleRequestCrashes(const base::Value::List& args) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void CrashesDOMHandler::HandleRequestUploads(const base::Value::List& args) {
-  chromeos::DebugDaemonClient* debugd_client =
-      chromeos::DebugDaemonClient::Get();
+  ash::DebugDaemonClient* debugd_client = ash::DebugDaemonClient::Get();
   DCHECK(debugd_client);
 
   debugd_client->UploadCrashes(base::BindOnce([](bool success) {
@@ -230,8 +229,7 @@ void CrashesDOMHandler::UpdateUI() {
   result.Set("os", base::SysInfo::OperatingSystemName() + " " +
                        base::SysInfo::OperatingSystemVersion());
   result.Set("isGoogleAccount", is_internal);
-  FireWebUIListener(crash_reporter::kCrashesUIUpdateCrashList,
-                    base::Value(std::move(result)));
+  FireWebUIListener(crash_reporter::kCrashesUIUpdateCrashList, result);
 }
 
 void CrashesDOMHandler::HandleRequestSingleCrashUpload(

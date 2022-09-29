@@ -385,8 +385,8 @@ base::Value::Dict LinearGradientToDict(
   base::Value::List steps;
   for (size_t i = 0; i < gradient_mask.step_count(); ++i) {
     base::Value::Dict step_dict;
-    step_dict.Set("percent",
-                  static_cast<double>(gradient_mask.steps()[i].percent));
+    step_dict.Set("fraction",
+                  static_cast<double>(gradient_mask.steps()[i].fraction));
     step_dict.Set("alpha", static_cast<int>(gradient_mask.steps()[i].alpha));
     steps.Append(std::move(step_dict));
   }
@@ -411,12 +411,12 @@ bool LinearGradientFromDict(const base::Value::Dict& dict,
     if (!step)
       return false;
 
-    absl::optional<double> percent = step->FindDouble("percent");
+    absl::optional<double> fraction = step->FindDouble("fraction");
     absl::optional<int> alpha = step->FindInt("alpha");
-    if (!percent || !alpha)
+    if (!fraction || !alpha)
       return false;
 
-    gradient_mask.AddStep(*percent, *alpha);
+    gradient_mask.AddStep(*fraction, *alpha);
   }
 
   *out = gradient_mask;
@@ -1829,22 +1829,27 @@ bool SharedQuadStateFromDict(const base::Value& dict, SharedQuadState* sqs) {
       dict.FindDoubleKey("de_jelly_delta_y");
 
   if (!quad_to_target_transform || !quad_layer_rect ||
-      !visible_quad_layer_rect || !mask_filter_info || !are_contents_opaque ||
-      !opacity || !blend_mode || !sorting_context_id ||
-      !is_fast_rounded_corner || !de_jelly_delta_y) {
+      !visible_quad_layer_rect || !are_contents_opaque || !opacity ||
+      !blend_mode || !sorting_context_id || !is_fast_rounded_corner ||
+      !de_jelly_delta_y) {
     return false;
   }
   gfx::Transform t_quad_to_target_transform;
   gfx::Rect t_quad_layer_rect, t_visible_quad_layer_rect, t_clip_rect;
-  gfx::MaskFilterInfo t_mask_filter_info;
   if (!TransformFromList(*quad_to_target_transform,
                          &t_quad_to_target_transform) ||
       !RectFromDict(*quad_layer_rect, &t_quad_layer_rect) ||
       !RectFromDict(*visible_quad_layer_rect, &t_visible_quad_layer_rect) ||
-      !MaskFilterInfoFromDict(*mask_filter_info, &t_mask_filter_info) ||
       (clip_rect && !RectFromDict(*clip_rect, &t_clip_rect))) {
     return false;
   }
+
+  gfx::MaskFilterInfo t_mask_filter_info;
+  if (mask_filter_info &&
+      !MaskFilterInfoFromDict(*mask_filter_info, &t_mask_filter_info)) {
+    return false;
+  }
+
   absl::optional<gfx::Rect> clip_rect_opt;
   // Some older files still use the is_clipped field.  If it's present, we'll
   // respect it, and ignore clip_rect if it's false.

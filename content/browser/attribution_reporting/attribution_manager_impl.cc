@@ -235,7 +235,7 @@ void LogMetricsOnReportCompleted(const AttributionReport& report,
 
 std::unique_ptr<AttributionStorageDelegate> MakeStorageDelegate() {
   bool debug_mode = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kConversionsDebugMode);
+      switches::kAttributionReportingDebugMode);
 
   if (debug_mode) {
     return std::make_unique<AttributionStorageDelegateImpl>(
@@ -334,7 +334,8 @@ AttributionManagerImpl::AttributionManagerImpl(
           std::move(special_storage_policy),
           MakeStorageDelegate(),
           std::make_unique<AttributionCookieCheckerImpl>(storage_partition),
-          std::make_unique<AttributionReportNetworkSender>(storage_partition),
+          std::make_unique<AttributionReportNetworkSender>(
+              storage_partition->GetURLLoaderFactoryForBrowserProcess()),
           std::make_unique<AttributionDataHostManagerImpl>(this)) {}
 
 AttributionManagerImpl::AttributionManagerImpl(
@@ -872,6 +873,7 @@ void AttributionManagerImpl::OnAggregatableReportAssembled(
     AttributionReport report,
     bool is_debug_report,
     ReportSentCallback callback,
+    AggregatableReportRequest,
     absl::optional<AggregatableReport> assembled_report,
     AggregationService::AssemblyStatus) {
   if (!assembled_report.has_value()) {

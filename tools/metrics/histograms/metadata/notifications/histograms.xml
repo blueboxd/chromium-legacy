@@ -28,7 +28,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Notifications.Actions" enum="NotificationActionType"
-    expires_after="2022-11-22">
+    expires_after="2023-01-22">
   <owner>dewittj@chromium.org</owner>
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -39,7 +39,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.Android.Build" enum="BooleanSuccess"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -242,8 +242,7 @@ chromium-metrics-reviews@google.com.
         summary="Count of notifications displayed in the first minute since
                  login for a user"/>
     <variant name="NotificationAdded"
-        summary="A notification was created (regardless if it was shown or
-                 not)"/>
+        summary="A notification was created and it was shown"/>
     <variant name="Popup.ClickedActionButton"
         summary="User clicks on an action button of a popup notification"/>
     <variant name="Popup.ClickedBody"
@@ -351,7 +350,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.Database.ExpiredNotificationCount"
-    units="notifications" expires_after="2022-12-11">
+    units="notifications" expires_after="2023-02-12">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -426,7 +425,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.Database.ReadResult"
-    enum="NotificationDatabaseStatus" expires_after="2022-12-04">
+    enum="NotificationDatabaseStatus" expires_after="2023-02-12">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -436,7 +435,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.Database.WriteResult"
-    enum="NotificationDatabaseStatus" expires_after="2022-12-04">
+    enum="NotificationDatabaseStatus" expires_after="2023-02-12">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -654,7 +653,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.PerNotificationActions"
-    enum="NotificationActionType" expires_after="2022-11-22">
+    enum="NotificationActionType" expires_after="2023-01-22">
   <owner>dewittj@chromium.org</owner>
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -667,7 +666,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.PersistentNotificationActionCount"
-    units="buttons" expires_after="2022-12-04">
+    units="buttons" expires_after="2023-02-12">
   <owner>peter@chromium.org</owner>
   <summary>
     The number of action buttons the developer provided for a persistent Web
@@ -676,7 +675,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.PersistentNotificationDisplayResult"
-    enum="PersistentNotificationDisplayResult" expires_after="2022-12-11">
+    enum="PersistentNotificationDisplayResult" expires_after="2023-02-12">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>

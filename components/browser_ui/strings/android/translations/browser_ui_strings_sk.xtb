@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">Sťahovanie bolo pozastavené</translation>
 <translation id="1409426117486808224">Jednoduché zobrazenie otvorených kariet</translation>
 <translation id="1415402041810619267">Skrátená webová adresa</translation>
+<translation id="1426410128494586442">Áno</translation>
 <translation id="1446450296470737166">Povoliť úplné ovlád. zar. MIDI</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1644574205037202324">História</translation>
@@ -32,6 +33,7 @@
 <translation id="1818308510395330587">Fotoaparát zapnite aj v <ph name="BEGIN_LINK" />nastaveniach Androidu<ph name="END_LINK" />, aby mohla aplikácia <ph name="APP_NAME" /> používať RR.</translation>
 <translation id="1864927262126810325">Zdroj: <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">Prístup k polohe je v tomto zariadení vypnutý. Zapnite ho v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
+<translation id="1915307458270490472">Zložiť</translation>
 <translation id="1919345977826869612">Reklamy</translation>
 <translation id="1919950603503897840">Výber kontaktov</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -78,6 +80,7 @@
 <translation id="2677748264148917807">Odísť</translation>
 <translation id="2687403674020088961">Blokovať všetky súbory cookie (neodporúča sa)</translation>
 <translation id="2704606927547763573">Skopírované</translation>
+<translation id="2713106313042589954">Vypnúť kameru</translation>
 <translation id="2717722538473713889">E‑mailové adresy</translation>
 <translation id="2750481671343847896">Weby môžu zobrazovať výzvy na prihlásenie od služieb identity.</translation>
 <translation id="2785051990912111074">Týmto výberom vymažete súbory cookie webu <ph name="WEBSITE" /></translation>
@@ -97,6 +100,7 @@
 <translation id="3114012059975132928">Prehrávač videa</translation>
 <translation id="3115898365077584848">Zobraziť informácie</translation>
 <translation id="3123473560110926937">Blokované na niektorých weboch</translation>
+<translation id="3143754809889689516">Prehrať od začiatku</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> uložených dát</translation>
 <translation id="3203366800380907218">Z webu</translation>
 <translation id="321187648315454507">Ak chcete povoliť aplikácii <ph name="APP_NAME" /> odosielať vám upozornenia, zapnite ich aj v <ph name="BEGIN_LINK" />nastaveniach Androidu<ph name="END_LINK" />.</translation>
@@ -153,10 +157,12 @@
 <translation id="4479647676395637221">Pýtať sa, či chcete povoliť webu používať kameru (odporúčané)</translation>
 <translation id="4505788138578415521">Webová adresa bola rozbalená</translation>
 <translation id="4534723447064627427">Ak chcete povoliť aplikácii <ph name="APP_NAME" /> používať mikrofón, zapnite ho aj v <ph name="BEGIN_LINK" />nastaveniach Androidu<ph name="END_LINK" />.</translation>
+<translation id="4566417217121906555">Vypnúť mikrofón</translation>
 <translation id="4570913071927164677">Podrobnosti</translation>
 <translation id="4645575059429386691">Spravované vaším rodičom</translation>
 <translation id="4670064810192446073">Virtuálna realita</translation>
 <translation id="4751476147751820511">Senzory pohybu alebo svetla</translation>
+<translation id="4811450222531576619">Ďalšie informácie o príslušnom zdroji a téme</translation>
 <translation id="4836046166855586901">Opýtať sa, keď chce web zistiť, či aktívne používate toto zariadenie</translation>
 <translation id="4883854917563148705">Spravované nastavenia sa nedajú resetovať</translation>
 <translation id="4887024562049524730">Pýtať sa, či chcete povoliť webu používať zariadenie a dáta pre virtuálnu realitu (odporúčané)</translation>
@@ -177,6 +183,7 @@
 <translation id="5186036860380548585">Možnosť je k dispozícii v hornej časti obrazovky</translation>
 <translation id="5197729504361054390">Vybrané kontakty budú zdieľané s webom <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Naposledy navštívený dnes</translation>
+<translation id="5225463052809312700">Zapnúť kameru</translation>
 <translation id="5264323282659631142">Odstrániť <ph name="CHIP_LABEL" /></translation>
 <translation id="528192093759286357">Režim celej obrazovky ukončíte potiahnutím z hornej časti a klepnutím na tlačidlo Späť.</translation>
 <translation id="5300589172476337783">Zobraziť</translation>
@@ -235,8 +242,10 @@
 <translation id="6367753977865761591">Na konkrétnom webe môžete blokovať prihlasovanie tretích strán.</translation>
 <translation id="6388207532828177975">Vymazať a resetovať</translation>
 <translation id="6398765197997659313">Ukončiť zobrazenie na celú obrazovku</translation>
+<translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Brániť webom používať zariadenie a dáta pre virtuálnu realitu</translation>
 <translation id="6447842834002726250">Súbory cookie</translation>
+<translation id="6467852467360539617">Vymazať údaje a resetovať povolenia</translation>
 <translation id="6527303717912515753">Zdieľať</translation>
 <translation id="6545864417968258051">Vyhľadávanie zariadení Bluetooth</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{Sú blokované povolenia: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> a <ph name="NUM_MORE" /> ďalšie}few{Sú blokované povolenia <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> a <ph name="NUM_MORE" /> ďalšie}many{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, and <ph name="NUM_MORE" /> more blocked}other{Sú blokované povolenia <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> a <ph name="NUM_MORE" /> ďalších}}</translation>
@@ -276,6 +285,7 @@
 <translation id="7250468141469952378">Vybrané: <ph name="ITEM_COUNT" /></translation>
 <translation id="7260727271532453612">Povolené: <ph name="PERMISSION_1" /> a <ph name="PERMISSION_2" /></translation>
 <translation id="7302486331832100261">Zvyčajne blokujete upozornenia. Ak ich chcete povoliť, klepnite na Podrobnosti.</translation>
+<translation id="7383715096023715447">Nastavenia domény <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Najprv sa opýtať</translation>
 <translation id="7423538860840206698">Blokovať čítanie schránky</translation>
 <translation id="7425915948813553151">Tmavý motív pre weby</translation>
@@ -335,6 +345,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Používa sa 1 súbor cookie}few{Používajú sa # súbory cookie}many{# cookies in use}other{Používa sa # súborov cookie}}</translation>
 <translation id="8487700953926739672">K dispozícii offline</translation>
 <translation id="848952951823693243">Vždy požadovať mobilný web</translation>
+<translation id="8499083585497694743">Zapnúť mikrofón</translation>
 <translation id="851751545965956758">Brániť webom pripájať sa k zariadeniam</translation>
 <translation id="8525306231823319788">Celá obrazovka</translation>
 <translation id="857943718398505171">Povolené (odporúčané)</translation>

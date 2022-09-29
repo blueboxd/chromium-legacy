@@ -11,16 +11,15 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
+#include "chrome/browser/ui/lens/lens_side_panel_helper.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/lens/lens_entrypoints.h"
 #include "components/lens/lens_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/color/color_provider.h"
@@ -33,26 +32,6 @@
 #include "ui/views/layout/layout_provider.h"
 
 namespace {
-
-// We need to create a new URL with the specified query parameters while
-// also keeping the payloard parameter in the original URL.
-GURL CreateURLForNewTab(const GURL& original_url) {
-  if (original_url.is_empty())
-    return GURL();
-
-  std::string payload;
-  // Make sure the payload is present.
-  if (!net::GetValueForKeyInQuery(original_url, lens::kPayloadQueryParameter,
-                                  &payload)) {
-    return GURL();
-  }
-
-  // Append or replace query parameters related to entry point.
-  return lens::AppendOrReplaceQueryParametersForLensRequest(
-      original_url, lens::EntryPoint::CHROME_OPEN_NEW_TAB_SIDE_PANEL,
-      /*is_side_panel_request=*/false);
-}
-
 std::unique_ptr<views::WebView> CreateWebView(
     views::View* host,
     content::BrowserContext* browser_context) {
@@ -74,35 +53,9 @@ std::unique_ptr<views::WebView> CreateWebView(
 
 namespace lens {
 constexpr int kDefaultSidePanelHeaderHeight = 40;
-constexpr gfx::Insets kLensLabelButtonMargins = gfx::Insets::VH(12, 16);
-// Explore hosting the html in the gstatic url instead.
-// That will avoid needing to make a change in Chromium.
-constexpr char kStaticGhostCardDataURL[] =
-    "data:text/html;charset=utf-8,"
-    "<!DOCTYPE html>"
-    "<style>"
-    "html, body {"
-    "width: 100%;"
-    "height: 100%;"
-    "display: flex;"
-    "background: linear-gradient(transparent 0%, %23fff 100%);"  // %23fff is
-                                                                 // #fff
-    "flex-direction: column;"
-    "align-items: center;"
-    "justify-content: center;"
-    "overflow: hidden;"
-    "}"
-    "img {"
-    "height: 95%;"
-    "width: 95%;"
-    "}"
-    "</style>"
-    "<body>"
-    "<img "
-    "src='https://www.gstatic.com/lens/web/ui/loading/"
-    "320x1957_resizable_side_panel_view-fcf5ded159483fa61496e2cc7afca2a5.svg' "
-    "alt='Loading Screen'/>"
-    "</body>";
+constexpr gfx::Insets kLensLabelButtonMargins = gfx::Insets::VH(12, 0);
+constexpr char kStaticLoadingScreenURL[] =
+    "https://www.gstatic.com/lens/chrome/lens_side_panel_loading.html";
 
 LensUnifiedSidePanelView::LensUnifiedSidePanelView(BrowserView* browser_view) {
   browser_view_ = browser_view;
@@ -117,7 +70,7 @@ LensUnifiedSidePanelView::LensUnifiedSidePanelView(BrowserView* browser_view) {
   loading_indicator_web_view_ =
       AddChildView(CreateWebView(this, browser_context));
   loading_indicator_web_view_->GetWebContents()->GetController().LoadURL(
-      GURL(kStaticGhostCardDataURL), content::Referrer(),
+      GURL(kStaticLoadingScreenURL), content::Referrer(),
       ui::PAGE_TRANSITION_FROM_API, std::string());
   web_view_ = AddChildView(CreateWebView(this, browser_context));
   separator_ = AddChildView(std::make_unique<views::Separator>());
@@ -136,8 +89,8 @@ content::WebContents* LensUnifiedSidePanelView::GetWebContents() {
 }
 
 void LensUnifiedSidePanelView::LoadResultsInNewTab() {
-  const GURL url =
-      CreateURLForNewTab(web_view_->GetWebContents()->GetLastCommittedURL());
+  const GURL url = lens::CreateURLForNewTab(
+      web_view_->GetWebContents()->GetLastCommittedURL());
   // If there is no payload parameter, we will have an empty URL. This means
   // we should return on empty and not close the side panel.
   if (url.is_empty())
@@ -153,7 +106,17 @@ void LensUnifiedSidePanelView::LoadResultsInNewTab() {
 }
 
 void LensUnifiedSidePanelView::LoadProgressChanged(double progress) {
-  SetContentVisible(progress == 1.0);
+  bool is_content_visible = progress == 1.0;
+  SetContentVisible(is_content_visible);
+  if (launch_button_ != nullptr && is_content_visible) {
+    auto last_committed_url =
+        web_view_->GetWebContents()->GetLastCommittedURL();
+    launch_button_->SetEnabled(lens::IsValidLensResultUrl(last_committed_url));
+  }
+}
+
+bool LensUnifiedSidePanelView::IsLaunchButtonEnabledForTesting() {
+  return launch_button_ != nullptr && launch_button_->GetEnabled();
 }
 
 bool LensUnifiedSidePanelView::HandleContextMenu(
@@ -164,8 +127,8 @@ bool LensUnifiedSidePanelView::HandleContextMenu(
 }
 
 void LensUnifiedSidePanelView::OpenUrl(const content::OpenURLParams& params) {
-  GetWebContents()->GetController().LoadURLWithParams(
-      content::NavigationController::LoadURLParams(params));
+  side_panel_url_params_ = std::make_unique<content::OpenURLParams>(params);
+  MaybeLoadURLWithParams();
 }
 
 void LensUnifiedSidePanelView::DidOpenRequestedURL(
@@ -202,7 +165,8 @@ void LensUnifiedSidePanelView::CreateAndInstallFooter() {
           views::DistanceMetric::DISTANCE_RELATED_CONTROL_HORIZONTAL),
       0,
       chrome_layout_provider->GetDistanceMetric(
-          ChromeDistanceMetric::DISTANCE_SIDE_PANEL_HEADER_RIGHT_MARGIN)));
+          ChromeDistanceMetric::
+              DISTANCE_SIDE_PANEL_HEADER_INTERIOR_MARGIN_HORIZONTAL)));
 
   // Set alignments for horizontal (main) and vertical (cross) axes.
   footer->SetMainAxisAlignment(views::LayoutAlignment::kStart);
@@ -239,6 +203,33 @@ void LensUnifiedSidePanelView::CreateAndInstallFooter() {
 
   // Install footer.
   AddChildView(std::move(footer));
+}
+
+void LensUnifiedSidePanelView::MaybeLoadURLWithParams() {
+  // Ensure the side panel view has a width before loading URL. If side panel is
+  // still closed (width == 0), defer loading the URL to
+  // LensUnifiedSidePanelView::OnViewBoundsChanged. The nullptr check ensures we
+  // don't rerender the same page on a unrelated resize event.
+  if (width() == 0 || !side_panel_url_params_)
+    return;
+
+  // Manually set web contents to the size of side panel view on initial load.
+  // This prevents a bug in Lens Web that renders the page as if it was 0px
+  // wide.
+  GetWebContents()->Resize(bounds());
+  GetWebContents()->GetController().LoadURLWithParams(
+      content::NavigationController::LoadURLParams(*side_panel_url_params_));
+  side_panel_url_params_.reset();
+}
+
+void LensUnifiedSidePanelView::OnBoundsChanged(
+    const gfx::Rect& previous_bounds) {
+  // If side panel is closed when we first try to render the URL, we must wait
+  // until side panel is opened. This method is called once side panel view goes
+  // from 0px wide to ~320px wide. Rendering the page after side panel view
+  // fully opens prevents a race condition which causes the page to load before
+  // side panel is open causing the page to render as if it were 0px wide.
+  MaybeLoadURLWithParams();
 }
 
 void LensUnifiedSidePanelView::SetContentVisible(bool visible) {

@@ -14,8 +14,8 @@
 // Shows the ToS page.
 - (void)showTOSPage;
 
-// Hides the ToS page.
-- (void)hideTOSPage;
+// Closes the ToS page.
+- (void)closeTOSPage;
 
 @end
 

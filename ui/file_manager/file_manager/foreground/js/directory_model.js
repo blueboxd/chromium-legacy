@@ -20,7 +20,7 @@ import {PropStatus, State} from '../../externs/ts/state.js';
 import {Store} from '../../externs/ts/store.js';
 import {VolumeInfo} from '../../externs/volume_info.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
-import {changeDirectory} from '../../state/actions.js';
+import {changeDirectory, searchAction} from '../../state/actions.js';
 import {getStore} from '../../state/store.js';
 
 import {constants} from './constants.js';
@@ -67,8 +67,6 @@ export class DirectoryModel extends EventTarget {
 
     /** @private {?function(Event): void} */
     this.onSearchCompleted_ = null;
-    /** @private {?Function} */
-    this.onClearSearch_ = null;
 
     /**
      * @private {boolean}
@@ -749,11 +747,28 @@ export class DirectoryModel extends EventTarget {
     }
 
     // Clear the table, and start scanning.
-    dispatchSimpleEvent(this, 'scan-started');
     fileList.splice(0, fileList.length);
+    dispatchSimpleEvent(this, 'scan-started');
     this.scan_(
         this.currentDirContents_, false, true, onDone, onFailed, onUpdated,
         onCancelled);
+  }
+
+  /**
+   * Similar to clearAndScan_() but instead of passing a `newDirContents`, it
+   * uses the `currentDirContents_`.
+   */
+  clearCurrentDirAndScan() {
+    const sequence = ++this.changeDirectorySequence_;
+    this.directoryChangeQueue_.run(callback => {
+      if (this.changeDirectorySequence_ !== sequence) {
+        callback();
+        return;
+      }
+      const newDirContents = this.createDirectoryContents_(
+          this.currentFileListContext_, assert(this.getCurrentDirEntry()));
+      this.clearAndScan_(newDirContents, callback);
+    });
   }
 
   /**
@@ -1221,11 +1236,9 @@ export class DirectoryModel extends EventTarget {
       event.newDirEntry = dirEntry;
       event.volumeChanged = previousVolumeInfo !== currentVolumeInfo;
       this.dispatchEvent(event);
-      if (util.isFilesAppExperimental()) {
-        // Notify the Store that the new directory has successfully changed.
-        this.store_.dispatch(
-            changeDirectory({to: dirEntry, status: PropStatus.SUCCESS}));
-      }
+      // Notify the Store that the new directory has successfully changed.
+      this.store_.dispatch(
+          changeDirectory({to: dirEntry, status: PropStatus.SUCCESS}));
     });
   }
 
@@ -1401,8 +1414,7 @@ export class DirectoryModel extends EventTarget {
          this.getCurrentRootType() === VolumeManagerCommon.RootType.CROSTINI) ||
         // TODO(crbug/1293229): Don't redirect if the user is looking at a
         // different Guest OS folder.
-        (event.added[0].volumeType ===
-             VolumeManagerCommon.VolumeType.GUEST_OS &&
+        (util.isGuestOs(event.added[0].volumeType) &&
          this.getCurrentRootType() === VolumeManagerCommon.RootType.GUEST_OS)) {
       // Resolving a display root on FSP volumes is instant, despite the
       // asynchronous call.
@@ -1624,11 +1636,8 @@ export class DirectoryModel extends EventTarget {
    * @param {string} query Query that will be searched for.
    * @param {function(Event)} onSearchRescan Function that will be called when
    *     the search directory is rescanned (i.e. search results are displayed).
-   * @param {function()} onClearSearch Function to be called when search state
-   *     gets cleared.
-   * TODO(olege): Change callbacks to events.
    */
-  search(query, onSearchRescan, onClearSearch) {
+  search(query, onSearchRescan) {
     this.lastSearchQuery_ = query;
     this.clearSearch_();
     const currentDirEntry = this.getCurrentDirEntry();
@@ -1662,8 +1671,14 @@ export class DirectoryModel extends EventTarget {
         return;
       }
 
-      this.onSearchCompleted_ = onSearchRescan;
-      this.onClearSearch_ = onClearSearch;
+      this.onSearchCompleted_ = (...args) => {
+        // Notify the caller via callback, for non-store based callers.
+        onSearchRescan(...args);
+
+        // Notify the store-aware parts.
+        this.store_.dispatch(
+            searchAction({query: query, status: PropStatus.SUCCESS}));
+      };
       this.addEventListener('scan-completed', this.onSearchCompleted_);
       this.clearAndScan_(newDirContents, callback);
     });
@@ -1684,10 +1699,7 @@ export class DirectoryModel extends EventTarget {
       this.onSearchCompleted_ = null;
     }
 
-    if (this.onClearSearch_) {
-      this.onClearSearch_();
-      this.onClearSearch_ = null;
-    }
+    this.store_.dispatch(searchAction({}));
   }
 
   /**
@@ -1704,6 +1716,8 @@ export class DirectoryModel extends EventTarget {
       chrome.fileManagerPrivate.IOTaskType.DELETE,
       chrome.fileManagerPrivate.IOTaskType.EMPTY_TRASH,
       chrome.fileManagerPrivate.IOTaskType.MOVE,
+      chrome.fileManagerPrivate.IOTaskType.RESTORE,
+      chrome.fileManagerPrivate.IOTaskType.TRASH,
     ]);
     /** @type {!Set<?VolumeManagerCommon.RootType>} */
     const rootTypesRequireRefresh = new Set([

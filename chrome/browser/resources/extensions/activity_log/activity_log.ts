@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/cr_tabs/cr_tabs.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
@@ -43,10 +43,10 @@ const enum ActivityLogSubpage {
  * for this component if the extensionId from the URL does not correspond to
  * installed extension.
  */
-export type ActivityLogExtensionPlaceholder = {
-  id: string,
-  isPlaceholder: boolean,
-};
+export interface ActivityLogExtensionPlaceholder {
+  id: string;
+  isPlaceholder: boolean;
+}
 
 export interface ExtensionsActivityLogElement {
   $: {

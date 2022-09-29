@@ -25,6 +25,7 @@ Jou soekenjin is <ph name="DSE_NAME" />. Sien hul instruksies om jou soekgeskied
 <translation id="1112015203684611006">Kon nie druk nie.</translation>
 <translation id="1125564390852150847">Skep nuwe oortjie.</translation>
 <translation id="1126809382673880764">Beskerm jou nie teen gevaarlike webwerwe, aflaaie en uitbreidings nie. Jy sal steeds Veiligblaai-beskerming kry, indien beskikbaar, in ander Google-dienste, soos Gmail en Search.</translation>
+<translation id="1135212215217513471">Kry Chrome vir iOS</translation>
 <translation id="1145536944570833626">Vee bestaande data uit.</translation>
 <translation id="1147031633655575115">Aangemeld as <ph name="USER" /></translation>
 <translation id="1154984953698510061">Sien ander oortjies</translation>
@@ -113,6 +114,7 @@ Jou soekenjin is <ph name="DSE_NAME" />. Sien hul instruksies om jou soekgeskied
 <translation id="1832848789136765277">Verifieer dis jy om seker te maak dat jy altyd toegang tot jou gesinkroniseerde data het</translation>
 <translation id="1870148520156231997">Wys wagwoord</translation>
 <translation id="1872096359983322073">Flits</translation>
+<translation id="1910975740091000991">Chrome vir iOS</translation>
 <translation id="1911619930368729126">Laai op na Google Drive</translation>
 <translation id="1923342640370224680">Afgelope uur</translation>
 <translation id="1930989359703290198">Jou organisasie laat jou toe om net met sekere rekeninge aan te meld. Rekeninge wat nie toegelaat word nie, word versteek. <ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /></translation>
@@ -140,6 +142,7 @@ Jou soekenjin is <ph name="DSE_NAME" />. Sien hul instruksies om jou soekgeskied
 <translation id="2139867232736819575">Soek vir teks wat jy gekopieer het</translation>
 <translation id="214201757571129614">Meld aan …</translation>
 <translation id="2149973817440762519">Wysig boekmerk</translation>
+<translation id="2155145621546387786">Deel Chrome</translation>
 <translation id="2175927920773552910">QR-kode</translation>
 <translation id="2218443599109088993">Zoem uit</translation>
 <translation id="2230173723195178503">Webblad is gelaai</translation>
@@ -308,6 +311,7 @@ Sien jou soekenjin se instruksies om jou soekgeskiedenis uit te vee, indien nodi
 <translation id="3529024052484145543">Nie veilig nie</translation>
 <translation id="3533202363250687977">Maak alle incognito-oortjies toe</translation>
 <translation id="3533436815740441613">Nuwe oortjie</translation>
+<translation id="3547799431091898961"><ph name="BEGIN_LINK" />Meld af uit Chrome<ph name="END_LINK" /> om op alle webwerwe uit jou Google-rekening af te meld.</translation>
 <translation id="3551320343578183772">Maak oortjie toe</translation>
 <translation id="3581564640715911333">Aanbieding om bladsye in ander tale te vertaal</translation>
 <translation id="3588820906588687999">Maak prent in nuwe oortjie oop</translation>
@@ -374,6 +378,7 @@ Sien jou soekenjin se instruksies om jou soekgeskiedenis uit te vee, indien nodi
 <translation id="4172051516777682613">Wys altyd</translation>
 <translation id="418156467088430727">Bekyk vanlyn weergawe in nuwe oortjie</translation>
 <translation id="4181841719683918333">Tale</translation>
+<translation id="4187450337729239226">Plak en soek</translation>
 <translation id="4223967053752765281">Jou organisasie het aanmelding afgeskakel. Jy kan steeds jou boekmerke, geskiedenis, wagwoorde en ander instellings op hierdie toestel sien. As jy veranderinge aanbring, sal hulle nie na jou rekening sinkroniseer nie.</translation>
 <translation id="4233831822770018312">Wysig toestemmings</translation>
 <translation id="4237377247299956313">Tik op <ph name="BEGIN_BOLD" />Verstekblaaierprogram<ph name="END_BOLD" /></translation>
@@ -436,6 +441,7 @@ Jou data is met jou sinkroniseringwagfrase geënkripteer. Voer dit in om te begi
 <translation id="473775607612524610">Dateer op</translation>
 <translation id="4747097190499141774">Wagfrase-enkripsie sluit nie betaalmetodes en adresse van Google Pay af in nie. Net iemand met jou wagfrase kan jou geënkripteerde data lees. Die wagfrase word nie na Google toe gestuur of deur Google geberg nie. As jy jou wagfrase vergeet of hierdie instelling wil verander, sal jy sinkronisering moet terugstel. <ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /></translation>
 <translation id="4751645464639803239">Nuwe incognito-oortjie</translation>
+<translation id="4766112107778026136">Ontdek en volg</translation>
 <translation id="4775879719735953715">Verstekblaaier</translation>
 <translation id="4778644898150334464">Gebruik ander wagwoord</translation>
 <translation id="478808905805139173">Maak in Incognito oop?</translation>
@@ -490,6 +496,7 @@ Jou data is met jou sinkroniseringwagfrase geënkripteer. Voer dit in om te begi
 <translation id="5118764316110575523">Af</translation>
 <translation id="5132942445612118989">Sinkroniseer jou wagwoorde, geskiedenis en meer op alle toestelle</translation>
 <translation id="5140288047769711648">Chrome sal hierdie wagwoord vir jou onthou. Jy hoef dit nie te onthou nie.</translation>
+<translation id="5149188072385105201">Voeg wagwoord by …</translation>
 <translation id="5150492518600715772">Stuur na jou toestel toe</translation>
 <translation id="5168414296986405587">Gebou vir iPadOS</translation>
 <translation id="5173088371991956744">Sinkronisering moet verifieer dat dit jy is</translation>
@@ -642,6 +649,7 @@ Oorgee moet ook in die Algemene afdeling van Instellings geaktiveer word, en jou
 <translation id="6374469231428023295">Probeer weer</translation>
 <translation id="6377118281273296434">Werfsekuriteit</translation>
 <translation id="6380866119319257197">As jy jou wagfrase vergeet of hierdie instelling wil verander, <ph name="BEGIN_LINK" />stel sinkronisering terug<ph name="END_LINK" /></translation>
+<translation id="6387994324662817823">Wagwoorde word slegs op hierdie toestel in Google Wagwoordbestuurder gestoor.</translation>
 <translation id="6389470377220713856">Naam op kaart</translation>
 <translation id="6406506848690869874">Sinkronisering</translation>
 <translation id="6410390304316730527">Veiligblaai beskerm jou teen aanvallers wat jou dalk kan mislei om iets gevaarlik te doen, soos om kwaadwillige sagteware te installeer of jou persoonlike inligting, soos wagwoorde, foonnommers of kredietkaartinligting, bekend te maak. As jy dit afskakel, moet jy versigtig wees wanneer jy op onbekende of nie-fatsoenlike werwe blaai.</translation>

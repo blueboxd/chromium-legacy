@@ -18,15 +18,15 @@
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/scoped_test_system_nss_key_slot_mixin.h"
+#include "chromeos/ash/components/dbus/shill/shill_device_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_property_changed_observer.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_cert_loader.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_policy_observer.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_property_changed_observer.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -99,8 +99,7 @@ class ServiceConnectedWaiter {
 
 // Records all values that shill service property had during the lifetime of
 // ServicePropertyValueWatcher. Only supports string properties at the moment.
-class ServicePropertyValueWatcher
-    : public chromeos::ShillPropertyChangedObserver {
+class ServicePropertyValueWatcher : public ash::ShillPropertyChangedObserver {
  public:
   ServicePropertyValueWatcher(
       ash::ShillServiceClient::TestInterface* shill_service_client_test,
@@ -217,14 +216,14 @@ class ScopedNetworkPolicyApplicationObserver
 };
 
 class ScopedNetworkCertLoaderRefreshWaiter
-    : public chromeos::NetworkCertLoader::Observer {
+    : public ash::NetworkCertLoader::Observer {
  public:
   ScopedNetworkCertLoaderRefreshWaiter() {
-    chromeos::NetworkCertLoader::Get()->AddObserver(this);
+    ash::NetworkCertLoader::Get()->AddObserver(this);
   }
 
   ~ScopedNetworkCertLoaderRefreshWaiter() override {
-    chromeos::NetworkCertLoader::Get()->RemoveObserver(this);
+    ash::NetworkCertLoader::Get()->RemoveObserver(this);
   }
 
   void OnCertificatesLoaded() override { run_loop_.Quit(); }
@@ -339,8 +338,7 @@ class NetworkPolicyApplicationTest : public ash::LoginManagerTest {
                   const std::string& key_filename) {
     // Before importing, configure NetworkCertLoader to assume that all
     // certificates can be used for network authentication.
-    chromeos::NetworkCertLoader::Get()
-        ->ForceAvailableForNetworkAuthForTesting();
+    ash::NetworkCertLoader::Get()->ForceAvailableForNetworkAuthForTesting();
 
     net::ScopedCERTCertificate cert;
     // Import testing key pair and certificate.
@@ -414,7 +412,7 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationTest,
       kServiceWifi1, shill::kSSIDProperty, base::Value("WifiOne"));
   shill_service_client_test_->SetServiceProperty(
       kServiceWifi1, shill::kSecurityClassProperty,
-      base::Value(shill::kSecurityPsk));
+      base::Value(shill::kSecurityClassPsk));
 
   shill_service_client_test_->AddService(
       kServiceWifi2, "wifi_orig_guid_2", "WifiTwo", shill::kTypeWifi,
@@ -423,7 +421,7 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationTest,
       kServiceWifi2, shill::kSSIDProperty, base::Value("WifiTwo"));
   shill_service_client_test_->SetServiceProperty(
       kServiceWifi2, shill::kSecurityClassProperty,
-      base::Value(shill::kSecurityPsk));
+      base::Value(shill::kSecurityClassPsk));
 
   // Apply device ONC policy and wait until it takes effect (one of the networks
   // auto connects).
@@ -605,7 +603,7 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationTest,
       kServiceWifi1, shill::kSSIDProperty, base::Value("WifiOne"));
   shill_service_client_test_->SetServiceProperty(
       kServiceWifi1, shill::kSecurityClassProperty,
-      base::Value(shill::kSecurityPsk));
+      base::Value(shill::kSecurityClassPsk));
 
   shill_service_client_test_->AddService(
       kServiceWifi2, "wifi_orig_guid_2", "WifiTwo", shill::kTypeWifi,
@@ -614,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationTest,
       kServiceWifi2, shill::kSSIDProperty, base::Value("WifiTwo"));
   shill_service_client_test_->SetServiceProperty(
       kServiceWifi2, shill::kSecurityClassProperty,
-      base::Value(shill::kSecurityPsk));
+      base::Value(shill::kSecurityClassPsk));
 
   const char kDeviceONC1[] = R"(
     {
@@ -696,7 +694,7 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationTest, DoesNotWipeCertSettings) {
       kServiceWifi1, shill::kSSIDProperty, base::Value("DeviceLevelWifiSsid"));
   shill_service_client_test_->SetServiceProperty(
       kServiceWifi1, shill::kSecurityClassProperty,
-      base::Value(shill::kSecurity8021x));
+      base::Value(shill::kSecurityClass8021x));
 
   ServicePropertyValueWatcher eap_cert_id_watcher(
       shill_service_client_test_, kServiceWifi1, shill::kEapCertIdProperty);
@@ -787,7 +785,7 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationTest,
       kServiceWifi1, shill::kSSIDProperty, base::Value("DeviceLevelWifiSsid"));
   shill_service_client_test_->SetServiceProperty(
       kServiceWifi1, shill::kSecurityClassProperty,
-      base::Value(shill::kSecurity8021x));
+      base::Value(shill::kSecurityClass8021x));
 
   const char kDeviceONC1[] = R"(
     {
@@ -861,7 +859,7 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationTest,
       kServiceWifi1, shill::kSSIDProperty, base::Value("DeviceLevelWifiSsid"));
   shill_service_client_test_->SetServiceProperty(
       kServiceWifi1, shill::kSecurityClassProperty,
-      base::Value(shill::kSecurity8021x));
+      base::Value(shill::kSecurityClass8021x));
 
   std::string kDeviceONC1 =
       base::StringPrintf(R"(
@@ -925,7 +923,7 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationTest,
       kServiceWifi1, shill::kSSIDProperty, base::Value("UserLevelWifiSsid"));
   shill_service_client_test_->SetServiceProperty(
       kServiceWifi1, shill::kSecurityClassProperty,
-      base::Value(shill::kSecurity8021x));
+      base::Value(shill::kSecurityClass8021x));
 
   std::string user_hash = ash::ProfileHelper::GetUserIdHashByUserIdForTesting(
       test_account_id_.GetUserEmail());

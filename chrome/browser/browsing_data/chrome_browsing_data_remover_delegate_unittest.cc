@@ -67,10 +67,6 @@
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
-#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/browser/web_applications/test/web_app_test_utils.h"
-#include "chrome/browser/web_applications/web_app.h"
-#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -172,9 +168,16 @@
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #include "components/feed/buildflags.h"
 #else
-#include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "content/public/browser/host_zoom_map.h"
 #endif  // BUILDFLAG(IS_ANDROID)
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/web_applications/test/fake_web_app_provider.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/test/web_app_test_utils.h"
+#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/login/users/mock_user_manager.h"
@@ -401,7 +404,7 @@ class RemoveHistoryTester {
   void AddHistory(const GURL& url, base::Time time) {
     history_service_->AddPage(url, time, nullptr, 0, GURL(),
                               history::RedirectList(), ui::PAGE_TRANSITION_LINK,
-                              history::SOURCE_BROWSED, false, false);
+                              history::SOURCE_BROWSED, false);
   }
 
  private:
@@ -450,7 +453,7 @@ class RemoveFaviconTester {
   void VisitAndAddFavicon(const GURL& page_url) {
     history_service_->AddPage(page_url, base::Time::Now(), nullptr, 0, GURL(),
                               history::RedirectList(), ui::PAGE_TRANSITION_LINK,
-                              history::SOURCE_BROWSED, false, false);
+                              history::SOURCE_BROWSED, false);
 
     SkBitmap bitmap;
     bitmap.allocN32Pixels(gfx::kFaviconSize, gfx::kFaviconSize);
@@ -1669,16 +1672,16 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveExternalProtocolData) {
 
   EXPECT_FALSE(
       profile->GetPrefs()
-          ->GetDictionary(prefs::kProtocolHandlerPerOriginAllowedProtocols)
-          ->DictEmpty());
+          ->GetValueDict(prefs::kProtocolHandlerPerOriginAllowedProtocols)
+          .empty());
 
   BlockUntilBrowsingDataRemoved(AnHourAgo(), base::Time::Max(),
                                 constants::DATA_TYPE_EXTERNAL_PROTOCOL_DATA,
                                 false);
   EXPECT_TRUE(
       profile->GetPrefs()
-          ->GetDictionary(prefs::kProtocolHandlerPerOriginAllowedProtocols)
-          ->DictEmpty());
+          ->GetValueDict(prefs::kProtocolHandlerPerOriginAllowedProtocols)
+          .empty());
 }
 
 // Check that clearing browsing data (either history or cookies with other site
@@ -1692,37 +1695,34 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePersistentIsolatedOrigins) {
   list.Append("http://foo.com");
   prefs->Set(site_isolation::prefs::kUserTriggeredIsolatedOrigins, list);
   EXPECT_FALSE(
-      prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
-          ->GetListDeprecated()
+      prefs->GetValueList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
           .empty());
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetKey("https://bar.com", base::TimeToValue(base::Time::Now()));
   prefs->Set(site_isolation::prefs::kWebTriggeredIsolatedOrigins, dict);
   EXPECT_FALSE(
-      prefs->GetDictionary(site_isolation::prefs::kWebTriggeredIsolatedOrigins)
-          ->DictEmpty());
+      prefs->GetValueDict(site_isolation::prefs::kWebTriggeredIsolatedOrigins)
+          .empty());
 
   // Clear history and ensure the stored isolated origins are cleared.
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 constants::DATA_TYPE_HISTORY, false);
   EXPECT_TRUE(
-      prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
-          ->GetListDeprecated()
+      prefs->GetValueList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
           .empty());
   EXPECT_TRUE(
-      prefs->GetDictionary(site_isolation::prefs::kWebTriggeredIsolatedOrigins)
-          ->DictEmpty());
+      prefs->GetValueDict(site_isolation::prefs::kWebTriggeredIsolatedOrigins)
+          .empty());
 
   // Re-add foo.com and bar.com to stored isolated origins.
   prefs->Set(site_isolation::prefs::kUserTriggeredIsolatedOrigins, list);
   EXPECT_FALSE(
-      prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
-          ->GetListDeprecated()
+      prefs->GetValueList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
           .empty());
   prefs->Set(site_isolation::prefs::kWebTriggeredIsolatedOrigins, dict);
   EXPECT_FALSE(
-      prefs->GetDictionary(site_isolation::prefs::kWebTriggeredIsolatedOrigins)
-          ->DictEmpty());
+      prefs->GetValueDict(site_isolation::prefs::kWebTriggeredIsolatedOrigins)
+          .empty());
 
   // Now clear cookies and other site data, and ensure foo.com is cleared.
   // Note that this uses a short time period to document that time ranges are
@@ -1730,45 +1730,41 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePersistentIsolatedOrigins) {
   BlockUntilBrowsingDataRemoved(AnHourAgo(), base::Time::Max(),
                                 constants::DATA_TYPE_SITE_DATA, false);
   EXPECT_TRUE(
-      prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
-          ->GetListDeprecated()
+      prefs->GetValueList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
           .empty());
   EXPECT_TRUE(
-      prefs->GetDictionary(site_isolation::prefs::kWebTriggeredIsolatedOrigins)
-          ->DictEmpty());
+      prefs->GetValueDict(site_isolation::prefs::kWebTriggeredIsolatedOrigins)
+          .empty());
 
   // Re-add foo.com and bar.com.
   prefs->Set(site_isolation::prefs::kUserTriggeredIsolatedOrigins, list);
   EXPECT_FALSE(
-      prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
-          ->GetListDeprecated()
+      prefs->GetValueList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
           .empty());
   prefs->Set(site_isolation::prefs::kWebTriggeredIsolatedOrigins, dict);
   EXPECT_FALSE(
-      prefs->GetDictionary(site_isolation::prefs::kWebTriggeredIsolatedOrigins)
-          ->DictEmpty());
+      prefs->GetValueDict(site_isolation::prefs::kWebTriggeredIsolatedOrigins)
+          .empty());
 
   // Clear the isolated origins data type.
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 constants::DATA_TYPE_ISOLATED_ORIGINS, false);
   EXPECT_TRUE(
-      prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
-          ->GetListDeprecated()
+      prefs->GetValueList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
           .empty());
   EXPECT_TRUE(
-      prefs->GetDictionary(site_isolation::prefs::kWebTriggeredIsolatedOrigins)
-          ->DictEmpty());
+      prefs->GetValueDict(site_isolation::prefs::kWebTriggeredIsolatedOrigins)
+          .empty());
 
   // Re-add foo.com and bar.com.
   prefs->Set(site_isolation::prefs::kUserTriggeredIsolatedOrigins, list);
   EXPECT_FALSE(
-      prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
-          ->GetListDeprecated()
+      prefs->GetValueList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
           .empty());
   prefs->Set(site_isolation::prefs::kWebTriggeredIsolatedOrigins, dict);
   EXPECT_FALSE(
-      prefs->GetDictionary(site_isolation::prefs::kWebTriggeredIsolatedOrigins)
-          ->DictEmpty());
+      prefs->GetValueDict(site_isolation::prefs::kWebTriggeredIsolatedOrigins)
+          .empty());
 
   // Clear both history and site data, and ensure the stored isolated origins
   // are cleared.
@@ -1776,12 +1772,11 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePersistentIsolatedOrigins) {
       base::Time(), base::Time::Max(),
       constants::DATA_TYPE_HISTORY | constants::DATA_TYPE_SITE_DATA, false);
   EXPECT_TRUE(
-      prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
-          ->GetListDeprecated()
+      prefs->GetValueList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
           .empty());
   EXPECT_TRUE(
-      prefs->GetDictionary(site_isolation::prefs::kWebTriggeredIsolatedOrigins)
-          ->DictEmpty());
+      prefs->GetValueDict(site_isolation::prefs::kWebTriggeredIsolatedOrigins)
+          .empty());
 }
 
 // Test that clearing history deletes favicons not associated with bookmarks.
@@ -1838,6 +1833,23 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, DeleteBookmarks) {
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 constants::DATA_TYPE_BOOKMARKS, false);
   EXPECT_EQ(0u, bookmark_model->bookmark_bar_node()->children().size());
+}
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, DeleteBookmarkHistory) {
+  GURL bookmarked_page("http://a");
+
+  TestingProfile* profile = GetProfile();
+  bookmarks::BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForBrowserContext(profile);
+  bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
+  const bookmarks::BookmarkNode* node = bookmark_model->AddURL(
+      bookmark_model->bookmark_bar_node(), 0, u"a", bookmarked_page);
+  bookmark_model->UpdateLastUsedTime(node, base::Time::Now());
+
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
+                                constants::DATA_TYPE_HISTORY, false);
+
+  EXPECT_EQ(base::Time(), node->date_last_used());
 }
 
 // Verifies deleting does not crash if BookmarkModel has not been loaded.
@@ -2054,14 +2066,18 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, ZeroSuggestCacheClear) {
   PrefService* prefs = GetProfile()->GetPrefs();
+  omnibox::SetUserPreferenceForZeroSuggestCachedResponse(
+      prefs, "https://google.com/search?q=chrome", R"(["", ["foo", "bar"]])");
   prefs->SetString(omnibox::kZeroSuggestCachedResults,
-                   "[\"\", [\"foo\", \"bar\"]]");
+                   R"(["", ["foo", "bar"]])");
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 content::BrowsingDataRemover::DATA_TYPE_COOKIES,
                                 false);
 
   // Expect the prefs to be cleared when cookies are removed.
   EXPECT_TRUE(prefs->GetString(omnibox::kZeroSuggestCachedResults).empty());
+  EXPECT_TRUE(
+      prefs->GetValueDict(omnibox::kZeroSuggestCachedResultsWithURL).empty());
   EXPECT_EQ(content::BrowsingDataRemover::DATA_TYPE_COOKIES, GetRemovalMask());
   EXPECT_EQ(content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
             GetOriginTypeMask());
@@ -3333,30 +3349,27 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   constexpr char kPermissionActionsPrefPath[] =
       "profile.content_settings.permission_actions";
 
-  EXPECT_EQ(3u, prefs->GetDictionary(kPermissionActionsPrefPath)
-                    ->FindKey("notifications")
-                    ->GetListDeprecated()
-                    .size());
+  EXPECT_EQ(3u, prefs->GetValueDict(kPermissionActionsPrefPath)
+                    .FindList("notifications")
+                    ->size());
   // Remove the first and the second element.
   BlockUntilBrowsingDataRemoved(first_recorded_time, third_recorded_time,
                                 constants::DATA_TYPE_SITE_USAGE_DATA, false);
   // There is only one element left.
-  EXPECT_EQ(1u, prefs->GetDictionary(kPermissionActionsPrefPath)
-                    ->FindKey("notifications")
-                    ->GetListDeprecated()
-                    .size());
-  EXPECT_EQ((base::ValueToTime(prefs->GetDictionary(kPermissionActionsPrefPath)
-                                   ->FindKey("notifications")
-                                   ->GetListDeprecated()
-                                   .begin()
-                                   ->FindKey("time")))
+  EXPECT_EQ(1u, prefs->GetValueDict(kPermissionActionsPrefPath)
+                    .FindList("notifications")
+                    ->size());
+  EXPECT_EQ((base::ValueToTime(prefs->GetValueDict(kPermissionActionsPrefPath)
+                                   .FindList("notifications")
+                                   ->front()
+                                   .FindKey("time")))
                 .value_or(base::Time()),
             third_recorded_time);
 
   // Test we wiped all the elements left.
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 constants::DATA_TYPE_SITE_USAGE_DATA, false);
-  EXPECT_TRUE(prefs->GetDictionary(kPermissionActionsPrefPath)->DictEmpty());
+  EXPECT_TRUE(prefs->GetValueDict(kPermissionActionsPrefPath).empty());
 }
 
 class ChromeBrowsingDataRemoverDelegateEnabledPasswordsTest

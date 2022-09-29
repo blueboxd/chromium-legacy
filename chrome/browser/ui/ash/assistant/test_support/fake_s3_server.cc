@@ -51,9 +51,11 @@ std::string GetSanitizedTestName() {
       "%s_%s",
       testing::UnitTest::GetInstance()->current_test_info()->test_suite_name(),
       testing::UnitTest::GetInstance()->current_test_info()->name()));
-  std::string new_test_name;
-  base::ReplaceChars(test_name, "/", "_", &new_test_name);
-  return new_test_name;
+  // The test name has suffix of `/0` or `/1`. Remove it to match the data_file
+  // name.
+  base::ReplaceSubstringsAfterOffset(&test_name, 0, "/0", "");
+  base::ReplaceSubstringsAfterOffset(&test_name, 0, "/1", "");
+  return test_name;
 }
 
 const std::string GetAccessTokenFromEnvironmentOrDie() {
@@ -177,22 +179,23 @@ void FakeS3Server::SetAccessTokenForMode(FakeS3Mode mode) {
 
 void FakeS3Server::SetFakeS3ServerURI() {
   // Note this must be stored in a local variable, as
-  // |Service::OverrideS3ServerUriForTesting| does not take ownership of the
-  // |const char *|.
+  // |ash::assistant::Service::OverrideS3ServerUriForTesting| does not take
+  // ownership of the |const char *|.
   fake_s3_server_uri_ = "localhost:" + base::NumberToString(port());
-  Service::OverrideS3ServerUriForTesting(fake_s3_server_uri_.c_str());
+  ash::assistant::Service::OverrideS3ServerUriForTesting(
+      fake_s3_server_uri_.c_str());
 }
 
 void FakeS3Server::SetDeviceId() {
-  Service::OverrideDeviceIdForTesting(kDeviceId);
+  ash::assistant::Service::OverrideDeviceIdForTesting(kDeviceId);
 }
 
 void FakeS3Server::UnsetDeviceId() {
-  Service::OverrideDeviceIdForTesting(nullptr);
+  ash::assistant::Service::OverrideDeviceIdForTesting(nullptr);
 }
 
 void FakeS3Server::UnsetFakeS3ServerURI() {
-  Service::OverrideS3ServerUriForTesting(nullptr);
+  ash::assistant::Service::OverrideS3ServerUriForTesting(nullptr);
   fake_s3_server_uri_ = "";
 }
 

@@ -72,7 +72,7 @@ std::string CannedOmahaPolicyFetchResponse() {
       ::wireless_android_enterprise_devicemanagement::MANUAL_UPDATES_ONLY);
 
   ::wireless_android_enterprise_devicemanagement::ApplicationSettings app;
-  app.set_app_guid(kChromeAppId);
+  app.set_app_guid(test::kChromeAppId);
 
   app.set_install(
       ::wireless_android_enterprise_devicemanagement::INSTALL_DISABLED);
@@ -150,6 +150,7 @@ TEST(DMStorage, PersistPolicies) {
   EXPECT_TRUE(base::DirectoryExists(stale_poliy));
 
   auto storage = base::MakeRefCounted<DMStorage>(cache_root.GetPath());
+  EXPECT_TRUE(storage->CanPersistPolicies());
   EXPECT_TRUE(storage->PersistPolicies(policies));
   base::FilePath policy_info_file =
       cache_root.GetPath().AppendASCII("CachedPolicyInfo");
@@ -200,6 +201,7 @@ TEST(DMStorage, GetCachedPolicyInfo) {
   ASSERT_TRUE(cache_root.CreateUniqueTempDir());
   auto storage = base::MakeRefCounted<DMStorage>(
       cache_root.GetPath(), std::make_unique<TestTokenService>());
+  EXPECT_TRUE(storage->CanPersistPolicies());
   EXPECT_TRUE(storage->PersistPolicies({
       {"sample-policy-type", response.SerializeAsString()},
   }));
@@ -220,6 +222,7 @@ TEST(DMStorage, ReadCachedOmahaPolicy) {
   ASSERT_TRUE(cache_root.CreateUniqueTempDir());
   auto storage = base::MakeRefCounted<DMStorage>(
       cache_root.GetPath(), std::make_unique<TestTokenService>());
+  EXPECT_TRUE(storage->CanPersistPolicies());
   EXPECT_TRUE(storage->PersistPolicies(policies));
 
   std::unique_ptr<

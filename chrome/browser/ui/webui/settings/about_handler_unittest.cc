@@ -10,7 +10,6 @@
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_ui.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,7 +39,6 @@ class AboutHandlerTest : public testing::Test {
   AboutHandlerTest& operator=(const AboutHandlerTest&) = delete;
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
     fake_update_engine_client_ =
         ash::UpdateEngineClient::InitializeFakeForTest();
     ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
@@ -59,7 +57,6 @@ class AboutHandlerTest : public testing::Test {
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
     ConciergeClient::Shutdown();
     ash::UpdateEngineClient::Shutdown();
-    DBusThreadManager::Shutdown();
   }
 
   const content::TestWebUI::CallData& CallDataAtIndex(size_t index) {
@@ -69,10 +66,9 @@ class AboutHandlerTest : public testing::Test {
   std::string CallGetEndOfLifeInfoAndReturnString(bool has_eol_passed) {
     size_t call_data_count_before_call = web_ui_.call_data().size();
 
-    base::Value args(base::Value::Type::LIST);
+    base::Value::List args;
     args.Append("handlerFunctionName");
-    web_ui_.HandleReceivedMessage("getEndOfLifeInfo",
-                                  &base::Value::AsListValue(args));
+    web_ui_.HandleReceivedMessage("getEndOfLifeInfo", args);
     task_environment_.RunUntilIdle();
 
     EXPECT_EQ(call_data_count_before_call + 1u, web_ui_.call_data().size());
@@ -127,6 +123,17 @@ TEST_F(AboutHandlerTest, EndOfLifeMessageInAboutDetailsSubpage) {
   const base::Time null_time = base::Time();
   fake_update_engine_client_->set_eol_date(null_time);
   EXPECT_EQ("", CallGetEndOfLifeInfoAndReturnString(false /*=has_eol_passed*/));
+}
+
+TEST_F(AboutHandlerTest, DeferredUpdateMessageInAboutPage) {
+  update_engine::StatusResult status;
+  status.set_current_operation(update_engine::Operation::UPDATED_BUT_DEFERRED);
+  fake_update_engine_client_->set_default_status(status);
+  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+
+  EXPECT_EQ(0, fake_update_engine_client_->apply_deferred_update_count());
+  web_ui_.HandleReceivedMessage("applyDeferredUpdate", base::Value::List());
+  EXPECT_EQ(1, fake_update_engine_client_->apply_deferred_update_count());
 }
 
 }  // namespace

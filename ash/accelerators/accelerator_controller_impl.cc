@@ -25,7 +25,6 @@
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/clipboard/clipboard_history_controller_impl.h"
-#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
@@ -95,6 +94,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/ui/base/display_util.h"
 #include "chromeos/ui/wm/desks/chromeos_desks_histogram_enums.h"
@@ -432,8 +432,8 @@ bool CanHandleFocusCameraPreview() {
     return false;
 
   auto* camera_controller = controller->camera_controller();
-  auto* preview_widget =
-      camera_controller ? camera_controller->camera_preview_widget() : nullptr;
+  DCHECK(camera_controller);
+  auto* preview_widget = camera_controller->camera_preview_widget();
   return preview_widget && preview_widget->IsVisible();
 }
 
@@ -1002,7 +1002,7 @@ void HandleToggleAssistant(const ui::Accelerator& accelerator) {
         base::UserMetricsAction("VoiceInteraction.Started.Assistant"));
   }
 
-  using chromeos::assistant::AssistantAllowedState;
+  using assistant::AssistantAllowedState;
   switch (AssistantState::Get()->allowed_state().value_or(
       AssistantAllowedState::ALLOWED)) {
     case AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER:
@@ -1057,8 +1057,8 @@ void HandleToggleAssistant(const ui::Accelerator& accelerator) {
   }
 
   AssistantUiController::Get()->ToggleUi(
-      /*entry_point=*/chromeos::assistant::AssistantEntryPoint::kHotkey,
-      /*exit_point=*/chromeos::assistant::AssistantExitPoint::kHotkey);
+      /*entry_point=*/assistant::AssistantEntryPoint::kHotkey,
+      /*exit_point=*/assistant::AssistantExitPoint::kHotkey);
 }
 
 void HandleSuspend() {

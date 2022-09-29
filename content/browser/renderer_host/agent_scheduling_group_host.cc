@@ -9,6 +9,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
+#include "base/state_transitions.h"
 #include "base/supports_user_data.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/bad_message.h"
@@ -17,10 +18,9 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/agent_scheduling_group.mojom.h"
 #include "content/common/renderer.mojom.h"
-#include "content/common/state_transitions.h"
+#include "content/common/shared_storage_worklet_service.mojom.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/services/shared_storage_worklet/public/mojom/shared_storage_worklet_service.mojom.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_message.h"
 
@@ -332,31 +332,6 @@ void AgentSchedulingGroupHost::CreateView(mojom::CreateViewParamsPtr params) {
   mojo_remote_.get()->CreateView(std::move(params));
 }
 
-void AgentSchedulingGroupHost::DestroyView(int32_t routing_id) {
-  DCHECK_EQ(state_, LifecycleState::kBound);
-  if (!mojo_remote_.is_bound())
-    return;
-  mojo_remote_.get()->DestroyView(routing_id);
-}
-
-void AgentSchedulingGroupHost::CreateFrameProxy(
-    const blink::RemoteFrameToken& token,
-    const absl::optional<blink::FrameToken>& opener_frame_token,
-    int32_t view_routing_id,
-    const absl::optional<blink::RemoteFrameToken>& parent_frame_token,
-    blink::mojom::TreeScopeType tree_scope_type,
-    blink::mojom::FrameReplicationStatePtr replicated_state,
-    const base::UnguessableToken& devtools_frame_token,
-    mojom::RemoteFrameInterfacesFromBrowserPtr remote_frame_interfaces,
-    mojom::RemoteMainFrameInterfacesPtr remote_main_frame_interfaces) {
-  DCHECK_EQ(state_, LifecycleState::kBound);
-  mojo_remote_.get()->CreateFrameProxy(
-      token, opener_frame_token, view_routing_id, parent_frame_token,
-      tree_scope_type, std::move(replicated_state), devtools_frame_token,
-      std::move(remote_frame_interfaces),
-      std::move(remote_main_frame_interfaces));
-}
-
 void AgentSchedulingGroupHost::CreateSharedStorageWorkletService(
     mojo::PendingReceiver<
         shared_storage_worklet::mojom::SharedStorageWorkletService> receiver) {
@@ -396,35 +371,11 @@ void AgentSchedulingGroupHost::DidUnloadRenderFrame(
   }
 }
 
-void AgentSchedulingGroupHost::GetRoute(
-    int32_t routing_id,
-    mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterfaceProvider>
-        receiver) {
-  DCHECK_EQ(state_, LifecycleState::kBound);
-  DCHECK(receiver.is_valid());
-  associated_interface_provider_receivers_.Add(this, std::move(receiver),
-                                               routing_id);
-}
-
-void AgentSchedulingGroupHost::GetAssociatedInterface(
-    const std::string& name,
-    mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterface>
-        receiver) {
-  DCHECK_EQ(state_, LifecycleState::kBound);
-  int32_t routing_id =
-      associated_interface_provider_receivers_.current_context();
-
-  if (auto* listener = GetListener(routing_id))
-    listener->OnAssociatedInterfaceRequest(name, receiver.PassHandle());
-}
-
 void AgentSchedulingGroupHost::ResetIPC() {
   DCHECK_EQ(state_, LifecycleState::kRenderProcessExited);
   receiver_.reset();
   mojo_remote_.reset();
   remote_route_provider_.reset();
-  route_provider_receiver_.reset();
-  associated_interface_provider_receivers_.Clear();
   broker_receiver_.reset();
   channel_ = nullptr;
 }
@@ -445,7 +396,6 @@ void AgentSchedulingGroupHost::SetUpIPC() {
   DCHECK(!mojo_remote_.is_bound());
   DCHECK(!receiver_.is_bound());
   DCHECK(!remote_route_provider_.is_bound());
-  DCHECK(!route_provider_receiver_.is_bound());
   DCHECK(!broker_receiver_.is_bound());
 
   // After this function returns, all of `this`'s mojo interfaces need to be
@@ -501,15 +451,14 @@ void AgentSchedulingGroupHost::SetUpIPC() {
 
   mojo_remote_.get()->BindAssociatedInterfaces(
       receiver_.BindNewEndpointAndPassRemote(),
-      route_provider_receiver_.BindNewEndpointAndPassRemote(),
       remote_route_provider_.BindNewEndpointAndPassReceiver());
   SetState(LifecycleState::kBound);
 }
 
 void AgentSchedulingGroupHost::SetState(
     AgentSchedulingGroupHost::LifecycleState state) {
-  static const base::NoDestructor<StateTransitions<LifecycleState>> transitions(
-      StateTransitions<LifecycleState>({
+  static const base::NoDestructor<base::StateTransitions<LifecycleState>>
+      transitions(base::StateTransitions<LifecycleState>({
           {LifecycleState::kNewborn, {LifecycleState::kBound}},
           {LifecycleState::kBound,
            {LifecycleState::kRenderProcessExited,

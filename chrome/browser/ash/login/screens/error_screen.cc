@@ -37,7 +37,6 @@
 #include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
-#include "chromeos/ash/components/network/portal_detector/network_portal_detector_strategy.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -85,7 +84,6 @@ constexpr const char kUserActionReloadGaia[] = "reload-gaia";
 constexpr const char kUserActionCancelReset[] = "cancel-reset";
 constexpr const char kUserActionCancel[] = "cancel";
 constexpr const char kUserActionContinueAppLaunch[] = "continue-app-launch";
-constexpr const char kUserActionLaunchHelpApp[] = "launch-help-app";
 constexpr const char kUserActionOfflineLogin[] = "offline-login";
 
 ErrorScreen::ErrorScreen(base::WeakPtr<ErrorScreenView> view)
@@ -257,8 +255,7 @@ void ErrorScreen::ShowImpl() {
   view_->Show();
   LOG(WARNING) << "Network error screen message is shown";
   session_manager::SessionManager::Get()->NotifyNetworkErrorScreenShown();
-  network_portal_detector::GetInstance()->SetStrategy(
-      PortalDetectorStrategy::STRATEGY_ID_ERROR_SCREEN);
+  network_portal_detector::GetInstance()->StartPortalDetection();
 }
 
 void ErrorScreen::HideImpl() {
@@ -270,8 +267,6 @@ void ErrorScreen::HideImpl() {
     std::move(on_hide_callback_).Run();
     on_hide_callback_ = base::OnceClosure();
   }
-  network_portal_detector::GetInstance()->SetStrategy(
-      PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN);
 }
 
 void ErrorScreen::OnUserAction(const base::Value::List& args) {
@@ -302,10 +297,6 @@ void ErrorScreen::OnUserAction(const base::Value::List& args) {
     OnOfflineLoginClicked();
   } else if (action_id == kUserActionContinueAppLaunch) {
     OnContinueAppLaunchButtonClicked();
-  } else if (action_id == kUserActionLaunchHelpApp) {
-    CHECK_EQ(args.size(), 2);
-    const int help_topic_id = args[1].GetInt();
-    LaunchHelpApp(help_topic_id);
   } else {
     BaseScreen::OnUserAction(args);
   }

@@ -72,8 +72,8 @@
 #include "content/browser/gpu/browser_gpu_client_delegate.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/gpu/gpu_disk_cache_factory.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/media/media_keys_listener_manager_impl.h"
 #include "content/browser/metrics/histogram_synchronizer.h"
@@ -1237,10 +1237,10 @@ void BrowserMainLoop::PostCreateThreadsImpl() {
     cc::SetClientNameForMetrics("Browser");
   }
 
-  // Initialize the GPU shader cache. This needs to be initialized before
+  // Initialize the GPU cache. This needs to be initialized before
   // BrowserGpuChannelHostFactory below, since that depends on an initialized
-  // ShaderCacheFactory.
-  InitShaderCacheFactorySingleton();
+  // GpuDiskCacheFactory.
+  InitGpuDiskCacheFactorySingleton();
 
   // Initialize the FontRenderParams. This needs to be initialized before gpu
   // process initialization below.
@@ -1326,21 +1326,8 @@ void BrowserMainLoop::PostCreateThreadsImpl() {
     TRACE_EVENT0("startup",
                  "BrowserMainLoop::PostCreateThreads:InitMediaStreamManager");
 
-    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner =
-        audio_manager_ ? audio_manager_->GetTaskRunner() : nullptr;
-
-#if BUILDFLAG(IS_MAC)
-    // On Mac, the audio task runner must belong to the main thread.
-    // See audio_thread_impl.cc and https://crbug.com/158170.
-    if (audio_task_runner) {
-      DCHECK(audio_task_runner->BelongsToCurrentThread());
-    } else {
-      audio_task_runner = base::ThreadTaskRunnerHandle::Get();
-    }
-#endif
-
-    media_stream_manager_ = std::make_unique<MediaStreamManager>(
-        audio_system_.get(), std::move(audio_task_runner));
+    media_stream_manager_ =
+        std::make_unique<MediaStreamManager>(audio_system_.get());
   }
 
   {
@@ -1490,6 +1477,11 @@ void BrowserMainLoop::InitializeAudio() {
   if (audio_manager_) {
     TRACE_EVENT_INSTANT0("startup", "Starting Audio service task runner",
                          TRACE_EVENT_SCOPE_THREAD);
+#if BUILDFLAG(IS_MAC)
+    // On Mac, the audio task runner must belong to the main thread.
+    // See audio_thread_impl.cc and https://crbug.com/158170.
+    DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+#endif
     audio::Service::GetInProcessTaskRunner()->StartWithTaskRunner(
         audio_manager_->GetTaskRunner());
   }

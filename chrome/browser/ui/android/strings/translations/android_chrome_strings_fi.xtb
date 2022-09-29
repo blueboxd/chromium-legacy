@@ -105,7 +105,6 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="1474893630593443211">Enemmän päätösvaltaa näkemiisi mainoksiin</translation>
 <translation id="1477626028522505441">Tiedoston <ph name="FILE_NAME" /> lataus epäonnistui palvelinongelman vuoksi.</translation>
 <translation id="148482509007564431">Kirjanmerkin tallennusvaiheet</translation>
-<translation id="1488775391433859242">Voit kirjautua sisään tämän QR-koodin näyttävälle tietokoneelle tämän puhelimen avulla.</translation>
 <translation id="1492417797159476138">Tallensit jo tämän käyttäjänimen sivustolle</translation>
 <translation id="1493287004536771723">Seuraat tätä: <ph name="SITE_NAME" /></translation>
 <translation id="1502010315804028179">Päivitä Google Play Palvelut, jotta voit ylläpitää salasanoja</translation>
@@ -235,6 +234,7 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="2239812875700136898">Muuta juttujesi asetuksia Discover-asetuksissa</translation>
 <translation id="2248941474044011069">Salasanat salataan laitteella ennen niiden tallentamista Googlen Salasanojen ylläpitoon</translation>
 <translation id="2259659629660284697">Vie salasanat…</translation>
+<translation id="2276231040576210443">Voit valita synkronoitavan sisällön <ph name="BEGIN_LINK1" />asetuksista<ph name="END_LINK1" />. Google voi personoida Hakua ja muita palveluita historiasi perusteella.</translation>
 <translation id="2276696007612801991">Kirjaudu Google-tilillesi tarkistaaksesi salasanasi</translation>
 <translation id="2278052315791335171">Vaikka poistat salasanan, tiliäsi (<ph name="SITE" />) ei poisteta</translation>
 <translation id="2279146068164892489">Avataanko <ph name="APPNAME" />?</translation>
@@ -282,7 +282,6 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> kohdetta poistettu</translation>
 <translation id="2536728043171574184">Näkyvissä on sivun offline-versio.</translation>
 <translation id="2546283357679194313">Evästeet ja sivustotiedot</translation>
-<translation id="2549516196460093976">Voit kirjautua sisään QR-koodin näyttävälle tietokoneelle tämän tabletin avulla.</translation>
 <translation id="2558569818338050235">Selaushistoria vaikuttaa näkemiisi mainoksiin</translation>
 <translation id="2561519700418191927">Videon esikatselut</translation>
 <translation id="2567385386134582609">KUVA</translation>
@@ -308,6 +307,7 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="2702516483241149200">Uutta: jaa linkki, joka vie tähän tekstiin</translation>
 <translation id="2704606927547763573">Kopioitu</translation>
 <translation id="2707726405694321444">Päivitä sivu</translation>
+<translation id="2709516037105925701">Automaattinen täyttö</translation>
 <translation id="271033894570825754">Uusi</translation>
 <translation id="2711073837061989559">Kokeilut</translation>
 <translation id="2718352093833049315">Vain Wi-Fillä</translation>
@@ -396,6 +396,7 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="3114507951000454849">Lue päivän uutiset <ph name="NEWS_ICON" /></translation>
 <translation id="311958134571892113">linkitetty:</translation>
 <translation id="3123734510202723619">Ilmoitukset</translation>
+<translation id="3130863904455712965">Historia ja muita</translation>
 <translation id="3134784203083076891">"</translation>
 <translation id="314939179385989105">Chromen etusivu</translation>
 <translation id="3166827708714933426">Välilehti- ja ikkunapikanäppäimet</translation>
@@ -587,7 +588,6 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="4256782883801055595">Avoimen lähdekoodin käyttöluvat</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Mitä dataa käytetään:<ph name="END_BOLD" /> Selaushistoriaasi ja listaa sivuista, joilla olet käynyt Chromella tällä laitteella</translation>
 <translation id="4263656433980196874">Assistantin puhehaun suostumus-UI avattu koko näytön kokoisena</translation>
-<translation id="4266054596873078491">Kirjaudu tälle sivustolle ja Chromeen Google-tililläsi.</translation>
 <translation id="4269820728363426813">Kopioi linkin osoite</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Laita näytön lukitus päälle Android-asetuksista<ph name="END_LINK" /></translation>
 <translation id="4293476595220860475">Käyttämällä Chromea hyväksyt <ph name="BEGIN_TOS_LINK" />Googlen käyttöehdot<ph name="END_TOS_LINK" /> sekä <ph name="BEGIN_ATOS_LINK" />Google Chromen ja Chrome-käyttöjärjestelmän lisäkäyttöehdot<ph name="END_ATOS_LINK" />. Myös <ph name="BEGIN_PRIVACY_LINK" />tietosuojakäytäntöä<ph name="END_PRIVACY_LINK" /> sovelletaan.</translation>
@@ -1051,6 +1051,7 @@ Luottamusmerkit parantavat yksityisyyttä verkossa, eikä sinua voi tunnistaa ni
 <translation id="6671495933530132209">Kopioi kuva</translation>
 <translation id="6674571176963658787">Aloita synkronointi lisäämällä tunnuslause</translation>
 <translation id="6676840375528380067">Poistetaanko Chrome-data tältä laitteelta?</translation>
+<translation id="6676927815633975364">Kirjaudu tälle sivustolle ja Chromeen</translation>
 <translation id="6684809838922667136">Entistä parempi Chrome</translation>
 <translation id="670498945988402717">Tarkistettu eilen</translation>
 <translation id="6710213216561001401">Edellinen</translation>
@@ -1140,6 +1141,7 @@ Luottamusmerkit parantavat yksityisyyttä verkossa, eikä sinua voi tunnistaa ni
 <translation id="7196215469483532480">Yksityisyysoppaan selitys kokonaan avattuna</translation>
 <translation id="7207760545532569765">Palauta <ph name="TAB_COUNT" /> välilehteä uusina taustavälilehtinä.</translation>
 <translation id="7208109991155904980">Reaktio siirretty</translation>
+<translation id="7217781228893594884">Incognito-välilehdet lukitaan, kun poistut Chromesta</translation>
 <translation id="7222235798733126207">Rajoitettu sivustojen välinen jakaminen</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 lataus odottaa}other{# latausta odottaa}}</translation>
 <translation id="7242755609445462077">Tyylitelty korostus <ph name="CURRENT_DATE" /></translation>
@@ -1300,6 +1302,7 @@ Luottamusmerkit parantavat yksityisyyttä verkossa, eikä sinua voi tunnistaa ni
 <translation id="8037801708772278989">Tarkistettu juuri äsken</translation>
 <translation id="804335162455518893">SD-korttia ei löydy</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> incognito-välilehti}other{<ph name="TAB_COUNT_NORMAL" /> incognito-välilehteä}}</translation>
+<translation id="8048728378294435881">Varmuuskopioi sisältösi ja käytä sitä millä tahansa laitteella</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> Mt käytettävissä</translation>
 <translation id="8058655154417507695">Viimeinen voimassaolovuosi</translation>
 <translation id="8058746566562539958">Avaa, uusi Chrome-välilehti</translation>

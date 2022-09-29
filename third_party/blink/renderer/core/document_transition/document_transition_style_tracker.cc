@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/document_transition/document_transition_content_element.h"
 #include "third_party/blink/renderer/core/document_transition/document_transition_pseudo_element_base.h"
 #include "third_party/blink/renderer/core/document_transition/document_transition_utils.h"
@@ -39,8 +40,9 @@ namespace {
 
 const char* kElementSetModificationError =
     "The element set cannot be modified at this transition state.";
-const char* kPaintContainmentNotSatisfied =
-    "Dropping element from transition. Shared element must contain paint";
+const char* kContainmentNotSatisfied =
+    "Dropping element from transition. Shared element must contain paint or "
+    "layout";
 const char* kDuplicateTagBaseError =
     "Unexpected duplicate page transition tag: ";
 
@@ -233,6 +235,19 @@ void DocumentTransitionStyleTracker::RemoveSharedElement(Element* element) {
 void DocumentTransitionStyleTracker::AddSharedElementsFromCSS() {
   DCHECK(document_ && document_->View());
 
+  // TODO(vmpstr): This needs some thought :(
+  // From khushalsagar:
+  // We have to change this such that discovering of tags happens at the end of
+  // reaching the paint phase of the lifecycle update at the next frame. So the
+  // way this would be setup is:
+  // - At the next frame, acquire the scope before dispatching raf callbacks.
+  // - When we hit paint, discover all the tags and then release the scope.
+  // We can have recursive lifecycle updates after this to invalidate the pseudo
+  // DOM but the decision for which elements will be shared is not changeable
+  // after that point.
+  auto scope =
+      document_->GetDisplayLockDocumentState().GetScopedForceActivatableLocks();
+
   // We need our paint layers, and z-order lists which is done during
   // compositing inputs update.
   document_->View()->UpdateLifecycleToCompositingInputsClean(
@@ -350,6 +365,8 @@ bool DocumentTransitionStyleTracker::Capture() {
   // Now we know that we can start a transition. Update the state and populate
   // `element_data_map_`.
   state_ = State::kCapturing;
+  InvalidateHitTestingCache();
+
   captured_tag_count_ = transition_tags.size() + OldRootDataTagSize();
 
   element_data_map_.ReserveCapacityForSize(captured_tag_count_);
@@ -400,6 +417,10 @@ void DocumentTransitionStyleTracker::CaptureResolved() {
   DCHECK_EQ(state_, State::kCapturing);
 
   state_ = State::kCaptured;
+  // TODO(crbug.com/1347473): We should also suppress hit testing at this point,
+  // since we're about to start painting the element as a captured snapshot, but
+  // we still haven't given script chance to modify the DOM to the new state.
+  InvalidateHitTestingCache();
 
   // Since the elements will be unset, we need to invalidate their style first.
   // TODO(vmpstr): We don't have to invalidate the pseudo styles at this point,
@@ -420,6 +441,20 @@ void DocumentTransitionStyleTracker::CaptureResolved() {
   root_effect_node_ = nullptr;
 }
 
+VectorOf<Element> DocumentTransitionStyleTracker::GetTransitioningElements()
+    const {
+  // In stable states, we don't have shared elements.
+  if (state_ == State::kIdle || state_ == State::kCaptured)
+    return {};
+
+  VectorOf<Element> result;
+  for (auto& entry : element_data_map_) {
+    if (entry.value->target_element)
+      result.push_back(entry.value->target_element);
+  }
+  return result;
+}
+
 bool DocumentTransitionStyleTracker::Start() {
   DCHECK_EQ(state_, State::kCaptured);
 
@@ -433,6 +468,8 @@ bool DocumentTransitionStyleTracker::Start() {
     return false;
 
   state_ = State::kStarted;
+  InvalidateHitTestingCache();
+
   HeapHashMap<Member<Element>, viz::SharedElementResourceId>
       element_snapshot_ids;
   bool found_new_tags = false;
@@ -524,6 +561,7 @@ void DocumentTransitionStyleTracker::Abort() {
 
 void DocumentTransitionStyleTracker::EndTransition() {
   state_ = State::kFinished;
+  InvalidateHitTestingCache();
 
   // We need a style invalidation to remove the pseudo element tree. This needs
   // to be done before we clear the data, since we need to invalidate the shared
@@ -667,7 +705,8 @@ void DocumentTransitionStyleTracker::RunPostPrePaintSteps() {
     // TODO(khushalsagar) : Switch paint containment and disallow fragmentation
     // to implicit constraints. See crbug.com/1277121.
     auto* layout_object = element_data->target_element->GetLayoutObject();
-    if (!layout_object || !layout_object->ShouldApplyPaintContainment()) {
+    if (!layout_object || (!layout_object->ShouldApplyPaintContainment() &&
+                           !layout_object->ShouldApplyLayoutContainment())) {
       element_data->target_element = nullptr;
 
       // If we had a valid |target_element| there must be an associated snapshot
@@ -832,10 +871,12 @@ void DocumentTransitionStyleTracker::VerifySharedElements() {
 
     // TODO(vmpstr): Should this work for replaced elements as well?
     if (object) {
-      if (object->ShouldApplyPaintContainment())
+      if (object->ShouldApplyPaintContainment() ||
+          object->ShouldApplyLayoutContainment()) {
         continue;
+      }
 
-      AddConsoleError(kPaintContainmentNotSatisfied,
+      AddConsoleError(kContainmentNotSatisfied,
                       {DOMNodeIds::IdForNode(active_element)});
     }
 
@@ -844,6 +885,7 @@ void DocumentTransitionStyleTracker::VerifySharedElements() {
     // support nulls as a valid active element.
 
     // Invalidate the element since we should no longer be compositing it.
+    // TODO(vmpstr): Should we abort the transition instead?0
     auto* box = active_element->GetLayoutBox();
     if (box && box->HasSelfPaintingLayer())
       box->SetNeedsPaintPropertyUpdate();
@@ -926,11 +968,10 @@ void DocumentTransitionStyleTracker::InvalidateStyle() {
     // means that we should update the paint properties to update the shared
     // element id.
     object->SetNeedsPaintPropertyUpdate();
-
-    auto* box = entry.value->target_element->GetLayoutBox();
-    if (!box || !box->HasSelfPaintingLayer())
-      continue;
   }
+
+  document_->GetDisplayLockDocumentState()
+      .NotifySharedElementPseudoTreeChanged();
 }
 
 HashSet<AtomicString> DocumentTransitionStyleTracker::AllRootTags() const {
@@ -1181,6 +1222,17 @@ void DocumentTransitionStyleTracker::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(element_data_map_);
   visitor->Trace(pending_shared_element_tags_);
+}
+
+void DocumentTransitionStyleTracker::InvalidateHitTestingCache() {
+  // Hit-testing data is cached based on the current DOM version. Normally, this
+  // version is incremented any time there is a DOM modification or an attribute
+  // change to some element (which can result in a new style). However, with
+  // shared element transitions, we dynamically create and destroy hit-testable
+  // pseudo elements based on the current state. This means that we have to
+  // manually modify the DOM tree version since there is no other mechanism that
+  // will do it.
+  document_->IncDOMTreeVersion();
 }
 
 void DocumentTransitionStyleTracker::ElementData::Trace(

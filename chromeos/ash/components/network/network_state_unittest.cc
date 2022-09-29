@@ -21,7 +21,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -189,29 +189,37 @@ TEST_F(NetworkStateTest, CaptivePortalState) {
       base::HexEncode(network_name.c_str(), network_name.length());
   EXPECT_TRUE(SetStringProperty(shill::kWifiHexSsid, hex_ssid));
 
-  // State != portal -> portal_state() == kOnline
+  // State != portal or online -> portal_state() == kUnknown
   EXPECT_TRUE(SetStringProperty(shill::kStateProperty, shill::kStateReady));
   SignalInitialPropertiesReceived();
-  EXPECT_EQ(network_state_.portal_state(), NetworkState::PortalState::kOnline);
+  EXPECT_EQ(network_state_.GetPortalState(),
+            NetworkState::PortalState::kUnknown);
+
+  // State == online -> portal_state() == kOnline
+  EXPECT_TRUE(SetStringProperty(shill::kStateProperty, shill::kStateOnline));
+  SignalInitialPropertiesReceived();
+  EXPECT_EQ(network_state_.GetPortalState(),
+            NetworkState::PortalState::kOnline);
 
   // State == redirect-found -> portal_state() == kPortal
   EXPECT_TRUE(
       SetStringProperty(shill::kStateProperty, shill::kStateRedirectFound));
   SignalInitialPropertiesReceived();
-  EXPECT_EQ(network_state_.portal_state(), NetworkState::PortalState::kPortal);
+  EXPECT_EQ(network_state_.GetPortalState(),
+            NetworkState::PortalState::kPortal);
 
   // State == portal-suspected -> portal_state() == kPortalSuspected
   EXPECT_TRUE(
       SetStringProperty(shill::kStateProperty, shill::kStatePortalSuspected));
   SignalInitialPropertiesReceived();
-  EXPECT_EQ(network_state_.portal_state(),
+  EXPECT_EQ(network_state_.GetPortalState(),
             NetworkState::PortalState::kPortalSuspected);
 
   // State == no-connectivity -> portal_state() == kOffline
   EXPECT_TRUE(
       SetStringProperty(shill::kStateProperty, shill::kStateNoConnectivity));
   SignalInitialPropertiesReceived();
-  EXPECT_EQ(network_state_.portal_state(),
+  EXPECT_EQ(network_state_.GetPortalState(),
             NetworkState::PortalState::kNoInternet);
 }
 
@@ -486,4 +494,4 @@ TEST_F(NetworkStateTest, NonShillCellular) {
   EXPECT_EQ(kTestGuid, *dictionary.FindStringKey(shill::kGuidProperty));
 }
 
-}  // namespace chromeos
+}  // namespace ash

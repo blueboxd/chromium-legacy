@@ -216,7 +216,7 @@ class CORE_EXPORT LocalFrame final
   void SetIsInert(bool) override;
   void SetInheritedEffectiveTouchAction(TouchAction) override;
   void DidFocus() override;
-  bool IsAdSubframe() const override;
+  bool IsAdFrame() const override;
 
   // BackForwardCacheLoaderHelperImpl::Delegate:
   void EvictFromBackForwardCache(
@@ -536,7 +536,7 @@ class CORE_EXPORT LocalFrame final
   // be removed.
   bool IsProvisional() const;
 
-  // Whether the frame is considered to be a root ad subframe by Ad Tagging.
+  // Whether the frame is considered to be a root ad frame by Ad Tagging.
   bool IsAdRoot() const;
 
   // Called by the embedder on creation of the initial empty document and, for
@@ -548,14 +548,14 @@ class CORE_EXPORT LocalFrame final
   bool IsAdScriptInStack() const;
 
   // The evidence for or against a frame being an ad. `absl::nullopt` if not yet
-  // set or if the frame is a top-level frame as only subframes can be tagged as
-  // ads.
+  // set or if the frame is a subfiltering root frame (outermost main frame or
+  // portal) as only child frames can be tagged as ads.
   const absl::optional<blink::FrameAdEvidence>& AdEvidence() const {
     return ad_evidence_;
   }
 
-  bool IsSubframeCreatedByAdScript() const {
-    return is_subframe_created_by_ad_script_;
+  bool IsFrameCreatedByAdScript() const {
+    return is_frame_created_by_ad_script_;
   }
 
   // Updates the frame color overlay to match the highlight ad setting.
@@ -587,6 +587,12 @@ class CORE_EXPORT LocalFrame final
   // by an associated interface with the legacy Chrome IPC channel.
   mojom::blink::BackForwardCacheControllerHost&
   GetBackForwardCacheControllerHostRemote();
+
+  const AtomicString& GetReducedAcceptLanguage() const {
+    return reduced_accept_language_;
+  }
+
+  void SetReducedAcceptLanguage(const AtomicString& reduced_accept_language);
 
   // Overlays a color on top of this LocalFrameView if it is associated with
   // the main frame. Should not have multiple consumers.
@@ -760,6 +766,9 @@ class CORE_EXPORT LocalFrame final
   void SetAncestorOrSelfHasCSPEE(bool has_policy) {
     ancestor_or_self_has_cspee_ = has_policy;
   }
+
+  void SetBackgroundColorPaintImageGeneratorForTesting(
+      BackgroundColorPaintImageGenerator* generator);
 
  private:
   friend class FrameNavigationDisabler;
@@ -972,22 +981,22 @@ class CORE_EXPORT LocalFrame final
 #endif
 
   // The evidence for or against a frame being an ad frame. `absl::nullopt` if
-  // not yet set or if the frame is a top-level frame. (Only subframes can be
-  // tagged as ad frames.) This is per-frame (as opposed to per-document) as we
-  // want to decide whether a frame is an ad or not before commit, while the
-  // document has not yet been created.
+  // not yet set or if the frame is a subfiltering root frame. (Only non-root
+  // frames can be tagged as ad frames.) This is per-frame (as opposed to
+  // per-document) as we want to decide whether a frame is an ad or not before
+  // commit, while the document has not yet been created.
   //
   // This is constructed directly in the renderer in the case of an initial
   // synchronous commit and otherwise is signaled from the browser process at
   // ready-to-commit time.
   absl::optional<blink::FrameAdEvidence> ad_evidence_;
 
-  // True if this frame is a subframe that had a script tagged as an ad on the
-  // v8 stack at the time of creation. This is updated in `SetAdEvidence()`,
+  // True if this frame is a frame that had a script tagged as an ad on the v8
+  // stack at the time of creation. This is updated in `SetAdEvidence()`,
   // allowing the bit to be propagated when a frame navigates cross-origin.
   // Fenced frames do not set this bit for the initial empty document, see
   // SubresourceFilterAgent::Initialize.
-  bool is_subframe_created_by_ad_script_ = false;
+  bool is_frame_created_by_ad_script_ = false;
 
   bool evict_cached_session_storage_on_freeze_or_unload_ = false;
 
@@ -1001,6 +1010,9 @@ class CORE_EXPORT LocalFrame final
   // frame). Calculated browser-side and used to help determine if this frame
   // is allowed to load a new child opaque-ads fenced frame.
   bool ancestor_or_self_has_cspee_ = false;
+
+  // Reduced accept language for top-level frame.
+  AtomicString reduced_accept_language_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {
@@ -1053,42 +1065,6 @@ class FrameNavigationDisabler {
   ~FrameNavigationDisabler();
 
  private:
-  LocalFrame* frame_;
-};
-
-// A helper class for attributing cost inside a scope to a LocalFrame, with
-// output written to the trace log. The class is irrelevant to the core logic
-// of LocalFrame.  Sample usage:
-//
-// void foo(LocalFrame* frame)
-// {
-//     ScopedFrameBlamer frameBlamer(frame);
-//     TRACE_EVENT0("blink", "foo");
-//     // Do some real work...
-// }
-//
-// In Trace Viewer, we can find the cost of slice |foo| attributed to |frame|.
-// Design doc:
-// https://docs.google.com/document/d/15BB-suCb9j-nFt55yCFJBJCGzLg2qUm3WaSOPb8APtI/edit?usp=sharing
-//
-// This class is used in performance-sensitive code (like V8 entry), so care
-// should be taken to ensure that it has an efficient fast path (for the common
-// case where we are not tracking this).
-class ScopedFrameBlamer {
-  STACK_ALLOCATED();
-
- public:
-  explicit ScopedFrameBlamer(LocalFrame*);
-  ScopedFrameBlamer(const ScopedFrameBlamer&) = delete;
-  ScopedFrameBlamer& operator=(const ScopedFrameBlamer&) = delete;
-  ~ScopedFrameBlamer() {
-    if (UNLIKELY(frame_))
-      LeaveContext();
-  }
-
- private:
-  void LeaveContext();
-
   LocalFrame* frame_;
 };
 

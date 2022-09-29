@@ -131,11 +131,4 @@ public class TabbedModeFirstRunActivity extends FirstRunActivity {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         }
     }
-
-    @Override
-    public boolean canUseLandscapeLayout() {
-        // TabbedModeFirstRunActivity shows FRE in a dialog that always has the portrait
-        // orientation, so never use the landscape layout with that activity.
-        return false;
-    }
 }

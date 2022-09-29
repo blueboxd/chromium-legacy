@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/containers/cxx20_erase.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/guid.h"
@@ -62,6 +63,14 @@ static const char kOtherBookmarksFolderServerTag[] = "other_bookmarks";
 static const char kOtherBookmarksFolderName[] = "Other Bookmarks";
 static const char kSyncedBookmarksFolderServerTag[] = "synced_bookmarks";
 static const char kSyncedBookmarksFolderName[] = "Synced Bookmarks";
+
+// Returns entity's version without increasing it by one for tombstones. The
+// version is updated and set in SaveEntity() and there is no need to increment
+// it again in CommitResponse. Otherwise, it would be possible that the next
+// commit request would return the same version.
+const base::Feature kSyncReturnRealVersionOnCommitInLoopbackServer{
+    "SyncReturnRealVersionOnCommitInLoopbackServer",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 int GetServerMigrationVersion(
     const std::map<ModelType, int>& server_migration_versions,
@@ -465,16 +474,13 @@ bool LoopbackServer::HandleGetUpdatesRequest(
     }
   }
 
-  int max_batch_size = max_get_updates_batch_size_;
-  if (get_updates.batch_size() > 0)
-    max_batch_size = std::min(max_batch_size, get_updates.batch_size());
-
-  if (static_cast<int>(wanted_entities.size()) > max_batch_size) {
-    response->set_changes_remaining(wanted_entities.size() - max_batch_size);
+  if (static_cast<int>(wanted_entities.size()) > max_get_updates_batch_size_) {
+    response->set_changes_remaining(wanted_entities.size() -
+                                    max_get_updates_batch_size_);
     std::partial_sort(wanted_entities.begin(),
-                      wanted_entities.begin() + max_batch_size,
+                      wanted_entities.begin() + max_get_updates_batch_size_,
                       wanted_entities.end(), SortByVersion);
-    wanted_entities.resize(max_batch_size);
+    wanted_entities.resize(max_get_updates_batch_size_);
   }
 
   bool send_encryption_keys_based_on_nigori = false;
@@ -584,7 +590,9 @@ void LoopbackServer::BuildEntryResponseForSuccessfulCommit(
                                         : sync_pb::CommitResponse::SUCCESS);
   entry_response->set_id_string(entity.GetId());
 
-  if (entity.IsDeleted()) {
+  if (entity.IsDeleted() &&
+      !base::FeatureList::IsEnabled(
+          kSyncReturnRealVersionOnCommitInLoopbackServer)) {
     entry_response->set_version(entity.GetVersion() + 1);
   } else {
     entry_response->set_version(entity.GetVersion());

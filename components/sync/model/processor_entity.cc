@@ -9,7 +9,6 @@
 #include "base/base64.h"
 #include "base/hash/sha1.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/features.h"
@@ -142,7 +141,7 @@ bool ProcessorEntity::CanClearMetadata() const {
   return metadata_.is_deleted() && !IsUnsynced();
 }
 
-bool ProcessorEntity::UpdateIsReflection(int64_t update_version) const {
+bool ProcessorEntity::IsVersionAlreadyKnown(int64_t update_version) const {
   return metadata_.server_version() >= update_version;
 }
 
@@ -271,6 +270,7 @@ void ProcessorEntity::ReceiveCommitResponse(const CommitResponseData& data,
   DCHECK_GT(data.sequence_number, metadata_.acked_sequence_number());
   // Version is not valid for commit only types, as it's stripped before being
   // sent to the server, so it cannot behave correctly.
+  // TODO(crbug.com/1351666): do not use DCHECK to verify the server response.
   DCHECK(commit_only || data.response_version > metadata_.server_version())
       << data.response_version << " vs " << metadata_.server_version();
 

@@ -11,13 +11,6 @@
 
 namespace ui {
 
-PlatformWindowDelegate::BoundsChange::BoundsChange() = default;
-
-PlatformWindowDelegate::BoundsChange::BoundsChange(const gfx::Rect& bounds)
-    : bounds(bounds) {}
-
-PlatformWindowDelegate::BoundsChange::~BoundsChange() = default;
-
 PlatformWindowDelegate::PlatformWindowDelegate() = default;
 
 PlatformWindowDelegate::~PlatformWindowDelegate() = default;
@@ -44,7 +37,7 @@ void PlatformWindowDelegate::OnOcclusionStateChanged(
     PlatformWindowOcclusionState occlusion_state) {}
 
 absl::optional<OwnedWindowAnchor>
-PlatformWindowDelegate::GetOwnedWindowAnchorAndRectInPx() {
+PlatformWindowDelegate::GetOwnedWindowAnchorAndRectInDIP() {
   return absl::nullopt;
 }
 

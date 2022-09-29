@@ -105,7 +105,6 @@
 <translation id="1474893630593443211">நீங்கள் பார்க்கும் விளம்பரங்களுக்கான கூடுதல் கட்டுப்பாடு</translation>
 <translation id="1477626028522505441">சேவையகச் சிக்கல்களால் <ph name="FILE_NAME" />ஐப் பதிவிறக்க முடியவில்லை.</translation>
 <translation id="148482509007564431">புக்மார்க் சேமிப்புச் செயல்முறை</translation>
-<translation id="1488775391433859242">இந்த QR குறியீட்டைக் காட்டும் கம்ப்யூட்டரில் உள்நுழைய இந்த ஃபோனைப் பயன்படுத்தலாம்.</translation>
 <translation id="1492417797159476138">இந்தத் தளத்தில் இந்தப் பயனர்பெயரை ஏற்கெனவே சேமித்துள்ளீர்கள்</translation>
 <translation id="1493287004536771723"><ph name="SITE_NAME" /> தளத்தைப் பின்தொடர்கிறீர்கள்</translation>
 <translation id="1502010315804028179">கடவுச்சொற்களை நிர்வகிக்க Google Play சேவைகளைப் புதுப்பிக்க வேண்டும்</translation>
@@ -235,6 +234,7 @@
 <translation id="2239812875700136898">கண்டறிவதற்கான விருப்பங்கள் என்ற பட்டன் மூலம் உங்கள் செய்திகளைக் கட்டுப்படுத்தலாம்</translation>
 <translation id="2248941474044011069">Google கடவுச்சொல் நிர்வாகியில் சேமிக்கப்படுவதற்கு முன்பு உங்கள் சாதனத்தில் கடவுச்சொற்கள் என்க்ரிப்ஷன் செய்யப்படுகின்றன</translation>
 <translation id="2259659629660284697">கடவுச்சொற்களை ஏற்று…</translation>
+<translation id="2276231040576210443">எதையெல்லாம் ஒத்திசைக்க வேண்டும் என்பதை <ph name="BEGIN_LINK1" />அமைப்புகளுக்குச்<ph name="END_LINK1" /> சென்று எப்போது வேண்டுமானாலும் தேர்வுசெய்யலாம். உங்கள் பதிவுகளின் அடிப்படையில் Search மற்றும் பிற சேவைகளை Google பிரத்தியேகமாக்கலாம்.</translation>
 <translation id="2276696007612801991">கடவுச்சொற்களைச் சரிபார்க்க, உங்கள் Google கணக்கில் உள்நுழையவும்</translation>
 <translation id="2278052315791335171">இந்தக் கடவுச்சொல்லை நீக்கினால் <ph name="SITE" /> இணையதளத்தில் உள்ள உங்கள் கணக்கு நீக்கப்படாது</translation>
 <translation id="2279146068164892489"><ph name="APPNAME" />க்கான ஆப்ஸைத் திறக்கவா?</translation>
@@ -282,7 +282,6 @@
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> வரலாற்று உள்ளடக்கங்கள் நீக்கப்பட்டன</translation>
 <translation id="2536728043171574184">இந்தப் பக்கத்தின் ஆஃப்லைன் நகலைப் பார்க்கிறீர்கள்</translation>
 <translation id="2546283357679194313">குக்கீகளும் தள தரவும்</translation>
-<translation id="2549516196460093976">இந்த QR குறியீட்டைக் காட்டும் கம்ப்யூட்டரில் உள்நுழைய இந்த டேப்லெட்டைப் பயன்படுத்தலாம்.</translation>
 <translation id="2558569818338050235">நீங்கள் இதுவரை இணையத்தில் பார்த்தவற்றைப் பொறுத்தே விளம்பரங்கள் உங்களுக்குக் காட்டப்படும்</translation>
 <translation id="2561519700418191927">வீடியோ மாதிரிகாட்சிகள்</translation>
 <translation id="2567385386134582609">படம்</translation>
@@ -308,6 +307,7 @@
 <translation id="2702516483241149200">புதிது: இந்த உரைக்குச் செல்லும் இணைப்பைப் பகிரலாம்</translation>
 <translation id="2704606927547763573">நகலெடுக்கப்பட்டது</translation>
 <translation id="2707726405694321444">பக்கத்தைப் புதுப்பி</translation>
+<translation id="2709516037105925701">தானாகநிரப்பு</translation>
 <translation id="271033894570825754">புதிது</translation>
 <translation id="2711073837061989559">சோதனைகள்</translation>
 <translation id="2718352093833049315">வைஃபையில் மட்டும்</translation>
@@ -396,6 +396,7 @@
 <translation id="3114507951000454849">இன்றைய செய்திகளைப் படியுங்கள் <ph name="NEWS_ICON" /></translation>
 <translation id="311958134571892113">இந்தக் கார்டுடன் இணைத்துள்ளீர்கள்</translation>
 <translation id="3123734510202723619">அறிவிப்புகள்</translation>
+<translation id="3130863904455712965">பதிவுகள் மற்றும் பல</translation>
 <translation id="3134784203083076891">”</translation>
 <translation id="314939179385989105">Chromeமின் முகப்புப்பக்கம்</translation>
 <translation id="3166827708714933426">தாவல் மற்றும் சாளரத்திற்கான ஷார்ட்கட்கள்</translation>
@@ -472,6 +473,7 @@
 <translation id="3557336313807607643">தொடர்புகளில் சேர்</translation>
 <translation id="3560491354538957576">தளம் ஆர்வங்களை வரையறுக்கலாம்</translation>
 <translation id="3563767357928833671">கிளிப்போர்டில் உள்ளவை காட்டப்படுகிறது</translation>
+<translation id="3566639033325271639">அமைப்புகளை மாற்று</translation>
 <translation id="3566923219790363270">VRருக்காக Chrome இன்னமும் தயார்செய்கிறது. Chromeமைப் பின்னர் மீண்டும் தொடங்கவும்.</translation>
 <translation id="3568688522516854065">உங்கள் பிற சாதனங்களிலிருந்து தாவல்களைப் பெற, உள்நுழைந்து, ஒத்திசைவை இயக்கவும்</translation>
 <translation id="357465026686164600">ஃபோனைப் பாதுகாப்பு விசையாகப் பயன்படுத்துதல்</translation>
@@ -566,6 +568,7 @@
 <translation id="4116038641877404294">ஆஃப்லைனில் பார்க்க, பக்கங்களைப் பதிவிறக்கவும்</translation>
 <translation id="4135200667068010335">தாவலைப் பகிர்வதற்கான சாதனங்களின் பட்டியல் மூடப்பட்டுள்ளது.</translation>
 <translation id="4137746084635924146">சாதனத்தின் தற்போதைய மொழி</translation>
+<translation id="414128724510021958">இயல்பாகக் கோரப்பட்ட டெஸ்க்டாப் தளங்கள்</translation>
 <translation id="4141536112466364990">Chrome குறித்து அறிந்துகொள்ளுங்கள்</translation>
 <translation id="4162867837470729563">பகிர்தல் விருப்பங்களுக்கான பட்டியல் முழுத் திரையில் காட்டப்படுகிறது.</translation>
 <translation id="4165986682804962316">தள அமைப்புகள்</translation>
@@ -587,7 +590,6 @@
 <translation id="4256782883801055595">ஓப்பன் சோர்ஸ் உரிமங்கள்</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />எந்தெந்தத் தரவு பயன்படுத்தப்படுகின்றது?<ph name="END_BOLD" /> நீங்கள் இதுவரை இணையத்தில் பார்த்தவை மற்றும் Chrome மூலம் நீங்கள் இந்தச் சாதனத்தில் பார்த்த தளங்களின் பதிவு.</translation>
 <translation id="4263656433980196874">குரல் தேடலுக்கு Assistantடைப் பயன்படுத்துவதற்கான ஒப்புதல் UI முழுத் திரையில் காட்டப்படுகிறது</translation>
-<translation id="4266054596873078491">இந்தத் தளத்திலும் Chromeமிலும் உங்கள் Google கணக்கில் உள்நுழைவீர்கள்.</translation>
 <translation id="4269820728363426813">இணைப்பு முகவரியை நகலெடு</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Android அமைப்புகளில் திரைப் பூட்டு அம்சத்தை இயக்கவும்<ph name="END_LINK" /></translation>
 <translation id="4293476595220860475">Chromeமைப் பயன்படுத்துவதன் மூலம் <ph name="BEGIN_TOS_LINK" />Google சேவை விதிமுறைகள்<ph name="END_TOS_LINK" />, <ph name="BEGIN_ATOS_LINK" />Google Chrome &amp; ChromeOS தொடர்பான கூடுதல் சேவை விதிமுறைகள்<ph name="END_ATOS_LINK" /> ஆகியவற்றை ஏற்கிறீர்கள். <ph name="BEGIN_PRIVACY_LINK" />தனியுரிமைக் கொள்கையையும்<ph name="END_PRIVACY_LINK" /> ஏற்கிறீர்கள்.</translation>
@@ -1051,6 +1053,7 @@
 <translation id="6671495933530132209">படத்தை நகலெடு</translation>
 <translation id="6674571176963658787">ஒத்திசைவைத் தொடங்க, கடவுச்சொற்றொடரை உள்ளிடவும்</translation>
 <translation id="6676840375528380067">இந்தச் சாதனத்திலிருந்து உங்கள் Chrome தரவை அழிக்கவா?</translation>
+<translation id="6676927815633975364">இந்த தளத்திலும் Chromeமிலும் உள்நுழையும்</translation>
 <translation id="6684809838922667136">Chromeமைச் சிறந்ததாக்குங்கள்</translation>
 <translation id="670498945988402717">சரிபார்த்தது: நேற்று</translation>
 <translation id="6710213216561001401">முந்தையது</translation>
@@ -1140,6 +1143,7 @@
 <translation id="7196215469483532480">தனியுரிமை வழிகாட்டியின் விளக்கம் முழுத் திரையில் காட்டப்பட்டுள்ளது</translation>
 <translation id="7207760545532569765"><ph name="TAB_COUNT" /> பக்கங்களைப் புதிய பின்னணிப் பக்கங்களாக மீட்டெடுக்கும்.</translation>
 <translation id="7208109991155904980">உணர்வு வெளிப்பாடு நகர்த்தப்பட்டது</translation>
+<translation id="7217781228893594884">Chromeமை விட்டு வெளியேறும்போது மறைநிலைப் பக்கங்கள் பூட்டப்படும்</translation>
 <translation id="7222235798733126207">தளங்களுக்கிடையே குறைவான பகிர்வு</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{ஒரு பதிவிறக்கம் நிலுவையில் உள்ளது}other{# பதிவிறக்கங்கள் நிலுவையில் உள்ளன}}</translation>
 <translation id="7242755609445462077">மெருகூட்டப்பட்ட ஹைலைட் <ph name="CURRENT_DATE" /></translation>
@@ -1300,6 +1304,7 @@
 <translation id="8037801708772278989">சரிபார்த்தது: சற்று முன்பு</translation>
 <translation id="804335162455518893">SD கார்டு இல்லை</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> மறைநிலைப் பக்கம்}other{<ph name="TAB_COUNT_NORMAL" /> மறைநிலைப் பக்கங்கள்}}</translation>
+<translation id="8048728378294435881">உங்கள் தரவைக் காப்புப் பிரதி எடுத்து எந்தச் சாதனத்தில் வேண்டுமானாலும் பயன்படுத்தலாம்</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> மெ.பை கிடைக்கிறது</translation>
 <translation id="8058655154417507695">காலாவதியாகும் ஆண்டு</translation>
 <translation id="8058746566562539958">புதிய Chrome தாவலில் திற</translation>

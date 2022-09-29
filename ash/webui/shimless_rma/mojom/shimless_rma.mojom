@@ -67,6 +67,8 @@ enum State {
   kWaitForManualWPEnable,
   kFinalize,
   kRepairComplete,
+  kHardwareError,
+  kReboot,
 };
 
 // Defined error codes.
@@ -227,6 +229,8 @@ enum OsUpdateOperation {
   kAttemptingRollback = 8,
   kDisabled = 9,
   kNeedPermissionToUpdate = 10,
+  kCleanupPreviousUpdate = 11,
+  kUpdatedButDeferred = 12,
 };
 
 enum UpdateErrorCode {
@@ -371,6 +375,12 @@ enum ProvisioningError {
   kCannotRead = 3,
   kCannotWrite = 4,
   kGenerateSecret = 5,
+  kMissingBaseAccelerometer = 6,
+  kMissingLidAccelerometer = 7,
+  kMissingBaseGyroscope = 8,
+  kMissingLidGyroscope = 9,
+  kCr50 = 10,
+  kGbb = 11,
 };
 
 // This must remain in sync with FinalizeStatus::Status in
@@ -749,6 +759,12 @@ interface ShimlessRmaService {
   // Returns an error indicating success or a failure.
   EndRma(ShutdownMethod shutdown_method)
       => (StateResult state_result);
+
+  ///////////////////////////////////////
+  // Methods for kHardwareError state.
+  //
+  // Shut down after encountering an unrecoverable hardware error.
+  ShutDownAfterHardwareError();
 
   ///////////////////////////////////////
   // Critical error handling

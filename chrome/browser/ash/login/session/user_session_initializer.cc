@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ash/login/session/user_session_initializer.h"
 
-#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/components/peripheral_notification/peripheral_notification_manager.h"
-#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/feature_list.h"
@@ -32,7 +30,6 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/ash/policy/reporting/app_install_event_log_manager_wrapper.h"
-#include "chrome/browser/ash/policy/reporting/extension_install_event_log_manager_wrapper.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
@@ -48,7 +45,9 @@
 #include "chrome/browser/ui/ash/media_client_impl.h"
 #include "chrome/browser/ui/webui/settings/chromeos/peripheral_data_access_handler.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/dbus/pciguard/pciguard_client.h"
+#include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/ash/components/network/network_cert_loader.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -225,7 +224,6 @@ void UserSessionInitializer::InitializePrimaryProfileServices(
     // `ExtensionInstallEventLogManagerWrapper` manages their own lifetime and
     // self-destruct on logout.
     policy::AppInstallEventLogManagerWrapper::CreateForProfile(profile);
-    policy::ExtensionInstallEventLogManagerWrapper::CreateForProfile(profile);
   }
 
   arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);

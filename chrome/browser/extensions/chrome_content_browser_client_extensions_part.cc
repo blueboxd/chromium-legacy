@@ -562,6 +562,8 @@ std::vector<url::Origin> ChromeContentBrowserClientExtensionsPart::
   // Require a dedicated process for the webstore origin.  See
   // https://crbug.com/939108.
   list.push_back(url::Origin::Create(extension_urls::GetWebstoreLaunchURL()));
+  list.push_back(
+      url::Origin::Create(extension_urls::GetNewWebstoreLaunchURL()));
 
   return list;
 }
@@ -744,12 +746,14 @@ void ChromeContentBrowserClientExtensionsPart::ExposeInterfacesToRenderer(
     service_manager::BinderRegistry* registry,
     blink::AssociatedInterfaceRegistry* associated_registry,
     content::RenderProcessHost* host) {
-  associated_registry->AddInterface(
+  associated_registry->AddInterface<mojom::EventRouter>(
       base::BindRepeating(&EventRouter::BindForRenderer, host->GetID()));
-  associated_registry->AddInterface(base::BindRepeating(
-      &ExtensionsGuestView::CreateForComponents, host->GetID()));
-  associated_registry->AddInterface(base::BindRepeating(
-      &ExtensionsGuestView::CreateForExtensions, host->GetID()));
+  associated_registry->AddInterface<guest_view::mojom::GuestViewHost>(
+      base::BindRepeating(&ExtensionsGuestView::CreateForComponents,
+                          host->GetID()));
+  associated_registry->AddInterface<extensions::mojom::GuestView>(
+      base::BindRepeating(&ExtensionsGuestView::CreateForExtensions,
+                          host->GetID()));
 }
 
 }  // namespace extensions

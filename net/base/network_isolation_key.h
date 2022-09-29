@@ -94,9 +94,11 @@ class NET_EXPORT NetworkIsolationKey {
            std::tie(other.top_frame_site_, other.frame_site_, other.nonce_);
   }
 
-  // Returns the string representation of the key, which is the string
-  // representation of each piece of the key separated by spaces.
-  std::string ToString() const;
+  // Returns the string representation of the key for use in string-keyed disk
+  // cache. This is the string representation of each piece of the key separated
+  // by spaces. Returns nullopt if the network isolation key is transient, in
+  // which case, nothing should typically be saved to disk using the key.
+  absl::optional<std::string> ToCacheKeyString() const;
 
   // Returns string for debugging. Difference from ToString() is that transient
   // entries may be distinguishable from each other.
@@ -125,6 +127,10 @@ class NET_EXPORT NetworkIsolationKey {
 
   // Returns true if all parts of the key are empty.
   bool IsEmpty() const;
+
+  // Returns true if the NetworkIsolationKey has a triple keyed scheme. This
+  // means both `frame_site_` and `top_frame_site_` are populated.
+  static bool IsFrameSiteEnabled();
 
   // Returns a representation of |this| as a base::Value. Returns false on
   // failure. Succeeds if either IsEmpty() or !IsTransient().

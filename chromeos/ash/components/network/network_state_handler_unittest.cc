@@ -21,6 +21,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "chromeos/ash/components/dbus/shill/shill_clients.h"
+#include "chromeos/ash/components/dbus/shill/shill_device_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_ipconfig_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/cellular_utils.h"
 #include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/ash/components/network/fake_stub_cellular_networks_provider.h"
@@ -29,18 +35,12 @@
 #include "chromeos/ash/components/network/network_type_pattern.h"
 #include "chromeos/ash/components/network/network_ui_data.h"
 #include "chromeos/ash/components/network/tether_constants.h"
-#include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
-#include "chromeos/dbus/shill/shill_ipconfig_client.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "dbus/object_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -105,7 +105,7 @@ base::Value GenerateSimSlotInfosWithEid(const std::string& eid) {
   return base::Value(std::move(sim_slot_infos));
 }
 
-class TestObserver final : public chromeos::NetworkStateHandlerObserver {
+class TestObserver final : public NetworkStateHandlerObserver {
  public:
   explicit TestObserver(NetworkStateHandler* handler) : handler_(handler) {}
 
@@ -124,7 +124,7 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
   void NetworkListChanged() override {
     NetworkStateHandler::NetworkStateList networks;
     handler_->GetNetworkListByType(
-        chromeos::NetworkTypePattern::Default(), false /* configured_only */,
+        NetworkTypePattern::Default(), false /* configured_only */,
         false /* visible_only */, 0 /* no limit */, &networks);
     network_count_ = networks.size();
     ++network_list_changed_count_;
@@ -143,7 +143,8 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
   void PortalStateChanged(const NetworkState* default_network,
                           NetworkState::PortalState portal_state) override {
     default_network_portal_state_ = portal_state;
-    VLOG(1) << "PortalStateChanged: " << static_cast<int>(portal_state);
+    ++portal_state_change_count_;
+    VLOG(1) << "PortalStateChanged: " << portal_state;
   }
 
   void NetworkConnectionStateChanged(const NetworkState* network) override {
@@ -202,6 +203,7 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
   size_t default_network_change_count() {
     return default_network_change_count_;
   }
+  size_t portal_state_change_count() { return portal_state_change_count_; }
   size_t device_list_changed_count() { return device_list_changed_count_; }
   size_t device_count() { return device_count_; }
   size_t network_list_changed_count() { return network_list_changed_count_; }
@@ -217,6 +219,7 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
     VLOG(1) << "=== RESET CHANGE COUNTS ===";
     active_network_change_count_ = 0;
     default_network_change_count_ = 0;
+    portal_state_change_count_ = 0;
     device_list_changed_count_ = 0;
     network_list_changed_count_ = 0;
     scan_requests_.clear();
@@ -280,6 +283,7 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
   NetworkStateHandler* handler_;
   size_t active_network_change_count_ = 0;
   size_t default_network_change_count_ = 0;
+  size_t portal_state_change_count_ = 0;
   size_t device_list_changed_count_ = 0;
   size_t device_count_ = 0;
   size_t network_list_changed_count_ = 0;
@@ -431,6 +435,17 @@ class NetworkStateHandlerTest : public testing::Test {
 
   void RemoveDevice(const std::string& device_path) {
     device_test_->RemoveDevice(device_path);
+  }
+
+  void RemoveEthernet() {
+    manager_test_->RemoveTechnology(shill::kTypeEthernet);
+    service_test_->RemoveService(kShillManagerClientStubDefaultService);
+    manager_test_->SetManagerProperty(
+        shill::kDefaultServiceProperty,
+        base::Value(kShillManagerClientStubDefaultWifi));
+    base::RunLoop().RunUntilIdle();
+    ASSERT_EQ(test_observer_->default_network(),
+              kShillManagerClientStubDefaultWifi);
   }
 
   void SetProperties(NetworkState* network, const base::Value& properties) {
@@ -1945,26 +1960,74 @@ TEST_F(NetworkStateHandlerTest, DefaultServiceChanged) {
   EXPECT_EQ(2u, test_observer_->default_network_change_count());
 }
 
-TEST_F(NetworkStateHandlerTest, PortalStateChanged) {
-  // Remove Ethernet.
-  manager_test_->RemoveTechnology(shill::kTypeEthernet);
-  service_test_->RemoveService(kShillManagerClientStubDefaultService);
-  manager_test_->SetManagerProperty(
-      shill::kDefaultServiceProperty,
-      base::Value(kShillManagerClientStubDefaultWifi));
-  base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(test_observer_->default_network(),
-            kShillManagerClientStubDefaultWifi);
+TEST_F(NetworkStateHandlerTest, SetNetworkChromePortalState) {
+  RemoveEthernet();
 
-  // Set WiFi to portal-suspected and ensure observer is triggered.
-  ASSERT_EQ(NetworkState::PortalState::kOnline,
-            test_observer_->default_network_portal_state());
   service_test_->SetServiceProperty(kShillManagerClientStubDefaultWifi,
                                     shill::kStateProperty,
                                     base::Value(shill::kStatePortalSuspected));
   base::RunLoop().RunUntilIdle();
+
+  const NetworkState* network = network_state_handler_->GetNetworkState(
+      kShillManagerClientStubDefaultWifi);
   EXPECT_EQ(NetworkState::PortalState::kPortalSuspected,
-            test_observer_->default_network_portal_state());
+            network->GetPortalState());
+
+  network_state_handler_->SetNetworkChromePortalState(
+      kShillManagerClientStubDefaultWifi, NetworkState::PortalState::kPortal);
+  base::RunLoop().RunUntilIdle();
+  network = network_state_handler_->GetNetworkState(
+      kShillManagerClientStubDefaultWifi);
+  EXPECT_EQ(NetworkState::PortalState::kPortal, network->GetPortalState());
+
+  // Setting the chrome portal state to 'unknown' should cause GetPortalState
+  // to return portal-suspected again.
+  network_state_handler_->SetNetworkChromePortalState(
+      kShillManagerClientStubDefaultWifi, NetworkState::PortalState::kUnknown);
+  base::RunLoop().RunUntilIdle();
+  network = network_state_handler_->GetNetworkState(
+      kShillManagerClientStubDefaultWifi);
+  EXPECT_EQ(NetworkState::PortalState::kPortalSuspected,
+            network->GetPortalState());
+}
+
+TEST_F(NetworkStateHandlerTest, PortalStateChanged) {
+  RemoveEthernet();
+
+  // Set wifi1 to portal-suspected and ensure observer is triggered.
+  service_test_->SetServiceProperty(kShillManagerClientStubDefaultWifi,
+                                    shill::kStateProperty,
+                                    base::Value(shill::kStatePortalSuspected));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(test_observer_->default_network_portal_state(),
+            NetworkState::PortalState::kPortalSuspected);
+  EXPECT_EQ(test_observer_->portal_state_change_count(), 1u);
+
+  // Set wifi2 to redirect-found. Observer should not be triggered since wifi2
+  // is not the default network.
+  service_test_->SetServiceProperty(kShillManagerClientStubWifi2,
+                                    shill::kStateProperty,
+                                    base::Value(shill::kStateRedirectFound));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(test_observer_->portal_state_change_count(), 1u);
+
+  // Disconnect wifi1, triggering the following:
+  // 1. The default network becomes <none> and the portal state becomes unknown.
+  // 2. The default network becomes wifi2 and the portal state becomes portal.
+  SetServiceProperty(kShillManagerClientStubDefaultWifi, shill::kStateProperty,
+                     base::Value(shill::kStateIdle));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(test_observer_->default_network_portal_state(),
+            NetworkState::PortalState::kPortal);
+  EXPECT_EQ(test_observer_->portal_state_change_count(), 3u);
+
+  // Disconnect wifi2, ensure the observer is triggered.
+  SetServiceProperty(kShillManagerClientStubWifi2, shill::kStateProperty,
+                     base::Value(shill::kStateIdle));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(test_observer_->default_network_portal_state(),
+            NetworkState::PortalState::kUnknown);
+  EXPECT_EQ(test_observer_->portal_state_change_count(), 4u);
 }
 
 TEST_F(NetworkStateHandlerTest, RequestUpdate) {
@@ -2579,25 +2642,6 @@ TEST_F(NetworkStateHandlerTest, SetNetworkConnectRequested) {
       NetworkListContainsPath(active_networks, kShillManagerClientStubWifi2));
 }
 
-TEST_F(NetworkStateHandlerTest, SetNetworkChromePortalDetected) {
-  const NetworkState* network = network_state_handler_->DefaultNetwork();
-  EXPECT_FALSE(network->IsCaptivePortal());
-
-  test_observer_->reset_updates();
-  network_state_handler_->SetNetworkChromePortalDetected(network->path(), true);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(network->IsCaptivePortal());
-  EXPECT_EQ(1,
-            test_observer_->ConnectionStateChangesForService(network->path()));
-  network_state_handler_->SetNetworkChromePortalDetected(network->path(),
-                                                         false);
-  base::RunLoop().RunUntilIdle();
-  network = network_state_handler_->DefaultNetwork();
-  EXPECT_FALSE(network->IsCaptivePortal());
-  EXPECT_EQ(2,
-            test_observer_->ConnectionStateChangesForService(network->path()));
-}
-
 TEST_F(NetworkStateHandlerTest, Hostname) {
   const std::string kTestHostname = "Test Hostname";
   network_state_handler_->SetHostname(kTestHostname);
@@ -2718,4 +2762,4 @@ TEST_F(NetworkStateHandlerTest, RequestTrafficCounters) {
   run_loop.Run();
 }
 
-}  // namespace chromeos
+}  // namespace ash

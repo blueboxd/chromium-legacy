@@ -55,19 +55,18 @@ component("lib") {
   ]
 
   deps = [
-    "//ash/components/audio",
     "//ash/constants",
     "//base",
     "//chromeos/ash/components/assistant:buildflags",
+    "//chromeos/ash/components/audio",
     "//chromeos/ash/services/assistant/public/proto",
     "//chromeos/dbus",
-    "//chromeos/dbus/dlcservice:dlcservice",
-    "//chromeos/dbus/dlcservice:dlcservice_proto",
     "//chromeos/dbus/power",
     "//chromeos/dbus/power:power_manager_proto",
-    "//chromeos/dbus/util",
+    "//chromeos/services/libassistant/public/cpp:loader",
     "//chromeos/services/libassistant/public/mojom",
     "//chromeos/strings",
+    "//chromeos/version",
     "//components/account_id",
     "//components/prefs",
     "//components/signin/public/identity_manager",
@@ -81,7 +80,11 @@ component("lib") {
     deps += [
       "//chromeos/ash/services/assistant/public/cpp",
       "//chromeos/services/libassistant",
+      "//chromeos/services/libassistant:loader",
     ]
+  } else {
+    sources +=
+        [ "//chromeos/ash/services/assistant/libassistant_loader_stub.cc" ]
   }
 
   public_deps = [
@@ -99,17 +102,17 @@ source_set("tests") {
   deps = [
     ":lib",
     ":test_support",
-    "//ash/components/audio",
     "//ash/constants",
     "//ash/public/cpp/assistant/test_support",
     "//base",
     "//base/test:test_support",
     "//chromeos/ash/components/assistant:buildflags",
     "//chromeos/ash/components/assistant/test_support",
+    "//chromeos/ash/components/audio",
+    "//chromeos/ash/components/dbus:test_support",
     "//chromeos/ash/components/dbus/audio",
     "//chromeos/ash/services/assistant/public/cpp",
     "//chromeos/ash/services/assistant/public/mojom",
-    "//chromeos/dbus:test_support",
     "//chromeos/dbus/power",
     "//chromeos/services/libassistant/public/mojom",
     "//components/prefs:test_support",

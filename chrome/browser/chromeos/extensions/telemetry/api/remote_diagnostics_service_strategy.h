@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/webui/telemetry_extension_ui/mojom/diagnostics_service.mojom.h"
+#include "chromeos/crosapi/mojom/diagnostics_service.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
@@ -25,7 +25,7 @@ class RemoteDiagnosticsServiceStrategy {
       const RemoteDiagnosticsServiceStrategy&) = delete;
   virtual ~RemoteDiagnosticsServiceStrategy();
 
-  virtual mojo::Remote<ash::health::mojom::DiagnosticsService>&
+  virtual mojo::Remote<crosapi::mojom::DiagnosticsService>&
   GetRemoteService() = 0;
 
  protected:

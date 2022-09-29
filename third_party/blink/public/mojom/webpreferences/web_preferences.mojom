@@ -144,6 +144,7 @@ struct WebPreferences {
   bool privileged_webgl_extensions_enabled;
   bool webgl_errors_to_console_enabled;
   bool hide_scrollbars;
+  bool enable_webkit_scrollbar_styling;
   bool accelerated_2d_canvas_enabled;
   bool canvas_2d_layers_enabled;
   bool antialiased_2d_canvas_disabled;
@@ -246,8 +247,6 @@ struct WebPreferences {
   // around WebVTT text tracks.
   // Window color can be any legal CSS color descriptor.
   string text_track_window_color;
-  // Window padding is in em.
-  string text_track_window_padding;
   // Window radius is in pixels.
   string text_track_window_radius;
 
@@ -437,4 +436,9 @@ struct WebPreferences {
 
   // Controls whether WebXR's immersive-ar is allowed.
   bool webxr_immersive_ar_allowed;
+
+  // Whether lookup of frames in the associated WebView (e.g. lookup via
+  // window.open or via <a target=...>) should be renderer-wide (i.e. going
+  // beyond the usual opener-relationship-based BrowsingInstance boundaries).
+  bool renderer_wide_named_frame_lookup;
 };

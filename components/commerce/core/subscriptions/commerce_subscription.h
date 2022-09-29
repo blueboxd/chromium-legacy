@@ -9,6 +9,16 @@
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+/**
+ * To add a new SubscriptionType / IdentifierType / ManagementType:
+ * 1. Define the type in the enum class in commerce_subscription.h.
+ * 2. Update the conversion methods between the type and std::string in
+ * commerce_subscription.cc.
+ * 3. Add the corresponding entry in {@link
+ * commerce_subscription_db_content.proto} to ensure the storage works
+ * correctly.
+ */
+
 namespace commerce {
 
 // The type of subscription.
@@ -40,35 +50,46 @@ enum class ManagementType {
 };
 
 struct UserSeenOffer {
-  UserSeenOffer(uint64_t offer_id,
+  UserSeenOffer(std::string offer_id,
                 long user_seen_price,
-                const std::string& country_code);
+                std::string country_code);
+  UserSeenOffer(const UserSeenOffer&);
+  UserSeenOffer& operator=(const UserSeenOffer&);
   ~UserSeenOffer();
 
-  const uint64_t offer_id;
-  const long user_seen_price;
-  const std::string country_code;
+  std::string offer_id;
+  long user_seen_price;
+  std::string country_code;
 };
+
+extern const int64_t kUnknownSubscriptionTimestamp;
 
 struct CommerceSubscription {
-  CommerceSubscription(SubscriptionType type,
-                       IdentifierType id_type,
-                       uint64_t id,
-                       ManagementType management_type);
-  CommerceSubscription(SubscriptionType type,
-                       IdentifierType id_type,
-                       uint64_t id,
-                       ManagementType management_type,
-                       absl::optional<UserSeenOffer> user_seen_offer);
+  CommerceSubscription(
+      SubscriptionType type,
+      IdentifierType id_type,
+      std::string id,
+      ManagementType management_type,
+      int64_t timestamp = kUnknownSubscriptionTimestamp,
+      absl::optional<UserSeenOffer> user_seen_offer = absl::nullopt);
+  CommerceSubscription(const CommerceSubscription&);
+  CommerceSubscription& operator=(const CommerceSubscription&);
   ~CommerceSubscription();
 
-  const SubscriptionType type;
-  const IdentifierType id_type;
-  const uint64_t id;
-  const ManagementType management_type;
-  const absl::optional<UserSeenOffer> user_seen_offer;
-  const uint64_t timestamp;
+  SubscriptionType type;
+  IdentifierType id_type;
+  std::string id;
+  ManagementType management_type;
+  int64_t timestamp;
+  absl::optional<UserSeenOffer> user_seen_offer;
 };
+
+std::string SubscriptionTypeToString(SubscriptionType type);
+SubscriptionType StringToSubscriptionType(const std::string& s);
+std::string SubscriptionIdTypeToString(IdentifierType type);
+IdentifierType StringToSubscriptionIdType(const std::string& s);
+std::string SubscriptionManagementTypeToString(ManagementType type);
+ManagementType StringToSubscriptionManagementType(const std::string& s);
 
 }  // namespace commerce
 

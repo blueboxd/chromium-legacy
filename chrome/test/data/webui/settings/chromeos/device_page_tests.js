@@ -4,7 +4,7 @@
 
 import 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
-import {DevicePageBrowserProxyImpl, IdleBehavior, LidClosedBehavior, NoteAppLockScreenSupport, Router, routes, setDisplayApiForTesting, StorageSpaceState} from 'chrome://os-settings/chromeos/os_settings.js';
+import {crosAudioConfigMojomWebui, DevicePageBrowserProxyImpl, IdleBehavior, LidClosedBehavior, NoteAppLockScreenSupport, Router, routes, setCrosAudioConfigForTesting, setDisplayApiForTesting, StorageSpaceState} from 'chrome://os-settings/chromeos/os_settings.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -14,6 +14,7 @@ import {flushTasks, isVisible, waitAfterNextRender} from 'chrome://test/test_uti
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 
+import {crosAudioConfigActiveFakeSpeaker, crosAudioConfigDefaultFakeMicJack, crosAudioConfigDefaultFakeSpeaker, crosAudioConfigInactiveFakeMicJack, defaultFakeAudioSystemProperties, FakeCrosAudioConfig} from './fake_cros_audio_config.js';
 import {FakeSystemDisplay} from './fake_system_display.js';
 
 /** @enum {string} */
@@ -704,6 +705,231 @@ suite('SettingsDevicePage', function() {
           isVisible(audioPage.shadowRoot.querySelector('#audioOutputTitle')));
       assertTrue(isVisible(
           audioPage.shadowRoot.querySelector('#audioOutputSubsection')));
+    });
+  });
+
+  suite(assert(TestNames.Audio), function() {
+    let audioPage;
+
+    /** @type {?FakeCrosAudioConfig} */
+    let crosAudioConfig;
+
+    // Static test audio system properties.
+    /** @type {!AudioSystemProperties} */
+    const maxVolumePercentFakeAudioSystemProperties = {
+      outputVolumePercent: 100,
+
+      /** @type {!MuteState} */
+      outputMuteState: crosAudioConfigMojomWebui.MuteState.kNotMuted,
+
+      /** @type {!Array<!AudioDevice>} */
+      outputDevices: [
+        crosAudioConfigDefaultFakeSpeaker,
+        crosAudioConfigDefaultFakeMicJack,
+      ],
+    };
+
+    /** @type {!AudioSystemProperties} */
+    const minVolumePercentFakeAudioSystemProperties = {
+      outputVolumePercent: 0,
+
+      /** @type {!MuteState} */
+      outputMuteState: crosAudioConfigMojomWebui.MuteState.kNotMuted,
+
+      /** @type {!Array<!AudioDevice>} */
+      outputDevices: [
+        crosAudioConfigDefaultFakeSpeaker,
+        crosAudioConfigDefaultFakeMicJack,
+      ],
+    };
+
+    /** @type {!AudioSystemProperties} */
+    const mutedByUserFakeAudioSystemProperties = {
+      outputVolumePercent: 75,
+
+      /** @type {!MuteState} */
+      outputMuteState: crosAudioConfigMojomWebui.MuteState.kMutedByUser,
+
+      /** @type {!Array<!AudioDevice>} */
+      outputDevices: [
+        crosAudioConfigDefaultFakeSpeaker,
+        crosAudioConfigDefaultFakeMicJack,
+      ],
+    };
+
+    /** @type {!AudioSystemProperties} */
+    const mutedByPolicyFakeAudioSystemProperties = {
+      outputVolumePercent: 75,
+
+      /** @type {!MuteState} */
+      outputMuteState: crosAudioConfigMojomWebui.MuteState.kMutedByPolicy,
+
+      /** @type {!Array<!AudioDevice>} */
+      outputDevices: [
+        crosAudioConfigDefaultFakeSpeaker,
+        crosAudioConfigDefaultFakeMicJack,
+      ],
+    };
+
+    /** @type {!AudioSystemProperties} */
+    const emptyOutputDevicesFakeAudioSystemProperties = {
+      outputVolumePercent: 75,
+
+      /** @type {!MuteState} */
+      outputMuteState: crosAudioConfigMojomWebui.MuteState.kNotMuted,
+
+      /** @type {!Array<!AudioDevice>} */
+      outputDevices: [],
+    };
+
+    /** @type {!AudioSystemProperties} */
+    const activeSpeakerFakeAudioSystemProperties = {
+      outputVolumePercent: 75,
+
+      /** @type {!MuteState} */
+      outputMuteState: crosAudioConfigMojomWebui.MuteState.kNotMuted,
+
+      /** @type {!Array<!AudioDevice>} */
+      outputDevices: [
+        crosAudioConfigActiveFakeSpeaker,
+        crosAudioConfigInactiveFakeMicJack,
+      ],
+    };
+
+    setup(async function() {
+      loadTimeData.overrideValues({
+        enableAudioSettingsPage: true,
+      });
+      await init();
+
+      // FakeAudioConfig must be set before audio subpage is loaded.
+      crosAudioConfig = new FakeCrosAudioConfig();
+      setCrosAudioConfigForTesting(crosAudioConfig);
+      return showAndGetDeviceSubpage('audio', routes.AUDIO)
+          .then(function(page) {
+            audioPage = page;
+            return flushTasks();
+          });
+    });
+
+    test('output volume mojo test', async function() {
+      const outputVolumeSlider =
+          audioPage.shadowRoot.querySelector('#outputVolumeSlider');
+
+      // Test default properties.
+      assertEquals(
+          defaultFakeAudioSystemProperties.outputVolumePercent,
+          outputVolumeSlider.value);
+
+      // Test min volume case.
+      crosAudioConfig.setAudioSystemProperties(
+          minVolumePercentFakeAudioSystemProperties);
+      await flushTasks();
+      assertEquals(
+          minVolumePercentFakeAudioSystemProperties.outputVolumePercent,
+          outputVolumeSlider.value);
+
+      // Test max volume case.
+      crosAudioConfig.setAudioSystemProperties(
+          maxVolumePercentFakeAudioSystemProperties);
+      await flushTasks();
+      assertEquals(
+          maxVolumePercentFakeAudioSystemProperties.outputVolumePercent,
+          outputVolumeSlider.value);
+    });
+
+    test('simulate setting output volume slider mojo test', async function() {
+      async function simulateSliderClicked(value) {
+        const outputVolumeSlider =
+            audioPage.shadowRoot.querySelector('#outputVolumeSlider');
+        const rect = outputVolumeSlider.$.container.getBoundingClientRect();
+        outputVolumeSlider.dispatchEvent(new PointerEvent('pointerdown', {
+          buttons: 1,
+          pointerId: 1,
+          clientX: rect.left + (value * rect.width),
+        }));
+        return await flushTasks();
+      }
+
+      // Test clicking to min volume case.
+      const minOutputVolumePercent = 0;
+      await simulateSliderClicked(minOutputVolumePercent / 100);
+      assertEquals(
+          minOutputVolumePercent,
+          audioPage.audioSystemProperties_.outputVolumePercent,
+      );
+
+      // Test clicking to max volume case.
+      const maxOutputVolumePercent = 100;
+      await simulateSliderClicked(maxOutputVolumePercent / 100);
+      assertEquals(
+          maxOutputVolumePercent,
+          audioPage.audioSystemProperties_.outputVolumePercent,
+      );
+
+      // Test clicking to non-boundary volume case.
+      const nonBoundaryOutputVolumePercent = 50;
+      await simulateSliderClicked(50 / 100);
+      assertEquals(
+          nonBoundaryOutputVolumePercent,
+          audioPage.audioSystemProperties_.outputVolumePercent,
+      );
+    });
+
+    test('output mute mojo test', async function() {
+      const outputVolumeSlider =
+          audioPage.shadowRoot.querySelector('#outputVolumeSlider');
+
+      // Test default properties.
+      assertFalse(audioPage.getIsOutputMutedForTest());
+      assertFalse(outputVolumeSlider.disabled);
+
+      // Test muted by user case.
+      crosAudioConfig.setAudioSystemProperties(
+          mutedByUserFakeAudioSystemProperties);
+      await flushTasks();
+      assertTrue(audioPage.getIsOutputMutedForTest());
+      assertFalse(outputVolumeSlider.disabled);
+
+      // Test muted by policy case.
+      crosAudioConfig.setAudioSystemProperties(
+          mutedByPolicyFakeAudioSystemProperties);
+      await flushTasks();
+      assertTrue(audioPage.getIsOutputMutedForTest());
+      assertTrue(outputVolumeSlider.disabled);
+    });
+
+    test('output device mojo test', async function() {
+      const outputDeviceDropdown =
+          audioPage.shadowRoot.querySelector('#audioOutputDeviceDropdown');
+
+      // Test default properties.
+      assertEquals(
+          crosAudioConfigDefaultFakeMicJack.id,
+          BigInt(outputDeviceDropdown.value));
+      assertEquals(
+          defaultFakeAudioSystemProperties.outputDevices.length,
+          outputDeviceDropdown.length);
+
+      // Test empty output devices case.
+      crosAudioConfig.setAudioSystemProperties(
+          emptyOutputDevicesFakeAudioSystemProperties);
+      await flushTasks();
+      assertTrue(!outputDeviceDropdown.value);
+      assertEquals(
+          emptyOutputDevicesFakeAudioSystemProperties.outputDevices.length,
+          outputDeviceDropdown.length);
+
+      // Test active speaker case.
+      crosAudioConfig.setAudioSystemProperties(
+          activeSpeakerFakeAudioSystemProperties);
+      await flushTasks();
+      assertEquals(
+          crosAudioConfigActiveFakeSpeaker.id,
+          BigInt(outputDeviceDropdown.value));
+      assertEquals(
+          activeSpeakerFakeAudioSystemProperties.outputDevices.length,
+          outputDeviceDropdown.length);
     });
   });
 

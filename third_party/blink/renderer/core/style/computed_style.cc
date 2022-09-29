@@ -2009,7 +2009,7 @@ static bool HasInitialVariables(const StyleInitialData* initial_data) {
 
 bool ComputedStyle::HasVariables() const {
   return InheritedVariables() || NonInheritedVariables() ||
-         HasInitialVariables(InitialDataInternal().get());
+         HasInitialVariables(InitialData().get());
 }
 
 wtf_size_t ComputedStyle::GetVariableNamesCount() const {
@@ -2025,7 +2025,7 @@ const Vector<AtomicString>& ComputedStyle::GetVariableNames() const {
   Vector<AtomicString>& cache = EnsureVariableNamesCache();
 
   HashSet<AtomicString> names;
-  if (auto* initial_data = InitialDataInternal().get())
+  if (auto* initial_data = InitialData().get())
     initial_data->CollectVariableNames(names);
   if (auto* inherited_variables = InheritedVariables())
     inherited_variables->CollectNames(names);
@@ -2108,7 +2108,7 @@ CSSVariableData* ComputedStyle::GetVariableData(
     if (auto data = NonInheritedVariables()->GetData(name))
       return *data;
   }
-  return GetInitialVariableData(name, InitialDataInternal().get());
+  return GetInitialVariableData(name, InitialData().get());
 }
 
 CSSVariableData* ComputedStyle::GetVariableData(
@@ -2125,7 +2125,7 @@ CSSVariableData* ComputedStyle::GetVariableData(
         return *data;
     }
   }
-  return GetInitialVariableData(name, InitialDataInternal().get());
+  return GetInitialVariableData(name, InitialData().get());
 }
 
 static const CSSValue* GetInitialVariableValue(
@@ -2146,7 +2146,7 @@ const CSSValue* ComputedStyle::GetVariableValue(
     if (auto value = NonInheritedVariables()->GetValue(name))
       return *value;
   }
-  return GetInitialVariableValue(name, InitialDataInternal().get());
+  return GetInitialVariableValue(name, InitialData().get());
 }
 
 const CSSValue* ComputedStyle::GetVariableValue(
@@ -2163,7 +2163,7 @@ const CSSValue* ComputedStyle::GetVariableValue(
         return *value;
     }
   }
-  return GetInitialVariableValue(name, InitialDataInternal().get());
+  return GetInitialVariableValue(name, InitialData().get());
 }
 
 bool ComputedStyle::SetFontDescription(const FontDescription& v) {
@@ -2393,12 +2393,13 @@ StyleColor ComputedStyle::DecorationColorIncludingFallback(
   return visited_link ? InternalVisitedTextFillColor() : TextFillColor();
 }
 
-Color ComputedStyle::VisitedDependentColor(
-    const CSSProperty& color_property) const {
+Color ComputedStyle::VisitedDependentColor(const CSSProperty& color_property,
+                                           bool* is_current_color) const {
   DCHECK(!color_property.IsVisited());
 
   Color unvisited_color =
-      To<Longhand>(color_property).ColorIncludingFallback(false, *this);
+      To<Longhand>(color_property)
+          .ColorIncludingFallback(false, *this, is_current_color);
   if (InsideLink() != EInsideLink::kInsideVisitedLink)
     return unvisited_color;
 
@@ -2411,20 +2412,34 @@ Color ComputedStyle::VisitedDependentColor(
   if (const CSSProperty* visited = color_property.GetVisitedProperty())
     visited_property = visited;
 
+  // Overwrite is_current_color based on the visited color.
   Color visited_color =
-      To<Longhand>(*visited_property).ColorIncludingFallback(true, *this);
+      To<Longhand>(*visited_property)
+          .ColorIncludingFallback(true, *this, is_current_color);
 
   // Take the alpha from the unvisited color, but get the RGB values from the
   // visited color.
+  //
+  // Ideally we would set the |is_current_color| flag to true if the unvisited
+  // color is ‘currentColor’, because the result depends on the unvisited alpha,
+  // to tell the highlight painter to resolve the color again with a different
+  // current color, but that’s not possible with the current interface.
+  //
+  // In reality, the highlight painter just throws away the whole color and
+  // falls back to the layer or next layer or originating ‘color’, so setting
+  // the flag when the unvisited color is ‘currentColor’ would break tests like
+  // css/css-pseudo/selection-link-001 and css/css-pseudo/target-text-008.
+  // TODO(dazabani@igalia.com) improve behaviour where unvisited is currentColor
   return Color(visited_color.Red(), visited_color.Green(), visited_color.Blue(),
                unvisited_color.Alpha());
 }
 
-Color ComputedStyle::ResolvedColor(const StyleColor& color) const {
+Color ComputedStyle::ResolvedColor(const StyleColor& color,
+                                   bool* is_current_color) const {
   bool visited_link = (InsideLink() == EInsideLink::kInsideVisitedLink);
   Color current_color =
       visited_link ? GetInternalVisitedCurrentColor() : GetCurrentColor();
-  return color.Resolve(current_color, UsedColorScheme());
+  return color.Resolve(current_color, UsedColorScheme(), is_current_color);
 }
 
 bool ComputedStyle::ShouldForceColor(const StyleColor& unforced_color) const {
@@ -2599,29 +2614,38 @@ void ComputedStyle::CopyChildDependentFlagsFrom(const ComputedStyle& other) {
     SetChildHasExplicitInheritance();
 }
 
-Color ComputedStyle::GetCurrentColor() const {
+Color ComputedStyle::GetCurrentColor(bool* is_current_color) const {
   DCHECK(!GetColor().IsCurrentColor());
+  if (is_current_color)
+    *is_current_color = ColorIsCurrentColor();
   return GetColor().Resolve(Color(), UsedColorScheme());
 }
 
-Color ComputedStyle::GetInternalVisitedCurrentColor() const {
+Color ComputedStyle::GetInternalVisitedCurrentColor(
+    bool* is_current_color) const {
   DCHECK(!InternalVisitedColor().IsCurrentColor());
+  if (is_current_color)
+    *is_current_color = InternalVisitedColorIsCurrentColor();
   return InternalVisitedColor().Resolve(Color(), UsedColorScheme());
 }
 
-Color ComputedStyle::GetInternalForcedCurrentColor() const {
+Color ComputedStyle::GetInternalForcedCurrentColor(
+    bool* is_current_color) const {
   DCHECK(!InternalForcedColor().IsCurrentColor());
   if (GetColor().IsSystemColorIncludingDeprecated())
-    return GetCurrentColor();
+    return GetCurrentColor(is_current_color);
   return InternalForcedColor().Resolve(Color(), UsedColorScheme(),
+                                       is_current_color,
                                        /* is_forced_color */ true);
 }
 
-Color ComputedStyle::GetInternalForcedVisitedCurrentColor() const {
+Color ComputedStyle::GetInternalForcedVisitedCurrentColor(
+    bool* is_current_color) const {
   DCHECK(!InternalForcedVisitedColor().IsCurrentColor());
   if (InternalVisitedColor().IsSystemColorIncludingDeprecated())
-    return GetInternalVisitedCurrentColor();
+    return GetInternalVisitedCurrentColor(is_current_color);
   return InternalForcedVisitedColor().Resolve(Color(), UsedColorScheme(),
+                                              is_current_color,
                                               /* is_forced_color */ true);
 }
 

@@ -193,6 +193,9 @@ void BrowserNonClientFrameViewChromeOS::Init() {
         std::make_unique<WebAppFrameToolbarView>(frame(), browser_view())));
   }
 
+  if (AppIsBorderlessPwa())
+    UpdateBorderlessModeEnabled();
+
   browser_view()->immersive_mode_controller()->AddObserver(this);
 }
 
@@ -428,6 +431,18 @@ void BrowserNonClientFrameViewChromeOS::LayoutWindowControlsOverlay() {
   }
 }
 
+void BrowserNonClientFrameViewChromeOS::UpdateBorderlessModeEnabled() {
+  web_app_frame_toolbar()->UpdateBorderlessModeEnabled();
+  caption_button_container_->UpdateBorderlessModeEnabled(
+      browser_view()->IsBorderlessModeEnabled());
+}
+
+bool BrowserNonClientFrameViewChromeOS::AppIsBorderlessPwa() {
+  return browser_view()->GetIsWebAppType() &&
+         browser_view()->AppUsesBorderlessMode() &&
+         browser_view()->IsBorderlessModeEnabled();
+}
+
 void BrowserNonClientFrameViewChromeOS::Layout() {
   // The header must be laid out before computing |painted_height| because the
   // computation of |painted_height| for app and popup windows depends on the
@@ -448,6 +463,8 @@ void BrowserNonClientFrameViewChromeOS::Layout() {
   if (web_app_frame_toolbar()) {
     if (browser_view()->IsWindowControlsOverlayEnabled()) {
       LayoutWindowControlsOverlay();
+    } else if (AppIsBorderlessPwa()) {
+      UpdateBorderlessModeEnabled();
     } else {
       web_app_frame_toolbar()->LayoutInContainer(GetToolbarLeftInset(),
                                                  caption_button_container_->x(),
@@ -671,9 +688,6 @@ void BrowserNonClientFrameViewChromeOS::OnWindowPropertyChanged(
   }
 
   if (key == chromeos::kWindowStateTypeKey) {
-    if (!chromeos::TabletState::Get()->InTabletMode())
-      return;
-
     // Update the window controls if we are entering or exiting float state.
     const bool enter_floated = IsFloated();
     const bool exit_floated = static_cast<chromeos::WindowStateType>(old) ==
@@ -681,7 +695,12 @@ void BrowserNonClientFrameViewChromeOS::OnWindowPropertyChanged(
     if (!enter_floated && !exit_floated)
       return;
 
+    if (frame_header_)
+      frame_header_->OnFloatStateChanged();
     ResetWindowControls();
+
+    if (!chromeos::TabletState::Get()->InTabletMode())
+      return;
 
     // Additionally updates immersive mode for PWA/SWA so that we show the title
     // bar when floated, and hide the title bar otherwise.
@@ -750,8 +769,11 @@ void BrowserNonClientFrameViewChromeOS::OnImmersiveRevealEnded() {
 
     // Add the web app frame toolbar at the end, but before the client view if
     // it exists.
-    if (client_view && GetIndexOf(client_view) >= 0)
-      AddChildViewAt(web_app_frame_toolbar(), GetIndexOf(client_view));
+    absl::optional<size_t> index;
+    if (client_view)
+      index = GetIndexOf(client_view);
+    if (index.has_value())
+      AddChildViewAt(web_app_frame_toolbar(), index.value());
     else
       AddChildView(web_app_frame_toolbar());
   }
@@ -876,8 +898,9 @@ void BrowserNonClientFrameViewChromeOS::UpdateTopViewInset() {
   const bool immersive =
       browser_view()->immersive_mode_controller()->IsEnabled();
   const bool tab_strip_visible = browser_view()->GetTabStripVisible();
-  const int inset =
-      (tab_strip_visible || immersive) ? 0 : GetTopInset(/*restored=*/false);
+  const int inset = (tab_strip_visible || immersive || AppIsBorderlessPwa())
+                        ? 0
+                        : GetTopInset(/*restored=*/false);
   frame()->GetNativeWindow()->SetProperty(aura::client::kTopViewInset, inset);
 }
 

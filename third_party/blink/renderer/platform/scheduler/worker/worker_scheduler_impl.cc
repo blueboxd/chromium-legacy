@@ -156,6 +156,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerSchedulerImpl::GetTaskRunner(
     case TaskType::kUserInteraction:
     case TaskType::kNetworking:
     case TaskType::kNetworkingControl:
+    case TaskType::kLowPriorityScriptExecution:
     case TaskType::kHistoryTraversal:
     case TaskType::kEmbed:
     case TaskType::kMediaElementEvent:
@@ -312,6 +313,11 @@ WorkerSchedulerImpl::CreateWebSchedulingTaskQueue(
   task_queue->SetWebSchedulingPriority(priority);
   return std::make_unique<NonMainThreadWebSchedulingTaskQueueImpl>(
       std::move(task_queue));
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+WorkerSchedulerImpl::CompositorTaskRunner() {
+  return thread_scheduler_->CompositorTaskRunner();
 }
 
 }  // namespace scheduler

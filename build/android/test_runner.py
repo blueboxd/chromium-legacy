@@ -181,6 +181,11 @@ def AddCommonOptions(parser):
       action='store_true',
       help='Whether to archive test output locally and generate '
            'a local results detail page.')
+
+  parser.add_argument('--list-tests',
+                      action='store_true',
+                      help='List available tests and exit.')
+
   parser.add_argument('--wrapper-script-args',
                       help='A string of args that were passed to the wrapper '
                       'script. This should probably not be edited by a '
@@ -428,6 +433,13 @@ def AddInstrumentationTestOptions(parser):
 
   parser = parser.add_argument_group('instrumentation arguments')
 
+  parser.add_argument('--additional-apex',
+                      action='append',
+                      dest='additional_apexs',
+                      default=[],
+                      type=_RealPath,
+                      help='Additional apex that must be installed on '
+                      'the device when the tests are run')
   parser.add_argument(
       '--additional-apk',
       action='append', dest='additional_apks', default=[],
@@ -459,6 +471,11 @@ def AddInstrumentationTestOptions(parser):
   parser.add_argument(
       '--apk-under-test',
       help='Path or name of the apk under test.')
+  parser.add_argument(
+      '--store-data-in-app-directory',
+      action='store_true',
+      help='Store test data in the application\'s data directory. By default '
+      'the test data is stored in the external storage folder.')
   parser.add_argument(
       '--module',
       action='append',
@@ -569,9 +586,6 @@ def AddInstrumentationTestOptions(parser):
       action='store_true',
       help='Install the test apk as an instant app. '
       'Instant apps run in a more restrictive execution environment.')
-  parser.add_argument(
-      '--test-jar',
-      help='Path of jar containing test java files.')
   parser.add_argument(
       '--test-launcher-batch-limit',
       dest='test_launcher_batch_limit',
@@ -1034,6 +1048,19 @@ def RunTestsInPlatformMode(args, result_sink_client=None):
 
   contexts_to_notify_on_sigterm.append(env)
   contexts_to_notify_on_sigterm.append(test_run)
+
+  if args.list_tests:
+    try:
+      with out_manager, env, test_instance, test_run:
+        test_names = test_run.GetTestsForListing()
+      print('There are {} tests:'.format(len(test_names)))
+      for n in test_names:
+        print(n)
+      return 0
+    except NotImplementedError:
+      sys.stderr.write('Test does not support --list-tests (type={}).\n'.format(
+          args.command))
+      return 1
 
   ### Run.
   with out_manager, json_finalizer():

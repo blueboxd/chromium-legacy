@@ -86,6 +86,9 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) LinuxInputMethodContextDelegate {
   // Commits the |text| to the text input client.
   virtual void OnCommit(const std::u16string& text) = 0;
 
+  // Converts current composition text into final content.
+  virtual void OnConfirmCompositionText(bool keep_selection) = 0;
+
   // Deletes the surrounding text around selection. |before| and |after|
   // are in UTF-16 code points.
   virtual void OnDeleteSurroundingText(size_t before, size_t after) = 0;
@@ -117,6 +120,10 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) LinuxInputMethodContextDelegate {
   // Sets the autocorrect range in the text input client.
   // |range| is in UTF-16 code range.
   virtual void OnSetAutocorrectRange(const gfx::Range& range) = 0;
+
+  // Sets the virtual keyboard's occluded bounds in screen DIP.
+  virtual void OnSetVirtualKeyboardOccludedBounds(
+      const gfx::Rect& screen_bounds) = 0;
 };
 
 }  // namespace ui

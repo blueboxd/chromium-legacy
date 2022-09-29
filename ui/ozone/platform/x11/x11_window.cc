@@ -536,8 +536,10 @@ void X11Window::SetBoundsInPixels(const gfx::Rect& bounds) {
     req.y = new_bounds_in_pixels.y();
   }
 
-  if (origin_changed || size_changed)
+  if (origin_changed || size_changed) {
+    bounds_change_in_flight_ = true;
     connection_->ConfigureWindow(req);
+  }
 
   // Assume that the resize will go through as requested, which should be the
   // case if we're running without a window manager.  If there's a window
@@ -550,7 +552,7 @@ void X11Window::SetBoundsInPixels(const gfx::Rect& bounds) {
   // Even if the pixel bounds didn't change this call to the delegate should
   // still happen. The device scale factor may have changed which effectively
   // changes the bounds.
-  OnXWindowBoundsChanged(new_bounds_in_pixels);
+  platform_window_delegate_->OnBoundsChanged({origin_changed});
 }
 
 gfx::Rect X11Window::GetBoundsInPixels() const {
@@ -663,20 +665,22 @@ void X11Window::ToggleFullscreen() {
   // Do not go through SetBounds as long as it adjusts bounds and sets them to X
   // Server. Instead, we just store the bounds and notify the client that the
   // window occupies the entire screen.
+  bool origin_changed = bounds_in_pixels_.origin() != new_bounds_px.origin();
   bounds_in_pixels_ = new_bounds_px;
 
-  // If there is a restore in flight, then set a flag to ignore the single
-  // configure event (hopefully) coming from that restore.  This prevents any
-  // in-flight restore requests from changing the bounds in a way that conflicts
-  // with the `bounds_in_pixels_` setting above.  This is not perfect, and if
-  // there is some other in-flight bounds change for some reason, or if the
-  // ordering of events from the WM behaves differently, this will not prevent
-  // the issue.  See: http://crbug.com/1227451
-  ignore_next_configure_ = restore_in_flight_;
-
+  // If there is a restore and/or bounds change in flight, then set a flag to
+  // ignore the next one or two configure events (hopefully) coming from those
+  // requests. This prevents any in-flight restore requests from changing the
+  // bounds in a way that conflicts with the `bounds_in_pixels_` setting above.
+  // This is not perfect, and if there is some other in-flight bounds change for
+  // some reason, or if the ordering of events from the WM behaves differently,
+  // this will not prevent the issue.  See: http://crbug.com/1227451
+  ignore_next_configures_ = restore_in_flight_ ? 1 : 0;
+  if (bounds_change_in_flight_)
+    ignore_next_configures_++;
   // This must be the final call in this function, as `this` may be deleted
   // during the observation of this event.
-  platform_window_delegate_->OnBoundsChanged(new_bounds_px);
+  platform_window_delegate_->OnBoundsChanged({origin_changed});
 }
 
 void X11Window::Maximize() {
@@ -1430,10 +1434,6 @@ void X11Window::OnXWindowDamageEvent(const gfx::Rect& damage_rect) {
   platform_window_delegate_->OnDamageRect(damage_rect);
 }
 
-void X11Window::OnXWindowBoundsChanged(const gfx::Rect& bounds) {
-  platform_window_delegate_->OnBoundsChanged(bounds);
-}
-
 void X11Window::OnXWindowCloseRequested() {
   platform_window_delegate_->OnCloseRequest();
 }
@@ -1683,7 +1683,9 @@ gfx::Size X11Window::AdjustSizeForDisplay(
 }
 
 void X11Window::CreateXWindow(const PlatformWindowInitProperties& properties) {
-  auto bounds = properties.bounds;
+  auto bounds =
+      platform_window_delegate_->ConvertRectToPixels(properties.bounds);
+
   gfx::Size adjusted_size_in_pixels = AdjustSizeForDisplay(bounds.size());
   bounds.set_size(adjusted_size_in_pixels);
   const auto override_redirect =
@@ -2137,7 +2139,7 @@ void X11Window::HandleEvent(const x11::Event& xev) {
     gfx::Point window_origin = gfx::Point() + (root_point - window_point);
     if (bounds_in_pixels_.origin() != window_origin) {
       bounds_in_pixels_.set_origin(window_origin);
-      NotifyBoundsChanged(bounds_in_pixels_);
+      NotifyBoundsChanged(/*origin changed=*/true);
     }
   }
 
@@ -2269,14 +2271,23 @@ void X11Window::OnConfigureEvent(const x11::ConfigureNotifyEvent& configure,
     pending_counter_value_ = 0;
   }
 
-  // During a Restore() -> ToggleFullscreen() sequence, ignore the configure
-  // event from the restore if we're waiting on fullscreen.  After
+  // During a Restore() -> ToggleFullscreen() or Restore() -> SetBounds() ->
+  // ToggleFullscreen() sequence, ignore the configure events from the Restore
+  // and SetBounds requests, if we're waiting on fullscreen.  After
   // OnXWindowStateChanged unsets this flag, there will be a configuration event
   // that will set the bounds to the final fullscreen bounds.
-  if (ignore_next_configure_) {
-    ignore_next_configure_ = false;
+  if (ignore_next_configures_ > 0) {
+    ignore_next_configures_--;
     return;
   }
+
+  // Note: This OnConfigureEvent might not necessarily correspond to a previous
+  // SetBounds request. Due to limitations in X11 there isn't a way to
+  // match events to its original request. For now, we assume that the next
+  // OnConfigureEvent event after a SetBounds (ConfigureWindow) request is from
+  // that request. This would break in some scenarios (for example calling
+  // SetBounds more than once quickly). See crbug.com/1227451.
+  bounds_change_in_flight_ = false;
 
   // It's possible that the X window may be resized by some other means than
   // from within aura (e.g. the X window manager can change the size). Make
@@ -2300,9 +2311,9 @@ void X11Window::OnConfigureEvent(const x11::ConfigureNotifyEvent& configure,
   bounds_in_pixels_ = new_bounds_px;
 
   if (size_changed)
-    DispatchResize();
+    DispatchResize(origin_changed);
   else if (origin_changed)
-    NotifyBoundsChanged(bounds_in_pixels_);
+    NotifyBoundsChanged(/*origin changed=*/true);
 }
 
 void X11Window::SetWMSpecState(bool enabled,
@@ -2372,13 +2383,13 @@ void X11Window::OnFrameExtentsUpdated() {
 
 // Removes |delayed_resize_task_| from the task queue (if it's in the queue) and
 // adds it back at the end of the queue.
-void X11Window::DispatchResize() {
+void X11Window::DispatchResize(bool origin_changed) {
   if (update_counter_ == x11::Sync::Counter{} ||
       configure_counter_value_ == 0) {
     // WM doesn't support _NET_WM_SYNC_REQUEST. Or we are too slow, so
     // _NET_WM_SYNC_REQUEST is disabled by the compositor.
     delayed_resize_task_.Reset(base::BindOnce(
-        &X11Window::DelayedResize, base::Unretained(this), bounds_in_pixels_));
+        &X11Window::DelayedResize, base::Unretained(this), origin_changed));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, delayed_resize_task_.callback());
     return;
@@ -2395,10 +2406,10 @@ void X11Window::DispatchResize() {
   // If _NET_WM_SYNC_REQUEST is used to synchronize with compositor during
   // resizing, the compositor will not resize the window, until last resize is
   // handled, so we don't need accumulate resize events.
-  DelayedResize(bounds_in_pixels_);
+  DelayedResize(origin_changed);
 }
 
-void X11Window::DelayedResize(const gfx::Rect& bounds_in_pixels) {
+void X11Window::DelayedResize(bool origin_changed) {
   if (configure_counter_value_is_extended_ &&
       (current_counter_value_ % 2) == 0) {
     // Increase the |extended_update_counter_|, so the compositor will know we
@@ -2410,7 +2421,7 @@ void X11Window::DelayedResize(const gfx::Rect& bounds_in_pixels) {
   }
 
   CancelResize();
-  NotifyBoundsChanged(bounds_in_pixels);
+  NotifyBoundsChanged(/*origin changed=*/origin_changed);
 
   // No more member accesses here: bounds change propagation may have deleted
   // |this| (e.g. when a chrome window is snapped into a tab strip. Further
@@ -2473,9 +2484,9 @@ void X11Window::UpdateWindowRegion(
   }
 }
 
-void X11Window::NotifyBoundsChanged(const gfx::Rect& new_bounds_in_px) {
+void X11Window::NotifyBoundsChanged(bool origin_changed) {
   ResetWindowRegion();
-  OnXWindowBoundsChanged(new_bounds_in_px);
+  platform_window_delegate_->OnBoundsChanged({origin_changed});
 }
 
 bool X11Window::InitializeAsStatusIcon() {

@@ -32,13 +32,14 @@ class PageInfoDelegateImpl : public PageInfoDelegate {
   void OnUserActionOnPasswordUi(safe_browsing::WarningAction action) override;
   std::u16string GetWarningDetailText() override;
 #endif
-  permissions::PermissionResult GetPermissionStatus(
-      ContentSettingsType type,
-      const GURL& site_url) override;
+  permissions::PermissionResult GetPermissionResult(
+      blink::PermissionType permission,
+      const url::Origin& origin) override;
 
 #if !BUILDFLAG(IS_ANDROID)
   bool CreateInfoBarDelegate() override;
   void ShowSiteSettings(const GURL& site_url) override;
+  void ShowCookiesSettings() override;
   void OpenCookiesDialog() override;
   void OpenCertificateDialog(net::X509Certificate* certificate) override;
   void OpenConnectionHelpCenterPage(const ui::Event& event) override;

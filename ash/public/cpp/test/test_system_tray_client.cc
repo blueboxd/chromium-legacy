@@ -54,6 +54,8 @@ void TestSystemTrayClient::ShowWifiSyncSettings() {
 
 void TestSystemTrayClient::ShowAboutChromeOS() {}
 
+void TestSystemTrayClient::ShowAboutChromeOSDetails() {}
+
 void TestSystemTrayClient::ShowAccessibilityHelp() {}
 
 void TestSystemTrayClient::ShowAccessibilitySettings() {}
@@ -119,5 +121,13 @@ void TestSystemTrayClient::ShowCalendarEvent(
     const base::Time& date,
     bool& opened_pwa,
     GURL& final_event_url) {}
+
+void TestSystemTrayClient::ShowChannelInfoAdditionalDetails() {}
+
+void TestSystemTrayClient::ShowChannelInfoGiveFeedback() {}
+
+bool TestSystemTrayClient::IsUserFeedbackEnabled() {
+  return user_feedback_enabled_;
+}
 
 }  // namespace ash

@@ -5,7 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_CACHE_CONSUMER_CLIENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_CACHE_CONSUMER_CLIENT_H_
 
+#include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "v8/include/v8-script.h"
 
 namespace blink {
 

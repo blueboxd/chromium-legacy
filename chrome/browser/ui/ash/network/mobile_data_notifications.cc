@@ -26,9 +26,9 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using chromeos::NetworkHandler;
-using chromeos::NetworkState;
-using chromeos::NetworkStateHandler;
+using ::ash::NetworkHandler;
+using ::ash::NetworkState;
+using ::ash::NetworkStateHandler;
 using session_manager::SessionManager;
 using user_manager::UserManager;
 
@@ -105,7 +105,7 @@ void MobileDataNotifications::ShowOptionalMobileDataNotification() {
 
   NetworkStateHandler::NetworkStateList active_networks;
   NetworkHandler::Get()->network_state_handler()->GetActiveNetworkListByType(
-      chromeos::NetworkTypePattern::NonVirtual(), &active_networks);
+      ash::NetworkTypePattern::NonVirtual(), &active_networks);
   ShowOptionalMobileDataNotificationImpl(active_networks);
 }
 

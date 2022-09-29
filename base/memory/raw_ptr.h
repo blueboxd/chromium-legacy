@@ -36,6 +36,7 @@
 
 #if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
 #include "base/allocator/partition_allocator/partition_tag.h"
+#include "base/allocator/partition_allocator/partition_tag_types.h"
 #include "base/allocator/partition_allocator/tagging.h"
 #include "base/check_op.h"
 #endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
@@ -458,14 +459,43 @@ struct BackupRefPtrImpl {
             typename Z,
             typename = std::enable_if_t<offset_type<Z>, void>>
   static ALWAYS_INLINE T* Advance(T* wrapped_ptr, Z delta_elems) {
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+#if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
+    // First check if the new address lands within the same allocation
+    // (end-of-allocation address is ok too). It has a non-trivial cost, but
+    // it's cheaper and more secure than the previous implementation that
+    // rewrapped the pointer (wrapped the new pointer and unwrapped the old
+    // one).
     uintptr_t address = partition_alloc::UntagPtr(wrapped_ptr);
     if (IsSupportedAndNotNull(address))
       CHECK(IsValidDelta(address, delta_elems * static_cast<Z>(sizeof(T))));
+    return wrapped_ptr + delta_elems;
+#else
+    // In the "before allocation" mode, on 32-bit, we can run into a problem
+    // that the end-of-allocation address could fall out of "GigaCage", if this
+    // is the last slot of the super page, thus pointing to the guard page. This
+    // mean the ref-count won't be decreased when the pointer is released
+    // (leak).
+    //
+    // We could possibly solve it in a few different ways:
+    // - Add the trailing guard page to "GigaCage", but we'd have to think very
+    //   hard if this doesn't create another hole.
+    // - Add an address adjustment to "GigaCage" check, similar as the one in
+    //   PartitionAllocGetSlotStartInBRPPool(), but that seems fragile, not to
+    //   mention adding an extra instruction to an inlined hot path.
+    // - Let the leak happen, since it should a very rare condition.
+    // - Go back to the previous solution of rewrapping the pointer, but that
+    //   had an issue of losing protection in case the pointer ever gets shifter
+    //   before the end of allocation.
+    //
+    // We decided to cross that bridge once we get there... if we ever get
+    // there. Currently there are no plans to switch back to the "before
+    // allocation" mode.
+    //
+    // This problem doesn't exist in the "previous slot" mode, or any mode that
+    // involves putting extras after the allocation, because the
+    // end-of-allocation address belongs to the same slot.
+    static_assert(false);
 #endif
-    T* new_wrapped_ptr = WrapRawPtr(wrapped_ptr + delta_elems);
-    ReleaseWrappedPtr(wrapped_ptr);
-    return new_wrapped_ptr;
   }
 
   // Returns a copy of a wrapped pointer, without making an assertion on whether
@@ -685,6 +715,16 @@ struct IsSupportedType<content::responsiveness::Calculator> {
   static constexpr bool value = false;
 };
 
+// IsRawPtrCountingImpl<T>::value answers whether T is a specialization of
+// RawPtrCountingImplWrapperForTest, to know whether Impl is for testing
+// purposes.
+template <typename T>
+struct IsRawPtrCountingImpl : std::false_type {};
+
+template <typename T>
+struct IsRawPtrCountingImpl<internal::RawPtrCountingImplWrapperForTest<T>>
+    : std::true_type {};
+
 #if __OBJC__
 // raw_ptr<T> is not compatible with pointers to Objective-C classes for a
 // multitude of reasons. They may fail to compile in many cases, and wouldn't
@@ -772,6 +812,11 @@ using DefaultRawPtrImpl = RawPtrBanDanglingIfSupported;
 
 template <typename T, typename Impl = DefaultRawPtrImpl>
 class TRIVIAL_ABI GSL_POINTER raw_ptr {
+  using DanglingRawPtr = std::conditional_t<
+      raw_ptr_traits::IsRawPtrCountingImpl<Impl>::value,
+      raw_ptr<T, internal::RawPtrCountingImplWrapperForTest<RawPtrMayDangle>>,
+      raw_ptr<T, RawPtrMayDangle>>;
+
  public:
   static_assert(raw_ptr_traits::IsSupportedType<T>::value,
                 "raw_ptr<T> doesn't work with this kind of pointee type T");
@@ -788,15 +833,23 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
     p.wrapped_ptr_ = nullptr;
   }
 
-  ALWAYS_INLINE raw_ptr& operator=(const raw_ptr& p) {
+  ALWAYS_INLINE raw_ptr& operator=(const raw_ptr& p) noexcept {
     // Duplicate before releasing, in case the pointer is assigned to itself.
+    //
+    // Unlike the move version of this operator, don't add |this != &p| branch,
+    // for performance reasons. Even though Duplicate() is not cheap, we
+    // practically never assign a raw_ptr<T> to itself. We suspect that a
+    // cumulative cost of a conditional branch, even if always correctly
+    // predicted, would exceed that.
     T* new_ptr = Impl::Duplicate(p.wrapped_ptr_);
     Impl::ReleaseWrappedPtr(wrapped_ptr_);
     wrapped_ptr_ = new_ptr;
     return *this;
   }
 
-  ALWAYS_INLINE raw_ptr& operator=(raw_ptr&& p) {
+  ALWAYS_INLINE raw_ptr& operator=(raw_ptr&& p) noexcept {
+    // Unlike the the copy version of this operator, this branch is necessaty
+    // for correctness.
     if (LIKELY(this != &p)) {
       Impl::ReleaseWrappedPtr(wrapped_ptr_);
       wrapped_ptr_ = p.wrapped_ptr_;
@@ -830,7 +883,7 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
   ALWAYS_INLINE raw_ptr& operator=(const raw_ptr&) noexcept = default;
   ALWAYS_INLINE raw_ptr& operator=(raw_ptr&&) noexcept = default;
 
-  ALWAYS_INLINE ~raw_ptr() = default;
+  ALWAYS_INLINE ~raw_ptr() noexcept = default;
 
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
@@ -977,26 +1030,43 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
   // during the free operation, which will lead to taking the slower path that
   // involves quarantine.
   ALWAYS_INLINE void ClearAndDelete() noexcept {
-#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
-    // We cannot directly `delete` a wrapped pointer, since the tag bits
-    // atop will lead PA totally astray.
-    T* ptr = Impl::SafelyUnwrapPtrForExtraction(wrapped_ptr_);
-#else
-    T* ptr = wrapped_ptr_;
-#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
-    operator=(nullptr);
-    delete ptr;
+    delete GetForExtractionAndReset();
   }
   ALWAYS_INLINE void ClearAndDeleteArray() noexcept {
-#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
-    // We cannot directly `delete` a wrapped pointer, since the tag bits
-    // atop will lead PA totally astray.
-    T* ptr = Impl::SafelyUnwrapPtrForExtraction(wrapped_ptr_);
-#else
-    T* ptr = wrapped_ptr_;
-#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
-    operator=(nullptr);
-    delete[] ptr;
+    delete[] GetForExtractionAndReset();
+  }
+
+  // Clear the underlying pointer and return another raw_ptr instance
+  // that is allowed to dangle.
+  // This can be useful in cases such as:
+  // ```
+  //  ptr.ExtractAsDangling()->SelfDestroy();
+  // ```
+  // ```
+  //  c_style_api_do_something_and_destroy(ptr.ExtractAsDangling());
+  // ```
+  // NOTE, avoid using this method as it indicates an error-prone memory
+  // ownership pattern. If possible, use smart pointers like std::unique_ptr<>
+  // instead of raw_ptr<>.
+  // If you have to use it, avoid saving the return value in a long-lived
+  // variable (or worse, a field)! It's meant to be used as a temporary, to be
+  // passed into a cleanup & freeing function, and destructed at the end of the
+  // statement.
+  ALWAYS_INLINE DanglingRawPtr ExtractAsDangling() noexcept {
+    if constexpr (std::is_same_v<
+                      typename std::remove_reference<decltype(*this)>::type,
+                      DanglingRawPtr>) {
+      DanglingRawPtr res(std::move(*this));
+      // Not all implementation clear the source pointer on move, so do it
+      // here just in case. Should be cheap.
+      operator=(nullptr);
+      return res;
+    } else {
+      T* ptr = GetForExtraction();
+      DanglingRawPtr res(ptr);
+      operator=(nullptr);
+      return res;
+    }
   }
 
   // Comparison operators between raw_ptr and raw_ptr<U>/U*/std::nullptr_t.
@@ -1131,6 +1201,12 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
     return Impl::UnsafelyUnwrapPtrForComparison(wrapped_ptr_);
   }
 
+  ALWAYS_INLINE T* GetForExtractionAndReset() {
+    T* ptr = GetForExtraction();
+    operator=(nullptr);
+    return ptr;
+  }
+
   T* wrapped_ptr_;
 
   template <typename U, typename V>
@@ -1215,7 +1291,7 @@ using DisableDanglingPtrDetection = base::RawPtrMayDangle;
 
 // See `docs/dangling_ptr.md`
 // Annotates known dangling raw_ptr. Those haven't been triaged yet. All the
-// occurrences are meant to be removed. See https://cbug.com/1291138.
+// occurrences are meant to be removed. See https://crbug.com/1291138.
 using DanglingUntriaged = DisableDanglingPtrDetection;
 
 // The following template parameters are only meaningful when `raw_ptr`

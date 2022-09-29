@@ -53,7 +53,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_set.h"
 #include "third_party/blink/renderer/modules/mediastream/overconstrained_error.h"
 #include "third_party/blink/renderer/modules/mediastream/transferred_media_stream_track.h"
-#include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -307,8 +307,8 @@ MediaConstraints ParseOptions(
 
 UserMediaRequest* UserMediaRequest::Create(
     ExecutionContext* context,
-    UserMediaController* controller,
-    UserMediaRequest::MediaType media_type,
+    UserMediaClient* client,
+    UserMediaRequestType media_type,
     const MediaStreamConstraints* options,
     Callbacks* callbacks,
     MediaErrorState& error_state,
@@ -321,8 +321,7 @@ UserMediaRequest* UserMediaRequest::Create(
   if (error_state.HadException())
     return nullptr;
 
-  if (media_type == UserMediaRequest::MediaType::kUserMedia &&
-      !video.IsNull()) {
+  if (media_type == UserMediaRequestType::kUserMedia && !video.IsNull()) {
     if (video.Basic().pan.HasMandatory()) {
       error_state.ThrowTypeError("Mandatory pan constraint is not supported");
       return nullptr;
@@ -335,8 +334,8 @@ UserMediaRequest* UserMediaRequest::Create(
       error_state.ThrowTypeError("Mandatory zoom constraint is not supported");
       return nullptr;
     }
-  } else if (media_type == UserMediaRequest::MediaType::kDisplayMedia ||
-             media_type == UserMediaRequest::MediaType::kDisplayMediaSet) {
+  } else if (media_type == UserMediaRequestType::kDisplayMedia ||
+             media_type == UserMediaRequestType::kDisplayMediaSet) {
     // https://w3c.github.io/mediacapture-screen-share/#mediadevices-additions
     // MediaDevices Additions
     // The user agent MUST reject audio-only requests.
@@ -352,7 +351,7 @@ UserMediaRequest* UserMediaRequest::Create(
     // either a dictionary value or a value of true.
     // 4. If requestedMediaTypes is the empty set, set requestedMediaTypes to a
     // set containing "video".
-    if (media_type == UserMediaRequest::MediaType::kDisplayMediaSet) {
+    if (media_type == UserMediaRequestType::kDisplayMediaSet) {
       if (!audio.IsNull()) {
         error_state.ThrowTypeError("Audio requests are not supported");
         return nullptr;
@@ -403,9 +402,8 @@ UserMediaRequest* UserMediaRequest::Create(
     CountVideoConstraintUses(context, video);
 
   UserMediaRequest* const result = MakeGarbageCollected<UserMediaRequest>(
-      context, controller, media_type, audio, video,
-      options->preferCurrentTab(), options->autoSelectAllScreens(), callbacks,
-      surface);
+      context, client, media_type, audio, video, options->preferCurrentTab(),
+      options->autoSelectAllScreens(), callbacks, surface);
 
   // The default is to include.
   // Note that this option is no-op if audio is not requested.
@@ -421,14 +419,14 @@ UserMediaRequest* UserMediaRequest::CreateForTesting(
     const MediaConstraints& audio,
     const MediaConstraints& video) {
   return MakeGarbageCollected<UserMediaRequest>(
-      nullptr, nullptr, UserMediaRequest::MediaType::kUserMedia, audio, video,
+      nullptr, nullptr, UserMediaRequestType::kUserMedia, audio, video,
       /*should_prefer_current_tab=*/false, /*auto_select_all_screens=*/false,
       nullptr, IdentifiableSurface());
 }
 
 UserMediaRequest::UserMediaRequest(ExecutionContext* context,
-                                   UserMediaController* controller,
-                                   UserMediaRequest::MediaType media_type,
+                                   UserMediaClient* client,
+                                   UserMediaRequestType media_type,
                                    MediaConstraints audio,
                                    MediaConstraints video,
                                    bool should_prefer_current_tab,
@@ -444,7 +442,7 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
       should_disable_hardware_noise_suppression_(
           RuntimeEnabledFeatures::DisableHardwareNoiseSuppressionEnabled(
               context)),
-      controller_(controller),
+      client_(client),
       callbacks_(callbacks),
       surface_(surface) {
   if (should_disable_hardware_noise_suppression_) {
@@ -455,7 +453,7 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
 
 UserMediaRequest::~UserMediaRequest() = default;
 
-UserMediaRequest::MediaType UserMediaRequest::MediaRequestType() const {
+UserMediaRequestType UserMediaRequest::MediaRequestType() const {
   return media_type_;
 }
 
@@ -522,8 +520,8 @@ LocalDOMWindow* UserMediaRequest::GetWindow() {
 }
 
 void UserMediaRequest::Start() {
-  if (controller_)
-    controller_->RequestUserMedia(this);
+  if (client_)
+    client_->RequestUserMedia(this);
 }
 
 void UserMediaRequest::Succeed(
@@ -648,8 +646,8 @@ void UserMediaRequest::Fail(Error name, const String& message) {
 void UserMediaRequest::ContextDestroyed() {
   if (!is_resolved_)
     blink::WebRtcLogMessage("UMR::ContextDestroyed. Request not resolved.");
-  if (controller_) {
-    controller_->CancelUserMediaRequest(this);
+  if (client_) {
+    client_->CancelUserMediaRequest(this);
     if (!is_resolved_) {
       blink::WebRtcLogMessage(base::StringPrintf(
           "UMR::ContextDestroyed. Resolving unsolved request. "
@@ -661,12 +659,17 @@ void UserMediaRequest::ContextDestroyed() {
                                            DOMExceptionCode::kAbortError,
                                            "Context destroyed")));
     }
-    controller_ = nullptr;
+    client_ = nullptr;
   }
 }
 
+void UserMediaRequest::SetTransferredTrackComponent(
+    MediaStreamComponent* component) {
+  transferred_track_->SetComponentImplementation(component);
+}
+
 void UserMediaRequest::Trace(Visitor* visitor) const {
-  visitor->Trace(controller_);
+  visitor->Trace(client_);
   visitor->Trace(callbacks_);
   visitor->Trace(transferred_track_);
   ExecutionContextLifecycleObserver::Trace(visitor);

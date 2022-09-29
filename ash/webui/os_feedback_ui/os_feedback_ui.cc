@@ -53,6 +53,11 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
       // The help content strings are needed for browser tests.
       {"suggestedHelpContent", IDS_FEEDBACK_TOOL_SUGGESTED_HELP_CONTENT},
       {"popularHelpContent", IDS_FEEDBACK_TOOL_POPULAR_HELP_CONTENT},
+      {"helpContentOfflineMessage",
+       IDS_FEEDBACK_TOOL_HELP_CONTENT_OFFLINE_MESSAGE},
+      {"helpContentOfflineAltText",
+       IDS_FEEDBACK_TOOL_HELP_CONTENT_OFFLINE_ALT_TEXT},
+      {"helpContentLabelTooltip", IDS_FEEDBACK_TOOL_HELP_CONTENT_LABEL_TOOLTIP},
       {"noMatchedResults", IDS_FEEDBACK_TOOL_NO_MATCHED_RESULTS},
       {"attachFilesLabel", IDS_FEEDBACK_TOOL_ATTACH_FILES_LABEL},
       {"attachScreenshotLabel", IDS_FEEDBACK_TOOL_SCREENSHOT_LABEL},
@@ -61,7 +66,12 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
       {"previewImageAriaLabel", IDS_FEEDBACK_TOOL_PREVIEW_IMAGE_ARIA_LABEL},
       {"addFileLabel", IDS_FEEDBACK_TOOL_ADD_FILE_LABEL},
       {"replaceFileLabel", IDS_FEEDBACK_TOOL_REPLACE_FILE_LABEL},
+      {"replaceFileArialLabel", IDS_FEEDBACK_TOOL_REPLACE_FILE_ARIA_LABEL},
+      {"attachFileLabelTooltip", IDS_FEEDBACK_TOOL_ATTACH_FILE_LABEL_TOOLTIP},
+      {"attachFileCheckboxArialLabel",
+       IDS_FEEDBACK_TOOL_ATTACH_FILE_CHECKBOX_ARIA_LABEL},
       {"userEmailLabel", IDS_FEEDBACK_TOOL_USER_EMAIL_LABEL},
+      {"userEmailAriaLabel", IDS_FEEDBACK_TOOL_USER_EMAIL_ARIA_LABEL},
       {"shareDiagnosticDataLabel",
        IDS_FEEDBACK_TOOL_SHARE_DIAGNOSTIC_DATA_LABEL},
       {"sharePageUrlLabel", IDS_FEEDBACK_TOOL_SHARE_PAGE_URL_LABEL},
@@ -87,6 +97,7 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
       {"buttonNewReport", IDS_FEEDBACK_TOOL_SEND_NEW_REPORT_BUTTON_LABEL},
       {"buttonDone", IDS_FEEDBACK_TOOL_DONE_BUTTON_LABEL},
       {"fileTooBigErrorMessage", IDS_FEEDBACK_TOOL_FILE_TOO_BIG_ERROR_MESSAGE},
+      {"bluetoothLogsInfo", IDS_FEEDBACK_TOOL_BLUETOOTH_LOGS_CHECKBOX},
   };
 
   source->AddLocalizedStrings(kLocalizedStrings);

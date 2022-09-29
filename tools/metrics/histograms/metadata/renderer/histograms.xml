@@ -277,7 +277,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.Font.PrimaryFont.FCP" units="ms"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>kojii@chromium.org</owner>
   <owner>tkent@chromium.org</owner>
   <owner>yosin@chromium.org</owner>
@@ -290,7 +290,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.Font.PrimaryFont.FCP.Style" units="ms"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>kojii@chromium.org</owner>
   <owner>tkent@chromium.org</owner>
   <owner>yosin@chromium.org</owner>
@@ -328,7 +328,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.Font.SystemFallback.DomContentLoaded" units="ms"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>kojii@chromium.org</owner>
   <owner>tkent@chromium.org</owner>
   <owner>yosin@chromium.org</owner>
@@ -365,7 +365,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.PaintPreview.Capture.MainFrameSuccess"
-    enum="BooleanSuccess" expires_after="2022-08-07">
+    enum="BooleanSuccess" expires_after="2022-12-18">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -375,7 +375,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.PaintPreview.Capture.SubframeBlinkCaptureDuration"
-    units="ms" expires_after="2022-10-09">
+    units="ms" expires_after="2022-12-18">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -386,7 +386,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.PaintPreview.Capture.SubframeSuccess"
-    enum="BooleanSuccess" expires_after="2022-08-07">
+    enum="BooleanSuccess" expires_after="2022-12-18">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -408,7 +408,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.RenderThreadImpl.Init" units="ms"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>jam@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>

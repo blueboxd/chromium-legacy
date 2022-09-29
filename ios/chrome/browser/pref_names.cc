@@ -53,6 +53,9 @@ const char kDefaultCharset[] = "intl.charset_default";
 // Whether to send the DNT header.
 const char kEnableDoNotTrack[] = "enable_do_not_track";
 
+// Number of times the First Follow UI has been shown.
+const char kFirstFollowUIShownCount[] = "follow.first_follow_ui_modal_count";
+
 // Prefs for persisting HttpServerProperties.
 const char kHttpServerProperties[] = "net.http_server_properties";
 
@@ -89,6 +92,12 @@ const char kIosBookmarkSigninPromoDisplayedCount[] =
 const char kIosDiscoverFeedLastRefreshTime[] =
     "ios.discover_feed.last_refresh_time";
 
+// List preference maintaining the list of active promo campaigns.
+const char kIosPromosManagerActivePromos[] = "ios.promos_manager.active_promos";
+
+// List preference containing the promo impression history.
+const char kIosPromosManagerImpressions[] = "ios.promos_manager.impressions";
+
 // Preference that hold a boolean indicating if the user has already dismissed
 // the sign-in promo in settings view.
 const char kIosSettingsPromoAlreadySeen[] = "ios.settings.promo_already_seen";
@@ -97,6 +106,12 @@ const char kIosSettingsPromoAlreadySeen[] = "ios.settings.promo_already_seen";
 // in the settings view.
 const char kIosSettingsSigninPromoDisplayedCount[] =
     "ios.settings.signin_promo_displayed_count";
+
+// The count of how many times the user has shared the app.
+const char kIosShareChromeCount[] = "ios.share_chrome.count";
+
+// Preference to store the last time the user shared the chrome app.
+const char kIosShareChromeLastShare[] = "ios.share_chrome.last_share";
 
 // Preference that hold a boolean indicating if the user has already dismissed
 // the sign-in promo in the ntp feed top section.

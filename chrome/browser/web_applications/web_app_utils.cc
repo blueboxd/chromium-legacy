@@ -111,6 +111,8 @@ DisplayMode ResolveAppDisplayModeForStandaloneLaunchContainer(
         return DisplayMode::kTabbed;
       else
         return DisplayMode::kStandalone;
+    case DisplayMode::kBorderless:
+      return DisplayMode::kBorderless;
   }
 }
 
@@ -184,9 +186,11 @@ bool AreWebAppsEnabled(const Profile* profile) {
   if (!ash::ProfileHelper::IsRegularProfile(original_profile)) {
     return false;
   }
-  // Disable Web Apps if running any kiosk app.
+  // Disable Web Apps if running any kiosk app and kKioskEnableAppService is not
+  // enabled.
   auto* user_manager = user_manager::UserManager::Get();
-  if (user_manager && user_manager->IsLoggedInAsAnyKioskApp()) {
+  if (user_manager && user_manager->IsLoggedInAsAnyKioskApp() &&
+      !base::FeatureList::IsEnabled(features::kKioskEnableAppService)) {
     return false;
   }
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -605,6 +609,7 @@ apps::LaunchContainer ConvertDisplayModeToAppLaunchContainer(
     case DisplayMode::kFullscreen:
     case DisplayMode::kWindowControlsOverlay:
     case DisplayMode::kTabbed:
+    case DisplayMode::kBorderless:
       return apps::LaunchContainer::kLaunchContainerWindow;
     case DisplayMode::kUndefined:
       return apps::LaunchContainer::kLaunchContainerNone;

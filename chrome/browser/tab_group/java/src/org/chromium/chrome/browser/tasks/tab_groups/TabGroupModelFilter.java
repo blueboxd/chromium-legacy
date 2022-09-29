@@ -280,6 +280,21 @@ public class TabGroupModelFilter extends TabModelFilter {
      * @param destinationTabId The id of a {@link Tab} to get the destination group.
      */
     public void mergeTabsToGroup(int sourceTabId, int destinationTabId) {
+        mergeTabsToGroup(sourceTabId, destinationTabId, false);
+    }
+
+    /**
+     * This method merges the source group that contains the {@code sourceTabId} to the destination
+     * group that contains the {@code destinationTabId}. This method only operates if two groups are
+     * in the same {@code TabModel}.
+     *
+     * @param sourceTabId The id of the {@link Tab} to get the source group.
+     * @param destinationTabId The id of a {@link Tab} to get the destination group.
+     * @param skipUpdateTabModel True if updating the tab model will be handled elsewhere (e.g. by
+     *                           the tab strip).
+     */
+    public void mergeTabsToGroup(
+            int sourceTabId, int destinationTabId, boolean skipUpdateTabModel) {
         Tab sourceTab = TabModelUtils.getTabById(getTabModel(), sourceTabId);
         Tab destinationTab = TabModelUtils.getTabById(getTabModel(), destinationTabId);
 
@@ -292,7 +307,7 @@ public class TabGroupModelFilter extends TabModelFilter {
         List<Tab> tabsToMerge = getRelatedTabList(sourceTabId);
         int destinationIndexInTabModel = getTabModelDestinationIndex(destinationTab);
 
-        if (!needToUpdateTabModel(tabsToMerge, destinationIndexInTabModel)) {
+        if (skipUpdateTabModel || !needToUpdateTabModel(tabsToMerge, destinationIndexInTabModel)) {
             for (Observer observer : mGroupFilterObserver) {
                 observer.willMergeTabToGroup(
                         tabsToMerge.get(tabsToMerge.size() - 1), destinationGroupId);
@@ -510,6 +525,17 @@ public class TabGroupModelFilter extends TabModelFilter {
         TabGroup group = mGroupIdToGroupMap.get(groupId);
         if (group == null) return super.getRelatedTabList(TabModel.INVALID_TAB_INDEX);
         return getRelatedTabList(group.getTabIdList());
+    }
+
+    @Override
+    public List<Integer> getRelatedTabIds(int tabId) {
+        Tab tab = TabModelUtils.getTabById(getTabModel(), tabId);
+        if (tab == null) return super.getRelatedTabIds(tabId);
+
+        int groupId = getRootId(tab);
+        TabGroup group = mGroupIdToGroupMap.get(groupId);
+        if (group == null) return super.getRelatedTabIds(TabModel.INVALID_TAB_INDEX);
+        return Collections.unmodifiableList(group.getTabIdList());
     }
 
     /**

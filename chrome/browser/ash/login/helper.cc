@@ -87,24 +87,18 @@ std::u16string NetworkStateHelper::GetCurrentNetworkName() const {
 }
 
 bool NetworkStateHelper::IsConnected() const {
-  chromeos::NetworkStateHandler* nsh =
-      chromeos::NetworkHandler::Get()->network_state_handler();
-  return nsh->ConnectedNetworkByType(chromeos::NetworkTypePattern::Default()) !=
-         nullptr;
+  NetworkStateHandler* nsh = NetworkHandler::Get()->network_state_handler();
+  return nsh->ConnectedNetworkByType(NetworkTypePattern::Default()) != nullptr;
 }
 
 bool NetworkStateHelper::IsConnectedToEthernet() const {
-  chromeos::NetworkStateHandler* nsh =
-      chromeos::NetworkHandler::Get()->network_state_handler();
-  return nsh->ConnectedNetworkByType(
-             chromeos::NetworkTypePattern::Ethernet()) != nullptr;
+  NetworkStateHandler* nsh = NetworkHandler::Get()->network_state_handler();
+  return nsh->ConnectedNetworkByType(NetworkTypePattern::Ethernet()) != nullptr;
 }
 
 bool NetworkStateHelper::IsConnecting() const {
-  chromeos::NetworkStateHandler* nsh =
-      chromeos::NetworkHandler::Get()->network_state_handler();
-  return nsh->ConnectingNetworkByType(
-             chromeos::NetworkTypePattern::Default()) != nullptr;
+  NetworkStateHandler* nsh = NetworkHandler::Get()->network_state_handler();
+  return nsh->ConnectingNetworkByType(NetworkTypePattern::Default()) != nullptr;
 }
 
 void NetworkStateHelper::OnCreateConfiguration(
@@ -125,6 +119,19 @@ content::StoragePartition* GetSigninPartition() {
   if (!signin_partition_manager->IsInSigninSession())
     return nullptr;
   return signin_partition_manager->GetCurrentStoragePartition();
+}
+
+content::StoragePartition* GetLockScreenPartition() {
+  Profile* lock_screen_profile = ProfileHelper::GetLockScreenProfile();
+  // TODO(http://crbug/1348126): dependency on SigninPartitionManager should be
+  // refactored after we clarify when and how do we clear data from the lock
+  // screen profile.
+  SigninPartitionManager* partition_manager =
+      SigninPartitionManager::Factory::GetForBrowserContext(
+          lock_screen_profile);
+  if (!partition_manager->IsInSigninSession())
+    return nullptr;
+  return partition_manager->GetCurrentStoragePartition();
 }
 
 network::mojom::NetworkContext* GetSigninNetworkContext() {

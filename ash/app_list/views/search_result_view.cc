@@ -258,24 +258,17 @@ class MaskedImageView : public views::ImageView {
   SearchResult::IconShape shape_;
 };
 
-class SearchResultView::LabelAndTag {
- public:
-  LabelAndTag(views::Label* label, SearchResult::Tags tags)
-      : label_(label), tags_(tags) {}
+SearchResultView::LabelAndTag::LabelAndTag(views::Label* label,
+                                           SearchResult::Tags tags)
+    : label_(label), tags_(tags) {}
 
-  LabelAndTag(const LabelAndTag& other) = default;
+SearchResultView::LabelAndTag::LabelAndTag(
+    const SearchResultView::LabelAndTag& other) = default;
 
-  LabelAndTag& operator=(const LabelAndTag& other) = default;
+SearchResultView::LabelAndTag& SearchResultView::LabelAndTag::operator=(
+    const SearchResultView::LabelAndTag& other) = default;
 
-  ~LabelAndTag() = default;
-
-  views::Label* GetLabel() { return label_; }
-  SearchResult::Tags GetTags() { return tags_; }
-
- private:
-  views::Label* label_;  // Owned by views hierarchy.
-  SearchResult::Tags tags_;
-};
+SearchResultView::LabelAndTag::~LabelAndTag() = default;
 
 SearchResultView::SearchResultView(
     SearchResultListView* list_view,
@@ -427,16 +420,6 @@ SearchResultView::SearchResultView(
 
 SearchResultView::~SearchResultView() = default;
 
-void SearchResultView::OnResultChanging(SearchResult* new_result) {
-  if (result_changed_)
-    return;
-  if (!new_result || !result()) {
-    result_changed_ = new_result;
-    return;
-  }
-  result_changed_ = new_result->id() != result()->id();
-}
-
 void SearchResultView::OnResultChanged() {
   OnMetadataChanged();
   SchedulePaint();
@@ -529,12 +512,6 @@ int SearchResultView::ActionButtonRightMargin() const {
     case SearchResultViewType::kDefault:
       return kDefaultActionButtonRightMargin;
   }
-}
-
-bool SearchResultView::GetAndResetResultChanged() {
-  bool result_changed = result_changed_;
-  result_changed_ = false;
-  return result_changed;
 }
 
 // static
@@ -922,7 +899,7 @@ void SearchResultView::StyleLabel(views::Label* label,
     if (has_match_tag) {
       switch (view_type_) {
         case SearchResultViewType::kClassic:
-          label->SetTextStyleRange(AshTextStyle::STYLE_EMPHASIZED, tag.range);
+          label->SetTextStyleRange(views::style::STYLE_EMPHASIZED, tag.range);
           break;
         case SearchResultViewType::kDefault:
           ABSL_FALLTHROUGH_INTENDED;

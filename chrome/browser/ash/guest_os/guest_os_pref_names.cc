@@ -49,6 +49,8 @@ const char kContainerOsVersionKey[] = "container_os_version";
 const char kContainerOsPrettyNameKey[] = "container_os_pretty_name";
 // SkColor used to assign badges to apps associated with this container.
 const char kContainerColorKey[] = "badge_color";
+const char kTerminalSupportedKey[] = "terminal_supported";
+const char kTerminalLabel[] = "terminal_label";
 
 // Terminal
 const char kGuestOsTerminalSettings[] = "crostini.terminal_settings";

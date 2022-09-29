@@ -16,7 +16,6 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/public/ash_interfaces.h"
 #include "ash/public/cpp/ash_prefs.h"
-#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -443,6 +442,10 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(::prefs::kHatsPerformanceDeviceIsSelected,
                                 false);
 
+  registry->RegisterInt64Pref(::prefs::kHatsCameraAppSurveyCycleEndTs, 0);
+
+  registry->RegisterBooleanPref(::prefs::kHatsCameraAppDeviceIsSelected, false);
+
   // Personalization HaTS survey prefs for avatar, screensaver, and wallpaper
   // features.
   registry->RegisterInt64Pref(
@@ -495,8 +498,6 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(::prefs::kStartupBrowserWindowLaunchSuppressed,
                                 false);
-
-  registry->RegisterBooleanPref(::prefs::kSettingsShowOSBanner, true);
 
   // This pref is a per-session pref and must not be synced.
   registry->RegisterBooleanPref(
@@ -1091,14 +1092,13 @@ void Preferences::ApplyPreferences(ApplyReason reason,
 
   if (pref_name == ::prefs::kParentAccessCodeConfig ||
       reason != REASON_PREF_CHANGED) {
-    const base::Value* value =
-        prefs_->GetDictionary(::prefs::kParentAccessCodeConfig);
-    if (value &&
-        prefs_->IsManagedPreference(::prefs::kParentAccessCodeConfig) &&
+    if (prefs_->IsManagedPreference(::prefs::kParentAccessCodeConfig) &&
         user_->IsChild()) {
+      const base::Value::Dict& value =
+          prefs_->GetValueDict(::prefs::kParentAccessCodeConfig);
       known_user.SetPath(user_->GetAccountId(),
                          ::prefs::kKnownUserParentAccessCodeConfig,
-                         value->Clone());
+                         base::Value(value.Clone()));
       parent_access::ParentAccessService::Get().LoadConfigForUser(user_);
     } else {
       known_user.RemovePref(user_->GetAccountId(),
@@ -1108,12 +1108,8 @@ void Preferences::ApplyPreferences(ApplyReason reason,
 
   for (auto* copy_pref : kCopyToKnownUserPrefs) {
     if (pref_name == copy_pref || reason != REASON_ACTIVE_USER_CHANGED) {
-      absl::optional<base::Value> opt_value = absl::nullopt;
-      if (const base::Value* value = prefs_->Get(copy_pref)) {
-        opt_value = value->Clone();
-      }
       known_user.SetPath(user_->GetAccountId(), copy_pref,
-                         std::move(opt_value));
+                         prefs_->GetValue(copy_pref).Clone());
     }
   }
 

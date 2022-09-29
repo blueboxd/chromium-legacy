@@ -8,6 +8,9 @@
 #include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
+#include "base/test/bind.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/desktop_capture/desktop_capture_api.h"
@@ -19,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -230,8 +234,10 @@ class WebRtcDesktopCaptureBrowserTest : public WebRtcTestBase {
   }
 
  protected:
-  void InitializeTabSharingForFirstTab(MediaIDCallback media_id_callback,
-                                       InfobarUIChangeObserver* observer) {
+  void InitializeTabSharingForFirstTab(
+      MediaIDCallback media_id_callback,
+      InfobarUIChangeObserver* observer,
+      absl::optional<std::string> extra_video_constraints = absl::nullopt) {
     ASSERT_TRUE(embedded_test_server()->Start());
     LoadDesktopCaptureExtension();
     auto* first_tab = OpenTestPageInNewTab(kMainWebrtcTestHtmlPage);
@@ -250,10 +256,11 @@ class WebRtcDesktopCaptureBrowserTest : public WebRtcTestBase {
 
     LOG(INFO) << "Opened desktop media stream, got id " << stream_id;
 
-    const std::string constraints =
-        "{audio: false, video: {mandatory: {chromeMediaSource: 'desktop',"
-        "chromeMediaSourceId: '" +
-        stream_id + "'}}}";
+    std::string constraints = base::StrCat(
+        {"{audio: false, video: { mandatory: {chromeMediaSource: 'desktop', "
+         "chromeMediaSourceId: '",
+         stream_id, "'", (extra_video_constraints.has_value() ? ", " : ""),
+         extra_video_constraints.value_or(""), "}}}"});
 
     // Should create 3 infobars if a tab (webcontents) is shared!
     if (observer)
@@ -294,6 +301,79 @@ class WebRtcDesktopCaptureBrowserTest : public WebRtcTestBase {
 
   FakeDesktopMediaPickerFactory picker_factory_;
 };
+
+IN_PROC_BROWSER_TEST_F(WebRtcDesktopCaptureBrowserTest,
+                       TabCaptureProvidesMinFps) {
+  constexpr int kFps = 30;
+  constexpr const char* const kFpsString = "30";
+  constexpr int kTestTimeSeconds = 2;
+  // We wait with measuring frame rate until a few frames has passed. This is
+  // because the frame rate frame dropper in VideoTrackAdapter is pretty
+  // aggressive dropping frames when the stream starts.
+  constexpr int kNumFramesBeforeStabilization = kFps;
+
+  InitializeTabSharingForFirstTab(
+      base::BindOnce(GetDesktopMediaIDForTab, base::Unretained(browser()), 1),
+      nullptr, base::StrCat({"minFrameRate: ", kFpsString}));
+  content::WebContents* first_tab =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  EnableVideoFrameCallbacks(first_tab, "local-view");
+
+  // First wait for a frame to appear, then wait until we get the number of
+  // frames expected during the test time.
+  int initial_frame_counter = 0;
+  base::TimeTicks initial_timestamp;
+  ASSERT_TRUE(test::PollingWaitUntilClosureEvaluatesTrue(
+      base::BindLambdaForTesting([&]() -> bool {
+        initial_timestamp = base::TimeTicks::Now();
+        initial_frame_counter = GetNumVideoFrameCallbacks(first_tab);
+        return initial_frame_counter > kNumFramesBeforeStabilization;
+      }),
+      first_tab, base::Milliseconds(50)));
+  int final_frame_counter = 0;
+  base::TimeTicks final_timestamp;
+  ASSERT_TRUE(test::PollingWaitUntilClosureEvaluatesTrue(
+      base::BindLambdaForTesting([&]() -> bool {
+        final_timestamp = base::TimeTicks::Now();
+        final_frame_counter = GetNumVideoFrameCallbacks(first_tab);
+        return final_frame_counter >=
+               kTestTimeSeconds * kFps + initial_frame_counter;
+      }),
+      first_tab, base::Milliseconds(50)));
+  int average_fps = (final_frame_counter - initial_frame_counter) * 1000 /
+                    (final_timestamp - initial_timestamp).InMilliseconds();
+  // MediaStreamVideoTrack upholds the min fps by way of an idle timer getting
+  // reset for every received frame from the source. Sources being slow to
+  // provide frames or plumbed main thread will ensure that the FPS provided is
+  // actually always strictly lower than the requested minimum.
+  // Expect at least 1/3 of the expected frames have appeared to aggressively
+  // combat flakes.
+  ASSERT_GE(average_fps, kFps / 3);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebRtcDesktopCaptureBrowserTest,
+    TabCaptureProvides0HzWith0MinFpsConstraintAndStaticContent) {
+  constexpr base::TimeDelta kTestTime = base::Seconds(2);
+  InitializeTabSharingForFirstTab(
+      base::BindOnce(GetDesktopMediaIDForTab, base::Unretained(browser()), 1),
+      nullptr, base::StrCat({"minFrameRate: 0, maxFrameRate: 30"}));
+  content::WebContents* first_tab =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  EnableVideoFrameCallbacks(first_tab, "local-view");
+
+  // Sample received frame counts during the test time.
+  int frame_counter = 0;
+  base::TimeTicks initial_timestamp = base::TimeTicks::Now();
+  ASSERT_TRUE(test::PollingWaitUntilClosureEvaluatesTrue(
+      base::BindLambdaForTesting([&]() -> bool {
+        frame_counter = GetNumVideoFrameCallbacks(first_tab);
+        return base::TimeTicks::Now() - initial_timestamp >= kTestTime;
+      }),
+      first_tab, base::Milliseconds(50)));
+  // Expect only a few initial frames.
+  ASSERT_LE(frame_counter, 3);
+}
 
 // TODO(crbug.com/796889): Enable on Mac when thread check crash is fixed.
 // TODO(sprang): Figure out why test times out on Win 10 and ChromeOS.
@@ -352,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcDesktopCaptureBrowserTest,
   observer.ExpectCalls(1);
   // Close non-shared and non-sharing, i.e., unrelated tab
   browser()->tab_strip_model()->CloseWebContentsAt(
-      0, TabStripModel::CloseTypes::CLOSE_CREATE_HISTORICAL_TAB);
+      0, TabCloseTypes::CLOSE_CREATE_HISTORICAL_TAB);
   observer.Wait();
 
   // Should create 1 infobar.

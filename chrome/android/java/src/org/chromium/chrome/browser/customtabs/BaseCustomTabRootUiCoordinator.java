@@ -5,9 +5,11 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.graphics.Rect;
+import android.text.TextUtils;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.chromium.base.jank_tracker.DummyJankTracker;
@@ -30,10 +32,13 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
+import org.chromium.chrome.browser.customtabs.features.branding.BrandingController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthCoordinatorFactory;
@@ -43,6 +48,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.reengagement.ReengagementNotificationController;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.tab.RequestDesktopUtils;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
@@ -66,6 +72,10 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
     private final Supplier<CustomTabActivityTabController> mTabController;
 
     private CustomTabHeightStrategy mCustomTabHeightStrategy;
+
+    // Created only when ChromeFeatureList.CctBrandTransparency is enabled.
+    // TODO(https://crbug.com/1343056): Make it part of the ctor.
+    private @Nullable BrandingController mBrandingController;
 
     /**
      * Construct a new BaseCustomTabRootUiCoordinator.
@@ -156,6 +166,17 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
         mToolbarCoordinator = customTabToolbarCoordinator;
         mNavigationController = customTabNavigationController;
         mIntentDataProvider = intentDataProvider;
+
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.CCT_BRAND_TRANSPARENCY)
+                && intentDataProvider.get().getActivityType() == ActivityType.CUSTOM_TAB
+                && !intentDataProvider.get().isOpenedByChrome()
+                && !intentDataProvider.get().isIncognito()) {
+            String packageName = mIntentDataProvider.get().getClientPackageName();
+            if (TextUtils.isEmpty(packageName)) {
+                packageName = CustomTabIntentDataProvider.getReferrerPackageName(activity);
+            }
+            mBrandingController = new BrandingController(activity, packageName);
+        }
         mTabController = tabController;
     }
 
@@ -170,6 +191,9 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
         View coordinator = mActivity.findViewById(R.id.coordinator);
         mCustomTabHeightStrategy.onToolbarInitialized(
                 coordinator, toolbar, mIntentDataProvider.get().getPartialTabToolbarCornerRadius());
+        if (mBrandingController != null) {
+            mBrandingController.onToolbarInitialized(toolbar.getBrandingDelegate());
+        }
         toolbar.setCloseButtonPosition(mIntentDataProvider.get().getCloseButtonPosition());
         if (mIntentDataProvider.get().isPartialHeightCustomTab()) {
             Runnable softInputCallback =
@@ -265,6 +289,16 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
         return mCustomTabHeightStrategy.canDrawOutsideScreen();
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if (mBrandingController != null) {
+            mBrandingController.destroy();
+            mBrandingController = null;
+        }
+    }
+
     /**
      * Delegates changing the background color to the {@link CustomTabHeightStrategy}.
      * Returns {@code true} if any action were taken, {@code false} if not.
@@ -281,5 +315,13 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
      */
     void handleCloseAnimation(Runnable finishRunnable) {
         mCustomTabHeightStrategy.handleCloseAnimation(finishRunnable);
+    }
+
+    /**
+     * Runs a set of deferred startup tasks.
+     */
+    void onDeferredStartup() {
+        RequestDesktopUtils.maybeShowDefaultEnableGlobalSettingMessage(
+                Profile.getLastUsedRegularProfile(), mMessageDispatcher, mActivity);
     }
 }

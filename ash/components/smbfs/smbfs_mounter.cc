@@ -98,8 +98,8 @@ void SmbFsMounter::Mount(SmbFsMounter::DoneCallback callback) {
 
   ash::disks::MountPoint::Mount(
       disk_mount_manager_, mount_url_, "" /* source_format */, mount_dir_name_,
-      {} /* mount_options */, chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-      chromeos::MOUNT_ACCESS_MODE_READ_WRITE,
+      {} /* mount_options */, ash::MountType::kNetworkStorage,
+      ash::MountAccessMode::kReadWrite,
       base::BindOnce(&SmbFsMounter::OnMountDone, weak_factory_.GetWeakPtr()));
   mount_timer_.Start(
       FROM_HERE, kMountTimeout,
@@ -107,7 +107,7 @@ void SmbFsMounter::Mount(SmbFsMounter::DoneCallback callback) {
 }
 
 void SmbFsMounter::OnMountDone(
-    chromeos::MountError error_code,
+    ash::MountError error_code,
     std::unique_ptr<ash::disks::MountPoint> mount_point) {
   if (!callback_) {
     // This can happen if the mount timeout expires and the callback is already
@@ -115,7 +115,7 @@ void SmbFsMounter::OnMountDone(
     return;
   }
 
-  if (error_code != chromeos::MOUNT_ERROR_NONE) {
+  if (error_code != ash::MountError::kNone) {
     LOG(WARNING) << "smbfs mount error: " << error_code;
     ProcessMountError(mojom::MountError::kUnknown);
     return;

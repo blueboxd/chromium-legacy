@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.history_clusters;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -16,6 +17,9 @@ import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.view.MenuItem;
 import android.view.View;
@@ -53,11 +57,14 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreator;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.components.favicon.LargeIconBridgeJni;
 import org.chromium.components.search_engines.TemplateUrlService;
+import org.chromium.ui.base.Clipboard;
+import org.chromium.ui.base.ClipboardImpl;
 import org.chromium.ui.display.DisplayAndroidManager;
 import org.chromium.ui.util.AccessibilityUtil;
 import org.chromium.url.GURL;
@@ -94,7 +101,7 @@ public class HistoryClustersCoordinatorTest {
 
         @Override
         public boolean isSeparateActivity() {
-            return true;
+            return mIsSeparateActivity;
         }
 
         @Override
@@ -150,6 +157,11 @@ public class HistoryClustersCoordinatorTest {
         public void markVisitForRemoval(ClusterVisit clusterVisit) {
             mVisitsForRemoval.add(clusterVisit);
         }
+
+        @Override
+        public boolean areTabGroupsEnabled() {
+            return mAreTabGroupsEnabled;
+        }
     }
 
     @Rule
@@ -181,6 +193,8 @@ public class HistoryClustersCoordinatorTest {
     private HistoryClustersMetricsLogger mMetricsLogger;
     @Mock
     private AccessibilityUtil mAccessibilityUtil;
+    @Mock
+    private SnackbarManager mSnackbarManager;
 
     private ActivityScenario<ChromeTabbedActivity> mActivityScenario;
     private HistoryClustersCoordinator mHistoryClustersCoordinator;
@@ -196,6 +210,8 @@ public class HistoryClustersCoordinatorTest {
             new TestHistoryClustersDelegate();
     private List<ClusterVisit> mVisitsForRemoval = new ArrayList<>();
     private SelectionDelegate<ClusterVisit> mSelectionDelegate = new SelectionDelegate<>();
+    private boolean mIsSeparateActivity = true;
+    private boolean mAreTabGroupsEnabled = true;
 
     @Before
     public void setUp() {
@@ -219,7 +235,7 @@ public class HistoryClustersCoordinatorTest {
                     mActivity = activity;
                     mHistoryClustersCoordinator = new HistoryClustersCoordinator(mProfile, activity,
                             mTemplateUrlService, mHistoryClustersDelegate, mMetricsLogger,
-                            mSelectionDelegate, mAccessibilityUtil);
+                            mSelectionDelegate, mAccessibilityUtil, mSnackbarManager);
                 });
     }
 
@@ -364,6 +380,26 @@ public class HistoryClustersCoordinatorTest {
     }
 
     @Test
+    public void testCopyMenuItem() {
+        final ClipboardManager clipboardManager =
+                (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
+        assertNotNull(clipboardManager);
+        ((ClipboardImpl) Clipboard.getInstance())
+                .overrideClipboardManagerForTesting(clipboardManager);
+        clipboardManager.setPrimaryClip(ClipData.newPlainText(null, "dummy_val"));
+        doReturn("http://spec1.com").when(mGurl1).getSpec();
+
+        HistoryClustersToolbar toolbar = mHistoryClustersCoordinator.getActivityContentView()
+                                                 .findViewById(R.id.selectable_list)
+                                                 .findViewById(R.id.action_bar);
+
+        mSelectionDelegate.setSelectedItems(new HashSet<>(Arrays.asList(mVisit1)));
+        mHistoryClustersCoordinator.onMenuItemClick(
+                toolbar.getMenu().findItem(R.id.selection_mode_copy_link));
+        assertEquals(mVisit1.getNormalizedUrl().getSpec(), clipboardManager.getText());
+    }
+
+    @Test
     public void testSetQueryState() {
         mHistoryClustersCoordinator.inflateActivityView();
         mHistoryClustersCoordinator.setInitialQuery(QueryState.forQuery("dogs", ""));
@@ -435,6 +471,31 @@ public class HistoryClustersCoordinatorTest {
         endButton = viewHolder.itemView.findViewById(R.id.end_button);
         assertEquals(endButton.getContentDescription(),
                 mActivity.getString(R.string.accessibility_list_remove_button, mVisit2.getTitle()));
+    }
+
+    @Test
+    public void testMenuItemVisibility() {
+        mIsSeparateActivity = false;
+        mAreTabGroupsEnabled = false;
+        mHistoryClustersCoordinator.inflateActivityView();
+        HistoryClustersToolbar toolbar = mHistoryClustersCoordinator.getActivityContentView()
+                                                 .findViewById(R.id.selectable_list)
+                                                 .findViewById(R.id.action_bar);
+
+        assertNotNull(toolbar);
+        assertNull(toolbar.getMenu().findItem(R.id.close_menu_id));
+        assertNull(toolbar.getMenu().findItem(R.id.selection_mode_open_in_tab_group));
+
+        mIsSeparateActivity = true;
+        mAreTabGroupsEnabled = true;
+        mHistoryClustersCoordinator.inflateActivityView();
+        toolbar = mHistoryClustersCoordinator.getActivityContentView()
+                          .findViewById(R.id.selectable_list)
+                          .findViewById(R.id.action_bar);
+
+        assertNotNull(toolbar);
+        assertNotNull(toolbar.getMenu().findItem(R.id.close_menu_id));
+        assertNotNull(toolbar.getMenu().findItem(R.id.selection_mode_open_in_tab_group));
     }
 
     private <T> void fulfillPromise(Promise<T> promise, T result) {

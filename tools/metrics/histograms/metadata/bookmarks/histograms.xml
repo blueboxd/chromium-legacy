@@ -106,6 +106,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Bookmarks.BookmarksBar.DragDropType"
+    enum="BookmarkBarDragDropType" expires_after="2023-01-15">
+  <owner>dfried@chromium.org</owner>
+  <owner>mickeyburks@chromium.org</owner>
+  <summary>
+    Records whether a bookmarks bar drag-drop is from a URL (e.g. from the
+    location bar) or from the bookmarks bar itself (which is effectively a
+    move).
+  </summary>
+</histogram>
+
 <histogram name="Bookmarks.BookmarksBarStatus.OnReadingListOpened"
     enum="BookmarkBarPrefAndState" expires_after="2022-08-28">
   <owner>corising@chromium.org</owner>
@@ -130,7 +141,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.Count.OnProfileLoad" units="bookmarks"
-    expires_after="2023-01-15">
+    expires_after="2023-02-12">
   <owner>supertri@chromium.org</owner>
   <owner>isherman@chromium.org</owner>
   <owner>aidanday@google.com</owner>
@@ -203,15 +214,27 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Bookmarks.EditLocation" enum="BookmarkLaunchLocation"
+    expires_after="2023-01-15">
+  <owner>dfried@chromium.org</owner>
+  <owner>mickeyburks@chromium.org</owner>
+  <component>UI&gt;Browser&gt;Bookmarks</component>
+  <summary>
+    Logs a UI location from which a bookmark is edited, after the user opts to
+    edit or rename a bookmark or folder via a context menu, and immediately
+    before displaying the edit dialog.
+  </summary>
+</histogram>
+
 <histogram name="Bookmarks.EntryPoint" enum="BookmarksEntryPoint"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>ianwen@chromium.org</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
   <summary>How users add a new bookmark.</summary>
 </histogram>
 
 <histogram name="Bookmarks.GetResultsMatching.AnyTermApproach.Used"
-    enum="Boolean" expires_after="2022-12-11">
+    enum="Boolean" expires_after="2023-02-12">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
@@ -254,7 +277,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.GetResultsMatching.Terms.TermLength"
-    units="characters" expires_after="2022-12-11">
+    units="characters" expires_after="2023-02-12">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
@@ -657,6 +680,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     Logs the number of unread items shown in the reading list on the Android
     Bookmarks page when it is opened.
+  </summary>
+</histogram>
+
+<histogram name="Bookmarks.RemovedLocation" enum="BookmarkLaunchLocation"
+    expires_after="2023-01-15">
+  <owner>dfried@chromium.org</owner>
+  <owner>mickeyburks@chromium.org</owner>
+  <component>UI&gt;Browser&gt;Bookmarks</component>
+  <summary>
+    Logs a UI location from which one or more bookmarks are removed, after the
+    user requests them to be removed via a menu and immediately before they are
+    actually removed.
   </summary>
 </histogram>
 

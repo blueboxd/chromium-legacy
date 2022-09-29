@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -41,7 +42,7 @@ constexpr char kExtraSecondaryAppId[] = "aaaaccccaaaaccccaaaaccccaaaacccc";
 
 class AppLaunchTracker : public extensions::TestEventRouter::EventObserver {
  public:
-  AppLaunchTracker(extensions::TestEventRouter* event_router) {
+  explicit AppLaunchTracker(extensions::TestEventRouter* event_router) {
     observation_.Observe(event_router);
   }
   AppLaunchTracker(const AppLaunchTracker&) = delete;
@@ -99,14 +100,14 @@ void InitAppWindow(extensions::AppWindow* app_window, const gfx::Rect& bounds) {
 
   extensions::AppWindow::CreateParams params;
   params.content_spec.bounds = bounds;
-  app_window->Init(GURL(), app_window_contents.release(), main_frame, params);
+  app_window->Init(GURL(), std::move(app_window_contents), main_frame, params);
 }
 
 extensions::AppWindow* CreateAppWindow(Profile* profile,
                                        const extensions::Extension* extension,
                                        gfx::Rect bounds = {}) {
   extensions::AppWindow* app_window = new extensions::AppWindow(
-      profile, new ChromeAppDelegate(profile, true), extension);
+      profile, std::make_unique<ChromeAppDelegate>(profile, true), extension);
   InitAppWindow(app_window, bounds);
   return app_window;
 }
@@ -270,6 +271,31 @@ TEST_F(ChromeKioskAppLauncherTest, ShouldSucceedWithSecondaryApp) {
   EXPECT_TRUE(registry()->enabled_extensions().Contains(kTestPrimaryAppId));
   EXPECT_TRUE(registry()->enabled_extensions().Contains(kSecondaryAppId));
   EXPECT_TRUE(registry()->disabled_extensions().Contains(kExtraSecondaryAppId));
+}
+
+TEST_F(ChromeKioskAppLauncherTest, ShouldSucceedWithAppService) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kKioskEnableAppService);
+
+  TestKioskExtensionBuilder primary_app_builder(Manifest::TYPE_PLATFORM_APP,
+                                                kTestPrimaryAppId);
+  primary_app_builder.set_version("1.0");
+  scoped_refptr<const extensions::Extension> primary_app =
+      primary_app_builder.Build();
+  service()->AddExtension(primary_app.get());
+
+  CreateLauncher(/*is_network_ready=*/true);
+
+  TestFuture<LaunchResult> future;
+  launcher_->LaunchApp(future.GetCallback());
+
+  SimulateAppWindowLaunch(primary_app.get());
+
+  ASSERT_THAT(future.Get(), Eq(LaunchResult::kSuccess));
+
+  EXPECT_THAT(app_launch_tracker_->launched_apps(),
+              ElementsAre(kTestPrimaryAppId));
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(kTestPrimaryAppId));
 }
 
 }  // namespace ash

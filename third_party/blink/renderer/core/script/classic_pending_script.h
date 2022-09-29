@@ -17,8 +17,6 @@
 
 namespace blink {
 
-class ScriptCacheConsumer;
-
 // PendingScript for a classic script
 // https://html.spec.whatwg.org/C/#classic-script.
 //
@@ -47,6 +45,7 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
   // For an inline script.
   static ClassicPendingScript* CreateInline(ScriptElementBase*,
                                             const TextPosition&,
+                                            const KURL& source_url,
                                             const KURL& base_url,
                                             const String& source_text,
                                             ScriptSourceLocationType,
@@ -54,11 +53,13 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
 
   ClassicPendingScript(ScriptElementBase*,
                        const TextPosition&,
+                       const KURL& source_url_for_inline_script,
                        const KURL& base_url_for_inline_script,
                        const String& source_text_for_inline_script,
                        ScriptSourceLocationType,
                        const ScriptFetchOptions&,
-                       bool is_external);
+                       bool is_external,
+                       bool is_eligible_for_delay);
   ~ClassicPendingScript() override;
 
   void Trace(Visitor*) const override;
@@ -67,19 +68,18 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
     return mojom::blink::ScriptType::kClassic;
   }
 
-  ClassicScript* GetSource(const KURL& document_url) const override;
+  ClassicScript* GetSource() const override;
   bool IsReady() const override;
   bool IsExternal() const override { return is_external_; }
   bool WasCanceled() const override;
   KURL UrlForTracing() const override;
   void DisposeInternal() override;
 
+  // ScriptCacheConsumerClient:
   void NotifyCacheConsumeFinished() override;
 
-  void SetNotStreamingReasonForTest(ScriptStreamer::NotStreamingReason reason) {
-    not_streamed_reason_ = reason;
-  }
-
+  // Check if this script is eligible for DelayAsyncScriptExecution
+  // (see crbug/1340837).
   bool IsEligibleForDelay() const override;
 
  private:
@@ -114,6 +114,8 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
 
   const ScriptFetchOptions options_;
 
+  const KURL source_url_for_inline_script_;
+
   // "base url" snapshot taken at #prepare-a-script timing.
   // https://html.spec.whatwg.org/C/#prepare-a-script
   // which will eventually be used as #concept-script-base-url.
@@ -130,14 +132,14 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
   const bool is_external_;
   ReadyState ready_state_;
   bool integrity_failure_;
+  // Describes if this script is eligible for DelayAsyncScriptExecution
+  // (see crbug/1340837).
+  const bool is_eligible_for_delay_;
 
   // The request is intervened by document.write() intervention.
   bool intervened_ = false;
 
-  // Specifies the reason that script was never streamed.
-  ScriptStreamer::NotStreamingReason not_streamed_reason_;
-
-  Member<ScriptCacheConsumer> cache_consumer_;
+  Member<ClassicScript> classic_script_;
 };
 
 }  // namespace blink

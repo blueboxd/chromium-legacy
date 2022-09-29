@@ -5,6 +5,8 @@
 #include "components/autofill/core/common/mojom/autofill_types_mojom_traits.h"
 
 #include "base/i18n/rtl.h"
+#include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/html_field_types.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -64,6 +66,97 @@ bool StructTraits<
   if (!data.ReadValue(&out->value))
     return false;
   if (!data.ReadContent(&out->content))
+    return false;
+  return true;
+}
+
+// static
+autofill::mojom::SectionPrefixDataView::Tag
+UnionTraits<autofill::mojom::SectionPrefixDataView,
+            autofill::Section::SectionPrefix>::
+    GetTag(const autofill::Section::SectionPrefix& r) {
+  if (absl::holds_alternative<autofill::Section::Default>(r))
+    return autofill::mojom::SectionPrefixDataView::Tag::kDefaultPrefix;
+  if (absl::holds_alternative<autofill::Section::Autocomplete>(r)) {
+    return autofill::mojom::SectionPrefixDataView::Tag::
+        kAutocompleteSectionPrefix;
+  }
+  if (absl::holds_alternative<autofill::Section::FieldIdentifier>(r))
+    return autofill::mojom::SectionPrefixDataView::Tag::kFromFieldPrefix;
+  if (absl::holds_alternative<autofill::Section::CreditCard>(r))
+    return autofill::mojom::SectionPrefixDataView::Tag::kCreditCardPrefix;
+
+  NOTREACHED();
+  return autofill::mojom::SectionPrefixDataView::Tag::kDefaultPrefix;
+}
+
+// static
+bool UnionTraits<autofill::mojom::SectionPrefixDataView,
+                 autofill::Section::SectionPrefix>::
+    Read(autofill::mojom::SectionPrefixDataView data,
+         autofill::Section::SectionPrefix* out) {
+  switch (data.tag()) {
+    case autofill::mojom::SectionPrefixDataView::Tag::kDefaultPrefix:
+      *out = autofill::Section::Default();
+      break;
+    case autofill::mojom::SectionPrefixDataView::Tag::
+        kAutocompleteSectionPrefix: {
+      autofill::Section::Autocomplete autocomplete_section_prefix;
+      if (!data.ReadAutocompleteSectionPrefix(&autocomplete_section_prefix))
+        return false;
+      *out = std::move(autocomplete_section_prefix);
+      break;
+    }
+    case autofill::mojom::SectionPrefixDataView::Tag::kFromFieldPrefix: {
+      autofill::Section::FieldIdentifier field_identifier;
+      if (!data.ReadFromFieldPrefix(&field_identifier))
+        return false;
+      *out = std::move(field_identifier);
+      break;
+    }
+    case autofill::mojom::SectionPrefixDataView::Tag::kCreditCardPrefix:
+      *out = autofill::Section::CreditCard();
+      break;
+  }
+  return true;
+}
+
+// static
+bool StructTraits<autofill::mojom::SectionAutocompleteDataView,
+                  autofill::Section::Autocomplete>::
+    Read(autofill::mojom::SectionAutocompleteDataView data,
+         autofill::Section::Autocomplete* out) {
+  if (!data.ReadSection(&out->section))
+    return false;
+  static_assert(sizeof(data.html_field_mode()) <=
+                sizeof(autofill::HtmlFieldMode));
+  out->mode = static_cast<autofill::HtmlFieldMode>(data.html_field_mode());
+  return true;
+}
+
+// static
+bool StructTraits<autofill::mojom::SectionFieldIdentifierDataView,
+                  autofill::Section::FieldIdentifier>::
+    Read(autofill::mojom::SectionFieldIdentifierDataView data,
+         autofill::Section::FieldIdentifier* out) {
+  if (!data.ReadFieldName(&out->field_name))
+    return false;
+  out->local_frame_id = data.local_frame_id();
+  if (!data.ReadFieldRendererId(&out->field_renderer_id))
+    return false;
+  return true;
+}
+
+// static
+bool StructTraits<autofill::mojom::SectionDataView, autofill::Section>::Read(
+    autofill::mojom::SectionDataView data,
+    autofill::Section* out) {
+  static_assert(sizeof(data.field_type_group()) <=
+                sizeof(autofill::Section::FieldTypeGroupSuffix));
+  out->field_type_group_ = static_cast<autofill::Section::FieldTypeGroupSuffix>(
+      data.field_type_group());
+
+  if (!data.ReadPrefix(&out->prefix_))
     return false;
   return true;
 }

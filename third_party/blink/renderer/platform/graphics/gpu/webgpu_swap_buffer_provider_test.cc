@@ -104,19 +104,32 @@ class WebGPUSwapBufferProviderForTests : public WebGPUSwapBufferProvider {
                                  usage,
                                  format),
         alive_(alive),
-        client_(client) {}
+        client_(client) {
+    texture_desc_.nextInChain = nullptr;
+    texture_desc_.usage = usage;
+    texture_desc_.format = format;
+    texture_desc_.size = {0, 0, 1};
+    texture_desc_.mipLevelCount = 1;
+    texture_desc_.sampleCount = 1;
+    texture_desc_.dimension = WGPUTextureDimension_2D;
+    texture_desc_.viewFormatCount = 0;
+    texture_desc_.viewFormats = nullptr;
+  }
   ~WebGPUSwapBufferProviderForTests() override { *alive_ = false; }
 
   WGPUTexture GetNewTexture(const gfx::Size& size) {
     // The alpha type is an optimization hint so just pass in opaque here.
-    client_->texture =
-        WebGPUSwapBufferProvider::GetNewTexture(size, kOpaque_SkAlphaType);
+    texture_desc_.size.width = size.width();
+    texture_desc_.size.height = size.height();
+    client_->texture = WebGPUSwapBufferProvider::GetNewTexture(
+        texture_desc_, kOpaque_SkAlphaType);
     return client_->texture;
   }
 
  private:
   bool* alive_;
   FakeProviderClient* client_;
+  WGPUTextureDescriptor texture_desc_;
 };
 
 }  // anonymous namespace
@@ -546,6 +559,21 @@ TEST_F(WebGPUSwapBufferProviderTest, ReserveTextureDescriptorForReflection) {
                                                      &release_callback));
   EXPECT_EQ(kOtherSize, resource.size);
   std::move(release_callback).Run(gpu::SyncToken(), false /* lostResource */);
+}
+
+// Ensures that requests for zero size textures (width == 0 or height == 0) do
+// not attempt to reserve a texture.
+TEST_F(WebGPUSwapBufferProviderTest, VerifyZeroSizeRejects) {
+  const gfx::Size kZeroSize(0, 0);
+  const gfx::Size kZeroWidth(0, 10);
+  const gfx::Size kZeroHeight(10, 0);
+
+  // None of these calls should result in ReserveTexture being called
+  EXPECT_CALL(*webgpu_, ReserveTexture(fake_device_, _)).Times(0);
+
+  EXPECT_EQ(nullptr, provider_->GetNewTexture(kZeroSize));
+  EXPECT_EQ(nullptr, provider_->GetNewTexture(kZeroWidth));
+  EXPECT_EQ(nullptr, provider_->GetNewTexture(kZeroHeight));
 }
 
 }  // namespace blink

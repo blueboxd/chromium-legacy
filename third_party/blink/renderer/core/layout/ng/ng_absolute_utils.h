@@ -22,6 +22,19 @@ class NGLayoutResult;
 struct NGLogicalStaticPosition;
 
 struct CORE_EXPORT NGLogicalOutOfFlowDimensions {
+  LayoutUnit MarginBoxInlineStart() const {
+    return inset.inline_start - margins.inline_start;
+  }
+  LayoutUnit MarginBoxBlockStart() const {
+    return inset.block_start - margins.block_start;
+  }
+  LayoutUnit MarginBoxInlineEnd() const {
+    return inset.inline_start + size.inline_size + margins.inline_end;
+  }
+  LayoutUnit MarginBoxBlockEnd() const {
+    return inset.block_start + size.block_size + margins.block_end;
+  }
+
   NGBoxStrut inset;
   LogicalSize size = {kIndefiniteSize, kIndefiniteSize};
   NGBoxStrut margins;
@@ -37,9 +50,7 @@ struct CORE_EXPORT NGLogicalOutOfFlowInsets {
 CORE_EXPORT NGLogicalOutOfFlowInsets
 ComputeOutOfFlowInsets(const ComputedStyle& style,
                        const LogicalSize& available_size,
-                       const WritingModeConverter& container_converter,
-                       const NGLogicalAnchorQuery& anchor_query,
-                       bool* has_anchor_functions = nullptr);
+                       NGAnchorEvaluatorImpl* anchor_evaluator);
 
 CORE_EXPORT LogicalSize
 ComputeOutOfFlowAvailableSize(const NGBlockNode&,
@@ -63,6 +74,7 @@ ComputeOutOfFlowAvailableSize(const NGBlockNode&,
 // Will return true if |NGBlockNode::ComputeMinMaxSizes| was called.
 CORE_EXPORT bool ComputeOutOfFlowInlineDimensions(
     const NGBlockNode&,
+    const ComputedStyle& style,
     const NGConstraintSpace&,
     const NGLogicalOutOfFlowInsets&,
     const NGBoxStrut& border_padding,
@@ -77,6 +89,7 @@ CORE_EXPORT bool ComputeOutOfFlowInlineDimensions(
 // otherwise it will return nullptr.
 CORE_EXPORT const NGLayoutResult* ComputeOutOfFlowBlockDimensions(
     const NGBlockNode&,
+    const ComputedStyle& style,
     const NGConstraintSpace&,
     const NGLogicalOutOfFlowInsets&,
     const NGBoxStrut& border_padding,

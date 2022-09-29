@@ -37,17 +37,25 @@ extern const base::FeatureParam<bool> kShowSampleContent;
 // Shows a link with more info about a site in PageInfo.
 extern const base::Feature kPageInfoAboutThisSiteMoreInfo;
 
+// Shows a placeholder when a description is missing. Only enable in combination
+// with kPageInfoAboutThisSiteMoreInfo.
+extern const base::Feature kPageInfoAboutThisSiteDescriptionPlaceholder;
+
 // Enables the "About this site" banner.
 extern const base::Feature kAboutThisSiteBanner;
 
 #if !BUILDFLAG(IS_ANDROID)
 // Enables the history section for Page Info on desktop.
 extern const base::Feature kPageInfoHistoryDesktop;
-#endif
 
-#if !BUILDFLAG(IS_ANDROID)
 // Hides site settings row.
 extern const base::Feature kPageInfoHideSiteSettings;
+
+// Enables Cookies Subpage. For implementation phase.
+extern const base::Feature kPageInfoCookiesSubpage;
+
+// Enables the new page specific site data dialog.
+extern const base::Feature kPageSpecificSiteDataDialog;
 #endif
 
 }  // namespace page_info

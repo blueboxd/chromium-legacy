@@ -20,11 +20,10 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/url_constants.h"
-#include "url/gurl.h"
 
 using content::BrowserContext;
 using content::RenderProcessHost;
@@ -72,10 +71,7 @@ class GuestViewManager::EmbedderRenderProcessHostObserver
 GuestViewManager::GuestViewManager(
     content::BrowserContext* context,
     std::unique_ptr<GuestViewManagerDelegate> delegate)
-    : current_instance_id_(0),
-      last_instance_id_removed_(0),
-      context_(context),
-      delegate_(std::move(delegate)) {}
+    : context_(context), delegate_(std::move(delegate)) {}
 
 GuestViewManager::~GuestViewManager() {
   // It seems that ChromeOS OTR profiles may still have RenderProcessHosts at
@@ -136,38 +132,18 @@ void GuestViewManager::AttachGuest(int embedder_process_id,
     return;
 
   ElementInstanceKey key(embedder_process_id, element_instance_id);
-  auto it = instance_id_map_.find(key);
-  // If there is an existing guest attached to the element, then destroy the
-  // existing guest.
-  if (it != instance_id_map_.end()) {
-    int old_guest_instance_id = it->second;
-    if (old_guest_instance_id == guest_instance_id)
-      return;
 
-    auto* old_guest_view =
-        GuestViewBase::From(embedder_process_id, old_guest_instance_id);
-    old_guest_view->Destroy(true);
+  // If there is an existing guest attached to the element, then the embedder is
+  // misbehaving.
+  if (base::Contains(instance_id_map_, key)) {
+    bad_message::ReceivedBadMessage(embedder_process_id,
+                                    bad_message::GVM_INVALID_ATTACH);
+    return;
   }
+
   instance_id_map_[key] = guest_instance_id;
   reverse_instance_id_map_[guest_instance_id] = key;
   guest_view->SetAttachParams(attach_params);
-}
-
-void GuestViewManager::DetachGuest(GuestViewBase* guest) {
-  if (!guest->attached())
-    return;
-
-  auto reverse_it = reverse_instance_id_map_.find(guest->guest_instance_id());
-  if (reverse_it == reverse_instance_id_map_.end())
-    return;
-
-  const ElementInstanceKey& key = reverse_it->second;
-
-  auto it = instance_id_map_.find(key);
-  DCHECK(it != instance_id_map_.end());
-
-  reverse_instance_id_map_.erase(reverse_it);
-  instance_id_map_.erase(it);
 }
 
 bool GuestViewManager::IsOwnedByExtension(GuestViewBase* guest) {
@@ -206,26 +182,6 @@ content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
       WebContents::Create(guest_create_params);
   guest->InitWithWebContents(base::Value::Dict(), guest_web_contents.get());
   return guest_web_contents.release();
-}
-
-content::WebContents* GuestViewManager::GetGuestByInstanceID(
-    int owner_process_id,
-    int element_instance_id) {
-  int guest_instance_id = GetGuestInstanceIDForElementID(owner_process_id,
-                                                         element_instance_id);
-  if (guest_instance_id == kInstanceIDNone)
-    return nullptr;
-
-  return GetGuestByInstanceID(guest_instance_id);
-}
-
-int GuestViewManager::GetGuestInstanceIDForElementID(int owner_process_id,
-                                                     int element_instance_id) {
-  auto iter = instance_id_map_.find(
-      ElementInstanceKey(owner_process_id, element_instance_id));
-  if (iter == instance_id_map_.end())
-    return kInstanceIDNone;
-  return iter->second;
 }
 
 SiteInstance* GuestViewManager::GetGuestSiteInstance(
@@ -336,10 +292,12 @@ void GuestViewManager::ViewCreated(int embedder_process_id,
   }
 
   // Register the cleanup callback for when this view is destroyed.
-  RegisterViewDestructionCallback(
-      embedder_process_id, view_instance_id,
-      base::BindOnce(view_it->second.cleanup_function, context_,
-                     embedder_process_id, view_instance_id));
+  if (view_it->second.cleanup_function) {
+    RegisterViewDestructionCallback(
+        embedder_process_id, view_instance_id,
+        base::BindOnce(view_it->second.cleanup_function, context_,
+                       embedder_process_id, view_instance_id));
+  }
 }
 
 void GuestViewManager::ViewGarbageCollected(int embedder_process_id,
@@ -399,7 +357,23 @@ GuestViewBase* GuestViewManager::CreateGuestInternal(
 }
 
 void GuestViewManager::RegisterGuestViewTypes() {
-  delegate_->RegisterAdditionalGuestViewTypes();
+  delegate_->RegisterAdditionalGuestViewTypes(this);
+}
+
+void GuestViewManager::RegisterGuestViewType(
+    const std::string& type,
+    GuestViewCreateFunction create_function,
+    GuestViewCleanUpFunction cleanup_function) {
+  // If the GuestView type `type` is already registered, then there is nothing
+  // more to do. If an existing entry in the registry was created by this
+  // function for `type`, then registering again would have no effect, and
+  // if it was registered elsewhere, then we do not want to overwrite it. Note
+  // that it is possible for tests to have special test factory methods
+  // registered here.
+  if (base::Contains(guest_view_registry_, type))
+    return;
+
+  guest_view_registry_.insert({type, {create_function, cleanup_function}});
 }
 
 void GuestViewManager::RegisterViewDestructionCallback(
@@ -563,6 +537,6 @@ GuestViewManager::GuestViewData::GuestViewData(
 GuestViewManager::GuestViewData::GuestViewData(const GuestViewData& other) =
     default;
 
-GuestViewManager::GuestViewData::~GuestViewData() {}
+GuestViewManager::GuestViewData::~GuestViewData() = default;
 
 }  // namespace guest_view

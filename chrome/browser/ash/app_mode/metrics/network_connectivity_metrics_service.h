@@ -19,8 +19,7 @@ extern const char kKioskNetworkDropsPerSessionHistogram[];
 
 // NetworkConnectivityMetricsService counts and reports network connectivity
 // drop events.
-class NetworkConnectivityMetricsService
-    : public chromeos::NetworkStateHandlerObserver {
+class NetworkConnectivityMetricsService : public NetworkStateHandlerObserver {
  public:
   NetworkConnectivityMetricsService();
   NetworkConnectivityMetricsService(NetworkConnectivityMetricsService&) =
@@ -37,9 +36,8 @@ class NetworkConnectivityMetricsService
  private:
   explicit NetworkConnectivityMetricsService(PrefService* prefs);
 
-  // chromeos::NetworkStateHandlerObserver:
-  void NetworkConnectionStateChanged(
-      const chromeos::NetworkState* network) override;
+  // NetworkStateHandlerObserver:
+  void NetworkConnectionStateChanged(const NetworkState* network) override;
 
   // Update a number of network connectivity drops for the current session.
   void LogNetworkDrops(int network_drops);

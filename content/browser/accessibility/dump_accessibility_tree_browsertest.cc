@@ -1279,6 +1279,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaRequired) {
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaRequiredEmptyInput) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-required-empty-input.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityAriaRoleDescription) {
   RunAriaTest(FILE_PATH_LITERAL("aria-roledescription.html"));
 }
@@ -1895,6 +1900,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityEm) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityEmbed) {
   RunHtmlTest(FILE_PATH_LITERAL("embed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityEmbedImageError) {
+  RunHtmlTest(FILE_PATH_LITERAL("embed-image-error.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityFieldset) {
@@ -3020,6 +3030,19 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySvg) {
 // TODO: fails on android, the test hangs in WaitForAllFramesLoaded while
 // waiting for AccessibilityNotificationWaiter::WaitForNotification.
 #if BUILDFLAG(IS_ANDROID)
+#define MAYBE_AccessibilitySvgAsEmbedSource \
+  DISABLED_AccessibilitySvgAsEmbedSource
+#else
+#define MAYBE_AccessibilitySvgAsEmbedSource AccessibilitySvgAsEmbedSource
+#endif
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       MAYBE_AccessibilitySvgAsEmbedSource) {
+  RunHtmlTest(FILE_PATH_LITERAL("svg-as-embed-source.html"));
+}
+
+// TODO: fails on android, the test hangs in WaitForAllFramesLoaded while
+// waiting for AccessibilityNotificationWaiter::WaitForNotification.
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_AccessibilitySvgAsObjectSource \
   DISABLED_AccessibilitySvgAsObjectSource
 #else
@@ -3395,6 +3418,12 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ActivedescendantCrash) {
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        DISABLED_AddClickIgnoredChanged) {
   RunRegressionTest(FILE_PATH_LITERAL("add-click-ignored-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AriaHiddenNegativeTabindexIgnoredInTree) {
+  RunRegressionTest(
+      FILE_PATH_LITERAL("aria-hidden-negative-tabindex-ignored-in-tree.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AriaHiddenTabindexChange) {

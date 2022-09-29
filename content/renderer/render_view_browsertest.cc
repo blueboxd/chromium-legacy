@@ -50,9 +50,7 @@
 #include "content/renderer/agent_scheduling_group.h"
 #include "content/renderer/document_state.h"
 #include "content/renderer/navigation_state.h"
-#include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
-#include "content/renderer/render_view_impl.h"
 #include "content/renderer/service_worker/service_worker_network_provider_for_frame.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -79,6 +77,7 @@
 #include "third_party/blink/public/common/widget/device_emulation_params.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_replication_state.mojom.h"
+#include "third_party/blink/public/mojom/frame/remote_frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -100,6 +99,8 @@
 #include "third_party/blink/public/web/web_origin_trials.h"
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/public/web/web_performance.h"
+#include "third_party/blink/public/web/web_picture_in_picture_window_options.h"
+#include "third_party/blink/public/web/web_remote_frame.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -263,8 +264,9 @@ blink::mojom::CommitNavigationParamsPtr DummyCommitNavigationParams() {
   return params;
 }
 
-mojom::RemoteFrameInterfacesFromBrowserPtr CreateStubRemoteFrameInterfaces() {
-  auto interfaces = mojom::RemoteFrameInterfacesFromBrowser::New();
+blink::mojom::RemoteFrameInterfacesFromBrowserPtr
+CreateStubRemoteFrameInterfaces() {
+  auto interfaces = blink::mojom::RemoteFrameInterfacesFromBrowser::New();
 
   mojo::AssociatedRemote<blink::mojom::RemoteFrame> frame;
   interfaces->frame_receiver = frame.BindNewEndpointAndPassDedicatedReceiver();
@@ -276,8 +278,9 @@ mojom::RemoteFrameInterfacesFromBrowserPtr CreateStubRemoteFrameInterfaces() {
   return interfaces;
 }
 
-mojom::RemoteMainFrameInterfacesPtr CreateStubRemoteMainFrameInterfaces() {
-  auto interfaces = mojom::RemoteMainFrameInterfaces::New();
+blink::mojom::RemoteMainFrameInterfacesPtr
+CreateStubRemoteMainFrameInterfaces() {
+  auto interfaces = blink::mojom::RemoteMainFrameInterfaces::New();
 
   mojo::AssociatedRemote<blink::mojom::RemoteMainFrame> main_frame;
   interfaces->main_frame = main_frame.BindNewEndpointAndPassDedicatedReceiver();
@@ -640,7 +643,7 @@ TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
                   .is_pinch_gesture_active);
 
   // Create a new remote child, and get its proxy. Unloading will force creation
-  // and registering of a new RenderFrameProxy, which should pick up the
+  // and registering of a new WebRemoteFrame, which should pick up the
   // existing setting.
   static_cast<mojom::Frame*>(child_frame_2)
       ->Unload(/*is_loading=*/true,
@@ -974,13 +977,12 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   popup_request.SetMode(network::mojom::RequestMode::kNavigate);
   popup_request.SetRedirectMode(network::mojom::RedirectMode::kManual);
   popup_request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
-  blink::WebView* new_web_view =
-      RenderViewImpl::FromWebView(web_view_)->CreateView(
-          GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
-          blink::kWebNavigationPolicyNewForegroundTab,
-          network::mojom::WebSandboxFlags::kNone,
-          blink::AllocateSessionStorageNamespaceId(), consumed_user_gesture,
-          absl::nullopt, absl::nullopt);
+  blink::WebView* new_web_view = frame()->CreateNewWindow(
+      popup_request, blink::WebWindowFeatures(), "foo",
+      blink::kWebNavigationPolicyNewForegroundTab,
+      network::mojom::WebSandboxFlags::kNone,
+      blink::AllocateSessionStorageNamespaceId(), consumed_user_gesture,
+      absl::nullopt, absl::nullopt);
   auto popup_navigation_info = std::make_unique<blink::WebNavigationInfo>();
   popup_navigation_info->url_request = std::move(popup_request);
   popup_navigation_info->frame_type =
@@ -994,7 +996,7 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   EXPECT_TRUE(frame()->IsURLOpened());
 }
 
-// This test verifies that when device emulation is enabled, RenderFrameProxy
+// This test verifies that when device emulation is enabled, WebRemoteFrame
 // continues to receive the original ScreenInfo and not the emualted
 // ScreenInfo.
 TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
@@ -1020,14 +1022,14 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
   EXPECT_TRUE(web_frame->FirstChild()->IsWebRemoteFrame());
 
   // Verify that the system device scale factor has propagated into the
-  // RenderFrameProxy.
+  // WebRemoteFrame.
   EXPECT_EQ(device_scale, GetMainRenderFrame()->GetDeviceScaleFactor());
   EXPECT_EQ(device_scale,
             main_frame_widget()->GetOriginalScreenInfo().device_scale_factor);
 
   TestEmulatedSizeDprDsf(640, 480, 3.f, device_scale);
 
-  // Verify that the RenderFrameProxy device scale factor is still the same.
+  // Verify that the WebRemoteFrame device scale factor is still the same.
   EXPECT_EQ(3.f, GetMainRenderFrame()->GetDeviceScaleFactor());
   EXPECT_EQ(device_scale,
             main_frame_widget()->GetOriginalScreenInfo().device_scale_factor);
@@ -1143,6 +1145,7 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceScaleCorrectAfterCrossOriginNav) {
       *agent_scheduling_group_, blink::LocalFrameToken(), routing_id,
       TestRenderFrame::CreateStubFrameReceiver(),
       TestRenderFrame::CreateStubBrowserInterfaceBrokerRemote(),
+      TestRenderFrame::CreateStubAssociatedInterfaceProviderRemote(),
       /*previous_frame_token=*/remote_child_frame_token,
       /*opener_frame_token=*/absl::nullopt,
       /*parent_frame_token=*/absl::nullopt,
@@ -1150,7 +1153,7 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceScaleCorrectAfterCrossOriginNav) {
       base::UnguessableToken::Create(), blink::mojom::TreeScopeType::kDocument,
       std::move(replication_state), std::move(widget_params),
       blink::mojom::FrameOwnerProperties::New(),
-      /*has_committed_real_load=*/true, CreateStubPolicyContainer());
+      /*is_on_initial_empty_document=*/true, CreateStubPolicyContainer());
 
   TestRenderFrame* provisional_frame =
       static_cast<TestRenderFrame*>(RenderFrameImpl::FromRoutingID(routing_id));
@@ -1208,6 +1211,7 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
       *agent_scheduling_group_, blink::LocalFrameToken(), routing_id,
       TestRenderFrame::CreateStubFrameReceiver(),
       TestRenderFrame::CreateStubBrowserInterfaceBrokerRemote(),
+      TestRenderFrame::CreateStubAssociatedInterfaceProviderRemote(),
       child_remote_frame_token,
       /*opener_frame_token=*/absl::nullopt,
       /*parent_frame_token=*/web_frame->GetFrameToken(),
@@ -1215,7 +1219,7 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
       base::UnguessableToken::Create(), blink::mojom::TreeScopeType::kDocument,
       std::move(replication_state),
       /*widget_params=*/nullptr, blink::mojom::FrameOwnerProperties::New(),
-      /*has_committed_real_load=*/true, CreateStubPolicyContainer());
+      /*is_on_initial_empty_document=*/true, CreateStubPolicyContainer());
   {
     TestRenderFrame* provisional_frame = static_cast<TestRenderFrame*>(
         RenderFrameImpl::FromRoutingID(routing_id));
@@ -2846,7 +2850,7 @@ TEST_F(RenderViewImplScaleFactorTest, PreferredSizeWithScaleFactor) {
   EXPECT_EQ(gfx::Size(400 + scrollbar_width, 400), size);
 }
 
-// Ensure the RenderViewImpl history list is properly updated when starting a
+// Ensure the `blink::WebView` history list is properly updated when starting a
 // new browser-initiated navigation.
 TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnNavigation) {
   blink::WebView* webview = web_view_;
@@ -2864,13 +2868,13 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnNavigation) {
   common_params->should_replace_current_entry = true;
   frame()->Navigate(std::move(common_params), std::move(commit_params));
 
-  // The current history list in RenderView is updated.
+  // The current history list in `blink::WebView` is updated.
   EXPECT_EQ(1, webview->HistoryBackListCount());
   EXPECT_EQ(2, webview->HistoryBackListCount() +
                    webview->HistoryForwardListCount() + 1);
 }
 
-// Ensure the RenderViewImpl history list is properly updated when starting a
+// Ensure the `blink::WebView` history list is properly updated when starting a
 // new history browser-initiated navigation.
 TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnHistoryNavigation) {
   blink::WebView* webview = web_view_;
@@ -2890,13 +2894,13 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnHistoryNavigation) {
   common_params->should_replace_current_entry = true;
   frame()->Navigate(std::move(common_params), std::move(commit_params));
 
-  // The current history list in RenderView is updated.
+  // The current history list in `blink::WebView` is updated.
   EXPECT_EQ(12, webview->HistoryBackListCount());
   EXPECT_EQ(25, webview->HistoryBackListCount() +
                     webview->HistoryForwardListCount() + 1);
 }
 
-// Ensure the RenderViewImpl history list is properly updated when starting a
+// Ensure the `blink::WebView` history list is properly updated when starting a
 // new history browser-initiated navigation with should_clear_history_list
 TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnShouldClearHistoryList) {
   blink::WebView* webview = web_view_;
@@ -2912,7 +2916,7 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnShouldClearHistoryList) {
   frame()->Navigate(blink::CreateCommonNavigationParams(),
                     std::move(commit_params));
 
-  // The current history list in RenderView is updated.
+  // The current history list in `blink::WebView` is updated.
   EXPECT_EQ(0, webview->HistoryBackListCount());
   EXPECT_EQ(1, webview->HistoryBackListCount() +
                    webview->HistoryForwardListCount() + 1);

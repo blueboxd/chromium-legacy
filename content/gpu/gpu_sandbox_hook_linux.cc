@@ -45,7 +45,10 @@ namespace content {
 namespace {
 
 inline bool IsChromeOS() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // TODO(b/206464999): for now, we're making the LaCrOS and Ash GPU sandboxes
+  // behave similarly. However, the LaCrOS GPU sandbox could probably be made
+  // tighter.
+#if BUILDFLAG(IS_CHROMEOS)
   return true;
 #else
   return false;
@@ -77,6 +80,7 @@ inline bool UseV4L2Codec() {
 }
 
 inline bool UseLibV4L2() {
+  // TODO(b/240881905): for LaCrOS, this will need to be determined at runtime.
 #if BUILDFLAG(USE_LIBV4L2)
   return true;
 #else
@@ -84,7 +88,7 @@ inline bool UseLibV4L2() {
 #endif
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(__aarch64__)
+#if BUILDFLAG(IS_CHROMEOS) && defined(__aarch64__)
 static const char kLibGlesPath[] = "/usr/lib64/libGLESv2.so.2";
 static const char kLibEglPath[] = "/usr/lib64/libEGL.so.1";
 static const char kLibMaliPath[] = "/usr/lib64/libmali.so";
@@ -283,13 +287,9 @@ void AddIntelGpuPermissions(std::vector<BrokerFilePermission>* permissions) {
 }
 
 void AddArmGpuPermissions(std::vector<BrokerFilePermission>* permissions) {
-  // On ARM we're enabling the sandbox before the X connection is made,
-  // so we need to allow access to |.Xauthority|.
-  static const char kXAuthorityPath[] = "/home/chronos/.Xauthority";
   static const char kLdSoCache[] = "/etc/ld.so.cache";
 
   // Files needed by the ARM GPU userspace.
-  permissions->push_back(BrokerFilePermission::ReadOnly(kXAuthorityPath));
   permissions->push_back(BrokerFilePermission::ReadOnly(kLdSoCache));
   permissions->push_back(BrokerFilePermission::ReadOnly(kLibGlesPath));
   permissions->push_back(BrokerFilePermission::ReadOnly(kLibEglPath));

@@ -27,9 +27,8 @@
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
+#include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -117,10 +116,9 @@ class CrostiniInstallerTest : public testing::Test {
     browser_part_.InitializeCrosComponentManager(component_manager_);
 
     chromeos::DlcserviceClient::InitializeFake();
-    chromeos::DBusThreadManager::Initialize();
     ash::ChunneldClient::InitializeFake();
     ash::CiceroneClient::InitializeFake();
-    chromeos::DebugDaemonClient::InitializeFake();
+    ash::DebugDaemonClient::InitializeFake();
     SetOSRelease();
     waiting_fake_concierge_client_ =
         new WaitingFakeConciergeClient(ash::FakeCiceroneClient::Get());
@@ -155,11 +153,10 @@ class CrostiniInstallerTest : public testing::Test {
 
     ash::disks::MockDiskMountManager::Shutdown();
     ash::SeneschalClient::Shutdown();
-    chromeos::DebugDaemonClient::Shutdown();
+    ash::DebugDaemonClient::Shutdown();
     ash::ConciergeClient::Shutdown();
     ash::CiceroneClient::Shutdown();
     ash::ChunneldClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
     chromeos::DlcserviceClient::Shutdown();
 
     browser_part_.ShutdownCrosComponentManager();

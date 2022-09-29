@@ -17,32 +17,6 @@ const base::Feature kRunOnMainThread{"RunOnMainThread",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if !BUILDFLAG(IS_ANDROID)
-const base::Feature kUrgentDiscardingFromPerformanceManager {
-  "UrgentDiscardingFromPerformanceManager",
-// Ash Chrome uses memory pressure evaluator instead of performance manager to
-// discard tabs.
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_LINUX)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
-
-UrgentDiscardingParams::UrgentDiscardingParams() = default;
-UrgentDiscardingParams::UrgentDiscardingParams(
-    const UrgentDiscardingParams& rhs) = default;
-UrgentDiscardingParams::~UrgentDiscardingParams() = default;
-
-constexpr base::FeatureParam<int> UrgentDiscardingParams::kDiscardStrategy;
-
-// static
-UrgentDiscardingParams UrgentDiscardingParams::GetParams() {
-  UrgentDiscardingParams params = {};
-  params.discard_strategy_ = static_cast<DiscardStrategy>(
-      UrgentDiscardingParams::kDiscardStrategy.Get());
-  return params;
-}
-
 const base::Feature kBackgroundTabLoadingFromPerformanceManager{
     "BackgroundTabLoadingFromPerformanceManager",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -54,7 +28,10 @@ const base::Feature kBatterySaverModeAvailable{
     "BatterySaverModeAvailable", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::FeatureParam<base::TimeDelta> kHighEfficiencyModeTimeBeforeDiscard{
-    &kHighEfficiencyModeAvailable, "time_before_discard", base::Minutes(5)};
+    &kHighEfficiencyModeAvailable, "time_before_discard", base::Hours(2)};
+
+extern const base::FeatureParam<bool> kHighEfficiencyModeDefaultState{
+    &kHighEfficiencyModeAvailable, "default_state", false};
 #endif
 
 const base::Feature kBFCachePerformanceManagerPolicy{

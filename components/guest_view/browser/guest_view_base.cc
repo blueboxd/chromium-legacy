@@ -11,23 +11,18 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/common/guest_view_constants.h"
-#include "components/zoom/page_zoom.h"
 #include "components/zoom/zoom_controller.h"
-#include "content/public/browser/color_chooser.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/url_constants.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 
@@ -326,13 +321,6 @@ void GuestViewBase::SetSize(const SetSizeParams& params) {
 }
 
 // static
-void GuestViewBase::CleanUp(content::BrowserContext* browser_context,
-                            int embedder_process_id,
-                            int view_instance_id) {
-  // TODO(paulmeyer): Add in any general GuestView cleanup work here.
-}
-
-// static
 GuestViewBase* GuestViewBase::FromWebContents(const WebContents* web_contents) {
   WebContentsGuestViewMap* guest_map = g_webcontents_guestview_map.Pointer();
   auto it = guest_map->find(web_contents);
@@ -418,10 +406,6 @@ const GURL& GuestViewBase::GetOwnerSiteURL() const {
       ->GetPrimaryMainFrame()
       ->GetSiteInstance()
       ->GetSiteURL();
-}
-
-bool GuestViewBase::ShouldDestroyOnDetach() const {
-  return false;
 }
 
 void GuestViewBase::Destroy(bool also_delete) {
@@ -523,7 +507,7 @@ void GuestViewBase::WillAttach(
   // Since this inner WebContents is created from the browser side we do
   // not have RemoteFrame mojo channels so we pass in
   // NullAssociatedRemote/Receivers. New channels will be bound when the
-  // `CreateFrameProxy` IPC is sent.
+  // `CreateView` IPC is sent.
   owner_web_contents_->AttachInnerWebContents(
       base::WrapUnique<WebContents>(web_contents()), outer_contents_frame,
       /*remote_frame=*/mojo::NullAssociatedRemote(),
@@ -920,6 +904,11 @@ void GuestViewBase::SetOwnerHost() {
 
 bool GuestViewBase::CanBeEmbeddedInsideCrossProcessFrames() const {
   return false;
+}
+
+content::RenderFrameHost* GuestViewBase::GetGuestMainFrame() const {
+  // TODO(crbug/1261928): Migrate the implementation for MPArch.
+  return web_contents()->GetPrimaryMainFrame();
 }
 
 }  // namespace guest_view

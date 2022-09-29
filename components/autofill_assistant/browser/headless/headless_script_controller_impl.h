@@ -11,21 +11,30 @@
 
 #include "base/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
-#include "components/autofill_assistant/browser/autofill_assistant_impl.h"
-#include "components/autofill_assistant/browser/controller.h"
-#include "components/autofill_assistant/browser/controller_observer.h"
-#include "components/autofill_assistant/browser/execution_delegate.h"
-#include "components/autofill_assistant/browser/headless/client_headless.h"
+#include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/metrics.h"
-#include "components/autofill_assistant/browser/script_executor_ui_delegate.h"
+#include "components/autofill_assistant/browser/public/headless_script_controller.h"
+#include "url/gurl.h"
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 namespace autofill_assistant {
 
+class ClientHeadless;
+class Service;
+class Starter;
+class WebController;
+class TriggerContext;
+class HeadlessScriptControllerImplTest;
+
 class HeadlessScriptControllerImpl : public HeadlessScriptController {
  public:
-  HeadlessScriptControllerImpl(
-      content::WebContents* web_contents,
-      ExternalActionDelegate* action_extension_delegate);
+  // |starter| must outlive this instance.
+  HeadlessScriptControllerImpl(content::WebContents* web_contents,
+                               Starter* starter,
+                               std::unique_ptr<ClientHeadless> client);
 
   HeadlessScriptControllerImpl(const HeadlessScriptControllerImpl&) = delete;
   HeadlessScriptControllerImpl& operator=(const HeadlessScriptControllerImpl&) =
@@ -37,20 +46,41 @@ class HeadlessScriptControllerImpl : public HeadlessScriptController {
   void StartScript(
       const base::flat_map<std::string, std::string>& script_parameters,
       base::OnceCallback<void(ScriptResult)> script_ended_callback) override;
+  void StartScript(
+      const base::flat_map<std::string, std::string>& script_parameters,
+      base::OnceCallback<void(ScriptResult)> script_ended_callback,
+      bool use_autofill_assistant_onboarding,
+      base::OnceCallback<void()> onboarding_successful_callback) override;
+
+ private:
+  friend HeadlessScriptControllerImplTest;
+
+  void StartScript(
+      const base::flat_map<std::string, std::string>& script_parameters,
+      base::OnceCallback<void(ScriptResult)> script_ended_callback,
+      bool use_autofill_assistant_onboarding,
+      base::OnceCallback<void()> onboarding_successful_callback,
+      std::unique_ptr<Service> service,
+      std::unique_ptr<WebController> web_controller);
+
+  void OnReadyToStart(std::unique_ptr<Service> service,
+                      std::unique_ptr<WebController> web_controller,
+                      bool can_start,
+                      absl::optional<GURL> url,
+                      std::unique_ptr<TriggerContext> trigger_context);
 
   // Notifies the external caller that the script has ended. Note that the
   // external caller can decide to destroy this instance once it has been
   // notified so this method should not be called directly to avoid UAF issues.
   void NotifyScriptEnded(Metrics::DropOutReason reason);
 
- private:
-  void OnReadyToStart(bool can_start,
-                      absl::optional<GURL> url,
-                      std::unique_ptr<TriggerContext> trigger_context);
   raw_ptr<content::WebContents> web_contents_;
+  raw_ptr<Starter> starter_;
   std::unique_ptr<ClientHeadless> client_;
 
   base::OnceCallback<void(ScriptResult)> script_ended_callback_;
+
+  base::OnceCallback<void()> onboarding_successful_callback_;
 
   base::WeakPtrFactory<HeadlessScriptControllerImpl> weak_ptr_factory_{this};
 };

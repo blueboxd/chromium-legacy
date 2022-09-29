@@ -459,8 +459,7 @@ def _AttributeListToDict(module, attribute_list):
   for attribute in attribute_list:
     if attribute.key in attributes:
       raise Exception("Duplicate key (%s) in attribute list" % attribute.key)
-    else:
-      attributes[attribute.key] = _MapValueToEnum(module, attribute.value)
+    attributes[attribute.key] = _MapValueToEnum(module, attribute.value)
   return attributes
 
 
@@ -577,7 +576,11 @@ def _Kind(kinds, spec, scope):
     return kind
 
   if spec.startswith('?'):
-    kind = _Kind(kinds, spec[1:], scope).MakeNullableKind()
+    kind = _Kind(kinds, spec[1:], scope)
+    if not mojom.IsReferenceKind(kind):
+      raise Exception('Unknown spec: %s. Check for missing imports.' % spec)
+
+    kind = kind.MakeNullableKind()
   elif spec.startswith('a:'):
     kind = mojom.Array(_Kind(kinds, spec[2:], scope))
   elif spec.startswith('asso:'):

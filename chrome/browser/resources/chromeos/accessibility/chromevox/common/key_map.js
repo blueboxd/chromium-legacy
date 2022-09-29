@@ -19,6 +19,8 @@
  * To retrieve static data about user commands, see both CommandStore and
  * UserCommands.
  */
+import {KeyCode} from '../../common/key_code.js';
+
 import {KeySequence} from './key_sequence.js';
 
 export class KeyMap {
@@ -57,9 +59,7 @@ export class KeyMap {
    * @return {Array<KeySequence>} Array of all keys.
    */
   keys() {
-    return this.bindings_.map(function(binding) {
-      return binding.sequence;
-    });
+    return this.bindings_.map(binding => binding.sequence);
   }
 
   /**

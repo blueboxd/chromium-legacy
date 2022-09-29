@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">ڈاؤن لوڈ موقوف ہوگیا</translation>
 <translation id="1409426117486808224">کھلے ٹیبز کیلئے سادہ منظر</translation>
 <translation id="1415402041810619267">‏URL کو چھوٹا کیا گیا</translation>
+<translation id="1426410128494586442">ہاں</translation>
 <translation id="1446450296470737166">‏MIDI آلات کے مکمل کنٹرول کی اجازت دیں</translation>
 <translation id="1620510694547887537">کیمرا</translation>
 <translation id="1644574205037202324">سرگزشت</translation>
@@ -32,6 +33,7 @@
 <translation id="1818308510395330587">‏<ph name="APP_NAME" /> کو AR کا استعمال کرنے دینے کے لیے، <ph name="BEGIN_LINK" />Android ترتیبات<ph name="END_LINK" /> میں بھی کیمرا آن کریں۔</translation>
 <translation id="1864927262126810325"><ph name="SOURCE_NAME" /> سے</translation>
 <translation id="1887786770086287077">‏مقام کی رسائی اس آلہ کے لیے آف ہے۔ <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" />.میں اسے آن کریں۔</translation>
+<translation id="1915307458270490472">کال منقطع کریں</translation>
 <translation id="1919345977826869612">اشتہارات</translation>
 <translation id="1919950603503897840">رابطے منتخب کریں</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -78,6 +80,7 @@
 <translation id="2677748264148917807">چھوڑیں</translation>
 <translation id="2687403674020088961">سبھی کوکیز مسدود کریں (تجویز نہیں کی جاتی ہے)</translation>
 <translation id="2704606927547763573">کاپی کیا</translation>
+<translation id="2713106313042589954">کیمرا آف کریں</translation>
 <translation id="2717722538473713889">ای میل پتے</translation>
 <translation id="2750481671343847896">سائٹس شناختی سروسز سے سائن ان پرامپٹس دکھا سکتی ہیں۔</translation>
 <translation id="2785051990912111074">یہ انتخاب <ph name="WEBSITE" /> کے لیے کوکیز کو صاف کرے گا</translation>
@@ -97,6 +100,7 @@
 <translation id="3114012059975132928">ویڈیو پلیئر</translation>
 <translation id="3115898365077584848">معلومات دکھائیں</translation>
 <translation id="3123473560110926937">بعض سائٹس پر مسدود ہے</translation>
+<translation id="3143754809889689516">شروع سے چلائیں</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> اسٹور کردہ ڈیٹا</translation>
 <translation id="3203366800380907218">ویب سے</translation>
 <translation id="321187648315454507">‏<ph name="APP_NAME" /> کو آپ کو اطلاعات بھیجنے کی سہولت دینے کے لیے، <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" /> میں بھی اطلاعات آن کریں۔</translation>
@@ -153,6 +157,7 @@
 <translation id="4479647676395637221">سائٹس کو آپ کا کیمرا استعمال کرنے کی اجازت دینے سے پہلے پوچھیں (تجویز کردہ)</translation>
 <translation id="4505788138578415521">‏URL کو پھیلا دیا گیا</translation>
 <translation id="4534723447064627427">‏<ph name="APP_NAME" /> کو اپنے مائیکروفون تک رسائی دینے کے لیے، <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" /> میں بھی مائیکروفون آن کریں۔</translation>
+<translation id="4566417217121906555">مائیکروفون کو خاموش کریں</translation>
 <translation id="4570913071927164677">تفاصیل</translation>
 <translation id="4645575059429386691">آپ کے والدین کے زیر انتظام</translation>
 <translation id="4670064810192446073">ورچوئل رئیلٹی</translation>
@@ -177,6 +182,7 @@
 <translation id="5186036860380548585">اسکرین کے اوپری حصہ کے قریب اختیار دستیاب ہے</translation>
 <translation id="5197729504361054390">آپ کے منتخب کردہ رابطوں کا <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> کے ساتھ اشتراک کیا جائے گا۔</translation>
 <translation id="5216942107514965959">آخری بار آج ملاحظہ کیا گیا</translation>
+<translation id="5225463052809312700">کیمرا آن کریں</translation>
 <translation id="5264323282659631142">’<ph name="CHIP_LABEL" />‘ ہٹائیں</translation>
 <translation id="528192093759286357">پوری اسکرین سے باہر نکلنے کیلئے اوپر سے گھسیٹیں اور پیچھے جائیں بٹن کو ٹچ کریں۔</translation>
 <translation id="5300589172476337783">دکھائیں</translation>
@@ -235,8 +241,10 @@
 <translation id="6367753977865761591">کسی مخصوص سائٹ کیلئے فریق ثالث سائن ان کو مسدود کریں۔</translation>
 <translation id="6388207532828177975">صاف کریں اور ری سیٹ کریں</translation>
 <translation id="6398765197997659313">پوری سکرین سے خارج ہوں</translation>
+<translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">سائٹس کو اپنا ورچوئل ریئلٹی آلہ اور ڈیٹا استعمال کرنے سے مسدود کریں</translation>
 <translation id="6447842834002726250">کوکیز</translation>
+<translation id="6467852467360539617">ڈیٹا صاف کریں اور اجازتیں دوبارہ ترتیب دیں</translation>
 <translation id="6527303717912515753">اشتراک کریں</translation>
 <translation id="6545864417968258051">بلوٹوتھ اسکیننگ</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />، <ph name="PERMISSION_2" /> اور <ph name="NUM_MORE" /> مزید کو مسدود کیا گیا}other{<ph name="PERMISSION_1" />، <ph name="PERMISSION_2" /> اور <ph name="NUM_MORE" /> مزید کو مسدود کیا گیا}}</translation>
@@ -276,6 +284,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> منتخب ہو گئے</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> اور <ph name="PERMISSION_2" /> کی اجازت دی گئی</translation>
 <translation id="7302486331832100261">آپ عام طور پر اطلاعات کو مسدود کرتے ہیں۔ اجازت دینے کے لیے، تفصیلات پر تھپتھپائیں۔</translation>
+<translation id="7383715096023715447"><ph name="DOMAIN" /> کیلئے ترتیبات</translation>
 <translation id="7423098979219808738">پہلے پوچھیں</translation>
 <translation id="7423538860840206698">کلپ بورڈ پڑھنے سے مسدود کیا گیا</translation>
 <translation id="7425915948813553151">سائٹس کیلئے گہری تھیم</translation>
@@ -335,6 +344,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 زیر استعمال کوکی}other{# زیر استعمال کوکیز}}</translation>
 <translation id="8487700953926739672">آف لائن دستیاب ہے</translation>
 <translation id="848952951823693243">ہمیشہ موبائل سائٹ کی درخواست کریں</translation>
+<translation id="8499083585497694743">مائیکروفون کی آواز چالو کریں</translation>
 <translation id="851751545965956758">سائٹس کو آلات سے منسلک ہونے سے مسدود کریں</translation>
 <translation id="8525306231823319788">پوری اسکرین</translation>
 <translation id="857943718398505171">اجازت یافتہ (تجویز کردہ)</translation>

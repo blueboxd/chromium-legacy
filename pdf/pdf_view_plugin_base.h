@@ -26,11 +26,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace blink {
-class WebInputEvent;
-struct WebPrintPresetOptions;
-}  // namespace blink
-
 namespace gfx {
 class PointF;
 class Vector2d;
@@ -41,8 +36,6 @@ namespace chrome_pdf {
 
 class PDFiumEngine;
 class PaintReadyRect;
-class Thumbnail;
-struct AccessibilityActionData;
 struct AccessibilityCharInfo;
 struct AccessibilityDocInfo;
 struct AccessibilityPageInfo;
@@ -87,15 +80,11 @@ class PdfViewPluginBase : public PDFEngine::Client,
                              const float* y,
                              const float* zoom) override;
   void NotifyTouchSelectionOccurred() override;
-  void GetDocumentPassword(
-      base::OnceCallback<void(const std::string&)> callback) override;
-  void Beep() override;
   void Email(const std::string& to,
              const std::string& cc,
              const std::string& bcc,
              const std::string& subject,
              const std::string& body) override;
-  void Print() override;
   void DocumentLoadComplete() override;
   void DocumentLoadFailed() override;
   void DocumentLoadProgress(uint32_t available, uint32_t doc_size) override;
@@ -103,18 +92,11 @@ class PdfViewPluginBase : public PDFEngine::Client,
   void SetIsSelecting(bool is_selecting) override;
   void SelectionChanged(const gfx::Rect& left, const gfx::Rect& right) override;
   void DocumentFocusChanged(bool document_has_focus) override;
-  void SetLinkUnderCursor(const std::string& link_under_cursor) override;
 
   // PaintManager::Client:
   void OnPaint(const std::vector<gfx::Rect>& paint_rects,
                std::vector<PaintReadyRect>& ready,
                std::vector<gfx::Rect>& pending) override;
-
-  // Enable accessibility for PDF plugin.
-  void EnableAccessibility();
-
-  // Handle invoked accessibility actions.
-  void HandleAccessibilityAction(const AccessibilityActionData& action_data);
 
   // Gets the content restrictions based on the permissions which `engine_` has.
   int GetContentRestrictions() const;
@@ -153,8 +135,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Runs when document load completes.
   virtual void OnDocumentLoadComplete() = 0;
 
-  bool HandleInputEvent(const blink::WebInputEvent& event);
-
   // Enqueues a "message" event carrying `message` to the embedder. Messages are
   // guaranteed to be received in the order that they are sent. This method is
   // non-blocking.
@@ -163,9 +143,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Sends the loading progress, where `percentage` represents the progress, or
   // -1 for loading error.
   void SendLoadingProgress(double percentage);
-
-  // Send a notification that the print preview has loaded.
-  void SendPrintPreviewLoadedNotification();
 
   // Schedules invalidation tasks after painting finishes.
   void InvalidateAfterPaintDone();
@@ -186,11 +163,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // device scale
   int GetDocumentPixelWidth() const;
   int GetDocumentPixelHeight() const;
-
-  // Common `pdf::mojom::PdfListener` implementations.
-  void SetCaretPosition(const gfx::PointF& position);
-  void MoveRangeSelectionExtent(const gfx::PointF& extent);
-  void SetSelectionBounds(const gfx::PointF& base, const gfx::PointF& extent);
 
   // Sets the text input type for this plugin based on `in_focus`.
   virtual void SetFormTextFieldInFocus(bool in_focus) = 0;
@@ -220,22 +192,10 @@ class PdfViewPluginBase : public PDFEngine::Client,
   virtual void SetAccessibilityViewportInfo(
       AccessibilityViewportInfo viewport_info) = 0;
 
-  // Returns the print preset options for the document.
-  blink::WebPrintPresetOptions GetPrintPresetOptions();
-
-  // Begins a print session with the given `print_params`. A call to
-  // `PrintPages()` can only be made after after a successful call to
-  // `PrintBegin()`. Returns the number of pages required for the print output.
-  // A returned value of 0 indicates failure.
-  int PrintBegin(const blink::WebPrintParams& print_params);
-
   // Prints the pages specified by `page_numbers` using the parameters passed to
   // `PrintBegin()` Returns a vector of bytes containing the printed output. An
   // empty returned value indicates failure.
   std::vector<uint8_t> PrintPages(const std::vector<int>& page_numbers);
-
-  // Ends the print session. Further calls to `PrintPages()` will fail.
-  void PrintEnd();
 
   // Disables browser commands because of restrictions on how the data is to be
   // used (i.e. can't copy/print). `content_restrictions` should have its bits
@@ -245,10 +205,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Sends start/stop loading notifications to the plugin's render frame.
   virtual void DidStartLoading() = 0;
   virtual void DidStopLoading() = 0;
-
-  // Requests the plugin's render frame to set up a print dialog for the
-  // document.
-  virtual void InvokePrintDialog() = 0;
 
   // Notifies the embedder of the top-left and bottom-right coordinates of the
   // current selection.
@@ -261,8 +217,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   virtual void UserMetricsRecordAction(const std::string& action) = 0;
 
   PaintManager& paint_manager() { return paint_manager_; }
-
-  const std::string& link_under_cursor() const { return link_under_cursor_; }
 
   SkBitmap& image_data() { return image_data_; }
 
@@ -306,6 +260,10 @@ class PdfViewPluginBase : public PDFEngine::Client,
     return accessibility_state_;
   }
 
+  void set_accessibility_state(AccessibilityState state) {
+    accessibility_state_ = state;
+  }
+
   static constexpr bool IsSaveDataSizeValid(size_t size) {
     return size > 0 && size <= kMaximumSavedFileSize;
   }
@@ -315,21 +273,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // top-left corner).
   gfx::PointF GetScrollPositionFromOffset(
       const gfx::Vector2dF& scroll_offset) const;
-
-  // Message handlers.
-  void HandleDisplayAnnotationsMessage(const base::Value::Dict& message);
-  void HandleGetNamedDestinationMessage(const base::Value::Dict& message);
-  void HandleGetPasswordCompleteMessage(const base::Value::Dict& message);
-  void HandleGetSelectedTextMessage(const base::Value::Dict& message);
-  void HandleGetThumbnailMessage(const base::Value::Dict& message);
-  void HandlePrintMessage(const base::Value::Dict& /*message*/);
-  void HandleRotateClockwiseMessage(const base::Value::Dict& /*message*/);
-  void HandleRotateCounterclockwiseMessage(
-      const base::Value::Dict& /*message*/);
-  void HandleSaveAttachmentMessage(const base::Value::Dict& message);
-  void HandleSelectAllMessage(const base::Value::Dict& /*message*/);
-  void HandleSetPresentationModeMessage(const base::Value::Dict& message);
-  void HandleSetTwoUpViewMessage(const base::Value::Dict& message);
 
   // Paints the given invalid area of the plugin to the given graphics device.
   // PaintManager::Client::OnPaint() should be its only caller.
@@ -344,9 +287,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Callback to clear deferred invalidates after painting finishes.
   void ClearDeferredInvalidates();
 
-  // Sends the thumbnail image data.
-  void SendThumbnail(base::Value::Dict reply, Thumbnail thumbnail);
-
   // Starts loading accessibility information.
   void LoadAccessibility();
 
@@ -358,9 +298,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // `PdfViewWebPlugin`, so all methods should be protected or public.
 
   PaintManager paint_manager_{this};
-
-  // The URL currently under the cursor.
-  std::string link_under_cursor_;
 
   // Image data buffer for painting.
   SkBitmap image_data_;
@@ -384,9 +321,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Whether OnPaint() is in progress or not.
   bool in_paint_ = false;
 
-  // The callback for receiving the password from the page.
-  base::OnceCallback<void(const std::string&)> password_callback_;
-
   // The last document load progress value sent to the web page.
   double last_progress_sent_ = 0.0;
 
@@ -399,12 +333,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // The next accessibility page index, used to track interprocess calls when
   // reconstructing the tree for new document layouts.
   int32_t next_accessibility_page_index_ = 0;
-
-  // Assigned a value only between `PrintBegin()` and `PrintEnd()` calls.
-  absl::optional<blink::WebPrintParams> print_params_;
-
-  // For identifying actual print operations to avoid double logging of UMA.
-  bool print_pages_called_;
 };
 
 }  // namespace chrome_pdf

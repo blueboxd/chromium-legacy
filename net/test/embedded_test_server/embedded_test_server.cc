@@ -35,7 +35,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/port_util.h"
 #include "net/cert/pki/extended_key_usage.h"
-#include "net/cert/test_root_certs.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_server_socket.h"
@@ -284,7 +283,7 @@ EmbeddedTestServer::EmbeddedTestServer(Type type,
 
   if (!is_using_ssl_)
     return;
-  RegisterTestCerts();
+  scoped_test_root_ = RegisterTestCerts();
 }
 
 EmbeddedTestServer::~EmbeddedTestServer() {
@@ -299,12 +298,12 @@ EmbeddedTestServer::~EmbeddedTestServer() {
   }
 }
 
-void EmbeddedTestServer::RegisterTestCerts() {
+ScopedTestRoot EmbeddedTestServer::RegisterTestCerts() {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  TestRootCerts* root_certs = TestRootCerts::GetInstance();
-  bool added_root_certs = root_certs->AddFromFile(GetRootCertPemPath());
-  DCHECK(added_root_certs)
-      << "Failed to install root cert from EmbeddedTestServer";
+  auto root = ImportCertFromFile(GetRootCertPemPath());
+  if (!root)
+    return ScopedTestRoot();
+  return ScopedTestRoot(root.get());
 }
 
 void EmbeddedTestServer::SetConnectionListener(
@@ -428,6 +427,16 @@ bool EmbeddedTestServer::GenerateCertAndKey() {
 
     leaf = CertBuilder::FromFile(certs_dir.AppendASCII("ok_cert.pem"),
                                  intermediate.get());
+    // Workaround for weird CertVerifyProcWin issue where if too many
+    // intermediates with the same key are fetched by AIA any further
+    // verifications using that key will fail. See
+    // https://crbug.com/1328060. Since generating ECDSA keys is cheap, just do
+    // this on all configurations rather than restricting to Windows, though
+    // this hack can be removed once we delete CertVerifyProcWin.
+    if (cert_config_.intermediate == IntermediateType::kByAIA) {
+      intermediate->GenerateECKey();
+      leaf->SetSignatureAlgorithm(SignatureAlgorithm::kEcdsaSha256);
+    }
   } else {
     leaf = CertBuilder::FromFile(certs_dir.AppendASCII("ok_cert.pem"),
                                  static_root.get());

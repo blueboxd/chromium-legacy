@@ -138,43 +138,42 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Scheduler.TaskQueueImpl.DelayedIncomingQueueSize"
+    units="tasks" expires_after="2023-02-12">
+  <owner>yafroze@google.com</owner>
+  <owner>pmonette@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    The size of the |delayed_incoming_queue|.
+
+    This is emitted pseudorandomly when a delayed task is enqueued on the
+    SequenceManager's main thread.
+
+    Note: This metric merges from all named threads.
+  </summary>
+</histogram>
+
+<histogram name="Scheduler.TaskQueueImpl.PostDelayedTaskDelay" units="ms"
+    expires_after="2023-02-12">
+  <owner>yafroze@google.com</owner>
+  <owner>pmonette@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    The delay time for the delayed tasks posted to the sequence manager.
+
+    This is emitted pseudorandomly when a delayed task is enqueued on the
+    SequenceManager's main thread.
+
+    Note: This metric merges from all named threads.
+  </summary>
+</histogram>
+
 <histogram name="Scheduling.BeginImplFrameLatency2" units="microseconds"
     expires_after="M85">
   <owner>stanisc@chromium.org</owner>
   <summary>
     The time from v-sync to when the main side actually starts the
     BeginImplFrame.
-
-    Warning: This metric may include reports from clients with low-resolution
-    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
-    will cause this metric to have an abnormal distribution. When considering
-    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
-    solution.
-  </summary>
-</histogram>
-
-<histogram name="Scheduling.CommitToReadyToActivateDuration2"
-    units="microseconds" expires_after="M85">
-  <owner>vmiura@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
-  <summary>
-    How long it takes for the compositor to rasterize pending tree content after
-    a commit before it is ready for activation.
-
-    Warning: This metric may include reports from clients with low-resolution
-    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
-    will cause this metric to have an abnormal distribution. When considering
-    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
-    solution.
-  </summary>
-</histogram>
-
-<histogram name="Scheduling.DrawDuration2" units="microseconds"
-    expires_after="M85">
-  <owner>vmiura@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
-  <summary>
-    How long it takes the compositor to draw a frame.
 
     Warning: This metric may include reports from clients with low-resolution
     clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
@@ -215,7 +214,6 @@ chromium-metrics-reviews@google.com.
 <!-- expires-never: guiding metric (internal: go/chrome-browser-guiding-metrics) -->
 
   <owner>vmiura@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
   <summary>
@@ -256,7 +254,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Scheduling.Renderer.FrameProduction.TimeOverused"
     units="microseconds" expires_after="2022-12-18">
-  <owner>behdadb@chromium.org</owner>
+  <owner>jonross@chromium.org</owner>
   <owner>chrome-gpu-metrics@chromium.org</owner>
   <summary>
     Measures the difference in time allotted to the Renderer, by the Scheduler,
@@ -271,7 +269,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Scheduling.Renderer.FrameProduction.TimeUnused"
     units="microseconds" expires_after="2022-12-18">
-  <owner>behdadb@chromium.org</owner>
+  <owner>jonross@chromium.org</owner>
   <owner>chrome-gpu-metrics@chromium.org</owner>
   <summary>
     Measures the difference in time allotted to the Renderer, by the Scheduler,

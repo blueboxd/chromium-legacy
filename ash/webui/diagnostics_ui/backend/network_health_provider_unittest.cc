@@ -12,6 +12,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "chromeos/ash/components/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_cert_loader.h"
 #include "chromeos/ash/components/network/network_device_handler.h"
@@ -21,7 +22,6 @@
 #include "chromeos/ash/components/network/network_type_pattern.h"
 #include "chromeos/ash/components/network/onc/network_onc_utils.h"
 #include "chromeos/ash/components/network/system_token_cert_db_storage.h"
-#include "chromeos/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/services/network_config/cros_network_config.h"
 #include "chromeos/services/network_config/in_process_instance.h"
@@ -277,9 +277,9 @@ class NetworkHealthProviderTest : public testing::Test {
   }
 
   void SetDeviceState(const std::string& type, bool enabled) {
-    chromeos::NetworkTypePattern pattern = type == shill::kTypeEthernet
-                                               ? NetworkTypePattern::Ethernet()
-                                               : NetworkTypePattern::WiFi();
+    NetworkTypePattern pattern = type == shill::kTypeEthernet
+                                     ? NetworkTypePattern::Ethernet()
+                                     : NetworkTypePattern::WiFi();
     NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
         pattern, enabled, network_handler::ErrorCallback());
     base::RunLoop().RunUntilIdle();
@@ -417,28 +417,28 @@ class NetworkHealthProviderTest : public testing::Test {
   }
 
   void SetGatewayForIPConfig(const std::string& gateway) {
-    chromeos::ShillIPConfigClient::Get()->SetProperty(
+    ShillIPConfigClient::Get()->SetProperty(
         dbus::ObjectPath(kTestIPConfigPath), shill::kGatewayProperty,
         base::Value(gateway), base::DoNothing());
     base::RunLoop().RunUntilIdle();
   }
 
   void SetIPAddressForIPConfig(const std::string& ip_address) {
-    chromeos::ShillIPConfigClient::Get()->SetProperty(
+    ShillIPConfigClient::Get()->SetProperty(
         dbus::ObjectPath(kTestIPConfigPath), shill::kAddressProperty,
         base::Value(ip_address), base::DoNothing());
     base::RunLoop().RunUntilIdle();
   }
 
   void SetNameServersForIPConfig(const base::ListValue& dns_servers) {
-    chromeos::ShillIPConfigClient::Get()->SetProperty(
-        dbus::ObjectPath(kTestIPConfigPath), shill::kNameServersProperty,
-        dns_servers, base::DoNothing());
+    ShillIPConfigClient::Get()->SetProperty(dbus::ObjectPath(kTestIPConfigPath),
+                                            shill::kNameServersProperty,
+                                            dns_servers, base::DoNothing());
     base::RunLoop().RunUntilIdle();
   }
 
   void SetRoutingPrefixForIPConfig(int routing_prefix) {
-    chromeos::ShillIPConfigClient::Get()->SetProperty(
+    ShillIPConfigClient::Get()->SetProperty(
         dbus::ObjectPath(kTestIPConfigPath), shill::kPrefixlenProperty,
         base::Value(routing_prefix), base::DoNothing());
     base::RunLoop().RunUntilIdle();
@@ -876,7 +876,7 @@ TEST_F(NetworkHealthProviderTest, ChangingWifiProperties) {
 
   // Enable security as WEP_8021x.
   mojom::SecurityType security_2 = mojom::SecurityType::kWep8021x;
-  SetWifiSecurity(shill::kSecurityWep, shill::kKeyManagementIEEE8021X);
+  SetWifiSecurity(shill::kSecurityClassWep, shill::kKeyManagementIEEE8021X);
   EXPECT_EQ(observer.GetLatestState()->type_properties->get_wifi()->security,
             security_2);
 
@@ -1256,31 +1256,31 @@ TEST_F(NetworkHealthProviderTest, SetupWifiNetworkWithSecurity) {
             mojom::SecurityType::kNone);
 
   // Enable security as WEP_8021x.
-  SetWifiSecurity(shill::kSecurityWep, shill::kKeyManagementIEEE8021X);
+  SetWifiSecurity(shill::kSecurityClassWep, shill::kKeyManagementIEEE8021X);
   EXPECT_EQ(observer.GetLatestState()->type_properties->get_wifi()->security,
             mojom::SecurityType::kWep8021x);
   ExpectStateObserverFired(observer, &state_call_count);
 
   // Enable security as WEP_PSK.
-  SetWifiSecurity(shill::kSecurityWep, std::string());
+  SetWifiSecurity(shill::kSecurityClassWep, std::string());
   EXPECT_EQ(observer.GetLatestState()->type_properties->get_wifi()->security,
             mojom::SecurityType::kWepPsk);
   ExpectStateObserverFired(observer, &state_call_count);
 
   // Enable security as WPA_EAP.
-  SetWifiSecurity(shill::kSecurity8021x);
+  SetWifiSecurity(shill::kSecurityClass8021x);
   EXPECT_EQ(observer.GetLatestState()->type_properties->get_wifi()->security,
             mojom::SecurityType::kWpaEap);
   ExpectStateObserverFired(observer, &state_call_count);
 
   // Enable security as WPA_PSK.
-  SetWifiSecurity(shill::kSecurityPsk);
+  SetWifiSecurity(shill::kSecurityClassPsk);
   EXPECT_EQ(observer.GetLatestState()->type_properties->get_wifi()->security,
             mojom::SecurityType::kWpaPsk);
   ExpectStateObserverFired(observer, &state_call_count);
 
   // Enable security as NONE.
-  SetWifiSecurity(shill::kSecurityNone);
+  SetWifiSecurity(shill::kSecurityClassNone);
   EXPECT_EQ(observer.GetLatestState()->type_properties->get_wifi()->security,
             mojom::SecurityType::kNone);
   ExpectStateObserverFired(observer, &state_call_count);

@@ -74,7 +74,7 @@ void AddNotification(const std::string& notification_id,
 
   message_center::MessageCenter::Get()->AddNotification(
       std::make_unique<message_center::Notification>(
-          message_center::NOTIFICATION_TYPE_BASE_FORMAT, notification_id,
+          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
           u"test-title", u"test-message", /*icon=*/ui::ImageModel(),
           /*display_source=*/std::u16string(), /*origin_url=*/GURL(),
           notifier_id, message_center::RichNotificationData(),
@@ -155,7 +155,7 @@ class FakeAppRegistryCache {
   FakeAppRegistryCache* GetAppRegistryCache(const AccountId&) { return this; }
 
   template <typename FunctionType>
-  bool ForApp(const std::string& app_id, FunctionType f) {
+  bool ForOneApp(const std::string& app_id, FunctionType f) {
     for (const std::unique_ptr<apps::AppUpdate>& app : apps_) {
       if (app_id == app->AppId()) {
         f(*app);

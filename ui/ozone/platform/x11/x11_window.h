@@ -149,7 +149,6 @@ class X11Window : public PlatformWindow,
 
   void OnXWindowStateChanged();
   void OnXWindowDamageEvent(const gfx::Rect& damage_rect);
-  void OnXWindowBoundsChanged(const gfx::Rect& size);
   void OnXWindowCloseRequested();
   void OnXWindowIsActiveChanged(bool active);
   void OnXWindowWorkspaceChanged();
@@ -241,7 +240,7 @@ class X11Window : public PlatformWindow,
 
   void SetFlashFrameHint(bool flash_frame);
   void UpdateMinAndMaxSize();
-  void DispatchResize();
+  void DispatchResize(bool origin_changed);
   void CancelResize();
 
   // Resets the window region for the current window bounds if necessary.
@@ -288,7 +287,7 @@ class X11Window : public PlatformWindow,
 
   void MaybeUpdateOcclusionState();
 
-  void DelayedResize(const gfx::Rect& bounds_in_pixels);
+  void DelayedResize(bool origin_changed);
 
   // If mapped, sends a message to the window manager to enable or disable the
   // states |state1| and |state2|.  Otherwise, the states will be enabled or
@@ -308,7 +307,7 @@ class X11Window : public PlatformWindow,
 
   void UpdateWindowRegion(std::unique_ptr<std::vector<x11::Rectangle>> region);
 
-  void NotifyBoundsChanged(const gfx::Rect& new_bounds_in_px);
+  void NotifyBoundsChanged(bool origin_changed);
 
   // Initializes as a status icon window.
   bool InitializeAsStatusIcon();
@@ -491,10 +490,14 @@ class X11Window : public PlatformWindow,
   // cross-display fullscreening, there is a Restore() (called by BrowserView)
   // that may cause configuration bounds updates that make this window appear to
   // temporarily be on a different screen than its destination screen.  This
-  // restore only happens if the window is maximized.
-  bool ignore_next_configure_ = false;
+  // restore only happens if the window is maximized. The integer represents how
+  // many events to ignore.
+  int ignore_next_configures_ = 0;
   // True between Restore() and the next OnXWindowStateChanged().
   bool restore_in_flight_ = false;
+  // True between SetBoundsInPixels (when the bounds actually change) and the
+  // next OnConfigureEvent.
+  bool bounds_change_in_flight_ = false;
 
   base::CancelableOnceClosure delayed_resize_task_;
 

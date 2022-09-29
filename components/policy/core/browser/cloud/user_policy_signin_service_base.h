@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -84,6 +85,7 @@ class POLICY_EXPORT UserPolicySigninServiceBase
 
   // CloudPolicyService::Observer implementation:
   void OnCloudPolicyServiceInitializationCompleted() override;
+  void OnPolicyRefreshed(bool success) override;
 
   // CloudPolicyClient::Observer implementation:
   void OnPolicyFetched(CloudPolicyClient* client) override;
@@ -170,6 +172,10 @@ class POLICY_EXPORT UserPolicySigninServiceBase
   }
 
  private:
+  // A getter for `policy_fetch_callbacks_` that constructs a new instance if
+  // it's null.
+  base::OnceCallbackList<void(bool)>& policy_fetch_callbacks();
+
   // Returns a CloudPolicyClient to perform a registration with the DM server,
   // or NULL if |username| shouldn't register for policy management.
   std::unique_ptr<CloudPolicyClient> CreateClientForRegistrationOnly(
@@ -182,8 +188,9 @@ class POLICY_EXPORT UserPolicySigninServiceBase
 
   // Handler to call the policy registration callback that provides the DM
   // token.
-  void CallPolicyRegistrationCallback(std::unique_ptr<CloudPolicyClient> client,
-                                      PolicyRegistrationCallback callback);
+  void CallPolicyRegistrationCallbackForTemporaryClient(
+      std::unique_ptr<CloudPolicyClient> client,
+      PolicyRegistrationCallback callback);
 
   // Fetches an OAuth token to allow the cloud policy service to register with
   // the cloud policy server. |oauth_login_token| should contain an OAuth login
@@ -205,10 +212,17 @@ class POLICY_EXPORT UserPolicySigninServiceBase
 
   signin::ConsentLevel consent_level_ = signin::ConsentLevel::kSignin;
 
+  // Callbacks to invoke upon policy fetch.
+  std::unique_ptr<base::OnceCallbackList<void(bool)>> policy_fetch_callbacks_;
+
   // Helper for registering the client to DMServer to get a DM token using a
   // cloud policy client. When there is an instance of |registration_helper_|,
   // it means that registration is ongoing. There is no registration when null.
   std::unique_ptr<CloudPolicyClientRegistrationHelper> registration_helper_;
+  // A separate helper instance for a registration only client created via
+  // `RegisterForPolicyWithAccountId()`.
+  std::unique_ptr<CloudPolicyClientRegistrationHelper>
+      registration_helper_for_temporary_client_;
 
   base::WeakPtrFactory<UserPolicySigninServiceBase> weak_factory_{this};
 

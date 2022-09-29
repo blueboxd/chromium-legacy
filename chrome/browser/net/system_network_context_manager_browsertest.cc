@@ -39,7 +39,6 @@
 #include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/net_buildflags.h"
-#include "services/cert_verifier/test_cert_verifier_service_factory.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -50,15 +49,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
-
-#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED) || \
-    BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
-#include "chrome/browser/policy/policy_test_utils.h"
-#include "components/policy/core/common/policy_map.h"
-#include "components/policy/policy_constants.h"
-#include "net/base/features.h"
-#endif  // BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED) ||
-        // BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
 
 using SystemNetworkContextManagerBrowsertest = InProcessBrowserTest;
 
@@ -71,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest,
   network::mojom::HttpAuthStaticParamsPtr static_params =
       SystemNetworkContextManager::GetHttpAuthStaticParamsForTesting();
   EXPECT_EQ("", static_params->gssapi_library_name);
-#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
   // Test that prefs are reflected in params.
 
   PrefService* local_state = g_browser_process->local_state();
@@ -81,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest,
       SystemNetworkContextManager::GetHttpAuthStaticParamsForTesting();
   EXPECT_EQ(dev_null, static_params->gssapi_library_name);
 #endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID) &&
-        // !BUILDFLAG(IS_CHROMEOS_ASH)
+        // !BUILDFLAG(IS_CHROMEOS)
 }
 
 IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
@@ -193,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
   EXPECT_TRUE(dynamic_params->patterns_allowed_to_use_all_schemes.empty());
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   // The kerberos.enabled pref is false and the device is not Active Directory
   // managed by default.
   EXPECT_FALSE(dynamic_params->allow_gssapi_library_load);
@@ -202,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
       SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting();
   EXPECT_TRUE(dynamic_params->allow_gssapi_library_load);
   EXPECT_TRUE(dynamic_params->patterns_allowed_to_use_all_schemes.empty());
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   base::Value patterns_allowed_to_use_all_schemes(base::Value::Type::LIST);
   patterns_allowed_to_use_all_schemes.Append(
@@ -440,228 +430,3 @@ class SystemNetworkContextManagerCertificateTransparencyBrowsertest
         absl::nullopt);
   }
 };
-
-#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-class SystemNetworkContextServiceCertVerifierBuiltinPermissionsPolicyTest
-    : public policy::PolicyTest,
-      public testing::WithParamInterface<bool> {
- public:
-  SystemNetworkContextServiceCertVerifierBuiltinPermissionsPolicyTest() {
-    bool use_builtin_cert_verifier = GetParam();
-    cert_verifier_impl_ =
-        use_builtin_cert_verifier
-            ? cert_verifier::mojom::CertVerifierCreationParams::
-                  CertVerifierImpl::kBuiltin
-            : cert_verifier::mojom::CertVerifierCreationParams::
-                  CertVerifierImpl::kSystem;
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    scoped_feature_list_.InitWithFeatureState(
-        net::features::kCertVerifierBuiltinFeature,
-        cert_verifier_impl_ ==
-            cert_verifier::mojom::CertVerifierCreationParams::CertVerifierImpl::
-                kBuiltin);
-
-    content::SetCertVerifierServiceFactoryForTesting(
-        &test_cert_verifier_service_factory_);
-
-    policy::PolicyTest::SetUpInProcessBrowserTestFixture();
-  }
-
-  void TearDownInProcessBrowserTestFixture() override {
-    content::SetCertVerifierServiceFactoryForTesting(nullptr);
-  }
-
-  void SetUpOnMainThread() override {
-    test_cert_verifier_service_factory_.ReleaseAllCertVerifierParams();
-  }
-
-  void ExpectUseBuiltinCertVerifierCorrect(
-      network::mojom::NetworkContextParamsPtr& network_context_params_ptr,
-      cert_verifier::mojom::CertVerifierCreationParams::CertVerifierImpl
-          use_builtin_cert_verifier) {
-    ASSERT_TRUE(network_context_params_ptr);
-    ASSERT_TRUE(network_context_params_ptr->cert_verifier_params);
-    ASSERT_EQ(1ul, test_cert_verifier_service_factory_.num_captured_params());
-    ASSERT_TRUE(test_cert_verifier_service_factory_.GetParamsAtIndex(0)
-                    ->creation_params);
-    EXPECT_EQ(use_builtin_cert_verifier,
-              test_cert_verifier_service_factory_.GetParamsAtIndex(0)
-                  ->creation_params->use_builtin_cert_verifier);
-    // Send it to the actual CertVerifierServiceFactory.
-    test_cert_verifier_service_factory_.ReleaseNextCertVerifierParams();
-  }
-
-  cert_verifier::mojom::CertVerifierCreationParams::CertVerifierImpl
-  cert_verifier_impl() const {
-    return cert_verifier_impl_;
-  }
-
- private:
-  cert_verifier::mojom::CertVerifierCreationParams::CertVerifierImpl
-      cert_verifier_impl_;
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  cert_verifier::TestCertVerifierServiceFactoryImpl
-      test_cert_verifier_service_factory_;
-};
-
-IN_PROC_BROWSER_TEST_P(
-    SystemNetworkContextServiceCertVerifierBuiltinPermissionsPolicyTest,
-    Test) {
-  network::mojom::NetworkContextParamsPtr network_context_params_ptr;
-
-  // If no BuiltinCertificateVerifierEnabled policy is set, the
-  // use_builtin_cert_verifier param should be set from the feature flag.
-  network_context_params_ptr =
-      g_browser_process->system_network_context_manager()
-          ->CreateDefaultNetworkContextParams();
-  ExpectUseBuiltinCertVerifierCorrect(network_context_params_ptr,
-                                      cert_verifier_impl());
-#if BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
-  // If the BuiltinCertificateVerifierEnabled policy is set it should
-  // override the feature flag.
-  policy::PolicyMap policies;
-  SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
-            base::Value(true));
-  UpdateProviderPolicy(policies);
-
-  network_context_params_ptr =
-      g_browser_process->system_network_context_manager()
-          ->CreateDefaultNetworkContextParams();
-  ExpectUseBuiltinCertVerifierCorrect(
-      network_context_params_ptr,
-      cert_verifier::mojom::CertVerifierCreationParams::CertVerifierImpl::
-          kBuiltin);
-
-  SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
-            base::Value(false));
-  UpdateProviderPolicy(policies);
-
-  network_context_params_ptr =
-      g_browser_process->system_network_context_manager()
-          ->CreateDefaultNetworkContextParams();
-  ExpectUseBuiltinCertVerifierCorrect(
-      network_context_params_ptr,
-      cert_verifier::mojom::CertVerifierCreationParams::CertVerifierImpl::
-          kSystem);
-#endif  // BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    SystemNetworkContextServiceCertVerifierBuiltinPermissionsPolicyTest,
-    ::testing::Bool());
-#endif  // BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-
-#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
-class SystemNetworkContextServiceChromeRootStorePermissionsPolicyTest
-    : public policy::PolicyTest,
-      public testing::WithParamInterface<bool> {
- public:
-  SystemNetworkContextServiceChromeRootStorePermissionsPolicyTest() {
-    bool use_chrome_root_store = GetParam();
-    root_store_impl_ = use_chrome_root_store
-                           ? cert_verifier::mojom::CertVerifierCreationParams::
-                                 ChromeRootImpl::kRootChrome
-                           : cert_verifier::mojom::CertVerifierCreationParams::
-                                 ChromeRootImpl::kRootSystem;
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    scoped_feature_list_.InitWithFeatureState(
-        net::features::kChromeRootStoreUsed,
-        root_store_impl_ == cert_verifier::mojom::CertVerifierCreationParams::
-                                ChromeRootImpl::kRootChrome);
-
-    content::SetCertVerifierServiceFactoryForTesting(
-        &test_cert_verifier_service_factory_);
-
-    policy::PolicyTest::SetUpInProcessBrowserTestFixture();
-  }
-
-  void TearDownInProcessBrowserTestFixture() override {
-    content::SetCertVerifierServiceFactoryForTesting(nullptr);
-  }
-
-  void SetUpOnMainThread() override {
-    test_cert_verifier_service_factory_.ReleaseAllCertVerifierParams();
-  }
-
-  void ExpectUseChromeRootStoreCorrect(
-      network::mojom::NetworkContextParamsPtr& network_context_params_ptr,
-      cert_verifier::mojom::CertVerifierCreationParams::ChromeRootImpl
-          use_chrome_root_store) {
-    ASSERT_TRUE(network_context_params_ptr);
-    ASSERT_TRUE(network_context_params_ptr->cert_verifier_params);
-    ASSERT_EQ(1ul, test_cert_verifier_service_factory_.num_captured_params());
-    ASSERT_TRUE(test_cert_verifier_service_factory_.GetParamsAtIndex(0)
-                    ->creation_params);
-    EXPECT_EQ(use_chrome_root_store,
-              test_cert_verifier_service_factory_.GetParamsAtIndex(0)
-                  ->creation_params->use_chrome_root_store);
-    // Send it to the actual CertVerifierServiceFactory.
-    test_cert_verifier_service_factory_.ReleaseNextCertVerifierParams();
-  }
-
-  cert_verifier::mojom::CertVerifierCreationParams::ChromeRootImpl
-  root_store_impl() const {
-    return root_store_impl_;
-  }
-
- private:
-  cert_verifier::mojom::CertVerifierCreationParams::ChromeRootImpl
-      root_store_impl_;
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  cert_verifier::TestCertVerifierServiceFactoryImpl
-      test_cert_verifier_service_factory_;
-};
-
-IN_PROC_BROWSER_TEST_P(
-    SystemNetworkContextServiceChromeRootStorePermissionsPolicyTest,
-    Test) {
-  network::mojom::NetworkContextParamsPtr network_context_params_ptr;
-
-  // If no ChromeRootStoreEnabled policy is set, the
-  // use_chrome_root_store param should be set from the feature flag.
-  network_context_params_ptr =
-      g_browser_process->system_network_context_manager()
-          ->CreateDefaultNetworkContextParams();
-  ExpectUseChromeRootStoreCorrect(network_context_params_ptr,
-                                  root_store_impl());
-#if BUILDFLAG(CHROME_ROOT_STORE_POLICY_SUPPORTED)
-  // If the ChromeRootStoreEnabled policy is set it should
-  // override the feature flag.
-  policy::PolicyMap policies;
-  SetPolicy(&policies, policy::key::kChromeRootStoreEnabled, base::Value(true));
-  UpdateProviderPolicy(policies);
-
-  network_context_params_ptr =
-      g_browser_process->system_network_context_manager()
-          ->CreateDefaultNetworkContextParams();
-  ExpectUseChromeRootStoreCorrect(
-      network_context_params_ptr,
-      cert_verifier::mojom::CertVerifierCreationParams::ChromeRootImpl::
-          kRootChrome);
-
-  SetPolicy(&policies, policy::key::kChromeRootStoreEnabled,
-            base::Value(false));
-  UpdateProviderPolicy(policies);
-
-  network_context_params_ptr =
-      g_browser_process->system_network_context_manager()
-          ->CreateDefaultNetworkContextParams();
-  ExpectUseChromeRootStoreCorrect(
-      network_context_params_ptr,
-      cert_verifier::mojom::CertVerifierCreationParams::ChromeRootImpl::
-          kRootSystem);
-#endif  // BUILDFLAG(CHROME_ROOT_STORE_POLICY_SUPPORTED)
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    SystemNetworkContextServiceChromeRootStorePermissionsPolicyTest,
-    ::testing::Bool());
-#endif  // BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)

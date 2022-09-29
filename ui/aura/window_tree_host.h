@@ -22,7 +22,7 @@
 #include "ui/aura/scoped_enable_unadjusted_mouse_events.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/ime/input_method_delegate.h"
+#include "ui/base/ime/ime_key_event_dispatcher.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/event_source.h"
@@ -63,7 +63,7 @@ class WindowTreeHostObserver;
 // WindowTreeHost bridges between a native window and the embedded RootWindow.
 // It provides the accelerated widget and maps events from the native os to
 // aura.
-class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
+class AURA_EXPORT WindowTreeHost : public ui::ImeKeyEventDispatcher,
                                    public ui::EventSource,
                                    public display::DisplayObserver,
                                    public ui::CompositorObserver {
@@ -195,7 +195,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // WindowTreeHost to dispatch events.
   void SetSharedInputMethod(ui::InputMethod* input_method);
 
-  // Overridden from ui::internal::InputMethodDelegate:
+  // Overridden from ui::ImeKeyEventDispatcher:
   ui::EventDispatchDetails DispatchKeyEventPostIME(ui::KeyEvent* event) final;
 
   // Overridden from ui::EventSource:
@@ -342,7 +342,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // Returns the location of the RootWindow on native screen.
   virtual gfx::Point GetLocationOnScreenInPixels() const = 0;
 
-  void OnHostMovedInPixels(const gfx::Point& new_location_in_pixels);
+  void OnHostMovedInPixels();
   void OnHostResizedInPixels(const gfx::Size& new_size_in_pixels);
   void OnHostWorkspaceChanged();
   void OnHostDisplayChanged();
@@ -481,13 +481,11 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   std::unique_ptr<ui::ViewProp> prop_;
 
+  std::unique_ptr<ui::InputMethod> input_method_owned_;
   // The InputMethod instance used to process key events.
   // If owned it, it is created in GetInputMethod() method;
   // If not owned it, it is passed in through SetSharedInputMethod() method.
-  raw_ptr<ui::InputMethod, DanglingUntriaged> input_method_ = nullptr;
-
-  // Whether the InputMethod instance is owned by this WindowTreeHost.
-  bool owned_input_method_ = false;
+  raw_ptr<ui::InputMethod> input_method_ = nullptr;
 
   // Set to true if this WindowTreeHost is currently holding pointer moves.
   bool holding_pointer_moves_ = false;

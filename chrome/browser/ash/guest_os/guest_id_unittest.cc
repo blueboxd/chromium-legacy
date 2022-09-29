@@ -83,7 +83,7 @@ TEST_F(GuestIdTest, DuplicateContainerNamesInPrefsAreRemoved) {
   RemoveDuplicateContainerEntries(prefs);
 
   const base::Value::List& result =
-      prefs->Get(prefs::kGuestOsContainers)->GetList();
+      prefs->GetValueList(prefs::kGuestOsContainers);
 
   ASSERT_EQ(result.size(), 3);
   EXPECT_EQ(result[0].GetDict(), dictionary1);
@@ -113,6 +113,15 @@ TEST_F(GuestIdTest, VmTypeFromPref) {
   EXPECT_EQ(VmType::PLUGIN_VM, VmTypeFromPref(dict));
   dict.SetIntKey("vm_type", 999);
   EXPECT_EQ(VmType::UNKNOWN, VmTypeFromPref(dict));
+}
+
+TEST_F(GuestIdTest, RoundTripViaPrefs) {
+  auto id = guest_os::GuestId(guest_os::VmType::PLUGIN_VM, "vm_name",
+                              "container_name");
+  AddContainerToPrefs(&profile_, id, {});
+  auto list = GetContainers(&profile_, VmType::PLUGIN_VM);
+  ASSERT_EQ(list.size(), 1);
+  EXPECT_EQ(list[0], id);
 }
 
 }  // namespace guest_os

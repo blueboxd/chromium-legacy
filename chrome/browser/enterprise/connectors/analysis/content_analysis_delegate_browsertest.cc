@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <memory>
 #include <set>
 
@@ -85,13 +86,29 @@ class FakeBinaryUploadService : public CloudBinaryUploadService {
     prepared_file_responses_[path] = response;
   }
 
+  void SetExpectedFinalAction(
+      enterprise_connectors::ContentAnalysisAcknowledgement::FinalAction
+          final_action) {
+    final_action_ = final_action;
+  }
+
   void SetShouldAutomaticallyAuthorize(bool authorize) {
     should_automatically_authorize_ = authorize;
   }
 
   int requests_count() const { return requests_count_; }
+  int ack_count() const { return ack_count_; }
 
  private:
+  void MaybeAcknowledge(std::unique_ptr<Ack> ack) override {
+    EXPECT_EQ(final_action_, ack->ack().final_action());
+
+    ++ack_count_;
+    ASSERT_NE(requests_tokens_.end(),
+              std::find(requests_tokens_.begin(), requests_tokens_.end(),
+                        ack->ack().request_token()));
+  }
+
   void UploadForDeepScanning(std::unique_ptr<Request> request) override {
     ++requests_count_;
 
@@ -109,10 +126,13 @@ class FakeBinaryUploadService : public CloudBinaryUploadService {
           ASSERT_FALSE(file.empty());
           ASSERT_TRUE(prepared_file_results_.count(file));
           ASSERT_TRUE(prepared_file_responses_.count(file));
+          requests_tokens_.push_back(
+              prepared_file_responses_[file].request_token());
           request->FinishRequest(prepared_file_results_[file],
                                  prepared_file_responses_[file]);
           break;
         case AnalysisConnector::BULK_DATA_ENTRY:
+          requests_tokens_.push_back(prepared_text_response_.request_token());
           request->FinishRequest(prepared_text_result_,
                                  prepared_text_response_);
           break;
@@ -145,8 +165,12 @@ class FakeBinaryUploadService : public CloudBinaryUploadService {
   std::map<std::string, BinaryUploadService::Result> prepared_file_results_;
   std::map<std::string, ContentAnalysisResponse> prepared_file_responses_;
 
+  std::vector<std::string> requests_tokens_;
   int requests_count_ = 0;
+  int ack_count_ = 0;
   bool should_automatically_authorize_ = false;
+  ContentAnalysisAcknowledgement::FinalAction final_action_ =
+      ContentAnalysisAcknowledgement::ACTION_UNSPECIFIED;
 };
 
 FakeBinaryUploadService* FakeBinaryUploadServiceStorage() {
@@ -374,6 +398,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest, Unauthorized) {
 
   // 1 request to authenticate for upload.
   ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 1);
+  ASSERT_EQ(FakeBinaryUploadServiceStorage()->ack_count(), 0);
 }
 
 IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest, Files) {
@@ -432,6 +457,8 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest, Files) {
   FakeBinaryUploadServiceStorage()->SetResponseForFile(
       created_file_paths()[1].AsUTF8Unsafe(),
       BinaryUploadService::Result::SUCCESS, bad_response);
+  FakeBinaryUploadServiceStorage()->SetExpectedFinalAction(
+      ContentAnalysisAcknowledgement::BLOCK);
 
   bool called = false;
   base::RunLoop run_loop;
@@ -458,6 +485,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest, Files) {
   // There should have been 1 request per file (2 files) and 1 for
   // authentication.
   ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 3);
+  ASSERT_EQ(FakeBinaryUploadServiceStorage()->ack_count(), 2);
 }
 
 IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest, Texts) {
@@ -494,6 +522,8 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest, Texts) {
 
   FakeBinaryUploadServiceStorage()->SetResponseForText(
       BinaryUploadService::Result::SUCCESS, response);
+  FakeBinaryUploadServiceStorage()->SetExpectedFinalAction(
+      ContentAnalysisAcknowledgement::BLOCK);
 
   // The DLP verdict means an event should be reported. The content size is
   // equal to the length of the concatenated texts (2 * 100 * 'a').
@@ -543,6 +573,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest, Texts) {
   // There should have been 1 request for all texts,
   // 1 for authentication of the scanning request.
   ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 2);
+  ASSERT_EQ(FakeBinaryUploadServiceStorage()->ack_count(), 1);
 }
 
 IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest, Throttled) {
@@ -623,8 +654,9 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBrowserTest, Throttled) {
   EXPECT_TRUE(called);
 
   // There should have been 1 request for the first file and 1 for
-  // authentication.
+  // authentication.  There were no successful requests so no acks.
   ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 2);
+  ASSERT_EQ(FakeBinaryUploadServiceStorage()->ack_count(), 0);
 }
 
 // This class tests each of the blocking settings used in Connector policies:
@@ -736,6 +768,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
   run_loop.Run();
   EXPECT_TRUE(called);
   ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 0);
+  ASSERT_EQ(FakeBinaryUploadServiceStorage()->ack_count(), 0);
 }
 
 IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
@@ -1028,6 +1061,8 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
   FakeBinaryUploadServiceStorage()->SetResponseForFile(
       created_file_paths()[0].AsUTF8Unsafe(),
       BinaryUploadService::Result::SUCCESS, response);
+  FakeBinaryUploadServiceStorage()->SetExpectedFinalAction(
+      ContentAnalysisAcknowledgement::BLOCK);
   validator.ExpectDangerousDeepScanningResultAndSensitiveDataEvent(
       /*url*/ "about:blank",
       /*filename*/ "foo.doc",
@@ -1080,6 +1115,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
   // removed for crbug.com/1090088, then count should be 1), + 1 to scan the
   // file in all cases.
   ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 2);
+  ASSERT_EQ(FakeBinaryUploadServiceStorage()->ack_count(), 1);
 }
 
 // This class tests that ContentAnalysisDelegate is handled correctly when the
@@ -1205,6 +1241,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateUnauthorizedBrowserTest, Paste) {
 
   // No requests should be made since the DM token is unauthorized.
   ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 0);
+  ASSERT_EQ(FakeBinaryUploadServiceStorage()->ack_count(), 0);
 }
 
 IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateUnauthorizedBrowserTest, Files) {
@@ -1255,6 +1292,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateUnauthorizedBrowserTest, Files) {
 
   // No requests should be made since the DM token is unauthorized.
   ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 0);
+  ASSERT_EQ(FakeBinaryUploadServiceStorage()->ack_count(), 0);
 }
 
 }  // namespace enterprise_connectors

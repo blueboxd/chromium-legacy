@@ -216,6 +216,7 @@ class NavigationHandle;
 class NavigationThrottle;
 class NavigationUIData;
 class PrefetchServiceDelegate;
+class PresentationObserver;
 class QuotaPermissionContext;
 class ReceiverPresentationServiceDelegate;
 class RenderFrameHost;
@@ -1248,6 +1249,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual ReceiverPresentationServiceDelegate*
   GetReceiverPresentationServiceDelegate(WebContents* web_contents);
 
+  // Add or remove an observer for presentations associated with `web_contents`.
+  virtual void AddPresentationObserver(PresentationObserver* observer,
+                                       WebContents* web_contents);
+  virtual void RemovePresentationObserver(PresentationObserver* observer,
+                                          WebContents* web_contents);
+
   // Allows programmatic opening of a new tab/window without going through
   // another WebContents. For example, from a Worker. |site_instance|
   // describes the context initiating the navigation. |callback| will be
@@ -2275,12 +2282,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // (e.g. in tests), an empty list will be used instead of waiting for the
   // embedder to call content::FirstPartySetsHandler::SetPublicFirstPartySets.
   virtual bool WillProvidePublicFirstPartySets();
-
-  // Returns a base::Value::Dict containing the value of the First-Party Sets
-  // Overrides enterprise policy.
-  // If the policy was not present or it was invalid, this returns an empty
-  // base::Value::Dict.
-  virtual base::Value::Dict GetFirstPartySetsOverrides();
 
   // Gets information required for an alternative error page from web app's
   // manifest for |url|, including theme color, background color and app short

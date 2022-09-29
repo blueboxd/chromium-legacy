@@ -44,7 +44,7 @@ bool IsAmbientModeAllowed() {
 }
 
 void AddResources(content::WebUIDataSource* source) {
-  source->AddResourcePath("", IDR_ASH_PERSONALIZATION_APP_TRUSTED_INDEX_HTML);
+  source->AddResourcePath("", IDR_ASH_PERSONALIZATION_APP_INDEX_HTML);
   source->AddResourcePaths(base::make_span(
       kAshPersonalizationAppResources, kAshPersonalizationAppResourcesSize));
   source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER_HTML);
@@ -54,7 +54,7 @@ void AddResources(content::WebUIDataSource* source) {
 
 #if !DCHECK_IS_ON()
   // Add a default path to avoid crashes when not debugging.
-  source->SetDefaultResource(IDR_ASH_PERSONALIZATION_APP_TRUSTED_INDEX_HTML);
+  source->SetDefaultResource(IDR_ASH_PERSONALIZATION_APP_INDEX_HTML);
 #endif  // !DCHECK_IS_ON()
 }
 
@@ -257,30 +257,6 @@ void AddStrings(content::WebUIDataSource* source) {
   source->EnableReplaceI18nInJS();
 }
 
-void AddBooleans(content::WebUIDataSource* source) {
-  source->AddBoolean("fullScreenPreviewEnabled",
-                     features::IsWallpaperFullScreenPreviewEnabled());
-
-  source->AddBoolean("isGooglePhotosIntegrationEnabled",
-                     features::IsWallpaperGooglePhotosIntegrationEnabled());
-
-  source->AddBoolean("isPersonalizationHubEnabled",
-                     features::IsPersonalizationHubEnabled());
-
-  source->AddBoolean("isAmbientModeAnimationEnabled",
-                     features::IsAmbientModeAnimationEnabled());
-
-  source->AddBoolean("isDarkLightModeEnabled",
-                     features::IsDarkLightModeEnabled());
-
-  source->AddBoolean("isAmbientModeAllowed", IsAmbientModeAllowed());
-
-  source->AddBoolean(
-      "isRgbKeyboardSupported",
-      features::IsRgbKeyboardEnabled() &&
-          Shell::Get()->rgb_keyboard_manager()->IsRgbKeyboardSupported());
-}
-
 }  // namespace
 
 PersonalizationAppUI::PersonalizationAppUI(
@@ -344,6 +320,31 @@ void PersonalizationAppUI::BindInterface(
 void PersonalizationAppUI::BindInterface(
     mojo::PendingReceiver<personalization_app::mojom::UserProvider> receiver) {
   user_provider_->BindInterface(std::move(receiver));
+}
+
+void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
+  source->AddBoolean("fullScreenPreviewEnabled",
+                     features::IsWallpaperFullScreenPreviewEnabled());
+
+  source->AddBoolean("isGooglePhotosIntegrationEnabled",
+                     features::IsWallpaperGooglePhotosIntegrationEnabled() &&
+                         wallpaper_provider_->IsEligibleForGooglePhotos());
+
+  source->AddBoolean("isPersonalizationHubEnabled",
+                     features::IsPersonalizationHubEnabled());
+
+  source->AddBoolean("isAmbientModeAnimationEnabled",
+                     features::IsAmbientModeAnimationEnabled());
+
+  source->AddBoolean("isDarkLightModeEnabled",
+                     features::IsDarkLightModeEnabled());
+
+  source->AddBoolean("isAmbientModeAllowed", IsAmbientModeAllowed());
+
+  source->AddBoolean(
+      "isRgbKeyboardSupported",
+      features::IsRgbKeyboardEnabled() &&
+          Shell::Get()->rgb_keyboard_manager()->IsRgbKeyboardSupported());
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(PersonalizationAppUI)

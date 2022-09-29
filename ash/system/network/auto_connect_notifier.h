@@ -22,10 +22,9 @@ namespace ash {
 // Notifies the user when a managed device policy auto-connects to a secure
 // network after the user has explicitly requested another network connection.
 // See https://crbug.com/764000 for details.
-class ASH_EXPORT AutoConnectNotifier
-    : public chromeos::NetworkConnectionObserver,
-      public chromeos::NetworkStateHandlerObserver,
-      public chromeos::AutoConnectHandler::Observer {
+class ASH_EXPORT AutoConnectNotifier : public NetworkConnectionObserver,
+                                       public NetworkStateHandlerObserver,
+                                       public AutoConnectHandler::Observer {
  public:
   AutoConnectNotifier();
 
@@ -34,14 +33,13 @@ class ASH_EXPORT AutoConnectNotifier
 
   ~AutoConnectNotifier() override;
 
-  // chromeos::NetworkConnectionObserver:
+  // NetworkConnectionObserver:
   void ConnectToNetworkRequested(const std::string& service_path) override;
 
-  // chromeos::NetworkStateHandlerObserver:
-  void NetworkConnectionStateChanged(
-      const chromeos::NetworkState* network) override;
+  // NetworkStateHandlerObserver:
+  void NetworkConnectionStateChanged(const NetworkState* network) override;
 
-  // chromeos::AutoConnectHandler::Observer:
+  // AutoConnectHandler::Observer:
   void OnAutoConnectedInitiated(int auto_connect_reasons) override;
 
   void set_timer_for_testing(std::unique_ptr<base::OneShotTimer> test_timer) {
@@ -51,7 +49,7 @@ class ASH_EXPORT AutoConnectNotifier
   static const char kAutoConnectToastId[];
 
  private:
-  void DisplayToast(const chromeos::NetworkState* network);
+  void DisplayToast(const NetworkState* network);
 
   bool has_user_explicitly_requested_connection_ = false;
   std::string connected_network_guid_;

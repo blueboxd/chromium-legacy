@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,7 +134,7 @@ pub struct Edition(pub String);
 
 impl Default for Edition {
     fn default() -> Self {
-        Edition("2021".to_string())
+        Edition("2015".to_string())
     }
 }
 
@@ -195,7 +195,7 @@ pub fn generate_fake_cargo_toml<Iter: IntoIterator<Item = PatchSpecification>>(
         name: "chromium".to_string(),
         version: Version::new(0, 1, 0),
         authors: Vec::new(),
-        edition: Default::default(),
+        edition: Edition("2021".to_string()),
         description: None,
     };
 

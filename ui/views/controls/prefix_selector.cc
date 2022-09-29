@@ -5,6 +5,7 @@
 #include "ui/views/controls/prefix_selector.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/i18n/case_conversion.h"
 #include "base/time/default_tick_clock.h"
@@ -43,8 +44,8 @@ bool PrefixSelector::ShouldContinueSelection() const {
 void PrefixSelector::SetCompositionText(
     const ui::CompositionText& composition) {}
 
-uint32_t PrefixSelector::ConfirmCompositionText(bool keep_selection) {
-  return UINT32_MAX;
+size_t PrefixSelector::ConfirmCompositionText(bool keep_selection) {
+  return std::numeric_limits<size_t>::max();
 }
 
 void PrefixSelector::ClearCompositionText() {}
@@ -92,7 +93,7 @@ gfx::Rect PrefixSelector::GetSelectionBoundingBox() const {
   return gfx::Rect();
 }
 
-bool PrefixSelector::GetCompositionCharacterBounds(uint32_t index,
+bool PrefixSelector::GetCompositionCharacterBounds(size_t index,
                                                    gfx::Rect* rect) const {
   // TextInputClient::GetCompositionCharacterBounds is expected to fill |rect|
   // in screen coordinates and GetCaretBounds returns screen coordinates.

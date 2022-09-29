@@ -105,7 +105,6 @@ Si eliminas tu historial de navegación (entero o de un sitio en concreto), tamb
 <translation id="1474893630593443211">Más control sobre los anuncios que ves</translation>
 <translation id="1477626028522505441">No se ha podido descargar <ph name="FILE_NAME" /> debido a problemas con el servidor.</translation>
 <translation id="148482509007564431">Flujo para guardar marcador</translation>
-<translation id="1488775391433859242">Puedes usar este teléfono para iniciar sesión en el ordenador donde se muestra este código QR.</translation>
 <translation id="1492417797159476138">Ya has guardado ese nombre de usuario en este sitio web</translation>
 <translation id="1493287004536771723">Estás siguiendo a <ph name="SITE_NAME" /></translation>
 <translation id="1502010315804028179">Para gestionar tus contraseñas, actualiza Servicios de Google Play</translation>
@@ -235,6 +234,7 @@ Si eliminas tu historial de navegación (entero o de un sitio en concreto), tamb
 <translation id="2239812875700136898">Controla tus historias con el botón Opciones de Discover</translation>
 <translation id="2248941474044011069">Tus contraseñas se cifran en tu dispositivo antes de guardarse en el gestor de contraseñas de Google</translation>
 <translation id="2259659629660284697">Exportar contraseñas…</translation>
+<translation id="2276231040576210443">Siempre puedes seleccionar qué contenido quieres sincronizar en los <ph name="BEGIN_LINK1" />ajustes<ph name="END_LINK1" />. Google puede personalizar la Búsqueda y otros servicios en función de tu historial.</translation>
 <translation id="2276696007612801991">Inicia sesión en tu cuenta de Google para comprobar tus contraseñas</translation>
 <translation id="2278052315791335171">Al eliminar esta contraseña, no se eliminará tu cuenta de <ph name="SITE" /></translation>
 <translation id="2279146068164892489">¿Abrir <ph name="APPNAME" />?</translation>
@@ -282,7 +282,6 @@ Si eliminas tu historial de navegación (entero o de un sitio en concreto), tamb
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> elementos eliminados</translation>
 <translation id="2536728043171574184">Viendo una copia sin conexión de esta página</translation>
 <translation id="2546283357679194313">Cookies y datos de sitios</translation>
-<translation id="2549516196460093976">Puedes usar este tablet para iniciar sesión en el ordenador donde se muestra este código QR.</translation>
 <translation id="2558569818338050235">Tu historial de navegación influye en los anuncios que ves</translation>
 <translation id="2561519700418191927">Vistas previas de vídeos</translation>
 <translation id="2567385386134582609">IMAGEN</translation>
@@ -308,6 +307,7 @@ Si eliminas tu historial de navegación (entero o de un sitio en concreto), tamb
 <translation id="2702516483241149200">Nuevo: Comparte un enlace que vaya directamente a este texto</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2707726405694321444">Actualizar página</translation>
+<translation id="2709516037105925701">Autocompletar</translation>
 <translation id="271033894570825754">Nuevo</translation>
 <translation id="2711073837061989559">Pruebas</translation>
 <translation id="2718352093833049315">Solo en Wi-Fi</translation>
@@ -396,6 +396,7 @@ Si eliminas tu historial de navegación (entero o de un sitio en concreto), tamb
 <translation id="3114507951000454849">Lee las noticias de hoy <ph name="NEWS_ICON" /></translation>
 <translation id="311958134571892113">vinculada con</translation>
 <translation id="3123734510202723619">Anuncios</translation>
+<translation id="3130863904455712965">Historial y más</translation>
 <translation id="3134784203083076891">"</translation>
 <translation id="314939179385989105">Página principal de Chrome</translation>
 <translation id="3166827708714933426">Combinaciones de teclas de pestañas y ventanas</translation>
@@ -587,7 +588,6 @@ Si eliminas tu historial de navegación (entero o de un sitio en concreto), tamb
 <translation id="4256782883801055595">Licencias de software libre</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Qué datos se usan:<ph name="END_BOLD" /> tu historial de navegación, un registro de los sitios que has visitado usando Chrome en este dispositivo.</translation>
 <translation id="4263656433980196874">Interfaz de consentimiento de la búsqueda por voz del Asistente abierta a altura completa</translation>
-<translation id="4266054596873078491">Inicia sesión en este sitio y en Chrome con tu cuenta de Google.</translation>
 <translation id="4269820728363426813">Copiar la dirección del enlace</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Activa el bloqueo de pantalla en los ajustes de Android<ph name="END_LINK" /></translation>
 <translation id="4293476595220860475">Al utilizar Chrome, aceptas los <ph name="BEGIN_TOS_LINK" />Términos del Servicio de Google<ph name="END_TOS_LINK" /> y los <ph name="BEGIN_ATOS_LINK" />Términos del Servicio Adicionales de Google Chrome y ChromeOS<ph name="END_ATOS_LINK" />. También se aplica la <ph name="BEGIN_PRIVACY_LINK" />Política de Privacidad<ph name="END_PRIVACY_LINK" />.</translation>
@@ -657,7 +657,7 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4678082183394354975">El tema oscuro para sitios está activado en Chrome</translation>
 <translation id="4684427112815847243">Sincronizar todo</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 y <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> más}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 y <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> más}}</translation>
-<translation id="4699172675775169585">Archivos e imágenes en caché</translation>
+<translation id="4699172675775169585">Archivos e imágenes almacenados en caché</translation>
 <translation id="4719927025381752090">Ofrecer la traducción</translation>
 <translation id="4720023427747327413">Abrir en <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136"><ph name="BEGIN_LINK" />Realiza la encuesta<ph name="END_LINK" /> para ayudar a mejorar Chrome</translation>
@@ -1051,6 +1051,7 @@ Los tokens de confianza mejoran la privacidad en la Web y no se pueden usar para
 <translation id="6671495933530132209">Copiar imagen</translation>
 <translation id="6674571176963658787">Para iniciar la sincronización, escribe tu frase de contraseña</translation>
 <translation id="6676840375528380067">¿Quieres borrar tus datos de Chrome en este dispositivo?</translation>
+<translation id="6676927815633975364">Inicia sesión en este sitio y en Chrome</translation>
 <translation id="6684809838922667136">Mejorar Chrome</translation>
 <translation id="670498945988402717">Comprobado ayer</translation>
 <translation id="6710213216561001401">Anterior</translation>
@@ -1140,6 +1141,7 @@ Los tokens de confianza mejoran la privacidad en la Web y no se pueden usar para
 <translation id="7196215469483532480">Explicación de la guía de privacidad abierta a altura completa</translation>
 <translation id="7207760545532569765">Restaurar <ph name="TAB_COUNT" /> pestañas como nuevas pestañas en segundo plano.</translation>
 <translation id="7208109991155904980">Reacción movida</translation>
+<translation id="7217781228893594884">Las pestañas de incógnito se bloquearán cuando salgas de Chrome</translation>
 <translation id="7222235798733126207">Limitación de lo que se comparte entre sitios</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 descarga pendiente}other{# descargas pendientes}}</translation>
 <translation id="7242755609445462077">Estilizado resaltado el <ph name="CURRENT_DATE" /></translation>
@@ -1300,6 +1302,7 @@ Los tokens de confianza mejoran la privacidad en la Web y no se pueden usar para
 <translation id="8037801708772278989">Comprobado justo ahora</translation>
 <translation id="804335162455518893">No se ha encontrado la tarjeta SD</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> pestaña de Incógnito}other{<ph name="TAB_COUNT_NORMAL" /> pestañas de incógnito}}</translation>
+<translation id="8048728378294435881">Crea una copia de seguridad de tus cosas y úsala en cualquier dispositivo</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponible(s)</translation>
 <translation id="8058655154417507695">Año de caducidad</translation>
 <translation id="8058746566562539958">Abrir en una pestaña nueva</translation>

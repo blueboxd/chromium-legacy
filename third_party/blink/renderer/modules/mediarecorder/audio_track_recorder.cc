@@ -14,8 +14,8 @@
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
+#include "third_party/blink/renderer/platform/scheduler/public/non_main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier_std.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -61,12 +61,12 @@ AudioTrackRecorder::AudioTrackRecorder(
                                   std::move(on_encoded_audio_cb),
                                   bits_per_second,
                                   bitrate_mode)),
-      encoder_thread_(Thread::CreateThread(
+      encoder_thread_(NonMainThread::CreateThread(
           ThreadCreationParams(ThreadType::kAudioEncoderThread))),
       encoder_task_runner_(encoder_thread_->GetTaskRunner()) {
   DCHECK(IsMainThread());
   DCHECK(track_);
-  DCHECK(track_->Source()->GetType() == MediaStreamSource::kTypeAudio);
+  DCHECK(track_->GetSourceType() == MediaStreamSource::kTypeAudio);
 
   // Connect the source provider to the track as a sink.
   ConnectToTrack();

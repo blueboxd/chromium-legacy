@@ -10,6 +10,7 @@
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "base/check.h"
+#include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
@@ -53,6 +54,15 @@ const int kDefaultPageSize = 9;
 
 bool IsUint32Value(int i) {
   return 0 <= i && i <= std::numeric_limits<uint32_t>::max();
+}
+
+int GetUtf16Size(std::u16string& text) {
+  int utf16_size = 0;
+  for (base::i18n::UTF16CharIterator char_iterator(text); !char_iterator.end();
+       char_iterator.Advance()) {
+    ++utf16_size;
+  }
+  return utf16_size;
 }
 
 }  // namespace
@@ -103,8 +113,8 @@ void InputMethodEngine::Initialize(
     profile_observation_.Observe(profile);
     input_method_settings_snapshot_ =
         profile->GetPrefs()
-            ->GetDictionary(prefs::kLanguageInputMethodSpecificSettings)
-            ->Clone();
+            ->GetValueDict(prefs::kLanguageInputMethodSpecificSettings)
+            .Clone();
 
     pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
     pref_change_registrar_->Init(profile->GetPrefs());
@@ -252,6 +262,7 @@ bool InputMethodEngine::SetComposition(int context_id,
     *error = kErrorNotActive;
     return false;
   }
+
   if (context_id != context_id_ || context_id_ == -1) {
     *error = base::StringPrintf(
         "%s request context id = %d, current context id = %d",
@@ -259,8 +270,25 @@ bool InputMethodEngine::SetComposition(int context_id,
     return false;
   }
 
+  if (selection_start < 0 || selection_end < 0 || cursor < 0) {
+    *error = base::StringPrintf(
+        "%s request selection start = %d, selection end = %d, cursor  =  %d",
+        "At least 1 arg is negative, which is invalid.", selection_start,
+        selection_end, cursor);
+    return false;
+  }
+
   ui::CompositionText composition_text;
   composition_text.text = base::UTF8ToUTF16(text);
+  // Check the length of the text.
+  uint32_t utf16_length = GetUtf16Size(composition_text.text);
+  if (selection_start > utf16_length || selection_end > utf16_length) {
+    *error = base::StringPrintf(
+        "%s request selection start = %d, selection end = %d, cursor  =  %d",
+        "At least 1 length is above the length of the text, which is invalid.",
+        selection_start, selection_end, cursor);
+    return false;
+  }
   composition_text.selection.set_start(selection_start);
   composition_text.selection.set_end(selection_end);
 
@@ -1069,21 +1097,19 @@ void InputMethodEngine::HideInputView() {
 }
 
 void InputMethodEngine::OnInputMethodOptionsChanged() {
-  const base::Value* new_settings = profile_->GetPrefs()->GetDictionary(
+  const base::Value::Dict& new_settings = profile_->GetPrefs()->GetValueDict(
       prefs::kLanguageInputMethodSpecificSettings);
-  const base::DictionaryValue& old_settings =
-      base::Value::AsDictionaryValue(input_method_settings_snapshot_);
-  for (const auto it : new_settings->DictItems()) {
-    if (old_settings.FindKey(it.first)) {
-      if (*(old_settings.FindPath(it.first)) !=
-          *(new_settings->FindPath(it.first))) {
-        observer_->OnInputMethodOptionsChanged(it.first);
+  const base::Value::Dict& old_settings = input_method_settings_snapshot_;
+  for (const auto&& [path, value] : new_settings) {
+    if (const base::Value* old_value = old_settings.Find(path)) {
+      if (*old_value != value) {
+        observer_->OnInputMethodOptionsChanged(path);
       }
     } else {
-      observer_->OnInputMethodOptionsChanged(it.first);
+      observer_->OnInputMethodOptionsChanged(path);
     }
   }
-  input_method_settings_snapshot_ = new_settings->Clone();
+  input_method_settings_snapshot_ = new_settings.Clone();
 }
 
 void InputMethodEngine::UpdateComposition(

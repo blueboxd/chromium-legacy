@@ -270,6 +270,64 @@ void TraceShouldSwapBrowsingInstanceResult(int frame_tree_node_id,
       });
 }
 
+// This method tries to find a process for |new_instance| to reuse by starting
+// from |rfh|'s outermost main frame, and then iterating through all the
+// embedded fenced frame FrameTrees and trying to reuse their BrowsingInstance's
+// default process (if one is set). By setting a process for |new_instance|, it
+// is also setting its BrowsingInstance's default process, and as a result, it
+// gets these groups of BrowsingInstances to share the same default process.
+//
+// Note that it is possible for a fenced frame BrowsingInstance to get assigned
+// a default process first, before its embedder (for example: if the embedder
+// only had a frame at an isolated site, which embeds a fenced frame at a
+// non-isolated site). If we were to assign the embedder BrowsingInstance a
+// default process later (from the previous example, if the embedder added a
+// non-isolated iframe), we would iterate through the entire set of FrameTrees
+// and find and reuse the fenced frame BrowsingInstance's default process.
+//
+// TODO(crbug.com/1347235): There are certain scenarios where this won't work,
+// see bug for an example scenario/proposed fix.
+void ReuseDefaultProcessFromDifferentBrowsingInstanceIfPossible(
+    scoped_refptr<SiteInstance> new_instance,
+    RenderFrameHostImpl* rfh) {
+  DCHECK(!new_instance->RequiresDedicatedProcess());
+  DCHECK(!new_instance->HasProcess());
+  RenderFrameHostImpl* root = rfh->GetMainFrame();
+  // Note: We explicitly don't use |RenderFrameHost::GetOutermostMainFrame()|
+  // here so as to not escape the portal boundary.
+  while (root->IsFencedFrameRoot()) {
+    root = root->GetParentOrOuterDocument()->GetMainFrame();
+  }
+  root->ForEachRenderFrameHost(base::BindRepeating(
+      [](scoped_refptr<SiteInstance> site_instance, RenderFrameHost* root,
+         RenderFrameHost* rfh) {
+        RenderFrameHostImpl* rfhi = static_cast<RenderFrameHostImpl*>(rfh);
+
+        if (rfhi->GetParent())
+          return RenderFrameHost::FrameIterationAction::kContinue;
+
+        // Avoid traversing through any embedded pages that aren't fenced
+        // frames. Note that we use rfhi->GetParentOrOuterDocumentOrEmbedder()
+        // instead of rfhi->GetParentOrOuterDocument() to avoid traversing
+        // through guests.
+        if (rfhi != root && rfhi->GetParentOrOuterDocumentOrEmbedder() &&
+            !rfhi->IsNestedWithinFencedFrame())
+          return RenderFrameHost::FrameIterationAction::kSkipChildren;
+
+        if (RenderProcessHost* default_process =
+                rfhi->GetSiteInstance()
+                    ->GetDefaultProcessForBrowsingInstance()) {
+          static_cast<SiteInstanceImpl*>(site_instance.get())
+              ->ReuseCurrentProcessIfPossible(default_process);
+          if (site_instance->HasProcess())
+            return RenderFrameHost::FrameIterationAction::kStop;
+        }
+
+        return RenderFrameHost::FrameIterationAction::kContinue;
+      },
+      new_instance, root));
+}
+
 }  // namespace
 
 RenderFrameHostManager::RenderFrameHostManager(FrameTreeNode* frame_tree_node,
@@ -324,7 +382,7 @@ void RenderFrameHostManager::InitRoot(
               false /* has_potentially_trustworthy_unique_origin */,
               false /* has_active_user_gesture */,
               false /* has_received_user_gesture_before_nav */,
-              false /* is_ad_subframe */),
+              false /* is_ad_frame */),
           frame_tree_node_->parent(),
           features::GetBrowsingContextMode() ==
                   features::BrowsingContextStateImplementationType::
@@ -366,7 +424,7 @@ void RenderFrameHostManager::InitChild(
               false /* has_potentially_trustworthy_unique_origin */,
               false /* has_active_user_gesture */,
               false /* has_received_user_gesture_before_nav */,
-              false /* is_ad_subframe */),
+              false /* is_ad_frame */),
           frame_tree_node_->parent(),
           features::GetBrowsingContextMode() ==
                   features::BrowsingContextStateImplementationType::
@@ -829,8 +887,8 @@ void RenderFrameHostManager::DiscardUnusedFrame(
 
   render_frame_host.reset();
 
-  // If the old proxy isn't live, create the RenderFrameProxy in the renderer,
-  // so that other frames can still communicate with this frame.  See
+  // If the old proxy isn't live, create the `blink::RemoteFrame` in the
+  // renderer, so that other frames can still communicate with this frame.  See
   // https://crbug.com/653746.
   if (proxy && !proxy->is_render_frame_proxy_live())
     proxy->InitRenderFrameProxy();
@@ -1142,14 +1200,26 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     }
 
     navigation_rfh = speculative_render_frame_host_.get();
+    // Check that this is for a prerendered FrameTree or not. Note that we
+    // cannot check the RFH's LifecycleState here instead, because it will be
+    // kSpeculative even for prerendering RFHs at this point.
+    bool is_prerendering = frame_tree_node_->frame_tree()->is_prerendering();
 
     if (!render_frame_host_->IsRenderFrameLive() &&
-        !recovering_without_early_commit) {
+        !recovering_without_early_commit && !is_prerendering) {
       // The current RFH is not live. There's no reason to sit around with a
       // sad tab or a newly created RFH while we wait for the navigation to
       // complete. Just switch to the speculative RFH now and go back to
       // normal. (Note that we don't care about on{before}unload handlers if
       // the current RFH isn't live.)
+      //
+      // Note: We can reach this path without there being a crash. If we
+      // navigate a frame immediately after its creation, and the navigation
+      // results in a speculative RFH being created, we would hit this codepath
+      // as the RFH is not live yet. For prerendering FrameTrees, we skip this
+      // codepath to explicitly avoid a LifecycleState transition from
+      // kSpeculative directly to kPrerender, and force it to go through the
+      // regular path instead (i.e. through kPendingCommit).
       //
       // If the corresponding RenderFrame is currently associated with a
       // proxy, send a SwapIn message to ensure that the RenderFrame swaps
@@ -1322,7 +1392,7 @@ RenderFrameHostManager::UnsetSpeculativeRenderFrameHost() {
               LifecycleStateImpl::kPendingCommit);
     // The browser process already asked the renderer to commit the navigation.
     // The renderer is guaranteed to commit the navigation and swap in the
-    // provisional `RenderFrame` to replace the current `RenderFrameProxy`
+    // provisional `RenderFrame` to replace the current `blink::RemoteFrame`
     // unless the frame is detached: see `AssertNavigationCommits` in
     // `RenderFrameImpl` for more details about this enforcement.
     //
@@ -1353,9 +1423,9 @@ void RenderFrameHostManager::DiscardSpeculativeRenderFrameHostForShutdown() {
 
   speculative_render_frame_host_->GetProcess()->RemovePendingView();
   // No need to call `DeleteRenderFrame()`. When a RenderFrame or
-  // RenderFrameProxy is detached, it also detaches any associated provisional
-  // RenderFrame, whether this due to a child frame being removed from the
-  // frame tree or the entire RenderView being torn down.
+  // `blink::RemoteFrame` is detached, it also detaches any associated
+  // provisional RenderFrame, whether this due to a child frame being removed
+  // from the frame tree or the entire `blink::WebView` being torn down.
   //
   // When the LifecycleStateImpl is kSpeculative, there is no need to transition
   // to kReadyToBeDeleted as speculative RenderFrameHosts don't run any unload
@@ -1605,10 +1675,10 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     return ShouldSwapBrowsingInstance::kYes_ForceSwap;
   }
 
-  // We can't switch a RenderView between view source and non-view source mode
-  // without screwing up the session history sometimes (when navigating between
-  // "view-source:http://foo.com/" and "http://foo.com/", Blink doesn't treat
-  // it as a new navigation). So require a BrowsingInstance switch.
+  // We can't switch a `blink::WebView` between view source and non-view source
+  // mode without screwing up the session history sometimes (when navigating
+  // between "view-source:http://foo.com/" and "http://foo.com/", Blink doesn't
+  // treat it as a new navigation). So require a BrowsingInstance switch.
   if (current_is_view_source_mode != destination_is_view_source_mode)
     return ShouldSwapBrowsingInstance::kYes_ForceSwap;
 
@@ -2021,6 +2091,20 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
     DCHECK(frame_tree_node_->IsMainFrame());
     new_instance_impl->ReuseCurrentProcessIfPossible(
         current_instance->GetProcess());
+  }
+
+  // We want fenced frame BrowsingInstances to share the same default
+  // process with their embedding BrowsingInstance. The code below forces
+  // SiteInstances in the embedder and fenced frame BrowsingInstances to
+  // share the same default process when they don't need a dedicated process.
+  // With sites that do require a dedicated process, we reuse processes via the
+  // subframe reuse policy (we set the reuse policy to
+  // REUSE_PENDING_OR_COMMITTED_SITE).
+  if (!current_frame_host()->IsOutermostMainFrame() &&
+      !new_instance->HasProcess() &&
+      !new_instance->RequiresDedicatedProcess()) {
+    ReuseDefaultProcessFromDifferentBrowsingInstanceIfPossible(
+        new_instance, current_frame_host());
   }
 
   return new_instance;
@@ -2489,10 +2573,12 @@ bool RenderFrameHostManager::CanUseSourceSiteInstance(
   // If `dest_url_info` is sandboxed, then we can't assign it to a SiteInstance
   // that isn't sandboxed. But if the `source_instance` is also sandboxed, then
   // it's possible (e.g. a sandboxed child frame in a sandboxed parent frame).
-  if (dest_url_info.is_sandboxed !=
-      static_cast<SiteInstanceImpl*>(source_instance)
-          ->GetSiteInfo()
-          .is_sandboxed()) {
+  auto& source_site_info =
+      static_cast<SiteInstanceImpl*>(source_instance)->GetSiteInfo();
+  if (dest_url_info.is_sandboxed != source_site_info.is_sandboxed())
+    return false;
+  if (dest_url_info.is_sandboxed &&
+      dest_url_info.unique_sandbox_id != source_site_info.unique_sandbox_id()) {
     return false;
   }
 
@@ -2680,8 +2766,7 @@ RenderFrameHostManager::CreateRenderFrameHost(
   }
   if (!render_view_host) {
     render_view_host = frame_tree->CreateRenderViewHost(
-        site_instance, frame_routing_id,
-        /*swapped_out=*/false, renderer_initiated_creation,
+        site_instance, frame_routing_id, renderer_initiated_creation,
         features::GetBrowsingContextMode() ==
                 features::BrowsingContextStateImplementationType::
                     kSwapForCrossBrowsingInstanceNavigations
@@ -2802,7 +2887,7 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
           DCHECK(outer_contents_frame_tree_node->parent());
           browsing_context_state->CreateOuterDelegateProxy(
               outer_contents_frame_tree_node->parent()->GetSiteInstance(),
-              frame_tree_node_);
+              frame_tree_node_, blink::RemoteFrameToken());
         }
       }
     }
@@ -2952,7 +3037,7 @@ void RenderFrameHostManager::CreateRenderFrameProxy(
       // exists for |instance|, as it creates the page level structure in Blink.
       render_view_host = frame_tree_node_->frame_tree()->CreateRenderViewHost(
           instance, /*main_frame_routing_id=*/MSG_ROUTING_NONE,
-          /*swapped_out=*/true, /*renderer_initiated_creation=*/false,
+          /*renderer_initiated_creation=*/false,
           features::GetBrowsingContextMode() ==
                   features::BrowsingContextStateImplementationType::
                       kSwapForCrossBrowsingInstanceNavigations
@@ -2968,7 +3053,7 @@ void RenderFrameHostManager::CreateRenderFrameProxy(
         instance, std::move(render_view_host), frame_tree_node_);
   }
 
-  // Make sure that the RenderFrameProxy is present in the renderer.
+  // Make sure that the `blink::RemoteFrame` is present in the renderer.
   if (frame_tree_node_->IsMainFrame() && proxy->GetRenderViewHost()) {
     InitRenderView(group, proxy->GetRenderViewHost(), proxy);
   } else {
@@ -3035,8 +3120,8 @@ void RenderFrameHostManager::EnsureRenderViewInitialized(
   if (render_view_host->IsRenderViewLive())
     return;
 
-  // If the proxy in |instance| doesn't exist, this RenderView is not swapped
-  // out and shouldn't be reinitialized here.
+  // If the proxy in `group` doesn't exist, this `blink::WebView` is not
+  // swapped out and shouldn't be reinitialized here.
   RenderFrameProxyHost* proxy =
       render_frame_host_->browsing_context_state()->GetRenderFrameProxyHost(
           group);
@@ -3075,7 +3160,7 @@ bool RenderFrameHostManager::InitRenderView(
     RenderViewHostImpl* render_view_host,
     RenderFrameProxyHost* proxy) {
   // Ensure the renderer process is initialized before creating the
-  // RenderView.
+  // `blink::WebView`.
   if (!render_view_host->GetAgentSchedulingGroup().Init())
     return false;
 
@@ -3142,7 +3227,8 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
       // same as the parent frame, but with the `is_sandbox` flag set. srcdoc
       // iframes are normally considered to have the same origin as their
       // parents, so this seems reasonable.
-      return parent->GetSiteInstance()->GetCompatibleSandboxedSiteInstance();
+      return parent->GetSiteInstance()->GetCompatibleSandboxedSiteInstance(
+          request->GetNavigationId());
     }
     AppendReason(reason,
                  "GetSiteInstanceForNavigationRequest => parent-instance"
@@ -3294,8 +3380,8 @@ bool RenderFrameHostManager::ReinitializeMainRenderFrame(
   CreateOpenerProxies(render_frame_host->GetSiteInstance(), frame_tree_node_,
                       render_frame_host_->browsing_context_state());
 
-  // Main frames need both the RenderView and RenderFrame reinitialized, so
-  // use InitRenderView.
+  // Main frames need both the `blink::WebView` and `RenderFrame` reinitialized,
+  // so use `InitRenderView`.
   DCHECK(!render_frame_host->browsing_context_state()->GetRenderFrameProxyHost(
       render_frame_host->GetSiteInstance()->group()));
   if (!InitRenderView(render_frame_host->GetSiteInstance()->group(),
@@ -3522,7 +3608,7 @@ void RenderFrameHostManager::CommitPending(
   if (is_main_frame && old_view && old_rvh != new_rvh) {
     // Note that this hides the RenderWidget but does not hide the Page. If it
     // did hide the Page then making a new RenderFrameHost on another call to
-    // here would need to make sure it showed the RenderView when the
+    // here would need to make sure it showed the `blink::WebView` when the
     // RenderWidget was created as visible.
     old_view->Hide();
   }
@@ -3636,8 +3722,8 @@ void RenderFrameHostManager::CommitPending(
 
     // If this frame has opened popups, we need to clear the opened popup's
     // opener. This is done here on the browser side. A similar mechanism occurs
-    // in the renderer process when the RenderView of this frame is destroyed,
-    // via blink::OpenedFrameTracker.
+    // in the renderer process when the `blink::WebView` of this frame is
+    // destroyed, via blink::OpenedFrameTracker.
     frame_tree_node_->ClearOpenerReferences();
 
     // We've just cleared other frames' "opener" referencing this frame, we now
@@ -3746,6 +3832,11 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
   // user, unlike kActive state.
   if (render_frame_host_) {
     if (frame_tree->is_prerendering()) {
+      // Prerendering pages do not currently support early commit, so
+      // speculative RFHs for prerendering pages will always go through
+      // kPendingCommit first.
+      DCHECK_NE(render_frame_host_->lifecycle_state(),
+                LifecycleStateImpl::kSpeculative);
       if (render_frame_host_->lifecycle_state() ==
           LifecycleStateImpl::kPendingCommit) {
         render_frame_host_->SetLifecycleState(
@@ -3908,8 +3999,6 @@ absl::optional<blink::FrameToken> RenderFrameHostManager::GetOpenerFrameToken(
 void RenderFrameHostManager::ExecutePageBroadcastMethod(
     PageBroadcastMethodCallback callback,
     SiteInstance* instance_to_skip) {
-  // TODO(dcheng): Now that RenderView and RenderWidget are increasingly
-  // separated, it might be possible/desirable to just route to the view.
   DCHECK(!frame_tree_node_->parent());
 
   // When calling a PageBroadcast Mojo method for an inner WebContents, we don't

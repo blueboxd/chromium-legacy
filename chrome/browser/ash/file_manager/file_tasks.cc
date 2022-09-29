@@ -267,7 +267,6 @@ bool IsFallbackFileHandler(const FullTaskDescriptor& task) {
       kFileManagerAppId,
       kFileManagerSwaAppId,
       kTextEditorAppId,
-      kAudioPlayerAppId,
       extension_misc::kQuickOfficeComponentExtensionId,
       extension_misc::kQuickOfficeInternalExtensionId,
       extension_misc::kQuickOfficeExtensionId};
@@ -340,7 +339,7 @@ void EndPostProcessFoundTasks(
   if (!disabled_actions.empty())
     RemoveFileManagerInternalActions(disabled_actions, result_list.get());
 
-  ChooseAndSetDefaultTask(*profile->GetPrefs(), entries, result_list.get());
+  ChooseAndSetDefaultTask(profile, entries, result_list.get());
   std::move(callback).Run(std::move(result_list));
 }
 
@@ -495,14 +494,38 @@ bool IsHandleOfficeTask(const FullTaskDescriptor& task) {
          action_id == kActionIdHandleOffice;
 }
 
-void UpdateDefaultTask(PrefService* pref_service,
+void UpdateDefaultTask(Profile* profile,
                        const TaskDescriptor& task_descriptor,
                        const std::set<std::string>& suffixes,
                        const std::set<std::string>& mime_types) {
+  PrefService* pref_service = profile->GetPrefs();
   if (!pref_service)
     return;
 
   std::string task_id = TaskDescriptorToId(task_descriptor);
+  if (ash::features::ShouldArcAndGuestOsFileTasksUseAppService() &&
+      task_descriptor.task_type == TASK_TYPE_ARC_APP) {
+    // Task IDs for Android apps are stored in a legacy format (app id:
+    // "<package>/<activity>", task id: "view"). For ARC app task descriptors
+    // (which use app id: "<app service id>", action id: "<activity>"), we
+    // generate Task IDs in the legacy format.
+    std::string package;
+    DCHECK(
+        apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile));
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile);
+    if (proxy) {
+      proxy->AppRegistryCache().ForOneApp(
+          task_descriptor.app_id, [&package](const apps::AppUpdate& update) {
+            package = update.PublisherId();
+          });
+    }
+    if (!package.empty()) {
+      std::string new_app_id = package + "/" + task_descriptor.action_id;
+      task_id = MakeTaskID(new_app_id, TASK_TYPE_ARC_APP, kActionIdView);
+    }
+  }
+
   if (!mime_types.empty()) {
     DictionaryPrefUpdate mime_type_pref(pref_service,
                                         prefs::kDefaultTasksByMimeType);
@@ -536,28 +559,20 @@ bool GetDefaultTaskFromPrefs(const PrefService& pref_service,
   VLOG(1) << "Looking for default for MIME type: " << mime_type
           << " and suffix: " << suffix;
   if (!mime_type.empty()) {
-    const base::Value* mime_task_prefs =
-        pref_service.GetDictionary(prefs::kDefaultTasksByMimeType);
-    DCHECK(mime_task_prefs);
-    LOG_IF(ERROR, !mime_task_prefs) << "Unable to open MIME type prefs";
-    if (mime_task_prefs) {
-      const std::string* task_id = mime_task_prefs->FindStringKey(mime_type);
-      if (task_id) {
-        VLOG(1) << "Found MIME default handler: " << *task_id;
-        return ParseTaskID(*task_id, task_out);
-      }
+    const base::Value::Dict& mime_task_prefs =
+        pref_service.GetValueDict(prefs::kDefaultTasksByMimeType);
+    const std::string* task_id = mime_task_prefs.FindString(mime_type);
+    if (task_id) {
+      VLOG(1) << "Found MIME default handler: " << *task_id;
+      return ParseTaskID(*task_id, task_out);
     }
   }
 
-  const base::Value* suffix_task_prefs =
-      pref_service.GetDictionary(prefs::kDefaultTasksBySuffix);
-  DCHECK(suffix_task_prefs);
-  LOG_IF(ERROR, !suffix_task_prefs) << "Unable to open suffix prefs";
+  const base::Value::Dict& suffix_task_prefs =
+      pref_service.GetValueDict(prefs::kDefaultTasksBySuffix);
   std::string lower_suffix = base::ToLowerASCII(suffix);
-  if (!suffix_task_prefs)
-    return false;
 
-  const std::string* task_id = suffix_task_prefs->FindStringKey(lower_suffix);
+  const std::string* task_id = suffix_task_prefs.FindString(lower_suffix);
 
   if (!task_id || task_id->empty())
     return false;
@@ -636,7 +651,8 @@ bool ExecuteFileTask(Profile* profile,
 
   if (IsFilesAppId(task.app_id) &&
       (parsed_action_id == "upload-office-to-drive")) {
-    const bool opened = chromeos::cloud_upload::CloudUploadDialog::Show();
+    const bool opened =
+        chromeos::cloud_upload::CloudUploadDialog::Show(file_urls);
     if (done) {
       if (opened) {
         std::move(done).Run(
@@ -694,10 +710,12 @@ bool ExecuteFileTask(Profile* profile,
     return true;
   }
 
-  // ARC apps and web apps need mime types for launching. Retrieve them first.
+  // Apps from App Service need mime types for launching. Retrieve them first.
   if (task.task_type == TASK_TYPE_ARC_APP ||
       task.task_type == TASK_TYPE_WEB_APP ||
-      task.task_type == TASK_TYPE_FILE_HANDLER) {
+      task.task_type == TASK_TYPE_FILE_HANDLER ||
+      (ash::features::ShouldArcAndGuestOsFileTasksUseAppService() &&
+       task.task_type == TASK_TYPE_CROSTINI_APP)) {
     // TODO(petermarshall): Implement GetProfileForExtensionTask in Lacros if
     // necessary, for Chrome Apps.
     extensions::app_file_handler_util::MimeTypeCollector* mime_collector =
@@ -709,8 +727,9 @@ bool ExecuteFileTask(Profile* profile,
     return true;
   }
 
-  if (task.task_type == TASK_TYPE_CROSTINI_APP ||
-      task.task_type == TASK_TYPE_PLUGIN_VM_APP) {
+  if (!ash::features::ShouldArcAndGuestOsFileTasksUseAppService() &&
+      (task.task_type == TASK_TYPE_CROSTINI_APP ||
+       task.task_type == TASK_TYPE_PLUGIN_VM_APP)) {
     DCHECK_EQ(kGuestOsAppActionID, task.action_id);
     ExecuteGuestOsTask(profile, task, file_urls, std::move(done));
     return true;
@@ -794,9 +813,11 @@ void FindAllTypesOfTasks(Profile* profile,
       new std::vector<FullTaskDescriptor>);
 
   if (ash::features::ShouldArcAndGuestOsFileTasksUseAppService()) {
-    // Skip FindArcTasks since ARC tasks are now found in App Service.
-    FindExtensionAndAppTasks(profile, entries, file_urls, std::move(callback),
-                             std::move(result_list));
+    // Skip FindArcTasks and FindGuestOsTasks since these tasks are now found in
+    // App Service.
+    FindAppServiceTasks(profile, entries, file_urls, result_list.get());
+    PostProcessFoundTasks(profile, entries, std::move(callback),
+                          std::move(result_list));
   } else {
     // 1. Find and append ARC handler tasks.
     FindArcTasks(profile, entries, file_urls, std::move(result_list),
@@ -805,7 +826,7 @@ void FindAllTypesOfTasks(Profile* profile,
   }
 }
 
-void ChooseAndSetDefaultTask(const PrefService& pref_service,
+void ChooseAndSetDefaultTask(Profile* profile,
                              const std::vector<extensions::EntryInfo>& entries,
                              std::vector<FullTaskDescriptor>* tasks) {
   // Collect the default tasks from the preferences into a set.
@@ -814,9 +835,42 @@ void ChooseAndSetDefaultTask(const PrefService& pref_service,
     const base::FilePath& file_path = entry.path;
     const std::string& mime_type = entry.mime_type;
     TaskDescriptor default_task;
-    if (file_tasks::GetDefaultTaskFromPrefs(
-            pref_service, mime_type, file_path.Extension(), &default_task)) {
+    if (file_tasks::GetDefaultTaskFromPrefs(*profile->GetPrefs(), mime_type,
+                                            file_path.Extension(),
+                                            &default_task)) {
       default_tasks.insert(default_task);
+      if (ash::features::ShouldArcAndGuestOsFileTasksUseAppService() &&
+          default_task.task_type == TASK_TYPE_ARC_APP) {
+        // Default preference Task Descriptors for Android apps are stored in a
+        // legacy format (app id: "<package>/<activity>", action id: "view"). To
+        // match against ARC app task descriptors (which use app id: "<app
+        // service id>", action id: "<activity>"), we translate the default Task
+        // Descriptors into the new format.
+        std::vector<std::string> app_id_info =
+            base::SplitString(default_task.app_id, "/", base::KEEP_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY);
+        if (app_id_info.size() != 2) {
+          continue;
+        }
+        const std::string& package = app_id_info[0];
+        const std::string& activity = app_id_info[1];
+
+        Profile* profile_with_app_service = GetProfileWithAppService(profile);
+        if (profile_with_app_service) {
+          // Add possible alternative forms of this task descriptor to our list
+          // of default tasks.
+          apps::AppServiceProxyFactory::GetForProfile(profile_with_app_service)
+              ->AppRegistryCache()
+              .ForEachApp([&default_tasks, package,
+                           activity](const apps::AppUpdate& update) {
+                if (update.PublisherId() == package) {
+                  TaskDescriptor alternate_default_task(
+                      update.AppId(), TASK_TYPE_ARC_APP, activity);
+                  default_tasks.insert(alternate_default_task);
+                }
+              });
+        }
+      }
     }
   }
 

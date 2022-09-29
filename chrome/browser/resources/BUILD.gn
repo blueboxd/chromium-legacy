@@ -31,7 +31,7 @@ group("resources") {
       "commander:resources",
       "downloads:resources",
       "feed:resources",
-      "feedback_webui:resources",
+      "feedback:resources",
       "gaia_auth_host:resources",
       "history:resources",
       "image_editor:trusted_resources",
@@ -40,6 +40,7 @@ group("resources") {
       "new_tab_page:resources",
       "new_tab_page_instant:resources",
       "new_tab_page_third_party:resources",
+      "password_manager:resources",
       "privacy_sandbox:resources",
       "profile_internals:resources",
       "settings:resources",
@@ -93,6 +94,7 @@ group("resources") {
 
   if (!is_android && !is_chromeos_ash) {
     public_deps += [
+      "intro:resources",
       "signin/profile_picker:resources",
       "welcome:resources",
     ]

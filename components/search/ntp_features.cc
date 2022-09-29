@@ -22,6 +22,11 @@ const base::Feature kConfirmSuggestionRemovals{
 const base::Feature kCacheOneGoogleBar{"CacheOneGoogleBar",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, Customize Chrome will be an option in the Unified Side Panel
+// when on the New Tab Page.
+const base::Feature kCustomizeChromeSidePanel{
+    "CustomizeChromeSidePanel", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the removal of the NTP background scrim and forced dark foreground
 // colors for a specific subset of Chrome Web Store themes (see
 // crbug.com/1329552). This is enabled by default to allow finch to disable this
@@ -96,7 +101,7 @@ const base::Feature kNtpModulesDragAndDrop{"NtpModulesDragAndDrop",
 
 // If enabled, the first run experience for Modular NTP Desktop v1 will show.
 const base::Feature kNtpModulesFirstRunExperience{
-    "NtpModulesFirstRunExperience", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NtpModulesFirstRunExperience", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, modules will be loaded but not shown. This is useful to determine
 // if a user would have seen modules in order to counterfactually log or
@@ -159,11 +164,6 @@ const base::Feature kNtpShortcuts{"NtpShortcuts",
 const char kNtpModulesLoadTimeoutMillisecondsParam[] =
     "NtpModulesLoadTimeoutMillisecondsParam";
 const char kNtpModulesOrderParam[] = "NtpModulesOrderParam";
-const char kNtpRecipeTasksModuleDataParam[] = "NtpRecipeTasksModuleDataParam";
-const char kNtpRecipeTasksModuleCacheMaxAgeSParam[] =
-    "NtpRecipeTasksModuleCacheMaxAgeSParam";
-const char kNtpRecipeTasksModuleExperimentGroupParam[] =
-    "NtpRecipeTasksModuleExperimentGroupParam";
 const char kNtpChromeCartModuleDataParam[] = "NtpChromeCartModuleDataParam";
 const char kNtpChromeCartModuleAbandonedCartDiscountParam[] =
     "NtpChromeCartModuleAbandonedCartDiscountParam";
@@ -179,6 +179,8 @@ const char kNtpDriveModuleCacheMaxAgeSParam[] =
     "NtpDriveModuleCacheMaxAgeSParam";
 const char kNtpDriveModuleExperimentGroupParam[] =
     "NtpDriveModuleExperimentGroupParam";
+const char kNtpMiddleSlotPromoDismissalParam[] =
+    "NtpMiddleSlotPromoDismissalParam";
 const char kNtpPhotosModuleDataParam[] = "NtpPhotosModuleDataParam";
 const char kNtpPhotosModuleOptInTitleParam[] = "NtpPhotosModuleOptInTitleParam";
 const char kNtpPhotosModuleOptInArtWorkParam[] =
@@ -191,6 +193,11 @@ const char kRealboxMatchOmniboxThemeVariantParam[] =
     "RealboxMatchOmniboxThemeVariantParam";
 const char kRealboxMatchSearchboxThemeParam[] =
     "RealboxMatchSearchboxThemeParam";
+const char kNtpRecipeTasksModuleDataParam[] = "NtpRecipeTasksModuleDataParam";
+const char kNtpRecipeTasksModuleCacheMaxAgeSParam[] =
+    "NtpRecipeTasksModuleCacheMaxAgeSParam";
+const char kNtpRecipeTasksModuleExperimentGroupParam[] =
+    "NtpRecipeTasksModuleExperimentGroupParam";
 
 base::TimeDelta GetModulesLoadTimeout() {
   std::string param_value = base::GetFieldTrialParamValueByFeature(

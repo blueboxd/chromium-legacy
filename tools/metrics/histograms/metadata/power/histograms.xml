@@ -281,7 +281,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PerformanceMonitor.ResourceCoalition.Availability"
-    enum="CoalitionIDAvailability" expires_after="2022-11-30">
+    enum="CoalitionIDAvailability" expires_after="2023-02-12">
   <owner>fdoray@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -607,6 +607,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Power.AmbientLightOnResume" units="lux"
+    expires_after="2023-02-01">
+  <owner>bkersten@chromium.org</owner>
+  <owner>slangley@chromium.org</owner>
+  <summary>
+    The Ambient Light Sensor reading sampled on resume from suspend. Only
+    applicable to Chrome OS.
+  </summary>
+</histogram>
+
 <histogram name="Power.ApproxCpuTimeSecondsPerCoreTypeAndFrequency"
     units="50 MHz" expires_after="2022-08-28">
   <obsolete>
@@ -655,23 +665,29 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Power.BacklightLevelOnAC" units="%" expires_after="2023-05-12">
+<histogram name="Power.BacklightLevel{PrivacyScreenState}{PowerSource}"
+    units="%" expires_after="2023-05-12">
   <owner>puthik@chromium.org</owner>
+  <owner>mqg@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
-    The level of the backlight as a percentage when the user is on AC. Sampled
-    every 30 seconds. Chrome OS only.
-  </summary>
-</histogram>
-
-<histogram name="Power.BacklightLevelOnBattery" units="%"
-    expires_after="2023-05-12">
-  <owner>puthik@chromium.org</owner>
-  <owner>chromeos-platform-power@google.com</owner>
-  <summary>
-    The level of the backlight as a percentage when the user is on battery.
+    The level of the backlight as a percentage when the privacy screen is in
+    {PrivacyScreenState} state and the device is powered by {PowerSource}.
     Sampled every 30 seconds. Chrome OS only.
   </summary>
+  <token key="PrivacyScreenState">
+    <variant name=""
+        summary="All Chrome OS, irrespective of whether privacy screens are
+                 present, or privacy screen state."/>
+    <variant name="PrivacyScreenDisabled"
+        summary="Chrome OS with privacy screens only."/>
+    <variant name="PrivacyScreenEnabled"
+        summary="Chrome OS with privacy screens only."/>
+  </token>
+  <token key="PowerSource">
+    <variant name="OnAC"/>
+    <variant name="OnBattery"/>
+  </token>
 </histogram>
 
 <histogram name="Power.BatteryChargeHealth" units="%"
@@ -698,7 +714,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatteryDischargeRate" units="mW"
-    expires_after="2022-11-30">
+    expires_after="2023-02-12">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -825,7 +841,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatterySamplingDelay" units="microseconds"
-    expires_after="2022-11-30">
+    expires_after="2023-02-12">
   <owner>etiennep@chromium.org</owner>
   <owner>fdoray@chromium.org</owner>
   <summary>
@@ -951,7 +967,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.CpuTimeSecondsPerProcessType" enum="ProcessType2"
-    expires_after="2022-11-27">
+    expires_after="2023-01-29">
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -1021,7 +1037,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Power.DarkMode{prefers-color-scheme}.InferredDarkPageColorScheme"
-    enum="BooleanIsDarkColorScheme" expires_after="2022-09-24">
+    enum="BooleanIsDarkColorScheme" expires_after="2023-09-24">
   <owner>michaelbai@chromium.org</owner>
   <owner>pdr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
@@ -1719,7 +1735,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.Mac.IsOnBattery2" enum="BooleanOnBattery"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>avi@chromium.org</owner>
   <owner>lgrey@chromium.org</owner>
   <summary>
@@ -1801,7 +1817,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.PowerButtonPressed" units="units"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>emaamari@google.com</owner>
   <owner>chromeos-commercial-identity@google.com</owner>
   <summary>

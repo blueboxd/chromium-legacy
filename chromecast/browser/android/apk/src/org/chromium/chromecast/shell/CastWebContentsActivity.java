@@ -100,8 +100,6 @@ public class CastWebContentsActivity extends Activity {
                 mIsFinishingState.andThen(mGotIntentState).map(Both::getSecond);
         Observable<?> createdAndNotTestingState =
                 mCreatedState.and(Observable.not(mIsTestingState));
-        Observable<?> startedAndNotTestingState =
-                mStartedState.and(Observable.not(mIsTestingState));
         createdAndNotTestingState.subscribe(x -> {
             // Register handler for web content stopped event while we have an Intent.
             IntentFilter filter = new IntentFilter();
@@ -115,6 +113,13 @@ public class CastWebContentsActivity extends Activity {
             CastBrowserHelper.initializeBrowser(getApplicationContext());
 
             setContentView(R.layout.cast_web_contents_activity);
+
+            mSurfaceHelperState.set(new CastWebContentsSurfaceHelper(
+                    CastWebContentsScopes.onLayoutActivity(this,
+                            (FrameLayout) findViewById(R.id.web_contents_container),
+                            CastSwitches.getSwitchValueColor(
+                                    CastSwitches.CAST_APP_BACKGROUND_COLOR, Color.BLACK)),
+                    (Uri uri) -> mIsFinishingState.set("Delayed teardown for URI: " + uri)));
         }));
 
         mSurfaceHelperState.subscribe((CastWebContentsSurfaceHelper surfaceHelper) -> {
@@ -133,6 +138,13 @@ public class CastWebContentsActivity extends Activity {
                 // Turn the screen on only if the launching Intent asks to.
                 .filter(CastWebContentsIntentUtils::shouldTurnOnScreen)
                 .subscribe(Observers.onEnter(x -> turnScreenOn()));
+
+        mCreatedState.and(mGotIntentState)
+                .map(Both::getSecond)
+                .filter(CastWebContentsIntentUtils::shouldKeepScreenOn)
+                .subscribe(Observers.onEnter(x -> {
+                    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                }));
 
         // Handle each new Intent.
         Controller<CastWebContentsSurfaceHelper.StartParams> startParamsState = new Controller<>();
@@ -159,23 +171,10 @@ public class CastWebContentsActivity extends Activity {
             Intent visible = CastWebContentsIntentUtils.onVisibilityChange(
                     instanceId, CastWebContentsIntentUtils.VISIBITY_TYPE_FULL_SCREEN);
             LocalBroadcastManager.getInstance(ctx).sendBroadcastSync(visible);
-
             return () -> {
                 Intent hidden = CastWebContentsIntentUtils.onVisibilityChange(
                         instanceId, CastWebContentsIntentUtils.VISIBITY_TYPE_HIDDEN);
                 LocalBroadcastManager.getInstance(ctx).sendBroadcastSync(hidden);
-            };
-        });
-
-        startedAndNotTestingState.subscribe(x -> {
-            mSurfaceHelperState.set(new CastWebContentsSurfaceHelper(
-                    CastWebContentsScopes.onLayoutActivity(this,
-                            (FrameLayout) findViewById(R.id.web_contents_container),
-                            CastSwitches.getSwitchValueColor(
-                                    CastSwitches.CAST_APP_BACKGROUND_COLOR, Color.BLACK)),
-                    (Uri uri) -> mIsFinishingState.set("Delayed teardown for URI: " + uri)));
-            return () -> {
-                mSurfaceHelperState.reset();
             };
         });
 

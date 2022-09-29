@@ -20,7 +20,8 @@ class StubWebView : public WebView {
   std::string GetId() override;
   bool WasCrashed() override;
   Status ConnectIfNecessary() override;
-  Status SetUpDevTools() override;
+  Status HandleEventsUntil(const ConditionalFunc& conditional_func,
+                           const Timeout& timeout) override;
   Status HandleReceivedEvents() override;
   Status GetUrl(std::string* url) override;
   Status Load(const std::string& url, const Timeout* timeout) override;
@@ -42,26 +43,26 @@ class StubWebView : public WebView {
                         std::unique_ptr<base::Value>* result) override;
   Status CallFunction(const std::string& frame,
                       const std::string& function,
-                      const base::ListValue& args,
+                      const base::Value::List& args,
                       std::unique_ptr<base::Value>* result) override;
   Status CallAsyncFunction(const std::string& frame,
                            const std::string& function,
-                           const base::ListValue& args,
+                           const base::Value::List& args,
                            const base::TimeDelta& timeout,
                            std::unique_ptr<base::Value>* result) override;
   Status CallUserAsyncFunction(const std::string& frame,
                                const std::string& function,
-                               const base::ListValue& args,
+                               const base::Value::List& args,
                                const base::TimeDelta& timeout,
                                std::unique_ptr<base::Value>* result) override;
   Status CallUserSyncScript(const std::string& frame,
                             const std::string& script,
-                            const base::ListValue& args,
+                            const base::Value::List& args,
                             const base::TimeDelta& timeout,
                             std::unique_ptr<base::Value>* result) override;
   Status GetFrameByFunction(const std::string& frame,
                             const std::string& function,
-                            const base::ListValue& args,
+                            const base::Value::List& args,
                             std::string* out_frame) override;
   Status DispatchMouseEvents(const std::vector<MouseEvent>& events,
                              const std::string& frame,

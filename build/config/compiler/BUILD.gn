@@ -148,15 +148,6 @@ declare_args() {
   # The gold linker by default has text section splitting enabled.
   use_text_section_splitting = false
 
-  # Token limits may not be accurate for build configs not covered by the CQ,
-  # so only enable them by default for mainstream build configs.
-  enable_wmax_tokens =
-      !is_official_build && !(is_component_build && !is_debug) &&
-      ((is_mac && target_cpu == "x64" && !use_system_xcode) ||
-       (is_linux && target_cpu == "x64") || (is_win && target_cpu == "x86") ||
-       (is_win && target_cpu == "x64") || (is_android && target_cpu == "arm") ||
-       (is_android && target_cpu == "arm64"))
-
   # Turn off the --call-graph-profile-sort flag for lld by default. Enable
   # selectively for targets where it's beneficial.
   enable_call_graph_profile_sort = chrome_pgo_phase == 2
@@ -1536,30 +1527,18 @@ config("default_warnings") {
         "-Wno-ignored-pragma-optimize",
       ]
 
+      if (llvm_force_head_revision && !is_nacl) {
+        cflags += [
+          # TODO(crbug.com/1352183) Evaluate and possibly enable.
+          "-Wno-bitfield-constant-conversion",
+        ]
+      }
+
       if (!is_nacl) {
-        # TODO(https://crbug.com/1300731) Clean up and enable.
-        cflags += [ "-Wno-unqualified-std-cast-call" ]
-
-        # Do not set the below flags if it's nacl as nacl-clang doesn't have the
-        # patches that require these flags.
-        if (llvm_force_head_revision) {
-          cflags += [
-            # TODO(crbug.com/1343303) Evaluate and possibly enable.
-            "-Wno-array-parameter",
-
-            # TODO(crbug.com/1343975) Evaluate and possibly enable.
-            "-Wno-deprecated-builtins",
-          ]
-        }
-      }
-
-      if (is_fuchsia) {
-        # TODO(https://bugs.chromium.org/p/fuchsia/issues/detail?id=77383)
-        cflags += [ "-Wno-deprecated-copy" ]
-      }
-
-      if (enable_wmax_tokens) {
-        cflags += [ "-Wmax-tokens" ]
+        cflags += [
+          # TODO(crbug.com/1343975) Evaluate and possibly enable.
+          "-Wno-deprecated-builtins",
+        ]
       }
     }
   }
@@ -1665,8 +1644,7 @@ config("chromium_code") {
   if (is_clang) {
     cflags += [
       # Warn on missing break statements at the end of switch cases.
-      # For intentional fallthrough, use FALLTHROUGH; from
-      # base/compiler_specific.h
+      # For intentional fallthrough, use [[fallthrough]].
       "-Wimplicit-fallthrough",
     ]
 

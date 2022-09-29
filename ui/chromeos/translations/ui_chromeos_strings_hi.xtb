@@ -5,6 +5,7 @@
 <translation id="1047956942837015229"><ph name="COUNT" /> आइटम हटा रहा है...</translation>
 <translation id="1049926623896334335">Word दस्तावेज़</translation>
 <translation id="1056775291175587022">नेटवर्क नहीं है</translation>
+<translation id="1056898198331236512">चेतावनी</translation>
 <translation id="1060368002126861100"><ph name="APP_NAME" /> में फ़ाइलें खोलने के लिए, पहले उन्हें Windows के फ़ाइल फ़ोल्डर में ले जाएं.</translation>
 <translation id="1062407476771304334">प्रतिस्थापित करें</translation>
 <translation id="1119447706177454957">आंतरिक गड़बड़ी</translation>
@@ -104,7 +105,6 @@
 <translation id="1832073788765803750">हाफ़ विड्थ काताकाना</translation>
 <translation id="1834290891154666894">विषय के दूसरे नाम से मिलती-जुलती एंट्री अमान्य है</translation>
 <translation id="1838709767668011582">Google साइट</translation>
-<translation id="1844692022597038441">यह फा़इल ऑफ़लाइन उपलब्ध नहीं है.</translation>
 <translation id="1853795129690976061">यह फ़ोल्डर, Linux के साथ शेयर किया गया है</translation>
 <translation id="1864756863218646478">फ़ाइल नहीं मिल सकी.</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, कनेक्ट करें</translation>
@@ -149,7 +149,6 @@
 <translation id="2282155092769082568">URL का अपने आप कॉन्‍फ़िगरेशन:</translation>
 <translation id="2288278176040912387">रिकॉर्ड प्‍लेयर</translation>
 <translation id="2291538123825441971"><ph name="NUMBER_OF_FILES" /> फ़ाइलें खुल रही हैं.</translation>
-<translation id="2303282178633578561">सिम कार्ड लॉक करें</translation>
 <translation id="2303301624314357662"><ph name="FILE_NAME" /> फ़ाइल खुल रही है.</translation>
 <translation id="2304820083631266885">ग्रह</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> को निकाल लिया गया है.</translation>
@@ -185,13 +184,10 @@
 <translation id="2544853746127077729">नेटवर्क द्वारा प्रमाणीकरण प्रमाणपत्र अस्वीकार किया गया</translation>
 <translation id="255937426064304553">यूएस अंतर्राष्ट्रीय</translation>
 <translation id="2563185590376525700">मेढक</translation>
-<translation id="2570012981255377263">आपकी हाल ही की फ़ाइलें यहां दिखेंगी</translation>
 <translation id="2578394532502990878">तमिल फ़ोनेटिक</translation>
 <translation id="2579959351793446050">ओडिया</translation>
-<translation id="2593644851255584939">आपका एडमिन चाहता है कि आप सिम लॉक की सुविधा बंद करें.</translation>
 <translation id="2602810353103180630"><ph name="NETWORK_COUNT" /> में से नेटवर्क <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, सिग्नल का स्तर <ph name="SIGNAL_STRENGTH" />%, आपके एडमिन ने ब्लॉक किया है, ब्यौरा</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> वीडियो</translation>
-<translation id="2617342710774726426">सिम कार्ड लॉक है</translation>
 <translation id="2620090360073999360">इस समय Google डिस्क तक नहीं पहुंचा जा सकता.</translation>
 <translation id="2621713457727696555">सुरक्षित</translation>
 <translation id="2638942478653899953">Google डिस्क तक नहीं पहुंचा जा सका. कृपया <ph name="BEGIN_LINK" />लॉग आउट करें<ph name="END_LINK" /> और वापस प्रवेश करें.</translation>
@@ -249,13 +245,13 @@
 <translation id="3138624403379688522">आपने गलत पिन डाला है. आप <ph name="RETRIES" /> बार और कोशिश कर सकते हैं.</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (हार्डवेयर समर्थित)</translation>
 <translation id="3188257591659621405">मेरी फ़ाइलें</translation>
+<translation id="3194553149358267393">हाल ही की कोई ऑडियो फ़ाइल नहीं मिली</translation>
 <translation id="3197563288998582412">यूके ड्वोरक</translation>
 <translation id="3202131003361292969">पाथ</translation>
 <translation id="3205852408225871810">पॉर्चुगीज़ (ब्राज़ील)</translation>
 <translation id="3224239078034945833">कनाडियाई बहुभाषी</translation>
 <translation id="3236289833370040187">स्वामित्व <ph name="DESTINATION_DOMAIN" /> को स्थानांतरित कर दिया जाएगा.</translation>
 <translation id="3241720467332021590">आयरिश</translation>
-<translation id="3245321423178950146">अज्ञात कलाकार</translation>
 <translation id="3248185426436836442">रुका हुआ है</translation>
 <translation id="3252266817569339921">फ़्रांसीसी</translation>
 <translation id="3253225298092156258">उपलब्ध नहीं है</translation>
@@ -290,6 +286,7 @@
 <translation id="3479552764303398839">अभी नहीं</translation>
 <translation id="3486821258960016770">मंगोलियन</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> त्रुटियां.</translation>
+<translation id="3495810061346586977">यह फ़ाइल गोपनीय है और एडमिन की नीति के तहत, इस पर पाबंदियां लगाई गई हैं. <ph name="BEGIN_LINK_HELP" />ज़्यादा जानें<ph name="END_LINK_HELP" /></translation>
 <translation id="3509680540198371098"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />%, जानकारी</translation>
 <translation id="3522708245912499433">पुर्तगाली</translation>
 <translation id="3524311639100184459">चेतावनी: ये फ़ाइलें अस्थायी हैं और डिस्क की जगह खाली करने के लिए अपने-आप मिटाई जा सकती हैं.  <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" /></translation>
@@ -303,9 +300,10 @@
 <translation id="3592251141500063301"><ph name="FILE_NAME" /> को ऑफ़लाइन मोड में इस्तेमाल करने के लिए डाउनलोड नहीं किया जा सका</translation>
 <translation id="3601151620448429694"><ph name="NETWORK_NAME" /> · <ph name="CARRIER_NAME" /></translation>
 <translation id="3603385196401704894">कनाडाई फ़्रेंच</translation>
-<translation id="3606220979431771195">तुर्किये-F</translation>
+<translation id="3606220979431771195">तुर्की-F</translation>
 <translation id="3616113530831147358">ऑडियो</translation>
 <translation id="3619115746895587757">कैपुचिनो</translation>
+<translation id="3619593063686672873">हाल ही का कोई वीडियो नहीं मिला</translation>
 <translation id="3620292326130836921">सभी का बैक अप लिया गया!</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, आपका एडमिन प्रबंधित करता है, जानकारी</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> आइटम भेजे गए.</translation>
@@ -343,7 +341,6 @@
 <translation id="3943857333388298514">चिपकाएं</translation>
 <translation id="3952872973865944257">तेलुगु फ़ोनेटिक</translation>
 <translation id="3958548648197196644">कीवी</translation>
-<translation id="3966388904776714213">ऑडियो प्लेयर</translation>
 <translation id="3971140002794351170">मोबाइल प्रोफ़ाइल डाउनलोड करें. यह <ph name="NETWORK_PROVIDER_NAME" /> के <ph name="NETWORK_COUNT" /> <ph name="NETWORK_NAME" /> नेटवर्क में से नेटवर्क <ph name="NETWORK_INDEX" /> है</translation>
 <translation id="3973925058222872294">अंग्रेज़ी (यूके)</translation>
 <translation id="3975895378829046965">बांग्ला फ़ोनेटिक</translation>
@@ -353,7 +350,6 @@
 <translation id="4057991113334098539">सक्रिय कर रहा है...</translation>
 <translation id="4092890906744441904">आयरिश</translation>
 <translation id="4124935795427217608">यूनिकॉर्न</translation>
-<translation id="4158739975813877944">प्‍ले लिस्‍ट खोलें</translation>
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> को भेज दिया गया.</translation>
 <translation id="4186579485882418952">ऑफ़लाइन मोड चालू करें</translation>
 <translation id="4193154014135846272">Google दस्‍तावेज़</translation>
@@ -406,6 +402,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> फ़ाइल</translation>
 <translation id="457386861538956877">ज़्यादा...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> को चुनी गई चीज़ों के साथ जोड़ा गया.</translation>
+<translation id="4583436353463424810">हाल ही का कोई दस्तावेज़ नहीं मिला</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> के लिए खोज नतीजे दिखाए जा रहे हैं.</translation>
 <translation id="4599600860674643278">फ़िल्टर, 'रीसेट करें' पर सेट है.</translation>
 <translation id="4603392156942865207"><ph name="FILE_NAME" />, <ph name="FOLDER_NAME" /> में कॉपी की जा रही है</translation>
@@ -423,7 +420,7 @@
 <translation id="4697043402264950621">फ़ाइल की सूची <ph name="COLUMN_NAME" /> के हिसाब से बढ़ते क्रम में लगाई गई है.</translation>
 <translation id="469897186246626197">यह फ़ाइल, Windows सॉफ़्टवेयर का इस्तेमाल करने वाले कंप्यूटर के लिए बनाई गई है. यह ChromeOS वाले आपके डिवाइस के साथ काम नहीं करती. ChromeOS पर फ़ाइलें खोलने के बारे में <ph name="BEGIN_LINK_HELP" />ज़्यादा जानें<ph name="END_LINK_HELP" />.</translation>
 <translation id="4706042980341760088">टाइपराइटर कीबोर्ड के साथ तमिल</translation>
-<translation id="4711094779914110278">तुर्किये</translation>
+<translation id="4711094779914110278">तुर्की</translation>
 <translation id="4712283082407695269">"<ph name="PATH" />" को खोला जा रहा है</translation>
 <translation id="4720185134442950733">मोबाइल डेटा नेटवर्क</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> फ़ोटो का बैक अप लिया गया</translation>
@@ -492,7 +489,9 @@
 <translation id="5159560892333415631">ट्रैश को खाली करें</translation>
 <translation id="5163869187418756376">शेयर नहीं किया जा सका. अपना कनेक्शन जाँचें और बाद में फिर से कोशिश करें.</translation>
 <translation id="516592729076796170">यूएस प्रोग्रामर ड्वोरक</translation>
+<translation id="5172749059808361023">पाबंदी की जानकारी</translation>
 <translation id="5177526793333269655">थंबनेल व्यू</translation>
+<translation id="5181896909298187506">हाल ही की कोई फ़ाइल नहीं मिली</translation>
 <translation id="5194713942430106590">स्तंभ को बढ़ते क्रम में लगाने के लिए क्लिक करें.</translation>
 <translation id="5211614973734216083">फ़ेरोसे</translation>
 <translation id="5218183485292899140">स्विस फ़्रेंच</translation>
@@ -533,7 +532,6 @@
 <translation id="5489067830765222292">लातवियन</translation>
 <translation id="5489965683297092283"><ph name="FILTER_NAME" /> फ़िल्टर बंद है.</translation>
 <translation id="5494920125229734069">सभी को चुनें</translation>
-<translation id="5500104704744051184">जब तक PUK नहीं डाला जाता, तब तक इस नेटवर्क का इस्तेमाल नहीं किया जा सकेगा</translation>
 <translation id="5500122897333236901">आइसलैंडिक</translation>
 <translation id="5508696409934741614">बिंदु</translation>
 <translation id="5522908512596376669">फ़ाइल की सूची को अब सूची की तरह दिखाया जा रहा है.</translation>
@@ -549,7 +547,6 @@
 <translation id="5625294776298156701">Tamil99 कीबोर्ड के साथ तमिल</translation>
 <translation id="5633226425545095130">इस आइटम को कहीं और ट्रांसफ़र करने से, यह उन सभी लोगों के साथ शेयर हो जाएगा जो इस शेयर किए जाने वाले फ़ोल्डर '<ph name="DESTINATION_NAME" />' को देख सकते हैं.</translation>
 <translation id="5649768706273821470">सुनें</translation>
-<translation id="5665074015635552640">आपके हाल ही के वीडियो यहां दिखेंगे</translation>
 <translation id="5669691691057771421">नया पिन डालें</translation>
 <translation id="5678784840044122290">Linux ऐप्लिकेशन आपके 'टर्मिनल' में उपलब्ध होगा और आपके 'लॉन्चर' में एक आइकॉन भी दिखाई दे सकता है.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />किसी संग्रह या वर्चुअल डिस्क से डिसकनेक्ट नहीं किया जा सकता<ph name="END_BOLD" />
@@ -618,7 +615,6 @@
 <translation id="6220423280121890987">पंजाबी</translation>
 <translation id="6224240818060029162">डेनिश</translation>
 <translation id="6224253798271602650"><ph name="DRIVE_NAME" /> फ़ॉर्मैट करें</translation>
-<translation id="6227235786875481728">यह फ़ाइल चलाई नहीं जा सकती.</translation>
 <translation id="6241349547798190358">डच (बेल्जियम)</translation>
 <translation id="6267547857941397424"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="PHONE_NAME" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />%, फ़ोन की बैटरी <ph name="BATTERY_STATUS" />%, कनेक्ट करें</translation>
 <translation id="6269630227984243955">मलय</translation>
@@ -634,6 +630,7 @@
 <translation id="6356685157277930264">फ़ाइलों के सुझाव वाली विंडो</translation>
 <translation id="6358884629796491903">ड्रैगन</translation>
 <translation id="636254897931573416">डोमेन सफ़िक्स से मिलती-जुलती वैल्यू अमान्य है</translation>
+<translation id="6364301859968397756">संगठन के डिवाइस का स्टोरेज भर गया है</translation>
 <translation id="6367976544441405720">वैन</translation>
 <translation id="637062427944097960">यह फ़ाइल किसी अलग डेस्कटॉप पर खुली है. उसे देखने के लिए <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) पर जाएं.</translation>
 <translation id="6394388407447716302">सिर्फ़ पढ़ने के लिए</translation>
@@ -694,7 +691,6 @@
     <ph name="FILE_COUNT" /> मिल गया</translation>
 <translation id="6935521024859866267">ऊपरी भाग नीचे</translation>
 <translation id="6943836128787782965">HTTP विफल हुआ</translation>
-<translation id="6945604978460872381">आपके हाल ही के दस्तावेज़ यहां दिखेंगे</translation>
 <translation id="6949408524333579394">सर्बियन ट्रांसलिट्रेशन</translation>
 <translation id="6954309393500027528">आपके एडमिन ने इस फ़ाइल को चिपकाने की सुविधा को ब्लॉक कर दिया है</translation>
 <translation id="6960565108681981554">यह चालू नहीं है. मोबाइल और इंटरनेट सेवा देने वाली कंपनी से संपर्क करें.</translation>
@@ -711,7 +707,7 @@
 <translation id="7008426324576352165">अपलोड को पूरा करने के लिए, आपके संगठन को ज़्यादा स्टोरेज की ज़रूरत है.</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">स्थापना विफल.</translation>
-<translation id="7031639531908619281">तुर्किये</translation>
+<translation id="7031639531908619281">तुर्की</translation>
 <translation id="7037472120706603960">तमिल ट्रांसलिट्रेशन</translation>
 <translation id="7040138676081995583">इसके साथ खोलें...</translation>
 <translation id="7048024426273850086"><ph name="NETWORK_COUNT" /> में से नेटवर्क <ph name="NETWORK_INDEX" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />%, फ़ोन की बैटरी <ph name="BATTERY_STATUS" />%, कनेक्ट करें</translation>
@@ -742,7 +738,6 @@
 <translation id="7295662345261934369">दूसरों से शेयर करें</translation>
 <translation id="7297443947353982503">उपयोगकर्ता नाम/पासवर्ड गलत या EAP-प्रमाणीकरण विफल रहा</translation>
 <translation id="7309413087278791451">जर्मन (बेल्जियम)</translation>
-<translation id="7313374447885864533">आपकी हाल ही की ऑडियो फ़ाइलें यहां दिखेंगी</translation>
 <translation id="7339898014177206373">नई विंडो</translation>
 <translation id="7343393116438664539">वियतनामीज़ टेलेक्स</translation>
 <translation id="7357762654218998920">यह फ़ाइल टाइप, ChromeOS के साथ काम नहीं करता. ChromeOS पर फ़ाइलें खोलने के बारे में <ph name="BEGIN_LINK_HELP" />ज़्यादा जानें<ph name="END_LINK_HELP" />.</translation>
@@ -752,6 +747,7 @@
 <translation id="7408870451288633753">चेक</translation>
 <translation id="7417453074306512035">इथिओपियाई कीबोर्ड</translation>
 <translation id="7417705661718309329">Google मैप</translation>
+<translation id="7458955835361612701">हाल ही की कोई इमेज नहीं मिली</translation>
 <translation id="7460898608667578234">उक्रेनियाई</translation>
 <translation id="7469894403370665791">इस नेटवर्क से अपने आप कनेक्ट करें</translation>
 <translation id="7486315294984620427">फाइलों को Parallels Desktop में डालने के लिए, Windows की फ़ाइलों में कॉपी किया जाना ज़रूरी है.</translation>
@@ -765,7 +761,6 @@
 <translation id="751507702149411736">बेलारूसी</translation>
 <translation id="7532029025027028521">फ़ारसी ट्रांसलिट्रेशन</translation>
 <translation id="7544830582642184299">Linux ऐप्लिकेशन को Google Drive में सेव की गई फ़ाइलें ऐक्सेस करने की अनुमति दें. बदलावों को आपके दूसरे डिवाइस में सिंक किया जाएगा.</translation>
-<translation id="7544853251252956727">शफ़ल करें</translation>
 <translation id="7547009467130558110">स्नीकर</translation>
 <translation id="7547780573915868306">लिथुआनियन</translation>
 <translation id="7547811415869834682">डच</translation>
@@ -815,7 +810,6 @@
 <translation id="7831491651892296503">नेटवर्क कॉन्फ़िगर करने में गड़बड़ी</translation>
 <translation id="7839804798877833423">इन फ़ाइलों को लाने में मोबाइल डेटा का करीब <ph name="FILE_SIZE" /> उपयोग होगा.</translation>
 <translation id="7846076177841592234">चुना गया हटाएं</translation>
-<translation id="7847617962681804761">मोबाइल डेटा के इस्तेमाल के लिए पिन ज़रूरी है</translation>
 <translation id="7853966320808728790">फ़्रेंच बेपो</translation>
 <translation id="7857117644404132472">अपवाद जोड़ें</translation>
 <translation id="7868774406711971383">पोलिश</translation>
@@ -841,7 +835,6 @@
 <translation id="8045462269890919536">रोमानियाई</translation>
 <translation id="8049184478152619004">निजी अनब्लॉकिंग कुंजी (PUK) डालें</translation>
 <translation id="807187749540895545"><ph name="FILE_NAME" /> को ढूंढा जा रहा है...</translation>
-<translation id="8079530767338315840">दोहराएं</translation>
 <translation id="8087576439476816834"><ph name="PROFILE_NAME" /> डाउनलोड करें</translation>
 <translation id="8106045200081704138">मुझसे शेयर किया गया</translation>
 <translation id="8116072619078571545">ठंडा पानी</translation>
@@ -855,7 +848,6 @@
 <translation id="8175731104491895765">फ़्रेंच (बेल्जियम)</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">डिवाइस मॉडल</translation>
-<translation id="8208580316430297579">आर्टवर्क</translation>
 <translation id="8223479393428528563">इन फ़ाइलों को ऑफ़लाइन देखने को सेव करने के लिए, फिर से ऑनलाइन होकर, फ़ाइलों पर राइट-क्‍लिक करें और <ph name="OFFLINE_CHECKBOX_NAME" /> विकल्‍प चुनें.</translation>
 <translation id="8249296373107784235">रद्द करें</translation>
 <translation id="8250690786522693009">लैटिन</translation>
@@ -876,7 +868,6 @@
 <translation id="8342318071240498787">समान नाम वाली फ़ाइल या निर्देशिका पहले से ही मौजूद है.</translation>
 <translation id="8372369524088641025">ख़राब WEP कुंजी</translation>
 <translation id="8372852072747894550">ग्रीक</translation>
-<translation id="8384716930968677505">आपकी हाल ही की इमेज यहां दिखेंगी</translation>
 <translation id="8386903983509584791">स्कैन पूरा हुआ</translation>
 <translation id="8387733224523483503"><ph name="FILE_NAME" /> मिली</translation>
 <translation id="8395901698320285466">आयाम</translation>
@@ -912,7 +903,6 @@
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> आइटम समन्‍वयित कर रहा है...</translation>
 <translation id="8600173386174225982">फ़ाइल की सूची अब थंबनेल की तरह दिखाई जा रही है.</translation>
 <translation id="8601932370724196034">Crostini इमेज फ़ाइल</translation>
-<translation id="8608515571837163082">कई बार गलत पिन डाला गया. मोबाइल और इंटरनेट सेवा देने वाली कंपनी से मिली आठ अंकों वाली निजी अनब्लॉकिंग कुंजी (PUK) डालें.</translation>
 <translation id="8609695766746872526">आइसलैंडिक</translation>
 <translation id="863903787380594467">आपने गलत पिन डाला है. आप <ph name="RETRIES" /> बार और कोशिश कर सकते हैं.</translation>
 <translation id="8639391553632924850"><ph name="INPUT_LABEL" /> - पोर्ट</translation>
@@ -950,7 +940,6 @@
 <translation id="9034924485347205037">Linux की फ़ाइलें</translation>
 <translation id="9035012421917565900">ये आइटम '<ph name="DESTINATION_NAME" />' में वापस नहीं ले जाए जा सकते हैं, इसलिए आप इस कार्रवाई को पहले जैसा नहीं कर सकेंगे.</translation>
 <translation id="9035689366572880647">मौजूदा पिन डालें</translation>
-<translation id="9037777873893411148">*संगठन के डिवाइस का स्टोरेज भर गया है</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" नाम की फ़ाइल पहले से मौजूद है. कृपया कोई दूसरा नाम चुनें.</translation>
 <translation id="9046895021617826162">कनेक्ट करना विफल</translation>
 <translation id="9065512565307033593">अगर आप पुष्टि नहीं कर पाते, तो आपके नेटवर्क का ऐक्सेस बंद कर दिया जाएगा.</translation>

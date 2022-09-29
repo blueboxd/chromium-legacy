@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/json/json_writer.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -43,8 +44,8 @@ const WebUI::TypeID WebUI::kNoWebUI = nullptr;
 
 // static
 std::u16string WebUI::GetJavascriptCall(
-    const std::string& function_name,
-    const std::vector<const base::Value*>& arg_list) {
+    base::StringPiece function_name,
+    base::span<const base::ValueView> arg_list) {
   std::u16string result(base::ASCIIToUTF16(function_name));
   result.push_back('(');
 
@@ -53,7 +54,7 @@ std::u16string WebUI::GetJavascriptCall(
     if (i > 0)
       result.push_back(',');
 
-    base::JSONWriter::Write(*arg_list[i], &json);
+    base::JSONWriter::Write(arg_list[i], &json);
     result.append(base::UTF8ToUTF16(json));
   }
 
@@ -206,59 +207,16 @@ bool WebUIImpl::CanCallJavascript() {
           frame_host_->GetLastCommittedURL().spec() == url::kAboutBlankURL);
 }
 
-void WebUIImpl::CallJavascriptFunctionUnsafe(const std::string& function_name) {
+void WebUIImpl::CallJavascriptFunctionUnsafe(base::StringPiece function_name) {
   DCHECK(base::IsStringASCII(function_name));
-  std::u16string javascript = base::ASCIIToUTF16(function_name + "();");
+  std::u16string javascript =
+      base::ASCIIToUTF16(base::StrCat({function_name, "();"}));
   ExecuteJavascript(javascript);
 }
 
-void WebUIImpl::CallJavascriptFunctionUnsafe(const std::string& function_name,
-                                             const base::Value& arg) {
-  DCHECK(base::IsStringASCII(function_name));
-  std::vector<const base::Value*> args;
-  args.push_back(&arg);
-  ExecuteJavascript(GetJavascriptCall(function_name, args));
-}
-
-void WebUIImpl::CallJavascriptFunctionUnsafe(const std::string& function_name,
-                                             const base::Value& arg1,
-                                             const base::Value& arg2) {
-  DCHECK(base::IsStringASCII(function_name));
-  std::vector<const base::Value*> args;
-  args.push_back(&arg1);
-  args.push_back(&arg2);
-  ExecuteJavascript(GetJavascriptCall(function_name, args));
-}
-
-void WebUIImpl::CallJavascriptFunctionUnsafe(const std::string& function_name,
-                                             const base::Value& arg1,
-                                             const base::Value& arg2,
-                                             const base::Value& arg3) {
-  DCHECK(base::IsStringASCII(function_name));
-  std::vector<const base::Value*> args;
-  args.push_back(&arg1);
-  args.push_back(&arg2);
-  args.push_back(&arg3);
-  ExecuteJavascript(GetJavascriptCall(function_name, args));
-}
-
-void WebUIImpl::CallJavascriptFunctionUnsafe(const std::string& function_name,
-                                             const base::Value& arg1,
-                                             const base::Value& arg2,
-                                             const base::Value& arg3,
-                                             const base::Value& arg4) {
-  DCHECK(base::IsStringASCII(function_name));
-  std::vector<const base::Value*> args;
-  args.push_back(&arg1);
-  args.push_back(&arg2);
-  args.push_back(&arg3);
-  args.push_back(&arg4);
-  ExecuteJavascript(GetJavascriptCall(function_name, args));
-}
-
 void WebUIImpl::CallJavascriptFunctionUnsafe(
-    const std::string& function_name,
-    const std::vector<const base::Value*>& args) {
+    base::StringPiece function_name,
+    base::span<const base::ValueView> args) {
   DCHECK(base::IsStringASCII(function_name));
   ExecuteJavascript(GetJavascriptCall(function_name, args));
 }
@@ -266,12 +224,6 @@ void WebUIImpl::CallJavascriptFunctionUnsafe(
 void WebUIImpl::RegisterMessageCallback(base::StringPiece message,
                                         MessageCallback callback) {
   message_callbacks_.emplace(message, std::move(callback));
-}
-
-void WebUIImpl::RegisterDeprecatedMessageCallback(
-    base::StringPiece message,
-    const DeprecatedMessageCallback& callback) {
-  deprecated_message_callbacks_.emplace(message, callback);
 }
 
 void WebUIImpl::ProcessWebUIMessage(const GURL& source_url,
@@ -284,16 +236,6 @@ void WebUIImpl::ProcessWebUIMessage(const GURL& source_url,
   if (callback_pair != message_callbacks_.end()) {
     // Forward this message and content on.
     callback_pair->second.Run(args);
-    return;
-  }
-
-  // Look up the deprecated callback for this message.
-  auto deprecated_callback_pair = deprecated_message_callbacks_.find(message);
-  if (deprecated_callback_pair != deprecated_message_callbacks_.end()) {
-    base::Value value(std::move(args));
-    const base::ListValue& list_value = base::Value::AsListValue(value);
-    // Forward this message and content on.
-    deprecated_callback_pair->second.Run(&list_value);
     return;
   }
 

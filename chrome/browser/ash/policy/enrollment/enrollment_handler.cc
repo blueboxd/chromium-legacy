@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/components/attestation/attestation_flow.h"
 #include "ash/constants/ash_switches.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -28,15 +27,17 @@
 #include "chrome/browser/ash/policy/core/dm_token_storage.h"
 #include "chrome/browser/ash/policy/dev_mode/dev_mode_policy_util.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_type_checker.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_status.h"
 #include "chrome/browser/ash/policy/enrollment/tpm_enrollment_key_signing_service.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/attestation/attestation_flow.h"
 #include "chromeos/ash/components/dbus/authpolicy/authpolicy_client.h"
+#include "chromeos/ash/components/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/ash/components/dbus/upstart/upstart_client.h"
-#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -134,6 +135,12 @@ em::DeviceRegisterRequest::Flavor EnrollmentModeToRegistrationFlavor(
     case EnrollmentConfig::MODE_ATTESTATION_INITIAL_MANUAL_FALLBACK:
       return em::DeviceRegisterRequest::
           FLAVOR_ENROLLMENT_ATTESTATION_INITIAL_MANUAL_FALLBACK;
+    case EnrollmentConfig::MODE_ATTESTATION_ROLLBACK_FORCED:
+      return em::DeviceRegisterRequest::
+          FLAVOR_ENROLLMENT_ATTESTATION_ROLLBACK_FORCED;
+    case EnrollmentConfig::MODE_ATTESTATION_ROLLBACK_MANUAL_FALLBACK:
+      return em::DeviceRegisterRequest::
+          FLAVOR_ENROLLMENT_ATTESTATION_ROLLBACK_MANUAL_FALLBACK;
   }
 
   NOTREACHED() << "Bad enrollment mode: " << mode;

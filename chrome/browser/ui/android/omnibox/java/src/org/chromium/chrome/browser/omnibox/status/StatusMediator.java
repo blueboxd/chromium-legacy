@@ -18,8 +18,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.Callback;
 import org.chromium.base.MathUtils;
+import org.chromium.base.Promise;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -40,7 +40,6 @@ import org.chromium.components.browser_ui.site_settings.ContentSettingsResources
 import org.chromium.components.browser_ui.site_settings.SiteSettingsUtil;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
-import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.page_info.PageInfoController;
 import org.chromium.components.page_info.PageInfoDiscoverabilityMetrics;
 import org.chromium.components.page_info.PageInfoDiscoverabilityMetrics.DiscoverabilityAction;
@@ -72,7 +71,6 @@ public class StatusMediator implements PermissionDialogController.Observer,
     private boolean mPageIsOffline;
     private boolean mShowStatusIconWhenUrlFocused;
     private boolean mIsSecurityViewShown;
-    private boolean mShouldCancelCustomFavicon;
     private boolean mIsTablet;
 
     private final int mEndPaddingPixelSizeOnFocusDelta;
@@ -209,59 +207,42 @@ public class StatusMediator implements PermissionDialogController.Observer,
     }
 
     /**
-     * Specify whether displayed page is an offline page.
+     * Updates the icon, tint, and description of the security chip.
      */
-    void setPageIsOffline(boolean pageIsOffline) {
-        if (mPageIsOffline != pageIsOffline) {
-            mPageIsOffline = pageIsOffline;
-            updateVerbaseStatusTextVisibility();
-            updateColorTheme();
-        }
-    }
-
-    /**
-     * Specify whether displayed page is a preview page.
-     */
-    void setPageIsPaintPreview(boolean pageIsPaintPreview) {
-        if (mPageIsPaintPreview != pageIsPaintPreview) {
-            mPageIsPaintPreview = pageIsPaintPreview;
-            updateVerbaseStatusTextVisibility();
-            updateColorTheme();
-        }
-    }
-
-    /**
-     * Specify displayed page's security level.
-     */
-    void setPageSecurityLevel(@ConnectionSecurityLevel int level) {
-        if (mPageSecurityLevel == level) return;
-        mPageSecurityLevel = level;
-        updateVerbaseStatusTextVisibility();
-        updateLocationBarIcon(IconTransitionType.CROSSFADE);
-    }
-
-    /**
-     * Specify icon displayed by the security chip.
-     */
-    void setSecurityIconResource(@DrawableRes int securityIcon) {
+    void updateSecurityIcon(
+            @DrawableRes int securityIcon, @ColorRes int tintList, @StringRes int desc) {
         mSecurityIconRes = securityIcon;
-        updateLocationBarIcon(IconTransitionType.CROSSFADE);
-    }
-
-    /**
-     * Specify tint of icon displayed by the security chip.
-     */
-    void setSecurityIconTint(@ColorRes int tintList) {
         mSecurityIconTintRes = tintList;
-        updateLocationBarIcon(IconTransitionType.CROSSFADE);
-    }
-
-    /**
-     * Specify tint of icon displayed by the security chip.
-     */
-    void setSecurityIconDescription(@StringRes int desc) {
         mSecurityIconDescriptionRes = desc;
         updateLocationBarIcon(IconTransitionType.CROSSFADE);
+    }
+
+    /**
+     * Update the displayed page's security level and whether it's a paint preview or offline page.
+     */
+    void updateVerboseStatus(@ConnectionSecurityLevel int securityLevel, boolean pageIsOffline,
+            boolean pageIsPaintPreview) {
+        boolean didUpdate = false;
+        if (mPageSecurityLevel != securityLevel) {
+            mPageSecurityLevel = securityLevel;
+            didUpdate = true;
+        }
+
+        if (mPageIsPaintPreview != pageIsPaintPreview) {
+            mPageIsPaintPreview = pageIsPaintPreview;
+            didUpdate = true;
+        }
+
+        if (mPageIsOffline != pageIsOffline) {
+            mPageIsOffline = pageIsOffline;
+            didUpdate = true;
+        }
+
+        if (didUpdate) {
+            updateVerbaseStatusTextVisibility();
+            updateLocationBarIcon(IconTransitionType.CROSSFADE);
+            updateColorTheme();
+        }
     }
 
     /**
@@ -345,15 +326,14 @@ public class StatusMediator implements PermissionDialogController.Observer,
         // This logic doesn't apply to tablets.
         if (mIsTablet) return;
 
-        boolean shouldShowLogo = mSearchEngineLogoUtils.shouldShowSearchEngineLogo(
-                mLocationBarDataProvider.isIncognito());
+        boolean shouldShowLogo = !mLocationBarDataProvider.isIncognito();
         setShowIconsWhenUrlFocused(shouldShowLogo);
         if (!shouldShowLogo) return;
 
         if (mLocationBarDataProvider.isInOverviewAndShowingOmnibox()) {
             setStatusIconShown(true);
         } else if (mProfileSupplier.get() != null
-                && UrlUtilities.isCanonicalizedNTPUrl(mLocationBarDataProvider.getCurrentUrl())) {
+                && mLocationBarDataProvider.getNewTabPageDelegate().isCurrentlyVisible()) {
             setStatusIconShown(shouldShowLogo && (mUrlHasFocus || mUrlFocusPercent > 0));
         } else {
             setStatusIconShown(true);
@@ -373,7 +353,7 @@ public class StatusMediator implements PermissionDialogController.Observer,
 
         // Only fade the animation on the new tab page.
         if (mProfileSupplier.get() != null
-                && UrlUtilities.isCanonicalizedNTPUrl(mLocationBarDataProvider.getCurrentUrl())) {
+                && mLocationBarDataProvider.getNewTabPageDelegate().isCurrentlyVisible()) {
             float focusAnimationProgress = percent;
             if (!mUrlHasFocus) {
                 focusAnimationProgress = MathUtils.clamp(
@@ -536,17 +516,22 @@ public class StatusMediator implements PermissionDialogController.Observer,
     boolean maybeUpdateStatusIconForSearchEngineIcon() {
         // Show the logo unfocused if we're on the NTP.
         if (shouldDisplaySearchEngineIcon()) {
-            getStatusIconResourceForSearchEngineIcon(
-                    mLocationBarDataProvider.isIncognito(), (statusIconRes) -> {
-                        // Check again in case the conditions have changed since this callback was
-                        // created.
-                        if (shouldDisplaySearchEngineIcon()) {
-                            mModel.set(StatusProperties.STATUS_ICON_RESOURCE, statusIconRes);
-                        }
-                    });
+            Promise<StatusIconResource> resourcePromise =
+                    getStatusIconResourceForSearchEngineIcon();
+            // As an optimization, synchronously update the status icon resource if it's available
+            // immediately, which is the common case. This lets us avoid rechecking
+            // shouldDisplaySearchEngineIcon().
+            if (resourcePromise.isFulfilled()) {
+                mModel.set(StatusProperties.STATUS_ICON_RESOURCE, resourcePromise.getResult());
+            } else {
+                resourcePromise.then((result -> {
+                    if (shouldDisplaySearchEngineIcon()) {
+                        mModel.set(StatusProperties.STATUS_ICON_RESOURCE, result);
+                    }
+                }));
+            }
             return true;
         } else {
-            mShouldCancelCustomFavicon = true;
             return false;
         }
     }
@@ -556,44 +541,38 @@ public class StatusMediator implements PermissionDialogController.Observer,
      * independent from alpha/visibility.
      */
     boolean shouldDisplaySearchEngineIcon() {
-        boolean showIconWhenFocused = mUrlHasFocus && mShowStatusIconWhenUrlFocused;
-        boolean showIconOnNTP = mProfileSupplier.get() != null
-                && UrlUtilities.isCanonicalizedNTPUrl(mLocationBarDataProvider.getCurrentUrl())
-                && !mLocationBarDataProvider.isLoading() && !mIsTablet
-                && (mUrlHasFocus || mUrlFocusPercent > 0);
+        if (mLocationBarDataProvider.isIncognito()) {
+            return false;
+        }
 
-        return mSearchEngineLogoUtils.shouldShowSearchEngineLogo(
-                       mLocationBarDataProvider.isIncognito())
-                && (showIconWhenFocused || showIconOnNTP);
+        if (mUrlHasFocus && mShowStatusIconWhenUrlFocused) {
+            return true;
+        }
+
+        return (mUrlHasFocus || mUrlFocusPercent > 0)
+                && mLocationBarDataProvider.getNewTabPageDelegate().isCurrentlyVisible()
+                && mProfileSupplier.get() != null;
     }
 
     /**
-     * Set the security icon resource for the search engine icon and invoke the callback to inform
-     * the caller which resource has been set.
-     *
-     * @param isIncognito True if the user is incognito.
-     * @param resourceCallback Called when the final value is set for the security icon resource.
-     *                         Meant to give the caller a chance to set the tint for the given
-     *                         resource.
+     * Returns a promise wrapping the result of calculating the security icon resource for the
+     * search engine icon. The icon is available immediately in most case, but may need to be
+     * fetched asynchronously. The returned promise will never be rejected.
      */
-    private void getStatusIconResourceForSearchEngineIcon(
-            boolean isIncognito, Callback<StatusIconResource> resourceCallback) {
-        mShouldCancelCustomFavicon = false;
+    private Promise<StatusIconResource> getStatusIconResourceForSearchEngineIcon() {
         // If the current url text is a valid url, then swap the dse icon for a globe.
         if (!mUrlBarTextIsSearch) {
-            resourceCallback.onResult(new StatusIconResource(R.drawable.ic_globe_24dp,
+            return Promise.fulfilled(new StatusIconResource(R.drawable.ic_globe_24dp,
                     ThemeUtils.getThemedToolbarIconTintRes(mBrandedColorScheme)));
-        } else {
-            mSearchEngineLogoUtils.getSearchEngineLogo(mResources, mBrandedColorScheme,
-                    mProfileSupplier.get(), mTemplateUrlServiceSupplier.get(), resourceCallback);
         }
+
+        return mSearchEngineLogoUtils.getSearchEngineLogo(mResources, mBrandedColorScheme,
+                mProfileSupplier.get(), mTemplateUrlServiceSupplier.get());
     }
 
     /** Return the resource id for the accessibility description or 0 if none apply. */
     private int getAccessibilityDescriptionRes() {
-        if (mUrlHasFocus
-                && mSearchEngineLogoUtils.shouldShowSearchEngineLogo(
-                        mLocationBarDataProvider.isIncognito())) {
+        if (mUrlHasFocus && !mLocationBarDataProvider.isIncognito()) {
             return 0;
         }
         return (mSecurityIconRes != 0) ? mSecurityIconDescriptionRes : 0;

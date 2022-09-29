@@ -5,9 +5,13 @@
 /**
  * @fileoverview Monitors user actions.
  */
+import {KeyCode} from '../../common/key_code.js';
+import {BridgeConstants} from '../common/bridge_constants.js';
+import {BridgeHelper} from '../common/bridge_helper.js';
 import {KeySequence} from '../common/key_sequence.js';
 import {KeyUtil} from '../common/key_util.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
+import {QueueMode} from '../common/tts_interface.js';
 
 import {CommandHandlerInterface} from './command_handler_interface.js';
 import {Output} from './output/output.js';
@@ -374,7 +378,7 @@ BridgeHelper.registerHandler(
     () => UserActionMonitor.destroy());
 BridgeHelper.registerHandler(
     BridgeConstants.UserActionMonitor.TARGET,
-    BridgeConstants.UserActionMonitor.Action.ON_KEY_DOWN, (evt) => {
+    BridgeConstants.UserActionMonitor.Action.ON_KEY_DOWN, evt => {
       if (!UserActionMonitor.instance) {
         // Continue propagating.
         return true;

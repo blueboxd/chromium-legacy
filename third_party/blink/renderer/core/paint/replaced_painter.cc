@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
+#include "third_party/blink/renderer/core/mobile_metrics/mobile_friendliness_checker.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/highlight_painting_utils.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
@@ -36,6 +37,10 @@ class ScopedReplacedContentPaintState : public ScopedPaintState {
  public:
   ScopedReplacedContentPaintState(const ScopedPaintState& input,
                                   const LayoutReplaced& replaced);
+
+ private:
+  absl::optional<MobileFriendlinessChecker::IgnoreBeyondViewportScope>
+      mf_ignore_scope_;
 };
 
 ScopedReplacedContentPaintState::ScopedReplacedContentPaintState(
@@ -71,6 +76,21 @@ ScopedReplacedContentPaintState::ScopedReplacedContentPaintState(
                               new_properties, replaced,
                               input_paint_info_.DisplayItemTypeForClipping());
   }
+
+  if (input_paint_info_.phase == PaintPhase::kForeground) {
+    if (auto* mf_checker =
+            MobileFriendlinessChecker::From(replaced.GetDocument())) {
+      PhysicalRect content_rect = replaced.ReplacedContentRect();
+      content_rect.Move(paint_offset_);
+      content_rect.Intersect(PhysicalRect(GetPaintInfo().GetCullRect().Rect()));
+      mf_checker->NotifyPaintReplaced(content_rect,
+                                      GetPaintInfo()
+                                          .context.GetPaintController()
+                                          .CurrentPaintChunkProperties()
+                                          .Transform());
+      mf_ignore_scope_.emplace(*mf_checker);
+    }
+  }
 }
 
 }  // anonymous namespace
@@ -79,7 +99,7 @@ bool ReplacedPainter::ShouldPaintBoxDecorationBackground(
     const PaintInfo& paint_info) {
   // LayoutFrameSet paints everything in the foreground phase.
   if (layout_replaced_.IsLayoutEmbeddedContent() &&
-      layout_replaced_.Parent()->IsFrameSet())
+      layout_replaced_.Parent()->IsFrameSetIncludingNG())
     return paint_info.phase == PaintPhase::kForeground;
   return ShouldPaintSelfBlockBackground(paint_info.phase);
 }

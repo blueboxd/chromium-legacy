@@ -950,8 +950,8 @@ void TSFTextStore::DispatchKeyEvent(ui::EventType type,
                                     lparam};
   ui::KeyEvent key_event = KeyEventFromMSG(key_event_MSG);
 
-  if (input_method_delegate_) {
-    input_method_delegate_->DispatchKeyEventPostIME(&key_event);
+  if (ime_key_event_dispatcher_) {
+    ime_key_event_dispatcher_->DispatchKeyEventPostIME(&key_event);
   }
 }
 
@@ -1317,13 +1317,13 @@ void TSFTextStore::RemoveFocusedTextInputClient(
   }
 }
 
-void TSFTextStore::SetInputMethodDelegate(
-    internal::InputMethodDelegate* delegate) {
-  input_method_delegate_ = delegate;
+void TSFTextStore::SetImeKeyEventDispatcher(
+    ImeKeyEventDispatcher* ime_key_event_dispatcher) {
+  ime_key_event_dispatcher_ = ime_key_event_dispatcher;
 }
 
-void TSFTextStore::RemoveInputMethodDelegate() {
-  input_method_delegate_ = nullptr;
+void TSFTextStore::RemoveImeKeyEventDispatcher() {
+  ime_key_event_dispatcher_ = nullptr;
 }
 
 bool TSFTextStore::CancelComposition() {
@@ -1342,9 +1342,9 @@ bool TSFTextStore::CancelComposition() {
 
   TRACE_EVENT0("ime", "TSFTextStore::CancelComposition");
 
+  bool result = TerminateComposition();
   ResetCompositionState();
-
-  return TerminateComposition();
+  return result;
 }
 
 bool TSFTextStore::ConfirmComposition() {
@@ -1358,9 +1358,9 @@ bool TSFTextStore::ConfirmComposition() {
   if (!text_input_client_)
     return false;
 
+  bool result = TerminateComposition();
   ResetCompositionState();
-
-  return TerminateComposition();
+  return result;
 }
 
 void TSFTextStore::SendOnLayoutChange() {

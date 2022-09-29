@@ -6,18 +6,15 @@
  * @fileoverview A tree walker over the automation tree.
  */
 
-goog.provide('AutomationTreeWalker');
-goog.provide('AutomationTreeWalkerPhase');
-goog.provide('AutomationTreeWalkerRestriction');
-
-goog.require('constants');
+import {AutomationPredicate} from './automation_predicate.js';
+import {constants} from './constants.js';
 
 /**
  * Defined phases of traversal from the initial node passed to an
  * AutomationTreeWalker instance.
  * @enum {string}
  */
-AutomationTreeWalkerPhase = {
+export const AutomationTreeWalkerPhase = {
   /** Walker is on the initial node. */
   INITIAL: 'initial',
   /** Walker is on an ancestor of initial node. */
@@ -35,7 +32,7 @@ AutomationTreeWalkerPhase = {
  *          skipInitialAncestry: (boolean|undefined),
  *          skipInitialSubtree: (boolean|undefined)}}
  */
-let AutomationTreeWalkerRestriction;
+export let AutomationTreeWalkerRestriction;
 
 /**
  * An AutomationTreeWalker provides an incremental pre order traversal of the
@@ -63,7 +60,7 @@ let AutomationTreeWalkerRestriction;
  * walker would visit all nodes in pre order. If a caller does not supply a
  * particular predicate, it will default to these "identity" predicates.
  */
-AutomationTreeWalker = class {
+export class AutomationTreeWalker {
   /**
    * @param {!chrome.automation.AutomationNode} node
    * @param {constants.Dir} dir
@@ -229,4 +226,4 @@ AutomationTreeWalker = class {
     }
     this.node_ = node.parent || null;
   }
-};
+}

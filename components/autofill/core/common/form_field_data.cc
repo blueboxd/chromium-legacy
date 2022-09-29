@@ -7,10 +7,13 @@
 #include <algorithm>
 #include <tuple>
 
+#include "base/notreached.h"
 #include "base/pickle.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -25,6 +28,9 @@ namespace {
 // Increment this anytime pickle format is modified as well as provide
 // deserialization routine from previous kFormFieldDataPickleVersion format.
 const int kFormFieldDataPickleVersion = 9;
+
+// Default section name for the fields.
+static constexpr char kDefaultSection[] = "-default";
 
 void WriteSelectOption(const SelectOption& option, base::Pickle* pickle) {
   pickle->WriteString16(option.value);
@@ -233,17 +239,133 @@ auto IdentityTuple(const FormFieldData& f) {
   // uniquely identify the field as well.
   return std::tuple_cat(
       SimilarityTuple(f),
-      std::tie(
-// TODO(crbug.com/896689): On iOS the unique_id member uniquely addresses
-// this field in the DOM.
-#if BUILDFLAG(IS_IOS)
-          f.unique_id,
-#endif
-          f.autocomplete_attribute, f.placeholder, f.max_length, f.css_classes,
-          f.is_focusable, f.should_autocomplete, f.role, f.text_direction));
+      std::tie(f.autocomplete_attribute, f.placeholder, f.max_length,
+               f.css_classes, f.is_focusable, f.should_autocomplete, f.role,
+               f.text_direction));
 }
 
 }  // namespace
+
+Section::Section() = default;
+Section::Section(const Section& section) = default;
+Section::~Section() = default;
+
+bool operator==(const Section::Autocomplete& a,
+                const Section::Autocomplete& b) {
+  return std::tie(a.section, a.mode) == std::tie(b.section, b.mode);
+}
+
+bool operator!=(const Section::Autocomplete& a,
+                const Section::Autocomplete& b) {
+  return !(a == b);
+}
+
+bool operator<(const Section::Autocomplete& a, const Section::Autocomplete& b) {
+  return std::tie(a.section, a.mode) < std::tie(b.section, b.mode);
+}
+
+bool operator==(const Section::FieldIdentifier& a,
+                const Section::FieldIdentifier& b) {
+  return std::tie(a.field_name, a.local_frame_id, a.field_renderer_id) ==
+         std::tie(b.field_name, b.local_frame_id, b.field_renderer_id);
+}
+
+bool operator!=(const Section::FieldIdentifier& a,
+                const Section::FieldIdentifier& b) {
+  return !(a == b);
+}
+
+bool operator<(const Section::FieldIdentifier& a,
+               const Section::FieldIdentifier& b) {
+  return std::tie(a.field_name, a.local_frame_id, a.field_renderer_id) <
+         std::tie(b.field_name, b.local_frame_id, b.field_renderer_id);
+}
+
+bool operator==(const Section& a, const Section& b) {
+  return std::tie(a.field_type_group_, a.prefix_) ==
+         std::tie(b.field_type_group_, b.prefix_);
+}
+
+bool operator!=(const Section& a, const Section& b) {
+  return !(a == b);
+}
+
+bool operator<(const Section& a, const Section& b) {
+  return std::tie(a.field_type_group_, a.prefix_) <
+         std::tie(b.field_type_group_, b.prefix_);
+}
+
+bool Section::is_from_autocomplete() const {
+  return absl::holds_alternative<Autocomplete>(prefix_);
+}
+
+void Section::set_field_type_group(FieldTypeGroupSuffix field_type_group) {
+  field_type_group_ = field_type_group;
+}
+
+void Section::SetPrefixToCreditCard() {
+  prefix_ = CreditCard();
+}
+
+bool Section::SetPrefixFromAutocomplete(Autocomplete autocomplete) {
+  if (autocomplete.section.empty() && autocomplete.mode == HTML_MODE_NONE)
+    return false;
+  prefix_ = std::move(autocomplete);
+  return true;
+}
+
+void Section::SetPrefixFromFieldIdentifier(
+    const FormFieldData& field,
+    base::flat_map<LocalFrameToken, size_t>& frame_token_ids) {
+  size_t generated_frame_id =
+      frame_token_ids.emplace(field.host_frame, frame_token_ids.size())
+          .first->second;
+  prefix_ = FieldIdentifier(base::UTF16ToUTF8(field.name), generated_frame_id,
+                            field.unique_renderer_id);
+}
+
+std::string Section::ToString() const {
+  std::string section_name;
+  if (const Autocomplete* autocomplete = absl::get_if<Autocomplete>(&prefix_)) {
+    // To prevent potential section name collisions, append `kDefaultSection`
+    // suffix to fields without a `HtmlFieldMode`. Without this, 'autocomplete'
+    // attribute values "section--shipping street-address" and "shipping
+    // street-address" would have the same prefix.
+    section_name =
+        autocomplete->section +
+        (autocomplete->mode != HTML_MODE_NONE
+             ? "-" + std::string(HtmlFieldModeToStringPiece(autocomplete->mode))
+             : kDefaultSection);
+  } else if (const FieldIdentifier* f =
+                 absl::get_if<FieldIdentifier>(&prefix_)) {
+    FieldIdentifier field_identifier = *f;
+    section_name = base::StrCat(
+        {field_identifier.field_name, "_",
+         base::NumberToString(field_identifier.local_frame_id), "_",
+         base::NumberToString(field_identifier.field_renderer_id.value())});
+  } else if (absl::holds_alternative<CreditCard>(prefix_)) {
+    section_name = "credit-card";
+  }
+
+  section_name = section_name.empty() ? kDefaultSection : section_name;
+  switch (field_type_group_) {
+    case FieldTypeGroupSuffix::kNoGroup:
+      return section_name;
+    case FieldTypeGroupSuffix::kDefault:
+      return section_name + kDefaultSection;
+    case FieldTypeGroupSuffix::kCreditCard:
+      return section_name + "-cc";
+  }
+  NOTREACHED();
+}
+
+LogBuffer& operator<<(LogBuffer& buffer, const Section& section) {
+  return buffer << section.ToString();
+}
+
+std::ostream& operator<<(std::ostream& os, const Section& section) {
+  return os << section.ToString();
+}
 
 FormFieldData::FormFieldData() = default;
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/system/accessibility/dictation_button_tray.h"
+#include <memory>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
@@ -10,10 +11,12 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/progress_indicator/progress_indicator.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
@@ -35,12 +38,19 @@
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/ime/ash/input_method_ash.h"
+#include "ui/base/ime/fake_text_input_client.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/events/types/event_type.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/image/image_unittest_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/wm/core/window_util.h"
 
@@ -101,7 +111,15 @@ class DictationButtonTrayTest : public AshTestBase {
   DictationButtonTrayTest& operator=(const DictationButtonTrayTest&) = delete;
 
   // AshTestBase:
-  void SetUp() override { AshTestBase::SetUp(); }
+  void SetUp() override {
+    // Focus some input text so the Dictation button will be enabled.
+    fake_text_input_client_ =
+        std::make_unique<ui::FakeTextInputClient>(ui::TEXT_INPUT_TYPE_TEXT);
+    ui::InputMethodAsh ime(nullptr);
+    ui::IMEBridge::Get()->SetInputContextHandler(&ime);
+    AshTestBase::SetUp();
+    FocusTextInputClient();
+  }
 
  protected:
   views::ImageView* GetImageView(DictationButtonTray* tray) {
@@ -110,6 +128,20 @@ class DictationButtonTrayTest : public AshTestBase {
   void CheckDictationStatusAndUpdateIcon(DictationButtonTray* tray) {
     tray->CheckDictationStatusAndUpdateIcon();
   }
+  void FocusTextInputClient() {
+    Shell::Get()
+        ->window_tree_host_manager()
+        ->input_method()
+        ->SetFocusedTextInputClient(fake_text_input_client_.get());
+  }
+  void DetachTextInputClient() {
+    Shell::Get()
+        ->window_tree_host_manager()
+        ->input_method()
+        ->SetFocusedTextInputClient(nullptr);
+  }
+
+  std::unique_ptr<ui::FakeTextInputClient> fake_text_input_client_;
 };
 
 // Ensures that creation doesn't cause any crashes and adds the image icon.
@@ -159,6 +191,8 @@ TEST_F(DictationButtonTrayTest, ActiveStateOnlyDuringDictation) {
 
   ASSERT_FALSE(controller->dictation_active());
   ASSERT_FALSE(GetTray()->is_active());
+  // In an input text area by default.
+  EXPECT_TRUE(GetTray()->GetEnabled());
 
   Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
       AcceleratorAction::TOGGLE_DICTATION, {});
@@ -169,6 +203,51 @@ TEST_F(DictationButtonTrayTest, ActiveStateOnlyDuringDictation) {
       AcceleratorAction::TOGGLE_DICTATION, {});
   EXPECT_FALSE(controller->dictation_active());
   EXPECT_FALSE(GetTray()->is_active());
+}
+
+TEST_F(DictationButtonTrayTest, ImageIcons) {
+  SkColor color = AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kIconColorPrimary);
+  gfx::ImageSkia off_icon =
+      gfx::CreateVectorIcon(kDictationOffNewuiIcon, color);
+  gfx::ImageSkia on_icon = gfx::CreateVectorIcon(kDictationOnNewuiIcon, color);
+
+  AccessibilityControllerImpl* controller =
+      Shell::Get()->accessibility_controller();
+  TestAccessibilityControllerClient client;
+  controller->dictation().SetEnabled(true);
+
+  views::ImageView* view = GetImageView(GetTray());
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(*view->GetImage().bitmap(),
+                                         *off_icon.bitmap()));
+
+  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
+      AcceleratorAction::TOGGLE_DICTATION, {});
+
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(*view->GetImage().bitmap(),
+                                         *on_icon.bitmap()));
+}
+
+TEST_F(DictationButtonTrayTest, DisabledWhenNoInputFocused) {
+  DetachTextInputClient();
+
+  AccessibilityControllerImpl* controller =
+      Shell::Get()->accessibility_controller();
+  controller->dictation().SetEnabled(true);
+  DictationButtonTray* tray = GetTray();
+  EXPECT_FALSE(tray->GetEnabled());
+
+  // Action doesn't work because disabled.
+  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
+      AcceleratorAction::TOGGLE_DICTATION, {});
+  EXPECT_FALSE(controller->dictation_active());
+  EXPECT_FALSE(tray->GetEnabled());
+
+  FocusTextInputClient();
+  EXPECT_TRUE(tray->GetEnabled());
+
+  DetachTextInputClient();
+  EXPECT_FALSE(tray->GetEnabled());
 }
 
 // Base class for SODA tests of the dictation button tray.
@@ -260,20 +339,28 @@ TEST_F(DictationButtonTraySodaTest, UpdateOnSpeechRecognitionDownloadChanged) {
   EXPECT_FALSE(tray->GetEnabled());
   EXPECT_EQ(base::UTF8ToUTF16(kDisabledTooltip), image->GetTooltipText());
 
-  // The tray icon should *not* be visible when the download is in progress.
+  // Enabled state doesn't change even if text input is focused.
+  DetachTextInputClient();
+  EXPECT_FALSE(tray->GetEnabled());
+  FocusTextInputClient();
+  EXPECT_FALSE(tray->GetEnabled());
+
+  // The tray icon should still be visible when the download is in progress.
   ProgressIndicatorWaiter().WaitForProgress(progress_indicator, 0.5f);
   EXPECT_TRUE(IsProgressIndicatorVisible());
-  EXPECT_FALSE(IsImageVisible());
+  EXPECT_FALSE(progress_indicator->inner_icon_visible());
+  EXPECT_TRUE(IsImageVisible());
 
   tray->UpdateOnSpeechRecognitionDownloadChanged(/*download_progress=*/70);
   EXPECT_EQ(70, tray->download_progress());
   EXPECT_FALSE(tray->GetEnabled());
   EXPECT_EQ(base::UTF8ToUTF16(kDisabledTooltip), image->GetTooltipText());
 
-  // The tray icon should *not* be visible when the download is in progress.
+  // The tray icon should be visible when the download is in progress.
   ProgressIndicatorWaiter().WaitForProgress(progress_indicator, 0.7f);
   EXPECT_TRUE(IsProgressIndicatorVisible());
-  EXPECT_FALSE(IsImageVisible());
+  EXPECT_FALSE(progress_indicator->inner_icon_visible());
+  EXPECT_TRUE(IsImageVisible());
 
   // Similar to 0, a value of 100 means that download is not in-progress.
   tray->UpdateOnSpeechRecognitionDownloadChanged(/*download_progress=*/100);

@@ -7,6 +7,7 @@
 <translation id="1258009455399840361">Պտտել 90 աստիճան ժամացույցի սլաքի ուղղությամբ</translation>
 <translation id="1276998909102132017">Ցուցասրահի պատկերներ</translation>
 <translation id="1300209025925956156">Փաստաթղթի սկանավորում</translation>
+<translation id="1309250603447638106">Ներբեռնվում են թարմացումներ փաստաթղթերի սկանավորման գործառույթի համար</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />։ Դրանք օգտագործելու համար սեղմեք «Որոնում»+ձախ սլաք։</translation>
 <translation id="1393338179284529051">Quad HD</translation>
 <translation id="1430915738399379752">Տպում</translation>
@@ -47,6 +48,7 @@
 <translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Հայելապատճենման ռեժիմ</translation>
 <translation id="2879583609344924966">Միացված է <ph name="CAMERA" /> սարքը։</translation>
+<translation id="2904654629665923749">Հասանելի է փաստաթղթերի սկանավորման գործառույթ</translation>
 <translation id="2968794441791257519">Տեսախցիկով արված լուսանկարներն ու տեսանյութերը կտեղափոխվեն «Ներբեռնումներ» պանակ։ Դրանք կարող եք գտնել նաև «Ֆայլեր» պանակում։
 
         Հավելվածներին, որոնց թույլատրել եք օգտագործել հիշողությունը, հասանելի կդառնան ձեր լուսանկարները և տեսանյութերը:</translation>
@@ -72,7 +74,6 @@
 <translation id="3838931309141338733">Սկանավորել գծակոդը</translation>
 <translation id="3892148308691398805">Պատճենել տեքստը</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> ՄՊ</translation>
-<translation id="4096701159033358951">Փաստաթղթերի սկանավորման գործառույթի ներբեռնում</translation>
 <translation id="4118525110028899586">Դադարեցնել տեսագրումը</translation>
 <translation id="4121305183798804752">Փաստաթուղթը ջնջված է</translation>
 <translation id="414641094616694804">Այս տեսախցիկի լուծաչափը հնարավոր չէ փոխել</translation>
@@ -94,7 +95,6 @@
 <translation id="5057360777601936059">Ձեր տեսախցիկն այս պահին հասանելի չէ:
         Ստուգեք՝ արդյոք տեսախցիկը ճիշտ է միացված:</translation>
 <translation id="5163387177077603948">Տեղափոխվում է աջ</translation>
-<translation id="520537883758714667">Փաստաթղթերի սկանավորումն արդեն հասանելի է</translation>
 <translation id="5235304959032763950">16:9</translation>
 <translation id="5266635337630551423">Փաստաթղթի վերևի ձախ անկյուն</translation>
 <translation id="5317780077021120954">Պահել</translation>

@@ -25,7 +25,7 @@
 #include "chrome/browser/ash/input_method/assistive_suggester_switch.h"
 #include "chrome/browser/ash/input_method/autocorrect_manager.h"
 #include "chrome/browser/ash/input_method/diacritics_checker.h"
-#include "chrome/browser/ash/input_method/get_browser_url.h"
+#include "chrome/browser/ash/input_method/get_current_window_properties.h"
 #include "chrome/browser/ash/input_method/grammar_service_client.h"
 #include "chrome/browser/ash/input_method/input_method_quick_settings_helpers.h"
 #include "chrome/browser/ash/input_method/input_method_settings.h"
@@ -519,19 +519,20 @@ void MigratePinyinAndZhuyinSettings(PrefService* prefs,
   if (engine_id != "zh-t-i0-pinyin" && engine_id != "zh-hant-t-i0-und")
     return;
 
-  const base::Value& all_input_method_pref =
-      *prefs->GetDictionary(::prefs::kLanguageInputMethodSpecificSettings);
+  const base::Value::Dict& all_input_method_pref =
+      prefs->GetValueDict(::prefs::kLanguageInputMethodSpecificSettings);
 
   // Check if the settings are already migrated.
-  if (all_input_method_pref.FindDictKey(engine_id))
+  if (all_input_method_pref.FindDict(engine_id))
     return;
 
-  const base::Value* existing_pref_or_null = all_input_method_pref.FindDictKey(
-      engine_id == "zh-t-i0-pinyin" ? "pinyin" : "zhuyin");
+  const base::Value::Dict* existing_pref_or_null =
+      all_input_method_pref.FindDict(engine_id == "zh-t-i0-pinyin" ? "pinyin"
+                                                                   : "zhuyin");
   if (existing_pref_or_null) {
     DictionaryPrefUpdate update(prefs,
                                 ::prefs::kLanguageInputMethodSpecificSettings);
-    update->SetPath(engine_id, existing_pref_or_null->Clone());
+    update->SetPath(engine_id, base::Value(existing_pref_or_null->Clone()));
   }
 }
 

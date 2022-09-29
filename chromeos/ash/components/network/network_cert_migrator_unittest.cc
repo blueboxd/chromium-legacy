@@ -11,12 +11,12 @@
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/task_environment.h"
+#include "chromeos/ash/components/dbus/shill/shill_clients.h"
+#include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/network_cert_loader.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/system_token_cert_db_storage.h"
-#include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_test_nss_db.h"
 #include "net/cert/nss_cert_database_chromeos.h"
@@ -27,7 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -142,8 +142,9 @@ class NetworkCertMigratorTest : public testing::Test {
                                       base::Value(cert_id));
 
     if (wifi) {
-      service_test_->SetServiceProperty(name, shill::kSecurityClassProperty,
-                                        base::Value(shill::kSecurity8021x));
+      service_test_->SetServiceProperty(
+          name, shill::kSecurityClassProperty,
+          base::Value(shill::kSecurityClass8021x));
     }
   }
 
@@ -434,4 +435,4 @@ TEST_F(NetworkCertMigratorTest, MigrateIpsecCertIdWrongSlotId) {
   EXPECT_EQ(test_client_cert_slot_id_, slot_id);
 }
 
-}  // namespace chromeos
+}  // namespace ash

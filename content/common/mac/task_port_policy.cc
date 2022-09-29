@@ -5,7 +5,6 @@
 #include "content/common/mac/task_port_policy.h"
 
 extern "C" {
-int csr_check(uint32_t op);
 int __sandbox_ms(const char* policy, int op, void* arg);
 }
 

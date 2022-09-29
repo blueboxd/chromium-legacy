@@ -206,7 +206,9 @@
                                       if ([weakSelf.dispatcher
                                               respondsToSelector:@selector
                                               (closeCurrentTab)]) {
-                                        [weakSelf.dispatcher closeCurrentTab];
+                                        [weakSelf
+                                                .browserCoordinatorCommandsHandler
+                                                    closeCurrentTab];
                                       }
                                     }],
     ]];
@@ -253,19 +255,8 @@
                            title:l10n_util::GetNSStringWithFixup(
                                      IDS_IOS_KEYBOARD_BOOKMARK_THIS_PAGE)
                           action:^{
-                            if (weakSelf.browser) {
-                              web::WebState* currentWebState =
-                                  weakSelf.browser->GetWebStateList()
-                                      ->GetActiveWebState();
-                              if (currentWebState) {
-                                BookmarkAddCommand* command =
-                                    [[BookmarkAddCommand alloc]
-                                            initWithWebState:currentWebState
-                                        presentFolderChooser:NO];
-                                [weakSelf.bookmarksCommandsHandler
-                                    bookmark:command];
-                              }
-                            }
+                            [weakSelf.bookmarksCommandsHandler
+                                    bookmarkCurrentPage];
                           }],
       [UIKeyCommand cr_keyCommandWithInput:@"r"
                              modifierFlags:UIKeyModifierCommand
@@ -362,18 +353,21 @@
                                     action:^{
                                       weakSelf.navigationAgent->StopLoading();
                                     }],
-      [UIKeyCommand cr_keyCommandWithInput:@"?"
-                             modifierFlags:UIKeyModifierCommand
-                                     title:nil
-                                    action:^{
-                                      [weakSelf.dispatcher showHelpPage];
-                                    }],
+      [UIKeyCommand
+          cr_keyCommandWithInput:@"?"
+                   modifierFlags:UIKeyModifierCommand
+                           title:nil
+                          action:^{
+                            [weakSelf.browserCoordinatorCommandsHandler
+                                    showHelpPage];
+                          }],
       [UIKeyCommand
           cr_keyCommandWithInput:@"l"
                    modifierFlags:UIKeyModifierCommand | UIKeyModifierAlternate
                            title:nil
                           action:^{
-                            [weakSelf.dispatcher showDownloadsFolder];
+                            [weakSelf.browserCoordinatorCommandsHandler
+                                    showDownloadsFolder];
                           }],
       [UIKeyCommand cr_keyCommandWithInput:@"1"
                              modifierFlags:UIKeyModifierCommand

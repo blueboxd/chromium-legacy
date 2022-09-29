@@ -5,6 +5,7 @@
 <translation id="1047956942837015229"><ph name="COUNT" /> üksuse kustutamine ...</translation>
 <translation id="1049926623896334335">Wordi dokument</translation>
 <translation id="1056775291175587022">Võrke ei ole</translation>
+<translation id="1056898198331236512">Hoiatus</translation>
 <translation id="1060368002126861100">Failide avamiseks rakendusega <ph name="APP_NAME" /> teisaldage need esmalt Windowsi failide kausta.</translation>
 <translation id="1062407476771304334">Asenda</translation>
 <translation id="1119447706177454957">Sisemine viga</translation>
@@ -104,7 +105,6 @@
 <translation id="1832073788765803750">Poollaiusega katakana</translation>
 <translation id="1834290891154666894">Sobimatu teema alternatiivse nime vaste sisestus</translation>
 <translation id="1838709767668011582">Google'i sait</translation>
-<translation id="1844692022597038441">Fail ei ole võrguühenduseta saadaval.</translation>
 <translation id="1853795129690976061">Seda kausta jagatakse Linuxiga</translation>
 <translation id="1864756863218646478">Faili ei leitud.</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_INDEX" />. võrk <ph name="NETWORK_COUNT" />-st, <ph name="NETWORK_NAME" />, ühenda</translation>
@@ -149,7 +149,6 @@
 <translation id="2282155092769082568">Automaatse konfigureerimise URL:</translation>
 <translation id="2288278176040912387">Grammofon</translation>
 <translation id="2291538123825441971"><ph name="NUMBER_OF_FILES" /> faili avamine.</translation>
-<translation id="2303282178633578561">SIM-kaardi lukustamine</translation>
 <translation id="2303301624314357662">Faili <ph name="FILE_NAME" /> avamine.</translation>
 <translation id="2304820083631266885">Planeet</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> on väljutatud.</translation>
@@ -185,13 +184,10 @@
 <translation id="2544853746127077729">Võrk lükkas autentimissertifikaadi tagasi</translation>
 <translation id="255937426064304553">USA rahvusvaheline</translation>
 <translation id="2563185590376525700">Konn</translation>
-<translation id="2570012981255377263">Teie hiljutised failid kuvatakse siin</translation>
 <translation id="2578394532502990878">tamili, foneetiline</translation>
 <translation id="2579959351793446050">odia</translation>
-<translation id="2593644851255584939">Administraator nõuab, et keelaksite SIM-i luku.</translation>
 <translation id="2602810353103180630"><ph name="NETWORK_INDEX" />. võrk <ph name="NETWORK_COUNT" />-st, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signaalitugevus: <ph name="SIGNAL_STRENGTH" />%, blokeeris administraator, üksikasjad</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" />-video</translation>
-<translation id="2617342710774726426">SIM-kaart on lukustatud</translation>
 <translation id="2620090360073999360">Google Drive'iga ei saa praegu ühendust.</translation>
 <translation id="2621713457727696555">Kaitstud</translation>
 <translation id="2638942478653899953">Google Drive'iga ei saadud ühendust. <ph name="BEGIN_LINK" />Logige välja<ph name="END_LINK" /> ja tagasi sisse.</translation>
@@ -249,13 +245,13 @@
 <translation id="3138624403379688522">Vale PIN-kood. Teil on veel <ph name="RETRIES" /> katset.</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (riistvaratoega)</translation>
 <translation id="3188257591659621405">Minu failid</translation>
+<translation id="3194553149358267393">Hiljutisi helifaile pole</translation>
 <translation id="3197563288998582412">Ühendkuningriigi Dvorak</translation>
 <translation id="3202131003361292969">Tee</translation>
 <translation id="3205852408225871810">portugali (Brasiilia)</translation>
 <translation id="3224239078034945833">Kanada mitmekeelne</translation>
 <translation id="3236289833370040187">Omandiline kuuluvus kantakse üle domeenile <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">iiri keel</translation>
-<translation id="3245321423178950146">Tundmatu esitaja</translation>
 <translation id="3248185426436836442">Ootel</translation>
 <translation id="3252266817569339921">prantsuse keel</translation>
 <translation id="3253225298092156258">Pole saadaval</translation>
@@ -290,10 +286,12 @@
 <translation id="3479552764303398839">Mitte praegu</translation>
 <translation id="3486821258960016770">mongoli</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> viga.</translation>
+<translation id="3495810061346586977">See fail on konfidentsiaalne ja sellele kehtivad administraatori reegli piirangud. <ph name="BEGIN_LINK_HELP" />Lisateave<ph name="END_LINK_HELP" /></translation>
 <translation id="3509680540198371098"><ph name="NETWORK_INDEX" />. võrk <ph name="NETWORK_COUNT" />-st, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signaalitugevus: <ph name="SIGNAL_STRENGTH" />%, üksikasjad</translation>
 <translation id="3522708245912499433">Portugali keel</translation>
 <translation id="3524311639100184459">Hoiatus. Need on ajutised failid ja võidakse kettaruumi vabastamiseks automaatselt kustutada.  <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Kaust</translation>
+<translation id="3548125359243647069">Vale PIN-kood sisestati liiga mitu korda.</translation>
 <translation id="3549797760399244642">Ava sait drive.google.com ...</translation>
 <translation id="3553048479571901246">Failide avamiseks rakendusega <ph name="APP_NAME" /> kopeerige need esmalt Windowsi failide kausta.</translation>
 <translation id="3556731189587832921">inglise (USA), rahvusvahelise arvutiklaviatuuriga</translation>
@@ -306,6 +304,7 @@
 <translation id="3606220979431771195">Türgi F</translation>
 <translation id="3616113530831147358">Heli</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
+<translation id="3619593063686672873">Hiljutisi videoid pole</translation>
 <translation id="3620292326130836921">Kõik on varundatud.</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_INDEX" />. võrk <ph name="NETWORK_COUNT" />-st, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, võrku haldab teie administraator, üksikasjad</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> üksust on teisaldatud.</translation>
@@ -343,7 +342,6 @@
 <translation id="3943857333388298514">Kleebi</translation>
 <translation id="3952872973865944257">telugu, foneetiline</translation>
 <translation id="3958548648197196644">Kiivi</translation>
-<translation id="3966388904776714213">Heliesitaja</translation>
 <translation id="3971140002794351170">Mobiiliprofiili allalaadimine, võrk <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">inglise (Ühendkuningriik)</translation>
 <translation id="3975895378829046965">bengali, foneetiline</translation>
@@ -353,7 +351,6 @@
 <translation id="4057991113334098539">Aktiveerimine ...</translation>
 <translation id="4092890906744441904">iiri</translation>
 <translation id="4124935795427217608">Ükssarvik</translation>
-<translation id="4158739975813877944">Ava esitusloend</translation>
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> on teisaldatud.</translation>
 <translation id="4186579485882418952">Luba võrguühenduseta</translation>
 <translation id="4193154014135846272">Google'i dokument</translation>
@@ -406,6 +403,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-file</translation>
 <translation id="457386861538956877">Rohkem ...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> lisati valikusse.</translation>
+<translation id="4583436353463424810">Hiljutisi dokumente pole</translation>
 <translation id="4594543368593301662">Kuvatakse otsingu <ph name="SEARCH_TERM" /> tulemusi.</translation>
 <translation id="4599600860674643278">Filter on lähtestatud.</translation>
 <translation id="4603392156942865207">Fail <ph name="FILE_NAME" /> kopeeritakse kausta <ph name="FOLDER_NAME" /></translation>
@@ -492,7 +490,9 @@
 <translation id="5159560892333415631">Tühjenda prügikast</translation>
 <translation id="5163869187418756376">Jagamine ebaõnnestus. Kontrollige ühendust ja proovige uuesti.</translation>
 <translation id="516592729076796170">USA programmeerija Dvorak</translation>
+<translation id="5172749059808361023">Piirangu üksikasjad</translation>
 <translation id="5177526793333269655">Pisipildi kuva</translation>
+<translation id="5181896909298187506">Hiljutisi faile pole</translation>
 <translation id="5194713942430106590">Klõpsake, et veerg kasvavas järjestuses sortida.</translation>
 <translation id="5211614973734216083">fääri</translation>
 <translation id="5218183485292899140">Šveitsi prantsuse</translation>
@@ -533,7 +533,6 @@
 <translation id="5489067830765222292">läti</translation>
 <translation id="5489965683297092283">Filter <ph name="FILTER_NAME" /> on välja lülitatud.</translation>
 <translation id="5494920125229734069">Valige kõik</translation>
-<translation id="5500104704744051184">Te ei saa seda võrku kasutada enne, kui sisestate PUK-i</translation>
 <translation id="5500122897333236901">islandi keel</translation>
 <translation id="5508696409934741614">Punktid</translation>
 <translation id="5522908512596376669">Faililoendi jaoks aktiveeriti loendikuva.</translation>
@@ -549,7 +548,6 @@
 <translation id="5625294776298156701">tamili, Tamil99-klaviatuuriga</translation>
 <translation id="5633226425545095130">Selle üksuse teisaldamisel jagatakse seda kõigiga, kes jagatud kausta „<ph name="DESTINATION_NAME" />“ näevad.</translation>
 <translation id="5649768706273821470">Esita</translation>
-<translation id="5665074015635552640">Teie hiljutised videod kuvatakse siin</translation>
 <translation id="5669691691057771421">Sisestage uus PIN-kood</translation>
 <translation id="5678784840044122290">Linuxi rakendus on saadaval teie terminalis ja käivitajas võidakse kuvada ka ikoon.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Ühendust arhiivi või virtuaalse kettaga ei saa katkestada<ph name="END_BOLD" />
@@ -618,11 +616,11 @@
 <translation id="6220423280121890987">pandžabi</translation>
 <translation id="6224240818060029162">taani</translation>
 <translation id="6224253798271602650">Ketta <ph name="DRIVE_NAME" /> vormindamine</translation>
-<translation id="6227235786875481728">Faili ei saanud esitada.</translation>
 <translation id="6241349547798190358">hollandi (Belgia)</translation>
 <translation id="6267547857941397424"><ph name="NETWORK_INDEX" />. võrk <ph name="NETWORK_COUNT" />-st, <ph name="PHONE_NAME" />, <ph name="SIGNAL_STRENGTH" />, signaalitugevus: <ph name="BATTERY_STATUS" />%, telefoni aku: %, ühenda</translation>
 <translation id="6269630227984243955">malai</translation>
 <translation id="6287852322318138013">Valige faili avamiseks rakendus</translation>
+<translation id="6295542640242147836">SIM-i lukustamine</translation>
 <translation id="6296410173147755564">Vale PUK</translation>
 <translation id="6312403991423642364">Tundmatu võrguviga</translation>
 <translation id="6317608858038767920">Kohandatud nimeserveri <ph name="INPUT_INDEX" /></translation>
@@ -634,6 +632,7 @@
 <translation id="6356685157277930264">Failide tagasiside aken</translation>
 <translation id="6358884629796491903">Draakon</translation>
 <translation id="636254897931573416">Sobimatu domeenisufiksi vaste väärtus</translation>
+<translation id="6364301859968397756">Organisatsiooni salvestusruum on täis</translation>
 <translation id="6367976544441405720">Kaubik</translation>
 <translation id="637062427944097960">Fail on avatud muul töölaual. Selle vaatamiseks avage <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
 <translation id="6394388407447716302">Kirjutuskaitstud</translation>
@@ -694,7 +693,6 @@
     Leiti <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">Tagurpidi</translation>
 <translation id="6943836128787782965">HTTP hankimine nurjus</translation>
-<translation id="6945604978460872381">Teie hiljutised dokumendid kuvatakse siin</translation>
 <translation id="6949408524333579394">serbia, transliteratsioon</translation>
 <translation id="6954309393500027528">Administraator blokeeris selle faili kleepimise</translation>
 <translation id="6960565108681981554">Aktiveerimata. Võtke oma operaatoriga ühendust.</translation>
@@ -731,6 +729,7 @@
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> GB</translation>
 <translation id="7191454237977785534">Salvesta fail nimega</translation>
 <translation id="7229570126336867161">Vajalik EVDO</translation>
+<translation id="7230898482850090046">Administraator on palunud teil seade „SIM-i lukustamine“ välja lülitada</translation>
 <translation id="7238097264433196391">Ketta nimi</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, üksikasjad</translation>
 <translation id="7246947237293279874">FTP-puhverserver</translation>
@@ -742,7 +741,6 @@
 <translation id="7295662345261934369">Teistega jagamine</translation>
 <translation id="7297443947353982503">Kasutajanimi/parool on vale või EAP-autentimine ebaõnnestus</translation>
 <translation id="7309413087278791451">saksa (Belgia)</translation>
-<translation id="7313374447885864533">Teie hiljutised helifailid kuvatakse siin</translation>
 <translation id="7339898014177206373">Uus aken</translation>
 <translation id="7343393116438664539">vietnami, Telex</translation>
 <translation id="7357762654218998920">Seda tüüpi faili ei toetata. <ph name="BEGIN_LINK_HELP" />Vaadake lisateavet<ph name="END_LINK_HELP" /> Chrome OS-is failide avamise kohta.</translation>
@@ -752,6 +750,7 @@
 <translation id="7408870451288633753">tšehhi</translation>
 <translation id="7417453074306512035">Etioopia klaviatuur</translation>
 <translation id="7417705661718309329">Google'i kaart</translation>
+<translation id="7458955835361612701">Hiljutisi pilte pole</translation>
 <translation id="7460898608667578234">ukraina keel</translation>
 <translation id="7469894403370665791">Võta automaatselt selle võrguga ühendust</translation>
 <translation id="7486315294984620427">Failide pukseerimiseks Parallels Desktopile peab fail olema kopeeritud Windowsi failide hulka.</translation>
@@ -763,9 +762,9 @@
 <translation id="7505167922889582512">Kuva peidetud failid</translation>
 <translation id="7514365320538308">Laadi alla</translation>
 <translation id="751507702149411736">valgevene keel</translation>
+<translation id="7521790570754130607">Mobiilse andmeside kasutamiseks nõutakse PIN-koodi</translation>
 <translation id="7532029025027028521">pärsia (transliteratsioon)</translation>
 <translation id="7544830582642184299">Andke Linuxi rakendustele luba pääseda juurde teie Google Drive'is olevatele failidele. Muudatused sünkroonitakse muude seadmetega.</translation>
-<translation id="7544853251252956727">Esita juhuslikus järjekorras</translation>
 <translation id="7547009467130558110">Botas</translation>
 <translation id="7547780573915868306">leedu</translation>
 <translation id="7547811415869834682">hollandi keel</translation>
@@ -788,6 +787,7 @@
 <translation id="76959938259365003">Prügikasti tühjendamine ebaõnnestus.</translation>
 <translation id="770015031906360009">kreeka keel</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> on kopeeritud.</translation>
+<translation id="7708271999969613024">Selle võrgu kasutamiseks sisestage operaatorilt saadud kaheksakohaline isiklik avamisvõti (PUK).</translation>
 <translation id="7711920809702896782">Pildi teave</translation>
 <translation id="7724603315864178912">Lõika</translation>
 <translation id="7730494089396812859">Pilvepõhise varunduse üksikasjade kuvamine</translation>
@@ -815,7 +815,6 @@
 <translation id="7831491651892296503">Viga võrgu seadistamisel</translation>
 <translation id="7839804798877833423">Failide toomine kasutab umbes <ph name="FILE_SIZE" /> mobiilsideandmeid.</translation>
 <translation id="7846076177841592234">Tühista valik</translation>
-<translation id="7847617962681804761">Mobiilse andmeside kasutamiseks on vaja PIN-koodi</translation>
 <translation id="7853966320808728790">Prantsuse BÉPO</translation>
 <translation id="7857117644404132472">Lisa erand</translation>
 <translation id="7868774406711971383">poola</translation>
@@ -841,7 +840,6 @@
 <translation id="8045462269890919536">rumeenia keel</translation>
 <translation id="8049184478152619004">Sisestage personaalne avamisvõti (PUK)</translation>
 <translation id="807187749540895545">Faili <ph name="FILE_NAME" /> ekstraktimine …</translation>
-<translation id="8079530767338315840">Korda</translation>
 <translation id="8087576439476816834">Allalaadimine, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Minuga jagatud</translation>
 <translation id="8116072619078571545">Jäävesi</translation>
@@ -855,7 +853,6 @@
 <translation id="8175731104491895765">prantsuse (Belgia)</translation>
 <translation id="8179976553408161302">Sisestusklahv</translation>
 <translation id="8193175696669055101">Seadme mudel</translation>
-<translation id="8208580316430297579">Kujundus</translation>
 <translation id="8223479393428528563">Kui soovite salvestada need failid võrguühenduseta kasutamiseks, minge uuesti veebi, paremklõpsake failidel ja tehke valik <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Katkesta</translation>
 <translation id="8250690786522693009">Ladina</translation>
@@ -876,7 +873,6 @@
 <translation id="8342318071240498787">Sama nimega fail või kataloog on juba olemas.</translation>
 <translation id="8372369524088641025">Halb WEP-võti</translation>
 <translation id="8372852072747894550">kreeka</translation>
-<translation id="8384716930968677505">Teie hiljutised pildid kuvatakse siin</translation>
 <translation id="8386903983509584791">Skannimine jõudis lõpule</translation>
 <translation id="8387733224523483503"><ph name="FILE_NAME" /> ekstraktiti.</translation>
 <translation id="8395901698320285466">Dimensioonid</translation>
@@ -886,6 +882,7 @@
 <translation id="8437209419043462667">USA</translation>
 <translation id="8452135315243592079">SIM-kaart puudub</translation>
 <translation id="8456681095658380701">Kehtetu nimi</translation>
+<translation id="8457767749626250697">Teie SIM on lukustatud</translation>
 <translation id="8459404855768962328">Selle üksuse kopeerimisel jagatakse seda kõigiga, kes jagatud kausta „<ph name="DESTINATION_NAME" />“ näevad.</translation>
 <translation id="8461467696380332069">Paremklõpsake failil ja tehke valik „Kinnita riiulile”, et riiulil olevatele failidele kiirelt juurde pääseda.</translation>
 <translation id="8461914792118322307">Puhverserver</translation>
@@ -912,7 +909,6 @@
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> üksuse sünkroonimine ...</translation>
 <translation id="8600173386174225982">Faililoendi jaoks aktiveeriti pisipildikuva.</translation>
 <translation id="8601932370724196034">Crostini pildifail</translation>
-<translation id="8608515571837163082">Vale PIN-kood sisestati liiga mitu korda. Sisestage operaatorilt saadud kaheksakohaline isiklik avamisvõti (PUK).</translation>
 <translation id="8609695766746872526">islandi</translation>
 <translation id="863903787380594467">Vale PIN-kood. Teil on veel <ph name="RETRIES" /> katset.</translation>
 <translation id="8639391553632924850"><ph name="INPUT_LABEL" /> – port</translation>
@@ -950,7 +946,6 @@
 <translation id="9034924485347205037">Linuxi failid</translation>
 <translation id="9035012421917565900">Üksusi ei saa sihtkohta „<ph name="DESTINATION_NAME" />” tagasi teisaldada, seega ei saa te seda toimingut tagasi võtta.</translation>
 <translation id="9035689366572880647">Sisestage praegune PIN-kood</translation>
-<translation id="9037777873893411148">* Organisatsiooni salvestusruum on täis</translation>
 <translation id="9038620279323455325">Fail nimega „<ph name="FILE_NAME" />” on juba olemas? Valige muu nimi.</translation>
 <translation id="9046895021617826162">Ühendamine nurjus</translation>
 <translation id="9065512565307033593">Kui kinnitamine ebaõnnestub, keelatakse juurdepääs võrgule.</translation>

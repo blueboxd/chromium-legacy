@@ -37,13 +37,6 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHChromeReengagementNotification3Feature,
     &kIPHContextualPageActionsPriceTrackingFeature,
     &kIPHContextualPageActionsPriceTrackingActionChipFeature,
-    &kIPHContextualSearchTranslationEnableFeature,
-    &kIPHContextualSearchWebSearchFeature,
-    &kIPHContextualSearchPromoteTapFeature,
-    &kIPHContextualSearchPromotePanelOpenFeature,
-    &kIPHContextualSearchOptInFeature,
-    &kIPHContextualSearchTappedButShouldLongpressFeature,
-    &kIPHContextualSearchInPanelHelpFeature,
     &kIPHCrowFeature,
     &kIPHDownloadSettingsFeature,
     &kIPHDownloadInfoBarDownloadContinuingFeature,
@@ -121,6 +114,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHDefaultSiteViewFeature,
     &kIPHPasswordSuggestionsFeature,
     &kIPHFollowWhileBrowsingFeature,
+    &kIPHOverflowMenuTipFeature,
 #endif  // BUILDFLAG(IS_IOS)
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
@@ -141,6 +135,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHProfileSwitchFeature,
     &kIPHDesktopSharedHighlightingFeature,
     &kIPHIntentChipFeature,
+    &kIPHWebUiHelpBubbleTestFeature,
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 

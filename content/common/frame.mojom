@@ -25,18 +25,19 @@ import "services/network/public/mojom/url_request.mojom";
 import "services/network/public/mojom/url_response_head.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 import "services/viz/public/mojom/compositing/surface_id.mojom";
+import "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/browser_interface_broker.mojom";
 import "third_party/blink/public/mojom/commit_result/commit_result.mojom";
 import "third_party/blink/public/mojom/conversions/conversions.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom";
-import "third_party/blink/public/mojom/frame/frame.mojom";
 import "third_party/blink/public/mojom/frame/frame_owner_properties.mojom";
 import "third_party/blink/public/mojom/frame/frame_policy.mojom";
 import "third_party/blink/public/mojom/frame/frame_replication_state.mojom";
 import "third_party/blink/public/mojom/frame/lifecycle.mojom";
 import "third_party/blink/public/mojom/frame/policy_container.mojom";
+import "third_party/blink/public/mojom/frame/remote_frame.mojom";
 import "third_party/blink/public/mojom/frame/tree_scope_type.mojom";
 import "third_party/blink/public/mojom/loader/referrer.mojom";
 import "third_party/blink/public/mojom/navigation/navigation_policy.mojom";
@@ -97,9 +98,6 @@ struct CreateViewParams {
   // Preferences for this view.
   blink.mojom.WebPreferences web_preferences;
 
-  // The ID of the view to be created.
-  int32 view_id = IPC.mojom.kRoutingIdNone;
-
   // The session storage namespace ID this view should use.
   string session_storage_namespace_id;
 
@@ -124,25 +122,20 @@ struct CreateViewParams {
 
   CreateMainFrameUnion main_frame;
 
-  // Whether the RenderView should initially be hidden.
+  // Whether the `blink::WebView` should initially be hidden.
   bool hidden;
 
-  // Prerender2: Whether the RenderView is for a prerendered page.
+  // Prerender2: Whether the `blink::WebView` is for a prerendered page.
   bool is_prerendering;
 
-  // When true, all RenderWidgets under this RenderView will never be shown to
-  // the user, and thus never composited, and will not need to produce pixels
-  // for display. This allows the renderer to optimize and avoid resources used
-  // for displaying graphical output.
+  // When true, all RenderWidgets under this `blink::WebView` will never be
+  // shown to the user, and thus never composited, and will not need to produce
+  // pixels for display. This allows the renderer to optimize and avoid
+  // resources used for displaying graphical output.
   bool never_composited;
 
   // Whether the window associated with this view was created by another window.
   bool window_was_opened_by_another_window;
-
-  // Whether lookup of frames in the created RenderView (e.g. lookup via
-  // window.open or via <a target=...>) should be renderer-wide (i.e. going
-  // beyond the usual opener-relationship-based BrowsingInstance boundaries).
-  bool renderer_wide_named_frame_lookup;
 
   // Indicates whether the view is a regular top-level widget or some other
   // nested "main frame" widget type.
@@ -183,6 +176,12 @@ struct CreateLocalMainFrameParams {
 
   pending_remote<blink.mojom.BrowserInterfaceBroker> interface_broker;
 
+  // The `AssociatedInterfaceProvider` that the main `RenderFrameImpl` will use
+  // to request associated interfaces from its corresponding
+  // `RenderFrameHostImpl`.
+  pending_associated_remote<blink.mojom.AssociatedInterfaceProvider>
+      associated_interface_provider_remote;
+
   // Whether the frame is still on the initial empty document or not.
   bool is_on_initial_empty_document = true;
 
@@ -202,8 +201,8 @@ struct CreateRemoteMainFrameParams {
   blink.mojom.RemoteFrameToken token;
 
   // The communication channels for the Remote/RemoteMainFrame in this view.
-  RemoteFrameInterfacesFromBrowser frame_interfaces;
-  RemoteMainFrameInterfaces main_frame_interfaces;
+  blink.mojom.RemoteFrameInterfacesFromBrowser frame_interfaces;
+  blink.mojom.RemoteMainFrameInterfaces main_frame_interfaces;
 };
 
 // Parameters used for creating a new frame widget.
@@ -298,6 +297,11 @@ struct CreateFrameParams {
 
   // The mojo connection to the mojom::Frame in the renderer.
   pending_associated_receiver<content.mojom.Frame> frame;
+
+  // The `AssociatedInterfaceProvider` that the `RenderFrameImpl` will use to
+  // request associated interfaces from its corresponding `RenderFrameHostImpl`.
+  pending_associated_remote<blink.mojom.AssociatedInterfaceProvider>
+      associated_interface_provider_remote;
 };
 
 // Provided with each call to Frame::GetSerializedHtmlWithLocalLinks() so that
@@ -351,23 +355,6 @@ enum FrameDeleteIntention {
   kSpeculativeMainFrameForNavigationCancelled,
 };
 
-// Struct for communication channels of the RemoteFrame in blink.
-struct RemoteFrameInterfacesFromBrowser {
-  pending_associated_receiver<blink.mojom.RemoteFrame> frame_receiver;
-  pending_associated_remote<blink.mojom.RemoteFrameHost> frame_host;
-};
-
-struct RemoteFrameInterfacesFromRenderer {
-  pending_associated_remote<blink.mojom.RemoteFrame> frame;
-  pending_associated_receiver<blink.mojom.RemoteFrameHost> frame_host_receiver;
-};
-
-// Struct for communication channels of the RemoteMainFrame in blink.
-struct RemoteMainFrameInterfaces {
-  pending_associated_remote<blink.mojom.RemoteMainFrameHost> main_frame_host;
-  pending_associated_receiver<blink.mojom.RemoteMainFrame> main_frame;
-};
-
 // Implemented by the frame provider, and must be associated with other content
 // mojoms bound to frames, widgets, views, and currently also with the legacy
 // IPC channel.
@@ -418,8 +405,8 @@ interface Frame {
       bool is_loading,
       blink.mojom.FrameReplicationState new_remote_frame_replication_state,
       blink.mojom.RemoteFrameToken new_remote_frame_token,
-      RemoteFrameInterfacesFromBrowser new_remote_frame_interfaces,
-      RemoteMainFrameInterfaces new_remote_main_frame_interfaces);
+      blink.mojom.RemoteFrameInterfacesFromBrowser new_remote_frame_interfaces,
+      blink.mojom.RemoteMainFrameInterfaces new_remote_main_frame_interfaces);
 
   // Delete the frame. This is only called for child frames that the browser
   // wants to detach, or for speculative main frames which are owned by the
@@ -465,8 +452,8 @@ interface Frame {
       bool is_loading,
       blink.mojom.FrameReplicationState new_remote_frame_replication_state,
       blink.mojom.RemoteFrameToken new_remote_frame_token,
-      RemoteFrameInterfacesFromBrowser new_remote_frame_interfaces,
-      RemoteMainFrameInterfaces new_remote_main_frame_interfaces);
+      blink.mojom.RemoteFrameInterfacesFromBrowser new_remote_frame_interfaces,
+      blink.mojom.RemoteMainFrameInterfaces new_remote_main_frame_interfaces);
 
   // Causes all new subresource requests to be blocked (not being started) until
   // ResumeBlockedRequests is called.
@@ -607,9 +594,6 @@ enum CreateNewWindowStatus {
 // See if there's a reasonable way to factor out state here by splitting things
 // into browser-created params vs renderer-created params.
 struct CreateNewWindowReply {
-  // The ID of the view to be created.
-  int32 route_id;
-
   // The unique identifier of the RenderFrameHost
   blink.mojom.LocalFrameToken main_frame_token;
 
@@ -626,6 +610,12 @@ struct CreateNewWindowReply {
 
   pending_remote<blink.mojom.BrowserInterfaceBroker>
       main_frame_interface_broker;
+
+  // The `AssociatedInterfaceProvider` that the main `RenderFrameImpl` will use
+  // to request associated interfaces from its corresponding
+  // `RenderFrameHostImpl`.
+  pending_associated_remote<blink.mojom.AssociatedInterfaceProvider>
+      associated_interface_provider;
 
   // Duplicated from CreateNewWindowParams because legacy code.
   string cloned_session_storage_namespace_id;
@@ -672,63 +662,6 @@ interface FrameHost {
   [Sync] CreateNewWindow(CreateNewWindowParams params)
       => (CreateNewWindowStatus status, CreateNewWindowReply? reply);
 
-  // Sent by the renderer process to request the creation of a new portal.
-  // |portal| is the pipe to be used for the Portal object, |client| is the pipe
-  // used to communicate back with the caller. Returns:
-  // |initial_replicated_state| - the replicated state associated with that
-  //                              RenderFrameProxy
-  // |portal_token| - the unique identifier for the portal
-  // |frame_token| - the unique identifier of the RenderFrameProxy
-  // |devtools_frame_token| - the unique identifier of the frame node in the
-  //                          frame tree
-  [Sync] CreatePortal(
-      pending_associated_receiver<blink.mojom.Portal> portal,
-      pending_associated_remote<blink.mojom.PortalClient> client,
-      RemoteFrameInterfacesFromRenderer remote_frame_interfaces)
-      => (blink.mojom.FrameReplicationState initial_replicated_state,
-          blink.mojom.PortalToken portal_token,
-          blink.mojom.RemoteFrameToken frame_token,
-          mojo_base.mojom.UnguessableToken devtools_frame_token);
-
-  // Requests that this frame adopts the portal identified by |portal_token|.
-  // Returns:
-  // |replicated_state| - the replicated state associated with that
-  //                      RenderFrameProxy
-  // |frame_token| - the unique identifier of the RenderFrameProxy
-  // |devtools_frame_token| - the unique identifier of the frame node in the
-  //                          frame tree
-  [Sync] AdoptPortal(
-      blink.mojom.PortalToken portal_token,
-      RemoteFrameInterfacesFromRenderer remote_frame_interfaces)
-      => (blink.mojom.FrameReplicationState replicated_state,
-          blink.mojom.RemoteFrameToken frame_token,
-          mojo_base.mojom.UnguessableToken devtools_frame_token);
-
-  // Sent by the frame in a renderer process that hosts/owns a <fencedframe>
-  // element, to the browser process requesting the creation of a new fenced
-  // frame tree that will host the contents of the <fencedframe> element.
-  // `fenced_frame` - the receiver that the browser will bind to receive
-  //                  messages from the renderer.
-  // `initial_replication_state` - the replicated state associated with the
-  //                               above RenderFrameProxy. This state is
-  //                               default-constructed, and thus has an opaque
-  //                               origin. This ensures that the origin that the
-  //                               proxy host is initialized with in the browser
-  //                               and renderer processes both match. For more
-  //                               info about this parameter see
-  //                               crbug.com/1028269.
-  // `frame_token` - the unique identifier of the RenderFrameProxy
-  // `devtools_frame_token` - the unique identifier of the main FrameTreeNode in
-  //                          the "inner" fenced frame FrameTree
-  [Sync] CreateFencedFrame(
-      pending_associated_receiver<blink.mojom.FencedFrameOwnerHost>
-        fenced_frame,
-      blink.mojom.FencedFrameMode mode,
-      RemoteFrameInterfacesFromRenderer remote_frame_interfaces)
-      => (blink.mojom.FrameReplicationState initial_replication_state,
-          blink.mojom.RemoteFrameToken frame_token,
-          mojo_base.mojom.UnguessableToken devtools_frame_token);
-
   // Asynchronously creates a child frame. A routing ID must be allocated first
   // by calling RenderMessageFilter::GenerateFrameRoutingID()
   // Each of these messages will have a corresponding mojom::FrameHost::Detach
@@ -739,6 +672,8 @@ interface FrameHost {
                      browser_interface_broker,
                    blink.mojom.PolicyContainerBindParams
                      policy_container_bind_params,
+                   pending_associated_receiver<blink.mojom.AssociatedInterfaceProvider>
+                     associated_interface_provider,
                    blink.mojom.TreeScopeType scope,
                    string frame_name,
                    string frame_unique_name,

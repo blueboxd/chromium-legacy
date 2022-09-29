@@ -136,6 +136,7 @@ class CORE_EXPORT VTTCue final : public TextTrackCue {
   DocumentFragment* getCueAsHTML();
 
   void UpdateDisplay(HTMLDivElement& container) override;
+  void UpdateSpeech(HTMLDivElement& container) override;
 
   void UpdatePastAndFutureNodes(double movie_time) override;
 
@@ -145,11 +146,11 @@ class CORE_EXPORT VTTCue final : public TextTrackCue {
 
   double CalculateComputedLinePosition() const;
 
-  enum WritingDirection {
+  enum class WritingDirection {
     kHorizontal = 0,
     kVerticalGrowingLeft,
     kVerticalGrowingRight,
-    kNumberOfWritingDirections
+    kMaxValue = kVerticalGrowingRight
   };
   WritingDirection GetWritingDirection() const { return writing_direction_; }
 
@@ -179,7 +180,7 @@ class CORE_EXPORT VTTCue final : public TextTrackCue {
   double CalculateComputedTextPosition() const;
   AlignSetting CalculateComputedCueAlignment() const;
 
-  enum CueSetting {
+  enum class CueSetting {
     kNone,
     kVertical,
     kLine,

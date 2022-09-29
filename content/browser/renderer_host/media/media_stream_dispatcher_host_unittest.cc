@@ -23,6 +23,7 @@
 #include "base/run_loop.h"
 #include "base/system/system_monitor.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/test/bind.h"
 #include "base/test/gmock_move_support.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -53,7 +54,7 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/audio/cras_audio_handler.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/dbus/audio/cras_audio_client.h"
 #endif
 
@@ -316,8 +317,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     mock_video_capture_provider_ = mock_video_capture_provider.get();
     // Create our own MediaStreamManager.
     media_stream_manager_ = std::make_unique<MediaStreamManager>(
-        audio_system_.get(), audio_manager_->GetTaskRunner(),
-        std::move(mock_video_capture_provider));
+        audio_system_.get(), std::move(mock_video_capture_provider));
     focus_ = true;
     background_ = false;
     host_ = std::make_unique<MockMediaStreamDispatcherHost>(
@@ -491,6 +491,10 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     if (!optional_device.has_value())
       return true;
     const blink::MediaStreamDevice& device = optional_device.value();
+    if (device.type != blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE &&
+        device.type != blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE) {
+      return true;
+    }
     bool found_match = false;
     media::AudioDeviceDescriptions::const_iterator audio_it =
         audio_device_descriptions_.begin();
@@ -514,8 +518,18 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   void GetOpenDevice(
       int32_t request_id,
       const base::UnguessableToken& session_id,
+      const base::UnguessableToken& transfer_id,
       MediaStreamDispatcherHost::GetOpenDeviceCallback callback) {
-    host_->GetOpenDevice(request_id, session_id, std::move(callback));
+    host_->GetOpenDevice(request_id, session_id, transfer_id,
+                         std::move(callback));
+  }
+
+  void KeepDeviceAliveForTransfer(
+      const base::UnguessableToken& session_id,
+      const base::UnguessableToken& transfer_id,
+      MediaStreamDispatcherHost::KeepDeviceAliveForTransferCallback callback) {
+    host_->KeepDeviceAliveForTransfer(session_id, transfer_id,
+                                      std::move(callback));
   }
 
   const absl::optional<blink::MediaStreamDevice>& audio_device(
@@ -1243,6 +1257,7 @@ TEST_F(MediaStreamDispatcherHostTest, GetOpenDeviceWithoutFeatureFails) {
   base::RunLoop loop;
   GetOpenDevice(/*request_id=*/0,
                 /*session_id=*/base::UnguessableToken(),
+                /*transfer_id=*/base::UnguessableToken(),
                 base::BindOnce([](blink::mojom::MediaStreamRequestResult result,
                                   blink::mojom::GetOpenDeviceResponsePtr ptr) {
                   EXPECT_EQ(
@@ -1253,6 +1268,57 @@ TEST_F(MediaStreamDispatcherHostTest, GetOpenDeviceWithoutFeatureFails) {
   loop.Run();
 }
 
+TEST_F(MediaStreamDispatcherHostTest, GetOpenDeviceSucceeds) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_
+      .InitFromCommandLine(/*enable_features=*/
+                           "UserMediaCaptureOnFocus,GetDisplayMediaSet,"
+                           "GetDisplayMediaSetAutoSelectAllScreens,"
+                           "MediaStreamTrackTransfer",
+                           /*disable_features=*/"");
+  base::RunLoop loop;
+
+  // Generate stream.
+  SetupFakeUI(true);
+  blink::StreamControls controls(false, true);
+  controls.video.stream_type =
+      blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE;
+
+  blink::mojom::StreamDevicesSet expectation;
+  expectation.stream_devices.emplace_back(blink::mojom::StreamDevices::New(
+      absl::nullopt, blink::MediaStreamDevice()));
+  GenerateStreamAndWaitForResult(kPageRequestId, controls, expectation);
+  EXPECT_TRUE(video_device(/*stream_index=*/0u).has_value());
+  blink::MediaStreamDevice current_video_device =
+      video_device(/*stream_index=*/0u).value();
+  const base::UnguessableToken session_id = current_video_device.session_id();
+
+  // Get stream generated above.
+  base::UnguessableToken transfer_id = base::UnguessableToken::Create();
+  GetOpenDevice(/*request_id=*/1, session_id, transfer_id,
+                base::BindOnce(
+                    [](const std::string device_id,
+                       const base::UnguessableToken& session_id,
+                       blink::mojom::MediaStreamRequestResult result,
+                       blink::mojom::GetOpenDeviceResponsePtr ptr) {
+                      EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK,
+                                result);
+                      EXPECT_TRUE(ptr);
+                      EXPECT_EQ(ptr->device.id, device_id);
+                      EXPECT_NE(ptr->device.session_id(), session_id);
+                    },
+                    current_video_device.id, session_id)
+                    .Then(loop.QuitClosure()));
+
+  // Keep MediaStreamDevice alive for GetOpenDevice to complete.
+  KeepDeviceAliveForTransfer(
+      session_id, transfer_id, base::BindOnce([](bool device_found) {
+                                 EXPECT_TRUE(device_found);
+                               }).Then(base::BindLambdaForTesting([&]() {
+        host_->OnStopStreamDevice(current_video_device.id, session_id);
+      })));
+  loop.Run();
+}
 // TODO(crbug.com/1300883): Add test cases for multi stream generation.
 
 }  // namespace content

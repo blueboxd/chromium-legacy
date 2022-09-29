@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
-#include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_base.h"
 
 namespace blink {
 namespace scheduler {
@@ -16,7 +16,7 @@ using base::sequence_manager::TaskQueue;
 NonMainThreadTaskQueue::NonMainThreadTaskQueue(
     std::unique_ptr<base::sequence_manager::internal::TaskQueueImpl> impl,
     const TaskQueue::Spec& spec,
-    NonMainThreadSchedulerImpl* non_main_thread_scheduler,
+    NonMainThreadSchedulerBase* non_main_thread_scheduler,
     bool can_be_throttled)
     : task_queue_(base::MakeRefCounted<TaskQueue>(std::move(impl), spec)),
       non_main_thread_scheduler_(non_main_thread_scheduler) {
@@ -45,7 +45,7 @@ void NonMainThreadTaskQueue::ShutdownTaskQueue() {
 void NonMainThreadTaskQueue::OnTaskCompleted(
     const base::sequence_manager::Task& task,
     TaskQueue::TaskTiming* task_timing,
-    base::sequence_manager::LazyNow* lazy_now) {
+    base::LazyNow* lazy_now) {
   // |non_main_thread_scheduler_| can be nullptr in tests.
   if (non_main_thread_scheduler_) {
     non_main_thread_scheduler_->OnTaskCompleted(this, task, task_timing,

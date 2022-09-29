@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
 
-#include "base/containers/adapters.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "cc/input/layer_selection_bound.h"
@@ -196,7 +195,21 @@ class ConversionContext {
   struct StateEntry {
     // Remembers the type of paired begin that caused a state to be saved.
     // This is for checking integrity of the algorithm.
-    enum PairedType { kClip, kEffect } type;
+    enum PairedType { kClip, kClipOmitted, kEffect };
+    explicit StateEntry(PairedType type,
+                        const TransformPaintPropertyNode* transform,
+                        const ClipPaintPropertyNode* clip,
+                        const EffectPaintPropertyNode* effect,
+                        const TransformPaintPropertyNode* previous_transform)
+        : transform(transform),
+          clip(clip),
+          effect(effect),
+          previous_transform(previous_transform),
+          type_(type) {}
+
+    bool IsClip() const { return type_ != kEffect; }
+    bool IsEffect() const { return type_ == kEffect; }
+    bool NeedsRestore() const { return type_ != kClipOmitted; }
 
     // These fields are neve nullptr.
     const TransformPaintPropertyNode* transform;
@@ -207,6 +220,9 @@ class ConversionContext {
 #if DCHECK_IS_ON()
     bool has_pre_cap_effect_hierarchy_issue = false;
 #endif
+
+   private:
+    PairedType type_;
   };
   void PushState(StateEntry::PairedType);
   void PopState();
@@ -256,7 +272,7 @@ class ConversionContext {
 ConversionContext::~ConversionContext() {
   // End all states.
   while (state_stack_.size()) {
-    if (state_stack_.back().type == StateEntry::kEffect)
+    if (state_stack_.back().IsEffect())
       EndEffect();
     else
       EndClip();
@@ -291,6 +307,9 @@ void ConversionContext::SwitchToChunkState(const PaintChunk& chunk) {
 // Returns whether the clip has been combined.
 static bool CombineClip(const ClipPaintPropertyNode& clip,
                         FloatRoundedRect& combined_clip_rect) {
+  if (clip.PixelMovingFilter())
+    return true;
+
   // Don't combine into a clip with clip path.
   DCHECK(clip.Parent());
   if (clip.UnaliasedParent()->ClipPath())
@@ -339,7 +358,7 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode& target_clip) {
   const auto* lca_clip =
       &target_clip.LowestCommonAncestor(*current_clip_).Unalias();
   while (current_clip_ != lca_clip) {
-    if (!state_stack_.size() || state_stack_.back().type != StateEntry::kClip) {
+    if (!state_stack_.size() || !state_stack_.back().IsClip()) {
       // TODO(crbug.com/803649): We still have clip hierarchy issues with
       // fragment clips. See crbug.com/1240080 for the test case. Will change
       // the above condition to DCHECK after LayoutNGBlockFragmentation is fully
@@ -403,31 +422,35 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode& target_clip) {
 void ConversionContext::StartClip(
     const FloatRoundedRect& combined_clip_rect,
     const ClipPaintPropertyNode& lowest_combined_clip_node) {
-  DCHECK_EQ(&lowest_combined_clip_node, &lowest_combined_clip_node);
-  const auto& local_transform =
-      lowest_combined_clip_node.LocalTransformSpace().Unalias();
-  if (&local_transform != current_transform_)
-    EndTransform();
-  cc_list_.StartPaint();
-  cc_list_.push<cc::SaveOp>();
-  ApplyTransform(local_transform);
-  const bool antialias = true;
-  if (combined_clip_rect.IsRounded()) {
-    cc_list_.push<cc::ClipRRectOp>(SkRRect(combined_clip_rect),
-                                   SkClipOp::kIntersect, antialias);
+  if (combined_clip_rect.Rect() == gfx::RectF(LayoutRect::InfiniteIntRect())) {
+    PushState(StateEntry::kClipOmitted);
   } else {
-    cc_list_.push<cc::ClipRectOp>(gfx::RectFToSkRect(combined_clip_rect.Rect()),
-                                  SkClipOp::kIntersect, antialias);
-  }
-  if (const auto& clip_path = lowest_combined_clip_node.ClipPath()) {
-    cc_list_.push<cc::ClipPathOp>(clip_path->GetSkPath(), SkClipOp::kIntersect,
-                                  antialias);
-  }
-  cc_list_.EndPaintOfPairedBegin();
+    const auto& local_transform =
+        lowest_combined_clip_node.LocalTransformSpace().Unalias();
+    if (&local_transform != current_transform_)
+      EndTransform();
+    cc_list_.StartPaint();
+    cc_list_.push<cc::SaveOp>();
+    ApplyTransform(local_transform);
+    const bool antialias = true;
+    if (combined_clip_rect.IsRounded()) {
+      cc_list_.push<cc::ClipRRectOp>(SkRRect(combined_clip_rect),
+                                     SkClipOp::kIntersect, antialias);
+    } else {
+      cc_list_.push<cc::ClipRectOp>(
+          gfx::RectFToSkRect(combined_clip_rect.Rect()), SkClipOp::kIntersect,
+          antialias);
+    }
+    if (const auto& clip_path = lowest_combined_clip_node.ClipPath()) {
+      cc_list_.push<cc::ClipPathOp>(clip_path->GetSkPath(),
+                                    SkClipOp::kIntersect, antialias);
+    }
+    cc_list_.EndPaintOfPairedBegin();
 
-  PushState(StateEntry::kClip);
+    PushState(StateEntry::kClip);
+    current_transform_ = &local_transform;
+  }
   current_clip_ = &lowest_combined_clip_node;
-  current_transform_ = &local_transform;
 }
 
 bool HasRealEffects(const EffectPaintPropertyNode& current,
@@ -549,7 +572,8 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
       flags.setAlpha(alpha);
       save_layer_id = cc_list_.push<cc::SaveLayerOp>(nullptr, &flags);
     } else {
-      save_layer_id = cc_list_.push<cc::SaveLayerAlphaOp>(nullptr, alpha);
+      save_layer_id = cc_list_.push<cc::SaveLayerAlphaOp>(
+          nullptr, static_cast<float>(alpha / 255.0f));
     }
   } else {
     // Handle filter effect.
@@ -606,7 +630,7 @@ void ConversionContext::UpdateEffectBounds(
 void ConversionContext::EndEffect() {
 #if DCHECK_IS_ON()
   const auto& previous_state = state_stack_.back();
-  DCHECK_EQ(previous_state.type, StateEntry::kEffect);
+  DCHECK(previous_state.IsEffect());
   if (!previous_state.has_pre_cap_effect_hierarchy_issue)
     DCHECK_EQ(current_effect_->UnaliasedParent(), previous_state.effect);
   DCHECK_EQ(current_clip_, previous_state.clip);
@@ -637,20 +661,20 @@ void ConversionContext::EndEffect() {
 }
 
 void ConversionContext::EndClips() {
-  while (state_stack_.size() && state_stack_.back().type == StateEntry::kClip)
+  while (state_stack_.size() && state_stack_.back().IsClip())
     EndClip();
 }
 
 void ConversionContext::EndClip() {
-  DCHECK_EQ(state_stack_.back().type, StateEntry::kClip);
+  DCHECK(state_stack_.back().IsClip());
   DCHECK_EQ(state_stack_.back().effect, current_effect_);
   EndTransform();
   PopState();
 }
 
 void ConversionContext::PushState(StateEntry::PairedType type) {
-  state_stack_.emplace_back(StateEntry{type, current_transform_, current_clip_,
-                                       current_effect_, previous_transform_});
+  state_stack_.emplace_back(type, current_transform_, current_clip_,
+                            current_effect_, previous_transform_);
   previous_transform_ = nullptr;
 }
 
@@ -658,7 +682,8 @@ void ConversionContext::PopState() {
   DCHECK_EQ(nullptr, previous_transform_);
 
   const auto& previous_state = state_stack_.back();
-  AppendRestore();
+  if (previous_state.NeedsRestore())
+    AppendRestore();
   current_transform_ = previous_state.transform;
   previous_transform_ = previous_state.previous_transform;
   current_clip_ = previous_state.clip;
@@ -797,55 +822,6 @@ scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::Convert(
 
   cc_list->Finalize();
   return cc_list;
-}
-
-// The heuristic for picking a checkerboarding color works as follows:
-//   - During paint, PaintChunker will look for background color display items,
-//     and record the blending of background colors if the background is larger
-//     than a ratio of the chunk bounds.
-//   - After layer allocation, the paint chunks assigned to a layer are
-//     examined for a background color annotation.
-//   - The blending of background colors of chunks having background larger than
-//     a ratio of the layer is set as the layer's background color.
-//   - If the above color exists, it's also used as the safe opaque background
-//     color. Otherwise the color of the largest background is used, without the
-//     size requirement, as safe opaque background color should always get a
-//     value if possible.
-static void UpdateBackgroundColor(cc::Layer& layer,
-                                  const EffectPaintPropertyNode& layer_effect,
-                                  const PaintChunkSubset& paint_chunks) {
-  Vector<Color, 4> background_colors;
-  float min_background_area = kMinBackgroundColorCoverageRatio *
-                              layer.bounds().width() * layer.bounds().height();
-  for (auto it = paint_chunks.end(); it != paint_chunks.begin();) {
-    const auto& chunk = *(--it);
-    if (chunk.background_color == Color::kTransparent)
-      continue;
-    if (chunk.background_color_area >= min_background_area) {
-      Color chunk_background_color = chunk.background_color;
-      const auto& chunk_effect = chunk.properties.Effect().Unalias();
-      if (&chunk_effect != &layer_effect) {
-        if (chunk_effect.UnaliasedParent() != &layer_effect ||
-            !chunk_effect.IsOpacityOnly()) {
-          continue;
-        }
-        chunk_background_color =
-            chunk_background_color.CombineWithAlpha(chunk_effect.Opacity());
-      }
-      background_colors.push_back(chunk_background_color);
-      if (!chunk_background_color.HasAlpha()) {
-        // If this color is opaque, blending it with subsequent colors will have
-        // no effect.
-        break;
-      }
-    }
-  }
-
-  Color background_color;
-  for (Color color : base::Reversed(background_colors))
-    background_color = background_color.Blend(color);
-  // TODO(crbug/1308932): Remove FromColor and make all SkColor4f.
-  layer.SetBackgroundColor(SkColor4f::FromColor(background_color.Rgb()));
 }
 
 static void UpdateTouchActionRegion(
@@ -1055,7 +1031,6 @@ void PaintChunksToCcLayer::UpdateLayerProperties(
     cc::Layer& layer,
     const PropertyTreeState& layer_state,
     const PaintChunkSubset& chunks) {
-  UpdateBackgroundColor(layer, layer_state.Effect(), chunks);
   UpdateTouchActionWheelEventHandlerAndNonFastScrollableRegions(
       layer, layer_state, chunks);
   UpdateRegionCaptureData(layer, layer_state, chunks);

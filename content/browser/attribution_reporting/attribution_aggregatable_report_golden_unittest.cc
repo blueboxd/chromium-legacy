@@ -116,7 +116,8 @@ class AttributionAggregatableReportGoldenLatestVersionTest
     aggregation_service().AssembleReport(
         std::move(*request),
         base::BindLambdaForTesting(
-            [&](absl::optional<AggregatableReport> assembled_report,
+            [&](AggregatableReportRequest,
+                absl::optional<AggregatableReport> assembled_report,
                 AggregationService::AssemblyStatus status) {
               EXPECT_EQ(status, AggregationService::AssemblyStatus::kOk);
               ASSERT_TRUE(assembled_report);
@@ -142,9 +143,10 @@ class AttributionAggregatableReportGoldenLatestVersionTest
 
  private:
   AggregationServiceImpl& aggregation_service() {
-    return *(static_cast<StoragePartitionImpl*>(
-                 browser_context_.GetDefaultStoragePartition())
-                 ->GetAggregationService());
+    return *static_cast<AggregationServiceImpl*>(
+        static_cast<StoragePartitionImpl*>(
+            browser_context_.GetDefaultStoragePartition())
+            ->GetAggregationService());
   }
 
   testing::AssertionResult VerifyReport(

@@ -26,8 +26,6 @@ bool CallbackInvokeHelper<CallbackBase, mode, return_type_is_promise>::
     ScriptForbiddenScope::ThrowScriptForbiddenException(isolate);
     return Abort();
   }
-  // TODO(crbug.com/1196853): Remove this once we have discovered and fixed
-  // sources of attempted script execution during blink lifecycle.
   DCHECK(!ScriptForbiddenScope::WillBeScriptForbidden());
 
   if constexpr (mode == CallbackInvokeHelperMode::kConstructorCall) {
@@ -106,11 +104,11 @@ bool CallbackInvokeHelper<CallbackBase, mode, return_type_is_promise>::
       //   have also elided creating a new scope entirely. 2) If there is no
       //   current running task, set the parent to absl::nullopt, making the
       //   current callback a root task.
-      absl::optional<scheduler::TaskId> parent_id =
+      absl::optional<scheduler::TaskAttributionId> parent_id =
           callback_->GetParentTaskId();
       if (!parent_id) {
-        parent_id =
-            tracker->RunningTaskId(callback_->CallbackRelevantScriptState());
+        parent_id = tracker->RunningTaskAttributionId(
+            callback_->CallbackRelevantScriptState());
       }
       task_attribution_scope_ = tracker->CreateTaskScope(
           callback_->CallbackRelevantScriptState(), parent_id);

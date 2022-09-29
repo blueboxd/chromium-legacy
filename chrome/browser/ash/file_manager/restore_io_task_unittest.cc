@@ -28,8 +28,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 
-namespace file_manager {
-namespace io_task {
+namespace file_manager::io_task {
 namespace {
 
 using ::base::test::RunClosure;
@@ -73,6 +72,25 @@ class RestoreIOTaskTest : public TrashBaseTest {
   std::unique_ptr<chromeos::trash_service::TrashServiceImpl>
       trash_service_impl_;
 };
+
+TEST_F(RestoreIOTaskTest, NoSourceUrlsShouldReturnSuccess) {
+  base::RunLoop run_loop;
+  std::vector<storage::FileSystemURL> source_urls;
+
+  base::MockRepeatingCallback<void(const ProgressStatus&)> progress_callback;
+  base::MockOnceCallback<void(ProgressStatus)> complete_callback;
+
+  // We should get one complete callback when the size check of `source_urls`
+  // finds none.
+  EXPECT_CALL(complete_callback,
+              Run(Field(&ProgressStatus::state, State::kSuccess)))
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
+
+  RestoreIOTask task(source_urls, profile_.get(), file_system_context_,
+                     temp_dir_.GetPath());
+  task.Execute(progress_callback.Get(), complete_callback.Get());
+  run_loop.Run();
+}
 
 TEST_F(RestoreIOTaskTest, URLsWithInvalidSuffixShouldError) {
   std::string foo_contents = base::RandBytesAsString(kTestFileSize);
@@ -136,9 +154,10 @@ TEST_F(RestoreIOTaskTest, MetadataWithNoCorrespondingFileShouldError) {
   EnsureTrashDirectorySetup(downloads_dir_);
 
   std::string foo_contents = base::RandBytesAsString(kTestFileSize);
-  const base::FilePath file_path = downloads_dir_.Append(kTrashFolderName)
-                                       .Append(kInfoFolderName)
-                                       .Append("foo.txt.trashinfo");
+  const base::FilePath file_path =
+      downloads_dir_.Append(trash::kTrashFolderName)
+          .Append(trash::kInfoFolderName)
+          .Append("foo.txt.trashinfo");
   ASSERT_TRUE(base::WriteFile(file_path, foo_contents));
 
   base::RunLoop run_loop;
@@ -172,12 +191,13 @@ TEST_F(RestoreIOTaskTest, RestorePathsShouldNotReferenceParent) {
   std::string foo_metadata_contents =
       GenerateTrashInfoContents("/../../../bad/actor/foo.txt");
 
-  const base::FilePath trash_path = downloads_dir_.Append(kTrashFolderName);
+  const base::FilePath trash_path =
+      downloads_dir_.Append(trash::kTrashFolderName);
   const base::FilePath info_file_path =
-      trash_path.Append(kInfoFolderName).Append("foo.txt.trashinfo");
+      trash_path.Append(trash::kInfoFolderName).Append("foo.txt.trashinfo");
   ASSERT_TRUE(base::WriteFile(info_file_path, foo_metadata_contents));
   const base::FilePath files_path =
-      trash_path.Append(kFilesFolderName).Append("foo.txt");
+      trash_path.Append(trash::kFilesFolderName).Append("foo.txt");
   ASSERT_TRUE(base::WriteFile(files_path, foo_contents));
 
   base::RunLoop run_loop;
@@ -206,14 +226,16 @@ TEST_F(RestoreIOTaskTest, ValidRestorePathShouldSucceedAndCreateDirectory) {
   EnsureTrashDirectorySetup(downloads_dir_);
 
   std::string foo_contents = base::RandBytesAsString(kTestFileSize);
-  std::string foo_metadata_contents = GenerateTrashInfoContents("/bar/foo.txt");
+  std::string foo_metadata_contents =
+      GenerateTrashInfoContents("/Downloads/bar/foo.txt");
 
-  const base::FilePath trash_path = downloads_dir_.Append(kTrashFolderName);
+  const base::FilePath trash_path =
+      downloads_dir_.Append(trash::kTrashFolderName);
   const base::FilePath info_file_path =
-      trash_path.Append(kInfoFolderName).Append("foo.txt.trashinfo");
+      trash_path.Append(trash::kInfoFolderName).Append("foo.txt.trashinfo");
   ASSERT_TRUE(base::WriteFile(info_file_path, foo_metadata_contents));
   const base::FilePath files_path =
-      trash_path.Append(kFilesFolderName).Append("foo.txt");
+      trash_path.Append(trash::kFilesFolderName).Append("foo.txt");
   ASSERT_TRUE(base::WriteFile(files_path, foo_contents));
 
   base::RunLoop run_loop;
@@ -241,14 +263,16 @@ TEST_F(RestoreIOTaskTest, ItemWithExistingConflictAreRenamed) {
   EnsureTrashDirectorySetup(downloads_dir_);
 
   std::string foo_contents = base::RandBytesAsString(kTestFileSize);
-  std::string foo_metadata_contents = GenerateTrashInfoContents("/bar/foo.txt");
+  std::string foo_metadata_contents =
+      GenerateTrashInfoContents("/Downloads/bar/foo.txt");
 
-  const base::FilePath trash_path = downloads_dir_.Append(kTrashFolderName);
+  const base::FilePath trash_path =
+      downloads_dir_.Append(trash::kTrashFolderName);
   const base::FilePath info_file_path =
-      trash_path.Append(kInfoFolderName).Append("foo.txt.trashinfo");
+      trash_path.Append(trash::kInfoFolderName).Append("foo.txt.trashinfo");
   ASSERT_TRUE(base::WriteFile(info_file_path, foo_metadata_contents));
   const base::FilePath files_path =
-      trash_path.Append(kFilesFolderName).Append("foo.txt");
+      trash_path.Append(trash::kFilesFolderName).Append("foo.txt");
   ASSERT_TRUE(base::WriteFile(files_path, foo_contents));
 
   // Create conflicting item at same place restore is going to happen at.
@@ -348,12 +372,13 @@ TEST_F(RestoreIOTaskDisconnectMojoTest,
 
   std::string foo_contents = base::RandBytesAsString(kTestFileSize);
 
-  const base::FilePath trash_path = downloads_dir_.Append(kTrashFolderName);
+  const base::FilePath trash_path =
+      downloads_dir_.Append(trash::kTrashFolderName);
   const base::FilePath info_file_path =
-      trash_path.Append(kInfoFolderName).Append("foo.txt.trashinfo");
+      trash_path.Append(trash::kInfoFolderName).Append("foo.txt.trashinfo");
   ASSERT_TRUE(base::WriteFile(info_file_path, foo_contents));
   const base::FilePath files_path =
-      trash_path.Append(kFilesFolderName).Append("foo.txt");
+      trash_path.Append(trash::kFilesFolderName).Append("foo.txt");
   ASSERT_TRUE(base::WriteFile(files_path, foo_contents));
 
   base::RunLoop run_loop;
@@ -376,5 +401,4 @@ TEST_F(RestoreIOTaskDisconnectMojoTest,
 }
 
 }  // namespace
-}  // namespace io_task
-}  // namespace file_manager
+}  // namespace file_manager::io_task

@@ -13,6 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "build/buildflag.h"
 #include "components/live_caption/views/caption_bubble_model.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/font_list.h"
 #include "ui/native_theme/caption_style.h"
@@ -67,7 +68,8 @@ using ResetInactivityTimerCallback = base::RepeatingCallback<void()>;
 class CaptionBubble : public views::BubbleDialogDelegateView {
  public:
   METADATA_HEADER(CaptionBubble);
-  CaptionBubble(base::OnceClosure destroyed_callback, bool hide_on_inactivity);
+  CaptionBubble(PrefService* profile_prefs,
+                base::OnceClosure destroyed_callback);
   CaptionBubble(const CaptionBubble&) = delete;
   CaptionBubble& operator=(const CaptionBubble&) = delete;
   ~CaptionBubble() override;
@@ -94,6 +96,8 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
   void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;
   }
+
+  void SetCaptionBubbleStyle();
 
 #if BUILDFLAG(IS_WIN)
   void OnContentSettingsLinkClicked();
@@ -122,10 +126,19 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
   void BackToTabButtonPressed();
   void CloseButtonPressed();
   void ExpandOrCollapseButtonPressed();
+  void PinOrUnpinButtonPressed();
+  void SwapButtons(views::Button* first_button,
+                   views::Button* second_button,
+                   bool show_first_button);
 
   // Called by CaptionBubbleModel to notify this object that the model's text
   // has changed. Sets the text of the caption bubble to the model's text.
   void OnTextChanged();
+
+  // Used to prevent propagating theme changes when no theme colors have
+  // changed. Returns whether the caption theme colors have changed since the
+  // last time this function was called.
+  bool ThemeColorsChanged();
 
   // Called by CaptionBubbleModel to notify this object that the model's error
   // state has changed. Makes the caption bubble display an error message if
@@ -133,10 +146,6 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
   void OnErrorChanged(CaptionBubbleErrorType error_type,
                       OnErrorClickedCallback callback,
                       OnDoNotShowAgainClickedCallback error_silenced_callback);
-
-  // Called when the caption bubble expanded state has changed. Changes the
-  // number of lines displayed.
-  void OnIsExpandedChanged();
 
   // The caption bubble manages its own visibility based on whether there's
   // space for it to be shown, and if it has an error or text to display.
@@ -160,7 +169,6 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
 
   // The following methods set the caption bubble style based on the user's
   // preferences, which are stored in `caption_style_`.
-  void SetCaptionBubbleStyle();
   double GetTextScaleFactor();
   const gfx::FontList GetFontList();
   void SetTextSizeAndFontFamily();
@@ -189,6 +197,8 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
   raw_ptr<views::ImageButton> close_button_;
   raw_ptr<views::ImageButton> expand_button_;
   raw_ptr<views::ImageButton> collapse_button_;
+  raw_ptr<views::ImageButton> pin_button_;
+  raw_ptr<views::ImageButton> unpin_button_;
   raw_ptr<CaptionBubbleFrameView> frame_;
 
 #if BUILDFLAG(IS_WIN)
@@ -203,18 +213,27 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
 
   absl::optional<ui::CaptionStyle> caption_style_;
   raw_ptr<CaptionBubbleModel> model_ = nullptr;
+  raw_ptr<PrefService> profile_prefs_;
 
   OnErrorClickedCallback error_clicked_callback_;
   OnDoNotShowAgainClickedCallback error_silenced_callback_;
   base::ScopedClosureRunner destroyed_callback_;
 
   // Whether the caption bubble is expanded to show more lines of text.
-  bool is_expanded_ = false;
+  bool is_expanded_;
+
+  // Whether the caption bubble is pinned or if it should hide on inactivity.
+  bool is_pinned_;
 
   bool has_been_shown_ = false;
 
-  // Whether we should hide the caption bubble on inactivity.
-  bool const hide_on_inactivity_;
+  // Used to determine whether to propagate theme changes to the widget.
+  SkColor text_color_ = gfx::kPlaceholderColor;
+  SkColor icon_color_ = gfx::kPlaceholderColor;
+  SkColor icon_disabled_color_ = gfx::kPlaceholderColor;
+  SkColor link_color_ = gfx::kPlaceholderColor;
+  SkColor checkbox_color_ = gfx::kPlaceholderColor;
+  SkColor background_color_ = gfx::kPlaceholderColor;
 
   // A timer which causes the bubble to hide if there is no activity after a
   // specified interval.

@@ -711,7 +711,7 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
       sk_image_info, transferable_resource.mailbox_holder.texture_target,
       /* is_origin_top_left = */ opengl_flip_y_extension_,
       context_provider_->GetWeakPtr(), base::PlatformThread::CurrentRef(),
-      Thread::Current()->GetTaskRunner(), std::move(release_callback),
+      Thread::Current()->GetDeprecatedTaskRunner(), std::move(release_callback),
       /*supports_display_compositing=*/true,
       transferable_resource.is_overlay_candidate);
 }
@@ -1828,6 +1828,8 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
   uint32_t usage = gpu::SHARED_IMAGE_USAGE_GLES2 |
                    gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
                    gpu::SHARED_IMAGE_USAGE_DISPLAY;
+  if (initial_gpu_ == gl::GpuPreference::kHighPerformance)
+    usage |= gpu::SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU;
   GrSurfaceOrigin origin = opengl_flip_y_extension_
                                ? kTopLeft_GrSurfaceOrigin
                                : kBottomLeft_GrSurfaceOrigin;

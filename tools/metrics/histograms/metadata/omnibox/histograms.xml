@@ -22,6 +22,51 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<variants name="NavigationOrSuggestionPrefetch">
+  <variant name="NavigationPrefetch"
+      summary="Recorded for prefetches where Chrome is relatively confident
+               an omnibox navigation is about to occur (i.e. the user
+               selected a search suggestion). These prefetches allow Chrome
+               to kickstart the request without waiting until before unload
+               handlers or other navigation pre-processing mechanisms in
+               Chrome."/>
+  <variant name="SuggestionPrefetch"
+      summary="Recorded for prefetches where an omnibox suggestion from the
+               suggestion server recommends a prefetch of a suggestion
+               results page."/>
+</variants>
+
+<variants name="NavigationPrefetchOnly">
+  <variant name="NavigationPrefetch"
+      summary="Recorded for prefetches where Chrome is relatively confident
+               an omnibox navigation is about to occur (i.e. the user
+               selected a search suggestion). These prefetches allow Chrome
+               to kickstart the request without waiting until before unload
+               handlers or other navigation pre-processing mechanisms in
+               Chrome."/>
+</variants>
+
+<variants name="OmniboxAutocompleteUpdateSlice">
+  <variant name=""
+      summary="This slice measures match changes for all updates, regardless
+               of whether it or the previous update were asynchronous or
+               synchronous. Logged exactly once per update; 0, 1, or multiple
+               times per input. The count here will be the sum of the counts
+               for the other 2 slices."/>
+  <variant name=".Async"
+      summary="This slice measures match changes between the last update for
+               the current input, whether it be asynchronous or synchronous,
+               and the current asynchronous, i.e. non-first, update of the
+               current input. Logged exactly once per asynchronous update; 0,
+               1, or multiple times per input."/>
+  <variant name=".CrossInput"
+      summary="This slice measures match changes between the last update for
+               the previous input, whether it be asynchronous or synchronous,
+               and the synchronous, i.e. first, update of the current input.
+               Logged exactly once per synchronous update; at most once per
+               input."/>
+</variants>
+
 <variants name="OmniboxProviders">
   <variant name="Bookmark"/>
   <variant name="Builtin"/>
@@ -45,6 +90,29 @@ chromium-metrics-reviews@google.com.
   <variant name="VerbatimMatch"/>
   <variant name="VoiceSuggest"/>
   <variant name="ZeroSuggest"/>
+</variants>
+
+<variants name="SearchPrefetch">
+  <variant name="SearchPrefetch"
+      summary="Search Prefetch issues results page requests in response to
+               either the suggestion server or the Omnibox client being
+               confident that the user will navigate to a specific search
+               suggestion. These requests are then served instantly to the
+               user when the user navigates to a search suggestion with the
+               same search terms. These requests can have mismatching query
+               params as the Omnibox client updates the search navigation URL
+               as the user types more into the Omnibox. The suggestion server
+               issues prefetch hints along with the suggestion request.
+               Additionally, the Omnibox client decides to prefetch when the
+               user has chosen (or likely chosen) a search suggestion to
+               initiate the search suggestion navigation earlier."/>
+</variants>
+
+<variants name="SuggestionPrefetchOnly">
+  <variant name="SuggestionPrefetch"
+      summary="Recorded for prefetches where an omnibox suggestion from the
+               suggestion server recommends a prefetch of a suggestion
+               results page."/>
 </variants>
 
 <histogram name="Omnibox.AcceptedKeywordSuggestion"
@@ -72,7 +140,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.AnswerParseType" enum="SuggestionAnswerType"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>jdonnelly@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -87,7 +155,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.AssistedQueryStats.Length" units="chars"
-    expires_after="2022-08-14">
+    expires_after="M115">
   <owner>mahmadi@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -350,7 +418,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.ClipboardSuggestionShownAge" units="ms"
-    expires_after="2022-11-27">
+    expires_after="2023-02-12">
   <owner>gangwu@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
@@ -368,7 +436,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.ClipboardSuggestionShownNumTimes" units="units"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>gangwu@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
@@ -419,74 +487,6 @@ chromium-metrics-reviews@google.com.
     compared with the count in the clipboard bucket of the
     Omnibox.SuggestionUsed.Provider histogram to determine the clickthrough rate
     on these suggestions.
-  </summary>
-</histogram>
-
-<histogram name="Omnibox.CrossInputMatchStability.MatchChange" units="position"
-    expires_after="2022-12-11">
-  <owner>manukh@chromium.org</owner>
-  <owner>tommycli@chromium.org</owner>
-  <owner>jdonnelly@chromium.org</owner>
-  <summary>
-    This tracks how unstable our matches are due to synchronous updates.
-    Synchronous updates usually, though not necessarily, follow asynchronous
-    updates; this measures match instability between the last update for the
-    previous input, whether it be asynchronous or synchronous, and the
-    synchronous, i.e. first, update of the current input.
-
-    Whenever a dropdown position gets synchronously set to a new match that's
-    different from the old match, this histogram logs the index.
-
-    We primarily care about the default match, which is logged at index 0. All
-    indices matter though, so we track the other indices too. When the number of
-    matches changes asynchronously, matches that are removed are considered a
-    &quot;change&quot; and logged here. Matches that are appended are less
-    disruptive to the user, and are not logged.
-
-    This is because this metric is primarily interested in how many times the
-    user could be looking at a match with the intention of selecting it, and
-    then it surprisingly goes away.
-
-    Note that merely adding a new provider will increase these counts. That's
-    intentional. Swapping matches out annoys users, and to avoid this, we should
-    do some things like: caching, update coalescing, update deferral until next
-    keystroke, provider timeouts, etc.
-
-    This metric is designed to be normalized by the True count of
-    Omnibox.Start.WantAsyncMatches, which will yield the number of match changes
-    synchronously per keystroke or other user gesture.
-
-    There's the related Omnibox.MatchStability.AsyncMatchChange2 histogram for
-    tracking match instability for asynchronous updates.
-  </summary>
-</histogram>
-
-<histogram name="Omnibox.CrossInputMatchStability.MatchChangedInAnyPosition"
-    enum="BooleanChanged" expires_after="2022-12-11">
-  <owner>manukh@chromium.org</owner>
-  <owner>tommycli@chromium.org</owner>
-  <owner>jdonnelly@chromium.org</owner>
-  <summary>
-    This tracks how unstable our matches are due to synchronous updates.
-    Synchronous updates usually, though not necessarily, follow asynchronous
-    updates; this measures match instability between the last update for the
-    previous input, whether it be asynchronous or synchronous, and the
-    synchronous, i.e. first, update of the current input.
-
-    For each synchronous autocomplete update, this histogram logs whether any
-    match in any position has changed. Note: if the only change is new matches
-    appended to the end of the list, that does not count as a change, since it's
-    not very disruptive to the user.
-
-    This metric is designed to be normalized by the True count of
-    Omnibox.Start.WantAsyncMatches, which will yield the number of times any
-    match changes asynchronously per keystroke or other user gesture.
-
-    This histogram can be considered a boolean analogue to
-    Omnibox.CrossInputMatchStability.MatchChange.
-
-    There's the related Omnibox.MatchStability.AsyncMatchChangedInAnyPosition
-    histogram for tracking match instability for asynchronous updates.
   </summary>
 </histogram>
 
@@ -629,7 +629,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.EnteredKeywordMode2" enum="OmniboxEnteredKeywordMode2"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -643,7 +643,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.Escape" enum="OmniboxEscapeAction"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -729,8 +729,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.FuzzyMatchConversion.{SubProvider}" units="counts"
-    expires_after="M115">
+<histogram name="Omnibox.HistoryFuzzy.MatchConversion.{SubProvider}"
+    units="counts" expires_after="M115">
   <owner>orinj@chromium.org</owner>
   <owner>jdonnelly-team@google.com</owner>
   <summary>
@@ -752,6 +752,46 @@ chromium-metrics-reviews@google.com.
     <variant name="Bookmark" summary="Bookmark conversion count"/>
     <variant name="HistoryQuick" summary="HistoryQuick conversion count"/>
   </token>
+</histogram>
+
+<histogram name="Omnibox.HistoryFuzzy.Precision" enum="Boolean"
+    expires_after="M115">
+  <owner>orinj@chromium.org</owner>
+  <owner>jdonnelly-team@google.com</owner>
+  <summary>
+    When a fuzzy match was offered at the moment the user opened a match, this
+    measures whether a fuzzy suggestion was taken. This is only recorded when at
+    least one fuzzy match is in the result set, so it is useful to measure total
+    presence and engagement with fuzzy URL suggestions. It can be interpreted as
+    a click through rate for fuzzy match presentation as a whole: given that any
+    fuzzy matches were presented at the moment a match was selected by the user,
+    how often was the selected match a fuzzy URL suggestion?
+
+    Context: Fuzzy match conversion produces modified matches from other
+    synchronous autocomplete providers (sub-providers) using alternative inputs:
+    what the user might have typed, the automatic corrections.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.HistoryFuzzy.SearchDuration" units="ms"
+    expires_after="M115">
+  <owner>orinj@chromium.org</owner>
+  <owner>jdonnelly-team@google.com</owner>
+  <summary>
+    The time taken by HistoryFuzzyProvider to search for fuzzy input
+    corrections. This is measured if and only if a search is performed, so many
+    input states will not result in recording this metric (for example if the
+    input contains a space, that's taken as a hint that the user may be
+    searching instead of typing a domain name so no fuzzy search is performed).
+    It is useful to distinguish portions of the total time taken by the
+    provider, particularly as separate from sub-provider match gathering, so
+    that if there are any pathological cases in the search algorithm then they
+    will be apparent here.
+
+    Context: Fuzzy match conversion produces modified matches from other
+    synchronous autocomplete providers (sub-providers) using alternative inputs:
+    what the user might have typed, the automatic corrections.
+  </summary>
 </histogram>
 
 <histogram name="Omnibox.HoverTime" units="ms" expires_after="2021-10-31">
@@ -838,6 +878,33 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.KeywordModeUsageByEngineType.{Usage}"
+    enum="OmniboxBuiltinEngineType" expires_after="2023-08-15">
+  <owner>yoangela@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    Records number of times users use keyword mode enumerated by the type of
+    search engine (whether the engine is &quot;built-in&quot;).
+  </summary>
+  <token key="Usage">
+    <variant name="Accepted"
+        summary="Logged when a user accepts a keyword suggestion while in
+                 keyword mode. This is also logged every time
+                 Omnibox.AcceptedKeywordSuggestion is logged. Not logged if a
+                 user enters keyword mode but doesn't complete a search. Not
+                 logged if a user enters keyword mode, but selects a URL
+                 suggestion or a search suggestion that is not for the
+                 keyword mode search engine."/>
+    <variant name="Entered"
+        summary="Logged each time the user enters keyword mode. This is
+                 logged whenever Omnibox.EnteredKeywordMode2 is logged. If a
+                 user enters, then leaves, then re-enters keyword mode during
+                 the same session (i.e. without selecting a navigation), this
+                 is logged twice. If the user doesn't accept the keyword
+                 suggestion, this is still logged."/>
+  </token>
+</histogram>
+
 <histogram name="Omnibox.LocalHistoryPrefixSuggest.SearchTermsExtractedCount"
     units="counts" expires_after="2022-12-18">
   <owner>mahmadi@chromium.org</owner>
@@ -908,62 +975,105 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.MatchStability.AsyncMatchChange2" units="position"
-    expires_after="2022-12-04">
+<histogram
+    name="Omnibox.MatchStability.MatchChangeInAnyPosition{OmniboxAutocompleteUpdateSlice}"
+    enum="BooleanChanged" expires_after="2022-12-04">
   <owner>tommycli@chromium.org</owner>
+  <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
-    This tracks how unstable our matches are due to asynchronous updates.
-    Whenever a dropdown position gets asynchronously set to a new match that's
-    different from the old match, this histogram logs the index.
+    This tracks how unstable omnibox matches are.
 
-    We primarily care about the default match, which is logged at index 0. All
-    indices matter though, so we track the other indices too. When the number of
-    matches changes asynchronously, matches that are removed are considered a
-    &quot;change&quot; and logged here. Matches that are appended are less
-    disruptive to the user, and are not logged.
+    Typically, each input change is followed by a single synchronous update, and
+    then approximately 3 asynchronous updates. There may be more or less
+    asynchronous updates depending on which providers are enabled for the
+    particular platform/user, the input (e.g. some providers don't run for
+    0-length inputs), and how quickly the input changes occur (e.g. if the
+    inputs update rapidly, slower async providers won't have time to provide
+    updates before they're aborted by newer inputs).
 
-    This is because this metric is primarily interested in how many times the
-    user could be looking at a match with the intention of selecting it, and
-    then it surprisingly goes away.
+    For each autocomplete update, this histogram logs whether any match position
+    changes. If 1 or more matches changed, logs true once; otherwise false once.
 
-    Note that merely adding a new asynchronous provider will increase these
-    counts. That's intentional. Swapping matches out annoys users, and to avoid
-    this, we should do some things like: caching, update coalescing, update
-    deferral until next keystroke, provider timeouts, etc.
+    When the number of matches changes, matches that are removed are considered
+    a 'change', while matches that are appended are less disruptive to the user
+    and not considered a 'change'. This is because this metric is primarily
+    interested in how many times the user could be looking at a match with the
+    intention of selecting it, and then it surprisingly goes away.
+
+    Note that merely adding a new provider will increase these counts. That's
+    intentional. Swapping matches out annoys users, and to avoid this, we should
+    do some things like: caching, update coalescing, update deferral until next
+    keystroke, provider timeouts, etc.
 
     This metric is designed to be normalized by the True count of
     Omnibox.Start.WantAsyncMatches, which will yield the number of match changes
-    asynchronously per keystroke or other user gesture.
+    per keystroke or other user gesture.
 
-    There's the related Omnibox.CrossInputMatchStability.MatchChange histogram
-    for tracking match instability for synchronous updates.
+    There're the related Omnibox.MatchStability.InAnyPosition.* slices for
+    tracking match instability for all, asynchronous, and synchronous updates.
+
+    This histogram can be considered a boolean analogue to the
+    Omnibox.MatchStability.Index.* histogram which tracks which matches changed.
+
+    {OmniboxAutocompleteUpdateSlice}
   </summary>
+  <token key="OmniboxAutocompleteUpdateSlice"
+      variants="OmniboxAutocompleteUpdateSlice"/>
 </histogram>
 
-<histogram name="Omnibox.MatchStability.AsyncMatchChangedInAnyPosition"
-    enum="BooleanChanged" expires_after="2022-12-04">
+<histogram
+    name="Omnibox.MatchStability.MatchChangeIndex{OmniboxAutocompleteUpdateSlice}"
+    units="position" expires_after="2022-12-04">
   <owner>tommycli@chromium.org</owner>
+  <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
-    This tracks how unstable our matches are due to asynchronous updates.
+    This tracks how unstable omnibox matches are.
 
-    For each asynchronous autocomplete update, this histogram logs whether any
-    match in any position has changed. Note: if the only change is new matches
-    appended to the end of the list, that does not count as a change, since it's
-    not very disruptive to the user.
+    Typically, each input change is followed by a single synchronous update, and
+    then approximately 3 asynchronous updates. There may be more or less
+    asynchronous updates depending on which providers are enabled for the
+    particular platform/user, the input (e.g. some providers don't run for
+    0-length inputs), and how quickly the input changes occur (e.g. if the
+    inputs update rapidly, slower async providers won't have time to provide
+    updates before they're aborted by newer inputs).
+
+    For each match change, this histogram logs the index of the match change.
+    Match changes occur when any match position changes; i.e. is set to a new
+    match different from the old match in that position, even if the new match
+    was contained in the old matches set. If multiple matches change in a single
+    autocomplete update, logs each. If none change in a single autocomplete
+    update, this histogram is not logged.
+
+    We primarily care about the default match, which is logged at index 0. All
+    indices matter though, so we track the other indices too.
+
+    When the number of matches changes, matches that are removed are considered
+    a 'change', while matches that are appended are less disruptive to the user
+    and not considered a 'change'. This is because this metric is primarily
+    interested in how many times the user could be looking at a match with the
+    intention of selecting it, and then it surprisingly goes away.
+
+    Note that merely adding a new provider will increase these counts. That's
+    intentional. Swapping matches out annoys users, and to avoid this, we should
+    do some things like: caching, update coalescing, update deferral until next
+    keystroke, provider timeouts, etc.
 
     This metric is designed to be normalized by the True count of
-    Omnibox.Start.WantAsyncMatches, which will yield the number of times any
-    match changes asynchronously per keystroke or other user gesture.
+    Omnibox.Start.WantAsyncMatches, which will yield the number of match changes
+    per keystroke or other user gesture.
 
-    This histogram can be considered a boolean analogue to
-    Omnibox.MatchStability.AsyncMatchChange2.
+    There're the related Omnibox.MatchStability.Index.* slices for tracking
+    match instability for all, asynchronous, and synchronous updates.
 
-    There's the related
-    Omnibox.CrossInputMatchStability.MatchChangedInAnyPosition histogram for
-    tracking match instability for synchronous updates.
+    There's the related Omnibox.MatchStability.InAnyPosition histogram for
+    tracking whether any match changed per autocomplete update.
+
+    {OmniboxAutocompleteUpdateSlice}
   </summary>
+  <token key="OmniboxAutocompleteUpdateSlice"
+      variants="OmniboxAutocompleteUpdateSlice"/>
 </histogram>
 
 <histogram name="Omnibox.NumEvents" enum="UsedOmnibox"
@@ -982,7 +1092,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.NumTypedTerms" units="terms"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1018,7 +1128,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.PaintTime" units="ms" expires_after="2022-12-04">
+<histogram name="Omnibox.PaintTime" units="ms" expires_after="2023-02-12">
   <owner>asvitkine@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -1039,7 +1149,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.PedalShown" enum="SuggestionPedalType"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>jdonnelly@chromium.org</owner>
   <owner>orinj@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1100,7 +1210,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.ResumeJourneyShown.ClusterKeywordScore" units="count"
-    expires_after="2022-12-10">
+    expires_after="2023-02-12">
   <owner>junzou@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -1115,7 +1225,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.ResumeJourneyShown.ClusterKeywordType"
-    enum="HistoryClusterKeywordType" expires_after="2022-12-10">
+    enum="HistoryClusterKeywordType" expires_after="2023-02-12">
   <owner>junzou@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -1132,7 +1242,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.ResumeJourneyShown.PageEntityCollection"
-    enum="OptimizationGuidePageEntityCollection" expires_after="2022-12-08">
+    enum="OptimizationGuidePageEntityCollection" expires_after="2023-02-12">
   <owner>junzou@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -1148,7 +1258,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.RichAutocompletion.Triggered"
-    enum="OmniboxRichAutocompletionType" expires_after="2022-12-08">
+    enum="OmniboxRichAutocompletionType" expires_after="2023-02-12">
   <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1179,7 +1289,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.RichAutocompletion.Triggered.Any" units="Boolean"
-    expires_after="2022-12-08">
+    expires_after="2023-02-12">
   <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1215,7 +1325,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SearchboxStats.Length" units="chars"
-    expires_after="2022-08-14">
+    expires_after="M115">
   <owner>mahmadi@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -1228,7 +1338,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SearchEngineType" enum="OmniboxSearchEngineType"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1237,296 +1347,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.SearchPrefetch.ClickToNavigationIntercepted"
-    units="ms" expires_after="2023-05-02">
-  <owner>spelchat@chromium.org</owner>
-  <owner>chrome-brapp-loading@google.com</owner>
-  <owner>chrome-omnibox-team@google.com</owner>
-  <summary>
-    Search Prefetch issues results page requests in response to either the
-    suggestion server or the Omnibox client being confident that the user will
-    navigate to a specific search suggestion. These requests are then served
-    instantly to the user when the user navigates to a search suggestion with
-    the same search terms. These requests can have mismatching query params as
-    the Omnibox client updates the search navigation URL as the user types more
-    into the Omnibox. The suggestion server issues prefetch hints along with the
-    suggestion request. Additionally, the Omnibox client decides to prefetch
-    when the user has chosen (or likely chosen) a search suggestion to initiate
-    the search suggestion navigation earlier. Whether a search prefetch request
-    finished with a success status or a status that could be served. Measures
-    the time between the user clicks the Omnibox suggestion and the moment the
-    navigation is intercepted by the Search Prefetch code.
-  </summary>
-</histogram>
-
-<histogram name="Omnibox.SearchPrefetch.FetchResult.SuggestionPrefetch"
-    enum="BooleanSuccess" expires_after="2022-08-07">
-  <owner>ryansturm@chromium.org</owner>
-  <owner>chrome-omnibox-team@google.com</owner>
-  <summary>
-    Search Prefetch issues results page requests in response to either the
-    suggestion server or the Omnibox client being confident that the user will
-    navigate to a specific search suggestion. These requests are then served
-    instantly to the user when the user navigates to a search suggestion with
-    the same search terms. These requests can have mismatching query params as
-    the Omnibox client updates the search navigation URL as the user types more
-    into the Omnibox. The suggestion server issues prefetch hints along with the
-    suggestion request. Additionally, the Omnibox client decides to prefetch
-    when the user has chosen (or likely chosen) a search suggestion to initiate
-    the search suggestion navigation earlier. Whether a search prefetch request
-    finished with a success status or a status that could be served. Recorded
-    when prefetch requests receive headers. Recorded for omnibox search
-    prefetches that are started when an omnibox suggestion from the suggestion
-    server recommends a prefetch of a suggestion results page.
-  </summary>
-</histogram>
-
 <histogram
-    name="Omnibox.SearchPrefetch.NavigationInterceptedToForwardingComplete"
-    units="ms" expires_after="2023-05-02">
-  <owner>spelchat@chromium.org</owner>
-  <owner>chrome-brapp-loading@google.com</owner>
-  <owner>chrome-omnibox-team@google.com</owner>
-  <summary>
-    Search Prefetch issues results page requests in response to either the
-    suggestion server or the Omnibox client being confident that the user will
-    navigate to a specific search suggestion. These requests are then served
-    instantly to the user when the user navigates to a search suggestion with
-    the same search terms. These requests can have mismatching query params as
-    the Omnibox client updates the search navigation URL as the user types more
-    into the Omnibox. The suggestion server issues prefetch hints along with the
-    suggestion request. Additionally, the Omnibox client decides to prefetch
-    when the user has chosen (or likely chosen) a search suggestion to initiate
-    the search suggestion navigation earlier. Whether a search prefetch request
-    finished with a success status or a status that could be served. Measure the
-    time between the navigation is intercepted by the Search Prefetch code and
-    the moment the Search Prefetch URL loader has finished forwarding the whole
-    response to the navigation URL loader. This time includes finishing fetching
-    the Search response and any queuing delays in the UI thread preventing the
-    Search Prefetch URL loader from forwarding bytes to the navigation code.
-  </summary>
-</histogram>
-
-<histogram
-    name="Omnibox.SearchPrefetch.NavigationURLMatches.NavigationPrefetch"
-    enum="Boolean" expires_after="2023-01-15">
-  <owner>ryansturm@chromium.org</owner>
-  <owner>chrome-omnibox-team@google.com</owner>
-  <summary>
-    Search Prefetch issues results page requests in response to either the
-    suggestion server or the Omnibox client being confident that the user will
-    navigate to a specific search suggestion. These requests are then served
-    instantly to the user when the user navigates to a search suggestion with
-    the same search terms. These requests can have mismatching query params as
-    the Omnibox client updates the search navigation URL as the user types more
-    into the Omnibox. The suggestion server issues prefetch hints along with the
-    suggestion request. Additionally, the Omnibox client decides to prefetch
-    when the user has chosen (or likely chosen) a search suggestion to initiate
-    the search suggestion navigation earlier. Whether the prefetch URL and the
-    navigation URL are an exact match including query params in the URL.
-    Recorded upon navigation to a matching search term. Only recorded when the
-    prefetch was issued when Chrome is relatively confident an omnibox
-    navigation is about to occur (i.e. the user selected a search suggestion).
-    These prefetches allow Chrome to kickstart the request without waiting until
-    before unload handlers or other navigation pre-processing mechanisms in
-    Chrome.
-  </summary>
-</histogram>
-
-<histogram
-    name="Omnibox.SearchPrefetch.PrefetchEligibilityReason.NavigationPrefetch"
-    enum="SearchPrefetchEligibilityReason" expires_after="2023-01-15">
-  <owner>ryansturm@chromium.org</owner>
-  <owner>chrome-omnibox-team@google.com</owner>
-  <summary>
-    Search Prefetch issues results page requests in response to either the
-    suggestion server or the Omnibox client being confident that the user will
-    navigate to a specific search suggestion. These requests are then served
-    instantly to the user when the user navigates to a search suggestion with
-    the same search terms. These requests can have mismatching query params as
-    the Omnibox client updates the search navigation URL as the user types more
-    into the Omnibox. The suggestion server issues prefetch hints along with the
-    suggestion request. Additionally, the Omnibox client decides to prefetch
-    when the user has chosen (or likely chosen) a search suggestion to initiate
-    the search suggestion navigation earlier. The reason that a search prefetch
-    request issued when a user navigates to a suggestion was not eligible to be
-    prefetched (or 'Prefetched' if it was prefetched). Only recorded when the
-    prefetch was issued when Chrome is relatively confident an omnibox
-    navigation is about to occur (i.e. the user selected a search suggestion).
-    These prefetches allow Chrome to kickstart the request without waiting until
-    before unload handlers or other navigation pre-processing mechanisms in
-    Chrome. in Chrome.
-  </summary>
-</histogram>
-
-<histogram
-    name="Omnibox.SearchPrefetch.PrefetchEligibilityReason.SuggestionPrefetch"
-    enum="SearchPrefetchEligibilityReason" expires_after="2023-01-01">
-  <owner>ryansturm@chromium.org</owner>
-  <owner>chrome-omnibox-team@google.com</owner>
-  <summary>
-    Search Prefetch issues results page requests in response to either the
-    suggestion server or the Omnibox client being confident that the user will
-    navigate to a specific search suggestion. These requests are then served
-    instantly to the user when the user navigates to a search suggestion with
-    the same search terms. These requests can have mismatching query params as
-    the Omnibox client updates the search navigation URL as the user types more
-    into the Omnibox. The suggestion server issues prefetch hints along with the
-    suggestion request. Additionally, the Omnibox client decides to prefetch
-    when the user has chosen (or likely chosen) a search suggestion to initiate
-    the search suggestion navigation earlier. The reason that a search prefetch
-    request from the autocomplete/omnibox suggest pipeline was not eligible to
-    be prefetched (or 'Prefetched' if it was prefetched). Recorded for omnibox
-    search prefetches that are started when an omnibox suggestion from the
-    suggestion server recommends a prefetch of a suggestion results page.
-  </summary>
-</histogram>
-
-<histogram name="Omnibox.SearchPrefetch.PrefetchFinalStatus.NavigationPrefetch"
-    enum="SearchPrefetchStatus" expires_after="2023-01-15">
-  <owner>ryansturm@chromium.org</owner>
-  <owner>chrome-omnibox-team@google.com</owner>
-  <summary>
-    Search Prefetch issues results page requests in response to either the
-    suggestion server or the Omnibox client being confident that the user will
-    navigate to a specific search suggestion. These requests are then served
-    instantly to the user when the user navigates to a search suggestion with
-    the same search terms. These requests can have mismatching query params as
-    the Omnibox client updates the search navigation URL as the user types more
-    into the Omnibox. The suggestion server issues prefetch hints along with the
-    suggestion request. Additionally, the Omnibox client decides to prefetch
-    when the user has chosen (or likely chosen) a search suggestion to initiate
-    the search suggestion navigation earlier. The status of a Search Prefetch
-    request when it is deleted by expiration or by serving the request. Only
-    recorded when the prefetch was issued when Chrome is relatively confident an
-    omnibox navigation is about to occur (i.e. the user selected a search
-    suggestion). These prefetches allow Chrome to kickstart the request without
-    waiting until before unload handlers or other navigation pre-processing
-    mechanisms in Chrome.
-  </summary>
-</histogram>
-
-<histogram name="Omnibox.SearchPrefetch.PrefetchFinalStatus.SuggestionPrefetch"
-    enum="SearchPrefetchStatus" expires_after="2022-08-07">
-  <owner>ryansturm@chromium.org</owner>
-  <owner>chrome-omnibox-team@google.com</owner>
-  <summary>
-    Search Prefetch issues results page requests in response to either the
-    suggestion server or the Omnibox client being confident that the user will
-    navigate to a specific search suggestion. These requests are then served
-    instantly to the user when the user navigates to a search suggestion with
-    the same search terms. These requests can have mismatching query params as
-    the Omnibox client updates the search navigation URL as the user types more
-    into the Omnibox. The suggestion server issues prefetch hints along with the
-    suggestion request. Additionally, the Omnibox client decides to prefetch
-    when the user has chosen (or likely chosen) a search suggestion to initiate
-    the search suggestion navigation earlier. The status of a Search Prefetch
-    request when it is deleted by expiration or by serving the request. Recorded
-    for omnibox search prefetches that are started when an omnibox suggestion
-    from the suggestion server recommends a prefetch of a suggestion results
-    page.
-  </summary>
-</histogram>
-
-<histogram name="Omnibox.SearchPrefetch.PrefetchServingReason"
-    enum="SearchPrefetchServingReason" expires_after="2022-12-11">
-  <owner>ryansturm@chromium.org</owner>
-  <owner>chrome-omnibox-team@google.com</owner>
-  <summary>
-    Search Prefetch issues results page requests in response to either the
-    suggestion server or the Omnibox client being confident that the user will
-    navigate to a specific search suggestion. These requests are then served
-    instantly to the user when the user navigates to a search suggestion with
-    the same search terms. These requests can have mismatching query params as
-    the Omnibox client updates the search navigation URL as the user types more
-    into the Omnibox. The suggestion server issues prefetch hints along with the
-    suggestion request. Additionally, the Omnibox client decides to prefetch
-    when the user has chosen (or likely chosen) a search suggestion to initiate
-    the search suggestion navigation earlier. The reason that a navigation
-    request could or could not serve a search prefetch request. Recorded for all
-    main frame navigations.
-  </summary>
-</histogram>
-
-<histogram name="Omnibox.SearchPrefetch.PrefetchServingReason.Prerender"
-    enum="SearchPrefetchServingReason" expires_after="2022-12-11">
-  <owner>lingqi@chromium.org</owner>
-  <owner>ryansturm@chromium.org</owner>
-  <owner>chrome-prerendering@google.com</owner>
-  <summary>
-    Records whether a search prerender request uses the prefetched response.
-    SearchPrefetchService records this metric when
-    SearchPrefetchURLLoaderInterceptor attempts to intercept a prerendering main
-    resource request, for prerender main frame navigations with the feature flag
-    of SearchPrefetchUpgradeToPrerender enabled.
-
-    Backgound: A search prerender request should use the prefetched response
-    instead of resending the same request, otherwise it will waste resources.
-    The search suggestion service may suggest to prefetch a result page, and
-    then ask the client to prerender the page. When the client attempts
-    prerender the page, it has received the response associated with the
-    prefetch request (by design), and should serve the prefetched response to
-    the prerender request.
-  </summary>
-</histogram>
-
-<histogram
-    name="Omnibox.SearchPrefetch.SearchWhatYouTypedWasAlsoSuggested.History"
-    units="boolean" expires_after="2022-10-30">
+    name="Omnibox.SearchPrefetch.SearchWhatYouTypedWasAlsoSuggested.{HistoryOrSuggest}"
+    units="boolean" expires_after="2023-05-02">
   <owner>ryansturm@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
     Records whether a &quot;search what you type&quot; omnibox navigation was
-    also a search history type. Recorded when the user navigates to a search via
-    typing the full query into the omnibox.
+    also a {HistoryOrSuggest} type. Recorded when the user navigates to a search
+    via typing the full query into the omnibox.
   </summary>
-</histogram>
-
-<histogram
-    name="Omnibox.SearchPrefetch.SearchWhatYouTypedWasAlsoSuggested.HistoryOrSuggest"
-    units="boolean" expires_after="2022-10-30">
-  <owner>ryansturm@chromium.org</owner>
-  <owner>chrome-omnibox-team@google.com</owner>
-  <summary>
-    Records whether a &quot;search what you type&quot; omnibox navigation was
-    also a search suggest type or a search history type. Recorded when the user
-    navigates to a search via typing the full query into the omnibox.
-  </summary>
-</histogram>
-
-<histogram
-    name="Omnibox.SearchPrefetch.SearchWhatYouTypedWasAlsoSuggested.Suggest"
-    units="boolean" expires_after="2022-10-30">
-  <owner>ryansturm@chromium.org</owner>
-  <owner>chrome-omnibox-team@google.com</owner>
-  <summary>
-    Records whether a &quot;search what you type&quot; omnibox navigation was
-    also a search suggest type. Recorded when the user navigates to a search via
-    typing the full query into the omnibox.
-  </summary>
-</histogram>
-
-<histogram name="Omnibox.SearchPrefetch.StartTime.NavigationPrefetch"
-    units="ms" expires_after="2022-10-30">
-  <owner>ryansturm@chromium.org</owner>
-  <owner>chrome-omnibox-team@google.com</owner>
-  <summary>
-    Search Prefetch issues results page requests in response to either the
-    suggestion server or the Omnibox client being confident that the user will
-    navigate to a specific search suggestion. These requests are then served
-    instantly to the user when the user navigates to a search suggestion with
-    the same search terms. These requests can have mismatching query params as
-    the Omnibox client updates the search navigation URL as the user types more
-    into the Omnibox. The suggestion server issues prefetch hints along with the
-    suggestion request. Additionally, the Omnibox client decides to prefetch
-    when the user has chosen (or likely chosen) a search suggestion to initiate
-    the search suggestion navigation earlier. The amount of time it takes to
-    start a prefetch request. Only recorded when the prefetch was issued when
-    Chrome is relatively confident an omnibox navigation is about to occur (i.e.
-    the user selected a search suggestion). These prefetches allow Chrome to
-    kickstart the request without waiting until before unload handlers or other
-    navigation pre-processing mechanisms in Chrome.
-  </summary>
+  <token key="HistoryOrSuggest">
+    <variant name="History" summary="history"/>
+    <variant name="HistoryOrSuggest" summary="history or suggest"/>
+    <variant name="Suggest" summary="suggest"/>
+  </token>
 </histogram>
 
 <histogram name="Omnibox.SearchProviderMatches" units="units"
@@ -1562,7 +1397,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.Start.WantAsyncMatches" enum="Boolean"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>tommycli@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
@@ -1592,7 +1427,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestionUsed.OfferedTabMatch" enum="BooleanOffered"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>gangwu@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -1615,7 +1450,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestionUsed.Pedal" enum="SuggestionPedalType"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>jdonnelly@chromium.org</owner>
   <owner>orinj@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1654,7 +1489,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestionUsed.ResumeJourney.ClusterKeywordScore"
-    units="count" expires_after="2022-12-10">
+    units="count" expires_after="2023-02-12">
   <owner>junzou@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -1674,7 +1509,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestionUsed.ResumeJourney.ClusterKeywordType"
-    enum="HistoryClusterKeywordType" expires_after="2022-12-10">
+    enum="HistoryClusterKeywordType" expires_after="2023-02-12">
   <owner>junzou@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -1727,7 +1562,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestionUsed.ResumeJourney.PageEntityCollection"
-    enum="OptimizationGuidePageEntityCollection" expires_after="2022-12-08">
+    enum="OptimizationGuidePageEntityCollection" expires_after="2023-02-12">
   <owner>junzou@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -1849,7 +1684,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestionUsed.ResumeJourneyCTR"
-    enum="BooleanSelected" expires_after="2022-12-01">
+    enum="BooleanSelected" expires_after="2023-02-12">
   <owner>tommycli@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -1870,7 +1705,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestionUsed.RichAutocompletion"
-    enum="OmniboxRichAutocompletionType" expires_after="2022-12-08">
+    enum="OmniboxRichAutocompletionType" expires_after="2023-02-12">
   <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1893,7 +1728,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Omnibox.SuggestionUsed.Search.Experimental.NavigationToFirstMeaningfulPaint"
-    units="ms" expires_after="2022-12-11">
+    units="ms" expires_after="2023-02-12">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1904,7 +1739,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestionUsed.Search.InputToNavigationStart"
-    units="ms" expires_after="2022-12-01">
+    units="ms" expires_after="2023-02-12">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1929,7 +1764,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Omnibox.SuggestionUsed.Search.NavigationToLargestContentfulPaint2"
-    units="ms" expires_after="2022-11-27">
+    units="ms" expires_after="2023-02-12">
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1958,7 +1793,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestionUsed.SelectedTabMatch"
-    enum="BooleanSelected" expires_after="2022-12-11">
+    enum="BooleanSelected" expires_after="2023-02-12">
   <owner>gangwu@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -1999,7 +1834,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestionUsed.URL.InputToNavigationStart" units="ms"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -2247,6 +2082,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Omnibox.ZeroSuggest.Eligible.OnFocusV2"
     enum="ZeroSuggestEligibleOnFocus" expires_after="2022-12-25">
+  <obsolete>
+    Obsolete as of M106.
+  </obsolete>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
@@ -2275,6 +2113,20 @@ chromium-metrics-reviews@google.com.
     suggest suggestions (including incognito mode), and reports eligibility for
     suggestions even if kOmniboxPopupShortcutIconsInZeroState is enabled
     (meaning: suggestions are not shown, but current URL is eligible).
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.ZeroSuggestProvider.Eligibility"
+    enum="ZeroSuggestEligibility" expires_after="2022-12-11">
+  <owner>mahmadi@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    Logs whether ZeroSuggestProvider is eligible to request and display zero-
+    prefix suggestions, and if not, why not. Emitted for both
+    omit_asynchronous_matches_ true (i.e, Autocomplete classifier) and false
+    inputs (i.e, when the user has typed in, focused the omnibox, or cleared it
+    but has not typed in yet) in ZeroSuggestProvider::Start(). Also emitted on
+    applicable page load/switch events in ZeroSuggestProvider::StartPrefetch().
   </summary>
 </histogram>
 
@@ -2359,6 +2211,229 @@ chromium-metrics-reviews@google.com.
     sent and the responses received; whether or not the response is loaded from
     HTTP cache.
   </summary>
+</histogram>
+
+<histogram
+    name="Omnibox.{SearchPrefetch}.ClickToNavigationIntercepted.{NavigationPrefetchOnly}"
+    units="ms" expires_after="2023-05-02">
+  <owner>spelchat@chromium.org</owner>
+  <owner>chrome-brapp-loading@google.com</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    {SearchPrefetch}
+
+    Measures the time between the user clicks the Omnibox suggestion and the
+    moment the navigation is intercepted by the Search Prefetch code.
+
+    {NavigationPrefetchOnly}
+  </summary>
+  <token key="SearchPrefetch" variants="SearchPrefetch"/>
+  <token key="NavigationPrefetchOnly" variants="NavigationPrefetchOnly"/>
+</histogram>
+
+<histogram name="Omnibox.{SearchPrefetch}.FetchResult.{SuggestionPrefetchOnly}"
+    enum="BooleanSuccess" expires_after="2023-05-02">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    {SearchPrefetch}
+
+    Whether a search prefetch request finished with a success status or a status
+    that could be served. Recorded when prefetch requests receive headers.
+
+    {SuggestionPrefetchOnly}
+  </summary>
+  <token key="SearchPrefetch" variants="SearchPrefetch"/>
+  <token key="SuggestionPrefetchOnly" variants="SuggestionPrefetchOnly"/>
+</histogram>
+
+<histogram
+    name="Omnibox.{SearchPrefetch}.NavigationInterceptedToForwardingComplete"
+    units="ms" expires_after="2023-05-02">
+  <owner>spelchat@chromium.org</owner>
+  <owner>chrome-brapp-loading@google.com</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    {SearchPrefetch}
+
+    Measures the time between the navigation is intercepted by the Search
+    Prefetch code and the moment the Search Prefetch URL loader has finished
+    forwarding the whole response to the navigation URL loader. This time
+    includes finishing fetching the Search response and any queuing delays in
+    the UI thread preventing the Search Prefetch URL loader from forwarding
+    bytes to the navigation code.
+  </summary>
+  <token key="SearchPrefetch" variants="SearchPrefetch"/>
+</histogram>
+
+<histogram
+    name="Omnibox.{SearchPrefetch}.NavigationURLMatches.NavigationPrefetch.{NavigationPrefetchOnly}"
+    enum="Boolean" expires_after="2023-05-02">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    {SearchPrefetch}
+
+    Whether the prefetch URL and the navigation URL are an exact match including
+    query params in the URL. Recorded upon navigation to a matching search term.
+
+    {NavigationPrefetchOnly}
+  </summary>
+  <token key="SearchPrefetch" variants="SearchPrefetch"/>
+  <token key="NavigationPrefetchOnly" variants="NavigationPrefetchOnly"/>
+</histogram>
+
+<histogram
+    name="Omnibox.{SearchPrefetch}.PrefetchEligibilityReason.{NavigationOrSuggestionPrefetch}"
+    enum="SearchPrefetchEligibilityReason" expires_after="2023-05-02">
+  <obsolete>
+    This is deprecated as of 07/2022. Please use
+    Omnibox.SearchPrefetch.PrefetchEligibilityReason2.{NavigationOrSuggestionPrefetch}.
+  </obsolete>
+  <owner>ryansturm@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    {SearchPrefetch}
+
+    The reason that a search prefetch request issued when a user navigates to a
+    suggestion was not eligible to be prefetched (or 'Prefetched' if it was
+    prefetched).
+
+    {NavigationOrSuggestionPrefetch}
+  </summary>
+  <token key="SearchPrefetch" variants="SearchPrefetch"/>
+  <token key="NavigationOrSuggestionPrefetch"
+      variants="NavigationOrSuggestionPrefetch"/>
+</histogram>
+
+<histogram
+    name="Omnibox.{SearchPrefetch}.PrefetchEligibilityReason2.{NavigationOrSuggestionPrefetch}"
+    enum="SearchPrefetchEligibilityReason" expires_after="2023-05-02">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    {SearchPrefetch}
+
+    The reason that a search prefetch request issued when a user navigates to a
+    suggestion was not eligible to be prefetched (or 'Prefetched' if it was
+    prefetched).
+
+    {NavigationOrSuggestionPrefetch}
+  </summary>
+  <token key="SearchPrefetch" variants="SearchPrefetch"/>
+  <token key="NavigationOrSuggestionPrefetch"
+      variants="NavigationOrSuggestionPrefetch"/>
+</histogram>
+
+<histogram
+    name="Omnibox.{SearchPrefetch}.PrefetchFinalStatus.{NavigationOrSuggestionPrefetch}"
+    enum="SearchPrefetchStatus" expires_after="2023-05-02">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    {SearchPrefetch}
+
+    The status of a Search Prefetch request when it is deleted by expiration or
+    by serving the request.
+
+    {NavigationOrSuggestionPrefetch}
+  </summary>
+  <token key="SearchPrefetch" variants="SearchPrefetch"/>
+  <token key="NavigationOrSuggestionPrefetch"
+      variants="NavigationOrSuggestionPrefetch"/>
+</histogram>
+
+<histogram
+    name="Omnibox.{SearchPrefetch}.PrefetchServingReason2{PrerenderOrNavigation}"
+    enum="SearchPrefetchServingReason" expires_after="2023-05-02">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>lingqi@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    {SearchPrefetch}
+
+    The reason that a navigation request could or could not serve a search
+    prefetch request.
+
+    {PrerenderOrNavigation}
+  </summary>
+  <token key="SearchPrefetch" variants="SearchPrefetch"/>
+  <token key="PrerenderOrNavigation">
+    <variant name="" summary="Recorded for typical navigations."/>
+    <variant name=".Prerender"
+        summary="Recorded for prerender navigations that might consume the
+                 prefetch response."/>
+  </token>
+</histogram>
+
+<histogram
+    name="Omnibox.{SearchPrefetch}.PrefetchServingReason{PrerenderOrNavigation}"
+    enum="SearchPrefetchServingReason" expires_after="2023-05-02">
+  <obsolete>
+    This is deprecated as of 08/2022. Please use
+    Omnibox.SearchPrefetch.PrefetchServingReason2{PrerenderOrNavigation}.
+  </obsolete>
+  <owner>ryansturm@chromium.org</owner>
+  <owner>lingqi@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    {SearchPrefetch}
+
+    The reason that a navigation request could or could not serve a search
+    prefetch request.
+
+    {PrerenderOrNavigation}
+  </summary>
+  <token key="SearchPrefetch" variants="SearchPrefetch"/>
+  <token key="PrerenderOrNavigation">
+    <variant name="" summary="Recorded for typical navigations."/>
+    <variant name=".Prerender"
+        summary="Recorded for prerender navigations that might consume the
+                 prefetch response."/>
+  </token>
+</histogram>
+
+<histogram
+    name="Omnibox.{SearchPrefetch}.ReceivedServableResponse.{FallbackOrInitial}.{NavigationOrSuggestionPrefetch}"
+    units="ms" expires_after="2023-05-02">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    {SearchPrefetch}
+
+    This histogram records whether an activated (i.e., served) prefetch URL
+    Loader receives a servabled response from the server.
+
+    {FallbackOrInitial}
+
+    {NavigationOrSuggestionPrefetch}
+  </summary>
+  <token key="SearchPrefetch" variants="SearchPrefetch"/>
+  <token key="FallbackOrInitial">
+    <variant name="Fallback"
+        summary="Recorded for the fallback request after the prefetch fails."/>
+    <variant name="Initial"
+        summary="Recorded for the initial prefetch request."/>
+  </token>
+  <token key="NavigationOrSuggestionPrefetch"
+      variants="NavigationOrSuggestionPrefetch"/>
+</histogram>
+
+<histogram name="Omnibox.{SearchPrefetch}.StartTime.{NavigationPrefetchOnly}"
+    units="ms" expires_after="2023-05-02">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    {SearchPrefetch}
+
+    The amount of time it takes to start a prefetch request.
+
+    {NavigationPrefetchOnly}
+  </summary>
+  <token key="SearchPrefetch" variants="SearchPrefetch"/>
+  <token key="NavigationPrefetchOnly" variants="NavigationPrefetchOnly"/>
 </histogram>
 
 </histograms>

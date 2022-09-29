@@ -17,6 +17,7 @@
 #include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/partition_tag_bitmap.h"
+#include "base/allocator/partition_allocator/partition_tag_types.h"
 #include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "base/allocator/partition_allocator/tagging.h"
 #include "build/build_config.h"
@@ -24,10 +25,6 @@
 namespace partition_alloc {
 
 #if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
-
-// Use 8 bits for the partition tag.
-// TODO(tasak): add a description about the partition tag.
-using PartitionTag = uint8_t;
 
 static_assert(
     sizeof(PartitionTag) == internal::tag_bitmap::kPartitionTagSize,
@@ -61,12 +58,13 @@ PA_ALWAYS_INLINE PartitionTag* PartitionTagPointer(const void* ptr) {
 
 namespace internal {
 
-PA_ALWAYS_INLINE void PartitionTagSetValue(uintptr_t addr,
+PA_ALWAYS_INLINE void PartitionTagSetValue(uintptr_t slot_start,
                                            size_t size,
                                            PartitionTag value) {
   PA_DCHECK((size % tag_bitmap::kBytesPerPartitionTag) == 0);
+  PA_DCHECK((slot_start % tag_bitmap::kBytesPerPartitionTag) == 0);
   size_t tag_count = size >> tag_bitmap::kBytesPerPartitionTagShift;
-  PartitionTag* tag_ptr = PartitionTagPointer(addr);
+  PartitionTag* tag_ptr = PartitionTagPointer(slot_start);
   if (sizeof(PartitionTag) == 1) {
     memset(tag_ptr, value, tag_count);
   } else {
@@ -75,28 +73,13 @@ PA_ALWAYS_INLINE void PartitionTagSetValue(uintptr_t addr,
   }
 }
 
-PA_ALWAYS_INLINE void PartitionTagSetValue(void* ptr,
-                                           size_t size,
-                                           PartitionTag value) {
-  // Disambiguation: UntagPtr relates to hwardware MTE, and it strips the tag
-  // from the pointer. Whereas, PartitionTagSetValue relates to software MTE
-  // (i.e. MTECheckedPtr) and it sets the in-memory tag.
-  PartitionTagSetValue(UntagPtr(ptr), size, value);
-}
-
 PA_ALWAYS_INLINE PartitionTag PartitionTagGetValue(void* ptr) {
   return *PartitionTagPointer(ptr);
 }
 
-PA_ALWAYS_INLINE void PartitionTagClearValue(void* ptr, size_t size) {
-  size_t tag_region_size = size >> tag_bitmap::kBytesPerPartitionTagShift
-                                       << tag_bitmap::kPartitionTagSizeShift;
-  PA_DCHECK(!memchr(PartitionTagPointer(ptr), 0, tag_region_size));
-  memset(PartitionTagPointer(ptr), 0, tag_region_size);
-}
-
-PA_ALWAYS_INLINE void PartitionTagIncrementValue(void* ptr, size_t size) {
-  PartitionTag tag = PartitionTagGetValue(ptr);
+PA_ALWAYS_INLINE void PartitionTagIncrementValue(uintptr_t slot_start,
+                                                 size_t size) {
+  PartitionTag tag = *PartitionTagPointer(slot_start);
   PartitionTag new_tag = tag;
   ++new_tag;
   new_tag += !new_tag;  // Avoid 0.
@@ -104,20 +87,18 @@ PA_ALWAYS_INLINE void PartitionTagIncrementValue(void* ptr, size_t size) {
   // This verifies that tags for the entire slot have the same value and that
   // |size| doesn't exceed the slot size.
   size_t tag_count = size >> tag_bitmap::kBytesPerPartitionTagShift;
-  PartitionTag* tag_ptr = PartitionTagPointer(ptr);
+  PartitionTag* tag_ptr = PartitionTagPointer(slot_start);
   while (tag_count-- > 0) {
     PA_DCHECK(tag == *tag_ptr);
     tag_ptr++;
   }
 #endif
-  PartitionTagSetValue(ptr, size, new_tag);
+  PartitionTagSetValue(slot_start, size, new_tag);
 }
 
 }  // namespace internal
 
 #else  // No-op versions
-
-using PartitionTag = uint8_t;
 
 PA_ALWAYS_INLINE PartitionTag* PartitionTagPointer(void* ptr) {
   PA_NOTREACHED();
@@ -126,15 +107,12 @@ PA_ALWAYS_INLINE PartitionTag* PartitionTagPointer(void* ptr) {
 
 namespace internal {
 
-PA_ALWAYS_INLINE void PartitionTagSetValue(void*, size_t, PartitionTag) {}
-
 PA_ALWAYS_INLINE PartitionTag PartitionTagGetValue(void*) {
   return 0;
 }
 
-PA_ALWAYS_INLINE void PartitionTagClearValue(void* ptr, size_t) {}
-
-PA_ALWAYS_INLINE void PartitionTagIncrementValue(void* ptr, size_t size) {}
+PA_ALWAYS_INLINE void PartitionTagIncrementValue(uintptr_t slot_start,
+                                                 size_t size) {}
 
 }  // namespace internal
 

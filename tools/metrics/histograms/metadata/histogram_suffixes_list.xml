@@ -886,11 +886,9 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Blink.PrePaint.UpdateTime"/>
   <affected-histogram name="Blink.ProxyCommit.UpdateTime"/>
   <affected-histogram name="Blink.ScrollDocumentUpdate.UpdateTime"/>
-  <affected-histogram name="Blink.ServiceDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.Style.UpdateTime"/>
   <affected-histogram name="Blink.StyleAndLayout.UpdateTime"/>
   <affected-histogram name="Blink.UpdateViewportIntersection.UpdateTime"/>
-  <affected-histogram name="Blink.UserDrivenDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.WaitForCommit.UpdateTime"/>
 </histogram_suffixes>
 
@@ -921,11 +919,9 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Blink.PrePaint.UpdateTime"/>
   <affected-histogram name="Blink.ProxyCommit.UpdateTime"/>
   <affected-histogram name="Blink.ScrollDocumentUpdate.UpdateTime"/>
-  <affected-histogram name="Blink.ServiceDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.Style.UpdateTime"/>
   <affected-histogram name="Blink.StyleAndLayout.UpdateTime"/>
   <affected-histogram name="Blink.UpdateViewportIntersection.UpdateTime"/>
-  <affected-histogram name="Blink.UserDrivenDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.WaitForCommit.UpdateTime"/>
 </histogram_suffixes>
 
@@ -956,11 +952,9 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Blink.PrePaint.UpdateTime"/>
   <affected-histogram name="Blink.ProxyCommit.UpdateTime"/>
   <affected-histogram name="Blink.ScrollDocumentUpdate.UpdateTime"/>
-  <affected-histogram name="Blink.ServiceDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.Style.UpdateTime"/>
   <affected-histogram name="Blink.StyleAndLayout.UpdateTime"/>
   <affected-histogram name="Blink.UpdateViewportIntersection.UpdateTime"/>
-  <affected-histogram name="Blink.UserDrivenDocumentUpdate.UpdateTime"/>
   <affected-histogram name="Blink.WaitForCommit.UpdateTime"/>
 </histogram_suffixes>
 
@@ -1345,8 +1339,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="Renderer" label=""/>
   <affected-histogram name="Scheduling.BeginImplFrameLatency2"/>
   <affected-histogram name="Scheduling.BeginMainFrameStartToCommitDuration2"/>
-  <affected-histogram name="Scheduling.CommitToReadyToActivateDuration2"/>
-  <affected-histogram name="Scheduling.DrawDuration2"/>
   <affected-histogram
       name="Scheduling.DrawIntervalWithMainThreadCompositableAnimations2"/>
   <affected-histogram name="Scheduling.SwapAckWasFast"/>
@@ -2892,14 +2884,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Event.Scroll.ScrollerSize.OnScroll"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="GestureNavigationOOBEPage" separator=".">
-  <suffix name="Back" label="Gesture Navigation Back Page"/>
-  <suffix name="Home" label="Gesture Navigation Home Page"/>
-  <suffix name="Intro" label="Gesture Navigation Intro Page"/>
-  <suffix name="Overview" label="Gesture Navigation Overview Page"/>
-  <affected-histogram name="OOBE.GestureNavigationScreen.PageShownTime"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="GetAuthTokenType" separator=".">
   <suffix name="RemoteConsentApproved"
       label="The remote consent has been approved for the getAuthToken()
@@ -3612,24 +3596,142 @@ chromium-metrics-reviews@google.com.
 </histogram_suffixes>
 
 <histogram_suffixes name="LiveTabCountMetrics" separator=".">
-  <suffix name="ByLiveTabCount.0Tabs"
-      label="Recorded with 0 live tabs open in the browser."/>
+  <suffix name="ByLiveTabCount.0Tab"
+      label="Recorded with 0 live tabs open in the browser.">
+    <obsolete>
+      These suffixes is used to record metrics with live tab count information.
+      As part of crbug.com/1317494, these suffixes are replaced by
+      ByLiveTabCount2.*. The difference are 1. *.ByLiveTabCount2.* include
+      samples from prerendered pages and 2.
+      PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
+      record duration from activation start to first contentful paint for
+      prerendered pages.
+    </obsolete>
+  </suffix>
   <suffix name="ByLiveTabCount.1Tab"
-      label="Recorded with 1 live tab open in the browser."/>
+      label="Recorded with 1 live tab open in the browser.">
+    <obsolete/>
+  </suffix>
   <suffix name="ByLiveTabCount.2Tabs"
-      label="Recorded with 2 live tabs open in the browser."/>
+      label="Recorded with 2 live tabs open in the browser.">
+    <obsolete>
+      These suffixes are used to record metrics with live tab count information.
+      As part of crbug.com/1317494, these suffixes are replaced by
+      ByLiveTabCount2.*. The difference are 1. *.ByLiveTabCount2.* include
+      samples from prerendered pages and 2.
+      PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
+      record duration from activation start to first contentful paint for
+      prerendered pages.
+    </obsolete>
+  </suffix>
   <suffix name="ByLiveTabCount.3To4Tabs"
-      label="Recorded with between 3 and 4 live tabs open in the browser."/>
+      label="Recorded with between 3 and 4 live tabs open in the browser.">
+    <obsolete>
+      These suffixes are used to record metrics with live tab count information.
+      As part of crbug.com/1317494, these suffixes are replaced by
+      ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.* include
+      samples from prerendered pages and 2.
+      PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
+      record duration from activation start to first contentful paint for
+      prerendered pages.
+    </obsolete>
+  </suffix>
   <suffix name="ByLiveTabCount.5To7Tabs"
-      label="Recorded with between 5 and 7 live tabs open in the browser."/>
+      label="Recorded with between 5 and 7 live tabs open in the browser.">
+    <obsolete>
+      These suffixes are used to record metrics with live tab count information.
+      As part of crbug.com/1317494, these suffixes are replaced by
+      ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.* include
+      samples from prerendered pages and 2.
+      PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
+      record duration from activation start to first contentful paint for
+      prerendered pages.
+    </obsolete>
+  </suffix>
   <suffix name="ByLiveTabCount.8To19Tabs"
-      label="Recorded with between 8 and 19 live tabs open in the browser."/>
+      label="Recorded with between 8 and 19 live tabs open in the browser.">
+    <obsolete>
+      These suffixes are used to record metrics with live tab count information.
+      As part of crbug.com/1317494, these suffixes are replaced by
+      ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.* include
+      samples from prerendered pages and 2.
+      PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
+      record duration from activation start to first contentful paint for
+      prerendered pages.
+    </obsolete>
+  </suffix>
   <suffix name="ByLiveTabCount.20To39Tabs"
-      label="Recorded with between 20 and 39 live tabs open in the browser."/>
+      label="Recorded with between 20 and 39 live tabs open in the browser.">
+    <obsolete>
+      These suffixes are used to record metrics with live tab count information.
+      As part of crbug.com/1317494, these suffixes are replaced by
+      ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.* include
+      samples from prerendered pages and 2.
+      PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
+      record duration from activation start to first contentful paint for
+      prerendered pages.
+    </obsolete>
+  </suffix>
   <suffix name="ByLiveTabCount.40OrMoreTabs"
-      label="Recorded with 40 or more live tabs open in the browser."/>
+      label="Recorded with 40 or more live tabs open in the browser.">
+    <obsolete>
+      These suffixes are used to record metrics with live tab count information.
+      As part of crbug.com/1317494, these suffixes are replaced by
+      ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.* include
+      samples from prerendered pages and 2.
+      PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
+      record duration from activation start to first contentful paint for
+      prerendered pages.
+    </obsolete>
+  </suffix>
   <affected-histogram name="PageLoad.InteractiveTiming.FirstInputDelay"/>
   <affected-histogram name="PageLoad.InteractiveTiming.FirstInputDelay2"/>
+  <affected-histogram name="PageLoad.InteractiveTiming.FirstInputDelay4"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="LiveTabCountMetrics2" separator=".">
+  <suffix name="ByLiveTabCount2.0Tabs"
+      label="Recorded with 0 live tabs open in the browser, including
+             prerendered samples. The recorded value of
+             NavigationToFirstContentfulPaint is prerendered version:
+             duration from activation start to first contentful paint"/>
+  <suffix name="ByLiveTabCount2.1Tab"
+      label="Recorded with 1 live tab open in the browser, including
+             prerendered samples. The recorded value of
+             NavigationToFirstContentfulPaint is prerendered version:
+             duration from activation start to first contentful paint"/>
+  <suffix name="ByLiveTabCount2.2Tabs"
+      label="Recorded with 2 live tabs open in the browser, including
+             prerendered samples. The recorded value of
+             NavigationToFirstContentfulPaint is prerendered version:
+             duration from activation start to first contentful paint"/>
+  <suffix name="ByLiveTabCount2.3To4Tabs"
+      label="Recorded with between 3 and 4 live tabs open in the browser,
+             including prerendered samples. The recorded value of
+             NavigationToFirstContentfulPaint is prerendered version:
+             duration from activation start to first contentful paint"/>
+  <suffix name="ByLiveTabCount2.5To7Tabs"
+      label="Recorded with between 5 and 7 live tabs open in the browser,
+             including prerendered samples. The recorded value of
+             NavigationToFirstContentfulPaint is prerendered version:
+             duration from activation start to first contentful paint"/>
+  <suffix name="ByLiveTabCount2.8To19Tabs"
+      label="Recorded with between 8 and 19 live tabs open in the browser,
+             including prerendered samples. The recorded value of
+             NavigationToFirstContentfulPaint is prerendered version:
+             duration from activation start to first contentful paint"/>
+  <suffix name="ByLiveTabCount2.20To39Tabs"
+      label="Recorded with between 20 and 39 live tabs open in the browser,
+             including prerendered samples. The recorded value of
+             NavigationToFirstContentfulPaint is prerendered version:
+             duration from activation start to first contentful paint"/>
+  <suffix name="ByLiveTabCount2.40OrMoreTabs"
+      label="Recorded with 40 or more live tabs open in the browser,
+             including prerendered samples. The recorded value of
+             NavigationToFirstContentfulPaint is prerendered version:
+             duration from activation start to first contentful paint"/>
   <affected-histogram name="PageLoad.InteractiveTiming.FirstInputDelay4"/>
   <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
@@ -5742,17 +5844,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Net.RequestTime2"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="NetworkErrors" separator=".">
-  <suffix name="AuthExtTimeout" label="with the last error AuthExtTimeout"/>
-  <suffix name="Offline" label="with the last error Offline"/>
-  <suffix name="Portal" label="with the last error Portal"/>
-  <suffix name="Proxy" label="with the last error Proxy"/>
-  <affected-histogram name="OOBE.ErrorScreensTime.Enrollment"/>
-  <affected-histogram name="OOBE.ErrorScreensTime.Signin"/>
-  <affected-histogram name="OOBE.ErrorScreensTime.Supervised"/>
-  <affected-histogram name="OOBE.ErrorScreensTime.Update"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="NewTabPage_BackgroundService_RequestLatency"
     separator=".">
   <suffix name="Failure" label="Failed to fetch data from background service"/>
@@ -6115,153 +6206,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Omnibox.ClipboardSuggestionShownWithCurrentURL"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="OobeMarketingCountries" separator=".">
-  <suffix name="au" label="Australia"/>
-  <suffix name="ca" label="Canada"/>
-  <suffix name="de" label="Germany"/>
-  <suffix name="dk" label="Denmark"/>
-  <suffix name="es" label="Spain"/>
-  <suffix name="fi" label="Finland"/>
-  <suffix name="fr" label="France"/>
-  <suffix name="gb" label="United Kingdom"/>
-  <suffix name="it" label="Italy"/>
-  <suffix name="jp" label="Japan"/>
-  <suffix name="nl" label="Netherlands"/>
-  <suffix name="no" label="Norway"/>
-  <suffix name="se" label="Sweden"/>
-  <suffix name="us" label="United States"/>
-  <affected-histogram name="OOBE.MarketingOptInScreen.BackendConnector"/>
-  <affected-histogram name="OOBE.MarketingOptInScreen.Event"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="OobeScreenName" separator=".">
-  <suffix name="Adb-sideloading" label=""/>
-  <suffix name="App-downloading" label=""/>
-  <suffix name="App-launch-splash" label=""/>
-  <suffix name="Arc_tos" label=""/>
-  <suffix name="Assistant-optin-flow" label=""/>
-  <suffix name="Auto-enrollment-check" label=""/>
-  <suffix name="Autolaunch" label=""/>
-  <suffix name="Debugging" label=""/>
-  <suffix name="Demo-preferences" label=""/>
-  <suffix name="Demo-setup" label=""/>
-  <suffix name="Device-disabled" label=""/>
-  <suffix name="Edu-coexistence-login" label=""/>
-  <suffix name="Encryption-migration" label=""/>
-  <suffix name="Enroll" label=""/>
-  <suffix name="Error-message" label=""/>
-  <suffix name="Family-link-notice" label=""/>
-  <suffix name="Fingerprint-setup" label=""/>
-  <suffix name="Gaia-signin" label=""/>
-  <suffix name="Gesture-navigation" label=""/>
-  <suffix name="Hid-detection" label=""/>
-  <suffix name="Image" label=""/>
-  <suffix name="Kiosk-enable" label=""/>
-  <suffix name="Locale-switch" label=""/>
-  <suffix name="Management-transition" label=""/>
-  <suffix name="Marketing-opt-in" label=""/>
-  <suffix name="Multidevice-setup-screen" label=""/>
-  <suffix name="Network" label=""/>
-  <suffix name="Network-selection" label=""/>
-  <suffix name="Offline-login" label=""/>
-  <suffix name="Oobe-eula-md" label=""/>
-  <suffix name="Oobe-update" label=""/>
-  <suffix name="Packaged-license" label=""/>
-  <suffix name="Parental-handoff" label=""/>
-  <suffix name="Pin-setup" label=""/>
-  <suffix name="Recommend-apps" label=""/>
-  <suffix name="Reset" label=""/>
-  <suffix name="Sync-consent" label=""/>
-  <suffix name="Tos" label=""/>
-  <suffix name="Update-required" label=""/>
-  <suffix name="User-creation" label=""/>
-  <suffix name="Wrong-hwid" label=""/>
-  <affected-histogram name="OOBE.StepCompletionTime"/>
-  <affected-histogram name="OOBE.StepShownStatus"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="OobeScreenName_ExitReason" separator=".">
-  <suffix name="Adb-sideloading.Next" label=""/>
-  <suffix name="App-downloading.Next" label=""/>
-  <suffix name="Arc-tos.Accepted" label=""/>
-  <suffix name="Arc-tos.Back" label=""/>
-  <suffix name="Arc-tos.Skipped" label=""/>
-  <suffix name="Assistant-optin-flow.Next" label=""/>
-  <suffix name="Auto-enrollment-check.Next" label=""/>
-  <suffix name="Autolaunch.Canceled" label=""/>
-  <suffix name="Autolaunch.Completed" label=""/>
-  <suffix name="Connect.EnableDebugging" label=""/>
-  <suffix name="Connect.Next" label=""/>
-  <suffix name="Connect.QuickStart" label=""/>
-  <suffix name="Connect.SetupDemo" label=""/>
-  <suffix name="Connect.StartDemo" label=""/>
-  <suffix name="Connect.StartOsInstall" label=""/>
-  <suffix name="Debugging.Next" label=""/>
-  <suffix name="Demo-preferences.Canceled" label=""/>
-  <suffix name="Demo-preferences.Completed" label=""/>
-  <suffix name="Demo-setup.Completed" label=""/>
-  <suffix name="Device-disabled.Canceled" label=""/>
-  <suffix name="Edu-coexistence-login.Done" label=""/>
-  <suffix name="Enterprise-enrollment.Back" label=""/>
-  <suffix name="Enterprise-enrollment.BackToAutoEnrollmentCheck" label=""/>
-  <suffix name="Enterprise-enrollment.Completed" label=""/>
-  <suffix name="Enterprise-enrollment.TpmDbusError" label=""/>
-  <suffix name="Enterprise-enrollment.TpmError" label=""/>
-  <suffix name="Family-link-notice.Done" label=""/>
-  <suffix name="Fingerprint-setup.Done" label=""/>
-  <suffix name="Fingerprint-setup.Skipped" label=""/>
-  <suffix name="Gaia-signin.Back" label=""/>
-  <suffix name="Gaia-signin.Cancel" label=""/>
-  <suffix name="Gaia-signin.EnterpriseEnroll" label=""/>
-  <suffix name="Gaia-signin.SAMLVideoTimeout" label=""/>
-  <suffix name="Gaia-signin.StartConsumerKiosk" label=""/>
-  <suffix name="Gesture-navigation.Next" label=""/>
-  <suffix name="Hid-detection.Next" label=""/>
-  <suffix name="Hid-detection.StartDemo" label=""/>
-  <suffix name="Kiosk-enable.Next" label=""/>
-  <suffix name="Locale-switch.LocaleFetchFailed" label=""/>
-  <suffix name="Locale-switch.LocaleFetchTimeout" label=""/>
-  <suffix name="Locale-switch.NoSwitchNeeded" label=""/>
-  <suffix name="Locale-switch.SwitchFailed" label=""/>
-  <suffix name="Locale-switch.SwitchSucceded" label=""/>
-  <suffix name="Management-transition.Next" label=""/>
-  <suffix name="Marketing-opt-in.Next" label=""/>
-  <suffix name="Multidevice-setup-screen.Next" label=""/>
-  <suffix name="Network-selection.Back" label=""/>
-  <suffix name="Network-selection.Connected" label=""/>
-  <suffix name="Network-selection.OfflineDemoSetup" label=""/>
-  <suffix name="Oauth-enrollment.Back" label=""/>
-  <suffix name="Oauth-enrollment.Completed" label=""/>
-  <suffix name="Offline-login.Back" label=""/>
-  <suffix name="Offline-login.ReloadOnlineLogin" label=""/>
-  <suffix name="Oobe-eula-md.AcceptedWithoutStats" label=""/>
-  <suffix name="Oobe-eula-md.AcceptedWithStats" label=""/>
-  <suffix name="Oobe-eula-md.Back" label=""/>
-  <suffix name="Oobe-update.UpdateError" label=""/>
-  <suffix name="Oobe-update.UpdateNotRequired" label=""/>
-  <suffix name="Packaged-license.DontEnroll" label=""/>
-  <suffix name="Packaged-license.Enroll" label=""/>
-  <suffix name="Parental-Handoff.Done" label=""/>
-  <suffix name="Pin-setup.Done" label=""/>
-  <suffix name="Pin-setup.Skipped" label=""/>
-  <suffix name="Pin-setup.TimedOut" label=""/>
-  <suffix name="Recommend-apps.Selected" label=""/>
-  <suffix name="Recommend-apps.Skipped" label=""/>
-  <suffix name="Reset.Cancel" label=""/>
-  <suffix name="Saml-confirm-password.Cancel" label=""/>
-  <suffix name="Saml-confirm-password.TooManyAttempts" label=""/>
-  <suffix name="Sync-consent.Next" label=""/>
-  <suffix name="Terms-of-service.Accepted" label=""/>
-  <suffix name="Terms-of-service.Declined" label=""/>
-  <suffix name="User-creation.Cancel" label=""/>
-  <suffix name="User-creation.CreateChildAccount" label=""/>
-  <suffix name="User-creation.EnterpriseEnroll" label=""/>
-  <suffix name="User-creation.SignIn" label=""/>
-  <suffix name="User-creation.SignInAsChild" label=""/>
-  <suffix name="Wrong-hwid.Next" label=""/>
-  <affected-histogram name="OOBE.StepCompletionTimeByExitReason"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="OsSettingsChangeType" separator=".">
   <suffix name="FirstChange"
       label="First setting change since the user has focused the page (may
@@ -6558,8 +6502,28 @@ chromium-metrics-reviews@google.com.
 
 <histogram_suffixes name="PageLoadMetricsClientsLoadingPredictor" separator="."
     ordering="prefix">
+  <obsolete>
+    These suffixes are used to record metrics if LoadingPredictor enabled. As
+    part of crbug.com/1317494, this suffix is replaced by
+    Clients.LoadingPredictor2. The difference are 1.
+    *.Clients.LoadingPredictor2.* include samples from prerendered pages and 2.
+    the value of the UMAs are modified as activation origined for prerendered
+    pages.
+  </obsolete>
   <suffix base="true" name="Clients.LoadingPredictor"
       label="PageLoadMetrics with enabled LoadingPredictor"/>
+  <affected-histogram
+      name="PageLoad.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadMetricsClientsLoadingPredictor2"
+    separator="." ordering="prefix">
+  <suffix base="true" name="Clients.LoadingPredictor2"
+      label="PageLoadMetrics with enabled LoadingPredictor. If the page is
+             prerendered, the recorded value is modified as activation
+             origined."/>
   <affected-histogram
       name="PageLoad.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint"/>
   <affected-histogram
@@ -6575,6 +6539,10 @@ chromium-metrics-reviews@google.com.
       name="PageLoad.Clients.LoadingPredictor.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint"/>
   <affected-histogram
       name="PageLoad.Clients.LoadingPredictor.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram
+      name="PageLoad.Clients.LoadingPredictor2.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint"/>
+  <affected-histogram
+      name="PageLoad.Clients.LoadingPredictor2.PaintTiming.NavigationToFirstContentfulPaint"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadMetricsClientsMedia" separator="."
@@ -6734,6 +6702,16 @@ chromium-metrics-reviews@google.com.
       name="PageLoad.Clients.ServiceWorker2.ParseTiming.NavigationToParseStart"/>
 </histogram_suffixes>
 
+<!-- TODO(crbug.com/1353689): rewrite with the new way. -->
+<histogram_suffixes name="PageLoadMetricsSkippableFetchHandler" separator=".">
+  <suffix name="SkippableFetchHandler"
+    label="The fetch handler is recognized as skippable."/>
+  <suffix name="NonSkippableFetchHandler"
+    label="The fetch handler is recognized as not skippable."/>
+  <affected-histogram name="PageLoad.Clients.ServiceWorker2.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram name="PageLoad.Clients.ServiceWorker2.PaintTiming.NavigationToLargestContentfulPaint2"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="PageLoadMetricsClientsTabRestore" separator="."
     ordering="prefix">
   <suffix name="Clients.TabRestore"
@@ -6748,9 +6726,31 @@ chromium-metrics-reviews@google.com.
 
 <histogram_suffixes name="PageLoadMetricsEarlyHints" separator="."
     ordering="prefix">
+  <obsolete>
+    Removed in favor of Clients.EarlyHints2.Preload.
+  </obsolete>
   <suffix name="Clients.EarlyHints.Preload"
       label="PageLoadMetrics from a page that received preload Link headers
              via Early Hints responses. Recorded only for main frames."/>
+  <affected-histogram name="PageLoad.InteractiveTiming.FirstInputDelay4"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToLargestContentfulPaint2"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadMetricsEarlyHints2" separator="."
+    ordering="prefix">
+  <suffix name="Clients.EarlyHints2.Preload"
+      label="PageLoadMetrics from a page that received preload Link headers
+             via Early Hints responses. Recorded only for main frames.
+             Includes samples from prerendered pages. record duration from
+             activation start to first contentful paint for prerendered
+             pages.
+             PageLoad.Clients.EarlyHints.Preload.PaintTiming.NavigationToFirstContentfulPaint
+             and
+             PageLoad.Clients.EarlyHints.Preload.PaintTiming.NavigationToLargestContentfulPaint2
+             record activation start origined values for prerendered pages."/>
   <affected-histogram name="PageLoad.InteractiveTiming.FirstInputDelay4"/>
   <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
@@ -7106,6 +7106,7 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="PasswordProtection.InterstitialAction"/>
   <affected-histogram name="PasswordProtection.ModalWarningDialogAction"/>
   <affected-histogram name="PasswordProtection.PageInfoAction"/>
+  <affected-histogram name="PasswordProtection.PasswordAlertModeOutcome"/>
   <affected-histogram name="PasswordProtection.RequestOutcome"/>
   <affected-histogram name="PasswordProtection.Verdict"/>
 </histogram_suffixes>
@@ -7231,31 +7232,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="PasswordManager.FillingAssistance"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="PaymentRequestCompletedInstrument" separator=".">
-  <suffix name="BasicCard"
-      label="Request is completed using basic card method."/>
-  <suffix name="Google"
-      label="Request is completed using Google payment instrument."/>
-  <suffix name="Other"
-      label="Request is completed using other payment instruments."/>
-  <suffix name="PlayBilling"
-      label="Request is completed using Google Play Billing instrument."/>
-  <suffix name="SecurePaymentConfirmation"
-      label="Request is completed using secure payment confirmation
-             instrument."/>
-  <affected-histogram name="PaymentRequest.TimeToCheckout.Completed.Shown"/>
-  <affected-histogram
-      name="PaymentRequest.TimeToCheckout.Completed.SkippedShow"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="PaymentRequestPaymentSheetShowStatus" separator=".">
-  <suffix name="BeforeShow"
-      label="Request is terminated before request.show()."/>
-  <suffix name="Shown" label="Payment sheet is shown."/>
-  <suffix name="SkippedShow" label="Payment sheet is skipped."/>
-  <affected-histogram name="PaymentRequest.TimeToCheckout.UserAborted"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="PerformanceHintsSource" separator=".">
   <suffix name="FastHostHint" label="From the fast host bloom filter."/>
   <suffix name="LinkHint" label="From the link hints of the current page."/>
@@ -7298,7 +7274,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="StorageAccess" label="Storage Access API permission"/>
   <suffix name="VideoCapture" label="Camera permission"/>
   <suffix name="VR" label="VR permission"/>
-  <suffix name="WindowPlacement" label="Window Placement permission"/>
+  <suffix name="WindowPlacement" label="Window Management permission"/>
   <affected-histogram name="Permissions.Engagement.Accepted"/>
   <affected-histogram name="Permissions.Engagement.AcceptedOnce"/>
   <affected-histogram name="Permissions.Engagement.Denied"/>
@@ -7324,7 +7300,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="StorageAccess" label="Storage Access API permission actions"/>
   <suffix name="VideoCapture" label="Camera permission actions"/>
   <suffix name="VR" label="VR permission actions"/>
-  <suffix name="WindowPlacement" label="Window Placement permission actions"/>
+  <suffix name="WindowPlacement" label="Window Management permission actions"/>
   <affected-histogram name="ContentSettings.PermissionActions"/>
   <affected-histogram name="ContentSettings.PermissionActionsInsecureOrigin"/>
   <affected-histogram name="ContentSettings.PermissionActionsSecureOrigin"/>
@@ -10384,6 +10360,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="DemoMode" label="DemoMode"/>
   <suffix name="Diagnostics" label="Diagnostics"/>
   <suffix name="Eche" label="Eche"/>
+  <suffix name="FacialML" label="Facial ML"/>
   <suffix name="FirmwareUpdate" label="FirmwareUpdate"/>
   <suffix name="Help" label="Help"/>
   <suffix name="Media" label="Media"/>

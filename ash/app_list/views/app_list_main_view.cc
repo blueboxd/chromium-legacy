@@ -124,13 +124,13 @@ void AppListMainView::Layout() {
     contents_view_->SetBoundsRect(rect);
 }
 
-void AppListMainView::QueryChanged(SearchBoxViewBase* sender) {
-  SearchModel* const search_model = AppListModelProvider::Get()->search_model();
-  const std::u16string raw_query = search_model->search_box()->text();
-  std::u16string query;
-  base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
+void AppListMainView::QueryChanged(const std::u16string& trimmed_query,
+                                   bool initiated_by_user) {
+  app_list_view_->SetStateFromSearchBoxView(trimmed_query.empty(),
+                                            initiated_by_user);
   contents_view_->ShowSearchResults(search_box_view_->is_search_box_active() ||
-                                    !query.empty());
+                                    !trimmed_query.empty());
+  contents_view_->search_result_page_view()->UpdateForNewSearch();
 }
 
 void AppListMainView::ActiveChanged(SearchBoxViewBase* sender) {
@@ -141,17 +141,13 @@ void AppListMainView::ActiveChanged(SearchBoxViewBase* sender) {
   if (search_box_view_->is_search_box_active()) {
     // Show zero state suggestions when search box is activated with an empty
     // query.
-    SearchModel* const search_model =
-        AppListModelProvider::Get()->search_model();
-    const std::u16string raw_query = search_model->search_box()->text();
-    std::u16string query;
-    base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
+    const bool is_query_empty = sender->IsSearchBoxTrimmedQueryEmpty();
     if (features::IsProductivityLauncherEnabled()) {
       app_list_view_->SetStateFromSearchBoxView(
-          query.empty(), true /*triggered_by_contents_change*/);
+          is_query_empty, true /*triggered_by_contents_change*/);
       contents_view_->ShowSearchResults(true);
     } else {
-      if (query.empty())
+      if (is_query_empty)
         search_box_view_->ShowZeroStateSuggestions();
     }
   } else {
@@ -195,11 +191,6 @@ bool AppListMainView::CanSelectSearchResults() {
 
 void AppListMainView::AssistantButtonPressed() {
   delegate_->StartAssistant();
-}
-
-void AppListMainView::BackButtonPressed() {
-  if (!contents_view_->Back())
-    app_list_view_->Dismiss();
 }
 
 void AppListMainView::CloseButtonPressed() {

@@ -18,8 +18,6 @@
 #include "ash/accessibility/switch_access/point_scan_controller.h"
 #include "ash/accessibility/ui/accessibility_highlight_controller.h"
 #include "ash/accessibility/ui/accessibility_panel_layout_manager.h"
-#include "ash/components/audio/cras_audio_handler.h"
-#include "ash/components/audio/sounds.h"
 #include "ash/constants/ash_constants.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/notifier_catalogs.h"
@@ -56,6 +54,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
+#include "chromeos/ash/components/audio/sounds.h"
 #include "components/live_caption/caption_util.h"
 #include "components/live_caption/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -2052,7 +2052,7 @@ void AccessibilityControllerImpl::UpdateSwitchAccessKeyCodesFromPref(
 
     key_codes[key_code] = std::set<std::string>();
 
-    for (const base::Value& device_type : v.second.GetListDeprecated())
+    for (const base::Value& device_type : v.second.GetList())
       key_codes[key_code].insert(device_type.GetString());
 
     DCHECK(!key_codes[key_code].empty());

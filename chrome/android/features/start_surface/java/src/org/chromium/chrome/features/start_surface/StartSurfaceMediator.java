@@ -224,7 +224,7 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
             // normal tabs.
             mNormalTabModelObserver = new TabModelObserver() {
                 @Override
-                public void willCloseTab(Tab tab, boolean animate) {
+                public void willCloseTab(Tab tab, boolean animate, boolean didCloseAlone) {
                     if (mStartSurfaceState == StartSurfaceState.SHOWN_HOMEPAGE
                             && mTabModelSelector.getModel(false).getCount() <= 1) {
                         setTabCarouselVisibility(false);
@@ -525,8 +525,7 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
             setMVTilesVisibility(!mIsIncognito);
             setTabCarouselVisibility(hasNormalTab && !mIsIncognito);
             setExploreSurfaceVisibility(!mIsIncognito && mExploreSurfaceCoordinatorFactory != null);
-            // TODO(qinmin): show query tiles when flag is enabled.
-            setQueryTilesVisibility(false);
+            setQueryTilesVisibility(!mIsIncognito);
             setFakeBoxVisibility(!mIsIncognito);
             setSecondaryTasksSurfaceVisibility(mIsIncognito, /* skipUpdateController = */ false);
             setTopToolbarPlaceholderHeight(getPixelSize(R.dimen.control_container_height)
@@ -595,6 +594,10 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
 
     void hideTabSwitcherView(boolean animate) {
         mController.hideTabSwitcherView(animate);
+    }
+
+    public void beforeHideTabSwitcherView() {
+        mController.prepareHideTabSwitcherView();
     }
 
     void showOverview(boolean animate) {

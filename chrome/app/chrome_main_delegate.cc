@@ -54,6 +54,7 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/profiler/process_type.h"
+#include "chrome/common/profiler/unwind_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/gpu/chrome_content_gpu_client.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
@@ -183,6 +184,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/startup_helper.h"
 #include "extensions/common/constants.h"
 #endif
 
@@ -209,7 +211,6 @@
 #include "chromeos/startup/browser_params_proxy.h"  // nogncheck
 #include "media/base/media_switches.h"
 #include "ui/base/resource/data_pack_with_resource_sharing_lacros.h"
-#include "ui/base/ui_base_switches.h"
 #endif
 
 base::LazyInstance<ChromeContentGpuClient>::DestructorAtExit
@@ -229,6 +230,11 @@ const size_t ChromeMainDelegate::kNonWildcardDomainNonPortSchemesSize =
     std::size(kNonWildcardDomainNonPortSchemes);
 
 namespace {
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+const base::FilePath::CharType kUserHomeDirPrefix[] =
+    FILE_PATH_LITERAL("/home/user");
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_WIN)
 // Early versions of Chrome incorrectly registered a chromehtml: URL handler,
@@ -442,6 +448,33 @@ void SetUpProfilingShutdownHandler() {
 
 #endif  // BUILDFLAG(IS_POSIX)
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+absl::optional<int> HandlePackExtensionSwitches(
+    const base::CommandLine& command_line) {
+  // If the command line specifies --pack-extension, attempt the pack extension
+  // startup action and exit.
+  if (!command_line.HasSwitch(switches::kPackExtension))
+    return absl::nullopt;
+
+  const std::string locale =
+      command_line.GetSwitchValueASCII(::switches::kLang);
+  ui::ResourceBundle::InitSharedInstanceWithLocale(
+      locale, /*delegate=*/nullptr,
+      ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
+
+  extensions::StartupHelper extension_startup_helper;
+  std::string error_message;
+  if (!extension_startup_helper.PackExtension(command_line, &error_message)) {
+    if (!error_message.empty()) {
+      LOG(ERROR) << error_message.c_str();
+    }
+    return chrome::RESULT_CODE_PACK_EXTENSION_ERROR;
+  }
+
+  return chrome::RESULT_CODE_NORMAL_EXIT_PACK_EXTENSION_SUCCESS;
+}
+#endif  // !BUILDFLAG(ENABLE_EXTENSIONS)
+
 struct MainFunction {
   const char* name;
   int (*function)(content::MainFunctionParams);
@@ -589,7 +622,6 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
   if (!invoked_in_browser) {
     CommonEarlyInitialization();
     return absl::nullopt;
-    ;
   }
 
 #if BUILDFLAG(IS_WIN)
@@ -858,8 +890,11 @@ absl::optional<int> ChromeMainDelegate::BasicStartupComplete() {
   content::Profiling::ProcessStarted();
 
   // Setup tracing sampler profiler as early as possible at startup if needed.
+  // We pass in CreateCoreUnwindersFactory here since it lives in the chrome/
+  // layer while TracingSamplerProfiler is outside of chrome/.
   tracing_sampler_profiler_ =
-      tracing::TracingSamplerProfiler::CreateOnMainThread();
+      tracing::TracingSamplerProfiler::CreateOnMainThread(
+          base::BindRepeating(&CreateCoreUnwindersFactory));
 
 #if BUILDFLAG(IS_WIN)
   v8_crashpad_support::SetUp();
@@ -1125,6 +1160,16 @@ void ChromeMainDelegate::PreSandboxStartup() {
         chromeos::BrowserParamsProxy::Get();
     chrome::SetLacrosDefaultPathsFromInitParams(
         init_params->DefaultPaths().get());
+
+    // Override the login user DIR_HOME path for the Lacros browser process. The
+    // primary user id hash is expected to be already set, because Lacros should
+    // only run inside the user session.
+    if (init_params->CrosUserIdHash().has_value()) {
+      base::FilePath homedir(kUserHomeDirPrefix);
+      homedir = homedir.Append(init_params->CrosUserIdHash().value());
+      base::PathService::OverrideAndCreateIfNeeded(
+          base::DIR_HOME, homedir, /*is_absolute=*/true, /*create=*/false);
+    }
   }
 
   // Generate shared resource file only on browser process. This is to avoid
@@ -1159,7 +1204,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
           ui::k200Percent);
     }
   }
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // Register component_updater PathProvider after DIR_USER_DATA overridden by
   // command line flags. Maybe move the chrome PathProvider down here also?
@@ -1463,6 +1508,15 @@ ChromeMainDelegate::CreateContentUtilityClient() {
 }
 
 absl::optional<int> ChromeMainDelegate::PreBrowserMain() {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  absl::optional<int> pack_extension_exit_code =
+      HandlePackExtensionSwitches(command_line);
+  if (pack_extension_exit_code.has_value())
+    return pack_extension_exit_code;  // Got a --pack-extension switch; exit.
+#endif
+
 #if BUILDFLAG(IS_MAC)
   // Tell Cocoa to finish its initialization, which we want to do manually
   // instead of calling NSApplicationMain(). The primary reason is that NSAM()

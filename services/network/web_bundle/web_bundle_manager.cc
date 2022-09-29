@@ -7,13 +7,13 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
+#include "components/web_package/web_bundle_memory_quota_consumer.h"
+#include "components/web_package/web_bundle_url_loader_factory.h"
 #include "components/web_package/web_bundle_utils.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/network_context.h"
 #include "services/network/public/mojom/devtools_observer.mojom.h"
 #include "services/network/public/mojom/web_bundle_handle.mojom.h"
-#include "services/network/web_bundle/web_bundle_memory_quota_consumer.h"
-#include "services/network/web_bundle/web_bundle_url_loader_factory.h"
 
 namespace network {
 
@@ -48,7 +48,7 @@ struct WebBundlePendingSubresourceRequest {
 };
 
 class WebBundleManager::MemoryQuotaConsumer
-    : public WebBundleMemoryQuotaConsumer {
+    : public web_package::WebBundleMemoryQuotaConsumer {
  public:
   MemoryQuotaConsumer(base::WeakPtr<WebBundleManager> manager,
                       int32_t process_id)
@@ -82,7 +82,7 @@ WebBundleManager::WebBundleManager()
 
 WebBundleManager::~WebBundleManager() = default;
 
-base::WeakPtr<WebBundleURLLoaderFactory>
+base::WeakPtr<web_package::WebBundleURLLoaderFactory>
 WebBundleManager::CreateWebBundleURLLoaderFactory(
     const GURL& bundle_url,
     const ResourceRequest::WebBundleTokenParams& web_bundle_token_params,
@@ -91,8 +91,10 @@ WebBundleManager::CreateWebBundleURLLoaderFactory(
     absl::optional<std::string> devtools_request_id,
     const CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
     mojom::CrossOriginEmbedderPolicyReporter* coep_reporter) {
-  DCHECK(factories_.find({process_id, web_bundle_token_params.token}) ==
-         factories_.end());
+  Key key = GetKey(web_bundle_token_params, process_id);
+  DCHECK(factories_.find(key) == factories_.end());
+  DCHECK(web_bundle_token_params.handle.is_valid());
+  DCHECK_NE(process_id, mojom::kBrowserProcessId);
 
   mojo::Remote<mojom::WebBundleHandle> remote(
       web_bundle_token_params.CloneHandle());
@@ -100,12 +102,12 @@ WebBundleManager::CreateWebBundleURLLoaderFactory(
   // Set a disconnect handler to remove a WebBundleURLLoaderFactory from this
   // WebBundleManager when the corresponding endpoint in the renderer is
   // removed.
-  remote.set_disconnect_handler(base::BindOnce(
-      &WebBundleManager::DisconnectHandler,
-      // |this| outlives |remote|.
-      base::Unretained(this), web_bundle_token_params.token, process_id));
+  remote.set_disconnect_handler(
+      base::BindOnce(&WebBundleManager::DisconnectHandler,
+                     // |this| outlives |remote|.
+                     base::Unretained(this), key));
 
-  auto factory = std::make_unique<WebBundleURLLoaderFactory>(
+  auto factory = std::make_unique<web_package::WebBundleURLLoaderFactory>(
       bundle_url, web_bundle_token_params, std::move(remote),
       std::make_unique<MemoryQuotaConsumer>(weak_ptr_factory_.GetWeakPtr(),
                                             process_id),
@@ -114,7 +116,7 @@ WebBundleManager::CreateWebBundleURLLoaderFactory(
 
   // Process pending subresource requests if there are.
   // These subresource requests arrived earlier than the request for the bundle.
-  auto it = pending_requests_.find({process_id, web_bundle_token_params.token});
+  auto it = pending_requests_.find(key);
   if (it != pending_requests_.end()) {
     for (auto& pending_request : it->second) {
       factory->StartSubresourceRequest(
@@ -128,14 +130,12 @@ WebBundleManager::CreateWebBundleURLLoaderFactory(
   }
 
   auto weak_factory = factory->GetWeakPtr();
-  factories_.insert({std::make_pair(process_id, web_bundle_token_params.token),
-                     std::move(factory)});
+  factories_.insert({key, std::move(factory)});
 
   return weak_factory;
 }
 
-base::WeakPtr<WebBundleURLLoaderFactory>
-WebBundleManager::GetWebBundleURLLoaderFactory(
+WebBundleManager::Key WebBundleManager::GetKey(
     const ResourceRequest::WebBundleTokenParams& token_params,
     int32_t process_id) {
   // If the request is from the browser process, use
@@ -143,7 +143,12 @@ WebBundleManager::GetWebBundleURLLoaderFactory(
   if (process_id == mojom::kBrowserProcessId)
     process_id = token_params.render_process_id;
 
-  auto it = factories_.find({process_id, token_params.token});
+  return {process_id, token_params.token};
+}
+
+base::WeakPtr<web_package::WebBundleURLLoaderFactory>
+WebBundleManager::GetWebBundleURLLoaderFactory(const Key& key) {
+  auto it = factories_.find(key);
   if (it == factories_.end()) {
     return nullptr;
   }
@@ -157,9 +162,11 @@ void WebBundleManager::StartSubresourceRequest(
     int32_t process_id,
     mojo::Remote<mojom::TrustedHeaderClient> trusted_header_client) {
   DCHECK(url_request.web_bundle_token_params.has_value());
-  base::WeakPtr<WebBundleURLLoaderFactory> web_bundle_url_loader_factory =
-      GetWebBundleURLLoaderFactory(*url_request.web_bundle_token_params,
-                                   process_id);
+  DCHECK(!url_request.web_bundle_token_params->handle.is_valid());
+
+  Key key = GetKey(*url_request.web_bundle_token_params, process_id);
+  base::WeakPtr<web_package::WebBundleURLLoaderFactory>
+      web_bundle_url_loader_factory = GetWebBundleURLLoaderFactory(key);
   base::Time request_start_time = base::Time::Now();
   base::TimeTicks request_start_time_ticks = base::TimeTicks::Now();
   if (web_bundle_url_loader_factory) {
@@ -169,19 +176,18 @@ void WebBundleManager::StartSubresourceRequest(
         request_start_time_ticks);
     return;
   }
+
   // A request for subresource arrives earlier than a request for a webbundle.
-  pending_requests_[{process_id, url_request.web_bundle_token_params->token}]
-      .push_back(std::make_unique<WebBundlePendingSubresourceRequest>(
+  pending_requests_[key].push_back(
+      std::make_unique<WebBundlePendingSubresourceRequest>(
           std::move(receiver), url_request, std::move(client),
           std::move(trusted_header_client), request_start_time,
           request_start_time_ticks));
 }
 
-void WebBundleManager::DisconnectHandler(
-    base::UnguessableToken web_bundle_token,
-    int32_t process_id) {
-  factories_.erase({process_id, web_bundle_token});
-  pending_requests_.erase({process_id, web_bundle_token});
+void WebBundleManager::DisconnectHandler(Key key) {
+  factories_.erase(key);
+  pending_requests_.erase(key);
 }
 
 bool WebBundleManager::AllocateMemoryForProcess(int32_t process_id,

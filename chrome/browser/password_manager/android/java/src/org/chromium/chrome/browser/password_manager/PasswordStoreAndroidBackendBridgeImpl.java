@@ -27,7 +27,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Date;
 
 /**
  * Java-counterpart of the native PasswordStoreAndroidBackendBridgeImpl. It's part of the password
@@ -61,27 +60,6 @@ class PasswordStoreAndroidBackendBridgeImpl {
     @CalledByNative
     static boolean canCreateBackend() {
         return PasswordStoreAndroidBackendFactory.getInstance().canCreateBackend();
-    }
-
-    @CalledByNative
-    void subscribe(@JobId int jobId, String syncingAccount) {
-        // Fire a call to get all logins between epoch+1ms and epoch+2ms. This is a valid range but
-        // will almost certainly return empty which minimizes the overhead of transmitting unused
-        // password data.
-        mBackend.getAllLoginsBetween(new Date(1), new Date(2), getAccount(syncingAccount),
-                unused_pwds
-                -> {
-                    if (mNativeBackendBridge == 0) return;
-                    PasswordStoreAndroidBackendBridgeImplJni.get().onSubscribed(
-                            mNativeBackendBridge, jobId);
-                },
-                exception -> {
-                    if (mNativeBackendBridge == 0) return;
-                    PasswordStoreAndroidBackendBridgeImplJni.get().onSubscribeFailed(
-                            mNativeBackendBridge, jobId,
-                            PasswordManagerAndroidBackendUtil.getBackendError(exception),
-                            PasswordManagerAndroidBackendUtil.getApiErrorCode(exception));
-                });
     }
 
     @CalledByNative
@@ -144,9 +122,12 @@ class PasswordStoreAndroidBackendBridgeImpl {
         @AndroidBackendErrorType
         int error = PasswordManagerAndroidBackendUtil.getBackendError(exception);
         int apiErrorCode = PasswordManagerAndroidBackendUtil.getApiErrorCode(exception);
+        Integer connectionResultCode =
+                PasswordManagerAndroidBackendUtil.getConnectionResultCode(exception);
 
-        PasswordStoreAndroidBackendBridgeImplJni.get().onError(
-                mNativeBackendBridge, jobId, error, apiErrorCode);
+        PasswordStoreAndroidBackendBridgeImplJni.get().onError(mNativeBackendBridge, jobId, error,
+                apiErrorCode, connectionResultCode != null,
+                connectionResultCode == null ? -1 : connectionResultCode.intValue());
     }
 
     private Optional<Account> getAccount(String syncingAccount) {
@@ -191,9 +172,7 @@ class PasswordStoreAndroidBackendBridgeImpl {
                 @JobId int jobId, byte[] passwords);
         void onLoginChanged(long nativePasswordStoreAndroidBackendBridgeImpl, @JobId int jobId);
         void onError(long nativePasswordStoreAndroidBackendBridgeImpl, @JobId int jobId,
-                int errorType, int apiErrorCode);
-        void onSubscribed(long nativePasswordStoreAndroidBackendBridgeImpl, @JobId int jobId);
-        void onSubscribeFailed(long nativePasswordStoreAndroidBackendBridgeImpl, @JobId int jobId,
-                int errorType, int apiErrorCode);
+                int errorType, int apiErrorCode, boolean hasConnectionResult,
+                int connectionResultStatusCode);
     }
 }

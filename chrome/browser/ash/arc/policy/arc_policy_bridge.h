@@ -85,12 +85,6 @@ class ArcPolicyBridge : public KeyedService,
                                   const std::string& package_name,
                                   mojom::InstallErrorReason reason) {}
 
-    // Called when CloudDPC scheduled direct install with Play Store for
-    // a set of packages.
-    virtual void OnReportDirectInstall(
-        base::Time time,
-        const std::set<std::string>& package_names) {}
-
     // Called when in CloudDPC the main loop of retries to install apps failed
     // to install some apps.
     virtual void OnReportForceInstallMainLoopFailed(
@@ -99,6 +93,11 @@ class ArcPolicyBridge : public KeyedService,
 
     // Called when ARC DPC starts.
     virtual void OnReportDPCVersion(const std::string& version) {}
+
+    // Called when a Play Store local policy was set.
+    virtual void OnPlayStoreLocalPolicySet(
+        base::Time time,
+        const std::set<std::string>& package_names) {}
 
    protected:
     Observer() = default;
@@ -159,13 +158,13 @@ class ArcPolicyBridge : public KeyedService,
   void ReportCloudDpsFailed(base::Time time,
                             const std::string& package_name,
                             mojom::InstallErrorReason reason) override;
-  void ReportDirectInstall(
-      base::Time time,
-      const std::vector<std::string>& package_names) override;
   void ReportForceInstallMainLoopFailed(
       base::Time time,
       const std::vector<std::string>& package_names) override;
   void ReportDPCVersion(const std::string& version) override;
+  void ReportPlayStoreLocalPolicySet(
+      base::Time time,
+      const std::vector<std::string>& package_names) override;
 
   // PolicyService::Observer overrides.
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,

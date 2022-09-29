@@ -112,7 +112,7 @@ ContentSettingsContentSettingClearFunction::Run() {
   store->ClearContentSettingsForExtensionAndContentType(extension_id(), scope,
                                                         content_type);
 
-  return RespondNow(NoArguments());
+  return RespondNow(WithArguments());
 }
 
 ExtensionFunction::ResponseAction
@@ -166,17 +166,18 @@ ContentSettingsContentSettingGetFunction::Run() {
 
   ContentSetting setting =
       content_type == ContentSettingsType::COOKIES
-          ? cookie_settings->GetCookieSetting(primary_url, secondary_url,
-                                              nullptr)
+          ? cookie_settings->GetCookieSetting(
+                primary_url, secondary_url, nullptr,
+                content_settings::CookieSettings::QueryReason::kSetting)
           : map->GetContentSetting(primary_url, secondary_url, content_type);
 
-  base::Value result(base::Value::Type::DICTIONARY);
+  base::Value::Dict result;
   std::string setting_string =
       content_settings::ContentSettingToString(setting);
   DCHECK(!setting_string.empty());
-  result.SetStringKey(ContentSettingsStore::kContentSettingKey, setting_string);
+  result.Set(ContentSettingsStore::kContentSettingKey, setting_string);
 
-  return RespondNow(OneArgument(std::move(result)));
+  return RespondNow(WithArguments(std::move(result)));
 }
 
 ExtensionFunction::ResponseAction
@@ -301,7 +302,7 @@ ContentSettingsContentSettingSetFunction::Run() {
                                     secondary_pattern, content_type, setting,
                                     scope);
 
-  return RespondNow(NoArguments());
+  return RespondNow(WithArguments());
 }
 
 ExtensionFunction::ResponseAction
@@ -310,7 +311,7 @@ ContentSettingsContentSettingGetResourceIdentifiersFunction::Run() {
   // plugins have been deprecated since Chrome 87, there are no resource
   // identifiers for existing settings (but we retain the function for
   // backwards and potential forwards compatibility).
-  return RespondNow(NoArguments());
+  return RespondNow(WithArguments());
 }
 
 }  // namespace extensions

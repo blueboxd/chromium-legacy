@@ -67,6 +67,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/mojo_core_library_support.h"
 #include "content/common/partition_alloc_support.h"
+#include "content/common/process_visibility_tracker.h"
 #include "content/common/url_schemes.h"
 #include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/app/content_main_delegate.h"
@@ -114,6 +115,7 @@
 #include <cstring>
 
 #include "base/trace_event/trace_event_etw_export_win.h"
+#include "base/win/dark_mode_support.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/display/win/dpi.h"
 #elif BUILDFLAG(IS_MAC)
@@ -149,7 +151,7 @@
 #include "chromeos/startup/startup_switches.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
 #include "content/common/pepper_plugin_list.h"
 #include "content/public/common/pepper_plugin_info.h"
 #endif
@@ -185,7 +187,7 @@
 
 namespace content {
 extern int GpuMain(MainFunctionParams);
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
 extern int PpapiPluginMain(MainFunctionParams);
 #endif
 extern int RendererMain(MainFunctionParams);
@@ -360,7 +362,7 @@ void InitializeZygoteSandboxForBrowserProcess(
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
 // Loads the (native) libraries but does not initialize them (i.e., does not
 // call PPP_InitializeModule). This is needed by the zygote on Linux to get
 // access to the plugins before entering the sandbox.
@@ -400,7 +402,7 @@ void PreSandboxInit() {
   // https://boringssl.googlesource.com/boringssl/+/HEAD/SANDBOXING.md
   CRYPTO_pre_sandbox_init();
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
   // Ensure access to the Pepper plugins before the sandbox is turned on.
   PreloadPepperPlugins();
 #endif
@@ -583,7 +585,7 @@ int NO_STACK_PROTECTOR RunZygote(ContentMainDelegate* delegate) {
     {switches::kGpuProcess, GpuMain},
     {switches::kRendererProcess, RendererMain},
     {switches::kUtilityProcess, UtilityMain},
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
     {switches::kPpapiPluginProcess, PpapiPluginMain},
 #endif
   };
@@ -691,9 +693,9 @@ RunOtherNamedProcessTypeMain(const std::string& process_type,
     InstallConsoleControlHandler(/*is_browser_process=*/false);
 #endif
   static const MainFunction kMainFunctions[] = {
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
     {switches::kPpapiPluginProcess, PpapiPluginMain},
-#endif  // ENABLE_PLUGINS
+#endif  // BUILDFLAG(ENABLE_PPAPI)
     {switches::kUtilityProcess, UtilityMain},
     {switches::kRendererProcess, RendererMain},
     {switches::kGpuProcess, GpuMain},
@@ -838,6 +840,11 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
     if (base::StringToDouble(scale_factor_string, &scale_factor))
       display::win::SetDefaultDeviceScaleFactor(scale_factor);
   }
+
+  // Make sure the 'uxtheme.dll' is pinned and that the process enabled to
+  // support the OS dark mode only for the browser process.
+  if (process_type.empty())
+    base::win::AllowDarkModeForApp(true);
 #endif
 
   RegisterContentSchemes(delegate_->ShouldLockSchemeRegistry());
@@ -1148,11 +1155,14 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams main_params,
     base::PowerMonitor::Initialize(
         std::make_unique<base::PowerMonitorDeviceSource>());
 
+    // Ensure the visibility tracker is created on the main thread.
+    ProcessVisibilityTracker::GetInstance();
+
 #if BUILDFLAG(IS_ANDROID)
     SetupCpuTimeMetrics();
 
     // Requires base::PowerMonitor to be initialized first.
-    AndroidBatteryMetrics::GetInstance();
+    AndroidBatteryMetrics::CreateInstance();
 #endif
 
     if (start_minimal_browser)

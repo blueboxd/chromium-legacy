@@ -38,14 +38,12 @@
 #include "build/build_config.h"
 #include "components/fuchsia_component_support/config_reader.h"
 #include "components/fuchsia_component_support/feedback_registration.h"
-#include "content/public/common/content_switches.h"
 #include "fuchsia_web/common/string_util.h"
 #include "fuchsia_web/webengine/features.h"
 #include "fuchsia_web/webengine/switches.h"
+#include "fuchsia_web/webinstance_host/fuchsia_web_debug_proxy.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_finch_features.h"
-#include "media/base/key_system_names.h"
-#include "media/base/media_switches.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -71,6 +69,25 @@ constexpr char kMixedContentAutoupgradeFeatureName[] =
     "AutoupgradeMixedContent";
 constexpr char kDisableMixedContentAutoupgradeOrigin[] =
     "disable-mixed-content-autoupgrade";
+
+// Use a constexpr instead of the existing switch, because of the additional
+// dependencies required.
+
+// Content switches:
+constexpr char kRemoteDebuggingPortSwitch[] = "remote-debugging-port";
+constexpr char kDisableAcceleratedVideoDecodeSwitch[] =
+    "disable-accelerated-video-decode";
+constexpr char kDisableAudioInputSwitch[] = "disable-audio-input";
+constexpr char kDisableAudioOutputSwitch[] = "disable-audio-output";
+
+// Media switches:
+constexpr char kDisableGpuSwitch[] = "disable-gpu";
+constexpr char kDisableSoftwareRasterizerSwitch[] =
+    "disable-software-rasterizer";
+
+// Use a constexpr instead of the media::IsClearKey() helper, because of the
+// additional dependencies required.
+constexpr char kClearKeyKeySystem[] = "org.w3.clearkey";
 
 // Registers product data for the web_instance Component, ensuring it is
 // registered regardless of how the Component is launched and without requiring
@@ -499,7 +516,7 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
       LOG(WARNING) << "Enabling remote debugging requires NETWORK feature.";
     }
     launch_args.AppendSwitchNative(
-        switches::kRemoteDebuggingPort,
+        kRemoteDebuggingPortSwitch,
         base::NumberToString(params.remote_debugging_port()));
   }
 
@@ -571,8 +588,8 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
     VLOG(1) << "Disabling GPU acceleration.";
     // Disable use of Vulkan GPU, and use of the software-GL rasterizer. The
     // Context will still run a GPU process, but will not support WebGL.
-    launch_args.AppendSwitch(switches::kDisableGpu);
-    launch_args.AppendSwitch(switches::kDisableSoftwareRasterizer);
+    launch_args.AppendSwitch(kDisableGpuSwitch);
+    launch_args.AppendSwitch(kDisableSoftwareRasterizerSwitch);
   }
 
   if (enable_widevine) {
@@ -581,7 +598,7 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
 
   if (enable_playready) {
     const std::string& key_system = params.playready_key_system();
-    if (key_system == kWidevineKeySystem || media::IsClearKey(key_system)) {
+    if (key_system == kWidevineKeySystem || key_system == kClearKeyKeySystem) {
       LOG(ERROR)
           << "Invalid value for CreateContextParams/playready_key_system: "
           << key_system;
@@ -595,15 +612,15 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
   if (!enable_audio) {
     // TODO(fxbug.dev/58902): Split up audio input and output in
     // ContextFeatureFlags.
-    launch_args.AppendSwitch(switches::kDisableAudioOutput);
-    launch_args.AppendSwitch(switches::kDisableAudioInput);
+    launch_args.AppendSwitch(kDisableAudioOutputSwitch);
+    launch_args.AppendSwitch(kDisableAudioInputSwitch);
   }
 
   bool enable_hardware_video_decoder =
       (features & fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER) ==
       fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER;
   if (!enable_hardware_video_decoder)
-    launch_args.AppendSwitch(switches::kDisableAcceleratedVideoDecode);
+    launch_args.AppendSwitch(kDisableAcceleratedVideoDecodeSwitch);
 
   if (enable_hardware_video_decoder && !enable_vulkan) {
     DLOG(ERROR) << "HARDWARE_VIDEO_DECODER requires VULKAN.";
@@ -644,10 +661,6 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
   HandleUnsafelyTreatInsecureOriginsAsSecureParam(&params, &launch_args);
   HandleCorsExemptHeadersParam(&params, &launch_args);
 
-  // Set the command-line flag to enable DevTools, if requested.
-  if (enable_remote_debug_mode_)
-    launch_args.AppendSwitch(switches::kEnableRemoteDebugMode);
-
   // In tests the ContextProvider is configured to log to stderr, so clone the
   // handle to allow web instances to also log there.
   if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -664,8 +677,23 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
     launch_info.flat_namespace->directories.push_back(tmp_dir_.TakeChannel());
   }
 
+  // Create a request for the new instance's service-directory.
+  fidl::InterfaceHandle<fuchsia::io::Directory> instance_services_handle;
+  launch_info.directory_request =
+      instance_services_handle.NewRequest().TakeChannel();
+  sys::ServiceDirectory instance_services(std::move(instance_services_handle));
+
+  // If one or more Debug protocol clients are active then enable debugging,
+  // and connect the instance to the fuchsia.web.Debug proxy.
+  if (debug_proxy_.has_clients()) {
+    launch_args.AppendSwitch(switches::kEnableRemoteDebugMode);
+    fidl::InterfaceHandle<fuchsia::web::Debug> debug_handle;
+    instance_services.Connect(debug_handle.NewRequest());
+    debug_proxy_.RegisterInstance(std::move(debug_handle));
+  }
+
   // Pass on the caller's service-directory request.
-  launch_info.directory_request = services_request.TakeChannel();
+  instance_services.CloneChannel(std::move(services_request));
 
   // Set |additional_services| to redirect requests for only those services
   // required for the specified |params|, to be satisfied by the caller-
@@ -687,6 +715,10 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
                                                  nullptr /* controller */);
 
   return ZX_OK;
+}
+
+fuchsia::web::Debug* WebInstanceHost::debug_api() {
+  return &debug_proxy_;
 }
 
 fuchsia::sys::Launcher* WebInstanceHost::IsolatedEnvironmentLauncher() {

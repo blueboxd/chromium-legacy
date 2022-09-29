@@ -66,11 +66,13 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/extensions/api/file_handlers/non_native_file_system_delegate_chromeos.h"
+#include "chrome/browser/extensions/api/file_system/chrome_file_system_delegate_ash.h"
 #include "chrome/browser/extensions/api/media_perception_private/media_perception_api_delegate_chromeos.h"
 #include "chrome/browser/extensions/api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/extensions/api/file_system/chrome_file_system_delegate_lacros.h"
 #include "chrome/browser/extensions/api/virtual_keyboard_private/lacros_virtual_keyboard_delegate.h"
 #endif
 
@@ -167,7 +169,9 @@ bool ChromeExtensionsAPIClient::ShouldHideBrowserNetworkRequest(
 
   // Hide requests made by the NTP Instant renderer.
   auto* instant_service =
-      InstantServiceFactory::GetForProfile(static_cast<Profile*>(context));
+      context
+          ? InstantServiceFactory::GetForProfile(static_cast<Profile*>(context))
+          : nullptr;
   if (instant_service) {
     is_sensitive_request |=
         instant_service->IsInstantProcess(request.render_process_id);
@@ -388,8 +392,15 @@ MetricsPrivateDelegate* ChromeExtensionsAPIClient::GetMetricsPrivateDelegate() {
 }
 
 FileSystemDelegate* ChromeExtensionsAPIClient::GetFileSystemDelegate() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  using ChromeFileSystemDelegate_Use = ChromeFileSystemDelegateAsh;
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  using ChromeFileSystemDelegate_Use = ChromeFileSystemDelegateLacros;
+#else
+  using ChromeFileSystemDelegate_Use = ChromeFileSystemDelegate;
+#endif
   if (!file_system_delegate_)
-    file_system_delegate_ = std::make_unique<ChromeFileSystemDelegate>();
+    file_system_delegate_ = std::make_unique<ChromeFileSystemDelegate_Use>();
   return file_system_delegate_.get();
 }
 

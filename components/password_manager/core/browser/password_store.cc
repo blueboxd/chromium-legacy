@@ -107,7 +107,8 @@ bool PasswordStore::Init(
   return true;
 }
 
-void PasswordStore::AddLogin(const PasswordForm& form) {
+void PasswordStore::AddLogin(const PasswordForm& form,
+                             base::OnceClosure completion) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!form.blocked_by_user ||
          (form.username_value.empty() && form.password_value.empty()));
@@ -116,8 +117,9 @@ void PasswordStore::AddLogin(const PasswordForm& form) {
   backend_->AddLoginAsync(
       form, base::BindOnce(&GetPasswordChangesOrEmptyListOnFailure)
                 .Then(base::BindOnce(
-                    &PasswordStore::NotifyLoginsChangedOnMainSequence, this,
-                    LoginsChangedTrigger::Addition)));
+                          &PasswordStore::NotifyLoginsChangedOnMainSequence,
+                          this, LoginsChangedTrigger::Addition)
+                .Then(std::move(completion))));
 }
 
 void PasswordStore::UpdateLogin(const PasswordForm& form) {
@@ -147,7 +149,7 @@ void PasswordStore::UpdateLoginWithPrimaryKey(
     // If the password changes, the password issues aren't valid
     // any more. Make sure they are cleared before storing the new form.
     new_form_with_correct_password_issues.password_issues.clear();
-  } else if (new_form.username_element != old_primary_key.username_element) {
+  } else if (new_form.username_value != old_primary_key.username_value) {
     // If the username changed then the phished and leaked issues aren't valid
     // any more. Make sure they are erased before storing the new form.
     new_form_with_correct_password_issues.password_issues.erase(

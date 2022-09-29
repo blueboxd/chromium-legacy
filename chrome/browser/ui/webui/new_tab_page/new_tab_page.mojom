@@ -54,8 +54,6 @@ struct BackgroundImage {
 struct Theme {
   skia.mojom.SkColor text_color;
   skia.mojom.SkColor background_color;
-  // True if the theme is default.
-  bool is_default;
   // True if the background is custom.
   bool is_custom_background;
   // True if the theme is dark (e.g. NTP background color is dark).
@@ -251,6 +249,10 @@ interface PageHandler {
   ChooseLocalCustomBackground() => (bool success);
   // Get the middle slot promo if it exists.
   GetPromo() => (Promo? promo);
+  // Marks a promo as blocked.
+  BlocklistPromo(string promo_id);
+  // Unmarks a promo as blocked.
+  UndoBlocklistPromo(string promo_id);
   // Called when a module the given id is dismissed.
   OnDismissModule(string module_id);
   // Called when a module the given id is restored.
@@ -276,6 +278,8 @@ interface PageHandler {
   UpdateModulesFreVisibility();
   // Log user's FRE |optInStatus|.
   LogModulesFreOptInStatus(OptInStatus opt_in_status);
+  // Shows customize chrome in unified side panel.
+  ShowCustomizeChromeSidePanel();
 
   // ======= METRICS =======
   // Logs that the One Google Bar was added to the DOM / loaded in an iframe at
@@ -312,6 +316,8 @@ interface PageHandler {
 
 // WebUI-side handler for requests from the browser.
 interface Page {
+  // Called when the customize chrome side panel is shown/hidden.
+  CustomizeChromeSidePanelVisibilityChanged(bool visible);
   // Sets the current theme.
   SetTheme(Theme theme);
   // Disables the modules in |ids|. If |all|, disables all modules and passes an

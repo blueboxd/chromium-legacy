@@ -6,6 +6,9 @@
  * @fileoverview Definitions of all types related to output.
  */
 
+import {Earcon} from '../../common/abstract_earcons.js';
+import {ChromeVox} from '../chromevox.js';
+
 /**
  * The ordering of contextual output.
  * @enum {string}
@@ -104,12 +107,12 @@ export class OutputSelectionSpan {
 
 /**
  * Wrapper for automation nodes as annotations.  Since the
- * {@code AutomationNode} constructor isn't exposed in the API, this class is
- * used to allow instanceof checks on these annotations.
+ * {@code chrome.automation.AutomationNode} constructor isn't exposed in the
+ * API, this class is used to allow instanceof checks on these annotations.
  */
 export class OutputNodeSpan {
   /**
-   * @param {!AutomationNode} node
+   * @param {!chrome.automation.AutomationNode} node
    * @param {number=} opt_offset Offsets into the node's text. Defaults to 0.
    */
   constructor(node, opt_offset) {

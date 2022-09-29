@@ -37,11 +37,9 @@ class LocaleSwitchScreen : public BaseScreen,
   static std::string GetResultString(Result result);
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
-  explicit LocaleSwitchScreen(LocaleSwitchView* view,
+  explicit LocaleSwitchScreen(base::WeakPtr<LocaleSwitchView> view,
                               const ScreenExitCallback& exit_callback);
   ~LocaleSwitchScreen() override;
-
-  void OnViewDestroyed(LocaleSwitchView* view);
 
   // signin::IdentityManager::Observer:
   void OnErrorStateOfRefreshTokenUpdatedForAccount(
@@ -54,7 +52,7 @@ class LocaleSwitchScreen : public BaseScreen,
   // BaseScreen:
   void ShowImpl() override;
   void HideImpl() override;
-  bool MaybeSkip(WizardContext* context) override;
+  bool MaybeSkip(WizardContext& context) override;
 
   void SwitchLocale(std::string locale);
   void OnLanguageChangedCallback(
@@ -63,7 +61,7 @@ class LocaleSwitchScreen : public BaseScreen,
   void ResetState();
   void OnTimeout();
 
-  LocaleSwitchView* view_ = nullptr;
+  base::WeakPtr<LocaleSwitchView> view_ = nullptr;
 
   std::string gaia_id_;
   ScreenExitCallback exit_callback_;

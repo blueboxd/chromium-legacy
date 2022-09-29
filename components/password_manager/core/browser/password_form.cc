@@ -59,10 +59,13 @@ std::string ToString(PasswordForm::Type type) {
       return "API";
     case PasswordForm::Type::kManuallyAdded:
       return "Manually Added";
+    case PasswordForm::Type::kImported:
+      return "Imported";
   }
 
-  NOTREACHED();
-  return std::string();
+  // In old clients type might contain non-enum values and their mapping is
+  // unknown.
+  return "Unknown";
 }
 
 std::string ToString(PasswordForm::GenerationUploadStatus status) {
@@ -301,10 +304,6 @@ bool PasswordForm::IsUsingProfileStore() const {
 
 bool PasswordForm::HasNonEmptyPasswordValue() const {
   return !password_value.empty() || !new_password_value.empty();
-}
-
-bool PasswordForm::IsInsecureCredential(InsecureType insecure_type) const {
-  return password_issues.find(insecure_type) != password_issues.end();
 }
 
 bool ArePasswordFormUniqueKeysEqual(const PasswordForm& left,

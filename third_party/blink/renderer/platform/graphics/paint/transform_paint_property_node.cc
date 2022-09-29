@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 
+#include "base/memory/values_equivalent.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -31,8 +32,9 @@ PaintPropertyChangeType TransformPaintPropertyNode::State::ComputeChange(
       compositor_element_id != other.compositor_element_id ||
       scroll != other.scroll ||
       scroll_translation_for_fixed != other.scroll_translation_for_fixed ||
-      !StickyConstraintEquals(other) ||
-      anchor_scroll_container != other.anchor_scroll_container ||
+      !base::ValuesEquivalent(sticky_constraint, other.sticky_constraint) ||
+      !base::ValuesEquivalent(anchor_scroll_containers_data,
+                              other.anchor_scroll_containers_data) ||
       visible_frame_element_id != other.visible_frame_element_id) {
     return PaintPropertyChangeType::kChangedOnlyValues;
   }
@@ -117,18 +119,6 @@ bool TransformPaintPropertyNodeOrAlias::Changed(
   // |this| is not a descendant of |relative_to_node|. We have seen no changed
   // flag from |this| to the root. Now check |relative_to_node| to the root.
   return relative_to_node.Changed(change, TransformPaintPropertyNode::Root());
-}
-
-const TransformPaintPropertyNode&
-TransformPaintPropertyNode::NearestScrollTranslationNode() const {
-  const auto* transform = this;
-  while (!transform->ScrollNode()) {
-    transform = transform->UnaliasedParent();
-    // The transform should never be null because the root transform has an
-    // associated scroll node (see: TransformPaintPropertyNode::Root()).
-    DCHECK(transform);
-  }
-  return *transform;
 }
 
 std::unique_ptr<JSONObject> TransformPaintPropertyNode::ToJSON() const {

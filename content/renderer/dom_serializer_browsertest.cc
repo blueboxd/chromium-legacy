@@ -68,6 +68,9 @@ bool HasDocType(const WebDocument& doc) {
 // https://crbug.com/788788
 #if BUILDFLAG(IS_ANDROID) && defined(ADDRESS_SANITIZER)
 #define MAYBE_DomSerializerTests DISABLED_DomSerializerTests
+#elif defined(THREAD_SANITIZER)
+// http://crbug.com/1350508
+#define MAYBE_DomSerializerTests DISABLED_DomSerializerTests
 #else
 #define MAYBE_DomSerializerTests DomSerializerTests
 #endif  // BUILDFLAG(IS_ANDROID) && defined(ADDRESS_SANITIZER)
@@ -127,8 +130,8 @@ class MAYBE_DomSerializerTests : public ContentBrowserTest,
         shell()->web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL(),
         contents, base_url);
     navigation_observer.Wait();
-    // After navigations, the RenderView for the new document might be a new
-    // one.
+    // After navigations, the `blink::WebView` for the new document might be a
+    // new one.
     main_frame_token_ =
         shell()->web_contents()->GetPrimaryMainFrame()->GetFrameToken();
   }
@@ -633,8 +636,17 @@ IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
 
 // Test situation of non-standard HTML entities when serializing HTML DOM.
 // This test started to fail at WebKit r65351. See http://crbug.com/52279.
+
+// Disabled due to test failure. http://crbug.com/1349583
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_SerializeHTMLDOMWithNonStandardEntities \
+  DISABLED_SerializeHTMLDOMWithNonStandardEntities
+#else
+#define MAYBE_SerializeHTMLDOMWithNonStandardEntities \
+  SerializeHTMLDOMWithNonStandardEntities
+#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
-                       SerializeHTMLDOMWithNonStandardEntities) {
+                       MAYBE_SerializeHTMLDOMWithNonStandardEntities) {
   // Make a test file URL and load it.
   base::FilePath page_file_path =
       GetTestFilePath("dom_serializer", "nonstandard_htmlentities.htm");
@@ -671,7 +683,15 @@ IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
 // When serializing, we should comment the BASE tag, append a new BASE tag.
 // rewrite all the savable URLs to relative local path, and change other URLs
 // to absolute URLs.
-IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests, SerializeHTMLDOMWithBaseTag) {
+
+// Disabled due to test failure. http://crbug.com/1349583
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_SerializeHTMLDOMWithBaseTag DISABLED_SerializeHTMLDOMWithBaseTag
+#else
+#define MAYBE_SerializeHTMLDOMWithBaseTag SerializeHTMLDOMWithBaseTag
+#endif
+IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
+                       MAYBE_SerializeHTMLDOMWithBaseTag) {
   base::FilePath page_file_path =
       GetTestFilePath("dom_serializer", "html_doc_has_base_tag.htm");
 

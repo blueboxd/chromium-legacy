@@ -45,6 +45,10 @@
 #include "components/crash/core/app/crash_export_thunks.h"
 #endif
 
+#if !BUILDFLAG(IS_IOS)
+#include "components/crash/core/common/crash_key.h"  // nogncheck
+#endif
+
 namespace crash_reporter {
 
 namespace {
@@ -63,36 +67,6 @@ void AbslAbortHook(const char* file,
 base::FilePath* g_database_path;
 
 crashpad::CrashReportDatabase* g_database;
-
-bool LogMessageHandler(int severity,
-                       const char* file,
-                       int line,
-                       size_t message_start,
-                       const std::string& string) {
-  // Only handle FATAL.
-  if (severity != logging::LOG_FATAL) {
-    return false;
-  }
-
-  // In case of an out-of-memory condition, this code could be reentered when
-  // constructing and storing the key. Using a static is not thread-safe, but if
-  // multiple threads are in the process of a fatal crash at the same time, this
-  // should work.
-  static bool guarded = false;
-  if (guarded) {
-    return false;
-  }
-  base::AutoReset<bool> guard(&guarded, true);
-
-  CHECK_LE(message_start, string.size());
-  static crashpad::StringAnnotation<512> crash_key("LOG_FATAL");
-  crash_key.Set(logging::LogMessage::BuildCrashString(
-      file, line, string.c_str() + message_start));
-
-  // Rather than including the code to force the crash here, allow the caller to
-  // do it.
-  return false;
-}
 
 void InitializeDatabasePath(const base::FilePath& database_path) {
   DCHECK(!g_database_path);
@@ -163,7 +137,16 @@ bool InitializeCrashpadImpl(bool initial_client,
   }
 #endif  // BUILDFLAG(IS_APPLE)
 
+// TODO(pbos): Remove this exception for iOS once it's 100% on Crashpad and
+// depending on //components/crash/core/common:crash_key_lib does not cause a
+// forbidden dependency through crash_key_breakpad_ios.mm depending on
+// //components/previous_session_info. As of writing this //base crash keys are
+// set up in //ios/chrome/browser/crash_report/crash_helper.mm.
+#if BUILDFLAG(IS_IOS)
   crashpad::AnnotationList::Register();
+#else
+  InitializeCrashKeys();
+#endif  // BUILDFLAG(IS_IOS)
 
 #if !BUILDFLAG(IS_IOS)
   static crashpad::StringAnnotation<24> ptype_key("ptype");
@@ -185,8 +168,6 @@ bool InitializeCrashpadImpl(bool initial_client,
   platform.Set(base::SysInfo::HardwareModelName());
 #endif  // !BUILDFLAG(IS_IOS)
 
-  logging::SetLogMessageHandler(LogMessageHandler);
-
   // If clients called CRASHPAD_SIMULATE_CRASH() instead of
   // base::debug::DumpWithoutCrashing(), these dumps would appear as crashes in
   // the correct function, at the correct file and line. This would be
@@ -198,7 +179,7 @@ bool InitializeCrashpadImpl(bool initial_client,
   // a public API in absl::.
   // Note: If this fails to compile because of an absl roll, this is fair to
   // remove if you file a crbug.com/new and assign it to pbos@.
-  absl::raw_logging_internal::RegisterAbortHook(&AbslAbortHook);
+  absl::raw_log_internal::RegisterAbortHook(&AbslAbortHook);
 
 #if BUILDFLAG(IS_APPLE)
   // On Mac, we only want the browser to initialize the database, but not the

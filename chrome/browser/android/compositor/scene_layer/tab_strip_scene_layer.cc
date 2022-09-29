@@ -31,8 +31,6 @@ TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env,
       left_fade_(cc::UIResourceLayer::Create()),
       right_fade_(cc::UIResourceLayer::Create()),
       model_selector_button_(cc::UIResourceLayer::Create()),
-      background_tab_brightness_(1.f),
-      brightness_(1.f),
       write_index_(0),
       content_tree_(nullptr) {
   new_tab_button_->SetIsDrawable(true);
@@ -115,22 +113,11 @@ void TabStripSceneLayer::UpdateTabStripLayer(JNIEnv* env,
                                              jfloat width,
                                              jfloat height,
                                              jfloat y_offset,
-                                             jfloat background_tab_brightness,
-                                             jfloat brightness,
                                              jboolean should_readd_background) {
-  background_tab_brightness_ = background_tab_brightness;
   gfx::RectF content(0, y_offset, width, height);
   layer()->SetPosition(gfx::PointF(0, y_offset));
   tab_strip_layer_->SetBounds(gfx::Size(width, height));
   scrollable_strip_layer_->SetBounds(gfx::Size(width, height));
-
-  if (brightness != brightness_) {
-    brightness_ = brightness;
-    cc::FilterOperations filters;
-    if (brightness_ < 1.f)
-      filters.Append(cc::FilterOperation::CreateBrightnessFilter(brightness_));
-    tab_strip_layer_->SetFilters(filters);
-  }
 
   // Content tree should not be affected by tab strip scene layer visibility.
   if (content_tree_)
@@ -328,6 +315,7 @@ void TabStripSceneLayer::PutStripTabLayer(
     jfloat close_button_alpha,
     jboolean is_loading,
     jfloat spinner_rotation,
+    jfloat brightness,
     const JavaParamRef<jobject>& jlayer_title_cache,
     const JavaParamRef<jobject>& jresource_manager) {
   LayerTitleCache* layer_title_cache =
@@ -348,7 +336,7 @@ void TabStripSceneLayer::PutStripTabLayer(
                        tab_handle_outline_resource, foreground, close_pressed,
                        toolbar_width, x, y, width, height, content_offset_x,
                        close_button_alpha, is_loading, spinner_rotation,
-                       background_tab_brightness_);
+                       brightness);
 }
 
 scoped_refptr<TabHandleLayer> TabStripSceneLayer::GetNextLayer(

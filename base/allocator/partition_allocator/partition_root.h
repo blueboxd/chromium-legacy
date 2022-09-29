@@ -64,6 +64,7 @@
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/partition_ref_count.h"
 #include "base/allocator/partition_allocator/partition_tag.h"
+#include "base/allocator/partition_allocator/partition_tag_types.h"
 #include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
 #include "base/allocator/partition_allocator/starscan/state_bitmap.h"
@@ -91,7 +92,9 @@ template <typename Z>
 static constexpr bool offset_type =
     std::is_integral_v<Z> && sizeof(Z) <= sizeof(ptrdiff_t);
 
-static constexpr size_t kAllocInfoSize = 1 << 20;
+// We want this size to be big enough that we have time to start up other
+// scripts _before_ we wrap around.
+static constexpr size_t kAllocInfoSize = 1 << 24;
 
 struct AllocInfo {
   std::atomic<size_t> index{0};
@@ -507,7 +510,8 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
 
   PA_ALWAYS_INLINE static size_t GetUsableSize(void* ptr);
 
-  PA_ALWAYS_INLINE size_t AllocationCapacityFromPtr(void* ptr) const;
+  PA_ALWAYS_INLINE size_t
+  AllocationCapacityFromSlotStart(uintptr_t slot_start) const;
   PA_ALWAYS_INLINE size_t
   AllocationCapacityFromRequestedSize(size_t size) const;
 
@@ -1187,10 +1191,8 @@ PA_ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooks(void* object) {
 
 #if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
   if (!root->IsDirectMappedBucket(slot_span->bucket)) {
-    size_t slot_size_less_extras =
-        root->AdjustSizeForExtrasSubtract(slot_span->bucket->slot_size);
     partition_alloc::internal::PartitionTagIncrementValue(
-        object, slot_size_less_extras);
+        slot_start, slot_span->bucket->slot_size);
   }
 #endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
 
@@ -1589,6 +1591,7 @@ PA_ALWAYS_INLINE bool PartitionRoot<thread_safe>::TryRecommitSystemPagesForData(
 }
 
 // static
+//
 // Returns the size available to the app. It can be equal or higher than the
 // requested size. If higher, the overage won't exceed what's actually usable
 // by the app without a risk of running out of an allocated region or into
@@ -1614,8 +1617,8 @@ PA_ALWAYS_INLINE size_t PartitionRoot<thread_safe>::GetUsableSize(void* ptr) {
 // the same amount of underlying memory.
 template <bool thread_safe>
 PA_ALWAYS_INLINE size_t
-PartitionRoot<thread_safe>::AllocationCapacityFromPtr(void* object) const {
-  uintptr_t slot_start = ObjectToSlotStart(object);
+PartitionRoot<thread_safe>::AllocationCapacityFromSlotStart(
+    uintptr_t slot_start) const {
   auto* slot_span = SlotSpan::FromSlotStart(slot_start);
   return AdjustSizeForExtrasSubtract(slot_span->bucket->slot_size);
 }

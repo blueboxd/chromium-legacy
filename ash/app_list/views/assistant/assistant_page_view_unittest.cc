@@ -160,21 +160,6 @@ class VisibilityObserver : public views::ViewObserver {
   bool was_drawn_ = false;
 };
 
-// Simply constructs a GestureEvent for test.
-class GestureEventForTest : public ui::GestureEvent {
- public:
-  GestureEventForTest(const gfx::Point& location,
-                      ui::GestureEventDetails details)
-      : GestureEvent(location.x(),
-                     location.y(),
-                     /*flags=*/ui::EF_NONE,
-                     base::TimeTicks(),
-                     details) {}
-
-  GestureEventForTest(const GestureEventForTest&) = delete;
-  GestureEventForTest& operator=(const GestureEventForTest&) = delete;
-};
-
 // Base class for tests of the embedded assistant page in:
 // - Legacy clamshell mode ("peeking launcher")
 // - Clamshell mode ("bubble launcher")
@@ -244,7 +229,7 @@ class AssistantPageBubbleTest : public AssistantPageViewTest {
 
 // Counts the number of Assistant interactions that are started.
 class AssistantInteractionCounter
-    : private chromeos::assistant::AssistantInteractionSubscriber {
+    : private assistant::AssistantInteractionSubscriber {
  public:
   explicit AssistantInteractionCounter(
       chromeos::assistant::Assistant* service) {
@@ -264,8 +249,7 @@ class AssistantInteractionCounter
   }
 
   int interaction_count_ = 0;
-  chromeos::assistant::ScopedAssistantInteractionSubscriber
-      interaction_observer_{this};
+  assistant::ScopedAssistantInteractionSubscriber interaction_observer_{this};
 };
 
 TEST_F(AssistantPageNonBubbleTest, ShouldStartInPeekingState) {

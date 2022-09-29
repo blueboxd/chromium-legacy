@@ -244,12 +244,14 @@ AppWindow* PlatformAppBrowserTest::CreateAppWindowFromParams(
     const Extension* extension,
     const AppWindow::CreateParams& params) {
   AppWindow* window = new AppWindow(
-      browser()->profile(), new ChromeAppDelegate(browser()->profile(), true),
+      browser()->profile(),
+      std::make_unique<ChromeAppDelegate>(browser()->profile(), true),
       extension);
   ProcessManager* process_manager = ProcessManager::Get(context);
   ExtensionHost* background_host =
       process_manager->GetBackgroundHostForExtension(extension->id());
-  window->Init(GURL(std::string()), new AppWindowContentsImpl(window),
+  window->Init(GURL(std::string()),
+               std::make_unique<AppWindowContentsImpl>(window),
                background_host->host_contents()->GetPrimaryMainFrame(), params);
   return window;
 }

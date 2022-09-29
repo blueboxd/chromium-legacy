@@ -9,7 +9,11 @@
 #import "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -36,6 +40,14 @@
 // Tests that the NTP is interactable even when multiple NTP are opened during
 // the animation of the first NTP opening. See crbug.com/1032544.
 - (void)testPageInteractable {
+  // Ensures that the first favicon in Most Visited row is the test URL.
+  [ChromeEarlGrey clearBrowsingHistory];
+  std::map<GURL, std::string> responses;
+  const GURL firstURL = web::test::HttpServer::MakeUrl("http://first");
+  responses[firstURL] = "First window";
+  web::test::SetUpSimpleHttpServer(responses);
+  [ChromeEarlGrey loadURL:firstURL];
+
   // Scope for the synchronization disabled.
   {
     ScopedSynchronizationDisabler syncDisabler;
@@ -54,31 +66,26 @@
 
   [ChromeEarlGrey waitForMainTabCount:3];
 
+  NSInteger faviconIndex = 0;
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_CONTENT_SUGGESTIONS_BOOKMARKS)]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::NavigationBarTitleWithAccessibilityLabelId(
-                     IDS_IOS_CONTENT_SUGGESTIONS_BOOKMARKS)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
-      performAction:grey_tap()];
+      selectElementWithMatcher:
+          grey_accessibilityID([NSString
+              stringWithFormat:
+                  @"%@%li",
+                  kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
+                  faviconIndex])] performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:responses[firstURL]];
 
   [ChromeEarlGrey selectTabAtIndex:1];
 
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_CONTENT_SUGGESTIONS_BOOKMARKS)]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::NavigationBarTitleWithAccessibilityLabelId(
-                     IDS_IOS_CONTENT_SUGGESTIONS_BOOKMARKS)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
-      performAction:grey_tap()];
+      selectElementWithMatcher:
+          grey_accessibilityID([NSString
+              stringWithFormat:
+                  @"%@%li",
+                  kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
+                  faviconIndex])] performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:responses[firstURL]];
 }
 
 // Tests that evaluating JavaScript in the omnibox (e.g, a bookmarklet) works.
@@ -242,6 +249,25 @@
                              inWindowWithNumber:0];
   [ChromeEarlGrey waitForWebStateContainingText:responses[secondURL]
                              inWindowWithNumber:1];
+}
+
+@end
+
+@interface BrowserViewControllerWith3PIntentsInIncognitoFeatureTestCase
+    : BrowserViewControllerTestCase
+@end
+
+@implementation BrowserViewControllerWith3PIntentsInIncognitoFeatureTestCase
+
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config = [super appConfigurationForTestCase];
+  config.features_disabled.push_back(kTrendingQueriesModule);
+  config.features_enabled.push_back(kIOS3PIntentsInIncognito);
+  return config;
+}
+
+// This is currently needed to prevent this test case from being ignored.
+- (void)testEmpty {
 }
 
 @end

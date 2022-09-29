@@ -127,36 +127,36 @@ void OfferNotificationBubbleControllerImpl::OnBubbleClosed(
   UpdatePageActionIcon();
 
   // Log bubble result according to the closed reason.
-  AutofillMetrics::OfferNotificationBubbleResultMetric metric;
+  autofill_metrics::OfferNotificationBubbleResultMetric metric;
   switch (closed_reason) {
     case PaymentsBubbleClosedReason::kAccepted:
-      metric = AutofillMetrics::OfferNotificationBubbleResultMetric::
+      metric = autofill_metrics::OfferNotificationBubbleResultMetric::
           OFFER_NOTIFICATION_BUBBLE_ACKNOWLEDGED;
       break;
     case PaymentsBubbleClosedReason::kClosed:
-      metric = AutofillMetrics::OfferNotificationBubbleResultMetric::
+      metric = autofill_metrics::OfferNotificationBubbleResultMetric::
           OFFER_NOTIFICATION_BUBBLE_CLOSED;
       break;
     case PaymentsBubbleClosedReason::kNotInteracted:
-      metric = AutofillMetrics::OfferNotificationBubbleResultMetric::
+      metric = autofill_metrics::OfferNotificationBubbleResultMetric::
           OFFER_NOTIFICATION_BUBBLE_NOT_INTERACTED;
       break;
     case PaymentsBubbleClosedReason::kLostFocus:
-      metric = AutofillMetrics::OfferNotificationBubbleResultMetric::
+      metric = autofill_metrics::OfferNotificationBubbleResultMetric::
           OFFER_NOTIFICATION_BUBBLE_LOST_FOCUS;
       break;
     default:
       NOTREACHED();
       return;
   }
-  AutofillMetrics::LogOfferNotificationBubbleResultMetric(
+  autofill_metrics::LogOfferNotificationBubbleResultMetric(
       offer_->GetOfferType(), metric, is_user_gesture_);
 }
 
 void OfferNotificationBubbleControllerImpl::OnPromoCodeButtonClicked() {
   promo_code_button_clicked_ = true;
 
-  AutofillMetrics::LogOfferNotificationBubblePromoCodeButtonClicked(
+  autofill_metrics::LogOfferNotificationBubblePromoCodeButtonClicked(
       offer_->GetOfferType());
 }
 
@@ -193,7 +193,7 @@ void OfferNotificationBubbleControllerImpl::ShowOfferNotificationIfApplicable(
     if (!last_display_time.is_null() &&
         (base::Time::Now() - last_display_time) <
             commerce::kCouponDisplayInterval.Get()) {
-      AutofillMetrics::LogOfferNotificationBubbleSuppressed(
+      autofill_metrics::LogOfferNotificationBubbleSuppressed(
           AutofillOfferData::OfferType::FREE_LISTING_COUPON_OFFER);
       return;
     }
@@ -271,8 +271,8 @@ void OfferNotificationBubbleControllerImpl::DoShowBubble() {
   if (observer_for_testing_)
     observer_for_testing_->OnBubbleShown();
 
-  AutofillMetrics::LogOfferNotificationBubbleOfferMetric(offer_->GetOfferType(),
-                                                         is_user_gesture_);
+  autofill_metrics::LogOfferNotificationBubbleOfferMetric(
+      offer_->GetOfferType(), is_user_gesture_);
 }
 
 bool OfferNotificationBubbleControllerImpl::IsWebContentsActive() {

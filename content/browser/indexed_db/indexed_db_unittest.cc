@@ -27,12 +27,12 @@
 #include "content/browser/indexed_db/indexed_db_leveldb_env.h"
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
+#include "net/base/features.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 
 using blink::IndexedDBDatabaseMetadata;
@@ -117,7 +117,7 @@ class IndexedDBTest : public testing::Test,
             base::SequencedTaskRunnerHandle::Get(),
             base::SequencedTaskRunnerHandle::Get())) {
     scoped_feature_list_.InitWithFeatureState(
-        blink::features::kThirdPartyStoragePartitioning,
+        net::features::kThirdPartyStoragePartitioning,
         IsThirdPartyStoragePartitioningEnabled());
 
     kNormalFirstPartyStorageKey =
@@ -189,10 +189,9 @@ class IndexedDBTest : public testing::Test,
       // Loop through all open buckets, and force close them, and request
       // the deletion of the leveldb state. Once the states are no longer
       // around, delete all of the databases on disk.
-      auto open_factory_buckets = factory->GetOpenBuckets();
-      for (const auto& bucket_locator : open_factory_buckets) {
+      for (const auto& bucket_id : factory->GetOpenBuckets()) {
         context_->ForceClose(
-            bucket_locator,
+            bucket_id,
             storage::mojom::ForceCloseReason::FORCE_CLOSE_DELETE_ORIGIN,
             base::DoNothing());
       }
@@ -420,7 +419,7 @@ TEST_P(IndexedDBTest, ForceCloseOpenDatabasesOnDeleteFirstParty) {
   RunPostedTasks();
 
   context()->ForceClose(
-      bucket_locator,
+      bucket_locator.id,
       storage::mojom::ForceCloseReason::FORCE_CLOSE_DELETE_ORIGIN,
       base::DoNothing());
   EXPECT_TRUE(open_db_callbacks->forced_close_called());
@@ -481,7 +480,7 @@ TEST_P(IndexedDBTest, ForceCloseOpenDatabasesOnDeleteThirdParty) {
   RunPostedTasks();
 
   context()->ForceClose(
-      bucket_locator,
+      bucket_locator.id,
       storage::mojom::ForceCloseReason::FORCE_CLOSE_DELETE_ORIGIN,
       base::DoNothing());
   EXPECT_TRUE(open_db_callbacks->forced_close_called());

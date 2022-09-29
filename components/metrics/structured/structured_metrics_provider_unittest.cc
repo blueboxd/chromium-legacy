@@ -23,8 +23,8 @@
 #include "components/metrics/structured/event_base.h"
 #include "components/metrics/structured/recorder.h"
 #include "components/metrics/structured/storage.pb.h"
+#include "components/metrics/structured/structured_events.h"
 #include "components/metrics/structured/structured_metrics_features.h"
-#include "components/metrics/structured/structured_mojo_events.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 
@@ -81,6 +81,8 @@ constexpr char kProjectFourId[] = "FBBBB6DE2AA74C3C";
 constexpr char kValueOne[] = "value one";
 constexpr char kValueTwo[] = "value two";
 
+constexpr char kHwid[] = "hwid";
+
 std::string HashToHex(const uint64_t hash) {
   return base::HexEncode(&hash, sizeof(uint64_t));
 }
@@ -98,6 +100,22 @@ EventsProto MakeExternalEventProto(const std::vector<uint64_t>& ids) {
   return proto;
 }
 
+class TestRecorder : public StructuredMetricsClient::RecordingDelegate {
+ public:
+  TestRecorder() = default;
+  TestRecorder(const TestRecorder& recorder) = delete;
+  TestRecorder& operator=(const TestRecorder& recorder) = delete;
+  ~TestRecorder() override = default;
+
+  void RecordEvent(Event&& event) override {
+    auto event_base = EventBase::FromEvent(std::move(event));
+    if (event_base.has_value())
+      Recorder::GetInstance()->Record(std::move(event_base.value()));
+  }
+
+  bool IsReadyToRecord() const override { return true; }
+};
+
 }  // namespace
 
 class StructuredMetricsProviderTest : public testing::Test {
@@ -106,7 +124,7 @@ class StructuredMetricsProviderTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     Recorder::GetInstance()->SetUiTaskRunner(
         task_environment_.GetMainThreadTaskRunner());
-    StructuredMetricsClient::Get()->SetDelegate(Recorder::GetInstance());
+    StructuredMetricsClient::Get()->SetDelegate(&recorder_);
     // Move the mock date forward from day 0, because KeyData assumes that day 0
     // is a bug.
     task_environment_.AdvanceClock(base::Days(1000));
@@ -267,6 +285,9 @@ class StructuredMetricsProviderTest : public testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   base::HistogramTester histogram_tester_;
   base::ScopedTempDir temp_dir_;
+
+ private:
+  TestRecorder recorder_;
 };
 
 // Test with kDelayUploadUntilHwid feature enabled.
@@ -279,29 +300,28 @@ class StructuredMetricsProviderHwidTest : public StructuredMetricsProviderTest {
     StructuredMetricsProviderTest::SetUp();
   }
 
-  void InitializeHwid() { provider_->OnHardwareClassInitialized(); }
+  void InitializeHwid() { provider_->OnHardwareClassInitialized(kHwid); }
 
   bool events_retrieved() { return events_retrieved_; }
 
-  StructuredDataProto GetMetrics() {
+  std::unique_ptr<ChromeUserMetricsExtension> GetUmaProto() {
     // Independent metrics are only reported at intervals. So advance time to
     // ensure HasIndependentMetrics will return true if there are recorded
     // metrics.
     task_environment_.AdvanceClock(base::Hours(1));
 
-    ChromeUserMetricsExtension uma_proto;
+    auto uma_proto = std::make_unique<ChromeUserMetricsExtension>();
 
     // Copy events from disk to proto.
     if (provider_->HasIndependentMetrics()) {
       provider_->ProvideIndependentMetrics(
           base::BindLambdaForTesting(
               [this](bool success) { events_retrieved_ = success; }),
-          &uma_proto, nullptr);
+          uma_proto.get(), nullptr);
       Wait();
-      return uma_proto.structured_data();
     }
 
-    return StructuredDataProto::default_instance();
+    return uma_proto;
   }
 
  private:
@@ -840,13 +860,20 @@ TEST_F(StructuredMetricsProviderHwidTest, EventsNotSentIfHwidNotInitialized) {
   events::v2::test_project_one::TestEventOne().SetTestMetricTwo(1).Record();
   events::v2::test_project_one::TestEventOne().SetTestMetricTwo(2).Record();
 
+  std::unique_ptr<ChromeUserMetricsExtension> uma_proto = GetUmaProto();
+
   // HWID has not been set. Events should still persist in files.
-  EXPECT_EQ(GetMetrics().events_size(), 0);
+  EXPECT_EQ(uma_proto->structured_data().events_size(), 0);
 
   InitializeHwid();
 
+  // Call again to fetch the new proto with new events.
+  uma_proto = GetUmaProto();
+
   // HWID has been set. Events should be ready to upload.
-  EXPECT_EQ(GetMetrics().events_size(), 2);
+  EXPECT_EQ(uma_proto->system_profile().hardware().full_hardware_class(),
+            kHwid);
+  EXPECT_EQ(uma_proto->structured_data().events_size(), 2);
 
   ExpectNoErrors();
 }

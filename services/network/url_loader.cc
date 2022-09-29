@@ -275,12 +275,15 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
 bool ShouldNotifyAboutCookie(net::CookieInclusionStatus status) {
   // Notify about cookies actually used, and those blocked by preferences ---
   // for purposes of cookie UI --- as well those carrying warnings pertaining to
-  // SameSite features, in order to issue a deprecation warning for them.
+  // SameSite features and cookies with non-ASCII domain attributes, in order to
+  // issue a deprecation warning for them.
   return status.IsInclude() || status.ShouldWarn() ||
          status.HasExclusionReason(
              net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES) ||
          status.HasExclusionReason(
-             net::CookieInclusionStatus::EXCLUDE_INVALID_SAMEPARTY);
+             net::CookieInclusionStatus::EXCLUDE_INVALID_SAMEPARTY) ||
+         status.HasExclusionReason(
+             net::CookieInclusionStatus::EXCLUDE_DOMAIN_NON_ASCII);
 }
 
 // Concerning headers that consumers probably shouldn't be allowed to set.
@@ -1555,8 +1558,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     return;
   }
 
-  // TODO(https://crbug.com/1339708): In-memory cache should support DevTools.
-  if (memory_cache_ && !devtools_request_id().has_value()) {
+  if (memory_cache_) {
     memory_cache_writer_ = memory_cache_->MaybeCreateWriter(
         url_request_.get(), request_destination_, transport_info_, response_);
   }

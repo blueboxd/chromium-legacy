@@ -245,7 +245,7 @@
           {
             "builder_id": {
               "bucket": "ci",
-              "builder": "mac-osxbeta-rel",
+              "builder": "Mac12 Tests (py2 less)",
               "project": "chromium"
             },
             "builder_spec": {
@@ -264,9 +264,6 @@
               },
               "legacy_gclient_config": {
                 "config": "chromium"
-              },
-              "legacy_test_results_config": {
-                "config": "staging_server"
               },
               "parent": {
                 "bucket": "ci",
@@ -322,7 +319,7 @@
         },
         {
           "bucket": "ci",
-          "builder": "mac-osxbeta-rel",
+          "builder": "Mac12 Tests (py2 less)",
           "project": "chromium"
         }
       ],

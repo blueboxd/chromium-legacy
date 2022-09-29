@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_launcher.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_service.h"
+#include "chrome/browser/ash/bruschetta/bruschetta_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_session_tracker.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 
@@ -23,7 +24,7 @@ Profile* BruschettaMountProvider::profile() {
 }
 
 std::string BruschettaMountProvider::DisplayName() {
-  return "Bruschetta";
+  return kBruschettaDisplayName;
 }
 
 guest_os::GuestId BruschettaMountProvider::GuestId() {
@@ -58,9 +59,9 @@ void BruschettaMountProvider::OnRunning(PrepareCallback callback,
     std::move(callback).Run(false, 0, 0, base::FilePath());
     return;
   }
+  auto* tracker = guest_os::GuestOsSessionTracker::GetForProfile(profile_);
 
-  auto info = guest_os::GuestOsSessionTracker::GetForProfile(profile_)->GetInfo(
-      guest_id_);
+  auto info = tracker->GetInfo(guest_id_);
   if (!info) {
     // Shouldn't happen unless you managed to shutdown the VM at the same
     // instant as you booted it.
@@ -68,10 +69,11 @@ void BruschettaMountProvider::OnRunning(PrepareCallback callback,
     std::move(callback).Run(false, 0, 0, base::FilePath());
     return;
   }
-
-  // TODO(b/217469540): Once the sftp changes in garcon land, change the port
-  // from hardcoded 1234 to the real value.
-  std::move(callback).Run(true, info->cid, 1234, info->homedir);
+  unmount_subscription_ = tracker->RunOnShutdown(
+      guest_id_, base::BindOnce(&BruschettaMountProvider::Unmount,
+                                weak_ptr_factory_.GetWeakPtr()));
+  std::move(callback).Run(true, info->cid, info->sftp_vsock_port,
+                          info->homedir);
 }
 
 }  // namespace bruschetta

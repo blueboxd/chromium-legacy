@@ -23,7 +23,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ash/components/dbus/update_engine/fake_update_engine_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/sync/base/client_tag_hash.h"
@@ -34,8 +33,8 @@
 #include "components/sync/model/syncable_service.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
-#include "components/sync/test/model/fake_sync_change_processor.h"
-#include "components/sync/test/model/sync_error_factory_mock.h"
+#include "components/sync/test/fake_sync_change_processor.h"
+#include "components/sync/test/sync_error_factory_mock.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
@@ -180,7 +179,6 @@ class PreferencesTest : public testing::Test {
         &previous_input_method_, &current_input_method_);
     input_method::InitializeForTesting(mock_manager_);
 
-    chromeos::DBusThreadManager::Initialize();
     fake_update_engine_client_ = UpdateEngineClient::InitializeFakeForTest();
 
     prefs_ = std::make_unique<Preferences>(mock_manager_);
@@ -190,7 +188,6 @@ class PreferencesTest : public testing::Test {
     // `prefs_` accesses UpdateEngineClient in its destructor.
     prefs_.reset();
     UpdateEngineClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
 
     input_method::Shutdown();
     // UserSessionManager doesn't listen to profile destruction, so make sure

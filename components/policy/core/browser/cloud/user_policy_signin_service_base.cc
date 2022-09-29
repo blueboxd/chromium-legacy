@@ -76,9 +76,19 @@ void UserPolicySigninServiceBase::FetchPolicyForSignedInUser(
     DCHECK(client->is_registered());
     DCHECK(!manager->core()->client());
     InitializeUserCloudPolicyManager(account_id, std::move(client));
+    // `UserCloudPolicyManager` will initiate a policy fetch right after
+    // initialization. Invoke `callback` after the policy is fetched.
+    policy_fetch_callbacks().AddUnsafe(std::move(callback));
+    return;
   }
 
-  DCHECK(manager->IsClientRegistered());
+  if (!manager->IsClientRegistered()) {
+    // The manager already has a client but it's still registering.
+    // `UserCloudPolicyManager` will initiate a policy fetch when the client
+    // registration completes. Invoke `callback` after the policy is fetched.
+    policy_fetch_callbacks().AddUnsafe(std::move(callback));
+    return;
+  }
 
   // Now initiate a policy fetch.
   manager->core()->service()->RefreshPolicy(std::move(callback));
@@ -118,6 +128,10 @@ void UserPolicySigninServiceBase::Shutdown() {
 
 void UserPolicySigninServiceBase::PrepareForUserCloudPolicyManagerShutdown() {
   registration_helper_.reset();
+  registration_helper_for_temporary_client_.reset();
+  // Don't run the callbacks to be consistent with
+  // `CloudPolicyService::RefreshPolicy()` behavior during shutdown.
+  policy_fetch_callbacks_.reset();
   UserCloudPolicyManager* manager = policy_manager();
   if (manager && manager->core()->client())
     manager->core()->client()->RemoveObserver(this);
@@ -125,12 +139,21 @@ void UserPolicySigninServiceBase::PrepareForUserCloudPolicyManagerShutdown() {
     manager->core()->service()->RemoveObserver(this);
 }
 
+base::OnceCallbackList<void(bool)>&
+UserPolicySigninServiceBase::policy_fetch_callbacks() {
+  if (!policy_fetch_callbacks_) {
+    policy_fetch_callbacks_ =
+        std::make_unique<base::OnceCallbackList<void(bool)>>();
+  }
+  return *policy_fetch_callbacks_;
+}
+
 std::unique_ptr<CloudPolicyClient>
 UserPolicySigninServiceBase::CreateClientForRegistrationOnly(
     const std::string& username) {
   DCHECK(!username.empty());
-  // We should not be called with a client already initialized.
-  DCHECK(!policy_manager() || !policy_manager()->core()->client());
+  // We should not be called with a client already registered.
+  DCHECK(!policy_manager() || !policy_manager()->IsClientRegistered());
 
   // If the user should not get policy, just bail out.
   if (!policy_manager() || !ShouldLoadPolicyForUser(username)) {
@@ -159,8 +182,10 @@ void UserPolicySigninServiceBase::InitializeForSignedInUser(
     scoped_refptr<network::SharedURLLoaderFactory> profile_url_loader_factory) {
   DCHECK(account_id.is_valid());
   UserCloudPolicyManager* manager = policy_manager();
-  if (!ShouldLoadPolicyForUser(account_id.GetUserEmail())) {
-    manager->SetPoliciesRequired(false);
+  bool should_load_policies =
+      ShouldLoadPolicyForUser(account_id.GetUserEmail());
+  manager->SetPoliciesRequired(should_load_policies);
+  if (!should_load_policies) {
     DVLOG(1) << "Policy load not enabled for user: "
              << account_id.GetUserEmail();
     return;
@@ -212,12 +237,14 @@ void UserPolicySigninServiceBase::ShutdownUserCloudPolicyManager() {
 void UserPolicySigninServiceBase::CancelPendingRegistration() {
   weak_factory_for_registration_.InvalidateWeakPtrs();
   registration_helper_.reset();
+  registration_helper_for_temporary_client_.reset();
 }
 
-void UserPolicySigninServiceBase::CallPolicyRegistrationCallback(
-    std::unique_ptr<CloudPolicyClient> client,
-    PolicyRegistrationCallback callback) {
-  registration_helper_.reset();
+void UserPolicySigninServiceBase::
+    CallPolicyRegistrationCallbackForTemporaryClient(
+        std::unique_ptr<CloudPolicyClient> client,
+        PolicyRegistrationCallback callback) {
+  registration_helper_for_temporary_client_.reset();
   std::move(callback).Run(client->dm_token(), client->client_id());
 }
 
@@ -244,20 +271,22 @@ void UserPolicySigninServiceBase::RegisterForPolicyWithAccountId(
     return;
   }
 
-  CancelPendingRegistration();
-
   // Fire off the registration process. Callback owns and keeps the
   // CloudPolicyClient alive for the length of the registration process.
-  registration_helper_ = std::make_unique<CloudPolicyClientRegistrationHelper>(
-      policy_client.get(), kCloudPolicyRegistrationType);
+  // Cancels in-progress registration triggered previously via
+  // `RegisterForPolicyWithAccountId()`, if any.
+  registration_helper_for_temporary_client_ =
+      std::make_unique<CloudPolicyClientRegistrationHelper>(
+          policy_client.get(), kCloudPolicyRegistrationType);
 
   // Using a raw pointer to |this| is okay, because the service owns
-  // |registration_helper_|.
+  // |registration_helper_for_temporary_client_|.
   auto registration_callback = base::BindOnce(
-      &UserPolicySigninServiceBase::CallPolicyRegistrationCallback,
+      &UserPolicySigninServiceBase::
+          CallPolicyRegistrationCallbackForTemporaryClient,
       base::Unretained(this), std::move(policy_client), std::move(callback));
-  registration_helper_->StartRegistration(identity_manager(), account_id,
-                                          std::move(registration_callback));
+  registration_helper_for_temporary_client_->StartRegistration(
+      identity_manager(), account_id, std::move(registration_callback));
 }
 
 void UserPolicySigninServiceBase::RegisterCloudPolicyService() {
@@ -330,6 +359,10 @@ void UserPolicySigninServiceBase::
   }
 
   ProhibitSignoutIfNeeded();
+}
+
+void UserPolicySigninServiceBase::OnPolicyRefreshed(bool success) {
+  policy_fetch_callbacks().Notify(success);
 }
 
 void UserPolicySigninServiceBase::ProhibitSignoutIfNeeded() {}

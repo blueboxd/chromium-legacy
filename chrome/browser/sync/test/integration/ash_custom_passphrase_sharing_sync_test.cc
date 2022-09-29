@@ -31,7 +31,7 @@
 #include "components/sync/nigori/cryptographer_impl.h"
 #include "components/sync/nigori/nigori_test_utils.h"
 #include "components/sync/protocol/os_preference_specifics.pb.h"
-#include "components/sync/test/fake_server/fake_server_nigori_helper.h"
+#include "components/sync/test/fake_server_nigori_helper.h"
 #include "content/public/test/browser_test.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -255,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(AshCustomPassphraseSharingSyncTest,
   // notify observers (Lacros) via crosapi and have default preference value.
   EXPECT_TRUE(passphrase_required_notified_to_crosapi_observer_checker.Wait());
   ASSERT_TRUE(PassphraseRequiredChecker(GetSyncService(0)).Wait());
-  ASSERT_NE(*preferences_helper::GetPrefs(0)->Get(
+  ASSERT_NE(preferences_helper::GetPrefs(0)->GetValue(
                 prefs::kResolveTimezoneByGeolocationMigratedToMethod),
             kNewPrefValue);
 

@@ -122,6 +122,7 @@
 #include "third_party/blink/public/common/widget/visual_properties.h"
 #include "third_party/blink/public/mojom/drag/drag.mojom.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-forward.h"
 #include "third_party/blink/public/mojom/input/touch_event.mojom.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
@@ -1004,8 +1005,6 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   }
 
   visual_properties.is_fullscreen_granted = delegate_->IsFullscreen();
-  visual_properties.window_controls_overlay_rect =
-      delegate_->GetWindowsControlsOverlayRect();
 
   if (is_frame_widget)
     visual_properties.display_mode = delegate_->GetDisplayMode();
@@ -1071,7 +1070,7 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   // 2. IPC           -> blink::mojom::Widget::UpdateVisualProperties
   // 3. Renderer A: parent RenderWidget
   //                  (sometimes blink involved)
-  // 4. Renderer A: child  RenderFrameProxy
+  // 4. Renderer A: child  blink::RemoteFrame
   // 5. IPC           -> FrameHostMsg_SynchronizeVisualProperties
   // 6. Browser:    child  CrossProcessFrameConnector
   // 7. Browser:    parent RenderWidgetHost (We're here if |is_child_frame|.)
@@ -1082,6 +1081,8 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   if (is_top_most_widget) {
     visual_properties.compositor_viewport_pixel_rect =
         gfx::Rect(view_->GetCompositorViewportPixelSize());
+    visual_properties.window_controls_overlay_rect =
+        delegate_->GetWindowsControlsOverlayRect();
   } else {
     visual_properties.compositor_viewport_pixel_rect =
         properties_from_parent_local_root_.compositor_viewport;
@@ -2520,11 +2521,15 @@ void RenderWidgetHostImpl::SetPopupBounds(const gfx::Rect& bounds,
   std::move(callback).Run();
 }
 
-void RenderWidgetHostImpl::ShowPopup(const gfx::Rect& initial_rect,
-                                     const gfx::Rect& anchor_rect,
+void RenderWidgetHostImpl::ShowPopup(const gfx::Rect& initial_screen_rect,
+                                     const gfx::Rect& anchor_screen_rect,
                                      ShowPopupCallback callback) {
-  delegate_->ShowCreatedWidget(GetProcess()->GetID(), GetRoutingID(),
-                               initial_rect, anchor_rect);
+  // `delegate_` may be null since this message may be received from when
+  // the delegate shutdown but this widget is not yet destroyed.
+  if (delegate_) {
+    delegate_->ShowCreatedWidget(GetProcess()->GetID(), GetRoutingID(),
+                                 initial_screen_rect, anchor_screen_rect);
+  }
   std::move(callback).Run();
 }
 
@@ -3262,7 +3267,8 @@ void RenderWidgetHostImpl::OnWheelEventAck(
 void RenderWidgetHostImpl::OnGestureEventAck(
     const GestureEventWithLatencyInfo& event,
     blink::mojom::InputEventResultSource ack_source,
-    blink::mojom::InputEventResultState ack_result) {
+    blink::mojom::InputEventResultState ack_result,
+    blink::mojom::ScrollResultDataPtr scroll_result_data) {
   latency_tracker_.OnInputEventAck(event.event, &event.latency, ack_result);
   for (auto& input_event_observer : input_event_observers_)
     input_event_observer.OnInputEventAck(ack_source, ack_result, event.event);
@@ -3273,7 +3279,8 @@ void RenderWidgetHostImpl::OnGestureEventAck(
     touch_emulator->OnGestureEventAck(event.event, GetView());
 
   if (view_)
-    view_->GestureEventAck(event.event, ack_result);
+    view_->GestureEventAck(event.event, ack_result,
+                           std::move(scroll_result_data));
 }
 
 void RenderWidgetHostImpl::OnTouchEventAck(

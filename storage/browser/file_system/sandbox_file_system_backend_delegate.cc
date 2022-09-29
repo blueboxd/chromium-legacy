@@ -14,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/files/file_error_or.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/task_runner_util.h"
@@ -81,10 +82,6 @@ const base::FilePath::CharType kRestrictedChars[] = {
     FILE_PATH_LITERAL('\\'),
 };
 
-std::string GetTypeStringForURL(const FileSystemURL& url) {
-  return SandboxFileSystemBackendDelegate::GetTypeString(url.type());
-}
-
 std::set<std::string> GetKnownTypeStrings() {
   std::set<std::string> known_type_strings;
   known_type_strings.insert(kTemporaryDirectoryName);
@@ -123,15 +120,13 @@ base::File::Error OpenSandboxFileSystemOnFileTaskRunner(
   base::File::Error error;
   if (bucket_locator.has_value()) {
     base::FileErrorOr<base::FilePath> path =
-        file_util->GetDirectoryForBucketAndType(
-            bucket_locator.value(),
-            SandboxFileSystemBackendDelegate::GetTypeString(type), create);
+        file_util->GetDirectoryForBucketAndType(bucket_locator.value(), type,
+                                                create);
     error = (path.is_error()) ? path.error() : base::File::FILE_OK;
   } else {
     base::FileErrorOr<base::FilePath> path =
         file_util->GetDirectoryForStorageKeyAndType(
-            blink::StorageKey(url::Origin::Create(origin_url)),
-            SandboxFileSystemBackendDelegate::GetTypeString(type), create);
+            blink::StorageKey(url::Origin::Create(origin_url)), type, create);
     error = (path.is_error()) ? path.error() : base::File::FILE_OK;
   }
   if (error != base::File::FILE_OK) {
@@ -167,10 +162,6 @@ void DeleteSoon(base::SequencedTaskRunner* runner, T* ptr) {
 
 }  // namespace
 
-const base::FilePath::CharType
-    SandboxFileSystemBackendDelegate::kFileSystemDirectory[] =
-        FILE_PATH_LITERAL("File System");
-
 // static
 std::string SandboxFileSystemBackendDelegate::GetTypeString(
     FileSystemType type) {
@@ -201,9 +192,8 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
       sandbox_file_util_(std::make_unique<AsyncFileUtilAdapter>(
           std::make_unique<ObfuscatedFileUtil>(
               special_storage_policy,
-              profile_path.Append(kFileSystemDirectory),
+              profile_path,
               env_override,
-              base::BindRepeating(&GetTypeStringForURL),
               GetKnownTypeStrings(),
               this,
               file_system_options.is_incognito()))),
@@ -228,8 +218,12 @@ SandboxFileSystemBackendDelegate::~SandboxFileSystemBackendDelegate() {
 
   if (!file_task_runner_->RunsTasksInCurrentSequence()) {
     DeleteSoon(file_task_runner_.get(), quota_reservation_manager_.release());
-    DeleteSoon(file_task_runner_.get(), sandbox_file_util_.release());
+    // `quota_observer_` depends on `sandbox_file_util_` and
+    // `file_system_usage_cache_` so it must be released first.
     DeleteSoon(file_task_runner_.get(), quota_observer_.release());
+    // Clear pointer to |this| to avoid holding a dangling ptr.
+    obfuscated_file_util()->sandbox_delegate_ = nullptr;
+    DeleteSoon(file_task_runner_.get(), sandbox_file_util_.release());
     DeleteSoon(file_task_runner_.get(), file_system_usage_cache_.release());
   }
 }
@@ -245,8 +239,8 @@ SandboxFileSystemBackendDelegate::GetBaseDirectoryForStorageKeyAndType(
     FileSystemType type,
     bool create) {
   base::FileErrorOr<base::FilePath> path =
-      obfuscated_file_util()->GetDirectoryForStorageKeyAndType(
-          storage_key, GetTypeString(type), create);
+      obfuscated_file_util()->GetDirectoryForStorageKeyAndType(storage_key,
+                                                               type, create);
   if (path.is_error())
     return base::FilePath();
   return path.value();
@@ -258,8 +252,8 @@ SandboxFileSystemBackendDelegate::GetBaseDirectoryForBucketAndType(
     FileSystemType type,
     bool create) {
   base::FileErrorOr<base::FilePath> path =
-      obfuscated_file_util()->GetDirectoryForBucketAndType(
-          bucket_locator, GetTypeString(type), create);
+      obfuscated_file_util()->GetDirectoryForBucketAndType(bucket_locator, type,
+                                                           create);
   if (path.is_error())
     return base::FilePath();
   return path.value();
@@ -368,7 +362,7 @@ SandboxFileSystemBackendDelegate::DeleteStorageKeyDataOnFileTaskRunner(
                                                      storage_key, type);
   usage_cache()->CloseCacheFiles();
   bool result = obfuscated_file_util()->DeleteDirectoryForStorageKeyAndType(
-      storage_key, GetTypeString(type));
+      storage_key, type);
   if (result && proxy && usage) {
     proxy->NotifyStorageModified(
         QuotaClientType::kFileSystem, storage_key,
@@ -381,8 +375,10 @@ SandboxFileSystemBackendDelegate::DeleteStorageKeyDataOnFileTaskRunner(
   // no-op. NOTE: one StorageKey may map to many BucketLocators depending on the
   // type. We only want to cache and delete kFileSystemTypeTemporary buckets.
   // Otherwise, we may accidentally delete the wrong databases.
-  if (type == FileSystemType::kFileSystemTypeTemporary)
+  if (FileSystemTypeToQuotaStorageType(type) ==
+      blink::mojom::StorageType::kTemporary) {
     obfuscated_file_util()->DeleteDefaultBucketForStorageKey(storage_key);
+  }
 
   if (result)
     return base::File::FILE_OK;
@@ -401,7 +397,7 @@ SandboxFileSystemBackendDelegate::DeleteBucketDataOnFileTaskRunner(
                           : 0;
   usage_cache()->CloseCacheFiles();
   bool result = obfuscated_file_util()->DeleteDirectoryForBucketAndType(
-      bucket_locator, GetTypeString(type));
+      bucket_locator, type);
   if (result && proxy && usage) {
     proxy->NotifyBucketModified(QuotaClientType::kFileSystem, bucket_locator.id,
                                 -usage, base::Time::Now(),
@@ -413,7 +409,8 @@ SandboxFileSystemBackendDelegate::DeleteBucketDataOnFileTaskRunner(
   // deleted as well. If it was not cached, result is a no-op. NOTE: We only
   // want to cache and delete kTemporary buckets. Otherwise, we may accidentally
   // delete the wrong databases.
-  if (type == FileSystemType::kFileSystemTypeTemporary &&
+  if (FileSystemTypeToQuotaStorageType(type) ==
+          blink::mojom::StorageType::kTemporary &&
       bucket_locator.is_default) {
     obfuscated_file_util()->DeleteDefaultBucket(bucket_locator);
   }
@@ -606,12 +603,12 @@ void SandboxFileSystemBackendDelegate::RegisterQuotaUpdateObserver(
 void SandboxFileSystemBackendDelegate::InvalidateUsageCache(
     const blink::StorageKey& storage_key,
     FileSystemType type) {
-  base::File::Error error = base::File::FILE_OK;
-  base::FilePath usage_file_path = GetUsageCachePathForStorageKeyAndType(
-      obfuscated_file_util(), storage_key, type, &error);
-  if (error != base::File::FILE_OK)
+  base::FileErrorOr<base::FilePath> usage_file_path =
+      GetUsageCachePathForStorageKeyAndType(obfuscated_file_util(), storage_key,
+                                            type);
+  if (usage_file_path.is_error())
     return;
-  usage_cache()->IncrementDirty(usage_file_path);
+  usage_cache()->IncrementDirty(usage_file_path.value());
 }
 
 void SandboxFileSystemBackendDelegate::StickyInvalidateUsageCache(
@@ -675,66 +672,48 @@ bool SandboxFileSystemBackendDelegate::IsAllowedScheme(const GURL& url) const {
   return false;
 }
 
-base::FilePath
+base::FileErrorOr<base::FilePath>
 SandboxFileSystemBackendDelegate::GetUsageCachePathForStorageKeyAndType(
     const blink::StorageKey& storage_key,
     FileSystemType type) {
-  base::File::Error error;
-  base::FilePath path = GetUsageCachePathForStorageKeyAndType(
-      obfuscated_file_util(), storage_key, type, &error);
-  if (error != base::File::FILE_OK)
-    return base::FilePath();
-  return path;
+  return GetUsageCachePathForStorageKeyAndType(obfuscated_file_util(),
+                                               storage_key, type);
 }
 
 // static
-// TODO(https://crbug.com/1345419): refactor this functions to return
-// base::FileErrorOr<base::FilePath> and remove the `error_out` parameter.
-base::FilePath
+base::FileErrorOr<base::FilePath>
 SandboxFileSystemBackendDelegate::GetUsageCachePathForStorageKeyAndType(
     ObfuscatedFileUtil* sandbox_file_util,
     const blink::StorageKey& storage_key,
-    FileSystemType type,
-    base::File::Error* error_out) {
-  DCHECK(error_out);
-  *error_out = base::File::FILE_OK;
+    FileSystemType type) {
   base::FileErrorOr<base::FilePath> base_path =
-      sandbox_file_util->GetDirectoryForStorageKeyAndType(
-          storage_key, GetTypeString(type), false /* create */);
+      sandbox_file_util->GetDirectoryForStorageKeyAndType(storage_key, type,
+                                                          false /* create */);
   if (base_path.is_error()) {
-    *error_out = base_path.error();
-    return base::FilePath();
+    return base_path;
   }
   return base_path->Append(FileSystemUsageCache::kUsageFileName);
 }
 
-base::FilePath
+base::FileErrorOr<base::FilePath>
 SandboxFileSystemBackendDelegate::GetUsageCachePathForBucketAndType(
     const BucketLocator& bucket_locator,
     FileSystemType type) {
-  base::File::Error error;
-  base::FilePath path = GetUsageCachePathForBucketAndType(
-      obfuscated_file_util(), bucket_locator, type, &error);
-  if (error != base::File::FILE_OK)
-    return base::FilePath();
-  return path;
+  return GetUsageCachePathForBucketAndType(obfuscated_file_util(),
+                                           bucket_locator, type);
 }
 
 // static
-base::FilePath
+base::FileErrorOr<base::FilePath>
 SandboxFileSystemBackendDelegate::GetUsageCachePathForBucketAndType(
     ObfuscatedFileUtil* sandbox_file_util,
     const BucketLocator& bucket_locator,
-    FileSystemType type,
-    base::File::Error* error_out) {
-  DCHECK(error_out);
-  *error_out = base::File::FILE_OK;
+    FileSystemType type) {
   base::FileErrorOr<base::FilePath> base_path =
-      sandbox_file_util->GetDirectoryForBucketAndType(
-          bucket_locator, GetTypeString(type), /*create=*/false);
+      sandbox_file_util->GetDirectoryForBucketAndType(bucket_locator, type,
+                                                      /*create=*/false);
   if (base_path.is_error()) {
-    *error_out = base_path.error();
-    return base::FilePath();
+    return base_path;
   }
   return base_path->Append(FileSystemUsageCache::kUsageFileName);
 }
@@ -815,13 +794,12 @@ SandboxFileSystemBackendDelegate::memory_file_util_delegate() {
 // static
 std::unique_ptr<ObfuscatedFileUtil> ObfuscatedFileUtil::CreateForTesting(
     scoped_refptr<SpecialStoragePolicy> special_storage_policy,
-    const base::FilePath& file_system_directory,
+    const base::FilePath& profile_path,
     leveldb::Env* env_override,
     bool is_incognito) {
   return std::make_unique<ObfuscatedFileUtil>(
-      std::move(special_storage_policy), file_system_directory, env_override,
-      base::BindRepeating(&GetTypeStringForURL), GetKnownTypeStrings(),
-      /*sandbox_delegate=*/nullptr, is_incognito);
+      std::move(special_storage_policy), profile_path, env_override,
+      GetKnownTypeStrings(), /*sandbox_delegate=*/nullptr, is_incognito);
 }
 
 }  // namespace storage

@@ -5,28 +5,29 @@
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
 
-type WebApkInfo = {
-  name: string,
-  shortName: string,
-  packageName: string,
-  id: string,
-  shellApkVersion: number,
-  versionCode: number,
-  uri: string,
-  scope: string,
-  manifestUrl: string,
-  manifestStartUrl: string,
-  displayMode: string,
-  orientation: string,
-  themeColor: string,
-  backgroundColor: string,
-  lastUpdateCheckTimeMs: number,
-  lastUpdateCompletionTimeMs: number,
-  relaxUpdates: boolean,
-  backingBrowser: string,
-  isBackingBrowser: boolean,
-  updateStatus: string,
-};
+interface WebApkInfo {
+  name: string;
+  shortName: string;
+  packageName: string;
+  id: string;
+  shellApkVersion: number;
+  versionCode: number;
+  uri: string;
+  scope: string;
+  manifestUrl: string;
+  manifestStartUrl: string;
+  manifestId: string;
+  displayMode: string;
+  orientation: string;
+  themeColor: string;
+  backgroundColor: string;
+  lastUpdateCheckTimeMs: number;
+  lastUpdateCompletionTimeMs: number;
+  relaxUpdates: boolean;
+  backingBrowser: string;
+  isBackingBrowser: boolean;
+  updateStatus: string;
+}
 
 /**
  * Creates and returns an element (with |text| as content) assigning it the
@@ -98,6 +99,7 @@ function addWebApk(webApkInfo: WebApkInfo) {
   addWebApkField(webApkList, 'Manifest URL: ', webApkInfo.manifestUrl);
   addWebApkField(
       webApkList, 'Manifest Start URL: ', webApkInfo.manifestStartUrl);
+  addWebApkField(webApkList, 'Manifest Id: ', webApkInfo.manifestId);
   addWebApkField(webApkList, 'Display Mode: ', webApkInfo.displayMode);
   addWebApkField(webApkList, 'Orientation: ', webApkInfo.orientation);
   addWebApkField(webApkList, 'Theme color: ', webApkInfo.themeColor);

@@ -41,7 +41,6 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/public/ash_interfaces.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
@@ -51,8 +50,8 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chrome/browser/metrics/enrollment_status.h"
-#include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/system/statistics_provider.h"
+#include "chromeos/version/version_loader.h"
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -166,13 +165,13 @@ std::string GetEnrollmentStatusString() {
 }
 
 std::string GetDisplayInfoString(
-    const ash::mojom::DisplayUnitInfo& display_info) {
+    const crosapi::mojom::DisplayUnitInfo& display_info) {
   std::string entry;
   if (!display_info.name.empty())
     base::StringAppendF(&entry, "%s : ", display_info.name.c_str());
   if (!display_info.edid)
     return entry;
-  const ash::mojom::Edid& edid = *display_info.edid;
+  const crosapi::mojom::Edid& edid = *display_info.edid;
   if (!edid.manufacturer_id.empty()) {
     base::StringAppendF(&entry, "Manufacturer: %s - ",
                         edid.manufacturer_id.c_str());
@@ -189,16 +188,16 @@ std::string GetDisplayInfoString(
 
 // Called from the main (UI) thread, invokes |callback| when complete.
 void PopulateMonitorInfoAsync(
-    ash::mojom::CrosDisplayConfigController* cros_display_config_ptr,
+    crosapi::mojom::CrosDisplayConfigController* cros_display_config_ptr,
     SystemLogsResponse* response,
     base::OnceCallback<void()> callback) {
   cros_display_config_ptr->GetDisplayUnitInfoList(
       false /* single_unified */,
       base::BindOnce(
           [](SystemLogsResponse* response, base::OnceCallback<void()> callback,
-             std::vector<ash::mojom::DisplayUnitInfoPtr> info_list) {
+             std::vector<crosapi::mojom::DisplayUnitInfoPtr> info_list) {
             std::string entry;
-            for (const ash::mojom::DisplayUnitInfoPtr& info : info_list) {
+            for (const crosapi::mojom::DisplayUnitInfoPtr& info : info_list) {
               if (!entry.empty())
                 base::StringAppendF(&entry, "\n");
               entry += GetDisplayInfoString(*info);
@@ -399,13 +398,12 @@ void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
     return;
 
   // Add sync logs to |response|.
-  std::unique_ptr<base::DictionaryValue> sync_logs =
-      syncer::sync_ui_util::ConstructAboutInformation(
-          syncer::sync_ui_util::IncludeSensitiveData(false),
-          SyncServiceFactory::GetForProfile(profile),
-          chrome::GetChannelName(chrome::WithExtendedStable(true)));
+  base::Value::Dict sync_logs = syncer::sync_ui_util::ConstructAboutInformation(
+      syncer::sync_ui_util::IncludeSensitiveData(false),
+      SyncServiceFactory::GetForProfile(profile),
+      chrome::GetChannelName(chrome::WithExtendedStable(true)));
   std::string serialized_sync_logs;
-  JSONStringValueSerializer(&serialized_sync_logs).Serialize(*sync_logs);
+  JSONStringValueSerializer(&serialized_sync_logs).Serialize(sync_logs);
   response->emplace(kSyncDataKey, serialized_sync_logs);
 }
 

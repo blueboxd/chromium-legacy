@@ -7,6 +7,7 @@
 <translation id="1258009455399840361">時計回りに 90 度回転</translation>
 <translation id="1276998909102132017">ギャラリー画像</translation>
 <translation id="1300209025925956156">ドキュメントをスキャンします</translation>
+<translation id="1309250603447638106">ドキュメント スキャン機能のアップデートをダウンロードしています</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />。アクセスするには検索+左矢印キーを押します。</translation>
 <translation id="1393338179284529051">クアッド HD</translation>
 <translation id="1430915738399379752">印刷</translation>
@@ -47,6 +48,7 @@
 <translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">ミラー プレビュー</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> が接続されました。</translation>
+<translation id="2904654629665923749">ドキュメントをスキャンできます</translation>
 <translation id="2968794441791257519">カメラで撮影した写真と動画を [ダウンロード] フォルダに移動します。これらの写真や動画には、[ファイル] からアクセスできます。
 
         また、ストレージへのアクセスが許可されているアプリからも、これらの写真や動画にアクセスできます。</translation>
@@ -72,7 +74,6 @@
 <translation id="3838931309141338733">バーコード スキャン</translation>
 <translation id="3892148308691398805">テキストをコピー</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> MP</translation>
-<translation id="4096701159033358951">ドキュメント スキャンの機能をダウンロードしています</translation>
 <translation id="4118525110028899586">録画を一時停止</translation>
 <translation id="4121305183798804752">ドキュメントを検出しました</translation>
 <translation id="414641094616694804">このカメラでは解像度を変更できません</translation>
@@ -94,7 +95,6 @@
 <translation id="5057360777601936059">カメラを使用できません。
         カメラが正しく接続されているかご確認ください。</translation>
 <translation id="5163387177077603948">右側に移動しています</translation>
-<translation id="520537883758714667">ドキュメント スキャンをご利用いただけるようになりました</translation>
 <translation id="5235304959032763950">16 対 9</translation>
 <translation id="5266635337630551423">ドキュメントの左上の角</translation>
 <translation id="5317780077021120954">保存</translation>

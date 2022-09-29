@@ -126,6 +126,12 @@ std::ostream& operator<<(std::ostream& out, FeedUserActionType value) {
       return out << "kFirstFollowSheetTappedGotIt";
     case FeedUserActionType::kFollowRecommendationIPHShown:
       return out << "kFollowRecommendationIPHShown";
+    case FeedUserActionType::kTappedOpenInNewTabInGroup:
+      return out << "kTappedOpenInNewTabInGroup";
+    case FeedUserActionType::kFollowingFeedSelectedGroupByPublisher:
+      return out << "kFollowingFeedSelectedGroupByPublisher";
+    case FeedUserActionType::kFollowingFeedSelectedSortByLatest:
+      return out << "kFollowingFeedSelectedSortByLatest";
   }
 }
 

@@ -22,8 +22,6 @@
 #include "chrome/browser/memory/memory_kills_monitor.h"
 #include "chromeos/ash/components/memory/memory.h"
 #include "chromeos/ash/components/memory/zram_writeback_controller.h"
-// TODO(https://crbug.com/1164001): remove and use forward declaration.
-#include "chromeos/ash/components/network/fast_transition_observer.h"
 
 class AssistantBrowserDelegateImpl;
 class AssistantStateClient;
@@ -77,11 +75,11 @@ class CrosUsbDetector;
 class DebugdNotificationHandler;
 class DemoModeResourcesRemover;
 class EventRewriterDelegateImpl;
+class FastTransitionObserver;
 class FirmwareUpdateManager;
 class FwupdDownloadClientImpl;
 class GnubbyNotification;
 class IdleActionWarningObserver;
-class LoginScreenExtensionsLifetimeManager;
 class LoginScreenExtensionsStorageCleaner;
 class LowDiskNotification;
 class NetworkPrefStateObserver;
@@ -265,8 +263,6 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<policy::LockToSingleUserManager> lock_to_single_user_manager_;
   std::unique_ptr<WilcoDtcSupportdManager> wilco_dtc_supportd_manager_;
-  std::unique_ptr<LoginScreenExtensionsLifetimeManager>
-      login_screen_extensions_lifetime_manager_;
   std::unique_ptr<LoginScreenExtensionsStorageCleaner>
       login_screen_extensions_storage_cleaner_;
 

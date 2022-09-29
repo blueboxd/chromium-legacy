@@ -27,6 +27,7 @@ import './keyboard_operations.js';
 import './metadata.js';
 import './metrics.js';
 import './my_files.js';
+import './navigation.js';
 import './office.js';
 import './open_audio_media_app.js';
 import './open_image_media_app.js';
@@ -69,15 +70,6 @@ export {FILE_MANAGER_EXTENSIONS_ID};
  * @type {!RemoteCallFilesApp}
  */
 export let remoteCall;
-
-/**
- * Extension ID of Audio Player.
- * @type {string}
- * @const
- */
-export const AUDIO_PLAYER_APP_ID = 'cjbfomnbifhcdnihkgipgfcihmgjfhbf';
-
-export const audioPlayerApp = new RemoteCall(AUDIO_PLAYER_APP_ID);
 
 /**
  * Opens a Files app's main window.
@@ -382,8 +374,7 @@ window.addEventListener('load', () => {
  * @return {Promise} Promise fulfilled on success.
  */
 export async function createShortcut(appId, directoryName) {
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [directoryName]));
+  await remoteCall.waitUntilSelected(appId, directoryName);
 
   await remoteCall.waitForElement(appId, ['.table-row[selected]']);
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(

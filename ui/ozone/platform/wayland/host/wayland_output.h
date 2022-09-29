@@ -74,6 +74,7 @@ class WaylandOutput : public wl::GlobalObjectRegistrar<WaylandOutput> {
   gfx::Size physical_size() const { return physical_size_; }
   gfx::Insets insets() const;
   const std::string& label() const;
+  const std::string& name() const;
   WaylandZcrColorManagementOutput* color_management_output() const {
     return color_management_output_.get();
   }
@@ -84,6 +85,8 @@ class WaylandOutput : public wl::GlobalObjectRegistrar<WaylandOutput> {
 
   wl_output* get_output() { return output_.get(); }
   zaura_output* get_zaura_output();
+
+  void SetScaleFactorForTesting(float scale_factor);
 
  private:
   static constexpr int32_t kDefaultScaleFactor = 1;

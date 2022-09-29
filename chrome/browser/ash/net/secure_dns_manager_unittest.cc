@@ -9,8 +9,8 @@
 #include "base/values.h"
 #include "chrome/browser/net/secure_dns_config.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/browser_task_environment.h"
@@ -46,8 +46,7 @@ void OnGetProperties(bool* success_out,
 std::map<std::string, std::string> GetDOHProviders() {
   bool success = false;
   std::map<std::string, std::string> props;
-  chromeos::ShillManagerClient* shill_manager =
-      chromeos::ShillManagerClient::Get();
+  ShillManagerClient* shill_manager = ShillManagerClient::Get();
   base::RunLoop run_loop;
   shill_manager->GetProperties(
       base::BindOnce(&OnGetProperties, base::Unretained(&success),
@@ -75,7 +74,7 @@ class SecureDnsManagerTest : public testing::Test {
 
  private:
   content::BrowserTaskEnvironment task_environment_;
-  chromeos::NetworkHandlerTestHelper network_handler_test_helper_;
+  NetworkHandlerTestHelper network_handler_test_helper_;
   TestingPrefServiceSimple pref_service_;
 };
 

@@ -14,7 +14,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/components/account_manager/account_manager_factory.h"
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/components/login/auth/auth_session_authenticator.h"
@@ -127,10 +126,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/account_manager/account_manager_factory.h"
 #include "chromeos/ash/components/assistant/buildflags.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
-#include "chromeos/ash/components/network/portal_detector/network_portal_detector_strategy.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
@@ -493,7 +492,6 @@ bool MaybeShowNewTermsAfterUpdateToFlex(Profile* profile) {
   bool is_device_managed = connector->IsDeviceEnterpriseManaged();
   if (is_device_managed) {
     StartupUtils::MarkEulaAccepted();
-    network_portal_detector::GetInstance()->Enable();
     return false;
   }
   if (!IsRevenUpdatedToFlex())
@@ -758,11 +756,6 @@ void UserSessionManager::DelegateDeleted(UserSessionManagerDelegate* delegate) {
 void UserSessionManager::PerformPostUserLoggedInActions() {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager->GetLoggedInUsers().size() == 1) {
-    if (network_portal_detector::IsInitialized()) {
-      network_portal_detector::GetInstance()->SetStrategy(
-          PortalDetectorStrategy::STRATEGY_ID_SESSION);
-    }
-
     InitNonKioskExtensionFeaturesSessionType(user_manager->GetPrimaryUser());
   }
 }
@@ -858,29 +851,6 @@ void UserSessionManager::SetFirstLoginPrefs(
   VLOG(1) << "Setting first login prefs";
   InitLocaleAndInputMethodsForNewUser(this, profile, public_session_locale,
                                       public_session_input_method);
-}
-
-bool UserSessionManager::GetAppModeChromeClientOAuthInfo(
-    std::string* chrome_client_id,
-    std::string* chrome_client_secret) {
-  if (!chrome::IsRunningInForcedAppMode() || chrome_client_id_.empty() ||
-      chrome_client_secret_.empty()) {
-    return false;
-  }
-
-  *chrome_client_id = chrome_client_id_;
-  *chrome_client_secret = chrome_client_secret_;
-  return true;
-}
-
-void UserSessionManager::SetAppModeChromeClientOAuthInfo(
-    const std::string& chrome_client_id,
-    const std::string& chrome_client_secret) {
-  if (!chrome::IsRunningInForcedAppMode())
-    return;
-
-  chrome_client_id_ = chrome_client_id;
-  chrome_client_secret_ = chrome_client_secret;
 }
 
 void UserSessionManager::DoBrowserLaunch(Profile* profile) {
@@ -1725,6 +1695,9 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
       login::SecurityTokenSessionControllerFactory::GetForBrowserContext(
           profile)
           ->OnChallengeResponseKeysUpdated();
+      login::SecurityTokenSessionControllerFactory::GetForBrowserContext(
+          ProfileHelper::GetSigninProfile())
+          ->OnChallengeResponseKeysUpdated();
     }
 
     if (user_context_.GetSyncTrustedVaultKeys().has_value()) {
@@ -1795,14 +1768,83 @@ void UserSessionManager::MaybeLaunchHelpApp(Profile* profile) const {
   }
 }
 
-bool UserSessionManager::InitializeUserSession(Profile* profile) {
-  TRACE_EVENT0(kEventCategoryChromeOS, kEventInitUserDesktop);
-
+bool UserSessionManager::MaybeStartNewUserOnboarding(Profile* profile) {
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  if (!user_manager->IsCurrentUserNew()) {
+    return false;
+  }
   ChildAccountService* child_service =
       ChildAccountServiceFactory::GetForProfile(profile);
   child_service->AddChildStatusReceivedCallback(
       base::BindOnce(&UserSessionManager::ChildAccountStatusReceivedCallback,
                      weak_factory_.GetWeakPtr(), profile));
+
+  PrefService* prefs = profile->GetPrefs();
+  prefs->SetTime(prefs::kOobeOnboardingTime, base::Time::Now());
+  prefs->SetBoolean(arc::prefs::kArcPlayStoreLaunchMetricCanBeRecorded, true);
+  // Don't specify start URLs if the administrator has configured the
+  // start URLs via policy.
+  if (!SessionStartupPref::TypeIsManaged(prefs)) {
+    if (child_service->IsChildAccountStatusKnown())
+      MaybeLaunchHelpApp(profile);
+    else
+      waiting_for_child_account_status_ = true;
+  }
+
+  // Mark the device as registered., i.e. the second part of OOBE as
+  // completed.
+  if (!StartupUtils::IsDeviceRegistered())
+    StartupUtils::MarkDeviceRegistered(base::OnceClosure());
+
+  LoginDisplayHost::default_host()->GetSigninUI()->StartUserOnboarding();
+
+  OnboardingUserActivityCounter::MaybeMarkForStart(profile);
+
+  return true;
+}
+
+bool MaybeResumeUserOnboardingFlow(Profile* profile) {
+  const AccountId account_id =
+      ProfileHelper::Get()->GetUserByProfile(profile)->GetAccountId();
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  std::string pending_screen =
+      known_user.GetPendingOnboardingScreen(account_id);
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  if (!user_manager->IsCurrentUserNew() && !pending_screen.empty()) {
+    LoginDisplayHost::default_host()->GetSigninUI()->ResumeUserOnboarding(
+        OobeScreenId(pending_screen));
+    return true;
+  }
+  return false;
+}
+
+bool MaybeStartManagementTransition(Profile* profile) {
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  if (!user_manager->IsCurrentUserNew() &&
+      arc::GetManagementTransition(profile) !=
+          arc::ArcManagementTransition::NO_TRANSITION) {
+    LoginDisplayHost::default_host()
+        ->GetSigninUI()
+        ->StartManagementTransition();
+    return true;
+  }
+  return false;
+}
+
+bool MaybeShowManagedTermsOfService(Profile* profile) {
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  if (features::IsManagedTermsOfServiceEnabled() &&
+      !user_manager->IsCurrentUserNew() &&
+      profile->GetPrefs()->IsManagedPreference(::prefs::kTermsOfServiceURL)) {
+    LoginDisplayHost::default_host()->GetSigninUI()->ShowTosForExistingUser();
+    return true;
+  }
+  return false;
+}
+
+bool UserSessionManager::InitializeUserSession(Profile* profile) {
+  TRACE_EVENT0(kEventCategoryChromeOS, kEventInitUserDesktop);
+
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&UserSessionManager::StopChildStatusObserving,
@@ -1823,74 +1865,42 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
 
   if (start_session_type_ == StartSessionType::kPrimary) {
     user_manager::KnownUser known_user(g_browser_process->local_state());
-    const user_manager::User* user =
-        ProfileHelper::Get()->GetUserByProfile(profile);
+    const AccountId account_id =
+        ProfileHelper::Get()->GetUserByProfile(profile)->GetAccountId();
     std::string pending_screen =
-        known_user.GetPendingOnboardingScreen(user->GetAccountId());
+        known_user.GetPendingOnboardingScreen(account_id);
     if (!pending_screen.empty() &&
         !WizardController::IsResumablePostLoginScreen(
             OobeScreenId(pending_screen))) {
       pending_screen.clear();
-      known_user.RemovePendingOnboardingScreen(user->GetAccountId());
+      known_user.RemovePendingOnboardingScreen(account_id);
     }
 
     absl::optional<base::Version> onboarding_completed_version =
-        known_user.GetOnboardingCompletedVersion(user->GetAccountId());
+        known_user.GetOnboardingCompletedVersion(account_id);
 
     if (!user_manager->IsCurrentUserNew() && pending_screen.empty() &&
         !onboarding_completed_version.has_value()) {
       known_user.SetOnboardingCompletedVersion(
-          user->GetAccountId(), base::Version(kOnboardingBackfillVersion));
+          account_id, base::Version(kOnboardingBackfillVersion));
       LoginDisplayHost::default_host()
           ->GetSigninUI()
           ->ClearOnboardingAuthSession();
     }
 
-    // TODO(https://crbug.com/1313844): better structure different user flows
-    if (user_manager->IsCurrentUserNew()) {
-      prefs->SetTime(prefs::kOobeOnboardingTime, base::Time::Now());
-      prefs->SetBoolean(arc::prefs::kArcPlayStoreLaunchMetricCanBeRecorded,
-                        true);
-      // Don't specify start URLs if the administrator has configured the
-      // start URLs via policy.
-      if (!SessionStartupPref::TypeIsManaged(prefs)) {
-        if (child_service->IsChildAccountStatusKnown())
-          MaybeLaunchHelpApp(profile);
-        else
-          waiting_for_child_account_status_ = true;
-      }
-
-      // Mark the device as registered., i.e. the second part of OOBE as
-      // completed.
-      if (!StartupUtils::IsDeviceRegistered())
-        StartupUtils::MarkDeviceRegistered(base::OnceClosure());
-
-      LoginDisplayHost::default_host()->GetSigninUI()->StartUserOnboarding();
-
-      OnboardingUserActivityCounter::MaybeMarkForStart(profile);
-
+    if (MaybeStartNewUserOnboarding(profile)) {
       return false;
     }
     if (MaybeShowNewTermsAfterUpdateToFlex(profile)) {
       return false;
     }
-    if (!user_manager->IsCurrentUserNew() && !pending_screen.empty()) {
-      LoginDisplayHost::default_host()->GetSigninUI()->ResumeUserOnboarding(
-          OobeScreenId(pending_screen));
+    if (MaybeResumeUserOnboardingFlow(profile)) {
       return false;
     }
-    if (!user_manager->IsCurrentUserNew() &&
-        arc::GetManagementTransition(profile) !=
-            arc::ArcManagementTransition::NO_TRANSITION) {
-      LoginDisplayHost::default_host()
-          ->GetSigninUI()
-          ->StartManagementTransition();
+    if (MaybeStartManagementTransition(profile)) {
       return false;
     }
-    if (features::IsManagedTermsOfServiceEnabled() &&
-        !user_manager->IsCurrentUserNew() &&
-        profile->GetPrefs()->IsManagedPreference(::prefs::kTermsOfServiceURL)) {
-      LoginDisplayHost::default_host()->GetSigninUI()->ShowTosForExistingUser();
+    if (MaybeShowManagedTermsOfService(profile)) {
       return false;
     }
   }

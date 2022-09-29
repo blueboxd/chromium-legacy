@@ -62,6 +62,23 @@ absl::optional<wl::Serial> GetSerialForMoveResize(
                                                  wl::SerialType::kKeyPress});
 }
 
+zaura_toplevel_z_order_level ToZauraToplevelZOrderLevel(
+    ZOrderLevel z_order_level) {
+  switch (z_order_level) {
+    case ZOrderLevel::kNormal:
+      return ZAURA_TOPLEVEL_Z_ORDER_LEVEL_NORMAL;
+    case ZOrderLevel::kFloatingWindow:
+      return ZAURA_TOPLEVEL_Z_ORDER_LEVEL_FLOATING_WINDOW;
+    case ZOrderLevel::kFloatingUIElement:
+      return ZAURA_TOPLEVEL_Z_ORDER_LEVEL_FLOATING_UI_ELEMENT;
+    case ZOrderLevel::kSecuritySurface:
+      return ZAURA_TOPLEVEL_Z_ORDER_LEVEL_SECURITY_SURFACE;
+  }
+
+  NOTREACHED();
+  return ZAURA_TOPLEVEL_Z_ORDER_LEVEL_NORMAL;
+}
+
 }  // namespace
 
 XDGToplevelWrapperImpl::XDGToplevelWrapperImpl(
@@ -84,6 +101,10 @@ bool XDGToplevelWrapperImpl::Initialize() {
   static constexpr xdg_toplevel_listener xdg_toplevel_listener = {
       &ConfigureTopLevel,
       &CloseTopLevel,
+      // Since v4
+      &ConfigureBounds,
+      // Since v5
+      &WmCapabilities,
   };
 
   if (!xdg_surface_wrapper_)
@@ -95,6 +116,8 @@ bool XDGToplevelWrapperImpl::Initialize() {
     LOG(ERROR) << "Failed to create xdg_toplevel";
     return false;
   }
+  connection_->wayland_window_manager()->NotifyWindowRoleAssigned(
+      wayland_window_);
 
   if (connection_->zaura_shell()) {
     uint32_t version =
@@ -278,6 +301,21 @@ void XDGToplevelWrapperImpl::CloseTopLevel(void* data,
   surface->wayland_window_->OnCloseRequest();
 }
 
+// static
+void XDGToplevelWrapperImpl::ConfigureBounds(void* data,
+                                             struct xdg_toplevel* xdg_toplevel,
+                                             int32_t width,
+                                             int32_t height) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+// static
+void XDGToplevelWrapperImpl::WmCapabilities(void* data,
+                                            struct xdg_toplevel* xdg_toplevel,
+                                            struct wl_array* capabilities) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void XDGToplevelWrapperImpl::SetTopLevelDecorationMode(
     DecorationMode requested_mode) {
   if (!zxdg_toplevel_decoration_ || requested_mode == decoration_mode_)
@@ -413,6 +451,14 @@ void XDGToplevelWrapperImpl::EnableScreenCoordinates() {
                               this);
 }
 
+void XDGToplevelWrapperImpl::SetZOrder(ZOrderLevel z_order) {
+  if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
+                            ZAURA_TOPLEVEL_SET_Z_ORDER_SINCE_VERSION) {
+    zaura_toplevel_set_z_order(aura_toplevel_.get(),
+                               ToZauraToplevelZOrderLevel(z_order));
+  }
+}
+
 void XDGToplevelWrapperImpl::SetRestoreInfo(int32_t restore_session_id,
                                             int32_t restore_window_id) {
   if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
@@ -431,6 +477,20 @@ void XDGToplevelWrapperImpl::SetRestoreInfoWithWindowIdSource(
     zaura_toplevel_set_restore_info_with_window_id_source(
         aura_toplevel_.get(), restore_session_id,
         restore_window_id_source.c_str());
+  }
+}
+
+void XDGToplevelWrapperImpl::SetFloat() {
+  if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
+                            ZAURA_TOPLEVEL_SET_FLOAT_SINCE_VERSION) {
+    zaura_toplevel_set_float(aura_toplevel_.get());
+  }
+}
+
+void XDGToplevelWrapperImpl::UnSetFloat() {
+  if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
+                            ZAURA_TOPLEVEL_UNSET_FLOAT_SINCE_VERSION) {
+    zaura_toplevel_unset_float(aura_toplevel_.get());
   }
 }
 

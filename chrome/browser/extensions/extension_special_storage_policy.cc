@@ -144,19 +144,8 @@ bool ExtensionSpecialStoragePolicy::IsStorageUnlimited(const GURL& origin) {
 bool ExtensionSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
   if (!cookie_settings_)
     return false;
-  return cookie_settings_->IsCookieSessionOnly(origin);
-}
-
-network::DeleteCookiePredicate
-ExtensionSpecialStoragePolicy::CreateDeleteCookieOnExitPredicate() {
-  if (!cookie_settings_)
-    return network::DeleteCookiePredicate();
-  // Fetch the list of cookies related content_settings and bind it
-  // to CookieSettings::ShouldDeleteCookieOnExit to avoid fetching it on
-  // every call.
-  return base::BindRepeating(
-      &content_settings::CookieSettings::ShouldDeleteCookieOnExit,
-      cookie_settings_, cookie_settings_->GetCookieSettings());
+  return cookie_settings_->IsCookieSessionOnly(
+      origin, content_settings::CookieSettings::QueryReason::kSiteStorage);
 }
 
 bool ExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {

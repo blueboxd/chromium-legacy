@@ -210,6 +210,8 @@
   \
   E_CPONLY(kColorAshOnboardingFocusRing) \
   \
+  E_CPONLY(kColorAshPrivacyIndicatorsBackground) \
+  \
   /* TODO(crbug/1319917): Remove these when dark light mode is launched. */ \
   E_CPONLY(kColorAshSystemUILightBorderColor1) \
   E_CPONLY(kColorAshSystemUILightBorderColor2) \
@@ -318,6 +320,8 @@ enum ColorIds : ColorId {
 };
 // clang-format on
 
+// Note that this second include is not redundant. The second inclusion of the
+// .inc file serves to undefine the macros the first inclusion defined.
 #include "ui/color/color_id_macros.inc"
 
 }  // namespace ui

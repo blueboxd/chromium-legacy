@@ -9,11 +9,17 @@
 #include <string>
 #include <utility>
 
+#include "base/barrier_callback.h"
+#include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/check.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "components/password_manager/core/browser/form_parsing/form_parser.h"
+#include "components/password_manager/core/browser/import/csv_password.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -50,12 +56,17 @@ bool IsUsernameAlreadyUsed(SavedPasswordsView all_forms,
 }
 
 password_manager::PasswordForm GenerateFormFromCredential(
-    password_manager::CredentialUIEntry credential) {
+    password_manager::CredentialUIEntry credential,
+    password_manager::PasswordForm::Type type) {
   password_manager::PasswordForm form;
   form.url = credential.url;
   form.signon_realm = credential.signon_realm;
   form.username_value = credential.username;
   form.password_value = credential.password;
+  form.type = type;
+  form.date_created = base::Time::Now();
+  form.date_password_modified = form.date_created;
+
   if (!credential.note.value.empty())
     form.notes = {credential.note};
 
@@ -96,6 +107,17 @@ PasswordNoteAction UpdateNoteInPasswordForm(
                                 : PasswordNoteAction::kNoteEditedInEditDialog;
 }
 
+void LogMetricsAddCredential(const password_manager::PasswordForm& form) {
+  password_manager::metrics_util::
+      LogUserInteractionsWhenAddingCredentialFromSettings(
+          password_manager::metrics_util::
+              AddCredentialFromSettingsUserInteractions::kCredentialAdded);
+  if (!form.notes.empty() && form.notes[0].value.length() > 0) {
+    password_manager::metrics_util::LogPasswordNoteActionInSettings(
+        PasswordNoteAction::kNoteAddedInAddDialog);
+  }
+}
+
 }  // namespace
 
 namespace password_manager {
@@ -108,15 +130,11 @@ SavedPasswordsPresenter::SavedPasswordsPresenter(
       undo_helper_(std::make_unique<PasswordUndoHelper>(profile_store_.get(),
                                                         account_store_.get())) {
   DCHECK(profile_store_);
-  profile_store_->AddObserver(this);
-  if (account_store_)
-    account_store_->AddObserver(this);
+  AddObservers();
 }
 
 SavedPasswordsPresenter::~SavedPasswordsPresenter() {
-  if (account_store_)
-    account_store_->RemoveObserver(this);
-  profile_store_->RemoveObserver(this);
+  RemoveObservers();
 }
 
 void SavedPasswordsPresenter::Init() {
@@ -128,8 +146,16 @@ void SavedPasswordsPresenter::Init() {
   }
 }
 
-void SavedPasswordsPresenter::RemovePassword(const PasswordForm& form) {
-  RemoveCredential(CredentialUIEntry(form));
+void SavedPasswordsPresenter::RemoveObservers() {
+  if (account_store_)
+    account_store_->RemoveObserver(this);
+  profile_store_->RemoveObserver(this);
+}
+
+void SavedPasswordsPresenter::AddObservers() {
+  profile_store_->AddObserver(this);
+  if (account_store_)
+    account_store_->AddObserver(this);
 }
 
 bool SavedPasswordsPresenter::RemoveCredential(
@@ -158,21 +184,75 @@ void SavedPasswordsPresenter::UndoLastRemoval() {
   undo_helper_->Undo();
 }
 
-bool SavedPasswordsPresenter::AddCredential(
-    const CredentialUIEntry& credential) {
+SavedPasswordsPresenter::AddResult
+SavedPasswordsPresenter::GetExpectedAddResult(
+    const CredentialUIEntry& credential) const {
   if (!password_manager_util::IsValidPasswordURL(credential.url))
-    return false;
+    return AddResult::kInvalid;
   if (credential.password.empty())
-    return false;
+    return AddResult::kInvalid;
 
   auto have_equal_username_and_realm =
       [&credential](const PasswordForm& entry) {
         return credential.signon_realm == entry.signon_realm &&
                credential.username == entry.username_value;
       };
-  if (base::ranges::any_of(passwords_, have_equal_username_and_realm))
+  auto have_equal_username_and_realm_in_profile_store =
+      [&have_equal_username_and_realm](const PasswordForm& entry) {
+        return have_equal_username_and_realm(entry) &&
+               entry.IsUsingProfileStore();
+      };
+  auto have_equal_username_and_realm_in_account_store =
+      [&have_equal_username_and_realm](const PasswordForm& entry) {
+        return have_equal_username_and_realm(entry) &&
+               entry.IsUsingAccountStore();
+      };
+
+  bool existing_password_profile = base::ranges::any_of(
+      passwords_, have_equal_username_and_realm_in_profile_store);
+  bool existing_password_account = base::ranges::any_of(
+      passwords_, have_equal_username_and_realm_in_account_store);
+
+  if (!existing_password_profile && !existing_password_account)
+    return AddResult::kSuccess;
+  if (existing_password_profile && !existing_password_account)
+    return AddResult::kExistsInProfileStore;
+  if (existing_password_account && !existing_password_profile)
+    return AddResult::kExistsInAccountStore;
+
+  return AddResult::kExistsInProfileAndAccountStore;
+}
+
+void SavedPasswordsPresenter::AddCredentialAsync(
+    const CredentialUIEntry& credential,
+    password_manager::PasswordForm::Type type,
+    base::OnceClosure completion) {
+  DCHECK_EQ(GetExpectedAddResult(credential), AddResult::kSuccess);
+
+  UnblocklistBothStores(credential);
+  PasswordForm form = GenerateFormFromCredential(credential, type);
+
+  GetStoreFor(form).AddLogin(form, base::BindOnce(std::move(completion)));
+  LogMetricsAddCredential(form);
+}
+
+bool SavedPasswordsPresenter::AddCredential(
+    const CredentialUIEntry& credential,
+    password_manager::PasswordForm::Type type) {
+  if (GetExpectedAddResult(credential) != AddResult::kSuccess)
     return false;
 
+  UnblocklistBothStores(credential);
+  PasswordForm form = GenerateFormFromCredential(credential, type);
+
+  GetStoreFor(form).AddLogin(form);
+  LogMetricsAddCredential(form);
+
+  return true;
+}
+
+void SavedPasswordsPresenter::UnblocklistBothStores(
+    const CredentialUIEntry& credential) {
   // Try to unblocklist in both stores anyway because if credentials don't
   // exist, the unblocklist operation is no-op.
   auto form_digest = PasswordFormDigest(
@@ -180,42 +260,58 @@ bool SavedPasswordsPresenter::AddCredential(
   profile_store_->Unblocklist(form_digest);
   if (account_store_)
     account_store_->Unblocklist(form_digest);
+}
 
-  PasswordForm form = GenerateFormFromCredential(credential);
-  form.type = password_manager::PasswordForm::Type::kManuallyAdded;
-  form.date_created = base::Time::Now();
-  form.date_password_modified = base::Time::Now();
+void SavedPasswordsPresenter::AddCredentials(
+    const std::vector<CredentialUIEntry>& credentials,
+    password_manager::PasswordForm::Type type,
+    AddCredentialsCallback completion) {
+  std::vector<AddResult> results;
+  results.reserve(credentials.size());
 
-  GetStoreFor(form).AddLogin(form);
-  metrics_util::LogUserInteractionsWhenAddingCredentialFromSettings(
-      metrics_util::AddCredentialFromSettingsUserInteractions::
-          kCredentialAdded);
-  if (!form.notes.empty() && form.notes[0].value.length() > 0) {
-    metrics_util::LogPasswordNoteActionInSettings(
-        PasswordNoteAction::kNoteAddedInAddDialog);
+  // Invalid credentials are filtered out since AddCredentialAsync() won't
+  // perform any checks on the credential and expects a valid credential.
+  std::vector<const CredentialUIEntry*> valid_credentials;
+  valid_credentials.reserve(credentials.size());
+
+  base::ranges::transform(credentials, std::back_inserter(results),
+                          [&](const CredentialUIEntry& credential) {
+                            AddResult result = GetExpectedAddResult(credential);
+                            if (result == AddResult::kSuccess)
+                              valid_credentials.emplace_back(&credential);
+                            return result;
+                          });
+
+  if (valid_credentials.empty()) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(completion), std::move(results)));
+    return;
   }
-  return true;
-}
 
-bool SavedPasswordsPresenter::EditPassword(const PasswordForm& form,
-                                           std::u16string new_password) {
-  CredentialUIEntry updated_credential(form);
-  updated_credential.password = new_password;
-  return EditSavedCredentials(CredentialUIEntry(form), updated_credential) ==
-         EditResult::kSuccess;
-}
+  if (valid_credentials.size() == 1) {
+    AddCredentialAsync(
+        *valid_credentials[0], type,
+        base::BindOnce(std::move(completion), std::move(results)));
+    return;
+  }
 
-bool SavedPasswordsPresenter::EditSavedPasswords(
-    const PasswordForm& form,
-    const std::u16string& new_username,
-    const std::u16string& new_password) {
-  // TODO(crbug.com/1184691): Change desktop settings and maybe iOS to use this
-  // presenter for updating the duplicates.
-  CredentialUIEntry updated_credential(form);
-  updated_credential.password = new_password;
-  updated_credential.username = new_username;
-  return EditSavedCredentials(CredentialUIEntry(form), updated_credential) ==
-         EditResult::kSuccess;
+  // To avoid multiple updates for the observers we remove them at the
+  // beginning.
+  RemoveObservers();
+
+  // The observers will have an effect only on the Add after enabling them. Thus
+  // we need to reenable them already on the n-1 transaction.
+  base::RepeatingClosure barrier_closure = base::BarrierClosure(
+      valid_credentials.size() - 1,
+      base::BindOnce(&SavedPasswordsPresenter::AddObservers,
+                     weak_ptr_factory_.GetWeakPtr())
+          .Then(base::BindOnce(
+              &SavedPasswordsPresenter::AddCredentialAsync,
+              weak_ptr_factory_.GetWeakPtr(), *valid_credentials.back(), type,
+              base::BindOnce(std::move(completion), std::move(results)))));
+
+  for (size_t i = 0; i < valid_credentials.size() - 1; i++)
+    AddCredentialAsync(*valid_credentials[i], type, barrier_closure);
 }
 
 SavedPasswordsPresenter::EditResult
@@ -297,14 +393,13 @@ SavedPasswordsPresenter::EditSavedCredentials(
   return EditResult::kSuccess;
 }
 
-SavedPasswordsPresenter::SavedPasswordsView
-SavedPasswordsPresenter::GetSavedPasswords() const {
+SavedPasswordsView SavedPasswordsPresenter::GetSavedPasswords() const {
   return passwords_;
 }
 
-std::vector<PasswordForm> SavedPasswordsPresenter::GetUniquePasswordForms()
+std::vector<CredentialUIEntry> SavedPasswordsPresenter::GetSavedCredentials()
     const {
-  std::vector<PasswordForm> forms;
+  std::vector<CredentialUIEntry> credentials;
 
   auto it = sort_key_to_password_forms_.begin();
   std::string current_key;
@@ -312,24 +407,14 @@ std::vector<PasswordForm> SavedPasswordsPresenter::GetUniquePasswordForms()
   while (it != sort_key_to_password_forms_.end()) {
     if (current_key != it->first) {
       current_key = it->first;
-      forms.push_back(it->second);
+      credentials.emplace_back(it->second);
     } else {
-      forms.back().in_store = forms.back().in_store | it->second.in_store;
+      // Aggregates store information which might be different across copies.
+      credentials.back().stored_in.insert(it->second.in_store);
     }
     ++it;
   }
 
-  return forms;
-}
-
-std::vector<CredentialUIEntry> SavedPasswordsPresenter::GetSavedCredentials()
-    const {
-  std::vector<PasswordForm> forms = GetUniquePasswordForms();
-  std::vector<CredentialUIEntry> credentials;
-  credentials.reserve(forms.size());
-  base::ranges::transform(
-      forms, std::back_inserter(credentials),
-      [](const PasswordForm& form) { return CredentialUIEntry(form); });
   return credentials;
 }
 

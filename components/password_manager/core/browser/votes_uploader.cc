@@ -18,10 +18,10 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_regex_constants.h"
-#include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
+#include "components/autofill/core/common/autofill_regex_constants.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/signatures.h"
@@ -232,13 +232,13 @@ AutofillUploadContents::ValueType GetValueType(
   if (credential_match != stored_credentials.end())
     return AutofillUploadContents::STORED_FOR_CURRENT_DOMAIN;
 
-  if (autofill::MatchesPattern(username_value, autofill::kEmailValueRe))
+  if (autofill::MatchesRegex<autofill::kEmailValueRe>(username_value))
     return AutofillUploadContents::EMAIL;
 
-  if (autofill::MatchesPattern(username_value, autofill::kPhoneValueRe))
+  if (autofill::MatchesRegex<autofill::kPhoneValueRe>(username_value))
     return AutofillUploadContents::PHONE;
 
-  if (autofill::MatchesPattern(username_value, autofill::kUsernameLikeValueRe))
+  if (autofill::MatchesRegex<autofill::kUsernameLikeValueRe>(username_value))
     return AutofillUploadContents::USERNAME_LIKE;
 
   if (username_value.find(' ') != std::u16string::npos)

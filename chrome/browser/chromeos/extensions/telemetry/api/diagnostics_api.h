@@ -7,9 +7,10 @@
 
 #include <memory>
 
-#include "ash/webui/telemetry_extension_ui/mojom/diagnostics_service.mojom.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/base_telemetry_extension_api_guard_function.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/remote_diagnostics_service_strategy.h"
+#include "chromeos/crosapi/mojom/diagnostics_service.mojom.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -28,7 +29,11 @@ class DiagnosticsApiFunctionBase
  protected:
   ~DiagnosticsApiFunctionBase() override;
 
-  mojo::Remote<ash::health::mojom::DiagnosticsService>& GetRemoteService();
+  mojo::Remote<crosapi::mojom::DiagnosticsService>& GetRemoteService();
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  bool IsCrosApiAvailable() override;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
  private:
   std::unique_ptr<RemoteDiagnosticsServiceStrategy>
@@ -54,7 +59,7 @@ class OsDiagnosticsGetAvailableRoutinesFunction
   void RunIfAllowed() override;
 
   void OnResult(
-      const std::vector<ash::health::mojom::DiagnosticRoutineEnum>& routines);
+      const std::vector<crosapi::mojom::DiagnosticsRoutineEnum>& routines);
 };
 
 class OsDiagnosticsGetRoutineUpdateFunction
@@ -75,7 +80,7 @@ class OsDiagnosticsGetRoutineUpdateFunction
   // BaseTelemetryExtensionApiGuardFunction:
   void RunIfAllowed() override;
 
-  void OnResult(ash::health::mojom::RoutineUpdatePtr ptr);
+  void OnResult(crosapi::mojom::DiagnosticsRoutineUpdatePtr ptr);
 };
 
 class DiagnosticsApiRunRoutineFunctionBase : public DiagnosticsApiFunctionBase {
@@ -87,7 +92,7 @@ class DiagnosticsApiRunRoutineFunctionBase : public DiagnosticsApiFunctionBase {
   DiagnosticsApiRunRoutineFunctionBase& operator=(
       const DiagnosticsApiRunRoutineFunctionBase&) = delete;
 
-  void OnResult(ash::health::mojom::RunRoutineResponsePtr ptr);
+  void OnResult(crosapi::mojom::DiagnosticsRunRoutineResponsePtr ptr);
 
  protected:
   ~DiagnosticsApiRunRoutineFunctionBase() override;

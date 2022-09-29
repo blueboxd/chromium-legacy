@@ -95,10 +95,10 @@ class ExtensionAppsBase : public apps::PublisherBase,
   content::WebContents* LaunchAppWithIntentImpl(
       const std::string& app_id,
       int32_t event_flags,
-      apps::mojom::IntentPtr intent,
-      apps::mojom::LaunchSource launch_source,
-      apps::mojom::WindowInfoPtr window_info,
-      LaunchAppWithIntentCallback callback);
+      IntentPtr intent,
+      LaunchSource launch_source,
+      WindowInfoPtr window_info,
+      base::OnceCallback<void(bool)> callback);
 
   virtual content::WebContents* LaunchImpl(AppLaunchParams&& params);
   virtual void LaunchAppWithParamsImpl(AppLaunchParams&& params,
@@ -164,8 +164,22 @@ class ExtensionAppsBase : public apps::PublisherBase,
               int32_t event_flags,
               LaunchSource launch_source,
               WindowInfoPtr window_info) override;
+  void LaunchAppWithFiles(const std::string& app_id,
+                          int32_t event_flags,
+                          LaunchSource launch_source,
+                          std::vector<base::FilePath> file_paths) override;
+  void LaunchAppWithIntent(const std::string& app_id,
+                           int32_t event_flags,
+                           IntentPtr intent,
+                           LaunchSource launch_source,
+                           WindowInfoPtr window_info,
+                           base::OnceCallback<void(bool)> callback) override;
   void LaunchAppWithParams(AppLaunchParams&& params,
                            LaunchCallback callback) override;
+  void Uninstall(const std::string& app_id,
+                 UninstallSource uninstall_source,
+                 bool clear_site_data,
+                 bool report_abuse) override;
 
   // apps::mojom::Publisher overrides.
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
@@ -249,6 +263,18 @@ class ExtensionAppsBase : public apps::PublisherBase,
                          int32_t event_flags,
                          LaunchSource launch_source,
                          WindowInfoPtr window_info);
+  // TODO(crbug.com/1253250): This function is used as `callback` for
+  // RunExtensionEnableFlow. The LaunchAppWithIntent interface can't be used as
+  // `callback` with `base::BindOnce`, because we have both mojom and non mojom
+  // Launch function. Remove this function after migrating to the non mojom
+  // Launch interface when we have one non mojom LaunchAppWithIntent interface
+  // only.
+  void LaunchAppWithIntentWhenEnabled(const std::string& app_id,
+                                      int32_t event_flags,
+                                      IntentPtr intent,
+                                      LaunchSource launch_source,
+                                      WindowInfoPtr window_info,
+                                      CallbackWrapper callback);
 
   // TODO(crbug.com/1253250): Remove after migrating to the non mojom Launch
   // interface.

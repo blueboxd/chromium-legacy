@@ -11,10 +11,9 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 
 namespace ash {
-class AssistantNotificationController;
-}  // namespace ash
 
-namespace chromeos {
+class AssistantNotificationController;
+
 namespace assistant {
 
 class DeviceActions;
@@ -48,13 +47,13 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) DeviceSettingsHost
   ServiceContext& context_;
 
   DeviceActions& device_actions();
-  ash::AssistantNotificationController& assistant_notification_controller();
+  AssistantNotificationController& assistant_notification_controller();
 
   bool has_setting_changed_ = false;
 
   mojo::Receiver<DeviceSettingsDelegate> receiver_{this};
 };
 }  // namespace assistant
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROMEOS_ASH_SERVICES_ASSISTANT_DEVICE_SETTINGS_HOST_H_

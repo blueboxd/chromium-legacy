@@ -5,10 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_CONTEXTUALSEARCH_NATIVE_CONTEXTUAL_SEARCH_CONTEXT_H_
 #define CHROME_BROWSER_ANDROID_CONTEXTUALSEARCH_NATIVE_CONTEXTUAL_SEARCH_CONTEXT_H_
 
-#include <string>
-
 #include "base/android/jni_android.h"
-#include "base/memory/weak_ptr.h"
 #include "components/contextual_search/core/browser/contextual_search_context.h"
 #include "url/gurl.h"
 
@@ -18,10 +15,6 @@
 class NativeContextualSearchContext : public ContextualSearchContext {
  public:
   NativeContextualSearchContext(JNIEnv* env, jobject obj);
-  // Constructor for tests.
-  NativeContextualSearchContext(const std::string& home_country,
-                                const GURL& page_url,
-                                const std::string& encoding);
 
   NativeContextualSearchContext(const NativeContextualSearchContext&) = delete;
   NativeContextualSearchContext& operator=(
@@ -87,17 +80,9 @@ class NativeContextualSearchContext : public ContextualSearchContext {
       const base::android::JavaParamRef<jstring>& j_target_language,
       const base::android::JavaParamRef<jstring>& j_fluent_languages);
 
-  // Gets a WeakPtr to this instance.
-  base::WeakPtr<NativeContextualSearchContext> GetWeakPtr();
-
  private:
   // The linked Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
-
-  // Member variables should appear before the WeakPtrFactory, to ensure
-  // that any WeakPtrs to this instance are invalidated before its members
-  // variable's destructors are executed, rendering them invalid.
-  base::WeakPtrFactory<NativeContextualSearchContext> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_ANDROID_CONTEXTUALSEARCH_NATIVE_CONTEXTUAL_SEARCH_CONTEXT_H_

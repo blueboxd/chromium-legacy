@@ -7,14 +7,18 @@
 #include <memory>
 
 #include "base/strings/strcat.h"
-#include "chrome/browser/ash/crostini/crostini_terminal.h"
+#include "chrome/browser/ash/crostini/crostini_pref_names.h"
+#include "chrome/browser/ash/guest_os/guest_os_terminal.h"
+#include "chrome/browser/ash/guest_os/virtual_machines/virtual_machines_util.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/common/constants.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -76,6 +80,13 @@ bool TerminalSystemAppDelegate::ShouldShowNewWindowMenuOption() const {
   return true;
 }
 
+bool TerminalSystemAppDelegate::ShouldShowInLauncher() const {
+  // Hide from launcher if VMs disabled, and SSH disabled.
+  return virtual_machines::AreVirtualMachinesAllowedByPolicy() ||
+         profile()->GetPrefs()->GetBoolean(
+             crostini::prefs::kTerminalSshAllowedByPolicy);
+}
+
 bool TerminalSystemAppDelegate::ShouldHaveTabStrip() const {
   return true;
 }
@@ -107,12 +118,12 @@ bool TerminalSystemAppDelegate::ShouldShowTabContextMenuShortcut(
     Profile* profile,
     int command_id) const {
   if (command_id == TabStripModel::CommandCloseTab) {
-    return crostini::GetTerminalSettingPassCtrlW(profile);
+    return guest_os::GetTerminalSettingPassCtrlW(profile);
   }
   return true;
 }
 
 bool TerminalSystemAppDelegate::ShouldPinTab(GURL url) const {
   return url == GURL(base::StrCat({chrome::kChromeUIUntrustedTerminalURL,
-                                   crostini::kTerminalHomePath}));
+                                   guest_os::kTerminalHomePath}));
 }

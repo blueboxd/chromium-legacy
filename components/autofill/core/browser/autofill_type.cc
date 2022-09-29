@@ -99,6 +99,7 @@ FieldTypeGroup GroupTypeOfServerFieldType(ServerFieldType field_type) {
     case MERCHANT_PROMO_CODE:
     case IBAN_VALUE:
     case UPI_VPA:
+    case CREDIT_CARD_STANDALONE_VERIFICATION_CODE:
       return FieldTypeGroup::kNoGroup;
 
     case MAX_VALID_FIELD_TYPE:
@@ -199,6 +200,9 @@ FieldTypeGroup GroupTypeOfHtmlFieldType(HtmlFieldType field_type,
       return FieldTypeGroup::kNoGroup;
 
     case HTML_TYPE_MERCHANT_PROMO_CODE:
+      return FieldTypeGroup::kNoGroup;
+
+    case HTML_TYPE_IBAN:
       return FieldTypeGroup::kNoGroup;
 
     case HTML_TYPE_UNSPECIFIED:
@@ -330,9 +334,13 @@ ServerFieldType AutofillType::GetStorableType() const {
       return PHONE_HOME_CITY_CODE;
 
     case HTML_TYPE_TEL_LOCAL:
-    case HTML_TYPE_TEL_LOCAL_PREFIX:
-    case HTML_TYPE_TEL_LOCAL_SUFFIX:
       return PHONE_HOME_NUMBER;
+
+    case HTML_TYPE_TEL_LOCAL_PREFIX:
+      return PHONE_HOME_NUMBER_PREFIX;
+
+    case HTML_TYPE_TEL_LOCAL_SUFFIX:
+      return PHONE_HOME_NUMBER_SUFFIX;
 
     case HTML_TYPE_TEL_EXTENSION:
       return PHONE_HOME_EXTENSION;
@@ -370,6 +378,7 @@ ServerFieldType AutofillType::GetStorableType() const {
     case HTML_TYPE_TRANSACTION_CURRENCY:
     case HTML_TYPE_ONE_TIME_CODE:
     case HTML_TYPE_MERCHANT_PROMO_CODE:
+    case HTML_TYPE_IBAN:
       return UNKNOWN_TYPE;
 
     case HTML_TYPE_UNRECOGNIZED:

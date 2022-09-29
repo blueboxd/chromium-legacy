@@ -21,7 +21,7 @@
 namespace app_list {
 namespace {
 
-using chromeos::assistant::AssistantAllowedState;
+using ::ash::assistant::AssistantAllowedState;
 
 // Parameterized by feature ProductivityLauncher.
 class AssistantTextSearchProviderTest
@@ -63,12 +63,14 @@ class AssistantTextSearchProviderTest
     EXPECT_LT(index, LastResults().size());
     auto* result = LastResults().at(0).get();
     EXPECT_EQ(result->title(), base::UTF8ToUTF16(text));
+    EXPECT_EQ(result->details(), u"Google Assistant");
     EXPECT_EQ(result->id(), "googleassistant_text://" + text);
     EXPECT_EQ(result->accessible_name(),
               base::UTF8ToUTF16(text + ", Google Assistant"));
     EXPECT_EQ(result->result_type(),
               ash::AppListSearchResultType::kAssistantText);
     EXPECT_EQ(result->display_type(), ash::SearchResultDisplayType::kList);
+    EXPECT_EQ(result->skip_update_animation(), true);
   }
 
  private:

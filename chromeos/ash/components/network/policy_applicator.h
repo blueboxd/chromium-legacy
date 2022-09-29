@@ -17,7 +17,7 @@
 #include "base/values.h"
 #include "chromeos/ash/components/network/network_profile.h"
 
-namespace chromeos {
+namespace ash {
 
 class ManagedCellularPrefHandler;
 class NetworkUIData;
@@ -165,6 +165,6 @@ class PolicyApplicator {
   base::WeakPtrFactory<PolicyApplicator> weak_ptr_factory_{this};
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_POLICY_APPLICATOR_H_

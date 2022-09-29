@@ -66,9 +66,10 @@ void IgnoreUserCloudPrecedencePolicies(PolicyMap* policies) {
 void DowngradeMetricsReportingToRecommendedPolicy(PolicyMap* policies) {
   // Capture both the Chrome-only and device-level policies on Chrome OS.
   const std::vector<const char*> metrics_keys = {
-    policy::key::kMetricsReportingEnabled,
 #if BUILDFLAG(IS_CHROMEOS)
     policy::key::kDeviceMetricsReportingEnabled,
+#else
+    policy::key::kMetricsReportingEnabled,
 #endif
   };
   for (const char* policy_key : metrics_keys) {
@@ -94,7 +95,7 @@ base::flat_set<std::string> GetStringListPolicyItems(
 }
 
 bool IsUserCloudMergingAllowed(const PolicyMap& policies) {
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_CHROMEOS)
   return false;
 #else
   const base::Value* cloud_user_policy_merge_value =
@@ -102,6 +103,31 @@ bool IsUserCloudMergingAllowed(const PolicyMap& policies) {
   return cloud_user_policy_merge_value &&
          cloud_user_policy_merge_value->GetBool();
 #endif
+}
+
+void AddPolicyMessages(PolicyMap& policies) {
+#if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_IOS)
+  // Add warning to inform users that these policies are ignored when the user
+  // is unaffiliated.
+  if (policies.IsUserAffiliated())
+    return;
+
+  auto* cloud_user_precedence_entry =
+      policies.GetMutable(key::kCloudUserPolicyOverridesCloudMachinePolicy);
+  if (cloud_user_precedence_entry &&
+      cloud_user_precedence_entry->value(base::Value::Type::BOOLEAN) &&
+      cloud_user_precedence_entry->value(base::Value::Type::BOOLEAN)
+          ->GetBool()) {
+    cloud_user_precedence_entry->AddMessage(PolicyMap::MessageType::kError,
+                                            IDS_POLICY_IGNORED_UNAFFILIATED);
+  }
+
+  if (IsUserCloudMergingAllowed(policies)) {
+    policies.GetMutable(key::kCloudUserPolicyMerge)
+        ->AddMessage(PolicyMap::MessageType::kError,
+                     IDS_POLICY_IGNORED_UNAFFILIATED);
+  }
+#endif  // !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_IOS)
 }
 
 }  // namespace
@@ -358,6 +384,9 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
 
   for (auto& migrator : migrators_)
     migrator->Migrate(&bundle);
+
+  // Add informational messages to specific policies.
+  AddPolicyMessages(chrome_policies);
 
   // Swap first, so that observers that call GetPolicies() see the current
   // values.

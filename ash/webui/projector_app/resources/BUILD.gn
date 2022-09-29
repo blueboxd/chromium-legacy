@@ -12,6 +12,7 @@ js_type_check("closure_compile") {
   is_polymer3 = true
   deps = [
     ":message_types",
+    ":mock_app_closure_compile",
     ":projector_browser_proxy",
     ":trusted_annotator_closure_compile",
     ":trusted_app_closure_compile",
@@ -22,6 +23,7 @@ js_type_check("closure_compile") {
 
 js_library("projector_browser_proxy") {
   sources = [ "communication/projector_browser_proxy.js" ]
+  externs_list = [ "communication/projector_app.externs.js" ]
 }
 
 js_library("message_types") {
@@ -46,6 +48,7 @@ js_library("trusted_annotator_closure_compile") {
 js_library("trusted_app_closure_compile") {
   sources = [
     "app/embedder.js",
+    "app/trusted/launch.js",
     "app/trusted/trusted_app_comm_factory.js",
   ]
   deps = [
@@ -54,6 +57,10 @@ js_library("trusted_app_closure_compile") {
     "//ui/webui/resources/js:post_message_api_client.m",
     "//ui/webui/resources/js:post_message_api_request_handler.m",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
+  ]
+  externs_list = [
+    "communication/projector_app.externs.js",
+    "//ash/webui/web_applications/externs/file_handling.externs.js",
   ]
 }
 
@@ -73,6 +80,15 @@ js_library("untrusted_app_closure_compile") {
     "//ui/webui/resources/js:post_message_api_client.m",
     "//ui/webui/resources/js:post_message_api_request_handler.m",
   ]
+  externs_list = [ "communication/projector_app.externs.js" ]
+}
+
+js_library("mock_app_closure_compile") {
+  sources = [ "mock/app_bin.js" ]
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+  externs_list = [ "communication/projector_app.externs.js" ]
 }
 
 generate_grd("build_untrusted_grd") {
@@ -96,6 +112,7 @@ generate_grd("build_trusted_grd") {
     "annotator/annotator_embedder.css",
     "annotator/annotator_embedder_impl.js",
     "annotator/trusted/trusted_annotator_comm_factory.js",
+    "app/trusted/launch.js",
     "app/trusted/trusted_app_comm_factory.js",
     "communication/annotator_browser_proxy.js",
     "communication/projector_browser_proxy.js",

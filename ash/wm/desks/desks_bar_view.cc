@@ -542,8 +542,10 @@ void DesksBarView::HandlePressEvent(DeskMiniView* mini_view,
 
   DeskNameView::CommitChanges(GetWidget());
 
-  gfx::PointF location = event.target()->GetScreenLocationF(event);
-  InitDragDesk(mini_view, location);
+  if (ui::EventTarget* target = event.target()) {
+    gfx::PointF location = target->GetScreenLocationF(event);
+    InitDragDesk(mini_view, location);
+  }
 }
 
 void DesksBarView::HandleLongPressEvent(DeskMiniView* mini_view,
@@ -1280,6 +1282,8 @@ int DesksBarView::GetAdjustedUncroppedScrollPosition(int position) const {
 
 void DesksBarView::OnDesksTemplatesButtonPressed() {
   RecordLoadSavedDeskLibraryHistogram();
+  if (IsDeskNameBeingModified())
+    DeskNameView::CommitChanges(GetWidget());
   overview_grid_->overview_session()->ShowDesksTemplatesGrids(
       IsZeroState(), base::GUID(), /*saved_desk_name=*/u"",
       GetWidget()->GetNativeWindow()->GetRootWindow());
@@ -1320,7 +1324,10 @@ void DesksBarView::NudgeDeskName(int desk_index) {
 
   // Set `name_view`'s accessible name to the default desk name since its text
   // is cleared.
-  name_view->SetAccessibleName(DesksController::GetDeskDefaultName(desk_index));
+  if (name_view->GetAccessibleName().empty()) {
+    name_view->SetAccessibleName(
+        DesksController::GetDeskDefaultName(desk_index));
+  }
 
   auto* highlight_controller = GetHighlightController();
   if (highlight_controller->IsFocusHighlightVisible())

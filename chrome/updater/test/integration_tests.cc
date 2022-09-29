@@ -32,6 +32,7 @@
 #include "chrome/updater/test/integration_test_commands.h"
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test/server.h"
+#include "chrome/updater/test_scope.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
@@ -171,6 +172,10 @@ class IntegrationTest : public ::testing::Test {
                                          int expected_exit_code) {
     test_commands_->ExpectLegacyAppCommandWebSucceeds(
         app_id, command_id, parameters, expected_exit_code);
+  }
+
+  void ExpectLegacyPolicyStatusSucceeds() {
+    test_commands_->ExpectLegacyPolicyStatusSucceeds();
   }
 
   void RunUninstallCmdLine() { test_commands_->RunUninstallCmdLine(); }
@@ -340,11 +345,7 @@ TEST_F(IntegrationTest, InstallUninstall) {
   Uninstall();
 }
 
-#if BUILDFLAG(IS_MAC)
 TEST_F(IntegrationTest, OverinstallWorking) {
-#else
-TEST_F(IntegrationTest, DISABLED_OverinstallWorking) {
-#endif
   SetupRealUpdaterLowerVersion();
   WaitForUpdaterExit();
   ExpectVersionNotActive(kUpdaterVersion);
@@ -358,12 +359,7 @@ TEST_F(IntegrationTest, DISABLED_OverinstallWorking) {
   Uninstall();
 }
 
-// TODO(https://crbug.com/1344846): Flaky on Mac.
-#if BUILDFLAG(IS_MAC)
-TEST_F(IntegrationTest, DISABLED_OverinstallBroken) {
-#else
-TEST_F(IntegrationTest, DISABLED_OverinstallBroken) {
-#endif
+TEST_F(IntegrationTest, OverinstallBroken) {
   SetupRealUpdaterLowerVersion();
   WaitForUpdaterExit();
   DeleteUpdaterDirectory();
@@ -501,6 +497,33 @@ TEST_F(IntegrationTest, UpdateApp) {
   Clean();
 }
 
+#if BUILDFLAG(IS_WIN)
+TEST_F(IntegrationTest, ForceInstallApp) {
+  ScopedServer test_server(test_commands_);
+  Install();
+
+  base::Value::Dict group_policies;
+  group_policies.Set("Installtest1", GetTestScope() == UpdaterScope::kSystem
+                                         ? kPolicyForceInstallMachine
+                                         : kPolicyForceInstallUser);
+  SetGroupPolicies(group_policies);
+
+  const std::string kAppId("test1");
+  base::Version v0point1("0.1");
+  base::Version v1("1");
+  ExpectUpdateSequence(&test_server, kAppId, "", base::Version("0.0.0.0"),
+                       v0point1);
+  ExpectUpdateSequence(&test_server, kAppId, "", v0point1, v1);
+  RunWake(0);
+
+  WaitForUpdaterExit();
+  ExpectAppVersion(kAppId, v1);
+
+  Uninstall();
+  Clean();
+}
+#endif  // BUILDFLAG(IS_WIN)
+
 TEST_F(IntegrationTest, MultipleWakesOneNetRequest) {
   ScopedServer test_server(test_commands_);
   Install();
@@ -527,7 +550,7 @@ TEST_F(IntegrationTest, MultipleUpdateAllsMultipleNetRequests) {
   Clean();
 }
 
-#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(IS_WIN)
 TEST_F(IntegrationTest, LegacyUpdate3Web) {
   ScopedServer test_server(test_commands_);
   Install();
@@ -577,6 +600,22 @@ TEST_F(IntegrationTest, LegacyAppCommandWeb) {
   Uninstall();
 }
 
+TEST_F(IntegrationTest, LegacyPolicyStatus) {
+  ScopedServer test_server(test_commands_);
+  Install();
+
+  const std::string kAppId("test");
+  InstallApp(kAppId);
+  base::Version v1("1");
+  ExpectUpdateSequence(&test_server, kAppId, "", base::Version("0.1"), v1);
+  RunWake(0);
+  ExpectAppVersion(kAppId, v1);
+
+  ExpectLegacyPolicyStatusSucceeds();
+
+  Uninstall();
+}
+
 TEST_F(IntegrationTest, UninstallCmdLine) {
   Install();
   ExpectInstalled();
@@ -596,7 +635,7 @@ TEST_F(IntegrationTest, UninstallCmdLine) {
   WaitForUpdaterExit();
   ExpectClean();
 }
-#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // BUILDFLAG(IS_WIN)
 
 TEST_F(IntegrationTest, UnregisterUninstalledApp) {
   Install();
@@ -674,11 +713,13 @@ TEST_F(IntegrationTest, UnregisterUnownedApp) {
 
 #if BUILDFLAG(CHROMIUM_BRANDING) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #if !defined(COMPONENT_BUILD)
-#if BUILDFLAG(IS_MAC)
-TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
+// Disabled on Windows due to high flake rate; see https://crbug.com/1341471.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_SelfUpdateFromOldReal DISABLED_SelfUpdateFromOldReal
 #else
-TEST_F(IntegrationTest, DISABLED_SelfUpdateFromOldReal) {
+#define MAYBE_SelfUpdateFromOldReal SelfUpdateFromOldReal
 #endif
+TEST_F(IntegrationTest, MAYBE_SelfUpdateFromOldReal) {
   ScopedServer test_server(test_commands_);
 
   SetupRealUpdaterLowerVersion();

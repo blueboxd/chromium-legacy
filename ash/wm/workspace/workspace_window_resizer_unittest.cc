@@ -729,6 +729,37 @@ TEST_F(WorkspaceWindowResizerTest, ResizeSnapped) {
   }
 }
 
+// Verifies the behavior of resizing and restoring a side snapped window.
+TEST_F(WorkspaceWindowResizerTest, ResizeRestoreSnappedWindow) {
+  WindowState* window_state = WindowState::Get(window_.get());
+  AllowSnap(window_.get());
+
+  const gfx::Rect kInitialBounds(100, 100, 100, 100);
+  window_->SetBounds(kInitialBounds);
+  window_->Show();
+
+  // Snap the window to the left.
+  const WindowSnapWMEvent snap_event(WM_EVENT_SNAP_PRIMARY);
+  window_state->OnWMEvent(&snap_event);
+  gfx::Rect snapped_bounds = window_->bounds();
+
+  // Resize the snapped window to make it wider.
+  std::unique_ptr<WindowResizer> resizer =
+      CreateResizerForTest(window_.get(), gfx::Point(), HTRIGHT);
+  resizer->Drag(CalculateDragPoint(*resizer, 10, 0), 0);
+  resizer->CompleteDrag();
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
+  snapped_bounds.Inset(gfx::Insets::TLBR(0, 0, 0, -10));
+  EXPECT_EQ(snapped_bounds.ToString(), window_->bounds().ToString());
+  EXPECT_EQ(kInitialBounds, window_state->GetRestoreBoundsInParent());
+
+  // Minimize then restore the window and expect the resized snapped bounds to
+  // be restored.
+  window_state->Minimize();
+  window_state->Restore();
+  EXPECT_EQ(snapped_bounds.ToString(), window_->bounds().ToString());
+}
+
 // Verifies windows are correctly restacked when reordering multiple windows.
 TEST_F(WorkspaceWindowResizerTest, RestackAttached) {
   window_->SetBounds(gfx::Rect(0, 0, 200, 300));
@@ -2406,17 +2437,12 @@ class PortraitWorkspaceWindowResizerTest : public WorkspaceWindowResizerTest {
 
   // WorkspaceWindowResizerTest:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::wm::features::kVerticalSnap);
     WorkspaceWindowResizerTest::SetUp();
     UpdateDisplay("600x800");
 
     // Make the window snappable.
     AllowSnap(window_.get());
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests that dragging to an external portrait display updates phantom snap to
@@ -2642,44 +2668,18 @@ TEST_F(PortraitWorkspaceWindowResizerTest, ResizeSnapped) {
   }
 }
 
+using MultiOrientationDisplayWorkspaceWindowResizerTest =
+    WorkspaceWindowResizerTest;
+
 // Test WorkspaceWindowResizer functionalities for two displays with different
-// orientation: landscape and portrait. This test is parameterized to enable
-// vertical or horizontal snap layout in the portrait display.
-class MultiOrientationDisplayWorkspaceWindowResizerTest
-    : public WorkspaceWindowResizerTest,
-      public ::testing::WithParamInterface<bool> {
- public:
-  MultiOrientationDisplayWorkspaceWindowResizerTest() = default;
-  MultiOrientationDisplayWorkspaceWindowResizerTest(
-      const MultiOrientationDisplayWorkspaceWindowResizerTest&) = delete;
-  MultiOrientationDisplayWorkspaceWindowResizerTest& operator=(
-      const MultiOrientationDisplayWorkspaceWindowResizerTest&) = delete;
-  ~MultiOrientationDisplayWorkspaceWindowResizerTest() override = default;
+// orientation: landscape and portrait. Assertions around dragging near the four
+// edges of the display.
+TEST_F(MultiOrientationDisplayWorkspaceWindowResizerTest, Edge) {
+  UpdateDisplay("800x600,500x600");
 
-  bool IsVerticalSnapEnabled() const { return GetParam(); }
+  // Make the window snappable.
+  AllowSnap(window_.get());
 
-  // WorkspaceWindowResizerTest:
-  void SetUp() override {
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          chromeos::wm::features::kVerticalSnap);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          chromeos::wm::features::kVerticalSnap);
-    }
-    WorkspaceWindowResizerTest::SetUp();
-    UpdateDisplay("800x600,500x600");
-
-    // Make the window snappable.
-    AllowSnap(window_.get());
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// Assertions around dragging near the four edges of the display.
-TEST_P(MultiOrientationDisplayWorkspaceWindowResizerTest, Edge) {
   window_->SetBounds(gfx::Rect(20, 30, 400, 60));
   WindowState* window_state = WindowState::Get(window_.get());
   // Test dragging to another display and snapping there.
@@ -2709,12 +2709,8 @@ TEST_P(MultiOrientationDisplayWorkspaceWindowResizerTest, Edge) {
     EXPECT_EQ(root_windows[1], window_->GetRootWindow());
 
     const gfx::Rect secondary_snap_bounds =
-        IsVerticalSnapEnabled() ? gfx::Rect(0, display2_work_area.height() / 2,
-                                            display2_work_area.width(),
-                                            display2_work_area.height() / 2)
-                                : gfx::Rect(display2_work_area.width() / 2, 0,
-                                            display2_work_area.width() / 2,
-                                            display2_work_area.height());
+        gfx::Rect(0, display2_work_area.height() / 2,
+                  display2_work_area.width(), display2_work_area.height() / 2);
     EXPECT_EQ(secondary_snap_bounds, window_->bounds());
     EXPECT_EQ(gfx::Rect(820, 30, 400, 60),
               window_state->GetRestoreBoundsInScreen());
@@ -2740,18 +2736,11 @@ TEST_P(MultiOrientationDisplayWorkspaceWindowResizerTest, Edge) {
     resizer->Drag(CalculateDragPoint(*resizer, 0, -100), 0);
     resizer->CompleteDrag();
     const gfx::Rect primary_snap_bounds =
-        IsVerticalSnapEnabled() ? gfx::Rect(display2_work_area.width(),
-                                            display2_work_area.height() / 2)
-                                : gfx::Rect(display2_work_area.width() / 2,
-                                            display2_work_area.height());
+        gfx::Rect(display2_work_area.width(), display2_work_area.height() / 2);
     EXPECT_EQ(primary_snap_bounds, window_->bounds());
     EXPECT_EQ(gfx::Rect(820, 30, 400, 60),
               window_state->GetRestoreBoundsInScreen());
   }
 }
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         MultiOrientationDisplayWorkspaceWindowResizerTest,
-                         ::testing::Bool());
 
 }  // namespace ash

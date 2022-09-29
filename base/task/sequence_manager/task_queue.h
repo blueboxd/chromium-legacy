@@ -11,7 +11,7 @@
 #include "base/check.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/common/checked_lock.h"
-#include "base/task/sequence_manager/lazy_now.h"
+#include "base/task/common/lazy_now.h"
 #include "base/task/sequence_manager/tasks.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_observer.h"
@@ -27,10 +27,6 @@ class EventContext;
 namespace base {
 
 class TaskObserver;
-
-namespace trace_event {
-class BlameContext;
-}
 
 namespace sequence_manager {
 
@@ -301,11 +297,6 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   // manager executes its tasks on.
   void AddTaskObserver(TaskObserver* task_observer);
   void RemoveTaskObserver(TaskObserver* task_observer);
-
-  // Set the blame context which is entered and left while executing tasks from
-  // this task queue. |blame_context| must be null or outlive this task queue.
-  // Must be called on the thread this TaskQueue was created by.
-  void SetBlameContext(trace_event::BlameContext* blame_context);
 
   enum class InsertFencePosition {
     kNow,  // Tasks posted on the queue up till this point further may run.

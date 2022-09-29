@@ -52,7 +52,7 @@ content::WebUIDataSource* CreateProjectorHTMLSource(
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;");
   std::string mediaCSP =
       std::string("media-src 'self' https://*.drive.google.com ") +
-      kChromeUIUntrustedProjectorPwaUrl + ";";
+      kChromeUIUntrustedProjectorPwaUrl + " blob:;";
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::MediaSrc,
       // Allows streaming video.
@@ -66,9 +66,10 @@ content::WebUIDataSource* CreateProjectorHTMLSource(
       "connect-src 'self' https://www.googleapis.com "
       "https://drive.google.com;");
 
-  // TODO(b/197120695): re-enable trusted type after fixing the issue that
-  // icon template is setting innerHTML.
-  source->DisableTrustedTypesCSP();
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types polymer_resin lit-html goog#html polymer-html-literal "
+      "polymer-template-event-attribute-policy;");
 
   source->AddFrameAncestor(GURL(kChromeUITrustedProjectorUrl));
 

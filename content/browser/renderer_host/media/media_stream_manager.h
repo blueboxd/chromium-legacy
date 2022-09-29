@@ -80,6 +80,14 @@ class VideoCaptureManager;
 class VideoCaptureProvider;
 class PermissionControllerImpl;
 
+enum TransferState { KEPT_ALIVE, GOT_OPEN_DEVICE };
+
+struct TransferStatus {
+  TransferState state;
+  base::TimeTicks start_time;
+};
+typedef std::map<const base::UnguessableToken, TransferStatus> TransferMap;
+
 // MediaStreamManager is used to generate and close new media devices, not to
 // start the media flow. The classes requesting new media streams are answered
 // using callbacks.
@@ -131,23 +139,20 @@ class CONTENT_EXPORT MediaStreamManager
   using GenerateStreamTestCallback =
       base::OnceCallback<bool(const blink::StreamControls&)>;
 
+  using KeepDeviceAliveForTransferCallback =
+      base::OnceCallback<void(bool device_found)>;
+
   // Adds |message| to native logs for outstanding device requests, for use by
   // render processes hosts whose corresponding render processes are requesting
   // logging from webrtcLoggingPrivate API. Safe to call from any thread.
   static void SendMessageToNativeLog(const std::string& message);
 
-  // |audio_task_runner| passed to constructors is the task runner used by audio
-  // system when it runs in-process; it's null if audio runs out of process.
-
-  MediaStreamManager(
-      media::AudioSystem* audio_system,
-      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner);
+  explicit MediaStreamManager(media::AudioSystem* audio_system);
 
   // |audio_system| is required but defaults will be used if either
   // |video_capture_system| or |device_task_runner| are null.
   MediaStreamManager(
       media::AudioSystem* audio_system,
-      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
       std::unique_ptr<VideoCaptureProvider> video_capture_provider);
 
   MediaStreamManager(const MediaStreamManager&) = delete;
@@ -223,6 +228,7 @@ class CONTENT_EXPORT MediaStreamManager
   // invoking |get_open_device_cb| asynchronously.
   void GetOpenDevice(
       const base::UnguessableToken& device_session_id,
+      const base::UnguessableToken& transfer_id,
       int render_process_id,
       int render_frame_id,
       int requester_id,
@@ -418,6 +424,16 @@ class CONTENT_EXPORT MediaStreamManager
   // This method is called when all tracks are started.
   void OnStreamStarted(const std::string& label);
 
+  // Keeps MediaStreamDevice alive to allow transferred tracks to successfully
+  // find and clone it.
+  void KeepDeviceAliveForTransfer(
+      int render_process_id,
+      int render_frame_id,
+      int requester_id,
+      const base::UnguessableToken& session_id,
+      const base::UnguessableToken& transfer_id,
+      KeepDeviceAliveForTransferCallback keep_device_alive_cb);
+
   void OnRegionCaptureRectChanged(
       const base::UnguessableToken& session_id,
       const absl::optional<gfx::Rect>& region_capture_rect);
@@ -531,7 +547,12 @@ class CONTENT_EXPORT MediaStreamManager
   // returns it. If no such device is found, it returns absl::nullopt.
   absl::optional<blink::MediaStreamDevice> CloneExistingOpenDevice(
       const base::UnguessableToken& existing_device_session_id,
-      const std::string& new_label) const;
+      const base::UnguessableToken& transfer_id,
+      const std::string& new_label);
+  void UpdateDeviceTransferStatus(DeviceRequest* request,
+                                  const blink::MediaStreamDevice* const device,
+                                  const base::UnguessableToken& transfer_id,
+                                  TransferState transfer_state);
   void DeleteRequest(const std::string& label);
   // Prepare the request with label |label| by starting device enumeration if
   // needed.
@@ -740,10 +761,6 @@ class CONTENT_EXPORT MediaStreamManager
   scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;
   scoped_refptr<VideoCaptureManager> video_capture_manager_;
 
-  // Not initialized on Mac (if not in tests), since the main thread is used.
-  // Always initialized on Windows.
-  // On other platforms, initialized when no audio task runner is provided in
-  // the constructor.
   absl::optional<base::Thread> video_capture_thread_;
 
   std::unique_ptr<MediaDevicesManager> media_devices_manager_;

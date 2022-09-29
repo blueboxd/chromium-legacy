@@ -9,10 +9,10 @@
  */
 
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
-import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
+import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
-import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
@@ -28,33 +28,33 @@ import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/po
 import {getTemplate} from './protocol_handlers.html.js';
 import {SiteSettingsMixin} from './site_settings_mixin.js';
 
-export type HandlerEntry = {
-  host: string,
-  is_default: boolean,
-  protocol: string,
-  protocol_display_name: string,
-  spec: string,
-};
+export interface HandlerEntry {
+  host: string;
+  is_default: boolean;
+  protocol: string;
+  protocol_display_name: string;
+  spec: string;
+}
 
-export type ProtocolEntry = {
-  handlers: HandlerEntry[],
-  protocol: string,
-  protocol_display_name: string,
-};
+export interface ProtocolEntry {
+  handlers: HandlerEntry[];
+  protocol: string;
+  protocol_display_name: string;
+}
 
-export type AppHandlerEntry = {
-  host: string,
-  protocol: string,
-  protocol_display_name: string,
-  spec: string,
-  app_id: string,
-};
+export interface AppHandlerEntry {
+  host: string;
+  protocol: string;
+  protocol_display_name: string;
+  spec: string;
+  app_id: string;
+}
 
-export type AppProtocolEntry = {
-  handlers: AppHandlerEntry[],
-  protocol: string,
-  protocol_display_name: string,
-};
+export interface AppProtocolEntry {
+  handlers: AppHandlerEntry[];
+  protocol: string;
+  protocol_display_name: string;
+}
 
 export interface ProtocolHandlersElement {
   $: {

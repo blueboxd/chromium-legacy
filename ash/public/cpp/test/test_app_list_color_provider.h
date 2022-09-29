@@ -23,6 +23,7 @@ class TestAppListColorProvider : public AppListColorProvider {
   SkColor GetSearchBoxBackgroundColor() const override;
   SkColor GetSearchBoxTextColor(SkColor default_color) const override;
   SkColor GetSearchBoxSecondaryTextColor(SkColor default_color) const override;
+  SkColor GetSearchBoxSuggestionTextColor(SkColor default_color) const override;
   SkColor GetSuggestionChipBackgroundColor() const override;
   SkColor GetSuggestionChipTextColor() const override;
   SkColor GetAppListItemTextColor(bool is_in_folder) const override;
@@ -45,10 +46,6 @@ class TestAppListColorProvider : public AppListColorProvider {
   SkColor GetInkDropBaseColor(
       SkColor bg_color = gfx::kPlaceholderColor) const override;
   float GetInkDropOpacity(
-      SkColor bg_color = gfx::kPlaceholderColor) const override;
-  SkColor GetInvertedInkDropBaseColor(
-      SkColor bg_color = gfx::kPlaceholderColor) const override;
-  float GetInvertedInkDropOpacity(
       SkColor bg_color = gfx::kPlaceholderColor) const override;
   SkColor GetSearchResultViewHighlightColor() const override;
   SkColor GetTextColorURL() const override;

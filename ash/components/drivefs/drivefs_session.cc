@@ -48,19 +48,18 @@ class DiskMounterImpl : public DiskMounter {
     ash::disks::MountPoint::Mount(
         disk_mount_manager_, source_path_, "", desired_mount_dir_name,
         {datadir_option, base::StrCat({kMyFilesOption, my_files_path.value()})},
-        chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-        chromeos::MOUNT_ACCESS_MODE_READ_WRITE,
+        ash::MountType::kNetworkStorage, ash::MountAccessMode::kReadWrite,
         base::BindOnce(&DiskMounterImpl::OnMountDone,
                        weak_factory_.GetWeakPtr()));
   }
 
  private:
   // MountPoint::Mount() done callback.
-  void OnMountDone(chromeos::MountError error_code,
+  void OnMountDone(ash::MountError error_code,
                    std::unique_ptr<ash::disks::MountPoint> mount_point) {
     DCHECK(callback_);
 
-    if (error_code != chromeos::MOUNT_ERROR_NONE) {
+    if (error_code != ash::MountError::kNone) {
       LOG(WARNING) << "DriveFs mount failed with error: " << error_code;
       std::move(callback_).Run({});
       return;

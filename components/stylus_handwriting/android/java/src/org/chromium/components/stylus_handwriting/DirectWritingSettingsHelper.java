@@ -38,28 +38,18 @@ class DirectWritingSettingsHelper {
      */
     private static boolean isFeatureEnabled(Context context) {
         if (context != null) {
-            try {
-                return Settings.System.getInt(context.getContentResolver(), URI_DIRECT_WRITING,
-                               /* default */ DIRECT_WRITING_DISABLED)
-                        == DIRECT_WRITING_ENABLED;
-            } catch (SecurityException e) {
-                // On some devices, URI_DIRECT_WRITING is not readable and trying to do so will
-                // throw a security exception. https://crbug.com/1356155.
-                return false;
-            }
+            return Settings.System.getInt(context.getContentResolver(), URI_DIRECT_WRITING,
+                           /* default */ DIRECT_WRITING_DISABLED)
+                    == DIRECT_WRITING_ENABLED;
         }
         return false;
     }
 
     private static boolean isHoneyboardDefault(Context context) {
         if (context != null) {
-            try {
-                String defaultIme = Settings.Secure.getString(
-                        context.getContentResolver(), Settings.Secure.DEFAULT_INPUT_METHOD);
-                return HONEYBOARD_SERVICE_PKG_NAME.equals(defaultIme);
-            } catch (SecurityException e) {
-                return false;
-            }
+            String defaultIme = Settings.Secure.getString(
+                    context.getContentResolver(), Settings.Secure.DEFAULT_INPUT_METHOD);
+            return HONEYBOARD_SERVICE_PKG_NAME.equals(defaultIme);
         }
         return false;
     }

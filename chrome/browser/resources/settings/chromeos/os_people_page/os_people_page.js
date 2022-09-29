@@ -6,7 +6,7 @@
  * @fileoverview
  * 'settings-people-page' is the settings page containing sign-in settings.
  */
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_indicator.m.js';
@@ -19,6 +19,7 @@ import '../../people_page/sync_page.js';
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
 import '../../settings_shared.css.js';
+import '../parental_controls_page/parental_controls_page.js';
 import './account_manager.js';
 import './fingerprint_list.js';
 import './lock_screen.js';
@@ -26,7 +27,7 @@ import './lock_screen_password_prompt_dialog.js';
 import './users_page.js';
 import './os_sync_controls.js';
 
-import {convertImageSequenceToPng} from 'chrome://resources/cr_elements/chromeos/cr_picture/png.js';
+import {convertImageSequenceToPng} from 'chrome://resources/ash/common/cr_picture/png.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';

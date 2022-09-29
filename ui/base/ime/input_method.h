@@ -10,19 +10,17 @@
 #include "build/build_config.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/base/ime/virtual_keyboard_controller.h"
 #include "ui/events/event_dispatcher.h"
 #include "ui/events/platform_event.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 
-namespace internal {
-class InputMethodDelegate;
-}  // namespace internal
-
 class VirtualKeyboardController;
 class InputMethodObserver;
 class KeyEvent;
+class ImeKeyEventDispatcher;
 class TextInputClient;
 
 // An interface implemented by an object that encapsulates a native input method
@@ -35,10 +33,10 @@ class TextInputClient;
 // - The input method should handle the key event either of the following ways:
 //   1) Send the original key down event to the focused window, which is e.g.
 //      a NativeWidgetAura (NWA) or a RenderWidgetHostViewAura (RWHVA), using
-//      internal::InputMethodDelegate::DispatchKeyEventPostIME API, then send
-//      a Char event using TextInputClient::InsertChar API to a text input
-//      client, which is, again, e.g. NWA or RWHVA, and then send the original
-//      key up event to the same window.
+//      ImeKeyEventDispatcher API, then send a Char event using
+//      TextInputClient::InsertChar API to a text input client, which is, again,
+//      e.g. NWA or RWHVA, and then send the original key up event to the same
+//      window.
 //   2) Send VKEY_PROCESSKEY event to the window using the DispatchKeyEvent API,
 //      then update IME status (e.g. composition text) using TextInputClient,
 //      and then send the original key up event to the window.
@@ -55,11 +53,12 @@ class InputMethod {
   typedef int32_t NativeEventResult;
 #endif
 
-  virtual ~InputMethod() {}
+  virtual ~InputMethod() = default;
 
-  // Sets the delegate used by this InputMethod instance. It should only be
-  // called by an object which manages the whole UI.
-  virtual void SetDelegate(internal::InputMethodDelegate* delegate) = 0;
+  // Sets the key event dispatcher used by this InputMethod instance. It should
+  // only be called by an object which manages the whole UI.
+  virtual void SetImeKeyEventDispatcher(
+      ImeKeyEventDispatcher* ime_key_event_dispatcher) = 0;
 
   // Called when the top-level system window gets keyboard focus.
   virtual void OnFocus() = 0;
@@ -147,11 +146,15 @@ class InputMethod {
   virtual void AddObserver(InputMethodObserver* observer) = 0;
   virtual void RemoveObserver(InputMethodObserver* observer) = 0;
 
-  // Set screen bounds of a on-screen keyboard.
-  virtual void SetOnScreenKeyboardBounds(const gfx::Rect& new_bounds) {}
+  // Set screen bounds of the virtual keyboard.
+  virtual void SetVirtualKeyboardBounds(const gfx::Rect& new_bounds) {}
 
-  // Return the keyboard controller; used only on Windows.
+  // Return the keyboard controller.
   virtual VirtualKeyboardController* GetVirtualKeyboardController() = 0;
+
+  // Sets a keyboard controller for testing.
+  virtual void SetVirtualKeyboardControllerForTesting(
+      std::unique_ptr<VirtualKeyboardController> controller) {}
 };
 
 }  // namespace ui

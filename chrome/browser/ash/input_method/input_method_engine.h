@@ -157,6 +157,10 @@ class InputMethodEngine : virtual public ui::IMEEngineHandlerInterface,
                      std::string* error);
 
   // Set the current composition and associated properties.
+  // Note: The cursor is used to index into a UTF16 version
+  // of the input text. Ideally, we should check the
+  // UTF16 version of the input text and make sure the
+  // selection start and end falls within that range.
   bool SetComposition(int context_id,
                       const char* text,
                       int selection_start,
@@ -402,7 +406,7 @@ class InputMethodEngine : virtual public ui::IMEEngineHandlerInterface,
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
-  base::Value input_method_settings_snapshot_;
+  base::Value::Dict input_method_settings_snapshot_;
 
   base::ScopedObservation<Profile, ProfileObserver> profile_observation_{this};
 };

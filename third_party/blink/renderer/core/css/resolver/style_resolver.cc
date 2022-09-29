@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 
+#include "base/containers/adapters.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
@@ -515,12 +516,12 @@ static void MatchSlottedRules(const Element& element,
       resolvers.push_back(std::make_pair(slot, resolver));
     }
   }
-  for (auto it = resolvers.rbegin(); it != resolvers.rend(); ++it) {
-    ElementRuleCollector::SlottedRulesScope scope(collector, *(*it).first);
+  for (const auto& [slot, resolver] : base::Reversed(resolvers)) {
+    ElementRuleCollector::SlottedRulesScope scope(collector, *slot);
     collector.ClearMatchedRules();
-    (*it).second->CollectMatchingSlottedRules(collector);
+    resolver->CollectMatchingSlottedRules(collector);
     collector.SortAndTransferMatchedRules();
-    collector.FinishAddingAuthorRulesForTreeScope((*it).first->GetTreeScope());
+    collector.FinishAddingAuthorRulesForTreeScope(slot->GetTreeScope());
   }
 }
 
@@ -969,11 +970,6 @@ void StyleResolver::ApplyInheritance(Element& element,
     // the element has rules but no matched properties, we currently clone.
 
     state.SetStyle(ComputedStyle::Clone(*state.ParentStyle()));
-    state.Style()->SetInsideLink(state.ElementLinkState());
-    state.Style()->SetInForcedColorsMode(
-        style_request.originating_element_style->InForcedColorsMode());
-    state.Style()->SetForcedColorAdjust(
-        style_request.originating_element_style->ForcedColorAdjust());
   } else {
     scoped_refptr<ComputedStyle> style = CreateComputedStyle();
     style->InheritFrom(
@@ -1018,6 +1014,17 @@ void StyleResolver::InitStyleAndApplyInheritance(
   }
   state.Style()->SetStyleType(style_request.pseudo_id);
   state.Style()->SetPseudoArgument(style_request.pseudo_argument);
+
+  // For highlight inheritance, propagate link visitedness and forced-colors
+  // status from the originating element, even if we have no parent highlight
+  // ComputedStyle we can inherit from.
+  if (UsesHighlightPseudoInheritance(style_request.pseudo_id)) {
+    state.Style()->SetInsideLink(state.ElementLinkState());
+    state.Style()->SetInForcedColorsMode(
+        style_request.originating_element_style->InForcedColorsMode());
+    state.Style()->SetForcedColorAdjust(
+        style_request.originating_element_style->ForcedColorAdjust());
+  }
 
   if (!style_request.IsPseudoStyleRequest() && element.IsLink()) {
     state.Style()->SetIsLink();
@@ -1576,9 +1583,9 @@ StyleResolver::CascadedValuesForElement(Element* element, PseudoId pseudo_id) {
 Element* StyleResolver::FindContainerForElement(
     Element* element,
     const ContainerSelector& container_selector) {
-  auto context = StyleRecalcContext::FromAncestors(*element);
-  return ContainerQueryEvaluator::FindContainer(context.container,
-                                                container_selector);
+  DCHECK(element);
+  return ContainerQueryEvaluator::FindContainer(
+      element->ParentOrShadowHostElement(), container_selector);
 }
 
 RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
@@ -2506,6 +2513,7 @@ scoped_refptr<const ComputedStyle> StyleResolver::ResolvePositionFallbackStyle(
     unsigned index) {
   const ComputedStyle& base_style = element.ComputedStyleRef();
   // TODO(crbug.com/1309178): Support tree-scoped fallback name lookup.
+  DCHECK(base_style.PositionFallback());
   StyleRulePositionFallback* position_fallback_rule =
       GetDocument().GetScopedStyleResolver()->PositionFallbackForName(
           base_style.PositionFallback());

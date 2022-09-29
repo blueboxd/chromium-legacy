@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
@@ -11,7 +11,9 @@ import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
 import '../os_settings_search_box/os_settings_search_box.js';
 import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {getTemplate} from './os_toolbar.html.js';
 
 /** @polymer */
 class OsToolbarElement extends PolymerElement {
@@ -20,7 +22,7 @@ class OsToolbarElement extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {

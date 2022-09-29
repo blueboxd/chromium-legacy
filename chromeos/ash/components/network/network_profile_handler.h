@@ -13,12 +13,12 @@
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chromeos/ash/components/dbus/shill/shill_property_changed_observer.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_profile.h"
-#include "chromeos/dbus/shill/shill_property_changed_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
 class NetworkProfileObserver;
 
@@ -107,11 +107,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkProfileHandler
   base::WeakPtrFactory<NetworkProfileHandler> weak_ptr_factory_{this};
 };
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when moved to ash.
-namespace ash {
-using ::chromeos::NetworkProfileHandler;
 }  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos {
+using ::ash::NetworkProfileHandler;
+}
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_NETWORK_PROFILE_HANDLER_H_

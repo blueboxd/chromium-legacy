@@ -7,10 +7,10 @@
 #include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/tailored_security/tailored_security_notification_result.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/browser/tailored_security_service/tailored_security_notification_result.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_policy_handler.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -24,7 +24,6 @@
 #else
 #include "chrome/browser/safe_browsing/tailored_security/notification_handler_desktop.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/safe_browsing/tailored_security_desktop_dialog.h"
 #endif
 
@@ -56,7 +55,7 @@ content::WebContents* GetWebContentsForProfile(Profile* profile) {
 void RecordEnabledNotificationResult(
     TailoredSecurityNotificationResult result) {
   base::UmaHistogramEnumeration(
-      "SafeBrowsing.TailoredSecurity.SyncPromptEnabledNotificationResult",
+      "SafeBrowsing.TailoredSecurity.SyncPromptEnabledNotificationResult2",
       result);
 }
 
@@ -132,15 +131,19 @@ void ChromeTailoredSecurityService::ShowSyncNotification(bool is_enabled) {
   if (base::FeatureList::IsEnabled(kTailoredSecurityDesktopNotice)) {
     Browser* browser = chrome::FindBrowserWithProfile(profile_);
     if (!browser) {
-      RecordEnabledNotificationResult(
-          TailoredSecurityNotificationResult::kNoBrowserAvailable);
+      if (is_enabled) {
+        RecordEnabledNotificationResult(
+            TailoredSecurityNotificationResult::kNoBrowserAvailable);
+      }
       return;
     }
     content::WebContents* web_contents =
         browser->tab_strip_model()->GetActiveWebContents();
     if (!web_contents) {
-      RecordEnabledNotificationResult(
-          TailoredSecurityNotificationResult::kNoWebContentsAvailable);
+      if (is_enabled) {
+        RecordEnabledNotificationResult(
+            TailoredSecurityNotificationResult::kNoWebContentsAvailable);
+      }
       return;
     }
     SetSafeBrowsingState(profile_->GetPrefs(),

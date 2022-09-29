@@ -66,6 +66,12 @@ FakeCiceroneClient::FakeCiceroneClient() {
 
   remove_file_watch_response_.set_status(
       vm_tools::cicerone::RemoveFileWatchResponse::SUCCEEDED);
+
+  attach_usb_to_container_response_.set_status(
+      vm_tools::cicerone::AttachUsbToContainerResponse::OK);
+
+  detach_usb_from_container_response_.set_status(
+      vm_tools::cicerone::DetachUsbFromContainerResponse::OK);
 }
 
 FakeCiceroneClient::~FakeCiceroneClient() {
@@ -349,6 +355,7 @@ void FakeCiceroneClient::SetUpLxdContainerUser(
     const vm_tools::cicerone::SetUpLxdContainerUserRequest& request,
     DBusMethodCallback<vm_tools::cicerone::SetUpLxdContainerUserResponse>
         callback) {
+  setup_lxd_container_user_request_ = request;
   last_container_username_ = request.container_username();
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
@@ -482,10 +489,35 @@ void FakeCiceroneClient::DetachUsbFromContainer(
 void FakeCiceroneClient::FileSelected(
     const vm_tools::cicerone::FileSelectedSignal& signal) {}
 
+void FakeCiceroneClient::ListRunningContainers(
+    const vm_tools::cicerone::ListRunningContainersRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::ListRunningContainersResponse>
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), list_containers_response_));
+}
+
+void FakeCiceroneClient::GetGarconSessionInfo(
+    const vm_tools::cicerone::GetGarconSessionInfoRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::GetGarconSessionInfoResponse>
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), get_garcon_session_info_response_));
+}
+
 void FakeCiceroneClient::NotifyLxdContainerCreated(
     const vm_tools::cicerone::LxdContainerCreatedSignal& proto) {
   for (auto& observer : observer_list_) {
     observer.OnLxdContainerCreated(proto);
+  }
+}
+
+void FakeCiceroneClient::NotifyLxdContainerDeleted(
+    const vm_tools::cicerone::LxdContainerDeletedSignal& proto) {
+  for (auto& observer : observer_list_) {
+    observer.OnLxdContainerDeleted(proto);
   }
 }
 

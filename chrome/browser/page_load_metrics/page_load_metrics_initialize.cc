@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
-#include "chrome/browser/page_load_metrics/observers/aborts_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/core/amp_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/core/ukm_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/document_write_page_load_metrics_observer.h"
@@ -47,6 +46,7 @@
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/observers/ad_metrics/ads_page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/observers/assert_page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_base.h"
 #include "components/page_load_metrics/browser/page_load_metrics_memory_tracker.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
@@ -110,6 +110,10 @@ PageLoadMetricsEmbedder::~PageLoadMetricsEmbedder() = default;
 
 void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
     page_load_metrics::PageLoadTracker* tracker) {
+#if DCHECK_IS_ON()
+  tracker->AddObserver(std::make_unique<AssertPageLoadMetricsObserver>());
+#endif
+
   // TODO(crbug.com/1299103): Integrate side panel metrics with UKM.
   if (IsSidePanel(web_contents())) {
 #if defined(TOOLKIT_VIEWS)
@@ -123,7 +127,6 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
   }
 
   if (!IsNoStatePrefetch(web_contents())) {
-    tracker->AddObserver(std::make_unique<AbortsPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<AMPPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<JavascriptFrameworksUkmObserver>());
     tracker->AddObserver(std::make_unique<SchemePageLoadMetricsObserver>());

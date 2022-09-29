@@ -157,6 +157,23 @@ public class FeedProcessScopeDependencyProvider implements ProcessScopeDependenc
         return FeedProcessScopeDependencyProviderJni.get().getExperimentIds();
     }
 
+    @Override
+    public ProcessScopeDependencyProvider.FeatureStateProvider getFeatureStateProvider() {
+        return new ProcessScopeDependencyProvider.FeatureStateProvider() {
+            @Override
+            public boolean isFeatureActive(String featureName) {
+                return ChromeFeatureList.isEnabled(featureName);
+            }
+
+            @Override
+            public boolean getBooleanParameterValue(
+                    String featureName, String paramName, boolean defaultValue) {
+                return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                        featureName, paramName, defaultValue);
+            }
+        };
+    }
+
     /**
      * Stores a view FeedAction for eventual upload. 'data' is a serialized FeedAction protobuf
      * message.

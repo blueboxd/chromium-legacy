@@ -34,7 +34,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
+#include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #endif
@@ -105,7 +105,7 @@ class TracingControllerTest : public ContentBrowserTest {
     disable_recording_done_callback_count_ = 0;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    chromeos::DebugDaemonClient::InitializeFake();
+    ash::DebugDaemonClient::InitializeFake();
     // Set statistic provider for hardware class tests.
     chromeos::system::StatisticsProvider::SetTestProvider(
         &fake_statistics_provider_);
@@ -118,7 +118,7 @@ class TracingControllerTest : public ContentBrowserTest {
   void TearDown() override {
     ContentBrowserTest::TearDown();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    chromeos::DebugDaemonClient::Shutdown();
+    ash::DebugDaemonClient::Shutdown();
 #endif
   }
 
@@ -126,7 +126,7 @@ class TracingControllerTest : public ContentBrowserTest {
     EXPECT_TRUE(NavigateToURL(shell, GetTestUrl("", "title1.html")));
   }
 
-  absl::optional<base::Value> GenerateMetadataDict() {
+  absl::optional<base::Value::Dict> GenerateMetadataDict() {
     return std::move(metadata_);
   }
 
@@ -244,8 +244,8 @@ class TracingControllerTest : public ContentBrowserTest {
       scoped_refptr<TracingController::TraceDataEndpoint> trace_data_endpoint =
           TracingController::CreateStringEndpoint(std::move(callback));
 
-      metadata_ = base::Value(base::Value::Type::DICTIONARY);
-      metadata_->SetStringKey("not-whitelisted", "this_not_found");
+      metadata_ = base::Value::Dict();
+      metadata_->Set("not-whitelisted", "this_not_found");
       tracing::TraceEventAgent::GetInstance()->AddMetadataGeneratorFunction(
           base::BindRepeating(&TracingControllerTest::GenerateMetadataDict,
                               base::Unretained(this)));
@@ -336,7 +336,7 @@ class TracingControllerTest : public ContentBrowserTest {
   int enable_recording_done_callback_count_;
   int disable_recording_done_callback_count_;
   base::FilePath last_actual_recording_file_path_;
-  absl::optional<base::Value> metadata_;
+  absl::optional<base::Value::Dict> metadata_;
   std::unique_ptr<std::string> last_data_;
 };
 

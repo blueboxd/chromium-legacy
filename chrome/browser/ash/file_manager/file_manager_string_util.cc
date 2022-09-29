@@ -36,6 +36,10 @@ namespace {
 const char kGoogleDriveBuyStorageUrl[] =
     "https://www.google.com/settings/storage";
 
+// Location of the page to manage Google Drive storage.
+const char kGoogleDriveManageStorageUrl[] =
+    "https://drive.google.com/drive/u/0/quota";
+
 // Location of the overview page about Google Drive.
 const char kGoogleDriveOverviewUrl[] =
     "https://support.google.com/chromebook/?p=filemanager_drive";
@@ -154,6 +158,8 @@ void AddStringsForDrive(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_DRIVE_SHARED_WITH_ME_COLLECTION_LABEL);
   SET_STRING("DRIVE_INDIVIDUAL_QUOTA_LOW",
              IDS_FILE_BROWSER_DRIVE_INDIVIDUAL_QUOTA_LOW);
+  SET_STRING("DRIVE_WARNING_QUOTA_OVER",
+             IDS_FILE_BROWSER_DRIVE_WARNING_QUOTA_OVER);
   SET_STRING("DRIVE_INDIVIDUAL_QUOTA_OVER",
              IDS_FILE_BROWSER_DRIVE_INDIVIDUAL_QUOTA_OVER);
   SET_STRING("DRIVE_ORGANIZATION_QUOTA_OVER",
@@ -239,22 +245,6 @@ void AddStringsForMediaPlayer(base::Value::Dict* dict) {
              IDS_MEDIA_PLAYER_SEEK_SLIDER_LABEL);
   SET_STRING("MEDIA_PLAYER_VOLUME_SLIDER_LABEL",
              IDS_MEDIA_PLAYER_VOLUME_SLIDER_LABEL);
-}
-
-void AddStringsForAudioPlayer(base::Value::Dict* dict) {
-  SET_STRING("AUDIO_ERROR", IDS_FILE_BROWSER_AUDIO_ERROR);
-  SET_STRING("AUDIO_OFFLINE", IDS_FILE_BROWSER_AUDIO_OFFLINE);
-  SET_STRING("AUDIO_PLAYER_DEFAULT_ARTIST",
-             IDS_FILE_BROWSER_AUDIO_PLAYER_DEFAULT_ARTIST);
-  SET_STRING("AUDIO_PLAYER_TITLE", IDS_FILE_BROWSER_AUDIO_PLAYER_TITLE);
-  SET_STRING("AUDIO_PLAYER_SHUFFLE_BUTTON_LABEL",
-             IDS_AUDIO_PLAYER_SHUFFLE_BUTTON_LABEL);
-  SET_STRING("AUDIO_PLAYER_REPEAT_BUTTON_LABEL",
-             IDS_AUDIO_PLAYER_REPEAT_BUTTON_LABEL);
-  SET_STRING("AUDIO_PLAYER_OPEN_PLAY_LIST_BUTTON_LABEL",
-             IDS_AUDIO_PLAYER_OPEN_PLAY_LIST_BUTTON_LABEL);
-  SET_STRING("AUDIO_PLAYER_ARTWORK_EXPAND_BUTTON_LABEL",
-             IDS_AUDIO_PLAYER_ARTWORK_EXPAND_BUTTON_LABEL);
 }
 
 void AddStringsForCloudImport(base::Value::Dict* dict) {
@@ -612,6 +602,8 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_METADATA_BOX_EXIF_GEOGRAPHY);
   SET_STRING("METADATA_BOX_FILE_LOCATION",
              IDS_FILE_BROWSER_METADATA_BOX_FILE_LOCATION);
+  SET_STRING("METADATA_BOX_ORIGINAL_LOCATION",
+             IDS_FILE_BROWSER_METADATA_BOX_ORIGINAL_LOCATION);
   SET_STRING("METADATA_BOX_FILE_PATH", IDS_FILE_BROWSER_METADATA_BOX_FILE_PATH);
   SET_STRING("METADATA_BOX_FILE_SIZE", IDS_FILE_BROWSER_METADATA_BOX_FILE_SIZE);
   SET_STRING("METADATA_BOX_FRAME_RATE",
@@ -937,6 +929,10 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_LOCATION_BREADCRUMB_ELIDER_BUTTON_LABEL);
   SET_STRING("DLP_BLOCK_COPY_TOAST", IDS_FILE_BROWSER_DLP_BLOCK_COPY_TOAST);
   SET_STRING("DLP_TOAST_BUTTON_LABEL", IDS_FILE_BROWSER_DLP_TOAST_BUTTON_LABEL);
+  SET_STRING("DLP_RESTRICTION_DETAILS",
+             IDS_FILE_BROWSER_DLP_RESTRICTION_DETAILS);
+  SET_STRING("DLP_MANAGED_ICON_TOOLTIP",
+             IDS_FILE_BROWSER_DLP_MANAGED_ICON_TOOLTIP);
 }
 
 #undef SET_STRING
@@ -950,7 +946,6 @@ base::Value::Dict GetFileManagerStrings() {
   AddStringsForMediaView(&dict);
   AddStringsForFileTypes(&dict);
   AddStringsForMediaPlayer(&dict);
-  AddStringsForAudioPlayer(&dict);
   AddStringsForCloudImport(&dict);
   AddStringsForCrUiMenuItemShortcuts(&dict);
   AddStringsForFileErrors(&dict);
@@ -966,6 +961,7 @@ base::Value::Dict GetFileManagerStrings() {
            base::StringPrintf(kHelpURLFormat, kFilesAppHelpNumber));
 
   dict.Set("GOOGLE_DRIVE_BUY_STORAGE_URL", kGoogleDriveBuyStorageUrl);
+  dict.Set("GOOGLE_DRIVE_MANAGE_STORAGE_URL", kGoogleDriveManageStorageUrl);
   dict.Set("GOOGLE_DRIVE_ERROR_HELP_URL",
            base::StringPrintf(kHelpURLFormat, kGoogleDriveErrorHelpNumber));
   dict.Set("GOOGLE_DRIVE_HELP_URL", kGoogleDriveHelpUrl);
@@ -1015,6 +1011,8 @@ void AddFileManagerFeatureStrings(const std::string& locale,
   dict->Set("HIDE_SPACE_INFO", ash::DemoSession::IsDeviceInDemoMode());
   dict->Set("ARC_USB_STORAGE_UI_ENABLED",
             base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature));
+  dict->Set("ARC_ENABLE_VIRTIO_BLK_FOR_DATA",
+            base::FeatureList::IsEnabled(arc::kEnableVirtioBlkForData));
   dict->Set("CROSTINI_ENABLED",
             crostini::CrostiniFeatures::Get()->IsEnabled(profile));
   dict->Set("PLUGIN_VM_ENABLED",

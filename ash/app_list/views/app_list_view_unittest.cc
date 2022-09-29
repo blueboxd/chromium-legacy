@@ -13,10 +13,8 @@
 #include <utility>
 #include <vector>
 
-#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_test_view_delegate.h"
 #include "ash/app_list/model/app_list_test_model.h"
-#include "ash/app_list/model/search/search_box_model.h"
 #include "ash/app_list/model/search/test_search_result.h"
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
@@ -25,18 +23,17 @@
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/apps_grid_view_test_api.h"
 #include "ash/app_list/views/contents_view.h"
-#include "ash/app_list/views/continue_section_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/folder_background_view.h"
 #include "ash/app_list/views/folder_header_view.h"
 #include "ash/app_list/views/page_switcher.h"
 #include "ash/app_list/views/paged_apps_grid_view.h"
+#include "ash/app_list/views/recent_apps_view.h"
 #include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_container_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
-#include "ash/app_list/views/search_result_suggestion_chip_view.h"
 #include "ash/app_list/views/search_result_tile_item_list_view.h"
 #include "ash/app_list/views/search_result_tile_item_view.h"
 #include "ash/app_list/views/search_result_view.h"
@@ -44,7 +41,6 @@
 #include "ash/constants/ash_features.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/public/cpp/test/test_app_list_color_provider.h"
@@ -52,14 +48,12 @@
 #include "ash/style/ash_color_provider.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/presentation_time_recorder.h"
@@ -68,14 +62,16 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_model.h"
 
 namespace ash {
-namespace test {
 namespace {
+
+using test::AppListTestModel;
+using test::AppListTestViewDelegate;
+using test::AppsGridViewTestApi;
 
 constexpr int kInitialItems = 34;
 
@@ -387,7 +383,7 @@ class AppListViewTest : public views::ViewsTestBase {
   }
 
   RecentAppsView* recent_apps() {
-    return contents_view()->apps_container_view()->GetRecentApps();
+    return contents_view()->apps_container_view()->GetRecentAppsView();
   }
 
   views::View* assistant_page_view() {
@@ -787,8 +783,8 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     view_->SetState(state);
   }
 
-  void Show(bool is_side_shelf = false) {
-    view_->Show(AppListViewState::kPeeking, is_side_shelf);
+  void Show() {
+    view_->Show(AppListViewState::kPeeking, /*is_side_shelf=*/false);
   }
 
   SearchResultTileItemListView* GetSearchResultTileItemListView() {
@@ -841,7 +837,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     }
 
     // Adding results will schedule Update().
-    RunPendingMessages();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Add search results for test on embedded Assistant UI.
@@ -868,7 +864,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     }
 
     // Adding results will schedule Update().
-    RunPendingMessages();
+    base::RunLoop().RunUntilIdle();
   }
 
   void ClearSearchResults() { GetSearchModel()->results()->DeleteAll(); }
@@ -882,7 +878,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     result->SetTitle(ASCIIToUTF16(title));
     result->set_best_match(true);
     GetSearchModel()->results()->Add(std::move(result));
-    RunPendingMessages();
+    base::RunLoop().RunUntilIdle();
   }
 
   int GetOpenFirstSearchResultCount() {
@@ -1365,52 +1361,6 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInFolder) {
   // Test traversal triggered by left.
   TestFocusTraversal(is_rtl_ ? forward_view_list : backward_view_list,
                      ui::VKEY_LEFT, false);
-}
-
-TEST_F(AppListViewFocusTest, OpeningFolderRemovesOtherViewsFromAccessibility) {
-  Show();
-
-  // Transition to FULLSCREEN_ALL_APPS state and open the folder.
-  SetAppListState(ash::AppListViewState::kFullscreenAllApps);
-  folder_item_view()->RequestFocus();
-  SimulateKeyPress(ui::VKEY_RETURN, false);
-  auto* apps_container_view = contents_view()->apps_container_view();
-  ASSERT_TRUE(apps_container_view->IsInFolderView());
-
-  // Note: For fullscreen app list, the search box is part of the focus cycle
-  // when a folder is open.
-  // ProductivityLauncher uses recent apps and continue section.
-  auto* recent_apps_view = apps_container_view->GetRecentApps();
-  auto* continue_section_view = apps_container_view->GetContinueSection();
-  // Non-ProductivityLauncher uses suggestion chips.
-  auto* suggestion_chip_container =
-      apps_container_view->suggestion_chip_container_view_for_test();
-  if (features::IsProductivityLauncherEnabled()) {
-    EXPECT_TRUE(recent_apps_view->GetViewAccessibility().IsIgnored());
-    EXPECT_TRUE(recent_apps_view->GetViewAccessibility().IsLeaf());
-    EXPECT_TRUE(continue_section_view->GetViewAccessibility().IsIgnored());
-    EXPECT_TRUE(continue_section_view->GetViewAccessibility().IsLeaf());
-  } else {
-    EXPECT_TRUE(suggestion_chip_container->GetViewAccessibility().IsIgnored());
-    EXPECT_TRUE(suggestion_chip_container->GetViewAccessibility().IsLeaf());
-  }
-  EXPECT_TRUE(apps_grid_view()->GetViewAccessibility().IsIgnored());
-  EXPECT_TRUE(apps_grid_view()->GetViewAccessibility().IsLeaf());
-
-  // Close the folder.
-  SimulateKeyPress(ui::VKEY_ESCAPE, false);
-
-  if (features::IsProductivityLauncherEnabled()) {
-    EXPECT_FALSE(recent_apps_view->GetViewAccessibility().IsIgnored());
-    EXPECT_FALSE(recent_apps_view->GetViewAccessibility().IsLeaf());
-    EXPECT_FALSE(continue_section_view->GetViewAccessibility().IsIgnored());
-    EXPECT_FALSE(continue_section_view->GetViewAccessibility().IsLeaf());
-  } else {
-    EXPECT_FALSE(suggestion_chip_container->GetViewAccessibility().IsIgnored());
-    EXPECT_FALSE(suggestion_chip_container->GetViewAccessibility().IsLeaf());
-  }
-  EXPECT_FALSE(apps_grid_view()->GetViewAccessibility().IsIgnored());
-  EXPECT_FALSE(apps_grid_view()->GetViewAccessibility().IsLeaf());
 }
 
 // Tests the vertical focus traversal by in PEEKING state.
@@ -2620,8 +2570,8 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
       search_text,
       ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   // Check that the current search is using |search_text|.
-  EXPECT_EQ(search_text, GetSearchModel()->search_box()->text());
   EXPECT_EQ(search_text, main_view->search_box_view()->search_box()->GetText());
+  EXPECT_EQ(search_text, main_view->search_box_view()->current_query());
   contents_view->Layout();
   EXPECT_TRUE(
       contents_view->IsStateActive(ash::AppListState::kStateSearchResults));
@@ -2641,69 +2591,13 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
       new_search_text,
       ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   // Check that the current search is using |new_search_text|.
-  EXPECT_EQ(new_search_text, GetSearchModel()->search_box()->text());
   EXPECT_EQ(new_search_text,
             main_view->search_box_view()->search_box()->GetText());
+  EXPECT_EQ(search_text, main_view->search_box_view()->current_query());
   contents_view->Layout();
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateSearchResults));
   EXPECT_TRUE(CheckSearchBoxWidget(contents_view->GetSearchBoxBounds(
       ash::AppListState::kStateSearchResults)));
-}
-
-// Tests that the back button navigates through the app list correctly.
-TEST_F(AppListViewTest, DISABLED_BackTest) {
-  Initialize(false /*is_tablet_mode*/);
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  EXPECT_FALSE(view_->GetWidget()->IsVisible());
-  EXPECT_EQ(-1, GetPaginationModel()->total_pages());
-
-  Show();
-
-  AppListMainView* main_view = view_->app_list_main_view();
-  ContentsView* contents_view = main_view->contents_view();
-  SearchBoxView* search_box_view = main_view->search_box_view();
-
-  // Show the apps grid.
-  SetAppListState(ash::AppListState::kStateApps);
-  EXPECT_NO_FATAL_FAILURE(CheckView(search_box_view->back_button()));
-
-  // The back button should return to the apps page.
-  EXPECT_TRUE(contents_view->Back());
-  contents_view->Layout();
-  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
-  EXPECT_FALSE(search_box_view->back_button()->GetVisible());
-
-  // Show the apps grid again.
-  SetAppListState(ash::AppListState::kStateApps);
-  EXPECT_NO_FATAL_FAILURE(CheckView(search_box_view->back_button()));
-
-  // Pressing ESC should return to the apps page.
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-  contents_view->Layout();
-  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
-  EXPECT_FALSE(search_box_view->back_button()->GetVisible());
-
-  // Pressing ESC from the start page should close the app list.
-  EXPECT_EQ(0, delegate_->dismiss_count());
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-  EXPECT_EQ(1, delegate_->dismiss_count());
-
-  // Show the search results.
-  std::u16string new_search_text = u"apple";
-  search_box_view->search_box()->SetText(std::u16string());
-  search_box_view->search_box()->InsertText(
-      new_search_text,
-      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
-  contents_view->Layout();
-  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateSearchResults));
-  EXPECT_NO_FATAL_FAILURE(CheckView(search_box_view->back_button()));
-
-  // The back button should return to the start page.
-  EXPECT_TRUE(contents_view->Back());
-  contents_view->Layout();
-  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
-  EXPECT_FALSE(search_box_view->back_button()->GetVisible());
 }
 
 // Tests that a context menu can be shown between app icons in tablet mode.
@@ -3153,7 +3047,7 @@ TEST_F(ProductivityLauncherAppListViewLayoutTest,
        RegularLandscapeScreenAtMinPreferredVerticalMargin) {
   const int window_height = GetExpectedScreenSizeForProductivityLauncher(
       /*row_count=*/4, /*tile_height=*/120, /*tile_margins=*/8,
-      /*large_height=*/false);
+      /*is_large_height=*/false);
   EXPECT_EQ(689, window_height);
   const gfx::Size window_size = gfx::Size(800, window_height);
   GetContext()->SetBounds(gfx::Rect(window_size));
@@ -3188,7 +3082,7 @@ TEST_F(ProductivityLauncherAppListViewLayoutTest,
        RegularLandscapeScreenWithRemovedRows) {
   const int window_height = GetExpectedScreenSizeForProductivityLauncher(
                                 /*row_count=*/4, /*tile_height=*/120,
-                                /*tile_margins=*/8, /*large_height=*/false) -
+                                /*tile_margins=*/8, /*is_large_height=*/false) -
                             4;
   EXPECT_EQ(685, window_height);
   const gfx::Size window_size = gfx::Size(800, window_height);
@@ -3224,7 +3118,7 @@ TEST_F(ProductivityLauncherAppListViewLayoutTest,
        RegularLandscapeScreenAtMaxPreferredVerticalMargin) {
   const int window_height = GetExpectedScreenSizeForProductivityLauncher(
       /*row_count=*/4, /*tile_height=*/120, /*tile_margins=*/96,
-      /*large_height=*/true);
+      /*is_large_height=*/true);
   EXPECT_EQ(1024, window_height);
   const gfx::Size window_size = gfx::Size(1100, window_height);
   GetContext()->SetBounds(gfx::Rect(window_size));
@@ -3259,7 +3153,7 @@ TEST_F(ProductivityLauncherAppListViewLayoutTest,
        RegularLandscapeScreenWithAddedRows) {
   const int window_height = GetExpectedScreenSizeForProductivityLauncher(
                                 /*row_count=*/4, /*tile_height=*/120,
-                                /*tile_margins=*/96, /*large_height=*/true) +
+                                /*tile_margins=*/96, /*is_large_height=*/true) +
                             6;
   EXPECT_EQ(1030, window_height);
   const gfx::Size window_size = gfx::Size(1100, window_height);
@@ -3325,7 +3219,7 @@ TEST_F(ProductivityLauncherAppListViewLayoutTest,
        RegularPortraitScreenAtMinPreferredVerticalMargin) {
   int window_height = GetExpectedScreenSizeForProductivityLauncher(
       /*row_count=*/5, /*tile_height=*/120, /*tile_margins=*/8,
-      /*large_height=*/true);
+      /*is_large_height=*/true);
   // window_height = 860;
   EXPECT_EQ(868, window_height);
   const gfx::Size window_size = gfx::Size(700, window_height);
@@ -3362,7 +3256,7 @@ TEST_F(ProductivityLauncherAppListViewLayoutTest,
   const int window_height =
       GetExpectedScreenSizeForProductivityLauncher(
           /*row_count=*/5, /*tile_height=*/120, /*tile_margins=*/8,
-          /*large_height=*/true) -
+          /*is_large_height=*/true) -
       8;
   EXPECT_EQ(860, window_height);
   const gfx::Size window_size = gfx::Size(700, window_height);
@@ -3398,7 +3292,7 @@ TEST_F(ProductivityLauncherAppListViewLayoutTest,
        RegularPortraitScreenAtMaxPreferredVerticalMargin) {
   const int window_height = GetExpectedScreenSizeForProductivityLauncher(
       /*row_count=*/5, /*tile_height=*/120, /*tile_margins=*/96,
-      /*large_height=*/true);
+      /*is_large_height=*/true);
   EXPECT_EQ(1270, window_height);
   const gfx::Size window_size = gfx::Size(1200, window_height);
   GetContext()->SetBounds(gfx::Rect(window_size));
@@ -3433,7 +3327,7 @@ TEST_F(ProductivityLauncherAppListViewLayoutTest,
   const int window_height =
       GetExpectedScreenSizeForProductivityLauncher(
           /*row_count=*/5, /*tile_height=*/120, /*tile_margins=*/96,
-          /*large_height=*/true) +
+          /*is_large_height=*/true) +
       4;
   EXPECT_EQ(1274, window_height);
   const gfx::Size window_size = gfx::Size(1200, window_height);
@@ -3498,7 +3392,7 @@ TEST_F(ProductivityLauncherAppListViewLayoutTest,
        DenseLandscapeScreenAtMinPreferredVerticalMargin) {
   const int window_height = GetExpectedScreenSizeForProductivityLauncher(
       /*row_count=*/4, /*tile_height=*/88, /*tile_margins=*/8,
-      /*large_height=*/false);
+      /*is_large_height=*/false);
   EXPECT_EQ(552, window_height);
   const gfx::Size window_size = gfx::Size(800, window_height);
   GetContext()->SetBounds(gfx::Rect(window_size));
@@ -4164,5 +4058,4 @@ TEST_F(AppListViewPeekingFocusTest, PageSwitchingNotRecordingMetric) {
 }
 
 }  // namespace
-}  // namespace test
 }  // namespace ash

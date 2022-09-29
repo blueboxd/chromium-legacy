@@ -46,6 +46,7 @@ const char kLowboxSid[] = "lowboxSid";
 const char kPlatformMitigations[] = "platformMitigations";
 const char kPolicyRules[] = "policyRules";
 const char kProcessId[] = "processId";
+const char kTag[] = "tag";
 
 // Values in snapshots of Policies.
 const char kDisabled[] = "disabled";
@@ -369,10 +370,12 @@ base::Value::Dict GetHandlesToClose(const HandleMap& handle_map) {
 // quickly in the BrokerServices tracker thread.
 PolicyDiagnostic::PolicyDiagnostic(PolicyBase* policy) {
   DCHECK(policy);
+  ConfigBase* config = policy->config();
   // TODO(crbug/997273) Add more fields once webui plumbing is complete.
   process_id_ = base::strict_cast<uint32_t>(policy->target_->ProcessId());
   lockdown_level_ = policy->lockdown_level_;
   job_level_ = policy->job_level_;
+  tag_ = policy->tag_;
 
   // Select the final integrity level.
   if (policy->delayed_integrity_level_ == INTEGRITY_LEVEL_LAST)
@@ -395,17 +398,18 @@ PolicyDiagnostic::PolicyDiagnostic(PolicyBase* policy) {
     app_container_type_ = policy->app_container_->GetAppContainerType();
   }
 
-  if (policy->policy_) {
-    size_t policy_mem_size = policy->policy_->data_size + sizeof(PolicyGlobal);
+  if (config->policy_) {
+    PolicyGlobal* policy_rules = config->policy_;
+    size_t policy_mem_size = policy_rules->data_size + sizeof(PolicyGlobal);
     policy_rules_.reset(
         static_cast<sandbox::PolicyGlobal*>(::operator new(policy_mem_size)));
-    memcpy(policy_rules_.get(), policy->policy_, policy_mem_size);
+    memcpy(policy_rules_.get(), policy_rules, policy_mem_size);
     // Fixup pointers (see |PolicyGlobal| in policy_low_level.h).
-    PolicyBuffer** original_entries = policy->policy_->entry;
-    PolicyBuffer** copy_base = policy_rules_->entry;
+    PolicyBuffer** original_entries = policy_rules->entry;
+    PolicyBuffer** copy_base = policy_rules->entry;
     for (size_t i = 0; i < kMaxServiceCount; i++) {
-      if (policy_rules_->entry[i]) {
-        policy_rules_->entry[i] = reinterpret_cast<PolicyBuffer*>(
+      if (policy_rules->entry[i]) {
+        policy_rules->entry[i] = reinterpret_cast<PolicyBuffer*>(
             reinterpret_cast<char*>(copy_base) +
             (reinterpret_cast<char*>(original_entries[i]) -
              reinterpret_cast<char*>(original_entries)));
@@ -426,6 +430,7 @@ const char* PolicyDiagnostic::JsonString() {
 
   base::Value::Dict dict;
   dict.Set(kProcessId, base::strict_cast<double>(process_id_));
+  dict.Set(kTag, base::Value(tag_));
   dict.Set(kLockdownLevel, GetTokenLevelInEnglish(lockdown_level_));
   dict.Set(kJobLevel, GetJobLevelInEnglish(job_level_));
   dict.Set(kDesiredIntegrityLevel,
@@ -440,7 +445,7 @@ const char* PolicyDiagnostic::JsonString() {
              base::AsStringPiece16(GetSidAsString(*app_container_sid_)));
     base::Value::List caps;
     for (const auto& sid : capabilities_) {
-      auto sid_value = base::AsStringPiece16(GetSidAsString(sid));
+      auto sid_value = base::Value(base::AsStringPiece16(GetSidAsString(sid)));
       caps.Append(std::move(sid_value));
     }
     if (!caps.empty()) {
@@ -448,7 +453,7 @@ const char* PolicyDiagnostic::JsonString() {
     }
     base::Value::List imp_caps;
     for (const auto& sid : initial_capabilities_) {
-      auto sid_value = base::AsStringPiece16(GetSidAsString(sid));
+      auto sid_value = base::Value(base::AsStringPiece16(GetSidAsString(sid)));
       imp_caps.Append(std::move(sid_value));
     }
     if (!imp_caps.empty()) {

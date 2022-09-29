@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">Ներբեռնումը դադարեցվել է</translation>
 <translation id="1409426117486808224">Բաց ներդիրների պարզեցված դիտակերպ</translation>
 <translation id="1415402041810619267">URL-ը կրճատվել է</translation>
+<translation id="1426410128494586442">Այո</translation>
 <translation id="1446450296470737166">Տրամադրել ամբողջական հսկողություն MIDI սարքերի նկատմամբ</translation>
 <translation id="1620510694547887537">Տեսախցիկ</translation>
 <translation id="1644574205037202324">Պատմություն</translation>
@@ -32,6 +33,7 @@
 <translation id="1818308510395330587"><ph name="APP_NAME" />-ին AR ռեժիմն օգտագործելու թույլտվություն տալու համար միացրեք նաև տեսախցիկը <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="1864927262126810325">Աղբյուրը՝ <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">Սարքի տեղորոշումն անջատված է: Միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />:</translation>
+<translation id="1915307458270490472">Փակել</translation>
 <translation id="1919345977826869612">Գովազդ</translation>
 <translation id="1919950603503897840">Ընտրեք կոնտակտներ</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -78,6 +80,7 @@
 <translation id="2677748264148917807">Դուրս գալ էջից</translation>
 <translation id="2687403674020088961">Արգելափակել բոլոր քուքիները (խորհուրդ չի տրվում)</translation>
 <translation id="2704606927547763573">Պատճենվեց</translation>
+<translation id="2713106313042589954">Անջատել տեսախցիկը</translation>
 <translation id="2717722538473713889">Էլ․ հասցեներ</translation>
 <translation id="2750481671343847896">Կայքերը կարող են ցույց տալ նույնականացման ծառայությունների մուտքի հարցումներ։</translation>
 <translation id="2785051990912111074">Այս կայքի (<ph name="WEBSITE" />) քուքիները կջնջվեն</translation>
@@ -97,6 +100,7 @@
 <translation id="3114012059975132928">Տեսանվագարկիչ</translation>
 <translation id="3115898365077584848">Ցուցադրել տեղեկությունները</translation>
 <translation id="3123473560110926937">Արգելափակված է որոշ կայքերում</translation>
+<translation id="3143754809889689516">Նվագարկել սկզբից</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> պահված տվյալներ</translation>
 <translation id="3203366800380907218">Համացանցից</translation>
 <translation id="321187648315454507">Որպեսզի <ph name="APP_NAME" />-ին թույլատրեք ձեզ ծանուցումներ ուղարկել, միացրեք նաև ծանուցումները <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
@@ -153,10 +157,12 @@
 <translation id="4479647676395637221">Հարցնել նախքան ձեր տեսախցիկը կայքերին հասանելի դարձնելը (խորհուրդ է տրվում)</translation>
 <translation id="4505788138578415521">URL-ը ծավալվել է</translation>
 <translation id="4534723447064627427">Որպեսզի խոսափողը հասանելի դառնա <ph name="APP_NAME" />-ին, միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
+<translation id="4566417217121906555">Անջատել խոսափողը</translation>
 <translation id="4570913071927164677">Մանրամասներ</translation>
 <translation id="4645575059429386691">Կառավարվում է ձեր ծնողի կողմից</translation>
 <translation id="4670064810192446073">Վիրտուալ իրականություն</translation>
 <translation id="4751476147751820511">Շարժման և լուսավորության տվիչներ</translation>
+<translation id="4811450222531576619">Իմացեք ավելին աղբյուրի և թեմայի մասին</translation>
 <translation id="4836046166855586901">Հարցնել, երբ որևէ կայք ուզում է տեղեկանալ, երբ դուք ակտիվորեն օգտագործում եք այս սարքը</translation>
 <translation id="4883854917563148705">Կառավարվող կարգավորումները հնարավոր չէ վերակայել</translation>
 <translation id="4887024562049524730">Կայքերի համար թույլտվություն խնդրել՝ օգտագործելու վիրտուալ իրականության ձեր սարքերն ու տվյալները (խորհուրդ է տրվում)</translation>
@@ -177,6 +183,7 @@
 <translation id="5186036860380548585">Գործողությունը հասանելի է էկրանի վերին մասում</translation>
 <translation id="5197729504361054390">Ձեր ընտրած կոնտակտները հասանելի կդառնան <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> կայքին:</translation>
 <translation id="5216942107514965959">Վերջին այցելությունը՝ այսօր</translation>
+<translation id="5225463052809312700">Միացնել տեսախցիկը</translation>
 <translation id="5264323282659631142">Հեռացնել «<ph name="CHIP_LABEL" />» չիպը</translation>
 <translation id="528192093759286357">Լիաէկրան ռեժիմից դուրս գալու համար քաշեք վերևից և հպեք «Հետ» կոճակին:</translation>
 <translation id="5300589172476337783">Ցույց տալ</translation>
@@ -235,8 +242,10 @@
 <translation id="6367753977865761591">Նշեք այն կայքերը, որոնց համար երրորդ կողմի ծառայությունների միջոցով մուտքը պետք է արգելափակվի։</translation>
 <translation id="6388207532828177975">Մաքրել և զրոյացնել</translation>
 <translation id="6398765197997659313">Ելնել լիաէկրան ռեժիմից</translation>
+<translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Արգելել կայքերին օգտագործել վիրտուալ իրականության ձեր սարքերն ու տվյալները</translation>
 <translation id="6447842834002726250">Cookie ֆայլեր</translation>
+<translation id="6467852467360539617">Ջնջել տվյալները և զրոյացնել թույլտվությունները</translation>
 <translation id="6527303717912515753">Կիսվել</translation>
 <translation id="6545864417968258051">Bluetooth սարքերի որոնում</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{Արգելափակված են՝ «<ph name="PERMISSION_1" />», «<ph name="PERMISSION_2" />» ու ևս <ph name="NUM_MORE" /> թույլտվություն}one{Արգելափակված են՝ «<ph name="PERMISSION_1" />», «<ph name="PERMISSION_2" />» ու ևս <ph name="NUM_MORE" /> թույլտվություն}other{Արգելափակված են՝ «<ph name="PERMISSION_1" />», «<ph name="PERMISSION_2" />» ու ևս <ph name="NUM_MORE" /> թույլտվություն}}</translation>
@@ -276,6 +285,7 @@
 <translation id="7250468141469952378">Ընտրված է <ph name="ITEM_COUNT" /> տարր</translation>
 <translation id="7260727271532453612">Թույլատրված են՝ «<ph name="PERMISSION_1" />» և «<ph name="PERMISSION_2" />»</translation>
 <translation id="7302486331832100261">Դուք սովորաբար արգելափակում եք ծանուցումները։ Թույլատրելու համար սեղմեք «Մանրամասներ»։</translation>
+<translation id="7383715096023715447"><ph name="DOMAIN" /> տիրույթի կարգավորումներ</translation>
 <translation id="7423098979219808738">Նախ հարցնել</translation>
 <translation id="7423538860840206698">Սեղմատախտակի հասանելիությունն արգելափակված է</translation>
 <translation id="7425915948813553151">Կայքերի մուգ թեմա</translation>
@@ -335,6 +345,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 օգտագործվող քուքի}one{# օգտագործվող քուքի}other{# օգտագործվող քուքի}}</translation>
 <translation id="8487700953926739672">Մատչելի է անցանց ռեժիմում</translation>
 <translation id="848952951823693243">Միշտ պահանջել կայքի բջջային տարբերակը</translation>
+<translation id="8499083585497694743">Միացնել խոսափողը</translation>
 <translation id="851751545965956758">Արգելել կայքերին միանալ սարքերին</translation>
 <translation id="8525306231823319788">Լիաէկրան</translation>
 <translation id="857943718398505171">Թույլատրված է (հանձնարարելի)</translation>

@@ -105,7 +105,6 @@ Dzēšot pārlūkošanas vēsturi (visu vai konkrētas vietnes vēsturi), tiek d
 <translation id="1474893630593443211">Lielāka kontrole pār jums rādītajām reklāmām</translation>
 <translation id="1477626028522505441">Neizdevās lejupielādēt failu <ph name="FILE_NAME" />, jo radās servera problēmas.</translation>
 <translation id="148482509007564431">Grāmatzīmes saglabāšanas plūsma</translation>
-<translation id="1488775391433859242">Izmantojot šo tālruni, varat pierakstīties datorā, kurā tiek rādīts šis kvadrātkods.</translation>
 <translation id="1492417797159476138">Jūs jau saglabājāt šo lietotājvārdu šai vietnei</translation>
 <translation id="1493287004536771723">Jūs sekojat vietnei <ph name="SITE_NAME" />.</translation>
 <translation id="1502010315804028179">Lai pārvaldītu paroles, atjauniniet Google Play pakalpojumus.</translation>
@@ -235,6 +234,7 @@ Dzēšot pārlūkošanas vēsturi (visu vai konkrētas vietnes vēsturi), tiek d
 <translation id="2239812875700136898">Pārvaldiet ziņas, izmantojot opciju pogu lapā Discover.</translation>
 <translation id="2248941474044011069">Jūsu paroles tiek šifrētas jūsu ierīcē, pirms tās tiek saglabātas Google paroļu pārvaldniekā.</translation>
 <translation id="2259659629660284697">Paroļu eksportēšana…</translation>
+<translation id="2276231040576210443">Jūs jebkurā laikā <ph name="BEGIN_LINK1" />iestatījumos<ph name="END_LINK1" /> varat izvēlēties, ko sinhronizēt. Google var personalizēt pakalpojumu Meklēšana un citus pakalpojumus, ņemot vērā jūsu vēsturi.</translation>
 <translation id="2276696007612801991">Lai pārbaudītu paroles, pierakstieties Google kontā</translation>
 <translation id="2278052315791335171">Izdzēšot šo paroli, netiks dzēsts jūsu konts vietnē <ph name="SITE" />.</translation>
 <translation id="2279146068164892489">Vai atvērt lietotni <ph name="APPNAME" />?</translation>
@@ -282,7 +282,6 @@ Dzēšot pārlūkošanas vēsturi (visu vai konkrētas vietnes vēsturi), tiek d
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> vienumi tika izdzēsti</translation>
 <translation id="2536728043171574184">Skata šīs lapas kopiju bezsaistē</translation>
 <translation id="2546283357679194313">Sīkfaili un vietņu dati</translation>
-<translation id="2549516196460093976">Izmantojot šo planšetdatoru, varat pierakstīties datorā, kurā tiek rādīts šis kvadrātkods.</translation>
 <translation id="2558569818338050235">Pārlūkošanas vēsture ietekmē to, kādas reklāmas jums tiek rādītas</translation>
 <translation id="2561519700418191927">Videoklipu priekšskatījumi</translation>
 <translation id="2567385386134582609">ATTĒLS</translation>
@@ -308,6 +307,7 @@ Dzēšot pārlūkošanas vēsturi (visu vai konkrētas vietnes vēsturi), tiek d
 <translation id="2702516483241149200">Jaunums: varat kopīgot saiti uz šo tekstu</translation>
 <translation id="2704606927547763573">Nokopēts</translation>
 <translation id="2707726405694321444">Atsvaidzināt lapu</translation>
+<translation id="2709516037105925701">Automātiskā aizpilde</translation>
 <translation id="271033894570825754">Jauns</translation>
 <translation id="2711073837061989559">Izmēģinājuma versijas</translation>
 <translation id="2718352093833049315">Tikai Wi-Fi</translation>
@@ -396,6 +396,7 @@ Dzēšot pārlūkošanas vēsturi (visu vai konkrētas vietnes vēsturi), tiek d
 <translation id="3114507951000454849">Lasiet šodienas ziņas <ph name="NEWS_ICON" /></translation>
 <translation id="311958134571892113">saistīta ar šo karti:</translation>
 <translation id="3123734510202723619">Paziņojumi</translation>
+<translation id="3130863904455712965">Vēsture un cits saturs</translation>
 <translation id="3134784203083076891">”</translation>
 <translation id="314939179385989105">Chrome sākumlapa</translation>
 <translation id="3166827708714933426">Ciļņu un logu īsinājumtaustiņi</translation>
@@ -587,7 +588,6 @@ Dzēšot pārlūkošanas vēsturi (visu vai konkrētas vietnes vēsturi), tiek d
 <translation id="4256782883801055595">Atklātā pirmkoda licences</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Kādi dati tiek izmantoti:<ph name="END_BOLD" /> jūsu pārlūkošanas vēsture, kurā tiek reģistrētas vietnes, ko šajā ierīcē apmeklējat ar pārlūku Chrome.</translation>
 <translation id="4263656433980196874">Piekrišanas lietotāja saskarne Asistenta izmantošanai meklēšanā ar balsi (atvērta pilna ekrāna augstumā)</translation>
-<translation id="4266054596873078491">Pierakstieties šajā vietnē un pārlūkā Chrome, izmantojot savu Google kontu.</translation>
 <translation id="4269820728363426813">Kopēt saites adresi</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Ieslēgt ekrāna bloķēšanu Android iestatījumos<ph name="END_LINK" /></translation>
 <translation id="4293476595220860475">Izmantojot pārlūku Chrome, jūs piekrītat <ph name="BEGIN_TOS_LINK" />Google pakalpojumu sniegšanas noteikumiem<ph name="END_TOS_LINK" />, kā arī <ph name="BEGIN_ATOS_LINK" />Google Chrome un Chrome OS pakalpojumu sniegšanas papildu noteikumiem<ph name="END_ATOS_LINK" />. Ir spēkā arī <ph name="BEGIN_PRIVACY_LINK" />konfidencialitātes politika<ph name="END_PRIVACY_LINK" />.</translation>
@@ -1051,6 +1051,7 @@ Uzticamības marķieri uzlabo konfidencialitāti tīmeklī. Tos nevar izmantot, 
 <translation id="6671495933530132209">Kopēt attēlu</translation>
 <translation id="6674571176963658787">Lai sāktu sinhronizāciju, ievadiet savu ieejas frāzi</translation>
 <translation id="6676840375528380067">Vai dzēst jūsu Chrome datus no šīs ierīces?</translation>
+<translation id="6676927815633975364">Pierakstieties šajā vietnē un pārlūkā Chrome.</translation>
 <translation id="6684809838922667136">Uzlabojiet Chrome</translation>
 <translation id="670498945988402717">Pārbaudīts: vakar</translation>
 <translation id="6710213216561001401">Iepriekšējais</translation>
@@ -1140,6 +1141,7 @@ Uzticamības marķieri uzlabo konfidencialitāti tīmeklī. Tos nevar izmantot, 
 <translation id="7196215469483532480">Paskaidrojums par konfidencialitātes ceļvedi ir atvērts pilna ekrāna augstumā</translation>
 <translation id="7207760545532569765">Atjaunot cilnes kā jaunas fona cilnes. Ciļņu skaits ir <ph name="TAB_COUNT" />.</translation>
 <translation id="7208109991155904980">Reakcija ir noņemta</translation>
+<translation id="7217781228893594884">Aizverot pārlūku Chrome, inkognito režīma cilnes tiks bloķētas.</translation>
 <translation id="7222235798733126207">Ierobežota datu kopīgošana starp vietnēm</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{Tiek gaidīta 1 lejupielāde}zero{Tiek gaidītas # lejupielādes}one{Tiek gaidīta # lejupielāde}other{Tiek gaidītas # lejupielādes}}</translation>
 <translation id="7242755609445462077">Stilizēts izcēlums: <ph name="CURRENT_DATE" /></translation>
@@ -1300,6 +1302,7 @@ Uzticamības marķieri uzlabo konfidencialitāti tīmeklī. Tos nevar izmantot, 
 <translation id="8037801708772278989">Pārbaudīts: tikko</translation>
 <translation id="804335162455518893">SD karte nav atrasta</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> inkognito cilne}zero{<ph name="TAB_COUNT_NORMAL" /> inkognito ciļņu}one{<ph name="TAB_COUNT_NORMAL" /> inkognito cilne}other{<ph name="TAB_COUNT_NORMAL" /> inkognito cilnes}}</translation>
+<translation id="8048728378294435881">Dublējiet savus failus un izmantojiet tos jebkurā ierīcē.</translation>
 <translation id="8051695050440594747">Ir pieejami <ph name="MEGABYTES" /> MB</translation>
 <translation id="8058655154417507695">Derīguma termiņa gads</translation>
 <translation id="8058746566562539958">Atvērt jaunā Chrome cilnē</translation>

@@ -568,8 +568,7 @@
     "channel": "stable",
     "contexts": ["webui_untrusted"],
     "matches": [
-      // Allow only terminal_ssh.html in Terminal System Web App.
-      "chrome-untrusted://terminal/html/terminal_ssh.html*"
+      "chrome-untrusted://terminal/*"
     ]
   }],
   "runtime.sendNativeMessage": {
@@ -584,18 +583,36 @@
     "dependencies": ["permission:socket"],
     "contexts": ["blessed_extension"]
   },
-  "sockets.tcp": {
+  "sockets.tcp": [{
     "dependencies": ["manifest:sockets"],
     "contexts": ["blessed_extension"]
-  },
-  "sockets.tcpServer": {
+  },{
+    "channel": "stable",
+    "contexts": ["webui_untrusted"],
+    "matches": [
+      "chrome-untrusted://terminal/*"
+    ]
+  }],
+  "sockets.tcpServer": [{
     "dependencies": ["manifest:sockets"],
     "contexts": ["blessed_extension"]
-  },
-  "sockets.udp": {
+  },{
+    "channel": "stable",
+    "contexts": ["webui_untrusted"],
+    "matches": [
+      "chrome-untrusted://terminal/*"
+    ]
+  }],
+  "sockets.udp": [{
     "dependencies": ["manifest:sockets"],
     "contexts": ["blessed_extension"]
-  },
+  },{
+    "channel": "stable",
+    "contexts": ["webui_untrusted"],
+    "matches": [
+      "chrome-untrusted://terminal/*"
+    ]
+  }],
   "storage": {
     "dependencies": ["permission:storage"],
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]

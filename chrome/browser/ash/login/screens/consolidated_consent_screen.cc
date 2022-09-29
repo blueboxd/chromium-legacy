@@ -36,7 +36,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
@@ -119,8 +118,8 @@ void ConsolidatedConsentScreen::OnViewDestroyed(
     view_ = nullptr;
 }
 
-bool ConsolidatedConsentScreen::MaybeSkip(WizardContext* context) {
-  if (context->skip_post_login_screens_for_tests) {
+bool ConsolidatedConsentScreen::MaybeSkip(WizardContext& context) {
+  if (context.skip_post_login_screens_for_tests) {
     if (features::IsOobeConsolidatedConsentEnabled())
       StartupUtils::MarkEulaAccepted();
 
@@ -133,7 +132,7 @@ bool ConsolidatedConsentScreen::MaybeSkip(WizardContext* context) {
 
   policy::BrowserPolicyConnectorAsh* policy_connector =
       g_browser_process->platform_part()->browser_policy_connector_ash();
-  if (!context->is_branded_build ||
+  if (!context.is_branded_build ||
       policy_connector->IsActiveDirectoryManaged() ||
       user_manager::UserManager::Get()->IsLoggedInAsPublicAccount()) {
     exit_callback_.Run(Result::NOT_APPLICABLE);
@@ -407,7 +406,6 @@ void ConsolidatedConsentScreen::OnAccept(bool enable_stats_usage,
 
 void ConsolidatedConsentScreen::ExitScreenWithAcceptedResult() {
   StartupUtils::MarkEulaAccepted();
-  network_portal_detector::GetInstance()->Enable();
 
   const DemoSetupController* const demo_setup_controller =
       WizardController::default_controller()->demo_setup_controller();

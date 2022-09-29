@@ -16,10 +16,13 @@
 #include "components/zoom/zoom_observer.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/guest_host.h"
-#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+
+namespace content {
+class RenderFrameHost;
+}
 
 namespace guest_view {
 
@@ -53,15 +56,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
                       public content::WebContentsObserver,
                       public zoom::ZoomObserver {
  public:
-  // Cleans up state when this GuestView is being destroyed.
-  // Note that this cannot be done in the destructor since a GuestView could
-  // potentially be created and destroyed in JavaScript before getting a
-  // GuestViewBase instance. This method can be hidden by a CleanUp() method in
-  // a derived class, in which case the derived method should call this one.
-  static void CleanUp(content::BrowserContext* browser_context,
-                      int embedder_process_id,
-                      int view_instance_id);
-
   static GuestViewBase* FromWebContents(
       const content::WebContents* web_contents);
 
@@ -181,11 +175,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // Destroy this guest.
   void Destroy(bool also_delete);
 
-  // Indicates whether a guest should call destroy during DidDetach().
-  // TODO(wjmaclean): Delete this when browser plugin goes away;
-  // https://crbug.com/533069 .
-  virtual bool ShouldDestroyOnDetach() const;
-
   // Saves the attach state of the custom element hosting this GuestView.
   void SetAttachParams(const base::Value::Dict& params);
 
@@ -209,6 +198,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // Returns true if the corresponding guest is allowed to be embedded inside an
   // <iframe> which is cross process.
   virtual bool CanBeEmbeddedInsideCrossProcessFrames() const;
+
+  content::RenderFrameHost* GetGuestMainFrame() const;
 
  protected:
   explicit GuestViewBase(content::WebContents* owner_web_contents);

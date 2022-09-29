@@ -35,11 +35,20 @@ bool SecureEnclaveHelperImpl::Delete(CFDictionaryRef query) {
   return SecItemDelete(query) == errSecSuccess;
 }
 
-bool SecureEnclaveHelperImpl::CheckExists(CFDictionaryRef query) {
-  base::ScopedCFTypeRef<CFTypeRef> key;
-  SecItemCopyMatching(query, key.InitializeInto());
-  return key != nullptr;
+base::ScopedCFTypeRef<SecKeyRef> SecureEnclaveHelperImpl::CopyKey(
+    CFDictionaryRef query) {
+  base::ScopedCFTypeRef<SecKeyRef> key;
+  SecItemCopyMatching(
+      query, const_cast<CFTypeRef*>(
+                 reinterpret_cast<const CFTypeRef*>(key.InitializeInto())));
+  return key;
 }
+
+// Much of the Keychain API was marked deprecated as of the macOS 13 SDK.
+// Removal of its use is tracked in https://crbug.com/1348251 but deprecation
+// warnings are disabled in the meanwhile.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 bool SecureEnclaveHelperImpl::CheckKeychainUnlocked() {
   base::ScopedCFTypeRef<SecKeychainRef> keychain;
@@ -54,6 +63,8 @@ bool SecureEnclaveHelperImpl::CheckKeychainUnlocked() {
 
   return keychain_status & kSecUnlockStateStatus;
 }
+
+#pragma clang diagnostic pop
 
 bool SecureEnclaveHelperImpl::IsSecureEnclaveSupported() {
   base::scoped_nsobject<TKTokenWatcher> token_watcher(

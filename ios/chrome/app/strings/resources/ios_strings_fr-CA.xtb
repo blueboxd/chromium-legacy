@@ -25,6 +25,7 @@ Vous utilisez <ph name="DSE_NAME" /> comme moteur de recherche. Consultez les in
 <translation id="1112015203684611006">Échec impr.</translation>
 <translation id="1125564390852150847">Créer un onglet.</translation>
 <translation id="1126809382673880764">Ce mode ne vous protège pas contre les téléchargements, les extensions ni les sites Web dangereux. Vous profitez toujours de la protection de navigation sécurisée, lorsqu'elle est offerte, dans d'autres services Google, comme Gmail et la recherche.</translation>
+<translation id="1135212215217513471">Télécharger Chrome pour iOS</translation>
 <translation id="1145536944570833626">Supprimer toutes les données existantes.</translation>
 <translation id="1147031633655575115">Connecté en tant que <ph name="USER" /></translation>
 <translation id="1154984953698510061">Voir les autres onglets</translation>
@@ -113,6 +114,7 @@ Vous utilisez <ph name="DSE_NAME" /> comme moteur de recherche. Consultez les in
 <translation id="1832848789136765277">Pour vous assurer de toujours pouvoir accéder à vos données de synchronisation, vérifiez qu'il s'agit bien de vous</translation>
 <translation id="1870148520156231997">Afficher le mot de passe</translation>
 <translation id="1872096359983322073">Lampe de poche</translation>
+<translation id="1910975740091000991">Chrome pour iOS</translation>
 <translation id="1911619930368729126">Télév. vers Google Disque</translation>
 <translation id="1923342640370224680">Dernière heure</translation>
 <translation id="1930989359703290198">Votre organisation vous autorise à vous connecter à certains comptes seulement. Les comptes qui ne sont pas autorisés seront masqués. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
@@ -140,6 +142,7 @@ Vous utilisez <ph name="DSE_NAME" /> comme moteur de recherche. Consultez les in
 <translation id="2139867232736819575">Rechercher le texte que vous avez copié</translation>
 <translation id="214201757571129614">Connexion…</translation>
 <translation id="2149973817440762519">Modifier le favori</translation>
+<translation id="2155145621546387786">Partager Chrome</translation>
 <translation id="2175927920773552910">Code QR</translation>
 <translation id="2218443599109088993">Zoom arrière</translation>
 <translation id="2230173723195178503">Page Web chargée</translation>
@@ -308,6 +311,7 @@ Consultez les instructions de votre moteur de recherche pour supprimer votre his
 <translation id="3529024052484145543">Pas sécuritaire</translation>
 <translation id="3533202363250687977">Fermer les onglets de navigation privée</translation>
 <translation id="3533436815740441613">Nouvel onglet</translation>
+<translation id="3547799431091898961">Pour vous déconnecter de votre compte Google sur tous les sites Web, <ph name="BEGIN_LINK" />déconnectez-vous de Chrome<ph name="END_LINK" />.</translation>
 <translation id="3551320343578183772">Fermer l'onglet</translation>
 <translation id="3581564640715911333">Proposer des traductions de pages dans d'autres langues</translation>
 <translation id="3588820906588687999">Ouvrir l'image dans un nouvel onglet</translation>
@@ -374,6 +378,7 @@ Consultez les instructions de votre moteur de recherche pour supprimer votre his
 <translation id="4172051516777682613">Toujours afficher</translation>
 <translation id="418156467088430727">Afficher la version hors ligne dans un nouvel onglet</translation>
 <translation id="4181841719683918333">Langues</translation>
+<translation id="4187450337729239226">Coller et rechercher</translation>
 <translation id="4223967053752765281">Votre organisation a désactivé la connexion. Vous pouvez tout de même voir vos favoris, votre historique, vos mots de passe et d'autres paramètres sur cet appareil. Si vous apportez des modifications, elles ne seront pas synchronisées avec votre compte.</translation>
 <translation id="4233831822770018312">Modifier les autorisations</translation>
 <translation id="4237377247299956313">Touchez <ph name="BEGIN_BOLD" />Navigateur par défaut<ph name="END_BOLD" /></translation>
@@ -436,6 +441,7 @@ Vos données sont chiffrées avec votre phrase de passe. Veuillez l'entrer pour 
 <translation id="473775607612524610">Mise à jour</translation>
 <translation id="4747097190499141774">Le chiffrement par phrase de passe ne couvre pas les modes de paiement ni les adresses de Google Pay. Seule une personne connaissant votre phrase de passe peut lire vos données chiffrées. Google ne reçoit ni ne stocke la phrase de passe. Si vous l'oubliez ou souhaitez modifier ce paramètre, vous devrez réinitialiser la synchronisation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="4751645464639803239">Nouvel onglet de navigation privée</translation>
+<translation id="4766112107778026136">Découvrir et suivre</translation>
 <translation id="4775879719735953715">Navigateur par défaut</translation>
 <translation id="4778644898150334464">Utiliser un autre mot de passe</translation>
 <translation id="478808905805139173">Ouvrir en mode de navigation privée?</translation>
@@ -490,6 +496,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5118764316110575523">Désactivé</translation>
 <translation id="5132942445612118989">Synchronisez vos mots de passe, votre historique et plus encore sur tous vos appareils</translation>
 <translation id="5140288047769711648">Chrome mémorisera ce mot de passe pour vous. Vous n'avez pas à le mémoriser.</translation>
+<translation id="5149188072385105201">Ajouter un mot de passe…</translation>
 <translation id="5150492518600715772">Envoyer à votre appareil</translation>
 <translation id="5168414296986405587">Conçu pour iPadOS</translation>
 <translation id="5173088371991956744">La synchronisation doit vérifier qu'il s'agit bien de vous</translation>
@@ -642,6 +649,7 @@ La fonction de transfert doit également être activée dans la section Généra
 <translation id="6374469231428023295">Réessayer</translation>
 <translation id="6377118281273296434">Sécurité du site</translation>
 <translation id="6380866119319257197">Si vous oubliez votre phrase de passe ou souhaitez modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" /></translation>
+<translation id="6387994324662817823">Les mots de passe sont enregistrés dans le gestionnaire de mots de passe Google sur cet appareil uniquement.</translation>
 <translation id="6389470377220713856">Nom sur carte</translation>
 <translation id="6406506848690869874">Synchronisation</translation>
 <translation id="6410390304316730527">La navigation sécurisée vous protège contre les pirates qui pourraient vous inciter à faire quelque chose de dangereux comme installer un logiciel malveillant ou révéler vos renseignements personnels (par exemple, des mots de passe, des numéros de téléphone ou des numéros de carte de crédit). Si vous la désactivez, faites attention lorsque vous naviguez sur des sites inconnus ou de mauvaise réputation.</translation>

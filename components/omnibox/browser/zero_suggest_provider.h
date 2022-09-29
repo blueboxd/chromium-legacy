@@ -20,10 +20,6 @@
 class AutocompleteProviderListener;
 class PrefRegistrySimple;
 
-namespace base {
-class Value;
-}
-
 namespace network {
 class SimpleURLLoader;
 }
@@ -40,44 +36,37 @@ class SimpleURLLoader;
 // omnibox text and suggestions.
 class ZeroSuggestProvider : public BaseSearchProvider {
  public:
-  // ZeroSuggestProvider is processing one of the following type of results
-  // at any time. Exposed as public for testing purposes.
-  enum ResultType {
-    NONE,
+  // The result type that can be processed by ZeroSuggestProvider.
+  // Public for testing purposes and for use in LocalHistoryZeroSuggestProvider.
+  enum class ResultType {
+    kNone = 0,
 
-    // A remote endpoint (usually the default search provider) is queried for
-    // suggestions. The endpoint is sent the user's authentication state, but
-    // not sent the current URL.
-    REMOTE_NO_URL,
+    // The remote endpoint is queried for zero-prefix suggestions. The endpoint
+    // is sent the user's authentication state, but not the current papge URL.
+    kRemoteNoURL = 1,
 
-    // A remote endpoint (usually the default search provider) is queried for
-    // suggestions. The endpoint is sent the user's authentication state and
-    // the current URL.
-    REMOTE_SEND_URL,
+    // The emote endpoint is queried for zero-prefix suggestions. The endpoint
+    // is sent both the user's authentication state and the current page URL.
+    kRemoteSendURL = 2,
   };
 
-  // Returns the type of results that should be generated for the given context.
-  // If `bypass_request_eligibility_checks` is false, checks whether the
-  // external conditions for REMOTE_NO_URL and REMOTE_SEND_URL variants are met;
-  // Logs eligibility UMA metrics, if applicable. Must be called exactly once
-  // with `bypass_request_eligibility_checks` set to false,
-  // otherwise the meaning of the metrics being logged would change.
+  // Returns the type of results that should be generated for the given context;
+  // however, it does not check whether or not a suggest request can be made.
+  // Those checks must be done using BaseSearchProvider::CanSendRequest() and
+  // BaseSearchProvider::CanSendPageURLInRequest() for the kRemoteNoURL and
+  // kRemoteSendURL variants respectively.
   // This method is static to avoid depending on the provider state.
-  static ResultType TypeOfResultToRun(const AutocompleteProviderClient* client,
-                                      const AutocompleteInput& input,
-                                      bool bypass_request_eligibility_checks);
+  static ResultType ResultTypeToRun(const AutocompleteProviderClient* client,
+                                    const AutocompleteInput& input);
 
-  // Called on Start(), confirms whether zero-prefix suggestions are allowed in
-  // the given context and logs eligibility UMA metrics. `result_type_to_run`
-  // must not be nullptr. It will be set to the result type that should be
-  // generated for the given context.
-  // Must be called exactly once, on Start(), otherwise the meaning of the
-  // the metrics being logged would change.
+  // Called in Start() or StartPrefetch(), confirms whether zero-prefix
+  // suggestions are allowed in the given context and logs eligibility UMA
+  // metrics. Must be called exactly once. Otherwise the meaning of the the
+  // metrics it logs would change.
   // This method is static to avoid depending on the provider state.
   static bool AllowZeroPrefixSuggestions(
       const AutocompleteProviderClient* client,
-      const AutocompleteInput& input,
-      ResultType* result_type_to_run);
+      const AutocompleteInput& input);
 
   // Creates and returns an instance of this provider.
   static ZeroSuggestProvider* Create(AutocompleteProviderClient* client,
@@ -118,73 +107,46 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   ZeroSuggestProvider& operator=(const ZeroSuggestProvider&) = delete;
 
   // BaseSearchProvider:
-  const TemplateURL* GetTemplateURL(bool is_keyword) const override;
-  const AutocompleteInput GetInput(bool is_keyword) const override;
   bool ShouldAppendExtraParams(
       const SearchSuggestionParser::SuggestResult& result) const override;
   void RecordDeletionResult(bool success) override;
 
   // Called when the non-prefetch network request has completed.
-  // `result_type` is bound to this callback and indicate the result type being
-  // received in this callback.
-  void OnURLLoadComplete(ResultType result_type,
+  // `input` and `result_type` are bound to this callback. The former is the
+  // input for which the request was made and the latter indicates the result
+  // type being received in this callback.
+  void OnURLLoadComplete(const AutocompleteInput& input,
+                         ResultType result_type,
                          const network::SimpleURLLoader* source,
                          std::unique_ptr<std::string> response_body);
   // Called when the prefetch network request has completed.
   // `input` and `result_type` are bound to this callback. The former is the
-  // input the request was made for and the latter indicates the result type
-  // being received in this callback.
+  // input for which the request was made and the latter indicates the result
+  // type being received in this callback.
   void OnPrefetchURLLoadComplete(const AutocompleteInput& input,
                                  ResultType result_type,
                                  const network::SimpleURLLoader* source,
                                  std::unique_ptr<std::string> response_body);
 
-  // Called when the remote response is received. Stores the response json in
-  // the user prefs, if successfully parsed and if applicable based on
-  // |result_type|.
-  //
-  // Returns the successfully parsed response if it is eligible to be converted
-  // to |matches_| or nullptr otherwise.
-  std::unique_ptr<base::Value> StoreRemoteResponse(
-      const std::string& response_json,
-      const AutocompleteInput& input,
-      ResultType result_type,
-      bool is_prefetch);
-
-  // Called on Start().
-  //
-  // Returns the response stored in the user prefs, if applicable based on
-  // |result_type| or nullptr otherwise.
-  std::unique_ptr<base::Value> ReadStoredResponse(ResultType result_type);
-
   // Returns an AutocompleteMatch for a navigational suggestion |navigation|.
   AutocompleteMatch NavigationToMatch(
       const SearchSuggestionParser::NavigationResult& navigation);
 
-  // Called on Start() with the cached response (where |matches_| is empty), or
-  // when the remote response is received and is eligible to be converted to
-  // |matches_| (where |matches_| may not be empty).
+  // Called either in Start() with |results| populated from the cached response,
+  // where |matches_| are empty; or in OnURLLoadComplete() with |results|
+  // populated from the remote response, where |matches_| may not be empty.
   //
-  // If the given response can be successfully parsed, converts it to a set of
-  // AutocompleteMatches and populates |matches_| as well as its associated
-  // metadata, if applicable. Also logs how many results were received.
-  //
-  // Returns whether the response was successfully converted to |matches_|.
-  // Note that this does not imply |matches_| were populated with the response.
-  // An empty result set in the response will clear |matches_| and return true.
-  bool ConvertResponseToAutocompleteMatches(
-      std::unique_ptr<base::Value> response);
+  // Uses |results| and |input| to populate |matches_| and its associated
+  // metadata. Also logs how many results were received. Note that an empty
+  // result set will clear |matches_|.
+  void ConvertSuggestResultsToAutocompleteMatches(
+      const SearchSuggestionParser::Results& results,
+      const AutocompleteInput& input);
 
   // The result type that is currently being retrieved and processed for
   // non-prefetch requests.
   // Set in Start() and used in Stop() for logging purposes.
-  ResultType result_type_running_{NONE};
-
-  // The input for which suggestions are being retrieved and processed for both
-  // prefetch and non-prefetch requests.
-  // Set in Start() and StartPrefetch() and used in GetInput() for parsing the
-  // response.
-  AutocompleteInput input_;
+  ResultType result_type_running_{ResultType::kNone};
 
   // Loader used to retrieve results for non-prefetch requests.
   std::unique_ptr<network::SimpleURLLoader> loader_;

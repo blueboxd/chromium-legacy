@@ -104,7 +104,7 @@ ExtensionFunction::ResponseAction FileManagerPrivateAddMountFunction::Run() {
   }
 
   // Pass back the actual source path of the mount point.
-  return RespondNow(OneArgument(base::Value(path_.AsUTF8Unsafe())));
+  return RespondNow(WithArguments(path_.AsUTF8Unsafe()));
 }
 
 void FileManagerPrivateAddMountFunction::OnEncodingDetected(
@@ -124,11 +124,11 @@ void FileManagerPrivateAddMountFunction::OnEncodingDetected(
 void FileManagerPrivateAddMountFunction::FinishMounting() {
   DiskMountManager* const disk_mount_manager = DiskMountManager::GetInstance();
   DCHECK(disk_mount_manager);
-  disk_mount_manager->MountPath(
-      path_.AsUTF8Unsafe(), std::move(extension_),
-      path_.BaseName().AsUTF8Unsafe(), std::move(options_),
-      chromeos::MOUNT_TYPE_ARCHIVE, chromeos::MOUNT_ACCESS_MODE_READ_WRITE,
-      base::DoNothing());
+  disk_mount_manager->MountPath(path_.AsUTF8Unsafe(), std::move(extension_),
+                                path_.BaseName().AsUTF8Unsafe(),
+                                std::move(options_), ash::MountType::kArchive,
+                                ash::MountAccessMode::kReadWrite,
+                                base::DoNothing());
 }
 
 FileManagerPrivateCancelMountingFunction::
@@ -168,9 +168,9 @@ FileManagerPrivateCancelMountingFunction::Run() {
 }
 
 void FileManagerPrivateCancelMountingFunction::OnCancelled(
-    chromeos::MountError error) {
-  if (error == chromeos::MOUNT_ERROR_NONE) {
-    Respond(NoArguments());
+    ash::MountError error) {
+  if (error == ash::MountError::kNone) {
+    Respond(WithArguments());
   } else {
     Respond(Error(file_manager_private::ToString(
         file_manager::MountErrorToMountCompletedStatus(error))));
@@ -224,7 +224,7 @@ ExtensionFunction::ResponseAction FileManagerPrivateRemoveMountFunction::Run() {
                                    volume->file_system_id())) {
         return RespondNow(Error("Unmount failed"));
       }
-      return RespondNow(NoArguments());
+      return RespondNow(WithArguments());
     }
 
     case file_manager::VOLUME_TYPE_CROSTINI:
@@ -237,7 +237,7 @@ ExtensionFunction::ResponseAction FileManagerPrivateRemoveMountFunction::Run() {
     case file_manager::VOLUME_TYPE_SMB:
       ash::smb_client::SmbServiceFactory::Get(profile)->UnmountSmbFs(
           volume->mount_path());
-      return RespondNow(NoArguments());
+      return RespondNow(WithArguments());
 
     case file_manager::VOLUME_TYPE_GUEST_OS:
       // TODO(crbug/1293229): Figure out if we need to support unmounting. I'm
@@ -253,7 +253,7 @@ ExtensionFunction::ResponseAction FileManagerPrivateRemoveMountFunction::Run() {
 
 void FileManagerPrivateRemoveMountFunction::OnSshFsUnmounted(bool ok) {
   if (ok) {
-    Respond(NoArguments());
+    Respond(WithArguments());
   } else {
     Respond(Error(file_manager_private::ToString(
         api::file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_UNKNOWN)));
@@ -261,9 +261,9 @@ void FileManagerPrivateRemoveMountFunction::OnSshFsUnmounted(bool ok) {
 }
 
 void FileManagerPrivateRemoveMountFunction::OnDiskUnmounted(
-    chromeos::MountError error) {
-  if (error == chromeos::MOUNT_ERROR_NONE) {
-    Respond(NoArguments());
+    ash::MountError error) {
+  if (error == ash::MountError::kNone) {
+    Respond(WithArguments());
   } else {
     Respond(Error(file_manager_private::ToString(
         file_manager::MountErrorToMountCompletedStatus(error))));

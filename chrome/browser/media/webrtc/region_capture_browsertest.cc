@@ -478,14 +478,28 @@ IN_PROC_BROWSER_TEST_F(RegionCaptureBrowserTest,
   EXPECT_TRUE(tab.CropTo(crop_target, Frame::kTopLevelDocument));
 }
 
-IN_PROC_BROWSER_TEST_F(RegionCaptureBrowserTest,
-                       CropToWorksForAllHtmlElements) {
+IN_PROC_BROWSER_TEST_F(RegionCaptureBrowserTest, CropToWorksForAllElements) {
   // NOTE: this list is intentionally non-exhaustive, but represents a wide
   // variety of element types.
-  static const std::vector<const char*> kElementTags{
-      "a",      "blockquote", "body",  "button", "canvas", "col",
-      "div",    "fieldset",   "form",  "h1",     "header", "hr",
-      "iframe", "img",        "input", "output", "span",   "video"};
+  static const std::vector<const char*> kElementTags{"a",
+                                                     "blockquote",
+                                                     "body",
+                                                     "button",
+                                                     "canvas",
+                                                     "col",
+                                                     "div",
+                                                     "fieldset",
+                                                     "form",
+                                                     "h1",
+                                                     "header",
+                                                     "hr"
+                                                     "iframe",
+                                                     "img",
+                                                     "input",
+                                                     "output",
+                                                     "span",
+                                                     "svg",
+                                                     "video"};
 
   SetUpTest(Frame::kTopLevelDocument, /*self_capture=*/true);
   TabInfo& tab = tabs_[kMainTab];
@@ -698,8 +712,16 @@ IN_PROC_BROWSER_TEST_F(RegionCaptureClonesBrowserTest,
 }
 
 // Original track becomes unblocked for cropping after clone is GCed 1/3.
+// Flaky on Mac crbug.com/1353349
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_CanCropOriginalTrackAfterCloneIsGarbageCollected \
+  DISABLED_CanCropOriginalTrackAfterCloneIsGarbageCollected
+#else
+#define MAYBE_CanCropOriginalTrackAfterCloneIsGarbageCollected \
+  CanCropOriginalTrackAfterCloneIsGarbageCollected
+#endif
 IN_PROC_BROWSER_TEST_F(RegionCaptureClonesBrowserTest,
-                       CanCropOriginalTrackAfterCloneIsGarbageCollected) {
+                       MAYBE_CanCropOriginalTrackAfterCloneIsGarbageCollected) {
   ManualSetUp();
 
   ASSERT_TRUE(CloneTrack());
@@ -711,8 +733,17 @@ IN_PROC_BROWSER_TEST_F(RegionCaptureClonesBrowserTest,
 }
 
 // Original track becomes unblocked for cropping after clone is GCed 2/3.
-IN_PROC_BROWSER_TEST_F(RegionCaptureClonesBrowserTest,
-                       CanRecropOriginalTrackAfterCloneIsGarbageCollected) {
+// Flaky on Mac crbug.com/1353349
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_CanRecropOriginalTrackAfterCloneIsGarbageCollected \
+  DISABLED_CanRecropOriginalTrackAfterCloneIsGarbageCollected
+#else
+#define MAYBE_CanRecropOriginalTrackAfterCloneIsGarbageCollected \
+  CanRecropOriginalTrackAfterCloneIsGarbageCollected
+#endif
+IN_PROC_BROWSER_TEST_F(
+    RegionCaptureClonesBrowserTest,
+    MAYBE_CanRecropOriginalTrackAfterCloneIsGarbageCollected) {
   ManualSetUp();
 
   ASSERT_TRUE(CropTo(kCropTarget0, Frame::kTopLevelDocument, Track::kOriginal));

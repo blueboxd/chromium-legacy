@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/common/icon_constants.h"
 #include "chrome/browser/ui/app_list/search/common/search_result_util.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/chromeos/styles/cros_styles.h"
@@ -117,8 +118,13 @@ void GameResult::Open(int event_flags) {
                                /*exclude_browser_tab_apps=*/true);
     for (const auto& app_id : app_ids) {
       if (kAllowedLaunchAppIds.contains(app_id)) {
-        proxy->LaunchAppWithUrl(app_id, event_flags, launch_url_,
-                                apps::mojom::LaunchSource::kFromAppListQuery);
+        if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
+          proxy->LaunchAppWithUrl(app_id, event_flags, launch_url_,
+                                  apps::LaunchSource::kFromAppListQuery);
+        } else {
+          proxy->LaunchAppWithUrl(app_id, event_flags, launch_url_,
+                                  apps::mojom::LaunchSource::kFromAppListQuery);
+        }
         return;
       }
     }
@@ -127,11 +133,6 @@ void GameResult::Open(int event_flags) {
   // If no suitable app was found, launch the URL in the browser.
   list_controller_->OpenURL(profile_, launch_url_, ui::PAGE_TRANSITION_TYPED,
                             ui::DispositionFromEventFlags(event_flags));
-}
-
-void GameResult::OnColorModeChanged(bool dark_mode_enabled) {
-  if (uses_generic_icon_)
-    SetGenericIcon();
 }
 
 void GameResult::UpdateText(const apps::Result& game,
@@ -152,41 +153,33 @@ void GameResult::OnIconLoaded(const gfx::ImageSkia& image,
                               apps::DiscoveryError error) {
   // TODO(crbug.com/1305880): Report the error to UMA.
   if (error != apps::DiscoveryError::kSuccess) {
-    SetGenericIcon();
+    // Don't display results that have no icon.
+    scoring().filter = true;
     return;
   }
 
+  // All icons must be circles and set on a white background. The white
+  // background will only affect images with transparent backgrounds.
+  gfx::ImageSkia icon;
   if (is_icon_masking_allowed_) {
-    // TODO(crbug.com/1305880): Check that this is set in unit tests. This
-    // relies on the AppDiscoveryService.
-    SetIcon(IconInfo(image, GetAppIconDimension(), IconShape::kCircle));
-    return;
+    // Create a circle that is large enough to cover the image. Images are
+    // expected to be squares of an even dimension.
+    const int radius = std::max(image.height(), image.width()) / 2;
+    icon = gfx::ImageSkiaOperations::CreateImageWithCircleBackground(
+        radius, SK_ColorWHITE, image);
+  } else {
+    // If icon masking is not allowed, resize the image to fit.
+    const int radius = dimension_ / 2;
+    const int size = MaxSquareLengthForRadius(radius);
+    const gfx::ImageSkia resized_image =
+        gfx::ImageSkiaOperations::CreateResizedImage(
+            image, skia::ImageOperations::ResizeMethod::RESIZE_GOOD,
+            gfx::Size(size, size));
+
+    icon = gfx::ImageSkiaOperations::CreateImageWithCircleBackground(
+        radius, SK_ColorWHITE, resized_image);
   }
-
-  // Resize and set the provided image into a white circle.
-  const int radius = dimension_ / 2;
-  const int size = MaxSquareLengthForRadius(radius);
-  const gfx::ImageSkia resized_image =
-      gfx::ImageSkiaOperations::CreateResizedImage(
-          image, skia::ImageOperations::ResizeMethod::RESIZE_GOOD,
-          gfx::Size(size, size));
-
-  const gfx::ImageSkia icon =
-      gfx::ImageSkiaOperations::CreateImageWithCircleBackground(
-          radius, SK_ColorWHITE, resized_image);
-
-  SetIcon(IconInfo(icon, GetAppIconDimension()));
-}
-
-void GameResult::SetGenericIcon() {
-  uses_generic_icon_ = true;
-  const auto color = cros_styles::ResolveColor(
-      cros_styles::ColorName::kIconColorPrimary, IsDarkModeEnabled(),
-      /*use_debug_colors=*/false);
-  const gfx::ImageSkia icon =
-      gfx::CreateVectorIcon(ash::kGameGenericIcon, kSystemIconDimension, color);
-
-  SetIcon(IconInfo(icon, kSystemIconDimension));
+  SetIcon(IconInfo(icon, GetAppIconDimension(), IconShape::kCircle));
 }
 
 }  // namespace app_list

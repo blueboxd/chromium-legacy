@@ -26,8 +26,7 @@
 #include "storage/common/file_system/file_system_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace file_manager {
-namespace io_task {
+namespace file_manager::io_task {
 namespace {
 
 using ::base::test::RunClosure;
@@ -69,10 +68,11 @@ class TrashIOTaskTest : public TrashBaseTest {
 };
 
 void AssertTrashSetup(const base::FilePath& parent_path) {
-  base::FilePath trash_path = parent_path.Append(kTrashFolderName);
+  base::FilePath trash_path = parent_path.Append(trash::kTrashFolderName);
   ASSERT_TRUE(base::DirectoryExists(trash_path));
-  ASSERT_TRUE(base::DirectoryExists(trash_path.Append(kFilesFolderName)));
-  ASSERT_TRUE(base::DirectoryExists(trash_path.Append(kInfoFolderName)));
+  ASSERT_TRUE(
+      base::DirectoryExists(trash_path.Append(trash::kFilesFolderName)));
+  ASSERT_TRUE(base::DirectoryExists(trash_path.Append(trash::kInfoFolderName)));
 }
 
 void ExpectFileContents(const base::FilePath& path,
@@ -80,6 +80,25 @@ void ExpectFileContents(const base::FilePath& path,
   std::string contents;
   ASSERT_TRUE(base::ReadFileToString(path, &contents));
   EXPECT_EQ(expected, contents);
+}
+
+TEST_F(TrashIOTaskTest, NoSourceUrlsShouldReturnSuccess) {
+  base::RunLoop run_loop;
+  std::vector<storage::FileSystemURL> source_urls;
+
+  base::MockRepeatingCallback<void(const ProgressStatus&)> progress_callback;
+  base::MockOnceCallback<void(ProgressStatus)> complete_callback;
+
+  // We should get one complete callback when the size check of `source_urls`
+  // finds none.
+  EXPECT_CALL(complete_callback,
+              Run(Field(&ProgressStatus::state, State::kSuccess)))
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
+
+  TrashIOTask task(source_urls, profile_.get(), file_system_context_,
+                   temp_dir_.GetPath());
+  task.Execute(progress_callback.Get(), complete_callback.Get());
+  run_loop.Run();
 }
 
 TEST_F(TrashIOTaskTest, FileInUnsupportedDirectoryShouldError) {
@@ -361,13 +380,13 @@ TEST_F(TrashIOTaskTest, WhenCrostiniContainerIsRunningPathsShouldTrash) {
   const base::FilePath trash_path =
       crostini_dir_.AppendASCII(".local/share/Trash");
   const base::FilePath files_path =
-      GenerateTrashPath(trash_path, kFilesFolderName, file_name);
+      trash::GenerateTrashPath(trash_path, trash::kFilesFolderName, file_name);
   ExpectFileContents(files_path, foo_contents);
 
   // Ensure the contents of the files at
   // .local/share/Trash/info/foo.txt.trashinfo contains the expected content.
   const base::FilePath info_path =
-      GenerateTrashPath(trash_path, kInfoFolderName, file_name);
+      trash::GenerateTrashPath(trash_path, trash::kInfoFolderName, file_name);
   ExpectFileContents(info_path, file_trashinfo_contents);
 }
 
@@ -419,5 +438,4 @@ TEST_F(TrashIOTaskTest,
 }
 
 }  // namespace
-}  // namespace io_task
-}  // namespace file_manager
+}  // namespace file_manager::io_task

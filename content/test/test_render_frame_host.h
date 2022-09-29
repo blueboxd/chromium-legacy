@@ -30,6 +30,10 @@
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-forward.h"
 #include "ui/base/page_transition_types.h"
 
+#if !BUILDFLAG(IS_ANDROID)
+#include "third_party/blink/public/mojom/hid/hid.mojom-forward.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 namespace net {
 class IPEndPoint;
 }
@@ -92,6 +96,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   TestRenderFrameHost* AppendChildWithPolicy(
       const std::string& frame_name,
       const blink::ParsedPermissionsPolicy& allow) override;
+  TestRenderFrameHost* AppendAnonymousChild(
+      const std::string& frame_name) override;
   void Detach() override;
   void SendNavigateWithTransition(int nav_entry_id,
                                   bool did_create_new_entry,
@@ -106,6 +112,11 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   TestRenderFrameHost* AppendFencedFrame(
       blink::mojom::FencedFrameMode mode =
           blink::mojom::FencedFrameMode::kDefault) override;
+
+#if !BUILDFLAG(IS_ANDROID)
+  void CreateHidServiceForTesting(
+      mojo::PendingReceiver<blink::mojom::HidService> receiver) override;
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   void SendNavigate(int nav_entry_id,
                     bool did_create_new_entry,
@@ -194,6 +205,12 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // an implementation, but will never receive any interface requests.
   static mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
   CreateStubBrowserInterfaceBrokerReceiver();
+
+  // Returns an `AssociatedInterfaceProvider` that will never receive any
+  // interface requests.
+  static mojo::PendingAssociatedReceiver<
+      blink::mojom::AssociatedInterfaceProvider>
+  CreateStubAssociatedInterfaceProviderReceiver();
 
   // Returns a blink::mojom::PolicyContainerBindParams containing a
   // PendingAssociatedReceiver<PolicyContainerHost> and a

@@ -63,6 +63,8 @@ bool ZXDGToplevelV6WrapperImpl::Initialize() {
     LOG(ERROR) << "Failed to create zxdg_toplevel";
     return false;
   }
+  connection_->wayland_window_manager()->NotifyWindowRoleAssigned(
+      wayland_window_);
   zxdg_toplevel_v6_add_listener(zxdg_toplevel_v6_.get(),
                                 &zxdg_toplevel_v6_listener, this);
 
@@ -212,5 +214,11 @@ bool ZXDGToplevelV6WrapperImpl::SupportsScreenCoordinates() const {
 }
 
 void ZXDGToplevelV6WrapperImpl::EnableScreenCoordinates() {}
+
+void ZXDGToplevelV6WrapperImpl::SetFloat() {}
+
+void ZXDGToplevelV6WrapperImpl::UnSetFloat() {}
+
+void ZXDGToplevelV6WrapperImpl::SetZOrder(ZOrderLevel z_order) {}
 
 }  // namespace ui

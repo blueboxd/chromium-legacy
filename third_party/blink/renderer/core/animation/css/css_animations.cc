@@ -442,6 +442,20 @@ AnimationTimeDelta IterationElapsedTime(const AnimationEffect& effect,
   return iteration_duration * (iteration_boundary - iteration_start);
 }
 
+// The source element must be a previous inclusive sibling of one of
+// subject's inclusive ancestors.
+bool IsPreviousSiblingAncestor(Node* source, Node* subject) {
+  DCHECK(subject);
+
+  for (Node* prev = subject; prev; prev = prev->previousSibling()) {
+    if (source == prev)
+      return true;
+  }
+
+  Node* parent = subject->ParentOrShadowHostNode();
+  return parent && IsPreviousSiblingAncestor(source, parent);
+}
+
 AnimationTimeline* ComputeTimeline(Element* element,
                                    const StyleNameOrKeyword& timeline_name) {
   Document& document = element->GetDocument();
@@ -451,8 +465,17 @@ AnimationTimeline* ComputeTimeline(Element* element,
     DCHECK_EQ(timeline_name.GetKeyword(), CSSValueID::kNone);
     return nullptr;
   }
-  return document.GetStyleEngine().FindScrollTimeline(
+  CSSScrollTimeline* timeline = document.GetStyleEngine().FindScrollTimeline(
       timeline_name.GetName().GetValue());
+  if (!timeline)
+    return nullptr;
+  // This currently enforces the lookup rules from the new scroll timeline API
+  // on @scroll-timelines. This makes transitioning to the new API easier.
+  if (timeline->source() &&
+      !IsPreviousSiblingAncestor(timeline->source(), element)) {
+    return nullptr;
+  }
+  return timeline;
 }
 
 }  // namespace
@@ -1774,8 +1797,8 @@ void CSSAnimations::AnimationEventDelegate::MaybeDispatch(
     const AtomicString& event_name,
     const AnimationTimeDelta& elapsed_time) {
   if (animation_target_->GetDocument().HasListenerType(listener_type)) {
-    String pseudo_element_name = PseudoElement::PseudoElementNameForEvents(
-        animation_target_->GetPseudoId());
+    String pseudo_element_name =
+        PseudoElement::PseudoElementNameForEvents(animation_target_);
     AnimationEvent* event = AnimationEvent::Create(
         event_name, name_, elapsed_time, pseudo_element_name);
     event->SetTarget(GetEventTarget());
@@ -1950,7 +1973,7 @@ void CSSAnimations::TransitionEventDelegate::EnqueueEvent(
           ? property_.CustomPropertyName()
           : property_.GetCSSProperty().GetPropertyNameString();
   String pseudo_element =
-      PseudoElement::PseudoElementNameForEvents(GetPseudoId());
+      PseudoElement::PseudoElementNameForEvents(transition_target_);
   TransitionEvent* event = TransitionEvent::Create(
       type, property_name, elapsed_time, pseudo_element);
   event->SetTarget(GetEventTarget());

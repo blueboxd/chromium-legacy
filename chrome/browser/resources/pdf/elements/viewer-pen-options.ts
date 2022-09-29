@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 
-import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {beforeNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './viewer-pen-options.html.js';
 
-type Color = {
-  name: string,
-  color: string,
-  outline?: boolean,
-};
+interface Color {
+  name: string;
+  color: string;
+  outline?: boolean;
+}
 
 const colors: Color[] = [
   // row 1
@@ -51,10 +51,10 @@ const colors: Color[] = [
   {name: 'annotationColorLightTeal', color: '#b2dfdb'},
 ];
 
-type Size = {
-  name: string,
-  size: number,
-};
+interface Size {
+  name: string;
+  size: number;
+}
 
 const sizes: Size[] = [
   {name: 'annotationSize1', size: 0},

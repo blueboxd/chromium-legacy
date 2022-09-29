@@ -25,6 +25,7 @@ Mesin telusur Anda adalah <ph name="DSE_NAME" />. Lihat petunjuknya untuk mengha
 <translation id="1112015203684611006">Gagal mencetak.</translation>
 <translation id="1125564390852150847">Buat tab baru.</translation>
 <translation id="1126809382673880764">Tidak melindungi Anda terhadap situs, download, dan ekstensi berbahaya. Anda akan tetap mendapatkan perlindungan Safe Browsing, jika tersedia, di layanan Google lainnya, seperti Gmail dan Penelusuran.</translation>
+<translation id="1135212215217513471">Dapatkan Chrome untuk iOS</translation>
 <translation id="1145536944570833626">Hapus data yang sudah ada.</translation>
 <translation id="1147031633655575115">Login sebagai <ph name="USER" /></translation>
 <translation id="1154984953698510061">Lihat Tab Lainnya</translation>
@@ -113,6 +114,7 @@ Mesin telusur Anda adalah <ph name="DSE_NAME" />. Lihat petunjuknya untuk mengha
 <translation id="1832848789136765277">Untuk memastikan Anda selalu dapat mengakses data yang disinkronkan, verifikasi diri Anda</translation>
 <translation id="1870148520156231997">Tampilkan Sandi</translation>
 <translation id="1872096359983322073">Senter</translation>
+<translation id="1910975740091000991">Chrome untuk iOS</translation>
 <translation id="1911619930368729126">Upload ke Google Drive</translation>
 <translation id="1923342640370224680">Sejam Terakhir</translation>
 <translation id="1930989359703290198">Organisasi mengizinkan Anda login hanya dengan akun tertentu. Akun yang tidak diizinkan akan disembunyikan. <ph name="BEGIN_LINK" />Pelajari Lebih Lanjut<ph name="END_LINK" /></translation>
@@ -140,6 +142,7 @@ Mesin telusur Anda adalah <ph name="DSE_NAME" />. Lihat petunjuknya untuk mengha
 <translation id="2139867232736819575">Telusuri Teks yang Anda Salin</translation>
 <translation id="214201757571129614">Login …</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
+<translation id="2155145621546387786">Bagikan Chrome</translation>
 <translation id="2175927920773552910">Kode QR</translation>
 <translation id="2218443599109088993">Perkecil</translation>
 <translation id="2230173723195178503">Halaman web dimuat</translation>
@@ -308,6 +311,7 @@ Lihat petunjuk mesin telusur untuk menghapus histori penelusuran Anda, jika memu
 <translation id="3529024052484145543">Tidak aman</translation>
 <translation id="3533202363250687977">Tutup Semua Tab Samaran</translation>
 <translation id="3533436815740441613">Tab Baru</translation>
+<translation id="3547799431091898961">Untuk logout dari Akun Google Anda di semua situs, <ph name="BEGIN_LINK" />logout dari Chrome<ph name="END_LINK" />.</translation>
 <translation id="3551320343578183772">Tutup Tab</translation>
 <translation id="3581564640715911333">Tawarkan penerjemahan halaman ke dalam bahasa lain</translation>
 <translation id="3588820906588687999">Buka Gambar di Tab Baru</translation>
@@ -374,6 +378,7 @@ Lihat petunjuk mesin telusur untuk menghapus histori penelusuran Anda, jika memu
 <translation id="4172051516777682613">Selalu tampilkan</translation>
 <translation id="418156467088430727">Tampilkan Versi Offline di Tab Baru</translation>
 <translation id="4181841719683918333">Bahasa</translation>
+<translation id="4187450337729239226">Tempel dan Telusuri</translation>
 <translation id="4223967053752765281">Organisasi Anda menonaktifkan login. Anda tetap dapat melihat bookmark, histori, sandi, dan setelan lainnya di perangkat ini. Jika Anda membuat perubahan, perubahan tersebut tidak akan disinkronkan ke akun Anda.</translation>
 <translation id="4233831822770018312">Edit Izin</translation>
 <translation id="4237377247299956313">Ketuk <ph name="BEGIN_BOLD" />Aplikasi Browser Default<ph name="END_BOLD" /></translation>
@@ -436,6 +441,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi. Loginkan frasa sandi untuk
 <translation id="473775607612524610">Perbarui</translation>
 <translation id="4747097190499141774">Enkripsi frasa sandi tidak mencakup alamat dan metode pembayaran dari Google Pay. Hanya pengguna yang memiliki frasa sandi Anda yang dapat membaca data yang telah Anda enkripsi. Frasa sandi tidak dikirim atau disimpan oleh Google. Jika lupa frasa sandi Anda atau ingin mengubah setelan ini, Anda harus menyetel ulang sinkronisasi. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="4751645464639803239">Tab Samaran Baru</translation>
+<translation id="4766112107778026136">Discover &amp; Mengikuti</translation>
 <translation id="4775879719735953715">Browser Default</translation>
 <translation id="4778644898150334464">Gunakan sandi lain</translation>
 <translation id="478808905805139173">Buka di Samaran?</translation>
@@ -490,6 +496,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />reset sinkronisasi<ph name="
 <translation id="5118764316110575523">Nonaktif</translation>
 <translation id="5132942445612118989">Sinkronkan sandi, histori, dan lainnya di semua perangkat</translation>
 <translation id="5140288047769711648">Chrome akan mengingat sandi ini untuk Anda. Anda tidak perlu mengingatnya.</translation>
+<translation id="5149188072385105201">Tambahkan sandi ...</translation>
 <translation id="5150492518600715772">Kirim ke Perangkat Anda</translation>
 <translation id="5168414296986405587">Dibuat untuk iPadOS</translation>
 <translation id="5173088371991956744">Sinkronisasi Perlu Memverifikasi Diri Anda</translation>
@@ -642,6 +649,7 @@ Handoff juga harus diaktifkan pada bagian General di Settings, dan perangkat And
 <translation id="6374469231428023295">Coba Lagi</translation>
 <translation id="6377118281273296434">Keamanan Situs</translation>
 <translation id="6380866119319257197">Jika lupa dengan frasa sandi atau ingin mengubah setelan ini, <ph name="BEGIN_LINK" />reset sinkronisasi<ph name="END_LINK" /></translation>
+<translation id="6387994324662817823">Sandi hanya disimpan ke Pengelola Sandi Google di perangkat ini.</translation>
 <translation id="6389470377220713856">Nama di Kartu</translation>
 <translation id="6406506848690869874">Sinkronisasi</translation>
 <translation id="6410390304316730527">Safe Browsing akan melindungi Anda dari penyerang yang dapat mengelabui Anda agar melakukan sesuatu yang berbahaya, misalnya menginstal software berbahaya atau mengungkap informasi pribadi seperti sandi, nomor telepon, atau kartu kredit. Jika dinonaktifkan, harap berhati-hati saat mengakses situs tidak dikenal atau tidak tepercaya.</translation>

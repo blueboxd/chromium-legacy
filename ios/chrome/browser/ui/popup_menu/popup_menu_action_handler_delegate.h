@@ -9,9 +9,6 @@
 
 @protocol PopupMenuItem;
 @class TableViewItem;
-namespace web {
-class WebState;
-}
 
 // Delegate for the PopupMenuActionHandler.
 @protocol PopupMenuActionHandlerDelegate
@@ -25,12 +22,10 @@ class WebState;
 - (void)recordDownloadsMetricsPerProfile;
 // Starts a reverse image search for the image currently in the pasteboard.
 - (void)searchCopiedImage;
-// Updates the follow status of the on browsing website. Called when the follow
+// Toggles the follow status of the on browsing website. Called when the follow
 // menu option has been tapped. Follows or unfollows the website according to
 // the current follow status of the website.
-- (void)updateFollowStatus;
-// The current web state.
-- (web::WebState*)currentWebState;
+- (void)toggleFollowed;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_POPUP_MENU_POPUP_MENU_ACTION_HANDLER_DELEGATE_H_

@@ -105,7 +105,6 @@ Keď odstránite históriu prehliadania (buď celú, alebo pre konkrétny web), 
 <translation id="1474893630593443211">Viac kontroly nad zobrazovanými reklamami</translation>
 <translation id="1477626028522505441">Súbor <ph name="FILE_NAME" /> sa nepodarilo stiahnuť z dôvodu problémov so serverom.</translation>
 <translation id="148482509007564431">Postup uloženia záložky</translation>
-<translation id="1488775391433859242">Pomocou tohto telefónu sa môžete prihlásiť v počítači, v ktorom je zobrazený tento QR kód.</translation>
 <translation id="1492417797159476138">Toto používateľské meno ste pre tento web už uložili</translation>
 <translation id="1493287004536771723">Sledujete web <ph name="SITE_NAME" /></translation>
 <translation id="1502010315804028179">Ak chcete svoje heslá spravovať, aktualizujte Služby Google Play</translation>
@@ -235,6 +234,7 @@ Keď odstránite históriu prehliadania (buď celú, alebo pre konkrétny web), 
 <translation id="2239812875700136898">Ovládajte svoje príbehy po stlačení tlačidla Možnosti kanála Objaviť</translation>
 <translation id="2248941474044011069">Heslá sú šifrované v zariadení ešte pred ich uložením do správcu hesiel Google</translation>
 <translation id="2259659629660284697">Exportovať heslá…</translation>
+<translation id="2276231040576210443">Položky, ktoré chcete synchronizovať, môžete kedykoľvek vybrať v <ph name="BEGIN_LINK1" />nastaveniach<ph name="END_LINK1" />. Google môže prispôsobiť Vyhľadávanie a ďalšie služby na základe vašej histórie.</translation>
 <translation id="2276696007612801991">Ak si chcete skontrolovať heslá, prihláste sa do svojho účtu Google</translation>
 <translation id="2278052315791335171">Odstránením tohto hesla nevymažete svoj účet na webe <ph name="SITE" /></translation>
 <translation id="2279146068164892489">Chcete otvoriť aplikáciu <ph name="APPNAME" />?</translation>
@@ -282,7 +282,6 @@ Keď odstránite históriu prehliadania (buď celú, alebo pre konkrétny web), 
 <translation id="2534155362429831547">Odstránené položky: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="2536728043171574184">Zobrazuje sa offline kópia tejto stránky</translation>
 <translation id="2546283357679194313">Súbory cookie a dáta webov</translation>
-<translation id="2549516196460093976">Pomocou tohto tabletu sa môžete prihlásiť v počítači, v ktorom je zobrazený tento QR kód.</translation>
 <translation id="2558569818338050235">Vaša história prehliadania ovplyvňuje zobrazované reklamy</translation>
 <translation id="2561519700418191927">Ukážky videí</translation>
 <translation id="2567385386134582609">OBRÁZOK</translation>
@@ -308,6 +307,7 @@ Keď odstránite históriu prehliadania (buď celú, alebo pre konkrétny web), 
 <translation id="2702516483241149200">Novinka: zdieľajte odkaz, ktorý posunie zobrazenie na tento text</translation>
 <translation id="2704606927547763573">Skopírované</translation>
 <translation id="2707726405694321444">Obnoviť stránku</translation>
+<translation id="2709516037105925701">Automatické dopĺňanie</translation>
 <translation id="271033894570825754">Nové</translation>
 <translation id="2711073837061989559">Skúšobné obdobia</translation>
 <translation id="2718352093833049315">Len s Wi‑Fi</translation>
@@ -396,6 +396,7 @@ Keď odstránite históriu prehliadania (buď celú, alebo pre konkrétny web), 
 <translation id="3114507951000454849">Prečítajte si dnešné správy <ph name="NEWS_ICON" /></translation>
 <translation id="311958134571892113">prepojená s kartou</translation>
 <translation id="3123734510202723619">Oznámenia</translation>
+<translation id="3130863904455712965">História a ďalšie nastavenia</translation>
 <translation id="3134784203083076891">“</translation>
 <translation id="314939179385989105">Domovská stránky Chromu</translation>
 <translation id="3166827708714933426">Skratky pre karty a okná</translation>
@@ -587,7 +588,6 @@ Keď odstránite históriu prehliadania (buď celú, alebo pre konkrétny web), 
 <translation id="4256782883801055595">Licencie open source</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Aké údaje sa používajú:<ph name="END_BOLD" /> vaša história prehliadania, teda záznam webov, ktoré ste navštívili pomocou Chromu v tomto zariadení.</translation>
 <translation id="4263656433980196874">Používateľské rozhranie na udelenie súhlasu s hlasovým vyhľadávaním Asistentom je otvorené na celú výšku</translation>
-<translation id="4266054596873078491">Prihláste sa na tomto webe a v Chrome svojím účtom Google.</translation>
 <translation id="4269820728363426813">Kopírovať adresu odkazu</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Zapnite zámku obrazovky v nastaveniach Androidu<ph name="END_LINK" /></translation>
 <translation id="4293476595220860475">Používaním Chromu vyjadrujete súhlas so <ph name="BEGIN_TOS_LINK" />zmluvnými podmienkami spoločnosti Google<ph name="END_TOS_LINK" /> a <ph name="BEGIN_ATOS_LINK" />dodatočnými zmluvnými podmienkami prehliadača Google Chrome a systému Chrome OS<ph name="END_ATOS_LINK" />. Uplatňujú sa aj <ph name="BEGIN_PRIVACY_LINK" />pravidlá ochrany súkromia<ph name="END_PRIVACY_LINK" />.</translation>
@@ -1051,6 +1051,7 @@ Tokeny dôveryhodnosti zlepšujú ochranu súkromia na internete a nedá sa pod
 <translation id="6671495933530132209">Kopírovať obrázok</translation>
 <translation id="6674571176963658787">Ak chcete spustiť synchronizáciu, zadajte prístupovú frázu</translation>
 <translation id="6676840375528380067">Chcete vymazať údaje Chromu z tohto zariadenia?</translation>
+<translation id="6676927815633975364">Prihlásiť sa na tomto webe a v Chrome</translation>
 <translation id="6684809838922667136">Zlepšite Chrome</translation>
 <translation id="670498945988402717">Kontrola prebehla včera</translation>
 <translation id="6710213216561001401">Späť</translation>
@@ -1140,6 +1141,7 @@ Tokeny dôveryhodnosti zlepšujú ochranu súkromia na internete a nedá sa pod
 <translation id="7196215469483532480">Vysvetlenie sprievodcu ochranou súkromia je otvorené na celú výšku</translation>
 <translation id="7207760545532569765">Obnovte karty (<ph name="TAB_COUNT" />) ako nové karty na pozadí.</translation>
 <translation id="7208109991155904980">Reakcia bola presunutá</translation>
+<translation id="7217781228893594884">Keď opustíte Chrome, karty inkognito budú uzamknuté</translation>
 <translation id="7222235798733126207">Obmedzené zdieľanie medzi webmi</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{Na stiahnutie čaká 1 položka}few{Na stiahnutie čakajú # položky}many{# downloads pending}other{Na stiahnutie čaká # položiek}}</translation>
 <translation id="7242755609445462077">Štylizované zvýraznenie <ph name="CURRENT_DATE" /></translation>
@@ -1300,12 +1302,13 @@ Tokeny dôveryhodnosti zlepšujú ochranu súkromia na internete a nedá sa pod
 <translation id="8037801708772278989">Kontrola prebehla pred chvíľou</translation>
 <translation id="804335162455518893">SD karta sa nenašla</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> karta inkognito}few{<ph name="TAB_COUNT_NORMAL" /> karty inkognito}many{<ph name="TAB_COUNT_NORMAL" /> incognito tabs}other{<ph name="TAB_COUNT_NORMAL" /> kariet inkognito}}</translation>
+<translation id="8048728378294435881">Zálohujte svoj obsah a používajte ho v ľubovoľnom zariadení</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB k dispozícii</translation>
 <translation id="8058655154417507695">Rok ukončenia platnosti</translation>
 <translation id="8058746566562539958">Otvoriť v Chrome na novej karte</translation>
 <translation id="8062594758852531064">Rozšírené prednačítavanie:</translation>
 <translation id="8063895661287329888">Záložku sa nepodarilo pridať.</translation>
-<translation id="806745655614357130">Ponechať moje údaje oddelené</translation>
+<translation id="806745655614357130">Ponechať moje dáta oddelené</translation>
 <translation id="8073388330009372546">Otvoriť obrázok na novej karte</translation>
 <translation id="8076492880354921740">Karty</translation>
 <translation id="8078096376109663956">Zdieľajte iba text</translation>

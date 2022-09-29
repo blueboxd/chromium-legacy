@@ -645,6 +645,19 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
   }];
 }
 
+- (void)bookmarkCurrentPage {
+  web::WebState* currentWebState =
+      _browser->GetWebStateList()->GetActiveWebState();
+
+  GURL URL = currentWebState->GetLastCommittedURL();
+  NSString* title = tab_util::GetTabTitle(currentWebState);
+  BookmarkAddCommand* command = [[BookmarkAddCommand alloc] initWithURL:URL
+                                                                  title:title
+                                                   presentFolderChooser:NO];
+
+  [self bookmark:command];
+}
+
 #pragma mark - Private
 
 // Presents `viewController` using the appropriate presentation and styling,

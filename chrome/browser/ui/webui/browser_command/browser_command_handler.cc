@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/user_education/user_education_service.h"
 #include "chrome/browser/ui/user_education/user_education_service_factory.h"
 #include "chrome/browser/ui/views/user_education/browser_user_education_service.h"
@@ -23,6 +24,7 @@
 #include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/common/safe_browsing_policy_handler.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/user_education/common/tutorial_identifier.h"
 #include "components/user_education/common/tutorial_service.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/page_transition_types.h"
@@ -83,9 +85,12 @@ void BrowserCommandHandler::CanExecuteCommand(
                     !profile_->IsChild();
       break;
     case Command::kStartTabGroupTutorial:
-      can_execute = !!GetTutorialService();
+      can_execute = !!GetTutorialService() && BrowserSupportsTabGroups();
       break;
     case Command::kOpenPasswordManager:
+      can_execute = true;
+      break;
+    case Command::kNoOpCommand:
       can_execute = true;
       break;
   }
@@ -149,6 +154,9 @@ void BrowserCommandHandler::ExecuteCommandWithDisposition(
           GURL(chrome::GetSettingsUrl(chrome::kPasswordManagerSubPage)),
           disposition);
       break;
+    case Command::kNoOpCommand:
+      // Nothing to do.
+      break;
     default:
       NOTREACHED() << "Unspecified behavior for command " << id;
       break;
@@ -166,19 +174,38 @@ ui::ElementContext BrowserCommandHandler::GetUiElementContext() {
       ->GetElementContext();
 }
 
+bool BrowserCommandHandler::BrowserSupportsTabGroups() {
+  Browser* browser = chrome::FindBrowserWithProfile(profile_);
+  return browser->tab_strip_model()->SupportsTabGroups();
+}
+
+bool BrowserCommandHandler::BrowserHasTabGroups() {
+  Browser* browser = chrome::FindBrowserWithProfile(profile_);
+  return !browser->tab_strip_model()->group_model()->ListTabGroups().empty();
+}
+
 void BrowserCommandHandler::StartTabGroupTutorial() {
   user_education::TutorialService* tutorial_service = GetTutorialService();
-  if (!tutorial_service) {
-    // Should never happen since we return false in CanExecuteCommand(), but
-    // avoid a browser crash anyway.
+
+  // Should never happen since we return false in CanExecuteCommand(), but
+  // avoid a browser crash anyway.
+  if (!tutorial_service)
     return;
-  }
 
   const ui::ElementContext context = GetUiElementContext();
   if (!context)
     return;
 
-  tutorial_service->StartTutorial(kTabGroupTutorialId, context);
+  if (!BrowserSupportsTabGroups()) {
+    return;
+  }
+
+  user_education::TutorialIdentifier tutorial_id =
+      BrowserHasTabGroups() ? kTabGroupWithExistingGroupTutorialId
+                            : kTabGroupTutorialId;
+
+  bool started_tutorial = tutorial_service->StartTutorial(tutorial_id, context);
+  tutorial_service->LogStartedFromWhatsNewPage(tutorial_id, started_tutorial);
 }
 
 void BrowserCommandHandler::OpenFeedbackForm() {

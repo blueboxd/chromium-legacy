@@ -1523,10 +1523,15 @@ class CORE_EXPORT Document : public ContainerNode,
   HeapVector<Member<Element>>& PopupStack() { return popup_stack_; }
   const HeapVector<Member<Element>>& PopupStack() const { return popup_stack_; }
   bool PopupAutoShowing() const { return !popup_stack_.IsEmpty(); }
+  HeapHashSet<Member<Element>>& AllOpenPopUps() { return all_open_pop_ups_; }
   Element* TopmostPopupAutoOrHint() const;
   HeapHashSet<Member<Element>>& PopupsWaitingToHide() {
     return popups_waiting_to_hide_;
   }
+  const Element* PopUpMousedownTarget() const {
+    return pop_up_mousedown_target_;
+  }
+  void SetPopUpMousedownTarget(const Element*);
 
   // A non-null template_document_host_ implies that |this| was created by
   // EnsureTemplateDocument().
@@ -1826,6 +1831,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void IncrementLazyAdsFrameCount();
   void IncrementLazyEmbedsFrameCount();
+  void IncrementImmediateChildFrameCreationCount();
+  int GetImmediateChildFrameCreationCount() const;
 
   enum class DeclarativeShadowRootAllowState : uint8_t {
     kNotSet,
@@ -2331,9 +2338,13 @@ class CORE_EXPORT Document : public ContainerNode,
   HeapVector<Member<Element>> popup_stack_;
   // The `popup=hint` that is currently showing, if any.
   Member<Element> popup_hint_showing_;
+  // The pop-up (if any) that received the most recent mousedown event.
+  Member<const Element> pop_up_mousedown_target_;
   // A set of popups for which hidePopUp() has been called, but animations are
   // still running.
   HeapHashSet<Member<Element>> popups_waiting_to_hide_;
+  // A set of all open pop-ups, of all types.
+  HeapHashSet<Member<Element>> all_open_pop_ups_;
 
   int load_event_delay_count_;
 

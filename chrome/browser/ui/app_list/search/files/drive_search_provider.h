@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/app_list/search/files/file_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
-#include "chromeos/components/string_matching/tokenized_string.h"
+#include "chromeos/ash/components/string_matching/tokenized_string.h"
 #include "components/drive/file_errors.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -28,18 +28,18 @@ namespace app_list {
 
 class DriveSearchProvider : public SearchProvider {
  public:
-  struct ItemInfo {
+  struct FileInfo {
     base::FilePath reparented_path;
     drivefs::mojom::FileMetadataPtr metadata;
     absl::optional<base::Time> last_accessed;
 
-    ItemInfo(const base::FilePath& reparented_path,
+    FileInfo(const base::FilePath& reparented_path,
              drivefs::mojom::FileMetadataPtr metadata,
              const absl::optional<base::Time>& last_accessed);
-    ~ItemInfo();
+    ~FileInfo();
 
-    ItemInfo(const ItemInfo&) = delete;
-    ItemInfo& operator=(const ItemInfo&) = delete;
+    FileInfo(const FileInfo&) = delete;
+    FileInfo& operator=(const FileInfo&) = delete;
   };
 
   explicit DriveSearchProvider(Profile* profile);
@@ -55,7 +55,7 @@ class DriveSearchProvider : public SearchProvider {
  private:
   void OnSearchDriveByFileName(drive::FileError error,
                                std::vector<drivefs::mojom::QueryItemPtr> items);
-  void SetSearchResults(std::vector<std::unique_ptr<ItemInfo>> items);
+  void SetSearchResults(std::vector<std::unique_ptr<FileInfo>> items);
   std::unique_ptr<FileResult> MakeResult(
       const base::FilePath& path,
       double relevance,
@@ -64,8 +64,7 @@ class DriveSearchProvider : public SearchProvider {
 
   base::TimeTicks query_start_time_;
   std::u16string last_query_;
-  absl::optional<chromeos::string_matching::TokenizedString>
-      last_tokenized_query_;
+  absl::optional<ash::string_matching::TokenizedString> last_tokenized_query_;
 
   Profile* const profile_;
   drive::DriveIntegrationService* const drive_service_;

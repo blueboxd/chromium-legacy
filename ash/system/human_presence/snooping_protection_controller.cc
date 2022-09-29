@@ -10,6 +10,7 @@
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/system/human_presence/human_presence_metrics.h"
 #include "ash/system/human_presence/snooping_protection_notification_blocker.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -29,19 +30,8 @@
 #include "ui/message_center/message_center.h"
 
 namespace ash {
-namespace {
-// Number of buckets to log SnoopingProtection present result.
-constexpr int kSnoopingProtectionDurationNumBucket = 100;
-// Minimum value for the SnoopingProtection.Positive.Duration and
-// SnoopingProtection.Negative.Duration.
-constexpr base::TimeDelta kSnoopingProtectionDurationMin = base::Seconds(1);
-// Maximum value for SnoopingProtection.Positive.Duration; Longer than 1 hour is
-// considered as 1 hour.
-constexpr base::TimeDelta kSnoopingProtectionPositiveMax = base::Hours(1);
-// Maximum value for SnoopingProtection.Negative.Duration; Longer than 1 day is
-// considered as 1 day.
-constexpr base::TimeDelta kSnoopingProtectionNegativeMax = base::Hours(24);
-}  // namespace
+
+namespace metrics = ash::snooping_protection_metrics;
 
 SnoopingProtectionController::SnoopingProtectionController()
     : notification_blocker_(
@@ -92,7 +82,7 @@ SnoopingProtectionController::~SnoopingProtectionController() {
 
   // We want to log current presence/absence duration since we'll not get
   // another event anymore.
-  LogPresenceWindow(!state_.present);
+  LogPresenceWindow(state_.present);
 }
 
 // static
@@ -157,8 +147,6 @@ void SnoopingProtectionController::OnHpsNotifyChanged(
     const hps::HpsResultProto& result) {
   const bool present = result.value() == hps::HpsResult::POSITIVE;
 
-  LogPresenceWindow(present);
-
   State new_state = state_;
   new_state.present = present;
 
@@ -189,7 +177,7 @@ void SnoopingProtectionController::OnShutdown() {
   // present/absent duration will not be logged, because the duration will be
   // incorrect.
   // This has to be done before UpdateSnooperStatus below.
-  LogPresenceWindow(!state_.present);
+  LogPresenceWindow(state_.present);
   last_presence_report_time_ = base::TimeTicks();
 
   State new_state = state_;
@@ -228,6 +216,12 @@ void SnoopingProtectionController::UpdateSnooperStatus(const State& new_state) {
   clean_state.within_pos_window =
       new_state.within_pos_window && detection_active;
 
+  // If the present state changes to false while within_pos_window, we would
+  // have got a flakey disappearing of the eyecon without pos_window.
+  if (clean_state.within_pos_window && !clean_state.present) {
+    base::UmaHistogramBoolean("ChromeOS.HPS.SnoopingProtection.FlakeyDetection",
+                              false);
+  }
   const bool was_present = SnooperPresent();
   state_ = clean_state;
   const bool is_present = SnooperPresent();
@@ -235,6 +229,7 @@ void SnoopingProtectionController::UpdateSnooperStatus(const State& new_state) {
   if (was_present == is_present)
     return;
 
+  LogPresenceWindow(was_present);
   for (auto& observer : observers_)
     observer.OnSnoopingStatusChanged(is_present);
 }
@@ -346,8 +341,7 @@ void SnoopingProtectionController::UpdatePrefState() {
 
   ReconfigureService(&new_state);
   UpdateSnooperStatus(new_state);
-  base::UmaHistogramBoolean("ChromeOS.HPS.SnoopingProtection.Enabled",
-                            pref_enabled);
+  base::UmaHistogramBoolean(metrics::kEnabledHistogramName, pref_enabled);
 }
 
 void SnoopingProtectionController::OnMinWindowExpired() {
@@ -356,7 +350,7 @@ void SnoopingProtectionController::OnMinWindowExpired() {
   UpdateSnooperStatus(new_state);
 }
 
-void SnoopingProtectionController::LogPresenceWindow(bool is_present) {
+void SnoopingProtectionController::LogPresenceWindow(bool was_present) {
   const auto now = base::TimeTicks::Now();
 
   // Set last_presence_report_time_ and return if it is the first time reported.
@@ -365,23 +359,19 @@ void SnoopingProtectionController::LogPresenceWindow(bool is_present) {
     return;
   }
 
-  // No log if present state is not changed.
-  if (state_.present == is_present)
-    return;
-
   const auto time_since_last_report = now - last_presence_report_time_;
   last_presence_report_time_ = now;
 
-  if (state_.present) {
-    base::UmaHistogramCustomTimes(
-        "ChromeOS.HPS.SnoopingProtection.Positive.Duration",
-        time_since_last_report, kSnoopingProtectionDurationMin,
-        kSnoopingProtectionPositiveMax, kSnoopingProtectionDurationNumBucket);
+  if (was_present) {
+    base::UmaHistogramCustomTimes(metrics::kPositiveDurationHistogramName,
+                                  time_since_last_report, metrics::kDurationMin,
+                                  metrics::kPositiveDurationMax,
+                                  metrics::kDurationNumBuckets);
   } else {
-    base::UmaHistogramCustomTimes(
-        "ChromeOS.HPS.SnoopingProtection.Negative.Duration",
-        time_since_last_report, kSnoopingProtectionDurationMin,
-        kSnoopingProtectionNegativeMax, kSnoopingProtectionDurationNumBucket);
+    base::UmaHistogramCustomTimes(metrics::kNegativeDurationHistogramName,
+                                  time_since_last_report, metrics::kDurationMin,
+                                  metrics::kNegativeDurationMax,
+                                  metrics::kDurationNumBuckets);
   }
 }
 

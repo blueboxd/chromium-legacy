@@ -5,6 +5,7 @@
 package org.chromium.net.impl;
 
 import android.content.Context;
+import android.os.Build;
 
 import androidx.annotation.Nullable;
 
@@ -26,12 +27,25 @@ public final class CronetLoggerFactory {
             "com.google.net.cronet.telemetry.CronetLoggerImpl";
 
     /**
+     * Bypasses CronetLoggerFactory logic and always creates a NoOpLogger.
+     * To be used only as a kill-switch for logging.
+     * @return a NoOpLogger instance.
+     */
+    public static CronetLogger createNoOpLogger() {
+        return sDefaultLogger;
+    }
+
+    /**
      * @return The correct CronetLogger to be used for logging.
      */
     public static CronetLogger createLogger(Context ctx, CronetSource source) {
         if (sTestingLogger != null) return sTestingLogger;
 
-        if (!CronetManifest.isAppOptedInForTelemetry(ctx, source)) return sDefaultLogger;
+        // The CronetLoggerImpl only works from apiLevel 30
+        if (!CronetManifest.isAppOptedInForTelemetry(ctx, source)
+                || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            return sDefaultLogger;
+        }
 
         Class<? extends CronetLogger> cronetLoggerImplClass = fetchLoggerImplClass();
         if (cronetLoggerImplClass == null) return sDefaultLogger;

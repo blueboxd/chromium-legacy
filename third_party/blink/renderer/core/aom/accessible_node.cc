@@ -198,10 +198,14 @@ AccessibleNode* AccessibleNode::Create(Document& document) {
 }
 
 Document* AccessibleNode::GetDocument() const {
-  if (document_)
+  if (document_) {
+    DCHECK(!element_);
     return document_;
-  if (element_)
+  }
+  if (element_) {
+    DCHECK(!document_);
     return &element_->GetDocument();
+  }
 
   return nullptr;
 }
@@ -948,6 +952,12 @@ void AccessibleNode::appendChild(AccessibleNode* child,
     return;
   }
   child->document_ = GetAncestorDocument();
+  if (!child->document_) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidAccessError,
+        "AccessibleNode must have an ancestor that is attached to a document.");
+    return;
+  }
   child->parent_ = this;
 
   if (!GetExecutionContext()) {

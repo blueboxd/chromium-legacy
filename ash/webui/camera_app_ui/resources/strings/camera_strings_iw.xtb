@@ -7,6 +7,7 @@
 <translation id="1258009455399840361">סיבוב ב-90 מעלות בכיוון השעון</translation>
 <translation id="1276998909102132017">תמונות מהגלריה</translation>
 <translation id="1300209025925956156">סריקת המסמך</translation>
+<translation id="1309250603447638106">מתבצעת הורדה של עדכונים לסריקת מסמכים</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. ניתן לגשת אליהם באמצעות חיפוש + חץ שמאלה.</translation>
 <translation id="1393338179284529051">Quad HD</translation>
 <translation id="1430915738399379752">הדפסה</translation>
@@ -47,6 +48,7 @@
 <translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">תצוגה מקדימה של השיקוף</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> מחוברת.</translation>
+<translation id="2904654629665923749">סריקת המסמכים זמינה</translation>
 <translation id="2968794441791257519">תמונות וסרטונים שצולמו בעזרת המצלמה יועברו אל התיקייה 'הורדות'. אפשר לגשת אליהם דרך 'קבצים'.
 
         אפליקציות עם הרשאות אחסון יוכלו לגשת אל התמונות והסרטונים שלך.</translation>
@@ -72,7 +74,6 @@
 <translation id="3838931309141338733">סריקת ברקוד</translation>
 <translation id="3892148308691398805">העתקת הטקסט</translation>
 <translation id="4061162772429051350">‎<ph name="MAGAPIXELS_AMOUNT" /> MP</translation>
-<translation id="4096701159033358951">מתבצעת הורדה של תכונה לסריקת מסמכים</translation>
 <translation id="4118525110028899586">השהיית ההקלטה</translation>
 <translation id="4121305183798804752">זוהה מסמך</translation>
 <translation id="414641094616694804">המצלמה הזו לא יכולה לשנות את הרזולוציה</translation>
@@ -94,7 +95,6 @@
 <translation id="5057360777601936059">המצלמה אינה זמינה כרגע.
         יש לבדוק אם המצלמה מחוברת כראוי.</translation>
 <translation id="5163387177077603948">מתבצעת תזוזה לימין</translation>
-<translation id="520537883758714667">התכונה 'סריקת מסמכים' זמינה עכשיו</translation>
 <translation id="5235304959032763950">16 על 9</translation>
 <translation id="5266635337630551423">הפינה הימנית העליונה במסמך</translation>
 <translation id="5317780077021120954">שמירה</translation>

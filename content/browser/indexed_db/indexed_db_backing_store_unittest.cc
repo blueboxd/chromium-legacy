@@ -47,12 +47,13 @@
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "net/base/features.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/browser/test/fake_blob.h"
+#include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
@@ -293,12 +294,7 @@ class MockFileSystemAccessContext
 
 class IndexedDBBackingStoreTest : public testing::Test {
  public:
-  IndexedDBBackingStoreTest()
-      : quota_manager_proxy_(
-            base::MakeRefCounted<storage::MockQuotaManagerProxy>(
-                nullptr,
-                base::ThreadTaskRunnerHandle::Get())) {}
-
+  IndexedDBBackingStoreTest() = default;
   IndexedDBBackingStoreTest(const IndexedDBBackingStoreTest&) = delete;
   IndexedDBBackingStoreTest& operator=(const IndexedDBBackingStoreTest&) =
       delete;
@@ -309,6 +305,12 @@ class IndexedDBBackingStoreTest : public testing::Test {
     blob_context_ = std::make_unique<MockBlobStorageContext>();
     file_system_access_context_ =
         std::make_unique<MockFileSystemAccessContext>();
+
+    quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
+        /*is_incognito=*/false, temp_dir_.GetPath(),
+        base::ThreadTaskRunnerHandle::Get(), nullptr);
+    quota_manager_proxy_ = base::MakeRefCounted<storage::MockQuotaManagerProxy>(
+        quota_manager_.get(), base::ThreadTaskRunnerHandle::Get());
 
     idb_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         temp_dir_.GetPath(), quota_manager_proxy_,
@@ -341,6 +343,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
         blink::StorageKey::CreateFromStringForTesting("http://localhost:81");
     auto bucket_locator = storage::BucketLocator();
     bucket_locator.storage_key = storage_key;
+    bucket_locator.is_default = true;
     idb_factory_ = std::make_unique<TestIDBFactory>(
         idb_context_.get(), blob_context_.get(),
         file_system_access_context_.get());
@@ -387,12 +390,11 @@ class IndexedDBBackingStoreTest : public testing::Test {
       // Loop through all open buckets, and force close them, and request the
       // deletion of the leveldb state. Once the states are no longer around,
       // delete all of the databases on disk.
-      auto open_factory_buckets = factory->GetOpenBuckets();
 
-      for (const auto& bucket_locator : open_factory_buckets) {
+      for (const auto& bucket_id : factory->GetOpenBuckets()) {
         base::RunLoop loop;
         IndexedDBBucketState* per_bucket_factory =
-            factory->GetBucketFactory(bucket_locator);
+            factory->GetBucketFactory(bucket_id);
 
         auto* leveldb_state =
             per_bucket_factory->backing_store()->db()->leveldb_state();
@@ -407,7 +409,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
             base::SequencedTaskRunnerHandle::Get());
 
         idb_context_->ForceClose(
-            bucket_locator,
+            bucket_id,
             storage::mojom::ForceCloseReason::FORCE_CLOSE_DELETE_ORIGIN,
             base::DoNothing());
         loop.Run();
@@ -459,6 +461,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<MockBlobStorageContext> blob_context_;
   std::unique_ptr<MockFileSystemAccessContext> file_system_access_context_;
+  scoped_refptr<storage::MockQuotaManager> quota_manager_;
   scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
   std::unique_ptr<TestIDBFactory> idb_factory_;
@@ -481,7 +484,7 @@ class IndexedDBBackingStoreTestForThirdPartyStoragePartitioning
  public:
   IndexedDBBackingStoreTestForThirdPartyStoragePartitioning() {
     scoped_feature_list_.InitWithFeatureState(
-        blink::features::kThirdPartyStoragePartitioning,
+        net::features::kThirdPartyStoragePartitioning,
         IsThirdPartyStoragePartitioningEnabled());
   }
 
@@ -1660,6 +1663,7 @@ TEST_P(IndexedDBBackingStoreTestForThirdPartyStoragePartitioning,
       storage::FilesystemProxy::UNRESTRICTED, base::FilePath());
   storage::BucketLocator bucket_locator;
   bucket_locator.storage_key = blink::StorageKey(url::Origin());
+  bucket_locator.is_default = true;
 
   // No `path_base`.
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(),
@@ -1676,8 +1680,8 @@ TEST_P(IndexedDBBackingStoreTestForThirdPartyStoragePartitioning,
   bucket_locator.storage_key =
       blink::StorageKey::CreateFromStringForTesting("http://www.google.com/");
   bucket_locator.id = storage::BucketId::FromUnsafeValue(1);
+  bucket_locator.is_default = true;
   ASSERT_FALSE(path_base.empty());
-  ASSERT_TRUE(PathIsWritable(path_base));
 
   // File not found.
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
@@ -1755,13 +1759,13 @@ TEST_P(IndexedDBBackingStoreTestForThirdPartyStoragePartitioning,
   auto filesystem_proxy = std::make_unique<storage::FilesystemProxy>(
       storage::FilesystemProxy::UNRESTRICTED, base::FilePath());
   storage::BucketLocator bucket_locator;
-  const base::FilePath path_base = temp_dir_.GetPath();
   bucket_locator.storage_key =
       blink::StorageKey(url::Origin::Create(GURL("http://www.google.com/")),
                         url::Origin::Create(GURL("http://www.youtube.com/")));
   bucket_locator.id = storage::BucketId::FromUnsafeValue(1);
+  bucket_locator.is_default = true;
+  const base::FilePath path_base = idb_context_->GetDataPath(bucket_locator);
   ASSERT_FALSE(path_base.empty());
-  ASSERT_TRUE(PathIsWritable(path_base));
 
   // File not found.
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
@@ -1772,9 +1776,7 @@ TEST_P(IndexedDBBackingStoreTestForThirdPartyStoragePartitioning,
       path_base.AppendASCII("http_www.google.com_0.indexeddb.leveldb")
           .AppendASCII("corruption_info.json");
   if (IsThirdPartyStoragePartitioningEnabled()) {
-    info_path = path_base.AppendASCII("1")
-                    .AppendASCII("IndexedDB")
-                    .AppendASCII("indexeddb.leveldb")
+    info_path = path_base.AppendASCII("indexeddb.leveldb")
                     .AppendASCII("corruption_info.json");
   }
   ASSERT_TRUE(CreateDirectory(info_path.DirName()));

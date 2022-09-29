@@ -4,6 +4,7 @@
 
 #include "ui/lottie/animation.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -25,22 +26,49 @@
 
 namespace lottie {
 
-Animation::TimerControl::TimerControl(const base::TimeDelta& offset,
-                                      const base::TimeDelta& cycle_duration,
-                                      const base::TimeDelta& total_duration,
-                                      const base::TimeTicks& start_timestamp,
-                                      bool should_reverse,
-                                      float playback_speed)
-    : start_offset_(offset),
-      end_offset_((offset + cycle_duration)),
-      cycle_duration_(end_offset_ - start_offset_),
+namespace {
+
+bool IsCycleValid(const Animation::CycleBoundaries& boundaries,
+                  const Animation& animation) {
+  return boundaries.start_offset >= base::TimeDelta() &&
+         boundaries.end_offset <= animation.GetAnimationDuration() &&
+         boundaries.start_offset < boundaries.end_offset;
+}
+
+bool IsInCycleBoundaries(base::TimeDelta offset,
+                         const Animation::CycleBoundaries& boundaries) {
+  return offset >= boundaries.start_offset && offset < boundaries.end_offset;
+}
+
+Animation::CycleBoundaries GetCycleAtIndex(
+    const std::vector<Animation::CycleBoundaries>& scheduled_cycles,
+    int cycle_idx) {
+  DCHECK(!scheduled_cycles.empty());
+  return scheduled_cycles[std::min(
+      cycle_idx, static_cast<int>(scheduled_cycles.size()) - 1)];
+}
+
+}  // namespace
+
+Animation::TimerControl::TimerControl(
+    std::vector<CycleBoundaries> scheduled_cycles,
+    base::TimeDelta initial_offset,
+    int initial_completed_cycles,
+    const base::TimeDelta& total_duration,
+    const base::TimeTicks& start_timestamp,
+    bool should_reverse,
+    float playback_speed)
+    : scheduled_cycles_(std::move(scheduled_cycles)),
       total_duration_(total_duration),
       previous_tick_(start_timestamp),
-      progress_(base::Milliseconds(0)),
-      current_cycle_progress_(start_offset_),
-      should_reverse_(should_reverse) {
+      current_cycle_progress_(initial_offset),
+      should_reverse_(should_reverse),
+      completed_cycles_(initial_completed_cycles),
+      current_cycle_(GetCycleAtIndex(scheduled_cycles_, completed_cycles_)) {
   SetPlaybackSpeed(playback_speed);
 }
+
+Animation::TimerControl::~TimerControl() = default;
 
 void Animation::TimerControl::SetPlaybackSpeed(float playback_speed) {
   DCHECK_GT(playback_speed, 0.f);
@@ -48,22 +76,29 @@ void Animation::TimerControl::SetPlaybackSpeed(float playback_speed) {
 }
 
 void Animation::TimerControl::Step(const base::TimeTicks& timestamp) {
-  progress_ += (timestamp - previous_tick_) * playback_speed_;
+  base::TimeDelta step_size = (timestamp - previous_tick_) * playback_speed_;
+  while (!step_size.is_zero()) {
+    base::TimeDelta time_until_current_cycle_end =
+        IsPlayingInReverse()
+            ? (current_cycle_progress_ - current_cycle_.start_offset)
+            : (current_cycle_.end_offset - current_cycle_progress_);
+    if (step_size >= time_until_current_cycle_end) {
+      ++completed_cycles_;
+      current_cycle_ = GetCycleAtIndex(scheduled_cycles_, completed_cycles_);
+      current_cycle_progress_ = IsPlayingInReverse()
+                                    ? current_cycle_.end_offset
+                                    : current_cycle_.start_offset;
+      step_size -= time_until_current_cycle_end;
+    } else {
+      if (IsPlayingInReverse()) {
+        current_cycle_progress_ -= step_size;
+      } else {
+        current_cycle_progress_ += step_size;
+      }
+      step_size = base::TimeDelta();
+    }
+  }
   previous_tick_ = timestamp;
-
-  base::TimeDelta completed_cycles_duration =
-      completed_cycles_ * cycle_duration_;
-  if (progress_ >= completed_cycles_duration + cycle_duration_) {
-    completed_cycles_ = base::ClampFloor(progress_ / cycle_duration_);
-    completed_cycles_duration = cycle_duration_ * completed_cycles_;
-  }
-
-  current_cycle_progress_ =
-      start_offset_ + progress_ - completed_cycles_duration;
-  if (should_reverse_ && completed_cycles_ % 2) {
-    current_cycle_progress_ =
-        end_offset_ - (current_cycle_progress_ - start_offset_);
-  }
 }
 
 void Animation::TimerControl::Resume(const base::TimeTicks& timestamp) {
@@ -75,19 +110,33 @@ double Animation::TimerControl::GetNormalizedCurrentCycleProgress() const {
 }
 
 double Animation::TimerControl::GetNormalizedStartOffset() const {
-  return start_offset_ / total_duration_;
+  return current_cycle_.start_offset / total_duration_;
 }
 
 double Animation::TimerControl::GetNormalizedEndOffset() const {
-  return end_offset_ / total_duration_;
+  return current_cycle_.end_offset / total_duration_;
+}
+
+bool Animation::TimerControl::IsPlayingInReverse() const {
+  return should_reverse_ && completed_cycles_ % 2;
+}
+
+// static
+Animation::CycleBoundaries Animation::CycleBoundaries::FullCycle(
+    const Animation& animation) {
+  return {
+      /*start_offset=*/base::TimeDelta(),
+      /*duration=*/animation.GetAnimationDuration(),
+  };
 }
 
 // static
 Animation::PlaybackConfig Animation::PlaybackConfig::CreateDefault(
     const Animation& animation) {
-  return {/*start_offset=*/base::TimeDelta(),
-          /*duration=*/animation.GetAnimationDuration(),
-          Animation::Style::kLoop};
+  return PlaybackConfig(
+      /*scheduled_cycles=*/{CycleBoundaries::FullCycle(animation)},
+      /*initial_offset=*/base::TimeDelta(),
+      /*initial_completed_cycles=*/0, Animation::Style::kLoop);
 }
 
 // static
@@ -98,6 +147,26 @@ Animation::PlaybackConfig Animation::PlaybackConfig::CreateWithStyle(
   config.style = style;
   return config;
 }
+
+Animation::PlaybackConfig::PlaybackConfig() = default;
+
+Animation::PlaybackConfig::PlaybackConfig(
+    std::vector<CycleBoundaries> scheduled_cycles,
+    base::TimeDelta initial_offset,
+    int initial_completed_cycles,
+    Style style)
+    : scheduled_cycles(std::move(scheduled_cycles)),
+      initial_offset(initial_offset),
+      initial_completed_cycles(initial_completed_cycles),
+      style(style) {}
+
+Animation::PlaybackConfig::PlaybackConfig(const PlaybackConfig& other) =
+    default;
+
+Animation::PlaybackConfig& Animation::PlaybackConfig::operator=(
+    const PlaybackConfig& other) = default;
+
+Animation::PlaybackConfig::~PlaybackConfig() = default;
 
 Animation::Animation(scoped_refptr<cc::SkottieWrapper> skottie,
                      cc::SkottieColorMap color_map,
@@ -163,8 +232,7 @@ void Animation::Start(absl::optional<PlaybackConfig> playback_config) {
   DCHECK(state_ == PlayState::kStopped || state_ == PlayState::kEnded);
   if (!playback_config)
     playback_config = PlaybackConfig::CreateDefault(*this);
-  DCHECK_LE(playback_config->start_offset + playback_config->duration,
-            GetAnimationDuration());
+  VerifyPlaybackConfigIsValid(*playback_config);
 
   // Reset the |timer_control_| object for a new animation play.
   timer_control_.reset(nullptr);
@@ -212,11 +280,37 @@ absl::optional<float> Animation::GetCurrentProgress() const {
   }
 }
 
+absl::optional<int> Animation::GetNumCompletedCycles() const {
+  if (state_ == PlayState::kStopped)
+    return absl::nullopt;
+
+  // This can happen if Start() has been called but a single frame has not been
+  // painted yet.
+  if (!timer_control_)
+    return playback_config_.initial_completed_cycles;
+
+  if (state_ == PlayState::kEnded) {
+    DCHECK_EQ(playback_config_.style, Style::kLinear);
+    return 1;
+  }
+
+  return timer_control_->completed_cycles();
+}
+
 absl::optional<Animation::PlaybackConfig> Animation::GetPlaybackConfig() const {
   if (state_ == PlayState::kStopped) {
     return absl::nullopt;
   } else {
     return playback_config_;
+  }
+}
+
+absl::optional<Animation::CycleBoundaries>
+Animation::GetCurrentCycleBoundaries() const {
+  if (state_ == PlayState::kStopped || !timer_control_) {
+    return absl::nullopt;
+  } else {
+    return timer_control_->current_cycle();
   }
 }
 
@@ -324,9 +418,9 @@ cc::SkottieWrapper::FrameDataFetchResult Animation::LoadImageForAsset(
 void Animation::InitTimer(const base::TimeTicks& timestamp) {
   DCHECK(!timer_control_);
   timer_control_ = std::make_unique<TimerControl>(
-      playback_config_.start_offset, playback_config_.duration,
-      GetAnimationDuration(), timestamp,
-      playback_config_.style == Style::kThrobbing, playback_speed_);
+      playback_config_.scheduled_cycles, playback_config_.initial_offset,
+      playback_config_.initial_completed_cycles, GetAnimationDuration(),
+      timestamp, playback_config_.style == Style::kThrobbing, playback_speed_);
 }
 
 void Animation::TryNotifyAnimationCycleEnded() const {
@@ -352,6 +446,22 @@ void Animation::TryNotifyAnimationCycleEnded() const {
       obs.AnimationCycleEnded(this);
     }
   }
+}
+
+void Animation::VerifyPlaybackConfigIsValid(
+    const PlaybackConfig& playback_config) const {
+  DCHECK(!playback_config.scheduled_cycles.empty());
+  for (const CycleBoundaries& cycle : playback_config.scheduled_cycles) {
+    DCHECK(IsCycleValid(cycle, *this));
+  }
+  if (playback_config.style == Style::kLinear) {
+    DCHECK_EQ(playback_config.scheduled_cycles.size(), 1u);
+  }
+  DCHECK_GE(playback_config.initial_completed_cycles, 0);
+  DCHECK(IsInCycleBoundaries(
+      playback_config.initial_offset,
+      GetCycleAtIndex(playback_config.scheduled_cycles,
+                      playback_config.initial_completed_cycles)));
 }
 
 }  // namespace lottie

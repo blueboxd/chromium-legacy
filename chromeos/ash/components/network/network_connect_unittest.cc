@@ -10,14 +10,14 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "chromeos/ash/components/dbus/shill/shill_device_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/network_connect.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +29,7 @@ using testing::AnyNumber;
 using testing::NiceMock;
 using testing::Return;
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -152,7 +152,7 @@ class NetworkConnectTest : public testing::Test {
                               add_to_visible);
     service_test_->SetServiceProperty(kWiFi1ServicePath,
                                       shill::kSecurityClassProperty,
-                                      base::Value(shill::kSecurityWep));
+                                      base::Value(shill::kSecurityClassWep));
     service_test_->SetServiceProperty(
         kWiFi1ServicePath, shill::kConnectableProperty, base::Value(true));
     service_test_->SetServiceProperty(
@@ -165,7 +165,7 @@ class NetworkConnectTest : public testing::Test {
                               add_to_visible);
     service_test_->SetServiceProperty(kWiFiUnconfiguredServicePath,
                                       shill::kSecurityClassProperty,
-                                      base::Value(shill::kSecurityWep));
+                                      base::Value(shill::kSecurityClassWep));
     service_test_->SetServiceProperty(kWiFiUnconfiguredServicePath,
                                       shill::kConnectableProperty,
                                       base::Value(false));
@@ -339,4 +339,4 @@ TEST_F(NetworkConnectTest, ConnectToCellularNetwork_SimLocked) {
   base::RunLoop().RunUntilIdle();
 }
 
-}  // namespace chromeos
+}  // namespace ash

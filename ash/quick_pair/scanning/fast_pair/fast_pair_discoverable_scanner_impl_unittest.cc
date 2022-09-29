@@ -98,7 +98,7 @@ namespace quick_pair {
 class FastPairDiscoverableScannerImplTest : public testing::Test {
  public:
   void SetUp() override {
-    chromeos::NetworkHandler::Initialize();
+    NetworkHandler::Initialize();
     repository_ = std::make_unique<FakeFastPairRepository>();
 
     nearby::fastpair::Device metadata;
@@ -131,7 +131,7 @@ class FastPairDiscoverableScannerImplTest : public testing::Test {
     process_manager_.reset();
     testing::Test::TearDown();
     discoverable_scanner_.reset();
-    chromeos::NetworkHandler::Shutdown();
+    NetworkHandler::Shutdown();
   }
 
   MockQuickPairProcessManager* mock_process_manager() {
@@ -173,7 +173,7 @@ class FastPairDiscoverableScannerImplTest : public testing::Test {
 
   FakeQuickPairProcessManager* fake_process_manager_;
   base::test::SingleThreadTaskEnvironment task_enviornment_;
-  chromeos::NetworkStateTestHelper helper_{/*use_defaults=*/true};
+  NetworkStateTestHelper helper_{/*use_default_devices_and_services=*/true};
   scoped_refptr<FakeFastPairScanner> scanner_;
   std::unique_ptr<FakeFastPairRepository> repository_;
   std::unique_ptr<FastPairDiscoverableScannerImpl> discoverable_scanner_;

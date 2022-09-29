@@ -13,11 +13,13 @@
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/system/accessibility/autoclick_menu_view.h"
 #include "ash/system/accessibility/tray_accessibility.h"
+#include "ash/system/ime_menu/ime_menu_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/barrier_closure.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 
 namespace ash {
 
@@ -39,6 +41,11 @@ class FloatingAccessibilityControllerTest : public AshTestBase {
  public:
   AccessibilityControllerImpl* accessibility_controller() {
     return Shell::Get()->accessibility_controller();
+  }
+
+  void TearDown() override {
+    AshTestBase::TearDown();
+    features_.Reset();
   }
 
   FloatingAccessibilityController* controller() {
@@ -72,6 +79,19 @@ class FloatingAccessibilityControllerTest : public AshTestBase {
     if (!view)
       return nullptr;
     return view->GetViewByID(static_cast<int>(button_id));
+  }
+
+  ImeMenuTray* GetImeTray() {
+    FloatingAccessibilityView* view = menu_view();
+    if (!view)
+      return nullptr;
+    return view->ime_button_;
+  }
+
+  // Returns true if the IME menu bubble has been shown.
+  bool IsImeTrayShown() {
+    return (GetImeTray() != nullptr) &&
+           (GetImeTray()->GetBubbleView() != nullptr);
   }
 
   void SetUpKioskSession() {
@@ -111,7 +131,49 @@ class FloatingAccessibilityControllerTest : public AshTestBase {
   void SetOnLayoutCallback(base::RepeatingClosure closure) {
     controller()->on_layout_change_ = std::move(closure);
   }
+
+ protected:
+  base::test::ScopedFeatureList features_;
 };
+
+TEST_F(FloatingAccessibilityControllerTest, ImeButtonNotShowWhenDisabled) {
+  SetUpVisibleMenu();
+
+  views::View* button =
+      GetMenuButton(FloatingAccessibilityView::ButtonId::kIme);
+  EXPECT_FALSE(button);
+}
+
+TEST_F(FloatingAccessibilityControllerTest, ImeButtonShowWhenEnabled) {
+  features_.InitAndEnableFeature(features::kKioskEnableImeButton);
+  EXPECT_TRUE(base::FeatureList::IsEnabled(features::kKioskEnableImeButton));
+  SetUpVisibleMenu();
+
+  views::View* button =
+      GetMenuButton(FloatingAccessibilityView::ButtonId::kIme);
+  EXPECT_TRUE(button);
+}
+
+TEST_F(FloatingAccessibilityControllerTest, KioskImeTrayVisibility) {
+  features_.InitAndEnableFeature(features::kKioskEnableImeButton);
+  EXPECT_TRUE(base::FeatureList::IsEnabled(features::kKioskEnableImeButton));
+  SetUpVisibleMenu();
+
+  // Tray bubble is visible when  a user taps on the IME icon.
+  GetImeTray()->PerformAction(CreateTapEvent());
+  EXPECT_TRUE(IsImeTrayShown());
+
+  // Tray bubble is invisible when the user clicks on the IME icon again.
+  GetImeTray()->PerformAction(CreateTapEvent());
+  EXPECT_FALSE(IsImeTrayShown());
+}
+
+TEST_F(FloatingAccessibilityControllerTest, KioskImeTrayBottomButtons) {
+  features_.InitAndEnableFeature(features::kKioskEnableImeButton);
+  EXPECT_TRUE(base::FeatureList::IsEnabled(features::kKioskEnableImeButton));
+  SetUpVisibleMenu();
+  EXPECT_FALSE(GetImeTray()->ShouldShowBottomButtons());
+}
 
 TEST_F(FloatingAccessibilityControllerTest, MenuIsNotShownWhenNotEnabled) {
   accessibility_controller()->ShowFloatingMenuIfEnabled();

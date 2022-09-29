@@ -195,19 +195,6 @@ bool BoundsChangeIsFromVKAndAllowed(aura::Window* window) {
 
 }  // namespace
 
-// static
-void TabletModeWindowState::UpdateWindowPosition(WindowState* window_state,
-                                                 bool animate) {
-  gfx::Rect bounds_in_parent = GetBoundsInTabletMode(window_state);
-  if (bounds_in_parent == window_state->window()->GetTargetBounds())
-    return;
-
-  if (animate)
-    window_state->SetBoundsDirectAnimated(bounds_in_parent);
-  else
-    window_state->SetBoundsDirect(bounds_in_parent);
-}
-
 TabletModeWindowState::TabletModeWindowState(aura::Window* window,
                                              TabletModeWindowManager* creator,
                                              bool snap,
@@ -229,8 +216,8 @@ TabletModeWindowState::TabletModeWindowState(aura::Window* window,
   // TODO(oshima|sammiequon): consider SplitView scenario.
   WindowState::ScopedBoundsChangeAnimation bounds_animation(
       window, entering_tablet_mode && !IsTopWindow(window)
-                  ? WindowState::BoundsChangeAnimationType::STEP_END
-                  : WindowState::BoundsChangeAnimationType::DEFAULT);
+                  ? WindowState::BoundsChangeAnimationType::kAnimateZero
+                  : WindowState::BoundsChangeAnimationType::kAnimate);
   old_window_bounds_in_screen_ = window->GetBoundsInScreen();
   old_state_.reset(
       state->SetStateObject(std::unique_ptr<State>(this)).release());
@@ -238,6 +225,30 @@ TabletModeWindowState::TabletModeWindowState(aura::Window* window,
 
 TabletModeWindowState::~TabletModeWindowState() {
   creator_->WindowStateDestroyed(window_);
+}
+
+// static
+void TabletModeWindowState::UpdateWindowPosition(
+    WindowState* window_state,
+    WindowState::BoundsChangeAnimationType animation_type) {
+  const gfx::Rect bounds_in_parent = GetBoundsInTabletMode(window_state);
+  if (bounds_in_parent == window_state->window()->GetTargetBounds())
+    return;
+
+  switch (animation_type) {
+    case WindowState::BoundsChangeAnimationType::kNone:
+      window_state->SetBoundsDirect(bounds_in_parent);
+      break;
+    case WindowState::BoundsChangeAnimationType::kCrossFade:
+      window_state->SetBoundsDirectCrossFade(bounds_in_parent);
+      break;
+    case WindowState::BoundsChangeAnimationType::kAnimate:
+      window_state->SetBoundsDirectAnimated(bounds_in_parent);
+      break;
+    case WindowState::BoundsChangeAnimationType::kAnimateZero:
+      NOTREACHED();
+      break;
+  }
 }
 
 void TabletModeWindowState::LeaveTabletMode(WindowState* window_state,
@@ -249,11 +260,11 @@ void TabletModeWindowState::LeaveTabletMode(WindowState* window_state,
   WindowState::BoundsChangeAnimationType animation_type =
       was_in_overview || window_state->IsSnapped() ||
               IsTopWindow(window_state->window())
-          ? WindowState::BoundsChangeAnimationType::DEFAULT
-          : WindowState::BoundsChangeAnimationType::IMMEDIATE;
+          ? WindowState::BoundsChangeAnimationType::kAnimate
+          : WindowState::BoundsChangeAnimationType::kNone;
   if (old_state_->GetType() == window_state->GetStateType() &&
       !window_state->IsNormalStateType()) {
-    animation_type = WindowState::BoundsChangeAnimationType::IMMEDIATE;
+    animation_type = WindowState::BoundsChangeAnimationType::kNone;
   }
 
   // Note: When we return we will destroy ourselves with the |our_reference|.
@@ -537,7 +548,7 @@ void TabletModeWindowState::UpdateBounds(WindowState* window_state,
       window_state->SetBoundsDirect(bounds_in_parent);
     } else {
       if (window_state->bounds_animation_type() ==
-          WindowState::BoundsChangeAnimationType::STEP_END) {
+          WindowState::BoundsChangeAnimationType::kAnimateZero) {
         // Just use the normal bounds animation with ZERO tween with long enough
         // duration for STEP_END. The animation will be stopped when the to
         // window's animation ends.

@@ -35,7 +35,7 @@ HEADER = headers.header(
         ),
         headers.oncall(
             name = "GPU",
-            url = "https://chrome-ops-rotation-proxy.appspot.com/current/oncallator:chrome-gpu-pixel-wrangler",
+            url = "https://chrome-ops-rotation-proxy.appspot.com/current/oncallator:chrome-gpu-pixel-wrangler-weekly",
         ),
         headers.oncall(
             name = "ANGLE",
@@ -231,6 +231,11 @@ HEADER = headers.header(
                     branch_selector = branches.CROS_LTS_MILESTONE,
                     url = "/p/{}/g/chromium.chromiumos".format(settings.project),
                     alt = "ChromiumOS console",
+                ),
+                headers.link(
+                    text = "flakiness",
+                    url = "/p/{}/g/chromium.flakiness".format(settings.project),
+                    alt = "Chromium Flakiness console",
                 ),
             ],
         ),

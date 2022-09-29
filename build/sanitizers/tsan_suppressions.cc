@@ -104,6 +104,7 @@ char kTSanDefaultSuppressions[] =
 
     // https://crbug.com/794920
     "race:base::debug::SetCrashKeyString\n"
+    "race:crash_reporter::internal::CrashKeyStringImpl::Clear\n"
     "race:crash_reporter::internal::CrashKeyStringImpl::Set\n"
 
     // http://crbug.com/927330
@@ -123,6 +124,10 @@ char kTSanDefaultSuppressions[] =
     // Harmless data races, see WTF::StringImpl::Release code comments.
     "race:scoped_refptr<WTF::StringImpl>::AddRef\n"
     "race:scoped_refptr<WTF::StringImpl>::Release\n"
+
+    // Harmless data race in ipcz block allocation. See comments in
+    // ipcz::BlockAllocator::Allocate().
+    "race:ipcz::BlockAllocator::Allocate\n"
 
     // End of suppressions.
     ;  // Please keep this semicolon.

@@ -72,7 +72,7 @@ class PointerEventsHandlerTest : public ::testing::Test {
 TEST_F(PointerEventsHandlerTest, Watch_EventCallbacksAreIndependent) {
   std::vector<std::unique_ptr<Event>> events;
   pointer_handler_->StartWatching(base::BindLambdaForTesting(
-      [&events](Event* event) { events.push_back(Event::Clone(*event)); }));
+      [&events](Event* event) { events.push_back(event->Clone()); }));
   RunLoopUntilIdle();  // Server gets watch call.
 
   std::vector<fup::TouchEvent> touch_events =
@@ -499,16 +499,63 @@ TEST_F(PointerEventsHandlerTest, ScrollEventDeltaInPhysicalPixel) {
   mouse_events.clear();
 }
 
+TEST_F(PointerEventsHandlerTest, ScrollEventDeltaInPhysicalPixelNoTickDelta) {
+  std::vector<ScrollEvent> mouse_events;
+  pointer_handler_->StartWatching(
+      base::BindLambdaForTesting([&mouse_events](Event* event) {
+        ASSERT_EQ(event->type(), ET_SCROLL);
+        mouse_events.push_back(*event->AsScrollEvent());
+      }));
+  RunLoopUntilIdle();  // Server gets watch call.
+
+  // receive a vertical scroll
+  std::vector<fup::MouseEvent> events =
+      MouseEventBuilder()
+          .AddTime(1111789u)
+          .AddViewParameters(kRect, kRect, kIdentity)
+          .AddSample(kMouseDeviceId, {10.f, 10.f}, {}, kNoScrollDelta, {0, 100},
+                     kPrecisionScroll)
+          .AddMouseDeviceInfo(kMouseDeviceId, {0, 1, 2})
+          .BuildAsVector();
+  mouse_source_->ScheduleCallback(std::move(events));
+  RunLoopUntilIdle();
+
+  ASSERT_EQ(mouse_events.size(), 1u);
+  EXPECT_EQ(mouse_events[0].type(), ET_SCROLL);
+  EXPECT_EQ(mouse_events[0].flags(), EF_NONE);
+  EXPECT_EQ(mouse_events[0].AsScrollEvent()->x_offset(), 0);
+  EXPECT_EQ(mouse_events[0].AsScrollEvent()->y_offset(), 100);
+  mouse_events.clear();
+
+  // receive a horizontal scroll
+  events = MouseEventBuilder()
+               .AddTime(1111789u)
+               .AddViewParameters(kRect, kRect, kIdentity)
+               .AddSample(kMouseDeviceId, {10.f, 10.f}, {}, kNoScrollDelta,
+                          {100, 0}, kPrecisionScroll)
+               .AddMouseDeviceInfo(kMouseDeviceId, {0, 1, 2})
+               .BuildAsVector();
+  mouse_source_->ScheduleCallback(std::move(events));
+  RunLoopUntilIdle();
+
+  ASSERT_EQ(mouse_events.size(), 1u);
+  EXPECT_EQ(mouse_events[0].type(), ET_SCROLL);
+  EXPECT_EQ(mouse_events[0].flags(), EF_NONE);
+  EXPECT_EQ(mouse_events[0].AsScrollEvent()->x_offset(), 100);
+  EXPECT_EQ(mouse_events[0].AsScrollEvent()->y_offset(), 0);
+  mouse_events.clear();
+}
+
 TEST_F(PointerEventsHandlerTest, MouseWheelEventWithButtonPressed) {
   std::vector<std::unique_ptr<Event>> mouse_events;
   pointer_handler_->StartWatching(
       base::BindLambdaForTesting([&mouse_events](Event* event) {
         ASSERT_TRUE(event->IsMouseEvent());
         if (event->IsMouseWheelEvent()) {
-          auto e = Event::Clone(*event->AsMouseWheelEvent());
+          auto e = event->AsMouseWheelEvent()->Clone();
           mouse_events.push_back(std::move(e));
         } else if (event->IsMouseEvent()) {
-          auto e = Event::Clone(*event->AsMouseEvent());
+          auto e = event->AsMouseEvent()->Clone();
           mouse_events.push_back(std::move(e));
         } else {
           NOTREACHED();
@@ -555,10 +602,10 @@ TEST_F(PointerEventsHandlerTest, MouseWheelEventWithButtonDownBundled) {
       base::BindLambdaForTesting([&mouse_events](Event* event) {
         ASSERT_TRUE(event->IsMouseEvent());
         if (event->IsMouseWheelEvent()) {
-          auto e = Event::Clone(*event->AsMouseWheelEvent());
+          auto e = event->AsMouseWheelEvent()->Clone();
           mouse_events.push_back(std::move(e));
         } else if (event->IsMouseEvent()) {
-          auto e = Event::Clone(*event->AsMouseEvent());
+          auto e = event->AsMouseEvent()->Clone();
           mouse_events.push_back(std::move(e));
         } else {
           NOTREACHED();

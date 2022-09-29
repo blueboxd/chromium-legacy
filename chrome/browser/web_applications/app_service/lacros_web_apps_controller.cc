@@ -140,11 +140,10 @@ void LacrosWebAppsController::OnReady() {
   PublishWebApps(std::move(apps));
 }
 
-void LacrosWebAppsController::Uninstall(
-    const std::string& app_id,
-    apps::mojom::UninstallSource uninstall_source,
-    bool clear_site_data,
-    bool report_abuse) {
+void LacrosWebAppsController::Uninstall(const std::string& app_id,
+                                        apps::UninstallSource uninstall_source,
+                                        bool clear_site_data,
+                                        bool report_abuse) {
   const WebApp* web_app = GetWebApp(app_id);
   if (!web_app) {
     return;
@@ -251,8 +250,7 @@ void LacrosWebAppsController::StopApp(const std::string& app_id) {
 
 void LacrosWebAppsController::SetPermission(const std::string& app_id,
                                             apps::PermissionPtr permission) {
-  publisher_helper().SetPermission(
-      app_id, apps::ConvertPermissionToMojomPermission(permission));
+  publisher_helper().SetPermission(app_id, std::move(permission));
 }
 
 // TODO(crbug.com/1144877): Clean up the multiple launch interfaces and remove

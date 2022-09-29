@@ -18,17 +18,17 @@ declare global {
   const trustedTypes: {emptyHTML: string};
 }
 
-type Component = {
-  id: string,
-  name: string,
-  status: string,
-  version: string,
-};
+interface Component {
+  id: string;
+  name: string;
+  status: string;
+  version: string;
+}
 
-type ComponentsData = {
-  components: Component[],
-  showOsLink: boolean,
-};
+interface ComponentsData {
+  components: Component[];
+  showOsLink: boolean;
+}
 
 /**
  * An array of the latest component data including ID, name, status and
@@ -55,7 +55,7 @@ function renderTemplate(componentsData: ComponentsData) {
   jstProcess(input, output);
   output.removeAttribute('hidden');
 
-  // <if expr="chromeos_ash or chromeos_lacros">
+  // <if expr="is_chromeos">
   const crosUrlRedirectButton = $('os-link-href');
   if (crosUrlRedirectButton) {
     crosUrlRedirectButton.onclick = crosUrlComponentRedirect;
@@ -63,7 +63,7 @@ function renderTemplate(componentsData: ComponentsData) {
   // </if>
 }
 
-// <if expr="chromeos_ash or chromeos_lacros">
+// <if expr="is_chromeos">
 /**
  * Called when the user clicks on the os-link-href button.
  */
@@ -126,11 +126,11 @@ function returnComponentsData(componentsData: ComponentsData) {
   body.className = 'show-tmi-mode-initial';
 }
 
-type ComponentEvent = {
-  event: string,
-  id?: string,
-  version?: string,
-};
+interface ComponentEvent {
+  event: string;
+  id?: string;
+  version?: string;
+}
 
 /**
  * Listener called when state of component updater service changes.

@@ -282,6 +282,7 @@ class Internals final : public ScriptWrappable {
 
   int lastSpellCheckRequestSequence(Document*, ExceptionState&);
   int lastSpellCheckProcessedSequence(Document*, ExceptionState&);
+  int spellCheckedTextLength(Document*, ExceptionState&);
   void cancelCurrentSpellCheckRequest(Document*, ExceptionState&);
   String idleTimeSpellCheckerState(Document*, ExceptionState&);
   void runIdleTimeSpellChecker(Document*, ExceptionState&);
@@ -337,11 +338,6 @@ class Internals final : public ScriptWrappable {
   InternalSettings* settings() const;
   InternalRuntimeFlags* runtimeFlags() const;
   unsigned workerThreadCount() const;
-
-  String resolveModuleSpecifier(const String& specifier,
-                                const String& base_url_string,
-                                Document*,
-                                ExceptionState&);
 
   String getParsedImportMap(Document*, ExceptionState&);
 
@@ -614,8 +610,7 @@ class Internals final : public ScriptWrappable {
 
   void generateTestReport(const String& message);
 
-  void setIsAdSubframe(HTMLIFrameElement* iframe,
-                       ExceptionState& exception_state);
+  void setIsAdFrame(HTMLIFrameElement* iframe, ExceptionState& exception_state);
 
   ReadableStream* createReadableStream(ScriptState* script_state,
                                        int32_t queueSize,
@@ -628,6 +623,7 @@ class Internals final : public ScriptWrappable {
                                           ExceptionState&);
 
   void setAllowPerChunkTransferring(ReadableStream* stream);
+  void setBackForwardCacheRestorationBufferSize(unsigned int maxSize);
 
  private:
   Document* ContextDocument() const;

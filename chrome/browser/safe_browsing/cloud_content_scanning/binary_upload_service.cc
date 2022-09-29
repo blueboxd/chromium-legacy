@@ -5,6 +5,8 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 
 #include "base/command_line.h"
+#include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/analysis/analysis_settings.h"
 #include "chrome/browser/enterprise/connectors/common.h"
@@ -14,6 +16,10 @@
 #include "components/enterprise/common/strings.h"
 #include "net/base/url_util.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#include "chrome/browser/enterprise/connectors/analysis/local_binary_upload_service_factory.h"
+#endif
 
 namespace safe_browsing {
 namespace {
@@ -41,6 +47,31 @@ absl::optional<GURL> GetUrlOverride() {
 }
 
 }  // namespace
+
+std::string BinaryUploadService::ResultToString(Result result) {
+  switch (result) {
+    case Result::UNKNOWN:
+      return "UNKNOWN";
+    case Result::SUCCESS:
+      return "SUCCESS";
+    case Result::UPLOAD_FAILURE:
+      return "UPLOAD_FAILURE";
+    case Result::TIMEOUT:
+      return "TIMEOUT";
+    case Result::FILE_TOO_LARGE:
+      return "FILE_TOO_LARGE";
+    case Result::FAILED_TO_GET_TOKEN:
+      return "FAILED_TO_GET_TOKEN";
+    case Result::UNAUTHORIZED:
+      return "UNAUTHORIZED";
+    case Result::FILE_ENCRYPTED:
+      return "FILE_ENCRYPTED";
+    case Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE:
+      return "DLP_SCAN_UNSUPPORTED_FILE_TYPE";
+    case Result::TOO_MANY_REQUESTS:
+      return "TOO_MANY_REQUESTS";
+  }
+}
 
 BinaryUploadService::Request::Data::Data() = default;
 BinaryUploadService::Request::Data::Data(Data&&) = default;
@@ -80,10 +111,6 @@ void BinaryUploadService::Request::set_fcm_token(const std::string& token) {
 
 void BinaryUploadService::Request::set_device_token(const std::string& token) {
   content_analysis_request_.set_device_token(token);
-}
-
-void BinaryUploadService::Request::set_request_token(const std::string& token) {
-  content_analysis_request_.set_request_token(token);
 }
 
 void BinaryUploadService::Request::set_filename(const std::string& filename) {
@@ -130,6 +157,15 @@ void BinaryUploadService::Request::set_client_metadata(
 
 void BinaryUploadService::Request::set_content_type(const std::string& type) {
   content_analysis_request_.mutable_request_data()->set_content_type(type);
+}
+
+std::string BinaryUploadService::Request::SetRandomRequestToken() {
+  DCHECK(request_token().empty());
+
+  std::string token = base::RandBytesAsString(128);
+  content_analysis_request_.set_request_token(
+      base::HexEncode(token.data(), token.size()));
+  return content_analysis_request_.request_token();
 }
 
 enterprise_connectors::AnalysisConnector
@@ -225,13 +261,43 @@ void BinaryUploadService::Request::set_access_token(
   access_token_ = access_token;
 }
 
+BinaryUploadService::Ack::Ack(
+    enterprise_connectors::CloudOrLocalAnalysisSettings settings)
+    : cloud_or_local_settings_(std::move(settings)) {}
+
+BinaryUploadService::Ack::~Ack() = default;
+
+void BinaryUploadService::Ack::set_request_token(const std::string& token) {
+  ack_.set_request_token(token);
+}
+
+void BinaryUploadService::Ack::set_status(
+    enterprise_connectors::ContentAnalysisAcknowledgement::Status status) {
+  ack_.set_status(status);
+}
+
+void BinaryUploadService::Ack::set_final_action(
+    enterprise_connectors::ContentAnalysisAcknowledgement::FinalAction
+        final_action) {
+  ack_.set_final_action(final_action);
+}
+
 // static
 BinaryUploadService* BinaryUploadService::GetForProfile(
     Profile* profile,
     const enterprise_connectors::AnalysisSettings& settings) {
-  // TODO(rogerta): If settings.is_local_analysis() is true, use
-  // LocalBinaryUploadServiceFactory instead.
+  // Local content analysis is supported only on desktop platforms.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  if (settings.cloud_or_local_settings.is_cloud_analysis()) {
+    return CloudBinaryUploadServiceFactory::GetForProfile(profile);
+  } else {
+    return enterprise_connectors::LocalBinaryUploadServiceFactory::
+        GetForProfile(profile);
+  }
+#else
+  DCHECK(settings.cloud_or_local_settings.is_cloud_analysis());
   return CloudBinaryUploadServiceFactory::GetForProfile(profile);
+#endif
 }
 
 }  // namespace safe_browsing

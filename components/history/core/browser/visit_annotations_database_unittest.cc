@@ -19,6 +19,24 @@ namespace history {
 namespace {
 
 using ::testing::ElementsAre;
+using ::testing::UnorderedElementsAre;
+
+VisitContextAnnotations MakeContextAnnotations(
+    bool omnibox_url_copied,
+    bool is_existing_part_of_tab_group,
+    bool is_placed_in_tab_group,
+    bool is_existing_bookmark,
+    bool is_new_bookmark,
+    bool is_ntp_custom_link) {
+  VisitContextAnnotations result;
+  result.omnibox_url_copied = omnibox_url_copied;
+  result.is_existing_part_of_tab_group = is_existing_part_of_tab_group;
+  result.is_placed_in_tab_group = is_placed_in_tab_group;
+  result.is_existing_bookmark = is_existing_bookmark;
+  result.is_new_bookmark = is_new_bookmark;
+  result.is_ntp_custom_link = is_ntp_custom_link;
+  return result;
+}
 
 }  // namespace
 
@@ -46,6 +64,19 @@ class VisitAnnotationsDatabaseTest : public testing::Test,
 
   void ExpectContextAnnotations(VisitContextAnnotations actual,
                                 VisitContextAnnotations expected) {
+    EXPECT_EQ(actual.immediate_fields.browser_type,
+              expected.immediate_fields.browser_type);
+    EXPECT_EQ(actual.immediate_fields.window_id,
+              expected.immediate_fields.window_id);
+    EXPECT_EQ(actual.immediate_fields.tab_id, expected.immediate_fields.tab_id);
+    EXPECT_EQ(actual.immediate_fields.task_id,
+              expected.immediate_fields.task_id);
+    EXPECT_EQ(actual.immediate_fields.root_task_id,
+              expected.immediate_fields.root_task_id);
+    EXPECT_EQ(actual.immediate_fields.parent_task_id,
+              expected.immediate_fields.parent_task_id);
+    EXPECT_EQ(actual.immediate_fields.response_code,
+              expected.immediate_fields.response_code);
     EXPECT_EQ(actual.omnibox_url_copied, expected.omnibox_url_copied);
     EXPECT_EQ(actual.is_existing_part_of_tab_group,
               expected.is_existing_part_of_tab_group);
@@ -90,9 +121,14 @@ TEST_F(VisitAnnotationsDatabaseTest, AddContentAnnotationsForVisit) {
   std::vector<std::string> related_searches{"related searches",
                                             "búsquedas relacionadas"};
   VisitContentAnnotations content_annotations{
-      annotation_flags, model_annotations,
-      related_searches, GURL("http://pagewithvisit.com?q=search"),
-      u"search",        "Alternative title"};
+      annotation_flags,
+      model_annotations,
+      related_searches,
+      GURL("http://pagewithvisit.com?q=search"),
+      u"search",
+      "Alternative title",
+      "en",
+      0};
   AddContentAnnotationsForVisit(visit_id, content_annotations);
 
   // Query for it.
@@ -130,10 +166,9 @@ TEST_F(VisitAnnotationsDatabaseTest,
   AddVisitWithTime(IntToTime(10), false);
 
   const std::vector<VisitContextAnnotations> visit_context_annotations_list = {
-      {true, false, true, true, false, false},
-      {false, true, false, false, false, true},
-      {false, true, true, false, true, false},
-  };
+      MakeContextAnnotations(true, false, true, true, false, false),
+      MakeContextAnnotations(false, true, false, false, false, true),
+      MakeContextAnnotations(false, true, true, false, true, false)};
 
   // Verify `AddContextAnnotationsForVisit()` and `GetAnnotatedVisits()`.
   AddContextAnnotationsForVisit(1, visit_context_annotations_list[0]);
@@ -173,10 +208,14 @@ TEST_F(VisitAnnotationsDatabaseTest, UpdateContentAnnotationsForVisit) {
   std::vector<std::string> related_searches{"related searches"};
   VisitContentAnnotationFlags annotation_flags =
       VisitContentAnnotationFlag::kBrowsingTopicsEligible;
-  VisitContentAnnotations original{
-      annotation_flags, model_annotations,
-      related_searches, GURL("http://pagewithvisit.com?q=search"),
-      u"search",        "Alternative title"};
+  VisitContentAnnotations original{annotation_flags,
+                                   model_annotations,
+                                   related_searches,
+                                   GURL("http://pagewithvisit.com?q=search"),
+                                   u"search",
+                                   "Alternative title",
+                                   "en",
+                                   0};
   AddContentAnnotationsForVisit(visit_id, original);
 
   // Mutate that row.
@@ -215,13 +254,89 @@ TEST_F(VisitAnnotationsDatabaseTest, UpdateContentAnnotationsForVisit) {
   EXPECT_EQ(final.alternative_title, "New alternative title");
 }
 
-TEST_F(VisitAnnotationsDatabaseTest, GetRecentClusterIds) {
-  AddCluster(
-      {AddVisitWithTime(IntToTime(11)), AddVisitWithTime(IntToTime(12))});
+TEST_F(VisitAnnotationsDatabaseTest,
+       AddClusters_GetCluster_GetClusterVisit_GetClusterKeywords) {
+  // Test `AddClusters()`.
 
-  EXPECT_EQ(GetRecentClusterIds(IntToTime(13)), std::vector<int64_t>({}));
-  EXPECT_EQ(GetRecentClusterIds(IntToTime(12)), std::vector<int64_t>({1}));
-  EXPECT_EQ(GetRecentClusterIds(IntToTime(10)), std::vector<int64_t>({1}));
+  // Cluster without visits shouldn't be added.
+  std::vector<Cluster> clusters;
+  // Cluster ID shouldn't matter, it should be auto-incremented in the db.
+  clusters.push_back({10, {}});
+
+  // Clusters with visits should be added.
+  ClusterVisit visit_1;
+  // Visit ID should matter, they should not be auto-incremented in the db.
+  visit_1.annotated_visit.visit_row.visit_id = 20;
+  visit_1.score = .4;
+  visit_1.engagement_score = .3;
+  visit_1.url_for_deduping = GURL{"url_for_deduping"};
+  visit_1.normalized_url = GURL{"normalized_url"};
+  visit_1.url_for_display = u"url_for_display";
+  // `matches_search_query` and `hidden` shouldn't matter, they are not
+  // persisted.
+  visit_1.matches_search_query = true;
+  visit_1.hidden = true;
+
+  ClusterVisit visit_2;
+  visit_2.annotated_visit.visit_row.visit_id = 21;
+  visit_2.score = .2;
+  visit_2.engagement_score = .1;
+  visit_2.url_for_deduping = GURL{"url_for_deduping_2"};
+  visit_2.normalized_url = GURL{"normalized_url_2"};
+  visit_2.url_for_display = u"url_for_display_2";
+
+  // `search_match_score` shouldn't matter, it is not persisted.
+  clusters.push_back(
+      {11, {visit_1, visit_2}, {}, false, u"label", u"raw_label", {}, {}, .6});
+
+  // Empty or `nullopt` labels should both be retrieved as `nullopt`.
+  clusters.push_back(
+      {11, {visit_1, visit_2}, {}, false, u"", absl::nullopt, {}, {}, .6});
+  AddClusters(clusters);
+
+  // Test `GetCluster()`
+
+  // Should return the non-empty cluster2.
+  const auto cluster_1 = GetCluster(1);
+  EXPECT_EQ(cluster_1.cluster_id, 1);
+  EXPECT_EQ(cluster_1.should_show_on_prominent_ui_surfaces, false);
+  EXPECT_EQ(cluster_1.label, u"label");
+  EXPECT_EQ(cluster_1.raw_label, u"raw_label");
+  // Should not populate visits.
+  EXPECT_TRUE(cluster_1.visits.empty());
+  EXPECT_THAT(GetVisitIdsInCluster(1), UnorderedElementsAre(20, 21));
+  // Should not populate the non-persisted `search_match_score` field.
+  EXPECT_EQ(cluster_1.search_match_score, 0);
+
+  const auto cluster_2 = GetCluster(2);
+  EXPECT_EQ(cluster_2.cluster_id, 2);
+  EXPECT_EQ(cluster_2.label, absl::nullopt);
+  EXPECT_EQ(cluster_2.raw_label, absl::nullopt);
+
+  // There should be no other cluster.
+  EXPECT_EQ(GetCluster(3).cluster_id, 0);
+
+  // Test `GetClusterVisit()`.
+
+  const auto visit_1_retrieved = GetClusterVisit(20);
+  EXPECT_EQ(visit_1_retrieved.annotated_visit.visit_row.visit_id, 20);
+  EXPECT_EQ(visit_1_retrieved.score, .4f);
+  EXPECT_EQ(visit_1_retrieved.engagement_score, .3f);
+  EXPECT_EQ(visit_1_retrieved.url_for_deduping, GURL{"url_for_deduping"});
+  EXPECT_EQ(visit_1_retrieved.normalized_url, GURL{"normalized_url"});
+  EXPECT_EQ(visit_1_retrieved.url_for_display, u"url_for_display");
+  // Should not populate the non-persisted `matches_search_query` and `hidden`
+  // fields.
+  EXPECT_EQ(visit_1_retrieved.matches_search_query, false);
+  EXPECT_EQ(visit_1_retrieved.hidden, false);
+
+  const auto visit_2_retrieved = GetClusterVisit(21);
+  EXPECT_EQ(visit_2_retrieved.annotated_visit.visit_row.visit_id, 21);
+  EXPECT_EQ(visit_2_retrieved.score, .2f);
+  EXPECT_EQ(visit_2_retrieved.engagement_score, .1f);
+  EXPECT_EQ(visit_2_retrieved.url_for_deduping, GURL{"url_for_deduping_2"});
+  EXPECT_EQ(visit_2_retrieved.normalized_url, GURL{"normalized_url_2"});
+  EXPECT_EQ(visit_2_retrieved.url_for_display, u"url_for_display_2");
 }
 
 TEST_F(VisitAnnotationsDatabaseTest, GetMostRecentClusterIds) {
@@ -246,7 +361,8 @@ TEST_F(VisitAnnotationsDatabaseTest, GetMostRecentClusterIds) {
             std::vector<int64_t>({3}));
 }
 
-TEST_F(VisitAnnotationsDatabaseTest, GetVisitsInCluster_IsVisitClustered) {
+TEST_F(VisitAnnotationsDatabaseTest,
+       GetVisitIdsInCluster_GetClusterIdContainingVisit) {
   // Add unclustered visits.
   AddVisitWithTime(IntToTime(0));
   AddVisitWithTime(IntToTime(2));
@@ -260,64 +376,108 @@ TEST_F(VisitAnnotationsDatabaseTest, GetVisitsInCluster_IsVisitClustered) {
   EXPECT_THAT(GetVisitIdsInCluster(1), ElementsAre(4));
   EXPECT_THAT(GetVisitIdsInCluster(3), ElementsAre(7, 6));
 
-  // IsVisitClustered
-  EXPECT_FALSE(IsVisitClustered(1));
-  EXPECT_FALSE(IsVisitClustered(2));
-  EXPECT_FALSE(IsVisitClustered(3));
-  EXPECT_TRUE(IsVisitClustered(4));
-  EXPECT_TRUE(IsVisitClustered(5));
-  EXPECT_TRUE(IsVisitClustered(6));
-  EXPECT_TRUE(IsVisitClustered(7));
+  // GetClusterIdContainingVisit
+  EXPECT_EQ(GetClusterIdContainingVisit(1), 0);
+  EXPECT_EQ(GetClusterIdContainingVisit(2), 0);
+  EXPECT_EQ(GetClusterIdContainingVisit(3), 0);
+  EXPECT_EQ(GetClusterIdContainingVisit(4), 1);
+  EXPECT_EQ(GetClusterIdContainingVisit(5), 2);
+  EXPECT_EQ(GetClusterIdContainingVisit(6), 3);
+  EXPECT_EQ(GetClusterIdContainingVisit(7), 3);
 }
 
 TEST_F(VisitAnnotationsDatabaseTest, DeleteAnnotationsForVisit) {
-  // Add content annotations for 1 visit.
-  VisitID visit_id = 1;
-  VisitContentModelAnnotations model_annotations = {
-      0.5f,
-      {{/*id=*/"1", /*weight=*/1}, {/*id=*/"2", /*weight=*/1}},
-      123,
-      {{/*id=*/"entity1", /*weight=*/1}, {/*id=*/"entity2", /*weight=*/1}}};
-  std::vector<std::string> related_searches{"related searches",
-                                            "búsquedas relacionadas"};
-  VisitContentAnnotationFlags annotation_flags =
-      VisitContentAnnotationFlag::kNone;
-  VisitContentAnnotations content_annotations{
-      annotation_flags, model_annotations,
-      related_searches, GURL("http://pagewithvisit.com?q=search"),
-      u"search",        "Alternative title"};
-  AddContentAnnotationsForVisit(visit_id, content_annotations);
+  // Add a cluster with 2 visits.
+  AddContentAnnotationsForVisit(1, {});
+  AddContextAnnotationsForVisit(1, {});
+  AddContentAnnotationsForVisit(2, {});
+  AddContextAnnotationsForVisit(2, {});
+  auto cluster = CreateCluster({1, 2});
+  cluster.keyword_to_data_map[u"keyword1"];
+  cluster.keyword_to_data_map[u"keyword2"];
+  AddClusters({cluster});
 
   VisitContentAnnotations got_content_annotations;
-  // First make sure the annotations are there.
-  EXPECT_TRUE(
-      GetContentAnnotationsForVisit(visit_id, &got_content_annotations));
+  VisitContextAnnotations got_context_annotations;
+  // First make sure the annotation and cluster tables are populated.
+  EXPECT_TRUE(GetContentAnnotationsForVisit(1, &got_content_annotations));
+  EXPECT_TRUE(GetContextAnnotationsForVisit(1, &got_context_annotations));
+  EXPECT_TRUE(GetContentAnnotationsForVisit(2, &got_content_annotations));
+  EXPECT_TRUE(GetContextAnnotationsForVisit(2, &got_context_annotations));
+  EXPECT_EQ(GetCluster(1).cluster_id, 1);
+  EXPECT_THAT(GetVisitIdsInCluster(1), UnorderedElementsAre(1, 2));
+  EXPECT_EQ(GetClusterIdContainingVisit(1), 1);
+  EXPECT_EQ(GetClusterIdContainingVisit(2), 1);
+  EXPECT_EQ(GetClusterKeywords(1).size(), 2u);
 
-  // Delete annotations and make sure we cannot query for it.
-  DeleteAnnotationsForVisit(visit_id);
-  EXPECT_FALSE(
-      GetContentAnnotationsForVisit(visit_id, &got_content_annotations));
+  // Delete 1 visit. Make sure the tables are updated, but the cluster remains.
+  DeleteAnnotationsForVisit(1);
+  EXPECT_FALSE(GetContentAnnotationsForVisit(1, &got_content_annotations));
+  EXPECT_FALSE(GetContextAnnotationsForVisit(1, &got_context_annotations));
+  EXPECT_TRUE(GetContentAnnotationsForVisit(2, &got_content_annotations));
+  EXPECT_TRUE(GetContextAnnotationsForVisit(2, &got_context_annotations));
+  EXPECT_EQ(GetCluster(1).cluster_id, 1);
+  EXPECT_THAT(GetVisitIdsInCluster(1), UnorderedElementsAre(2));
+  EXPECT_EQ(GetClusterIdContainingVisit(1), 0);
+  EXPECT_EQ(GetClusterIdContainingVisit(2), 1);
+  EXPECT_EQ(GetClusterKeywords(1).size(), 2u);
+
+  // Delete the 2nd visit. Make sure the cluster is removed.
+  DeleteAnnotationsForVisit(2);
+  EXPECT_FALSE(GetContentAnnotationsForVisit(1, &got_content_annotations));
+  EXPECT_FALSE(GetContextAnnotationsForVisit(1, &got_context_annotations));
+  EXPECT_FALSE(GetContentAnnotationsForVisit(2, &got_content_annotations));
+  EXPECT_FALSE(GetContextAnnotationsForVisit(2, &got_context_annotations));
+  EXPECT_EQ(GetCluster(1).cluster_id, 0);
+  EXPECT_TRUE(GetVisitIdsInCluster(1).empty());
+  EXPECT_EQ(GetClusterIdContainingVisit(1), 0);
+  EXPECT_EQ(GetClusterIdContainingVisit(2), 0);
+  EXPECT_EQ(GetClusterKeywords(1).size(), 0u);
 }
 
 TEST_F(VisitAnnotationsDatabaseTest, AddClusters_DeleteClusters) {
   AddClusters(CreateClusters({{3, 2, 5}, {3, 2, 5}, {6}}));
 
+  auto cluster_with_keyword_data = CreateCluster({10});
+  cluster_with_keyword_data.keyword_to_data_map[u"keyword1"];
+  cluster_with_keyword_data.keyword_to_data_map[u"keyword2"];
+  AddClusters({cluster_with_keyword_data});
+
+  EXPECT_EQ(GetCluster(1).cluster_id, 1);
+  EXPECT_EQ(GetCluster(2).cluster_id, 2);
+  EXPECT_EQ(GetCluster(3).cluster_id, 3);
+  EXPECT_EQ(GetCluster(4).cluster_id, 4);
   EXPECT_THAT(GetVisitIdsInCluster(1), ElementsAre(5, 3, 2));
   EXPECT_THAT(GetVisitIdsInCluster(2), ElementsAre(5, 3, 2));
   EXPECT_THAT(GetVisitIdsInCluster(3), ElementsAre(6));
+  EXPECT_THAT(GetVisitIdsInCluster(4), ElementsAre(10));
+  EXPECT_EQ(GetClusterKeywords(4).size(), 2u);
 
   DeleteClusters({});
 
+  EXPECT_EQ(GetCluster(1).cluster_id, 1);
+  EXPECT_EQ(GetCluster(2).cluster_id, 2);
+  EXPECT_EQ(GetCluster(3).cluster_id, 3);
+  EXPECT_EQ(GetCluster(4).cluster_id, 4);
   EXPECT_THAT(GetVisitIdsInCluster(1), ElementsAre(5, 3, 2));
   EXPECT_THAT(GetVisitIdsInCluster(2), ElementsAre(5, 3, 2));
   EXPECT_THAT(GetVisitIdsInCluster(3), ElementsAre(6));
+  EXPECT_THAT(GetVisitIdsInCluster(4), ElementsAre(10));
+  EXPECT_EQ(GetClusterKeywords(4).size(), 2u);
 
-  DeleteClusters({1, 3, 4});
+  DeleteClusters({1, 3, 4, 5});
 
+  EXPECT_EQ(GetCluster(1).cluster_id, 0);
+  EXPECT_EQ(GetCluster(2).cluster_id, 2);
+  EXPECT_EQ(GetCluster(3).cluster_id, 0);
+  EXPECT_EQ(GetCluster(4).cluster_id, 0);
+  EXPECT_EQ(GetCluster(5).cluster_id, 0);
   EXPECT_THAT(GetVisitIdsInCluster(1), ElementsAre());
   EXPECT_THAT(GetVisitIdsInCluster(2), ElementsAre(5, 3, 2));
   EXPECT_THAT(GetVisitIdsInCluster(3), ElementsAre());
   EXPECT_THAT(GetVisitIdsInCluster(4), ElementsAre());
+  EXPECT_THAT(GetVisitIdsInCluster(5), ElementsAre());
+  EXPECT_TRUE(GetClusterKeywords(4).empty());
 }
 
 }  // namespace history

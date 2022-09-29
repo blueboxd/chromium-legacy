@@ -66,9 +66,6 @@ constexpr char kResponseSizeHistogramName[] =
 namespace app_list {
 using base::test::ScopedFeatureList;
 
-// TODO(crbug.com/1034842): Add test checking we make no requests when disabled
-// by experiment or policy.
-
 class ItemSuggestCacheTest : public testing::Test {
  protected:
   ItemSuggestCacheTest() = default;
@@ -210,8 +207,7 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheDisabledByExperiment) {
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
       feature_, {{"enabled", "false"}});
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
-      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_,
-                                         base::DoNothing());
+      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
   itemSuggestCache->UpdateCache();
   task_environment_.RunUntilIdle();
   histogram_tester_.ExpectUniqueSample(
@@ -221,8 +217,7 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheDisabledByExperiment) {
 TEST_F(ItemSuggestCacheTest, UpdateCacheDisabledByPolicy) {
   profile_->GetPrefs()->SetBoolean(drive::prefs::kDisableDrive, true);
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
-      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_,
-                                         base::DoNothing());
+      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
   itemSuggestCache->UpdateCache();
   task_environment_.RunUntilIdle();
   histogram_tester_.ExpectUniqueSample(
@@ -234,8 +229,7 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheServerUrlIsNotHttps) {
       feature_,
       {{"server_url", "http://appsitemsuggest-pa.googleapis.com/v1/items"}});
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
-      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_,
-                                         base::DoNothing());
+      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
   itemSuggestCache->UpdateCache();
   task_environment_.RunUntilIdle();
   histogram_tester_.ExpectUniqueSample(
@@ -246,8 +240,7 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheServerUrlIsNotGoogleDomain) {
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
       feature_, {{"server_url", "https://foo.com"}});
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
-      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_,
-                                         base::DoNothing());
+      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
   itemSuggestCache->UpdateCache();
   task_environment_.RunUntilIdle();
   histogram_tester_.ExpectUniqueSample(
@@ -256,8 +249,7 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheServerUrlIsNotGoogleDomain) {
 
 TEST_F(ItemSuggestCacheTest, UpdateCacheServerNoAuthToken) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
-      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_,
-                                         base::DoNothing());
+      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
   itemSuggestCache->UpdateCache();
   task_environment_.RunUntilIdle();
   histogram_tester_.ExpectUniqueSample(
@@ -266,8 +258,7 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheServerNoAuthToken) {
 
 TEST_F(ItemSuggestCacheTest, UpdateCacheInsufficientResourcesError) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
-      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_,
-                                         base::DoNothing());
+      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
   identity_test_env_->MakePrimaryAccountAvailable(kEmail,
                                                   signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
@@ -285,8 +276,7 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheInsufficientResourcesError) {
 
 TEST_F(ItemSuggestCacheTest, UpdateCacheNetError) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
-      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_,
-                                         base::DoNothing());
+      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
   identity_test_env_->MakePrimaryAccountAvailable(kEmail,
                                                   signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
@@ -304,8 +294,7 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheNetError) {
 
 TEST_F(ItemSuggestCacheTest, UpdateCache5kkError) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
-      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_,
-                                         base::DoNothing());
+      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
   identity_test_env_->MakePrimaryAccountAvailable(kEmail,
                                                   signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
@@ -327,8 +316,7 @@ TEST_F(ItemSuggestCacheTest, UpdateCache5kkError) {
 
 TEST_F(ItemSuggestCacheTest, UpdateCache4kkError) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
-      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_,
-                                         base::DoNothing());
+      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
   identity_test_env_->MakePrimaryAccountAvailable(kEmail,
                                                   signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
@@ -350,8 +338,7 @@ TEST_F(ItemSuggestCacheTest, UpdateCache4kkError) {
 
 TEST_F(ItemSuggestCacheTest, UpdateCache3kkError) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
-      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_,
-                                         base::DoNothing());
+      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
   identity_test_env_->MakePrimaryAccountAvailable(kEmail,
                                                   signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
@@ -373,8 +360,7 @@ TEST_F(ItemSuggestCacheTest, UpdateCache3kkError) {
 
 TEST_F(ItemSuggestCacheTest, UpdateCacheEmptyResponse) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
-      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_,
-                                         base::DoNothing());
+      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
   identity_test_env_->MakePrimaryAccountAvailable(kEmail,
                                                   signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
@@ -390,8 +376,7 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheEmptyResponse) {
 
 TEST_F(ItemSuggestCacheTest, UpdateCacheInvalidResponse) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
-      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_,
-                                         base::DoNothing());
+      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
   identity_test_env_->MakePrimaryAccountAvailable(kEmail,
                                                   signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
@@ -409,8 +394,7 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheInvalidResponse) {
 
 TEST_F(ItemSuggestCacheTest, UpdateCacheConversionFailure) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
-      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_,
-                                         base::DoNothing());
+      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
   identity_test_env_->MakePrimaryAccountAvailable(kEmail,
                                                   signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
@@ -433,8 +417,7 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheConversionFailure) {
 
 TEST_F(ItemSuggestCacheTest, UpdateCacheConversionEmptyResults) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
-      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_,
-                                         base::DoNothing());
+      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
   identity_test_env_->MakePrimaryAccountAvailable(kEmail,
                                                   signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
@@ -458,8 +441,7 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheConversionEmptyResults) {
 
 TEST_F(ItemSuggestCacheTest, UpdateCacheSavesResults) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
-      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_,
-                                         base::DoNothing());
+      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
   identity_test_env_->MakePrimaryAccountAvailable(kEmail,
                                                   signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);
@@ -482,8 +464,7 @@ TEST_F(ItemSuggestCacheTest, UpdateCacheSavesResults) {
 
 TEST_F(ItemSuggestCacheTest, UpdateCacheSmallTimeBetweenUpdates) {
   std::unique_ptr<ItemSuggestCache> itemSuggestCache =
-      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_,
-                                         base::DoNothing());
+      std::make_unique<ItemSuggestCache>(profile_, shared_url_loader_factory_);
   identity_test_env_->MakePrimaryAccountAvailable(kEmail,
                                                   signin::ConsentLevel::kSync);
   identity_test_env_->SetAutomaticIssueOfAccessTokens(true);

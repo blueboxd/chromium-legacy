@@ -5,6 +5,7 @@
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 
 #include "ash/public/cpp/holding_space/holding_space_image.h"
+#include "ash/public/cpp/holding_space/holding_space_util.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/json/values_util.h"
 #include "base/memory/ptr_util.h"
@@ -32,6 +33,41 @@ constexpr char kVersionPath[] = "version";
 
 }  // namespace
 
+// HoldingSpaceItem::InProgressCommand -----------------------------------------
+
+HoldingSpaceItem::InProgressCommand::InProgressCommand(
+    HoldingSpaceCommandId command_id,
+    int label_id,
+    const gfx::VectorIcon* icon,
+    Handler handler)
+    : command_id(command_id),
+      label_id(label_id),
+      icon(icon),
+      handler(std::move(handler)) {
+  DCHECK(holding_space_util::IsInProgressCommand(command_id));
+}
+
+HoldingSpaceItem::InProgressCommand::InProgressCommand(
+    const InProgressCommand& other)
+    : command_id(other.command_id),
+      label_id(other.label_id),
+      icon(other.icon),
+      handler(other.handler) {}
+
+HoldingSpaceItem::InProgressCommand::~InProgressCommand() = default;
+
+HoldingSpaceItem::InProgressCommand&
+HoldingSpaceItem::InProgressCommand::operator=(const InProgressCommand& other) =
+    default;
+
+bool HoldingSpaceItem::InProgressCommand::operator==(
+    const InProgressCommand& other) const {
+  return command_id == other.command_id && label_id == other.label_id &&
+         icon == other.icon && handler == other.handler;
+}
+
+// HoldingSpaceItem ------------------------------------------------------------
+
 HoldingSpaceItem::~HoldingSpaceItem() {
   deletion_callback_list_.Notify();
 }
@@ -42,7 +78,7 @@ bool HoldingSpaceItem::operator==(const HoldingSpaceItem& rhs) const {
          secondary_text_ == rhs.secondary_text_ &&
          secondary_text_color_ == rhs.secondary_text_color_ &&
          *image_ == *rhs.image_ && progress_ == rhs.progress_ &&
-         paused_ == rhs.paused_;
+         in_progress_commands_ == rhs.in_progress_commands_;
 }
 
 // static
@@ -239,8 +275,23 @@ bool HoldingSpaceItem::SetProgress(const HoldingSpaceProgress& progress) {
   progress_ = progress;
 
   if (progress_.IsComplete())
-    paused_ = false;
+    in_progress_commands_.clear();
 
+  return true;
+}
+
+bool HoldingSpaceItem::SetInProgressCommands(
+    std::vector<InProgressCommand> in_progress_commands) {
+  DCHECK(std::all_of(in_progress_commands.begin(), in_progress_commands.end(),
+                     [](const InProgressCommand& in_progress_command) {
+                       return holding_space_util::IsInProgressCommand(
+                           in_progress_command.command_id);
+                     }));
+
+  if (progress_.IsComplete() || in_progress_commands_ == in_progress_commands)
+    return false;
+
+  in_progress_commands_ = in_progress_commands;
   return true;
 }
 
@@ -265,18 +316,6 @@ bool HoldingSpaceItem::IsScreenCapture() const {
     case Type::kPhoneHubCameraRoll:
       return false;
   }
-}
-
-bool HoldingSpaceItem::IsPaused() const {
-  return paused_;
-}
-
-bool HoldingSpaceItem::SetPaused(bool paused) {
-  if (paused_ == paused || progress_.IsComplete())
-    return false;
-
-  paused_ = paused;
-  return true;
 }
 
 HoldingSpaceItem::HoldingSpaceItem(Type type,

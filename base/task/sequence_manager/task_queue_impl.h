@@ -40,11 +40,8 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
-namespace sequence_manager {
-
 class LazyNow;
-
-namespace internal {
+namespace sequence_manager::internal {
 
 class SequenceManagerImpl;
 class WorkQueue;
@@ -144,7 +141,6 @@ class BASE_EXPORT TaskQueueImpl {
   TaskQueue::QueuePriority GetQueuePriority() const;
   void AddTaskObserver(TaskObserver* task_observer);
   void RemoveTaskObserver(TaskObserver* task_observer);
-  void SetBlameContext(trace_event::BlameContext* blame_context);
   void InsertFence(TaskQueue::InsertFencePosition position);
   void InsertFenceAt(TimeTicks time);
   void RemoveFence();
@@ -321,6 +317,10 @@ class BASE_EXPORT TaskQueueImpl {
 
     void ShutdownAndWaitForZeroOperations() {
       operations_controller_.ShutdownAndWaitForZeroOperations();
+      // `operations_controller_` won't let any more operations here, and
+      // `outer_` might get destroyed before `this` does, so clearing `outer_`
+      // avoids a potential dangling pointer.
+      outer_ = nullptr;
     }
 
    private:
@@ -330,7 +330,7 @@ class BASE_EXPORT TaskQueueImpl {
 
     base::internal::OperationsController operations_controller_;
     // Pointer might be stale, access guarded by |operations_controller_|
-    const raw_ptr<TaskQueueImpl, DanglingUntriaged> outer_;
+    raw_ptr<TaskQueueImpl> outer_;
   };
 
   class TaskRunner final : public SingleThreadTaskRunner {
@@ -437,7 +437,6 @@ class BASE_EXPORT TaskQueueImpl {
     ObserverList<TaskObserver>::Unchecked task_observers;
     HeapHandle heap_handle;
     bool is_enabled = true;
-    raw_ptr<trace_event::BlameContext> blame_context = nullptr;  // Not owned.
     absl::optional<Fence> current_fence;
     absl::optional<TimeTicks> delayed_fence;
     // Snapshots the next sequence number when the queue is unblocked, otherwise
@@ -501,6 +500,11 @@ class BASE_EXPORT TaskQueueImpl {
 
   void MoveReadyImmediateTasksToImmediateWorkQueueLocked()
       EXCLUSIVE_LOCKS_REQUIRED(any_thread_lock_);
+
+  // Records the delay for some tasks in the main thread and the size of the
+  // |delayed_incoming_queue| pseudorandomly in a histogram.
+  void RecordQueuingDelayedTaskMetrics(const Task& pending_task,
+                                       LazyNow* lazy_now);
 
   // LazilyDeallocatedDeque use TimeTicks to figure out when to resize.  We
   // should use real time here always.
@@ -625,8 +629,7 @@ class BASE_EXPORT TaskQueueImpl {
   const bool delayed_fence_allowed_;
 };
 
-}  // namespace internal
-}  // namespace sequence_manager
+}  // namespace sequence_manager::internal
 }  // namespace base
 
 #endif  // BASE_TASK_SEQUENCE_MANAGER_TASK_QUEUE_IMPL_H_

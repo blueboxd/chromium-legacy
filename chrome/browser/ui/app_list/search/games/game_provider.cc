@@ -4,12 +4,15 @@
 
 #include "chrome/browser/ui/app_list/search/games/game_provider.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "ash/constants/ash_pref_names.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/rand_util.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/apps/app_discovery_service/app_discovery_service.h"
@@ -22,24 +25,24 @@
 #include "chrome/browser/ui/app_list/search/games/game_result.h"
 #include "chrome/browser/ui/app_list/search/search_features.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/string_matching/fuzzy_tokenized_string_match.h"
-#include "chromeos/components/string_matching/tokenized_string.h"
+#include "chromeos/ash/components/string_matching/fuzzy_tokenized_string_match.h"
+#include "chromeos/ash/components/string_matching/tokenized_string.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace app_list {
+
 namespace {
 
-using chromeos::string_matching::FuzzyTokenizedStringMatch;
-using chromeos::string_matching::TokenizedString;
+using ::ash::string_matching::FuzzyTokenizedStringMatch;
+using ::ash::string_matching::TokenizedString;
 
 // Parameters for FuzzyTokenizedStringMatch.
 constexpr bool kUseWeightedRatio = false;
-constexpr bool kUseEditDistance = false;
-constexpr double kRelevanceThreshold = 0.32;
-constexpr double kPartialMatchPenaltyRate = 0.9;
 
+constexpr double kRelevanceThreshold = 0.65;
 constexpr size_t kMaxResults = 3u;
+constexpr double kEpsilon = 1e-5;
 
 // Outcome of a call to GameSearchProvider::Start. These values persist to logs.
 // Entries should not be renumbered and numeric values should not be reused.
@@ -72,10 +75,23 @@ bool EnabledByPolicy(Profile* profile) {
   return suggested_content_enabled;
 }
 
+// Game titles often contain special characters. Strip out some common ones
+// before searching.
+// This does not affect query highlighting, which calculates matched portions of
+// text in a separate post-processing step.
+std::u16string GetStrippedText(const std::u16string& text) {
+  std::u16string stripped_text;
+  // In order, these are: apostrophe, left quote, right quote, TM, registered
+  // sign.
+  base::RemoveChars(text, u"\'\u2018\u2019\u2122\u00AE", &stripped_text);
+  return stripped_text;
+}
+
 double CalculateTitleRelevance(const TokenizedString& tokenized_query,
                                const std::u16string& game_title) {
-  const TokenizedString tokenized_title(game_title,
-                                        TokenizedString::Mode::kCamelCase);
+  std::u16string stripped_title = GetStrippedText(game_title);
+  const TokenizedString tokenized_title(stripped_title,
+                                        TokenizedString::Mode::kWords);
 
   if (tokenized_query.text().empty() || tokenized_title.text().empty()) {
     static constexpr double kDefaultRelevance = 0.0;
@@ -83,8 +99,7 @@ double CalculateTitleRelevance(const TokenizedString& tokenized_query,
   }
 
   FuzzyTokenizedStringMatch match;
-  return match.Relevance(tokenized_query, tokenized_title, kUseWeightedRatio,
-                         kUseEditDistance, kPartialMatchPenaltyRate);
+  return match.Relevance(tokenized_query, tokenized_title, kUseWeightedRatio);
 }
 
 std::vector<std::pair<const apps::Result*, double>> SearchGames(
@@ -92,7 +107,9 @@ std::vector<std::pair<const apps::Result*, double>> SearchGames(
     const GameProvider::GameIndex* index) {
   DCHECK(index);
 
-  TokenizedString tokenized_query(query, TokenizedString::Mode::kCamelCase);
+  std::u16string stripped_query = GetStrippedText(query);
+  TokenizedString tokenized_query(stripped_query,
+                                  TokenizedString::Mode::kWords);
   std::vector<std::pair<const apps::Result*, double>> matches;
   for (const auto& game : *index) {
     double relevance =
@@ -185,6 +202,14 @@ void GameProvider::OnSearchComplete(
     std::u16string query,
     std::vector<std::pair<const apps::Result*, double>> matches) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Shuffle the matches and use the resulting order to slightly modify all
+  // scores. When the results are sorted, this will have the effect of
+  // randomizing the order of cloud providers given the same game title.
+  base::RandomShuffle(matches.begin(), matches.end());
+  for (size_t i = 0; i < matches.size(); ++i) {
+    matches[i].second = std::max(0.0, matches[i].second - i * kEpsilon);
+  }
 
   // Sort matches by descending relevance score.
   std::sort(matches.begin(), matches.end(),

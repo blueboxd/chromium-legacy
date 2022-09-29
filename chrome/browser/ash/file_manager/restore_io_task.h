@@ -11,9 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/trash_common_util.h"
-#include "chromeos/ash/components/trash_service/public/cpp/trash_service.h"
-#include "chromeos/ash/components/trash_service/public/mojom/trash_service.mojom.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "chrome/browser/ash/file_manager/trash_info_validator.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
@@ -21,8 +19,7 @@
 
 class Profile;
 
-namespace file_manager {
-namespace io_task {
+namespace file_manager::io_task {
 
 // This class represents a task restoring from trash. A restore task attempts to
 // restore files from a supported Trash folder back to it's original path. If
@@ -48,31 +45,15 @@ class RestoreIOTask : public IOTask {
   // Finalises the RestoreIOTask with the `state`.
   void Complete(State state);
 
-  void OnGotFile(chromeos::trash_service::ParseTrashInfoCallback callback,
-                 size_t idx,
-                 base::File file);
-
-  // Ensure the metadata file conforms to the following:
-  //   - Has a .trashinfo suffix
-  //   - Resides in an enabled trash directory
-  //   - The file resides in the info directory
-  //   - Has an identical item in the files directory with no .trashinfo suffix
+  // Calls the underlying TrashInfoValidator to perform validation on the
+  // supplied .trashinfo file.
   void ValidateTrashInfo(size_t idx);
-
-  void OnTrashedFileExists(size_t idx,
-                           const base::FilePath& trash_parent_path,
-                           const base::FilePath& trashed_file_location,
-                           bool exists);
 
   // Make sure the enclosing folder where the trashed file to be restored to
   // actually exists. In the event the file path has been removed, recreate it.
   void EnsureParentRestorePathExists(
       size_t idx,
-      const base::FilePath& trash_parent_path,
-      const base::FilePath& trashed_file_location,
-      base::File::Error status,
-      const base::FilePath& restore_path,
-      base::Time deletion_date);
+      base::FileErrorOr<trash::ParsedTrashInfoData> parsed_data);
 
   void OnParentRestorePathExists(size_t idx,
                                  const base::FilePath& trashed_file_location,
@@ -113,16 +94,12 @@ class RestoreIOTask : public IOTask {
   // only in testing.
   base::FilePath base_path_;
 
-  // A map containing paths which are enabled for trashing.
-  TrashPathsMap enabled_trash_locations_;
-
   // Stores the id of the restore operation if one is in progress. Used so the
   // restore can be cancelled.
   absl::optional<storage::FileSystemOperationRunner::OperationID> operation_id_;
 
-  // Holds the connection open to the `TrashService`. This is a sandboxed
-  // process that performs parsing of the trashinfo files.
-  mojo::Remote<chromeos::trash_service::mojom::TrashService> trash_service_;
+  // Validates and parses .trashinfo files.
+  std::unique_ptr<trash::TrashInfoValidator> validator_ = nullptr;
 
   ProgressCallback progress_callback_;
   CompleteCallback complete_callback_;
@@ -130,7 +107,6 @@ class RestoreIOTask : public IOTask {
   base::WeakPtrFactory<RestoreIOTask> weak_ptr_factory_{this};
 };
 
-}  // namespace io_task
-}  // namespace file_manager
+}  // namespace file_manager::io_task
 
 #endif  // CHROME_BROWSER_ASH_FILE_MANAGER_RESTORE_IO_TASK_H_

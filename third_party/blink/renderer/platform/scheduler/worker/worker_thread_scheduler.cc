@@ -99,7 +99,7 @@ WorkerThreadScheduler::WorkerThreadScheduler(
     ThreadType thread_type,
     base::sequence_manager::SequenceManager* sequence_manager,
     WorkerSchedulerProxy* proxy)
-    : NonMainThreadSchedulerImpl(sequence_manager,
+    : NonMainThreadSchedulerBase(sequence_manager,
                                  TaskType::kWorkerThreadTaskQueueDefault),
       thread_type_(thread_type),
       idle_helper_queue_(
@@ -153,17 +153,6 @@ WorkerThreadScheduler::CompositorTaskRunner() {
   return compositor_task_runner_;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-WorkerThreadScheduler::NonWakingTaskRunner() {
-  NOTREACHED() << "Not implemented";
-  return nullptr;
-}
-
-bool WorkerThreadScheduler::CanExceedIdleDeadlineIfRequired() const {
-  DCHECK(initialized_);
-  return idle_helper_.CanExceedIdleDeadlineIfRequired();
-}
-
 bool WorkerThreadScheduler::ShouldYieldForHighPriorityWork() {
   // We don't consider any work as being high priority on workers.
   return false;
@@ -182,7 +171,7 @@ void WorkerThreadScheduler::RemoveTaskObserver(
 
 void WorkerThreadScheduler::Shutdown() {
   DCHECK(initialized_);
-  ThreadSchedulerImpl::Shutdown();
+  ThreadSchedulerBase::Shutdown();
   idle_helper_.Shutdown();
   GetHelper().Shutdown();
 }
@@ -207,7 +196,7 @@ void WorkerThreadScheduler::OnTaskCompleted(
     NonMainThreadTaskQueue* task_queue,
     const base::sequence_manager::Task& task,
     TaskQueue::TaskTiming* task_timing,
-    base::sequence_manager::LazyNow* lazy_now) {
+    base::LazyNow* lazy_now) {
   PerformMicrotaskCheckpoint();
 
   task_timing->RecordTaskEnd(lazy_now);
@@ -325,6 +314,37 @@ WorkerThreadScheduler::GetWorkerSchedulersForTesting() {
 void WorkerThreadScheduler::PerformMicrotaskCheckpoint() {
   if (isolate())
     EventLoop::PerformIsolateGlobalMicrotasksCheckpoint(isolate());
+}
+
+void WorkerThreadScheduler::PostIdleTask(const base::Location& location,
+                                         Thread::IdleTask task) {
+  IdleTaskRunner()->PostIdleTask(location, std::move(task));
+}
+
+void WorkerThreadScheduler::PostNonNestableIdleTask(
+    const base::Location& location,
+    Thread::IdleTask task) {
+  IdleTaskRunner()->PostNonNestableIdleTask(location, std::move(task));
+}
+
+void WorkerThreadScheduler::PostDelayedIdleTask(const base::Location& location,
+                                                base::TimeDelta delay,
+                                                Thread::IdleTask task) {
+  IdleTaskRunner()->PostDelayedIdleTask(location, delay, std::move(task));
+}
+
+base::TimeTicks WorkerThreadScheduler::MonotonicallyIncreasingVirtualTime() {
+  return base::TimeTicks::Now();
+}
+
+void WorkerThreadScheduler::SetV8Isolate(v8::Isolate* isolate) {
+  NonMainThreadSchedulerBase::SetV8Isolate(isolate);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+WorkerThreadScheduler::DeprecatedDefaultTaskRunner() {
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace scheduler

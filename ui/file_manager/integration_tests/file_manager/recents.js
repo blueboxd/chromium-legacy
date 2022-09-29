@@ -214,9 +214,7 @@ async function verifyRecentDocuments(appId, expectedEntries) {
  * @param {string} expectedPath Expected breadcrumb path.
  */
 async function verifyBreadcrumbsPath(appId, expectedPath) {
-  const path =
-      await remoteCall.callRemoteTestUtil('getBreadcrumbPath', appId, []);
-  chrome.test.assertEq(expectedPath, path);
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, expectedPath);
 }
 
 /**
@@ -229,8 +227,7 @@ async function verifyBreadcrumbsPath(appId, expectedPath) {
  */
 async function rightClickContextMenu(appId, fileName, commandId) {
   // Select the item.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil('selectFile', appId, [fileName]));
+  await remoteCall.waitUntilSelected(appId, fileName);
 
   // Right-click the selected file.
   await remoteCall.waitAndRightClick(appId, '.table-row[selected]');
@@ -895,8 +892,8 @@ testcase.recentsNoRenameForPlayFiles = async () => {
   await remoteCall.waitForFiles(appId, files);
 
   // Select the item.
-  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [RECENT_MODIFIED_ANDROID_DOCUMENT.nameText]));
+  await remoteCall.waitUntilSelected(
+      appId, RECENT_MODIFIED_ANDROID_DOCUMENT.nameText);
 
   // Right-click the selected file.
   await remoteCall.waitAndRightClick(appId, '.table-row[selected]');
@@ -914,7 +911,7 @@ testcase.recentsNoRenameForPlayFiles = async () => {
 testcase.recentsAllowCutForDownloads = async () => {
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, [ENTRIES.beautiful, ENTRIES.directoryA], []);
-  const files = TestEntryInfo.getExpectedRows([ENTRIES.beautiful]);
+  const files = [ENTRIES.beautiful.getExpectedRow()];
   const newFolderBreadcrumb =
       `/My files/Downloads/${ENTRIES.directoryA.nameText}`;
 
@@ -1013,19 +1010,24 @@ testcase.recentsTimePeriodHeadings = async () => {
   await remoteCall.waitForFiles(
       appId, TestEntryInfo.getExpectedRows([todayFile, yesterdayFile]), {
         // Ignore last modified time because it will show Today/Yesterday
-        // instead
-        // of the actual date.
+        // instead of the actual date.
         ignoreLastModifiedTime: true,
       });
   // Check headings in list view mode.
-  const todayListItem =
-      await remoteCall.waitForElement(appId, 'li[group-heading="Today"]');
+  await remoteCall.waitForElementsCount(appId, ['.group-heading'], 2);
+  const groupHeadings = await remoteCall.callRemoteTestUtil(
+      'deepQueryAllElements', appId, ['.group-heading']);
+  chrome.test.assertEq(2, groupHeadings.length);
+  const fileItems = await remoteCall.callRemoteTestUtil(
+      'deepQueryAllElements', appId, ['.group-heading + .table-row']);
+  chrome.test.assertEq(2, fileItems.length);
+
+  chrome.test.assertEq('Today', groupHeadings[0].text);
   chrome.test.assertEq(
-      todayFile.nameText, todayListItem.attributes['file-name']);
-  const yesterdayListItem =
-      await remoteCall.waitForElement(appId, 'li[group-heading="Yesterday"]');
+      todayFile.nameText, fileItems[0].attributes['file-name']);
+  chrome.test.assertEq('Yesterday', groupHeadings[1].text);
   chrome.test.assertEq(
-      yesterdayFile.nameText, yesterdayListItem.attributes['file-name']);
+      yesterdayFile.nameText, fileItems[1].attributes['file-name']);
 
   // Switch to grid view.
   await remoteCall.waitAndClickElement(appId, '#view-button');
@@ -1054,22 +1056,20 @@ testcase.recentsEmptyFolderMessage = async () => {
       RootPath.DOWNLOADS, [ENTRIES.directoryA], []);
   await navigateToRecent(appId);
   // All filter is on by default.
-  await waitForEmptyFolderMessage(appId, 'Your recent files will appear here');
+  await waitForEmptyFolderMessage(appId, 'No recent files');
   // Activates to audio filter.
   await remoteCall.waitAndClickElement(appId, [`[file-type-filter="audio"]`]);
-  await waitForEmptyFolderMessage(
-      appId, 'Your recent audio files will appear here');
+  await waitForEmptyFolderMessage(appId, 'No recent audio files');
   // Activates to documents filter.
   await remoteCall.waitAndClickElement(
       appId, [`[file-type-filter="document"]`]);
-  await waitForEmptyFolderMessage(
-      appId, 'Your recent documents will appear here');
+  await waitForEmptyFolderMessage(appId, 'No recent documents');
   // Activates to images filter.
   await remoteCall.waitAndClickElement(appId, [`[file-type-filter="image"]`]);
-  await waitForEmptyFolderMessage(appId, 'Your recent images will appear here');
+  await waitForEmptyFolderMessage(appId, 'No recent images');
   // Activates to videos filter.
   await remoteCall.waitAndClickElement(appId, [`[file-type-filter="video"]`]);
-  await waitForEmptyFolderMessage(appId, 'Your recent videos will appear here');
+  await waitForEmptyFolderMessage(appId, 'No recent videos');
 };
 
 
@@ -1084,5 +1084,5 @@ testcase.recentsEmptyFolderMessageAfterDeletion = async () => {
   const files = TestEntryInfo.getExpectedRows([ENTRIES.beautiful]);
   await remoteCall.waitForFiles(appId, files);
   await deleteFile(appId, ENTRIES.beautiful.nameText);
-  await waitForEmptyFolderMessage(appId, 'Your recent files will appear here');
+  await waitForEmptyFolderMessage(appId, 'No recent files');
 };

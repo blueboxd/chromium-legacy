@@ -67,7 +67,7 @@ class PageHandler : public DevToolsDomainHandler,
   PageHandler(EmulationHandler* emulation_handler,
               BrowserHandler* browser_handler,
               bool allow_unsafe_operations,
-              bool is_trusted,
+              bool may_capture_screenshots_not_from_surface,
               absl::optional<url::Origin> navigation_initiator_origin,
               bool may_read_local_files);
 
@@ -111,7 +111,8 @@ class PageHandler : public DevToolsDomainHandler,
   void DidActivatePrerender(const NavigationRequest& nav_request);
   void DidCancelPrerender(const GURL& prerendering_url,
                           const std::string& initiating_frame_id,
-                          PrerenderHost::FinalStatus status);
+                          PrerenderHost::FinalStatus status,
+                          const std::string& reason_details);
 
   Response Enable() override;
   Response Disable() override;
@@ -223,7 +224,7 @@ class PageHandler : public DevToolsDomainHandler,
   ResponseOrWebContents GetWebContentsForTopLevelActiveFrame();
 
   const bool allow_unsafe_operations_;
-  const bool is_trusted_;
+  const bool may_capture_screenshots_not_from_surface_;
   const absl::optional<url::Origin> navigation_initiator_origin_;
   const bool may_read_local_files_;
 

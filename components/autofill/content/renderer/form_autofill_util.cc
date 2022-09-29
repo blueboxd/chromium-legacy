@@ -1052,7 +1052,8 @@ std::vector<WebFormControlElement> ForEachMatchingFormFieldCommon(
 
     WebFormControlElement& element = *it;
 
-    element.SetAutofillSection(WebString::FromUTF8(data.fields[i].section));
+    element.SetAutofillSection(
+        WebString::FromUTF8(data.fields[i].section.ToString()));
 
     // Only autofill empty fields (or those with the field's default value
     // attribute) and the field that initiated the filling, i.e. the field the
@@ -1296,17 +1297,6 @@ struct CompareByRendererId {
   }
 };
 
-// Autofill supports assigning <label for=x> tags to inputs if x its id/name,
-// or the id/name of a shadow host element containing the input.
-// This enum is used to track how often each case occurs in practise.
-enum class AssignedLabelSource {
-  kId = 0,
-  kName = 1,
-  kShadowHostId = 2,
-  kShadowHostName = 3,
-  kMaxValue = kShadowHostName,
-};
-
 // Searches |field_set| for a unique field with name |field_name|. If there is
 // none or more than one field with that name, the fields' shadow hosts' name
 // and id attributes are tested, and the first match is returned. Returns
@@ -1389,11 +1379,7 @@ void MatchLabelsAndFields(
     if (!field_data->label.empty() && !label_text.empty())
       field_data->label += u" ";
     field_data->label += label_text;
-    // This temporary histogram is emitted inline, because browser files like
-    // AutofillMetrics cannot be included here.
-    // TODO(crbug.com/1339277): Remove.
-    base::UmaHistogramEnumeration("Autofill.LabelInference.AssignedLabelSource",
-                                  label_source);
+    base::UmaHistogramEnumeration(kAssignedLabelSourceHistogram, label_source);
   }
 }
 
@@ -1496,7 +1482,8 @@ bool FormOrFieldsetsToFormData(
   }
 
   // Extracts field labels from the <label for="..."> tags.
-  {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillImprovedLabelForInference)) {
     std::vector<std::pair<FormFieldData*, ShadowFieldData>> items;
     DCHECK_EQ(form->fields.size(), shadow_fields.size());
     for (size_t i = 0; i < form->fields.size(); i++) {
@@ -1641,6 +1628,22 @@ std::string GetAutocompleteAttribute(const WebElement& element) {
   return autocomplete_attribute;
 }
 
+// Returns the concatenated label text of all labels assigned to the `element`
+// using <label for=`element.GetIdAttribute()`>, separated by a space.
+std::u16string GetAssignedLabel(const WebFormControlElement& element) {
+  std::u16string concatenated_labels;
+  for (const auto& label : element.Labels()) {
+    if (auto label_text = FindChildText(label); !label_text.empty()) {
+      if (!concatenated_labels.empty())
+        concatenated_labels.push_back(' ');
+      concatenated_labels.append(std::move(label_text));
+      base::UmaHistogramEnumeration(kAssignedLabelSourceHistogram,
+                                    AssignedLabelSource::kId);
+    }
+  }
+  return concatenated_labels;
+}
+
 void FindFormElementUpShadowRoots(const WebElement& element,
                                   WebFormElement* found_form_element) {
   // If we are in shadowdom, then look to see if the host(s) are inside a form
@@ -1680,7 +1683,7 @@ bool IsVisibleIframe(const WebElement& element) {
 bool IsAdIframe(const WebElement& element) {
   DCHECK(element.HasHTMLTagName("iframe"));
   WebFrame* iframe = WebFrame::FromFrameOwnerElement(element);
-  return iframe && iframe->IsAdSubframe();
+  return iframe && iframe->IsAdFrame();
 }
 
 // A necessary condition for an iframe to be added to FormData::child_frames.
@@ -1840,6 +1843,11 @@ bool IsTextAreaElement(const WebFormControlElement& element) {
          element.FormControlTypeForAutofill() == "textarea";
 }
 
+bool IsTextAreaElementOrTextInput(const WebFormControlElement& element) {
+  return IsTextAreaElement(element) ||
+         IsTextInput(element.DynamicTo<WebInputElement>());
+}
+
 bool IsCheckableElement(const WebInputElement& element) {
   if (element.IsNull())
     return false;
@@ -1950,6 +1958,10 @@ void WebFormControlElementToFormField(
   field->form_control_ax_id = element.GetAxId();
   field->form_control_type = element.FormControlTypeForAutofill().Utf8();
   field->autocomplete_attribute = GetAutocompleteAttribute(element);
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillImprovedLabelForInference)) {
+    field->label = GetAssignedLabel(element);
+  }
   if (base::EqualsCaseInsensitiveASCII(element.GetAttribute(*kRole).Utf16(),
                                        "presentation")) {
     field->role = FormFieldData::RoleAttribute::kPresentation;

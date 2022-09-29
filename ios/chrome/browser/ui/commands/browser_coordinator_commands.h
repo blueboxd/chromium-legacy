@@ -83,6 +83,15 @@ class GURL;
 - (void)viewSource;
 #endif
 
+// Animates the NTP fakebox to the focused position and focuses the real
+// omnibox.
+- (void)focusFakebox;
+
+// Closes the current tab.
+// TODO(crbug.com/1272498): Refactor this command away; call sites should close
+// via the WebStateList.
+- (void)closeCurrentTab;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COORDINATOR_COMMANDS_H_

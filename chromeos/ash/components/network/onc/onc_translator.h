@@ -7,8 +7,6 @@
 
 #include "base/component_export.h"
 // TODO(https://crbug.com/1164001): move to forward declaration
-#include "chromeos/ash/components/network/network_state.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
 #include "chromeos/components/onc/onc_signature.h"
 #include "components/onc/onc_constants.h"
 
@@ -16,7 +14,11 @@ namespace base {
 class Value;
 }
 
-namespace ash::onc {
+namespace ash {
+
+class NetworkState;
+
+namespace onc {
 
 // Translates a hierarchical ONC dictionary |onc_object| (a Value of type
 // DICTIONARY) to a flat Shill dictionary. The |signature| declares the type of
@@ -48,12 +50,7 @@ base::Value TranslateShillServiceToONCPart(
     const OncValueSignature* onc_signature,
     const NetworkState* network_state);
 
-}  // namespace ash::onc
-
-// TODO(https://crbug.com/1164001): remove when the migration is finished.
-namespace chromeos::onc {
-using ::ash::onc::TranslateONCObjectToShill;
-using ::ash::onc::TranslateShillServiceToONCPart;
-}  // namespace chromeos::onc
+}  // namespace onc
+}  // namespace ash
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_ONC_ONC_TRANSLATOR_H_

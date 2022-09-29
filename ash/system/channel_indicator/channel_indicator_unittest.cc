@@ -5,15 +5,22 @@
 #include "ash/system/channel_indicator/channel_indicator.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/system/channel_indicator/channel_indicator_utils.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/status_area_widget_test_helper.h"
+#include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test_shell_delegate.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/session_manager/session_manager_types.h"
 #include "components/version_info/channel.h"
+#include "ui/views/controls/image_view.h"
 
 namespace ash {
 
@@ -21,6 +28,12 @@ class ChannelIndicatorViewTest
     : public AshTestBase,
       public testing::WithParamInterface<version_info::Channel> {
  public:
+  ChannelIndicatorViewTest() = default;
+  ChannelIndicatorViewTest(const ChannelIndicatorViewTest&) = delete;
+  ChannelIndicatorViewTest& operator=(const ChannelIndicatorViewTest&) = delete;
+  ~ChannelIndicatorViewTest() override = default;
+
+  // AshTestBase:
   void SetUp() override {
     // Need this feature enabled in order for the `ChannelIndicatorView` to be
     // instantiated.
@@ -31,6 +44,12 @@ class ChannelIndicatorViewTest
         std::make_unique<TestShellDelegate>();
     shell_delegate->set_channel(static_cast<version_info::Channel>(GetParam()));
     AshTestBase::SetUp(std::move(shell_delegate));
+  }
+
+  void SetSessionState(session_manager::SessionState state) {
+    SessionInfo info;
+    info.state = state;
+    Shell::Get()->session_controller()->SetSessionInfo(info);
   }
 
  private:
@@ -55,20 +74,80 @@ TEST_P(ChannelIndicatorViewTest, Visible) {
   UnifiedSystemTray* tray =
       StatusAreaWidgetTestHelper::GetStatusAreaWidget()->unified_system_tray();
   ChannelIndicatorView* channel_indicator_view = tray->channel_indicator_view();
-  DCHECK(channel_indicator_view);
 
-  // The `ChannelIndicatorView` should be visible for BETA, DEV, and CANARY
-  // channels, not visible otherwise.
-  switch (shell_delegate->GetChannel()) {
-    case version_info::Channel::BETA:
-    case version_info::Channel::DEV:
-    case version_info::Channel::CANARY:
-      EXPECT_TRUE(channel_indicator_view->GetVisible());
-      break;
-    case version_info::Channel::UNKNOWN:
-    case version_info::Channel::STABLE:
-      EXPECT_FALSE(channel_indicator_view->GetVisible());
-      break;
+  // If the channel is not displayable, there should be no view and the test is
+  // complete.
+  if (!channel_indicator_utils::IsDisplayableChannel(
+          shell_delegate->GetChannel())) {
+    EXPECT_FALSE(channel_indicator_view);
+    EXPECT_FALSE(tray->ShouldChannelIndicatorBeShown());
+    return;
+  }
+
+  // Otherwise the view exists, should be shown, and is visible.
+  EXPECT_TRUE(channel_indicator_view);
+  EXPECT_TRUE(tray->ShouldChannelIndicatorBeShown());
+  EXPECT_TRUE(channel_indicator_view->GetVisible());
+
+  // User is not logged in, view should display text, no image.
+  SetSessionState(session_manager::SessionState::LOGIN_PRIMARY);
+  EXPECT_TRUE(channel_indicator_view->IsLabelVisibleForTesting());
+  EXPECT_FALSE(channel_indicator_view->IsImageViewVisibleForTesting());
+
+  // User is logged in, view should display image, no text.
+  SetSessionState(session_manager::SessionState::ACTIVE);
+  EXPECT_FALSE(channel_indicator_view->IsLabelVisibleForTesting());
+  EXPECT_TRUE(channel_indicator_view->IsImageViewVisibleForTesting());
+
+  // Two shelf alignments to test.
+  auto shelf_alignments = {ShelfAlignment::kBottom, ShelfAlignment::kRight};
+
+  // Image is the right size in both alignments.
+  for (const auto& alignment : shelf_alignments) {
+    // Initiates the shelf alignment change.
+    GetPrimaryShelf()->SetAlignment(alignment);
+
+    // Perform a synchronous `Layout` of `channel_indicator_view` and its child
+    // views.
+    channel_indicator_view->GetWidget()->LayoutRootViewIfNecessary();
+
+    // Now test the bounds of the image view.
+    gfx::Rect image_view_bounds = GetPrimaryUnifiedSystemTray()
+                                      ->channel_indicator_view()
+                                      ->image_view()
+                                      ->GetLocalBounds();
+    EXPECT_GE(image_view_bounds.width(), kUnifiedTrayChannelIndicatorDimension);
+    EXPECT_GE(image_view_bounds.height(),
+              kUnifiedTrayChannelIndicatorDimension);
+  }
+
+  // User locks the session, view should display text, no image.
+  SetSessionState(session_manager::SessionState::LOCKED);
+  EXPECT_TRUE(channel_indicator_view->IsLabelVisibleForTesting());
+  EXPECT_FALSE(channel_indicator_view->IsImageViewVisibleForTesting());
+
+  // User is logged in again, view should display image, no text.
+  SetSessionState(session_manager::SessionState::ACTIVE);
+  EXPECT_FALSE(channel_indicator_view->IsLabelVisibleForTesting());
+  EXPECT_TRUE(channel_indicator_view->IsImageViewVisibleForTesting());
+
+  // Image is the right size in both alignments.
+  for (const auto& alignment : shelf_alignments) {
+    // Initiates the shelf alignment change.
+    GetPrimaryShelf()->SetAlignment(alignment);
+
+    // Perform a synchronous `Layout` of `channel_indicator_view` and its child
+    // views.
+    channel_indicator_view->GetWidget()->LayoutRootViewIfNecessary();
+
+    // Now test the bounds of the image view.
+    gfx::Rect image_view_bounds = GetPrimaryUnifiedSystemTray()
+                                      ->channel_indicator_view()
+                                      ->image_view()
+                                      ->GetLocalBounds();
+    EXPECT_GE(image_view_bounds.width(), kUnifiedTrayChannelIndicatorDimension);
+    EXPECT_GE(image_view_bounds.height(),
+              kUnifiedTrayChannelIndicatorDimension);
   }
 }
 

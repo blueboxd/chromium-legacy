@@ -8,17 +8,16 @@
  */
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import './avatar_icon.js';
 import '../site_favicon.js';
 
-import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
 import {getTemplate} from './password_move_to_account_dialog.html.js';
 
@@ -58,7 +57,7 @@ export class PasswordMoveToAccountDialogElement extends PolymerElement {
     };
   }
 
-  passwordToMove: MultiStorePasswordUiEntry;
+  passwordToMove: chrome.passwordsPrivate.PasswordUiEntry;
 
   override connectedCallback() {
     super.connectedCallback();

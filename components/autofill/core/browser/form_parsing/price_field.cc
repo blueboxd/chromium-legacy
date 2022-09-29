@@ -5,9 +5,9 @@
 #include "components/autofill/core/browser/form_parsing/price_field.h"
 
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
 #include "components/autofill/core/browser/form_parsing/regex_patterns.h"
+#include "components/autofill/core/common/autofill_regex_constants.h"
 
 namespace autofill {
 
@@ -35,7 +35,7 @@ std::unique_ptr<FormField> PriceField::Parse(AutofillScanner* scanner,
 PriceField::PriceField(const AutofillField* field) : field_(field) {}
 
 void PriceField::AddClassifications(
-    FieldCandidatesMap* field_candidates) const {
+    FieldCandidatesMap& field_candidates) const {
   AddClassification(field_, PRICE, kBasePriceParserScore, field_candidates);
 }
 

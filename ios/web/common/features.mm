@@ -37,9 +37,6 @@ const base::Feature kRecordSnapshotSize{"RecordSnapshotSize",
 const base::Feature kSetRequestAttribution{"SetRequestAttribution",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kDefaultWebViewContextMenu{
-    "DefaultWebViewContextMenu", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kDisableNonHTMLScreenshotOnIOS15{
     "DisableNonHTMLScreenshotOnIOS15", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -49,19 +46,18 @@ const base::Feature kIOSSharedHighlightingColorChange{
 const base::Feature kSynthesizedRestoreSession{
     "SynthesizedRestoreSession", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kEnableFullscreenAPI{"EnableFullscreenAPI",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kMediaPermissionsControl{"MediaPermissionsControl",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-extern const base::Feature kEnableFullscreenAPI{
-    "EnableFullscreenAPI", base::FEATURE_DISABLED_BY_DEFAULT};
-
-extern const base::Feature kUseLoadSimulatedRequestForOfflinePage{
+const base::Feature kUseLoadSimulatedRequestForOfflinePage{
     "UseLoadSimulatedRequestForErrorPageNavigation",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool UseWebViewNativeContextMenuWeb() {
-  return base::FeatureList::IsEnabled(kDefaultWebViewContextMenu);
-}
+const base::Feature kEnableWebPageAnnotations{
+    "EnableWebPageAnnotations", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool ShouldTakeScreenshotOnNonHTMLContent() {
   if (@available(iOS 15, *)) {

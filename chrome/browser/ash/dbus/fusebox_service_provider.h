@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_ASH_DBUS_FUSEBOX_SERVICE_PROVIDER_H_
 #define CHROME_BROWSER_ASH_DBUS_FUSEBOX_SERVICE_PROVIDER_H_
 
-#include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/fusebox/fusebox_server.h"
 #include "chromeos/ash/components/dbus/services/cros_dbus_service.h"
@@ -16,8 +15,8 @@ namespace ash {
 
 // FuseBoxServiceProvider implements the org.chromium.FuseBoxService D-Bus
 // interface.
-class FuseBoxServiceProvider
-    : public CrosDBusService::ServiceProviderInterface {
+class FuseBoxServiceProvider : public CrosDBusService::ServiceProviderInterface,
+                               public fusebox::Server::Delegate {
  public:
   FuseBoxServiceProvider();
   FuseBoxServiceProvider(const FuseBoxServiceProvider&) = delete;
@@ -28,6 +27,10 @@ class FuseBoxServiceProvider
   void Start(scoped_refptr<dbus::ExportedObject> object) override;
 
  private:
+  // fusebox::Server::Delegate overrides:
+  void OnRegisterFSURLPrefix(const std::string& subdir) override;
+  void OnUnregisterFSURLPrefix(const std::string& subdir) override;
+
   // D-Bus methods.
   //
   // In terms of semantics, they're roughly equivalent to the C standard
@@ -44,6 +47,7 @@ class FuseBoxServiceProvider
   void Stat(dbus::MethodCall* method_call,
             dbus::ExportedObject::ResponseSender sender);
 
+  scoped_refptr<dbus::ExportedObject> exported_object_;
   fusebox::Server server_;
 
   // base::WeakPtr{this} factory.

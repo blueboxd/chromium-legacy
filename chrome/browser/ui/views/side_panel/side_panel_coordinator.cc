@@ -369,6 +369,7 @@ void SidePanelCoordinator::PopulateSidePanel(
   DCHECK(header_combobox_);
   header_combobox_->SetSelectedIndex(
       combobox_model_->GetIndexForId(entry->id()));
+  header_combobox_->SchedulePaint();
 
   auto* content_wrapper =
       GetContentView()->GetViewByID(kSidePanelContentWrapperViewId);
@@ -461,7 +462,8 @@ std::unique_ptr<views::View> SidePanelCoordinator::CreateHeader() {
   // Set the interior margins of the header on the left and right sides.
   header->SetInteriorMargin(gfx::Insets::VH(
       0, chrome_layout_provider->GetDistanceMetric(
-             views::DistanceMetric::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
+             ChromeDistanceMetric::
+                 DISTANCE_SIDE_PANEL_HEADER_INTERIOR_MARGIN_HORIZONTAL)));
   // Set alignments for horizontal (main) and vertical (cross) axes.
   header->SetMainAxisAlignment(views::LayoutAlignment::kStart);
   header->SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
@@ -518,11 +520,21 @@ bool SidePanelCoordinator::OnComboboxChangeTriggered(size_t index) {
 
 void SidePanelCoordinator::OnEntryRegistered(SidePanelEntry* entry) {
   combobox_model_->AddItem(entry);
+  if (GetContentView()) {
+    header_combobox_->SetSelectedIndex(combobox_model_->GetIndexForId(
+        GetLastActiveEntryId().value_or(kDefaultEntry)));
+    header_combobox_->SchedulePaint();
+  }
 }
 
 void SidePanelCoordinator::OnEntryWillDeregister(SidePanelEntry* entry) {
   absl::optional<SidePanelEntry::Id> selected_id = GetSelectedId();
   combobox_model_->RemoveItem(entry->id());
+  if (GetContentView()) {
+    header_combobox_->SetSelectedIndex(combobox_model_->GetIndexForId(
+        GetLastActiveEntryId().value_or(kDefaultEntry)));
+    header_combobox_->SchedulePaint();
+  }
 
   // If the active global entry is the entry being deregistered, reset
   // last_active_global_entry_id_.
@@ -569,6 +581,10 @@ void SidePanelCoordinator::OnTabStripModelChanged(
 
   // If an active entry is available, show it. If not, close the panel.
   if (GetContentView()) {
+    header_combobox_->SetSelectedIndex(combobox_model_->GetIndexForId(
+        GetLastActiveEntryId().value_or(kDefaultEntry)));
+    header_combobox_->SchedulePaint();
+
     if ((!new_contextual_registry ||
          !new_contextual_registry->active_entry().has_value()) &&
         !global_registry_->active_entry().has_value()) {

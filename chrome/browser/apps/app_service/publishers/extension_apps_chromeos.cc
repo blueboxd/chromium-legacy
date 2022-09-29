@@ -216,6 +216,38 @@ void ExtensionAppsChromeOs::LaunchAppWithParamsImpl(AppLaunchParams&& params,
 void ExtensionAppsChromeOs::LaunchAppWithIntent(
     const std::string& app_id,
     int32_t event_flags,
+    IntentPtr intent,
+    LaunchSource launch_source,
+    WindowInfoPtr window_info,
+    base::OnceCallback<void(bool)> callback) {
+  const auto* extension = MaybeGetExtension(app_id);
+  if (!extension) {
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+  bool is_quickoffice = extension_misc::IsQuickOfficeExtension(extension->id());
+  if (extension->is_app() || is_quickoffice) {
+    content::WebContents* web_contents = LaunchAppWithIntentImpl(
+        app_id, event_flags, std::move(intent), launch_source,
+        std::move(window_info), std::move(callback));
+
+    if (launch_source == LaunchSource::kFromArc && web_contents) {
+      // Add a flag to remember this web_contents originated in the ARC context.
+      web_contents->SetUserData(
+          &arc::ArcWebContentsData::kArcTransitionFlag,
+          std::make_unique<arc::ArcWebContentsData>(web_contents));
+    }
+  } else {
+    DCHECK(extension->is_extension());
+    // TODO(petermarshall): Set Arc flag as above?
+    LaunchExtension(app_id, event_flags, std::move(intent), launch_source,
+                    std::move(window_info), std::move(callback));
+  }
+}
+
+void ExtensionAppsChromeOs::LaunchAppWithIntent(
+    const std::string& app_id,
+    int32_t event_flags,
     apps::mojom::IntentPtr intent,
     apps::mojom::LaunchSource launch_source,
     apps::mojom::WindowInfoPtr window_info,
@@ -228,8 +260,9 @@ void ExtensionAppsChromeOs::LaunchAppWithIntent(
   bool is_quickoffice = extension_misc::IsQuickOfficeExtension(extension->id());
   if (extension->is_app() || is_quickoffice) {
     content::WebContents* web_contents = LaunchAppWithIntentImpl(
-        app_id, event_flags, std::move(intent), launch_source,
-        std::move(window_info), std::move(callback));
+        app_id, event_flags, ConvertMojomIntentToIntent(intent),
+        ConvertMojomLaunchSourceToLaunchSource(launch_source),
+        ConvertMojomWindowInfoToWindowInfo(window_info), std::move(callback));
 
     if (launch_source == apps::mojom::LaunchSource::kFromArc && web_contents) {
       // Add a flag to remember this web_contents originated in the ARC context.
@@ -654,7 +687,15 @@ bool ExtensionAppsChromeOs::IsBlocklisted(const std::string& app_id) {
   // In the App Service world, there should be a unique app publisher for any
   // given app. In this case, the ArcApps publisher publishes the Play Store
   // app, and the ExtensionApps publisher does not.
-  return app_id == arc::kPlayStoreAppId;
+  if (app_id == arc::kPlayStoreAppId)
+    return true;
+
+  // If an extension runs in both ash and lacros, then don't publish it as that
+  // would conflict with lacros publishing it. This path is used for both
+  // extensions and extension apps.
+  return crosapi::browser_util::IsLacrosChromeAppsEnabled() &&
+         (extensions::ExtensionRunsInBothOSAndStandaloneBrowser(app_id) ||
+          extensions::ExtensionAppRunsInBothOSAndStandaloneBrowser(app_id));
 }
 
 void ExtensionAppsChromeOs::UpdateShowInFields(const std::string& app_id) {
@@ -685,11 +726,9 @@ void ExtensionAppsChromeOs::OnSystemFeaturesPrefChanged() {
     return;
   }
 
-  const base::Value* disabled_system_features_pref =
-      local_state->GetList(policy::policy_prefs::kSystemFeaturesDisableList);
-  if (!disabled_system_features_pref) {
-    return;
-  }
+  const base::Value::List& disabled_system_features_pref =
+      local_state->GetValueList(
+          policy::policy_prefs::kSystemFeaturesDisableList);
 
   const bool is_pref_disabled_mode_hidden =
       local_state->GetString(
@@ -757,12 +796,11 @@ void ExtensionAppsChromeOs::SetShowInFields(
     App& app) {
   ExtensionAppsBase::SetShowInFields(extension, app);
 
-  // Explicitly mark AudioPlayer and QuickOffice as being able to handle
-  // intents even though they are otherwise hidden from the user. Otherwise,
-  // extensions are only published if they have file_browser_handlers, which
-  // means they need to handle intents.
-  if (extension->id() == file_manager::kAudioPlayerAppId ||
-      extension_misc::IsQuickOfficeExtension(extension->id()) ||
+  // Explicitly mark QuickOffice as being able to handle intents even though it
+  // is otherwise hidden from the user. Otherwise, extensions are only published
+  // if they have file_browser_handlers, which means they need to handle
+  // intents.
+  if (extension_misc::IsQuickOfficeExtension(extension->id()) ||
       extension->is_extension()) {
     app.handles_intents = true;
   }
@@ -773,10 +811,9 @@ void ExtensionAppsChromeOs::SetShowInFields(
     const extensions::Extension* extension) {
   ExtensionAppsBase::SetShowInFields(app, extension);
 
-  // Explicitly mark these apps as being able to handle intents even though they
-  // are otherwise hidden from the user.
-  if (extension->id() == file_manager::kAudioPlayerAppId ||
-      extension_misc::IsQuickOfficeExtension(extension->id())) {
+  // Explicitly mark QuickOffice as being able to handle intents even though it
+  // is otherwise hidden from the user.
+  if (extension_misc::IsQuickOfficeExtension(extension->id())) {
     app->handles_intents = apps::mojom::OptionalBool::kTrue;
   }
 
@@ -995,12 +1032,12 @@ content::WebContents* ExtensionAppsChromeOs::LaunchImpl(
 }
 
 void ExtensionAppsChromeOs::UpdateAppDisabledState(
-    const base::Value* disabled_system_features_pref,
+    const base::Value::List& disabled_system_features_pref,
     int feature,
     const std::string& app_id,
     bool is_disabled_mode_changed) {
-  const bool is_disabled = base::Contains(
-      disabled_system_features_pref->GetListDeprecated(), base::Value(feature));
+  const bool is_disabled =
+      base::Contains(disabled_system_features_pref, base::Value(feature));
   // Sometimes the policy is updated before the app is installed, so this way
   // the disabled_apps_ is updated regardless the Publish should happen or not
   // and the app will be published with the correct readiness upon its

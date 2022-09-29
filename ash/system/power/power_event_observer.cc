@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/display/projecting_observer.h"
 #include "ash/login_status.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -290,7 +291,7 @@ void PowerEventObserver::SuspendImminent(
     // If screen is getting locked during suspend, delay suspend until screen
     // lock finishes, and post-lock frames get picked up by display compositors.
     if (lock_state_ == LockState::kUnlocked) {
-      VLOG(1) << "Requesting screen lock from PowerEventObserver";
+      VLOG(1) << "Requesting screen lock from PowerEventObserver suspend";
       lock_state_ = LockState::kLocking;
       Shell::Get()->lock_state_controller()->LockWithoutAnimation();
       if (lock_on_suspend_usage_)
@@ -304,7 +305,8 @@ void PowerEventObserver::SuspendImminent(
   }
 }
 
-void PowerEventObserver::SuspendDone(base::TimeDelta sleep_duration) {
+void PowerEventObserver::SuspendDoneEx(
+    const power_manager::SuspendDone& proto) {
   suspend_in_progress_ = false;
 
   Shell::Get()->display_configurator()->ResumeDisplays();
@@ -317,6 +319,42 @@ void PowerEventObserver::SuspendDone(base::TimeDelta sleep_duration) {
   block_suspend_token_ = {};
 
   StartRootWindowCompositors();
+  // If this is a resume from hibernation, the user just authenticated in order
+  // to launch the resume image. Dismiss the lock screen here to avoid making
+  // them log in twice.
+  if (proto.deepest_state() ==
+      power_manager::SuspendDone_SuspendState_TO_DISK) {
+    Shell::Get()->session_controller()->HideLockScreen();
+  }
+}
+
+void PowerEventObserver::LidEventReceived(
+    chromeos::PowerManagerClient::LidState state,
+    base::TimeTicks timestamp) {
+  lid_state_ = state;
+  MaybeLockOnLidClose(
+      ash::Shell::Get()->projecting_observer()->is_projecting());
+}
+
+void PowerEventObserver::SetIsProjecting(bool is_projecting) {
+  MaybeLockOnLidClose(is_projecting);
+}
+
+void PowerEventObserver::MaybeLockOnLidClose(bool is_projecting) {
+  SessionControllerImpl* controller = ash::Shell::Get()->session_controller();
+  VLOG(1) << "Lock screen on lid close: lid=" << static_cast<int>(lid_state_)
+          << ", lock=" << static_cast<int>(lock_state_)
+          << ", projecting=" << is_projecting
+          << ", policy=" << controller->ShouldLockScreenAutomatically()
+          << ", can_lock=" << controller->CanLockScreen();
+  if (lid_state_ == chromeos::PowerManagerClient::LidState::CLOSED &&
+      lock_state_ == LockState::kUnlocked && !is_projecting &&
+      controller->ShouldLockScreenAutomatically() &&
+      controller->CanLockScreen()) {
+    VLOG(1) << "Screen locked due to lid close";
+    lock_state_ = LockState::kLocking;
+    Shell::Get()->lock_state_controller()->LockWithoutAnimation();
+  }
 }
 
 void PowerEventObserver::OnLoginStatusChanged(LoginStatus) {

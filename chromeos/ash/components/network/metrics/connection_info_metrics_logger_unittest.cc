@@ -9,17 +9,17 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/metrics/connection_results.h"
 #include "chromeos/ash/components/network/metrics/network_metrics_helper.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -110,13 +110,13 @@ class ConnectionInfoMetricsLoggerTest : public testing::Test {
   }
 
   void TriggerUserInitiatedConnectSuccess(const std::string& service_path) {
-    chromeos::NetworkHandler::Get()
+    NetworkHandler::Get()
         ->connection_info_metrics_logger_->ConnectSucceeded(service_path);
   }
 
   void TriggerUserInitiatedConnectFailure(const std::string& service_path,
                                           const std::string& error_name) {
-    chromeos::NetworkHandler::Get()
+    NetworkHandler::Get()
         ->connection_info_metrics_logger_->ConnectFailed(service_path,
                                                          error_name);
   }
@@ -257,4 +257,4 @@ TEST_F(ConnectionInfoMetricsLoggerTest, MultipleNetworksStatusRecorded) {
                                        ShillConnectResult::kSuccess, 1);
 }
 
-}  // namespace chromeos
+}  // namespace ash

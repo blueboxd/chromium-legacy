@@ -188,13 +188,6 @@ AccountId AccountId::AdFromUserEmailObjGuid(const std::string& email,
 }
 
 // static
-AccountId AccountId::AdFromObjGuid(const std::string& obj_guid) {
-  DCHECK(!obj_guid.empty());
-  return AccountId(obj_guid, std::string() /* email */,
-                   AccountType::ACTIVE_DIRECTORY);
-}
-
-// static
 AccountType AccountId::StringToAccountType(
     const std::string& account_type_string) {
   if (account_type_string == kGoogle)
@@ -221,19 +214,19 @@ std::string AccountId::AccountTypeToString(const AccountType& account_type) {
 }
 
 std::string AccountId::Serialize() const {
-  base::DictionaryValue value;
+  base::Value::Dict value;
   switch (GetAccountType()) {
     case AccountType::GOOGLE:
-      value.SetString(kGaiaIdKey, id_);
+      value.Set(kGaiaIdKey, id_);
       break;
     case AccountType::ACTIVE_DIRECTORY:
-      value.SetString(kObjGuid, id_);
+      value.Set(kObjGuid, id_);
       break;
     case AccountType::UNKNOWN:
       break;
   }
-  value.SetString(kAccountTypeKey, AccountTypeToString(GetAccountType()));
-  value.SetString(kEmailKey, user_email_);
+  value.Set(kAccountTypeKey, AccountTypeToString(GetAccountType()));
+  value.Set(kEmailKey, user_email_);
 
   std::string serialized;
   base::JSONWriter::Write(value, &serialized);

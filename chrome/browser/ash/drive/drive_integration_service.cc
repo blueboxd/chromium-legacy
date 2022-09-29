@@ -46,7 +46,6 @@
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"
 #include "components/drive/resource_metadata_storage.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -453,7 +452,7 @@ class DriveIntegrationService::PreferenceWatcher
 
   // ash::NetworkPortalDetector::Observer
   void OnPortalDetectionCompleted(
-      const chromeos::NetworkState* network,
+      const ash::NetworkState* network,
       const ash::NetworkPortalDetector::CaptivePortalStatus status) override {
     last_portal_status_ = status;
 
@@ -1433,20 +1432,15 @@ DriveIntegrationServiceFactory* DriveIntegrationServiceFactory::GetInstance() {
 }
 
 DriveIntegrationServiceFactory::DriveIntegrationServiceFactory()
-    : BrowserContextKeyedServiceFactory(
+    : ProfileKeyedServiceFactory(
           "DriveIntegrationService",
-          BrowserContextDependencyManager::GetInstance()) {
+          ProfileSelections::BuildRedirectedInIncognito()) {
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(DriveNotificationManagerFactory::GetInstance());
   DependsOn(DownloadCoreServiceFactory::GetInstance());
 }
 
 DriveIntegrationServiceFactory::~DriveIntegrationServiceFactory() = default;
-
-content::BrowserContext* DriveIntegrationServiceFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
-}
 
 KeyedService* DriveIntegrationServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {

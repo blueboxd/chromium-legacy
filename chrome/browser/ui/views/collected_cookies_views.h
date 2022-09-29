@@ -40,19 +40,33 @@ class CollectedCookiesViews : public views::DialogDelegateView,
                               public views::TabbedPaneListener,
                               public views::TreeViewController {
  public:
+  // Used for UMA histogram to record types of actions done by the user in
+  // the "Cookies in use" dialog. These values are persisted to logs.
+  // Entries should not be renumbered and numeric values should never be reused.
+  enum class CookiesInUseDialogAction {
+    kDialogOpened = 0,
+    kSingleCookieDeleted = 1,
+    kCookiesFolderDeleted = 2,
+    kFolderDeleted = 3,
+    kSiteDeleted = 4,
+    kSiteBlocked = 5,
+    kSiteAllowed = 6,
+    kSiteClearedOnExit = 7,
+    kMaxValue = kSiteClearedOnExit,
+  };
+
   METADATA_HEADER(CollectedCookiesViews);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kTabbedPaneElementId);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kBlockedCookiesTreeElementId);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kAllowedCookiesTreeElementId);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kBlockButtonId);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kAllowButtonId);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kRemoveButtonId);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kClearOnExitButtonId);
 
   CollectedCookiesViews(const CollectedCookiesViews&) = delete;
   CollectedCookiesViews& operator=(const CollectedCookiesViews&) = delete;
   ~CollectedCookiesViews() override;
-
-  // Use BrowserWindow::ShowCollectedCookiesDialog to show.
-  static void CreateAndShowForWebContents(content::WebContents* web_contents);
-
-  static CollectedCookiesViews* GetDialogForTesting(
-      content::WebContents* web_contents);
 
   void set_status_changed_for_testing() { status_changed_ = true; }
 
@@ -66,7 +80,7 @@ class CollectedCookiesViews : public views::DialogDelegateView,
   gfx::Size GetMinimumSize() const override;
 
  private:
-  class WebContentsUserData;
+  friend class PageSpecificSiteDataDialogController;
 
   explicit CollectedCookiesViews(content::WebContents* web_contents);
 
@@ -90,8 +104,12 @@ class CollectedCookiesViews : public views::DialogDelegateView,
 
   void AddContentException(views::TreeView* tree_view, ContentSetting setting);
 
+  void DeleteSelectedCookieNode();
+
+  static void RecordDialogAction(CookiesInUseDialogAction action);
+
   // The web contents.
-  raw_ptr<content::WebContents> web_contents_;
+  base::WeakPtr<content::WebContents> web_contents_;
 
   // Assorted views.
   raw_ptr<views::Label> allowed_label_ = nullptr;

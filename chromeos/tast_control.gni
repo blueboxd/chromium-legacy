@@ -100,6 +100,9 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1300941
   "ui.WebUIJSErrors",
 
+  # https://crbug.com/1351699
+  "ui.ForceRegion",
+
   # https://crbug.com/1306441
   "policy.UserAvatarImage",
 
@@ -134,10 +137,6 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1309289
   "policy.AllowDeletingBrowserHistory",
 
-  # https://crbug.com/1307750
-  "dlp.DataLeakPreventionRulesListPrinting.ash_blocked",
-  "dlp.DataLeakPreventionRulesListPrinting.ash_allowed",
-
   # https://crbug.com/1309052
   "policy.ShowHomeButton",
   "policy.ShowLogoutButtonInTray",
@@ -165,27 +164,9 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1312908
   "policy.DefaultNotificationsSetting",
 
-  # https://crbug.com/1314935
-  "dlp.DataLeakPreventionRulesListClipboardShelf",
-
-  # https://crbug.com/1322973
-  "dlp.DataLeakPreventionRulesListClipboardShelf.ash",
-
-  # https://crbug.com/1314923
-  "dlp.DataLeakPreventionRulesListScreenshot.ash_allowed",
-
-  # https://crbug.com/1315123
-  "dlp.DataLeakPreventionRulesListScreenshot.ash_blocked",
-
   # https://crbug.com/1318989
   "assistant.StartupInSignedOutMode",
   "login.ChangePassword",
-
-  # https://crbug.com/1322572
-  "policy.NotificationsAllowedForUrls",
-  "policy.NotificationsBlockedForUrls",
-  "policy.PolicyRefreshRate",
-  "policy.PopupsForURLCheck.allowlist",
 
   # https://crbug.com/1326279
   "policy.AccessibilityPolicies.focus_highlight",
@@ -196,17 +177,11 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1326403
   "policy.AccessibilityPolicies.large_cursor",
 
-  # https://crbug.com/1327171
-  "policy.PopupsForURLCheck.default",
-
   # https://crbug.com/1327345
   "policy.ChromePolicyPageStatusTimestamps.ash",
 
   # https://crbug.com/1327361
   "policy.FullscreenAllowed",
-
-  # https://crbug.com/1328128
-  "policy.PopupsForURLCheck.blocklist",
 
   # https://crbug.com/1329734
   "health.DiagnosticsList",
@@ -214,9 +189,6 @@ tast_disabled_tests_from_chrome_all = [
 
   # https://crbug.com/1329761
   "policy.DefaultSerialGuardSetting",
-
-  # https://crbug.com/1335176
-  "policy.ScreenBrightnessPercent",
 
   # http://b/229032436
   "health.DiagnosticsRun.captive_portal",
@@ -271,6 +243,53 @@ tast_disabled_tests_from_chrome_all = [
 
   # https://crbug.com/1236234
   "lacros.AudioPlay",
+
+  # https://crbug.com/1346149
+  "apps.Sharesheet",
+
+  # http://crbug.com/1350529
+  "crostini.RemoveCancel.bullseye_stable",
+  "crostini.RemoveCancel.buster_stable",
+  "crostini.RemoveOk.bullseye_stable",
+  "crostini.RemoveOk.buster_stable",
+
+  # b/241122961
+  "policy.BlockThirdPartyCookies",
+
+  # https://crbug.com/1350180
+  # also see http://crbug.com/1350191
+  "printer.Print",
+
+  # https://crbug.com/1350191
+  "arc.Print",
+
+  # https://crbug.com/1350880
+  "arc.PIPRoundedCornersUnderlay",
+
+  # https://crbug.com/1352475
+  "a11y.LiveCaption",
+
+  # https://crbug.com/1352476
+  "lacros.ShelfLaunch",
+  "lacros.ShelfLaunch.only",
+  "lacros.ShelfLaunch.primary",
+
+  # https://crbug.com/1352477
+  "platform.PerfettoChromeConsumer.lacros",
+
+  # https://crbug.com/1352478
+  "mlservice.WebHandwritingRecognitionNotSupported.lacros",
+
+  # http://b/242349028
+  "crostini.DragDrop.bullseye_stable",
+  "crostini.DragDrop.buster_stable",
+
+  # http://b/242172965
+  "crostini.SSHFSMount.bullseye_stable",
+  "crostini.SSHFSMount.buster_stable",
+
+  # https://crbug.com/1353760
+  "crostini.RestartIcon.bullseye_stable",
 ]
 
 # To create filters to be used on specific builders add them like this:
@@ -279,7 +298,20 @@ tast_disabled_tests_from_chrome_all = [
 # test config as 'tast_expr_key'
 # To disable a specific test in lacros_all_tast_tests, add it the following
 # list and cite a bug.
+# The test disabled here will not impact it running in chrome on chromeOS
+# pipeline.
 tast_disabled_tests_from_lacros_all = [
   # https://crbug.com/1329764
   "policy.HistoryClustersVisible",
+
+  # https://crbug.com/1352476
+  "lacros.ShelfLaunch",
+  "lacros.ShelfLaunch.only",
+  "lacros.ShelfLaunch.primary",
+
+  # https://crbug.com/1352478
+  "mlservice.WebHandwritingRecognition.lacros",
+
+  # https://crbug.com/1352477
+  "platform.PerfettoChromeConsumer.lacros",
 ]

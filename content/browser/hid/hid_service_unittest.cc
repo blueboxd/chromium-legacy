@@ -13,9 +13,11 @@
 #include "base/test/test_future.h"
 #include "content/browser/hid/hid_service.h"
 #include "content/browser/hid/hid_test_utils.h"
+#include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/hid_delegate.h"
 #include "content/public/common/content_client.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/test_web_contents_factory.h"
@@ -24,9 +26,9 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "services/device/hid/test_report_descriptors.h"
-#include "services/device/hid/test_util.h"
-#include "services/device/public/cpp/hid/fake_hid_manager.h"
+#include "services/device/public/cpp/test/fake_hid_manager.h"
+#include "services/device/public/cpp/test/hid_test_util.h"
+#include "services/device/public/cpp/test/test_report_descriptors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
@@ -44,7 +46,7 @@ using ::testing::Return;
 
 enum HidServiceCreationType {
   kCreateUsingRenderFrameHost,
-  kCreateUsingBrowserContextAndOrigin,
+  kCreateUsingServiceWorkerContextCore,
 };
 
 const char kTestUrl[] = "https://www.google.com";
@@ -55,8 +57,8 @@ std::string HidServiceCreationTypeToString(HidServiceCreationType type) {
   switch (type) {
     case kCreateUsingRenderFrameHost:
       return "CreateUsingRenderFrameHost";
-    case kCreateUsingBrowserContextAndOrigin:
-      return "CreateUsingBrowserContextAndOrigin";
+    case kCreateUsingServiceWorkerContextCore:
+      return "CreateUsingServiceWorkerContextCore";
   }
 }
 
@@ -193,8 +195,10 @@ class HidServiceBaseTest : public testing::Test, public HidServiceTestHelper {
             ->GetPrimaryMainFrame()
             ->GetHidService(service_.BindNewPipeAndPassReceiver());
         break;
-      case kCreateUsingBrowserContextAndOrigin:
-        HidService::Create(&browser_context_,
+      case kCreateUsingServiceWorkerContextCore:
+        embedded_worker_test_helper_ =
+            std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
+        HidService::Create(embedded_worker_test_helper_->context()->AsWeakPtr(),
                            url::Origin::Create(GURL(kTestUrl)),
                            service_.BindNewPipeAndPassReceiver());
         break;
@@ -205,18 +209,23 @@ class HidServiceBaseTest : public testing::Test, public HidServiceTestHelper {
   void CheckWebContentsHidServiceConnectedState(HidServiceCreationType type,
                                                 bool expected_state) {
     // Skip the check when there is no web content.
-    if (type == kCreateUsingBrowserContextAndOrigin) {
+    if (type == kCreateUsingServiceWorkerContextCore) {
       return;
     }
     ASSERT_EQ(web_contents_->IsConnectedToHidDevice(), expected_state);
   }
 
- private:
+ protected:
   BrowserTaskEnvironment task_environment_;
-  TestBrowserContext browser_context_;
   mojo::Remote<blink::mojom::HidService> service_;
+
+  // For create hid service using RenderFrameHost.
+  TestBrowserContext browser_context_;
   TestWebContentsFactory web_contents_factory_;
   raw_ptr<WebContents> web_contents_;  // Owned by |web_contents_factory_|.
+
+  // For create hid service using service worker.
+  std::unique_ptr<EmbeddedWorkerTestHelper> embedded_worker_test_helper_;
 };
 
 class HidServiceRenderFrameHostTest : public RenderViewHostImplTestHarness,
@@ -230,6 +239,19 @@ class HidServiceTest
 class HidServiceFidoTest : public HidServiceBaseTest,
                            public testing::WithParamInterface<
                                std::tuple<HidServiceCreationType, bool>> {};
+
+// Test fixture for service worker specific tests.
+class HidServiceServiceWorkerBrowserContextDestroyedTest
+    : public HidServiceBaseTest {
+ public:
+  void DestroyBrowserContext() {
+    // Reset |embedded_worker_test_helper_| will subsequently destroy the
+    // BrowserContext associated with it.
+    embedded_worker_test_helper_.reset();
+  }
+
+  void SetUp() override { GetService(kCreateUsingServiceWorkerContextCore); }
+};
 
 }  // namespace
 
@@ -350,9 +372,14 @@ TEST_P(HidServiceTest, OpenAndCloseHidConnection) {
   CheckWebContentsHidServiceConnectedState(service_creation_type, false);
 }
 
-// This test is disabled because it fails on the "linux-bfcache-rel" bot.
-// TODO(https://crbug.com/1232841): Re-enable this test.
-TEST_F(HidServiceRenderFrameHostTest, DISABLED_OpenAndNavigateCrossOrigin) {
+TEST_F(HidServiceRenderFrameHostTest, OpenAndNavigateCrossOrigin) {
+  // The test assumes the previous page gets deleted after navigation,
+  // disconnecting the device. Disable back/forward cache to ensure that it
+  // doesn't get preserved in the cache.
+  // TODO(crbug.com/1346021): Integrate WebHID with bfcache and remove this.
+  DisableBackForwardCacheForTesting(web_contents(),
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   NavigateAndCommit(GURL(kTestUrl));
 
   mojo::Remote<blink::mojom::HidService> service;
@@ -973,7 +1000,7 @@ INSTANTIATE_TEST_SUITE_P(
     HidServiceTests,
     HidServiceTest,
     testing::Values(kCreateUsingRenderFrameHost,
-                    kCreateUsingBrowserContextAndOrigin),
+                    kCreateUsingServiceWorkerContextCore),
     [](const ::testing::TestParamInfo<HidServiceCreationType>& info) {
       return HidServiceCreationTypeToString(info.param);
     });
@@ -983,7 +1010,7 @@ INSTANTIATE_TEST_SUITE_P(
     HidServiceFidoTests,
     HidServiceFidoTest,
     testing::Combine(testing::Values(kCreateUsingRenderFrameHost,
-                                     kCreateUsingBrowserContextAndOrigin),
+                                     kCreateUsingServiceWorkerContextCore),
                      testing::ValuesIn(kIsFidoAllowed)),
     [](const ::testing::TestParamInfo<std::tuple<HidServiceCreationType, bool>>&
            info) {
@@ -992,5 +1019,41 @@ INSTANTIATE_TEST_SUITE_P(
           HidServiceCreationTypeToString(std::get<0>(info.param)).c_str(),
           std::get<1>(info.param) ? "FidoAllowed" : "FidoNotAllowed");
     });
+
+TEST_F(HidServiceServiceWorkerBrowserContextDestroyedTest, GetDevices) {
+  auto device_info = CreateDeviceWithOneReport();
+  ConnectDevice(*device_info);
+  DestroyBrowserContext();
+
+  TestFuture<std::vector<device::mojom::HidDeviceInfoPtr>> devices_future;
+  service_->GetDevices(devices_future.GetCallback());
+  EXPECT_EQ(0u, devices_future.Get().size());
+}
+
+TEST_F(HidServiceServiceWorkerBrowserContextDestroyedTest, Connect) {
+  auto device_info = CreateDeviceWithOneReport();
+  ConnectDevice(*device_info);
+  mojo::PendingRemote<device::mojom::HidConnectionClient> hid_connection_client;
+  connection_client()->Bind(
+      hid_connection_client.InitWithNewPipeAndPassReceiver());
+  DestroyBrowserContext();
+
+  TestFuture<mojo::PendingRemote<device::mojom::HidConnection>>
+      connection_future;
+  service_->Connect(kTestGuid, std::move(hid_connection_client),
+                    connection_future.GetCallback());
+  EXPECT_FALSE(connection_future.Get().is_valid());
+}
+
+TEST_F(HidServiceServiceWorkerBrowserContextDestroyedTest, Forget) {
+  auto device_info = CreateDeviceWithOneReport();
+  ConnectDevice(*device_info);
+
+  DestroyBrowserContext();
+  EXPECT_CALL(hid_delegate(), RevokeDevicePermission).Times(0);
+  base::RunLoop run_loop;
+  service_->Forget(std::move(device_info), run_loop.QuitClosure());
+  run_loop.Run();
+}
 
 }  // namespace content

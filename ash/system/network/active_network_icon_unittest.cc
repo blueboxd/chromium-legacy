@@ -147,10 +147,10 @@ class ActiveNetworkIconTest : public AshTestBase {
     network_state_helper().SetServiceProperty(service_path, key, value);
   }
 
-  chromeos::NetworkStateTestHelper& network_state_helper() {
+  NetworkStateTestHelper& network_state_helper() {
     return network_config_helper_.network_state_helper();
   }
-  chromeos::NetworkStateHandler* network_state_handler() {
+  NetworkStateHandler* network_state_handler() {
     return network_state_helper().network_state_handler();
   }
   ActiveNetworkIcon* active_network_icon() {
@@ -264,7 +264,7 @@ TEST_F(ActiveNetworkIconTest, CellularScanning) {
   SetCellularUninitialized(true /* scanning */);
 
   ASSERT_TRUE(network_state_handler()->GetScanningByType(
-      chromeos::NetworkTypePattern::Cellular()));
+      NetworkTypePattern::Cellular()));
 
   bool animating;
   gfx::ImageSkia image = active_network_icon()->GetImage(

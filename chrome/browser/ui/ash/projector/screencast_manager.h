@@ -9,9 +9,13 @@
 
 #include "ash/webui/projector_app/projector_app_client.h"
 
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
+
 namespace ash {
 
-// Class to get and modify screencast data through IO and Drive/DriveFS.
+// Class to get and modify screencast data through IO and DriveFS.
 class ScreencastManager {
  public:
   ScreencastManager();
@@ -19,14 +23,17 @@ class ScreencastManager {
   ScreencastManager& operator=(const ScreencastManager&) = delete;
   ~ScreencastManager();
 
-  // Populates all fields for a screencast except `srcUrl` in `callback` for
-  // given `screencast_id`.
-  void GetScreencast(const std::string& screencast_id,
-                     ProjectorAppClient::OnGetScreencastCallback callback);
+  // Launches the given DriveFS video file with `video_file_id` into the
+  // Projector app. The `resource_key` is an additional security token needed to
+  // gain access to link-shared files. Since the `resource_key` is currently
+  // only used by Googlers, the `resource_key` might be empty.
+  void GetVideo(const std::string& video_file_id,
+                const std::string& resource_key,
+                ProjectorAppClient::OnGetVideoCallback callback) const;
 
-  // TODO(b/236857019):
-  // SearchScreencastFilesByParentId(): Call rest API to populate screencast
-  // metadata file id and video file id.
+ private:
+  // The task runner to get video metadata.
+  scoped_refptr<base::SequencedTaskRunner> video_metadata_task_runner_;
 };
 
 }  // namespace ash

@@ -28,7 +28,6 @@
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
 #include "chromeos/ash/components/network/network_type_pattern.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
@@ -124,7 +123,6 @@ class ShimlessRmaServiceTest : public testing::Test {
     scoped_feature_list_.InitWithFeatures(
         {chromeos::features::kShimlessRMAOsUpdate}, {});
     PowerManagerClient::InitializeFake();
-    chromeos::DBusThreadManager::Initialize();
     // VersionUpdater depends on UpdateEngineClient.
     UpdateEngineClient::InitializeFake();
 
@@ -152,7 +150,6 @@ class ShimlessRmaServiceTest : public testing::Test {
     cros_network_config_test_helper_.reset();
     chromeos::LoginState::Shutdown();
     UpdateEngineClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
     PowerManagerClient::Shutdown();
   }
 
@@ -294,11 +291,11 @@ class ShimlessRmaServiceTest : public testing::Test {
     return *cros_network_config_test_helper_;
   }
 
-  chromeos::NetworkStateTestHelper& network_state_helper() {
+  NetworkStateTestHelper& network_state_helper() {
     return cros_network_config_test_helper_->network_state_helper();
   }
 
-  chromeos::NetworkStateHandler* network_state_handler() {
+  NetworkStateHandler* network_state_handler() {
     return network_state_helper().network_state_handler();
   }
 
@@ -485,7 +482,9 @@ TEST_F(ShimlessRmaServiceTest, ChooseNetworkHasNetworkConnection) {
   run_loop.Run();
 }
 
-TEST_F(ShimlessRmaServiceTest, ChooseNetworkPageSkipsOsUpdateIfFlagIsOff) {
+// Make sure the network and OS update pages are skipped when the
+// `ShimlessRMAOsUpdate` feature flag is disabled.
+TEST_F(ShimlessRmaServiceTest, NetworkPageOsUpdatePageSkipped) {
   ResetFeatures();
 
   const std::vector<rmad::GetStateReply> fake_states = {
@@ -504,24 +503,13 @@ TEST_F(ShimlessRmaServiceTest, ChooseNetworkPageSkipsOsUpdateIfFlagIsOff) {
       }));
   run_loop.RunUntilIdle();
 
-  // No network should prompt select network page
+  // Even without a network connection, the network page will be skipped.
   shimless_rma_provider_->BeginFinalization(
-      base::BindLambdaForTesting([&](mojom::StateResultPtr state_result_ptr) {
-        EXPECT_EQ(state_result_ptr->state, mojom::State::kConfigureNetwork);
-        EXPECT_EQ(state_result_ptr->error, rmad::RmadErrorCode::RMAD_ERROR_OK);
-      }));
-  run_loop.RunUntilIdle();
-  SetupWiFiNetwork(kDefaultWifiGuid);
-
-  // With a WiFi network it should redirect to kSelectComponents because the OS
-  // Update flag is off.
-  shimless_rma_provider_->NetworkSelectionComplete(
       base::BindLambdaForTesting([&](mojom::StateResultPtr state_result_ptr) {
         EXPECT_EQ(state_result_ptr->state, mojom::State::kSelectComponents);
         EXPECT_EQ(state_result_ptr->error, rmad::RmadErrorCode::RMAD_ERROR_OK);
-        run_loop.Quit();
       }));
-  run_loop.Run();
+  run_loop.RunUntilIdle();
 }
 
 TEST_F(ShimlessRmaServiceTest, ChooseNetworkHasNoNetworkConnection) {
@@ -890,6 +878,45 @@ TEST_F(ShimlessRmaServiceTest, WithNetworkConnectedAndGoBack) {
   run_loop.Run();
 }
 
+// Navigating to the SelectNetwork page should enable WiFi if it's currently
+// disabled.
+TEST_F(ShimlessRmaServiceTest, SelectNetworkTurnsOnWiFi) {
+  const std::vector<rmad::GetStateReply> fake_states = {
+      CreateStateReply(rmad::RmadState::kWelcome, rmad::RMAD_ERROR_OK),
+      CreateStateReply(rmad::RmadState::kComponentsRepair,
+                       rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+
+  base::RunLoop run_loop;
+
+  // Simulate disabling WiFi.
+  network_state_handler()->SetTechnologyEnabled(
+      chromeos::NetworkTypePattern::WiFi(), /*enabled=*/false,
+      network_handler::ErrorCallback());
+  EXPECT_FALSE(network_state_handler()->IsTechnologyEnabled(
+      chromeos::NetworkTypePattern::WiFi()));
+
+  // Initialize current state.
+  shimless_rma_provider_->GetCurrentState(
+      base::BindLambdaForTesting([&](mojom::StateResultPtr state_result_ptr) {
+        EXPECT_EQ(state_result_ptr->state, mojom::State::kWelcomeScreen);
+        EXPECT_EQ(state_result_ptr->error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  // No network should direct user to the NetworkPage.
+  shimless_rma_provider_->BeginFinalization(
+      base::BindLambdaForTesting([&](mojom::StateResultPtr state_result_ptr) {
+        EXPECT_EQ(state_result_ptr->state, mojom::State::kConfigureNetwork);
+        EXPECT_EQ(state_result_ptr->error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  // After transitioning to the select network page, WiFi should be enabled.
+  EXPECT_TRUE(network_state_handler()->IsTechnologyEnabled(
+      chromeos::NetworkTypePattern::WiFi()));
+}
+
 TEST_F(ShimlessRmaServiceTest, GetCurrentState) {
   std::vector<rmad::GetStateReply> fake_states;
   fake_states.push_back(CreateStateReply(rmad::RmadState::kDeviceDestination,
@@ -1050,6 +1077,48 @@ TEST_F(ShimlessRmaServiceTest,
   run_loop.Run();
 
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
+}
+
+TEST_F(ShimlessRmaServiceTest,
+       ShutDownAfterHardwareErrorInFinalizationRequestsShutdown) {
+  const std::vector<rmad::GetStateReply> fake_states = {
+      CreateStateReply(rmad::RmadState::kFinalize, rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+  fake_rmad_client_()->SetAbortable(true);
+  base::RunLoop run_loop;
+
+  shimless_rma_provider_->GetCurrentState(
+      base::BindLambdaForTesting([&](mojom::StateResultPtr state_result_ptr) {
+        EXPECT_EQ(state_result_ptr->state, mojom::State::kFinalize);
+        EXPECT_EQ(state_result_ptr->error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  shimless_rma_provider_->ShutDownAfterHardwareError();
+  run_loop.RunUntilIdle();
+
+  EXPECT_EQ(1, FakePowerManagerClient::Get()->num_request_shutdown_calls());
+}
+
+TEST_F(ShimlessRmaServiceTest,
+       ShutDownAfterHardwareErrorInProvisioningRequestsShutdown) {
+  const std::vector<rmad::GetStateReply> fake_states = {
+      CreateStateReply(rmad::RmadState::kProvisionDevice, rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+  fake_rmad_client_()->SetAbortable(true);
+  base::RunLoop run_loop;
+
+  shimless_rma_provider_->GetCurrentState(
+      base::BindLambdaForTesting([&](mojom::StateResultPtr state_result_ptr) {
+        EXPECT_EQ(state_result_ptr->state, mojom::State::kProvisionDevice);
+        EXPECT_EQ(state_result_ptr->error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  shimless_rma_provider_->ShutDownAfterHardwareError();
+  run_loop.RunUntilIdle();
+
+  EXPECT_EQ(1, FakePowerManagerClient::Get()->num_request_shutdown_calls());
 }
 
 TEST_F(ShimlessRmaServiceTest, CriticalErrorRebootRequestsFullReboot) {

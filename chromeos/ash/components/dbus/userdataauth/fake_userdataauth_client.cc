@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -18,8 +19,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
-#include "chromeos/dbus/cryptohome/rpc.pb.h"
+#include "chromeos/ash/components/dbus/cryptohome/UserDataAuth.pb.h"
+#include "chromeos/ash/components/dbus/cryptohome/rpc.pb.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace ash {
@@ -177,6 +178,26 @@ std::pair<std::string, FakeAuthFactor> KeyToAuthFactor(
   }
 }
 
+bool CheckCredentialsViaAuthFactor(const FakeAuthFactor& factor,
+                                   const std::string& secret) {
+  return absl::visit(
+      Overload<bool>(
+          [&](const PasswordFactor& password) {
+            return password.password == secret;
+          },
+          [&](const PinFactor& pin) { return pin.pin == secret; },
+          [&](const RecoveryFactor& recovery) {
+            LOG(FATAL) << "Checking recovery key is not allowed";
+            return false;
+          },
+          [&](const KioskFactor& kiosk) {
+            // Kiosk key secrets are derived from app ids and don't leave
+            // cryptohome, so there's nothing to check.
+            return true;
+          }),
+      factor);
+}
+
 // Helper that automatically sends a reply struct to a supplied callback when
 // it goes out of scope. Basically a specialized `absl::Cleanup` or
 // `std::scope_exit`.
@@ -277,7 +298,7 @@ void FakeUserDataAuthClient::TestApi::SetPinLocked(
 }
 
 void FakeUserDataAuthClient::TestApi::AddExistingUser(
-    cryptohome::AccountIdentifier account_id) {
+    const cryptohome::AccountIdentifier& account_id) {
   const auto [user_it, was_inserted] =
       client_->users_.insert({std::move(account_id), UserCryptohomeState()});
   if (!was_inserted) {
@@ -295,6 +316,23 @@ void FakeUserDataAuthClient::TestApi::AddExistingUser(
 
   base::ScopedAllowBlockingForTesting allow_blocking;
   CHECK(base::CreateDirectory(*profile_dir));
+}
+
+absl::optional<base::FilePath>
+FakeUserDataAuthClient::TestApi::GetUserProfileDir(
+    const cryptohome::AccountIdentifier& account_id) const {
+  return client_->GetUserProfileDir(account_id);
+}
+
+void FakeUserDataAuthClient::TestApi::AddKey(
+    const cryptohome::AccountIdentifier& account_id,
+    const cryptohome::Key& key) {
+  const auto user_it = client_->users_.find(account_id);
+  CHECK(user_it != std::end(client_->users_)) << "User doesn't exist";
+  UserCryptohomeState& user_state = user_it->second;
+  const auto [factor_it, was_inserted] = user_state.auth_factors.insert(
+      KeyToAuthFactor(key, TestApi::Get()->enable_auth_check_));
+  CHECK(was_inserted) << "Factor already exists";
 }
 
 FakeUserDataAuthClient::FakeUserDataAuthClient() {
@@ -334,6 +372,7 @@ void FakeUserDataAuthClient::Unmount(
   ReturnProtobufMethodCallback(::user_data_auth::UnmountReply(),
                                std::move(callback));
 }
+
 void FakeUserDataAuthClient::Mount(
     const ::user_data_auth::MountRequest& request,
     MountCallback callback) {
@@ -380,6 +419,27 @@ void FakeUserDataAuthClient::Mount(
       users_.insert({*account_id, UserCryptohomeState()});
   UserCryptohomeState& user_state = user_it->second;
 
+  if (!was_inserted) {
+    const cryptohome::Key& key = request.authorization().key();
+    switch (AuthenticateViaAuthFactors(*account_id,
+                                       /*factor_label=*/key.data().label(),
+                                       /*secret=*/key.secret(),
+                                       /*wildcard_allowed=*/true)) {
+      case AuthResult::kAuthSuccess:
+        break;
+      case AuthResult::kUserNotFound:
+        NOTREACHED();
+        break;
+      case AuthResult::kFactorNotFound:
+        reply.set_error(::user_data_auth::CRYPTOHOME_ERROR_KEY_NOT_FOUND);
+        return;
+      case AuthResult::kAuthFailed:
+        reply.set_error(
+            ::user_data_auth::CRYPTOHOME_ERROR_AUTHORIZATION_KEY_FAILED);
+        return;
+    }
+  }
+
   // The real cryptohome supports this, but it's not used in chrome at the
   // moment and thus not properly supported by fake cryptohome.
   LOG_IF(WARNING, !was_inserted && request.has_create())
@@ -412,12 +472,45 @@ void FakeUserDataAuthClient::Mount(
 
   reply.set_sanitized_username(GetStubSanitizedUsername(*account_id));
 }
+
 void FakeUserDataAuthClient::Remove(
     const ::user_data_auth::RemoveRequest& request,
     RemoveCallback callback) {
-  ReturnProtobufMethodCallback(::user_data_auth::RemoveReply(),
-                               std::move(callback));
+  ::user_data_auth::RemoveReply reply;
+  ReplyOnReturn auto_reply(&reply, std::move(callback));
+
+  cryptohome::AccountIdentifier account_id;
+  if (request.has_identifier()) {
+    account_id = request.identifier();
+  } else {
+    auto auth_session = auth_sessions_.find(request.auth_session_id());
+    CHECK(auth_session != std::end(auth_sessions_)) << "Invalid auth session";
+    account_id = auth_session->second.account;
+  }
+
+  const auto user_it = users_.find(account_id);
+  if (user_it == users_.end()) {
+    reply.set_error(::user_data_auth::CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND);
+    return;
+  }
+
+  const absl::optional<base::FilePath> profile_dir =
+      GetUserProfileDir(account_id);
+  if (profile_dir) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    CHECK(base::DeletePathRecursively(*profile_dir));
+  } else {
+    LOG(WARNING) << "User data directory has not been set, will not delete "
+                    "user profile directory";
+  }
+
+  users_.erase(user_it);
+  if (!request.auth_session_id().empty()) {
+    // Removing the user also invalidates the AuthSession.
+    auth_sessions_.erase(request.auth_session_id());
+  }
 }
+
 void FakeUserDataAuthClient::GetKeyData(
     const ::user_data_auth::GetKeyDataRequest& request,
     GetKeyDataCallback callback) {
@@ -473,63 +566,35 @@ void FakeUserDataAuthClient::GetKeyData(
         ::user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_KEY_NOT_FOUND);
   }
 }
+
 void FakeUserDataAuthClient::CheckKey(
     const ::user_data_auth::CheckKeyRequest& request,
     CheckKeyCallback callback) {
   ::user_data_auth::CheckKeyReply reply;
   ReplyOnReturn auto_reply(&reply, std::move(callback));
 
-  if (!TestApi::Get()->enable_auth_check_) {
-    return;
-  }
-
   last_unlock_webauthn_secret_ = request.unlock_webauthn_secret();
 
-  const auto user_it = users_.find(request.account_id());
-  if (user_it == std::end(users_)) {
-    reply.set_error(::user_data_auth::CryptohomeErrorCode::
-                        CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND);
-    return;
-  }
-  const UserCryptohomeState& user_state = user_it->second;
-
   const cryptohome::Key& key = request.authorization_request().key();
-  const std::string& label = key.data().label();
-
-  const auto factor_it = user_state.auth_factors.find(label);
-  if (factor_it == std::end(user_state.auth_factors)) {
-    // Factor does not exist.
-    reply.set_error(
-        ::user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_KEY_NOT_FOUND);
-    return;
+  switch (AuthenticateViaAuthFactors(
+      request.account_id(), /*factor_label=*/key.data().label(),
+      /*secret=*/key.secret(), /*wildcard_allowed=*/true)) {
+    case AuthResult::kAuthSuccess:
+      // Empty reply denotes a successful check.
+      break;
+    case AuthResult::kUserNotFound:
+      reply.set_error(::user_data_auth::CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND);
+      break;
+    case AuthResult::kFactorNotFound:
+      reply.set_error(::user_data_auth::CRYPTOHOME_ERROR_KEY_NOT_FOUND);
+      break;
+    case AuthResult::kAuthFailed:
+      reply.set_error(
+          ::user_data_auth::CRYPTOHOME_ERROR_AUTHORIZATION_KEY_FAILED);
+      break;
   }
-  const FakeAuthFactor& factor = factor_it->second;
-
-  absl::visit(
-      Overload<void>(
-          [&](const PasswordFactor& password) {
-            const std::string& secret = key.secret();
-            if (password.password != secret) {
-              reply.set_error(::user_data_auth::CryptohomeErrorCode::
-                                  CRYPTOHOME_ERROR_AUTHORIZATION_KEY_FAILED);
-            }
-          },
-          [&](const PinFactor& pin) {
-            const std::string& secret = key.secret();
-            if (pin.pin != secret) {
-              reply.set_error(::user_data_auth::CryptohomeErrorCode::
-                                  CRYPTOHOME_ERROR_AUTHORIZATION_KEY_FAILED);
-            }
-          },
-          [&](const RecoveryFactor& recovery) {
-            LOG(FATAL) << "Checking recovery key is not allowed";
-          },
-          [&](const KioskFactor& kiosk) {
-            // Kiosk key secrets are derived from app ids and don't leave
-            // cryptohome, so there's nothing to check.
-          }),
-      factor);
 }
+
 void FakeUserDataAuthClient::AddKey(
     const ::user_data_auth::AddKeyRequest& request,
     AddKeyCallback callback) {
@@ -587,12 +652,46 @@ void FakeUserDataAuthClient::MassRemoveKeys(
   ReturnProtobufMethodCallback(::user_data_auth::MassRemoveKeysReply(),
                                std::move(callback));
 }
+
 void FakeUserDataAuthClient::MigrateKey(
     const ::user_data_auth::MigrateKeyRequest& request,
     MigrateKeyCallback callback) {
-  ReturnProtobufMethodCallback(::user_data_auth::MigrateKeyReply(),
-                               std::move(callback));
+  ::user_data_auth::MigrateKeyReply reply;
+  ReplyOnReturn auto_reply(&reply, std::move(callback));
+
+  const cryptohome::Key& key = request.authorization_request().key();
+  std::string matched_factor_label;
+  switch (AuthenticateViaAuthFactors(
+      request.account_id(), /*factor_label=*/key.data().label(),
+      /*secret=*/key.secret(), /*wildcard_allowed=*/true,
+      &matched_factor_label)) {
+    case AuthResult::kAuthSuccess:
+      // Can proceed to the migration.
+      break;
+    case AuthResult::kUserNotFound:
+      reply.set_error(::user_data_auth::CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND);
+      return;
+    case AuthResult::kFactorNotFound:
+      reply.set_error(::user_data_auth::CRYPTOHOME_ERROR_KEY_NOT_FOUND);
+      return;
+    case AuthResult::kAuthFailed:
+      reply.set_error(
+          ::user_data_auth::CRYPTOHOME_ERROR_AUTHORIZATION_KEY_FAILED);
+      return;
+  }
+  UserCryptohomeState& user_state = users_[request.account_id()];
+
+  // Update the fake auth factor according to the new secret.
+  cryptohome::Key new_key = key;
+  if (new_key.data().label().empty())
+    new_key.mutable_data()->set_label(matched_factor_label);
+  new_key.set_secret(request.secret());
+  const auto [new_label, new_factor] =
+      KeyToAuthFactor(new_key, TestApi::Get()->enable_auth_check_);
+  DCHECK_EQ(new_label, matched_factor_label);
+  user_state.auth_factors[matched_factor_label] = new_factor;
 }
+
 void FakeUserDataAuthClient::StartFingerprintAuthSession(
     const ::user_data_auth::StartFingerprintAuthSessionRequest& request,
     StartFingerprintAuthSessionCallback callback) {
@@ -672,6 +771,9 @@ void FakeUserDataAuthClient::StartAuthSession(
   DCHECK_EQ(auth_sessions_.count(auth_session_id), 0u);
   AuthSessionData& session = auth_sessions_[auth_session_id];
   session.id = auth_session_id;
+  session.ephemeral =
+      (request.flags() & ::user_data_auth::AUTH_SESSION_FLAGS_EPHEMERAL_USER) !=
+      0;
   session.account = request.account_id();
 
   if (cryptohome_error_ !=
@@ -738,6 +840,7 @@ void FakeUserDataAuthClient::AuthenticateAuthSession(
     AuthenticateAuthSessionCallback callback) {
   last_authenticate_auth_session_request_ = request;
   ::user_data_auth::AuthenticateAuthSessionReply reply;
+  ReplyOnReturn auto_reply(&reply, std::move(callback));
 
   const std::string auth_session_id = request.auth_session_id();
 
@@ -745,14 +848,40 @@ void FakeUserDataAuthClient::AuthenticateAuthSession(
   if (it == auth_sessions_.end()) {
     reply.set_error(::user_data_auth::CryptohomeErrorCode::
                         CRYPTOHOME_INVALID_AUTH_SESSION_TOKEN);
-  } else if (cryptohome_error_ !=
-             ::user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_NOT_SET) {
-    reply.set_error(cryptohome_error_);
-  } else {
-    it->second.authenticated = true;
-    reply.set_authenticated(true);
+    return;
   }
-  ReturnProtobufMethodCallback(reply, std::move(callback));
+  AuthSessionData& auth_session = it->second;
+
+  if (cryptohome_error_ !=
+      ::user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_NOT_SET) {
+    reply.set_error(cryptohome_error_);
+    return;
+  }
+
+  const cryptohome::Key& key = request.authorization().key();
+  switch (AuthenticateViaAuthFactors(auth_session.account,
+                                     /*factor_label=*/key.data().label(),
+                                     /*secret=*/key.secret(),
+                                     /*wildcard_allowed=*/false)) {
+    case AuthResult::kAuthSuccess:
+      // Proceed to marking the auth session authenticated.
+      break;
+    case AuthResult::kUserNotFound:
+      reply.set_error(::user_data_auth::CryptohomeErrorCode::
+                          CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND);
+      return;
+    case AuthResult::kFactorNotFound:
+      reply.set_error(::user_data_auth::CryptohomeErrorCode::
+                          CRYPTOHOME_ERROR_KEY_NOT_FOUND);
+      return;
+    case AuthResult::kAuthFailed:
+      reply.set_error(::user_data_auth::CryptohomeErrorCode::
+                          CRYPTOHOME_ERROR_AUTHORIZATION_KEY_FAILED);
+      return;
+  }
+
+  auth_session.authenticated = true;
+  reply.set_authenticated(true);
 }
 
 void FakeUserDataAuthClient::AddCredentials(
@@ -808,30 +937,35 @@ void FakeUserDataAuthClient::PrepareEphemeralVault(
     const ::user_data_auth::PrepareEphemeralVaultRequest& request,
     PrepareEphemeralVaultCallback callback) {
   ::user_data_auth::PrepareEphemeralVaultReply reply;
+  ReplyOnReturn auto_reply(&reply, std::move(callback));
 
-  cryptohome::AccountIdentifier account;
-  auto auth_session = auth_sessions_.find(request.auth_session_id());
-  if (auth_session == auth_sessions_.end()) {
+  const auto session_it = auth_sessions_.find(request.auth_session_id());
+  if (session_it == auth_sessions_.end()) {
     LOG(ERROR) << "AuthSession not found";
     reply.set_sanitized_username(std::string());
     reply.set_error(::user_data_auth::CryptohomeErrorCode::
                         CRYPTOHOME_INVALID_AUTH_SESSION_TOKEN);
-  } else {
-    account = auth_session->second.account;
-    // Ephemeral mount does not require session to be authenticated;
-    // It authenticates session instead.
-    if (auth_session->second.authenticated) {
-      LOG(ERROR) << "AuthSession is authenticated";
-      reply.set_error(::user_data_auth::CryptohomeErrorCode::
-                          CRYPTOHOME_ERROR_INVALID_ARGUMENT);
-    } else {
-      auth_session->second.authenticated = true;
-    }
-
-    reply.set_sanitized_username(GetStubSanitizedUsername(account));
+    return;
   }
+  AuthSessionData& auth_session = session_it->second;
+  if (!auth_session.ephemeral) {
+    LOG(ERROR) << "Non-ephemeral AuthSession used with PrepareEphemeralVault";
+    reply.set_error(::user_data_auth::CryptohomeErrorCode::
+                        CRYPTOHOME_ERROR_INVALID_ARGUMENT);
+    return;
+  }
+  cryptohome::AccountIdentifier account = auth_session.account;
+  // Ephemeral mount does not require session to be authenticated;
+  // It authenticates session instead.
+  if (auth_session.authenticated) {
+    LOG(ERROR) << "AuthSession is authenticated";
+    reply.set_error(::user_data_auth::CryptohomeErrorCode::
+                        CRYPTOHOME_ERROR_INVALID_ARGUMENT);
+    return;
+  }
+  auth_session.authenticated = true;
 
-  ReturnProtobufMethodCallback(reply, std::move(callback));
+  reply.set_sanitized_username(GetStubSanitizedUsername(account));
 }
 
 void FakeUserDataAuthClient::CreatePersistentUser(
@@ -849,6 +983,13 @@ void FakeUserDataAuthClient::CreatePersistentUser(
     return;
   }
   AuthSessionData& auth_session = session_it->second;
+
+  if (auth_session.ephemeral) {
+    LOG(ERROR) << "Ephemeral AuthSession used with CreatePersistentUser";
+    reply.set_error(::user_data_auth::CryptohomeErrorCode::
+                        CRYPTOHOME_ERROR_INVALID_ARGUMENT);
+    return;
+  }
 
   const auto [_, was_inserted] =
       users_.insert({auth_session.account, UserCryptohomeState()});
@@ -875,6 +1016,13 @@ void FakeUserDataAuthClient::PreparePersistentVault(
 
   if (authenticated_auth_session == nullptr) {
     reply.set_error(error);
+    return;
+  }
+
+  if (authenticated_auth_session->ephemeral) {
+    LOG(ERROR) << "Ephemeral AuthSession used with PreparePersistentVault";
+    reply.set_error(::user_data_auth::CryptohomeErrorCode::
+                        CRYPTOHOME_ERROR_INVALID_ARGUMENT);
     return;
   }
 
@@ -1035,6 +1183,49 @@ void FakeUserDataAuthClient::RunPendingWaitForServiceToBeAvailableCallbacks() {
   callbacks.swap(pending_wait_for_service_to_be_available_callbacks_);
   for (auto& callback : callbacks)
     std::move(callback).Run(false);
+}
+
+FakeUserDataAuthClient::AuthResult
+FakeUserDataAuthClient::AuthenticateViaAuthFactors(
+    const cryptohome::AccountIdentifier& account_id,
+    const std::string& factor_label,
+    const std::string& secret,
+    bool wildcard_allowed,
+    std::string* matched_factor_label) const {
+  if (!TestApi::Get()->enable_auth_check_)
+    return AuthResult::kAuthSuccess;
+
+  const auto user_it = users_.find(account_id);
+  if (user_it == std::end(users_))
+    return AuthResult::kUserNotFound;
+  const UserCryptohomeState& user_state = user_it->second;
+
+  if (wildcard_allowed && factor_label.empty()) {
+    // Do a wildcard match (it's only used for legacy APIs): try the secret
+    // against every credential.
+    for (const auto& [candidate_label, candidate_factor] :
+         user_state.auth_factors) {
+      if (CheckCredentialsViaAuthFactor(candidate_factor, secret)) {
+        if (matched_factor_label)
+          *matched_factor_label = candidate_label;
+        return AuthResult::kAuthSuccess;
+      }
+    }
+    // It's not well-defined which error is returned on a failed wildcard
+    // authentication, but we follow what the real cryptohome does (at least in
+    // CheckKey).
+    return AuthResult::kAuthFailed;
+  }
+
+  const auto factor_it = user_state.auth_factors.find(factor_label);
+  if (factor_it == std::end(user_state.auth_factors))
+    return AuthResult::kFactorNotFound;
+  const auto& [label, factor] = *factor_it;
+  if (!CheckCredentialsViaAuthFactor(factor, secret))
+    return AuthResult::kAuthFailed;
+  if (matched_factor_label)
+    *matched_factor_label = label;
+  return AuthResult::kAuthSuccess;
 }
 
 template <typename ReplyType>

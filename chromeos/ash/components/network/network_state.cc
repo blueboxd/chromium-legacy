@@ -48,7 +48,12 @@ std::string GetStringFromDictionary(const base::Value& dict, const char* key) {
 
 }  // namespace
 
-namespace chromeos {
+namespace ash {
+
+// TODO(https://crbug.com/1164001): remove after migrating to ash.
+namespace network_config {
+namespace mojom = ::chromeos::network_config::mojom;
+}
 
 NetworkState::NetworkState(const std::string& path)
     : ManagedState(MANAGED_TYPE_NETWORK, path) {}
@@ -194,7 +199,7 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return true;
   } else if (key == shill::kUIDataProperty) {
     std::unique_ptr<NetworkUIData> ui_data =
-        chromeos::shill_property_util::GetUIDataFromValue(value);
+        shill_property_util::GetUIDataFromValue(value);
     if (!ui_data)
       return false;
     onc_source_ = ui_data->onc_source();
@@ -360,8 +365,8 @@ bool NetworkState::RequiresActivation() const {
 
 bool NetworkState::SecurityRequiresPassphraseOnly() const {
   return type() == shill::kTypeWifi &&
-         (security_class_ == shill::kSecurityPsk ||
-          security_class_ == shill::kSecurityWep);
+         (security_class_ == shill::kSecurityClassPsk ||
+          security_class_ == shill::kSecurityClassWep);
 }
 
 const std::string& NetworkState::GetError() const {
@@ -413,6 +418,10 @@ void NetworkState::SetConnectionState(const std::string& connection_state) {
     // |connect_requested_| so that the UI knows the connecting state is
     // important (i.e. not a normal auto connect).
     connect_requested_ = true;
+  }
+  if (shill_portal_state_ == PortalState::kUnknown &&
+      connection_state_ == shill::kStateOnline) {
+    shill_portal_state_ = PortalState::kOnline;
   }
 }
 
@@ -470,23 +479,9 @@ bool NetworkState::IsNonShillCellularNetwork() const {
   return type() == shill::kTypeCellular && IsStubCellularServicePath(path());
 }
 
-bool NetworkState::IsShillCaptivePortal() const {
-  switch (portal_state_) {
-    case PortalState::kUnknown:
-    case PortalState::kOnline:
-      return false;
-    case PortalState::kPortalSuspected:
-    case PortalState::kPortal:
-    case PortalState::kProxyAuthRequired:
-    case PortalState::kNoInternet:
-      return true;
-  }
-  NOTREACHED();
-  return false;
-}
-
-bool NetworkState::IsCaptivePortal() const {
-  return is_chrome_captive_portal_ || IsShillCaptivePortal();
+NetworkState::PortalState NetworkState::GetPortalState() const {
+  return chrome_portal_state_ != PortalState::kUnknown ? chrome_portal_state_
+                                                       : shill_portal_state_;
 }
 
 bool NetworkState::IsSecure() const {
@@ -561,11 +556,11 @@ network_config::mojom::SecurityType NetworkState::GetMojoSecurity() const {
   if (IsDynamicWep())
     return SecurityType::kWep8021x;
 
-  if (security_class_ == shill::kSecurityWep)
+  if (security_class_ == shill::kSecurityClassWep)
     return SecurityType::kWepPsk;
-  if (security_class_ == shill::kSecurityPsk)
+  if (security_class_ == shill::kSecurityClassPsk)
     return SecurityType::kWpaPsk;
-  if (security_class_ == shill::kSecurity8021x)
+  if (security_class_ == shill::kSecurityClass8021x)
     return SecurityType::kWpaEap;
   NET_LOG(ERROR) << "Unsupported shill security class: " << security_class_;
   return SecurityType::kNone;
@@ -655,21 +650,29 @@ void NetworkState::UpdateCaptivePortalState(const base::Value& properties) {
       properties.FindIntKey(kPortalDetectionFailedStatusCodeProperty)
           .value_or(0);
   if (connection_state_ == shill::kStateNoConnectivity) {
-    portal_state_ = PortalState::kNoInternet;
+    shill_portal_state_ = PortalState::kNoInternet;
   } else if (connection_state_ == shill::kStateRedirectFound) {
-    portal_state_ = status_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED
-                        ? PortalState::kProxyAuthRequired
-                        : PortalState::kPortal;
+    shill_portal_state_ = PortalState::kPortal;
   } else if (connection_state_ == shill::kStatePortalSuspected) {
-    portal_state_ = PortalState::kPortalSuspected;
+    if (status_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
+      // If Shill's portal detection HTTP probe returns a 407 response, Shill
+      // will treat that as a portal-suspected state.
+      shill_portal_state_ = PortalState::kProxyAuthRequired;
+    } else {
+      shill_portal_state_ = PortalState::kPortalSuspected;
+    }
+  } else if (connection_state_ == shill::kStateOnline) {
+    shill_portal_state_ = PortalState::kOnline;
   } else {
-    portal_state_ = PortalState::kOnline;
+    shill_portal_state_ = PortalState::kUnknown;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("CaptivePortal.NetworkStateResult", portal_state_);
-  if (portal_state_ != PortalState::kOnline) {
-    NET_LOG(EVENT) << "Network is in captive portal state: " << NetworkId(this)
-                   << " status_code=" << status_code;
+  UMA_HISTOGRAM_ENUMERATION("CaptivePortal.NetworkStateResult",
+                            shill_portal_state_);
+  if (shill_portal_state_ != PortalState::kOnline) {
+    NET_LOG(EVENT) << "Shill captive portal state for: " << NetworkId(this)
+                   << " = " << shill_portal_state_
+                   << " ,status_code=" << status_code;
     base::UmaHistogramSparse("CaptivePortal.NetworkStateStatusCode",
                              std::abs(status_code));
   }
@@ -688,4 +691,29 @@ void NetworkState::SetVpnProvider(const std::string& id,
   vpn_provider_->type = type;
 }
 
-}  // namespace chromeos
+std::ostream& operator<<(std::ostream& stream,
+                         const NetworkState::PortalState& portal_state) {
+  switch (portal_state) {
+    case NetworkState::PortalState::kUnknown:
+      stream << "Unknown";
+      break;
+    case NetworkState::PortalState::kOnline:
+      stream << "Online";
+      break;
+    case NetworkState::PortalState::kPortalSuspected:
+      stream << "PortalSuspected";
+      break;
+    case NetworkState::PortalState::kPortal:
+      stream << "Portal";
+      break;
+    case NetworkState::PortalState::kProxyAuthRequired:
+      stream << "ProxyAuthRequired";
+      break;
+    case NetworkState::PortalState::kNoInternet:
+      stream << "NoInternet";
+      break;
+  }
+  return stream;
+}
+
+}  // namespace ash

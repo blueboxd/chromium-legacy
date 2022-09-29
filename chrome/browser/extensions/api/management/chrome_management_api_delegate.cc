@@ -72,7 +72,6 @@
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/web_applications/web_app_utils.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -337,6 +336,7 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
       // These modes are not supported by the extension app backend.
       case web_app::DisplayMode::kWindowControlsOverlay:
       case web_app::DisplayMode::kTabbed:
+      case web_app::DisplayMode::kBorderless:
       case web_app::DisplayMode::kUndefined:
         info.launch_type = extensions::api::management::LAUNCH_TYPE_NONE;
         break;

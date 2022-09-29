@@ -118,7 +118,9 @@ class MockH265Accelerator : public H265Decoder::H265Accelerator {
   MOCK_METHOD2(SetStream,
                Status(base::span<const uint8_t> stream,
                       const DecryptConfig* decrypt_config));
-
+  bool IsChromaSamplingSupported(VideoChromaSampling format) override {
+    return format == VideoChromaSampling::k420;
+  }
   void Reset() override {}
 };
 
@@ -519,6 +521,13 @@ TEST_F(H265DecoderTest, SetStreamRetry) {
     EXPECT_CALL(*accelerator_, OutputPicture(HasPoc(0))).Times(1);
   }
   EXPECT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode(false));
+  EXPECT_TRUE(decoder_->Flush());
+}
+
+TEST_F(H265DecoderTest, DecodeMultiFrameInput) {
+  SetInputFrameFiles({"bear.hevc"});
+  EXPECT_EQ(AcceleratedVideoDecoder::kConfigChange, Decode());
+  EXPECT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
   EXPECT_TRUE(decoder_->Flush());
 }
 

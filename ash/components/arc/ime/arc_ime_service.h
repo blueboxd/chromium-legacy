@@ -111,7 +111,7 @@ class ArcImeService : public KeyedService,
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
-  uint32_t ConfirmCompositionText(bool keep_selection) override;
+  size_t ConfirmCompositionText(bool keep_selection) override;
   void ClearCompositionText() override;
   void InsertText(const std::u16string& text,
                   InsertTextCursorBehavior cursor_behavior) override;
@@ -132,7 +132,7 @@ class ArcImeService : public KeyedService,
   base::i18n::TextDirection GetTextDirection() const override;
   int GetTextInputFlags() const override;
   bool CanComposeInline() const override;
-  bool GetCompositionCharacterBounds(uint32_t index,
+  bool GetCompositionCharacterBounds(size_t index,
                                      gfx::Rect* rect) const override;
   bool HasCompositionText() const override;
   FocusReason GetFocusReason() const override;

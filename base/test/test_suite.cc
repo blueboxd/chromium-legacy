@@ -80,6 +80,8 @@
 #include <crtdbg.h>
 #endif  // _DEBUG
 #include <windows.h>
+
+#include "base/debug/handle_hooks_win.h"
 #endif  // BUILDFLAG(IS_WIN)
 
 namespace base {
@@ -136,13 +138,12 @@ class FeatureListScopedToEachTest : public testing::EmptyTestEventListener {
       delete;
 
   void OnTestStart(const testing::TestInfo& test_info) override {
-    field_trial_list_ = std::make_unique<FieldTrialList>(
-        std::make_unique<MockEntropyProvider>());
-
     const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
-    // Set up a FeatureList instance, so that code using that API will not hit a
-    // an error that it's not set. It will be cleared automatically.
+    // We set up a FeatureList via ScopedFeatureList::InitFromCommandLine().
+    // This ensures that code using that API will not hit an error that it's
+    // not set. It will be cleared by ~ScopedFeatureList().
+
     // TestFeatureForBrowserTest1 and TestFeatureForBrowserTest2 used in
     // ContentBrowserTestScopedFeatureListTest to ensure ScopedFeatureList keeps
     // features from command line.
@@ -172,11 +173,9 @@ class FeatureListScopedToEachTest : public testing::EmptyTestEventListener {
 
   void OnTestEnd(const testing::TestInfo& test_info) override {
     scoped_feature_list_.Reset();
-    field_trial_list_.reset();
   }
 
  private:
-  std::unique_ptr<FieldTrialList> field_trial_list_;
   test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -342,6 +341,10 @@ void TestSuite::InitializeFromCommandLine(int argc, wchar_t** argv) {
 
 void TestSuite::PreInitialize() {
   DCHECK(!is_initialized_);
+
+#if BUILDFLAG(IS_WIN)
+  base::debug::HandleHooks::PatchLoadedModules();
+#endif  // BUILDFLAG(IS_WIN)
 
   // The default death_test_style of "fast" is a frequent source of subtle test
   // flakiness. And on some platforms like macOS, use of system libraries after
@@ -587,7 +590,7 @@ void TestSuite::Initialize() {
   }
 #endif
 
-#if defined(DCHECK_IS_CONFIGURABLE)
+#if BUILDFLAG(DCHECK_IS_CONFIGURABLE)
   // Default the configurable DCHECK level to FATAL when running death tests'
   // child process, so that they behave as expected.
   // TODO(crbug.com/1057995): Remove this in favor of the codepath in
@@ -595,7 +598,7 @@ void TestSuite::Initialize() {
   // are fixed to be invoked in the child process as expected.
   if (command_line->HasSwitch("gtest_internal_run_death_test"))
     logging::LOGGING_DCHECK = logging::LOG_FATAL;
-#endif
+#endif  // BUILDFLAG(DCHECK_IS_CONFIGURABLE)
 
 #if BUILDFLAG(IS_IOS)
   InitIOSTestMessageLoop();

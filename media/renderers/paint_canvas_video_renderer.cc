@@ -141,7 +141,8 @@ const gpu::MailboxHolder& GetVideoFrameMailboxHolder(VideoFrame* video_frame) {
          PIXEL_FORMAT_XBGR == video_frame->format() ||
          PIXEL_FORMAT_XB30 == video_frame->format() ||
          PIXEL_FORMAT_XR30 == video_frame->format() ||
-         PIXEL_FORMAT_NV12 == video_frame->format())
+         PIXEL_FORMAT_NV12 == video_frame->format() ||
+         PIXEL_FORMAT_RGBAF16 == video_frame->format())
       << "Format: " << VideoPixelFormatToString(video_frame->format());
 
   const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
@@ -1508,9 +1509,14 @@ bool PaintCanvasVideoRenderer::UploadVideoFrameToGLTexture(
   destination_gl->GenUnverifiedSyncTokenCHROMIUM(
       mailbox_holder.sync_token.GetData());
 
-  if (!VideoFrameYUVConverter::ConvertYUVVideoFrameToDstTextureNoCaching(
+  VideoFrameYUVConverter::GrParams yuv_gr_params;
+  yuv_gr_params.internal_format = internal_format;
+  yuv_gr_params.type = type;
+  yuv_gr_params.flip_y = flip_y;
+  yuv_gr_params.use_visible_rect = true;
+  if (!VideoFrameYUVConverter::ConvertYUVVideoFrameNoCaching(
           video_frame.get(), raster_context_provider, mailbox_holder,
-          internal_format, type, flip_y, true /* use visible_rect */)) {
+          yuv_gr_params)) {
     return false;
   }
 

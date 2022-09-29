@@ -4,6 +4,7 @@
 //
 #include "chrome/browser/autofill_assistant/common_dependencies_chrome.h"
 
+#include "base/values.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill_assistant/annotate_dom_model_service_factory.h"
 #include "chrome/browser/autofill_assistant/assistant_field_trial_util_chrome.h"
@@ -16,11 +17,15 @@
 #include "components/autofill_assistant/browser/assistant_field_trial_util.h"
 #include "components/autofill_assistant/browser/dependencies_util.h"
 #include "components/autofill_assistant/content/browser/annotate_dom_model_service.h"
+#include "components/metrics/metrics_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/tribool.h"
+#include "components/unified_consent/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using ::autofill::PersonalDataManager;
 using ::content::WebContents;
@@ -47,6 +52,9 @@ std::string CommonDependenciesChrome::GetCountryCode() const {
 
 PersonalDataManager* CommonDependenciesChrome::GetPersonalDataManager(
     content::BrowserContext* browser_context) const {
+  if (!browser_context)
+    return nullptr;
+
   return autofill::PersonalDataManagerFactory::GetForBrowserContext(
       browser_context);
 }
@@ -86,6 +94,23 @@ bool CommonDependenciesChrome::IsSupervisedUser(
          signin::Tribool::kTrue;
 }
 
+bool CommonDependenciesChrome::IsAllowedForMachineLearning(
+    content::BrowserContext* browser_context) const {
+  DCHECK(browser_context);
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context));
+  if (!identity_manager) {
+    return true;
+  }
+
+  std::string gaia_id =
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync).gaia;
+  return identity_manager->FindExtendedAccountInfoByGaiaId(gaia_id)
+             .capabilities.is_allowed_for_machine_learning() !=
+         signin::Tribool::kFalse;
+}
+
 AnnotateDomModelService*
 CommonDependenciesChrome::GetOrCreateAnnotateDomModelService(
     content::BrowserContext* browser_context) const {
@@ -104,6 +129,21 @@ signin::IdentityManager* CommonDependenciesChrome::GetIdentityManager(
 
 version_info::Channel CommonDependenciesChrome::GetChannel() const {
   return chrome::GetChannel();
+}
+
+bool CommonDependenciesChrome::GetMakeSearchesAndBrowsingBetterEnabled(
+    content::BrowserContext* browser_context) const {
+  return Profile::FromBrowserContext(browser_context)
+      ->GetPrefs()
+      ->GetBoolean(
+          unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
+}
+
+bool CommonDependenciesChrome::GetMetricsReportingEnabled(
+    content::BrowserContext* browser_context) const {
+  return Profile::FromBrowserContext(browser_context)
+      ->GetPrefs()
+      ->GetBoolean(metrics::prefs::kMetricsReportingEnabled);
 }
 
 }  // namespace autofill_assistant

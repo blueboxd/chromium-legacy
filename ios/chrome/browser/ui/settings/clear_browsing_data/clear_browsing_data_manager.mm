@@ -21,6 +21,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
+#import "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
@@ -59,7 +60,6 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/common/channel_info.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -71,6 +71,8 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+const char kCBDSignOutOfChromeURL[] = "settings://CBDSignOutOfChrome";
 
 namespace {
 // Maximum number of times to show a notice about other forms of browsing
@@ -101,11 +103,17 @@ UIImage* SymbolForItemType(ClearBrowsingDataItemType itemType) {
   UIImage* symbol = nil;
   switch (itemType) {
     case ItemTypeDataTypeBrowsingHistory:
+      symbol = DefaultSymbolTemplateWithPointSize(kClockArrowSymbol,
+                                                  kSymbolPointSize);
+      break;
     case ItemTypeDataTypeCookiesSiteData:
+      symbol = DefaultSymbolTemplateWithPointSize(kInfoCircleSymbol,
+                                                  kSymbolPointSize);
+      break;
     case ItemTypeDataTypeSavedPasswords:
-      // TODO(crbug.com/1315544): update these cases when custom symbols are
+      // TODO(crbug.com/1315544): update this case when the custom symbol is
       // done.
-      symbol = DefaultSymbolTemplateWithPointSize(kCachedDataSymbol,
+      symbol = DefaultSymbolTemplateWithPointSize(kClockArrowSymbol,
                                                   kSymbolPointSize);
       break;
     case ItemTypeDataTypeCache:
@@ -387,8 +395,7 @@ static NSDictionary* imageNamesByItemTypes = @{
       IdentityManagerFactory::GetForBrowserState(self.browserState);
 
   const BOOL loggedIn =
-      identityManager->HasPrimaryAccount(signin::ConsentLevel::kSignin) ||
-      identityManager->HasPrimaryAccount(signin::ConsentLevel::kSync);
+      identityManager->HasPrimaryAccount(signin::ConsentLevel::kSignin);
   const TemplateURLService* templateURLService =
       ios::TemplateURLServiceFactory::GetForBrowserState(_browserState);
   const TemplateURL* defaultSearchEngine =
@@ -411,18 +418,24 @@ static NSDictionary* imageNamesByItemTypes = @{
         forSectionWithIdentifier:SectionIdentifierGoogleAccount];
   }
 
-  [model addSectionWithIdentifier:SectionIdentifierSavedSiteData];
   syncer::SyncService* syncService =
       SyncServiceFactory::GetForBrowserState(self.browserState);
-  if (syncService && syncService->IsSyncFeatureActive()) {
-    [model setFooter:[self footerClearSyncAndSavedSiteDataItem]
-        forSectionWithIdentifier:SectionIdentifierSavedSiteData];
-  } else {
-    [model setFooter:[self footerSavedSiteDataItem]
+  if (!base::FeatureList::IsEnabled(switches::kEnableCbdSignOut)) {
+    [model addSectionWithIdentifier:SectionIdentifierSavedSiteData];
+    if (syncService && syncService->IsSyncFeatureActive()) {
+      [model setFooter:[self footerClearSyncAndSavedSiteDataItem]
+          forSectionWithIdentifier:SectionIdentifierSavedSiteData];
+    } else {
+      [model setFooter:[self footerSavedSiteDataItem]
+          forSectionWithIdentifier:SectionIdentifierSavedSiteData];
+    }
+  } else if (loggedIn) {
+    [model addSectionWithIdentifier:SectionIdentifierSavedSiteData];
+    [model setFooter:[self signOutFooterItem]
         forSectionWithIdentifier:SectionIdentifierSavedSiteData];
   }
 
-  // If not signed in, no need to continue with profile syncing.
+  // If not syncing, no need to continue with profile syncing.
   if (!identityManager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
     return;
   }
@@ -582,14 +595,16 @@ static NSDictionary* imageNamesByItemTypes = @{
   return [self
       footerItemWithType:ItemTypeFooterGoogleAccountAndMyActivity
                  titleID:IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_ACCOUNT_AND_HISTORY
-                     URL:kClearBrowsingDataMyActivityUrlInFooterURL];
+                     URL:kClearBrowsingDataMyActivityUrlInFooterURL
+       appendLocaleToURL:YES];
 }
 
 - (TableViewLinkHeaderFooterItem*)footerSavedSiteDataItem {
   return [self
       footerItemWithType:ItemTypeFooterSavedSiteData
                  titleID:IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_SAVED_SITE_DATA
-                     URL:kClearBrowsingDataLearnMoreURL];
+                     URL:kClearBrowsingDataLearnMoreURL
+       appendLocaleToURL:YES];
 }
 
 - (TableViewLinkHeaderFooterItem*)footerClearSyncAndSavedSiteDataItem {
@@ -597,20 +612,35 @@ static NSDictionary* imageNamesByItemTypes = @{
       footerItemWithType:ItemTypeFooterClearSyncAndSavedSiteData
                  titleID:
                      IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_CLEAR_SYNC_AND_SAVED_SITE_DATA
-                     URL:kClearBrowsingDataLearnMoreURL];
+                     URL:kClearBrowsingDataLearnMoreURL
+       appendLocaleToURL:YES];
 }
 
+- (TableViewLinkHeaderFooterItem*)signOutFooterItem {
+  return [self
+      footerItemWithType:ItemTypeFooterClearSyncAndSavedSiteData
+                 titleID:
+                     IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_SIGN_OUT_EVERY_WEBSITE
+                     URL:kCBDSignOutOfChromeURL
+       appendLocaleToURL:NO];
+}
+
+// Creates item of type `itemType` with `titleMessageId`, containing a link to
+// `URL`. If appendLocaleToURL, the local is added to the URL.
 - (TableViewLinkHeaderFooterItem*)footerItemWithType:
                                       (ClearBrowsingDataItemType)itemType
                                              titleID:(int)titleMessageID
-                                                 URL:(const char[])URL {
+                                                 URL:(const char[])URL
+                                   appendLocaleToURL:(BOOL)appendLocaleToURL {
   TableViewLinkHeaderFooterItem* footerItem =
       [[TableViewLinkHeaderFooterItem alloc] initWithType:itemType];
   footerItem.text = l10n_util::GetNSString(titleMessageID);
-  footerItem.urls = @[ [[CrURL alloc]
-      initWithGURL:google_util::AppendGoogleLocaleParam(
-                       GURL(URL),
-                       GetApplicationContext()->GetApplicationLocale())] ];
+  GURL gurl = GURL(URL);
+  if (appendLocaleToURL) {
+    gurl = google_util::AppendGoogleLocaleParam(
+        gurl, GetApplicationContext()->GetApplicationLocale());
+  }
+  footerItem.urls = @[ [[CrURL alloc] initWithGURL:gurl] ];
   return footerItem;
 }
 
@@ -659,9 +689,11 @@ static NSDictionary* imageNamesByItemTypes = @{
     AuthenticationService* authenticationService =
         AuthenticationServiceFactory::GetForBrowserState(_browserState);
     DCHECK(authenticationService);
-    authenticationService->SignOut(
-        signin_metrics::ProfileSignout::USER_DELETED_ACCOUNT_COOKIES,
-        /*force_clear_browsing_data=*/false, nil);
+    if (!base::FeatureList::IsEnabled(switches::kEnableCbdSignOut)) {
+      authenticationService->SignOut(
+          signin_metrics::ProfileSignout::USER_DELETED_ACCOUNT_COOKIES,
+          /*force_clear_browsing_data=*/false, nil);
+    }
   }
 }
 

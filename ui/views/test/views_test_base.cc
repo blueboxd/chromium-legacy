@@ -114,6 +114,19 @@ void ViewsTestBase::RunPendingMessages() {
   run_loop.RunUntilIdle();
 }
 
+void ViewsTestBase::RunScheduledLayout(View* view) {
+  DCHECK(view);
+  Widget* widget = view->GetWidget();
+  if (widget) {
+    widget->LayoutRootViewIfNecessary();
+    return;
+  }
+  View* parent_view = view;
+  while (parent_view->parent())
+    parent_view = parent_view->parent();
+  parent_view->Layout();
+}
+
 Widget::InitParams ViewsTestBase::CreateParams(Widget::InitParams::Type type) {
   Widget::InitParams params(type);
   params.context = GetContext();
@@ -122,8 +135,13 @@ Widget::InitParams ViewsTestBase::CreateParams(Widget::InitParams::Type type) {
 
 std::unique_ptr<Widget> ViewsTestBase::CreateTestWidget(
     Widget::InitParams::Type type) {
+  return CreateTestWidget(CreateParamsForTestWidget(type));
+}
+
+std::unique_ptr<Widget> ViewsTestBase::CreateTestWidget(
+    Widget::InitParams params) {
   std::unique_ptr<Widget> widget = AllocateTestWidget();
-  widget->Init(CreateParamsForTestWidget(type));
+  widget->Init(std::move(params));
   return widget;
 }
 

@@ -19,19 +19,13 @@ namespace {
 // was found.
 int GetSyncTransportOptInBitFieldForAccount(const PrefService* prefs,
                                             const std::string& account_hash) {
-  auto* dictionary = prefs->GetDictionary(prefs::kAutofillSyncTransportOptIn);
-
-  // If there is no dictionary it means the account didn't opt-in. Use 0 because
-  // it's the same as not having opted-in to anything.
-  if (!dictionary) {
-    return 0;
-  }
+  const auto& dictionary =
+      prefs->GetValueDict(prefs::kAutofillSyncTransportOptIn);
 
   // If there is no entry in the dictionary, it means the account didn't opt-in.
   // Use 0 because it's the same as not having opted-in to anything.
-  auto* found =
-      dictionary->FindKeyOfType(account_hash, base::Value::Type::INTEGER);
-  return found ? found->GetInt() : 0;
+  const auto found = dictionary.FindInt(account_hash);
+  return found.value_or(0);
 }
 
 }  // namespace
@@ -60,6 +54,9 @@ const char kAutofillEnabledDeprecated[] = "autofill.enabled";
 // Deprecated 10/2019.
 const char kAutofillJapanCityFieldMigratedDeprecated[] =
     "autofill.japan_city_field_migrated_to_street_address";
+
+// Boolean that is true if Autofill is enabled and allowed to save IBAN data.
+extern const char kAutofillIBANEnabled[] = "autofill.iban_enabled";
 
 // Integer that is set to the last version where the profile deduping routine
 // was run. This routine will be run once per version.
@@ -134,6 +131,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kAutofillCreditCardEnabled, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAutofillIBANEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   // Non-synced prefs. Used for per-device choices, e.g., signin promo.
@@ -215,6 +215,14 @@ bool IsAutofillCreditCardEnabled(const PrefService* prefs) {
 
 void SetAutofillCreditCardEnabled(PrefService* prefs, bool enabled) {
   prefs->SetBoolean(kAutofillCreditCardEnabled, enabled);
+}
+
+bool IsAutofillIBANEnabled(const PrefService* prefs) {
+  return prefs->GetBoolean(kAutofillIBANEnabled);
+}
+
+void SetAutofillIBANEnabled(PrefService* prefs, bool enabled) {
+  prefs->SetBoolean(kAutofillIBANEnabled, enabled);
 }
 
 bool IsAutofillManaged(const PrefService* prefs) {

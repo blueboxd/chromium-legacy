@@ -19,7 +19,7 @@
 #include "components/device_event_log/device_event_log.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -355,33 +355,33 @@ std::ostream& operator<<(std::ostream& stream,
   return stream;
 }
 
-}  // namespace chromeos
-
 std::ostream& operator<<(
     std::ostream& stream,
-    const chromeos::CellularInhibitor::InhibitReason& inhibit_reason) {
+    const CellularInhibitor::InhibitReason& inhibit_reason) {
   switch (inhibit_reason) {
-    case chromeos::CellularInhibitor::InhibitReason::kInstallingProfile:
+    case CellularInhibitor::InhibitReason::kInstallingProfile:
       stream << "[Installing profile]";
       break;
-    case chromeos::CellularInhibitor::InhibitReason::kRenamingProfile:
+    case CellularInhibitor::InhibitReason::kRenamingProfile:
       stream << "[Renaming profile]";
       break;
-    case chromeos::CellularInhibitor::InhibitReason::kRemovingProfile:
+    case CellularInhibitor::InhibitReason::kRemovingProfile:
       stream << "[Removing profile]";
       break;
-    case chromeos::CellularInhibitor::InhibitReason::kConnectingToProfile:
+    case CellularInhibitor::InhibitReason::kConnectingToProfile:
       stream << "[Connecting to profile]";
       break;
-    case chromeos::CellularInhibitor::InhibitReason::kRefreshingProfileList:
+    case CellularInhibitor::InhibitReason::kRefreshingProfileList:
       stream << "[Refreshing profile list]";
       break;
-    case chromeos::CellularInhibitor::InhibitReason::kResettingEuiccMemory:
+    case CellularInhibitor::InhibitReason::kResettingEuiccMemory:
       stream << "[Resetting EUICC memory]";
       break;
-    case chromeos::CellularInhibitor::InhibitReason::kDisablingProfile:
+    case CellularInhibitor::InhibitReason::kDisablingProfile:
       stream << "[Disabling profile]";
       break;
   }
   return stream;
 }
+
+}  // namespace ash

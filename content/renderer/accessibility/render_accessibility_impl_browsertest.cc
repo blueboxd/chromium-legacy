@@ -23,7 +23,6 @@
 #include "content/renderer/accessibility/ax_image_annotator.h"
 #include "content/renderer/accessibility/render_accessibility_manager.h"
 #include "content/renderer/render_frame_impl.h"
-#include "content/renderer/render_view_impl.h"
 #include "content/test/test_render_frame.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -556,7 +555,6 @@ TEST_F(RenderAccessibilityImplTest, TestDeferred) {
       ax::mojom::Event::kFocus,
       ax::mojom::Event::kHover,
       ax::mojom::Event::kLoadComplete,
-      ax::mojom::Event::kTextSelectionChanged,
       ax::mojom::Event::kValueChanged};
 
   for (ax::mojom::Event event : kInteractiveEvents) {
@@ -1249,10 +1247,7 @@ class AXImageAnnotatorTest : public RenderAccessibilityImplTest {
     GetRenderAccessibilityImpl()->ax_image_annotator_ =
         std::make_unique<TestAXImageAnnotator>(GetRenderAccessibilityImpl(),
                                                mock_annotator().GetRemote());
-    GetRenderAccessibilityImpl()->tree_source_->RemoveBlinkImageAnnotator();
-    GetRenderAccessibilityImpl()->tree_source_->AddBlinkImageAnnotator(
-        GetRenderAccessibilityImpl()->ax_image_annotator_.get());
-    BlinkAXTreeSource::IgnoreProtocolChecksForTesting();
+    RenderAccessibilityImpl::IgnoreProtocolChecksForTesting();
   }
 
   void TearDown() override {

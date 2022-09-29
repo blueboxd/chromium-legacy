@@ -27,8 +27,6 @@
 #include "base/android/scoped_hardware_buffer_handle.h"
 #endif
 
-extern "C" typedef struct _ClientBuffer* ClientBuffer;
-
 namespace base {
 namespace trace_event {
 class ProcessMemoryDump;
@@ -76,7 +74,7 @@ struct GFX_EXPORT GpuMemoryBufferHandle {
   GpuMemoryBufferId id{0};
   base::UnsafeSharedMemoryRegion region;
   uint32_t offset = 0;
-  int32_t stride = 0;
+  uint32_t stride = 0;
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
   NativePixmapHandle native_pixmap_handle;
 #elif BUILDFLAG(IS_MAC)
@@ -134,9 +132,6 @@ class GFX_EXPORT GpuMemoryBuffer {
   // be sent over IPC. This duplicates file handles as appropriate, so that a
   // caller takes ownership of the returned handle.
   virtual GpuMemoryBufferHandle CloneHandle() const = 0;
-
-  // Type-checking downcast routine.
-  virtual ClientBuffer AsClientBuffer() = 0;
 
   // Dumps information about the memory backing the GpuMemoryBuffer to |pmd|.
   // The memory usage is attributed to |buffer_dump_guid|.

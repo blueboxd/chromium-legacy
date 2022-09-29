@@ -66,7 +66,8 @@ static bool IsWindowFeaturesSeparator(UChar c) {
 }
 
 WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string,
-                                              LocalDOMWindow* dom_window) {
+                                              LocalDOMWindow* dom_window,
+                                              const KURL& url) {
   WebWindowFeatures window_features;
 
   bool attribution_reporting_enabled =
@@ -226,10 +227,10 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string,
       // If the impression could not be set, or if the value was empty, mark
       // attribution eligibility by adding an impression.
       if (!window_features.impression &&
-          CanRegisterAttributionInContext(
-              dom_window->GetFrame(), /*element=*/nullptr,
-              /*request_id=*/absl::nullopt,
-              AttributionSrcLoader::RegisterContext::kAttributionSrc)) {
+          dom_window->GetFrame()->GetAttributionSrcLoader()->CanRegister(
+              url,
+              /*element=*/nullptr,
+              /*request_id=*/absl::nullopt)) {
         window_features.impression = blink::Impression();
       }
     }
@@ -262,7 +263,7 @@ static void MaybeLogWindowOpen(LocalFrame& opener_frame) {
   if (!ad_tracker)
     return;
 
-  bool is_ad_subframe = opener_frame.IsAdSubframe();
+  bool is_ad_frame = opener_frame.IsAdFrame();
   bool is_ad_script_in_stack =
       ad_tracker->IsAdScriptInStack(AdTracker::StackType::kBottomAndTop);
 
@@ -271,7 +272,7 @@ static void MaybeLogWindowOpen(LocalFrame& opener_frame) {
   ukm::SourceId source_id = opener_frame.GetDocument()->UkmSourceID();
   if (source_id != ukm::kInvalidSourceId) {
     ukm::builders::AbusiveExperienceHeuristic_WindowOpen(source_id)
-        .SetFromAdSubframe(is_ad_subframe)
+        .SetFromAdSubframe(is_ad_frame)
         .SetFromAdScript(is_ad_script_in_stack)
         .Record(ukm_recorder);
   }

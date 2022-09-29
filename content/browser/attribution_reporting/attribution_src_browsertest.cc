@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
@@ -159,11 +160,13 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   for (const char* registration_js : kTestCases) {
     EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
     std::unique_ptr<MockDataHost> data_host;
-    base::RunLoop loop;
+    base::RunLoop loop, disconnect_loop;
     EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
         .WillOnce(
             [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host) {
               data_host = GetRegisteredDataHost(std::move(host));
+              data_host->receiver().set_disconnect_handler(
+                  disconnect_loop.QuitClosure());
               loop.Quit();
             });
 
@@ -176,6 +179,9 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
       loop.Run();
     data_host->WaitForSourceData(/*num_source_data=*/1);
     const auto& source_data = data_host->source_data();
+    // Regression test for crbug.com/1336797. This will timeout flakily if the
+    // data host isn't disconnected promptly.
+    disconnect_loop.Run();
 
     EXPECT_EQ(source_data.size(), 1u);
     EXPECT_EQ(source_data.front()->source_event_id, 5UL);
@@ -795,6 +801,41 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   ASSERT_EQ(register_response1->http_request()->headers.at(
                 "Attribution-Reporting-Eligible"),
             "event-source, trigger");
+}
+
+// Regression test for crbug.com/1345955.
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
+                       UntrustworthyUrl_DoesNotSetEligibleHeader) {
+  auto http_server = std::make_unique<net::EmbeddedTestServer>();
+  net::test_server::RegisterDefaultHandlers(http_server.get());
+
+  auto response1 = std::make_unique<net::test_server::ControllableHttpResponse>(
+      http_server.get(), "/register_source1");
+  auto response2 = std::make_unique<net::test_server::ControllableHttpResponse>(
+      http_server.get(), "/register_source2");
+  ASSERT_TRUE(http_server->Start());
+
+  GURL page_url =
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html");
+  ASSERT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  GURL register_url1 = http_server->GetURL("d.test", "/register_source1");
+  ASSERT_TRUE(ExecJs(web_contents(), JsReplace(R"(
+  createAndClickAttributionSrcAnchor({url: $1, attributionsrc: '', target: '_blank'});)",
+                                               register_url1)));
+
+  response1->WaitForRequest();
+  ASSERT_FALSE(base::Contains(response1->http_request()->headers,
+                              "Attribution-Reporting-Eligible"));
+
+  GURL register_url2 = http_server->GetURL("d.test", "/register_source2");
+  ASSERT_TRUE(ExecJs(web_contents(), JsReplace(R"(
+    window.open($1, '_blank', 'attributionsrc=');)",
+                                               register_url2)));
+
+  response2->WaitForRequest();
+  ASSERT_FALSE(base::Contains(response2->http_request()->headers,
+                              "Attribution-Reporting-Eligible"));
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,

@@ -15,15 +15,15 @@ namespace {
 constexpr char kServicePrefix[] = "/service/";
 constexpr char kUnknownId[] = "<none>";
 
-chromeos::NetworkStateHandler* GetNetworkStateHandler() {
-  if (!chromeos::NetworkHandler::IsInitialized())
+ash::NetworkStateHandler* GetNetworkStateHandler() {
+  if (!ash::NetworkHandler::IsInitialized())
     return nullptr;
-  return chromeos::NetworkHandler::Get()->network_state_handler();
+  return ash::NetworkHandler::Get()->network_state_handler();
 }
 
 }  // namespace
 
-namespace chromeos {
+namespace ash {
 
 // Returns a descriptive unique id for |network|
 // e.g.: ethernet_0, wifi_psk_1, cellular_lte_2, vpn_openvpn_3.
@@ -90,4 +90,4 @@ std::string NetworkGuidId(const std::string& guid) {
   return guid;
 }
 
-}  // namespace chromeos
+}  // namespace ash

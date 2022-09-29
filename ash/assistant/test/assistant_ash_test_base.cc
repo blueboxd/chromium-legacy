@@ -107,8 +107,8 @@ AssistantAshTestBase::AssistantAshTestBase(
       test_api_(AssistantTestApi::Create()),
       test_setup_(std::make_unique<TestAssistantSetup>()),
       test_web_view_factory_(std::make_unique<TestAshWebViewFactory>()),
-      delegate_(std::make_unique<
-                chromeos::assistant::ScopedAssistantBrowserDelegate>()) {}
+      delegate_(std::make_unique<assistant::ScopedAssistantBrowserDelegate>()) {
+}
 
 AssistantAshTestBase::~AssistantAshTestBase() = default;
 
@@ -368,7 +368,7 @@ void AssistantAshTestBase::SetUpActiveUser() {
 
   // Set AssistantAllowedState to ALLOWED.
   test_api_->GetAssistantState()->NotifyFeatureAllowed(
-      chromeos::assistant::AssistantAllowedState::ALLOWED);
+      assistant::AssistantAllowedState::ALLOWED);
 
   // Set user consent so the suggestion chips are displayed.
   SetConsentStatus(ConsentStatus::kActivityControlAccepted);
@@ -376,7 +376,7 @@ void AssistantAshTestBase::SetUpActiveUser() {
   // At this point our Assistant service is ready for use.
   // Indicate this by changing status from NOT_READY to READY.
   test_api_->GetAssistantState()->NotifyStatusChanged(
-      chromeos::assistant::AssistantStatus::READY);
+      assistant::AssistantStatus::READY);
 }
 
 }  // namespace ash

@@ -17,6 +17,7 @@
 #include "ui/gl/gl_surface_egl_x11_gles2.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
+#include "ui/ozone/common/native_pixmap_egl_binding.h"
 #include "ui/ozone/platform/x11/gl_ozone_glx.h"
 #include "ui/ozone/platform/x11/gl_surface_egl_readback_x11.h"
 #include "ui/ozone/platform/x11/native_pixmap_egl_x11_binding.h"
@@ -45,12 +46,11 @@ class GLOzoneEGLX11 : public GLOzoneEGL {
     return GLOzoneEGL::InitializeStaticGLBindings(implementation);
   }
 
-  bool CanImportNativePixmap() override { return false; }
+  bool CanImportNativePixmap() override {
+    return gl::GLSurfaceEGL::GetGLDisplayEGL()
+        ->ext->b_EGL_EXT_image_dma_buf_import;
+  }
 
-  // This implementation is used when ANGLE supports pixmaps through
-  // eglCreatePixmapSurface and exposes it through EGL extension
-  // EGL_NOK_texture_from_pixmap to chrome. This can then be used to create
-  // native bindings using GLImageEGLPixmap.
   std::unique_ptr<NativePixmapGLBinding> ImportNativePixmap(
       scoped_refptr<gfx::NativePixmap> pixmap,
       gfx::BufferFormat plane_format,
@@ -59,26 +59,29 @@ class GLOzoneEGLX11 : public GLOzoneEGL {
       const gfx::ColorSpace& color_space,
       GLenum target,
       GLuint texture_id) override {
-    return NativePixmapEGLX11Binding::Create(pixmap, plane_format, plane_size,
-                                             target, texture_id);
+    return NativePixmapEGLBinding::Create(pixmap, plane_format, plane,
+                                          plane_size, color_space, target,
+                                          texture_id);
   }
 
   scoped_refptr<gl::GLSurface> CreateViewGLSurface(
+      gl::GLDisplay* display,
       gfx::AcceleratedWidget window) override {
     if (is_swiftshader_) {
       return gl::InitializeGLSurface(
-          base::MakeRefCounted<GLSurfaceEglReadbackX11>(window));
+          base::MakeRefCounted<GLSurfaceEglReadbackX11>(
+              display->GetAs<gl::GLDisplayEGL>(), window));
     } else {
       switch (gl::GetGLImplementation()) {
         case gl::kGLImplementationEGLGLES2:
           DCHECK(window != gfx::kNullAcceleratedWidget);
           return gl::InitializeGLSurface(new gl::NativeViewGLSurfaceEGLX11GLES2(
-              gl::GLSurfaceEGL::GetGLDisplayEGL(),
+              display->GetAs<gl::GLDisplayEGL>(),
               static_cast<x11::Window>(window)));
         case gl::kGLImplementationEGLANGLE:
           DCHECK(window != gfx::kNullAcceleratedWidget);
           return gl::InitializeGLSurface(new gl::NativeViewGLSurfaceEGLX11(
-              gl::GLSurfaceEGL::GetGLDisplayEGL(),
+              display->GetAs<gl::GLDisplayEGL>(),
               static_cast<x11::Window>(window)));
         default:
           NOTREACHED();
@@ -88,15 +91,15 @@ class GLOzoneEGLX11 : public GLOzoneEGL {
   }
 
   scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
+      gl::GLDisplay* display,
       const gfx::Size& size) override {
-    if (gl::GLSurfaceEGL::GetGLDisplayEGL()
-            ->IsEGLSurfacelessContextSupported() &&
-        size.width() == 0 && size.height() == 0) {
-      return InitializeGLSurface(
-          new gl::SurfacelessEGL(gl::GLSurfaceEGL::GetGLDisplayEGL(), size));
+    gl::GLDisplayEGL* egl_display = display->GetAs<gl::GLDisplayEGL>();
+    if (egl_display->IsEGLSurfacelessContextSupported() && size.width() == 0 &&
+        size.height() == 0) {
+      return InitializeGLSurface(new gl::SurfacelessEGL(egl_display, size));
     } else {
-      return InitializeGLSurface(new gl::PbufferGLSurfaceEGL(
-          gl::GLSurfaceEGL::GetGLDisplayEGL(), size));
+      return InitializeGLSurface(
+          new gl::PbufferGLSurfaceEGL(egl_display, size));
     }
   }
 
@@ -213,9 +216,9 @@ X11SurfaceFactory::CreateNativePixmapFromHandle(
       ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBufferFromHandle(
           size, format, std::move(handle));
   if (buffer) {
-    gfx::NativePixmapHandle handle = buffer->ExportHandle();
-    pixmap = base::MakeRefCounted<gfx::NativePixmapDmaBuf>(size, format,
-                                                           std::move(handle));
+    gfx::NativePixmapHandle buffer_handle = buffer->ExportHandle();
+    pixmap = base::MakeRefCounted<gfx::NativePixmapDmaBuf>(
+        size, format, std::move(buffer_handle));
   }
   return pixmap;
 }

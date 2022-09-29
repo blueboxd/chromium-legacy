@@ -168,8 +168,23 @@ void LockStateController::StartShutdownAnimation(ShutdownReason reason) {
 }
 
 void LockStateController::LockWithoutAnimation() {
-  if (animating_unlock_)
+  if (animating_unlock_) {
     CancelUnlockAnimation();
+    // One would expect a call to
+    // `Shell::Get()->session_controller()->LockScreen()` at this point,
+    // however, when execution reaches here, if:
+    //
+    // We were running the animations started as part of
+    // StartUnlockAnimationBeforeLockUIDestroyed, `session_manager` still
+    // considers the screen to be locked, as we've only executed the part of the
+    // animations done before the lock screen UI is destroyed.
+    //
+    // We were running the animations started as part of
+    // StartUnlockAnimationAfterLockUIDestroyed, `session_manager` would
+    // consider the session to be unlocked, and thus we lock it again as part of
+    // UnlockAnimationAfterLockUIDestroyedFinished.
+    return;
+  }
   if (animating_lock_)
     return;
   animating_lock_ = true;
@@ -216,11 +231,7 @@ void LockStateController::CancelLockAnimation() {
 
 void LockStateController::CancelUnlockAnimation() {
   VLOG(1) << "CancelUnlockAnimation";
-  animator_->AbortAllAnimations(
-      SessionStateAnimator::SHELF |
-      SessionStateAnimator::LOCK_SCREEN_CONTAINERS |
-      SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS);
-  animating_unlock_ = false;
+  pb_pressed_during_unlock_ = true;
 }
 
 bool LockStateController::CanCancelShutdownAnimation() {
@@ -262,9 +273,30 @@ void LockStateController::RequestShutdown(ShutdownReason reason) {
   StartRealShutdownTimer(true);
 }
 
+void LockStateController::OnUnlockAnimationBeforeLockUIDestroyedFinished() {
+  if (pb_pressed_during_unlock_) {
+    // Power button was pressed during the unlock animation and
+    // CancelUnlockAnimation was called, restore UI elements to previous state
+    // immediately.
+    animator_->StartAnimation(SessionStateAnimator::SHELF,
+                              SessionStateAnimator::ANIMATION_FADE_IN,
+                              SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
+    animator_->StartAnimation(SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
+                              SessionStateAnimator::ANIMATION_UNDO_LIFT,
+                              SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
+    // We aborted, so we are not animating anymore.
+    animating_unlock_ = false;
+  }
+  std::move(start_unlock_callback_).Run(pb_pressed_during_unlock_);
+  pb_pressed_during_unlock_ = false;
+}
+
 void LockStateController::OnLockScreenHide(
     SessionStateAnimator::AnimationCallback callback) {
-  StartUnlockAnimationBeforeUIDestroyed(std::move(callback));
+  start_unlock_callback_ = std::move(callback);
+  StartUnlockAnimationBeforeLockUIDestroyed(base::BindOnce(
+      &LockStateController::OnUnlockAnimationBeforeLockUIDestroyedFinished,
+      base::Unretained(this)));
 }
 
 void LockStateController::SetLockScreenDisplayedCallback(
@@ -325,7 +357,7 @@ void LockStateController::OnLockStateChanged(bool locked) {
       lock_duration_timer_.reset();
     }
   } else {
-    StartUnlockAnimationAfterUIDestroyed();
+    StartUnlockAnimationAfterLockUIDestroyed();
   }
 }
 
@@ -439,32 +471,28 @@ void LockStateController::StartPostLockAnimation() {
   animation_sequence->EndSequence();
 }
 
-void LockStateController::StartUnlockAnimationBeforeUIDestroyed(
-    SessionStateAnimator::AnimationCallback callback) {
-  VLOG(1) << "StartUnlockAnimationBeforeUIDestroyed";
+void LockStateController::StartUnlockAnimationBeforeLockUIDestroyed(
+    base::OnceClosure callback) {
+  VLOG(1) << "StartUnlockAnimationBeforeLockUIDestroyed";
   animating_unlock_ = true;
-  auto* animation_sequence =
-      animator_->BeginAnimationSequence(std::move(callback));
-
   // Hide the lock screen shelf. This is a no-op if views-based shelf is
   // disabled, since shelf is in NonLockScreenContainersContainer.
-  animation_sequence->StartAnimation(
-      SessionStateAnimator::SHELF, SessionStateAnimator::ANIMATION_FADE_OUT,
-      SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
-  animation_sequence->StartAnimation(
+  animator_->StartAnimation(SessionStateAnimator::SHELF,
+                            SessionStateAnimator::ANIMATION_FADE_OUT,
+                            SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
+  animator_->StartAnimationWithCallback(
       SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
       SessionStateAnimator::ANIMATION_LIFT,
-      SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
+      SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS, std::move(callback));
   animator_->StartAnimation(SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
                             SessionStateAnimator::ANIMATION_COPY_LAYER,
                             SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
-  animation_sequence->EndSequence();
 }
 
-void LockStateController::StartUnlockAnimationAfterUIDestroyed() {
-  VLOG(1) << "StartUnlockAnimationAfterUIDestroyed";
+void LockStateController::StartUnlockAnimationAfterLockUIDestroyed() {
+  VLOG(1) << "StartUnlockAnimationAfterLockUIDestroyed";
   auto next_animation_starter = base::BindOnce(
-      &LockStateController::UnlockAnimationAfterUIDestroyedFinished,
+      &LockStateController::UnlockAnimationAfterLockUIDestroyedFinished,
       weak_ptr_factory_.GetWeakPtr());
   SessionStateAnimator::AnimationSequence* animation_sequence =
       animator_->BeginAnimationSequence(std::move(next_animation_starter));
@@ -518,7 +546,6 @@ void LockStateController::PreLockAnimationFinished(bool request_lock,
 void LockStateController::PostLockAnimationFinished(bool aborted) {
   DVLOG(1) << "PostLockAnimationFinished: aborted=" << aborted;
   animating_lock_ = false;
-  post_lock_immediate_animation_ = false;
   OnLockStateEvent(LockStateObserver::EVENT_LOCK_ANIMATION_FINISHED);
   if (!lock_screen_displayed_callback_.is_null())
     std::move(lock_screen_displayed_callback_).Run();
@@ -526,12 +553,19 @@ void LockStateController::PostLockAnimationFinished(bool aborted) {
   CHECK(!views::MenuController::GetActiveInstance());
 }
 
-void LockStateController::UnlockAnimationAfterUIDestroyedFinished(
+void LockStateController::UnlockAnimationAfterLockUIDestroyedFinished(
     bool aborted) {
-  DVLOG(1) << "UnlockAnimationAfterUIDestroyedFinished: aborted=" << aborted;
+  DVLOG(1) << "UnlockAnimationAfterLockUIDestroyedFinished: aborted="
+           << aborted;
   animating_unlock_ = false;
-  Shell::Get()->wallpaper_controller()->UpdateWallpaperBlurForLockState(false);
-  RestoreUnlockedProperties();
+  if (pb_pressed_during_unlock_) {
+    Shell::Get()->session_controller()->LockScreen();
+    pb_pressed_during_unlock_ = false;
+  } else {
+    Shell::Get()->wallpaper_controller()->UpdateWallpaperBlurForLockState(
+        false);
+    RestoreUnlockedProperties();
+  }
 }
 
 void LockStateController::StoreUnlockedProperties() {

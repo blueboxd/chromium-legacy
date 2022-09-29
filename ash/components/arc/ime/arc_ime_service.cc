@@ -28,8 +28,8 @@
 #include "ui/base/ime/ash/extension_ime_util.h"
 #include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/ime/constants.h"
+#include "ui/base/ime/ime_key_event_dispatcher.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
@@ -434,7 +434,7 @@ void ArcImeService::SetCompositionText(const ui::CompositionText& composition) {
   ime_bridge_->SendSetCompositionText(composition);
 }
 
-uint32_t ArcImeService::ConfirmCompositionText(bool keep_selection) {
+size_t ArcImeService::ConfirmCompositionText(bool keep_selection) {
   if (!keep_selection) {
     InvalidateSurroundingTextAndSelectionRange();
   }
@@ -442,7 +442,7 @@ uint32_t ArcImeService::ConfirmCompositionText(bool keep_selection) {
   // Note: SendConfirmCompositonText() will commit the text and
   // keep the selection unchanged
   ime_bridge_->SendConfirmCompositionText();
-  return UINT32_MAX;
+  return std::numeric_limits<size_t>::max();
 }
 
 void ArcImeService::ClearCompositionText() {
@@ -548,7 +548,7 @@ bool ArcImeService::CanComposeInline() const {
   return true;
 }
 
-bool ArcImeService::GetCompositionCharacterBounds(uint32_t index,
+bool ArcImeService::GetCompositionCharacterBounds(size_t index,
                                                   gfx::Rect* rect) const {
   return false;
 }

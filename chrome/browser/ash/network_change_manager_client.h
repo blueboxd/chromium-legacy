@@ -32,7 +32,7 @@ namespace ash {
 // the NetworkChangeManager if the network service is enabled.
 class NetworkChangeManagerClient
     : public chromeos::PowerManagerClient::Observer,
-      public chromeos::NetworkStateHandlerObserver {
+      public NetworkStateHandlerObserver {
  public:
   NetworkChangeManagerClient(
       net::NetworkChangeNotifierPosix* network_change_notifier);
@@ -50,8 +50,7 @@ class NetworkChangeManagerClient
   void SuspendDone(base::TimeDelta sleep_duration) override;
 
   // NetworkStateHandlerObserver overrides.
-  void DefaultNetworkChanged(
-      const chromeos::NetworkState* default_network) override;
+  void DefaultNetworkChanged(const NetworkState* default_network) override;
 
   // Adds Lacros NetworkChangeObserver.
   void AddLacrosNetworkChangeObserver(
@@ -74,7 +73,7 @@ class NetworkChangeManagerClient
   // |dns_changed| is set to true if we must report a DNS config change.
   // |connection_subtype_changed| is set to true if we must report a connection
   // subtype change.
-  void UpdateState(const chromeos::NetworkState* default_network,
+  void UpdateState(const NetworkState* default_network,
                    bool* dns_changed,
                    bool* ip_address_changed,
                    bool* connection_type_changed,
@@ -115,8 +114,7 @@ class NetworkChangeManagerClient
   // Service path for the current default network.
   std::string service_path_;
 
-  base::ScopedObservation<chromeos::NetworkStateHandler,
-                          chromeos::NetworkStateHandlerObserver>
+  base::ScopedObservation<NetworkStateHandler, NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
 
   net::NetworkChangeNotifierPosix* network_change_notifier_;

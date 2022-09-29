@@ -422,11 +422,11 @@ void NativeWidgetNSWindowBridge::StackAbove(uint64_t sibling_id) {
   DCHECK(sibling_bridge);
 
   NSInteger sibling = sibling_bridge->ns_window().windowNumber;
-  [window_ reallyOrderWindow:NSWindowAbove relativeTo:sibling];
+  [window_ orderWindow:NSWindowAbove relativeTo:sibling];
 }
 
 void NativeWidgetNSWindowBridge::StackAtTop() {
-  [window_ reallyOrderWindow:NSWindowAbove relativeTo:0];
+  [window_ orderWindow:NSWindowAbove relativeTo:0];
 }
 
 void NativeWidgetNSWindowBridge::ShowEmojiPanel() {
@@ -708,8 +708,9 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
     NSData* restore_ns_data =
         [NSData dataWithBytes:pending_restoration_data_.data()
                        length:pending_restoration_data_.size()];
-    base::scoped_nsobject<NSKeyedUnarchiver> decoder(
-        [[NSKeyedUnarchiver alloc] initForReadingWithData:restore_ns_data]);
+    base::scoped_nsobject<NSKeyedUnarchiver> decoder([[NSKeyedUnarchiver alloc]
+        initForReadingFromData:restore_ns_data
+                         error:nil]);
     [window_ restoreStateWithCoder:decoder];
     pending_restoration_data_.clear();
 

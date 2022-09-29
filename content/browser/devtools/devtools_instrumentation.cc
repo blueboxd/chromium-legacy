@@ -210,11 +210,6 @@ std::string FederatedAuthRequestResultToProtocol(
         kErrorFetchingClientMetadataInvalidResponse: {
       return FederatedAuthRequestIssueReasonEnum::ClientMetadataInvalidResponse;
     }
-    case FederatedAuthRequestResult::
-        kErrorClientMetadataMissingPrivacyPolicyUrl: {
-      return FederatedAuthRequestIssueReasonEnum::
-          ClientMetadataMissingPrivacyPolicyUrl;
-    }
     case FederatedAuthRequestResult::kErrorFetchingAccountsHttpNotFound: {
       return FederatedAuthRequestIssueReasonEnum::AccountsHttpNotFound;
     }
@@ -232,9 +227,6 @@ std::string FederatedAuthRequestResultToProtocol(
     }
     case FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidResponse: {
       return FederatedAuthRequestIssueReasonEnum::IdTokenInvalidResponse;
-    }
-    case FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidRequest: {
-      return FederatedAuthRequestIssueReasonEnum::IdTokenInvalidRequest;
     }
     case FederatedAuthRequestResult::kErrorCanceled: {
       return FederatedAuthRequestIssueReasonEnum::Canceled;
@@ -323,10 +315,12 @@ void DidActivatePrerender(const NavigationRequest& nav_request) {
 
 void DidCancelPrerender(const GURL& prerendering_url,
                         FrameTreeNode* ftn,
-                        PrerenderHost::FinalStatus status) {
+                        PrerenderHost::FinalStatus status,
+                        const std::string& reason_details) {
   std::string initiating_frame_id = ftn->devtools_frame_token().ToString();
   DispatchToAgents(ftn, &protocol::PageHandler::DidCancelPrerender,
-                   prerendering_url, initiating_frame_id, status);
+                   prerendering_url, initiating_frame_id, status,
+                   reason_details);
 }
 
 namespace {
@@ -652,8 +646,10 @@ void ApplyNetworkRequestOverrides(
     bool* report_raw_headers,
     absl::optional<std::vector<net::SourceStream::SourceType>>*
         devtools_accepted_stream_types,
-    bool* devtools_user_agent_overridden) {
+    bool* devtools_user_agent_overridden,
+    bool* devtools_accept_language_overridden) {
   *devtools_user_agent_overridden = false;
+  *devtools_accept_language_overridden = false;
   bool disable_cache = false;
   DevToolsAgentHostImpl* agent_host =
       RenderFrameDevToolsAgentHost::GetFor(frame_tree_node);
@@ -684,8 +680,11 @@ void ApplyNetworkRequestOverrides(
 
   for (auto* emulation : protocol::EmulationHandler::ForAgentHost(agent_host)) {
     bool ua_overridden = false;
-    emulation->ApplyOverrides(&headers, &ua_overridden);
+    bool accept_language_overridden = false;
+    emulation->ApplyOverrides(&headers, &ua_overridden,
+                              &accept_language_overridden);
     *devtools_user_agent_overridden |= ua_overridden;
+    *devtools_accept_language_overridden |= accept_language_overridden;
   }
 
   if (disable_cache) {
@@ -957,6 +956,13 @@ void OnPrefetchRequestComplete(
                    request_id, protocol::Network::ResourceTypeEnum::Prefetch,
                    status);
 }
+void OnPrefetchBodyDataReceived(FrameTreeNode* frame_tree_node,
+                                const std::string& request_id,
+                                const std::string& body,
+                                bool is_base64_encoded) {
+  DispatchToAgents(frame_tree_node, &protocol::NetworkHandler::BodyDataReceived,
+                   request_id, body, is_base64_encoded);
+}
 
 void OnNavigationRequestWillBeSent(
     const NavigationRequest& navigation_request) {
@@ -1124,6 +1130,11 @@ std::unique_ptr<protocol::Array<protocol::String>> BuildExclusionReasons(
     exclusion_reasons->push_back(protocol::Audits::CookieExclusionReasonEnum::
                                      ExcludeSamePartyCrossPartyContext);
   }
+  if (status.HasExclusionReason(
+          net::CookieInclusionStatus::EXCLUDE_DOMAIN_NON_ASCII)) {
+    exclusion_reasons->push_back(
+        protocol::Audits::CookieExclusionReasonEnum::ExcludeDomainNonASCII);
+  }
 
   return exclusion_reasons;
 }
@@ -1178,6 +1189,12 @@ std::unique_ptr<protocol::Array<protocol::String>> BuildWarningReasons(
                      WARN_LAX_CROSS_DOWNGRADE_LAX_SAMESITE)) {
     warning_reasons->push_back(protocol::Audits::CookieWarningReasonEnum::
                                    WarnSameSiteLaxCrossDowngradeLax);
+  }
+
+  if (status.HasWarningReason(
+          net::CookieInclusionStatus::WARN_DOMAIN_NON_ASCII)) {
+    warning_reasons->push_back(
+        protocol::Audits::CookieWarningReasonEnum::WarnDomainNonASCII);
   }
 
   return warning_reasons;

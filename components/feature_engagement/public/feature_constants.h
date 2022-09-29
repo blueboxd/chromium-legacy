@@ -51,6 +51,7 @@ extern const base::Feature kIPHWebUITabStripFeature;
 extern const base::Feature kIPHDesktopSnoozeFeature;
 extern const base::Feature kIPHDesktopPwaInstallFeature;
 extern const base::Feature kIPHProfileSwitchFeature;
+extern const base::Feature kIPHWebUiHelpBubbleTestFeature;
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 
@@ -81,13 +82,6 @@ extern const base::Feature kIPHDownloadPageFeature;
 extern const base::Feature kIPHDownloadPageScreenshotFeature;
 extern const base::Feature kIPHChromeHomeExpandFeature;
 extern const base::Feature kIPHChromeHomePullToRefreshFeature;
-extern const base::Feature kIPHContextualSearchTranslationEnableFeature;
-extern const base::Feature kIPHContextualSearchWebSearchFeature;
-extern const base::Feature kIPHContextualSearchPromoteTapFeature;
-extern const base::Feature kIPHContextualSearchPromotePanelOpenFeature;
-extern const base::Feature kIPHContextualSearchOptInFeature;
-extern const base::Feature kIPHContextualSearchTappedButShouldLongpressFeature;
-extern const base::Feature kIPHContextualSearchInPanelHelpFeature;
 extern const base::Feature kIPHDownloadSettingsFeature;
 extern const base::Feature kIPHDownloadInfoBarDownloadContinuingFeature;
 extern const base::Feature kIPHDownloadInfoBarDownloadsAreFasterFeature;
@@ -179,6 +173,7 @@ extern const base::Feature kIPHDiscoverFeedHeaderFeature;
 extern const base::Feature kIPHDefaultSiteViewFeature;
 extern const base::Feature kIPHPasswordSuggestionsFeature;
 extern const base::Feature kIPHFollowWhileBrowsingFeature;
+extern const base::Feature kIPHOverflowMenuTipFeature;
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \

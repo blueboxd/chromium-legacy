@@ -17,7 +17,6 @@
 #include "components/segmentation_platform/internal/database/test_segment_info_database.h"
 #include "components/segmentation_platform/internal/execution/processing/mock_feature_list_query_processor.h"
 #include "components/segmentation_platform/internal/metadata/metadata_utils.h"
-#include "components/segmentation_platform/internal/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/internal/proto/model_prediction.pb.h"
 #include "components/segmentation_platform/internal/segmentation_ukm_helper.h"
 #include "components/segmentation_platform/internal/selection/segmentation_result_prefs.h"
@@ -25,6 +24,7 @@
 #include "components/segmentation_platform/public/config.h"
 #include "components/segmentation_platform/public/features.h"
 #include "components/segmentation_platform/public/local_state_helper.h"
+#include "components/segmentation_platform/public/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/public/segmentation_platform_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -85,10 +85,12 @@ class TrainingDataCollectorImplTest : public ::testing::Test {
 
     configs_.emplace_back(std::make_unique<Config>());
     configs_[0]->segmentation_key = kSegmentationKey;
-    configs_[0]->segment_ids.push_back(
-        SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB);
-    configs_[0]->segment_ids.push_back(
-        SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHARE);
+    configs_[0]->segments.insert(
+        {SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB,
+         std::make_unique<Config::SegmentMetadata>("UmaNameNewTab")});
+    configs_[0]->segments.insert(
+        {SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHARE,
+         std::make_unique<Config::SegmentMetadata>("UmaNameShare")});
 
     SegmentationResultPrefs result_prefs(&prefs_);
     SelectedSegment selected_segment(

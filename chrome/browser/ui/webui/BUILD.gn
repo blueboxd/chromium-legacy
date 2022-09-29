@@ -55,11 +55,13 @@ source_set("configs") {
       "//ash/webui/file_manager:file_manager_untrusted_ui",
       "//ash/webui/help_app_ui",
       "//ash/webui/os_feedback_ui",
+      "//ash/webui/shortcut_customization_ui",
       "//chrome/browser/ash",
     ]
     if (!is_official_build) {
       deps += [
         "//ash/webui/demo_mode_app_ui",
+        "//ash/webui/facial_ml_app_ui",
         "//ash/webui/sample_system_web_app_ui",
       ]
     }

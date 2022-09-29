@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">Download sospeso</translation>
 <translation id="1409426117486808224">Visualizzazione semplificata delle schede aperte</translation>
 <translation id="1415402041810619267">URL troncato</translation>
+<translation id="1426410128494586442">Sì</translation>
 <translation id="1446450296470737166">Controllo completo dispos. MIDI</translation>
 <translation id="1620510694547887537">Fotocamera</translation>
 <translation id="1644574205037202324">Cronologia</translation>
@@ -32,6 +33,7 @@
 <translation id="1818308510395330587">Per consentire all'app <ph name="APP_NAME" /> di utilizzare la realtà aumentata, attiva la fotocamera anche nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="1864927262126810325">Da <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">L'accesso alla posizione è disattivato per questo dispositivo. Attivalo nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
+<translation id="1915307458270490472">Chiudi</translation>
 <translation id="1919345977826869612">Annunci</translation>
 <translation id="1919950603503897840">Seleziona contatti</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> di <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -78,6 +80,7 @@
 <translation id="2677748264148917807">Esci</translation>
 <translation id="2687403674020088961">Blocca tutti i cookie (non consigliato)</translation>
 <translation id="2704606927547763573">Copiata</translation>
+<translation id="2713106313042589954">Disattiva fotocamera</translation>
 <translation id="2717722538473713889">Indirizzi email</translation>
 <translation id="2750481671343847896">I siti possono mostrare richieste di accesso da servizi di identità.</translation>
 <translation id="2785051990912111074">Questa selezione cancellerà i cookie per <ph name="WEBSITE" /></translation>
@@ -97,6 +100,7 @@
 <translation id="3114012059975132928">Video player</translation>
 <translation id="3115898365077584848">Mostra informazioni</translation>
 <translation id="3123473560110926937">Bloccati su alcuni siti</translation>
+<translation id="3143754809889689516">Riproduci dall'inizio</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> di dati memorizzati</translation>
 <translation id="3203366800380907218">Dal Web</translation>
 <translation id="321187648315454507">Per consentire all'app <ph name="APP_NAME" /> di inviarti notifiche, devi attivare le notifiche anche nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
@@ -153,10 +157,12 @@
 <translation id="4479647676395637221">Chiedi conferma prima di consentire ai siti di utilizzare la fotocamera (opzione consigliata)</translation>
 <translation id="4505788138578415521">URL espanso</translation>
 <translation id="4534723447064627427">Per consentire all'app <ph name="APP_NAME" /> di accedere al tuo microfono, devi attivare il microfono anche nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
+<translation id="4566417217121906555">Disattiva microfono</translation>
 <translation id="4570913071927164677">Dettagli</translation>
 <translation id="4645575059429386691">Gestito da un genitore</translation>
 <translation id="4670064810192446073">Realtà virtuale</translation>
 <translation id="4751476147751820511">Sensori di movimento o della luce</translation>
+<translation id="4811450222531576619">Scopri la fonte e l'argomento</translation>
 <translation id="4836046166855586901">Chiedi conferma quando un sito vuole sapere quando usi attivamente questo dispositivo</translation>
 <translation id="4883854917563148705">Le impostazioni gestite non possono essere reimpostate</translation>
 <translation id="4887024562049524730">Chiedi conferma prima di consentire ai siti di usare i dati e i dispositivi della realtà virtuale (opzione consigliata)</translation>
@@ -177,6 +183,7 @@
 <translation id="5186036860380548585">Opzione disponibile nella parte superiore dello schermo</translation>
 <translation id="5197729504361054390">I contatti che selezioni verranno condivisi con <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Ultima visita: oggi</translation>
+<translation id="5225463052809312700">Attiva fotocamera</translation>
 <translation id="5264323282659631142">Rimuovi "<ph name="CHIP_LABEL" />"</translation>
 <translation id="528192093759286357">Trascina dall'alto e tocca il pulsante Indietro per uscire dalla modalità a schermo intero.</translation>
 <translation id="5300589172476337783">Mostra</translation>
@@ -235,8 +242,10 @@
 <translation id="6367753977865761591">Blocca l'accesso di terze parti per un sito specifico.</translation>
 <translation id="6388207532828177975">Cancella e reimposta</translation>
 <translation id="6398765197997659313">Esci da schermo intero</translation>
+<translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Impedisci ai siti di usare i dati e dispositivi della realtà virtuale</translation>
 <translation id="6447842834002726250">Cookie</translation>
+<translation id="6467852467360539617">Cancella i dati e reimposta le autorizzazioni</translation>
 <translation id="6527303717912515753">Condividi</translation>
 <translation id="6545864417968258051">Scansione Bluetooth</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{Bloccate: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e <ph name="NUM_MORE" /> altra}other{Bloccate: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e altre <ph name="NUM_MORE" />}}</translation>
@@ -276,6 +285,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elementi selezionati</translation>
 <translation id="7260727271532453612">Autorizzazioni <ph name="PERMISSION_1" /> e <ph name="PERMISSION_2" /> consentite</translation>
 <translation id="7302486331832100261">Di solito blocchi le notifiche. Per consentirle, tocca Dettagli.</translation>
+<translation id="7383715096023715447">Impostazioni di <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Chiedi prima</translation>
 <translation id="7423538860840206698">Lettura degli appunti non consentita</translation>
 <translation id="7425915948813553151">Tema scuro per i siti</translation>
@@ -335,6 +345,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie in uso}other{# cookie in uso}}</translation>
 <translation id="8487700953926739672">Disponibile offline</translation>
 <translation id="848952951823693243">Richiedi sempre sito per dispositivi mobili</translation>
+<translation id="8499083585497694743">Riattiva microfono</translation>
 <translation id="851751545965956758">Impedisci ai siti di connettersi ai dispositivi</translation>
 <translation id="8525306231823319788">Schermo intero</translation>
 <translation id="857943718398505171">Consentita (opzione consigliata)</translation>

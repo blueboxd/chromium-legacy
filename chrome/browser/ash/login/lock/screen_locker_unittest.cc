@@ -6,10 +6,8 @@
 
 #include <memory>
 
-#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/components/cryptohome/system_salt_getter.h"
 #include "ash/components/login/session/session_termination_manager.h"
-#include "ash/components/tpm/stub_install_attributes.h"
 #include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/login_types.h"
 #include "base/bind.h"
@@ -35,12 +33,13 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/dbus/audio/cras_audio_client.h"
 #include "chromeos/ash/components/dbus/biod/biod_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/cryptohome_misc_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -77,7 +76,6 @@ class ScreenLockerUnitTest : public testing::Test {
   ~ScreenLockerUnitTest() override = default;
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
     ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     BiodClient::InitializeFake();
     CrasAudioClient::InitializeFake();
@@ -169,7 +167,6 @@ class ScreenLockerUnitTest : public testing::Test {
     CrasAudioClient::Shutdown();
     BiodClient::Shutdown();
     ConciergeClient::Shutdown();
-    DBusThreadManager::Shutdown();
   }
 
  protected:

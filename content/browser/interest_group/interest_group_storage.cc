@@ -59,6 +59,8 @@ const base::FilePath::CharType kDatabasePath[] =
 // Version 6 - 2021/12 - crrev.com/c/3330516
 // Version 7 - 2022/03 - crrev.com/c/3517534
 // Version 8 - 2022/06 - crrev.com/c/3696265
+// Version 9 - 2022/07 - crrev.com/c/3780305
+// Version 10 - 2022/08 - crrev.com/c/3818142
 //
 // Version 1 adds a table for interest groups.
 // Version 2 adds a column for rate limiting interest group updates.
@@ -68,21 +70,17 @@ const base::FilePath::CharType kDatabasePath[] =
 // Version 6 adds WebAssembly helper url.
 // Version 7 changes an index, adds interest group priority.
 // Version 8 adds the execution_mode field to interest groups.
-const int kCurrentVersionNumber = 8;
+// Version 9 changes bid_history and join_history to daily counts.
+// Version 10 changes k-anonymity table so it doesn't split by type.
+const int kCurrentVersionNumber = 10;
 
 // Earliest version of the code which can use a |kCurrentVersionNumber|
 // database without failing.
-const int kCompatibleVersionNumber = 7;
+const int kCompatibleVersionNumber = 10;
 
 // Latest version of the database that cannot be upgraded to
 // |kCurrentVersionNumber| without razing the database.
 const int kDeprecatedVersionNumber = 5;
-
-enum class KAnonType {
-  kOwnerAndName = 1,
-  kUpdateURL = 2,
-  kAdURL = 3,  // represents ads and ad components
-};
 
 GURL KAnonKeyFor(url::Origin interest_group_owner,
                  std::string interest_group_name) {
@@ -189,7 +187,7 @@ absl::optional<std::vector<std::string>> DeserializeStringVector(
 
 // Initializes the tables, returning true on success.
 // The tables cannot exist when calling this function.
-bool CreateV8Schema(sql::Database& db) {
+bool CreateV10Schema(sql::Database& db) {
   DCHECK(!db.DoesTableExist("interest_groups"));
   static const char kInterestGroupTableSql[] =
       // clang-format off
@@ -248,32 +246,30 @@ bool CreateV8Schema(sql::Database& db) {
   if (!db.Execute(kInterestGroupJoiningOriginIndexSql))
     return false;
 
+  DCHECK(!db.DoesTableExist("k_anon"));
   static const char kInterestGroupKAnonTableSql[] =
       // clang-format off
-      "CREATE TABLE kanon("
+      "CREATE TABLE k_anon("
         "last_referenced_time INTEGER NOT NULL,"
-        "type INTEGER NOT NULL,"
         "key TEXT NOT NULL,"
-        "k_anon_count INTEGER NOT NULL,"
+        "is_k_anon INTEGER NOT NULL,"
         "last_k_anon_updated_time INTEGER NOT NULL,"
         "last_reported_to_anon_server_time INTEGER NOT NULL,"
-        "PRIMARY KEY(type,key))";
+        "PRIMARY KEY(key))";
   // clang-format on
   if (!db.Execute(kInterestGroupKAnonTableSql))
     return false;
 
   // Index on kanon last_referenced_time.
-  DCHECK(!db.DoesIndexExist("kanon_last_referenced_time"));
+  DCHECK(!db.DoesIndexExist("k_anon_last_referenced_time"));
   static const char kInterestGroupKAnonLastRefIndexSql[] =
       // clang-format off
-      "CREATE INDEX kanon_last_referenced_time"
-      " ON kanon(last_referenced_time DESC)";
+      "CREATE INDEX k_anon_last_referenced_time"
+      " ON k_anon(last_referenced_time DESC)";
   // clang-format on
   if (!db.Execute(kInterestGroupKAnonLastRefIndexSql))
     return false;
 
-  // We can't use the interest group and join time as primary keys since
-  // different pages may try to join the same interest group at the same time.
   DCHECK(!db.DoesTableExist("join_history"));
   static const char kJoinHistoryTableSql[] =
       // clang-format off
@@ -281,22 +277,13 @@ bool CreateV8Schema(sql::Database& db) {
         "owner TEXT NOT NULL,"
         "name TEXT NOT NULL,"
         "join_time INTEGER NOT NULL,"
+        "count INTEGER NOT NULL,"
+      "PRIMARY KEY(owner, name, join_time) "
       "FOREIGN KEY(owner,name) REFERENCES interest_groups)";
   // clang-format on
   if (!db.Execute(kJoinHistoryTableSql))
     return false;
 
-  DCHECK(!db.DoesIndexExist("join_history_index"));
-  static const char kJoinHistoryIndexSql[] =
-      // clang-format off
-      "CREATE INDEX join_history_index "
-      "ON join_history(owner,name,join_time)";
-  // clang-format on
-  if (!db.Execute(kJoinHistoryIndexSql))
-    return false;
-
-  // We can't use the interest group and bid time as primary keys since
-  // auctions on separate pages may occur at the same time.
   DCHECK(!db.DoesTableExist("bid_history"));
   static const char kBidHistoryTableSql[] =
       // clang-format off
@@ -304,18 +291,11 @@ bool CreateV8Schema(sql::Database& db) {
         "owner TEXT NOT NULL,"
         "name TEXT NOT NULL,"
         "bid_time INTEGER NOT NULL,"
+        "count INTEGER NOT NULL,"
+      "PRIMARY KEY(owner, name, bid_time) "
       "FOREIGN KEY(owner,name) REFERENCES interest_groups)";
   // clang-format on
   if (!db.Execute(kBidHistoryTableSql))
-    return false;
-
-  DCHECK(!db.DoesIndexExist("bid_history_index"));
-  static const char kBidHistoryIndexSql[] =
-      // clang-format off
-      "CREATE INDEX bid_history_index "
-      "ON bid_history(owner,name,bid_time)";
-  // clang-format on
-  if (!db.Execute(kBidHistoryIndexSql))
     return false;
 
   // We can't use the interest group and win time as primary keys since
@@ -342,6 +322,131 @@ bool CreateV8Schema(sql::Database& db) {
   if (!db.Execute(kWinHistoryIndexSQL))
     return false;
 
+  return true;
+}
+
+bool UpgradeV9SchemaToV10(sql::Database& db, sql::MetaTable& meta_table) {
+  static const char kInterestGroupKAnonTableSql[] =
+      // clang-format off
+      "CREATE TABLE k_anon("
+        "last_referenced_time INTEGER NOT NULL,"
+        "key TEXT NOT NULL,"
+        "is_k_anon INTEGER NOT NULL,"
+        "last_k_anon_updated_time INTEGER NOT NULL,"
+        "last_reported_to_anon_server_time INTEGER NOT NULL,"
+        "PRIMARY KEY(key))";
+  // clang-format on
+  if (!db.Execute(kInterestGroupKAnonTableSql))
+    return false;
+
+  static const char kInterestGroupKAnonLastRefIndexSql[] =
+      // clang-format off
+      "CREATE INDEX k_anon_last_referenced_time"
+      " ON k_anon(last_referenced_time DESC)";
+  // clang-format on
+  if (!db.Execute(kInterestGroupKAnonLastRefIndexSql))
+    return false;
+
+  static const char kCopyKAnonTableSql[] =
+      // clang-format off
+      "INSERT INTO k_anon "
+        "SELECT last_referenced_time,"
+        "key,"
+        "k_anon_count > 50 AS is_k_anon,"
+        "last_k_anon_updated_time,"
+        "last_reported_to_anon_server_time "
+      "FROM kanon";
+  // clang-format on
+  if (!db.Execute(kCopyKAnonTableSql))
+    return false;
+
+  static const char kDropKanonTableSql[] = "DROP TABLE kanon";
+  if (!db.Execute(kDropKanonTableSql))
+    return false;
+
+  return true;
+}
+
+bool UpgradeV8SchemaToV9(sql::Database& db, sql::MetaTable& meta_table) {
+  static const char kJoinHistoryTableSql[] =
+      // clang-format off
+      "CREATE TABLE join_history2("
+        "owner TEXT NOT NULL,"
+        "name TEXT NOT NULL,"
+        "join_time INTEGER NOT NULL,"
+        "count INTEGER NOT NULL,"
+      "PRIMARY KEY(owner, name, join_time) "
+      "FOREIGN KEY(owner,name) REFERENCES interest_groups)";
+  // clang-format on
+  if (!db.Execute(kJoinHistoryTableSql))
+    return false;
+
+  // Consolidate old join records into a single record that
+  // counts the number joins in a day (86400000000 microseconds)
+  static const char kCopyJoinHistoryTableSql[] =
+      // clang-format off
+      "INSERT INTO join_history2 "
+      "SELECT owner,"
+             "name,"
+             "(join_time-(join_time%86400000000)) as join_time2,"
+             "COUNT() as count "
+      "FROM join_history "
+      "GROUP BY owner,name,join_time2";
+  // clang-format on
+  if (!db.Execute(kCopyJoinHistoryTableSql))
+    return false;
+
+  static const char kDropJoinHistoryTableSql[] = "DROP TABLE join_history";
+  if (!db.Execute(kDropJoinHistoryTableSql))
+    return false;
+
+  static const char kRenameJoinHistoryTableSql[] =
+      // clang-format off
+      "ALTER TABLE join_history2 "
+      "RENAME TO join_history";
+  // clang-format on
+  if (!db.Execute(kRenameJoinHistoryTableSql))
+    return false;
+
+  static const char kBidHistoryTableSql[] =
+      // clang-format off
+      "CREATE TABLE bid_history2("
+        "owner TEXT NOT NULL,"
+        "name TEXT NOT NULL,"
+        "bid_time INTEGER NOT NULL,"
+        "count INTEGER NOT NULL,"
+      "PRIMARY KEY(owner, name, bid_time) "
+      "FOREIGN KEY(owner,name) REFERENCES interest_groups)";
+  // clang-format on
+  if (!db.Execute(kBidHistoryTableSql))
+    return false;
+
+  // Consolidate old bid records into a single record that
+  // counts the number bids in a day (86400000000 microseconds)
+  static const char kCopyBidHistoryTableSql[] =
+      // clang-format off
+      "INSERT INTO bid_history2 "
+      "SELECT owner,"
+             "name,"
+             "(bid_time-(bid_time%86400000000)) as bid_time2,"
+             "COUNT() as count "
+      "FROM bid_history "
+      "GROUP BY owner,name,bid_time2";
+  // clang-format on
+  if (!db.Execute(kCopyBidHistoryTableSql))
+    return false;
+
+  static const char kDropBidHistoryTableSql[] = "DROP TABLE bid_history";
+  if (!db.Execute(kDropBidHistoryTableSql))
+    return false;
+
+  static const char kRenameBidHistoryTableSql[] =
+      // clang-format off
+      "ALTER TABLE bid_history2 "
+      "RENAME TO bid_history";
+  // clang-format on
+  if (!db.Execute(kRenameBidHistoryTableSql))
+    return false;
   return true;
 }
 
@@ -380,7 +485,6 @@ bool UpgradeV6SchemaToV7(sql::Database& db, sql::MetaTable& meta_table) {
 }
 
 bool DoCreateOrMarkKAnonReferenced(sql::Database& db,
-                                   KAnonType type,
                                    const GURL& key,
                                    const base::Time& now) {
   base::Time distant_past = base::Time::Min();
@@ -394,14 +498,13 @@ bool DoCreateOrMarkKAnonReferenced(sql::Database& db,
   // clang-format off
   sql::Statement maybe_insert_kanon(
       db.GetCachedStatement(SQL_FROM_HERE,
-          "INSERT OR IGNORE INTO kanon("
+          "INSERT OR IGNORE INTO k_anon("
               "last_referenced_time,"
-              "type,"
               "key,"
-              "k_anon_count,"
+              "is_k_anon,"
               "last_k_anon_updated_time,"
               "last_reported_to_anon_server_time) "
-            "VALUES(?,?,?,0,?,?)"
+            "VALUES(?,?,0,?,?)"
       ));
 
   // clang-format on
@@ -410,10 +513,9 @@ bool DoCreateOrMarkKAnonReferenced(sql::Database& db,
 
   maybe_insert_kanon.Reset(true);
   maybe_insert_kanon.BindTime(0, now);
-  maybe_insert_kanon.BindInt(1, static_cast<int>(type));
-  maybe_insert_kanon.BindString(2, Serialize(key));
+  maybe_insert_kanon.BindString(1, Serialize(key));
+  maybe_insert_kanon.BindTime(2, distant_past);
   maybe_insert_kanon.BindTime(3, distant_past);
-  maybe_insert_kanon.BindTime(4, distant_past);
 
   if (!maybe_insert_kanon.Run())
     return false;
@@ -427,14 +529,14 @@ bool DoCreateOrMarkKAnonReferenced(sql::Database& db,
   // clang-format off
   sql::Statement update_kanon(
       db.GetCachedStatement(SQL_FROM_HERE,
-          "UPDATE kanon "
+          "UPDATE k_anon "
           "SET last_referenced_time=?1,"
-              "k_anon_count=IIF(last_referenced_time>?2,k_anon_count,0),"
+              "is_k_anon=IIF(last_referenced_time>?2,is_k_anon,0),"
               "last_k_anon_updated_time="
                 "IIF(last_referenced_time>?2,last_k_anon_updated_time,?3),"
               "last_reported_to_anon_server_time=IIF(last_referenced_time>?2,"
                 "last_reported_to_anon_server_time,?3) "
-          "WHERE type=?4 AND key=?5"));
+          "WHERE key=?4"));
   // clang-format on
   if (!update_kanon.is_valid())
     return false;
@@ -443,8 +545,7 @@ bool DoCreateOrMarkKAnonReferenced(sql::Database& db,
   update_kanon.BindTime(0, now);
   update_kanon.BindTime(1, cutoff);
   update_kanon.BindTime(2, distant_past);
-  update_kanon.BindInt(3, static_cast<int>(type));
-  update_kanon.BindString(4, Serialize(key));
+  update_kanon.BindString(3, Serialize(key));
 
   return update_kanon.Run();
 }
@@ -453,23 +554,20 @@ bool DoCreateOrMarkInterestGroupNameReferenced(sql::Database& db,
                                                url::Origin owner,
                                                const std::string& name,
                                                const base::Time& now) {
-  return DoCreateOrMarkKAnonReferenced(db, KAnonType::kOwnerAndName,
-                                       KAnonKeyFor(owner, name), now);
+  return DoCreateOrMarkKAnonReferenced(db, KAnonKeyFor(owner, name), now);
 }
 
 bool DoCreateOrMarkInterestGroupUpdateURLReferenced(
     sql::Database& db,
     const GURL& daily_update_url,
     const base::Time& now) {
-  return DoCreateOrMarkKAnonReferenced(db, KAnonType::kUpdateURL,
-                                       daily_update_url, now);
+  return DoCreateOrMarkKAnonReferenced(db, daily_update_url, now);
 }
 
 bool DoCreateOrMarkAdReferenced(sql::Database& db,
                                 const blink::InterestGroup::Ad& ad,
                                 const base::Time& now) {
-  return DoCreateOrMarkKAnonReferenced(db, KAnonType::kAdURL, ad.render_url,
-                                       now);
+  return DoCreateOrMarkKAnonReferenced(db, ad.render_url, now);
 }
 
 // Takes a blink::InterestGroup, or InterestGroupUpdate.
@@ -672,6 +770,57 @@ bool DoLoadInterestGroup(sql::Database& db,
   return true;
 }
 
+bool DoRecordInterestGroupJoin(sql::Database& db,
+                               const url::Origin& owner,
+                               const std::string& name,
+                               base::Time join_time) {
+  // This flow basically emulates SQLite's UPSERT feature which is disabled in
+  // Chrome. Although there are two statements executed, we don't need to
+  // enclose them in a transaction since only one will actually modify the
+  // database.
+
+  int64_t join_day = join_time.ToDeltaSinceWindowsEpoch()
+                         .FloorToMultiple(base::Days(1))
+                         .InMicroseconds();
+
+  // clang-format off
+  sql::Statement insert_join_hist(
+      db.GetCachedStatement(SQL_FROM_HERE,
+      "INSERT OR IGNORE INTO join_history(owner,name,join_time,count) "
+      "VALUES(?,?,?,1)"));
+  // clang-format on
+  if (!insert_join_hist.is_valid())
+    return false;
+
+  insert_join_hist.Reset(true);
+  insert_join_hist.BindString(0, Serialize(owner));
+  insert_join_hist.BindString(1, name);
+  insert_join_hist.BindInt64(2, join_day);
+  if (!insert_join_hist.Run())
+    return false;
+
+  // If the insert changed the database return early.
+  if (db.GetLastChangeCount() > 0)
+    return true;
+
+  // clang-format off
+  sql::Statement update_join_hist(
+      db.GetCachedStatement(SQL_FROM_HERE,
+          "UPDATE join_history "
+          "SET count=count+1 "
+          "WHERE owner=? AND name=? AND join_time=?"));
+  // clang-format on
+  if (!update_join_hist.is_valid())
+    return false;
+
+  update_join_hist.Reset(true);
+  update_join_hist.BindString(0, Serialize(owner));
+  update_join_hist.BindString(1, name);
+  update_join_hist.BindInt64(2, join_day);
+
+  return update_join_hist.Run();
+}
+
 bool DoJoinInterestGroup(sql::Database& db,
                          const blink::InterestGroup& data,
                          const GURL& joining_url,
@@ -749,22 +898,7 @@ bool DoJoinInterestGroup(sql::Database& db,
   if (!join_group.Run())
     return false;
 
-  // Record the join. It should be unique since a site should only join once
-  // per a page load. If it is not unique we should collapse the entries to
-  // minimize the damage done by a misbehaving site.
-  sql::Statement join_hist(
-      db.GetCachedStatement(SQL_FROM_HERE,
-                            "INSERT INTO join_history(owner,name,join_time) "
-                            "VALUES(?,?,?)"));
-  if (!join_hist.is_valid())
-    return false;
-
-  join_hist.Reset(true);
-  join_hist.BindString(0, Serialize(data.owner));
-  join_hist.BindString(1, data.name);
-  join_hist.BindTime(2, last_updated);
-
-  if (!join_hist.Run())
+  if (!DoRecordInterestGroupJoin(db, data.owner, data.name, last_updated))
     return false;
 
   if (!DoCreateOrMarkInterestGroupAndAdsReferenced(db, data, last_updated))
@@ -908,30 +1042,65 @@ WHERE owner=? AND name=?)"));
   return update_group.Run();
 }
 
+bool DoRecordInterestGroupBid(sql::Database& db,
+                              const blink::InterestGroupKey& group_key,
+                              base::Time bid_time) {
+  // This flow basically emulates SQLite's UPSERT feature which is disabled in
+  // Chrome. Although there are two statements executed, we don't need to
+  // enclose them in a transaction since only one will actually modify the
+  // database.
+
+  int64_t bid_day = bid_time.ToDeltaSinceWindowsEpoch()
+                        .FloorToMultiple(base::Days(1))
+                        .InMicroseconds();
+
+  // clang-format off
+  sql::Statement insert_bid_hist(
+      db.GetCachedStatement(SQL_FROM_HERE,
+      "INSERT OR IGNORE INTO bid_history(owner,name,bid_time,count) "
+      "VALUES(?,?,?,1)"));
+  // clang-format on
+  if (!insert_bid_hist.is_valid())
+    return false;
+
+  insert_bid_hist.Reset(true);
+  insert_bid_hist.BindString(0, Serialize(group_key.owner));
+  insert_bid_hist.BindString(1, group_key.name);
+  insert_bid_hist.BindInt64(2, bid_day);
+  if (!insert_bid_hist.Run())
+    return false;
+
+  // If the insert changed the database return early.
+  if (db.GetLastChangeCount() > 0)
+    return true;
+
+  // clang-format off
+  sql::Statement update_bid_hist(
+      db.GetCachedStatement(SQL_FROM_HERE,
+          "UPDATE bid_history "
+          "SET count=count+1 "
+          "WHERE owner=? AND name=? AND bid_time=?"));
+  // clang-format on
+  if (!update_bid_hist.is_valid())
+    return false;
+
+  update_bid_hist.Reset(true);
+  update_bid_hist.BindString(0, Serialize(group_key.owner));
+  update_bid_hist.BindString(1, group_key.name);
+  update_bid_hist.BindInt64(2, bid_day);
+
+  return update_bid_hist.Run();
+}
+
 bool DoRecordInterestGroupBids(sql::Database& db,
                                const blink::InterestGroupSet& group_keys,
                                base::Time bid_time) {
-  // Record the bid. It should be unique since auctions should be serialized.
-  // If it is not unique we should just keep the first one.
-  // clang-format off
-  sql::Statement bid_hist(
-      db.GetCachedStatement(SQL_FROM_HERE,
-      "INSERT INTO bid_history(owner,name,bid_time) "
-      "VALUES(?,?,?)"));
-  // clang-format on
-  if (!bid_hist.is_valid())
-    return false;
-
   sql::Transaction transaction(&db);
   if (!transaction.Begin())
     return false;
 
   for (const auto& group_key : group_keys) {
-    bid_hist.Reset(true);
-    bid_hist.BindString(0, Serialize(group_key.owner));
-    bid_hist.BindString(1, group_key.name);
-    bid_hist.BindTime(2, bid_time);
-    if (!bid_hist.Run())
+    if (!DoRecordInterestGroupBid(db, group_key, bid_time))
       return false;
   }
   return transaction.Commit();
@@ -961,52 +1130,68 @@ bool DoRecordInterestGroupWin(sql::Database& db,
 }
 
 bool DoUpdateKAnonymity(sql::Database& db,
-                        KAnonType type,
                         const StorageInterestGroup::KAnonymityData& data,
                         const absl::optional<base::Time>& update_sent_time) {
   // clang-format off
   sql::Statement update(
       db.GetCachedStatement(SQL_FROM_HERE,
-      "UPDATE kanon "
-      "SET k_anon_count=?, last_k_anon_updated_time=?,"
+      "UPDATE k_anon "
+      "SET is_k_anon=?, last_k_anon_updated_time=?,"
           "last_reported_to_anon_server_time="
             "IFNULL(?,last_reported_to_anon_server_time) "
-      "WHERE type=? AND key=?"));
+      "WHERE key=?"));
   // clang-format on
   if (!update.is_valid())
     return false;
 
   update.Reset(true);
-  update.BindInt(0, data.k);
+  update.BindInt(0, data.is_k_anonymous);
   update.BindTime(1, data.last_updated);
   if (update_sent_time)
     update.BindTime(2, update_sent_time.value());
   else
     update.BindNull(2);
-  update.BindInt(3, static_cast<int>(type));
-  update.BindString(4, Serialize(data.key));
+  update.BindString(3, Serialize(data.key));
   return update.Run();
 }
 
-bool DoUpdateInterestGroupNameKAnonymity(
-    sql::Database& db,
-    const StorageInterestGroup::KAnonymityData& data,
-    const absl::optional<base::Time>& update_sent_time) {
-  return DoUpdateKAnonymity(db, KAnonType::kOwnerAndName, data,
-                            update_sent_time);
+base::Time DoGetLastKAnonymityReported(sql::Database& db, const GURL& key) {
+  sql::Statement get_reported(db.GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT last_reported_to_anon_server_time FROM k_anon WHERE key=?"));
+  if (!get_reported.is_valid()) {
+    DLOG(ERROR) << "GetLastKAnonymityReported SQL statement did not compile: "
+                << db.GetErrorMessage();
+    return {};
+  }
+  get_reported.Reset(true);
+  get_reported.BindString(0, key.spec());
+  if (!get_reported.Step()) {
+    return {};
+  }
+  if (!get_reported.Succeeded())
+    return {};
+  return get_reported.ColumnTime(0);
 }
 
-bool DoUpdateInterestGroupUpdateURLKAnonymity(
-    sql::Database& db,
-    const StorageInterestGroup::KAnonymityData& data,
-    const absl::optional<base::Time>& update_sent_time) {
-  return DoUpdateKAnonymity(db, KAnonType::kUpdateURL, data, update_sent_time);
-}
-
-bool DoUpdateAdKAnonymity(sql::Database& db,
-                          const StorageInterestGroup::KAnonymityData& data,
-                          const absl::optional<base::Time>& update_sent_time) {
-  return DoUpdateKAnonymity(db, KAnonType::kAdURL, data, update_sent_time);
+void DoUpdateLastKAnonymityReported(sql::Database& db,
+                                    const GURL& key,
+                                    base::Time now) {
+  sql::Statement set_reported(db.GetCachedStatement(
+      SQL_FROM_HERE,
+      "UPDATE k_anon SET last_reported_to_anon_server_time=? WHERE key=?"));
+  if (!set_reported.is_valid()) {
+    DLOG(ERROR)
+        << "DoUpdateLastKAnonymityReported SQL statement did not compile: "
+        << db.GetErrorMessage();
+    return;
+  }
+  set_reported.Reset(true);
+  set_reported.BindTime(0, now);
+  set_reported.BindString(1, key.spec());
+  if (!set_reported.Run()) {
+    return;
+  }
 }
 
 absl::optional<std::vector<url::Origin>> DoGetAllInterestGroupOwners(
@@ -1057,17 +1242,16 @@ absl::optional<std::vector<url::Origin>> DoGetAllInterestGroupJoiningOrigins(
   return result;
 }
 
-bool DoGetInterestGroupKAnonymity(
+bool DoGetKAnonymity(
     sql::Database& db,
-    KAnonType type,
     const GURL& key,
     absl::optional<StorageInterestGroup::KAnonymityData>& output) {
   // clang-format off
   sql::Statement interest_group_kanon(
     db.GetCachedStatement(SQL_FROM_HERE,
-      "SELECT k_anon_count, last_k_anon_updated_time "
-      "FROM kanon "
-      "WHERE type=? AND key=?"
+      "SELECT is_k_anon, last_k_anon_updated_time "
+      "FROM k_anon "
+      "WHERE key=?"
     ));
   // clang-format on
   if (!interest_group_kanon.is_valid()) {
@@ -1079,15 +1263,14 @@ bool DoGetInterestGroupKAnonymity(
   }
 
   interest_group_kanon.Reset(true);
-  interest_group_kanon.BindInt(0, static_cast<int>(type));
-  interest_group_kanon.BindString(1, Serialize(key));
+  interest_group_kanon.BindString(0, Serialize(key));
 
   if (!interest_group_kanon.Step()) {
     return false;
   }
 
-  output = {key, interest_group_kanon.ColumnInt(0),
-            interest_group_kanon.ColumnTime(1)};
+  output = {key, /*is_k_anonymous=*/interest_group_kanon.ColumnInt(0) > 0,
+            /*last_updated=*/interest_group_kanon.ColumnTime(1)};
   return interest_group_kanon.Succeeded();
 }
 
@@ -1096,23 +1279,7 @@ bool DoGetInterestGroupNameKAnonymity(
     const url::Origin& owner,
     const std::string& name,
     absl::optional<StorageInterestGroup::KAnonymityData>& output) {
-  return DoGetInterestGroupKAnonymity(db, KAnonType::kOwnerAndName,
-                                      KAnonKeyFor(owner, name), output);
-}
-
-bool DoGetInterestGroupUpdateURLKAnonymity(
-    sql::Database& db,
-    const GURL& daily_update_url,
-    absl::optional<StorageInterestGroup::KAnonymityData>& output) {
-  return DoGetInterestGroupKAnonymity(db, KAnonType::kUpdateURL,
-                                      daily_update_url, output);
-}
-
-bool DoGetAdsKAnonymity(
-    sql::Database& db,
-    const GURL& ad_url,
-    absl::optional<StorageInterestGroup::KAnonymityData>& output) {
-  return DoGetInterestGroupKAnonymity(db, KAnonType::kAdURL, ad_url, output);
+  return DoGetKAnonymity(db, KAnonKeyFor(owner, name), output);
 }
 
 bool GetPreviousWins(sql::Database& db,
@@ -1153,7 +1320,7 @@ bool GetJoinCount(sql::Database& db,
   // clang-format off
   sql::Statement join_count(
       db.GetCachedStatement(SQL_FROM_HERE,
-    "SELECT COUNT(1) "
+    "SELECT SUM(count) "
     "FROM join_history "
     "WHERE owner = ? AND name = ? AND join_time >=?"));
   // clang-format on
@@ -1179,7 +1346,7 @@ bool GetBidCount(sql::Database& db,
   // clang-format off
   sql::Statement bid_count(
       db.GetCachedStatement(SQL_FROM_HERE,
-    "SELECT COUNT(1) "
+    "SELECT SUM(count) "
     "FROM bid_history "
     "WHERE owner = ? AND name = ? AND bid_time >= ?"));
   // clang-format on
@@ -1246,7 +1413,7 @@ absl::optional<StorageInterestGroup> DoGetStoredInterestGroup(
     return absl::nullopt;
   }
   if (db_interest_group.interest_group.daily_update_url &&
-      !DoGetInterestGroupUpdateURLKAnonymity(
+      !DoGetKAnonymity(
           db, db_interest_group.interest_group.daily_update_url.value(),
           db_interest_group.daily_update_url_kanon)) {
     return absl::nullopt;
@@ -1254,7 +1421,7 @@ absl::optional<StorageInterestGroup> DoGetStoredInterestGroup(
   if (db_interest_group.interest_group.ads) {
     for (auto& ad : db_interest_group.interest_group.ads.value()) {
       absl::optional<StorageInterestGroup::KAnonymityData> ad_kanon;
-      if (!DoGetAdsKAnonymity(db, ad.render_url, ad_kanon)) {
+      if (!DoGetKAnonymity(db, ad.render_url, ad_kanon)) {
         return absl::nullopt;
       }
       if (!ad_kanon)
@@ -1265,7 +1432,7 @@ absl::optional<StorageInterestGroup> DoGetStoredInterestGroup(
   if (db_interest_group.interest_group.ad_components) {
     for (auto& ad : db_interest_group.interest_group.ad_components.value()) {
       absl::optional<StorageInterestGroup::KAnonymityData> ad_kanon;
-      if (!DoGetAdsKAnonymity(db, ad.render_url, ad_kanon)) {
+      if (!DoGetKAnonymity(db, ad.render_url, ad_kanon)) {
         return absl::nullopt;
       }
       if (!ad_kanon)
@@ -1561,7 +1728,7 @@ bool ClearExpiredInterestGroups(sql::Database& db,
 bool ClearExpiredKAnon(sql::Database& db, base::Time cutoff) {
   sql::Statement expired_kanon(
       db.GetCachedStatement(SQL_FROM_HERE,
-                            "DELETE FROM kanon "
+                            "DELETE FROM k_anon "
                             "WHERE last_referenced_time <= ?"));
   if (!expired_kanon.is_valid()) {
     DLOG(ERROR) << "ClearExpiredKAnon SQL statement did not compile.";
@@ -1686,7 +1853,7 @@ bool InterestGroupStorage::InitializeDB() {
   DCHECK(db_->DoesTableExist("join_history"));
   DCHECK(db_->DoesTableExist("bid_history"));
   DCHECK(db_->DoesTableExist("win_history"));
-  DCHECK(db_->DoesTableExist("kanon"));
+  DCHECK(db_->DoesTableExist("k_anon"));
   return true;
 }
 
@@ -1712,7 +1879,7 @@ bool InterestGroupStorage::InitializeSchema() {
     return false;
 
   if (new_db)
-    return CreateV8Schema(*db_);
+    return CreateV10Schema(*db_);
 
   const int db_version = meta_table.GetVersionNumber();
 
@@ -1739,7 +1906,15 @@ bool InterestGroupStorage::InitializeSchema() {
       case 7:
         if (!UpgradeV7SchemaToV8(*db_, meta_table))
           return false;
-        meta_table.SetVersionNumber(8);
+        ABSL_FALLTHROUGH_INTENDED;
+      case 8:
+        if (!UpgradeV8SchemaToV9(*db_, meta_table))
+          return false;
+        ABSL_FALLTHROUGH_INTENDED;
+      case 9:
+        if (!UpgradeV9SchemaToV10(*db_, meta_table))
+          return false;
+        meta_table.SetVersionNumber(kCurrentVersionNumber);
     }
     return transaction.Commit();
   }
@@ -1844,43 +2019,32 @@ void InterestGroupStorage::RecordInterestGroupWin(
   }
 }
 
-void InterestGroupStorage::UpdateInterestGroupNameKAnonymity(
+void InterestGroupStorage::UpdateKAnonymity(
     const StorageInterestGroup::KAnonymityData& data,
     const absl::optional<base::Time>& update_sent_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!EnsureDBInitialized())
     return;
 
-  if (!DoUpdateInterestGroupNameKAnonymity(*db_, data, update_sent_time)) {
-    DLOG(ERROR) << "Could not update k-anonymity for ad: "
-                << db_->GetErrorMessage();
+  if (!DoUpdateKAnonymity(*db_, data, update_sent_time)) {
+    DLOG(ERROR) << "Could not update k-anonymity: " << db_->GetErrorMessage();
   }
 }
 
-void InterestGroupStorage::UpdateInterestGroupUpdateURLKAnonymity(
-    const StorageInterestGroup::KAnonymityData& data,
-    const absl::optional<base::Time>& update_sent_time) {
+base::Time InterestGroupStorage::GetLastKAnonymityReported(const GURL& key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!EnsureDBInitialized())
-    return;
+    return {};
 
-  if (!DoUpdateInterestGroupUpdateURLKAnonymity(*db_, data, update_sent_time)) {
-    DLOG(ERROR) << "Could not update k-anonymity for ad: "
-                << db_->GetErrorMessage();
-  }
+  return DoGetLastKAnonymityReported(*db_, key);
 }
 
-void InterestGroupStorage::UpdateAdKAnonymity(
-    const StorageInterestGroup::KAnonymityData& data,
-    const absl::optional<base::Time>& update_sent_time) {
+void InterestGroupStorage::UpdateLastKAnonymityReported(const GURL& key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!EnsureDBInitialized())
     return;
 
-  if (!DoUpdateAdKAnonymity(*db_, data, update_sent_time)) {
-    DLOG(ERROR) << "Could not update k-anonymity for ad: "
-                << db_->GetErrorMessage();
-  }
+  DoUpdateLastKAnonymityReported(*db_, key, base::Time::Now());
 }
 
 absl::optional<StorageInterestGroup> InterestGroupStorage::GetInterestGroup(

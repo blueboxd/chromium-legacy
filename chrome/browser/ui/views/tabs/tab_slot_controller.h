@@ -21,7 +21,6 @@ enum class BrowserFrameActiveState;
 
 namespace gfx {
 class Point;
-class Rect;
 }  // namespace gfx
 namespace tab_groups {
 enum class TabGroupColorId;
@@ -94,6 +93,10 @@ class TabSlotController {
       const tab_groups::TabGroupId group,
       ToggleTabGroupCollapsedStateOrigin origin =
           ToggleTabGroupCollapsedStateOrigin::kImplicitAction) = 0;
+
+  // Notify this controller of a tab group editor bubble opening/closing.
+  virtual void NotifyTabGroupEditorBubbleOpened() = 0;
+  virtual void NotifyTabGroupEditorBubbleClosed() = 0;
 
   // Shows a context menu for the tab at the specified point in screen coords.
   virtual void ShowContextMenuForTab(Tab* tab,
@@ -192,11 +195,6 @@ class TabSlotController {
   virtual absl::optional<int> GetCustomBackgroundId(
       BrowserFrameActiveState active_state) const = 0;
 
-  // If the given tab is animating to its target destination, this returns the
-  // target bounds. If the tab isn't moving this will return the current bounds
-  // of the given tab.
-  virtual gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) = 0;
-
   // Returns the accessible tab name for this tab.
   virtual std::u16string GetAccessibleTabName(const Tab* tab) const = 0;
 
@@ -222,6 +220,9 @@ class TabSlotController {
 
   // Returns the |group| collapsed state. Returns false if the group does not
   // exist or is not collapsed.
+  // NOTE: This method signature is duplicated in TabContainerController; the
+  // methods are intended to have equivalent semantics so they can share an
+  // implementation.
   virtual bool IsGroupCollapsed(const tab_groups::TabGroupId& group) const = 0;
 
   // Returns the actual painted color of the given |group|, which depends on the

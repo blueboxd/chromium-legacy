@@ -68,7 +68,7 @@ absl::optional<IconKey> AppServiceProxyBase::InnerIconLoader::GetIconKey(
   }
 
   absl::optional<IconKey> icon_key;
-  host_->app_registry_cache_.ForApp(
+  host_->app_registry_cache_.ForOneApp(
       app_id,
       [&icon_key](const AppUpdate& update) { icon_key = update.IconKey(); });
   return icon_key;
@@ -329,6 +329,41 @@ void AppServiceProxyBase::Launch(const std::string& app_id,
 void AppServiceProxyBase::LaunchAppWithFiles(
     const std::string& app_id,
     int32_t event_flags,
+    LaunchSource launch_source,
+    std::vector<base::FilePath> file_paths) {
+  app_registry_cache_.ForOneApp(
+      app_id, [this, event_flags, launch_source,
+               &file_paths](const apps::AppUpdate& update) {
+        auto* publisher = GetPublisher(update.AppType());
+        if (!publisher) {
+          return;
+        }
+
+        if (MaybeShowLaunchPreventionDialog(update)) {
+          return;
+        }
+
+        RecordAppPlatformMetrics(profile_, update, launch_source,
+                                 LaunchContainer::kLaunchContainerNone);
+
+        // TODO(crbug/1117655): File manager records metrics for apps it
+        // launched. So we only record launches from other places. We should
+        // eventually move those metrics here, after AppService supports all
+        // app types launched by file manager.
+        if (launch_source != LaunchSource::kFromFileManager) {
+          RecordAppLaunch(update.AppId(), launch_source);
+        }
+
+        publisher->LaunchAppWithFiles(update.AppId(), event_flags,
+                                      launch_source, std::move(file_paths));
+
+        PerformPostLaunchTasks(launch_source);
+      });
+}
+
+void AppServiceProxyBase::LaunchAppWithFiles(
+    const std::string& app_id,
+    int32_t event_flags,
     apps::mojom::LaunchSource mojom_launch_source,
     apps::mojom::FilePathsPtr file_paths) {
   if (app_service_.is_connected()) {
@@ -359,6 +394,47 @@ void AppServiceProxyBase::LaunchAppWithFiles(
           PerformPostLaunchTasks(launch_source);
         });
   }
+}
+
+void AppServiceProxyBase::LaunchAppWithIntent(
+    const std::string& app_id,
+    int32_t event_flags,
+    IntentPtr intent,
+    LaunchSource launch_source,
+    WindowInfoPtr window_info,
+    base::OnceCallback<void(bool)> callback) {
+  CHECK(intent);
+  app_registry_cache_.ForOneApp(
+      app_id,
+      [this, event_flags, &intent, launch_source, &window_info,
+       callback = std::move(callback)](const AppUpdate& update) mutable {
+        auto* publisher = GetPublisher(update.AppType());
+        if (!publisher) {
+          std::move(callback).Run(/*success=*/false);
+          return;
+        }
+
+        if (MaybeShowLaunchPreventionDialog(update)) {
+          std::move(callback).Run(/*success=*/false);
+          return;
+        }
+
+        // TODO(crbug/1117655): File manager records metrics for apps it
+        // launched. So we only record launches from other places. We should
+        // eventually move those metrics here, after AppService supports all
+        // app types launched by file manager.
+        if (launch_source != LaunchSource::kFromFileManager) {
+          RecordAppLaunch(update.AppId(), launch_source);
+        }
+        RecordAppPlatformMetrics(profile_, update, launch_source,
+                                 LaunchContainer::kLaunchContainerNone);
+
+        publisher->LaunchAppWithIntent(
+            update.AppId(), event_flags, std::move(intent), launch_source,
+            std::move(window_info), std::move(callback));
+
+        PerformPostLaunchTasks(launch_source);
+      });
 }
 
 void AppServiceProxyBase::LaunchAppWithIntent(
@@ -402,6 +478,17 @@ void AppServiceProxyBase::LaunchAppWithIntent(
   } else if (callback) {
     std::move(callback).Run(/*success=*/false);
   }
+}
+
+void AppServiceProxyBase::LaunchAppWithUrl(const std::string& app_id,
+                                           int32_t event_flags,
+                                           GURL url,
+                                           LaunchSource launch_source,
+                                           WindowInfoPtr window_info) {
+  LaunchAppWithIntent(
+      app_id, event_flags,
+      std::make_unique<apps::Intent>(apps_util::kIntentActionView, url),
+      launch_source, std::move(window_info), base::DoNothing());
 }
 
 void AppServiceProxyBase::LaunchAppWithUrl(
@@ -452,6 +539,19 @@ void AppServiceProxyBase::LaunchAppWithParams(AppLaunchParams&& params,
 }
 
 void AppServiceProxyBase::SetPermission(const std::string& app_id,
+                                        PermissionPtr permission) {
+  app_registry_cache_.ForOneApp(
+      app_id, [this, &permission](const apps::AppUpdate& update) {
+        auto* publisher = GetPublisher(update.AppType());
+        if (!publisher) {
+          return;
+        }
+
+        publisher->SetPermission(update.AppId(), std::move(permission));
+      });
+}
+
+void AppServiceProxyBase::SetPermission(const std::string& app_id,
                                         apps::mojom::PermissionPtr permission) {
   if (app_service_.is_connected()) {
     app_registry_cache_.ForOneApp(
@@ -463,6 +563,18 @@ void AppServiceProxyBase::SetPermission(const std::string& app_id,
   }
 }
 
+void AppServiceProxyBase::UninstallSilently(const std::string& app_id,
+                                            UninstallSource uninstall_source) {
+  auto app_type = app_registry_cache_.GetAppType(app_id);
+  auto* publisher = GetPublisher(app_type);
+  if (!publisher) {
+    return;
+  }
+  publisher->Uninstall(app_id, uninstall_source,
+                       /*clear_site_data=*/false, /*report_abuse=*/false);
+  PerformPostUninstallTasks(app_type, app_id, uninstall_source);
+}
+
 void AppServiceProxyBase::UninstallSilently(
     const std::string& app_id,
     apps::mojom::UninstallSource uninstall_source) {
@@ -471,11 +583,21 @@ void AppServiceProxyBase::UninstallSilently(
     app_service_->Uninstall(ConvertAppTypeToMojomAppType(app_type), app_id,
                             uninstall_source,
                             /*clear_site_data=*/false, /*report_abuse=*/false);
-    PerformPostUninstallTasks(app_type, app_id, uninstall_source);
+    PerformPostUninstallTasks(
+        app_type, app_id,
+        ConvertMojomUninstallSourceToUninstallSource(uninstall_source));
   }
 }
 
 void AppServiceProxyBase::StopApp(const std::string& app_id) {
+  if (base::FeatureList::IsEnabled(kAppServiceWithoutMojom)) {
+    auto* publisher = GetPublisher(app_registry_cache_.GetAppType(app_id));
+    if (publisher) {
+      publisher->StopApp(app_id);
+    }
+    return;
+  }
+
   if (!app_service_.is_connected()) {
     return;
   }
@@ -502,6 +624,15 @@ void AppServiceProxyBase::ExecuteContextMenuCommand(
     int command_id,
     const std::string& shortcut_id,
     int64_t display_id) {
+  if (base::FeatureList::IsEnabled(kAppServiceWithoutMojom)) {
+    auto* publisher = GetPublisher(app_registry_cache_.GetAppType(app_id));
+    if (publisher) {
+      publisher->ExecuteContextMenuCommand(app_id, command_id, shortcut_id,
+                                           display_id);
+    }
+    return;
+  }
+
   if (!app_service_.is_connected()) {
     return;
   }
@@ -513,6 +644,14 @@ void AppServiceProxyBase::ExecuteContextMenuCommand(
 }
 
 void AppServiceProxyBase::OpenNativeSettings(const std::string& app_id) {
+  if (base::FeatureList::IsEnabled(kAppServiceWithoutMojom)) {
+    auto* publisher = GetPublisher(app_registry_cache_.GetAppType(app_id));
+    if (publisher) {
+      publisher->OpenNativeSettings(app_id);
+    }
+    return;
+  }
+
   if (app_service_.is_connected()) {
     app_registry_cache_.ForOneApp(
         app_id, [this](const apps::AppUpdate& update) {
@@ -905,7 +1044,7 @@ void AppServiceProxyBase::RecordAppPlatformMetrics(
 void AppServiceProxyBase::PerformPostUninstallTasks(
     apps::AppType app_type,
     const std::string& app_id,
-    apps::mojom::UninstallSource uninstall_source) {}
+    UninstallSource uninstall_source) {}
 
 void AppServiceProxyBase::OnLaunched(LaunchCallback callback,
                                      LaunchResult&& launch_result) {

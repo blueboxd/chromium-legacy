@@ -129,9 +129,10 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
   properties.activatable =
       params.activatable == Widget::InitParams::Activatable::kYes;
   properties.force_show_in_taskbar = params.force_show_in_taskbar;
-  auto z_order = params.EffectiveZOrderLevel();
-  properties.keep_on_top = z_order != ui::ZOrderLevel::kNormal;
-  properties.is_security_surface = z_order == ui::ZOrderLevel::kSecuritySurface;
+  properties.z_order = params.EffectiveZOrderLevel();
+  properties.keep_on_top = properties.z_order != ui::ZOrderLevel::kNormal;
+  properties.is_security_surface =
+      properties.z_order == ui::ZOrderLevel::kSecuritySurface;
   properties.visible_on_all_workspaces = params.visible_on_all_workspaces;
   properties.remove_standard_frame = params.remove_standard_frame;
   properties.workspace = params.workspace;
@@ -276,7 +277,7 @@ void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
   }
 
   // Calculate initial bounds.
-  properties.bounds = ToPixelRect(params.bounds);
+  properties.bounds = params.bounds;
 
   // Set extensions delegate.
   DCHECK(!properties.workspace_extension_delegate);
@@ -449,10 +450,9 @@ bool DesktopWindowTreeHostPlatform::IsVisible() const {
 }
 
 void DesktopWindowTreeHostPlatform::SetSize(const gfx::Size& size) {
-  gfx::Size size_in_pixels = ToPixelRect(gfx::Rect(size)).size();
-  auto bounds_in_pixels = GetBoundsInPixels();
-  bounds_in_pixels.set_size(size_in_pixels);
-  WindowTreeHostPlatform::SetBoundsInPixels(bounds_in_pixels);
+  auto bounds_in_dip = platform_window()->GetBoundsInDIP();
+  bounds_in_dip.set_size(size);
+  platform_window()->SetBoundsInDIP(bounds_in_dip);
 }
 
 void DesktopWindowTreeHostPlatform::StackAbove(aura::Window* window) {
@@ -904,17 +904,10 @@ absl::optional<ui::MenuType> DesktopWindowTreeHostPlatform::GetMenuType() {
 }
 
 absl::optional<ui::OwnedWindowAnchor>
-DesktopWindowTreeHostPlatform::GetOwnedWindowAnchorAndRectInPx() {
-  auto* anchor =
+DesktopWindowTreeHostPlatform::GetOwnedWindowAnchorAndRectInDIP() {
+  const auto* anchor =
       GetContentWindow()->GetProperty(aura::client::kOwnedWindowAnchor);
-  if (!anchor)
-    return absl::nullopt;
-  // Make a copy of the structure. Otherwise, conversion will result in
-  // overriding the stored property's value.
-  ui::OwnedWindowAnchor window_anchor = *anchor;
-  // Anchor rect must be translated from DIP to px.
-  window_anchor.anchor_rect = ToPixelRect(window_anchor.anchor_rect);
-  return window_anchor;
+  return anchor ? absl::make_optional(*anchor) : absl::nullopt;
 }
 
 gfx::Rect DesktopWindowTreeHostPlatform::ConvertRectToPixels(

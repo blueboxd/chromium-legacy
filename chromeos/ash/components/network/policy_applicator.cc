@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
 #include "chromeos/ash/components/network/managed_cellular_pref_handler.h"
 #include "chromeos/ash/components/network/network_event_log.h"
 #include "chromeos/ash/components/network/network_type_pattern.h"
@@ -23,12 +24,11 @@
 #include "chromeos/ash/components/network/policy_util.h"
 #include "chromeos/ash/components/network/shill_property_util.h"
 #include "chromeos/components/onc/onc_signature.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
 #include "components/onc/onc_constants.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -471,4 +471,4 @@ void PolicyApplicator::NotifyConfigurationHandlerAndFinish() {
   handler_->OnPoliciesApplied(profile_, new_cellular_policy_guids_);
 }
 
-}  // namespace chromeos
+}  // namespace ash

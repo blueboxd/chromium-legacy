@@ -12,6 +12,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -24,7 +25,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/user_selectable_type.h"
-#include "components/sync/test/fake_server/fake_server.h"
+#include "components/sync/test/fake_server.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -186,6 +187,7 @@ class SyncTest : public PlatformBrowserTest {
   // Returns a pointer to a particular sync client. Callee owns the object
   // and manages its lifetime.
   SyncServiceImplHarness* GetClient(int index);
+  const SyncServiceImplHarness* GetClient(int index) const;
 
   // Returns a list of the collection of sync clients.
   std::vector<SyncServiceImplHarness*> GetSyncClients();
@@ -408,12 +410,19 @@ class SyncTest : public PlatformBrowserTest {
   // SetupSync() call which might be unexpected in several tests.
   bool WaitForAsyncChangesToBeCommitted(size_t profile_index) const;
 
+  // Verifies that there are no data type failures for the given |client_index|.
+  // Otherwise, causes test failure. A corresponding client must exist.
+  void CheckForDataTypeFailures(size_t client_index) const;
+
   // Used to differentiate between single-client and two-client tests.
   const TestType test_type_;
 
   // Used to remember when the test fixture was constructed and later understand
   // how long the setup took.
   const base::Time test_construction_time_;
+
+  // Used to catch any timeout within RunLoop and cause test error.
+  base::test::ScopedRunLoopTimeout sync_run_loop_timeout;
 
   // GAIA account used by the test case.
   std::string username_;
@@ -439,6 +448,8 @@ class SyncTest : public PlatformBrowserTest {
   // Collection of sync profiles used by a test. A sync profile maintains sync
   // data contained within its own subdirectory under the chrome user data
   // directory. Profiles are owned by the ProfileManager.
+  // TODO(crbug.com/1349349): store |profiles_|, |browsers_| and |clients_| in
+  // one structure.
   std::vector<Profile*> profiles_;
 
   // List of temporary directories that need to be deleted when the test is

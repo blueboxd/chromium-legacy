@@ -14,6 +14,7 @@
 #include "chrome/browser/autofill_assistant/common_dependencies_chrome.h"
 #include "chrome/browser/autofill_assistant/password_change/apc_external_action_delegate.h"
 #include "chrome/browser/autofill_assistant/password_change/apc_onboarding_coordinator.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/apc_scrim_manager.h"
 #include "chrome/browser/ui/autofill_assistant/password_change/assistant_display_delegate.h"
@@ -21,7 +22,9 @@
 #include "chrome/common/channel_info.h"
 #include "components/autofill_assistant/browser/public/autofill_assistant_factory.h"
 #include "components/autofill_assistant/browser/public/headless_script_controller.h"
+#include "components/autofill_assistant/browser/public/password_change/website_login_manager_impl.h"
 #include "components/autofill_assistant/browser/public/public_script_parameters.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -48,6 +51,11 @@ void ApcClientImpl::Start(
   // If the unified side panel is not enabled, trying to register an entry in it
   // later on will crash.
   if (!base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  if (GetPasswordManagerClient() == nullptr) {
     std::move(callback).Run(false);
     return;
   }
@@ -88,14 +96,18 @@ bool ApcClientImpl::IsRunning() const {
   return is_running_;
 }
 
-void ApcClientImpl::PromptForConsent() {
-  if (is_running_)
+void ApcClientImpl::PromptForConsent(OnboardingResultCallback callback) {
+  if (is_running_) {
+    // If a run is ongoing and beyond the onboarding stage, consent must have
+    // been given.
+    std::move(callback).Run(onboarding_coordinator_ == nullptr);
     return;
+  }
   is_running_ = true;
 
   onboarding_coordinator_ = CreateOnboardingCoordinator();
-  onboarding_coordinator_->PerformOnboarding(
-      base::BindOnce(&ApcClientImpl::Stop, base::Unretained(this)));
+  onboarding_coordinator_->PerformOnboarding(std::move(callback).Then(
+      base::BindOnce(&ApcClientImpl::Stop, base::Unretained(this), false)));
 }
 
 void ApcClientImpl::RevokeConsent(const std::vector<int>& description_grd_ids) {
@@ -110,13 +122,21 @@ void ApcClientImpl::RevokeConsent(const std::vector<int>& description_grd_ids) {
 // `success` indicates whether onboarding was successful, i.e. whether consent
 // has been given.
 void ApcClientImpl::OnOnboardingComplete(bool success) {
+  onboarding_coordinator_.reset();
   if (!success) {
     Stop(/*success=*/false);
     return;
   }
 
-  side_panel_coordinator_ = CreateSidePanel();
-  side_panel_coordinator_->AddObserver(this);
+  // Only create a new sidepanel coordinator if there is not one already shown.
+  if (!side_panel_coordinator_) {
+    side_panel_coordinator_ = CreateSidePanel();
+    if (!side_panel_coordinator_) {
+      Stop(/*success=*/false);
+      return;
+    }
+    side_panel_coordinator_->AddObserver(this);
+  }
 
   base::flat_map<std::string, std::string> params_map = {
       {autofill_assistant::public_script_parameters::
@@ -151,6 +171,13 @@ void ApcClientImpl::OnOnboardingComplete(bool success) {
   }
 
   scrim_manager_ = CreateApcScrimManager();
+
+  website_login_manager_ = CreateWebsiteLoginManager();
+
+  apc_external_action_delegate_ = CreateApcExternalActionDelegate();
+  apc_external_action_delegate_->SetupDisplay();
+  apc_external_action_delegate_->ShowStartingScreen(url_);
+
   external_script_controller_ = CreateHeadlessScriptController();
   scrim_manager_->Show();
   external_script_controller_->StartScript(
@@ -160,8 +187,19 @@ void ApcClientImpl::OnOnboardingComplete(bool success) {
 
 void ApcClientImpl::OnRunComplete(
     autofill_assistant::HeadlessScriptController::ScriptResult result) {
-  // TODO(crbug.com/1324089): Handle failed result.
   Stop(result.success);
+
+  if (!result.success) {
+    apc_external_action_delegate_->ShowErrorScreen();
+    return;
+  }
+
+  if (apc_external_action_delegate_->PasswordWasSuccessfullyChanged()) {
+    apc_external_action_delegate_->ShowCompletionScreen(base::BindRepeating(
+        &ApcClientImpl::CloseSidePanel, base::Unretained(this)));
+  } else {
+    CloseSidePanel();
+  }
 }
 
 void ApcClientImpl::OnHidden() {
@@ -170,6 +208,10 @@ void ApcClientImpl::OnHidden() {
   // The two resets below are not included in `Stop()`, since we may wish to
   // render content in the side panel even for a stopped flow.
   apc_external_action_delegate_.reset();
+  side_panel_coordinator_.reset();
+}
+
+void ApcClientImpl::CloseSidePanel() {
   side_panel_coordinator_.reset();
 }
 
@@ -186,17 +228,16 @@ ApcClientImpl::CreateSidePanel() {
 std::unique_ptr<autofill_assistant::HeadlessScriptController>
 ApcClientImpl::CreateHeadlessScriptController() {
   DCHECK(scrim_manager_);
-  apc_external_action_delegate_ = std::make_unique<ApcExternalActionDelegate>(
-      side_panel_coordinator_.get(), scrim_manager_.get());
-  apc_external_action_delegate_->SetupDisplay();
-  apc_external_action_delegate_->ShowStartingScreen(url_);
+  DCHECK(apc_external_action_delegate_);
+  DCHECK(website_login_manager_);
 
   std::unique_ptr<autofill_assistant::AutofillAssistant> autofill_assistant =
       autofill_assistant::AutofillAssistantFactory::CreateForBrowserContext(
           GetWebContents().GetBrowserContext(),
           std::make_unique<autofill_assistant::CommonDependenciesChrome>());
   return autofill_assistant->CreateHeadlessScriptController(
-      &GetWebContents(), apc_external_action_delegate_.get());
+      &GetWebContents(), apc_external_action_delegate_.get(),
+      website_login_manager_.get());
 }
 
 autofill_assistant::RuntimeManager* ApcClientImpl::GetRuntimeManager() {
@@ -206,6 +247,27 @@ autofill_assistant::RuntimeManager* ApcClientImpl::GetRuntimeManager() {
 
 std::unique_ptr<ApcScrimManager> ApcClientImpl::CreateApcScrimManager() {
   return ApcScrimManager::Create(&GetWebContents());
+}
+
+std::unique_ptr<ApcExternalActionDelegate>
+ApcClientImpl::CreateApcExternalActionDelegate() {
+  DCHECK(scrim_manager_);
+  DCHECK(website_login_manager_);
+
+  return std::make_unique<ApcExternalActionDelegate>(
+      &GetWebContents(), side_panel_coordinator_.get(), scrim_manager_.get(),
+      website_login_manager_.get());
+}
+
+std::unique_ptr<autofill_assistant::WebsiteLoginManager>
+ApcClientImpl::CreateWebsiteLoginManager() {
+  return std::make_unique<autofill_assistant::WebsiteLoginManagerImpl>(
+      GetPasswordManagerClient(), &GetWebContents());
+}
+
+password_manager::PasswordManagerClient*
+ApcClientImpl::GetPasswordManagerClient() {
+  return ChromePasswordManagerClient::FromWebContents(&GetWebContents());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ApcClientImpl);

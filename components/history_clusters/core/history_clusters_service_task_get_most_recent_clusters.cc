@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time_to_iso8601.h"
 #include "components/history/core/browser/history_service.h"
@@ -20,19 +19,6 @@
 
 namespace history_clusters {
 
-namespace {
-
-// Get the most recent `ClusterVisit` in `cluster`.
-history::ClusterVisit GetMostRecentClusterVisit(history::Cluster cluster) {
-  return *base::ranges::min_element(
-      cluster.visits, [](auto time1, auto time2) { return time1 < time2; },
-      [](const auto& cluster_visit) {
-        return cluster_visit.annotated_visit.visit_row.visit_time;
-      });
-}
-
-}  // namespace
-
 HistoryClustersServiceTaskGetMostRecentClusters::
     HistoryClustersServiceTaskGetMostRecentClusters(
         base::WeakPtr<HistoryClustersService> weak_history_clusters_service,
@@ -42,6 +28,7 @@ HistoryClustersServiceTaskGetMostRecentClusters::
         ClusteringRequestSource clustering_request_source,
         base::Time begin_time,
         QueryClustersContinuationParams continuation_params,
+        bool recluster,
         QueryClustersCallback callback)
     : weak_history_clusters_service_(std::move(weak_history_clusters_service)),
       incomplete_visit_context_annotations_(
@@ -51,6 +38,7 @@ HistoryClustersServiceTaskGetMostRecentClusters::
       clustering_request_source_(clustering_request_source),
       begin_time_(begin_time),
       continuation_params_(continuation_params),
+      recluster_(recluster),
       callback_(std::move(callback)) {
   DCHECK(weak_history_clusters_service_);
   DCHECK(history_service_);
@@ -68,19 +56,35 @@ void HistoryClustersServiceTaskGetMostRecentClusters::Start() {
     // If visits can't be clustered, either because `backend_` is null, or all
     // unclustered visits have already been clustered and returned, then return
     // persisted clusters.
-    weak_history_clusters_service_->NotifyDebugMessage(
-        "HistoryClustersService::QueryClusters Error: ClusteringBackend is "
-        "nullptr. Returning empty cluster vector.");
+    if (!backend_) {
+      weak_history_clusters_service_->NotifyDebugMessage(
+          "HistoryClustersServiceTaskGetMostRecentClusters::Start() Error: "
+          "ClusteringBackend is nullptr. Returning most recent clusters.");
+    } else {
+      weak_history_clusters_service_->NotifyDebugMessage(
+          "HistoryClustersServiceTaskGetMostRecentClusters::Start() exhausted "
+          "unclustered visits. Returning most recent clusters.");
+    }
     ReturnMostRecentPersistedClusters(continuation_params_.continuation_time);
 
   } else {
+    // TODO(manukh): It's not clear how to blend unclustered and clustered
+    //  visits when iterating recent first. E.g., if we have 4 days of
+    //  unclustered visits, should the most recent 3 be clustered in isolation,
+    //  while the 4th is clustered with older clustered visits? For now, we do
+    //  the simplest approach: cluster each day in isolation. If updating
+    //  clusters occurs frequently enough, this issue will be mitigated.
+    //  However, since the top, most prominent clusters will be the most recent
+    //  clusters, and current-day visits will never be pre-clustered, we
+    //  probably want to make sure they're optimal. So we should probably not
+    //  cluster at least the current day in isolation.
     history_service_get_annotated_visits_to_cluster_start_time_ =
         base::TimeTicks::Now();
     history_service_->ScheduleDBTask(
         FROM_HERE,
         std::make_unique<GetAnnotatedVisitsToCluster>(
             incomplete_visit_context_annotations_, begin_time_,
-            continuation_params_, true, 0,
+            continuation_params_, true, 0, recluster_,
             base::BindOnce(&HistoryClustersServiceTaskGetMostRecentClusters::
                                OnGotAnnotatedVisitsToCluster,
                            weak_ptr_factory_.GetWeakPtr())),
@@ -164,12 +168,16 @@ void HistoryClustersServiceTaskGetMostRecentClusters::OnGotModelClusters(
 
 void HistoryClustersServiceTaskGetMostRecentClusters::
     ReturnMostRecentPersistedClusters(base::Time exclusive_max_time) {
-  history_service_->GetMostRecentClusters(
-      begin_time_, exclusive_max_time, 1,
-      base::BindOnce(&HistoryClustersServiceTaskGetMostRecentClusters::
-                         OnGotMostRecentPersistedClusters,
-                     weak_ptr_factory_.GetWeakPtr()),
-      &task_tracker_);
+  if (GetConfig().persist_clusters_in_history_db && !recluster_) {
+    history_service_->GetMostRecentClusters(
+        begin_time_, exclusive_max_time, 1,
+        base::BindOnce(&HistoryClustersServiceTaskGetMostRecentClusters::
+                           OnGotMostRecentPersistedClusters,
+                       weak_ptr_factory_.GetWeakPtr()),
+        &task_tracker_);
+  } else {
+    OnGotMostRecentPersistedClusters({});
+  }
 }
 
 void HistoryClustersServiceTaskGetMostRecentClusters::
@@ -177,7 +185,8 @@ void HistoryClustersServiceTaskGetMostRecentClusters::
   auto continuation_params =
       clusters.empty() ? QueryClustersContinuationParams::DoneParams()
                        : QueryClustersContinuationParams{
-                             GetMostRecentClusterVisit(clusters[0])
+                             clusters[0]
+                                 .GetMostRecentVisit()
                                  .annotated_visit.visit_row.visit_time,
                              true, false, true, false};
   done_ = true;

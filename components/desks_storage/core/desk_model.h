@@ -80,13 +80,20 @@ class DeskModel {
   DeskModel& operator=(const DeskModel&) = delete;
   virtual ~DeskModel();
 
+  // Stores GetAllEntries result.
+  struct GetAllEntriesResult {
+    GetAllEntriesResult(GetAllEntriesStatus status,
+                        std::vector<const ash::DeskTemplate*> entries);
+    ~GetAllEntriesResult();
+
+    GetAllEntriesStatus status;
+    std::vector<const ash::DeskTemplate*> entries;
+  };
+
   // TODO(crbug.com/1320805): Once DeskSyncBridge is set to support saved desk,
   // add methods to support operations on both types of templates.
-  using GetAllEntriesCallback = base::OnceCallback<void(
-      GetAllEntriesStatus status,
-      const std::vector<const ash::DeskTemplate*>& entries)>;
-  // Returns a vector of entries in the model.
-  virtual void GetAllEntries(GetAllEntriesCallback callback) = 0;
+  // Returns all entries in the model.
+  virtual GetAllEntriesResult GetAllEntries() = 0;
 
   using GetEntryByUuidCallback =
       base::OnceCallback<void(GetEntryByUuidStatus status,
@@ -105,20 +112,20 @@ class DeskModel {
 
   using AddOrUpdateEntryCallback =
       base::OnceCallback<void(AddOrUpdateEntryStatus status)>;
-  // Add or update a desk template by |new_entry|'s UUID.
+  // Add or update a desk template by `new_entry`'s UUID.
   // The given template's name could be cleaned (e.g. removing trailing
   // whitespace) and truncated to a reasonable length before saving. This method
-  // will also validate the given |new_entry|. If the |new_entry| is missing
-  // critical information, such as |uuid|, |callback| will be called with
-  // |kInvalidArgument|. If the given desk template could not be persisted due
-  // to any backend error, |callback| will be called with |kFailure|.
+  // will also validate the given `new_entry`. If the `new_entry` is missing
+  // critical information, such as `uuid`, `callback` will be called with
+  // `kInvalidArgument`. If the given desk template could not be persisted due
+  // to any backend error, `callback` will be called with `kFailure`.
   virtual void AddOrUpdateEntry(std::unique_ptr<ash::DeskTemplate> new_entry,
                                 AddOrUpdateEntryCallback callback) = 0;
 
   using GetTemplateJsonCallback =
       base::OnceCallback<void(GetTemplateJsonStatus status,
                               const std::string& json_representation)>;
-  // Retrieves a template based on its |uuid|, if found returns a std::string
+  // Retrieves a template based on its `uuid`, if found returns a std::string
   // containing the json representation of the template queried.
   virtual void GetTemplateJson(const std::string& uuid,
                                apps::AppRegistryCache* app_cache,
@@ -126,7 +133,7 @@ class DeskModel {
 
   using DeleteEntryCallback =
       base::OnceCallback<void(DeleteEntryStatus status)>;
-  // Remove entry with |uuid| from entries. If the entry with |uuid| does not
+  // Remove entry with `uuid` from entries. If the entry with `uuid` does not
   // exist, then the deletion is considered a success.
   virtual void DeleteEntry(const std::string& uuid,
                            DeleteEntryCallback callback) = 0;

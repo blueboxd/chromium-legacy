@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
@@ -323,17 +324,19 @@ bool HTMLFormControlElement::IsSuccessfulSubmitButton() const {
 // element, and c) this form control supports popup triggering. If multiple
 // toggle attributes are present:
 //  1. Only one idref will ever be used, if multiple attributes are present.
-//  2. If 'togglepopup' is present, its IDREF will be used.
-//  3. If 'showpopup' is present and 'togglepopup' isn't, its IDREF will be
-//  used.
-//  4. If both 'showpopup' and 'hidepopup' are present, the behavior is to
-//  toggle.
+//  2. If 'popuptoggletarget' is present, its IDREF will be used.
+//  3. If 'popupshowtarget' is present and 'popuptoggletarget' isn't present
+//     or its value doesn't match that of popupshowtarget, only popupshowtarget
+//     will be used.
+//  4. If both 'popupshowtarget' and 'popuphidetarget' are present and their
+//     values match, the behavior is to toggle.
 HTMLFormControlElement::PopupTargetElement
 HTMLFormControlElement::popupTargetElement() const {
   const PopupTargetElement no_element{.element = nullptr,
                                       .action = PopupTriggerAction::kNone,
                                       .attribute_name = g_null_name};
-  if (!RuntimeEnabledFeatures::HTMLPopupAttributeEnabled() ||
+  if (!RuntimeEnabledFeatures::HTMLPopupAttributeEnabled(
+          GetDocument().GetExecutionContext()) ||
       !IsInTreeScope() ||
       SupportsPopupTriggering() == PopupTriggerSupport::kNone) {
     return no_element;
@@ -442,6 +445,15 @@ int32_t HTMLFormControlElement::GetAxId() const {
   if (!document.IsActive() || !document.View())
     return 0;
   if (AXObjectCache* cache = document.ExistingAXObjectCache()) {
+    LocalFrameView* local_frame_view = document.View();
+    if (local_frame_view->IsUpdatingLifecycle()) {
+      // Autofill (the caller of this code) can end up making calls to get AXIDs
+      // of form elements during, e.g. resize observer callbacks, which are
+      // in the middle up updating the document lifecycle. In these cases, just
+      // return the existing AXID of the element.
+      return cache->GetExistingAXID(const_cast<HTMLFormControlElement*>(this));
+    }
+
     if (document.NeedsLayoutTreeUpdate() || document.View()->NeedsLayout() ||
         document.Lifecycle().GetState() < DocumentLifecycle::kPrePaintClean) {
       document.View()->UpdateAllLifecyclePhasesExceptPaint(

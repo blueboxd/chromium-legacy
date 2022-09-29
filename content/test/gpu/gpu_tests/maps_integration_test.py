@@ -6,7 +6,7 @@
 import json
 import os
 import sys
-import typing
+from typing import Any, List, Tuple
 import unittest
 
 from gpu_tests import color_profile_manager
@@ -46,10 +46,10 @@ class MapsIntegrationTest(expected_color_test.ExpectedColorTest):
 
   @classmethod
   def SetUpProcess(cls) -> None:
-    options = cls.GetParsedCommandLineOptions()
+    super(MapsIntegrationTest, cls).SetUpProcess()
+    options = cls.GetOriginalFinderOptions()
     color_profile_manager.ForceUntilExitSRGB(
         options.dont_restore_color_profile_after_test)
-    super(MapsIntegrationTest, cls).SetUpProcess()
     cls.CustomizeBrowserArgs([
         cba.ENSURE_FORCED_COLOR_PROFILE,
         cba.FORCE_BROWSER_CRASH_ON_GPU_CRASH,
@@ -68,7 +68,6 @@ class MapsIntegrationTest(expected_color_test.ExpectedColorTest):
 
   @classmethod
   def GenerateGpuTests(cls, options: ct.ParsedCmdArgs) -> ct.TestGenerator:
-    cls.SetParsedCommandLineOptions(options)
     # The maps_pixel_expectations.json contain the actual image expectations. If
     # the test fails, with errors greater than the tolerance for the run, then
     # the logs will report the actual failure.
@@ -128,7 +127,7 @@ class MapsIntegrationTest(expected_color_test.ExpectedColorTest):
     self._ValidateScreenshotSamplesWithSkiaGold(tab, page, screenshot, dpr)
 
   @classmethod
-  def ExpectationsFiles(cls) -> typing.List[str]:
+  def ExpectationsFiles(cls) -> List[str]:
     return [
         os.path.join(
             os.path.dirname(os.path.abspath(__file__)), 'test_expectations',
@@ -136,7 +135,7 @@ class MapsIntegrationTest(expected_color_test.ExpectedColorTest):
     ]
 
 
-def _ReadPixelExpectations(expectations_file: str) -> typing.List[dict]:
+def _ReadPixelExpectations(expectations_file: str) -> List[dict]:
   expectations_path = os.path.join(_DATA_PATH, expectations_file)
   with open(expectations_path, 'r') as f:
     json_contents = json.load(f)
@@ -145,7 +144,7 @@ def _ReadPixelExpectations(expectations_file: str) -> typing.List[dict]:
 
 def _GetMapsPageForUrl(
     url: str,
-    expected_colors: typing.List[expected_color_test.ExpectedColorExpectation]
+    expected_colors: List[expected_color_test.ExpectedColorExpectation]
 ) -> expected_color_test.ExpectedColorPixelTestPage:
   page = expected_color_test.ExpectedColorPixelTestPage(
       url=url,
@@ -158,8 +157,7 @@ def _GetMapsPageForUrl(
   return page
 
 
-def _GetCropBoundaries(screenshot: ct.Screenshot
-                       ) -> typing.Tuple[int, int, int, int]:
+def _GetCropBoundaries(screenshot: ct.Screenshot) -> Tuple[int, int, int, int]:
   """Returns the boundaries to crop the screenshot to.
 
   Specifically, we look for the boundaries where the white background
@@ -214,7 +212,7 @@ def _GetCropBoundaries(screenshot: ct.Screenshot
   return x1, y1, x2, y2
 
 
-def load_tests(loader: unittest.TestLoader, tests: typing.Any,
-               pattern: typing.Any) -> unittest.TestSuite:
+def load_tests(loader: unittest.TestLoader, tests: Any,
+               pattern: Any) -> unittest.TestSuite:
   del loader, tests, pattern  # Unused.
   return gpu_integration_test.LoadAllTestsInModule(sys.modules[__name__])

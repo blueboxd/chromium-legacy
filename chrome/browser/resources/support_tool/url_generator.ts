@@ -5,8 +5,8 @@
 import './support_tool_shared.css.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
-import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
-import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.js';
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 
@@ -73,7 +73,7 @@ export class UrlGeneratorElement extends PolymerElement {
         });
   }
 
-  private onDataCollectorItemClicked_() {
+  private onDataCollectorItemChange_() {
     // The button should be disabled if no data collector is selected.
     this.buttonDisabled_ = !this.hasDataCollectorSelected();
   }

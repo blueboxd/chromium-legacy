@@ -92,7 +92,7 @@ const char kQuicHostWhitelist[] = "host_whitelist";
 const char kQuicEnableSocketRecvOptimization[] =
     "enable_socket_recv_optimization";
 const char kQuicVersion[] = "quic_version";
-const char kQuicObsoleteVersionsAllowed[] = "obsolete_versions_allowed";
+const char kQuicObsoleteVersionsAllowed[] = "obsolete_versions_allowed2";
 const char kQuicFlags[] = "set_quic_flags";
 const char kQuicIOSNetworkServiceType[] = "ios_network_service_type";
 const char kRetryWithoutAltSvcOnQuicErrors[] =
@@ -181,6 +181,13 @@ const char kSpdyGoAwayOnIpChange[] = "spdy_go_away_on_ip_change";
 // SpdySession#EnableBrokenConnectionDetection for more info.
 const char kBidiStreamDetectBrokenConnection[] =
     "bidi_stream_detect_broken_connection";
+
+const char kUseDnsHttpsSvcbFieldTrialName[] = "UseDnsHttpsSvcb";
+const char kUseDnsHttpsSvcbUseAlpn[] = "use_alpn";
+
+// Runtime flag to bypass Cronet's logging: When set to true logging calls will
+// be skipped. If missing, logging will happen.
+const char kSkipLogging[] = "skip_logging";
 
 // "goaway_sessions_on_ip_change" is default on for iOS unless overridden via
 // experimental options explicitly.
@@ -303,7 +310,8 @@ URLRequestContextConfig::URLRequestContextConfig(
       experimental_options(std::move(experimental_options)),
       network_thread_priority(network_thread_priority),
       bidi_stream_detect_broken_connection(false),
-      heartbeat_interval(base::Seconds(0)) {
+      heartbeat_interval(base::Seconds(0)),
+      skip_logging(false) {
   SetContextConfigExperimentalOptions();
 }
 
@@ -377,36 +385,48 @@ URLRequestContextConfig::ParseExperimentalOptions(
 void URLRequestContextConfig::SetContextConfigExperimentalOptions() {
   const base::Value* heartbeat_interval_value =
       experimental_options.Find(kBidiStreamDetectBrokenConnection);
-  if (!heartbeat_interval_value)
-    return;
-
-  if (!heartbeat_interval_value->is_int()) {
-    LOG(ERROR) << "\"" << kBidiStreamDetectBrokenConnection
-               << "\" config params \"" << heartbeat_interval_value
-               << "\" is not an int";
-    experimental_options.Remove(kBidiStreamDetectBrokenConnection);
-    effective_experimental_options.Remove(kBidiStreamDetectBrokenConnection);
-    return;
+  if (heartbeat_interval_value) {
+    if (!heartbeat_interval_value->is_int()) {
+      LOG(ERROR) << "\"" << kBidiStreamDetectBrokenConnection
+                 << "\" config params \"" << heartbeat_interval_value
+                 << "\" is not an int";
+      experimental_options.Remove(kBidiStreamDetectBrokenConnection);
+      effective_experimental_options.Remove(kBidiStreamDetectBrokenConnection);
+    } else {
+      int heartbeat_interval_secs = heartbeat_interval_value->GetInt();
+      heartbeat_interval = base::Seconds(heartbeat_interval_secs);
+      bidi_stream_detect_broken_connection = heartbeat_interval_secs > 0;
+      experimental_options.Remove(kBidiStreamDetectBrokenConnection);
+    }
   }
 
-  int heartbeat_interval_secs = heartbeat_interval_value->GetInt();
-  heartbeat_interval = base::Seconds(heartbeat_interval_secs);
-  bidi_stream_detect_broken_connection = heartbeat_interval_secs > 0;
-  experimental_options.Remove(kBidiStreamDetectBrokenConnection);
+  const base::Value* skip_logging_value =
+      experimental_options.Find(kSkipLogging);
+  if (skip_logging_value) {
+    if (!skip_logging_value->is_bool()) {
+      LOG(ERROR) << "\"" << kSkipLogging << "\" config params \""
+                 << skip_logging_value << "\" is not a bool";
+      experimental_options.Remove(kSkipLogging);
+      effective_experimental_options.Remove(kSkipLogging);
+    } else {
+      skip_logging = skip_logging_value->GetBool();
+      experimental_options.Remove(kSkipLogging);
+    }
+  }
 }
 
 void URLRequestContextConfig::SetContextBuilderExperimentalOptions(
     net::URLRequestContextBuilder* context_builder,
     net::HttpNetworkSessionParams* session_params,
     net::QuicParams* quic_params,
-    net::NetworkChangeNotifier::NetworkHandle bound_network) {
+    net::handles::NetworkHandle bound_network) {
   bool async_dns_enable = false;
   bool stale_dns_enable = false;
   bool host_resolver_rules_enable = false;
   bool disable_ipv6_on_wifi = false;
   bool nel_enable = false;
-  bool is_network_bound =
-      bound_network != net::NetworkChangeNotifier::kInvalidNetworkHandle;
+  bool is_network_bound = bound_network != net::handles::kInvalidNetworkHandle;
+  absl::optional<net::HostResolver::HttpsSvcbOptions> https_svcb_options;
 
   StaleHostResolver::StaleOptions stale_dns_options;
   const std::string* host_resolver_rules_string;
@@ -432,12 +452,6 @@ void URLRequestContextConfig::SetContextBuilderExperimentalOptions(
           quic::ParsedQuicVersionVector obsolete_versions =
               net::ObsoleteQuicVersions();
           for (const quic::ParsedQuicVersion& version : supported_versions) {
-            if (version == quic::ParsedQuicVersion::Q043()) {
-              // TODO(dschinazi) Remove this special-casing of Q043 once we no
-              // longer have cronet applications that require it.
-              filtered_versions.push_back(version);
-              continue;
-            }
             if (std::find(obsolete_versions.begin(), obsolete_versions.end(),
                           version) == obsolete_versions.end()) {
               filtered_versions.push_back(version);
@@ -684,6 +698,18 @@ void URLRequestContextConfig::SetContextBuilderExperimentalOptions(
       host_resolver_rules_string =
           host_resolver_rules_args.FindString(kHostResolverRules);
       host_resolver_rules_enable = !!host_resolver_rules_string;
+    } else if (iter->first == kUseDnsHttpsSvcbFieldTrialName) {
+      if (!iter->second.is_dict()) {
+        LOG(ERROR) << "\"" << iter->first << "\" config params \""
+                   << iter->second << "\" is not a dictionary value";
+        effective_experimental_options.Remove(iter->first);
+        continue;
+      }
+      const base::Value::Dict& args = iter->second.GetDict();
+      https_svcb_options = net::HostResolver::HttpsSvcbOptions::FromDict(args);
+      session_params->use_dns_https_svcb_alpn =
+          args.FindBool(kUseDnsHttpsSvcbUseAlpn)
+              .value_or(session_params->use_dns_https_svcb_alpn);
     } else if (iter->first == kNetworkErrorLoggingFieldTrialName) {
       if (!iter->second.is_dict()) {
         LOG(ERROR) << "\"" << iter->first << "\" config params \""
@@ -765,11 +791,14 @@ void URLRequestContextConfig::SetContextBuilderExperimentalOptions(
   }
 
   if (async_dns_enable || stale_dns_enable || host_resolver_rules_enable ||
-      disable_ipv6_on_wifi || is_network_bound) {
+      disable_ipv6_on_wifi || is_network_bound || https_svcb_options) {
     net::HostResolver::ManagerOptions host_resolver_manager_options;
     host_resolver_manager_options.insecure_dns_client_enabled =
         async_dns_enable;
     host_resolver_manager_options.check_ipv6_on_wifi = !disable_ipv6_on_wifi;
+    if (https_svcb_options) {
+      host_resolver_manager_options.https_svcb_options = https_svcb_options;
+    }
 
     if (!is_network_bound) {
       std::unique_ptr<net::HostResolver> host_resolver;
@@ -823,7 +852,7 @@ void URLRequestContextConfig::SetContextBuilderExperimentalOptions(
 
 void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
     net::URLRequestContextBuilder* context_builder,
-    net::NetworkChangeNotifier::NetworkHandle bound_network) {
+    net::handles::NetworkHandle bound_network) {
   std::string config_cache;
   if (http_cache != DISABLED) {
     net::URLRequestContextBuilder::HttpCacheParams cache_params;

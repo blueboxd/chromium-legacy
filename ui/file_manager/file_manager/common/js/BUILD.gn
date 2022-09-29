@@ -37,7 +37,6 @@ group("js_modules") {
     ":icon_util",
     ":importer_common",
     ":lru_cache",
-    ":mediasession_types",
     ":metrics",
     ":metrics_base",
     ":notifications_browser_proxy",
@@ -85,6 +84,7 @@ js_type_check("closure_compile_jsmodules") {
   ]
 
   closure_flags = strict_error_checking_closure_args + [
+                    "language_in=ECMASCRIPT_2020",
                     "js_module_root=./gen/ui",
                     "js_module_root=../../ui",
                     "hide_warnings_for=third_party/",
@@ -102,6 +102,7 @@ js_type_check("test_support_modules_type_check") {
 
   closure_flags =
       strict_error_checking_closure_args + [
+        "language_in=ECMASCRIPT_2020",
         "js_module_root=./gen/ui",
         "js_module_root=../../ui",
         "browser_resolver_prefix_replacements=\"chrome://webui-test/=./\"",
@@ -266,9 +267,6 @@ js_unittest("lru_cache_unittest") {
   ]
 }
 
-js_library("mediasession_types") {
-}
-
 js_library("metrics") {
   visibility = []
   visibility = [ "//ui/file_manager/file_manager/*" ]
@@ -371,7 +369,6 @@ js_library("util") {
     "//ui/file_manager/file_manager/externs:volume_manager",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js:util.m",
     "//ui/webui/resources/js/cr:ui.m",
   ]
 
@@ -422,6 +419,7 @@ js_test_type_check("js_test_type_check") {
 
   closure_flags =
       strict_error_checking_closure_args + [
+        "language_in=ECMASCRIPT_2020",
         "js_module_root=./gen/ui",
         "js_module_root=../../ui",
         "browser_resolver_prefix_replacements=\"chrome://webui-test/=./\"",

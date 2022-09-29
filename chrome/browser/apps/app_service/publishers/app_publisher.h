@@ -18,6 +18,7 @@
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_filter.h"
+#include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/preferred_app.h"
 
 namespace apps {
@@ -85,6 +86,23 @@ class AppPublisher {
                       LaunchSource launch_source,
                       WindowInfoPtr window_info) = 0;
 
+  // DEPRECATED. Prefer passing the files in an Intent through
+  // LaunchAppWithIntent.
+  // TODO(crbug.com/1264164): Remove this method.
+  virtual void LaunchAppWithFiles(const std::string& app_id,
+                                  int32_t event_flags,
+                                  LaunchSource launch_source,
+                                  std::vector<base::FilePath> file_paths);
+
+  // Launches an app with `app_id` and Chrome OS generic `intent` irrespective
+  // of app platform. Returns whether the app was successfully launched.
+  virtual void LaunchAppWithIntent(const std::string& app_id,
+                                   int32_t event_flags,
+                                   IntentPtr intent,
+                                   LaunchSource launch_source,
+                                   WindowInfoPtr window_info,
+                                   base::OnceCallback<void(bool)> callback);
+
   // Launches an app with |params|.
   //
   // Publishers implementing this method should:
@@ -97,6 +115,26 @@ class AppPublisher {
   virtual void LaunchShortcut(const std::string& app_id,
                               const std::string& shortcut_id,
                               int64_t display_id) {}
+
+  virtual void SetPermission(const std::string& app_id,
+                             PermissionPtr permission);
+
+  virtual void Uninstall(const std::string& app_id,
+                         UninstallSource uninstall_source,
+                         bool clear_site_data,
+                         bool report_abuse);
+
+  void PauseApp(const std::string& app_id);
+  void UnpauseApp(const std::string& app_id);
+
+  virtual void StopApp(const std::string& app_id);
+
+  virtual void ExecuteContextMenuCommand(const std::string& app_id,
+                                         int command_id,
+                                         const std::string& shortcut_id,
+                                         int64_t display_id);
+
+  virtual void OpenNativeSettings(const std::string& app_id);
 
   // Indicates that the app identified by |app_id| has been set as a preferred
   // app for |intent_filter|, and the |replaced_app_preferences| is the apps

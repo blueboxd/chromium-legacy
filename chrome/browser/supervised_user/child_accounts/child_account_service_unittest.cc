@@ -12,6 +12,7 @@
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/family_info_fetcher.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/public/base/list_accounts_test_utils.h"
@@ -21,9 +22,13 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+using ::testing::IsEmpty;
+using ::testing::Not;
 
 std::unique_ptr<KeyedService> BuildTestSigninClient(
     content::BrowserContext* context) {
@@ -139,8 +144,8 @@ TEST_F(ChildAccountServiceTest, StartFetchingFamilyInfo) {
       "http://profile.url/homer/image"));
   members.push_back(FamilyInfoFetcher::FamilyMember(
       "anotherObfuscatedGaiaId", FamilyInfoFetcher::PARENT, "Marge Simpson",
-      /*profile_image_url=*/std::string(), "http://profile.url/marge",
-      /*email=*/std::string()));
+      /*email=*/std::string(), "http://profile.url/marge",
+      /*profile_image_url=*/std::string()));
 
   OnGetFamilyMembersSuccess(members);
 
@@ -148,4 +153,27 @@ TEST_F(ChildAccountServiceTest, StartFetchingFamilyInfo) {
                                  prefs::kSupervisedUserCustodianName));
   EXPECT_EQ("Marge Simpson", profile_->GetPrefs()->GetString(
                                  prefs::kSupervisedUserSecondCustodianName));
+}
+
+TEST_F(ChildAccountServiceTest, FieldsAreClearedForNonChildAccounts) {
+  std::vector<FamilyInfoFetcher::FamilyMember> members;
+  members.emplace_back("someObfuscatedGaiaId",
+                       FamilyInfoFetcher::HEAD_OF_HOUSEHOLD, "Homer Simpson",
+                       "homer@simpson.com", "http://profile.url/homer",
+                       "http://profile.url/homer/image");
+  members.emplace_back("anotherObfuscatedGaiaId", FamilyInfoFetcher::PARENT,
+                       "Marge Simpson", "marge@simpson.com",
+                       "http://profile.url/marge",
+                       "http://profile.url/marge/image");
+
+  OnGetFamilyMembersSuccess(members);
+  for (const char* property : supervised_users::kCustodianInfoPrefs) {
+    EXPECT_THAT(profile_->GetPrefs()->GetString(property), Not(IsEmpty()));
+  }
+
+  members.clear();
+  OnGetFamilyMembersSuccess(members);
+  for (const char* property : supervised_users::kCustodianInfoPrefs) {
+    EXPECT_THAT(profile_->GetPrefs()->GetString(property), IsEmpty());
+  }
 }

@@ -11,10 +11,12 @@
 #include "ash/app_list/test/test_focus_change_listener.h"
 #include "ash/app_list/views/app_list_a11y_announcer.h"
 #include "ash/app_list/views/app_list_bubble_search_page.h"
+#include "ash/app_list/views/app_list_bubble_view.h"
 #include "ash/app_list/views/app_list_toast_container_view.h"
 #include "ash/app_list/views/app_list_toast_view.h"
 #include "ash/app_list/views/apps_grid_view_test_api.h"
 #include "ash/app_list/views/continue_section_view.h"
+#include "ash/app_list/views/recent_apps_view.h"
 #include "ash/app_list/views/scrollable_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/constants/ash_features.h"
@@ -152,6 +154,40 @@ TEST_F(AppListBubbleAppsPageTest, AppsPageVisibleAfterQuicklyClearingSearch) {
   EXPECT_EQ(1.0f, apps_page->scroll_view()->contents()->layer()->opacity());
 }
 
+// Regression test for https://crbug.com/1349833
+TEST_F(AppListBubbleAppsPageTest,
+       AppsPageVisibleAfterQuicklyHidingAndShowingLauncherFromSearchPage) {
+  // Open the app list without animation.
+  ASSERT_EQ(ui::ScopedAnimationDurationScaleMode::duration_multiplier(),
+            ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+  auto* helper = GetAppListTestHelper();
+  helper->AddAppItems(5);
+  helper->ShowAppList();
+
+  auto* apps_page = helper->GetBubbleAppsPage();
+  ASSERT_TRUE(apps_page->GetVisible());
+
+  // Type a key to trigger the animation to transition to the search page.
+  PressAndReleaseKey(ui::VKEY_A);
+  EXPECT_FALSE(apps_page->GetVisible());
+
+  // Enable animations.
+  ui::ScopedAnimationDurationScaleMode duration(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  helper->GetBubbleView()->StartHideAnimation(/*is_side_shelf=*/false,
+                                              base::DoNothing());
+  helper->GetBubbleView()->StartShowAnimation(/*is_side_shelf=*/false);
+  apps_page->AbortAllAnimations();
+
+  LayerAnimationStoppedWaiter().Wait(apps_page->GetPageAnimationLayerForTest());
+
+  EXPECT_TRUE(apps_page->GetVisible());
+  EXPECT_EQ(1.0f, apps_page->scroll_view()->contents()->layer()->opacity());
+  EXPECT_EQ(gfx::Transform(),
+            apps_page->scroll_view()->contents()->layer()->transform());
+}
+
 TEST_F(AppListBubbleAppsPageTest, AnimateHidePage) {
   // Open the app list without animation.
   ASSERT_EQ(ui::ScopedAnimationDurationScaleMode::duration_multiplier(),
@@ -275,7 +311,7 @@ TEST_F(AppListBubbleAppsPageTest, ContinueLabelHiddenWhenNoTasksAndNoRecents) {
   EXPECT_FALSE(apps_page->continue_label_container_for_test()->GetVisible());
 }
 
-TEST_F(AppListBubbleAppsPageTest, CanHideContinueSection) {
+TEST_F(AppListBubbleAppsPageTest, CanHideContinueSectionByClickingButton) {
   base::test::ScopedFeatureList feature_list(
       features::kLauncherHideContinueSection);
 
@@ -305,6 +341,39 @@ TEST_F(AppListBubbleAppsPageTest, CanHideContinueSection) {
   // Label container and separator stay visible.
   EXPECT_TRUE(apps_page->continue_label_container_for_test()->GetVisible());
   EXPECT_TRUE(apps_page->separator_for_test()->GetVisible());
+}
+
+TEST_F(AppListBubbleAppsPageTest, CanHideContinueSectionByClickingHeader) {
+  base::test::ScopedFeatureList feature_list(
+      features::kLauncherHideContinueSection);
+
+  // Show the app list with enough items to make the continue section and
+  // recent apps visible.
+  auto* helper = GetAppListTestHelper();
+  helper->AddContinueSuggestionResults(4);
+  helper->AddRecentApps(5);
+  helper->AddAppItems(5);
+  helper->ShowAppList();
+
+  // The toggle continue section button has the "hide" tooltip.
+  auto* apps_page = helper->GetBubbleAppsPage();
+  views::View* continue_label_container =
+      apps_page->continue_label_container_for_test();
+  ASSERT_TRUE(continue_label_container);
+
+  // Click on the container to hide the continue section.
+  LeftClickOn(continue_label_container);
+
+  // Continue section and recent apps are hidden.
+  EXPECT_FALSE(helper->GetBubbleContinueSectionView()->GetVisible());
+  EXPECT_FALSE(helper->GetBubbleRecentAppsView()->GetVisible());
+
+  // Tap on the container to show the continue section.
+  GestureTapOn(continue_label_container);
+
+  // Continue section and recent apps are shown.
+  EXPECT_TRUE(helper->GetBubbleContinueSectionView()->GetVisible());
+  EXPECT_TRUE(helper->GetBubbleRecentAppsView()->GetVisible());
 }
 
 TEST_F(AppListBubbleAppsPageTest, HideContinueSectionPlaysAnimation) {

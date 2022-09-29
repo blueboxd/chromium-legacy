@@ -18,10 +18,17 @@ namespace ipcz {
 
 class LocalRouterLink::SharedState : public RefCounted {
  public:
-  SharedState(LinkType type, Ref<Router> router_a, Ref<Router> router_b)
+  SharedState(LinkType type,
+              LocalRouterLink::InitialState initial_state,
+              Ref<Router> router_a,
+              Ref<Router> router_b)
       : type_(type),
         router_a_(std::move(router_a)),
-        router_b_(std::move(router_b)) {}
+        router_b_(std::move(router_b)) {
+    if (initial_state == LocalRouterLink::kStable) {
+      link_state_.status = RouterLinkState::kStable;
+    }
+  }
 
   LinkType type() const { return type_; }
 
@@ -63,14 +70,14 @@ class LocalRouterLink::SharedState : public RefCounted {
 };
 
 // static
-RouterLink::Pair LocalRouterLink::ConnectRouters(LinkType type,
-                                                 const Router::Pair& routers) {
+RouterLink::Pair LocalRouterLink::CreatePair(LinkType type,
+                                             const Router::Pair& routers,
+                                             InitialState initial_state) {
   ABSL_ASSERT(type == LinkType::kCentral || type == LinkType::kBridge);
-  auto state = MakeRefCounted<SharedState>(type, routers.first, routers.second);
+  auto state = MakeRefCounted<SharedState>(type, initial_state, routers.first,
+                                           routers.second);
   auto a = AdoptRef(new LocalRouterLink(LinkSide::kA, state));
   auto b = AdoptRef(new LocalRouterLink(LinkSide::kB, state));
-  routers.first->SetOutwardLink(a);
-  routers.second->SetOutwardLink(b);
   return {a, b};
 }
 
@@ -87,24 +94,61 @@ RouterLinkState* LocalRouterLink::GetLinkState() const {
   return &state_->link_state();
 }
 
-bool LocalRouterLink::HasLocalPeer(const Router& router) {
-  return state_->GetRouter(side_.opposite()).get() == &router;
+Ref<Router> LocalRouterLink::GetLocalPeer() {
+  return state_->GetRouter(side_.opposite());
 }
 
-bool LocalRouterLink::IsRemoteLinkTo(const NodeLink& node_link,
-                                     SublinkId sublink) {
-  return false;
+RemoteRouterLink* LocalRouterLink::AsRemoteRouterLink() {
+  return nullptr;
+}
+
+void LocalRouterLink::AllocateParcelData(size_t num_bytes,
+                                         bool allow_partial,
+                                         Parcel& parcel) {
+  parcel.AllocateData(num_bytes, allow_partial, /*memory=*/nullptr);
 }
 
 void LocalRouterLink::AcceptParcel(Parcel& parcel) {
   if (Ref<Router> receiver = state_->GetRouter(side_.opposite())) {
-    receiver->AcceptInboundParcel(parcel);
+    if (state_->type() == LinkType::kCentral) {
+      receiver->AcceptInboundParcel(parcel);
+    } else {
+      ABSL_ASSERT(state_->type() == LinkType::kBridge);
+      receiver->AcceptOutboundParcel(parcel);
+    }
   }
 }
 
 void LocalRouterLink::AcceptRouteClosure(SequenceNumber sequence_length) {
   if (Ref<Router> receiver = state_->GetRouter(side_.opposite())) {
     receiver->AcceptRouteClosureFrom(state_->type(), sequence_length);
+  }
+}
+
+size_t LocalRouterLink::GetParcelCapacityInBytes(const IpczPutLimits& limits) {
+  return state_->GetRouter(side_.opposite())->GetInboundCapacityInBytes(limits);
+}
+
+RouterLinkState::QueueState LocalRouterLink::GetPeerQueueState() {
+  return state_->link_state().GetQueueState(side_.opposite());
+}
+
+bool LocalRouterLink::UpdateInboundQueueState(size_t num_parcels,
+                                              size_t num_bytes) {
+  return state_->link_state().UpdateQueueState(side_, num_parcels, num_bytes);
+}
+
+void LocalRouterLink::NotifyDataConsumed() {
+  state_->GetRouter(side_.opposite())->NotifyPeerConsumedData();
+}
+
+bool LocalRouterLink::EnablePeerMonitoring(bool enable) {
+  return state_->link_state().SetSideIsMonitoringPeer(side_, enable);
+}
+
+void LocalRouterLink::AcceptRouteDisconnected() {
+  if (Ref<Router> receiver = state_->GetRouter(side_.opposite())) {
+    receiver->AcceptRouteDisconnectedFrom(state_->type());
   }
 }
 
@@ -117,10 +161,8 @@ bool LocalRouterLink::TryLockForBypass(const NodeName& bypass_request_source) {
     return false;
   }
 
-  state_->link_state().allowed_bypass_request_source = bypass_request_source;
-
-  // Balanced by an acquire in CanNodeRequestBypass().
-  std::atomic_thread_fence(std::memory_order_release);
+  state_->link_state().allowed_bypass_request_source.StoreRelease(
+      bypass_request_source);
   return true;
 }
 
@@ -135,7 +177,7 @@ void LocalRouterLink::Unlock() {
 bool LocalRouterLink::FlushOtherSideIfWaiting() {
   const LinkSide other_side = side_.opposite();
   if (state_->link_state().ResetWaitingBit(other_side)) {
-    state_->GetRouter(other_side)->Flush();
+    state_->GetRouter(other_side)->Flush(Router::kForceProxyBypassAttempt);
     return true;
   }
   return false;
@@ -144,10 +186,41 @@ bool LocalRouterLink::FlushOtherSideIfWaiting() {
 bool LocalRouterLink::CanNodeRequestBypass(
     const NodeName& bypass_request_source) {
   // Balanced by a release in TryLockForBypass().
-  std::atomic_thread_fence(std::memory_order_acquire);
+  const NodeName allowed_source =
+      state_->link_state().allowed_bypass_request_source.LoadAcquire();
   return state_->link_state().is_locked_by(side_.opposite()) &&
-         state_->link_state().allowed_bypass_request_source ==
-             bypass_request_source;
+         allowed_source == bypass_request_source;
+}
+
+void LocalRouterLink::BypassPeer(const NodeName& bypass_target_node,
+                                 SublinkId bypass_target_sublink) {
+  // Not implemented, and never called on local links.
+  ABSL_ASSERT(false);
+}
+
+void LocalRouterLink::StopProxying(SequenceNumber inbound_sequence_length,
+                                   SequenceNumber outbound_sequence_length) {
+  // Not implemented, and never called on local links.
+  ABSL_ASSERT(false);
+}
+
+void LocalRouterLink::ProxyWillStop(SequenceNumber inbound_sequence_length) {
+  // Not implemented, and never called on local links.
+  ABSL_ASSERT(false);
+}
+
+void LocalRouterLink::BypassPeerWithLink(
+    SublinkId new_sublink,
+    FragmentRef<RouterLinkState> new_link_state,
+    SequenceNumber inbound_sequence_length) {
+  // Not implemented, and never called on local links.
+  ABSL_ASSERT(false);
+}
+
+void LocalRouterLink::StopProxyingToLocalPeer(
+    SequenceNumber outbound_sequence_length) {
+  // Not implemented, and never called on local links.
+  ABSL_ASSERT(false);
 }
 
 void LocalRouterLink::Deactivate() {

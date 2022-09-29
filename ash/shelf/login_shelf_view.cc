@@ -191,10 +191,9 @@ class LoginShelfButton : public PillButton {
                    const gfx::VectorIcon& icon)
       : PillButton(std::move(callback),
                    l10n_util::GetStringUTF16(text_resource_id),
-                   PillButton::Type::kIcon,
+                   PillButton::Type::kIconLarge,
                    &icon,
-                   PillButton::kPillButtonHorizontalSpacing,
-                   ShelfConfig::Get()->control_size()),
+                   PillButton::kPillButtonHorizontalSpacing),
         text_resource_id_(text_resource_id),
         icon_(icon) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -669,9 +668,6 @@ void LoginShelfView::OnThemeChanged() {
 }
 
 void LoginShelfView::OnShelfConfigUpdated() {
-  for (LoginShelfButton* button : login_shelf_buttons_)
-    button->UpdateButtonHeight(ShelfConfig::Get()->control_size());
-
   views::InstallRoundRectHighlightPathGenerator(
       kiosk_apps_button_, gfx::Insets(),
       ShelfConfig::Get()->control_border_radius());
@@ -890,6 +886,8 @@ void LoginShelfView::UpdateUi() {
 
     return;
   }
+
+  const gfx::Size old_preferred_size = GetPreferredSize();
   bool show_reboot = Shell::Get()->shutdown_controller()->reboot_on_shutdown();
   mojom::TrayActionState tray_action_state =
       Shell::Get()->tray_action()->GetLockScreenNoteState();
@@ -962,7 +960,16 @@ void LoginShelfView::UpdateUi() {
   SetFocusBehavior(is_anything_focusable ? views::View::FocusBehavior::ALWAYS
                                          : views::View::FocusBehavior::NEVER);
   UpdateButtonsColors();
-  Layout();
+
+  // When the login shelf view is moved to its own widget, the login shelf
+  // widget needs to change the size according to the login shelf view's
+  // preferred size.
+  if (old_preferred_size != GetPreferredSize() &&
+      features::IsUseLoginShelfWidgetEnabled()) {
+    PreferredSizeChanged();
+  } else {
+    Layout();
+  }
 }
 
 void LoginShelfView::UpdateButtonsColors() {
@@ -1061,9 +1068,6 @@ bool LoginShelfView::ShouldShowGuestButton() const {
     return is_first_signin_step_;
 
   if (session_state != SessionState::LOGIN_PRIMARY)
-    return false;
-
-  if (kiosk_license_mode_)
     return false;
 
   return true;

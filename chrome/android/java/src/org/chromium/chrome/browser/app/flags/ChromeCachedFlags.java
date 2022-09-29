@@ -10,6 +10,7 @@ import org.chromium.build.BuildConfig;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.customtabs.features.branding.BrandingController;
 import org.chromium.chrome.browser.feed.FeedPlaceholderLayout;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
@@ -17,6 +18,8 @@ import org.chromium.chrome.browser.flags.CachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.CachedFlag;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.chime.ChimeFeatures;
+import org.chromium.chrome.browser.omaha.VersionNumberGetter;
+import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuidePushNotificationManager;
 import org.chromium.chrome.browser.page_annotations.PageAnnotationsServiceConfig;
 import org.chromium.chrome.browser.paint_preview.StartupPaintPreviewHelper;
@@ -25,7 +28,6 @@ import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
-import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 
 import java.util.ArrayList;
@@ -75,6 +77,7 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sAnonymousUpdateChecks);
                 add(ChromeFeatureList.sAppMenuMobileSiteOption);
                 add(ChromeFeatureList.sBackGestureRefactorAndroid);
+                add(ChromeFeatureList.sCctBrandTransparency);
                 add(ChromeFeatureList.sCctIncognito);
                 add(ChromeFeatureList.sCctIncognitoAvailableToThirdParty);
                 add(ChromeFeatureList.sCctRemoveRemoteViewIds);
@@ -90,8 +93,6 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sCreateSafebrowsingOnStartup);
                 add(ChromeFeatureList.sCriticalPersistedTabData);
                 add(ChromeFeatureList.sDownloadsAutoResumptionNative);
-                add(ChromeFeatureList.sDynamicColorAndroid);
-                add(ChromeFeatureList.sDynamicColorButtonsAndroid);
                 add(ChromeFeatureList.sEarlyLibraryLoad);
                 add(ChromeFeatureList.sElasticOverscroll);
                 add(ChromeFeatureList.sElidePrioritizationOfPreNativeBootstrapTasks);
@@ -103,9 +104,12 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sInstantStart);
                 add(ChromeFeatureList.sInterestFeedV2);
                 add(ChromeFeatureList.sNewWindowAppMenu);
+                add(ChromeFeatureList.sOmniboxModernizeVisualUpdate);
                 add(ChromeFeatureList.sOptimizationGuidePushNotifications);
                 add(ChromeFeatureList.sPaintPreviewDemo);
                 add(ChromeFeatureList.sPaintPreviewShowOnStartup);
+                add(ChromeFeatureList.sQueryTiles);
+                add(ChromeFeatureList.sQueryTilesOnStart);
                 add(ChromeFeatureList.sReadLater);
                 add(ChromeFeatureList.sStartSurfaceAndroid);
                 add(ChromeFeatureList.sStartSurfaceRefactor);
@@ -128,6 +132,9 @@ public class ChromeCachedFlags {
         List<CachedFieldTrialParameter> fieldTrialsToCache =
                 new ArrayList<CachedFieldTrialParameter>() {
                     {
+                        add(BrandingController.BRANDING_CADENCE_MS);
+                        add(BrandingController.MAX_BLANK_TOOLBAR_TIMEOUT_MS);
+                        add(BrandingController.USE_TEMPORARY_STORAGE);
                         add(ChimeFeatures.ALWAYS_REGISTER);
                         add(StartSurfaceConfiguration.BEHAVIOURAL_TARGETING);
                         add(ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_INFOBAR_LIMIT);
@@ -135,6 +142,7 @@ public class ChromeCachedFlags {
                         add(ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_SESSION_TIME_MS);
                         add(FeedPlaceholderLayout.ENABLE_INSTANT_START_ANIMATION);
                         add(OptimizationGuidePushNotificationManager.MAX_CACHE_SIZE);
+                        add(OmniboxFeatures.ENABLE_MODERNIZE_VISUAL_UPDATE_ON_TABLET);
                         add(PageAnnotationsServiceConfig.PAGE_ANNOTATIONS_BASE_URL);
                         add(ReturnToChromeUtil.TAB_SWITCHER_ON_RETURN_MS);
                         add(CustomTabIntentDataProvider.THIRD_PARTIES_DEFAULT_POLICY);
@@ -152,7 +160,6 @@ public class ChromeCachedFlags {
                         add(StartSurfaceConfiguration.SIGNIN_PROMO_NTP_RESET_AFTER_HOURS);
                         add(StartSurfaceConfiguration.SPARE_RENDERER_DELAY_MS);
                         add(StartSurfaceConfiguration.START_SURFACE_EXCLUDE_MV_TILES);
-                        add(StartSurfaceConfiguration.START_SURFACE_EXCLUDE_QUERY_TILES);
                         add(StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB);
                         add(StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY);
                         add(StartSurfaceConfiguration.START_SURFACE_OPEN_NTP_INSTEAD_OF_START);
@@ -179,7 +186,7 @@ public class ChromeCachedFlags {
                         add(TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO);
                         add(TabUiFeatureUtilities.GRID_TAB_SWITCHER_FOR_TABLETS_POLISH);
                         add(TabUiFeatureUtilities.TAB_STRIP_TAB_WIDTH);
-                        add(ThemeUtils.ENABLE_FULL_DYNAMIC_COLORS);
+                        add(VersionNumberGetter.MIN_SDK_VERSION);
                     }
                 };
         tryToCatchMissingParameters(fieldTrialsToCache);

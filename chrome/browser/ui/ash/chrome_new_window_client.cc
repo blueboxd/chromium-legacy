@@ -124,6 +124,9 @@ chrome::FeedbackSource MapToChromeSource(
       return chrome::FeedbackSource::kFeedbackSourceAssistant;
     case ash::NewWindowDelegate::FeedbackSource::kFeedbackSourceQuickAnswers:
       return chrome::FeedbackSource::kFeedbackSourceQuickAnswers;
+    case ash::NewWindowDelegate::FeedbackSource::
+        kFeedbackSourceChannelIndicator:
+      return chrome::FeedbackSource::kFeedbackSourceChannelIndicator;
   }
 }
 
@@ -308,7 +311,23 @@ void ChromeNewWindowClient::NewWindowForDetachingTab(
   std::move(closure).Run(window);
 }
 
-void ChromeNewWindowClient::OpenUrl(const GURL& url, OpenUrlFrom from) {
+namespace {
+WindowOpenDisposition ToWindowOpenDisposition(
+    ash::NewWindowDelegate::Disposition disposition) {
+  switch (disposition) {
+    case ash::NewWindowDelegate::Disposition::kNewForegroundTab:
+      return WindowOpenDisposition::NEW_FOREGROUND_TAB;
+    case ash::NewWindowDelegate::Disposition::kNewWindow:
+      return WindowOpenDisposition::NEW_WINDOW;
+    case ash::NewWindowDelegate::Disposition::kSwitchToTab:
+      return WindowOpenDisposition::SWITCH_TO_TAB;
+  }
+}
+}  // namespace
+
+void ChromeNewWindowClient::OpenUrl(const GURL& url,
+                                    OpenUrlFrom from,
+                                    Disposition disposition) {
   // Opens a URL in a new tab. If the URL is for a chrome://settings page,
   // opens settings in a new window.
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -334,6 +353,7 @@ void ChromeNewWindowClient::OpenUrl(const GURL& url, OpenUrlFrom from) {
       profile, url,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                 ui::PAGE_TRANSITION_FROM_API));
+  navigate_params.disposition = ToWindowOpenDisposition(disposition);
 
   // If the |from| is kUserInteraction, then the page will load with a user
   // activation. This means it will be able to autoplay media without
@@ -436,14 +456,23 @@ void ChromeNewWindowClient::OpenDownloadsFolder() {
       return;
     }
 
-    apps::mojom::FilePathsPtr launch_files = apps::mojom::FilePaths::New();
-    launch_files->file_paths.push_back(downloads_path);
-
-    proxy->LaunchAppWithFiles(
-        update.AppId(),
-        apps::GetEventFlags(WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                            /*prefer_container=*/true),
-        apps::mojom::LaunchSource::kFromKeyboard, std::move(launch_files));
+    if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
+      std::vector<base::FilePath> launch_files;
+      launch_files.push_back(downloads_path);
+      proxy->LaunchAppWithFiles(
+          update.AppId(),
+          apps::GetEventFlags(WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                              /*prefer_container=*/true),
+          apps::LaunchSource::kFromKeyboard, std::move(launch_files));
+    } else {
+      apps::mojom::FilePathsPtr launch_files = apps::mojom::FilePaths::New();
+      launch_files->file_paths.push_back(downloads_path);
+      proxy->LaunchAppWithFiles(
+          update.AppId(),
+          apps::GetEventFlags(WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                              /*prefer_container=*/true),
+          apps::mojom::LaunchSource::kFromKeyboard, std::move(launch_files));
+    }
   };
 
   bool result = proxy->AppRegistryCache().ForOneApp(

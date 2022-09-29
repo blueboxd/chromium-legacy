@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+#import "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #include "components/sync/driver/sync_service_utils.h"
@@ -149,8 +150,9 @@ constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes = base::Minutes(1);
                                            .size()];
 }
 
-- (void)deletePasswordForm:(const password_manager::PasswordForm&)form {
-  _savedPasswordsPresenter->RemovePassword(form);
+- (void)deleteCredential:
+    (const password_manager::CredentialUIEntry&)credential {
+  _savedPasswordsPresenter->RemoveCredential(credential);
 }
 
 - (void)disconnect {
@@ -161,10 +163,10 @@ constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes = base::Minutes(1);
 
 #pragma mark - PasswordManagerViewControllerDelegate
 
-- (void)deletePasswordForms:
-    (const std::vector<password_manager::PasswordForm>&)forms {
-  for (const auto& form : forms) {
-    _savedPasswordsPresenter->RemovePassword(form);
+- (void)deleteCredentials:
+    (const std::vector<password_manager::CredentialUIEntry>&)credentials {
+  for (const auto& credential : credentials) {
+    _savedPasswordsPresenter->RemoveCredential(credential);
   }
 }
 
@@ -258,6 +260,11 @@ constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes = base::Minutes(1);
   return OnDeviceEncryptionStateNotShown;
 }
 
+- (BOOL)isSyncingPasswords {
+  return password_manager_util::GetPasswordSyncState(_syncService) !=
+         password_manager::SyncState::kNotSyncing;
+}
+
 #pragma mark - PasswordCheckObserver
 
 - (void)passwordCheckStateDidChange:(PasswordCheckState)state {
@@ -273,8 +280,7 @@ constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes = base::Minutes(1);
                                            .size()];
 }
 
-- (void)compromisedCredentialsDidChange:
-    (password_manager::InsecureCredentialsManager::CredentialsView)credentials {
+- (void)compromisedCredentialsDidChange {
   // Compromised passwords changes has no effect on UI while check is running.
   if (_passwordCheckManager->GetPasswordCheckState() ==
       PasswordCheckState::kRunning)
@@ -282,9 +288,12 @@ constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes = base::Minutes(1);
 
   DCHECK(self.consumer);
 
-  [self.consumer setPasswordCheckUIState:
-                     [self computePasswordCheckUIStateWith:_currentState]
-        unmutedCompromisedPasswordsCount:credentials.size()];
+  [self.consumer
+               setPasswordCheckUIState:
+                   [self computePasswordCheckUIStateWith:_currentState]
+      unmutedCompromisedPasswordsCount:_passwordCheckManager
+                                           ->GetUnmutedCompromisedCredentials()
+                                           .size()];
 }
 
 #pragma mark - PasswordAutoFillStatusObserver
@@ -300,20 +309,18 @@ constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes = base::Minutes(1);
 
 // Provides passwords and blocked forms to the '_consumer'.
 - (void)providePasswordsToConsumer {
-  std::vector<password_manager::PasswordForm> forms =
-      _savedPasswordsPresenter->GetUniquePasswordForms();
-
-  std::vector<password_manager::PasswordForm> savedForms, blockedForms;
-  for (const auto& form : forms) {
-    if (form.blocked_by_user) {
-      blockedForms.push_back(std::move(form));
+  std::vector<password_manager::CredentialUIEntry> passwords, blockedSites;
+  for (const auto& credential :
+       _savedPasswordsPresenter->GetSavedCredentials()) {
+    if (credential.blocked_by_user) {
+      blockedSites.push_back(std::move(credential));
     } else {
-      savedForms.push_back(std::move(form));
+      passwords.push_back(std::move(credential));
     }
   }
 
-  [_consumer setPasswordsForms:std::move(savedForms)
-                  blockedForms:std::move(blockedForms)];
+  [_consumer setPasswords:std::move(passwords)
+             blockedSites:std::move(blockedSites)];
 }
 
 // Returns PasswordCheckUIState based on PasswordCheckState.

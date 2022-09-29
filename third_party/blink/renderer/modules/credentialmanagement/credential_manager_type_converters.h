@@ -19,7 +19,8 @@ class AuthenticatorSelectionCriteria;
 class CableAuthenticationData;
 class CableRegistrationData;
 class Credential;
-class IdentityCredentialLogoutRpsRequest;
+class IdentityCredentialLogoutRPsRequest;
+class IdentityProvider;
 class PublicKeyCredentialCreationOptions;
 class PublicKeyCredentialDescriptor;
 class PublicKeyCredentialParameters;
@@ -122,9 +123,9 @@ struct TypeConverter<blink::mojom::blink::AuthenticatorSelectionCriteriaPtr,
 
 template <>
 struct TypeConverter<blink::mojom::blink::LogoutRpsRequestPtr,
-                     blink::IdentityCredentialLogoutRpsRequest> {
+                     blink::IdentityCredentialLogoutRPsRequest> {
   static blink::mojom::blink::LogoutRpsRequestPtr Convert(
-      const blink::IdentityCredentialLogoutRpsRequest&);
+      const blink::IdentityCredentialLogoutRPsRequest&);
 };
 
 template <>
@@ -188,6 +189,13 @@ struct TypeConverter<blink::mojom::blink::RemoteDesktopClientOverridePtr,
                      blink::RemoteDesktopClientOverride> {
   static blink::mojom::blink::RemoteDesktopClientOverridePtr Convert(
       const blink::RemoteDesktopClientOverride&);
+};
+
+template <>
+struct TypeConverter<blink::mojom::blink::IdentityProviderPtr,
+                     blink::IdentityProvider> {
+  static blink::mojom::blink::IdentityProviderPtr Convert(
+      const blink::IdentityProvider&);
 };
 
 }  // namespace mojo

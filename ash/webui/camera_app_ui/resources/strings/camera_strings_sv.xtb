@@ -7,6 +7,7 @@
 <translation id="1258009455399840361">Rotera 90 grader medurs</translation>
 <translation id="1276998909102132017">Bilder i galleriet</translation>
 <translation id="1300209025925956156">Skanna dokumentet</translation>
+<translation id="1309250603447638106">Laddar ned uppdateringar för dokumentskanning</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Sök + vänsterpil för att få åtkomst.</translation>
 <translation id="1393338179284529051">Quad HD</translation>
 <translation id="1430915738399379752">Skriv ut</translation>
@@ -47,6 +48,7 @@
 <translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Spegla förhandsgranskning</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> är ansluten.</translation>
+<translation id="2904654629665923749">Dokumentskanning tillgängligt</translation>
 <translation id="2968794441791257519">Videor och foton du tagit med kameran flyttas till mappen Nedladdningar. Du kan öppna dem i Filer.
 
         Fotona och videorna blir tillgängliga för appar som har åtkomstbehörighet till lagringsutrymmet.</translation>
@@ -72,7 +74,6 @@
 <translation id="3838931309141338733">Läs av streckkod</translation>
 <translation id="3892148308691398805">Kopiera text</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> MP</translation>
-<translation id="4096701159033358951">Laddar ned funktionen för dokumentskanning</translation>
 <translation id="4118525110028899586">Pausa inspelning</translation>
 <translation id="4121305183798804752">Ett dokument identifierades</translation>
 <translation id="414641094616694804">Det går inte att ändra upplösning för den här kameran</translation>
@@ -90,11 +91,10 @@
 <translation id="4705093842003735294">Hög upplösning</translation>
 <translation id="4890010094662541459">3 × 3</translation>
 <translation id="491895758387112773">Multistream-videoinspelning</translation>
-<translation id="5034763830503483128">Fotots bildformat</translation>
+<translation id="5034763830503483128">Fotots bildproportioner</translation>
 <translation id="5057360777601936059">Kameran är inte tillgänglig.
         Kontrollera kameraanslutningen.</translation>
 <translation id="5163387177077603948">Flyttas åt höger</translation>
-<translation id="520537883758714667">Dokumentskanning är nu tillgängligt</translation>
 <translation id="5235304959032763950">16 till 9</translation>
 <translation id="5266635337630551423">Övre vänstra hörnet på dokumentet</translation>
 <translation id="5317780077021120954">Spara</translation>

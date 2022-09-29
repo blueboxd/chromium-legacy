@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/core/css/parser/sizes_attribute_parser.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
-#include "third_party/blink/renderer/core/frame/attribution_src_loader.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
@@ -341,8 +340,7 @@ class TokenPreloadScanner::StartTagScanner {
     if (scanner_type_ == ScannerType::kInsertion)
       request->SetFromInsertionScanner(true);
 
-    if (attributionsrc_attr_set_ &&
-        document_parameters.can_register_attribution) {
+    if (attributionsrc_attr_set_) {
       DCHECK(is_script || is_img);
       request->SetAttributionReportingEligibleImgOrScript(true);
     }
@@ -878,14 +876,6 @@ void TokenPreloadScanner::HandleMetaNameAttribute(
     HandleMetaReferrer(content_attribute_value, document_parameters_.get(),
                        &css_scanner_);
   }
-
-  if (EqualIgnoringASCIICase(name_attribute_value, http_names::kAcceptCH) &&
-      RuntimeEnabledFeatures::ClientHintsMetaNameAcceptCHEnabled()) {
-    meta_ch_values.push_back(MetaCHValue{
-        .value = content_attribute->GetValue(),
-        .type = network::MetaCHType::NameAcceptCH,
-        .is_doc_preloader = scanner_type_ == ScannerType::kMainDocument});
-  }
 }
 
 void TokenPreloadScanner::ScanCommon(
@@ -1090,9 +1080,7 @@ WTF::SequenceBound<HTMLPreloadScanner> HTMLPreloadScanner::CreateBackground(
       std::make_unique<CachedDocumentParameters>(document),
       MediaValuesCached::MediaValuesCachedData(*document),
       TokenPreloadScanner::ScannerType::kMainDocument,
-      base::FeatureList::IsEnabled(features::kPrecompileInlineScripts)
-          ? BackgroundHTMLScanner::ScriptTokenScanner::Create(parser)
-          : nullptr);
+      BackgroundHTMLScanner::ScriptTokenScanner::Create(parser));
 }
 
 HTMLPreloadScanner::HTMLPreloadScanner(
@@ -1139,8 +1127,7 @@ std::unique_ptr<PendingPreloadData> HTMLPreloadScanner::Scan(
 
   while (tokenizer_->NextToken(source_, token_)) {
     if (token_.GetType() == HTMLToken::kStartTag)
-      tokenizer_->UpdateStateFor(
-          AttemptStaticStringCreation(token_.GetName(), kLikely8Bit));
+      tokenizer_->UpdateStateFor(token_);
     bool seen_csp_meta_tag = false;
     scanner_.Scan(token_, source_, pending_data->requests,
                   pending_data->meta_ch_values, &pending_data->viewport,
@@ -1199,13 +1186,6 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
   }
   probe::GetDisabledImageTypes(document->GetExecutionContext(),
                                &disabled_image_types);
-
-  can_register_attribution = CanRegisterAttributionInContext(
-      document->Loader()->GetFrame(),
-      /*element=*/nullptr,
-      /*request_id=*/absl::nullopt,
-      AttributionSrcLoader::RegisterContext::kAttributionSrc,
-      /*log_issues=*/false);
 }
 
 }  // namespace blink

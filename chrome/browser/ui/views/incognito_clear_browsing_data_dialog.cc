@@ -5,11 +5,9 @@
 #include "chrome/browser/ui/views/incognito_clear_browsing_data_dialog.h"
 
 #include "base/metrics/histogram_functions.h"
-
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/accessibility/theme_tracking_non_accessible_image_view.h"
-#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -21,48 +19,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_provider.h"
-
-namespace {
-IncognitoClearBrowsingDataDialog* g_incognito_cbd_dialog = nullptr;
-}  // namespace
-
-// static
-void IncognitoClearBrowsingDataDialog::Show(views::View* anchor_view,
-                                            Profile* incognito_profile,
-                                            Type type) {
-  g_incognito_cbd_dialog = new IncognitoClearBrowsingDataDialog(
-      anchor_view, incognito_profile, type);
-  views::Widget* const widget =
-      BubbleDialogDelegateView::CreateBubble(g_incognito_cbd_dialog);
-  widget->Show();
-}
-
-// static
-bool IncognitoClearBrowsingDataDialog::IsShowing() {
-  return g_incognito_cbd_dialog != nullptr;
-}
-
-// static
-void IncognitoClearBrowsingDataDialog::CloseDialog() {
-  if (IsShowing())
-    g_incognito_cbd_dialog->GetWidget()->Close();
-}
-
-// static
-IncognitoClearBrowsingDataDialog* IncognitoClearBrowsingDataDialog::
-    GetIncognitoClearBrowsingDataDialogForTesting() {
-  return g_incognito_cbd_dialog;
-}
-
-void IncognitoClearBrowsingDataDialog::SetDestructorCallbackForTesting(
-    base::OnceClosure callback) {
-  destructor_callback_ = std::move(callback);
-}
-
-IncognitoClearBrowsingDataDialog::~IncognitoClearBrowsingDataDialog() {
-  g_incognito_cbd_dialog = nullptr;
-  std::move(destructor_callback_).Run();
-}
+#include "ui/views/style/typography.h"
 
 IncognitoClearBrowsingDataDialog::IncognitoClearBrowsingDataDialog(
     views::View* anchor_view,
@@ -107,13 +64,14 @@ IncognitoClearBrowsingDataDialog::IncognitoClearBrowsingDataDialog(
 
 void IncognitoClearBrowsingDataDialog::SetDialogForDefaultBubbleType() {
   // Text
-  AddChildView(views::Builder<views::Label>()
-                   .SetText(l10n_util::GetStringUTF16(
-                       IDS_INCOGNITO_CLEAR_BROWSING_DATA_DIALOG_PRIMARY_TEXT))
-                   .SetFontList(views::style::GetFont(
-                       views::style::CONTEXT_LABEL, STYLE_EMPHASIZED))
-                   .SetHorizontalAlignment(gfx::ALIGN_LEFT)
-                   .Build());
+  AddChildView(
+      views::Builder<views::Label>()
+          .SetText(l10n_util::GetStringUTF16(
+              IDS_INCOGNITO_CLEAR_BROWSING_DATA_DIALOG_PRIMARY_TEXT))
+          .SetFontList(views::style::GetFont(views::style::CONTEXT_LABEL,
+                                             views::style::STYLE_EMPHASIZED))
+          .SetHorizontalAlignment(gfx::ALIGN_LEFT)
+          .Build());
 
   AddChildView(
       views::Builder<views::Label>()
@@ -142,13 +100,14 @@ void IncognitoClearBrowsingDataDialog::SetDialogForDefaultBubbleType() {
 void IncognitoClearBrowsingDataDialog::
     SetDialogForHistoryDisclaimerBubbleType() {
   // Text
-  AddChildView(views::Builder<views::Label>()
-                   .SetText(l10n_util::GetStringUTF16(
-                       IDS_INCOGNITO_HISTORY_BUBBLE_PRIMARY_TEXT))
-                   .SetFontList(views::style::GetFont(
-                       views::style::CONTEXT_LABEL, STYLE_EMPHASIZED))
-                   .SetHorizontalAlignment(gfx::ALIGN_LEFT)
-                   .Build());
+  AddChildView(
+      views::Builder<views::Label>()
+          .SetText(l10n_util::GetStringUTF16(
+              IDS_INCOGNITO_HISTORY_BUBBLE_PRIMARY_TEXT))
+          .SetFontList(views::style::GetFont(views::style::CONTEXT_LABEL,
+                                             views::style::STYLE_EMPHASIZED))
+          .SetHorizontalAlignment(gfx::ALIGN_LEFT)
+          .Build());
 
   views::Label* label = AddChildView(
       views::Builder<views::Label>()
@@ -201,7 +160,8 @@ void IncognitoClearBrowsingDataDialog::OnCancelButtonClicked() {
         DialogActionType::kCancel);
   }
 
-  CloseDialog();
+  GetWidget()->CloseWithReason(
+      views::Widget::ClosedReason::kCloseButtonClicked);
 }
 
 BEGIN_METADATA(IncognitoClearBrowsingDataDialog,

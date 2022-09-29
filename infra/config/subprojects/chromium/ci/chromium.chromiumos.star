@@ -584,6 +584,7 @@ ci.builder(
             target_bits = 64,
             target_cros_boards = [
                 "arm-generic",
+                "jacuzzi",
             ],
             target_platform = builder_config.target_platform.CHROMEOS,
         ),
@@ -698,6 +699,8 @@ ci.builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    # This builder build 2 chrome(Ash and Lacros), so it need
+    # more time.
     # TODO(crbug.com/1345687): use normal machines.
     builderless = False,
 )

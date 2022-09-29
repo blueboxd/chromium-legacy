@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.os.Bundle;
 
+import org.chromium.base.Promise;
 import org.chromium.base.supplier.OneshotSupplier;
 
 /**
@@ -94,8 +95,8 @@ public interface FirstRunPageDelegate {
     OneshotSupplier<Boolean> getChildAccountStatusSupplier();
 
     /**
-     * Whether FRE pages can use layouts optimized for landscape orientation. Returns false if the
-     * FRE is shown in a dialog.
+     * Returns the promise that provides information about native initialization. Callers can use
+     * {@link Promise#isFulfilled()} to check whether the native has already been initialized.
      */
-    boolean canUseLandscapeLayout();
+    Promise<Void> getNativeInitializationPromise();
 }

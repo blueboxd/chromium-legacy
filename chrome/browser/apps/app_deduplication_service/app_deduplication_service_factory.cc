@@ -19,7 +19,7 @@ static constexpr const char* kAppDeduplicationService =
     "AppDeduplicationService";
 }  // namespace
 
-namespace apps {
+namespace apps::deduplication {
 
 // static
 AppDeduplicationService* AppDeduplicationServiceFactory::GetForProfile(
@@ -41,6 +41,9 @@ AppDeduplicationServiceFactory* AppDeduplicationServiceFactory::GetInstance() {
 // app deduplication.
 bool AppDeduplicationServiceFactory::
     IsAppDeduplicationServiceAvailableForProfile(Profile* profile) {
+  if (!base::FeatureList::IsEnabled(features::kAppDeduplicationService)) {
+    return false;
+  }
   return AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile);
 }
 
@@ -74,4 +77,4 @@ content::BrowserContext* AppDeduplicationServiceFactory::GetBrowserContextToUse(
   return BrowserContextKeyedServiceFactory::GetBrowserContextToUse(context);
 }
 
-}  // namespace apps
+}  // namespace apps::deduplication

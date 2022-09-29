@@ -19,10 +19,6 @@ const base::Feature kEnableZeroStateMixedTypesRanker{
     "EnableZeroStateMixedTypesRanker", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAppReinstallZeroState{
     "EnableAppReinstallZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kEnableSuggestedFiles{"EnableSuggestedFiles",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kEnableSuggestedLocalFiles{
-    "EnableSuggestedLocalFiles", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppListLaunchRecording{
     "EnableAppListLaunchRecording", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kLauncherSettingsSearch{"LauncherSettingsSearch",
@@ -40,8 +36,6 @@ const base::Feature kSearchResultInlineIcon{"SearchResultInlineIcon",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kDynamicSearchUpdateAnimation{
     "DynamicSearchUpdateAnimation", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kLauncherLacrosIntegration{
-    "LauncherLacrosIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kCompactBubbleLauncher{"CompactBubbleLauncher",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kLauncherPlayStoreSearch{"LauncherPlayStoreSearch",
@@ -61,14 +55,6 @@ bool IsZeroStateMixedTypesRankerEnabled() {
 
 bool IsAppReinstallZeroStateEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppReinstallZeroState);
-}
-
-bool IsSuggestedFilesEnabled() {
-  return base::FeatureList::IsEnabled(kEnableSuggestedFiles);
-}
-
-bool IsSuggestedLocalFilesEnabled() {
-  return base::FeatureList::IsEnabled(kEnableSuggestedLocalFiles);
 }
 
 bool IsLauncherSettingsSearchEnabled() {
@@ -111,11 +97,6 @@ bool IsDynamicSearchUpdateAnimationEnabled() {
   // Search update animations are only supported for categorical search.
   return IsCategoricalSearchEnabled() &&
          base::FeatureList::IsEnabled(kDynamicSearchUpdateAnimation);
-}
-
-bool IsLauncherLacrosIntegrationEnabled() {
-  return base::FeatureList::IsEnabled(chromeos::features::kLacrosSupport) &&
-         base::FeatureList::IsEnabled(kLauncherLacrosIntegration);
 }
 
 std::string CategoricalSearchType() {

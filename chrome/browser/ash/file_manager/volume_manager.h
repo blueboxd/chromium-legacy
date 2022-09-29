@@ -106,7 +106,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   static std::unique_ptr<Volume> CreateForDownloads(
       const base::FilePath& downloads_path);
   static std::unique_ptr<Volume> CreateForRemovable(
-      const ash::disks::DiskMountManager::MountPointInfo& mount_point,
+      const ash::disks::DiskMountManager::MountPoint& mount_point,
       const ash::disks::Disk* disk);
   static std::unique_ptr<Volume> CreateForProvidedFileSystem(
       const ash::file_system_provider::ProvidedFileSystemInfo& file_system_info,
@@ -152,7 +152,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   static std::unique_ptr<Volume> CreateForTesting(
       const base::FilePath& path,
       VolumeType volume_type,
-      chromeos::DeviceType device_type,
+      ash::DeviceType device_type,
       bool read_only,
       const base::FilePath& device_path,
       const std::string& drive_label,
@@ -161,6 +161,16 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   static std::unique_ptr<Volume> CreateForTesting(
       const base::FilePath& device_path,
       const base::FilePath& mount_path);
+  // Create a volume at `path` with the specified `volume_type`.
+  // For `volume_type`==VOLUME_TYPE_GUEST_OS, `vm_type` should also be
+  // specified. For `volume_type`==VOLUME_TYPE_MOUNTED_ARCHIVE_FILE,
+  // `source_path` has to be specified and point to the (not necessarily
+  // existing) path of the archive file.
+  static std::unique_ptr<Volume> CreateForTesting(
+      const base::FilePath& path,
+      VolumeType volume_type,
+      absl::optional<guest_os::VmType> vm_type,
+      absl::optional<base::FilePath> source_path = absl::nullopt);
 
   // Getters for all members. See below for details.
   const std::string& volume_id() const { return volume_id_; }
@@ -170,7 +180,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   }
   Source source() const { return source_; }
   VolumeType type() const { return type_; }
-  chromeos::DeviceType device_type() const { return device_type_; }
+  ash::DeviceType device_type() const { return device_type_; }
   const base::FilePath& source_path() const { return source_path_; }
   const base::FilePath& mount_path() const { return mount_path_; }
   const base::FilePath& remote_mount_path() const { return remote_mount_path_; }
@@ -227,7 +237,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   VolumeType type_;
 
   // The type of device. (e.g. USB, SD card, DVD etc.)
-  chromeos::DeviceType device_type_;
+  ash::DeviceType device_type_ = ash::DeviceType::kUnknown;
 
   // The source path of the volume.
   // E.g.:
@@ -390,6 +400,7 @@ class VolumeManager : public KeyedService,
   // mount was removed successfully or wasn't mounted to begin with. Runs
   // `callback` with false in all other cases.
   void RemoveSftpGuestOsVolume(const base::FilePath& sftp_mount_path,
+                               const guest_os::VmType vm_type,
                                RemoveSftpGuestOsVolumeCallback callback);
 
   // Removes Downloads volume used for testing.
@@ -419,7 +430,7 @@ class VolumeManager : public KeyedService,
   // type. Assumes that the mount point is already registered.
   void AddVolumeForTesting(const base::FilePath& path,
                            VolumeType volume_type,
-                           chromeos::DeviceType device_type,
+                           ash::DeviceType device_type,
                            bool read_only,
                            const base::FilePath& device_path = base::FilePath(),
                            const std::string& drive_label = "",
@@ -432,7 +443,7 @@ class VolumeManager : public KeyedService,
   void RemoveVolumeForTesting(
       const base::FilePath& path,
       VolumeType volume_type,
-      chromeos::DeviceType device_type,
+      ash::DeviceType device_type,
       bool read_only,
       const base::FilePath& device_path = base::FilePath(),
       const std::string& drive_label = "",
@@ -449,18 +460,18 @@ class VolumeManager : public KeyedService,
                      const std::string& device_path) override;
   void OnMountEvent(
       ash::disks::DiskMountManager::MountEvent event,
-      chromeos::MountError error_code,
-      const ash::disks::DiskMountManager::MountPointInfo& mount_info) override;
+      ash::MountError error_code,
+      const ash::disks::DiskMountManager::MountPoint& mount_info) override;
   void OnFormatEvent(ash::disks::DiskMountManager::FormatEvent event,
-                     chromeos::FormatError error_code,
+                     ash::FormatError error_code,
                      const std::string& device_path,
                      const std::string& device_label) override;
   void OnPartitionEvent(ash::disks::DiskMountManager::PartitionEvent event,
-                        chromeos::PartitionError error_code,
+                        ash::PartitionError error_code,
                         const std::string& device_path,
                         const std::string& device_label) override;
   void OnRenameEvent(ash::disks::DiskMountManager::RenameEvent event,
-                     chromeos::RenameError error_code,
+                     ash::RenameError error_code,
                      const std::string& device_path,
                      const std::string& device_label) override;
 
@@ -533,12 +544,11 @@ class VolumeManager : public KeyedService,
   void OnStorageMonitorInitialized();
   void DoAttachMtpStorage(const storage_monitor::StorageInfo& info,
                           device::mojom::MtpStorageInfoPtr mtp_storage_info);
-  void DoMountEvent(chromeos::MountError error_code,
-                    std::unique_ptr<Volume> volume);
-  void DoUnmountEvent(chromeos::MountError error_code, const Volume& volume);
+  void DoMountEvent(ash::MountError error_code, std::unique_ptr<Volume> volume);
+  void DoUnmountEvent(ash::MountError error_code, const Volume& volume);
   void OnExternalStorageDisabledChangedUnmountCallback(
       std::vector<std::string> remaining_mount_paths,
-      chromeos::MountError error_code);
+      ash::MountError error_code);
 
   // Returns the path of the mount point for drive.
   base::FilePath GetDriveMountPointPath() const;
@@ -546,11 +556,12 @@ class VolumeManager : public KeyedService,
   void OnSshfsCrostiniUnmountCallback(
       const base::FilePath& sshfs_mount_path,
       RemoveSshfsCrostiniVolumeCallback callback,
-      chromeos::MountError error_code);
+      ash::MountError error_code);
 
   void OnSftpGuestOsUnmountCallback(const base::FilePath& sftp_mount_path,
+                                    const guest_os::VmType vm_type,
                                     RemoveSftpGuestOsVolumeCallback callback,
-                                    chromeos::MountError error_code);
+                                    ash::MountError error_code);
 
   Profile* profile_;
   drive::DriveIntegrationService* drive_integration_service_;  // Not owned.

@@ -51,6 +51,9 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
   void SetSystemModal(bool modal) override;
   bool SupportsScreenCoordinates() const override;
   void EnableScreenCoordinates() override;
+  void SetFloat() override;
+  void UnSetFloat() override;
+  void SetZOrder(ZOrderLevel z_order) override;
 
   XDGSurfaceWrapperImpl* xdg_surface_wrapper() const;
 
@@ -62,6 +65,13 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
                                 int32_t height,
                                 struct wl_array* states);
   static void CloseTopLevel(void* data, struct xdg_toplevel* xdg_toplevel);
+  static void ConfigureBounds(void* data,
+                              struct xdg_toplevel* xdg_toplevel,
+                              int32_t width,
+                              int32_t height);
+  static void WmCapabilities(void* data,
+                             struct xdg_toplevel* xdg_toplevel,
+                             struct wl_array* capabilities);
 
   // zxdg_decoration_listener
   static void ConfigureDecoration(

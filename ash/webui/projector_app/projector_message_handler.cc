@@ -59,10 +59,10 @@ struct SetUserPrefArgs {
   base::Value value;
 };
 
-base::Value AccessTokenInfoToValue(const signin::AccessTokenInfo& info) {
-  base::Value value(base::Value::Type::DICTIONARY);
-  value.SetKey(kToken, base::Value(info.token));
-  value.SetKey(kExpirationTime, base::TimeToValue(info.expiration_time));
+base::Value::Dict AccessTokenInfoToValue(const signin::AccessTokenInfo& info) {
+  base::Value::Dict value;
+  value.Set(kToken, info.token);
+  value.Set(kExpirationTime, base::TimeToValue(info.expiration_time));
   return value;
 }
 
@@ -77,13 +77,14 @@ std::string ProjectorErrorToString(ProjectorError mode) {
   }
 }
 
-base::Value ScreencastListToValue(const PendingScreencastSet& screencasts) {
+base::Value::List ScreencastListToValue(
+    const PendingScreencastSet& screencasts) {
   base::Value::List value;
   value.reserve(screencasts.size());
   for (const auto& item : screencasts)
     value.Append(item.ToValue());
 
-  return base::Value(std::move(value));
+  return value;
 }
 
 bool IsUserPrefSupported(const std::string& pref) {
@@ -147,11 +148,10 @@ bool GetSetUserPrefArgs(const base::Value& args, SetUserPrefArgs* out) {
   return IsValidPrefValueArg(*out);
 }
 
-base::Value CreateRejectMessageForArgs(const base::Value& value) {
-  base::Value rejected_response(base::Value::Type::DICTIONARY);
-  rejected_response.SetKey(kRejectedRequestMessageKey,
-                           base::Value(kRejectedRequestMessage));
-  rejected_response.SetKey(kRejectedRequestArgsKey, value.Clone());
+base::Value::Dict CreateRejectMessageForArgs(const base::Value& value) {
+  base::Value::Dict rejected_response;
+  rejected_response.Set(kRejectedRequestMessageKey, kRejectedRequestMessage);
+  rejected_response.Set(kRejectedRequestArgsKey, value.Clone());
   return rejected_response;
 }
 
@@ -224,9 +224,8 @@ void ProjectorMessageHandler::RegisterMessages() {
       base::BindRepeating(&ProjectorMessageHandler::OpenFeedbackDialog,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "getScreencast",
-      base::BindRepeating(&ProjectorMessageHandler::GetScreencast,
-                          base::Unretained(this)));
+      "getVideo", base::BindRepeating(&ProjectorMessageHandler::GetVideo,
+                                      base::Unretained(this)));
 }
 
 void ProjectorMessageHandler::OnScreencastsPendingStatusChanged(
@@ -280,7 +279,7 @@ void ProjectorMessageHandler::GetAccounts(const base::Value::List& args) {
     response.Append(std::move(account_info));
   }
 
-  ResolveJavascriptCallback(args[0], base::Value(std::move(response)));
+  ResolveJavascriptCallback(args[0], response);
 }
 
 void ProjectorMessageHandler::GetNewScreencastPrecondition(
@@ -290,10 +289,9 @@ void ProjectorMessageHandler::GetNewScreencastPrecondition(
   // Check that there is only one argument which is the callback id.
   DCHECK_EQ(args.size(), 1u);
 
-  ResolveJavascriptCallback(args[0],
-                            base::Value(ProjectorController::Get()
-                                            ->GetNewScreencastPrecondition()
-                                            .ToValue()));
+  ResolveJavascriptCallback(
+      args[0],
+      ProjectorController::Get()->GetNewScreencastPrecondition().ToValue());
 }
 
 void ProjectorMessageHandler::StartProjectorSession(
@@ -411,7 +409,7 @@ void ProjectorMessageHandler::GetUserPref(const base::Value::List& args) {
     return;
   }
 
-  ResolveJavascriptCallback(args[0], *(pref_service_->Get(user_pref)));
+  ResolveJavascriptCallback(args[0], pref_service_->GetValue(user_pref));
 }
 
 void ProjectorMessageHandler::SetUserPref(const base::Value::List& args) {
@@ -440,19 +438,19 @@ void ProjectorMessageHandler::OnAccessTokenRequestCompleted(
     const signin::AccessTokenInfo& info) {
   AllowJavascript();
 
-  base::Value response(base::Value::Type::DICTIONARY);
-  response.SetKey(kUserEmail, base::Value(email));
+  base::Value::Dict response;
+  response.Set(kUserEmail, base::Value(email));
   if (error.state() != GoogleServiceAuthError::State::NONE) {
-    response.SetKey(kOAuthTokenInfo, base::Value());
-    response.SetKey(kError, base::Value(ProjectorErrorToString(
-                                ProjectorError::kTokenFetchFailure)));
+    response.Set(kOAuthTokenInfo, base::Value());
+    response.Set(kError, base::Value(ProjectorErrorToString(
+                             ProjectorError::kTokenFetchFailure)));
   } else {
-    response.SetKey(kError,
-                    base::Value(ProjectorErrorToString(ProjectorError::kNone)));
-    response.SetKey(kOAuthTokenInfo, AccessTokenInfoToValue(info));
+    response.Set(kError,
+                 base::Value(ProjectorErrorToString(ProjectorError::kNone)));
+    response.Set(kOAuthTokenInfo, AccessTokenInfoToValue(info));
   }
 
-  ResolveJavascriptCallback(base::Value(js_callback_id), std::move(response));
+  ResolveJavascriptCallback(base::Value(js_callback_id), response);
 }
 
 void ProjectorMessageHandler::OnXhrRequestCompleted(
@@ -462,12 +460,12 @@ void ProjectorMessageHandler::OnXhrRequestCompleted(
     const std::string& error) {
   AllowJavascript();
 
-  base::Value response(base::Value::Type::DICTIONARY);
-  response.SetBoolKey(kXhrSuccess, success);
-  response.SetStringKey(kXhrResponseBody, response_body);
-  response.SetStringKey(kXhrError, error);
+  base::Value::Dict response;
+  response.Set(kXhrSuccess, success);
+  response.Set(kXhrResponseBody, response_body);
+  response.Set(kXhrError, error);
 
-  ResolveJavascriptCallback(base::Value(js_callback_id), std::move(response));
+  ResolveJavascriptCallback(base::Value(js_callback_id), response);
 }
 
 void ProjectorMessageHandler::GetPendingScreencasts(
@@ -482,31 +480,39 @@ void ProjectorMessageHandler::GetPendingScreencasts(
                             ScreencastListToValue(pending_screencasts));
 }
 
-void ProjectorMessageHandler::GetScreencast(const base::Value::List& args) {
-  AllowJavascript();
+void ProjectorMessageHandler::GetVideo(const base::Value::List& args) {
+  // Two arguments. The first is callback id, and the second is the list
+  // containing the item id and resource key.
   DCHECK_EQ(args.size(), 2u);
   const auto& func_args = args[1].GetList();
-  DCHECK_EQ(func_args.size(), 1u);
+  DCHECK_EQ(func_args.size(), 2u);
 
-  // 1. TODO(b/236857019):Locates the local path of container folder local path
-  // by server side file id.
-  //  2. TODO(b/236857019): Locates the local path of media file for given
-  //  container folder path.
-  //  3. TODO(b/237089852) With the media file path, issues an open file request
-  //  to retrieve video url.
-  //  4. TODO(b/236857019): Populate the screencast info and return the promise
-  //  with it.
-  ProjectorScreencast screencast;
-  // 5. TODO(b/236857019): Investigate load screencast outside DriveFS. Finds a
-  // way(maybe by checking the pattern) to distinguish whether args[1] is a
-  // container folder id or path/blob uuid. Or add a separate API like
-  // GetScreencastByPath?
-  screencast.container_folder_id = func_args[0].GetString();
-  // Set the "name" with a random string for now.
-  // TODO(b/236857019) Gets screencast name by using DriveFS service.
-  screencast.name = "name";
+  const std::string& js_callback_id = args[0].GetString();
+  const std::string& video_file_id = func_args[0].GetString();
+  std::string resource_key;
+  if (func_args[1].is_string())
+    resource_key = func_args[1].GetString();
 
-  ResolveJavascriptCallback(args[0], screencast.ToValue());
+  ProjectorAppClient::Get()->GetVideo(
+      video_file_id, resource_key,
+      base::BindOnce(&ProjectorMessageHandler::OnVideoLocated, GetWeakPtr(),
+                     js_callback_id));
+}
+
+void ProjectorMessageHandler::OnVideoLocated(
+    const std::string& js_callback_id,
+    std::unique_ptr<ProjectorScreencastVideo> video,
+    const std::string& error_message) {
+  AllowJavascript();
+
+  if (!error_message.empty()) {
+    RejectJavascriptCallback(base::Value(js_callback_id),
+                             base::Value(error_message));
+    return;
+  }
+  DCHECK(video)
+      << "If there is no error message, then video should not be nullptr";
+  ResolveJavascriptCallback(base::Value(js_callback_id), video->ToValue());
 }
 
 }  // namespace ash

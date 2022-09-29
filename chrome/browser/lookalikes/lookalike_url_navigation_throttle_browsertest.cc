@@ -49,6 +49,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "net/cert/test_root_certs.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -1549,9 +1550,9 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                            embedded_test_server()->GetURL("example.net", "/"));
 }
 
-// Test Combo Squatting heuristic. In this test, if kNavigatedUrl is
-// Combo Squatting, the metrics should be recorded but no interstitial
-// page (full page warning) is shown.
+// Navigate to a URL that triggers combo squatting heuristic via the
+// hard coded brand name list. This should record metrics but shouldn't show
+// an interstitial.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        ComboSquatting_ShouldRecordMetricsWithoutUI) {
   base::HistogramTester histograms;
@@ -1567,6 +1568,40 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   CheckUkm({kNavigatedUrl}, "MatchType",
            LookalikeUrlMatchType::kComboSquatting);
   CheckUkm({kNavigatedUrl}, "TriggeredByInitialUrl", false);
+}
+
+// Navigate to a URL that triggers combo squatting heuristic via a
+// brand name from engaged sites. This should record metrics but shouldn't show
+// an interstitial.
+IN_PROC_BROWSER_TEST_P(
+    LookalikeUrlNavigationThrottleBrowserTest,
+    ComboSquatting_EngagedSites_ShouldRecordMetricsWithoutUI) {
+  base::HistogramTester histograms;
+  SetEngagementScore(browser(), GURL("https://example.com"), kHighEngagement);
+  const GURL kNavigatedUrl = GetURL("example-login.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+
+  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
+  histograms.ExpectBucketCount(
+      lookalikes::kHistogramName,
+      NavigationSuggestionEvent::kComboSquattingSiteEngagement, 1);
+
+  CheckUkm({kNavigatedUrl}, "MatchType",
+           LookalikeUrlMatchType::kComboSquattingSiteEngagement);
+  CheckUkm({kNavigatedUrl}, "TriggeredByInitialUrl", false);
+}
+
+// Combo Squatting shouldn't trigger on allowlisted sites and no
+// UKM should be recorded.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       ComboSquatting_ShouldNotTriggeredForAllowlist) {
+  const GURL kNavigatedUrl = GetURL("google-login.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  reputation::SetSafetyTipAllowlistPatterns({"google-login.com/"}, {}, {});
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+  CheckNoUkm();
 }
 
 scoped_refptr<net::X509Certificate> LoadCertificate() {
@@ -1586,7 +1621,7 @@ class LookalikeUrlNavigationThrottleSignedExchangeBrowserTest
     : public LookalikeUrlNavigationThrottleBrowserTest {
  public:
   LookalikeUrlNavigationThrottleSignedExchangeBrowserTest() {
-    net::EmbeddedTestServer::RegisterTestCerts();
+    scoped_test_root_ = net::EmbeddedTestServer::RegisterTestCerts();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1671,6 +1706,7 @@ class LookalikeUrlNavigationThrottleSignedExchangeBrowserTest
         it->second;
   }
 
+  net::ScopedTestRoot scoped_test_root_;
   std::map<GURL, std::string> url_accept_header_map_;
 };
 

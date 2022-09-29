@@ -8,14 +8,14 @@ import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
 import {fakeEmptyFeedbackContext, fakeFeedbackContext} from 'chrome://os-feedback/fake_data.js';
 import {FakeFeedbackServiceProvider} from 'chrome://os-feedback/fake_feedback_service_provider.js';
 import {FeedbackFlowState} from 'chrome://os-feedback/feedback_flow.js';
-import {FeedbackContext} from 'chrome://os-feedback/feedback_types.js';
+import {FeedbackAppPreSubmitAction, FeedbackContext} from 'chrome://os-feedback/feedback_types.js';
 import {setFeedbackServiceProviderForTesting} from 'chrome://os-feedback/mojo_interface_provider.js';
 import {ShareDataPageElement} from 'chrome://os-feedback/share_data_page.js';
 import {mojoString16ToString, stringToMojoString16} from 'chrome://resources/ash/common/mojo_utils.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+import {assertArrayEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
 import {eventToPromise, flushTasks, isVisible} from '../../test_util.js';
 
 /** @type {string} */
@@ -70,6 +70,17 @@ export function shareDataPageTestSuite() {
   }
 
   /**
+   * @param {number} callCounts
+   * @param {FeedbackAppPreSubmitAction} action
+   * @private
+   */
+  function verifyRecordPreSubmitActionCallCount(callCounts, action) {
+    assertEquals(
+        callCounts,
+        feedbackServiceProvider.getRecordPreSubmitActionCallCount(action));
+  }
+
+  /**
    * Helper function which will click the send button, wait for the event
    * 'continue-click', and return the detail data of the event.
    * @param {!Element} element
@@ -111,9 +122,19 @@ export function shareDataPageTestSuite() {
     assertTrue(page.i18nExists('attachFilesLabel'));
     assertEquals('Attach files', getElementContent('#attachFilesLabel'));
 
+    // Verify the add files Icon is in the page.
+    const addFilesIcon = getElement('#attachFilesIcon');
+    assertTrue(!!addFilesIcon);
+
     // Verify the user email label is in the page.
     assertTrue(page.i18nExists('userEmailLabel'));
     assertEquals('Email', getElementContent('#userEmailLabel'));
+
+    // Verify the role and aria label of the user email dropdown.
+    const userEmailDropDown = getElement('#userEmailDropDown');
+    assertEquals('listbox', userEmailDropDown.role);
+    assertTrue(page.i18nExists('userEmailAriaLabel'));
+    assertEquals('Select email', userEmailDropDown.ariaLabel);
 
     // Verify don't include email address is in the page.
     assertTrue(page.i18nExists('anonymousUser'));
@@ -130,7 +151,7 @@ export function shareDataPageTestSuite() {
     const screenshotCheckbox = getElement('#screenshotCheckbox');
     assertTrue(!!screenshotCheckbox);
     assertTrue(page.i18nExists('attachScreenshotCheckboxAriaLabel'));
-    assertEquals('Attach screenshot', screenshotCheckbox.ariaLabel);
+    assertEquals('Attach screenshot', screenshotCheckbox.ariaDescription);
 
     assertTrue(page.i18nExists('attachScreenshotLabel'));
     assertEquals('Screenshot', getElementContent('#screenshotCheckLabel'));
@@ -394,6 +415,8 @@ export function shareDataPageTestSuite() {
   // focus on the close dialog icon button.
   test('screenshotPreview', async () => {
     await initializePage();
+    verifyRecordPreSubmitActionCallCount(
+        0, FeedbackAppPreSubmitAction.kViewedScreenshot);
     page.feedbackContext = fakeFeedbackContext;
     page.screenshotUrl = fakeImageUrl;
     assertEquals(fakeImageUrl, getElement('#screenshotImage').src);
@@ -412,6 +435,8 @@ export function shareDataPageTestSuite() {
     assertTrue(isVisible(closeDialogButton));
     // The preview dialog's close icon button is focused.
     assertEquals(closeDialogButton, getDeepActiveElement());
+    verifyRecordPreSubmitActionCallCount(
+        1, FeedbackAppPreSubmitAction.kViewedScreenshot);
 
     // Press enter should close the preview dialog.
     closeDialogButton.dispatchEvent(
@@ -457,7 +482,7 @@ export function shareDataPageTestSuite() {
    */
   test('UserConsentGrantedCheckbox_StartsFalse', async () => {
     const expectedUserConsentMessage =
-        'We may email you for more information or updates';
+        'Allow Google to email you about this issue';
     await initializePage();
 
     assertTrue(page.i18nExists('userConsentLabel'));
@@ -569,30 +594,106 @@ export function shareDataPageTestSuite() {
   });
 
   /**
-   * Test that feedbackServiceProvider.openMetricsDialog is called
-   * when #histogramsLink ("metrics") link is clicked.
+   * Test that openMetricsDialog and recordPreSubmitAction are called when
+   * #histogramsLink ("metrics") link is clicked.
    */
   test('openMetricsDialog', async () => {
     await initializePage();
 
     assertEquals(0, feedbackServiceProvider.getOpenMetricsDialogCallCount());
+    verifyRecordPreSubmitActionCallCount(
+        0, FeedbackAppPreSubmitAction.kViewedMetrics);
 
     getElement('#histogramsLink').click();
 
     assertEquals(1, feedbackServiceProvider.getOpenMetricsDialogCallCount());
+    verifyRecordPreSubmitActionCallCount(
+        1, FeedbackAppPreSubmitAction.kViewedMetrics);
   });
 
   /**
-   * Test that feedbackServiceProvider.openSystemInfoDialog is called
-   * when #sysInfoLink ("system and app info") link is clicked.
+   * Test that openSystemInfoDialog and recordPreSubmitAction are called when
+   * #sysInfoLink ("system and app info") link is clicked.
    */
   test('openSystemInfoDialog', async () => {
     await initializePage();
 
     assertEquals(0, feedbackServiceProvider.getOpenSystemInfoDialogCallCount());
+    verifyRecordPreSubmitActionCallCount(
+        0, FeedbackAppPreSubmitAction.kViewedSystemAndAppInfo);
 
     getElement('#sysInfoLink').click();
 
     assertEquals(1, feedbackServiceProvider.getOpenSystemInfoDialogCallCount());
+    verifyRecordPreSubmitActionCallCount(
+        1, FeedbackAppPreSubmitAction.kViewedSystemAndAppInfo);
+  });
+
+  /**
+   * Test that feedbackServiceProvider.openBluetoothLogsInfoDialog is called
+   * when #bluetoothLogsLink link is clicked.
+   */
+  test('openBluetoothLogsInfoDialog', async () => {
+    await initializePage();
+
+    assertEquals(
+        0, feedbackServiceProvider.getOpenBluetoothLogsInfoDialogCallCount());
+
+    getElement('#bluetoothLogsInfoLink').click();
+
+    assertEquals(
+        1, feedbackServiceProvider.getOpenBluetoothLogsInfoDialogCallCount());
+  });
+
+  /**
+   * Test that sendBluetoothLogs flag is true and categoryTag is marked as
+   * 'BluetoothReportWithLogs' when bluetooth logs checkbox is checked.
+   */
+  test('sendReportWithBluetoothLogsFlagChecked', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+
+    const bluetoothLogsCheckbox = getElement('#bluetoothLogsCheckbox');
+
+    // Check the bluetoothLogs checkbox, it is default to be checked.
+    assertTrue(!!bluetoothLogsCheckbox);
+    assertTrue(bluetoothLogsCheckbox.checked);
+
+    // Report should have sendBluetoothLogs flag true,and category marked as
+    // "BluetoothReportWithLogs".
+    const requestWithBluetoothFlag = (await clickSendAndWait(page)).report;
+
+    assertTrue(requestWithBluetoothFlag.sendBluetoothLogs);
+    assertTrue(!!requestWithBluetoothFlag.feedbackContext.categoryTag);
+    assertEquals(
+        'BluetoothReportWithLogs',
+        requestWithBluetoothFlag.feedbackContext.categoryTag);
+  });
+
+  /**
+   * Test that sendBluetoothLogs flag is false and categoryTag is not marked as
+   * 'BluetoothReportWithLogs' when bluetooth logs checkbox is unchecked.
+   */
+  test('sendReportWithoutBluetoothLogsFlagChecked', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+
+    const bluetoothLogsCheckbox = getElement('#bluetoothLogsCheckbox');
+
+    // BluetoothLogs checkbox is default to be checked.
+    assertTrue(!!bluetoothLogsCheckbox);
+    assertTrue(bluetoothLogsCheckbox.checked);
+
+    // Verify that unchecking the checkbox will remove the flag in the report.
+    bluetoothLogsCheckbox.click();
+    assertFalse(bluetoothLogsCheckbox.checked);
+    await flushTasks();
+
+    // Report should not have sendBluetoothLogs flag,
+    // and category marked as "BluetoothReportWithLogs".
+    const requestWithoutBluetoothFlag = (await clickSendAndWait(page)).report;
+
+    assertFalse(requestWithoutBluetoothFlag.sendBluetoothLogs);
+    assertFalse(!!requestWithoutBluetoothFlag.feedbackContext.categoryTag);
   });
 }

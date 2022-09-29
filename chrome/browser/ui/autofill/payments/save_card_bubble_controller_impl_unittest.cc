@@ -110,10 +110,9 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
           AutofillClient::SaveCreditCardOptions().with_show_prompt()) {
     absl::optional<base::Value> value(base::JSONReader::Read(message_json));
     ASSERT_TRUE(value);
-    base::DictionaryValue* dictionary;
-    ASSERT_TRUE(value->GetAsDictionary(&dictionary));
+    ASSERT_TRUE(value->is_dict());
     LegalMessageLines legal_message_lines;
-    LegalMessageLine::Parse(*dictionary, &legal_message_lines,
+    LegalMessageLine::Parse(*value, &legal_message_lines,
                             /*escape_apostrophes=*/true);
     controller()->OfferUploadSave(CreditCard(), legal_message_lines, options,
                                   base::BindOnce(&UploadSaveCardCallback));
@@ -488,27 +487,7 @@ TEST_P(SaveCardBubbleLoggingTest, Metrics_LegalMessageLinkedClicked) {
                    "Autofill_CreditCardUpload_LegalMessageLinkClicked"));
 }
 
-// TODO(crbug.com/932818): Delete (manage card) or move (sign in promo) below
-// tests when feature is fully launched.
-class SaveCardBubbleControllerImplTestWithoutStatusChip
-    : public SaveCardBubbleControllerImplTest {
- protected:
-  SaveCardBubbleControllerImplTestWithoutStatusChip()
-      : SaveCardBubbleControllerImplTest() {}
-  ~SaveCardBubbleControllerImplTestWithoutStatusChip() override {}
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{},
-        /*disabled_features=*/{features::kAutofillCreditCardUploadFeedback,
-                               features::kAutofillEnableToolbarStatusChip});
-    SaveCardBubbleControllerImplTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(SaveCardBubbleControllerImplTestWithoutStatusChip,
+TEST_F(SaveCardBubbleControllerImplTest,
        Local_FirstShow_SaveButton_SigninPromo_Close_Reshow_ManageCards) {
   EXPECT_CALL(*mock_sentiment_service_, SavedCard()).Times(1);
   ShowLocalBubble();
@@ -520,7 +499,7 @@ TEST_F(SaveCardBubbleControllerImplTestWithoutStatusChip,
   EXPECT_NE(nullptr, controller()->GetSaveCardBubbleView());
 }
 
-TEST_F(SaveCardBubbleControllerImplTestWithoutStatusChip,
+TEST_F(SaveCardBubbleControllerImplTest,
        Metrics_Local_ClickManageCardsDoneButton) {
   EXPECT_CALL(*mock_sentiment_service_, SavedCard()).Times(1);
   base::HistogramTester histogram_tester;
@@ -536,7 +515,7 @@ TEST_F(SaveCardBubbleControllerImplTestWithoutStatusChip,
                   Bucket(ManageCardsPromptMetric::kManageCardsDone, 1)));
 }
 
-TEST_F(SaveCardBubbleControllerImplTestWithoutStatusChip,
+TEST_F(SaveCardBubbleControllerImplTest,
        Metrics_Local_ClickManageCardsManageCardsButton) {
   EXPECT_CALL(*mock_sentiment_service_, SavedCard()).Times(1);
   base::HistogramTester histogram_tester;
@@ -551,7 +530,7 @@ TEST_F(SaveCardBubbleControllerImplTestWithoutStatusChip,
 }
 
 TEST_F(
-    SaveCardBubbleControllerImplTestWithoutStatusChip,
+    SaveCardBubbleControllerImplTest,
     Metrics_Local_FirstShow_SaveButton_Close_Reshow_Close_Reshow_ManageCards) {
   EXPECT_CALL(*mock_sentiment_service_, SavedCard()).Times(1);
   base::HistogramTester histogram_tester;
@@ -567,7 +546,7 @@ TEST_F(
 }
 
 TEST_F(
-    SaveCardBubbleControllerImplTestWithoutStatusChip,
+    SaveCardBubbleControllerImplTest,
     Metrics_Local_FirstShow_SaveButton_SigninPromo_Close_Reshow_ManageCards) {
   EXPECT_CALL(*mock_sentiment_service_, SavedCard()).Times(1);
   base::HistogramTester histogram_tester;
@@ -581,7 +560,7 @@ TEST_F(
       ElementsAre(Bucket(ManageCardsPromptMetric::kManageCardsShown, 1)));
 }
 
-TEST_F(SaveCardBubbleControllerImplTestWithoutStatusChip,
+TEST_F(SaveCardBubbleControllerImplTest,
        Upload_FirstShow_SaveButton_NoSigninPromo) {
   EXPECT_CALL(*mock_sentiment_service_, SavedCard()).Times(1);
   ShowUploadBubble();
@@ -592,7 +571,7 @@ TEST_F(SaveCardBubbleControllerImplTestWithoutStatusChip,
   EXPECT_EQ(nullptr, controller()->GetSaveCardBubbleView());
 }
 
-TEST_F(SaveCardBubbleControllerImplTestWithoutStatusChip,
+TEST_F(SaveCardBubbleControllerImplTest,
        Metrics_Upload_FirstShow_SaveButton_NoSigninPromo) {
   EXPECT_CALL(*mock_sentiment_service_, SavedCard()).Times(1);
   base::HistogramTester histogram_tester;
@@ -604,8 +583,7 @@ TEST_F(SaveCardBubbleControllerImplTestWithoutStatusChip,
   histogram_tester.ExpectTotalCount("Autofill.ManageCardsPrompt.Upload", 0);
 }
 
-TEST_F(SaveCardBubbleControllerImplTestWithoutStatusChip,
-       Metrics_Upload_FirstShow_ManageCards) {
+TEST_F(SaveCardBubbleControllerImplTest, Metrics_Upload_FirstShow_ManageCards) {
   EXPECT_CALL(*mock_sentiment_service_, SavedCard()).Times(1);
   base::HistogramTester histogram_tester;
   ShowUploadBubble();

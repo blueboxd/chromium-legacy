@@ -18,6 +18,7 @@
 #include "base/task/thread_pool/task.h"
 #include "base/task/thread_pool/task_source_sort_key.h"
 #include "base/threading/sequence_local_storage_map.h"
+#include "base/time/time.h"
 
 namespace base {
 namespace internal {
@@ -45,8 +46,8 @@ struct BASE_EXPORT ExecutionEnvironment {
 // 1- It has new tasks that can run concurrently as a result of external
 //    operations, e.g. posting a new task to an empty Sequence or increasing
 //    max concurrency of a JobTaskSource;
-// 2- A worker finished running a task from it and DidProcessTask() returned
-//    true; or
+// 2- A worker finished running a task from it and both DidProcessTask() and
+//    WillReEnqueue() returned true; or
 // 3- A worker is about to run a task from it and WillRunTask() returned
 //    kAllowedNotSaturated.
 //
@@ -58,7 +59,8 @@ struct BASE_EXPORT ExecutionEnvironment {
 //    with TakeTask().
 // 3- (optional) Execute the task.
 // 4- Inform the task source that a task was processed with DidProcessTask(),
-//    and re-enqueue the task source iff requested.
+//    and re-enqueue the task source iff requested. The task source is ready to
+//    run immediately iff WillReEnqueue() returns true.
 // When a task source is registered multiple times, many overlapping chains of
 // operations may run concurrently, as permitted by WillRunTask(). This allows
 // tasks from the same task source to run in parallel.
@@ -147,6 +149,9 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
 
   // Returns a TaskSourceSortKey representing the priority of the TaskSource.
   virtual TaskSourceSortKey GetSortKey(bool disable_fair_scheduling) const = 0;
+  // Returns a Timeticks object representing the next delayed runtime of the
+  // TaskSource.
+  virtual TimeTicks GetDelayedSortKey() const = 0;
 
   // Support for IntrusiveHeap.
   void SetHeapHandle(const HeapHandle& handle);
@@ -169,10 +174,10 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   // Transaction because it is never mutated.
   ThreadPolicy thread_policy() const { return traits_.thread_policy(); }
 
-  // A reference to TaskRunner is only retained between PushTask() and when
-  // DidProcessTask() returns false, guaranteeing it is safe to dereference this
-  // pointer. Otherwise, the caller should guarantee such TaskRunner still
-  // exists before dereferencing.
+  // A reference to TaskRunner is only retained between
+  // PushImmediateTask()/PushDelayedTask() and when DidProcessTask() returns
+  // false, guaranteeing it is safe to dereference this pointer. Otherwise, the
+  // caller should guarantee such TaskRunner still exists before dereferencing.
   TaskRunner* task_runner() const { return task_runner_; }
 
   TaskSourceExecutionMode execution_mode() const { return execution_mode_; }
@@ -182,10 +187,12 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
 
   virtual RunStatus WillRunTask() = 0;
 
-  // Implementations of TakeTask(), DidProcessTask() and Clear() must ensure
-  // proper synchronization iff |transaction| is nullptr.
+  // Implementations of TakeTask(), DidProcessTask(), WillReEnqueue(), and
+  // Clear() must ensure proper synchronization iff |transaction| is nullptr.
   virtual Task TakeTask(TaskSource::Transaction* transaction) = 0;
   virtual bool DidProcessTask(TaskSource::Transaction* transaction) = 0;
+  virtual bool WillReEnqueue(TimeTicks now,
+                             TaskSource::Transaction* transaction) = 0;
 
   // This may be called for each outstanding RegisteredTaskSource that's ready.
   // The implementation needs to support this being called multiple times;
@@ -206,6 +213,7 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   mutable CheckedLock lock_{UniversalPredecessor()};
 
  private:
+  virtual void OnBecomeReady() = 0;
   friend class RefCountedThreadSafe<TaskSource>;
   friend class RegisteredTaskSource;
 
@@ -230,7 +238,7 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
 // used by a single worker at a time. However, the same task source may be
 // registered several times, spawning multiple RegisteredTaskSources. A
 // RegisteredTaskSource resets to its initial state when WillRunTask() fails
-// or after DidProcessTask(), so it can be used again.
+// or after DidProcessTask() and WillReEnqueue(), so it can be used again.
 class BASE_EXPORT RegisteredTaskSource {
  public:
   RegisteredTaskSource();
@@ -261,6 +269,10 @@ class BASE_EXPORT RegisteredTaskSource {
   // that indicates if the operation is allowed (TakeTask() can be called).
   TaskSource::RunStatus WillRunTask();
 
+  // Informs this TaskSource that it has become ready to run and is being moved
+  // from delayed to immediate queue.
+  void OnBecomeReady();
+
   // Returns the next task to run from this TaskSource. This should be called
   // only after WillRunTask() returned RunStatus::kAllowed*. |transaction| is
   // optional and should only be provided if this operation is already part of
@@ -273,6 +285,13 @@ class BASE_EXPORT RegisteredTaskSource {
   // should only be provided if this operation is already part of a transaction.
   // Returns true if the TaskSource should be queued after this operation.
   bool DidProcessTask(TaskSource::Transaction* transaction = nullptr);
+
+  // Must be called iff DidProcessTask() previously returns true .
+  // |transaction| is optional and should only be provided if this
+  // operation is already part of a transaction. Returns true if the
+  // TaskSource is ready to run immediately.
+  bool WillReEnqueue(TimeTicks now,
+                     TaskSource::Transaction* transaction = nullptr);
 
   // Returns a task that clears this TaskSource to make it empty. |transaction|
   // is optional and should only be provided if this operation is already part
@@ -318,6 +337,23 @@ struct BASE_EXPORT TransactionWithRegisteredTaskSource {
       RegisteredTaskSource task_source_in);
 
   RegisteredTaskSource task_source;
+  TaskSource::Transaction transaction;
+};
+
+struct BASE_EXPORT TaskSourceAndTransaction {
+ public:
+  TaskSourceAndTransaction(scoped_refptr<TaskSource> task_source_in,
+                           TaskSource::Transaction transaction_in);
+
+  TaskSourceAndTransaction(TaskSourceAndTransaction&& other);
+  TaskSourceAndTransaction(const TaskSourceAndTransaction&) = delete;
+  TaskSourceAndTransaction& operator=(const TaskSourceAndTransaction&) = delete;
+  ~TaskSourceAndTransaction();
+
+  static TaskSourceAndTransaction FromTaskSource(
+      scoped_refptr<TaskSource> task_source_in);
+
+  scoped_refptr<TaskSource> task_source;
   TaskSource::Transaction transaction;
 };
 

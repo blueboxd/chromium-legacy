@@ -82,6 +82,7 @@ std::string GetCompressedHistograms() {
 void MaybeProceedWithProfile(base::OnceCallback<void(Profile*)> callback,
                              Profile* profile,
                              bool proceed) {
+  LOG_IF(ERROR, !proceed) << "Not proceeding after LacrosFirstRun";
   std::move(callback).Run(proceed ? profile : nullptr);
 }
 
@@ -93,6 +94,7 @@ void OnMainProfileLoaded(base::OnceCallback<void(Profile*)>& callback,
   DCHECK(callback);
   switch (status) {
     case Profile::CREATE_STATUS_LOCAL_FAIL:
+      LOG(ERROR) << "Profile creation failed.";
       // Profile creation failed, show the profile picker instead.
       ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
           ProfilePicker::EntryPoint::kNewSessionOnExistingProcess));
@@ -106,8 +108,7 @@ void OnMainProfileLoaded(base::OnceCallback<void(Profile*)>& callback,
 
       auto* fre_service =
           LacrosFirstRunServiceFactory::GetForBrowserContext(profile);
-      DCHECK(fre_service);
-      if (can_trigger_fre && fre_service->ShouldOpenFirstRun()) {
+      if (fre_service && can_trigger_fre && fre_service->ShouldOpenFirstRun()) {
         // TODO(https://crbug.com/1313848): Consider taking a
         // `ScopedProfileKeepAlive`.
         fre_service->OpenFirstRunIfNeeded(
@@ -450,6 +451,9 @@ void BrowserServiceLacros::OpenUrlImpl(Profile* profile,
       break;
     case OpenUrlParams::WindowOpenDisposition::kNewForegroundTab:
       navigate_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+      break;
+    case OpenUrlParams::WindowOpenDisposition::kNewWindow:
+      navigate_params.disposition = WindowOpenDisposition::NEW_WINDOW;
       break;
     case OpenUrlParams::WindowOpenDisposition::kSwitchToTab:
       navigate_params.disposition = WindowOpenDisposition::SWITCH_TO_TAB;

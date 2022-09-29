@@ -141,14 +141,6 @@
       custom_copy: true,
       custom_compare: true,
     },
-    // Whether this style is related with :has() pseudo-class
-    {
-      name: "AffectedBySubjectHas",
-      field_template: "monotonic_flag",
-      default_value: "false",
-      custom_copy: true,
-      custom_compare: true,
-    },
     // A non-inherited property references a variable or @apply is used
     {
       name: "HasVariableReferenceFromNonInheritedProperty",
@@ -544,7 +536,7 @@
       default_value: "nullptr",
       wrapper_pointer_name: "scoped_refptr",
       field_group: "*",
-      computed_style_custom_functions: ["getter", "setter"],
+      computed_style_custom_functions: ["setter"],
     },
     {
       name: "Mask",
@@ -844,6 +836,16 @@
       type_name: "bool",
       default_value: "true",
       inherited: true,
+      computed_style_custom_functions: ["getter"],
+    },
+    {
+      name: "InternalVisitedColorIsCurrentColor",
+      field_template: "primitive",
+      field_group: "inherited",
+      type_name: "bool",
+      default_value: "true",
+      inherited: true,
+      computed_style_custom_functions: ["getter"],
     },
     {
       name: "WillChangeProperties",

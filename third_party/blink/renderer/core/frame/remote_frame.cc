@@ -11,6 +11,7 @@
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/frame_replication_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom-blink.h"
@@ -228,7 +229,7 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
       window->IsSandboxed(network::mojom::blink::WebSandboxFlags::kDownloads);
   if (window->GetFrame()) {
     is_opener_navigation = window->GetFrame()->Opener() == this;
-    initiator_frame_is_ad = window->GetFrame()->IsAdSubframe();
+    initiator_frame_is_ad = window->GetFrame()->IsAdFrame();
     if (frame_request.ClientRedirectReason() != ClientNavigationReason::kNone) {
       probe::FrameRequestedNavigation(window->GetFrame(), this, url,
                                       frame_request.ClientRedirectReason(),
@@ -509,13 +510,9 @@ void RemoteFrame::SetInsecureRequestPolicy(
   security_context_.SetInsecureRequestPolicy(policy);
 }
 
-void RemoteFrame::SetInsecureNavigationsSet(const WebVector<unsigned>& set) {
-  security_context_.SetInsecureNavigationsSet(set);
-}
-
 void RemoteFrame::FrameRectsChanged(const gfx::Size& local_frame_size,
-                                    const gfx::Rect& screen_space_rect) {
-  pending_visual_properties_.screen_space_rect = screen_space_rect;
+                                    const gfx::Rect& rect_in_local_root) {
+  pending_visual_properties_.rect_in_local_root = rect_in_local_root;
   pending_visual_properties_.local_frame_size = local_frame_size;
   SynchronizeVisualProperties();
 }
@@ -592,12 +589,12 @@ void RemoteFrame::SetReplicatedOrigin(
   }
 }
 
-bool RemoteFrame::IsAdSubframe() const {
-  return is_ad_subframe_;
+bool RemoteFrame::IsAdFrame() const {
+  return is_ad_frame_;
 }
 
-void RemoteFrame::SetReplicatedIsAdSubframe(bool is_ad_subframe) {
-  is_ad_subframe_ = is_ad_subframe;
+void RemoteFrame::SetReplicatedIsAdFrame(bool is_ad_frame) {
+  is_ad_frame_ = is_ad_frame;
 }
 
 void RemoteFrame::SetReplicatedName(const String& name,
@@ -700,7 +697,8 @@ void RemoteFrame::ScrollRectToVisible(
       PhysicalRect::EnclosingRect(rect_to_scroll), owner_object->View());
 
   scroll_into_view_util::ScrollRectToVisible(*owner_object, absolute_rect,
-                                             std::move(params));
+                                             std::move(params),
+                                             /*from_remote_frame=*/true);
 }
 
 void RemoteFrame::IntrinsicSizingInfoOfChildChanged(
@@ -937,8 +935,8 @@ bool RemoteFrame::SynchronizeVisualProperties(bool propagate) {
           pending_visual_properties_.max_size_for_auto_resize ||
       sent_visual_properties_->local_frame_size !=
           pending_visual_properties_.local_frame_size ||
-      sent_visual_properties_->screen_space_rect.size() !=
-          pending_visual_properties_.screen_space_rect.size() ||
+      sent_visual_properties_->rect_in_local_root.size() !=
+          pending_visual_properties_.rect_in_local_root.size() ||
       sent_visual_properties_->screen_infos !=
           pending_visual_properties_.screen_infos ||
       sent_visual_properties_->zoom_level !=
@@ -972,8 +970,8 @@ bool RemoteFrame::SynchronizeVisualProperties(bool propagate) {
                                     capture_sequence_number_changed);
 
   bool rect_changed = !sent_visual_properties_ ||
-                      sent_visual_properties_->screen_space_rect !=
-                          pending_visual_properties_.screen_space_rect;
+                      sent_visual_properties_->rect_in_local_root !=
+                          pending_visual_properties_.rect_in_local_root;
   bool visual_properties_changed = synchronized_props_changed || rect_changed;
 
   if (visual_properties_changed && propagate) {
@@ -1078,6 +1076,18 @@ void RemoteFrame::EnableAutoResize(const gfx::Size& min_size,
 void RemoteFrame::DisableAutoResize() {
   pending_visual_properties_.auto_resize_enabled = false;
   SynchronizeVisualProperties();
+}
+
+void RemoteFrame::CreateRemoteChild(
+    const RemoteFrameToken& token,
+    const absl::optional<FrameToken>& opener_frame_token,
+    mojom::blink::TreeScopeType tree_scope_type,
+    mojom::blink::FrameReplicationStatePtr replication_state,
+    const base::UnguessableToken& devtools_frame_token,
+    mojom::blink::RemoteFrameInterfacesFromBrowserPtr remote_frame_interfaces) {
+  Client()->CreateRemoteChild(
+      token, opener_frame_token, tree_scope_type, std::move(replication_state),
+      devtools_frame_token, std::move(remote_frame_interfaces));
 }
 
 }  // namespace blink

@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/zip.gni")
 import("//build/util/process_version.gni")
 import("//chrome/process_version_rc_template.gni")
 import("//chrome/updater/branding.gni")
+import("//chrome/updater/zip.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
@@ -32,8 +32,20 @@ source_set("updater_executable") {
     "updater.rc",
   ]
 
+  # `updater.rc` does not process `#if BUILDFLAG(GOOGLE_CHROME_BRANDING)`
+  # correctly sometimes, especially seen with the `win10_chromium_x64_rel_ng`
+  # build bot. Explicitly defining `CHROME_BRANDED_TLB` is being done here as a
+  # workaround.
+  if (is_chrome_branded) {
+    defines = [ "CHROME_BRANDED_TLB=1" ]
+  } else {
+    defines = [ "CHROME_BRANDED_TLB=0" ]
+  }
+
   deps = [
+    "//build:branding_buildflags",
     "//chrome/updater:base",
+    "//chrome/updater/app/server/win:updater_legacy_idl_idl",
     "//chrome/updater/win/ui/resources",
   ]
 
@@ -44,8 +56,6 @@ source_set("updater_executable") {
 }
 
 executable("updater") {
-  configs -= [ "//build/config/compiler:cet_shadow_stack" ]
-
   deps = [
     ":updater_executable",
     ":version_resources",
@@ -54,8 +64,6 @@ executable("updater") {
 }
 
 executable("updater_test") {
-  configs -= [ "//build/config/compiler:cet_shadow_stack" ]
-
   deps = [
     ":updater_executable",
     ":version_resources_test",
@@ -67,7 +75,7 @@ copy("signing") {
   sources = [
     "$root_out_dir/certificate_tag.exe",
     "//chrome/tools/build/win/resedit.py",
-    "//third_party/lzma_sdk/bin/7zr.exe",
+    "//third_party/lzma_sdk/bin/win64/7zr.exe",
     "signing/sign.py",
   ]
 
@@ -76,7 +84,7 @@ copy("signing") {
   outputs = [ "$root_out_dir/UpdaterSigning/{{source_file_part}}" ]
 }
 
-zip("updater_zip") {
+artifact_zip("updater_zip") {
   output = "$root_build_dir/updater.zip"
   inputs = [
              "$root_build_dir/UpdaterSetup.exe",

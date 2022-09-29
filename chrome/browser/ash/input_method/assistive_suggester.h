@@ -122,6 +122,8 @@ class AssistiveSuggester : public SuggestionsSource {
 
   bool IsExpandedMultiWordSuggestEnabled();
 
+  bool IsDiacriticsOnPhysicalKeyboardLongpressEnabled();
+
   // Checks the text before cursor, emits metric if any assistive prefix is
   // matched.
   void RecordAssistiveMatchMetrics(
@@ -165,7 +167,9 @@ class AssistiveSuggester : public SuggestionsSource {
   void RecordTextInputStateMetrics(
       const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions);
 
-  void HandleLongpressEnabledKeyEvent(const ui::KeyEvent& key_character);
+  void HandleLongpressEnabledKeyEvent(
+      const ui::KeyEvent& key_character,
+      const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions);
 
   void OnLongpressDetected();
 

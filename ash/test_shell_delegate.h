@@ -6,6 +6,7 @@
 #define ASH_TEST_SHELL_DELEGATE_H_
 
 #include <memory>
+#include <string>
 
 #include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "ash/shell_delegate.h"
@@ -48,6 +49,8 @@ class TestShellDelegate : public ShellDelegate {
   GetGeolocationUrlLoaderFactory() const override;
   bool CanGoBack(gfx::NativeWindow window) const override;
   void SetTabScrubberChromeOSEnabled(bool enabled) override;
+  void ShouldExitFullscreenBeforeLock(
+      ShouldExitFullscreenCallback callback) override;
   bool ShouldWaitForTouchPressAck(gfx::NativeWindow window) override;
   int GetBrowserWebUITabStripHeight() override;
   void BindMultiDeviceSetup(
@@ -60,6 +63,8 @@ class TestShellDelegate : public ShellDelegate {
       const std::vector<aura::Window*>& windows) override {}
 
   void SetCanGoBack(bool can_go_back);
+  void SetShouldExitFullscreenBeforeLock(
+      bool should_exit_fullscreen_before_lock);
   void SetShouldWaitForTouchAck(bool should_wait_for_touch_ack);
   void SetSessionRestoreInProgress(bool in_progress);
   bool IsLoggingRedirectDisabled() const override;
@@ -67,8 +72,13 @@ class TestShellDelegate : public ShellDelegate {
   void OpenFeedbackPageForPersistentDesksBar() override {}
   void SetLastCommittedURLForWindow(const GURL& url);
   version_info::Channel GetChannel() override;
+  std::string GetVersionString() override;
 
   void set_channel(version_info::Channel channel) { channel_ = channel; }
+
+  void set_version_string(const std::string& string) {
+    version_string_ = string;
+  }
 
  private:
   // True if the current top window can go back.
@@ -76,6 +86,9 @@ class TestShellDelegate : public ShellDelegate {
 
   // True if the tab scrubber is enabled.
   bool tab_scrubber_enabled_ = true;
+
+  // False if it is allowed by policy to keep fullscreen after unlock.
+  bool should_exit_fullscreen_before_lock_ = true;
 
   // True if when performing back gesture on the top window, we should handle
   // the event after the touch ack is received. Please refer to
@@ -91,6 +104,8 @@ class TestShellDelegate : public ShellDelegate {
   GURL last_committed_url_ = GURL::EmptyGURL();
 
   version_info::Channel channel_ = version_info::Channel::UNKNOWN;
+
+  std::string version_string_;
 };
 
 }  // namespace ash

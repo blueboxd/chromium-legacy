@@ -31,13 +31,7 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
   ~MockScriptedIdleTaskControllerScheduler() override = default;
 
   // ThreadScheduler implementation:
-  scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override {
-    return nullptr;
-  }
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override {
-    return nullptr;
-  }
-  scoped_refptr<base::SingleThreadTaskRunner> NonWakingTaskRunner() override {
     return nullptr;
   }
   scoped_refptr<base::SingleThreadTaskRunner> DeprecatedDefaultTaskRunner()
@@ -46,7 +40,6 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
   }
   void Shutdown() override {}
   bool ShouldYieldForHighPriorityWork() override { return should_yield_; }
-  bool CanExceedIdleDeadlineIfRequired() const override { return false; }
   void PostIdleTask(const base::Location&,
                     Thread::IdleTask idle_task) override {
     idle_task_ = std::move(idle_task);
@@ -58,18 +51,6 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
   }
   void PostNonNestableIdleTask(const base::Location&,
                                Thread::IdleTask) override {}
-  std::unique_ptr<scheduler::WebAgentGroupScheduler> CreateAgentGroupScheduler()
-      override {
-    NOTREACHED();
-    return nullptr;
-  }
-  std::unique_ptr<RendererPauseHandle> PauseScheduler() override {
-    return nullptr;
-  }
-  scheduler::WebAgentGroupScheduler* GetCurrentAgentGroupScheduler() override {
-    NOTREACHED();
-    return nullptr;
-  }
   base::TimeTicks MonotonicallyIncreasingVirtualTime() override {
     return base::TimeTicks();
   }
@@ -77,14 +58,6 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
   void AddTaskObserver(Thread::TaskObserver* task_observer) override {}
 
   void RemoveTaskObserver(Thread::TaskObserver* task_observer) override {}
-
-  void AddRAILModeObserver(RAILModeObserver*) override {}
-
-  void RemoveRAILModeObserver(RAILModeObserver const*) override {}
-
-  scheduler::NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override {
-    return nullptr;
-  }
 
   void SetV8Isolate(v8::Isolate* isolate) override {}
 

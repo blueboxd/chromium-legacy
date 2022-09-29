@@ -26,6 +26,13 @@ std::string SerializeValue(const base::Value value) {
 
 namespace policy_test_utils {
 
+std::string GetValueForPlatformPolicy(const std::string& policy_key) {
+  NSString* policy_key_as_nsstring = base::SysUTF8ToNSString(policy_key);
+  NSString* value_as_nsstring =
+      [PolicyAppInterface valueForPlatformPolicy:policy_key_as_nsstring];
+  return base::SysNSStringToUTF8(value_as_nsstring);
+}
+
 void SetPolicy(bool enabled, const std::string& policy_key) {
   SetPolicy(base::Value(enabled), policy_key);
 }
@@ -46,6 +53,10 @@ void SetPolicy(const std::string& json_value, const std::string& policy_key) {
 
 void SetPolicy(base::Value value, const std::string& policy_key) {
   SetPolicy(SerializeValue(std::move(value)), policy_key);
+}
+
+void ClearPolicies() {
+  [PolicyAppInterface clearPolicies];
 }
 
 }  // namespace policy_test_utils

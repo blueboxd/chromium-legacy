@@ -35,12 +35,17 @@ class TestBase {
   // Some trivial shorthand methods to access the ipcz API more conveniently.
   void Close(IpczHandle handle);
   void CloseAll(absl::Span<const IpczHandle> handles);
+  IpczResult Merge(IpczHandle a, IpczHandle b);
   IpczHandle CreateNode(const IpczDriver& driver,
                         IpczCreateNodeFlags flags = IPCZ_NO_FLAGS);
   std::pair<IpczHandle, IpczHandle> OpenPortals(IpczHandle node);
   IpczResult Put(IpczHandle portal,
                  std::string_view message,
                  absl::Span<IpczHandle> handles = {});
+  IpczResult PutWithLimits(IpczHandle portal,
+                           const IpczPutLimits& limits,
+                           std::string_view message,
+                           absl::Span<IpczHandle> handles = {});
 
   // Shorthand for ipcz Get() to retrieve the next available parcel from
   // `portal`.If no parcel is available, or any other condition prevents Get()
@@ -100,6 +105,16 @@ class TestBase {
   // portals are local to the same node. In this case, a message is put into
   // both `a` and `b`, and then this waits to read the same message from both.
   void VerifyEndToEndLocal(IpczHandle a, IpczHandle b);
+
+  // Waits until `portal` is backed by a Router which is connected directly to
+  // its peer portal's Router on another node, with no proxies in between. Must
+  // be called on each portal of the portal pair in order to properly verify a
+  // direct route end-to-end.
+  void WaitForDirectRemoteLink(IpczHandle portal);
+
+  // Waits for portals `a` and `b` to become direct local peers, after any
+  // potential proxies in between are eliminated.
+  void WaitForDirectLocalLink(IpczHandle a, IpczHandle b);
 
  private:
   static void HandleEvent(const IpczTrapEvent* event);

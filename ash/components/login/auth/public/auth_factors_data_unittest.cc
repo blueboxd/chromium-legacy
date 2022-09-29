@@ -4,12 +4,14 @@
 
 #include "ash/components/login/auth/public/auth_factors_data.h"
 
+#include "ash/components/cryptohome/common_types.h"
 #include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/components/login/auth/public/cryptohome_key_constants.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using cryptohome::KeyDefinition;
+using cryptohome::KeyLabel;
 
 namespace ash {
 
@@ -17,19 +19,20 @@ namespace {
 
 KeyDefinition MakeGaiaKeyDef() {
   return KeyDefinition::CreateForPassword(
-      "gaia-secret", kCryptohomeGaiaKeyLabel, /*privileges=*/0);
+      "gaia-secret", KeyLabel(kCryptohomeGaiaKeyLabel), /*privileges=*/0);
 }
 
 KeyDefinition MakePinKeyDef() {
   KeyDefinition key_def = KeyDefinition::CreateForPassword(
-      "pin-secret", kCryptohomePinLabel, /*privileges=*/0);
+      "pin-secret", KeyLabel(kCryptohomePinLabel), /*privileges=*/0);
   key_def.policy.low_entropy_credential = true;
   return key_def;
 }
 
 KeyDefinition MakeLegacyKeyDef(int legacy_key_index) {
   return KeyDefinition::CreateForPassword(
-      "legacy-secret", base::StringPrintf("legacy-%d", legacy_key_index),
+      "legacy-secret",
+      KeyLabel(base::StringPrintf("legacy-%d", legacy_key_index)),
       /*privileges=*/0);
 }
 

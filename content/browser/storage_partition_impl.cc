@@ -44,6 +44,7 @@
 #include "components/services/storage/shared_storage/shared_storage_manager.h"
 #include "components/services/storage/storage_service_impl.h"
 #include "components/variations/net/variations_http_headers.h"
+#include "content/browser/aggregation_service/aggregation_service.h"
 #include "content/browser/aggregation_service/aggregation_service_features.h"
 #include "content/browser/aggregation_service/aggregation_service_impl.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
@@ -66,7 +67,7 @@
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/file_system_access/file_system_access_manager_impl.h"
 #include "content/browser/font_access/font_access_manager.h"
-#include "content/browser/gpu/shader_cache_factory.h"
+#include "content/browser/gpu/gpu_disk_cache_factory.h"
 #include "content/browser/host_zoom_level_context.h"
 #include "content/browser/indexed_db/indexed_db_control_wrapper.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
@@ -78,7 +79,6 @@
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_app_context_impl.h"
 #include "content/browser/preloading/prerender/prerender_host_registry.h"
-#include "content/browser/private_aggregation/private_aggregation_features.h"
 #include "content/browser/private_aggregation/private_aggregation_manager_impl.h"
 #include "content/browser/push_messaging/push_messaging_context.h"
 #include "content/browser/quota/quota_context.h"
@@ -92,6 +92,7 @@
 #include "content/browser/ssl_private_key_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/worker_host/shared_worker_service_impl.h"
+#include "content/common/private_aggregation_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -100,6 +101,7 @@
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_controller.h"
+#include "content/public/browser/permission_result.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
@@ -301,10 +303,10 @@ void PerformQuotaManagerStorageCleanup(
       quota_storage_type, std::move(quota_client_types), std::move(callback));
 }
 
-void ClearedShaderCache(base::OnceClosure callback) {
+void ClearedGpuCache(base::OnceClosure callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE, base::BindOnce(&ClearedShaderCache, std::move(callback)));
+        FROM_HERE, base::BindOnce(&ClearedGpuCache, std::move(callback)));
     return;
   }
   std::move(callback).Run();
@@ -784,9 +786,8 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
     : public network::SharedURLLoaderFactory {
  public:
   explicit URLLoaderFactoryForBrowserProcess(
-      StoragePartitionImpl* storage_partition,
-      bool corb_enabled)
-      : storage_partition_(storage_partition), corb_enabled_(corb_enabled) {}
+      StoragePartitionImpl* storage_partition)
+      : storage_partition_(storage_partition) {}
 
   URLLoaderFactoryForBrowserProcess(const URLLoaderFactoryForBrowserProcess&) =
       delete;
@@ -806,8 +807,7 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!storage_partition_)
       return;
-    storage_partition_
-        ->GetURLLoaderFactoryForBrowserProcessInternal(corb_enabled_)
+    storage_partition_->GetURLLoaderFactoryForBrowserProcessInternal()
         ->CreateLoaderAndStart(std::move(receiver), request_id, options,
                                url_request, std::move(client),
                                traffic_annotation);
@@ -817,9 +817,8 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
       override {
     if (!storage_partition_)
       return;
-    storage_partition_
-        ->GetURLLoaderFactoryForBrowserProcessInternal(corb_enabled_)
-        ->Clone(std::move(receiver));
+    storage_partition_->GetURLLoaderFactoryForBrowserProcessInternal()->Clone(
+        std::move(receiver));
   }
 
   // SharedURLLoaderFactory implementation:
@@ -836,7 +835,6 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
   ~URLLoaderFactoryForBrowserProcess() override = default;
 
   raw_ptr<StoragePartitionImpl> storage_partition_;
-  const bool corb_enabled_;
 };
 
 // Static.
@@ -973,7 +971,7 @@ class StoragePartitionImpl::DataDeletionHelper {
       network::mojom::CookieManager* cookie_manager,
       InterestGroupManagerImpl* interest_group_manager,
       AttributionManager* attribution_manager,
-      AggregationServiceImpl* aggregation_service,
+      AggregationService* aggregation_service,
       storage::SharedStorageManager* shared_storage_manager,
       bool perform_storage_cleanup,
       const base::Time begin,
@@ -1000,12 +998,13 @@ class StoragePartitionImpl::DataDeletionHelper {
     kQuota = 3,
     kLocalStorage = 4,
     kSessionStorage = 5,
-    kShaderCache = 6,
+    kShaderCache = 6,  // Deprecated in favor of using kGpuCache.
     kPluginPrivate = 7,
     kConversions = 8,
     kAggregationService = 9,
     kSharedStorage = 10,
-    kMaxValue = kSharedStorage,
+    kGpuCache = 11,
+    kMaxValue = kGpuCache,
   };
 
   base::OnceClosure CreateTaskCompletionClosure(TracingDataType data_type);
@@ -1107,9 +1106,6 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 
   if (shared_url_loader_factory_for_browser_process_) {
     shared_url_loader_factory_for_browser_process_->Shutdown();
-  }
-  if (shared_url_loader_factory_for_browser_process_with_corb_) {
-    shared_url_loader_factory_for_browser_process_with_corb_->Shutdown();
   }
 
   scoped_refptr<storage::DatabaseTracker> database_tracker(
@@ -1316,7 +1312,7 @@ void StoragePartitionImpl::Initialize(
   // behavior when restoring the state fails.
   cookie_store_manager_->LoadAllSubscriptions(base::DoNothing());
 
-  bucket_manager_ = std::make_unique<BucketManager>(quota_manager_proxy);
+  bucket_manager_ = std::make_unique<BucketManager>(this);
 
   // The Conversion Measurement API is not available in Incognito mode.
   if (!is_in_memory() &&
@@ -1393,7 +1389,8 @@ void StoragePartitionImpl::Initialize(
 
   if (base::FeatureList::IsEnabled(kPrivateAggregationApi)) {
     private_aggregation_manager_ =
-        std::make_unique<PrivateAggregationManagerImpl>(is_in_memory(), path);
+        std::make_unique<PrivateAggregationManagerImpl>(is_in_memory(), path,
+                                                        this);
   }
 }
 
@@ -1430,19 +1427,9 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcess() {
   DCHECK(initialized_);
   if (!shared_url_loader_factory_for_browser_process_) {
     shared_url_loader_factory_for_browser_process_ =
-        new URLLoaderFactoryForBrowserProcess(this, false /* corb_enabled */);
+        new URLLoaderFactoryForBrowserProcess(this);
   }
   return shared_url_loader_factory_for_browser_process_;
-}
-
-scoped_refptr<network::SharedURLLoaderFactory>
-StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessWithCORBEnabled() {
-  DCHECK(initialized_);
-  if (!shared_url_loader_factory_for_browser_process_with_corb_) {
-    shared_url_loader_factory_for_browser_process_with_corb_ =
-        new URLLoaderFactoryForBrowserProcess(this, true /* corb_enabled */);
-  }
-  return shared_url_loader_factory_for_browser_process_with_corb_;
 }
 
 std::unique_ptr<network::PendingSharedURLLoaderFactory>
@@ -1495,6 +1482,11 @@ void StoragePartitionImpl::CreateTrustTokenQueryAnswerer(
 storage::QuotaManager* StoragePartitionImpl::GetQuotaManager() {
   DCHECK(initialized_);
   return quota_manager_.get();
+}
+
+storage::QuotaManagerProxy* StoragePartitionImpl::GetQuotaManagerProxy() {
+  DCHECK(initialized_);
+  return quota_manager_->proxy();
 }
 
 BackgroundSyncContextImpl* StoragePartitionImpl::GetBackgroundSyncContext() {
@@ -1703,7 +1695,7 @@ NativeIOContext* StoragePartitionImpl::GetNativeIOContext() {
   return native_io_context_.get();
 }
 
-AggregationServiceImpl* StoragePartitionImpl::GetAggregationService() {
+AggregationService* StoragePartitionImpl::GetAggregationService() {
   DCHECK(initialized_);
   return aggregation_service_.get();
 }
@@ -2046,10 +2038,10 @@ void StoragePartitionImpl::OnCanSendReportingReports(
 
   std::vector<url::Origin> origins_out;
   for (auto& origin : origins) {
-    bool allowed =
-        permission_controller->GetPermissionStatusForOriginWithoutContext(
-            blink::PermissionType::BACKGROUND_SYNC, origin) ==
-        blink::mojom::PermissionStatus::GRANTED;
+    bool allowed = permission_controller
+                       ->GetPermissionResultForOriginWithoutContext(
+                           blink::PermissionType::BACKGROUND_SYNC, origin)
+                       .status == blink::mojom::PermissionStatus::GRANTED;
     if (allowed)
       origins_out.push_back(origin);
   }
@@ -2058,16 +2050,16 @@ void StoragePartitionImpl::OnCanSendReportingReports(
 }
 
 void StoragePartitionImpl::OnCanSendDomainReliabilityUpload(
-    const GURL& origin,
+    const url::Origin& origin,
     OnCanSendDomainReliabilityUploadCallback callback) {
   DCHECK(initialized_);
   PermissionController* permission_controller =
       browser_context_->GetPermissionController();
   std::move(callback).Run(
-      permission_controller->GetPermissionStatusForOriginWithoutContext(
-          blink::PermissionType::BACKGROUND_SYNC,
-          url::Origin::Create(origin)) ==
-      blink::mojom::PermissionStatus::GRANTED);
+      permission_controller
+          ->GetPermissionResultForOriginWithoutContext(
+              blink::PermissionType::BACKGROUND_SYNC, origin)
+          .status == blink::mojom::PermissionStatus::GRANTED);
 }
 
 void StoragePartitionImpl::OnClearSiteData(
@@ -2412,7 +2404,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     network::mojom::CookieManager* cookie_manager,
     InterestGroupManagerImpl* interest_group_manager,
     AttributionManager* attribution_manager,
-    AggregationServiceImpl* aggregation_service,
+    AggregationService* aggregation_service,
     storage::SharedStorageManager* shared_storage_manager,
     bool perform_storage_cleanup,
     const base::Time begin,
@@ -2510,16 +2502,20 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
   }
 
   if (remove_mask_ & REMOVE_DATA_MASK_SHADER_CACHE) {
-    gpu::ShaderCacheFactory* shader_cache_factory =
-        GetShaderCacheFactorySingleton();
+    gpu::GpuDiskCacheFactory* gpu_cache_factory =
+        GetGpuDiskCacheFactorySingleton();
     // May be null in tests where it is difficult to plumb through a test
     // storage partition.
-    if (shader_cache_factory) {
-      shader_cache_factory->ClearByPath(
-          path, begin, end,
-          base::BindOnce(
-              &ClearedShaderCache,
-              CreateTaskCompletionClosure(TracingDataType::kShaderCache)));
+    if (!path.empty() && gpu_cache_factory) {
+      // Clear the path for all the different GPU cache sub-types.
+      base::RepeatingClosure barrier = base::BarrierClosure(
+          gpu::kGpuDiskCacheTypes.size(),
+          CreateTaskCompletionClosure(TracingDataType::kGpuCache));
+      for (gpu::GpuDiskCacheType type : gpu::kGpuDiskCacheTypes) {
+        gpu_cache_factory->ClearByPath(
+            path.Append(gpu::GetGpuDiskCacheSubdir(type)), begin, end,
+            base::BindOnce(&ClearedGpuCache, barrier));
+      }
     }
   }
 
@@ -2651,7 +2647,6 @@ void StoragePartitionImpl::ResetURLLoaderFactories() {
   DCHECK(initialized_);
   GetNetworkContext()->ResetURLLoaderFactories();
   url_loader_factory_for_browser_process_.reset();
-  url_loader_factory_for_browser_process_with_corb_.reset();
   url_loader_factory_getter_->Initialize(this);
 }
 
@@ -2688,8 +2683,6 @@ void StoragePartitionImpl::FlushNetworkInterfaceForTesting() {
   network_context_.FlushForTesting();
   if (url_loader_factory_for_browser_process_)
     url_loader_factory_for_browser_process_.FlushForTesting();
-  if (url_loader_factory_for_browser_process_with_corb_)
-    url_loader_factory_for_browser_process_with_corb_.FlushForTesting();
   if (cookie_manager_for_browser_process_)
     cookie_manager_for_browser_process_.FlushForTesting();
 }
@@ -2825,7 +2818,7 @@ void StoragePartitionImpl::OverrideSharedStorageWorkletHostManagerForTesting(
 }
 
 void StoragePartitionImpl::OverrideAggregationServiceForTesting(
-    std::unique_ptr<AggregationServiceImpl> aggregation_service) {
+    std::unique_ptr<AggregationService> aggregation_service) {
   DCHECK(initialized_);
   aggregation_service_ = std::move(aggregation_service);
 }
@@ -2834,6 +2827,13 @@ void StoragePartitionImpl::OverrideAttributionManagerForTesting(
     std::unique_ptr<AttributionManager> attribution_manager) {
   DCHECK(initialized_);
   attribution_manager_ = std::move(attribution_manager);
+}
+
+void StoragePartitionImpl::OverridePrivateAggregationManagerForTesting(
+    std::unique_ptr<PrivateAggregationManagerImpl>
+        private_aggregation_manager) {
+  DCHECK(initialized_);
+  private_aggregation_manager_ = std::move(private_aggregation_manager);
 }
 
 void StoragePartitionImpl::GetQuotaSettings(
@@ -2909,50 +2909,43 @@ void StoragePartitionImpl::InitNetworkContext() {
 }
 
 network::mojom::URLLoaderFactory*
-StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal(
-    bool corb_enabled) {
-  auto& url_loader_factory =
-      corb_enabled ? url_loader_factory_for_browser_process_with_corb_
-                   : url_loader_factory_for_browser_process_;
-  auto& is_test_url_loader_factory =
-      corb_enabled ? is_test_url_loader_factory_for_browser_process_with_corb_
-                   : is_test_url_loader_factory_for_browser_process_;
-
+StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal() {
   // Create the URLLoaderFactory as needed, but make sure not to reuse a
   // previously created one if the test override has changed.
-  if (url_loader_factory && url_loader_factory.is_connected() &&
-      is_test_url_loader_factory != !GetCreateURLLoaderFactoryCallback()) {
-    return url_loader_factory.get();
+  if (url_loader_factory_for_browser_process_ &&
+      url_loader_factory_for_browser_process_.is_connected() &&
+      is_test_url_loader_factory_for_browser_process_ !=
+          !GetCreateURLLoaderFactoryCallback()) {
+    return url_loader_factory_for_browser_process_.get();
   }
 
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
   params->process_id = network::mojom::kBrowserProcessId;
   params->automatically_assign_isolation_info = true;
-  params->is_corb_enabled = corb_enabled;
-  // Corb requests are likely made on behalf of untrusted renderers.
-  if (!corb_enabled)
-    params->is_trusted = true;
+  params->is_corb_enabled = false;
+  params->is_trusted = true;
   params->url_loader_network_observer =
       CreateAuthCertObserverForServiceWorker();
   params->disable_web_security =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebSecurity);
-  url_loader_factory.reset();
+  url_loader_factory_for_browser_process_.reset();
   if (!GetCreateURLLoaderFactoryCallback()) {
     GetNetworkContext()->CreateURLLoaderFactory(
-        url_loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
-    is_test_url_loader_factory = false;
-    return url_loader_factory.get();
+        url_loader_factory_for_browser_process_.BindNewPipeAndPassReceiver(),
+        std::move(params));
+    is_test_url_loader_factory_for_browser_process_ = false;
+    return url_loader_factory_for_browser_process_.get();
   }
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory;
   GetNetworkContext()->CreateURLLoaderFactory(
       original_factory.InitWithNewPipeAndPassReceiver(), std::move(params));
-  url_loader_factory.Bind(
+  url_loader_factory_for_browser_process_.Bind(
       GetCreateURLLoaderFactoryCallback().Run(std::move(original_factory)));
-  is_test_url_loader_factory = true;
-  return url_loader_factory.get();
+  is_test_url_loader_factory_for_browser_process_ = true;
+  return url_loader_factory_for_browser_process_.get();
 }
 
 void StoragePartition::SetDefaultQuotaSettingsForTesting(

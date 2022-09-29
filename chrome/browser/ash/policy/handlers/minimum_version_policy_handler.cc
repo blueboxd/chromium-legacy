@@ -51,9 +51,9 @@ PrefService* local_state() {
 }
 
 MinimumVersionPolicyHandler::NetworkStatus GetCurrentNetworkStatus() {
-  chromeos::NetworkStateHandler* network_state_handler =
-      chromeos::NetworkHandler::Get()->network_state_handler();
-  const chromeos::NetworkState* current_network =
+  ash::NetworkStateHandler* network_state_handler =
+      ash::NetworkHandler::Get()->network_state_handler();
+  const ash::NetworkState* current_network =
       network_state_handler->DefaultNetwork();
   if (!current_network || !current_network->IsConnectedState())
     return MinimumVersionPolicyHandler::NetworkStatus::kOffline;
@@ -514,8 +514,8 @@ void MinimumVersionPolicyHandler::MaybeShowNotification(
                               std::move(close_callback));
 
   if (!eol_reached_) {
-    chromeos::NetworkStateHandler* network_state_handler =
-        chromeos::NetworkHandler::Get()->network_state_handler();
+    ash::NetworkStateHandler* network_state_handler =
+        ash::NetworkHandler::Get()->network_state_handler();
     if (!network_state_handler->HasObserver(this))
       network_state_handler_observer_.Observe(network_state_handler);
   }
@@ -570,7 +570,7 @@ void MinimumVersionPolicyHandler::HideNotification() const {
 }
 
 void MinimumVersionPolicyHandler::DefaultNetworkChanged(
-    const chromeos::NetworkState* network) {
+    const ash::NetworkState* network) {
   // Close notification if network has switched to one that allows updates.
   const NetworkStatus status = GetCurrentNetworkStatus();
   if (status == NetworkStatus::kAllowed && notification_handler_) {

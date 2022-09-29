@@ -59,33 +59,6 @@ class DiscardAttemptMarker : public NodeAttachedDataImpl<DiscardAttemptMarker> {
 
 const char kDescriberName[] = "PageDiscardingHelper";
 
-// Caches page node properties to facilitate sorting.
-class PageNodeSortProxy {
- public:
-  PageNodeSortProxy(const PageNode* page_node,
-                    bool is_protected,
-                    base::TimeDelta last_visible)
-      : page_node_(page_node),
-        is_protected_(is_protected),
-        last_visible_(last_visible) {}
-  const PageNode* page_node() { return page_node_; }
-
-  // Returns true if the rhs is more important.
-  bool operator<(const PageNodeSortProxy& rhs) const {
-    if (is_protected_ && !rhs.is_protected_)
-      return false;
-    if (!is_protected_ && rhs.is_protected_)
-      return true;
-    return last_visible_ > rhs.last_visible_;
-  }
-
- private:
-  const PageNode* page_node_;
-  bool is_protected_;
-  // Delta between current time and last visibility change time.
-  base::TimeDelta last_visible_;
-};
-
 using NodeRssMap = base::flat_map<const PageNode*, uint64_t>;
 
 // Returns the mapping from page_node to its RSS estimation.
@@ -139,15 +112,13 @@ PageDiscardingHelper::PageDiscardingHelper()
 PageDiscardingHelper::~PageDiscardingHelper() = default;
 
 void PageDiscardingHelper::UrgentlyDiscardAPage(
-    features::DiscardStrategy discard_strategy,
     base::OnceCallback<void(bool)> post_discard_cb) {
-  UrgentlyDiscardMultiplePages(absl::nullopt, discard_strategy, false,
+  UrgentlyDiscardMultiplePages(absl::nullopt, false,
                                std::move(post_discard_cb));
 }
 
 void PageDiscardingHelper::UrgentlyDiscardMultiplePages(
     absl::optional<uint64_t> reclaim_target_kb,
-    features::DiscardStrategy discard_strategy,
     bool discard_protected_tabs,
     base::OnceCallback<void(bool)> post_discard_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -171,7 +142,7 @@ void PageDiscardingHelper::UrgentlyDiscardMultiplePages(
         (can_discard_result == CanUrgentlyDiscardResult::kProtected);
     if (!discard_protected_tabs && is_protected)
       continue;
-    candidates.emplace_back(page_node, is_protected,
+    candidates.emplace_back(page_node, false, is_protected,
                             page_node->GetTimeSinceLastVisibilityChange());
   }
   // Sorts with ascending importance.
@@ -187,62 +158,26 @@ void PageDiscardingHelper::UrgentlyDiscardMultiplePages(
   }
   std::vector<const PageNode*> discard_attempts;
 
-  if (discard_strategy == features::DiscardStrategy::LRU) {
-    if (reclaim_target_kb == absl::nullopt) {
-      const PageNode* oldest = candidates[0].page_node();
-      discard_attempts.emplace_back(oldest);
-    } else {
-      const uint64_t reclaim_target_kb_value = *reclaim_target_kb;
-      uint64_t total_reclaim_kb = 0;
-      NodeRssMap page_node_rss_kb = GetPageNodeRssEstimateKb(candidates);
-      for (auto& candidate : candidates) {
-        if (total_reclaim_kb >= reclaim_target_kb_value)
-          break;
-        const PageNode* node = candidate.page_node();
-        discard_attempts.emplace_back(node);
-        // The node RSS value is updated by ProcessMetricsDecorator
-        // periodically. The RSS value is 0 for nodes that have never been
-        // updated, estimate the RSS value to 80 MiB for these nodes. 80 MiB is
-        // the average Memory.Renderer.PrivateMemoryFootprint histogram value on
-        // Windows in August 2021.
-        total_reclaim_kb +=
-            (page_node_rss_kb[node]) ? page_node_rss_kb[node] : 80 * 1024;
-      }
-    }
-  } else if (discard_strategy == features::DiscardStrategy::BIGGEST_RSS) {
-    if (reclaim_target_kb == absl::nullopt) {
-      NodeRssMap page_node_rss_kb = GetPageNodeRssEstimateKb(candidates);
-      DCHECK(!page_node_rss_kb.empty());
-
-      const PageNode* oldest = candidates[0].page_node();
-      auto largest =
-          std::max_element(page_node_rss_kb.begin(), page_node_rss_kb.end(),
-                           [](const std::pair<const PageNode*, uint64_t>& p1,
-                              const std::pair<const PageNode*, uint64_t>& p2) {
-                             return p1.second < p2.second;
-                           });
-
-      // max_element should return a valid element unless the map is empty.
-      DCHECK(largest != page_node_rss_kb.end());
-
-      if (largest->second != 0) {
-        // Only report the memory usage metrics if we can compare them.
-        UMA_HISTOGRAM_COUNTS_1000("Discarding.LargestTabFootprint",
-                                  largest->second / 1024);
-        UMA_HISTOGRAM_COUNTS_1000("Discarding.OldestTabFootprint",
-                                  page_node_rss_kb[oldest] / 1024);
-        discard_attempts.emplace_back(largest->first);
-      } else {
-        // If RSS is 0 for every node, fallback to the oldest node.
-        discard_attempts.emplace_back(oldest);
-      }
-    } else {
-      NOTIMPLEMENTED() << "When DiscardStrategy is BIGGEST_RSS, multiple "
-                          "discarding is not supported.";
-      return;
-    }
+  if (reclaim_target_kb == absl::nullopt) {
+    const PageNode* oldest = candidates[0].page_node();
+    discard_attempts.emplace_back(oldest);
   } else {
-    NOTIMPLEMENTED() << "Unknown discard strategy.";
+    const uint64_t reclaim_target_kb_value = *reclaim_target_kb;
+    uint64_t total_reclaim_kb = 0;
+    NodeRssMap page_node_rss_kb = GetPageNodeRssEstimateKb(candidates);
+    for (auto& candidate : candidates) {
+      if (total_reclaim_kb >= reclaim_target_kb_value)
+        break;
+      const PageNode* node = candidate.page_node();
+      discard_attempts.emplace_back(node);
+      // The node RSS value is updated by ProcessMetricsDecorator periodically.
+      // The RSS value is 0 for nodes that have never been updated, estimate the
+      // RSS value to 80 MiB for these nodes. 80 MiB is the average
+      // Memory.Renderer.PrivateMemoryFootprint histogram value on Windows in
+      // August 2021.
+      total_reclaim_kb +=
+          (page_node_rss_kb[node]) ? page_node_rss_kb[node] : 80 * 1024;
+    }
   }
 
   if (discard_attempts.empty()) {
@@ -265,8 +200,7 @@ void PageDiscardingHelper::UrgentlyDiscardMultiplePages(
       discard_attempts,
       base::BindOnce(&PageDiscardingHelper::PostDiscardAttemptCallback,
                      weak_factory_.GetWeakPtr(), reclaim_target_kb,
-                     discard_strategy, discard_protected_tabs,
-                     std::move(split_callback.second)));
+                     discard_protected_tabs, std::move(split_callback.second)));
 }
 
 void PageDiscardingHelper::ImmediatelyDiscardSpecificPage(
@@ -477,7 +411,6 @@ base::Value PageDiscardingHelper::DescribePageNodeData(
 
 void PageDiscardingHelper::PostDiscardAttemptCallback(
     absl::optional<uint64_t> reclaim_target_kb,
-    features::DiscardStrategy discard_strategy,
     bool discard_protected_tabs,
     base::OnceCallback<void(bool)> post_discard_cb,
     bool success) {
@@ -485,8 +418,7 @@ void PageDiscardingHelper::PostDiscardAttemptCallback(
   // early and PostDiscardAttemptCallback is not called.
   if (!success) {
     // DiscardAttemptMarker will force the retry to choose different pages.
-    UrgentlyDiscardMultiplePages(reclaim_target_kb, discard_strategy,
-                                 discard_protected_tabs,
+    UrgentlyDiscardMultiplePages(reclaim_target_kb, discard_protected_tabs,
                                  std::move(post_discard_cb));
     return;
   }

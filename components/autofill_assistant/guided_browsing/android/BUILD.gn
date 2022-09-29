@@ -21,6 +21,7 @@ android_library("java") {
 
   sources = [
     "java/src/org/chromium/components/autofill_assistant/guided_browsing/LayoutUtils.java",
+    "java/src/org/chromium/components/autofill_assistant/guided_browsing/parse_xml/AssistantParseSingleTagXmlUtil.java",
     "java/src/org/chromium/components/autofill_assistant/guided_browsing/qr_code/AssistantQrCodeController.java",
     "java/src/org/chromium/components/autofill_assistant/guided_browsing/qr_code/AssistantQrCodeDelegate.java",
     "java/src/org/chromium/components/autofill_assistant/guided_browsing/qr_code/camera_scan/AssistantQrCodeCameraCallbacks.java",
@@ -52,6 +53,8 @@ android_library("java") {
 android_resources("java_resources") {
   sources = [
     "java/res/drawable/folder_img.xml",
+    "java/res/drawable/shield_img.xml",
+    "java/res/drawable/videocam_img.xml",
     "java/res/layout/autofill_assistant_qr_code_dialog.xml",
     "java/res/layout/autofill_assistant_qr_code_permission_layout.xml",
     "java/res/values-v17/dimens.xml",

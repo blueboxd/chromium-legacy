@@ -45,7 +45,6 @@
 #include "components/tab_groups/tab_group_id.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/clipboard/clipboard_constants.h"
-#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
@@ -437,9 +436,7 @@ TabDragController::TabDragController()
       did_restore_window_(false),
       tab_strip_to_attach_to_after_exit_(nullptr),
       move_loop_widget_(nullptr),
-      is_mutating_(false),
-      attach_x_(-1),
-      attach_index_(-1) {
+      is_mutating_(false) {
   g_tab_drag_controller = this;
 }
 
@@ -452,7 +449,7 @@ TabDragController::~TabDragController() {
   if (current_state_ == DragState::kDraggingWindow)
     GetAttachedBrowserWidget()->EndMoveLoop();
 
-  if (event_source_ == EVENT_SOURCE_TOUCH) {
+  if (event_source_ == ui::mojom::DragEventSource::kTouch) {
     TabDragContext* capture_context =
         attached_context_ ? attached_context_.get() : source_context_.get();
     capture_context->GetWidget()->ReleaseCapture();
@@ -466,7 +463,7 @@ void TabDragController::Init(TabDragContext* source_context,
                              const gfx::Point& mouse_offset,
                              int source_view_offset,
                              ui::ListSelectionModel initial_selection_model,
-                             EventSource event_source) {
+                             ui::mojom::DragEventSource event_source) {
   DCHECK(!dragging_views.empty());
   DCHECK(base::Contains(dragging_views, source_view));
   source_context_ = source_context;
@@ -523,7 +520,7 @@ void TabDragController::Init(TabDragContext* source_context,
 
   // Gestures don't automatically do a capture. We don't allow multiple drags at
   // the same time, so we explicitly capture.
-  if (event_source == EVENT_SOURCE_TOUCH) {
+  if (event_source == ui::mojom::DragEventSource::kTouch) {
     // Taking capture may cause capture to be lost, ending the drag and
     // destroying |this|.
     base::WeakPtr<TabDragController> ref(weak_factory_.GetWeakPtr());
@@ -1158,61 +1155,34 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen,
         GetDraggedViewTabStripBounds(dragged_view_point),
         GetViewsMatchingDraggedContents(attached_context_), num_dragging_tabs(),
         group_);
-    bool do_move = true;
-    // While dragging within a tabstrip the expectation is the insertion index
-    // is based on the left edge of the tabs being dragged. OTOH when dragging
-    // into a new tabstrip (attaching) the expectation is the insertion index is
-    // based on the cursor. This proves problematic as insertion may change the
-    // size of the tabs, resulting in the index calculated before the insert
-    // differing from the index calculated after the insert. To alleviate this
-    // the index is chosen before insertion, and subsequently a new index is
-    // only used once the mouse moves enough such that the index changes based
-    // on the direction the mouse moved relative to |attach_x_| (smaller
-    // x-coordinate should yield a smaller index or larger x-coordinate yields a
-    // larger index).
-    if (attach_index_ != -1) {
-      gfx::Point tab_strip_point(point_in_screen);
-      views::View::ConvertPointFromScreen(attached_context_, &tab_strip_point);
-      const int new_x =
-          attached_context_->GetMirroredXInView(tab_strip_point.x());
-      if (new_x < attach_x_)
-        to_index = std::min(to_index, attach_index_);
-      else
-        to_index = std::max(to_index, attach_index_);
-      if (to_index != attach_index_)
-        attach_index_ = -1;  // Once a valid move is detected, don't constrain.
-      else
-        do_move = false;
+
+    WebContents* last_contents = drag_data_.back().contents;
+    int index_of_last_item =
+        attached_model->GetIndexOfWebContents(last_contents);
+    if (initial_move_) {
+      // TabDragContext determines if the tabs needs to be animated
+      // based on model position. This means we need to invoke
+      // LayoutDraggedTabsAt before changing the model.
+      attached_context_->LayoutDraggedViewsAt(
+          views, source_view_drag_data()->attached_view, dragged_view_point,
+          initial_move_);
+      did_layout = true;
     }
-    if (do_move) {
-      WebContents* last_contents = drag_data_.back().contents;
-      int index_of_last_item =
-          attached_model->GetIndexOfWebContents(last_contents);
-      if (initial_move_) {
-        // TabDragContext determines if the tabs needs to be animated
-        // based on model position. This means we need to invoke
-        // LayoutDraggedTabsAt before changing the model.
-        attached_context_->LayoutDraggedViewsAt(
-            views, source_view_drag_data()->attached_view, dragged_view_point,
-            initial_move_);
-        did_layout = true;
-      }
 
-      attached_model->MoveSelectedTabsTo(to_index);
+    attached_model->MoveSelectedTabsTo(to_index);
 
-      if (header_drag_) {
-        attached_model->MoveTabGroup(group_.value());
-      } else {
-        UpdateGroupForDraggedTabs();
-      }
+    if (header_drag_) {
+      attached_model->MoveTabGroup(group_.value());
+    } else {
+      UpdateGroupForDraggedTabs();
+    }
 
-      // Move may do nothing in certain situations (such as when dragging pinned
-      // tabs). Make sure the tabstrip actually changed before updating
-      // last_move_screen_loc_.
-      if (index_of_last_item !=
-          attached_model->GetIndexOfWebContents(last_contents)) {
-        last_move_screen_loc_ = point_in_screen.x();
-      }
+    // Move may do nothing in certain situations (such as when dragging pinned
+    // tabs). Make sure the tabstrip actually changed before updating
+    // last_move_screen_loc_.
+    if (index_of_last_item !=
+        attached_model->GetIndexOfWebContents(last_contents)) {
+      last_move_screen_loc_ = point_in_screen.x();
     }
   }
 
@@ -1343,20 +1313,12 @@ void TabDragController::Attach(TabDragContext* attached_context,
     // Insert at any valid index in the tabstrip. We'll fix up the insertion
     // index in MoveAttached() later.
     int index = attached_context_->GetPinnedTabCount();
-    attach_index_ = index;
-
-    gfx::Point tab_strip_point(point_in_screen);
-    views::View::ConvertPointFromScreen(attached_context_, &tab_strip_point);
-    tab_strip_point.set_x(
-        attached_context_->GetMirroredXInView(tab_strip_point.x()));
-    tab_strip_point.Offset(0, -mouse_offset_.y());
-    attach_x_ = tab_strip_point.x();
 
     base::AutoReset<bool> setter(&is_mutating_, true);
     for (size_t i = first_tab_index(); i < drag_data_.size(); ++i) {
-      int add_types = TabStripModel::ADD_NONE;
+      int add_types = AddTabTypes::ADD_NONE;
       if (drag_data_[i].pinned)
-        add_types |= TabStripModel::ADD_PINNED;
+        add_types |= AddTabTypes::ADD_PINNED;
 
       // We should have owned_contents here, this CHECK is used to gather data
       // for https://crbug.com/677806.
@@ -1408,9 +1370,6 @@ void TabDragController::Attach(TabDragContext* attached_context,
   attached_context_tabs_closed_tracker_ =
       std::make_unique<DraggedTabsClosedTracker>(
           attached_context_->GetTabStripModel(), this);
-
-  if (attach_index_ != -1 && !header_drag_)
-    UpdateGroupForDraggedTabs();
 }
 
 std::unique_ptr<TabDragController> TabDragController::Detach(
@@ -1423,8 +1382,6 @@ std::unique_ptr<TabDragController> TabDragController::Detach(
   // Detaching may trigger the Widget bounds to change. Such bounds changes
   // should be ignored as they may lead to reentrancy and bad things happening.
   widget_observation_.Reset();
-
-  attach_index_ = -1;
 
   // Release ownership of the drag controller and mouse capture. When we
   // reattach ownership is transferred.
@@ -1563,7 +1520,7 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
     attached_context_->OwnDragController(std::move(me));
   }
   const views::Widget::MoveLoopSource move_loop_source =
-      event_source_ == EVENT_SOURCE_MOUSE
+      event_source_ == ui::mojom::DragEventSource::kMouse
           ? views::Widget::MoveLoopSource::kMouse
           : views::Widget::MoveLoopSource::kTouch;
   const views::Widget::MoveLoopEscapeBehavior escape_behavior =
@@ -1762,6 +1719,9 @@ void TabDragController::AttachTabsToNewBrowserOnDrop() {
   // Attach() expects |attached_context_| to be nullptr;
   attached_context_ = nullptr;
   Attach(new_context, last_point_in_screen_, std::move(me));
+  // Run MoveAttached to ensure the insertion index and group membership make
+  // sense for this mouse position.
+  MoveAttached(last_point_in_screen_, true);
   browser->window()->Show();
 }
 
@@ -1788,9 +1748,10 @@ void TabDragController::PerformDeferredAttach() {
   // On ChromeOS, the gesture state is already cleared and so
   // GetCursorScreenPoint() will fail to obtain the last touch location.
   // Therefore it uses the last remembered location instead.
-  const gfx::Point current_screen_point = (event_source_ == EVENT_SOURCE_TOUCH)
-                                              ? last_point_in_screen_
-                                              : GetCursorScreenPoint();
+  const gfx::Point current_screen_point =
+      (event_source_ == ui::mojom::DragEventSource::kTouch)
+          ? last_point_in_screen_
+          : GetCursorScreenPoint();
   // If we're attaching the dragged tabs to an overview window's tabstrip, the
   // tabstrip should not have focus.
   DetachAndAttachToNewContext(DONT_RELEASE_CAPTURE, deferred_target_context,
@@ -1932,7 +1893,7 @@ void TabDragController::RevertDragAt(size_t drag_index) {
       //             somehow.
       source_context_->GetTabStripModel()->InsertWebContentsAt(
           target_index, std::move(detached_web_contents),
-          (data->pinned ? TabStripModel::ADD_PINNED : 0));
+          (data->pinned ? AddTabTypes::ADD_PINNED : 0));
     } else {
       // The Tab was moved within the TabDragContext where the drag
       // was initiated. Move it back to the starting location.
@@ -1956,7 +1917,7 @@ void TabDragController::RevertDragAt(size_t drag_index) {
     // We need to put it back into the source TabDragContext.
     source_context_->GetTabStripModel()->InsertWebContentsAt(
         target_index, std::move(data->owned_contents),
-        (data->pinned ? TabStripModel::ADD_PINNED : 0));
+        (data->pinned ? AddTabTypes::ADD_PINNED : 0));
   }
   TabStripModel* source_model = source_context_->GetTabStripModel();
   source_model->UpdateGroupForDragRevert(
@@ -2014,8 +1975,8 @@ void TabDragController::CompleteDrag() {
       // for https://crbug.com/677806.
       CHECK(drag_data_[i].owned_contents);
       item.web_contents = std::move(drag_data_[i].owned_contents);
-      item.add_types = drag_data_[i].pinned ? TabStripModel::ADD_PINNED
-                                            : TabStripModel::ADD_NONE;
+      item.add_types = drag_data_[i].pinned ? AddTabTypes::ADD_PINNED
+                                            : AddTabTypes::ADD_NONE;
       contentses.push_back(std::move(item));
     }
 
@@ -2342,11 +2303,8 @@ gfx::Point TabDragController::GetCursorScreenPoint() {
   DCHECK(widget);
   aura::Window* widget_window = widget->GetNativeWindow();
   DCHECK(widget_window->GetRootWindow());
-  auto event_source = event_source_ == EVENT_SOURCE_MOUSE
-                          ? ui::mojom::DragEventSource::kMouse
-                          : ui::mojom::DragEventSource::kTouch;
   return aura::Env::GetInstance()->GetLastPointerPoint(
-      event_source, widget_window, /*fallback=*/last_point_in_screen_);
+      event_source_, widget_window, /*fallback=*/last_point_in_screen_);
 #else
   return display::Screen::GetScreen()->GetCursorScreenPoint();
 #endif

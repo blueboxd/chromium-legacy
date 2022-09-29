@@ -28,17 +28,12 @@
  */
 
 #include "third_party/blink/renderer/core/dom/document.h"
-// document.h is a widely included header and its size impacts build time
-// significantly. If you run into this limit, try using forward declarations
-// instead of including more headers. If that is infeasible, adjust the limit.
-// For more info, see
-// https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
-#pragma clang max_tokens_here 980000
 
 #include <memory>
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
@@ -66,6 +61,7 @@
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/page_state/page_state.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -2369,12 +2365,12 @@ bool Document::NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
         (ancestor->NeedsAdjacentStyleRecalc() && !ignore_adjacent_style)) {
       is_dirty = true;
     }
+    if (NodeLayoutUpgrade::GetReasons(*ancestor) & upgrade_mask)
+      is_dirty = true;
     if (is_dirty) {
       if (auto* style = ancestor->GetComputedStyle())
         return !style->IsEnsuredOutsideFlatTree();
     }
-    if (NodeLayoutUpgrade::GetReasons(*ancestor) & upgrade_mask)
-      is_dirty = true;
 
     auto* element = DynamicTo<Element>(ancestor);
     if (!element)
@@ -3771,9 +3767,10 @@ bool Document::CheckCompletedInternal() {
     }
     Loader()->SetSentDidFinishLoad();
     GetFrame()->Client()->DispatchDidFinishLoad();
-    GetFrame()->GetLocalFrameHostRemote().DidFinishLoad(Loader()->Url());
+    // RenderFrameObservers may execute script, which could detach this frame.
     if (!GetFrame())
       return false;
+    GetFrame()->GetLocalFrameHostRemote().DidFinishLoad(Loader()->Url());
 
     GetFrame()->GetFrameScheduler()->RegisterStickyFeature(
         SchedulingPolicy::Feature::kDocumentLoaded,
@@ -4816,6 +4813,7 @@ void Document::DynamicViewportUnitsChanged() {
 }
 
 void Document::SetHoverElement(Element* new_hover_element) {
+  Element::HoveredElementChanged(hover_element_, new_hover_element);
   hover_element_ = new_hover_element;
 }
 
@@ -6745,6 +6743,14 @@ void Document::IncrementLazyEmbedsFrameCount() {
   data_->lazy_embeds_frame_count_++;
 }
 
+void Document::IncrementImmediateChildFrameCreationCount() {
+  data_->immediate_child_frame_creation_count_++;
+}
+
+int Document::GetImmediateChildFrameCreationCount() const {
+  return data_->immediate_child_frame_creation_count_;
+}
+
 DOMWindow* Document::defaultView() const {
   return dom_window_;
 }
@@ -6794,10 +6800,11 @@ void Document::FinishedParsing() {
       MilestoneForDelayedAsyncScript::kFinishedParsing);
 
   // FIXME: DOMContentLoaded is dispatched synchronously, but this should be
-  // dispatched in a queued task, see https://crbug.com/425790
+  // dispatched in a queued task, see https://crbug.com/961428
   if (document_timing_.DomContentLoadedEventStart().is_null())
     document_timing_.MarkDomContentLoadedEventStart();
-  DispatchEvent(*Event::CreateBubble(event_type_names::kDOMContentLoaded));
+  if (!ScriptForbiddenScope::IsScriptForbidden())
+    DispatchEvent(*Event::CreateBubble(event_type_names::kDOMContentLoaded));
   if (document_timing_.DomContentLoadedEventEnd().is_null())
     document_timing_.MarkDomContentLoadedEventEnd();
   SetParsingState(kFinishedParsing);
@@ -6805,7 +6812,8 @@ void Document::FinishedParsing() {
   // Ensure Custom Element callbacks are drained before DOMContentLoaded.
   // FIXME: Remove this ad-hoc checkpoint when DOMContentLoaded is dispatched in
   // a queued task, which will do a checkpoint anyway. https://crbug.com/425790
-  Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
+  if (!ScriptForbiddenScope::IsScriptForbidden())
+    Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
 
   ScriptableDocumentParser* parser = GetScriptableDocumentParser();
   well_formed_ = parser && parser->WellFormed();
@@ -7295,9 +7303,8 @@ void Document::RemoveFromTopLayer(Element* element) {
 }
 
 HTMLDialogElement* Document::ActiveModalDialog() const {
-  for (auto it = top_layer_elements_.rbegin(); it != top_layer_elements_.rend();
-       ++it) {
-    if (auto* dialog = DynamicTo<HTMLDialogElement>(*it->Get()))
+  for (const auto& element : base::Reversed(top_layer_elements_)) {
+    if (auto* dialog = DynamicTo<HTMLDialogElement>(*element))
       return dialog;
   }
 
@@ -7310,6 +7317,13 @@ Element* Document::TopmostPopupAutoOrHint() const {
   if (PopupStack().IsEmpty())
     return nullptr;
   return PopupStack().back();
+}
+
+void Document::SetPopUpMousedownTarget(const Element* pop_up) {
+  DCHECK(
+      RuntimeEnabledFeatures::HTMLPopupAttributeEnabled(GetExecutionContext()));
+  DCHECK(!pop_up || pop_up->HasValidPopupAttribute());
+  pop_up_mousedown_target_ = pop_up;
 }
 
 void Document::exitPointerLock() {
@@ -7564,11 +7578,11 @@ void Document::UpdateHoverState(Element* inner_element_in_document) {
   Element* new_hover_element =
       SkipDisplayNoneAncestors(inner_element_in_document);
 
-  // Update our current hover element.
-  SetHoverElement(new_hover_element);
-
   if (old_hover_element == new_hover_element)
     return;
+
+  // Update our current hover element.
+  SetHoverElement(new_hover_element);
 
   Node* ancestor_element = nullptr;
   if (old_hover_element && old_hover_element->isConnected() &&
@@ -8013,7 +8027,7 @@ scoped_refptr<base::SingleThreadTaskRunner> Document::GetTaskRunner(
     return GetExecutionContext()->GetTaskRunner(type);
   // GetExecutionContext() can be nullptr in unit tests and after Shutdown().
   // Fallback to the default task runner for this thread if all else fails.
-  return Thread::Current()->GetTaskRunner();
+  return Thread::Current()->GetDeprecatedTaskRunner();
 }
 
 DOMFeaturePolicy* Document::featurePolicy() {
@@ -8065,7 +8079,9 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(top_layer_elements_);
   visitor->Trace(popup_hint_showing_);
   visitor->Trace(popup_stack_);
+  visitor->Trace(pop_up_mousedown_target_);
   visitor->Trace(popups_waiting_to_hide_);
+  visitor->Trace(all_open_pop_ups_);
   visitor->Trace(load_event_delay_timer_);
   visitor->Trace(plugin_loading_timer_);
   visitor->Trace(elem_sheet_);
@@ -8153,7 +8169,7 @@ bool Document::IsFocusAllowed() const {
   WebFeature uma_type;
   bool sandboxed = dom_window_->IsSandboxed(
       network::mojom::blink::WebSandboxFlags::kNavigation);
-  bool ad = GetFrame()->IsAdSubframe();
+  bool ad = GetFrame()->IsAdFrame();
   if (sandboxed) {
     uma_type = ad ? WebFeature::kFocusWithoutUserActivationSandboxedAdFrame
                   : WebFeature::kFocusWithoutUserActivationSandboxedNotAdFrame;
@@ -8272,12 +8288,6 @@ void Document::ColorSchemeChanged() {
   UpdateForcedColors();
   GetStyleEngine().ColorSchemeChanged();
   MediaQueryAffectingValueChanged(MediaValueChange::kOther);
-  MediaValues* media_values =
-      MediaValues::CreateDynamicIfFrameExists(GetFrame());
-  if (GetFrame()) {
-    GetFrame()->GetLocalFrameHostRemote().DidUpdatePreferredColorScheme(
-        media_values->GetPreferredColorScheme());
-  }
 }
 
 void Document::VisionDeficiencyChanged() {

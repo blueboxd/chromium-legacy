@@ -5,7 +5,9 @@
 #include "ash/app_list/views/apps_container_view.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/model/app_list_test_model.h"
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/views/apps_grid_view_test_api.h"
 #include "ash/app_list/views/continue_section_view.h"
 #include "ash/app_list/views/recent_apps_view.h"
 #include "ash/app_list/views/search_box_view.h"
@@ -19,9 +21,38 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/textfield/textfield.h"
 
 namespace ash {
+
+namespace {
+
+class TransitionWaiter : public PaginationModelObserver {
+ public:
+  explicit TransitionWaiter(PaginationModel* model) : model_(model) {
+    model_->AddObserver(this);
+  }
+
+  TransitionWaiter(const TransitionWaiter&) = delete;
+  TransitionWaiter& operator=(const TransitionWaiter&) = delete;
+
+  ~TransitionWaiter() override { model_->RemoveObserver(this); }
+
+  void Wait() {
+    ui_run_loop_ = std::make_unique<base::RunLoop>();
+    ui_run_loop_->Run();
+  }
+
+ private:
+  // PaginationModelObserver:
+  void TransitionEnded() override { ui_run_loop_->QuitWhenIdle(); }
+
+  std::unique_ptr<base::RunLoop> ui_run_loop_;
+  PaginationModel* model_ = nullptr;
+};
+
+}  // namespace
 
 class AppsContainerViewTest : public AshTestBase {
  public:
@@ -32,6 +63,25 @@ class AppsContainerViewTest : public AshTestBase {
                                {});
   }
   ~AppsContainerViewTest() override = default;
+
+  // testing::Test:
+  void SetUp() override {
+    AshTestBase::SetUp();
+    app_list_test_model_ = std::make_unique<test::AppListTestModel>();
+    search_model_ = std::make_unique<SearchModel>();
+    Shell::Get()->app_list_controller()->SetActiveModel(
+        /*profile_id=*/1, app_list_test_model_.get(), search_model_.get());
+  }
+
+  void AddFolderWithApps(int count) {
+    app_list_test_model_->CreateAndPopulateFolderWithApps(count);
+  }
+
+  AppListToastContainerView* GetToastContainerView() {
+    return GetAppListTestHelper()
+        ->GetAppsContainerView()
+        ->GetToastContainerView();
+  }
 
   void PressDown() {
     ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
@@ -45,8 +95,25 @@ class AppsContainerViewTest : public AshTestBase {
         ->selected_page();
   }
 
+  int GetTotalPages() {
+    return GetAppListTestHelper()
+        ->GetRootPagedAppsGridView()
+        ->pagination_model()
+        ->total_pages();
+  }
+
+  bool HasGradientMask() {
+    return GetAppListTestHelper()
+        ->GetAppsContainerView()
+        ->scrollable_container_for_test()
+        ->layer()
+        ->layer_mask_layer();
+  }
+
  private:
   base::test::ScopedFeatureList features_;
+  std::unique_ptr<test::AppListTestModel> app_list_test_model_;
+  std::unique_ptr<SearchModel> search_model_;
 };
 
 TEST_F(AppsContainerViewTest, ContinueSectionVisibleByDefault) {
@@ -205,6 +272,52 @@ TEST_F(AppsContainerViewTest, ShowContinueSectionPlaysAnimation) {
       ui::LayerAnimationElement::TRANSFORM));
 }
 
+TEST_F(AppsContainerViewTest, OpeningFolderRemovesOtherViewsFromAccessibility) {
+  auto* helper = GetAppListTestHelper();
+  helper->AddContinueSuggestionResults(4);
+  helper->AddRecentApps(5);
+  AddFolderWithApps(5);
+  TabletMode::Get()->SetEnabledForTest(true);
+
+  // Force the sorting toast to show.
+  AppListController::Get()->UpdateAppListWithNewTemporarySortOrder(
+      AppListSortOrder::kColor,
+      /*animate=*/false, /*update_position_closure=*/base::OnceClosure());
+  ASSERT_TRUE(GetToastContainerView()->GetToastButton());
+
+  // Open the folder.
+  AppListItemView* folder_item =
+      helper->GetRootPagedAppsGridView()->GetItemViewAt(0);
+  LeftClickOn(folder_item);
+
+  // Note: For fullscreen app list, the search box is part of the focus cycle
+  // when a folder is open.
+  auto* continue_section = helper->GetFullscreenContinueSectionView();
+  EXPECT_TRUE(continue_section->GetViewAccessibility().IsIgnored());
+  EXPECT_TRUE(continue_section->GetViewAccessibility().IsLeaf());
+  auto* recent_apps = helper->GetFullscreenRecentAppsView();
+  EXPECT_TRUE(recent_apps->GetViewAccessibility().IsIgnored());
+  EXPECT_TRUE(recent_apps->GetViewAccessibility().IsLeaf());
+  auto* toast_container = GetToastContainerView();
+  EXPECT_TRUE(toast_container->GetViewAccessibility().IsIgnored());
+  EXPECT_TRUE(toast_container->GetViewAccessibility().IsLeaf());
+  auto* apps_grid_view = helper->GetRootPagedAppsGridView();
+  EXPECT_TRUE(apps_grid_view->GetViewAccessibility().IsIgnored());
+  EXPECT_TRUE(apps_grid_view->GetViewAccessibility().IsLeaf());
+
+  // Close the folder.
+  PressAndReleaseKey(ui::VKEY_ESCAPE);
+
+  EXPECT_FALSE(continue_section->GetViewAccessibility().IsIgnored());
+  EXPECT_FALSE(continue_section->GetViewAccessibility().IsLeaf());
+  EXPECT_FALSE(recent_apps->GetViewAccessibility().IsIgnored());
+  EXPECT_FALSE(recent_apps->GetViewAccessibility().IsLeaf());
+  EXPECT_FALSE(toast_container->GetViewAccessibility().IsIgnored());
+  EXPECT_FALSE(toast_container->GetViewAccessibility().IsLeaf());
+  EXPECT_FALSE(apps_grid_view->GetViewAccessibility().IsIgnored());
+  EXPECT_FALSE(apps_grid_view->GetViewAccessibility().IsLeaf());
+}
+
 TEST_F(AppsContainerViewTest, UpdatesSelectedPageAfterFocusTraversal) {
   auto* helper = GetAppListTestHelper();
   helper->AddRecentApps(5);
@@ -256,6 +369,47 @@ TEST_F(AppsContainerViewTest, UpdatesSelectedPageAfterFocusTraversal) {
   PressDown();
   EXPECT_TRUE(recent_apps_view->GetItemViewAt(0)->HasFocus());
   EXPECT_EQ(GetSelectedPage(), 0);
+}
+
+// Test that the gradient mask is created when the page drag begins, and
+// destroyed once the page drag has been released and completes.
+TEST_F(AppsContainerViewTest, StartPageDragThenRelease) {
+  GetAppListTestHelper()->AddAppItems(23);
+  TabletMode::Get()->SetEnabledForTest(true);
+  auto* apps_grid_view = GetAppListTestHelper()->GetRootPagedAppsGridView();
+  test::AppsGridViewTestApi test_api(apps_grid_view);
+
+  EXPECT_FALSE(HasGradientMask());
+  EXPECT_EQ(0, GetSelectedPage());
+  EXPECT_EQ(2, GetTotalPages());
+
+  TransitionWaiter transition_waiter(apps_grid_view->pagination_model());
+  gfx::Point start_page_drag = test_api.GetViewAtIndex(GridIndex(0, 0))
+                                   ->GetIconBoundsInScreen()
+                                   .bottom_right();
+  start_page_drag.Offset(10, 0);
+
+  // Begin a touch and drag the page upward.
+  auto* generator = GetEventGenerator();
+  generator->set_current_screen_location(start_page_drag);
+  generator->PressTouch();
+  generator->MoveTouchBy(0, -20);
+
+  // Move the touch down a bit so it does not register as a fling to the next
+  // page.
+  generator->MoveTouchBy(0, 1);
+
+  // Gradient mask should exist during the page drag.
+  EXPECT_TRUE(HasGradientMask());
+
+  // End the page drag and wait for the page to animate back to the correct
+  // position.
+  generator->ReleaseTouch();
+  transition_waiter.Wait();
+
+  // The gradient mask should be removed after the end of the page animation.
+  EXPECT_FALSE(HasGradientMask());
+  EXPECT_EQ(0, GetSelectedPage());
 }
 
 }  // namespace ash

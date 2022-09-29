@@ -39,11 +39,11 @@ void SuspendUnmountManager::SuspendImminent(
   if (!unmounting_paths_.empty())
     return;
   std::set<std::string> mount_paths;
-  for (const auto& pair : disk_mount_manager_->disks()) {
-    if ((pair.second->device_type() == DEVICE_TYPE_USB ||
-         pair.second->device_type() == DEVICE_TYPE_SD) &&
-        !pair.second->mount_path().empty()) {
-      mount_paths.insert(pair.second->mount_path());
+  for (const auto& disk : disk_mount_manager_->disks()) {
+    if ((disk->device_type() == DeviceType::kUSB ||
+         disk->device_type() == DeviceType::kSD) &&
+        !disk->mount_path().empty()) {
+      mount_paths.insert(disk->mount_path());
     }
   }
   for (const auto& mount_path : mount_paths) {
@@ -70,7 +70,7 @@ void SuspendUnmountManager::SuspendDone(base::TimeDelta sleep_duration) {
 }
 
 void SuspendUnmountManager::OnUnmountComplete(const std::string& mount_path,
-                                              chromeos::MountError error_code) {
+                                              MountError error_code) {
   // This can happen when unmount completes after suspend done is called.
   if (unmounting_paths_.erase(mount_path) != 1)
     return;

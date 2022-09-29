@@ -29,8 +29,6 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/commit_deferring_condition.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -55,6 +53,7 @@
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-test-utils.h"
+#include "third_party/blink/public/mojom/frame/remote_frame.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -257,14 +256,18 @@ void SimulateUnresponsiveRenderer(WebContents* web_contents,
 
 // Simulates clicking at the center of the given tab asynchronously; modifiers
 // may contain bits from WebInputEvent::Modifiers. Sends the event through
-// RenderWidgetHostInputEventRouter and thus can target OOPIFs.
+// RenderWidgetHostInputEventRouter and thus can target OOPIFs. If an OOPIF is
+// the intended target, ensure that its hit test data is available for routing,
+// using `WaitForHitTestData`, first.
 void SimulateMouseClick(WebContents* web_contents,
                         int modifiers,
                         blink::WebMouseEvent::Button button);
 
 // Simulates clicking at the point |point| of the given tab asynchronously;
 // modifiers may contain bits from WebInputEvent::Modifiers. Sends the event
-// through RenderWidgetHostInputEventRouter and thus can target OOPIFs.
+// through RenderWidgetHostInputEventRouter and thus can target OOPIFs. If an
+// OOPIF is the intended target, ensure that its hit test data is available for
+// routing, using `WaitForHitTestData`, first.
 void SimulateMouseClickAt(WebContents* web_contents,
                           int modifiers,
                           blink::WebMouseEvent::Button button,
@@ -1245,8 +1248,7 @@ class RenderProcessHostBadMojoMessageWaiter {
 
 // Watches for responses from the DOMAutomationController and keeps them in a
 // queue. Useful for waiting for a message to be received.
-class DOMMessageQueue : public NotificationObserver,
-                        public WebContentsObserver {
+class DOMMessageQueue {
  public:
   // Constructs a DOMMessageQueue and begins listening for messages from the
   // DOMAutomationController. Do not construct this until the browser has
@@ -1266,7 +1268,7 @@ class DOMMessageQueue : public NotificationObserver,
   DOMMessageQueue(const DOMMessageQueue&) = delete;
   DOMMessageQueue& operator=(const DOMMessageQueue&) = delete;
 
-  ~DOMMessageQueue() override;
+  ~DOMMessageQueue();
 
   // Removes all messages in the message queue.
   void ClearQueue();
@@ -1282,23 +1284,19 @@ class DOMMessageQueue : public NotificationObserver,
   // Returns true if there are currently any messages in the queue.
   bool HasMessages();
 
-  // Overridden NotificationObserver methods.
-  void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) override;
-
-  // Overridden WebContentsObserver methods.
-  void DomOperationResponse(RenderFrameHost* render_frame_host,
-                            const std::string& json_string) override;
-  void PrimaryMainFrameRenderProcessGone(
-      base::TerminationStatus status) override;
-  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
-
  private:
-  // Invoked when a message is received from the DomAutomationController.
-  void OnDomMessageReceived(const std::string& message);
+  class MessageObserver;
+  friend class MessageObserver;
 
-  NotificationRegistrar registrar_;
+  void OnDomMessageReceived(const std::string& message);
+  void PrimaryMainFrameRenderProcessGone(base::TerminationStatus status);
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host);
+
+  void OnWebContentsCreated(WebContents* contents);
+  void OnBackingWebContentsDestroyed(MessageObserver* observer);
+
+  std::set<std::unique_ptr<MessageObserver>> observers_;
+  base::CallbackListSubscription web_contents_creation_subscription_;
   base::queue<std::string> message_queue_;
   base::OnceClosure quit_closure_;
   bool renderer_crashed_ = false;
@@ -1323,10 +1321,9 @@ class WebContentsAddedObserver {
  private:
   void WebContentsCreated(WebContents* web_contents);
 
-  // Callback to WebContentCreated(). Cached so that we can unregister it.
-  base::RepeatingCallback<void(WebContents*)> web_contents_created_callback_;
+  base::CallbackListSubscription creation_subscription_;
 
-  raw_ptr<WebContents> web_contents_;
+  raw_ptr<WebContents> web_contents_ = nullptr;
   base::OnceClosure quit_closure_;
 };
 
@@ -1582,6 +1579,10 @@ class FrameDeletedObserver {
   ~FrameDeletedObserver();
 
   void Wait();
+
+  bool IsDeleted() const;
+
+  int GetFrameTreeNodeId() const;
 
  private:
   // Private impl struct which hides non public types including FrameTreeNode.
@@ -2075,8 +2076,8 @@ class SynchronizeVisualPropertiesInterceptor
 
   raw_ptr<RenderFrameProxyHost> render_frame_proxy_host_;
 
-  std::unique_ptr<base::RunLoop> screen_space_rect_run_loop_;
-  bool screen_space_rect_received_ = false;
+  std::unique_ptr<base::RunLoop> local_root_rect_run_loop_;
+  bool local_root_rect_received_ = false;
   gfx::Rect last_rect_;
 
   viz::LocalSurfaceId last_surface_id_;
@@ -2274,12 +2275,16 @@ class CreateAndLoadWebContentsObserver {
   void UnregisterIfNeeded();
 
   absl::optional<LoadStopObserver> load_stop_observer_;
-  base::RepeatingCallback<void(WebContents*)> web_contents_created_callback_;
+  base::CallbackListSubscription creation_subscription_;
 
   raw_ptr<WebContents> web_contents_ = nullptr;
   base::OnceClosure quit_closure_;
   bool failed_ = false;
 };
+
+[[nodiscard]] base::CallbackListSubscription
+RegisterWebContentsCreationCallback(
+    base::RepeatingCallback<void(WebContents*)> callback);
 
 // Functions to traverse history and wait until the traversal completes. These
 // are wrappers around the same-named methods of the `NavigationController`.

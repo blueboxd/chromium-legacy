@@ -17,9 +17,11 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom-forward.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
+#include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
 #include "content/services/auction_worklet/public/mojom/seller_worklet.mojom.h"
 #include "content/services/auction_worklet/trusted_signals.h"
 #include "content/services/auction_worklet/trusted_signals_request_manager.h"
@@ -44,12 +46,15 @@ namespace auction_worklet {
 // Represents a seller worklet for FLEDGE
 // (https://github.com/WICG/turtledove/blob/main/FLEDGE.md). Loads and runs the
 // seller worklet's Javascript.
-class SellerWorklet : public mojom::SellerWorklet {
+class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
  public:
   // Deletes the worklet immediately and resets the SellerWorklet's Mojo pipe
   // with the provided description. See mojo::Receiver::ResetWithReason().
   using ClosePipeCallback =
       base::OnceCallback<void(const std::string& description)>;
+
+  using PrivateAggregationRequests =
+      std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>;
 
   // Starts loading the worklet script on construction.
   SellerWorklet(scoped_refptr<AuctionV8Helper> v8_helper,
@@ -90,7 +95,8 @@ class SellerWorklet : public mojom::SellerWorklet {
       uint32_t browser_signal_bidding_duration_msecs,
       const absl::optional<base::TimeDelta> seller_timeout,
       uint64_t trace_id,
-      ScoreAdCallback callback) override;
+      mojo::PendingRemote<auction_worklet::mojom::ScoreAdClient>
+          score_ad_client) override;
   void SendPendingSignalsRequests() override;
   void ReportResult(
       const blink::AuctionConfig::NonSharedParams&
@@ -135,7 +141,7 @@ class SellerWorklet : public mojom::SellerWorklet {
     absl::optional<base::TimeDelta> seller_timeout;
     uint64_t trace_id;
 
-    ScoreAdCallback callback;
+    mojo::Remote<auction_worklet::mojom::ScoreAdClient> score_ad_client;
 
     std::unique_ptr<TrustedSignalsRequestManager::Request>
         trusted_scoring_signals_request;
@@ -189,11 +195,13 @@ class SellerWorklet : public mojom::SellerWorklet {
         absl::optional<uint32_t> scoring_signals_data_version,
         absl::optional<GURL> debug_loss_report_url,
         absl::optional<GURL> debug_win_report_url,
+        PrivateAggregationRequests pa_requests,
         std::vector<std::string> errors)>;
     using ReportResultCallbackInternal =
         base::OnceCallback<void(absl::optional<std::string> signals_for_winner,
                                 absl::optional<GURL> report_url,
                                 base::flat_map<std::string, GURL> ad_beacon_map,
+                                PrivateAggregationRequests pa_requests,
                                 std::vector<std::string> errors)>;
 
     V8State(scoped_refptr<AuctionV8Helper> v8_helper,
@@ -250,7 +258,8 @@ class SellerWorklet : public mojom::SellerWorklet {
     // report URLs, even if the methods to set them have been invoked.
     void PostScoreAdCallbackToUserThreadOnError(
         ScoreAdCallbackInternal callback,
-        std::vector<std::string> errors);
+        std::vector<std::string> errors,
+        PrivateAggregationRequests pa_requests = {});
 
     void PostScoreAdCallbackToUserThread(
         ScoreAdCallbackInternal callback,
@@ -260,6 +269,7 @@ class SellerWorklet : public mojom::SellerWorklet {
         absl::optional<uint32_t> scoring_signals_data_version,
         absl::optional<GURL> debug_loss_report_url,
         absl::optional<GURL> debug_win_report_url,
+        PrivateAggregationRequests pa_requests,
         std::vector<std::string> errors);
 
     void PostReportResultCallbackToUserThread(
@@ -267,6 +277,7 @@ class SellerWorklet : public mojom::SellerWorklet {
         absl::optional<std::string> signals_for_winner,
         absl::optional<GURL> report_url,
         base::flat_map<std::string, GURL> ad_beacon_map,
+        PrivateAggregationRequests pa_requests,
         std::vector<std::string> errors);
 
     static void PostResumeToUserThread(
@@ -317,6 +328,7 @@ class SellerWorklet : public mojom::SellerWorklet {
       absl::optional<uint32_t> scoring_signals_data_version,
       absl::optional<GURL> debug_loss_report_url,
       absl::optional<GURL> debug_win_report_url,
+      PrivateAggregationRequests pa_requests,
       std::vector<std::string> errors);
 
   // Runs the specified queued ReportWinTask. All code must already be loaded by
@@ -328,6 +340,7 @@ class SellerWorklet : public mojom::SellerWorklet {
       absl::optional<std::string> signals_for_winner,
       absl::optional<GURL> report_url,
       base::flat_map<std::string, GURL> ad_beacon_map,
+      PrivateAggregationRequests pa_requests,
       std::vector<std::string> errors);
 
   // Returns true if unpaused and the script has loaded.

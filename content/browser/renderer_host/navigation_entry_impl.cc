@@ -217,7 +217,7 @@ void RegisterOriginsRecursive(NavigationEntryImpl::TreeNode* node,
         node->frame_entry->committed_origin().value();
     SiteInstanceImpl* site_instance = node->frame_entry->site_instance();
     if (site_instance && origin == node_origin)
-      site_instance->PreventOptInOriginIsolation(node_origin);
+      site_instance->RegisterAsDefaultOriginIsolation(node_origin);
   }
 
   for (auto& child : node->children)
@@ -226,7 +226,7 @@ void RegisterOriginsRecursive(NavigationEntryImpl::TreeNode* node,
 
 }  // namespace
 
-void NavigationEntryImpl::RegisterExistingOriginToPreventOptInIsolation(
+void NavigationEntryImpl::RegisterExistingOriginAsHavingDefaultIsolation(
     const url::Origin& origin) {
   return RegisterOriginsRecursive(root_node(), origin);
 }
@@ -923,7 +923,8 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
           /*fenced_frame_reporting_metadata=*/nullptr,
           // This timestamp will be populated when the commit IPC is sent.
           base::TimeTicks() /* commit_sent */, std::string() /* srcdoc_value */,
-          false /* should_load_data_url */, ancestor_or_self_has_cspee);
+          false /* should_load_data_url */, ancestor_or_self_has_cspee,
+          std::string() /* reduced_accept_language */);
 #if BUILDFLAG(IS_ANDROID)
   // `data_url_as_string` is saved in NavigationEntry but should only be used by
   // main frames, because loadData* navigations can only happen on the main
@@ -1136,14 +1137,14 @@ void NavigationEntryImpl::RemoveEntryForFrame(FrameTreeNode* frame_tree_node,
       !InSameTreePosition(frame_tree_node, node)) {
     auto* frame_entry = node->frame_entry.get();
     if (frame_entry && frame_entry->committed_origin()) {
-      // Normally non-isolated origins are tracked through their presence in
+      // Normally default-isolated origins are tracked through their presence in
       // session history, which is consulted whenever an origin newly requests
       // isolation. If we remove a frame_entry, its origin won't be available
       // to any future global walk if the same origin later wants to opt-in. So
       // we add it to the non-opt-in list here to be spec compliant (unless it's
       // currently opted-in, in which case this call will do nothing).
       ChildProcessSecurityPolicyImpl::GetInstance()
-          ->AddNonIsolatedOriginIfNeeded(
+          ->AddDefaultIsolatedOriginIfNeeded(
               frame_entry->site_instance()->GetIsolationContext(),
               frame_entry->committed_origin().value(),
               true /* global_ walk_or_frame_removal */);

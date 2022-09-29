@@ -8,12 +8,15 @@
 #include "base/memory/raw_ptr.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "ui/base/metadata/metadata_header_macros.h"
-#include "ui/views/view.h"
+#include "ui/views/accessible_pane_view.h"
+#include "ui/views/controls/resize_area_delegate.h"
 #include "ui/views/view_observer.h"
 
 class BrowserView;
 
-class SidePanel : public views::View, public views::ViewObserver {
+class SidePanel : public views::AccessiblePaneView,
+                  public views::ViewObserver,
+                  public views::ResizeAreaDelegate {
  public:
   // Determines the side from which the side panel will appear.
   // LTR / RTL conversions are handled in
@@ -33,6 +36,14 @@ class SidePanel : public views::View, public views::ViewObserver {
   void SetHorizontalAlignment(HorizontalAlignment alignment);
   HorizontalAlignment GetHorizontalAlignment();
   bool IsRightAligned();
+  gfx::Size GetMinimumSize() const override;
+
+  // views::ResizeAreaDelegate:
+  void OnResize(int resize_amount, bool done_resizing) override;
+
+  // Log UMA data for the side panel resize feature. Will only log if the side
+  // panel has been resized since metrics were last logged.
+  void RecordMetricsIfResized();
 
  private:
   void UpdateVisibility();
@@ -46,6 +57,15 @@ class SidePanel : public views::View, public views::ViewObserver {
 
   const raw_ptr<View> border_view_;
   const raw_ptr<BrowserView> browser_view_;
+  const raw_ptr<View> resize_area_;
+
+  // -1 if a side panel resize is not in progress, otherwise the width of the
+  // side panel when the current resize was initiated.
+  int starting_width_on_resize_ = -1;
+
+  // Should be true if the side panel was resized since metrics were last
+  // logged.
+  bool did_resize_ = false;
 
   // Keeps track of the side the side panel will appear on (left or right).
   HorizontalAlignment horizontal_alignment_;

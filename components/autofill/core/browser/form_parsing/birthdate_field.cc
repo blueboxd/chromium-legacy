@@ -8,10 +8,10 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
 #include "components/autofill/core/browser/form_parsing/regex_patterns.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_regex_constants.h"
 
 namespace autofill {
 
@@ -106,7 +106,7 @@ bool BirthdateField::IsLikelyBirthdateYearSelectField(
 }
 
 void BirthdateField::AddClassifications(
-    FieldCandidatesMap* field_candidates) const {
+    FieldCandidatesMap& field_candidates) const {
   AddClassification(day_, BIRTHDATE_DAY, kBaseBirthdateParserScore,
                     field_candidates);
   AddClassification(month_, BIRTHDATE_MONTH, kBaseBirthdateParserScore,

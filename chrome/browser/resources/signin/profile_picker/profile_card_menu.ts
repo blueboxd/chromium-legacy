@@ -3,17 +3,16 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/action_link_css.m.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
-import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/js/action_link.js';
 import './profile_picker_shared.css.js';
-import './icons.js';
 
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
-import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 // <if expr="chromeos_lacros">
@@ -30,20 +29,20 @@ import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_b
 import {ManageProfilesBrowserProxy, ManageProfilesBrowserProxyImpl, ProfileState} from './manage_profiles_browser_proxy.js';
 import {getTemplate} from './profile_card_menu.html.js';
 
-export type Statistics = {
-  BrowsingHistory: number,
-  Passwords: number,
-  Bookmarks: number,
-  Autofill: number,
-};
+export interface Statistics {
+  BrowsingHistory: number;
+  Passwords: number;
+  Bookmarks: number;
+  Autofill: number;
+}
 
 /**
  * This is the data structure sent back and forth between C++ and JS.
  */
-export type StatisticsResult = {
-  profilePath: string,
-  statistics: Statistics,
-};
+export interface StatisticsResult {
+  profilePath: string;
+  statistics: Statistics;
+}
 
 /**
  * Profile statistics data types.
@@ -133,7 +132,7 @@ export class ProfileCardMenuElement extends ProfileCardMenuElementBase {
   }
 
   profileState: ProfileState;
-  private statistics_: {[key: string]: number};
+  private statistics_: Statistics;
   private profileStatistics_: ProfileStatistics[];
   private removeWarningText_: string;
   private removeWarningTitle_: string;
@@ -236,7 +235,7 @@ export class ProfileCardMenuElement extends ProfileCardMenuElementBase {
     }
   }
 
-  private getProfileStatisticCount_(dataType: string): string {
+  private getProfileStatisticCount_(dataType: keyof Statistics): string {
     const count = this.statistics_[dataType];
     return (count === undefined) ? this.i18n('removeWarningCalculating') :
                                    count.toString();

@@ -105,7 +105,6 @@ Når du sletter nettleserloggen, enten det er hele loggen eller bare loggen for 
 <translation id="1474893630593443211">Mer kontroll over annonsene du ser</translation>
 <translation id="1477626028522505441">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av tjenerproblemer.</translation>
 <translation id="148482509007564431">Flyt for lagring av bokmerke</translation>
-<translation id="1488775391433859242">Du kan bruke denne telefonen til å logge på datamaskinen som viser denne QR-koden.</translation>
 <translation id="1492417797159476138">Du har allerede lagret dette brukernavnet for dette nettstedet</translation>
 <translation id="1493287004536771723">Du følger <ph name="SITE_NAME" /></translation>
 <translation id="1502010315804028179">For å administrere passordene dine, oppdater Google Play-tjenester</translation>
@@ -235,6 +234,7 @@ Når du sletter nettleserloggen, enten det er hele loggen eller bare loggen for 
 <translation id="2239812875700136898">Styr nyhetssakene dine via Alternativer for Discover-knappen</translation>
 <translation id="2248941474044011069">Passordene dine krypteres på enheten før de lagres i Google Passordlagring</translation>
 <translation id="2259659629660284697">Eksportér passord</translation>
+<translation id="2276231040576210443">Du kan når som helst velge hva du vil synkronisere, i <ph name="BEGIN_LINK1" />innstillingene<ph name="END_LINK1" />. Google kan gi Søk og andre tjenester personlig preg basert på loggen din.</translation>
 <translation id="2276696007612801991">Logg på Google-kontoen din for å sjekke passordene dine</translation>
 <translation id="2278052315791335171">Sletting av dette passordet sletter ikke kontoen din på <ph name="SITE" /></translation>
 <translation id="2279146068164892489">Vil du åpne appen for <ph name="APPNAME" />?</translation>
@@ -282,7 +282,6 @@ Når du sletter nettleserloggen, enten det er hele loggen eller bare loggen for 
 <translation id="2534155362429831547">Slettet <ph name="NUMBER_OF_ITEMS" /> elementer</translation>
 <translation id="2536728043171574184">Ser på en lokalt lagret versjon av denne siden</translation>
 <translation id="2546283357679194313">Informasjonskapsler og data fra nettsteder</translation>
-<translation id="2549516196460093976">Du kan bruke dette nettbrettet til å logge på datamaskinen som viser denne QR-koden.</translation>
 <translation id="2558569818338050235">Nettleserloggen din påvirker hvilke annonser du ser</translation>
 <translation id="2561519700418191927">Videoforhåndsvisninger</translation>
 <translation id="2567385386134582609">BILDE</translation>
@@ -308,6 +307,7 @@ Når du sletter nettleserloggen, enten det er hele loggen eller bare loggen for 
 <translation id="2702516483241149200">Ny: del en link som ruller til denne teksten</translation>
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2707726405694321444">Last inn siden på nytt</translation>
+<translation id="2709516037105925701">Autofyll</translation>
 <translation id="271033894570825754">Ny</translation>
 <translation id="2711073837061989559">Prøveprosjekter</translation>
 <translation id="2718352093833049315">Bare når Wi-Fi er på</translation>
@@ -396,6 +396,7 @@ Når du sletter nettleserloggen, enten det er hele loggen eller bare loggen for 
 <translation id="3114507951000454849">Les dagens nyheter <ph name="NEWS_ICON" /></translation>
 <translation id="311958134571892113">Tilknyttet til</translation>
 <translation id="3123734510202723619">Kunngjøringer</translation>
+<translation id="3130863904455712965">Logg med mer</translation>
 <translation id="3134784203083076891">»</translation>
 <translation id="314939179385989105">Startsiden for Chrome</translation>
 <translation id="3166827708714933426">Hurtigtaster for vinduer og faner</translation>
@@ -587,7 +588,6 @@ Når du sletter nettleserloggen, enten det er hele loggen eller bare loggen for 
 <translation id="4256782883801055595">Lisenser for åpen kildekode</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Disse dataene brukes:<ph name="END_BOLD" /> nettleserloggen din, som er en logg over nettsteder du har besøkt med Chrome på denne enheten.</translation>
 <translation id="4263656433980196874">UI for samtykke til talesøk med assistenten er åpnet i full høyde</translation>
-<translation id="4266054596873078491">Logg på dette nettstedet og Chrome med Google-kontoen din.</translation>
 <translation id="4269820728363426813">Kopiér linkadressen</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Slå på skjermlås i Android-innstillingene<ph name="END_LINK" /></translation>
 <translation id="4293476595220860475">Ved å bruke Chrome samtykker du i <ph name="BEGIN_TOS_LINK" />Googles vilkår for bruk<ph name="END_TOS_LINK" /> og <ph name="BEGIN_ATOS_LINK" />tilleggsvilkårene for bruk av Google Chrome og ChromeOS<ph name="END_ATOS_LINK" />. <ph name="BEGIN_PRIVACY_LINK" />Personvernreglene<ph name="END_PRIVACY_LINK" /> gjelder også.</translation>
@@ -1051,6 +1051,7 @@ Tillitstokener gir bedre personvern på nettet og kan ikke brukes til å finne u
 <translation id="6671495933530132209">Kopiér bildet</translation>
 <translation id="6674571176963658787">For å starte synkroniseringen, skriv inn passordfrasen din</translation>
 <translation id="6676840375528380067">Vil du fjerne Chrome-dataene dine fra denne enheten?</translation>
+<translation id="6676927815633975364">Logg på dette nettstedet og Chrome</translation>
 <translation id="6684809838922667136">Gjør Chrome bedre</translation>
 <translation id="670498945988402717">Sjekket i går</translation>
 <translation id="6710213216561001401">Forrige</translation>
@@ -1140,6 +1141,7 @@ Tillitstokener gir bedre personvern på nettet og kan ikke brukes til å finne u
 <translation id="7196215469483532480">Forklaringen til personvernveiledningen er åpnet i full høyde</translation>
 <translation id="7207760545532569765">Gjenopprett <ph name="TAB_COUNT" /> faner som nye bakgrunnsfaner.</translation>
 <translation id="7208109991155904980">Reaksjonen er flyttet</translation>
+<translation id="7217781228893594884">Inkognitofaner blir låst når du forlater Chrome</translation>
 <translation id="7222235798733126207">Begrenset deling mellom nettsteder</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 nedlasting venter}other{# nedlastinger venter}}</translation>
 <translation id="7242755609445462077">Stilisert fremheving <ph name="CURRENT_DATE" /></translation>
@@ -1300,6 +1302,7 @@ Tillitstokener gir bedre personvern på nettet og kan ikke brukes til å finne u
 <translation id="8037801708772278989">Sjekket nettopp</translation>
 <translation id="804335162455518893">Finner ikke SD-kort</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> inkognitofane}other{<ph name="TAB_COUNT_NORMAL" /> inkognitofaner}}</translation>
+<translation id="8048728378294435881">Sikkerhetskopier tingene dine og bruk dem på alle enheter</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB tilgjengelig</translation>
 <translation id="8058655154417507695">Utløpsår</translation>
 <translation id="8058746566562539958">Åpne i en ny Chrome-fane</translation>

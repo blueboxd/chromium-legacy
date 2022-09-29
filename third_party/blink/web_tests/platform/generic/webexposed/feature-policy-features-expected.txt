@@ -55,8 +55,9 @@ publickey-credentials-get
 screen-wake-lock
 serial
 shared-autofill
-storage-access-api
+storage-access
 sync-xhr
+unload
 usb
 vertical-scroll
 window-placement

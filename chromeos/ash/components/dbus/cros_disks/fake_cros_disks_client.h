@@ -15,7 +15,7 @@
 #include "base/observer_list.h"
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 
-namespace chromeos {
+namespace ash {
 
 // A fake implementation of CrosDiskeClient. This class provides a fake behavior
 // and the user of this class can raise a fake mouse events.
@@ -177,7 +177,7 @@ class COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS) FakeCrosDisksClient
   base::ObserverList<Observer> observer_list_;
   int unmount_call_count_ = 0;
   std::string last_unmount_device_path_;
-  MountError unmount_error_ = MOUNT_ERROR_NONE;
+  MountError unmount_error_ = MountError::kNone;
   base::RepeatingClosure unmount_listener_;
   int format_call_count_ = 0;
   std::string last_format_device_path_;
@@ -186,7 +186,7 @@ class COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS) FakeCrosDisksClient
   bool format_success_ = true;
   int partition_call_count_ = 0;
   std::string last_partition_device_path_;
-  PartitionError partition_error_ = PARTITION_ERROR_NONE;
+  PartitionError partition_error_ = PartitionError::kNone;
   int rename_call_count_ = 0;
   std::string last_rename_device_path_;
   std::string last_rename_volume_name_;
@@ -200,11 +200,6 @@ class COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS) FakeCrosDisksClient
   base::WeakPtrFactory<FakeCrosDisksClient> weak_ptr_factory_{this};
 };
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when //chromeos/dbus moved to ash.
-namespace ash {
-using ::chromeos::FakeCrosDisksClient;
 }  // namespace ash
 
 #endif  // CHROMEOS_ASH_COMPONENTS_DBUS_CROS_DISKS_FAKE_CROS_DISKS_CLIENT_H_

@@ -619,9 +619,11 @@ void VaapiVideoDecoder::ApplyResolutionChange() {
     // NOTE: Only use this for protected content as other requirements for using
     // it are tied to protected content.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    chromeos::ChromeOsCdmFactory::GetScreenResolutions(BindToCurrentLoop(
-        base::BindOnce(&VaapiVideoDecoder::ApplyResolutionChangeWithScreenSizes,
-                       weak_this_)));
+    cdm_context_ref_->GetCdmContext()
+        ->GetChromeOsCdmContext()
+        ->GetScreenResolutions(BindToCurrentLoop(base::BindOnce(
+            &VaapiVideoDecoder::ApplyResolutionChangeWithScreenSizes,
+            weak_this_)));
     return;
 #endif
   }
@@ -944,13 +946,13 @@ bool VaapiVideoDecoder::NeedsTranscryption() {
   DCHECK(state_ == State::kWaitingForInput);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // We do not need to invoke transcryption if this is coming from ARC since
-  // that will already be done.
+  // We do not need to invoke transcryption if this is coming from a remote CDM
+  // since it will already have been done.
   if (cdm_context_ref_ &&
       cdm_context_ref_->GetCdmContext()->GetChromeOsCdmContext() &&
       cdm_context_ref_->GetCdmContext()
           ->GetChromeOsCdmContext()
-          ->UsingArcCdm()) {
+          ->IsRemoteCdm()) {
     return false;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

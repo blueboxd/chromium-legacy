@@ -90,7 +90,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.ControlCharacterTruncation" enum="Boolean"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>bingler@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
@@ -274,6 +274,33 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Cookie.FirstPartySets.ContextDelayedQueriesCount"
+    units="queries" expires_after="M110">
+  <owner>shuuran@chromium.org</owner>
+  <owner>kaustubhag@chromium.org</owner>
+  <summary>
+    The number of queries that were delayed for a browser context (i.e. answered
+    asynchronously instead of synchronously).
+
+    Recorded once per profile during log-in when the First-Party Sets info is
+    ready for the network context. If the feature was disabled, 0 is recorded.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.FirstPartySets.ContextMostDelayedQueryDelta" units="ms"
+    expires_after="M110">
+  <owner>shuuran@chromium.org</owner>
+  <owner>kaustubhag@chromium.org</owner>
+  <summary>
+    The length of time between when the first asynchronous query was received,
+    and when asynchronous queries started to be answered for a browser context.
+
+    Recorded once per profile profile during log-in when the First-Party Sets
+    info is ready in the network context. Recorded for all clients, even those
+    with low-resolution clocks. If the feature was disabled, 0 is recorded.
+  </summary>
+</histogram>
+
 <histogram name="Cookie.FirstPartySets.DelayedQueriesCount" units="queries"
     expires_after="M110">
   <owner>cfredric@chromium.org</owner>
@@ -338,6 +365,7 @@ chromium-metrics-reviews@google.com.
     restarts.) Recorded for all clients, even those with low-resolution clocks.
   </summary>
   <token key="Landmark">
+    <variant name="ContextReadyToServeQueries"/>
     <variant name="ReadCommandLineSet"/>
     <variant name="ReadComponentSets"/>
     <variant name="ReadPersistedSets"/>
@@ -361,28 +389,6 @@ chromium-metrics-reviews@google.com.
     If the feature was enabled (so some queries could have been async) but the
     instance was initialized before any queries were made, 0 is recorded.
   </summary>
-</histogram>
-
-<histogram name="Cookie.FirstPartySetsContextType.{AccessMedium}.{AccessType}"
-    enum="FirstPartySetsContextType" expires_after="M110">
-  <owner>cfredric@chromium.org</owner>
-  <owner>kaustubhag@chromium.org</owner>
-  <summary>
-    The &quot;type&quot; of each context when cookies are {AccessType} via
-    {AccessMedium}, w.r.t. First-Party Sets.
-
-    Note that this type infers singleton sets. That is, it treats sites that are
-    not members of a First-Party Set as if they were in an implicitly-declared
-    singleton set.
-  </summary>
-  <token key="AccessMedium">
-    <variant name="HTTP" summary="HTTP"/>
-    <variant name="JS" summary="JavaScript"/>
-  </token>
-  <token key="AccessType">
-    <variant name="Read" summary="read"/>
-    <variant name="Write" summary="written"/>
-  </token>
 </histogram>
 
 <histogram name="Cookie.FromStorageWithValidLength" enum="BooleanValid"
@@ -423,7 +429,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.IsPartitionedValid" enum="BooleanValid"
-    expires_after="2022-10-30">
+    expires_after="2023-02-01">
   <owner>dylancutler@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -502,7 +508,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.PartitionCount" units="partitions"
-    expires_after="2022-12-06">
+    expires_after="2023-02-12">
   <owner>dylancutler@chromium.org</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>
@@ -514,7 +520,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.PartitionedCookieCount" units="cookies"
-    expires_after="2022-12-06">
+    expires_after="2023-02-12">
   <owner>dylancutler@chromium.org</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>
@@ -525,7 +531,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.PartitionedCookiesInRequest" units="cookies"
-    expires_after="2022-12-06">
+    expires_after="2023-02-12">
   <owner>dylancutler@chromium.org</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>
@@ -804,22 +810,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cookie.SameSiteNone.PartyContext.{AccessType}"
-    enum="SameSiteNonePartyContextType" expires_after="2023-06-15">
-  <owner>cfredric@chromium.org</owner>
-  <owner>kaustubhag@chromium.org</owner>
-  <summary>
-    The strictest semantics that could have included a particular SameSite=None
-    cookie for the {AccessType} in the current context.
-
-    Recorded once per included SameSite=None cookie per {AccessType}.
-  </summary>
-  <token key="AccessType">
-    <variant name="Read" summary="read"/>
-    <variant name="Write" summary="write"/>
-  </token>
-</histogram>
-
 <histogram name="Cookie.TimeBlockedOnLoad" units="ms"
     expires_after="2023-01-01">
   <owner>nharper@chromium.org</owner>
@@ -880,7 +870,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.TimeDatabaseMigrationToV18" units="ms"
-    expires_after="2022-11-27">
+    expires_after="2023-02-12">
   <owner>arichiv@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -906,7 +896,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.TruncatingCharacterInCookieString"
-    enum="TruncatingCharacterInCookieStringType" expires_after="2022-12-11">
+    enum="TruncatingCharacterInCookieStringType" expires_after="2023-02-12">
   <owner>bingler@chromium.org</owner>
   <owner>awillia@chromium.org</owner>
   <summary>

@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">Спампоўка прыпынена</translation>
 <translation id="1409426117486808224">Спрошчаны выгляд адкрытых укладак</translation>
 <translation id="1415402041810619267">URL-адрас абрэзаны</translation>
+<translation id="1426410128494586442">Так</translation>
 <translation id="1446450296470737166">Дазв. поўны кантроль MIDI-прылад</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1644574205037202324">Гісторыя</translation>
@@ -32,6 +33,7 @@
 <translation id="1818308510395330587">Каб праграма "<ph name="APP_NAME" />" магла выкарыстоўваць дапоўненую рэальнасць, уключыце таксама камеру ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="1864927262126810325">Крыніца: <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">Доступ да месцазнаходжання для гэтай прылады выключаны. Уключыце яго ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
+<translation id="1915307458270490472">Закрыць</translation>
 <translation id="1919345977826869612">Рэклама</translation>
 <translation id="1919950603503897840">Выберыце кантакты</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -78,6 +80,7 @@
 <translation id="2677748264148917807">Выйсці</translation>
 <translation id="2687403674020088961">Блакіраваць усе файлы cookie (не рэкамендуецца)</translation>
 <translation id="2704606927547763573">Скапіравана</translation>
+<translation id="2713106313042589954">Выключыць камеру</translation>
 <translation id="2717722538473713889">Адрасы электроннай пошты</translation>
 <translation id="2750481671343847896">Сайты могуць паказваць запыты на ўваход ад сэрвісаў ідэнтыфікацыі.</translation>
 <translation id="2785051990912111074">Будуць выдалены файлы cookie для вэб-сайта <ph name="WEBSITE" /></translation>
@@ -97,6 +100,7 @@
 <translation id="3114012059975132928">Відэапрайгравальнік</translation>
 <translation id="3115898365077584848">Паказаць інфармацыю</translation>
 <translation id="3123473560110926937">Заблакіравана на некаторых сайтах</translation>
+<translation id="3143754809889689516">Прайграць з пачатку</translation>
 <translation id="3198916472715691905">Аб'ём захаваных даных: <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3203366800380907218">З інтэрнэту</translation>
 <translation id="321187648315454507">Каб праграма "<ph name="APP_NAME" />" магла адпраўляць вам апавяшчэнні, таксама ўключыце іх у <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
@@ -153,6 +157,7 @@
 <translation id="4479647676395637221">Пытацца, перш чым дазволіць сайтам выкарыстоўваць камеру (рэкамендуецца)</translation>
 <translation id="4505788138578415521">URL-адрас разгорнуты</translation>
 <translation id="4534723447064627427">Каб даць праграме "<ph name="APP_NAME" />" доступ да мікрафона, уключыце апошні ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
+<translation id="4566417217121906555">Выключыць мікрафон</translation>
 <translation id="4570913071927164677">Падрабязныя звесткі</translation>
 <translation id="4645575059429386691">Пад кіраваннем бацькоў</translation>
 <translation id="4670064810192446073">Віртуальная рэальнасць</translation>
@@ -177,6 +182,7 @@
 <translation id="5186036860380548585">Гэты выбар можна зрабіць уверсе экрана</translation>
 <translation id="5197729504361054390">Выбраныя вамі кантакты будуць абагулены з сайтам <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Апошняе наведванне: сёння</translation>
+<translation id="5225463052809312700">Уключыць камеру</translation>
 <translation id="5264323282659631142">Выдаліць чып "<ph name="CHIP_LABEL" />"</translation>
 <translation id="528192093759286357">Каб выйсці з поўнаэкраннага рэжыму, правядзіце зверху ўніз і націсніце кнопку "Назад".</translation>
 <translation id="5300589172476337783">Паказаць</translation>
@@ -235,8 +241,10 @@
 <translation id="6367753977865761591">Блакіраваць уваход праз староннія сэрвісы для канкрэтнага сайта.</translation>
 <translation id="6388207532828177975">Ачысціць і скінуць</translation>
 <translation id="6398765197997659313">Выключыць поўнаэкранны рэжым</translation>
+<translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Забараніць сайтам выкарыстоўваць даныя і прылады віртуальнай рэальнасці</translation>
 <translation id="6447842834002726250">Файлы cookie</translation>
+<translation id="6467852467360539617">Выдаліць даныя і скінуць дазволы</translation>
 <translation id="6527303717912515753">Абагуліць</translation>
 <translation id="6545864417968258051">Пошук прылад Bluetooth</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{Заблакіраваны <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> і яшчэ <ph name="NUM_MORE" />}one{Заблакіраваны <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> і яшчэ <ph name="NUM_MORE" />}few{Заблакіраваны <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> і яшчэ <ph name="NUM_MORE" />}many{Заблакіраваны <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> і яшчэ <ph name="NUM_MORE" />}other{Заблакіраваны <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> і яшчэ <ph name="NUM_MORE" />}}</translation>
@@ -276,6 +284,7 @@
 <translation id="7250468141469952378">Выбрана: <ph name="ITEM_COUNT" /></translation>
 <translation id="7260727271532453612">Дазволены <ph name="PERMISSION_1" /> і <ph name="PERMISSION_2" /></translation>
 <translation id="7302486331832100261">Звычайна вы блакіруеце апавяшчэнні. Каб дазволіць іх, націсніце "Падрабязнасці".</translation>
+<translation id="7383715096023715447">Налады для дамена <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Спачатку запытваць</translation>
 <translation id="7423538860840206698">Чытанне буфера абмену заблакіравана</translation>
 <translation id="7425915948813553151">Цёмная тэма для сайтаў</translation>
@@ -335,6 +344,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Выкарыстоўваецца 1 файл cookie}one{Выкарыстоўваецца # файл cookie}few{Выкарыстоўваюцца # файлы cookie}many{Выкарыстоўваюцца # файлаў cookie}other{Выкарыстоўваюцца # файла cookie}}</translation>
 <translation id="8487700953926739672">Даступна па-за сеткай</translation>
 <translation id="848952951823693243">Заўсёды запытваць версію сайта для мабільных прылад</translation>
+<translation id="8499083585497694743">Уключыць мікрафон</translation>
 <translation id="851751545965956758">Блакіраваць сайтам падключэнне да прылад</translation>
 <translation id="8525306231823319788">Поўнаэкранны рэжым</translation>
 <translation id="857943718398505171">Дазволена (рэкамендуецца)</translation>

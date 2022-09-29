@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/create_application_shortcut_view.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "build/build_config.h"
@@ -26,6 +28,7 @@
 #if BUILDFLAG(IS_WIN)
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
+#include "chrome/installer/util/taskbar_util.h"
 #endif  // BUILDFLAG(IS_WIN)
 
 namespace chrome {
@@ -117,7 +120,7 @@ void CreateChromeApplicationShortcutView::InitControls() {
       prefs::kWebAppCreateOnDesktop);
 
   std::unique_ptr<views::Checkbox> menu_check_box;
-  std::unique_ptr<views::Checkbox> quick_launch_check_box;
+  std::unique_ptr<views::Checkbox> pin_to_taskbar_checkbox;
 
 #if BUILDFLAG(IS_WIN)
   base::win::Version version = base::win::GetVersion();
@@ -129,14 +132,11 @@ void CreateChromeApplicationShortcutView::InitControls() {
         prefs::kWebAppCreateInAppsMenu);
   }
 
-  // Win10 actively prevents creating shortcuts on the taskbar so we eliminate
-  // that option from the dialog.
-  if (base::win::CanPinShortcutToTaskbar()) {
-    quick_launch_check_box =
-        AddCheckbox((version >= base::win::Version::WIN7)
-                        ? l10n_util::GetStringUTF16(IDS_PIN_TO_TASKBAR_CHKBOX)
-                        : l10n_util::GetStringUTF16(
-                              IDS_CREATE_SHORTCUTS_QUICK_LAUNCH_BAR_CHKBOX),
+  // Only include the pin-to-taskbar option when running on versions of Windows
+  // that support pinning.
+  if (CanPinShortcutToTaskbar()) {
+    pin_to_taskbar_checkbox =
+        AddCheckbox(l10n_util::GetStringUTF16(IDS_PIN_TO_TASKBAR_CHKBOX),
                     prefs::kWebAppCreateInQuickLaunchBar);
   }
 #elif BUILDFLAG(IS_POSIX)
@@ -154,8 +154,8 @@ void CreateChromeApplicationShortcutView::InitControls() {
   desktop_check_box_ = AddChildView(std::move(desktop_check_box));
   if (menu_check_box)
     menu_check_box_ = AddChildView(std::move(menu_check_box));
-  if (quick_launch_check_box)
-    quick_launch_check_box_ = AddChildView(std::move(quick_launch_check_box));
+  if (pin_to_taskbar_checkbox)
+    quick_launch_check_box_ = AddChildView(std::move(pin_to_taskbar_checkbox));
 }
 
 gfx::Size CreateChromeApplicationShortcutView::CalculatePreferredSize() const {

@@ -129,6 +129,7 @@ generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/chrome/browser/tab/TrustedCdn.java",
     "java/src/org/chromium/chrome/browser/tab/WebContentsStateBridge.java",
+    "java/src/org/chromium/chrome/browser/tab/state/CriticalPersistedTabData.java",
     "java/src/org/chromium/chrome/browser/tab/state/LevelDBPersistedDataStorage.java",
   ]
 }
@@ -137,7 +138,6 @@ proto_java_library("critical_persisted_tab_data_proto_java") {
   proto_path = "java/src/org/chromium/chrome/browser/tab/state/proto"
   sources = [
     "$proto_path/coupon_persisted_tab_data.proto",
-    "$proto_path/critical_persisted_tab_data.proto",
     "$proto_path/shopping_persisted_tab_data.proto",
     "$proto_path/store_persisted_tab_data.proto",
   ]

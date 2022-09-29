@@ -25,6 +25,7 @@ namespace blink {
 
 class NGBoxFragmentBuilder;
 enum class NGOutlineType;
+struct FrameSetLayoutData;
 
 class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
  public:
@@ -332,15 +333,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
   }
   const NGPhysicalBoxFragment* InlineContainerFragmentIfOutlineOwner() const;
 
-  // Returns the |ComputedStyle| to use for painting outlines. When |this| is
-  // a block in a continuation-chain, it may need to paint outlines if its
-  // ancestor inline boxes in the DOM tree has outlines.
-  const ComputedStyle* StyleForContinuationOutline() const {
-    if (const auto* layout_object = GetLayoutObject())
-      return layout_object->StyleForContinuationOutline();
-    return nullptr;
-  }
-
   // Fragment offset is this fragment's offset from parent.
   // Needed to compensate for LayoutInline Legacy code offsets.
   void AddSelfOutlineRects(const PhysicalOffset& additional_offset,
@@ -388,6 +380,10 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
                                     bool check_same_block_size) const;
 #endif
 
+  const FrameSetLayoutData* GetFrameSetLayoutData() const {
+    return ComputeRareDataAddress()->frame_set_layout_data.get();
+  }
+
   bool HasExtraMathMLPainting() const {
     if (IsMathMLFraction())
       return true;
@@ -433,6 +429,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
 
    public:
     void ClearIsFirstForNode() { fragment_.is_first_for_node_ = false; }
+    void ClearPropagatedOOFs() { fragment_.ClearOutOfFlowData(); }
     void SetBreakToken(const NGBlockBreakToken* token) {
       fragment_.break_token_ = token;
     }
@@ -487,6 +484,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
     explicit RareData(NGBoxFragmentBuilder*);
     void Trace(Visitor*) const;
 
+    const std::unique_ptr<const FrameSetLayoutData> frame_set_layout_data;
     const std::unique_ptr<const NGMathMLPaintInfo> mathml_paint_info;
 
     // Table rare-data.

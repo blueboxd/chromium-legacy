@@ -9,6 +9,7 @@
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_progress.h"
+#include "ash/public/cpp/holding_space/holding_space_util.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/style/ash_color_provider.h"
@@ -133,6 +134,7 @@ HoldingSpaceItemView::HoldingSpaceItemView(HoldingSpaceViewDelegate* delegate,
   SetNotifyEnterExitOnChild(true);
 
   // Accessibility.
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kListItem);
   GetViewAccessibility().OverrideName(item->GetAccessibleName());
 
   // When the description is not specified, tooltip text will be used.
@@ -142,8 +144,6 @@ HoldingSpaceItemView::HoldingSpaceItemView(HoldingSpaceViewDelegate* delegate,
   // to the empty string. See crrev.com/c/3218112.
   GetViewAccessibility().OverrideDescription(
       std::u16string(), ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty);
-
-  GetViewAccessibility().OverrideRole(ax::mojom::Role::kListItem);
 
   // Layer.
   SetPaintToLayer();
@@ -462,7 +462,10 @@ void HoldingSpaceItemView::OnPrimaryActionPressed() {
 
   // Cancel.
   if (primary_action_cancel_->GetVisible()) {
-    HoldingSpaceController::Get()->client()->CancelItems({item()});
+    if (!holding_space_util::ExecuteInProgressCommand(
+            item(), HoldingSpaceCommandId::kCancelItem)) {
+      NOTREACHED();
+    }
     return;
   }
 
@@ -495,10 +498,11 @@ void HoldingSpaceItemView::UpdatePrimaryAction() {
   }
 
   // Cancel.
-  // NOTE: Only download type items currently support cancellation.
+  // NOTE: Only in-progress items currently support cancellation.
   const bool is_item_in_progress = !item()->progress().IsComplete();
   primary_action_cancel_->SetVisible(
-      is_item_in_progress && HoldingSpaceItem::IsDownload(item()->type()));
+      is_item_in_progress && holding_space_util::SupportsInProgressCommand(
+                                 item(), HoldingSpaceCommandId::kCancelItem));
 
   // Pin.
   const bool is_item_pinned =

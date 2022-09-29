@@ -248,7 +248,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="BackForwardCache.HistoryNavigationOutcome.BlocklistedFeature"
-    enum="WebSchedulerTrackedFeature" expires_after="2022-12-11">
+    enum="WebSchedulerTrackedFeature" expires_after="2023-02-12">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -283,7 +283,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 <histogram
     name="BackForwardCache.HistoryNavigationOutcome.DisabledForRenderFrameHostReason2"
     enum="BackForwardCacheDisabledForRenderFrameHostReason2"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>carlscab@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
@@ -571,6 +571,18 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram name="Navigation.CrossOtr.ContextMenu.RefreshCount" units="count"
+    expires_after="2023-01-02">
+  <owner>mreichhoff@chromium.org</owner>
+  <owner>wanderview@chromium.org</owner>
+  <owner>bcl@chromium.org</owner>
+  <owner>dc-komics@google.com</owner>
+  <summary>
+    The count of refreshes on the first document after a cross-OTR navigation
+    completes. This metric is written when default classifications were applied.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.CrossOtr.ContextMenu.RefreshCountExperimental"
     units="count" expires_after="2023-01-02">
   <owner>mreichhoff@chromium.org</owner>
@@ -581,6 +593,21 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
     The count of refreshes on the first document after a cross-OTR navigation
     completes. This metric is currently experimental and will likely be
     replaced.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.CrossOtr.ContextMenu.ResponseCode"
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-01-02">
+  <owner>mreichhoff@chromium.org</owner>
+  <owner>wanderview@chromium.org</owner>
+  <owner>bcl@chromium.org</owner>
+  <owner>dc-komics@google.com</owner>
+  <summary>
+    Http response codes seen when opening links from non-OTR to OTR browsing.
+    Logged when using the &quot;Open Link in Incognito Window&quot; menu item.
+    Note that, in the case of redirects, multiple entries will be written for a
+    single navigation. This metric is written when default classifications were
+    applied.
   </summary>
 </histogram>
 
@@ -801,7 +828,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.MainFrame.ThirdPartyCookieBlockingEnabled"
-    enum="ThirdPartyCookieBlockState" expires_after="2022-11-27">
+    enum="ThirdPartyCookieBlockState" expires_after="2023-02-12">
   <owner>dullweber@chromium.org</owner>
   <owner>feuunk@chromium.org</owner>
   <summary>
@@ -822,7 +849,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.MainFrameHasRTLDomain2" enum="Boolean"
-    expires_after="2022-10-12">
+    expires_after="2023-01-22">
   <owner>cthomp@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -1108,7 +1135,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.QueueTime.{Method}.{FrameType}" units="ms"
-    expires_after="2022-09-08">
+    expires_after="2023-07-28">
   <owner>cduvall@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -1175,7 +1202,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.RendererDidNavigateTime.{FrameType}" units="ms"
-    expires_after="2022-09-07">
+    expires_after="2023-07-28">
   <owner>cduvall@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -1200,7 +1227,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.RequiresDedicatedProcess"
-    enum="NavigationRequiresDedicatedProcess" expires_after="2022-10-09">
+    enum="NavigationRequiresDedicatedProcess" expires_after="2023-02-12">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -1247,7 +1274,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.ThrottleDeferTime.{Event}" units="ms"
-    expires_after="2022-09-11">
+    expires_after="2023-02-11">
   <owner>cduvall@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -1258,7 +1285,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.ThrottleExecutionTime.{Event}" units="ms"
-    expires_after="2022-09-11">
+    expires_after="2023-02-11">
   <owner>cduvall@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -1326,7 +1353,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.UrlParamFilter.ClassificationListValidationResult"
-    enum="ClassificationListValidationResult" expires_after="2022-11-20">
+    enum="ClassificationListValidationResult" expires_after="2023-01-22">
   <owner>kaklilu@chromium.org</owner>
   <owner>src/chrome/browser/url_param_filter/OWNERS</owner>
   <summary>
@@ -1515,6 +1542,17 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram name="Prerender.Experimental.ActivationNavigationParamsMatch"
+    enum="PrerenderActivationNavigationParamsMatch" expires_after="2022-12-05">
+  <owner>nhiroki@chromium.org</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    Records the mismatched parameters between the prerender initial navigation
+    parameters and the prerender activation navigation parameters. Recorded by
+    PrerenderHost in the browser process when comparing these two parameters.
+  </summary>
+</histogram>
+
 <histogram
     name="Prerender.Experimental.DefaultSearchEngine.SearchTermExtractorCorrectness"
     enum="Boolean" expires_after="2022-07-27">
@@ -1528,7 +1566,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Prerender.Experimental.PredictionStatus.DefaultSearchEngine"
-    enum="PrerenderPredictionStatus" expires_after="2022-11-27">
+    enum="PrerenderPredictionStatus" expires_after="2023-02-12">
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -1540,7 +1578,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Prerender.Experimental.PredictionStatus.DirectUrlInput"
-    enum="PrerenderPredictionStatus" expires_after="2022-11-27">
+    enum="PrerenderPredictionStatus" expires_after="2023-02-12">
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -1609,7 +1647,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="Prerender.Experimental.Search.FirstCorrectPrerenderHintReceivedToRealSearchNavigationStartedDuration"
-    units="ms" expires_after="2022-11-27">
+    units="ms" expires_after="2023-02-12">
   <owner>lingqi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -1655,7 +1693,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Prerender.FinalStatus" enum="PrerenderFinalStatus"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>ryansturm@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>

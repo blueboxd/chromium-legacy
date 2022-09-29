@@ -165,13 +165,17 @@ int WebAXObject::GenerateAXID() const {
 // order to ensure that layout calls are not made at an unsafe time in the
 // document lifecycle.
 bool WebAXObject::MaybeUpdateLayoutAndCheckValidity() {
-  if (!IsDetached()) {
-    if (!MaybeUpdateLayoutAndCheckValidity(GetDocument()))
-      return false;
-  }
+  DCHECK(!IsDetached());
+
+  if (!MaybeUpdateLayoutAndCheckValidity(GetDocument()))
+    return false;
 
   // Doing a layout can cause this object to be invalid, so check again.
-  return CheckValidity();
+  if (!CheckValidity())
+    return false;
+
+  private_->PreSerializationConsistencyCheck();
+  return true;
 }
 
 // Returns true if the object is valid and can be accessed.
@@ -888,6 +892,7 @@ bool WebAXObject::AccessibilityIsIncludedInTree() const {
   if (IsDetached())
     return false;
 
+  DCHECK(private_->GetDocument());
   DCHECK_GE(private_->GetDocument()->Lifecycle().GetState(),
             DocumentLifecycle::kLayoutClean)
       << "Document lifecycle must be at LayoutClean or later, was "
@@ -1373,6 +1378,8 @@ void WebAXObject::Freeze(const WebDocument& web_document) {
 // static
 void WebAXObject::Thaw(const WebDocument& web_document) {
   const Document* doc = web_document.ConstUnwrap<Document>();
+  if (!doc)
+    return;
   auto* cache = To<AXObjectCacheImpl>(doc->ExistingAXObjectCache());
   if (cache)
     cache->Thaw();

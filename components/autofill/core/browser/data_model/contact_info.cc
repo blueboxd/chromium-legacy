@@ -13,12 +13,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
-#include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_utils.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 
 namespace autofill {
 
@@ -381,16 +381,15 @@ void CompanyInfo::SetRawInfoWithVerificationStatus(ServerFieldType type,
 }
 
 bool CompanyInfo::IsValidOrVerified(const std::u16string& value) const {
-  // TODO(crbug/1117296): retrieve regular expressions dynamically.
-  static const char* kBirthyearRe = "^(19|20)\\d{2}$";
-  static const char* kSocialTitleRe =
-      "^(Ms\\.?|Mrs\\.?|Mr\\.?|Miss|Mistress|Mister|"
-      "Frau|Herr|"
-      "Mlle|Mme|M\\.|"
-      "Dr\\.?|Prof\\.?)$";
+  static constexpr char16_t kBirthyearRe[] = u"^(19|20)\\d{2}$";
+  static constexpr char16_t kSocialTitleRe[] =
+      u"^(Ms\\.?|Mrs\\.?|Mr\\.?|Miss|Mistress|Mister|"
+      u"Frau|Herr|"
+      u"Mlle|Mme|M\\.|"
+      u"Dr\\.?|Prof\\.?)$";
   return (profile_ && profile_->IsVerified()) ||
-         (!MatchesPattern(value, base::UTF8ToUTF16(kBirthyearRe)) &&
-          !MatchesPattern(value, base::UTF8ToUTF16(kSocialTitleRe)));
+         (!MatchesRegex<kBirthyearRe>(value) &&
+          !MatchesRegex<kSocialTitleRe>(value));
 }
 
 }  // namespace autofill

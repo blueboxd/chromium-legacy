@@ -17,7 +17,7 @@ using RemoteLocations = std::set<net::HostPortPair>;
 
 class TargetHandler : public protocol::Target::Backend {
  public:
-  TargetHandler(protocol::UberDispatcher* dispatcher, bool is_trusted);
+  explicit TargetHandler(protocol::UberDispatcher* dispatcher);
 
   TargetHandler(const TargetHandler&) = delete;
   TargetHandler& operator=(const TargetHandler&) = delete;
@@ -42,7 +42,6 @@ class TargetHandler : public protocol::Target::Backend {
 
  private:
   RemoteLocations remote_locations_;
-  const bool is_trusted_;
 };
 
 #endif  // CHROME_BROWSER_DEVTOOLS_PROTOCOL_TARGET_HANDLER_H_

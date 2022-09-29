@@ -3090,6 +3090,36 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Blink.DeveloperMetricsRare">
+  <owner>schenney@chromium.org</owner>
+  <owner>chrome-webdev-metrics@google.com</owner>
+  <summary>
+    Collects data for a subset of UseCounter features of interest to the Web
+    Platform Developer Metrics team due to their recent launch or potential for
+    spec changes. Features reported in this set should be rare, appearing in
+    fewer than 5% of page loads.
+  </summary>
+  <metric name="Feature" enum="FeatureObserver">
+    <summary>
+      Opt-in UseCounter feature, listed in
+      components/page_load_metrics/browser/observers/use_counter/webdev_metrics_ukm_features.cc
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="IsMainFrameFeature" enum="Boolean">
+    <summary>
+      Emits True(1) or False(0) to indicate whether the Feature recorded is in
+      the main frame or not.
+    </summary>
+  </metric>
+</event>
+
 <event name="Blink.FedCm">
   <owner>yigu@chromium.org</owner>
   <owner>webid-core@google.com</owner>
@@ -5160,6 +5190,82 @@ be describing additional metrics about the same event.
       The number of unique context domains have requested the topics. Rounded to
       the nearest exponential bucket (with a bucket ratio of 1.15).
     </summary>
+  </metric>
+</event>
+
+<event name="ChromeOS.WebsiteUsageTime">
+  <owner>nancylingwang@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    Records the amount of time that the focused and activated website was
+    accessed in last two hours on Chrome OS. This is logged each two hours, and
+    only when the website is not installed as a PWA or Chrome app.
+  </summary>
+  <metric name="Duration">
+    <summary>
+      The milliseconds that the website was accessed in the focused tab and the
+      activated browser window. The accessing time is calculated each five
+      minutes, then the noise is applied, and sum the running time for five
+      minutes with noise to calculate the two hours accessing time. For example
+      the running time in the past 2 hours = time1 * noise1 + time2 * noise2 +
+      time3 * noise3....
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="IsFromLastLogin" enum="Boolean">
+    <summary>
+      Whether the metrics is read from the user pref on disk, recorded for the
+      last login.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Promotable" enum="Boolean">
+    <summary>
+      Whether the website can be an installable web app.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="UrlContent" enum="URLContent">
+    <summary>
+      The url content, e.g. full url, scope.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="UserDeviceMatrix" enum="UserDeviceMatrix">
+    <summary>
+      An enum that records the user type and the device type.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -8602,6 +8708,9 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="TimingSinceFCPWorstCase">
+    <obsolete>
+      Removed July 2022 along with UMA metric, which are no longer needed.
+    </obsolete>
     <summary>
       The Time From FCP when the worst case happened
     </summary>
@@ -10560,7 +10669,7 @@ be describing additional metrics about the same event.
       Reflects the current status of user gesture/activation. This is a bit
       field with the following values: - 0b0001 if there is a user gesture on
       the stack; - 0b0010 if there was a user gesture on the page (ie. was
-      activated); - 0b0100 if there was a user gesture propogated after a
+      activated); - 0b0100 if there was a user gesture propagated after a
       navigation.
     </summary>
   </metric>
@@ -10951,6 +11060,62 @@ be describing additional metrics about the same event.
   <metric name="KeySystem" enum="MediaKeySystemLegacy">
     <summary>
       The key system associated with this call.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="Media.EME.GetStatusForPolicy">
+  <owner>frs@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Event recorded when the EME API GetStatusForPolicy promise is resovled.
+  </summary>
+  <metric name="IsAdFrame" enum="Boolean">
+    <summary>
+      Whether the frame is an ad frame. This is not set if the frame is null.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="KeySystem" enum="MediaKeySystem">
+    <summary>
+      The key system associated with the current CDM.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="MinHdcpVersion" enum="HdcpVersion">
+    <summary>
+      The minimum HDCP version requested for EME API GetStatusForPolicy.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="UseHardwareSecureCodecs" enum="Boolean">
+    <summary>
+      Whether hardware secure codecs are required for the current CDM.
     </summary>
     <aggregation>
       <history>
@@ -12743,6 +12908,36 @@ be describing additional metrics about the same event.
     <summary>
       A bool that is set if the page is a search result page for the browser's
       default search engine
+    </summary>
+  </metric>
+</event>
+
+<event name="NavigationThrottleDeferredTime" singular="False">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>chrome-brapp-loading@google.com</owner>
+  <summary>
+    Information recorded about a navigation throttle when a navigation is
+    deferred at any stage of the navigation. Only recorded for main frame
+    navigations that were deferred and later resumed.
+  </summary>
+  <metric name="DurationOfNavigationDeferralMs">
+    <summary>
+      The duration from the start of the navigation deferral until the throttle
+      resumes the navigation recorded in milliseconds.
+    </summary>
+  </metric>
+  <metric name="NavigationThrottleEventType">
+    <summary>
+      An enum representing each event that can cause deferral method
+      (WillFailRequest, WillProcessResponse, WillRedirectRequest,
+      WillStartRequest). See NavigationThrottleRunner::Event for enum details.
+    </summary>
+  </metric>
+  <metric name="NavigationThrottleNameHash">
+    <summary>
+      A (MD5) hash of the logging name string which represents a unique
+      navigation throttle class (subclass of NavigationThrottle). See
+      NavigationThrottle::GetNameForLogging().
     </summary>
   </metric>
 </event>
@@ -15699,6 +15894,21 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="PasswordManager.PasswordFillingIOS">
+  <owner>theocristea@google.com</owner>
+  <owner>kazinova@google.com</owner>
+  <owner>vsemeniuk@google.com</owner>
+  <summary>
+    Records password filling for IOS. The metric records whether the password
+    filling is successful upon suggestion click.
+  </summary>
+  <metric name="FillingSuccess" enum="BooleanSuccess">
+    <summary>
+      A boolean indicating success or failure.
+    </summary>
+  </metric>
+</event>
+
 <event name="PasswordManager.WellKnownChangePasswordResult">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
@@ -17224,6 +17434,13 @@ be describing additional metrics about the same event.
       This is replicated as Prerender.Experimental.PrerenderHostFinalStatus.* in
       UMA.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="InteractiveTiming.FirstInputDelay4">
     <summary>
@@ -17249,6 +17466,13 @@ be describing additional metrics about the same event.
       the time when the page first paints content. A contentful paint includes a
       paint of text, image, SVG, or canvas.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="Timing.ActivationToLargestContentfulPaint">
     <summary>
@@ -17256,6 +17480,13 @@ be describing additional metrics about the same event.
       the time when the page first paints the largest content (text or image)
       within viewport, across all frames.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="Timing.NavigationToActivation">
     <summary>
@@ -21604,17 +21835,38 @@ be describing additional metrics about the same event.
     <summary>
       Records the display mode of the added Webapp.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="SameAsManifestStartUrl" enum="Boolean">
     <summary>
       Record whether `start_url` for the Shortcuts is the same as the current
       page url.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="ShortcutReason" enum="InstallableStatusCode">
     <summary>
       Record an StatusCode for why this site is not WebAPK compatible.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 

@@ -4,107 +4,49 @@
 
 #include "ash/system/channel_indicator/channel_indicator.h"
 
-#include <string>
-#include <utility>
-
-#include "ash/public/cpp/shelf_config.h"
-#include "ash/public/cpp/style/dark_light_mode_controller.h"
-#include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/strings/grit/ash_strings.h"
-#include "ash/system/model/system_tray_model.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shell.h"
+#include "ash/system/channel_indicator/channel_indicator_utils.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_item_view.h"
+#include "base/memory/weak_ptr.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "components/session_manager/session_manager_types.h"
 #include "components/version_info/channel.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 
 namespace ash {
 
 namespace {
 
+// Background rounded rectangle corner radius.
 constexpr int kIndicatorBgCornerRadius = 50;
 
-bool IsDisplayableChannel(version_info::Channel channel) {
-  switch (channel) {
-    case version_info::Channel::BETA:
-    case version_info::Channel::DEV:
-    case version_info::Channel::CANARY:
-      return true;
-    default:
-      return false;
-  }
-}
-
-SkColor GetFgColor(version_info::Channel channel) {
-  bool is_dark_mode_enabled =
-      DarkLightModeController::Get()->IsDarkModeEnabled();
-  switch (channel) {
-    case version_info::Channel::BETA:
-      return is_dark_mode_enabled ? gfx::kGoogleBlue200 : gfx::kGoogleBlue900;
-    case version_info::Channel::DEV:
-      return is_dark_mode_enabled ? gfx::kGoogleGreen200 : gfx::kGoogleGreen900;
-    case version_info::Channel::CANARY:
-      return is_dark_mode_enabled ? gfx::kGoogleYellow200 : gfx::kGoogleGrey900;
-    default:
-      return 0;
-  }
-}
-
-SkColor GetBgColor(version_info::Channel channel) {
-  bool is_dark_mode_enabled =
-      DarkLightModeController::Get()->IsDarkModeEnabled();
-  switch (channel) {
-    case version_info::Channel::BETA:
-      return is_dark_mode_enabled ? SkColorSetA(gfx::kGoogleBlue300, 0x55)
-                                  : gfx::kGoogleBlue200;
-    case version_info::Channel::DEV:
-      return is_dark_mode_enabled ? SkColorSetA(gfx::kGoogleGreen300, 0x55)
-                                  : gfx::kGoogleGreen200;
-    case version_info::Channel::CANARY:
-      return is_dark_mode_enabled ? SkColorSetA(gfx::kGoogleYellow300, 0x55)
-                                  : gfx::kGoogleYellow200;
-    default:
-      return 0;
-  }
-}
-
-int GetStringResource(version_info::Channel channel) {
-  DCHECK(IsDisplayableChannel(channel));
-  switch (channel) {
-    case version_info::Channel::BETA:
-      return IDS_ASH_STATUS_TRAY_CHANNEL_BETA;
-    case version_info::Channel::DEV:
-      return IDS_ASH_STATUS_TRAY_CHANNEL_DEV;
-    case version_info::Channel::CANARY:
-      return IDS_ASH_STATUS_TRAY_CHANNEL_CANARY;
-    default:
-      return -1;
-  }
-}
+// Size of padding area around the icon or text.
+constexpr int kIndicatorInset = 8;
 
 }  // namespace
 
 ChannelIndicatorView::ChannelIndicatorView(Shelf* shelf,
                                            version_info::Channel channel)
-    : TrayItemView(shelf), channel_(channel) {
+    : TrayItemView(shelf), channel_(channel), session_observer_(this) {
+  shell_observer_.Observe(Shell::Get());
   SetVisible(false);
-  CreateImageView();
-  Update(channel_);
+  Update();
 }
 
 ChannelIndicatorView::~ChannelIndicatorView() = default;
-
-gfx::Size ChannelIndicatorView::CalculatePreferredSize() const {
-  return gfx::Size(kUnifiedTrayChannelIndicatorDimension,
-                   kUnifiedTrayChannelIndicatorDimension);
-}
 
 void ChannelIndicatorView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(accessible_name_);
@@ -125,61 +67,153 @@ const char* ChannelIndicatorView::GetClassName() const {
 
 void ChannelIndicatorView::OnThemeChanged() {
   TrayItemView::OnThemeChanged();
-  Update(channel_);
-}
 
-void ChannelIndicatorView::HandleLocaleChange() {
-  Update(channel_);
-}
-
-void ChannelIndicatorView::Update(version_info::Channel channel) {
-  if (!IsDisplayableChannel(channel))
+  if (Shell::Get()->session_controller()->GetSessionState() ==
+      session_manager::SessionState::ACTIVE) {
+    // User is logged in, set image view colors.
+    if (image_view()) {
+      image_view()->SetBackground(views::CreateRoundedRectBackground(
+          channel_indicator_utils::GetBgColor(channel_),
+          kIndicatorBgCornerRadius));
+      image_view()->SetImage(gfx::CreateVectorIcon(
+          channel_indicator_utils::GetVectorIcon(channel_),
+          kUnifiedTrayChannelIndicatorDimension,
+          channel_indicator_utils::GetFgColor(channel_)));
+    }
     return;
+  }
 
-  SetVisible(true);
-  SetAccessibleName(channel);
-  SetTooltip(channel);
-  SetImage(channel);
-}
-
-void ChannelIndicatorView::SetImage(version_info::Channel channel) {
-  DCHECK(IsDisplayableChannel(channel));
-
-  SetBorder(views::CreateEmptyBorder(
-      gfx::Insets::VH(kUnifiedTrayChannelIndicatorDimension / 2, 0)));
-  image_view()->SetBackground(views::CreateRoundedRectBackground(
-      GetBgColor(channel), kIndicatorBgCornerRadius));
-
-  switch (channel) {
-    case version_info::Channel::BETA:
-      image_view()->SetImage(gfx::CreateVectorIcon(
-          kChannelBetaIcon, kUnifiedTrayChannelIndicatorDimension,
-          GetFgColor(channel)));
-      break;
-    case version_info::Channel::DEV:
-      image_view()->SetImage(gfx::CreateVectorIcon(
-          kChannelDevIcon, kUnifiedTrayChannelIndicatorDimension,
-          GetFgColor(channel)));
-      break;
-    case version_info::Channel::CANARY:
-      image_view()->SetImage(gfx::CreateVectorIcon(
-          kChannelCanaryIcon, kUnifiedTrayChannelIndicatorDimension,
-          GetFgColor(channel)));
-      break;
-    default:
-      break;
+  // User is not logged in, set label colors.
+  if (label()) {
+    label()->SetBackground(views::CreateRoundedRectBackground(
+        channel_indicator_utils::GetBgColor(channel_),
+        kIndicatorBgCornerRadius));
+    label()->SetEnabledColor(channel_indicator_utils::GetFgColor(channel_));
   }
 }
 
-void ChannelIndicatorView::SetAccessibleName(version_info::Channel channel) {
-  DCHECK(IsDisplayableChannel(channel));
-  accessible_name_ = l10n_util::GetStringUTF16(GetStringResource(channel));
-  image_view()->SetAccessibleName(accessible_name_);
+void ChannelIndicatorView::HandleLocaleChange() {
+  Update();
 }
 
-void ChannelIndicatorView::SetTooltip(version_info::Channel channel) {
-  DCHECK(IsDisplayableChannel(channel));
-  tooltip_ = l10n_util::GetStringUTF16(GetStringResource(channel));
+void ChannelIndicatorView::Update() {
+  if (!channel_indicator_utils::IsDisplayableChannel(channel_))
+    return;
+
+  SetImageOrText();
+  SetVisible(true);
+  SetAccessibleName();
+  SetTooltip();
+}
+
+void ChannelIndicatorView::SetImageOrText() {
+  DCHECK(channel_indicator_utils::IsDisplayableChannel(channel_));
+
+  if (Shell::Get()->session_controller()->GetSessionState() ==
+      session_manager::SessionState::ACTIVE) {
+    // User is logged in, show the icon.
+    if (image_view())
+      return;
+
+    DestroyLabel();
+    CreateImageView();
+
+    // Border insets depend on shelf horizontal alignment.
+    SetBorder(views::CreateEmptyBorder(
+        IsHorizontalAlignment() ? gfx::Insets::VH(kIndicatorInset, 0)
+                                : gfx::Insets::VH(0, kIndicatorInset)));
+
+    image_view()->SetBackground(views::CreateRoundedRectBackground(
+        channel_indicator_utils::GetBgColor(channel_),
+        kIndicatorBgCornerRadius));
+    image_view()->SetImage(
+        gfx::CreateVectorIcon(channel_indicator_utils::GetVectorIcon(channel_),
+                              kUnifiedTrayChannelIndicatorDimension,
+                              channel_indicator_utils::GetFgColor(channel_)));
+    PreferredSizeChanged();
+    return;
+  }
+
+  // User is not logged in, show the channel name.
+  if (label())
+    return;
+
+  DestroyImageView();
+  CreateLabel();
+
+  // Label is only displayed if the user is in a non-active `SessionState`,
+  // where side-shelf isn't possible (for now at least!), so nothing here is
+  // adjusted for shelf alignment.
+  DCHECK(IsHorizontalAlignment());
+  SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(kIndicatorInset, 0)));
+  label()->SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(0, 6)));
+  label()->SetBackground(views::CreateRoundedRectBackground(
+      channel_indicator_utils::GetBgColor(channel_), kIndicatorBgCornerRadius));
+  label()->SetEnabledColor(channel_indicator_utils::GetFgColor(channel_));
+  label()->SetText(l10n_util::GetStringUTF16(
+      channel_indicator_utils::GetChannelNameStringResourceID(
+          channel_,
+          /*append_channel=*/false)));
+  PreferredSizeChanged();
+}
+
+void ChannelIndicatorView::SetAccessibleName() {
+  DCHECK(channel_indicator_utils::IsDisplayableChannel(channel_));
+  accessible_name_ = l10n_util::GetStringUTF16(
+      channel_indicator_utils::GetChannelNameStringResourceID(
+          channel_, /*append_channel=*/true));
+
+  // If icon is showing, set it on the image view.
+  if (image_view()) {
+    DCHECK(!label());
+    image_view()->SetAccessibleName(accessible_name_);
+    return;
+  }
+
+  // Otherwise set it on the label.
+  if (label())
+    label()->SetAccessibleName(accessible_name_);
+}
+
+void ChannelIndicatorView::SetTooltip() {
+  DCHECK(channel_indicator_utils::IsDisplayableChannel(channel_));
+  tooltip_ = l10n_util::GetStringUTF16(
+      channel_indicator_utils::GetChannelNameStringResourceID(
+          channel_, /*append_channel=*/true));
+}
+
+void ChannelIndicatorView::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  Update();
+}
+
+void ChannelIndicatorView::OnShelfAlignmentChanged(
+    aura::Window* root_window,
+    ShelfAlignment old_alignment) {
+  if (image_view()) {
+    // Border insets depend on shelf horizontal alignment.
+    SetBorder(views::CreateEmptyBorder(
+        IsHorizontalAlignment() ? gfx::Insets::VH(kIndicatorInset, 0)
+                                : gfx::Insets::VH(0, kIndicatorInset)));
+  }
+}
+
+bool ChannelIndicatorView::IsLabelVisibleForTesting() {
+  return label() && label()->GetVisible();
+}
+
+bool ChannelIndicatorView::IsImageViewVisibleForTesting() {
+  return image_view() && image_view()->GetVisible();
+}
+
+std::u16string ChannelIndicatorView::GetAccessibleNameString() const {
+  if (image_view())
+    return image_view()->GetAccessibleName();
+
+  if (label())
+    return label()->GetAccessibleName();
+
+  return base::EmptyString16();
 }
 
 }  // namespace ash

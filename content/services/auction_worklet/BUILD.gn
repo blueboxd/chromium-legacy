@@ -52,6 +52,8 @@ source_set("auction_worklet") {
     "debug_command_queue.h",
     "for_debugging_only_bindings.cc",
     "for_debugging_only_bindings.h",
+    "private_aggregation_bindings.cc",
+    "private_aggregation_bindings.h",
     "register_ad_beacon_bindings.cc",
     "register_ad_beacon_bindings.h",
     "report_bindings.cc",
@@ -75,11 +77,14 @@ source_set("auction_worklet") {
   configs += [
     "//build/config/compiler:wexit_time_destructors",
     "//v8:external_startup_data",
+    "//content:content_implementation",
   ]
 
   deps = [
     ":protocol_sources",
     "//base",
+    "//content:export",
+    "//content/common",
     "//gin",
     "//mojo/public/cpp/bindings",
     "//net",
@@ -93,8 +98,22 @@ source_set("auction_worklet") {
   public_deps = [ "public/mojom" ]
 }
 
+# See comment at the top of //content/BUILD.gn for how this works.
+group("for_content_tests") {
+  visibility = [ ":tests" ]
+  if (!is_component_build) {
+    public_deps = [ ":auction_worklet" ]
+  }
+}
+
 source_set("tests") {
   testonly = true
+
+  # See comment at the top of //content/BUILD.gn for why this is disabled in
+  # component builds.
+  if (is_component_build) {
+    check_includes = false
+  }
 
   sources = [
     "auction_downloader_unittest.cc",
@@ -116,10 +135,9 @@ source_set("tests") {
   ]
 
   deps = [
-    ":auction_worklet",
-    "public/mojom",
     "//base",
     "//base/test:test_support",
+    "//content/common:for_content_tests",
     "//gin",
     "//net",
     "//services/network:test_support",
@@ -130,6 +148,8 @@ source_set("tests") {
     "//third_party/inspector_protocol:crdtp",
     "//v8",
   ]
+
+  public_deps = [ ":for_content_tests" ]
 
   if (v8_use_external_startup_data) {
     deps += [ "//gin" ]

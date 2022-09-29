@@ -147,27 +147,31 @@ std::vector<absl::optional<base::FilePath>> FilterPathsByTime(
 ZeroStateDriveProvider::ZeroStateDriveProvider(
     Profile* profile,
     SearchController* search_controller,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    drive::DriveIntegrationService* drive_service,
+    session_manager::SessionManager* session_manager,
+    std::unique_ptr<ItemSuggestCache> item_suggest_cache)
     : profile_(profile),
-      drive_service_(
-          drive::DriveIntegrationServiceFactory::GetForProfile(profile)),
-      session_manager_(session_manager::SessionManager::Get()),
+      drive_service_(drive_service),
+      session_manager_(session_manager),
+      item_suggest_cache_(std::move(item_suggest_cache)),
       construction_time_(base::Time::Now()),
-      item_suggest_cache_(
-          profile,
-          std::move(url_loader_factory),
-          base::BindRepeating(&ZeroStateDriveProvider::OnCacheUpdated,
-                              base::Unretained(this))),
       max_last_modified_time_(base::Days(base::GetFieldTrialParamByFeatureAsInt(
           ash::features::kProductivityLauncher,
           "max_last_modified_time",
-          8))),
-      enabled_(ash::features::IsProductivityLauncherEnabled()) {
-  DCHECK(profile_);
+          8))) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(profile_);
+  DCHECK(item_suggest_cache_);
+
   task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
       {base::TaskPriority::USER_BLOCKING, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+
+  // It's safe to use Unretained(this) by contract of the
+  // CallbackListSubscription.
+  item_suggest_subscription_ =
+      item_suggest_cache_->RegisterCallback(base::BindRepeating(
+          &ZeroStateDriveProvider::OnCacheUpdated, base::Unretained(this)));
 
   if (drive_service_) {
     if (drive_service_->IsMounted()) {
@@ -197,7 +201,7 @@ void ZeroStateDriveProvider::OnFileSystemMounted() {
       ash::features::kProductivityLauncher,
       "itemsuggest_query_on_filesystem_mounted", true);
 
-  if (kUpdateCache && enabled_) {
+  if (kUpdateCache) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&ZeroStateDriveProvider::MaybeUpdateCache,
@@ -263,9 +267,6 @@ void ZeroStateDriveProvider::StartZeroState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ClearResultsSilently();
 
-  if (!enabled_)
-    return;
-
   // Exit if drive fs isn't mounted, as we launch results via drive fs.
   if (!drive_service_ || !drive_service_->IsMounted()) {
     LogStatus(Status::kDriveFSNotMounted);
@@ -281,7 +282,7 @@ void ZeroStateDriveProvider::StartZeroState() {
   weak_factory_.InvalidateWeakPtrs();
 
   // Get the most recent results from the cache.
-  cache_results_ = item_suggest_cache_.GetResults();
+  cache_results_ = item_suggest_cache_->GetResults();
   if (!cache_results_) {
     LogStatus(Status::kNoResults);
     return;
@@ -398,11 +399,8 @@ void ZeroStateDriveProvider::OnCacheUpdated() {
 }
 
 void ZeroStateDriveProvider::MaybeUpdateCache() {
-  if (!enabled_)
-    return;
-
   if (base::Time::Now() - kFirstUpdateDelay > construction_time_) {
-    item_suggest_cache_.UpdateCache();
+    item_suggest_cache_->UpdateCache();
   }
 }
 

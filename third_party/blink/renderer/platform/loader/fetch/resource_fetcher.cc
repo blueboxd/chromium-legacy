@@ -637,6 +637,7 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
             : resource->GetResourceRequest().Url());
     ResourceResponse final_response = resource->GetResponse();
     final_response.SetResourceLoadTiming(nullptr);
+    final_response.SetEncodedDataLength(0);
     info->SetFinalResponse(final_response);
     info->SetLoadResponseEnd(info->InitialTime());
     if (render_blocking_behavior == RenderBlockingBehavior::kBlocking)
@@ -1073,7 +1074,6 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
     if (auto info = resource_timing_info_map_.Take(resource)) {
       PopulateAndAddResourceTimingInfo(resource, info,
                                        /*response_end=*/base::TimeTicks::Now());
-      Context().AddResourceTiming(*info);
     }
     return resource;
   }
@@ -1300,7 +1300,7 @@ std::unique_ptr<WebURLLoader> ResourceFetcher::CreateURLLoader(
   // that task runner is frame-associated.
   return loader_factory_->CreateURLLoader(
       ResourceRequest(request), options, freezable_task_runner_,
-      request.GetKeepalive() ? Thread::Current()->GetTaskRunner()
+      request.GetKeepalive() ? Thread::Current()->GetDeprecatedTaskRunner()
                              : unfreezable_task_runner_,
       WebBackForwardCacheLoaderHelper(back_forward_cache_loader_helper_));
 }
@@ -1468,9 +1468,6 @@ void ResourceFetcher::PrintPreloadMismatch(Resource* resource,
       break;
     case Resource::MatchStatus::kRequestMethodDoesNotMatch:
       builder.Append("because the request HTTP method does not match.");
-      break;
-    case Resource::MatchStatus::kRequestHeadersDoNotMatch:
-      builder.Append("because the request headers do not match.");
       break;
     case Resource::MatchStatus::kScriptTypeDoesNotMatch:
       builder.Append("because the script type does not match.");
@@ -1965,10 +1962,8 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
 
   if (scoped_refptr<ResourceTimingInfo> info =
           resource_timing_info_map_.Take(resource)) {
-    if (resource->GetResponse().ShouldPopulateResourceTiming()) {
+    if (resource->GetResponse().ShouldPopulateResourceTiming())
       PopulateAndAddResourceTimingInfo(resource, info, response_end);
-      Context().AddResourceTiming(*info);
-    }
   }
 
   resource->VirtualTimePauser().UnpauseVirtualTime();
@@ -2021,10 +2016,8 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
   RemoveResourceLoader(resource->Loader());
 
   if (scoped_refptr<ResourceTimingInfo> info =
-          resource_timing_info_map_.Take(resource)) {
+          resource_timing_info_map_.Take(resource))
     PopulateAndAddResourceTimingInfo(resource, info, finish_time);
-    Context().AddResourceTiming(*info);
-  }
 
   resource->VirtualTimePauser().UnpauseVirtualTime();
   // If the preload was cancelled due to an HTTP error, we don't want to request
@@ -2383,6 +2376,9 @@ void ResourceFetcher::PopulateAndAddResourceTimingInfo(
     Resource* resource,
     scoped_refptr<ResourceTimingInfo> info,
     base::TimeTicks response_end) {
+  if (resource->GetResourceRequest().IsFromOriginDirtyStyleSheet())
+    return;
+
   const KURL& initial_url =
       resource->GetResourceRequest().GetRedirectInfo().has_value()
           ? resource->GetResourceRequest().GetRedirectInfo()->original_url
@@ -2402,6 +2398,7 @@ void ResourceFetcher::PopulateAndAddResourceTimingInfo(
   info->SetInitialURL(initial_url);
   info->SetFinalResponse(resource->GetResponse());
   info->SetLoadResponseEnd(response_end);
+  Context().AddResourceTiming(*info);
 }
 
 SubresourceWebBundle* ResourceFetcher::GetMatchingBundle(

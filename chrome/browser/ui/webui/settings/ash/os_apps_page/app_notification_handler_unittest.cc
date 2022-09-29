@@ -16,10 +16,10 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/permission.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace chromeos {
 namespace settings {
@@ -146,17 +146,8 @@ class AppNotificationHandlerTest : public testing::Test {
 
   void UpdateAppRegistryCache(std::vector<apps::AppPtr>& fake_apps,
                               apps::AppType app_type) {
-    if (base::FeatureList::IsEnabled(
-            apps::kAppServiceOnAppUpdateWithoutMojom)) {
-      app_service_proxy_->AppRegistryCache().OnApps(std::move(fake_apps),
-                                                    app_type, false);
-    } else {
-      std::vector<apps::mojom::AppPtr> mojom_apps;
-      mojom_apps.push_back(apps::ConvertAppToMojomApp(fake_apps[0]));
-      app_service_proxy_->AppRegistryCache().OnApps(
-          std::move(mojom_apps), apps::mojom::AppType::kUnknown,
-          /*should_notify_initialized=*/false);
-    }
+    app_service_proxy_->AppRegistryCache().OnApps(std::move(fake_apps),
+                                                  app_type, false);
   }
 
   bool CheckIfFakeAppInList(std::string fake_id) {
@@ -214,9 +205,9 @@ TEST_F(AppNotificationHandlerTest, TestAppListUpdated) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observer()->app_list_changed(), 1);
   EXPECT_EQ("arcAppWithNotifications", observer()->recently_updated_app()->id);
-  EXPECT_TRUE(observer()
-                  ->recently_updated_app()
-                  ->notification_permission->value->bool_value.value());
+  EXPECT_TRUE(absl::get<bool>(observer()
+                                  ->recently_updated_app()
+                                  ->notification_permission->value->value));
 
   CreateAndStoreFakeApp("webAppWithNotifications", apps::AppType::kWeb,
                         apps::PermissionType::kNotifications,
@@ -225,9 +216,10 @@ TEST_F(AppNotificationHandlerTest, TestAppListUpdated) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observer()->app_list_changed(), 2);
   EXPECT_EQ("webAppWithNotifications", observer()->recently_updated_app()->id);
-  EXPECT_TRUE(observer()
-                  ->recently_updated_app()
-                  ->notification_permission->value->bool_value.value());
+  EXPECT_TRUE(absl::holds_alternative<bool>(
+      observer()
+          ->recently_updated_app()
+          ->notification_permission->value->value));
 
   CreateAndStoreFakeApp("arcAppWithCamera", apps::AppType::kArc,
                         apps::PermissionType::kCamera);
@@ -254,9 +246,9 @@ TEST_F(AppNotificationHandlerTest, TestAppListUpdated) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observer()->app_list_changed(), 3);
   EXPECT_EQ("arcAppWithNotifications", observer()->recently_updated_app()->id);
-  EXPECT_FALSE(observer()
-                   ->recently_updated_app()
-                   ->notification_permission->value->bool_value.value());
+  EXPECT_FALSE(absl::get<bool>(observer()
+                                   ->recently_updated_app()
+                                   ->notification_permission->value->value));
 
   CreateAndStoreFakeApp("webAppWithNotifications", apps::AppType::kWeb,
                         apps::PermissionType::kNotifications,
@@ -265,9 +257,9 @@ TEST_F(AppNotificationHandlerTest, TestAppListUpdated) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observer()->app_list_changed(), 4);
   EXPECT_EQ("webAppWithNotifications", observer()->recently_updated_app()->id);
-  EXPECT_FALSE(observer()
-                   ->recently_updated_app()
-                   ->notification_permission->value->bool_value.value());
+  EXPECT_FALSE(absl::get<bool>(observer()
+                                   ->recently_updated_app()
+                                   ->notification_permission->value->value));
 }
 
 }  // namespace settings

@@ -197,7 +197,8 @@ bool CastConfigControllerMediaRouter::HasActiveRoute() const {
 bool CastConfigControllerMediaRouter::AccessCodeCastingEnabled() const {
   Profile* profile = GetProfile();
   return base::FeatureList::IsEnabled(::features::kAccessCodeCastUI) &&
-         profile && media_router::GetAccessCodeCastEnabledPref(profile);
+         profile &&
+         media_router::GetAccessCodeCastEnabledPref(profile->GetPrefs());
 }
 
 void CastConfigControllerMediaRouter::RequestDeviceRefresh() {

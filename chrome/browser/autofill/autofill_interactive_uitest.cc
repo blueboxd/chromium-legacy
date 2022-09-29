@@ -1106,7 +1106,7 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
         element_id.c_str(), value.c_str());
     ASSERT_TRUE(content::ExecJs(GetWebContents(), script));
 
-    content::DOMMessageQueue msg_queue;
+    content::DOMMessageQueue msg_queue(GetWebContents());
     for (char16_t character : value) {
       ui::DomKey dom_key = ui::DomKey::FromCharacter(character);
       const ui::PrintableCodeEntry* code_entry = base::ranges::find_if(
@@ -3724,6 +3724,23 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ShadowDOM) {
   EXPECT_EQ("Austin", Js("getCity()"));
   EXPECT_EQ("TX", Js("getState()"));
   EXPECT_EQ("78744", Js("getZip()"));
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ShadowDOMNoInference) {
+  CreateTestProfile();
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/shadowdom-no-inference.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  ASSERT_TRUE(AutofillFlow(ElementExpr("getNameElement()"), this));
+
+  auto Js = [this](const std::string& code) {
+    return content::EvalJs(GetWebContents(), code);
+  };
+
+  EXPECT_EQ("Milton C. Waddams", Js("getName()"));
+  EXPECT_EQ("4120 Freidrich Lane", Js("getAddress()"));
+  EXPECT_EQ("TX", Js("getState()"));
 }
 
 // ChromeVox is only available on ChromeOS.

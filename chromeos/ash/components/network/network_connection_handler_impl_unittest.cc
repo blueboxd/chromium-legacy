@@ -43,7 +43,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -460,8 +460,8 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
     helper_.hermes_euicc_test()->AddCarrierProfile(
         dbus::ObjectPath(kTestCellularServicePath),
         dbus::ObjectPath(kTestEuiccPath), kTestIccid, kTestCellularName,
-        "service_provider", "activation_code", kTestCellularServicePath,
-        hermes::profile::State::kInactive,
+        "nickname", "service_provider", "activation_code",
+        kTestCellularServicePath, hermes::profile::State::kInactive,
         hermes::profile::ProfileClass::kOperational, behavior);
     base::RunLoop().RunUntilIdle();
   }
@@ -1279,4 +1279,4 @@ TEST_F(NetworkConnectionHandlerImplTest,
             GetResultAndReset());
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -849,6 +849,14 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectFrameSet);
   }
+  bool IsLayoutNGFrameSet() const {
+    NOT_DESTROYED();
+    return IsOfType(kLayoutObjectNGFrameSet);
+  }
+  bool IsFrameSetIncludingNG() const {
+    NOT_DESTROYED();
+    return IsFrameSet() || IsLayoutNGFrameSet();
+  }
   bool IsInsideListMarkerForCustomContent() const {
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectInsideListMarker);
@@ -2414,7 +2422,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   const LayoutBlock* InclusiveContainingBlock() const;
 
-  const LayoutBlock* EnclosingScrollportBox() const;
+  const LayoutBox* ContainingScrollContainer() const;
 
   bool CanContainAbsolutePositionObjects() const {
     NOT_DESTROYED();
@@ -2467,7 +2475,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // space of the ancestor.
   // Otherwise:
   //   If TraverseDocumentBoundaries is specified, the result will be in the
-  //   space of the local root frame.
+  //   space of the outermost root frame.
   //   Otherwise, the result will be in the space of the containing frame.
   // This method supports kUseGeometryMapperMode.
   PhysicalRect LocalToAncestorRect(const PhysicalRect& rect,
@@ -3608,6 +3616,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     kLayoutObjectNGCustom,
     kLayoutObjectNGFieldset,
     kLayoutObjectNGFlexibleBox,
+    kLayoutObjectNGFrameSet,
     kLayoutObjectNGGrid,
     kLayoutObjectNGInsideListMarker,
     kLayoutObjectNGListItem,

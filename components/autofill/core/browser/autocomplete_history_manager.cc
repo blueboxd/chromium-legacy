@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
-#include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/suggestions_context.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
@@ -23,6 +22,7 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
@@ -51,9 +51,9 @@ bool IsTextField(const FormFieldData& field) {
 // that a different website or different form uses the same field name for a
 // totally different purpose.
 bool IsMeaningfulFieldName(const std::u16string& name) {
-  return !MatchesPattern(
-      name,
-      u"^(((field|input)(_|-)?\\d+)|title|otp|tan)$|(cvc|cvn|cvv|captcha)");
+  static constexpr char16_t kRegex[] =
+      u"^(((field|input)(_|-)?\\d+)|title|otp|tan)$|(cvc|cvn|cvv|captcha)";
+  return !MatchesRegex<kRegex>(name);
 }
 
 }  // namespace
@@ -82,32 +82,30 @@ void AutocompleteHistoryManager::OnGetSingleFieldSuggestions(
     int query_id,
     bool is_autocomplete_enabled,
     bool autoselect_first_suggestion,
-    const std::u16string& name,
-    const std::u16string& prefix,
-    const std::string& form_control_type,
+    const FormFieldData& field,
     base::WeakPtr<SuggestionsHandler> handler,
     const SuggestionsContext& context) {
   CancelPendingQueries(handler.get());
 
-  if (!IsMeaningfulFieldName(name) || !is_autocomplete_enabled ||
-      form_control_type == "textarea" ||
+  if (!IsMeaningfulFieldName(field.name) || !is_autocomplete_enabled ||
+      field.form_control_type == "textarea" ||
       IsInAutofillSuggestionsDisabledExperiment()) {
     SendSuggestions({}, QueryHandler(query_id, autoselect_first_suggestion,
-                                     prefix, handler));
-    uma_recorder_.OnGetAutocompleteSuggestions(name,
+                                     field.value, handler));
+    uma_recorder_.OnGetAutocompleteSuggestions(field.name,
                                                0 /* pending_query_handle */);
     return;
   }
 
   if (profile_database_) {
     auto query_handle = profile_database_->GetFormValuesForElementName(
-        name, prefix, kMaxAutocompleteMenuItems, this);
-    uma_recorder_.OnGetAutocompleteSuggestions(name, query_handle);
+        field.name, field.value, kMaxAutocompleteMenuItems, this);
+    uma_recorder_.OnGetAutocompleteSuggestions(field.name, query_handle);
 
     // We can simply insert, since |query_handle| is always unique.
     pending_queries_.insert(
-        {query_handle,
-         QueryHandler(query_id, autoselect_first_suggestion, prefix, handler)});
+        {query_handle, QueryHandler(query_id, autoselect_first_suggestion,
+                                    field.value, handler)});
   }
 }
 

@@ -39,7 +39,6 @@ std::unique_ptr<IntentFile> IntentFile::Clone() const {
 
 bool IntentFile::MatchConditionValue(const ConditionValuePtr& condition_value) {
   switch (condition_value->match_type) {
-    case PatternMatchType::kNone:
     case PatternMatchType::kLiteral:
     case PatternMatchType::kPrefix:
     case PatternMatchType::kSuffix: {
@@ -156,7 +155,7 @@ absl::optional<std::string> Intent::GetIntentConditionValueByType(
       return url.has_value() ? absl::optional<std::string>(url->host())
                              : absl::nullopt;
     }
-    case ConditionType::kPattern: {
+    case ConditionType::kPath: {
       return url.has_value() ? absl::optional<std::string>(url->path())
                              : absl::nullopt;
     }

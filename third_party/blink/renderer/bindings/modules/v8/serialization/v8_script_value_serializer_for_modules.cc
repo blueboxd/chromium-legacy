@@ -613,23 +613,32 @@ bool V8ScriptValueSerializerForModules::WriteDecoderBuffer(
 bool V8ScriptValueSerializerForModules::WriteMediaStreamTrack(
     MediaStreamTrack* track,
     ExceptionState& exception_state) {
+  if (track->Ended()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "MediaStreamTrack has ended.");
+    return false;
+  }
   if (!track->serializable_session_id()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kDataCloneError,
         "MediaStreamTrack could not be serialized.");
     return false;
   }
+  // TODO(crbug.com/1352414): Replace this UnguessableToken with a mojo
+  // interface.
+  auto transfer_id = base::UnguessableToken::Create();
 
   WriteTag(kMediaStreamTrack);
   WriteUnguessableToken(*track->serializable_session_id());
+  WriteUnguessableToken(transfer_id);
   WriteUTF8String(track->kind());
   WriteUTF8String(track->id());
   WriteUTF8String(track->label());
   WriteOneByte(track->enabled());
   WriteOneByte(track->muted());
   WriteUint32Enum(SerializeContentHint(track->Component()->ContentHint()));
-  WriteUint32Enum(
-      SerializeReadyState(track->Component()->Source()->GetReadyState()));
+  WriteUint32Enum(SerializeReadyState(track->Component()->GetReadyState()));
+  track->BeingTransferred(transfer_id);
   return true;
 }
 

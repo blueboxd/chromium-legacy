@@ -6,11 +6,10 @@
 #define ASH_APP_LIST_VIEWS_PRODUCTIVITY_LAUNCHER_SEARCH_VIEW_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "ash/app_list/app_list_model_provider.h"
-#include "ash/app_list/model/search/search_box_model.h"
-#include "ash/app_list/model/search/search_box_model_observer.h"
 #include "ash/app_list/views/search_result_container_view.h"
 #include "ash/ash_export.h"
 #include "base/time/time.h"
@@ -31,8 +30,7 @@ class SearchResultPageDialogController;
 class ASH_EXPORT ProductivityLauncherSearchView
     : public views::View,
       public SearchResultContainerView::Delegate,
-      public AppListModelProvider::Observer,
-      public SearchBoxModelObserver {
+      public AppListModelProvider::Observer {
  public:
   METADATA_HEADER(ProductivityLauncherSearchView);
 
@@ -57,10 +55,11 @@ class ASH_EXPORT ProductivityLauncherSearchView
   void OnActiveAppListModelsChanged(AppListModel* model,
                                     SearchModel* search_model) override;
 
-  // Overridden from SearchBoxModelObserver:
-  void Update() override;
-  void SearchEngineChanged() override;
-  void ShowAssistantChanged() override;
+  // Called when the app list search query changes and new search is about to
+  // start or cleared.
+  // `search_active` - whether search update will result in a new search. This
+  // will be false when the search is about to be cleared using an empty query.
+  void UpdateForNewSearch(bool search_active);
 
   // Returns true if there are search results that can be keyboard selected.
   bool CanSelectSearchResults();
@@ -128,6 +127,10 @@ class ASH_EXPORT ProductivityLauncherSearchView
   // views hierarchy. Used by result_selection_controller_.
   std::vector<SearchResultContainerView*> result_container_views_;
 
+  // Cache of the last shown search results' animation metadata.
+  std::vector<SearchResultContainerView::SearchResultAimationMetadata>
+      last_result_metadata_;
+
   // Handles search result selection.
   std::unique_ptr<ResultSelectionController> result_selection_controller_;
 
@@ -139,9 +142,6 @@ class ASH_EXPORT ProductivityLauncherSearchView
 
   // The last reported number of search results shown by all containers.
   int last_search_result_count_ = 0;
-
-  base::ScopedObservation<SearchBoxModel, SearchBoxModelObserver>
-      search_box_model_observer_{this};
 };
 
 }  // namespace ash

@@ -13,9 +13,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/ash/components/network/geolocation_handler.h"
 #include "chromeos/ash/components/network/network_handler.h"
-#include "services/device/geolocation/wifi_data_provider_manager.h"
+#include "services/device/geolocation/wifi_data_provider_handle.h"
 
-using chromeos::NetworkHandler;
+using ::ash::NetworkHandler;
 
 namespace device {
 
@@ -159,7 +159,7 @@ bool WifiDataProviderChromeOs::GetAccessPointData(
   DCHECK(NetworkHandler::Get()->task_runner()->BelongsToCurrentThread());
 
   // If wifi isn't enabled, we've effectively completed the task.
-  chromeos::GeolocationHandler* const geolocation_handler =
+  ash::GeolocationHandler* const geolocation_handler =
       NetworkHandler::Get()->geolocation_handler();
   if (!geolocation_handler || !geolocation_handler->wifi_enabled())
     return true;  // Access point list is empty, no more data.
@@ -186,7 +186,7 @@ bool WifiDataProviderChromeOs::GetAccessPointData(
 }
 
 // static
-WifiDataProvider* WifiDataProviderManager::DefaultFactoryFunction() {
+WifiDataProvider* WifiDataProviderHandle::DefaultFactoryFunction() {
   return new WifiDataProviderChromeOs();
 }
 

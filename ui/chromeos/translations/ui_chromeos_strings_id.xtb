@@ -5,6 +5,7 @@
 <translation id="1047956942837015229">Menghapus <ph name="COUNT" /> item...</translation>
 <translation id="1049926623896334335">Dokumen Word</translation>
 <translation id="1056775291175587022">Jaringan nihil</translation>
+<translation id="1056898198331236512">Peringatan</translation>
 <translation id="1060368002126861100">Untuk membuka file dengan <ph name="APP_NAME" />, pindahkan ke folder file Windows terlebih dulu.</translation>
 <translation id="1062407476771304334">Ganti</translation>
 <translation id="1119447706177454957">Kesalahan internal</translation>
@@ -104,7 +105,6 @@
 <translation id="1832073788765803750">Katakana lebar separuh</translation>
 <translation id="1834290891154666894">Entri kecocokan nama alternatif subjek tidak valid</translation>
 <translation id="1838709767668011582">Situs Google</translation>
-<translation id="1844692022597038441">File ini tidak tersedia secara offline.</translation>
 <translation id="1853795129690976061">Folder ini dibagikan ke Linux</translation>
 <translation id="1864756863218646478">File tidak dapat ditemukan.</translation>
 <translation id="1884013283844450420">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Sambungkan</translation>
@@ -149,7 +149,6 @@
 <translation id="2282155092769082568">URL konfigurasi otomatis:</translation>
 <translation id="2288278176040912387">Pemutar piringan hitam</translation>
 <translation id="2291538123825441971">Membuka <ph name="NUMBER_OF_FILES" /> file.</translation>
-<translation id="2303282178633578561">Kunci kartu SIM</translation>
 <translation id="2303301624314357662">Membuka file <ph name="FILE_NAME" />.</translation>
 <translation id="2304820083631266885">Planet</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> telah dikeluarkan.</translation>
@@ -185,13 +184,10 @@
 <translation id="2544853746127077729">Sertifikat autentikasi ditolak oleh jaringan</translation>
 <translation id="255937426064304553">Internasional AS</translation>
 <translation id="2563185590376525700">Katak</translation>
-<translation id="2570012981255377263">File terbaru Anda akan muncul di sini</translation>
 <translation id="2578394532502990878">Fonetik Tamil</translation>
 <translation id="2579959351793446050">Odia</translation>
-<translation id="2593644851255584939">Administrator mengharuskan Anda menonaktifkan Kunci SIM.</translation>
 <translation id="2602810353103180630">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />%, Diblokir oleh Administrator Anda, Detail</translation>
 <translation id="2614589611416690597">Video <ph name="VIDEO_TYPE" /></translation>
-<translation id="2617342710774726426">Kartu SIM terkunci</translation>
 <translation id="2620090360073999360">Google Drive tidak dapat dijangkau saat ini.</translation>
 <translation id="2621713457727696555">Aman</translation>
 <translation id="2638942478653899953">Google Drive tidak dapat dibuka. <ph name="BEGIN_LINK" />Keluar<ph name="END_LINK" /> dan masuk lagi.</translation>
@@ -249,13 +245,13 @@
 <translation id="3138624403379688522">PIN tidak valid. Tersisa <ph name="RETRIES" /> upaya lagi.</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (dilindungi hardware)</translation>
 <translation id="3188257591659621405">File saya</translation>
+<translation id="3194553149358267393">Tidak ada file audio terbaru</translation>
 <translation id="3197563288998582412">Dvorak Inggris</translation>
 <translation id="3202131003361292969">Jalur</translation>
 <translation id="3205852408225871810">Portugis (Brasil)</translation>
 <translation id="3224239078034945833">Multibahasa Kanada</translation>
 <translation id="3236289833370040187">Kepemilikan akan ditransfer ke <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Irlandia</translation>
-<translation id="3245321423178950146">Artis Tidak Dikenal</translation>
 <translation id="3248185426436836442">Tertunda</translation>
 <translation id="3252266817569339921">Prancis</translation>
 <translation id="3253225298092156258">Tidak tersedia</translation>
@@ -290,10 +286,12 @@
 <translation id="3479552764303398839">Jangan sekarang</translation>
 <translation id="3486821258960016770">Mongolia</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> kesalahan.</translation>
+<translation id="3495810061346586977">File ini bersifat rahasia dan tunduk pada pembatasan oleh kebijakan administrator. <ph name="BEGIN_LINK_HELP" />Pelajari lebih lanjut<ph name="END_LINK_HELP" /></translation>
 <translation id="3509680540198371098">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />%, Detail</translation>
 <translation id="3522708245912499433">Portugis</translation>
 <translation id="3524311639100184459">Perhatian: File ini bersifat sementara dan dapat dihapus secara otomatis untuk mengosongkan ruang disk.  <ph name="BEGIN_LINK" />Pelajari Lebih Lanjut<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Folder</translation>
+<translation id="3548125359243647069">Terlalu sering memasukkan PIN yang salah.</translation>
 <translation id="3549797760399244642">Buka drive.google.com...</translation>
 <translation id="3553048479571901246">Untuk membuka file dengan <ph name="APP_NAME" />, salin ke folder file Windows terlebih dulu.</translation>
 <translation id="3556731189587832921">Inggris (AS) dengan keyboard International PC</translation>
@@ -306,6 +304,7 @@
 <translation id="3606220979431771195">Turki-F</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
+<translation id="3619593063686672873">Tidak ada video terbaru</translation>
 <translation id="3620292326130836921">Semua dicadangkan!</translation>
 <translation id="3634507049637220048">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Dikelola oleh Administrator Anda, Detail</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> item dipindahkan.</translation>
@@ -343,7 +342,6 @@
 <translation id="3943857333388298514">Sisipkan</translation>
 <translation id="3952872973865944257">Fonetik Telugu</translation>
 <translation id="3958548648197196644">Burung Kiwi</translation>
-<translation id="3966388904776714213">Pemutar Audio</translation>
 <translation id="3971140002794351170">Download profil seluler, Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Inggris (Inggris Raya)</translation>
 <translation id="3975895378829046965">Fonetik Bengali</translation>
@@ -353,7 +351,6 @@
 <translation id="4057991113334098539">Mengaktifkan...</translation>
 <translation id="4092890906744441904">Irlandia</translation>
 <translation id="4124935795427217608">Unicorn</translation>
-<translation id="4158739975813877944">Buka daftar putar</translation>
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> dipindahkan.</translation>
 <translation id="4186579485882418952">Aktifkan Offline</translation>
 <translation id="4193154014135846272">Dokumen Google</translation>
@@ -406,6 +403,7 @@
 <translation id="4572815280350369984">File <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Lainnya...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> ditambahkan ke pilihan.</translation>
+<translation id="4583436353463424810">Tidak ada dokumen terbaru</translation>
 <translation id="4594543368593301662">Menampilkan hasil untuk <ph name="SEARCH_TERM" />.</translation>
 <translation id="4599600860674643278">Filter direset.</translation>
 <translation id="4603392156942865207">Menyalin <ph name="FILE_NAME" /> ke <ph name="FOLDER_NAME" /></translation>
@@ -492,7 +490,9 @@
 <translation id="5159560892333415631">Kosongkan Sampah</translation>
 <translation id="5163869187418756376">Gagal berbagi. Periksa sambungan Anda dan coba lagi nanti.</translation>
 <translation id="516592729076796170">Programmer Dvorak AS</translation>
+<translation id="5172749059808361023">Detail pembatasan</translation>
 <translation id="5177526793333269655">Tampilan thumbnail</translation>
+<translation id="5181896909298187506">Tidak ada file terbaru</translation>
 <translation id="5194713942430106590">Klik untuk mengurutkan kolom dari atas ke bawah.</translation>
 <translation id="5211614973734216083">Faroe</translation>
 <translation id="5218183485292899140">Prancis Swiss</translation>
@@ -533,7 +533,6 @@
 <translation id="5489067830765222292">Latvia</translation>
 <translation id="5489965683297092283">Filter <ph name="FILTER_NAME" /> nonaktif.</translation>
 <translation id="5494920125229734069">Pilih semua</translation>
-<translation id="5500104704744051184">Anda tidak akan dapat menggunakan jaringan ini hingga Anda memasukkan PUK</translation>
 <translation id="5500122897333236901">Islandia</translation>
 <translation id="5508696409934741614">Titik</translation>
 <translation id="5522908512596376669">Daftar file telah berubah menjadi tampilan daftar.</translation>
@@ -549,7 +548,6 @@
 <translation id="5625294776298156701">Tamil dengan keyboard Tamil99</translation>
 <translation id="5633226425545095130">Memindahkan item ini akan membagikannya ke siapa saja yang dapat melihat folder bersama '<ph name="DESTINATION_NAME" />'.</translation>
 <translation id="5649768706273821470">Dengar</translation>
-<translation id="5665074015635552640">Video terbaru Anda akan muncul di sini</translation>
 <translation id="5669691691057771421">Masukkan PIN baru</translation>
 <translation id="5678784840044122290">Aplikasi Linux akan tersedia dalam Terminal Anda dan juga mungkin menampilkan ikon di Peluncur.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Tidak dapat memutuskan hubungan dari arsip atau disk virtual<ph name="END_BOLD" />
@@ -589,7 +587,7 @@
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> item</translation>
 <translation id="5957366693331451795">Chromebox</translation>
-<translation id="5982621672636444458">Opsi sortir</translation>
+<translation id="5982621672636444458">Sortir opsi</translation>
 <translation id="6007237601604674381">Pemindahan gagal. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6011074160056912900">Jaringan ethernet</translation>
 <translation id="60357267506638014">QWERTY Ceko</translation>
@@ -618,11 +616,11 @@
 <translation id="6220423280121890987">Punjabi</translation>
 <translation id="6224240818060029162">Denmark</translation>
 <translation id="6224253798271602650">Format <ph name="DRIVE_NAME" /></translation>
-<translation id="6227235786875481728">File ini tidak dapat diputar.</translation>
 <translation id="6241349547798190358">Belanda (Belgia)</translation>
 <translation id="6267547857941397424">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />%, Baterai Ponsel <ph name="BATTERY_STATUS" />%, Sambungkan</translation>
 <translation id="6269630227984243955">Malaysia</translation>
 <translation id="6287852322318138013">Pilih aplikasi untuk membuka file ini</translation>
+<translation id="6295542640242147836">Kunci SIM</translation>
 <translation id="6296410173147755564">PUK tidak valid</translation>
 <translation id="6312403991423642364">Kesalahan jaringan tidak dikenal</translation>
 <translation id="6317608858038767920">Server nama khusus <ph name="INPUT_INDEX" /></translation>
@@ -634,6 +632,7 @@
 <translation id="6356685157277930264">Jendela masukan file</translation>
 <translation id="6358884629796491903">Naga</translation>
 <translation id="636254897931573416">Nilai kecocokan suffix domain tidak valid</translation>
+<translation id="6364301859968397756">Penyimpanan organisasi penuh</translation>
 <translation id="6367976544441405720">Van</translation>
 <translation id="637062427944097960">File ini dibuka pada desktop yang berbeda. Pindahkan ke <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) untuk melihatnya.</translation>
 <translation id="6394388407447716302">Hanya baca</translation>
@@ -694,7 +693,6 @@
     <ph name="FILE_COUNT" /> ditemukan</translation>
 <translation id="6935521024859866267">Terbalik</translation>
 <translation id="6943836128787782965">HTTP gagal</translation>
-<translation id="6945604978460872381">Dokumen terbaru Anda akan muncul di sini</translation>
 <translation id="6949408524333579394">Transliterasi Serbia</translation>
 <translation id="6954309393500027528">Penempelan file ini diblokir oleh administrator Anda</translation>
 <translation id="6960565108681981554">Tidak diaktifkan. Hubungi operator.</translation>
@@ -731,6 +729,7 @@
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> GB</translation>
 <translation id="7191454237977785534">Simpan file sebagai</translation>
 <translation id="7229570126336867161">Memerlukan EVDO</translation>
+<translation id="7230898482850090046">Administrator telah meminta Anda untuk menonaktifkan setelan "Kunci SIM"</translation>
 <translation id="7238097264433196391">Nama drive</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, Detail</translation>
 <translation id="7246947237293279874">Proxy FTP</translation>
@@ -742,7 +741,6 @@
 <translation id="7295662345261934369">Bagikan dengan yang lain</translation>
 <translation id="7297443947353982503">Nama pengguna/sandi salah atau autentikasi EAP gagal</translation>
 <translation id="7309413087278791451">Jerman (Belgia)</translation>
-<translation id="7313374447885864533">File audio terbaru Anda akan muncul di sini</translation>
 <translation id="7339898014177206373">Jendela baru</translation>
 <translation id="7343393116438664539">Telex Vietnam</translation>
 <translation id="7357762654218998920">Jenis file ini tidak didukung. <ph name="BEGIN_LINK_HELP" />Pelajari Lebih Lanjut<ph name="END_LINK_HELP" /> cara membuka file di ChromeOS.</translation>
@@ -752,6 +750,7 @@
 <translation id="7408870451288633753">Ceko</translation>
 <translation id="7417453074306512035">Keyboard Ethiopia</translation>
 <translation id="7417705661718309329">Peta Google</translation>
+<translation id="7458955835361612701">Tidak ada gambar terbaru</translation>
 <translation id="7460898608667578234">Ukraina</translation>
 <translation id="7469894403370665791">Otomatis hubungkan ke jaringan ini</translation>
 <translation id="7486315294984620427">Untuk melepaskan file di Parallels Desktop, file harus disalin ke file Windows.</translation>
@@ -763,9 +762,9 @@
 <translation id="7505167922889582512">Tampilkan file tersembunyi</translation>
 <translation id="7514365320538308">Download</translation>
 <translation id="751507702149411736">Belarusian</translation>
+<translation id="7521790570754130607">Perlu PIN untuk menggunakan data seluler</translation>
 <translation id="7532029025027028521">Transliterasi Farsi</translation>
 <translation id="7544830582642184299">Beri aplikasi Linux izin untuk mengakses file di Google Drive Anda. Perubahan akan disinkronkan ke perangkat lainnya.</translation>
-<translation id="7544853251252956727">Acak</translation>
 <translation id="7547009467130558110">Sneaker</translation>
 <translation id="7547780573915868306">Lituania</translation>
 <translation id="7547811415869834682">Belanda</translation>
@@ -788,6 +787,7 @@
 <translation id="76959938259365003">Gagal mengosongkan sampah.</translation>
 <translation id="770015031906360009">Yunani</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> disalin.</translation>
+<translation id="7708271999969613024">Untuk menggunakan jaringan ini, Anda harus memasukkan Kunci Pembuka Blokir Pribadi (PUK) 8 digit yang diberikan oleh operator.</translation>
 <translation id="7711920809702896782">Info gambar</translation>
 <translation id="7724603315864178912">Potong</translation>
 <translation id="7730494089396812859">Tampilkan detail cadangan Awan</translation>
@@ -815,7 +815,6 @@
 <translation id="7831491651892296503">Terjadi error saat mengonfigurasi jaringan</translation>
 <translation id="7839804798877833423">Mengambil file ini akan menggunakan sekitar <ph name="FILE_SIZE" /> data seluler.</translation>
 <translation id="7846076177841592234">Batalkan pilihan</translation>
-<translation id="7847617962681804761">Perlu PIN untuk menggunakan data seluler</translation>
 <translation id="7853966320808728790">BÉPO Prancis</translation>
 <translation id="7857117644404132472">Tambahkan pengecualian</translation>
 <translation id="7868774406711971383">Polandia</translation>
@@ -841,7 +840,6 @@
 <translation id="8045462269890919536">Rumania</translation>
 <translation id="8049184478152619004">Masukkan Kunci Pembuka Blokir Pribadi (PUK)</translation>
 <translation id="807187749540895545">Mengekstrak <ph name="FILE_NAME" /> ...</translation>
-<translation id="8079530767338315840">Ulangi</translation>
 <translation id="8087576439476816834">Download, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Dibagikan kepada saya</translation>
 <translation id="8116072619078571545">Air es</translation>
@@ -855,7 +853,6 @@
 <translation id="8175731104491895765">Prancis (Belgia)</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">Model perangkat</translation>
-<translation id="8208580316430297579">Karya Seni</translation>
 <translation id="8223479393428528563">Untuk menyimpan file ini agar dapat digunakan saat offline, sambungkan ke internet, klik kanan pada file, dan pilih opsi <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Batalkan</translation>
 <translation id="8250690786522693009">Latin</translation>
@@ -876,7 +873,6 @@
 <translation id="8342318071240498787">Sudah ada file atau direktori dengan nama yang sama.</translation>
 <translation id="8372369524088641025">Kunci WEP yang buruk</translation>
 <translation id="8372852072747894550">Yunani</translation>
-<translation id="8384716930968677505">Gambar terbaru Anda akan muncul di sini</translation>
 <translation id="8386903983509584791">Pemindaian selesai</translation>
 <translation id="8387733224523483503"><ph name="FILE_NAME" /> diekstrak.</translation>
 <translation id="8395901698320285466">Dimensi</translation>
@@ -886,6 +882,7 @@
 <translation id="8437209419043462667">AS</translation>
 <translation id="8452135315243592079">Kartu SIM tidak ada</translation>
 <translation id="8456681095658380701">Nama tidak valid</translation>
+<translation id="8457767749626250697">SIM Anda terkunci</translation>
 <translation id="8459404855768962328">Menyalin item ini akan membagikannya ke siapa saja yang dapat melihat folder bersama '<ph name="DESTINATION_NAME" />'.</translation>
 <translation id="8461467696380332069">Klik kanan file, lalu pilih "Sematkan ke Rak" untuk mendapatkan akses cepat ke file Anda di rak.</translation>
 <translation id="8461914792118322307">Proxy</translation>
@@ -912,7 +909,6 @@
 <translation id="8579285237314169903">Menyinkronkan <ph name="NUMBER_OF_FILES" /> item...</translation>
 <translation id="8600173386174225982">Daftar file telah diubah menjadi tampilan thumbnail.</translation>
 <translation id="8601932370724196034">File gambar Crostini</translation>
-<translation id="8608515571837163082">Terlalu sering memasukkan PIN yang salah. Masukkan Kunci Pembuka Blokir Pribadi (PUK) 8 digit yang diberikan oleh operator.</translation>
 <translation id="8609695766746872526">Islandia</translation>
 <translation id="863903787380594467">PIN salah. Tersisa <ph name="RETRIES" /> upaya lagi.</translation>
 <translation id="8639391553632924850"><ph name="INPUT_LABEL" /> - Port</translation>
@@ -950,7 +946,6 @@
 <translation id="9034924485347205037">File Linux</translation>
 <translation id="9035012421917565900">Item tidak dapat dipindahkan kembali ke '<ph name="DESTINATION_NAME" />', jadi tindakan ini tidak dapat diurungkan.</translation>
 <translation id="9035689366572880647">Masukkan PIN saat ini</translation>
-<translation id="9037777873893411148">*Penyimpanan organisasi penuh</translation>
 <translation id="9038620279323455325">File bernama "<ph name="FILE_NAME" />" sudah ada. Harap pilih nama lain.</translation>
 <translation id="9046895021617826162">Gagal menyambung</translation>
 <translation id="9065512565307033593">Jika gagal memverifikasi, akses jaringan Anda akan dinonaktifkan.</translation>

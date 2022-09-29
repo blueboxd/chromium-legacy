@@ -353,8 +353,7 @@ void PageSchedulerImpl::SetIsMainFrameLocal(bool is_local) {
 
 void PageSchedulerImpl::RegisterFrameSchedulerImpl(
     FrameSchedulerImpl* frame_scheduler) {
-  base::sequence_manager::LazyNow lazy_now(
-      main_thread_scheduler_->GetTickClock());
+  base::LazyNow lazy_now(main_thread_scheduler_->GetTickClock());
 
   MaybeInitializeWakeUpBudgetPools(&lazy_now);
   MaybeInitializeBackgroundCPUTimeBudgetPool(&lazy_now);
@@ -365,11 +364,10 @@ void PageSchedulerImpl::RegisterFrameSchedulerImpl(
 
 std::unique_ptr<blink::FrameScheduler> PageSchedulerImpl::CreateFrameScheduler(
     FrameScheduler::Delegate* delegate,
-    blink::BlameContext* blame_context,
     bool is_in_embedded_frame_tree,
     FrameScheduler::FrameType frame_type) {
   auto frame_scheduler = std::make_unique<FrameSchedulerImpl>(
-      this, delegate, blame_context, is_in_embedded_frame_tree, frame_type);
+      this, delegate, is_in_embedded_frame_tree, frame_type);
   RegisterFrameSchedulerImpl(frame_scheduler.get());
   return frame_scheduler;
 }
@@ -475,8 +473,7 @@ void PageSchedulerImpl::OnThrottlingStatusUpdated() {
       opted_out_from_aggressive_throttling) {
     opted_out_from_aggressive_throttling_ =
         opted_out_from_aggressive_throttling;
-    base::sequence_manager::LazyNow lazy_now(
-        main_thread_scheduler_->GetTickClock());
+    base::LazyNow lazy_now(main_thread_scheduler_->GetTickClock());
     UpdateCPUTimeBudgetPool(&lazy_now);
     UpdateWakeUpBudgetPools(&lazy_now);
   }
@@ -558,7 +555,7 @@ void PageSchedulerImpl::AddQueueToWakeUpBudgetPool(
     MainThreadTaskQueue* task_queue,
     FrameOriginType frame_origin_type,
     bool frame_visible,
-    base::sequence_manager::LazyNow* lazy_now) {
+    base::LazyNow* lazy_now) {
   DCHECK(!task_queue->GetWakeUpBudgetPool());
   WakeUpBudgetPool* wake_up_budget_pool =
       GetWakeUpBudgetPool(task_queue, frame_origin_type, frame_visible);
@@ -568,7 +565,7 @@ void PageSchedulerImpl::AddQueueToWakeUpBudgetPool(
 
 void PageSchedulerImpl::RemoveQueueFromWakeUpBudgetPool(
     MainThreadTaskQueue* task_queue,
-    base::sequence_manager::LazyNow* lazy_now) {
+    base::LazyNow* lazy_now) {
   if (!task_queue->GetWakeUpBudgetPool())
     return;
   task_queue->RemoveFromBudgetPool(lazy_now->Now(),
@@ -607,7 +604,7 @@ CPUTimeBudgetPool* PageSchedulerImpl::background_cpu_time_budget_pool() {
 }
 
 void PageSchedulerImpl::MaybeInitializeBackgroundCPUTimeBudgetPool(
-    base::sequence_manager::LazyNow* lazy_now) {
+    base::LazyNow* lazy_now) {
   if (cpu_time_budget_pool_)
     return;
 
@@ -633,7 +630,7 @@ void PageSchedulerImpl::MaybeInitializeBackgroundCPUTimeBudgetPool(
 }
 
 void PageSchedulerImpl::MaybeInitializeWakeUpBudgetPools(
-    base::sequence_manager::LazyNow* lazy_now) {
+    base::LazyNow* lazy_now) {
   if (HasWakeUpBudgetPools())
     return;
 
@@ -664,8 +661,7 @@ void PageSchedulerImpl::MaybeInitializeWakeUpBudgetPools(
 
 void PageSchedulerImpl::UpdatePolicyOnVisibilityChange(
     NotificationPolicy notification_policy) {
-  base::sequence_manager::LazyNow lazy_now(
-      main_thread_scheduler_->GetTickClock());
+  base::LazyNow lazy_now(main_thread_scheduler_->GetTickClock());
 
   if (IsPageVisible()) {
     is_cpu_time_throttled_ = false;
@@ -701,8 +697,7 @@ void PageSchedulerImpl::DoThrottleCPUTime() {
   do_throttle_cpu_time_callback_.Cancel();
   is_cpu_time_throttled_ = true;
 
-  base::sequence_manager::LazyNow lazy_now(
-      main_thread_scheduler_->GetTickClock());
+  base::LazyNow lazy_now(main_thread_scheduler_->GetTickClock());
   UpdateCPUTimeBudgetPool(&lazy_now);
   NotifyFrames();
 }
@@ -711,14 +706,12 @@ void PageSchedulerImpl::DoIntensivelyThrottleWakeUps() {
   do_intensively_throttle_wake_ups_callback_.Cancel();
   are_wake_ups_intensively_throttled_ = true;
 
-  base::sequence_manager::LazyNow lazy_now(
-      main_thread_scheduler_->GetTickClock());
+  base::LazyNow lazy_now(main_thread_scheduler_->GetTickClock());
   UpdateWakeUpBudgetPools(&lazy_now);
   NotifyFrames();
 }
 
-void PageSchedulerImpl::UpdateCPUTimeBudgetPool(
-    base::sequence_manager::LazyNow* lazy_now) {
+void PageSchedulerImpl::UpdateCPUTimeBudgetPool(base::LazyNow* lazy_now) {
   if (!cpu_time_budget_pool_)
     return;
 
@@ -739,8 +732,7 @@ void PageSchedulerImpl::OnTitleOrFaviconUpdated() {
     // the user's attention. Cross-origin frames are not affected, since they
     // shouldn't be able to observe that the page title or favicon was updated.
     had_recent_title_or_favicon_update_ = true;
-    base::sequence_manager::LazyNow lazy_now(
-        main_thread_scheduler_->GetTickClock());
+    base::LazyNow lazy_now(main_thread_scheduler_->GetTickClock());
     UpdateWakeUpBudgetPools(&lazy_now);
     // Re-enable intensive throttling from a delayed task.
     reset_had_recent_title_or_favicon_update_.Cancel();
@@ -753,8 +745,7 @@ void PageSchedulerImpl::OnTitleOrFaviconUpdated() {
 void PageSchedulerImpl::ResetHadRecentTitleOrFaviconUpdate() {
   had_recent_title_or_favicon_update_ = false;
 
-  base::sequence_manager::LazyNow lazy_now(
-      main_thread_scheduler_->GetTickClock());
+  base::LazyNow lazy_now(main_thread_scheduler_->GetTickClock());
   UpdateWakeUpBudgetPools(&lazy_now);
 
   NotifyFrames();
@@ -773,8 +764,7 @@ base::TimeDelta PageSchedulerImpl::GetIntensiveWakeUpThrottlingInterval(
     return kDefaultThrottledWakeUpInterval;
 }
 
-void PageSchedulerImpl::UpdateWakeUpBudgetPools(
-    base::sequence_manager::LazyNow* lazy_now) {
+void PageSchedulerImpl::UpdateWakeUpBudgetPools(base::LazyNow* lazy_now) {
   if (!same_origin_intensive_wake_up_budget_pool_)
     return;
 
@@ -869,8 +859,7 @@ void PageSchedulerImpl::MoveTaskQueuesToCorrectWakeUpBudgetPoolAndUpdate() {
 
   // Update the WakeUpBudgetPools' interval everytime task queues change their
   // attached WakeUpBudgetPools
-  base::sequence_manager::LazyNow lazy_now(
-      main_thread_scheduler_->GetTickClock());
+  base::LazyNow lazy_now(main_thread_scheduler_->GetTickClock());
   UpdateWakeUpBudgetPools(&lazy_now);
 }
 

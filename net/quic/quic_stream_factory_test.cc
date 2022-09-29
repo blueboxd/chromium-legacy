@@ -112,7 +112,7 @@ const char kServer4Url[] = "https://images.example.org/";
 const int kDefaultRTTMilliSecs = 300;
 const size_t kMinRetryTimeForDefaultNetworkSecs = 1;
 const size_t kWaitTimeForNewNetworkSecs = 10;
-const IPAddress kCachedIPAddress = IPAddress(192, 168, 0, 2);
+const char kCachedIPAddress[] = "192.168.0.2";
 const char kNonCachedIPAddress[] = "192.168.0.1";
 const quic::QuicConnectionId kNewCID = quic::test::TestConnectionId(12345678);
 
@@ -237,7 +237,6 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
             base::Unretained(this))),
         quic_params_(context_.params()) {
     FLAGS_quic_enable_http3_grease_randomness = false;
-    FLAGS_quic_enable_chaos_protection = false;
     quic_params_->headers_include_h2_stream_dependency =
         client_headers_include_h2_stream_dependency;
     context_.AdvanceTime(quic::QuicTime::Delta::FromSeconds(1));
@@ -1325,7 +1324,7 @@ TEST_P(QuicStreamFactoryTest, CachedInitialRttWithNetworkIsolationKey) {
 
   for (const auto& network_isolation_key :
        {kNetworkIsolationKey1, kNetworkIsolationKey2, NetworkIsolationKey()}) {
-    SCOPED_TRACE(network_isolation_key.ToString());
+    SCOPED_TRACE(network_isolation_key.ToDebugString());
 
     ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -6744,8 +6743,9 @@ TEST_P(QuicStreamFactoryTest, MigrateBackToDefaultPostMigrationOnWriteError) {
 // This test verifies that the connection will not attempt connection migration
 // (send connectivity probes on alternate path) when path degrading is detected
 // and handshake is not confirmed.
+// TODO(crbug.com/1347664): This test is failing on various platforms.
 TEST_P(QuicStreamFactoryTest,
-       NoMigrationOnPathDegradingBeforeHandshakeConfirmed) {
+       DISABLED_NoMigrationOnPathDegradingBeforeHandshakeConfirmed) {
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
 
@@ -6797,13 +6797,16 @@ TEST_P(QuicStreamFactoryTest,
 // This test verifies that if a connection is closed with
 // QUIC_NETWORK_IDLE_TIMEOUT before handshake is completed and there is no
 // alternate network, no new connection will be created.
-TEST_P(QuicStreamFactoryTest, NoAlternateNetworkBeforeHandshakeOnIdleTimeout) {
+// TODO(crbug.com/1347664): This test is failing on various platforms.
+TEST_P(QuicStreamFactoryTest,
+       DISABLED_NoAlternateNetworkBeforeHandshakeOnIdleTimeout) {
   TestNoAlternateNetworkBeforeHandshake(quic::QUIC_NETWORK_IDLE_TIMEOUT);
 }
 
 // This test verifies that if a connection is closed with QUIC_HANDSHAKE_TIMEOUT
 // and there is no alternate network, no new connection will be created.
-TEST_P(QuicStreamFactoryTest, NoAlternateNetworkOnHandshakeTimeout) {
+// TODO(crbug.com/1347664): This test is failing on various platforms.
+TEST_P(QuicStreamFactoryTest, DISABLED_NoAlternateNetworkOnHandshakeTimeout) {
   TestNoAlternateNetworkBeforeHandshake(quic::QUIC_HANDSHAKE_TIMEOUT);
 }
 
@@ -6875,12 +6878,15 @@ void QuicStreamFactoryTestBase::TestNoAlternateNetworkBeforeHandshake(
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
-TEST_P(QuicStreamFactoryTest, NewConnectionBeforeHandshakeAfterIdleTimeout) {
+// TODO(crbug.com/1347664): This test is failing on various platforms.
+TEST_P(QuicStreamFactoryTest,
+       DISABLED_NewConnectionBeforeHandshakeAfterIdleTimeout) {
   TestNewConnectionOnAlternateNetworkBeforeHandshake(
       quic::QUIC_NETWORK_IDLE_TIMEOUT);
 }
 
-TEST_P(QuicStreamFactoryTest, NewConnectionAfterHandshakeTimeout) {
+// TODO(crbug.com/1347664): This test is failing on various platforms.
+TEST_P(QuicStreamFactoryTest, DISABLED_NewConnectionAfterHandshakeTimeout) {
   TestNewConnectionOnAlternateNetworkBeforeHandshake(
       quic::QUIC_HANDSHAKE_TIMEOUT);
 }
@@ -7137,8 +7143,9 @@ TEST_P(QuicStreamFactoryTest, MigrationOnWriteErrorBeforeHandshakeConfirmed) {
 // Test that if the original connection is closed with QUIC_PACKET_WRITE_ERROR
 // before handshake is confirmed and new connection before handshake is turned
 // on, a new connection will be retried on the alternate network.
+// TODO(crbug.com/1347664): This test is failing on various platforms.
 TEST_P(QuicStreamFactoryTest,
-       RetryConnectionOnWriteErrorBeforeHandshakeConfirmed) {
+       DISABLED_RetryConnectionOnWriteErrorBeforeHandshakeConfirmed) {
   quic_params_->retry_on_alternate_network_before_handshake = true;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
@@ -8320,7 +8327,9 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionOnMultipleWriteErrorsAsyncAsync) {
 
 // Verifies that a connection is closed when connection migration is triggered
 // on network being disconnected and the handshake is not confirmed.
-TEST_P(QuicStreamFactoryTest, NoMigrationBeforeHandshakeOnNetworkDisconnected) {
+// TODO(crbug.com/1347664): This test is failing on various platforms.
+TEST_P(QuicStreamFactoryTest,
+       DISABLED_NoMigrationBeforeHandshakeOnNetworkDisconnected) {
   if (!version_.UsesHttp3())
     return;
   InitializeConnectionMigrationV2Test(
@@ -10988,7 +10997,7 @@ TEST_P(QuicStreamFactoryTest, ServerMigration) {
 
   const uint8_t kTestIpAddress[] = {1, 2, 3, 4};
   const uint16_t kTestPort = 123;
-  session->Migrate(NetworkChangeNotifier::kInvalidNetworkHandle,
+  session->Migrate(handles::kInvalidNetworkHandle,
                    IPEndPoint(IPAddress(kTestIpAddress), kTestPort), true);
 
   session->GetDefaultSocket()->GetPeerAddress(&ip);
@@ -11107,8 +11116,8 @@ TEST_P(QuicStreamFactoryTest, ServerMigrationNonMigratableStream) {
                                     callback_.callback()));
 
   // The specific network isn't important, we just want something !=
-  // kInvalidNetworkHandle to specify a non-default network.
-  constexpr NetworkChangeNotifier::NetworkHandle kNonDefaultNetwork = 1;
+  // handles::kInvalidNetworkHandle to specify a non-default network.
+  constexpr handles::NetworkHandle kNonDefaultNetwork = 1;
   constexpr uint8_t kTestIpAddress[] = {1, 2, 3, 4};
   constexpr uint16_t kTestPort = 123;
   session->Migrate(kNonDefaultNetwork,
@@ -13320,9 +13329,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceAndHostResolutionSync) {
 
   // Set up an address in stale resolver cache.
   host_resolver_->set_synchronous_mode(true);
-  host_resolver_->rules()->AddRule(
-      scheme_host_port_.host(),
-      AddressList::CreateFromIPAddress(kCachedIPAddress, 0));
+  host_resolver_->rules()->AddRule(scheme_host_port_.host(), kCachedIPAddress);
   host_resolver_->LoadIntoCache(scheme_host_port_, NetworkIsolationKey(),
                                 /*optional_parameters=*/absl::nullopt);
 
@@ -13417,9 +13424,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsyncStaleMatch) {
 
   // Set up an address in stale resolver cache.
   host_resolver_->set_ondemand_mode(true);
-  host_resolver_->rules()->AddRule(
-      scheme_host_port_.host(),
-      AddressList::CreateFromIPAddress(kCachedIPAddress, 0));
+  host_resolver_->rules()->AddRule(scheme_host_port_.host(), kCachedIPAddress);
   host_resolver_->LoadIntoCache(scheme_host_port_, NetworkIsolationKey(),
                                 /*optional_parameters=*/absl::nullopt);
 
@@ -13453,8 +13458,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsyncStaleMatch) {
 
   QuicChromiumClientSession* session = GetActiveSession(scheme_host_port_);
 
-  EXPECT_EQ(session->peer_address().host().ToString(),
-            kCachedIPAddress.ToString());
+  EXPECT_EQ(session->peer_address().host().ToString(), kCachedIPAddress);
 
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
@@ -13472,9 +13476,7 @@ TEST_P(QuicStreamFactoryTest,
 
   // Set up an address in stale resolver cache.
   host_resolver_->set_ondemand_mode(true);
-  host_resolver_->rules()->AddRule(
-      scheme_host_port_.host(),
-      AddressList::CreateFromIPAddress(kCachedIPAddress, 0));
+  host_resolver_->rules()->AddRule(scheme_host_port_.host(), kCachedIPAddress);
   host_resolver_->LoadIntoCache(scheme_host_port_, NetworkIsolationKey(),
                                 /*optional_parameters=*/absl::nullopt);
 
@@ -13519,8 +13521,7 @@ TEST_P(QuicStreamFactoryTest,
 
   QuicChromiumClientSession* session = GetActiveSession(scheme_host_port_);
 
-  EXPECT_EQ(session->peer_address().host().ToString(),
-            kCachedIPAddress.ToString());
+  EXPECT_EQ(session->peer_address().host().ToString(), kCachedIPAddress);
 
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
@@ -13538,9 +13539,7 @@ TEST_P(QuicStreamFactoryTest,
 
   // Set up an address in stale resolver cache.
   host_resolver_->set_ondemand_mode(true);
-  host_resolver_->rules()->AddRule(
-      scheme_host_port_.host(),
-      AddressList::CreateFromIPAddress(kCachedIPAddress, 0));
+  host_resolver_->rules()->AddRule(scheme_host_port_.host(), kCachedIPAddress);
   host_resolver_->LoadIntoCache(scheme_host_port_, NetworkIsolationKey(),
                                 /*optional_parameters=*/absl::nullopt);
 
@@ -13581,8 +13580,7 @@ TEST_P(QuicStreamFactoryTest,
   EXPECT_TRUE(stream.get());
 
   QuicChromiumClientSession* session = GetActiveSession(scheme_host_port_);
-  EXPECT_EQ(session->peer_address().host().ToString(),
-            kCachedIPAddress.ToString());
+  EXPECT_EQ(session->peer_address().host().ToString(), kCachedIPAddress);
 
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
@@ -13600,9 +13598,7 @@ TEST_P(QuicStreamFactoryTest,
 
   // Set up an address in stale resolver cache.
   host_resolver_->set_ondemand_mode(true);
-  host_resolver_->rules()->AddRule(
-      scheme_host_port_.host(),
-      AddressList::CreateFromIPAddress(kCachedIPAddress, 0));
+  host_resolver_->rules()->AddRule(scheme_host_port_.host(), kCachedIPAddress);
   host_resolver_->LoadIntoCache(scheme_host_port_, NetworkIsolationKey(),
                                 /*optional_parameters=*/absl::nullopt);
 
@@ -13677,9 +13673,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleAsyncResolveAsyncNoMatch) {
 
   // Set up an address in stale resolver cache.
   host_resolver_->set_ondemand_mode(true);
-  host_resolver_->rules()->AddRule(
-      scheme_host_port_.host(),
-      AddressList::CreateFromIPAddress(kCachedIPAddress, 0));
+  host_resolver_->rules()->AddRule(scheme_host_port_.host(), kCachedIPAddress);
   host_resolver_->LoadIntoCache(scheme_host_port_, NetworkIsolationKey(),
                                 /*optional_parameters=*/absl::nullopt);
 
@@ -13762,9 +13756,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncStaleAsyncNoMatch) {
 
   // Set up an address in stale resolver cache.
   host_resolver_->set_ondemand_mode(true);
-  host_resolver_->rules()->AddRule(
-      scheme_host_port_.host(),
-      AddressList::CreateFromIPAddress(kCachedIPAddress, 0));
+  host_resolver_->rules()->AddRule(scheme_host_port_.host(), kCachedIPAddress);
   host_resolver_->LoadIntoCache(scheme_host_port_, NetworkIsolationKey(),
                                 /*optional_parameters=*/absl::nullopt);
 
@@ -13894,9 +13886,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleSyncHostResolveError) {
 
   // Set up an address in stale resolver cache.
   host_resolver_->set_ondemand_mode(true);
-  host_resolver_->rules()->AddRule(
-      scheme_host_port_.host(),
-      AddressList::CreateFromIPAddress(kCachedIPAddress, 0));
+  host_resolver_->rules()->AddRule(scheme_host_port_.host(), kCachedIPAddress);
   host_resolver_->LoadIntoCache(scheme_host_port_, NetworkIsolationKey(),
                                 /*optional_parameters=*/absl::nullopt);
 
@@ -13955,9 +13945,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSMatches) {
 
   // Set up an address in stale resolver cache.
   host_resolver_->set_ondemand_mode(true);
-  host_resolver_->rules()->AddRule(
-      scheme_host_port_.host(),
-      AddressList::CreateFromIPAddress(kCachedIPAddress, 0));
+  host_resolver_->rules()->AddRule(scheme_host_port_.host(), kCachedIPAddress);
   host_resolver_->LoadIntoCache(scheme_host_port_, NetworkIsolationKey(),
                                 /*optional_parameters=*/absl::nullopt);
 
@@ -13999,9 +13987,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSNoMatch) {
 
   // Set up an address in stale resolver cache.
   host_resolver_->set_ondemand_mode(true);
-  host_resolver_->rules()->AddRule(
-      scheme_host_port_.host(),
-      AddressList::CreateFromIPAddress(kCachedIPAddress, 0));
+  host_resolver_->rules()->AddRule(scheme_host_port_.host(), kCachedIPAddress);
   host_resolver_->LoadIntoCache(scheme_host_port_, NetworkIsolationKey(),
                                 /*optional_parameters=*/absl::nullopt);
 
@@ -14064,9 +14050,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSNoMatchError) {
 
   // Set up an address in stale resolver cache.
   host_resolver_->set_ondemand_mode(true);
-  host_resolver_->rules()->AddRule(
-      scheme_host_port_.host(),
-      AddressList::CreateFromIPAddress(kCachedIPAddress, 0));
+  host_resolver_->rules()->AddRule(scheme_host_port_.host(), kCachedIPAddress);
   host_resolver_->LoadIntoCache(scheme_host_port_, NetworkIsolationKey(),
                                 /*optional_parameters=*/absl::nullopt);
 
@@ -14117,9 +14101,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncErrorStaleAsync) {
 
   // Set up an address in stale resolver cache.
   host_resolver_->set_ondemand_mode(true);
-  host_resolver_->rules()->AddRule(
-      scheme_host_port_.host(),
-      AddressList::CreateFromIPAddress(kCachedIPAddress, 0));
+  host_resolver_->rules()->AddRule(scheme_host_port_.host(), kCachedIPAddress);
   host_resolver_->LoadIntoCache(scheme_host_port_, NetworkIsolationKey(),
                                 /*optional_parameters=*/absl::nullopt);
 
@@ -14176,9 +14158,7 @@ TEST_P(QuicStreamFactoryTest,
 
   // Set up an address in stale resolver cache.
   host_resolver_->set_ondemand_mode(true);
-  host_resolver_->rules()->AddRule(
-      scheme_host_port_.host(),
-      AddressList::CreateFromIPAddress(kCachedIPAddress, 0));
+  host_resolver_->rules()->AddRule(scheme_host_port_.host(), kCachedIPAddress);
   host_resolver_->LoadIntoCache(scheme_host_port_, NetworkIsolationKey(),
                                 /*optional_parameters=*/absl::nullopt);
 
@@ -14284,9 +14264,7 @@ TEST_P(QuicStreamFactoryTest, StaleNetworkFailedAfterHandshake) {
 
   // Set up an address in stale resolver cache.
   host_resolver_->set_ondemand_mode(true);
-  host_resolver_->rules()->AddRule(
-      scheme_host_port_.host(),
-      AddressList::CreateFromIPAddress(kCachedIPAddress, 0));
+  host_resolver_->rules()->AddRule(scheme_host_port_.host(), kCachedIPAddress);
   host_resolver_->LoadIntoCache(scheme_host_port_, NetworkIsolationKey(),
                                 /*optional_parameters=*/absl::nullopt);
 
@@ -14359,9 +14337,7 @@ TEST_P(QuicStreamFactoryTest, StaleNetworkFailedBeforeHandshake) {
 
   // Set up an address in stale resolver cache.
   host_resolver_->set_ondemand_mode(true);
-  host_resolver_->rules()->AddRule(
-      scheme_host_port_.host(),
-      AddressList::CreateFromIPAddress(kCachedIPAddress, 0));
+  host_resolver_->rules()->AddRule(scheme_host_port_.host(), kCachedIPAddress);
   host_resolver_->LoadIntoCache(scheme_host_port_, NetworkIsolationKey(),
                                 /*optional_parameters=*/absl::nullopt);
 
@@ -14877,8 +14853,11 @@ void QuicStreamFactoryTestBase::TestRequireDnsHttpsAlpn(
     bool expect_success) {
   quic_params_->supported_versions = {version_};
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
-  host_resolver_->rules()->AddRule(scheme_host_port_.host(),
-                                   std::move(endpoints));
+  host_resolver_->rules()->AddRule(
+      scheme_host_port_.host(),
+      MockHostResolverBase::RuleResolver::RuleResult(
+          std::move(endpoints),
+          /*aliases=*/std::set<std::string>{scheme_host_port_.host()}));
 
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();

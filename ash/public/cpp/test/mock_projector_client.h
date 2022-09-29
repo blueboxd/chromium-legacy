@@ -30,7 +30,7 @@ class MockProjectorClient : public ProjectorClient,
   // ProjectorClient:
   MOCK_METHOD0(StartSpeechRecognition, void());
   MOCK_METHOD0(StopSpeechRecognition, void());
-  bool GetDriveFsMountPointPath(base::FilePath* result) const override;
+  bool GetBaseStoragePath(base::FilePath* result) const override;
   MOCK_CONST_METHOD0(IsDriveFsMounted, bool());
   MOCK_CONST_METHOD0(IsDriveFsMountFailed, bool());
   MOCK_CONST_METHOD0(OpenProjectorApp, void());
@@ -38,8 +38,6 @@ class MockProjectorClient : public ProjectorClient,
   MOCK_CONST_METHOD0(CloseProjectorApp, void());
   MOCK_CONST_METHOD1(OnNewScreencastPreconditionChanged,
                      void(const NewScreencastPrecondition&));
-  MOCK_METHOD1(SetAnnotatorMessageHandler, void(AnnotatorMessageHandler*));
-  MOCK_METHOD1(ResetAnnotatorMessageHandler, void(AnnotatorMessageHandler*));
 
   // ProjectorAnnotatorController:
   MOCK_METHOD1(SetTool, void(const AnnotatorTool&));

@@ -21,6 +21,9 @@
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/assistant/assistant_util.h"
+#include "chrome/browser/ash/crosapi/crosapi_ash.h"
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/crosapi/fullscreen_controller_ash.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -53,6 +56,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/user_manager/user_manager.h"
+#include "components/version_info/channel.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/media_session_service.h"
 #include "content/public/browser/render_widget_host.h"
@@ -138,7 +143,8 @@ ChromeShellDelegate::GetGeolocationUrlLoaderFactory() const {
 void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
   ash::NewWindowDelegate::GetPrimary()->OpenUrl(
       GURL(kKeyboardShortcutHelpPageUrl),
-      ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction);
+      ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+      ash::NewWindowDelegate::Disposition::kNewForegroundTab);
 }
 
 bool ChromeShellDelegate::CanGoBack(gfx::NativeWindow window) const {
@@ -256,7 +262,7 @@ void ChromeShellDelegate::SetUpEnvironmentForLockedFullscreen(bool locked) {
   }
 
   if (assistant::IsAssistantAllowedForProfile(profile) ==
-      chromeos::assistant::AssistantAllowedState::ALLOWED) {
+      ash::assistant::AssistantAllowedState::ALLOWED) {
     ash::AssistantState::Get()->NotifyLockedFullScreenStateChanged(locked);
   }
 }
@@ -351,4 +357,16 @@ void ChromeShellDelegate::ForceSkipWarningUserOnClose(
       browser_view->browser()->set_force_skip_warning_user_on_close(true);
     }
   }
+}
+
+std::string ChromeShellDelegate::GetVersionString() {
+  return version_info::GetVersionNumber();
+}
+
+void ChromeShellDelegate::ShouldExitFullscreenBeforeLock(
+    ChromeShellDelegate::ShouldExitFullscreenCallback callback) {
+  crosapi::CrosapiManager::Get()
+      ->crosapi_ash()
+      ->fullscreen_controller_ash()
+      ->ShouldExitFullscreenBeforeLock(std::move(callback));
 }

@@ -62,19 +62,19 @@ void Operation::UnmountVolumes(base::OnceClosure continuation) {
 }
 
 void Operation::UnmountVolumesCallback(base::OnceClosure continuation,
-                                       chromeos::MountError error_code) {
+                                       ash::MountError error_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (error_code != chromeos::MOUNT_ERROR_NONE) {
+  if (error_code != ash::MountError::kNone) {
     LOG(ERROR) << "Volume unmounting failed with error code " << error_code;
     PostTask(
         base::BindOnce(&Operation::Error, this, error::kUnmountVolumesError));
     return;
   }
 
-  const DiskMountManager::DiskMap& disks =
+  const DiskMountManager::Disks& disks =
       DiskMountManager::GetInstance()->disks();
-  DiskMountManager::DiskMap::const_iterator iter =
+  DiskMountManager::Disks::const_iterator iter =
       disks.find(device_path_.value());
 
   if (iter == disks.end()) {
@@ -84,7 +84,7 @@ void Operation::UnmountVolumesCallback(base::OnceClosure continuation,
     return;
   }
 
-  StartWriteOnUIThread(iter->second->file_path(), std::move(continuation));
+  StartWriteOnUIThread(iter->get()->file_path(), std::move(continuation));
 }
 
 void Operation::StartWriteOnUIThread(const std::string& target_path,

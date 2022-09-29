@@ -89,8 +89,7 @@ js_library("add_items_dialog") {
     "//ui/webui/resources/cr_elements:cr_scrollable_behavior.m",
     "//ui/webui/resources/cr_elements:find_shortcut_behavior",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
-    "//ui/webui/resources/cr_elements/cr_checkbox:cr_checkbox.m",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
   ]
   externs_list = [ "//ui/webui/resources/cr_elements/cr_search_field/cr_search_field_externs.js" ]
 }
@@ -122,7 +121,6 @@ js_library("cr_checkbox_with_policy") {
     "//third_party/polymer/v3_0/components-chromium/iron-icon:iron-icon",
     "//third_party/polymer/v3_0/components-chromium/paper-tooltip:paper-tooltip",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_checkbox:cr_checkbox.m",
   ]
 }
 
@@ -188,7 +186,7 @@ js_library("os_edit_dictionary_page") {
     "//third_party/polymer/v3_0/components-chromium/iron-list:iron-list",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
-    "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input",
   ]
 }
 
@@ -202,8 +200,6 @@ js_library("os_languages_page_v2") {
     "..:route_observer_behavior",
     "../..:router",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_expand_button:cr_expand_button.m",
-    "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render.m",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js/cr/ui:focus_without_ink.m",

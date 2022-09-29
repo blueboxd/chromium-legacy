@@ -170,6 +170,21 @@ std::ostream& operator<<(std::ostream& out,
     case ProcessedActionStatusProto::JS_FORCED_ROUNDTRIP:
       out << "JS_FORCED_ROUNDTRIP";
       break;
+    case ProcessedActionStatusProto::QR_CODE_SCAN_CANCELLED:
+      out << "QR_CODE_SCAN_CANCELLED";
+      break;
+    case ProcessedActionStatusProto::QR_CODE_SCAN_FAILURE:
+      out << "QR_CODE_SCAN_FAILURE";
+      break;
+    case ProcessedActionStatusProto::QR_CODE_SCAN_CAMERA_ERROR:
+      out << "QR_CODE_SCAN_CAMERA_ERROR";
+      break;
+    case ProcessedActionStatusProto::XML_PARSE_INCORRECT_DATA:
+      out << "XML_PARSE_INCORRECT_DATA";
+      break;
+    case ProcessedActionStatusProto::XML_PARSE_SIGNED_DATA:
+      out << "XML_PARSE_SIGNED_DATA";
+      break;
 
       // Intentionally no default case to make compilation fail if a new value
       // was added to the enum but not to this list.

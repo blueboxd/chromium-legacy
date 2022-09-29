@@ -7,7 +7,7 @@
  * intentional.
  * @type {number}
  */
-/* #export */ const MOVE_THRESHOLD_PX = 5;
+export const MOVE_THRESHOLD_PX = 5;
 
 /**
  * @fileoverview 'cr-toggle' is a component for showing an on/off switch. It
@@ -15,66 +15,107 @@
  * interaction. Besides just clicking the element, its state can be changed by
  * dragging (pointerdown+pointermove) the element towards the desired direction.
  */
-Polymer({
-  is: 'cr-toggle',
+import {PaperRippleBehavior} from '//resources/polymer/v3_0/paper-behaviors/paper-ripple-behavior.js';
+import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import '../shared_vars_css.m.js';
 
-  behaviors: [Polymer.PaperRippleBehavior],
+class PaperRippleBehaviorInterface {
+  /** @return {!PaperRippleElement} */
+  getRipple() {}
+}
 
-  properties: {
-    checked: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
-      observer: 'checkedChanged_',
-      notify: true,
-    },
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {PaperRippleBehaviorInterface}
+ */
+const CrToggleElementBase =
+    mixinBehaviors([PaperRippleBehavior], PolymerElement);
 
-    dark: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
-    },
+/** @polymer */
+export class CrToggleElement extends CrToggleElementBase {
+  static get is() {
+    return 'cr-toggle';
+  }
 
-    disabled: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
-      observer: 'disabledChanged_',
-    },
-  },
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
-  hostAttributes: {
-    'aria-disabled': 'false',
-    'aria-pressed': 'false',
-    role: 'button',
-    tabindex: 0,
-  },
+  static get properties() {
+    return {
+      checked: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+        observer: 'checkedChanged_',
+        notify: true,
+      },
 
-  listeners: {
-    blur: 'hideRipple_',
-    click: 'onClick_',
-    focus: 'onFocus_',
-    keydown: 'onKeyDown_',
-    keyup: 'onKeyUp_',
-    pointerdown: 'onPointerDown_',
-    pointerup: 'onPointerUp_',
-  },
+      dark: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+      },
 
-  /** @private {?Function} */
-  boundPointerMove_: null,
+      disabled: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+        observer: 'disabledChanged_',
+      },
+    };
+  }
 
-  /**
-   * Whether the state of the toggle has already taken into account by
-   * |pointeremove| handlers. Used in the 'click' handler.
-   * @private {boolean}
-   */
-  handledInPointerMove_: false,
+  constructor() {
+    super();
+    /** @private {?Function} */
+    this.boundPointerMove_ = null;
+
+    /**
+     * Whether the state of the toggle has already taken into account by
+     * |pointeremove| handlers. Used in the 'click' handler.
+     * @private {boolean}
+     */
+    this.handledInPointerMove_ = false;
+
+    /** @private {?number} */
+    this.pointerDownX_ = null;
+
+    /** @type {!Element} */
+    this._rippleContainer;
+  }
 
   /** @override */
-  attached() {
+  ready() {
+    super.ready();
+    if (!this.hasAttribute('role')) {
+      this.setAttribute('role', 'button');
+    }
+    if (!this.hasAttribute('tabindex')) {
+      this.setAttribute('tabindex', '0');
+    }
+    this.setAttribute('aria-pressed', 'false');
+    this.setAttribute('aria-disabled', 'false');
+  }
+
+  /** @override */
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('blur', this.hideRipple_.bind(this));
+    this.addEventListener('click', this.onClick_.bind(this));
+    this.addEventListener('focus', this.onFocus_.bind(this));
+    this.addEventListener(
+        'keydown', e => this.onKeyDown_(/** @type {!KeyboardEvent} */ (e)));
+    this.addEventListener(
+        'keyup', e => this.onKeyUp_(/** @type {!KeyboardEvent} */ (e)));
+    this.addEventListener(
+        'pointerdown',
+        e => this.onPointerDown_(/** @type {!PointerEvent} */ (e)));
+    this.addEventListener('pointerup', this.onPointerUp_.bind(this));
+
     const direction =
         this.matches(':host-context([dir=rtl]) cr-toggle') ? -1 : 1;
-
     this.boundPointerMove_ = (e) => {
       // Prevent unwanted text selection to occur while moving the pointer, this
       // is important.
@@ -93,34 +134,34 @@ Polymer({
         this.toggleState_(/* fromKeyboard= */ false);
       }
     };
-  },
+  }
 
   /** @private */
   checkedChanged_() {
     this.setAttribute('aria-pressed', this.checked ? 'true' : 'false');
-  },
+  }
 
   /** @private */
   disabledChanged_() {
     this.setAttribute('tabindex', this.disabled ? -1 : 0);
     this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
-  },
+  }
 
   /** @private */
   onFocus_() {
     this.getRipple().showAndHoldDown();
-  },
+  }
 
   /** @private */
   hideRipple_() {
     this.getRipple().clear();
-  },
+  }
 
   /** @private */
   onPointerUp_() {
     this.removeEventListener('pointermove', this.boundPointerMove_);
     this.hideRipple_();
-  },
+  }
 
   /**
    * @param {!PointerEvent} e
@@ -138,7 +179,7 @@ Polymer({
     this.pointerDownX_ = e.clientX;
     this.handledInPointerMove_ = false;
     this.addEventListener('pointermove', this.boundPointerMove_);
-  },
+  }
 
   /**
    * @param {!Event} e
@@ -159,7 +200,7 @@ Polymer({
     // If no pointermove event fired, then user just clicked on the
     // toggle button and therefore it should be toggled.
     this.toggleState_(/* fromKeyboard= */ false);
-  },
+  }
 
   /**
    * @param {boolean} fromKeyboard
@@ -177,8 +218,9 @@ Polymer({
     }
 
     this.checked = !this.checked;
-    this.fire('change', this.checked);
-  },
+    this.dispatchEvent(new CustomEvent(
+        'change', {bubbles: true, composed: true, detail: this.checked}));
+  }
 
   /**
    * @param {!KeyboardEvent} e
@@ -198,7 +240,7 @@ Polymer({
     if (e.key === 'Enter') {
       this.toggleState_(/* fromKeyboard= */ true);
     }
-  },
+  }
 
   /**
    * @param {!KeyboardEvent} e
@@ -215,16 +257,17 @@ Polymer({
     if (e.key === ' ') {
       this.toggleState_(/* fromKeyboard= */ true);
     }
-  },
+  }
 
   // customize the element's ripple
   _createRipple() {
     this._rippleContainer = this.$.knob;
-    const ripple = Polymer.PaperRippleBehavior._createRipple();
+    const ripple = PaperRippleBehavior._createRipple();
     ripple.id = 'ink';
     ripple.setAttribute('recenters', '');
     ripple.classList.add('circle', 'toggle-ink');
     return ripple;
-  },
-});
-/* #ignore */ console.warn('crbug/1173575, non-JS module files deprecated.');
+  }
+}
+
+customElements.define(CrToggleElement.is, CrToggleElement);

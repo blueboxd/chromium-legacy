@@ -76,8 +76,12 @@ const char* FinalStatusToString(PrerenderHost::FinalStatus final_status) {
       return "EmbedderTriggeredAndSameOriginRedirected";
     case PrerenderHost::FinalStatus::kEmbedderTriggeredAndCrossOriginRedirected:
       return "EmbedderTriggeredAndCrossOriginRedirected";
-    case PrerenderHost::FinalStatus::kEmbedderTriggeredAndDestroyed:
-      return "EmbedderTriggeredAndDestroyed";
+    case PrerenderHost::FinalStatus::kMemoryLimitExceeded:
+      return "MemoryLimitExceeded";
+    case PrerenderHost::FinalStatus::kFailToGetMemoryUsage:
+      return "FailToGetMemoryUsage";
+    case PrerenderHost::FinalStatus::kDataSaverEnabled:
+      return "DataSaverEnabled";
   }
   NOTREACHED();
   return "";

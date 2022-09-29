@@ -17,6 +17,7 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.Picture;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.net.http.SslCertificate;
@@ -54,6 +55,7 @@ import org.chromium.android_webview.gfx.AwFunctor;
 import org.chromium.android_webview.gfx.AwGLFunctor;
 import org.chromium.android_webview.gfx.AwPicture;
 import org.chromium.android_webview.gfx.RectUtils;
+import org.chromium.android_webview.metrics.AwOriginVisitLogger;
 import org.chromium.android_webview.permission.AwGeolocationCallback;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
@@ -73,6 +75,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.blink_public.common.BlinkFeatures;
 import org.chromium.components.autofill.AutofillActionModeCallback;
 import org.chromium.components.autofill.AutofillProvider;
@@ -806,7 +809,7 @@ public class AwContents implements SmartClipProvider {
         }
 
         @Override
-        public void onScrollUpdateGestureConsumed() {
+        public void onScrollUpdateGestureConsumed(Point rootScrollOffset) {
             mScrollAccessibilityHelper.postViewScrolledAccessibilityEventCallback();
             mZoomControls.invokeZoomPicker();
         }
@@ -863,10 +866,15 @@ public class AwContents implements SmartClipProvider {
         }
     };
 
-    private static class AwWindowCoverageTracker {
+    /**
+     * Tracks and reports the percentage of coverage of AwContents on the root view.
+     */
+    @VisibleForTesting
+    public static class AwWindowCoverageTracker {
         private static final long RECALCULATION_DELAY_MS = 200;
 
-        private static final HashMap<View, AwWindowCoverageTracker> sWindowCoverageTrackers =
+        @VisibleForTesting
+        public static final Map<View, AwWindowCoverageTracker> sWindowCoverageTrackers =
                 new HashMap<>();
 
         private final View mRootView;
@@ -895,21 +903,20 @@ public class AwContents implements SmartClipProvider {
             return tracker;
         }
 
-        public boolean trackContents(AwContents contents) {
+        public void trackContents(AwContents contents) {
             contents.mAwWindowCoverageTracker = this;
-            return mAwContentsList.add(contents);
+            mAwContentsList.add(contents);
         }
 
-        public boolean untrackContents(AwContents contents) {
+        public void untrackContents(AwContents contents) {
             contents.mAwWindowCoverageTracker = null;
+            mAwContentsList.remove(contents);
 
-            // If that was the last AwContents, remove ourselves from the static list.
+            // If that was the last AwContents, remove ourselves from the static map.
             if (!isTracking()) {
                 if (TRACE) Log.i(TAG, "%s removing " + this, contents);
                 sWindowCoverageTrackers.remove(mRootView);
             }
-
-            return mAwContentsList.remove(contents);
         }
 
         private boolean isTracking() {
@@ -980,7 +987,8 @@ public class AwContents implements SmartClipProvider {
                         // protective copy.
                         Rect contentRect = new Rect(content.getGlobalVisibleRect());
 
-                        // If the intersect method returns true then it has modified contentRect.
+                        // If the intersect method returns true then it may have modified
+                        // contentRect. A Rect with area 0 will not intersect with anything.
                         if (contentRect.intersect(rootVisibleRect)) {
                             contentRects.add(contentRect);
                             schemes.add(AwContentsJni.get().getScheme(content.mNativeAwContents));
@@ -3636,6 +3644,13 @@ public class AwContents implements SmartClipProvider {
     @CalledByNative
     private void onPermissionRequestCanceled(AwPermissionRequest awPermissionRequest) {
         mContentsClient.onPermissionRequestCanceled(awPermissionRequest);
+    }
+
+    @CalledByNative
+    private void logOriginVisit(long originHash) {
+        if (isDestroyed(NO_WARN)) return;
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
+                () -> AwOriginVisitLogger.logOriginVisit(originHash));
     }
 
     @CalledByNative

@@ -578,8 +578,8 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       "borderedkey", base::FeatureList::IsEnabled(
                          chromeos::features::kVirtualKeyboardBorderedKey)));
   features.Append(GenerateFeatureFlag(
-      "multitouch",
-      base::FeatureList::IsEnabled(features::kVirtualKeyboardMultitouch)));
+      "multitouch", base::FeatureList::IsEnabled(
+                        chromeos::features::kVirtualKeyboardMultitouch)));
   features.Append(GenerateFeatureFlag(
       "roundCorners", base::FeatureList::IsEnabled(
                           chromeos::features::kVirtualKeyboardRoundCorners)));
@@ -598,6 +598,10 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       GenerateFeatureFlag("autocorrectparamstuning",
                           base::FeatureList::IsEnabled(
                               chromeos::features::kAutocorrectParamsTuning)));
+  features.Append(
+      GenerateFeatureFlag("handwritinglibrarydlc",
+                          base::FeatureList::IsEnabled(
+                              chromeos::features::kHandwritingLibraryDlc)));
 
   results.Set("features", std::move(features));
 

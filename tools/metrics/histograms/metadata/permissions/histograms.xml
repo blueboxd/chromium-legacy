@@ -63,7 +63,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Permissions.Action.WithDisposition.{DispositionType}"
-    enum="PermissionAction" expires_after="2022-08-25">
+    enum="PermissionAction" expires_after="2023-08-01">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -137,7 +137,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Permissions.AutoBlocker.EmbargoStatus"
-    enum="PermissionEmbargoStatus" expires_after="2022-10-24">
+    enum="PermissionEmbargoStatus" expires_after="2023-02-12">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -152,6 +152,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Permissions.BatteryLevel.Accepted.Geolocation" units="%"
     expires_after="M85">
+  <obsolete>
+    Removed in July 2022, as it's been unused for some time.
+  </obsolete>
   <owner>timloh@chromium.org</owner>
   <summary>
     Battery percentage when a geolocation permission prompt was accepted on
@@ -161,6 +164,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Permissions.BatteryLevel.Accepted.LocationSettingsDialog"
     units="%" expires_after="2022-08-28">
+  <obsolete>
+    Removed in July 2022, as it's been unused for some time.
+  </obsolete>
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -173,6 +179,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Permissions.BatteryLevel.Denied.Geolocation" units="%"
     expires_after="M85">
+  <obsolete>
+    Removed in July 2022, as it's been unused for some time.
+  </obsolete>
   <owner>timloh@chromium.org</owner>
   <summary>
     Battery percentage when a geolocation permission prompt was denied on
@@ -182,6 +191,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Permissions.BatteryLevel.Denied.LocationSettingsDialog"
     units="%" expires_after="M77">
+  <obsolete>
+    Removed in July 2022, as it's been unused for some time.
+  </obsolete>
   <owner>timloh@chromium.org</owner>
   <summary>
     Battery percentage when a location settings dialog was denied.
@@ -190,6 +202,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Permissions.BatteryLevel.Dismissed.Geolocation" units="%"
     expires_after="M85">
+  <obsolete>
+    Removed in July 2022, as it's been unused for some time.
+  </obsolete>
   <owner>timloh@chromium.org</owner>
   <summary>
     Battery percentage when a geolocation permission prompt was dismissed on
@@ -272,7 +287,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.PreloadData.VersionAtAbuseCheckTime"
-    units="date" expires_after="2022-11-27">
+    units="date" expires_after="2023-01-29">
   <owner>elklm@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -548,7 +563,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Permissions.Prompt.Accepted.PriorDismissCount2" units="units"
-    expires_after="2022-10-31">
+    expires_after="2023-02-12">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -1037,7 +1052,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SiteEngagementService.EngagementType"
-    enum="SiteEngagementServiceEngagementType" expires_after="2022-11-27">
+    enum="SiteEngagementServiceEngagementType" expires_after="2023-01-29">
   <owner>calamity@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <summary>
@@ -1069,7 +1084,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SiteEngagementService.OriginsEngaged" units="units"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>calamity@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <summary>
@@ -1120,7 +1135,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebsiteSettings.Action" enum="WebsiteSettingsAction"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>estark@chromium.org</owner>
   <owner>dullweber@chromium.org</owner>
   <summary>
@@ -1151,7 +1166,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebsiteSettings.Discoverability.Action"
-    enum="WebsiteSettingsDiscoverabilityAction" expires_after="2022-12-11">
+    enum="WebsiteSettingsDiscoverabilityAction" expires_after="2023-02-12">
   <owner>eokoyomon@chromium.org</owner>
   <owner>dullweber@chromium.org</owner>
   <summary>
@@ -1294,7 +1309,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebsiteSettings.OriginInfo.PermissionChanged"
-    enum="ContentType" expires_after="2022-08-25">
+    enum="ContentType" expires_after="2023-08-01">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -1309,7 +1324,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebsiteSettings.OriginInfo.PermissionChanged.Allowed"
-    enum="ContentType" expires_after="2023-01-15">
+    enum="ContentType" expires_after="2023-08-01">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -1324,7 +1339,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebsiteSettings.OriginInfo.PermissionChanged.Blocked"
-    enum="ContentType" expires_after="2022-08-25">
+    enum="ContentType" expires_after="2023-08-01">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>

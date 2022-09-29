@@ -267,13 +267,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // Returns the font size converted to points, if available.
   absl::optional<float> GetFontSizeInPoints() const;
 
-  // Returns true if either a descendant has selection (sel_focus_object_id) or
-  // if this node is a simple text element and has text selection attributes.
-  // Optionally accepts a selection, which can be useful if checking the
-  // unignored selection is required. If not provided, uses the selection from
-  // the tree data, which is safe and fast but does not take ignored nodes into
-  // account.
-  bool HasCaret(const AXTree::Selection* selection = nullptr);
+  // See `AXNode::HasVisibleCaretOrSelection`.
+  bool HasVisibleCaretOrSelection() const;
 
   // See AXPlatformNodeDelegate::IsChildOfLeaf().
   bool IsChildOfLeaf() const;
@@ -543,6 +538,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   int32_t GetHyperlinkIndexFromChild(AXPlatformNodeBase* child);
   int32_t GetHypertextOffsetFromHyperlinkIndex(int32_t hyperlink_index);
   int32_t GetHypertextOffsetFromChild(AXPlatformNodeBase* child);
+  int HypertextOffsetFromChildIndex(int child_index) const;
   int32_t GetHypertextOffsetFromDescendant(AXPlatformNodeBase* descendant);
 
   // If the selection endpoint is either equal to or an ancestor of this object,
@@ -588,6 +584,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   friend AXPlatformNode* AXPlatformNode::Create(
       AXPlatformNodeDelegate* delegate);
+
+  FRIEND_TEST_ALL_PREFIXES(AXPlatformNodeTest, HypertextOffsetFromEndpoint);
 };
 
 }  // namespace ui

@@ -132,6 +132,7 @@ source_set("settings") {
     "//ios/chrome/browser/history",
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/net:crurl",
+    "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/prerender:prerender_pref",
     "//ios/chrome/browser/search_engines",
@@ -209,6 +210,7 @@ source_set("settings") {
     "//url",
   ]
   allow_circular_includes_from = [ "//ios/chrome/browser/ui/authentication" ]
+  public_deps = [ "//ios/third_party/material_components_ios" ]
   frameworks = [
     "CoreLocation.framework",
     "UIKit.framework",
@@ -303,7 +305,7 @@ source_set("unit_tests") {
     "//components/search_engines",
     "//components/signin/public/base",
     "//components/strings",
-    "//components/sync/driver:test_support",
+    "//components/sync:test_support",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//components/translate/core/browser",

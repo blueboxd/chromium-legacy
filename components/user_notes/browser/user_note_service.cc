@@ -14,6 +14,7 @@
 #include "components/user_notes/interfaces/user_notes_ui.h"
 #include "components/user_notes/user_notes_features.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/weak_document_ptr.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace user_notes {
@@ -68,11 +69,12 @@ void UserNoteService::OnFrameNavigated(content::RenderFrameHost* rfh) {
 
   DCHECK(UserNoteManager::GetForPage(rfh->GetPage()));
 
-  std::vector<content::RenderFrameHost*> frames = {rfh};
-  std::vector<GURL> urls = {rfh->GetLastCommittedURL()};
+  std::vector<content::WeakDocumentPtr> frames = {rfh->GetWeakDocumentPtr()};
+  UserNoteStorage::UrlSet urls = {rfh->GetLastCommittedURL()};
   storage_->GetNoteMetadataForUrls(
-      urls, base::BindOnce(&UserNoteService::OnNoteMetadataFetchedForNavigation,
-                           weak_ptr_factory_.GetWeakPtr(), frames, rfh));
+      std::move(urls),
+      base::BindOnce(&UserNoteService::OnNoteMetadataFetchedForNavigation,
+                     weak_ptr_factory_.GetWeakPtr(), frames));
 }
 
 void UserNoteService::OnNoteInstanceAddedToPage(
@@ -257,15 +259,19 @@ void UserNoteService::OnNoteEdited(const base::UnguessableToken& id,
 void UserNoteService::OnNotesChanged() {
   std::vector<content::RenderFrameHost*> all_frames =
       delegate_->GetAllFramesForUserNotes();
-  std::vector<GURL> urls;
+  UserNoteStorage::UrlSet urls;
+  std::vector<content::WeakDocumentPtr> all_frames_weak;
+  all_frames_weak.reserve(all_frames.size());
 
   for (content::RenderFrameHost* frame : all_frames) {
-    urls.emplace_back(frame->GetLastCommittedURL());
+    urls.emplace(frame->GetLastCommittedURL());
+    all_frames_weak.emplace_back(frame->GetWeakDocumentPtr());
   }
 
   storage_->GetNoteMetadataForUrls(
-      urls, base::BindOnce(&UserNoteService::OnNoteMetadataFetched,
-                           weak_ptr_factory_.GetWeakPtr(), all_frames));
+      std::move(urls),
+      base::BindOnce(&UserNoteService::OnNoteMetadataFetched,
+                     weak_ptr_factory_.GetWeakPtr(), all_frames_weak));
 }
 
 void UserNoteService::InitializeNewNoteForCreation(
@@ -376,13 +382,19 @@ void UserNoteService::InitializeNewNoteForCreation(
 }
 
 void UserNoteService::OnNoteMetadataFetchedForNavigation(
-    const std::vector<content::RenderFrameHost*>& all_frames,
-    const content::RenderFrameHost* navigated_frame,
+    const std::vector<content::WeakDocumentPtr>& all_frames,
     UserNoteMetadataSnapshot metadata_snapshot) {
   DCHECK(all_frames.size() == 1u);
 
-  if (delegate_->IsFrameInActiveTab(all_frames[0])) {
-    UserNotesUI* ui = delegate_->GetUICoordinatorForFrame(all_frames[0]);
+  content::RenderFrameHost* rfh = all_frames[0].AsRenderFrameHostIfValid();
+
+  if (!rfh) {
+    // The navigated frame is no longer valid.
+    return;
+  }
+
+  if (delegate_->IsFrameInActiveTab(rfh)) {
+    UserNotesUI* ui = delegate_->GetUICoordinatorForFrame(rfh);
     DCHECK(ui);
 
     // TODO(crbug.com/1313967): For now, always invalidate the UI if the tab is
@@ -413,7 +425,7 @@ void UserNoteService::OnNoteMetadataFetchedForNavigation(
 }
 
 void UserNoteService::OnNoteMetadataFetched(
-    const std::vector<content::RenderFrameHost*>& all_frames,
+    const std::vector<content::WeakDocumentPtr>& all_frames,
     UserNoteMetadataSnapshot metadata_snapshot) {
   std::vector<std::unique_ptr<FrameUserNoteChanges>> note_changes =
       CalculateNoteChanges(*this, all_frames, metadata_snapshot);
@@ -421,24 +433,24 @@ void UserNoteService::OnNoteMetadataFetched(
   // All added and modified notes must be fetched from storage to eventually be
   // put in the model map. For removed notes there is no need to update the
   // model map at this point; it will be done later when applying the changes.
-  std::vector<base::UnguessableToken> notes_to_fetch;
-  std::unordered_set<base::UnguessableToken, base::UnguessableTokenHash>
-      new_notes;
+  IdSet notes_to_fetch;
+  IdSet new_notes;
 
   for (const std::unique_ptr<FrameUserNoteChanges>& diff : note_changes) {
     for (const base::UnguessableToken& note_id : diff->notes_added()) {
-      notes_to_fetch.emplace_back(note_id);
+      notes_to_fetch.emplace(note_id);
       new_notes.emplace(note_id);
     }
     for (const base::UnguessableToken& note_id : diff->notes_modified()) {
-      notes_to_fetch.emplace_back(note_id);
+      notes_to_fetch.emplace(note_id);
     }
   }
 
   storage_->GetNotesById(
-      notes_to_fetch, base::BindOnce(&UserNoteService::OnNoteModelsFetched,
-                                     weak_ptr_factory_.GetWeakPtr(), new_notes,
-                                     std::move(note_changes)));
+      std::move(notes_to_fetch),
+      base::BindOnce(&UserNoteService::OnNoteModelsFetched,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(new_notes),
+                     std::move(note_changes)));
 }
 
 void UserNoteService::OnNoteModelsFetched(
@@ -452,7 +464,16 @@ void UserNoteService::OnNoteModelsFetched(
     const auto& creation_entry_it = creation_map_.find(id);
     const auto& model_entry_it = model_map_.find(id);
 
-    if (new_note_it == new_notes.end() || model_entry_it != model_map_.end()) {
+    if (creation_entry_it != creation_map_.end()) {
+      // This note was authored locally. It could also be in the list of new
+      // notes if the URL it's attached to was loaded in multiple tabs, but it
+      // cannot exist in the model map yet. Move it there from the creation map.
+      DCHECK(model_entry_it == model_map_.end());
+      creation_entry_it->second.model->Update(std::move(note));
+      model_map_.emplace(id, std::move(creation_entry_it->second));
+      creation_map_.erase(creation_entry_it);
+    } else if (new_note_it == new_notes.end() ||
+               model_entry_it != model_map_.end()) {
       // Either this note was updated or the URL it is attached to was already
       // loaded in another tab. Either way, its model already exists in the
       // model map, so simply update it with the latest model.
@@ -460,24 +481,12 @@ void UserNoteService::OnNoteModelsFetched(
       DCHECK(model_entry_it != model_map_.end());
       model_entry_it->second.model->Update(std::move(note));
     } else {
+      // This is a new note that wasn't authored locally. Simply add the model
+      // to the model map.
+      DCHECK(new_note_it != new_notes.end());
       DCHECK(model_entry_it == model_map_.end());
-
-      if (creation_entry_it == creation_map_.end()) {
-        // This is a new note that wasn't authored locally. Simply add the model
-        // to the model map.
-        UserNoteService::ModelMapEntry entry(std::move(note));
-        model_map_.emplace(id, std::move(entry));
-      } else {
-        // This is a new note that was authored locally, which means it has a
-        // partial model in the creation map. Update it with the new model from
-        // storage, then move it from the creation map to the model map. The new
-        // model from storage can't be used directly because the note instance
-        // for the page highlight has a reference to the partial model, and that
-        // connection must be maintained.
-        creation_entry_it->second.model->Update(std::move(note));
-        model_map_.emplace(id, std::move(creation_entry_it->second));
-        creation_map_.erase(creation_entry_it);
-      }
+      UserNoteService::ModelMapEntry entry(std::move(note));
+      model_map_.emplace(id, std::move(entry));
     }
   }
 

@@ -42,7 +42,6 @@
 #include "chrome/browser/ash/arc/auth/arc_auth_service.h"
 #include "chrome/browser/ash/arc/optin/arc_terms_of_service_default_negotiator.h"
 #include "chrome/browser/ash/arc/optin/arc_terms_of_service_oobe_negotiator.h"
-#include "chrome/browser/ash/arc/policy/arc_android_management_checker.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_util.h"
 #include "chrome/browser/ash/arc/session/arc_provisioning_result.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
@@ -88,10 +87,6 @@ ArcSessionManager* g_arc_session_manager = nullptr;
 
 // Allows the session manager to skip creating UI in unit tests.
 bool g_ui_enabled = true;
-
-// Allows the session manager to create ArcTermsOfServiceOobeNegotiator in
-// tests, even when the tests are set to skip creating UI.
-bool g_enable_arc_terms_of_service_oobe_negotiator_in_tests = false;
 
 absl::optional<bool> g_enable_check_android_management_in_tests;
 
@@ -508,12 +503,14 @@ ArcSessionManager* ArcSessionManager::Get() {
 // static
 void ArcSessionManager::SetUiEnabledForTesting(bool enable) {
   g_ui_enabled = enable;
+  ArcRequirementChecker::SetUiEnabledForTesting(enable);
 }
 
 // static
 void ArcSessionManager::SetArcTermsOfServiceOobeNegotiatorEnabledForTesting(
     bool enable) {
-  g_enable_arc_terms_of_service_oobe_negotiator_in_tests = enable;
+  ArcRequirementChecker::SetArcTermsOfServiceOobeNegotiatorEnabledForTesting(
+      enable);
 }
 
 // static
@@ -647,7 +644,7 @@ void ArcSessionManager::OnProvisioningFinished(
             prefs->GetBoolean(prefs::kArcProvisioningInitiatedFromOobe))) {
       playstore_launcher_ = std::make_unique<ArcAppLauncher>(
           profile_, kPlayStoreAppId,
-          apps_util::CreateIntentForActivity(
+          apps_util::MakeIntentForActivity(
               kPlayStoreActivity, kInitialStartParam, kCategoryLauncher),
           false /* deferred_launch_allowed */, display::kInvalidDisplayId,
           apps::LaunchSource::kFromChromeInternal);
@@ -845,7 +842,7 @@ void ArcSessionManager::ResetArcState() {
   start_time_ = base::TimeTicks();
   arc_sign_in_timer_.Stop();
   playstore_launcher_.reset();
-  terms_of_service_negotiator_.reset();
+  requirement_checker_.reset();
   android_management_checker_.reset();
   wait_for_policy_timer_.AbandonAndStop();
 }
@@ -933,7 +930,7 @@ bool ArcSessionManager::IsPlaystoreLaunchRequestedForTesting() const {
 }
 
 void ArcSessionManager::OnBackgroundAndroidManagementCheckedForTesting(
-    policy::AndroidManagementClient::Result result) {
+    ArcAndroidManagementChecker::CheckResult result) {
   OnBackgroundAndroidManagementChecked(result);
 }
 
@@ -1062,8 +1059,8 @@ bool ArcSessionManager::RequestEnableImpl() {
     // Note: StartBackgroundAndroidManagementCheck() may call
     // OnBackgroundAndroidManagementChecked() synchronously (or
     // asynchronously). In the callback, Google Play Store enabled preference
-    // can be set to false if managed, and it triggers RequestDisable() via
-    // ArcPlayStoreEnabledPreferenceHandler.
+    // can be set to false if Android management is enabled, and it triggers
+    // RequestDisable() via ArcPlayStoreEnabledPreferenceHandler.
     // Thus, StartArc() should be called so that disabling should work even
     // if synchronous call case.
     StartBackgroundAndroidManagementCheck();
@@ -1142,7 +1139,7 @@ void ArcSessionManager::RequestArcDataRemoval() {
 void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
-  DCHECK(!terms_of_service_negotiator_);
+  DCHECK(!requirement_checker_);
   // In Kiosk and Public Session mode, Terms of Service negotiation should be
   // skipped. See also RequestEnableImpl().
   DCHECK(!IsRobotOrOfflineDemoAccountMode());
@@ -1176,20 +1173,6 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
     return;
   }
 
-  if (IsArcOobeOptInActive()) {
-    if (g_enable_arc_terms_of_service_oobe_negotiator_in_tests ||
-        g_ui_enabled) {
-      VLOG(1) << "Use OOBE negotiator.";
-      terms_of_service_negotiator_ =
-          std::make_unique<ArcTermsOfServiceOobeNegotiator>();
-    }
-  } else if (support_host_) {
-    VLOG(1) << "Use default negotiator.";
-    terms_of_service_negotiator_ =
-        std::make_unique<ArcTermsOfServiceDefaultNegotiator>(
-            profile_->GetPrefs(), support_host_.get());
-  }
-
   // Start the mini-container (or mini-VM) here to save time starting the OS if
   // the user decides to opt-in. Unlike calling StartMiniArc() for ARCVM on
   // login screen, doing so on ToS screen is safe and desirable. The user has
@@ -1200,23 +1183,9 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
   // faster.
   StartMiniArc();
 
-  if (!terms_of_service_negotiator_) {
-    // The only case reached here is when g_ui_enabled is false so
-    // 1. ARC support host is not created in SetProfile(), and
-    // 2. ArcTermsOfServiceOobeNegotiator is not created with OOBE test setup
-    // unless test explicitly called
-    // SetArcTermsOfServiceOobeNegotiatorEnabledForTesting(true).
-    if (IsArcOobeOptInActive()) {
-      DCHECK(!g_enable_arc_terms_of_service_oobe_negotiator_in_tests &&
-             !g_ui_enabled)
-          << "OOBE negotiator is not created on production.";
-    } else {
-      DCHECK(!g_ui_enabled) << "Negotiator is not created on production.";
-    }
-    return;
-  }
-
-  terms_of_service_negotiator_->StartNegotiation(
+  requirement_checker_ =
+      std::make_unique<ArcRequirementChecker>(profile_, support_host_.get());
+  requirement_checker_->StartTermsOfServiceNegotiation(
       base::BindOnce(&ArcSessionManager::OnTermsOfServiceNegotiated,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -1229,8 +1198,8 @@ void ArcSessionManager::StartArcForTesting() {
 void ArcSessionManager::OnTermsOfServiceNegotiated(bool accepted) {
   DCHECK_EQ(state_, State::NEGOTIATING_TERMS_OF_SERVICE);
   DCHECK(profile_);
-  DCHECK(terms_of_service_negotiator_ || !g_ui_enabled);
-  terms_of_service_negotiator_.reset();
+  DCHECK(requirement_checker_ || !g_ui_enabled);
+  requirement_checker_.reset();
 
   if (!accepted) {
     VLOG(1) << "Terms of services declined";
@@ -1285,18 +1254,18 @@ void ArcSessionManager::StartAndroidManagementCheck() {
 }
 
 void ArcSessionManager::OnAndroidManagementChecked(
-    policy::AndroidManagementClient::Result result) {
+    ArcAndroidManagementChecker::CheckResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::CHECKING_ANDROID_MANAGEMENT);
   DCHECK(android_management_checker_);
   android_management_checker_.reset();
 
   switch (result) {
-    case policy::AndroidManagementClient::Result::UNMANAGED:
+    case ArcAndroidManagementChecker::CheckResult::ALLOWED:
       VLOG(1) << "Starting ARC for first sign in.";
       StartArc();
       break;
-    case policy::AndroidManagementClient::Result::MANAGED:
+    case ArcAndroidManagementChecker::CheckResult::DISALLOWED:
       ShowArcSupportHostError(
           ArcSupportHost::ErrorInfo(
               ArcSupportHost::Error::ANDROID_MANAGEMENT_REQUIRED_ERROR),
@@ -1304,7 +1273,7 @@ void ArcSessionManager::OnAndroidManagementChecked(
           false /* should_show_run_network_tests */);
       UpdateOptInCancelUMA(OptInCancelReason::ANDROID_MANAGEMENT_REQUIRED);
       break;
-    case policy::AndroidManagementClient::Result::ERROR:
+    case ArcAndroidManagementChecker::CheckResult::ERROR:
       ShowArcSupportHostError(
           ArcSupportHost::ErrorInfo(
               ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR),
@@ -1321,8 +1290,8 @@ void ArcSessionManager::StartBackgroundAndroidManagementCheck() {
   DCHECK(!android_management_checker_);
 
   // Skip Android management check for testing.
-  // We also skip if Android management check for Kiosk and Public Session mode,
-  // because there are no managed human users for them exist.
+  // We also skip Android management check for Kiosk and Public Session mode,
+  // because they don't use real google accounts.
   if (IsArcOptInVerificationDisabled() || IsRobotOrOfflineDemoAccountMode() ||
       (!g_ui_enabled &&
        !g_enable_check_android_management_in_tests.value_or(false))) {
@@ -1337,7 +1306,7 @@ void ArcSessionManager::StartBackgroundAndroidManagementCheck() {
 }
 
 void ArcSessionManager::OnBackgroundAndroidManagementChecked(
-    policy::AndroidManagementClient::Result result) {
+    ArcAndroidManagementChecker::CheckResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (g_enable_check_android_management_in_tests.value_or(true)) {
@@ -1346,10 +1315,10 @@ void ArcSessionManager::OnBackgroundAndroidManagementChecked(
   }
 
   switch (result) {
-    case policy::AndroidManagementClient::Result::UNMANAGED:
+    case ArcAndroidManagementChecker::CheckResult::ALLOWED:
       // Do nothing. ARC should be started already.
       break;
-    case policy::AndroidManagementClient::Result::MANAGED:
+    case ArcAndroidManagementChecker::CheckResult::DISALLOWED:
       if (base::FeatureList::IsEnabled(
               arc::kEnableUnmanagedToManagedTransitionFeature)) {
         WaitForPoliciesLoad();
@@ -1357,7 +1326,7 @@ void ArcSessionManager::OnBackgroundAndroidManagementChecked(
         SetArcPlayStoreEnabledForProfile(profile_, false /* enabled */);
       }
       break;
-    case policy::AndroidManagementClient::Result::ERROR:
+    case ArcAndroidManagementChecker::CheckResult::ERROR:
       // This code should not be reached. For background check,
       // retry_on_error should be set.
       NOTREACHED();
@@ -1595,7 +1564,7 @@ void ArcSessionManager::OnRetryClicked() {
   DCHECK(!g_ui_enabled || support_host_);
   DCHECK(!g_ui_enabled ||
          support_host_->ui_page() == ArcSupportHost::UIPage::ERROR);
-  DCHECK(!terms_of_service_negotiator_);
+  DCHECK(!requirement_checker_);
   DCHECK(!g_ui_enabled || !support_host_->HasAuthDelegate());
 
   UpdateOptInActionUMA(OptInActionType::RETRY);

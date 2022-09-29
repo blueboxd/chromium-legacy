@@ -48,15 +48,16 @@ class TestNodePair {
  public:
   TestNodePair() {
     auto transports = DriverTransport::CreatePair(kTestDriver);
-    auto alloc = NodeLinkMemory::Allocate(node_a_);
-    node_link_a_ =
-        NodeLink::Create(node_a_, LinkSide::kA, kTestBrokerName,
-                         kTestNonBrokerName, Node::Type::kNormal, 0,
-                         transports.first, std::move(alloc.node_link_memory));
-    node_link_b_ = NodeLink::Create(
+    DriverMemoryWithMapping buffer =
+        NodeLinkMemory::AllocateMemory(kTestDriver);
+    node_link_a_ = NodeLink::CreateInactive(
+        node_a_, LinkSide::kA, kTestBrokerName, kTestNonBrokerName,
+        Node::Type::kNormal, 0, transports.first,
+        NodeLinkMemory::Create(node_a_, std::move(buffer.mapping)));
+    node_link_b_ = NodeLink::CreateInactive(
         node_b_, LinkSide::kB, kTestNonBrokerName, kTestBrokerName,
         Node::Type::kBroker, 0, transports.second,
-        NodeLinkMemory::Adopt(node_b_, std::move(alloc.primary_buffer_memory)));
+        NodeLinkMemory::Create(node_b_, buffer.memory.Map()));
     node_a_->AddLink(kTestNonBrokerName, node_link_a_);
     node_b_->AddLink(kTestBrokerName, node_link_b_);
   }
@@ -72,8 +73,8 @@ class TestNodePair {
   // Activates both of the test nodes' NodeLink transports. Tests can defer this
   // activation as a means of deferring NodeLink communications in general.
   void ActivateTransports() {
-    node_link_a_->transport()->Activate();
-    node_link_b_->transport()->Activate();
+    node_link_a_->Activate();
+    node_link_b_->Activate();
   }
 
   // Establishes new RemoteRouterLinks between `a` and `b`. Different initial
@@ -127,7 +128,9 @@ class RouterLinkTest : public testing::Test,
     switch (GetParam()) {
       case RouterLinkTestMode::kLocal:
         std::tie(a_link_, b_link_) =
-            LocalRouterLink::ConnectRouters(LinkType::kCentral, {a_, b_});
+            LocalRouterLink::CreatePair(LinkType::kCentral, {a_, b_});
+        a_->SetOutwardLink(a_link_);
+        b_->SetOutwardLink(b_link_);
         break;
 
       case RouterLinkTestMode::kRemote: {
@@ -168,7 +171,7 @@ class RouterLinkTest : public testing::Test,
 };
 
 TEST_P(RouterLinkTest, Locking) {
-  EXPECT_EQ(RouterLinkState::kUnstable, link_status());
+  link_state().status = RouterLinkState::kUnstable;
 
   // No locking can take place until both sides are marked stable.
   EXPECT_FALSE(a_link().TryLockForBypass(kTestPeer1Name));
@@ -216,6 +219,8 @@ TEST_P(RouterLinkTest, Locking) {
 }
 
 TEST_P(RouterLinkTest, FlushOtherSideIfWaiting) {
+  link_state().status = RouterLinkState::kUnstable;
+
   // FlushOtherSideIfWaiting() does nothing if the other side is not, in fact,
   // waiting for something.
   EXPECT_FALSE(a_link().FlushOtherSideIfWaiting());
@@ -340,38 +345,6 @@ TEST_F(RemoteRouterLinkTest, NewLinkWithPendingState) {
 
   // Now all links should be lockable from either side, implying that both
   // sides have a valid reference to the same RouterLinkState.
-  for (const auto& [a_link, b_link] : links) {
-    EXPECT_TRUE(a_link->TryLockForClosure());
-    a_link->Unlock();
-    EXPECT_TRUE(b_link->TryLockForClosure());
-  }
-
-  CloseRoutes(router_pairs);
-}
-
-TEST_F(RemoteRouterLinkTest, NewLinkWithNullState) {
-  // Occupy all fragments in the primary buffer so they aren't usable.
-  std::vector<FragmentRef<RouterLinkState>> unused_fragments =
-      nodes().AllocateAllRouterLinkStates();
-
-  constexpr size_t kNumIterations = 15000;
-  std::vector<Router::Pair> router_pairs =
-      CreateTestRouterPairs(kNumIterations);
-  std::vector<RouterLink::Pair> links;
-  for (size_t i = 0; i < kNumIterations; ++i) {
-    auto [a, b] = router_pairs[i];
-    auto [a_link, b_link] = nodes().LinkRemoteRouters(a, nullptr, b, nullptr);
-    a_link->MarkSideStable();
-    b_link->MarkSideStable();
-    EXPECT_FALSE(a_link->TryLockForClosure());
-    EXPECT_FALSE(b_link->TryLockForClosure());
-    links.emplace_back(std::move(a_link), std::move(b_link));
-  }
-
-  // Since we're using the synchronous driver, by the time transport activation
-  // completes, side A of each link must have already dynamically allocated a
-  // RouterLinkState and shared it with side B.
-  nodes().ActivateTransports();
   for (const auto& [a_link, b_link] : links) {
     EXPECT_TRUE(a_link->TryLockForClosure());
     a_link->Unlock();

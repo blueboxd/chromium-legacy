@@ -73,6 +73,12 @@ struct Referrer;
 //   use `DocumentUserData` instead.
 // - Mojo interface implementations that have a 1 RenderFrameHost to many
 //   instances relationship can often use `DocumentService` instead.
+// - `base::WeakPtr<WebContents>` and `WeakDocumentPtr` can be used instead of
+//   manually clearing raw ptrs using observer methods like
+//   `WebContentsDestroyed` or `RenderFrameDeleted`. Similarly, don't create a
+//   `WebContentsObserver` just to be able to check for a null
+//   `WebContentsObserver::web_contents()`. Use a `base::WeakPtr<WebContents>`
+//   instead.
 //
 // These helpers can help avoid memory safety bugs, such as retaining a pointer
 // to a deleted RenderFrameHost, or other security issues, such as origin
@@ -209,8 +215,8 @@ class CONTENT_EXPORT WebContentsObserver {
   virtual void OnCaptureHandleConfigUpdate(
       const blink::mojom::CaptureHandleConfig& config) {}
 
-  // This method is invoked when the RenderView of the current RenderViewHost
-  // is ready, e.g. because we recreated it after a crash.
+  // This method is invoked when the `blink::WebView` of the current
+  // RenderViewHost is ready, e.g. because we recreated it after a crash.
   virtual void RenderViewReady() {}
 
   // This method is invoked when a RenderViewHost of the WebContents is

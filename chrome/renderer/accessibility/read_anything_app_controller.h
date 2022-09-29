@@ -13,6 +13,7 @@
 #include "gin/wrappable.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_id_forward.h"
 #include "ui/accessibility/ax_tree_update_forward.h"
 
@@ -66,21 +67,19 @@ class ReadAnythingAppController
   void OnAXTreeDistilled(
       const ui::AXTreeUpdate& snapshot,
       const std::vector<ui::AXNodeID>& content_node_ids) override;
-  void OnFontNameChange(const std::string& new_font_name) override;
-  void OnFontSizeChanged(const float new_font_size) override;
+  void OnThemeChanged(
+      read_anything::mojom::ReadAnythingThemePtr new_theme) override;
 
   // gin templates:
   std::vector<ui::AXNodeID> ContentNodeIds();
   std::string FontName();
   float FontSize();
+  SkColor ForegroundColor();
+  SkColor BackgroundColor();
   std::vector<ui::AXNodeID> GetChildren(ui::AXNodeID ax_node_id);
-  uint32_t GetHeadingLevel(ui::AXNodeID ax_node_id);
+  std::string GetHtmlTag(ui::AXNodeID ax_node_id);
   std::string GetTextContent(ui::AXNodeID ax_node_id);
   std::string GetUrl(ui::AXNodeID ax_node_id);
-  bool IsHeading(ui::AXNodeID ax_node_id);
-  bool IsLink(ui::AXNodeID ax_node_id);
-  bool IsParagraph(ui::AXNodeID ax_node_id);
-  bool IsStaticText(ui::AXNodeID ax_node_id);
   void OnConnected();
 
   // The following methods are used for testing ReadAnythingAppTest.
@@ -102,7 +101,10 @@ class ReadAnythingAppController
   //   };
   void SetContentForTesting(v8::Local<v8::Value> v8_snapshot_lite,
                             std::vector<ui::AXNodeID> content_node_ids);
-  void SetFontNameForTesting(std::string new_font_name);
+  void SetThemeForTesting(const std::string& font_name,
+                          float font_size,
+                          SkColor foreground_color,
+                          SkColor background_color);
 
   ui::AXNode* GetAXNode(ui::AXNodeID ax_node_id);
 
@@ -116,6 +118,8 @@ class ReadAnythingAppController
   std::vector<ui::AXNodeID> content_node_ids_;
   std::string font_name_;
   float font_size_;
+  SkColor foreground_color_;
+  SkColor background_color_;
 };
 
 #endif  // CHROME_RENDERER_ACCESSIBILITY_READ_ANYTHING_APP_CONTROLLER_H_

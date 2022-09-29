@@ -209,6 +209,11 @@ void SessionControllerImpl::LockScreen() {
     client_->RequestLockScreen();
 }
 
+void SessionControllerImpl::HideLockScreen() {
+  if (client_)
+    client_->RequestHideLockScreen();
+}
+
 void SessionControllerImpl::RequestSignOut() {
   if (client_)
     client_->RequestSignOut();
@@ -364,10 +369,7 @@ void SessionControllerImpl::SetUserSessionOrder(
 }
 
 void SessionControllerImpl::PrepareForLock(PrepareForLockCallback callback) {
-  if (FullscreenController::ShouldExitFullscreenBeforeLock())
-    FullscreenController::MaybeExitFullscreen();
-
-  std::move(callback).Run();
+  fullscreen_controller_->MaybeExitFullscreenBeforeLock(std::move(callback));
 }
 
 void SessionControllerImpl::StartLock(StartLockCallback callback) {

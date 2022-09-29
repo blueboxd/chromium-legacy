@@ -5,6 +5,7 @@
 <translation id="1047956942837015229">Deleting <ph name="COUNT" /> items...</translation>
 <translation id="1049926623896334335">Word document</translation>
 <translation id="1056775291175587022">No networks</translation>
+<translation id="1056898198331236512">Warning</translation>
 <translation id="1060368002126861100">To open files with <ph name="APP_NAME" />, first move them to the Windows files folder.</translation>
 <translation id="1062407476771304334">Replace</translation>
 <translation id="1119447706177454957">Internal error</translation>
@@ -104,7 +105,6 @@
 <translation id="1832073788765803750">Half width katakana</translation>
 <translation id="1834290891154666894">Invalid subject alternative name match entry</translation>
 <translation id="1838709767668011582">Google site</translation>
-<translation id="1844692022597038441">This file is not available offline.</translation>
 <translation id="1853795129690976061">This folder is shared with Linux</translation>
 <translation id="1864756863218646478">The file could not be found.</translation>
 <translation id="1884013283844450420">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, connect</translation>
@@ -149,7 +149,6 @@
 <translation id="2282155092769082568">Auto-configuration URL:</translation>
 <translation id="2288278176040912387">Record player</translation>
 <translation id="2291538123825441971">Opening <ph name="NUMBER_OF_FILES" /> files.</translation>
-<translation id="2303282178633578561">Lock SIM card</translation>
 <translation id="2303301624314357662">Opening file <ph name="FILE_NAME" />.</translation>
 <translation id="2304820083631266885">Planet</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> has been ejected.</translation>
@@ -185,13 +184,10 @@
 <translation id="2544853746127077729">Authentication certificate rejected by network</translation>
 <translation id="255937426064304553">US international</translation>
 <translation id="2563185590376525700">Frog</translation>
-<translation id="2570012981255377263">Your recent files will appear here</translation>
 <translation id="2578394532502990878">Tamil phonetic</translation>
 <translation id="2579959351793446050">Odia</translation>
-<translation id="2593644851255584939">Your administrator requires you to disable SIM lock.</translation>
 <translation id="2602810353103180630">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, blocked by your administrator. Details</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> video</translation>
-<translation id="2617342710774726426">SIM card is locked</translation>
 <translation id="2620090360073999360">Google Drive cannot be reached at this time.</translation>
 <translation id="2621713457727696555">Secured</translation>
 <translation id="2638942478653899953">Google Drive could not be reached. Please <ph name="BEGIN_LINK" />log out<ph name="END_LINK" /> and log back in.</translation>
@@ -249,13 +245,13 @@
 <translation id="3138624403379688522">Invalid PIN. You have <ph name="RETRIES" /> remaining attempts.</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (hardware-backed)</translation>
 <translation id="3188257591659621405">My files</translation>
+<translation id="3194553149358267393">No recent audio files</translation>
 <translation id="3197563288998582412">UK Dvorak</translation>
 <translation id="3202131003361292969">Path</translation>
 <translation id="3205852408225871810">Portuguese (Brazil)</translation>
 <translation id="3224239078034945833">Canadian Multilingual</translation>
 <translation id="3236289833370040187">Ownership will be transferred to <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Irish Gaelic</translation>
-<translation id="3245321423178950146">Unknown Artist</translation>
 <translation id="3248185426436836442">Pending</translation>
 <translation id="3252266817569339921">French</translation>
 <translation id="3253225298092156258">Not available</translation>
@@ -290,10 +286,12 @@
 <translation id="3479552764303398839">Not now</translation>
 <translation id="3486821258960016770">Mongolian</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> errors.</translation>
+<translation id="3495810061346586977">This file is confidential and subject to restrictions by administrator policy. <ph name="BEGIN_LINK_HELP" />Learn more<ph name="END_LINK_HELP" /></translation>
 <translation id="3509680540198371098">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, details</translation>
 <translation id="3522708245912499433">Portuguese</translation>
 <translation id="3524311639100184459">Caution: These files are temporary and may be automatically deleted to free up disk space.  <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Folder</translation>
+<translation id="3548125359243647069">An incorrect PIN was entered too many times.</translation>
 <translation id="3549797760399244642">Go to drive.google.com...</translation>
 <translation id="3553048479571901246">To open files with <ph name="APP_NAME" />, first copy them to the Windows files folder.</translation>
 <translation id="3556731189587832921">English (US) with International PC keyboard</translation>
@@ -306,6 +304,7 @@
 <translation id="3606220979431771195">Turkish-F</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
+<translation id="3619593063686672873">No recent videos</translation>
 <translation id="3620292326130836921">All backed up!</translation>
 <translation id="3634507049637220048">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, managed by your administrator, details</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> items moved.</translation>
@@ -343,7 +342,6 @@
 <translation id="3943857333388298514">Paste</translation>
 <translation id="3952872973865944257">Telugu phonetic</translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="3966388904776714213">Audio Player</translation>
 <translation id="3971140002794351170">Download mobile profile, network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">English (UK)</translation>
 <translation id="3975895378829046965">Bangla phonetic</translation>
@@ -353,7 +351,6 @@
 <translation id="4057991113334098539">Activating...</translation>
 <translation id="4092890906744441904">Irish</translation>
 <translation id="4124935795427217608">Unicorn</translation>
-<translation id="4158739975813877944">Open play list</translation>
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> moved.</translation>
 <translation id="4186579485882418952">Enable offline</translation>
 <translation id="4193154014135846272">Google document</translation>
@@ -406,6 +403,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> file</translation>
 <translation id="457386861538956877">More...</translation>
 <translation id="4579744207439506346">Added <ph name="ENTRY_NAME" /> to selection.</translation>
+<translation id="4583436353463424810">No recent documents</translation>
 <translation id="4594543368593301662">Showing results for <ph name="SEARCH_TERM" />.</translation>
 <translation id="4599600860674643278">Filter has been reset.</translation>
 <translation id="4603392156942865207">Copying <ph name="FILE_NAME" /> to <ph name="FOLDER_NAME" /></translation>
@@ -492,7 +490,9 @@
 <translation id="5159560892333415631">Empty bin</translation>
 <translation id="5163869187418756376">Sharing failed. Please check your connection and try again later.</translation>
 <translation id="516592729076796170">US Programmer Dvorak</translation>
+<translation id="5172749059808361023">Restriction details</translation>
 <translation id="5177526793333269655">Thumbnail view</translation>
+<translation id="5181896909298187506">No recent files</translation>
 <translation id="5194713942430106590">Click to sort the column in ascending order.</translation>
 <translation id="5211614973734216083">Faroese</translation>
 <translation id="5218183485292899140">Swiss French</translation>
@@ -533,7 +533,6 @@
 <translation id="5489067830765222292">Latvian</translation>
 <translation id="5489965683297092283"><ph name="FILTER_NAME" /> filter is off.</translation>
 <translation id="5494920125229734069">Select all</translation>
-<translation id="5500104704744051184">You won't be able to use this network until you enter the PUK</translation>
 <translation id="5500122897333236901">Icelandic</translation>
 <translation id="5508696409934741614">Dots</translation>
 <translation id="5522908512596376669">File list has changed to list view.</translation>
@@ -549,7 +548,6 @@
 <translation id="5625294776298156701">Tamil with Tamil99 keyboard</translation>
 <translation id="5633226425545095130">Moving this item will share it with everyone who can see the shared folder '<ph name="DESTINATION_NAME" />'.</translation>
 <translation id="5649768706273821470">Listen</translation>
-<translation id="5665074015635552640">Your recent videos will appear here</translation>
 <translation id="5669691691057771421">Enter new PIN</translation>
 <translation id="5678784840044122290">The Linux application will be available within your Terminal and may also show an icon in your Launcher.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Can't disconnect from an archive or virtual disk<ph name="END_BOLD" />
@@ -618,11 +616,11 @@
 <translation id="6220423280121890987">Punjabi</translation>
 <translation id="6224240818060029162">Danish</translation>
 <translation id="6224253798271602650">Format <ph name="DRIVE_NAME" /></translation>
-<translation id="6227235786875481728">This file could not be played.</translation>
 <translation id="6241349547798190358">Dutch (Belgium)</translation>
 <translation id="6267547857941397424">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, signal strength <ph name="SIGNAL_STRENGTH" />%, phone battery <ph name="BATTERY_STATUS" />%, connect</translation>
 <translation id="6269630227984243955">Malay</translation>
 <translation id="6287852322318138013">Select an app to open this file</translation>
+<translation id="6295542640242147836">Lock SIM</translation>
 <translation id="6296410173147755564">Invalid PUK</translation>
 <translation id="6312403991423642364">Unknown network error</translation>
 <translation id="6317608858038767920">Custom nameserver <ph name="INPUT_INDEX" /></translation>
@@ -634,6 +632,7 @@
 <translation id="6356685157277930264">Files feedback window</translation>
 <translation id="6358884629796491903">Dragon</translation>
 <translation id="636254897931573416">Invalid domain suffix match value</translation>
+<translation id="6364301859968397756">Org storage full</translation>
 <translation id="6367976544441405720">Van</translation>
 <translation id="637062427944097960">This file opened on a different desktop. Move to <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) to view it.</translation>
 <translation id="6394388407447716302">Read-only</translation>
@@ -694,7 +693,6 @@
     <ph name="FILE_COUNT" /> found</translation>
 <translation id="6935521024859866267">Upside Down</translation>
 <translation id="6943836128787782965">HTTP get failed</translation>
-<translation id="6945604978460872381">Your recent documents will appear here</translation>
 <translation id="6949408524333579394">Serbian transliteration</translation>
 <translation id="6954309393500027528">Pasting this file is blocked by your administrator</translation>
 <translation id="6960565108681981554">Not activated. Contact your operator.</translation>
@@ -731,6 +729,7 @@
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> GB</translation>
 <translation id="7191454237977785534">Save file as</translation>
 <translation id="7229570126336867161">Need EVDO</translation>
+<translation id="7230898482850090046">Your administrator has requested you to turn off the 'Lock SIM' setting</translation>
 <translation id="7238097264433196391">Drive name</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, details</translation>
 <translation id="7246947237293279874">FTP Proxy</translation>
@@ -742,7 +741,6 @@
 <translation id="7295662345261934369">Share with others</translation>
 <translation id="7297443947353982503">Username/password incorrect or EAP-auth failed</translation>
 <translation id="7309413087278791451">German (Belgium)</translation>
-<translation id="7313374447885864533">Your recent audio files will appear here</translation>
 <translation id="7339898014177206373">New window</translation>
 <translation id="7343393116438664539">Vietnamese Telex</translation>
 <translation id="7357762654218998920">This file type is not supported. <ph name="BEGIN_LINK_HELP" />Learn more<ph name="END_LINK_HELP" /> about opening files on Chrome OS.</translation>
@@ -752,6 +750,7 @@
 <translation id="7408870451288633753">Czech</translation>
 <translation id="7417453074306512035">Ethiopic keyboard</translation>
 <translation id="7417705661718309329">Google map</translation>
+<translation id="7458955835361612701">No recent images</translation>
 <translation id="7460898608667578234">Ukrainian</translation>
 <translation id="7469894403370665791">Automatically connect to this network</translation>
 <translation id="7486315294984620427">To drop files in Parallels Desktop, the file must be copied to Windows files.</translation>
@@ -763,9 +762,9 @@
 <translation id="7505167922889582512">Show hidden files</translation>
 <translation id="7514365320538308">Download</translation>
 <translation id="751507702149411736">Belarusian</translation>
+<translation id="7521790570754130607">A PIN is required to use mobile data</translation>
 <translation id="7532029025027028521">Persian transliteration</translation>
 <translation id="7544830582642184299">Give Linux apps permission to access files in your Google Drive. Changes will sync to your other devices.</translation>
-<translation id="7544853251252956727">Shuffle</translation>
 <translation id="7547009467130558110">Trainer</translation>
 <translation id="7547780573915868306">Lithuanian</translation>
 <translation id="7547811415869834682">Dutch</translation>
@@ -788,6 +787,7 @@
 <translation id="76959938259365003">Failed to empty the bin.</translation>
 <translation id="770015031906360009">Greek</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> copied.</translation>
+<translation id="7708271999969613024">To use this network, you need to enter the 8-digit Personal Unblocking Key (PUK) provided by the operator.</translation>
 <translation id="7711920809702896782">Image info</translation>
 <translation id="7724603315864178912">Cut</translation>
 <translation id="7730494089396812859">Show Cloud backup details</translation>
@@ -815,7 +815,6 @@
 <translation id="7831491651892296503">Error configuring network</translation>
 <translation id="7839804798877833423">Fetching these files will use approximately <ph name="FILE_SIZE" /> of mobile data.</translation>
 <translation id="7846076177841592234">Cancel selection</translation>
-<translation id="7847617962681804761">PIN is required to use mobile data</translation>
 <translation id="7853966320808728790">French BÉPO</translation>
 <translation id="7857117644404132472">Add exception</translation>
 <translation id="7868774406711971383">Polish</translation>
@@ -841,7 +840,6 @@
 <translation id="8045462269890919536">Romanian</translation>
 <translation id="8049184478152619004">Enter personal unblocking key (PUK)</translation>
 <translation id="807187749540895545">Extracting <ph name="FILE_NAME" />…</translation>
-<translation id="8079530767338315840">Repeat</translation>
 <translation id="8087576439476816834">Download, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Shared with me</translation>
 <translation id="8116072619078571545">Ice water</translation>
@@ -855,7 +853,6 @@
 <translation id="8175731104491895765">French (Belgium)</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">Device model</translation>
-<translation id="8208580316430297579">Artwork</translation>
 <translation id="8223479393428528563">To save these files for offline use, get back online, right-click the files and select the <ph name="OFFLINE_CHECKBOX_NAME" /> option.</translation>
 <translation id="8249296373107784235">Abort</translation>
 <translation id="8250690786522693009">Latin</translation>
@@ -876,7 +873,6 @@
 <translation id="8342318071240498787">A file or a directory with the same name already exists.</translation>
 <translation id="8372369524088641025">Bad WEP key</translation>
 <translation id="8372852072747894550">Greek</translation>
-<translation id="8384716930968677505">Your recent images will appear here</translation>
 <translation id="8386903983509584791">Scan completed</translation>
 <translation id="8387733224523483503"><ph name="FILE_NAME" /> extracted.</translation>
 <translation id="8395901698320285466">Dimensions</translation>
@@ -886,6 +882,7 @@
 <translation id="8437209419043462667">US</translation>
 <translation id="8452135315243592079">Missing SIM card</translation>
 <translation id="8456681095658380701">Invalid name</translation>
+<translation id="8457767749626250697">Your SIM is locked</translation>
 <translation id="8459404855768962328">Copying this item will share it with everyone who can see the shared folder '<ph name="DESTINATION_NAME" />'.</translation>
 <translation id="8461467696380332069">Right-click a file, and select 'Pin to shelf' for quick access to your files in shelf.</translation>
 <translation id="8461914792118322307">Proxy</translation>
@@ -912,7 +909,6 @@
 <translation id="8579285237314169903">Syncing <ph name="NUMBER_OF_FILES" /> items...</translation>
 <translation id="8600173386174225982">File list has changed to thumbnail view.</translation>
 <translation id="8601932370724196034">Crostini image file</translation>
-<translation id="8608515571837163082">An incorrect PIN was entered too many times. Enter the 8-digit Personal Unblocking Key (PUK) provided by the operator.</translation>
 <translation id="8609695766746872526">Icelandic</translation>
 <translation id="863903787380594467">Incorrect PIN. You have <ph name="RETRIES" /> remaining attempts.</translation>
 <translation id="8639391553632924850"><ph name="INPUT_LABEL" /> – port</translation>
@@ -950,7 +946,6 @@
 <translation id="9034924485347205037">Linux files</translation>
 <translation id="9035012421917565900">The items cannot be moved back into '<ph name="DESTINATION_NAME" />', so you won't be able to undo this action.</translation>
 <translation id="9035689366572880647">Enter current PIN</translation>
-<translation id="9037777873893411148">*Org storage full</translation>
 <translation id="9038620279323455325">The file named '<ph name="FILE_NAME" />' already exists. Please choose a different name.</translation>
 <translation id="9046895021617826162">Connection failed</translation>
 <translation id="9065512565307033593">If you fail to verify, your network access will be disabled.</translation>

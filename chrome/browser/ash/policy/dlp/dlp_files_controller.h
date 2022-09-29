@@ -7,9 +7,10 @@
 
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom-forward.h"
@@ -48,6 +49,26 @@ class DlpFilesController {
     bool is_dlp_restricted;
   };
 
+  // DlpFileRestrictionDetails keeps aggregated information about DLP rules
+  // that apply to a file. It consists of the level (e.g. block, warn) and
+  // destinations for which this level applies (URLs and/or components).
+  struct DlpFileRestrictionDetails {
+    DlpFileRestrictionDetails();
+    DlpFileRestrictionDetails(const DlpFileRestrictionDetails&) = delete;
+    DlpFileRestrictionDetails& operator=(const DlpFileRestrictionDetails&) =
+        delete;
+    DlpFileRestrictionDetails(DlpFileRestrictionDetails&&);
+    DlpFileRestrictionDetails& operator=(DlpFileRestrictionDetails&&);
+    ~DlpFileRestrictionDetails();
+
+    // The level for which the restriction is enforced.
+    DlpRulesManager::Level level;
+    // List of URLs for which the restriction is enforced.
+    std::vector<std::string> urls;
+    // List of components for which the restriction is enforced.
+    std::vector<DlpRulesManager::Component> components;
+  };
+
   using GetDisallowedTransfersCallback =
       base::OnceCallback<void(std::vector<storage::FileSystemURL>)>;
   using GetFilesRestrictedByAnyRuleCallback = GetDisallowedTransfersCallback;
@@ -55,6 +76,8 @@ class DlpFilesController {
       std::vector<blink::mojom::FileChooserFileInfoPtr>)>;
   using GetDlpMetadataCallback =
       base::OnceCallback<void(std::vector<DlpFileMetadata>)>;
+  using IsFilesTransferRestrictedCallback =
+      base::OnceCallback<void(const std::vector<GURL>&)>;
 
   DlpFilesController();
   DlpFilesController(const DlpFilesController& other) = delete;
@@ -79,12 +102,20 @@ class DlpFilesController {
       const GURL& destination,
       FilterDisallowedUploadsCallback result_callback);
 
-  // Returns a list of `files_sources` from from which files aren't allowed to
-  // be transferred to `destination`.
-  static std::vector<GURL> IsFilesTransferRestricted(
+  // Returns a list of |files_sources| from which files aren't allowed to
+  // be transferred to |destination| in |result_callback|.
+  void IsFilesTransferRestricted(
       Profile* profile,
       std::vector<GURL> files_sources,
-      std::string destination);
+      std::string destination,
+      IsFilesTransferRestrictedCallback result_callback);
+
+  // Returns restriction information for `sourceUrl`.
+  std::vector<DlpFileRestrictionDetails> GetDlpRestrictionDetails(
+      const std::string& sourceUrl);
+
+  // Returns whether a dlp policy matches for the `source_url`.
+  bool IsDlpPolicyMatched(const std::string& source_url);
 
  private:
   void ReturnDisallowedTransfers(

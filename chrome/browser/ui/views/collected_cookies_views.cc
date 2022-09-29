@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,6 +17,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/cookie_info_view.h"
+#include "chrome/browser/ui/views/site_data/page_specific_site_data_dialog_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browsing_data/content/cookie_helper.h"
 #include "components/browsing_data/content/database_helper.h"
@@ -57,7 +60,13 @@ DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(CollectedCookiesViews,
                                       kTabbedPaneElementId);
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(CollectedCookiesViews,
                                       kBlockedCookiesTreeElementId);
-
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(CollectedCookiesViews,
+                                      kAllowedCookiesTreeElementId);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(CollectedCookiesViews, kBlockButtonId);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(CollectedCookiesViews, kAllowButtonId);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(CollectedCookiesViews, kRemoveButtonId);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(CollectedCookiesViews,
+                                      kClearOnExitButtonId);
 namespace {
 
 // Dimensions of the tree views.
@@ -122,53 +131,6 @@ std::unique_ptr<CookiesTreeModel> CreateCookiesTreeModel(
 }
 
 }  // namespace
-
-class CollectedCookiesViews::WebContentsUserData
-    : public content::WebContentsUserData<
-          CollectedCookiesViews::WebContentsUserData> {
- public:
-  ~WebContentsUserData() override {
-    if (!tracker_.view())
-      return;  // Dialog already destroyed.
-    // Destroyed while the Widget is still alive, close immediately.
-    tracker_.view()->GetWidget()->CloseNow();
-  }
-
-  static CollectedCookiesViews* GetDialog(content::WebContents* web_contents) {
-    WebContentsUserData* handle = static_cast<WebContentsUserData*>(
-        web_contents->GetUserData(UserDataKey()));
-    if (!handle)
-      return nullptr;
-    return handle->GetCollectedCookiesViews();
-  }
-
-  static void Create(content::WebContents* web_contents) {
-    CollectedCookiesViews::WebContentsUserData::CreateForWebContents(
-        web_contents);
-  }
-
- private:
-  friend class content::WebContentsUserData<WebContentsUserData>;
-
-  explicit WebContentsUserData(content::WebContents* web_contents)
-      : content::WebContentsUserData<
-            CollectedCookiesViews::WebContentsUserData>(*web_contents) {
-    // Owned by its Widget
-    CollectedCookiesViews* const dialog =
-        new CollectedCookiesViews(web_contents);
-    tracker_.SetView(dialog);
-  }
-
-  CollectedCookiesViews* GetCollectedCookiesViews() {
-    return static_cast<CollectedCookiesViews*>(tracker_.view());
-  }
-
-  views::ViewTracker tracker_;
-
-  WEB_CONTENTS_USER_DATA_KEY_DECL();
-};
-
-WEB_CONTENTS_USER_DATA_KEY_IMPL(CollectedCookiesViews::WebContentsUserData);
 
 // This DrawingProvider allows TreeModelNodes to be annotated with auxiliary
 // text. Annotated nodes will be drawn in a lighter color than normal to
@@ -313,39 +275,8 @@ END_METADATA
 // CollectedCookiesViews, public:
 
 CollectedCookiesViews::~CollectedCookiesViews() {
-  web_contents_->RemoveUserData(
-      CollectedCookiesViews::WebContentsUserData::UserDataKey());
   allowed_cookies_tree_->SetModel(nullptr);
   blocked_cookies_tree_->SetModel(nullptr);
-}
-
-// static
-void CollectedCookiesViews::CreateAndShowForWebContents(
-    content::WebContents* web_contents) {
-  CollectedCookiesViews* instance =
-      CollectedCookiesViews::WebContentsUserData::GetDialog(web_contents);
-  if (!instance) {
-    CollectedCookiesViews::WebContentsUserData::Create(web_contents);
-    return;
-  }
-
-  // On rare occasions, |instance| may have started, but not finished,
-  // closing. In this case, the modal dialog manager will have removed the
-  // dialog from its list of tracked dialogs, and therefore might not have any
-  // active dialog. This should be rare enough that it's not worth trying to
-  // re-open the dialog. See https://crbug.com/989888
-  if (instance->GetWidget()->IsClosed())
-    return;
-
-  auto* dialog_manager =
-      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
-  CHECK(dialog_manager->IsDialogActive());
-  dialog_manager->FocusTopmostDialog();
-}
-
-CollectedCookiesViews* CollectedCookiesViews::GetDialogForTesting(
-    content::WebContents* web_contents) {
-  return CollectedCookiesViews::WebContentsUserData::GetDialog(web_contents);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -380,7 +311,7 @@ gfx::Size CollectedCookiesViews::GetMinimumSize() const {
 // CollectedCookiesViews, private:
 
 CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
-    : web_contents_(web_contents) {
+    : web_contents_(web_contents->GetWeakPtr()) {
   SetButtons(ui::DIALOG_BUTTON_OK);
   SetButtonLabel(ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_DONE));
   SetModalType(ui::MODAL_TYPE_CHILD);
@@ -442,6 +373,7 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
 
   EnableControls();
   ShowCookieInfo();
+  RecordDialogAction(CookiesInUseDialogAction::kDialogOpened);
 }
 
 void CollectedCookiesViews::OnDialogClosed() {
@@ -451,11 +383,21 @@ void CollectedCookiesViews::OnDialogClosed() {
   // infobars::ContentInfoBarManager is also torn down in response to
   // WebContentsDestroyed(), it may already be null. Since the tab is going away
   // anyway, we can just omit showing an infobar, which prevents any attempt to
-  // access a null infobars::ContentInfoBarManager.
-  if (status_changed_ && !web_contents_->IsBeingDestroyed()) {
+  // access a null infobars::ContentInfoBarManager. Same applies to removing the
+  // webcontents' user data.
+  if (!web_contents_ || web_contents_->IsBeingDestroyed())
+    return;
+
+  if (status_changed_)
     CollectedCookiesInfoBarDelegate::Create(
-        infobars::ContentInfoBarManager::FromWebContents(web_contents_));
-  }
+        infobars::ContentInfoBarManager::FromWebContents(web_contents_.get()));
+
+  // Reset the dialog reference in the user data. If the dialog is opened again,
+  // a new instance should be created. When the dialog is destroyed because of
+  // the web contents being destroyed, no need to remove the user data because
+  // it will be destroyed.
+  web_contents_->RemoveUserData(
+      PageSpecificSiteDataDialogController::UserDataKey());
 }
 
 std::unique_ptr<views::View> CollectedCookiesViews::CreateAllowedPane() {
@@ -488,6 +430,8 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateAllowedPane() {
   allowed_cookies_tree->SetEditable(false);
   allowed_cookies_tree->set_auto_expand_children(true);
   allowed_cookies_tree->SetController(this);
+  allowed_cookies_tree->SetProperty(views::kElementIdentifierKey,
+                                    kAllowedCookiesTreeElementId);
   allowed_cookies_tree_ = allowed_cookies_tree.get();
   auto* scroll_view =
       pane->AddChildView(CreateScrollView(std::move(allowed_cookies_tree)));
@@ -554,17 +498,18 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
                                 base::Unretained(this), allowed_cookies_tree_,
                                 CONTENT_SETTING_BLOCK),
             l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON)));
+
+    block_allowed_button_->SetProperty(views::kElementIdentifierKey,
+                                       kBlockButtonId);
     delete_allowed_button_ =
         allowed->AddChildView(std::make_unique<views::MdTextButton>(
             base::BindRepeating(
-                [](CollectedCookiesViews* view) {
-                  view->allowed_cookies_tree_model_->DeleteCookieNode(
-                      static_cast<CookieTreeNode*>(
-                          view->allowed_cookies_tree_->GetSelectedNode()));
-                },
+                &CollectedCookiesViews::DeleteSelectedCookieNode,
                 base::Unretained(this)),
             l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL)));
 
+    delete_allowed_button_->SetProperty(views::kElementIdentifierKey,
+                                        kRemoveButtonId);
     allowed_buttons_pane_ = view->AddChildView(std::move(allowed));
   }
 
@@ -577,6 +522,8 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
                                 base::Unretained(this), blocked_cookies_tree_,
                                 CONTENT_SETTING_ALLOW),
             l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOW_BUTTON)));
+    allow_blocked_button_->SetProperty(views::kElementIdentifierKey,
+                                       kAllowButtonId);
     for_session_blocked_button_ =
         blocked->AddChildView(std::make_unique<views::MdTextButton>(
             base::BindRepeating(&CollectedCookiesViews::AddContentException,
@@ -584,7 +531,8 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
                                 CONTENT_SETTING_SESSION_ONLY),
             l10n_util::GetStringUTF16(
                 IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON)));
-
+    for_session_blocked_button_->SetProperty(views::kElementIdentifierKey,
+                                             kClearOnExitButtonId);
     blocked_buttons_pane_ = view->AddChildView(std::move(blocked));
   }
 
@@ -660,6 +608,27 @@ void CollectedCookiesViews::AddContentException(views::TreeView* tree_view,
   infobar_->SetLabelText(setting, host_node->GetTitle());
   status_changed_ = true;
 
+  CookiesInUseDialogAction user_action;
+  switch (setting) {
+    case ContentSetting::CONTENT_SETTING_BLOCK:
+      user_action = CookiesInUseDialogAction::kSiteBlocked;
+      break;
+    case ContentSetting::CONTENT_SETTING_ALLOW:
+      user_action = CookiesInUseDialogAction::kSiteAllowed;
+      break;
+    case ContentSetting::CONTENT_SETTING_SESSION_ONLY:
+      user_action = CookiesInUseDialogAction::kSiteClearedOnExit;
+      break;
+    case ContentSetting::CONTENT_SETTING_DEFAULT:
+    case ContentSetting::CONTENT_SETTING_ASK:
+    case ContentSetting::CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
+    case ContentSetting::CONTENT_SETTING_NUM_SETTINGS:
+      NOTREACHED() << "Unknown ContentSetting value: " << setting;
+      return;
+  }
+
+  RecordDialogAction(user_action);
+
   CookiesTreeViewDrawingProvider* provider =
       (tree_view == allowed_cookies_tree_)
           ? allowed_cookies_drawing_provider_.get()
@@ -667,6 +636,80 @@ void CollectedCookiesViews::AddContentException(views::TreeView* tree_view,
   provider->AnnotateNode(tree_view->GetSelectedNode(),
                          GetAnnotationTextForSetting(setting));
   tree_view->SchedulePaint();
+}
+
+void CollectedCookiesViews::DeleteSelectedCookieNode() {
+  CookieTreeNode* cookie_node =
+      static_cast<CookieTreeNode*>(allowed_cookies_tree_->GetSelectedNode());
+  CookieTreeNode::DetailedInfo::NodeType node_type =
+      cookie_node->GetDetailedInfo().node_type;
+  CookiesInUseDialogAction user_action;
+  switch (node_type) {
+    // User deleted data at site level.
+    case CookieTreeNode::DetailedInfo::TYPE_HOST:
+      user_action = CookiesInUseDialogAction::kSiteDeleted;
+      break;
+    // User deleted a single cookie.
+    case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
+      user_action = CookiesInUseDialogAction::kSingleCookieDeleted;
+      break;
+    // User deleted cookies folder.
+    case CookieTreeNode::DetailedInfo::TYPE_COOKIES:
+      user_action = CookiesInUseDialogAction::kCookiesFolderDeleted;
+      break;
+    // User deleted other folders.
+    case CookieTreeNode::DetailedInfo::TYPE_DATABASES:
+    case CookieTreeNode::DetailedInfo::TYPE_DATABASE:
+    case CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGES:
+    case CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE:
+    case CookieTreeNode::DetailedInfo::TYPE_SESSION_STORAGES:
+    case CookieTreeNode::DetailedInfo::TYPE_SESSION_STORAGE:
+    case CookieTreeNode::DetailedInfo::TYPE_INDEXED_DBS:
+    case CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB:
+    case CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEMS:
+    case CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEM:
+    case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
+    case CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKERS:
+    case CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKER:
+    case CookieTreeNode::DetailedInfo::TYPE_SHARED_WORKERS:
+    case CookieTreeNode::DetailedInfo::TYPE_SHARED_WORKER:
+    case CookieTreeNode::DetailedInfo::TYPE_CACHE_STORAGES:
+    case CookieTreeNode::DetailedInfo::TYPE_CACHE_STORAGE:
+      user_action = CookiesInUseDialogAction::kFolderDeleted;
+      break;
+    case CookieTreeNode::DetailedInfo::TYPE_NONE:
+    case CookieTreeNode::DetailedInfo::TYPE_ROOT:
+      NOTREACHED()
+          << "This node type is not visible to the user in UI. Node Type: "
+          << node_type;
+      return;
+  }
+
+  allowed_cookies_tree_model_->DeleteCookieNode(cookie_node);
+  RecordDialogAction(user_action);
+}
+
+void CollectedCookiesViews::RecordDialogAction(
+    CookiesInUseDialogAction action) {
+  switch (action) {
+    case CookiesInUseDialogAction::kSiteDeleted:
+    case CookiesInUseDialogAction::kSingleCookieDeleted:
+    case CookiesInUseDialogAction::kCookiesFolderDeleted:
+    case CookiesInUseDialogAction::kFolderDeleted:
+      base::RecordAction(
+          base::UserMetricsAction("CookiesInUseDialog.RemoveButtonClicked"));
+      break;
+    case CookiesInUseDialogAction::kDialogOpened:
+      base::RecordAction(base::UserMetricsAction("CookiesInUseDialog.Opened"));
+      break;
+    case CookiesInUseDialogAction::kSiteBlocked:
+    case CookiesInUseDialogAction::kSiteAllowed:
+    case CookiesInUseDialogAction::kSiteClearedOnExit:
+      // No user actions for these metrics.
+      break;
+  }
+
+  base::UmaHistogramEnumeration("Privacy.CookiesInUseDialog.Action", action);
 }
 
 BEGIN_METADATA(CollectedCookiesViews, views::DialogDelegateView)

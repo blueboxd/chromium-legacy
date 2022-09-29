@@ -12,27 +12,54 @@
 #include "base/containers/flat_map.h"
 #include "components/autofill_assistant/browser/public/external_action_delegate.h"
 #include "components/autofill_assistant/browser/public/headless_script_controller.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace autofill {
+class FormSignature;
+}  // namespace autofill
 
 namespace content {
 class WebContents;
-}
+}  // namespace content
+
+namespace url {
+class Origin;
+}  // namespace url
 
 namespace autofill_assistant {
+
+class WebsiteLoginManager;
 
 // Abstract interface for exported services.
 class AutofillAssistant {
  public:
+  // The C++ (parsed) version of `BundleCapabilitiesInformationProto`.
+  struct BundleCapabilitiesInformation {
+    BundleCapabilitiesInformation();
+    virtual ~BundleCapabilitiesInformation();
+    BundleCapabilitiesInformation(const BundleCapabilitiesInformation& other);
+
+    // The form signatures that the script may be started on.
+    std::vector<autofill::FormSignature> trigger_form_signatures;
+  };
+
   struct CapabilitiesInfo {
     CapabilitiesInfo();
     CapabilitiesInfo(
         const std::string& url,
-        const base::flat_map<std::string, std::string>& script_parameters);
+        const base::flat_map<std::string, std::string>& script_parameters,
+        const absl::optional<BundleCapabilitiesInformation>&
+            bundle_capabilities_information = absl::nullopt);
     ~CapabilitiesInfo();
     CapabilitiesInfo(const CapabilitiesInfo& other);
     CapabilitiesInfo& operator=(const CapabilitiesInfo& other);
 
     std::string url;
     base::flat_map<std::string, std::string> script_parameters;
+    // Additional information specified in the bundle that is needed prior to
+    // starting the script.
+    absl::optional<BundleCapabilitiesInformation>
+        bundle_capabilities_information;
   };
 
   using GetCapabilitiesResponseCallback =
@@ -40,6 +67,11 @@ class AutofillAssistant {
                               const std::vector<CapabilitiesInfo>&)>;
 
   virtual ~AutofillAssistant() = default;
+
+  // Creates a hash prefix of `hash_prefix_length` for `origin` for use in
+  // `GetCapabilitiesByHashPrefix`.
+  static uint64_t GetHashPrefix(uint32_t hash_prefix_length,
+                                const url::Origin& origin);
 
   // Allows querying for domain capabilities by sending the |hash_prefix_length|
   // number of leading bits of the domain url hashes. CityHash64 should be used
@@ -65,7 +97,8 @@ class AutofillAssistant {
   virtual std::unique_ptr<HeadlessScriptController>
   CreateHeadlessScriptController(
       content::WebContents* web_contents,
-      ExternalActionDelegate* action_extension_delegate) = 0;
+      ExternalActionDelegate* action_extension_delegate,
+      WebsiteLoginManager* website_login_manager = nullptr) = 0;
 
  protected:
   AutofillAssistant() = default;

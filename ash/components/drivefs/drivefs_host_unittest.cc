@@ -258,7 +258,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
             testing::AllOf(testing::Contains(
                                "datadir=/path/to/profile/GCache/v2/salt-g-ID"),
                            testing::Contains("myfiles=/MyFiles")),
-            _, chromeos::MOUNT_ACCESS_MODE_READ_WRITE, _))
+            _, ash::MountAccessMode::kReadWrite, _))
         .WillOnce(testing::DoAll(testing::SaveArg<0>(&source),
                                  MoveArg<6>(&mount_callback_)));
 
@@ -274,10 +274,10 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
 
   void CallMountCallbackSuccess(const std::string& token) {
     std::move(mount_callback_)
-        .Run(chromeos::MOUNT_ERROR_NONE, {base::StrCat({"drivefs://", token}),
-                                          "/media/drivefsroot/salt-g-ID",
-                                          chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-                                          {}});
+        .Run(ash::MountError::kNone, {base::StrCat({"drivefs://", token}),
+                                      "/media/drivefsroot/salt-g-ID",
+                                      ash::MountType::kNetworkStorage,
+                                      {}});
   }
 
   void SendOnMounted() { delegate_->OnMounted(); }
@@ -428,10 +428,10 @@ TEST_F(DriveFsHostTest, OnMountFailedFromDbus) {
   EXPECT_CALL(*host_delegate_, OnMountFailed(MountFailure::kInvocation, _))
       .WillOnce(RunOnceClosure(std::move(quit_closure)));
   std::move(mount_callback_)
-      .Run(chromeos::MOUNT_ERROR_INVALID_MOUNT_OPTIONS,
+      .Run(ash::MountError::kInvalidMountOptions,
            {base::StrCat({"drivefs://", token}),
             "/media/drivefsroot/salt-g-ID",
-            chromeos::MOUNT_TYPE_NETWORK_STORAGE,
+            ash::MountType::kNetworkStorage,
             {}});
   run_loop.Run();
 
@@ -465,7 +465,6 @@ TEST_F(DriveFsHostTest, UnsupportedAccountTypes) {
   const AccountId unsupported_accounts[] = {
       AccountId::FromGaiaId("ID"),
       AccountId::FromUserEmail("test2@example.com"),
-      AccountId::AdFromObjGuid("ID"),
   };
   for (auto& account : unsupported_accounts) {
     host_delegate_ = std::make_unique<TestingDriveFsHostDelegate>(

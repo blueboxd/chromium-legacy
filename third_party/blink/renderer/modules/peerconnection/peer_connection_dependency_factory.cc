@@ -37,7 +37,7 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
@@ -143,14 +143,24 @@ class PeerConnectionStaticDeps {
         chrome_network_thread_("WebRTC_Network") {}
 
   void EnsureChromeThreadsStarted() {
-    if (!chrome_signaling_thread_.IsRunning())
-      chrome_signaling_thread_.Start();
-    if (!chrome_network_thread_.IsRunning())
-      chrome_network_thread_.Start();
+    base::ThreadType thread_type = base::ThreadType::kDefault;
+    if (base::FeatureList::IsEnabled(
+            features::kWebRtcThreadsUseResourceEfficientType)) {
+      thread_type = base::ThreadType::kResourceEfficient;
+    }
+    if (!chrome_signaling_thread_.IsRunning()) {
+      chrome_signaling_thread_.StartWithOptions(
+          base::Thread::Options(thread_type));
+    }
+    if (!chrome_network_thread_.IsRunning()) {
+      chrome_network_thread_.StartWithOptions(
+          base::Thread::Options(thread_type));
+    }
 
-    if (!chrome_worker_thread_.IsRunning())
-      chrome_worker_thread_.Start();
-
+    if (!chrome_worker_thread_.IsRunning()) {
+      chrome_worker_thread_.StartWithOptions(
+          base::Thread::Options(thread_type));
+    }
     // To allow sending to the signaling/worker threads.
     webrtc::ThreadWrapper::EnsureForCurrentMessageLoop();
     webrtc::ThreadWrapper::current()->set_send_allowed(true);
@@ -693,8 +703,9 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   // |web_frame| may be null in tests, e.g. if
   // RTCPeerConnectionHandler::InitializeForTest() is used.
   if (web_frame) {
-    rtc::SetAllowLegacyTLSProtocols(
-        web_frame->Client()->AllowRTCLegacyTLSProtocols());
+    rtc::SetAllowLegacyTLSProtocols(web_frame->View()
+                                        ->GetRendererPreferences()
+                                        .webrtc_allow_legacy_tls_protocols);
     dependencies.allocator = CreatePortAllocator(web_frame);
   }
   dependencies.async_resolver_factory = CreateAsyncResolverFactory();

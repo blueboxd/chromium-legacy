@@ -34,6 +34,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/pref_names.h"
@@ -46,7 +47,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -442,20 +442,11 @@ class SystemTrayClientShowCalendarTest : public ash::LoginManagerTest {
     apps::AppServiceProxyAsh* proxy =
         apps::AppServiceProxyFactory::GetForProfile(profile);
 
-    if (base::FeatureList::IsEnabled(
-            apps::kAppServiceOnAppUpdateWithoutMojom)) {
-      std::vector<apps::AppPtr> registry_deltas;
-      registry_deltas.push_back(MakeApp(app_id, name));
-      proxy->AppRegistryCache().OnApps(std::move(registry_deltas),
-                                       apps::AppType::kUnknown,
-                                       /*should_notify_initialized=*/false);
-    } else {
-      std::vector<apps::mojom::AppPtr> mojom_deltas;
-      mojom_deltas.push_back(apps::ConvertAppToMojomApp(MakeApp(app_id, name)));
-      proxy->AppRegistryCache().OnApps(std::move(mojom_deltas),
-                                       apps::mojom::AppType::kUnknown,
-                                       /*should_notify_initialized=*/false);
-    }
+    std::vector<apps::AppPtr> registry_deltas;
+    registry_deltas.push_back(MakeApp(app_id, name));
+    proxy->AppRegistryCache().OnApps(std::move(registry_deltas),
+                                     apps::AppType::kUnknown,
+                                     /*should_notify_initialized=*/false);
   }
 
  protected:
@@ -550,4 +541,51 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientShowCalendarTest, UnofficialEventUrl) {
       event_url, date, opened_pwa, final_url);
   EXPECT_TRUE(opened_pwa);
   EXPECT_EQ(final_url.spec(), GURL(kOfficialCalendarEventUrl).spec());
+}
+
+class SystemTrayClientShowChannelInfoGiveFeedbackTest
+    : public ash::LoginManagerTest {
+ public:
+  SystemTrayClientShowChannelInfoGiveFeedbackTest() {
+    login_mixin_.AppendRegularUsers(1);
+    account_id_ = login_mixin_.users()[0].account_id;
+  }
+
+  SystemTrayClientShowChannelInfoGiveFeedbackTest(
+      const SystemTrayClientShowCalendarTest&) = delete;
+  SystemTrayClientShowChannelInfoGiveFeedbackTest& operator=(
+      const SystemTrayClientShowChannelInfoGiveFeedbackTest&) = delete;
+
+  ~SystemTrayClientShowChannelInfoGiveFeedbackTest() override = default;
+
+ protected:
+  AccountId account_id_;
+  ash::LoginManagerMixin login_mixin_{&mixin_host_};
+};
+
+// TODO(crbug.com/1352326): Flaky on release bots.
+#if defined(NDEBUG)
+#define MAYBE_RecordFeedbackSourceChannelIndicator \
+  DISABLED_RecordFeedbackSourceChannelIndicator
+#else
+#define MAYBE_RecordFeedbackSourceChannelIndicator \
+  RecordFeedbackSourceChannelIndicator
+#endif
+IN_PROC_BROWSER_TEST_F(SystemTrayClientShowChannelInfoGiveFeedbackTest,
+                       MAYBE_RecordFeedbackSourceChannelIndicator) {
+  base::HistogramTester histograms;
+  auto tray_test_api = ash::SystemTrayTestApi::Create();
+
+  LoginUser(account_id_);
+
+  histograms.ExpectBucketCount("Feedback.RequestSource",
+                               chrome::kFeedbackSourceChannelIndicator,
+                               /*expected_count=*/0);
+  ash::Shell::Get()
+      ->system_tray_model()
+      ->client()
+      ->ShowChannelInfoGiveFeedback();
+  histograms.ExpectBucketCount("Feedback.RequestSource",
+                               chrome::kFeedbackSourceChannelIndicator,
+                               /*expected_count=*/1);
 }

@@ -148,7 +148,7 @@ void ProjectorControllerImpl::StartProjectorSession(
 void ProjectorControllerImpl::CreateScreencastContainerFolder(
     CreateScreencastContainerFolderCallback callback) {
   base::FilePath mounted_path;
-  if (!client_->GetDriveFsMountPointPath(&mounted_path)) {
+  if (!client_->GetBaseStoragePath(&mounted_path)) {
     LOG(ERROR) << "Failed to get DriveFs mounted point path.";
     ProjectorUiController::ShowSaveFailureNotification();
     std::move(callback).Run(base::FilePath());
@@ -240,10 +240,15 @@ ProjectorControllerImpl::GetNewScreencastPrecondition() const {
         result.reasons = {
             NewScreencastPreconditionReason::kSodaDownloadInProgress};
         return result;
-      case SpeechRecognitionAvailability::kSodaInstallationError:
+      case SpeechRecognitionAvailability::kSodaInstallationErrorUnspecified:
         result.state = NewScreencastPreconditionState::kDisabled;
         result.reasons = {
-            NewScreencastPreconditionReason::kSodaInstallationError};
+            NewScreencastPreconditionReason::kSodaInstallationErrorUnspecified};
+        return result;
+      case SpeechRecognitionAvailability::kSodaInstallationErrorNeedsReboot:
+        result.state = NewScreencastPreconditionState::kDisabled;
+        result.reasons = {
+            NewScreencastPreconditionReason::kSodaInstallationErrorNeedsReboot};
         return result;
       case SpeechRecognitionAvailability::kAvailable:
         break;
@@ -291,6 +296,8 @@ void ProjectorControllerImpl::OnUndoRedoAvailabilityChanged(
 
 void ProjectorControllerImpl::OnCanvasInitialized(bool success) {
   ui_controller_->OnCanvasInitialized(success);
+  if (on_canvas_initialized_callback_for_test_)
+    std::move(on_canvas_initialized_callback_for_test_).Run();
 }
 
 bool ProjectorControllerImpl::GetAnnotatorAvailability() {

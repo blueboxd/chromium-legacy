@@ -9,6 +9,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_service.pb.h"
 
 namespace ash {
 
@@ -159,6 +160,14 @@ class COMPONENT_EXPORT(CICERONE) FakeCiceroneClient : public CiceroneClient {
           callback) override;
   void FileSelected(
       const vm_tools::cicerone::FileSelectedSignal& signal) override;
+  void ListRunningContainers(
+      const vm_tools::cicerone::ListRunningContainersRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::ListRunningContainersResponse>
+          callback) override;
+  void GetGarconSessionInfo(
+      const vm_tools::cicerone::GetGarconSessionInfoRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::GetGarconSessionInfoResponse>
+          callback) override;
   void WaitForServiceToBeAvailable(
       dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) override;
 
@@ -361,6 +370,17 @@ class COMPONENT_EXPORT(CICERONE) FakeCiceroneClient : public CiceroneClient {
     detach_usb_from_container_response_ =
         std::move(detach_usb_from_container_response);
   }
+  void set_list_containers_response(
+      vm_tools::cicerone::ListRunningContainersResponse
+          list_container_response) {
+    list_containers_response_ = std::move(list_container_response);
+  }
+  void set_get_garcon_session_info_response(
+      vm_tools::cicerone::GetGarconSessionInfoResponse
+          get_garcon_session_info_response) {
+    get_garcon_session_info_response_ =
+        std::move(get_garcon_session_info_response);
+  }
 
   void set_send_container_starting_signal_delay(base::TimeDelta delay) {
     send_container_starting_signal_delay_ = delay;
@@ -387,6 +407,11 @@ class COMPONENT_EXPORT(CICERONE) FakeCiceroneClient : public CiceroneClient {
   }
   void set_send_stop_lxd_container_response_delay(base::TimeDelta delay) {
     send_stop_lxd_container_response_delay_ = delay;
+  }
+
+  vm_tools::cicerone::SetUpLxdContainerUserRequest
+  get_setup_lxd_container_user_request() {
+    return setup_lxd_container_user_request_;
   }
 
   // Returns true if the method has been invoked at least once, false otherwise.
@@ -522,6 +547,9 @@ class COMPONENT_EXPORT(CICERONE) FakeCiceroneClient : public CiceroneClient {
       attach_usb_to_container_response_;
   vm_tools::cicerone::DetachUsbFromContainerResponse
       detach_usb_from_container_response_;
+  vm_tools::cicerone::ListRunningContainersResponse list_containers_response_;
+  vm_tools::cicerone::GetGarconSessionInfoResponse
+      get_garcon_session_info_response_;
 
   base::TimeDelta send_container_starting_signal_delay_;
   base::TimeDelta send_container_started_signal_delay_;
@@ -531,6 +559,9 @@ class COMPONENT_EXPORT(CICERONE) FakeCiceroneClient : public CiceroneClient {
   base::TimeDelta send_set_up_lxd_container_user_response_delay_;
   base::TimeDelta send_start_lxd_container_response_delay_;
   base::TimeDelta send_stop_lxd_container_response_delay_;
+
+  vm_tools::cicerone::SetUpLxdContainerUserRequest
+      setup_lxd_container_user_request_;
 
   vm_tools::cicerone::OsRelease lxd_container_os_release_;
 

@@ -12,13 +12,13 @@
 #include "chromeos/ash/components/dbus/hermes/hermes_euicc_client.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_profile_client.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
-#include "chromeos/dbus/shill/shill_ipconfig_client.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_device_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_ipconfig_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 
-namespace chromeos {
+namespace ash {
 
 // Base Network test helper class. This base class handles initialization and
 // shutdown of Shill and Hermes DBus clients and provides utility methods to
@@ -123,6 +123,6 @@ class NetworkTestHelperBase {
   base::WeakPtrFactory<NetworkTestHelperBase> weak_ptr_factory_{this};
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_NETWORK_TEST_HELPER_BASE_H_

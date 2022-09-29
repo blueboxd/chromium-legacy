@@ -50,6 +50,13 @@ class StandaloneBrowserExtensionApps;
 
 namespace ash {
 class ApkWebAppService;
+namespace login {
+class SecurityTokenSessionController;
+}
+}
+
+namespace extensions {
+class AutotestPrivateGetLacrosInfoFunction;
 }
 
 namespace policy {
@@ -174,7 +181,10 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Opens the specified URL in lacros-chrome. If it is not running,
   // it launches lacros-chrome with the given URL.
   // See crosapi::mojom::BrowserService::OpenUrl for more details.
-  void OpenUrl(const GURL& url, crosapi::mojom::OpenUrlFrom from);
+  void OpenUrl(
+      const GURL& url,
+      crosapi::mojom::OpenUrlFrom from,
+      crosapi::mojom::OpenUrlParams::WindowOpenDisposition disposition);
 
   // If there's already a tab opening the URL in lacros-chrome, in some window
   // of the primary profile, activate the tab. Otherwise, opens a tab for
@@ -294,6 +304,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   };
 
  protected:
+  // NOTE: You may have to update tests if you make changes to State, as state_
+  // is exposed via autotest_private.
   enum class State {
     // Lacros is not initialized yet.
     // Lacros-chrome loading depends on user type, so it needs to wait
@@ -350,6 +362,13 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // installation when lacros-chrome starts at arbitrary points of time, so it
   // needs to be kept alive.
   friend class ash::ApkWebAppService;
+  // Only for exposing state_ to Tast tests.
+  friend class extensions::AutotestPrivateGetLacrosInfoFunction;
+  // In LacrosOnly mode, certificate provider and smart card connector
+  // extensions will be running in Lacros, but policy implementation stays in
+  // Ash. Thus, session controller needs to keep Lacros alive to keep track of
+  // smart card status.
+  friend class ash::login::SecurityTokenSessionController;
 
   // Holds the data for restoring a window from the desk template.
   // The request to restore a window may come when the browser service is not
@@ -389,6 +408,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
     kApkWebAppService,
     kChromeApps,
     kExtensions,
+    kSmartCardSessionController,
   };
 
   // Any instance of this class will ensure that the Lacros browser will stay
@@ -471,6 +491,13 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // shutdown window.
   void OnMojoDisconnected();
 
+  // This may be called synchronously by the BrowserManager following a
+  // Terminate() signal during shutdown, or following a call to
+  // OnMojoDisconnected(). This posts a shutdown blocking task that waits for
+  // lacros-chrome to cleanly exit for `timeout` duration before forcefully
+  // killing the process.
+  void HandleLacrosChromeTermination(base::TimeDelta timeout);
+
   // Called when lacros-chrome is terminated and successfully wait(2)ed.
   void OnLacrosChromeTerminated();
 
@@ -538,6 +565,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Creates windows from template data.
   void RestoreWindowsFromTemplate();
 
+  // NOTE: The state is exposed to tests via autotest_private.
   State state_ = State::NOT_INITIALIZED;
 
   std::unique_ptr<crosapi::BrowserLoader> browser_loader_;

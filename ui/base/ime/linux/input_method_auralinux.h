@@ -22,7 +22,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) InputMethodAuraLinux
     : public InputMethodBase,
       public LinuxInputMethodContextDelegate {
  public:
-  explicit InputMethodAuraLinux(internal::InputMethodDelegate* delegate);
+  explicit InputMethodAuraLinux(
+      ImeKeyEventDispatcher* ime_key_event_dispatcher);
   InputMethodAuraLinux(const InputMethodAuraLinux&) = delete;
   InputMethodAuraLinux& operator=(const InputMethodAuraLinux&) = delete;
   ~InputMethodAuraLinux() override;
@@ -39,6 +40,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) InputMethodAuraLinux
 
   // Overriden from ui::LinuxInputMethodContextDelegate
   void OnCommit(const std::u16string& text) override;
+  void OnConfirmCompositionText(bool keep_selection) override;
   void OnDeleteSurroundingText(size_t before, size_t after) override;
   void OnPreeditChanged(const CompositionText& composition_text) override;
   void OnPreeditEnd() override;
@@ -48,6 +50,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) InputMethodAuraLinux
   void OnClearGrammarFragments(const gfx::Range& range) override;
   void OnAddGrammarFragment(const ui::GrammarFragment& fragment) override;
   void OnSetAutocorrectRange(const gfx::Range& range) override;
+  void OnSetVirtualKeyboardOccludedBounds(
+      const gfx::Rect& screen_bounds) override;
 
  protected:
   // Overridden from InputMethodBase.
@@ -75,7 +79,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) InputMethodAuraLinux
   // the client's composition string, specifically for async-mode case.
   void OnPreeditUpdate(const ui::CompositionText& composition_text,
                        bool force_update_client);
-  void ConfirmCompositionText();
+  void ConfirmCompositionText(bool keep_selection);
   bool HasInputMethodResult();
   bool NeedInsertChar(const absl::optional<std::u16string>& result_text) const;
   [[nodiscard]] ui::EventDispatchDetails SendFakeProcessKeyEvent(

@@ -20,11 +20,13 @@
 #include "ash/assistant/ui/main_stage/assistant_error_element_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_web_view.h"
 #include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/test/fake_android_intent_helper.h"
 #include "ash/test/test_ash_web_view.h"
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_service.h"
@@ -36,16 +38,16 @@ namespace ash {
 
 namespace {
 
+using assistant::Assistant;
+using assistant::AssistantInteractionSubscriber;
+using assistant::MockAssistantInteractionSubscriber;
+using assistant::ScopedAssistantInteractionSubscriber;
 using chromeos::assistant::AndroidAppInfo;
-using chromeos::assistant::Assistant;
 using chromeos::assistant::AssistantInteractionMetadata;
-using chromeos::assistant::AssistantInteractionSubscriber;
 using chromeos::assistant::AssistantInteractionType;
 using chromeos::assistant::AssistantQuerySource;
 using chromeos::assistant::AssistantSuggestion;
 using chromeos::assistant::AssistantSuggestionType;
-using chromeos::assistant::MockAssistantInteractionSubscriber;
-using chromeos::assistant::ScopedAssistantInteractionSubscriber;
 
 using ::testing::Invoke;
 using ::testing::Mock;
@@ -55,7 +57,7 @@ using ::testing::StrictMock;
 // Mocks -----------------------------------------------------------------------
 
 class AssistantInteractionSubscriberMock
-    : public chromeos::assistant::AssistantInteractionSubscriber {
+    : public AssistantInteractionSubscriber {
  public:
   explicit AssistantInteractionSubscriberMock(Assistant* service) {
     scoped_subscriber_.Observe(service);
@@ -69,8 +71,7 @@ class AssistantInteractionSubscriberMock
               (override));
 
  private:
-  chromeos::assistant::ScopedAssistantInteractionSubscriber scoped_subscriber_{
-      this};
+  ScopedAssistantInteractionSubscriber scoped_subscriber_{this};
 };
 
 // AssistantInteractionControllerImplTest --------------------------------------
@@ -237,7 +238,7 @@ TEST_F(AssistantInteractionControllerImplTest, ShouldDisplayGenericErrorOnce) {
   base::RunLoop().RunUntilIdle();
 
   interaction_controller()->OnInteractionFinished(
-      chromeos::assistant::AssistantInteractionResolution::kError);
+      assistant::AssistantInteractionResolution::kError);
 
   base::RunLoop().RunUntilIdle();
 
@@ -341,5 +342,18 @@ TEST_F(AssistantInteractionControllerImplTest, CompactBubbleLauncher) {
             kNarrowLayoutAshWebViewWidth);
   EXPECT_EQ(ash_web_view->init_params_for_testing().min_size.value().width(),
             kNarrowLayoutAshWebViewWidth);
+}
+
+TEST_F(AssistantInteractionControllerImplTest, FixedZoomLevel) {
+  ShowAssistantUi();
+  StartInteraction();
+
+  interaction_controller()->OnHtmlResponse("<html></html>", "fallback");
+
+  base::RunLoop().RunUntilIdle();
+
+  TestAshWebView* ash_web_view = static_cast<TestAshWebView*>(
+      page_view()->GetViewByID(AssistantViewID::kAshWebView));
+  EXPECT_TRUE(ash_web_view->init_params_for_testing().fix_zoom_level_to_one);
 }
 }  // namespace ash

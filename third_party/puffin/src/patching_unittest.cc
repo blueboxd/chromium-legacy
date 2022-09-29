@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "gtest/gtest.h"
 
 #include "puffin/memory_stream.h"
@@ -24,6 +26,12 @@ using std::vector;
 namespace puffin {
 
 namespace {
+
+base::FilePath out_test_file(const char* file) {
+  base::FilePath path;
+  base::PathService::Get(base::DIR_GEN_TEST_DATA_ROOT, &path);
+  return path.AppendASCII(file);
+}
 
 #if PRINT_SAMPLE
 // Print an array into hex-format to the output. This can be used to create
@@ -138,6 +146,29 @@ TEST(PatchingTest, Patching2To1Test) {
 TEST(PatchingTest, Patching1ToNoDeflateTest) {
   TestPatching(kDeflatesSample1, {11, 22, 33, 44},
                kSubblockDeflateExtentsSample1, {}, kPatch1ToNoDeflate);
+}
+
+TEST(PatchingTest, ApplyPuffPatchTest) {
+  base::FilePath app_v1_crx = out_test_file("puffin_app_v1.crx3");
+  base::FilePath app_v2_crx = out_test_file("puffin_app_v2.crx3");
+  base::FilePath patch_v1_to_v2_puff =
+      out_test_file("puffin_app_v1_to_v2.puff");
+  base::FilePath patch_v2_to_v1_puff =
+      out_test_file("puffin_app_v2_to_v1.puff");
+  base::FilePath app_v1_to_v2_crx = out_test_file("puffin_app_v1_to_v2.crx3");
+  base::FilePath app_v2_to_v1_crx = out_test_file("puffin_app_v2_to_v1.crx3");
+
+  // Test patching v1 to v2:
+  ASSERT_TRUE(base::DeleteFile(app_v1_to_v2_crx));
+  ASSERT_EQ(ApplyPuffPatch(app_v1_crx, patch_v1_to_v2_puff, app_v1_to_v2_crx),
+            Status::P_OK);
+  EXPECT_TRUE(base::ContentsEqual(app_v2_crx, app_v1_to_v2_crx));
+
+  // Test patching v2 to v1:
+  ASSERT_TRUE(base::DeleteFile(app_v2_to_v1_crx));
+  ASSERT_EQ(ApplyPuffPatch(app_v2_crx, patch_v2_to_v1_puff, app_v2_to_v1_crx),
+            Status::P_OK);
+  EXPECT_TRUE(base::ContentsEqual(app_v1_crx, app_v2_to_v1_crx));
 }
 
 // TODO(ahassani): add tests for:

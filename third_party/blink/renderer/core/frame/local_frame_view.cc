@@ -33,6 +33,7 @@
 #include "base/auto_reset.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/functional/function_ref.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/numerics/safe_conversions.h"
@@ -47,8 +48,9 @@
 #include "cc/tiles/frame_viewer_instrumentation.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/paint_preview/common/paint_preview_tracker.h"
-#include "third_party/abseil-cpp/absl/functional/function_ref.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/remote_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -288,17 +290,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, gfx::Rect frame_rect)
       unique_id_(NewUniqueObjectId()),
       layout_shift_tracker_(MakeGarbageCollected<LayoutShiftTracker>(this)),
       paint_timing_detector_(MakeGarbageCollected<PaintTimingDetector>(this)),
-      mobile_friendliness_checker_(
-          // Only run the mobile friendliness checker for the outermost main
-          // frame. The checker will iterate through all local frames in the
-          // current blink::Page. Also skip the mobile friendliness checks for
-          // "non-ordinary" pages by checking IsLocalFrameClientImpl(), since
-          // it's not useful to generate mobile friendliness metrics for
-          // devtools, svg, etc.
-          GetFrame().Client()->IsLocalFrameClientImpl() &&
-                  GetFrame().IsOutermostMainFrame()
-              ? MakeGarbageCollected<MobileFriendlinessChecker>(*this)
-              : nullptr)
+      mobile_friendliness_checker_(MobileFriendlinessChecker::Create(*this))
 #if DCHECK_IS_ON()
       ,
       is_updating_descendant_dependent_flags_(false),
@@ -344,7 +336,7 @@ void LocalFrameView::Trace(Visitor* visitor) const {
 }
 
 void LocalFrameView::ForAllChildViewsAndPlugins(
-    absl::FunctionRef<void(EmbeddedContentView&)> function) {
+    base::FunctionRef<void(EmbeddedContentView&)> function) {
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     if (child->View())
@@ -374,7 +366,7 @@ void LocalFrameView::ForAllChildViewsAndPlugins(
 }
 
 void LocalFrameView::ForAllChildLocalFrameViews(
-    absl::FunctionRef<void(LocalFrameView&)> function) {
+    base::FunctionRef<void(LocalFrameView&)> function) {
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     auto* child_local_frame = DynamicTo<LocalFrame>(child);
@@ -388,7 +380,7 @@ void LocalFrameView::ForAllChildLocalFrameViews(
 // Note: if this logic is updated, `ForAllThrottledLocalFrameViews()` may
 // need to be updated as well.
 void LocalFrameView::ForAllNonThrottledLocalFrameViews(
-    absl::FunctionRef<void(LocalFrameView&)> function,
+    base::FunctionRef<void(LocalFrameView&)> function,
     TraversalOrder order) {
   if (ShouldThrottleRendering())
     return;
@@ -407,7 +399,7 @@ void LocalFrameView::ForAllNonThrottledLocalFrameViews(
 // Note: if this logic is updated, `ForAllNonThrottledLocalFrameViews()` may
 // need to be updated as well.
 void LocalFrameView::ForAllThrottledLocalFrameViews(
-    absl::FunctionRef<void(LocalFrameView&)> function) {
+    base::FunctionRef<void(LocalFrameView&)> function) {
   if (ShouldThrottleRendering())
     function(*this);
 
@@ -417,7 +409,7 @@ void LocalFrameView::ForAllThrottledLocalFrameViews(
 }
 
 void LocalFrameView::ForAllRemoteFrameViews(
-    absl::FunctionRef<void(RemoteFrameView&)> function) {
+    base::FunctionRef<void(RemoteFrameView&)> function) {
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     if (child->IsLocalFrame()) {
@@ -802,7 +794,6 @@ void LocalFrameView::PerformLayout() {
       }
       for (auto& root : layout_subtree_root_list_.Ordered()) {
         bool should_rebuild_fragments = false;
-        LayoutObject& root_layout_object = *root;
         LayoutBlock* cb = root->ContainingNGBlock();
         if (cb) {
           auto it = fragment_tree_spines.find(cb);
@@ -822,7 +813,7 @@ void LocalFrameView::PerformLayout() {
         // We need to ensure that we mark up all layoutObjects up to the
         // LayoutView for paint invalidation. This simplifies our code as we
         // just always do a full tree walk.
-        if (LayoutObject* container = root_layout_object.Container())
+        if (LayoutObject* container = root->Container())
           container->SetShouldCheckForPaintInvalidation();
       }
       layout_subtree_root_list_.Clear();
@@ -855,8 +846,6 @@ void LocalFrameView::PerformLayout() {
               !document->GetDisplayLockDocumentState().HasForcedScopes());
       DeferredShapingViewportScope viewport_scope(*this, *GetLayoutView());
       GetLayoutView()->UpdateLayout();
-      if (mobile_friendliness_checker_)
-        mobile_friendliness_checker_->NotifyInitialScaleUpdated();
     }
   }
 
@@ -1043,6 +1032,9 @@ DocumentLifecycle& LocalFrameView::Lifecycle() const {
 void LocalFrameView::RunPostLifecycleSteps() {
   AllowThrottlingScope allow_throttling(*this);
   RunIntersectionObserverSteps();
+  if (mobile_friendliness_checker_)
+    mobile_friendliness_checker_->MaybeRecompute();
+
   ForAllRemoteFrameViews([](RemoteFrameView& frame_view) {
     frame_view.UpdateCompositingScaleFactor();
   });
@@ -2000,8 +1992,10 @@ Color LocalFrameView::DocumentBackgroundColor() {
   Color doc_bg =
       background_source->ResolveColor(GetCSSPropertyBackgroundColor());
   if (background_source->StyleRef().ColorSchemeForced()) {
-    doc_bg = EnsureDarkModeFilter().InvertColorIfNeeded(
-        doc_bg.Rgb(), DarkModeFilter::ElementRole::kBackground);
+    // TODO(https://crbug.com/1351544): The DarkModeFilter operate on SkColor4f,
+    // and DocumentBackgroundColor should return an SkColor4f.
+    doc_bg = Color::FromSkColor(EnsureDarkModeFilter().InvertColorIfNeeded(
+        SkColor(doc_bg), DarkModeFilter::ElementRole::kBackground));
   }
   if (blend_with_base)
     return result.Blend(doc_bg);
@@ -2009,9 +2003,6 @@ Color LocalFrameView::DocumentBackgroundColor() {
 }
 
 void LocalFrameView::WillBeRemovedFromFrame() {
-  if (mobile_friendliness_checker_)
-    mobile_friendliness_checker_->WillBeRemovedFromFrame();
-
   if (paint_artifact_compositor_)
     paint_artifact_compositor_->WillBeRemovedFromFrame();
 
@@ -2653,10 +2644,8 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
           }
         }
 
-        // We skipped pre-paint for this frame while it was throttled, or we
-        // have never run pre-paint for this frame. Either way, we're
-        // unthrottled now, so we must propagate our dirty bits into our
-        // parent frame so that pre-paint reaches into this frame.
+        // Propagate dirty bits in the frame into the parent frame so that
+        // pre-paint reaches into this frame.
         if (LayoutView* layout_view = frame_view.GetLayoutView()) {
           if (auto* owner = frame_view.GetFrame().OwnerLayoutObject()) {
             if (layout_view->NeedsPaintPropertyUpdate() ||
@@ -2673,11 +2662,6 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
             if (layout_view->BlockingWheelEventHandlerChanged() ||
                 layout_view->DescendantBlockingWheelEventHandlerChanged()) {
               owner->MarkDescendantBlockingWheelEventHandlerChanged();
-            }
-            if (layout_view->Layer()->NeedsCullRectUpdate() ||
-                layout_view->Layer()->DescendantNeedsCullRectUpdate()) {
-              layout_view->Layer()
-                  ->MarkCompositingContainerChainForNeedsCullRectUpdate();
             }
           }
         }
@@ -2770,6 +2754,11 @@ void LocalFrameView::RunPaintLifecyclePhase(PaintBenchmarkMode benchmark_mode) {
         total_animations_count +=
             document.GetDocumentAnimations().GetAnimationsCount();
       });
+
+  // If this is a throttled local root, then we shouldn't run animation steps
+  // below, because the cc animation data structures might not even exist.
+  if (frame_->IsLocalRoot() && ShouldThrottleRendering())
+    return;
 
   if (auto* animation_host = GetCompositorAnimationHost()) {
     animation_host->SetAnimationCounts(total_animations_count);
@@ -2865,6 +2854,10 @@ bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode,
                            LocalFrameUkmAggregator::kPaint);
 
   DCHECK(GetFrame().IsLocalRoot());
+
+  absl::optional<MobileFriendlinessChecker::PaintScope> mf_scope;
+  if (mobile_friendliness_checker_)
+    mf_scope.emplace(*mobile_friendliness_checker_);
 
   auto* layout_view = GetLayoutView();
   DCHECK(layout_view);
@@ -3117,7 +3110,6 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
   if (ShouldThrottleRendering() || !frame_->GetDocument()->IsActive())
     return;
 
-  ScopedFrameBlamer frame_blamer(frame_);
   TRACE_EVENT0("blink,benchmark",
                "LocalFrameView::updateStyleAndLayoutIfNeededRecursive");
 
@@ -3201,7 +3193,13 @@ void LocalFrameView::UpdateStyleAndLayout() {
   gfx::SizeF visual_viewport_size(visual_viewport.VisibleWidthCSSPx(),
                                   visual_viewport.VisibleHeightCSSPx());
 
-  bool did_layout = UpdateStyleAndLayoutInternal();
+  bool did_layout = false;
+  {
+    // Script is allowed during the initial style and layout as we will rerun
+    // at least once more if anything was invalidated.
+    ScriptForbiddenScope::AllowUserAgentScript allow_script;
+    did_layout = UpdateStyleAndLayoutInternal();
+  }
 
   // Second pass: run autosize until it stabilizes
   if (auto_size_info_) {
@@ -4690,6 +4688,10 @@ LocalFrameUkmAggregator& LocalFrameView::EnsureUkmAggregator() {
     local_root->ukm_aggregator_ = base::MakeRefCounted<LocalFrameUkmAggregator>(
         local_root->frame_->GetDocument()->UkmSourceID(),
         local_root->frame_->GetDocument()->UkmRecorder());
+    if (base::FeatureList::IsEnabled(
+            features::kThrottleIntersectionObserverUMA)) {
+      local_root->ukm_aggregator_->SetIntersectionObserverSamplePeriod(10);
+    }
   }
   return *local_root->ukm_aggregator_;
 }
@@ -4868,6 +4870,27 @@ PaintLayer* LocalFrameView::GetXROverlayLayer() const {
     return GetXrOverlayLayer(*doc);
 
   return nullptr;
+}
+
+void LocalFrameView::PropagateCullRectNeedsUpdateForFrames() {
+  ForAllNonThrottledLocalFrameViews(
+      [](LocalFrameView& frame_view) {
+        // Propagate child frame PaintLayer NeedsCullRectUpdate flag into the
+        // owner frame.
+        if (auto* frame_layout_view = frame_view.GetLayoutView()) {
+          if (auto* owner = frame_view.GetFrame().OwnerLayoutObject()) {
+            PaintLayer* frame_root_layer = frame_layout_view->Layer();
+            DCHECK(frame_root_layer);
+            DCHECK(owner->Layer());
+            if (frame_root_layer->NeedsCullRectUpdate() ||
+                frame_root_layer->DescendantNeedsCullRectUpdate()) {
+              owner->Layer()->SetDescendantNeedsCullRectUpdate();
+            }
+          }
+        }
+      },
+      // Use post-order to ensure correct flag propagation for nested frames.
+      kPostOrder);
 }
 
 void LocalFrameView::RunPaintBenchmark(int repeat_count,

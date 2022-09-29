@@ -7,6 +7,9 @@
  * the background context (background page or options page).
  *
  */
+import {BridgeConstants} from '../common/bridge_constants.js';
+import {BridgeHelper} from '../common/bridge_helper.js';
+
 import {ConsoleTts} from './console_tts.js';
 import {EventStreamLogger} from './logging/event_stream_logger.js';
 import {LogUrlWatcher} from './logging/log_url_watcher.js';
@@ -37,19 +40,14 @@ export class ChromeVoxPrefs {
     // Default per session sticky to off.
     localStorage['sticky'] = false;
 
-    this.init(loadExistingSettings);
+    this.init();
   }
 
   /**
    * Merge the default values of all known prefs with what's found in
    * localStorage.
-   * @param {boolean} pullFromLocalStorage or not to pull prefs from local
-   * storage. True if we want to respect changes the user has already made
-   * to prefs, false if we want to overwrite them. Set false if we've made
-   * changes to keyboard shortcuts and need to make sure they aren't
-   * overridden by the old keymap in local storage.
    */
-  init(pullFromLocalStorage) {
+  init() {
     // Set the default value of any pref that isn't already in localStorage.
     for (const pref in ChromeVoxPrefs.DEFAULT_PREFS) {
       if (localStorage[pref] === undefined) {
@@ -221,8 +219,8 @@ BridgeHelper.registerHandler(
 BridgeHelper.registerHandler(
     BridgeConstants.ChromeVoxPrefs.TARGET,
     BridgeConstants.ChromeVoxPrefs.Action.SET_LOGGING_PREFS,
-    ({key, value}) => ChromeVoxPrefs.instance.setLoggingPrefs(key, value));
+    (key, value) => ChromeVoxPrefs.instance.setLoggingPrefs(key, value));
 BridgeHelper.registerHandler(
     BridgeConstants.ChromeVoxPrefs.TARGET,
     BridgeConstants.ChromeVoxPrefs.Action.SET_PREF,
-    ({key, value}) => ChromeVoxPrefs.instance.setPref(key, value));
+    (key, value) => ChromeVoxPrefs.instance.setPref(key, value));

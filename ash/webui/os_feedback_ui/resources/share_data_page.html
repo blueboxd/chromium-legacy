@@ -1,10 +1,4 @@
 <style include="os-feedback-shared">
-  #legalHelpPageUrl,
-  #privacyPolicyUrl,
-  #termsOfServiceUrl {
-    text-decoration: none;
-  }
-
   #privacyNote {
     color: var(--cros-color-secondary);
     font-size: 13px;
@@ -13,6 +7,20 @@
     margin-bottom: 0;
     text-align: justify;
     text-justify: inter-word;
+  }
+
+  #attachFilesLabelContainer {
+    align-items: center;
+    display: inline-flex;
+  }
+
+  #attachFilesIcon {
+    --iron-icon-fill-color: var(--cros-icon-color-secondary);
+    display: inline-block;
+    height: 20px;
+    margin-bottom: 8px;
+    margin-inline-start: 6px;
+    width: 20px;
   }
 
   #attachFiles {
@@ -36,13 +44,10 @@
 
   #screenshotContainer {
     align-items: center;
+    box-sizing: border-box;
     height: 48px;
     margin-inline-end: 12px;
     width: 50%;
-  }
-
-  #screenshotCheckLabel {
-    flex: 1;
   }
 
   #screenshotContainer > button {
@@ -68,6 +73,7 @@
 
   #addFileContainer {
     align-items: center;
+    box-sizing: border-box;
     height: 48px;
     margin-inline-start: 12px;
     width: 50%;
@@ -78,12 +84,18 @@
   }
 
   .md-select {
+    --md-select-side-padding: 16px;
     height: 32px;
     width: 248px;
   }
 
   #shareDiagnosticData {
-    height: 96px;
+    margin-bottom: 16px;
+  }
+
+  .checkbox-field-container {
+    display: flex;
+    margin-bottom: 8px;
   }
 
   #pageUrl {
@@ -101,20 +113,16 @@
     color: var(--cros-text-color-disabled);
   }
 
-  #sysInfoCheckboxLabel {
-    color: var(--cros-text-color-primary);
-    line-height: 20px;
-  }
-
   #screenshotCheckbox {
     margin-inline-end: 10px;
     margin-inline-start: 12px;
   }
 
   #screenshotCheckLabel {
-    color: var(--cros-text-color-primary);
+    flex: 1;
     font-weight: 400;
     line-height: 20px;
+    margin-inline-end: 12px;
   }
 
   #imageButton {
@@ -125,20 +133,18 @@
     width: 68px;
   }
 
-  #sysInfoContainer,
   #userConsent {
     display: flex;
     margin-bottom: 24px;
   }
 
-  cr-checkbox {
-    --cr-checkbox-label-padding-start: 0;
-    --cr-checkbox-size: 20px;
-    margin-inline-end: 12px;
-  }
-
   h2 {
     margin: 0 0 8px 0;
+  }
+
+  label {
+    color: var(--cros-text-color-primary);
+    line-height: 20px;
   }
 </style>
 <div id="container">
@@ -148,7 +154,15 @@
   <div id="content">
     <!-- Attach files -->
     <div id="attachFiles">
-      <h2 id="attachFilesLabel">[[i18n('attachFilesLabel')]]</h2>
+      <div id="attachFilesLabelContainer">
+        <h2 id="attachFilesLabel">[[i18n('attachFilesLabel')]]</h2>
+        <iron-icon icon="os-feedback:info" id="attachFilesIcon"></iron-icon>
+        <paper-tooltip for="attachFilesIcon" position="top" offset="0" fit-to-visible-bounds>
+          <div id="attachFilesTooltipContent">
+            [[i18n('attachFileLabelTooltip')]]
+          </div>
+        </paper-tooltip>
+      </div>
       <div id="attachFilesContainer">
         <!-- Attach a screenshot -->
         <div id="screenshotContainer" class="card-frame">
@@ -171,12 +185,14 @@
         hidden$="[[!hasEmail_(feedbackContext)]]">
       <h2 id="userEmailLabel">[[i18n('userEmailLabel')]]</h2>
       <select id="userEmailDropDown" class="md-select"
-          aria-labelledby="userEmailLabel">
+          aria-label="[[i18n('userEmailAriaLabel')]]">
         <option value$="[[feedbackContext.email]]"
+            aria-label="user email"
             class="email-dropdown">
           [[feedbackContext.email]]
         </option>
-        <option value="" id="anonymousUser" class="email-dropdown">
+        <option value="" aria-label="anonymous user"
+          id="anonymousUser" class="email-dropdown">
           [[i18n('anonymousUser')]]
         </option>
       </select>
@@ -205,6 +221,12 @@
         <cr-checkbox id="sysInfoCheckbox" aria-labelledby="sysInfoCheckboxLabel" checked>
         </cr-checkbox>
         <label id="sysInfoCheckboxLabel" inner-h-t-m-l="[[sysInfoCheckboxLabel_]]"></label>
+      </div>
+      <!-- Bluetooth Logs (Googler Internal Only) -->
+      <div id="bluetoothCheckboxContainer" class="checkbox-field-container">
+        <cr-checkbox id="bluetoothLogsCheckbox" aria-labelledby="sysInfoCheckboxLabel" checked>
+        </cr-checkbox>
+        <label id="bluetoothInfoLabel" inner-h-t-m-l="[[bluetoothLogsCheckboxLabel_]]"></label>
       </div>
     </div>
     <!-- Privacy note -->

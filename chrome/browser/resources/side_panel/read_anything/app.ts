@@ -5,7 +5,9 @@
 import '../strings.m.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
+import {skColorToRgba} from 'chrome://resources/js/color_utils.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
+import {SkColor} from 'chrome://resources/mojo/skia/public/mojom/skcolor.mojom-webui.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './app.html.js';
@@ -21,22 +23,16 @@ const ReadAnythingElementBase = WebUIListenerMixin(PolymerElement);
 // check if chrome.readAnything exists prevents runtime errors when the feature
 // is disabled.
 if (chrome.readAnything) {
-  chrome.readAnything.updateFontName = function() {
-    const readAnythingApp = document.querySelector('read-anything-app');
-    assert(readAnythingApp);
-    readAnythingApp.updateFontName();
-  };
-
   chrome.readAnything.updateContent = function() {
     const readAnythingApp = document.querySelector('read-anything-app');
     assert(readAnythingApp);
     readAnythingApp.updateContent();
   };
 
-  chrome.readAnything.updateFontSize = function() {
+  chrome.readAnything.updateTheme = function() {
     const readAnythingApp = document.querySelector('read-anything-app');
     assert(readAnythingApp);
-    readAnythingApp.updateFontSize();
+    readAnythingApp.updateTheme();
   };
 }
 
@@ -48,17 +44,6 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   static get template() {
     return getTemplate();
   }
-
-  static get properties() {
-    return {
-      fontName_: {
-        type: String,
-      },
-    };
-  }
-
-  private fontName_: string;
-  private fontSize_: number;
 
   // Defines the valid font names that can be passed to front-end and maps
   // them to a corresponding class style in app.html. Must stay in-sync with
@@ -84,58 +69,20 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   }
 
   private buildNode_(nodeId: number): Node|null {
-    if (chrome.readAnything.isHeading(nodeId)) {
-      return this.buildHeadingElement_(nodeId);
+    const htmlTag = chrome.readAnything.getHtmlTag(nodeId);
+    // Text nodes do not have an html tag.
+    if (!htmlTag.length) {
+      const textContent = chrome.readAnything.getTextContent(nodeId);
+      return document.createTextNode(textContent);
     }
-    if (chrome.readAnything.isLink(nodeId)) {
-      return this.buildLinkElement_(nodeId);
-    }
-    if (chrome.readAnything.isParagraph(nodeId)) {
-      return this.buildParagraphElement_(nodeId);
-    }
-    if (chrome.readAnything.isStaticText(nodeId)) {
-      return this.buildStaticTextElement_(nodeId);
-    }
-    return null;
-  }
 
-  private buildHeadingElement_(nodeId: number): HTMLHeadingElement {
-    let headingLevel = chrome.readAnything.getHeadingLevel(nodeId);
-    // In ARIA 1.1, the default heading level is 2.
-    // See AXNodeObject::kDefaultHeadingLevel.
-    if (headingLevel < 1 || headingLevel > 6) {
-      headingLevel = 2;
-    }
-    const tagName = 'h' + headingLevel;
-    const element = document.createElement(tagName);
-    element.setAttribute('align', 'left');
-    this.appendChildNodes_(element, nodeId);
-    return element as HTMLHeadingElement;
-  }
-
-  private buildLinkElement_(nodeId: number): HTMLAnchorElement|null {
+    const element = document.createElement(htmlTag);
     const url = chrome.readAnything.getUrl(nodeId);
-    if (!url.length) {
-      return null;
+    if (url) {
+      element.setAttribute('href', url);
     }
-    const element = document.createElement('a');
-    element.setAttribute('href', url);
     this.appendChildNodes_(element, nodeId);
     return element;
-  }
-
-  private buildParagraphElement_(nodeId: number): HTMLParagraphElement {
-    const element = document.createElement('p');
-    this.appendChildNodes_(element, nodeId);
-    return element;
-  }
-
-  private buildStaticTextElement_(nodeId: number): Text|null {
-    const textContent = chrome.readAnything.getTextContent(nodeId);
-    if (!textContent.length) {
-      return null;
-    }
-    return document.createTextNode(textContent);
   }
 
   private appendChildNodes_(node: Node, nodeId: number) {
@@ -174,15 +121,25 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     }
   }
 
-  updateFontName() {
+  validatedFontName(): string {
     // Validate that the given font name is a valid choice, or use the default.
     const validFontName = this.validFontNames.find(
         (f: {name: string}) => f.name === chrome.readAnything.fontName);
-    this.fontName_ = validFontName ? validFontName.css : this.defaultFontName;
+    return validFontName ? validFontName.css : this.defaultFontName;
   }
 
-  updateFontSize() {
-    this.fontSize_ = chrome.readAnything.fontSize;
+  updateTheme() {
+    const foregroundColor:
+        SkColor = {value: chrome.readAnything.foregroundColor};
+    const backgroundColor:
+        SkColor = {value: chrome.readAnything.backgroundColor};
+
+    this.updateStyles({
+      '--foreground-color': skColorToRgba(foregroundColor),
+      '--background-color': skColorToRgba(backgroundColor),
+      '--read-anything-font-family': this.validatedFontName(),
+      '--read-anything-font-size': chrome.readAnything.fontSize + 'px',
+    });
   }
 }
 

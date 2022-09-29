@@ -372,17 +372,8 @@ class AppServiceProxyPreferredAppsTest : public AppServiceProxyTest {
   // Shortcut for adding apps to App Service without going through a real
   // Publisher.
   void OnApps(std::vector<AppPtr> apps, AppType type) {
-    if (base::FeatureList::IsEnabled(kAppServiceOnAppUpdateWithoutMojom)) {
-      proxy_->OnApps(std::move(apps), type,
-                     /*should_notify_initialized=*/false);
-    } else {
-      std::vector<mojom::AppPtr> mojom_apps;
-      for (const auto& app : apps) {
-        mojom_apps.push_back(ConvertAppToMojomApp(app));
-      }
-      proxy_->OnApps(std::move(mojom_apps), ConvertAppTypeToMojomAppType(type),
-                     /*should_notify_initialized=*/false);
-    }
+    proxy_->OnApps(std::move(apps), type,
+                   /*should_notify_initialized=*/false);
   }
 
   PreferredAppsList& GetPreferredAppsList() {
@@ -795,15 +786,15 @@ TEST_F(AppServiceProxyPreferredAppsTest, PreferredAppsOverlap) {
 
   auto intent_filter_1 = apps_util::MakeIntentFilterForUrlScope(filter_url_1);
   apps_util::AddConditionValue(ConditionType::kScheme, filter_url_2.scheme(),
-                               PatternMatchType::kNone, intent_filter_1);
+                               PatternMatchType::kLiteral, intent_filter_1);
   apps_util::AddConditionValue(ConditionType::kHost, filter_url_2.host(),
-                               PatternMatchType::kNone, intent_filter_1);
+                               PatternMatchType::kLiteral, intent_filter_1);
 
   auto intent_filter_2 = apps_util::MakeIntentFilterForUrlScope(filter_url_3);
   apps_util::AddConditionValue(ConditionType::kScheme, filter_url_2.scheme(),
-                               PatternMatchType::kNone, intent_filter_2);
+                               PatternMatchType::kLiteral, intent_filter_2);
   apps_util::AddConditionValue(ConditionType::kHost, filter_url_2.host(),
-                               PatternMatchType::kNone, intent_filter_2);
+                               PatternMatchType::kLiteral, intent_filter_2);
 
   auto intent_filter_3 = apps_util::MakeIntentFilterForUrlScope(filter_url_1);
 
@@ -857,15 +848,15 @@ TEST_F(AppServiceProxyPreferredAppsTest, PreferredAppsOverlapSupportedLink) {
 
   auto intent_filter_1 = apps_util::MakeIntentFilterForUrlScope(filter_url_1);
   apps_util::AddConditionValue(ConditionType::kScheme, filter_url_2.scheme(),
-                               PatternMatchType::kNone, intent_filter_1);
+                               PatternMatchType::kLiteral, intent_filter_1);
   apps_util::AddConditionValue(ConditionType::kHost, filter_url_2.host(),
-                               PatternMatchType::kNone, intent_filter_1);
+                               PatternMatchType::kLiteral, intent_filter_1);
 
   auto intent_filter_2 = apps_util::MakeIntentFilterForUrlScope(filter_url_3);
   apps_util::AddConditionValue(ConditionType::kScheme, filter_url_2.scheme(),
-                               PatternMatchType::kNone, intent_filter_2);
+                               PatternMatchType::kLiteral, intent_filter_2);
   apps_util::AddConditionValue(ConditionType::kHost, filter_url_2.host(),
-                               PatternMatchType::kNone, intent_filter_2);
+                               PatternMatchType::kLiteral, intent_filter_2);
 
   auto intent_filter_3 = apps_util::MakeIntentFilterForUrlScope(filter_url_1);
 

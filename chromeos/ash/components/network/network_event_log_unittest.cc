@@ -5,16 +5,16 @@
 #include "chromeos/ash/components/network/network_event_log.h"
 
 #include "base/test/task_environment.h"
+#include "chromeos/ash/components/dbus/shill/shill_device_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 class NetworkEventLogTest : public testing::Test {
  public:
@@ -65,21 +65,21 @@ class NetworkEventLogTest : public testing::Test {
                              add_to_visible);
     service_test->SetServiceProperty("/service/2",
                                      shill::kSecurityClassProperty,
-                                     base::Value(shill::kSecurityNone));
+                                     base::Value(shill::kSecurityClassNone));
 
     service_test->AddService("/service/3", "wifi3_guid", "wifi3",
                              shill::kTypeWifi, shill::kStateIdle,
                              add_to_visible);
     service_test->SetServiceProperty("/service/3",
                                      shill::kSecurityClassProperty,
-                                     base::Value(shill::kSecurityWep));
+                                     base::Value(shill::kSecurityClassWep));
 
     service_test->AddService("/service/4", "wifi4_guid", "wifi4",
                              shill::kTypeWifi, shill::kStateIdle,
                              add_to_visible);
     service_test->SetServiceProperty("/service/4",
                                      shill::kSecurityClassProperty,
-                                     base::Value(shill::kSecurity8021x));
+                                     base::Value(shill::kSecurityClass8021x));
 
     // VPN
     service_test->AddService("/service/5", "vpn5_guid", "vpn5", shill::kTypeVPN,
@@ -155,4 +155,4 @@ TEST_F(NetworkEventLogTest, NetworkGuidId) {
   EXPECT_EQ("wifi99_guid", NetworkGuidId("wifi99_guid"));
 }
 
-}  // namespace chromeos
+}  // namespace ash

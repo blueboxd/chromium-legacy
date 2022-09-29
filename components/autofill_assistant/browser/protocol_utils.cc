@@ -27,6 +27,7 @@
 #include "components/autofill_assistant/browser/actions/get_element_status_action.h"
 #include "components/autofill_assistant/browser/actions/js_flow_action.h"
 #include "components/autofill_assistant/browser/actions/navigate_action.h"
+#include "components/autofill_assistant/browser/actions/parse_single_tag_xml_action.h"
 #include "components/autofill_assistant/browser/actions/perform_on_single_element_action.h"
 #include "components/autofill_assistant/browser/actions/popup_message_action.h"
 #include "components/autofill_assistant/browser/actions/presave_generated_password_action.h"
@@ -34,6 +35,7 @@
 #include "components/autofill_assistant/browser/actions/prompt_qr_code_scan_action.h"
 #include "components/autofill_assistant/browser/actions/register_password_reset_request_action.h"
 #include "components/autofill_assistant/browser/actions/release_elements_action.h"
+#include "components/autofill_assistant/browser/actions/report_progress_action.h"
 #include "components/autofill_assistant/browser/actions/reset_pending_credentials_action.h"
 #include "components/autofill_assistant/browser/actions/save_generated_password_action.h"
 #include "components/autofill_assistant/browser/actions/save_submitted_password_action.h"
@@ -481,6 +483,10 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
                          action.set_native_checked().checked()));
     case ActionProto::ActionInfoCase::kPromptQrCodeScan:
       return std::make_unique<PromptQrCodeScanAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kParseSingleTagXml:
+      return std::make_unique<ParseSingleTagXmlAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kReportProgress:
+      return std::make_unique<ReportProgressAction>(delegate, action);
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
       VLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
       return std::make_unique<UnsupportedAction>(delegate, action);
@@ -766,6 +772,14 @@ absl::optional<ActionProto> ProtocolUtils::ParseFromString(
       success = ParseActionFromString(action_id, bytes, error_message,
                                       proto.mutable_prompt_qr_code_scan());
       break;
+    case ActionProto::ActionInfoCase::kParseSingleTagXml:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_parse_single_tag_xml());
+      break;
+    case ActionProto::ActionInfoCase::kReportProgress:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_report_progress());
+      break;
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET:
       // This is an "unknown action", handled as such in CreateAction.
       return proto;
@@ -790,7 +804,8 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
                                  std::vector<std::unique_ptr<Action>>* actions,
                                  std::vector<std::unique_ptr<Script>>* scripts,
                                  bool* should_update_scripts,
-                                 std::string* js_flow_library) {
+                                 std::string* js_flow_library,
+                                 std::string* report_token) {
   DCHECK(actions);
   DCHECK(scripts);
 
@@ -811,6 +826,11 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
   }
   if (js_flow_library) {
     *js_flow_library = std::move(*response_proto.mutable_js_flow_library());
+  }
+  // Only set the report token if it's empty; it should only be populated in the
+  // initial response from GetActions beginning the script run.
+  if (report_token && report_token->empty()) {
+    *report_token = response_proto.report_token();
   }
 
   for (const auto& action : response_proto.actions()) {
@@ -854,6 +874,20 @@ std::string ProtocolUtils::CreateGetTriggerScriptsRequest(
   *request_proto.mutable_client_context() = client_context;
   *request_proto.mutable_script_parameters() =
       script_parameters.ToProto(/* only_non_sensitive_allowlisted = */ true);
+
+  std::string serialized_request_proto;
+  bool success = request_proto.SerializeToString(&serialized_request_proto);
+  DCHECK(success);
+  return serialized_request_proto;
+}
+
+// static
+std::string ProtocolUtils::CreateReportProgressRequest(
+    const std::string& token,
+    const std::string& payload) {
+  ReportProgressRequestProto request_proto;
+  *request_proto.mutable_token() = token;
+  *request_proto.mutable_payload() = payload;
 
   std::string serialized_request_proto;
   bool success = request_proto.SerializeToString(&serialized_request_proto);

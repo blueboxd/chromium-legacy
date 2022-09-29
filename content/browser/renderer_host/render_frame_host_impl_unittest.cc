@@ -17,6 +17,7 @@
 #include "content/test/navigation_simulator_impl.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
+#include "net/base/features.h"
 #include "net/base/isolation_info.h"
 #include "net/cookies/site_for_cookies.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
@@ -122,7 +123,7 @@ TEST_F(RenderFrameHostImplTest, CrossSiteAncestorInFrameTree) {
   // Enable 3p partitioning to accurately test AncestorChainBit.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
-      blink::features::kThirdPartyStoragePartitioning);
+      net::features::kThirdPartyStoragePartitioning);
 
   // Load site A into the main frame.
   GURL parent_url = GURL("https://parent.example.test/");
@@ -373,7 +374,16 @@ TEST_F(RenderFrameHostImplTest, ChildOfAnonymousIsAnonymous) {
   EXPECT_FALSE(child_frame->IsAnonymous());
   EXPECT_FALSE(child_frame->storage_key().nonce().has_value());
 
-  child_frame->frame_tree_node()->SetAnonymous(true);
+  auto attributes = blink::mojom::IframeAttributes::New();
+  attributes->parsed_csp_attribute = std::move(
+      child_frame->frame_tree_node()->attributes_->parsed_csp_attribute);
+  attributes->id = child_frame->frame_tree_node()->html_id();
+  attributes->name = child_frame->frame_tree_node()->html_name();
+  attributes->src = child_frame->frame_tree_node()->html_src();
+  // Set |anonymous| to true.
+  attributes->anonymous = true;
+  child_frame->frame_tree_node()->SetAttributes(std::move(attributes));
+
   EXPECT_FALSE(child_frame->IsAnonymous());
   EXPECT_FALSE(child_frame->storage_key().nonce().has_value());
 
@@ -775,10 +785,10 @@ class RenderFrameHostImplThirdPartyStorageTest
     contents()->GetPrimaryMainFrame()->InitializeRenderFrameIfNeeded();
     if (ThirdPartyStoragePartitioningEnabled()) {
       scoped_feature_list_.InitAndEnableFeature(
-          blink::features::kThirdPartyStoragePartitioning);
+          net::features::kThirdPartyStoragePartitioning);
     } else {
       scoped_feature_list_.InitAndDisableFeature(
-          blink::features::kThirdPartyStoragePartitioning);
+          net::features::kThirdPartyStoragePartitioning);
     }
   }
   bool ThirdPartyStoragePartitioningEnabled() { return GetParam(); }

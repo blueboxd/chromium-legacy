@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/test_data_source.h"
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -452,9 +453,7 @@ class MockWebUIDataSource : public content::URLDataSource {
     std::move(callback).Run(response.get());
   }
 
-  std::string GetMimeType(const std::string& path) override {
-    return "text/html";
-  }
+  std::string GetMimeType(const GURL& url) override { return "text/html"; }
 
   std::string GetContentSecurityPolicy(
       const network::mojom::CSPDirectiveName directive) override {
@@ -520,6 +519,17 @@ void BaseWebUIBrowserTest::SetUpOnMainThread() {
   }
 
   logging::SetLogMessageHandler(&LogHandler);
+
+  // Register URLDataSource that serves files used in tests at chrome://test/
+  // e.g. `chrome://test/mocha.js`.
+  //
+  // For tests that run on the login screen, there is no Browser during
+  // SetUpOnMainThread() so skip adding TestDataSource. These tests don't need
+  // TestDataSource anyway.
+  if (browser()) {
+    content::URLDataSource::Add(browser()->profile(),
+                                std::make_unique<TestDataSource>("webui"));
+  }
 
   test_factory_ = std::make_unique<TestChromeWebUIControllerFactory>();
   factory_registration_ =
@@ -587,11 +597,11 @@ bool BaseWebUIBrowserTest::RunJavascriptUsingHandler(
       called_function = BuildRunTestJSCall(is_async, function_name,
                                            std::move(function_arguments));
     } else {
-      std::vector<const base::Value*> ptr_vector(function_arguments.size());
-      for (size_t i = 0; i < function_arguments.size(); ++i)
-        ptr_vector[i] = &function_arguments[i];
+      std::vector<base::ValueView> view_vector;
+      for (const auto& argument : function_arguments)
+        view_vector.emplace_back(argument);
       called_function =
-          content::WebUI::GetJavascriptCall(function_name, ptr_vector);
+          content::WebUI::GetJavascriptCall(function_name, view_vector);
     }
     content.append(called_function);
   }

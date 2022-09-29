@@ -6,13 +6,19 @@
 
 namespace apps {
 
-const base::Feature kAppServiceOnAppUpdateWithoutMojom{
-    "AppServiceOnAppUpdateWithoutMojom", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kAppServicePreferredAppsWithoutMojom{
     "AppServicePreferredAppsWithoutMojom", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAppServiceLaunchWithoutMojom{
-    "AppServiceLaunchWithoutMojom", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AppServiceLaunchWithoutMojom", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAppServiceSetPermissionWithoutMojom{
+    "AppServiceSetPermissionWithoutMojom", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAppServiceUninstallWithoutMojom{
+    "AppServiceUninstallWithoutMojom", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAppServiceWithoutMojom{"AppServiceWithoutMojom",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace apps

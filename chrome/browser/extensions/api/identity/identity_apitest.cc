@@ -84,13 +84,19 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/tpm/stub_install_attributes.h"
 #include "chrome/browser/ash/login/users/mock_user_manager.h"
 #include "chrome/browser/ash/net/network_portal_detector_test_impl.h"
+#include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "components/user_manager/scoped_user_manager.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/startup/browser_init_params.h"
 #endif
 
 using guest_view::GuestViewBase;
@@ -116,10 +122,8 @@ const char kGetAuthTokenResultAfterConsentApprovedHistogramName[] =
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void InitNetwork() {
-  const chromeos::NetworkState* default_network =
-      chromeos::NetworkHandler::Get()
-          ->network_state_handler()
-          ->DefaultNetwork();
+  const ash::NetworkState* default_network =
+      ash::NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
 
   auto* portal_detector = new ash::NetworkPortalDetectorTestImpl();
   portal_detector->SetDefaultNetworkForTesting(default_network->guid());
@@ -414,7 +418,7 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
     }
   }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   void StartDeviceAccessTokenRequest() override {
     // In these tests requests for the device account just funnel through to
     // requests for the token key account.
@@ -1094,9 +1098,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       IdentityGetAuthTokenError::State::kSignInFailed, 1);
 }
 
+// Signin is always allowed on Lacros.
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
-// TODO(crbug.com/1220066): Remove the lacros exclusion when DICE is disabled on
-// Lacros.
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        PRE_InteractiveNotSignedAndSigninNotAllowed) {
   // kSigninAllowed cannot be set after the profile creation. Use
@@ -1232,7 +1235,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       IdentityGetAuthTokenError::State::kMintTokenAuthFailure, 1);
 }
 
-// The signin flow is simply not used on ChromeOS.
+// The signin flow is simply not used on Ash.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        InteractiveMintServiceErrorShowSigninOnlyOnce) {
@@ -1285,8 +1288,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveLoginCanceled) {
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{\"interactive\": true}]", browser());
   EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
-// ChromeOS does not support the interactive login flow, so the login UI will
-// never be shown on that platform.
+// Ash does not support the interactive login flow, so the login UI will never
+// be shown on that platform.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_TRUE(func->login_ui_shown());
 #endif
@@ -1316,7 +1319,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 }
 
 // The interactive login flow is always short-circuited out with failure on
-// ChromeOS, so the tests of the interactive login flow being successful are not
+// Ash, so the tests of the interactive login flow being successful are not
 // relevant on that platform.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1523,7 +1526,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveApprovalNoGrant) {
       IdentityGetAuthTokenError::State::kNoGrant, 1);
 }
 
-// The signin flow is simply not used on ChromeOS.
+// The signin flow is simply not used on Ash.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        InteractiveApprovalNoGrantShowSigninUIOnlyOnce) {
@@ -1936,8 +1939,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveCacheHit) {
       1);
 }
 
-// The interactive login UI is never shown on ChromeOS, so tests of the
-// interactive login flow being successful are not relevant on that platform.
+// The interactive login UI is never shown on Ash, so tests of the interactive
+// login flow being successful are not relevant on that platform.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, LoginInvalidatesTokenCache) {
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
@@ -2567,7 +2570,7 @@ IN_PROC_BROWSER_TEST_F(
       2);
 }
 
-// The signin flow is simply not used on ChromeOS.
+// The signin flow is simply not used on Ash.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        MultiSecondaryInteractiveInvalidToken) {
@@ -2785,22 +2788,103 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, GranularPermissionsResponse) {
       1);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-class GetAuthTokenFunctionDeviceLocalAccountTest
-    : public GetAuthTokenFunctionTest {
- public:
-  GetAuthTokenFunctionDeviceLocalAccountTest()
-      : user_manager_(new ash::MockUserManager) {}
+#if BUILDFLAG(IS_CHROMEOS)
+enum class DeviceLocalAccountSessionType { kPublic, kAppKiosk, kWebKiosk };
 
-  void SetUpOnMainThread() override {
-    GetAuthTokenFunctionTest::SetUpOnMainThread();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+class GetAuthTokenFunctionDeviceLocalAccountTestPlatformHelper {
+ public:
+  explicit GetAuthTokenFunctionDeviceLocalAccountTestPlatformHelper(
+      DeviceLocalAccountSessionType session_type)
+      : session_type_(session_type), user_manager_(new ash::MockUserManager) {}
+
+  void SetUpOnMainThread() {
+    chromeos::LoginState::Get()->SetLoggedInState(
+        chromeos::LoginState::LoggedInState::LOGGED_IN_ACTIVE,
+        session_type_ == DeviceLocalAccountSessionType::kPublic
+            ? chromeos::LoginState::LoggedInUserType::
+                  LOGGED_IN_USER_PUBLIC_ACCOUNT
+            : chromeos::LoginState::LoggedInUserType::LOGGED_IN_USER_KIOSK);
+    EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp())
+        .WillRepeatedly(
+            Return(session_type_ == DeviceLocalAccountSessionType::kAppKiosk));
+    EXPECT_CALL(*user_manager_, IsLoggedInAsWebKioskApp())
+        .WillRepeatedly(
+            Return(session_type_ == DeviceLocalAccountSessionType::kWebKiosk));
+    EXPECT_CALL(*user_manager_, IsLoggedInAsPublicAccount())
+        .WillRepeatedly(
+            Return(session_type_ == DeviceLocalAccountSessionType::kPublic));
+    EXPECT_CALL(*user_manager_, GetLoggedInUsers())
+        .WillRepeatedly(
+            testing::Invoke(user_manager_, &ash::MockUserManager::GetUsers));
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         base::WrapUnique(user_manager_));
   }
 
+  void TearDownOnMainThread() { scoped_user_manager_.reset(); }
+
+ private:
+  const DeviceLocalAccountSessionType session_type_;
+
+  // Set up fake install attributes to make the device appeared as
+  // enterprise-managed.
+  ash::ScopedStubInstallAttributes test_install_attributes_{
+      ash::StubInstallAttributes::CreateCloudManaged("example.com", "fake-id")};
+
+  // Owned by |scoped_user_manager_|.
+  ash::MockUserManager* user_manager_;
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
+};
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+class GetAuthTokenFunctionDeviceLocalAccountTestPlatformHelper {
+ public:
+  explicit GetAuthTokenFunctionDeviceLocalAccountTestPlatformHelper(
+      DeviceLocalAccountSessionType session_type) {
+    crosapi::mojom::SessionType init_params_session_type =
+        crosapi::mojom::SessionType::kUnknown;
+    switch (session_type) {
+      case DeviceLocalAccountSessionType::kPublic:
+        init_params_session_type = crosapi::mojom::SessionType::kPublicSession;
+        break;
+      case DeviceLocalAccountSessionType::kAppKiosk:
+        init_params_session_type =
+            crosapi::mojom::SessionType::kAppKioskSession;
+        break;
+      case DeviceLocalAccountSessionType::kWebKiosk:
+        init_params_session_type =
+            crosapi::mojom::SessionType::kWebKioskSession;
+        break;
+    }
+    crosapi::mojom::BrowserInitParamsPtr init_params =
+        crosapi::mojom::BrowserInitParams::New();
+    init_params->session_type = init_params_session_type;
+    init_params->is_device_enterprised_managed = true;
+    init_params->device_settings = crosapi::mojom::DeviceSettings::New();
+    chromeos::BrowserInitParams::SetInitParamsForTests(std::move(init_params));
+  }
+
+  void SetUpOnMainThread() {}
+  void TearDownOnMainThread() {}
+};
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+class GetAuthTokenFunctionDeviceLocalAccountTest
+    : public GetAuthTokenFunctionTest {
+ public:
+  explicit GetAuthTokenFunctionDeviceLocalAccountTest(
+      DeviceLocalAccountSessionType session_type)
+      : platform_helper_(session_type) {}
+
+  void SetUpOnMainThread() override {
+    platform_helper_.SetUpOnMainThread();
+    GetAuthTokenFunctionTest::SetUpOnMainThread();
+  }
+
   void TearDownOnMainThread() override {
     GetAuthTokenFunctionTest::TearDownOnMainThread();
-    scoped_user_manager_.reset();
+    platform_helper_.TearDownOnMainThread();
   }
 
  protected:
@@ -2835,33 +2919,15 @@ class GetAuthTokenFunctionDeviceLocalAccountTest
         .Build();
   }
 
-  // Set up fake install attributes to make the device appeared as
-  // enterprise-managed.
-  ash::ScopedStubInstallAttributes test_install_attributes_{
-      ash::StubInstallAttributes::CreateCloudManaged("example.com", "fake-id")};
-
-  // Owned by |user_manager_enabler|.
-  ash::MockUserManager* user_manager_;
-  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
+  GetAuthTokenFunctionDeviceLocalAccountTestPlatformHelper platform_helper_;
 };
 
 class GetAuthTokenFunctionPublicSessionTest
     : public GetAuthTokenFunctionDeviceLocalAccountTest {
  protected:
-  void SetUpInProcessBrowserTestFixture() override {
-    GetAuthTokenFunctionTest::SetUpInProcessBrowserTestFixture();
-
-    // Set up the user manager to fake a public session.
-    EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*user_manager_, IsLoggedInAsWebKioskApp())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*user_manager_, IsLoggedInAsPublicAccount())
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*user_manager_, GetLoggedInUsers())
-        .WillRepeatedly(
-            testing::Invoke(user_manager_, &ash::MockUserManager::GetUsers));
-  }
+  GetAuthTokenFunctionPublicSessionTest()
+      : GetAuthTokenFunctionDeviceLocalAccountTest(
+            DeviceLocalAccountSessionType::kPublic) {}
 };
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionPublicSessionTest, NonAllowlisted) {
@@ -2882,20 +2948,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionPublicSessionTest, NonAllowlisted) {
 class GetAuthTokenFunctionChromeKioskTest
     : public GetAuthTokenFunctionDeviceLocalAccountTest {
  protected:
-  void SetUpInProcessBrowserTestFixture() override {
-    GetAuthTokenFunctionTest::SetUpInProcessBrowserTestFixture();
-
-    // Set up the user manager to fake a Chrome Kiosk session.
-    EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp())
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*user_manager_, IsLoggedInAsWebKioskApp())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*user_manager_, IsLoggedInAsPublicAccount())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*user_manager_, GetLoggedInUsers())
-        .WillRepeatedly(
-            testing::Invoke(user_manager_, &ash::MockUserManager::GetUsers));
-  }
+  GetAuthTokenFunctionChromeKioskTest()
+      : GetAuthTokenFunctionDeviceLocalAccountTest(
+            DeviceLocalAccountSessionType::kAppKiosk) {}
 };
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionChromeKioskTest, NonAllowlisted) {
@@ -2907,20 +2962,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionChromeKioskTest, NonAllowlisted) {
 class GetAuthTokenFunctionWebKioskTest
     : public GetAuthTokenFunctionDeviceLocalAccountTest {
  protected:
-  void SetUpInProcessBrowserTestFixture() override {
-    GetAuthTokenFunctionTest::SetUpInProcessBrowserTestFixture();
-
-    // Set up the user manager to fake a web Kiosk session.
-    EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*user_manager_, IsLoggedInAsWebKioskApp())
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*user_manager_, IsLoggedInAsPublicAccount())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*user_manager_, GetLoggedInUsers())
-        .WillRepeatedly(
-            testing::Invoke(user_manager_, &ash::MockUserManager::GetUsers));
-  }
+  GetAuthTokenFunctionWebKioskTest()
+      : GetAuthTokenFunctionDeviceLocalAccountTest(
+            DeviceLocalAccountSessionType::kWebKiosk) {}
 };
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionWebKioskTest, NonAllowlisted) {
@@ -2929,7 +2973,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionWebKioskTest, NonAllowlisted) {
   RunExtensionAndVerifyNoError(/*is_extension_allowlisted=*/false);
 }
 
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // There are two parameters, which are stored in a std::pair, for these tests.
 //
@@ -3133,7 +3177,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionSelectedUserIdTest,
       1);
 }
 
-// The signin flow is not used on ChromeOS.
+// The signin flow is not used on Ash.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 // Tests that Chrome does not have any selected user id value if the account
 // specified by the extension is not available.

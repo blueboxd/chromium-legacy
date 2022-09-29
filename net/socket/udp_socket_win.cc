@@ -356,8 +356,8 @@ int UDPSocketWin::GetLocalAddress(IPEndPoint* address) const {
       return ERR_ADDRESS_INVALID;
     local_address_ = std::move(local_address);
     net_log_.AddEvent(NetLogEventType::UDP_LOCAL_ADDRESS, [&] {
-      return CreateNetLogUDPConnectParams(
-          *local_address_, NetworkChangeNotifier::kInvalidNetworkHandle);
+      return CreateNetLogUDPConnectParams(*local_address_,
+                                          handles::kInvalidNetworkHandle);
     });
   }
 
@@ -440,8 +440,8 @@ int UDPSocketWin::SendToOrWrite(IOBuffer* buf,
 int UDPSocketWin::Connect(const IPEndPoint& address) {
   DCHECK_NE(socket_, INVALID_SOCKET);
   net_log_.BeginEvent(NetLogEventType::UDP_CONNECT, [&] {
-    return CreateNetLogUDPConnectParams(
-        address, NetworkChangeNotifier::kInvalidNetworkHandle);
+    return CreateNetLogUDPConnectParams(address,
+                                        handles::kInvalidNetworkHandle);
   });
   int rv = SetMulticastOptions();
   if (rv != OK)
@@ -499,7 +499,7 @@ int UDPSocketWin::Bind(const IPEndPoint& address) {
   return rv;
 }
 
-int UDPSocketWin::BindToNetwork(NetworkChangeNotifier::NetworkHandle network) {
+int UDPSocketWin::BindToNetwork(handles::NetworkHandle network) {
   NOTIMPLEMENTED();
   return ERR_NOT_IMPLEMENTED;
 }
@@ -1182,37 +1182,6 @@ void UDPSocketWin::ApplySocketTag(const SocketTag& tag) {
   CHECK(tag == SocketTag());
 }
 
-void UDPSocketWin::SetWriteAsyncEnabled(bool enabled) {}
-bool UDPSocketWin::WriteAsyncEnabled() {
-  return false;
-}
-void UDPSocketWin::SetMaxPacketSize(size_t max_packet_size) {}
-void UDPSocketWin::SetWriteMultiCoreEnabled(bool enabled) {}
-void UDPSocketWin::SetSendmmsgEnabled(bool enabled) {}
-void UDPSocketWin::SetWriteBatchingActive(bool active) {}
-
-int UDPSocketWin::WriteAsync(
-    DatagramBuffers buffers,
-    CompletionOnceCallback callback,
-    const NetworkTrafficAnnotationTag& traffic_annotation) {
-  NOTIMPLEMENTED();
-  return ERR_NOT_IMPLEMENTED;
-}
-
-int UDPSocketWin::WriteAsync(
-    const char* buffer,
-    size_t buf_len,
-    CompletionOnceCallback callback,
-    const NetworkTrafficAnnotationTag& traffic_annotation) {
-  NOTIMPLEMENTED();
-  return ERR_NOT_IMPLEMENTED;
-}
-
-DatagramBuffers UDPSocketWin::GetUnwrittenBuffers() {
-  DatagramBuffers result;
-  NOTIMPLEMENTED();
-  return result;
-}
 DscpManager::DscpManager(QwaveApi* api, SOCKET socket)
     : api_(api), socket_(socket) {
   RequestHandle();

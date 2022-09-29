@@ -13,7 +13,7 @@
 #include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/ash/components/network/network_handler_callbacks.h"
 
-namespace chromeos {
+namespace ash {
 
 // Fake NetworkConnectionHandler implementation for tests.
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkConnectionHandler
@@ -92,11 +92,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkConnectionHandler
   std::vector<ConnectionParams> disconnect_calls_;
 };
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash {
-using ::chromeos::FakeNetworkConnectionHandler;
-}
+}  // namespace ash
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_FAKE_NETWORK_CONNECTION_HANDLER_H_

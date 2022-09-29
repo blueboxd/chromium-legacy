@@ -9,7 +9,9 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/unguessable_token.h"
+#include "chromeos/ash/components/oobe_quick_start/connectivity/random_session_id.h"
+
+namespace ash::quick_start {
 
 namespace {
 
@@ -17,8 +19,59 @@ constexpr const char kFastPairServiceUuid[] =
     "0000fe2c-0000-1000-8000-00805f9b34fb";
 constexpr uint8_t kFastPairModelId[] = {0x41, 0xc0, 0xd9};
 constexpr uint16_t kCompanyId = 0x00e0;
-constexpr const char kAdvertisingSuccessHistogramName[] =
-    "OOBE.QuickStart.FastPairAdvertising";
+constexpr const char kAdvertisingStartErrorCodeHistogramName[] =
+    "OOBE.QuickStart.FastPair.AdvertisingStart.ErrorCode";
+constexpr const char kAdvertisingStartResultHistogramName[] =
+    "OOBE.QuickStart.FastPair.AdvertisingStart.Result";
+
+// This enum is tied directly to a UMA enum defined in
+// //tools/metrics/histograms/enums.xml and should always reflect it. The UMA
+// enum cannot use |device::BluetoothAdvertisement::ErrorCode| directly, because
+// it is missing the required |kMaxValue| field.
+enum class AdvertisingStartErrorCode {
+  kUnsupportedPlatform = 0,
+  kAdvertisementAlreadyExists = 1,
+  kAdvertisementDoesNotExist = 2,
+  kAdvertisementInvalidLength = 3,
+  kStartingAdvertisement = 4,
+  kResetAdvertising = 5,
+  kAdapterPoweredOff = 6,
+  kInvalidAdvertisementInterval = 7,
+  kInvalidAdvertisementErrorCode = 8,
+  kMaxValue = kInvalidAdvertisementErrorCode,
+};
+
+AdvertisingStartErrorCode MapBluetoothAdvertisementErrorCode(
+    device::BluetoothAdvertisement::ErrorCode error_code) {
+  switch (error_code) {
+    case device::BluetoothAdvertisement::ErrorCode::ERROR_UNSUPPORTED_PLATFORM:
+      return AdvertisingStartErrorCode::kUnsupportedPlatform;
+    case device::BluetoothAdvertisement::ErrorCode::
+        ERROR_ADVERTISEMENT_ALREADY_EXISTS:
+      return AdvertisingStartErrorCode::kAdvertisementAlreadyExists;
+    case device::BluetoothAdvertisement::ErrorCode::
+        ERROR_ADVERTISEMENT_DOES_NOT_EXIST:
+      return AdvertisingStartErrorCode::kAdvertisementDoesNotExist;
+    case device::BluetoothAdvertisement::ErrorCode::
+        ERROR_ADVERTISEMENT_INVALID_LENGTH:
+      return AdvertisingStartErrorCode::kAdvertisementInvalidLength;
+    case device::BluetoothAdvertisement::ErrorCode::
+        ERROR_STARTING_ADVERTISEMENT:
+      return AdvertisingStartErrorCode::kStartingAdvertisement;
+    case device::BluetoothAdvertisement::ErrorCode::ERROR_RESET_ADVERTISING:
+      return AdvertisingStartErrorCode::kResetAdvertising;
+    case device::BluetoothAdvertisement::ErrorCode::ERROR_ADAPTER_POWERED_OFF:
+      return AdvertisingStartErrorCode::kAdapterPoweredOff;
+    case device::BluetoothAdvertisement::ErrorCode::
+        ERROR_INVALID_ADVERTISEMENT_INTERVAL:
+      return AdvertisingStartErrorCode::kInvalidAdvertisementInterval;
+    case device::BluetoothAdvertisement::ErrorCode::
+        INVALID_ADVERTISEMENT_ERROR_CODE:
+      [[fallthrough]];
+    default:
+      return AdvertisingStartErrorCode::kInvalidAdvertisementErrorCode;
+  }
+}
 
 }  // namespace
 
@@ -58,10 +111,12 @@ void FastPairAdvertiser::AdvertisementReleased(
 
 void FastPairAdvertiser::StartAdvertising(
     base::OnceCallback<void()> callback,
-    base::OnceCallback<void()> error_callback) {
+    base::OnceCallback<void()> error_callback,
+    const RandomSessionId& random_session_id) {
   DCHECK(adapter_->IsPresent() && adapter_->IsPowered());
   DCHECK(!advertisement_);
-  RegisterAdvertisement(std::move(callback), std::move(error_callback));
+  RegisterAdvertisement(std::move(callback), std::move(error_callback),
+                        random_session_id);
 }
 
 void FastPairAdvertiser::StopAdvertising(base::OnceCallback<void()> callback) {
@@ -76,7 +131,8 @@ void FastPairAdvertiser::StopAdvertising(base::OnceCallback<void()> callback) {
 
 void FastPairAdvertiser::RegisterAdvertisement(
     base::OnceClosure callback,
-    base::OnceClosure error_callback) {
+    base::OnceClosure error_callback,
+    const RandomSessionId& random_session_id) {
   auto advertisement_data =
       std::make_unique<device::BluetoothAdvertisement::Data>(
           device::BluetoothAdvertisement::ADVERTISEMENT_TYPE_BROADCAST);
@@ -95,7 +151,8 @@ void FastPairAdvertiser::RegisterAdvertisement(
 
   auto manufacturer_data =
       std::make_unique<device::BluetoothAdvertisement::ManufacturerData>();
-  auto manufacturer_metadata = GenerateManufacturerMetadata();
+  std::vector<uint8_t> manufacturer_metadata =
+      GenerateManufacturerMetadata(random_session_id);
   manufacturer_data->insert(std::pair<uint16_t, std::vector<uint8_t>>(
       kCompanyId, manufacturer_metadata));
   advertisement_data->set_manufacturer_data(std::move(manufacturer_data));
@@ -114,7 +171,7 @@ void FastPairAdvertiser::OnRegisterAdvertisement(
     scoped_refptr<device::BluetoothAdvertisement> advertisement) {
   advertisement_ = advertisement;
   advertisement_->AddObserver(this);
-  base::UmaHistogramBoolean(kAdvertisingSuccessHistogramName, true);
+  base::UmaHistogramBoolean(kAdvertisingStartResultHistogramName, true);
   std::move(callback).Run();
 }
 
@@ -122,7 +179,11 @@ void FastPairAdvertiser::OnRegisterAdvertisementError(
     base::OnceClosure error_callback,
     device::BluetoothAdvertisement::ErrorCode error_code) {
   LOG(ERROR) << __func__ << " failed with error code = " << error_code;
-  base::UmaHistogramBoolean(kAdvertisingSuccessHistogramName, false);
+  base::UmaHistogramBoolean(kAdvertisingStartResultHistogramName, false);
+  AdvertisingStartErrorCode uma_error_code_enum =
+      MapBluetoothAdvertisementErrorCode(error_code);
+  base::UmaHistogramEnumeration(kAdvertisingStartErrorCodeHistogramName,
+                                uma_error_code_enum);
   std::move(error_callback).Run();
   // |this| might be destroyed here, do not access local fields.
 }
@@ -151,15 +212,12 @@ void FastPairAdvertiser::OnUnregisterAdvertisementError(
   // |this| might be destroyed here, do not access local fields.
 }
 
-std::vector<uint8_t> FastPairAdvertiser::GenerateManufacturerMetadata() {
-  // TODO(b/235403498): This code may need to be updated later to be derived
-  // from the device BT address. It is not required in order for the
-  // advertisement to trigger the Fast Pair halfsheet.
-  auto token = base::UnguessableToken::Create();
-  base::span<const uint8_t> fast_pair_code = token.AsBytes().first(2);
-
-  std::vector<uint8_t> metadata(std::begin(fast_pair_code),
-                                std::end(fast_pair_code));
-
+std::vector<uint8_t> FastPairAdvertiser::GenerateManufacturerMetadata(
+    const RandomSessionId& random_session_id) {
+  base::span<const uint8_t, RandomSessionId::kLength> id =
+      random_session_id.AsBytes();
+  std::vector<uint8_t> metadata(std::begin(id), std::end(id));
   return metadata;
 }
+
+}  // namespace ash::quick_start

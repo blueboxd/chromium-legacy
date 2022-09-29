@@ -385,21 +385,6 @@ class PasswordFormManagerTest : public testing::Test,
     field.unique_renderer_id = autofill::FieldRendererId(5);
     observed_form_only_password_fields_.fields.push_back(field);
 
-// On iOS the unique_id member uniquely addresses this field in the DOM.
-// This is an ephemeral value which is not guaranteed to be stable across
-// page loads. It serves to allow a given field to be found during the
-// current navigation.
-// TODO(crbug.com/896689): Expand the logic/application of this to other
-// platforms and/or merge this concept with |unique_renderer_id|.
-#if BUILDFLAG(IS_IOS)
-    for (auto& f : observed_form_.fields) {
-      f.unique_id = f.id_attribute;
-    }
-    for (auto& f : observed_form_only_password_fields_.fields) {
-      f.unique_id = f.id_attribute;
-    }
-#endif
-
     submitted_form_ = observed_form_;
     submitted_form_.fields[kUsernameFieldIndex].value = u"user1";
     submitted_form_.fields[kPasswordFieldIndex].value = u"secret1";
@@ -1765,9 +1750,6 @@ TEST_P(PasswordFormManagerTest, FillForm) {
       form.fields[kUsernameFieldIndex].unique_renderer_id.value() += 1000;
       form.fields[kUsernameFieldIndex].name += u"1";
       form.fields[kUsernameFieldIndex].id_attribute += u"1";
-#if BUILDFLAG(IS_IOS)
-      form.fields[kUsernameFieldIndex].unique_id += u"1";
-#endif
       form.fields[kPasswordFieldIndex].unique_renderer_id.value() += 1000;
     }
 
@@ -2126,8 +2108,6 @@ TEST_P(PasswordFormManagerTest, iOSPresavedGeneratedPassword) {
   // Use |generated_password| different from value in field to test that the
   // generated password is saved.
   const std::u16string generated_password = u"gen_pw";
-  // Use different |unique_id| and |name| to test that |unique_id| is taken.
-  password_field.unique_id = password_field.name + u"1";
   FieldRendererId generation_element = password_field.unique_renderer_id;
 
   PasswordForm saved_form;
@@ -2196,9 +2176,6 @@ TEST_P(PasswordFormManagerTest, iOSUsingFieldDataManagerData) {
 
 // Tests provisional saving of credentials during username first flow.
 TEST_P(PasswordFormManagerTest, UsernameFirstFlowProvisionalSave) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
-
   CreateFormManager(observed_form_only_password_fields_);
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
@@ -2235,9 +2212,6 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowProvisionalSave) {
 // Tests that username is not taken if domains of possible username field
 // and submitted password form are different.
 TEST_P(PasswordFormManagerTest, UsernameFirstFlowDifferentDomains) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
-
   CreateFormManager(observed_form_only_password_fields_);
   fetcher_->NotifyFetchCompleted();
 
@@ -2265,9 +2239,6 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowDifferentDomains) {
 // Tests that username is not taken during the sign up flow (when there is no
 // current password field in the password form).
 TEST_P(PasswordFormManagerTest, UsernameFirstFlowSignupForm) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
-
   CreateFormManager(observed_form_only_password_fields_);
   fetcher_->NotifyFetchCompleted();
 
@@ -2297,8 +2268,7 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowSignupForm) {
 TEST_P(PasswordFormManagerTest, UsernameFirstFlow) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      /*enabled_features=*/{features::kUsernameFirstFlow,
-                            features::kUsernameFirstFlowFallbackCrowdsourcing},
+      /*enabled_features=*/{features::kUsernameFirstFlowFallbackCrowdsourcing},
       /*disabled_features=*/{});
 
   for (bool is_password_update : {false, true}) {
@@ -2398,8 +2368,7 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlow) {
 TEST_P(PasswordFormManagerTest, NegativeUsernameFirstFlowVotes) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      /*enabled_features=*/{features::kUsernameFirstFlow,
-                            features::kUsernameFirstFlowFallbackCrowdsourcing},
+      /*enabled_features=*/{features::kUsernameFirstFlowFallbackCrowdsourcing},
       /*disabled_features=*/{});
 
   constexpr char16_t kPossibleUsername[] = u"possible_username";
@@ -2492,8 +2461,7 @@ TEST_P(PasswordFormManagerTest, NegativeUsernameFirstFlowVotes) {
 TEST_P(PasswordFormManagerTest, UsernameFirstFlowVotesNamelessField) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      /*enabled_features=*/{features::kUsernameFirstFlow,
-                            features::kUsernameFirstFlowFallbackCrowdsourcing},
+      /*enabled_features=*/{features::kUsernameFirstFlowFallbackCrowdsourcing},
       /*disabled_features=*/{});
 
   CreateFormManager(observed_form_only_password_fields_);
@@ -2548,9 +2516,6 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowVotesNamelessField) {
 // Tests that server prediction are taken into consideration for offering
 // username on username first flow.
 TEST_P(PasswordFormManagerTest, PossibleUsernameServerPredictions) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
-
   const std::u16string username_field_name = u"username_field";
   const std::u16string possible_username = u"possible_username";
   PossibleUsernameData possible_username_data(
@@ -3274,8 +3239,6 @@ TEST_F(PasswordFormManagerTestWithMockedSaver, HTTPAuthAlreadySaved) {
 
 // Tests that username is taken during username first flow.
 TEST_F(PasswordFormManagerTestWithMockedSaver, UsernameFirstFlow) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
   CreateFormManager(observed_form_only_password_fields_);
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
@@ -3301,8 +3264,6 @@ TEST_F(PasswordFormManagerTestWithMockedSaver, UsernameFirstFlow) {
 // Tests that username is not taken when a possible username is not valid.
 TEST_F(PasswordFormManagerTestWithMockedSaver,
        UsernameFirstFlowDifferentDomains) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
   CreateFormManager(observed_form_only_password_fields_);
   fetcher_->NotifyFetchCompleted();
 

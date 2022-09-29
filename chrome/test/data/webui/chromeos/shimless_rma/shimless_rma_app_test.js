@@ -105,6 +105,11 @@ export function shimlessRMAAppTest() {
   test('ShimlessRMALoaded', async () => {
     await initializeShimlessRMAApp(fakeStates, fakeChromeVersion[0]);
     assertNavButtons();
+
+    // The Hardware Error page should be hidden by default.
+    const hardwareErrorPage =
+        component.shadowRoot.querySelector('hardware-error-page');
+    assertFalse(!!hardwareErrorPage);
   });
 
   test('ShimlessRMABasicNavigation', async () => {
@@ -553,5 +558,69 @@ export function shimlessRMAAppTest() {
     // The exit button should never be hidden for the Calibration failed page.
     assertTrue(backButton.hidden);
     assertFalse(exitButton.hidden);
+  });
+
+  test('HardwareErrorEventIsHandled', async () => {
+    await initializeShimlessRMAApp(fakeStates, fakeChromeVersion[0]);
+
+    component.dispatchEvent(new CustomEvent(
+        'fatal-hardware-error',
+        {bubbles: true, composed: true},
+        ));
+
+    await flushTasks();
+
+    // Confirm transition to the Hardware Error page.
+    const hardwareErrorPage =
+        component.shadowRoot.querySelector('hardware-error-page');
+    assertTrue(!!hardwareErrorPage);
+  });
+
+  test('RebootErrorCodeResultsInShowingRebootPage', async () => {
+    await initializeShimlessRMAApp(fakeStates, fakeChromeVersion[0]);
+
+    // Emulate platform sending a reboot error code.
+    component.dispatchEvent(new CustomEvent(
+        'transition-state',
+        {
+          bubbles: true,
+          composed: true,
+          detail: () => Promise.resolve({
+            stateResult: {
+              state: State.kWPDisableComplete,
+              error: RmadErrorCode.kExpectReboot,
+            },
+          }),
+        },
+        ));
+    await flushTasks();
+
+    // Confirm transition to the reboot page.
+    const rebootPage = component.shadowRoot.querySelector('reboot-page');
+    assertTrue(!!rebootPage);
+  });
+
+  test('ShutdownErrorCodeResultsInShowingShutdownPage', async () => {
+    await initializeShimlessRMAApp(fakeStates, fakeChromeVersion[0]);
+
+    // Emulate platform sending a shut down error code.
+    component.dispatchEvent(new CustomEvent(
+        'transition-state',
+        {
+          bubbles: true,
+          composed: true,
+          detail: () => Promise.resolve({
+            stateResult: {
+              state: State.kWPDisableComplete,
+              error: RmadErrorCode.kExpectShutdown,
+            },
+          }),
+        },
+        ));
+    await flushTasks();
+
+    // Confirm transition to the reboot page.
+    const rebootPage = component.shadowRoot.querySelector('reboot-page');
+    assertTrue(!!rebootPage);
   });
 }

@@ -226,9 +226,9 @@ int GetMicrotasksScopeDepth(v8::Isolate* isolate,
 v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     ScriptState* script_state,
     const ClassicScript& classic_script,
+    v8::ScriptOrigin origin,
     v8::ScriptCompiler::CompileOptions compile_options,
-    v8::ScriptCompiler::NoCacheReason no_cache_reason,
-    v8::Local<v8::Data> host_defined_options) {
+    v8::ScriptCompiler::NoCacheReason no_cache_reason) {
   v8::Isolate* isolate = script_state->GetIsolate();
   if (classic_script.SourceText().length() >= v8::String::kMaxLength) {
     V8ThrowException::ThrowError(isolate, "Source file too large.");
@@ -245,22 +245,6 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
   probe::V8Compile probe(execution_context, file_name,
                          script_start_position.line_.ZeroBasedInt(),
                          script_start_position.column_.ZeroBasedInt());
-
-  const SanitizeScriptErrors sanitize_script_errors =
-      classic_script.GetSanitizeScriptErrors();
-
-  // NOTE: For compatibility with WebCore, ClassicScript's line starts at
-  // 1, whereas v8 starts at 0.
-  v8::ScriptOrigin origin(
-      isolate, V8String(isolate, file_name),
-      script_start_position.line_.ZeroBasedInt(),
-      script_start_position.column_.ZeroBasedInt(),
-      sanitize_script_errors == SanitizeScriptErrors::kDoNotSanitize, -1,
-      V8String(isolate, classic_script.SourceMapUrl()),
-      sanitize_script_errors == SanitizeScriptErrors::kSanitize,
-      false,  // is_wasm
-      false,  // is_module
-      host_defined_options);
 
   if (!*TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(kTraceEventCategoryGroup)) {
     return CompileScriptInternal(isolate, script_state, classic_script, origin,
@@ -387,8 +371,6 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
     v8::Local<v8::Data> host_defined_options,
     ExecutionContext* context) {
   DCHECK(!script.IsEmpty());
-  LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(context);
-  ScopedFrameBlamer frame_blamer(window ? window->GetFrame() : nullptr);
 
   v8::Local<v8::Value> script_name =
       script->GetUnboundScript()->GetScriptName();
@@ -410,6 +392,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
       ThrowScriptForbiddenException(isolate);
       return v8::MaybeLocal<v8::Value>();
     }
+    DCHECK(!ScriptForbiddenScope::WillBeScriptForbidden());
 
     v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
     v8::MicrotasksScope microtasks_scope(isolate, microtask_queue,
@@ -511,9 +494,6 @@ ScriptEvaluationResult V8ScriptRunner::CompileAndRunScript(
       try_catch.SetVerbose(true);
     }
 
-    const ReferrerScriptInfo referrer_info(classic_script->BaseUrl(),
-                                           classic_script->FetchOptions());
-
     v8::Local<v8::Script> script;
 
     SingleCachedMetadataHandler* cache_handler = classic_script->CacheHandler();
@@ -522,9 +502,6 @@ ScriptEvaluationResult V8ScriptRunner::CompileAndRunScript(
           ExecutionContext::GetCodeCacheHostFromContext(execution_context),
           classic_script->SourceText());
     }
-    v8::Local<v8::Data> host_defined_options =
-        referrer_info.ToV8HostDefinedOptions(isolate,
-                                             classic_script->SourceUrl());
     v8::ScriptCompiler::CompileOptions compile_options;
     V8CodeCache::ProduceCacheOptions produce_cache_options;
     v8::ScriptCompiler::NoCacheReason no_cache_reason;
@@ -532,13 +509,13 @@ ScriptEvaluationResult V8ScriptRunner::CompileAndRunScript(
         V8CodeCache::GetCompileOptions(execution_context->GetV8CacheOptions(),
                                        *classic_script);
 
+    v8::ScriptOrigin origin = classic_script->CreateScriptOrigin(isolate);
     v8::MaybeLocal<v8::Value> maybe_result;
-    if (V8ScriptRunner::CompileScript(script_state, *classic_script,
-                                      compile_options, no_cache_reason,
-                                      host_defined_options)
+    if (V8ScriptRunner::CompileScript(script_state, *classic_script, origin,
+                                      compile_options, no_cache_reason)
             .ToLocal(&script)) {
       maybe_result = V8ScriptRunner::RunCompiledScript(
-          isolate, script, host_defined_options, execution_context);
+          isolate, script, origin.GetHostDefinedOptions(), execution_context);
       probe::DidProduceCompilationCache(
           probe::ToCoreProbeSink(execution_context), *classic_script, script);
 
@@ -668,6 +645,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallAsConstructor(
     ThrowScriptForbiddenException(isolate);
     return v8::MaybeLocal<v8::Value>();
   }
+  DCHECK(!ScriptForbiddenScope::WillBeScriptForbidden());
 
   // TODO(dominicc): When inspector supports tracing object
   // invocation, change this to use v8::Object instead of
@@ -709,7 +687,6 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
     v8::Isolate* isolate) {
   LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(context);
   LocalFrame* frame = window ? window->GetFrame() : nullptr;
-  ScopedFrameBlamer frame_blamer(frame);
   TRACE_EVENT0("v8", "v8.callFunction");
   RuntimeCallStatsScopedTracer rcs_scoped_tracer(isolate);
   RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
@@ -725,6 +702,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
     ThrowScriptForbiddenException(isolate);
     return v8::MaybeLocal<v8::Value>();
   }
+  DCHECK(!ScriptForbiddenScope::WillBeScriptForbidden());
 
   DCHECK(!frame ||
          BindingSecurity::ShouldAllowAccessToFrame(

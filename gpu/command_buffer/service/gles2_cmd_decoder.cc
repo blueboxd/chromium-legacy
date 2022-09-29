@@ -4532,39 +4532,39 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     resources.HashFunction = nullptr;
   }
 
-  ShCompileOptions driver_bug_workarounds = 0;
+  ShCompileOptions driver_bug_workarounds{};
   if (workarounds().init_gl_position_in_vertex_shader)
-    driver_bug_workarounds |= SH_INIT_GL_POSITION;
+    driver_bug_workarounds.initGLPosition = true;
   if (workarounds().unfold_short_circuit_as_ternary_operation)
-    driver_bug_workarounds |= SH_UNFOLD_SHORT_CIRCUIT;
+    driver_bug_workarounds.unfoldShortCircuit = true;
   if (workarounds().scalarize_vec_and_mat_constructor_args)
-    driver_bug_workarounds |= SH_SCALARIZE_VEC_AND_MAT_CONSTRUCTOR_ARGS;
+    driver_bug_workarounds.scalarizeVecAndMatConstructorArgs = true;
   if (workarounds().regenerate_struct_names)
-    driver_bug_workarounds |= SH_REGENERATE_STRUCT_NAMES;
+    driver_bug_workarounds.regenerateStructNames = true;
   if (workarounds().emulate_abs_int_function)
-    driver_bug_workarounds |= SH_EMULATE_ABS_INT_FUNCTION;
+    driver_bug_workarounds.emulateAbsIntFunction = true;
   if (workarounds().rewrite_texelfetchoffset_to_texelfetch)
-    driver_bug_workarounds |= SH_REWRITE_TEXELFETCHOFFSET_TO_TEXELFETCH;
+    driver_bug_workarounds.rewriteTexelFetchOffsetToTexelFetch = true;
   if (workarounds().add_and_true_to_loop_condition)
-    driver_bug_workarounds |= SH_ADD_AND_TRUE_TO_LOOP_CONDITION;
+    driver_bug_workarounds.addAndTrueToLoopCondition = true;
   if (workarounds().rewrite_do_while_loops)
-    driver_bug_workarounds |= SH_REWRITE_DO_WHILE_LOOPS;
+    driver_bug_workarounds.rewriteDoWhileLoops = true;
   if (workarounds().emulate_isnan_on_float)
-    driver_bug_workarounds |= SH_EMULATE_ISNAN_FLOAT_FUNCTION;
+    driver_bug_workarounds.emulateIsnanFloatFunction = true;
   if (workarounds().use_unused_standard_shared_blocks)
-    driver_bug_workarounds |= SH_USE_UNUSED_STANDARD_SHARED_BLOCKS;
+    driver_bug_workarounds.useUnusedStandardSharedBlocks = true;
   if (workarounds().remove_invariant_and_centroid_for_essl3)
-    driver_bug_workarounds |= SH_REMOVE_INVARIANT_AND_CENTROID_FOR_ESSL3;
+    driver_bug_workarounds.removeInvariantAndCentroidForESSL3 = true;
   if (workarounds().rewrite_float_unary_minus_operator)
-    driver_bug_workarounds |= SH_REWRITE_FLOAT_UNARY_MINUS_OPERATOR;
+    driver_bug_workarounds.rewriteFloatUnaryMinusOperator = true;
   if (workarounds().dont_use_loops_to_initialize_variables)
-    driver_bug_workarounds |= SH_DONT_USE_LOOPS_TO_INITIALIZE_VARIABLES;
+    driver_bug_workarounds.dontUseLoopsToInitializeVariables = true;
   if (workarounds().remove_dynamic_indexing_of_swizzled_vector)
-    driver_bug_workarounds |= SH_REMOVE_DYNAMIC_INDEXING_OF_SWIZZLED_VECTOR;
+    driver_bug_workarounds.removeDynamicIndexingOfSwizzledVector = true;
 
   // Initialize uninitialized locals by default
   if (!workarounds().dont_initialize_uninitialized_locals)
-    driver_bug_workarounds |= SH_INITIALIZE_UNINITIALIZED_LOCALS;
+    driver_bug_workarounds.initializeUninitializedLocals = true;
 
   ShShaderOutput shader_output_language =
       ShaderTranslator::GetShaderOutputLanguageForContext(gl_version_info());
@@ -9784,7 +9784,6 @@ void GLES2DecoderImpl::DoLineWidth(GLfloat width) {
 
 void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoLinkProgram");
-  SCOPED_UMA_HISTOGRAM_TIMER("GPU.DoLinkProgramTime");
   Program* program = GetProgramInfoNotShader(
       program_id, "glLinkProgram");
   if (!program) {

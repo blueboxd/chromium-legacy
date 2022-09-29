@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/public/password_change/proto/actions.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -31,6 +32,15 @@ class MockPasswordChangeRunDisplay : public PasswordChangeRunDisplay {
               SetProgressBarStep,
               (autofill_assistant::password_change::ProgressStep),
               (override));
+  MOCK_METHOD(autofill_assistant::password_change::ProgressStep,
+              GetProgressStep,
+              (),
+              (override));
+  MOCK_METHOD(void,
+              ShowBasePrompt,
+              (const std::u16string& description,
+               const std::vector<PromptChoice>&),
+              (override));
   MOCK_METHOD(void,
               ShowBasePrompt,
               (const std::vector<PromptChoice>&),
@@ -44,6 +54,12 @@ class MockPasswordChangeRunDisplay : public PasswordChangeRunDisplay {
                const PromptChoice&),
               (override));
   MOCK_METHOD(void, ClearPrompt, (), (override));
+  MOCK_METHOD(void, ShowStartingScreen, (const GURL&), (override));
+  MOCK_METHOD(void,
+              ShowCompletionScreen,
+              (base::RepeatingClosure done_button_callback),
+              (override));
+  MOCK_METHOD(void, ShowErrorScreen, (), (override));
   MOCK_METHOD(void, OnControllerGone, (), (override));
 
   base::WeakPtr<MockPasswordChangeRunDisplay> GetWeakPtr() {

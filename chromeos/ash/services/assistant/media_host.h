@@ -14,8 +14,7 @@
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
-namespace chromeos {
-namespace assistant {
+namespace ash::assistant {
 
 class AssistantBrowserDelegate;
 class AssistantInteractionSubscriber;
@@ -88,7 +87,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) MediaHost {
   std::unique_ptr<LibassistantMediaDelegate> libassistant_media_delegate_;
 };
 
-}  // namespace assistant
-}  // namespace chromeos
+}  // namespace ash::assistant
 
 #endif  // CHROMEOS_ASH_SERVICES_ASSISTANT_MEDIA_HOST_H_

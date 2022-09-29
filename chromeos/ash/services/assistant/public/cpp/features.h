@@ -9,9 +9,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 
-namespace chromeos {
-namespace assistant {
-namespace features {
+namespace ash::assistant::features {
 
 // Enable Assistant Feedback UI.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
@@ -56,6 +54,9 @@ extern const base::Feature kEnableLibAssistantSandbox;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kEnableLibAssistantV2;
 
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+extern const base::Feature kEnableLibAssistantDlc;
+
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsAppSupportEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsAudioEraserEnabled();
@@ -83,8 +84,13 @@ bool IsLibAssistantSandboxEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsLibAssistantV2Enabled();
 
-}  // namespace features
-}  // namespace assistant
-}  // namespace chromeos
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsLibAssistantDlcEnabled();
+
+}  // namespace ash::assistant::features
+
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos::assistant {
+namespace features = ::ash::assistant::features;
+}
 
 #endif  // CHROMEOS_ASH_SERVICES_ASSISTANT_PUBLIC_CPP_FEATURES_H_

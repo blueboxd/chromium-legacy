@@ -31,7 +31,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -67,7 +66,6 @@ class DemoSessionTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(profile_manager_->SetUp());
-    chromeos::DBusThreadManager::Initialize();
     ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kOnline);
     InitializeCrosComponentManager();
@@ -83,7 +81,6 @@ class DemoSessionTest : public testing::Test {
 
     wallpaper_controller_client_.reset();
     ConciergeClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
 
     cros_component_manager_ = nullptr;
     browser_process_platform_part_test_api_.ShutdownCrosComponentManager();
@@ -209,7 +206,8 @@ TEST_F(DemoSessionTest, ShowAndRemoveSplashScreen) {
           .SetID(DemoSession::GetScreensaverAppId())
           .Build();
   extensions::AppWindow* app_window = new extensions::AppWindow(
-      profile, new ChromeAppDelegate(profile, true /* keep_alive */),
+      profile,
+      std::make_unique<ChromeAppDelegate>(profile, true /* keep_alive */),
       screensaver_app.get());
   demo_session->OnAppWindowActivated(app_window);
   // The splash screen is not removed until active session starts.
@@ -269,7 +267,8 @@ TEST_F(DemoSessionTest, RemoveSplashScreenWhenTimeout) {
           .SetID(DemoSession::GetScreensaverAppId())
           .Build();
   extensions::AppWindow* app_window = new extensions::AppWindow(
-      profile, new ChromeAppDelegate(profile, true /* keep_alive */),
+      profile,
+      std::make_unique<ChromeAppDelegate>(profile, true /* keep_alive */),
       screensaver_app.get());
   demo_session->OnAppWindowActivated(app_window);
   EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());

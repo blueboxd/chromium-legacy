@@ -17,9 +17,12 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+namespace web_package {
+class WebBundleURLLoaderFactory;
+}  // namespace web_package
+
 namespace network {
 
-class WebBundleURLLoaderFactory;
 struct WebBundlePendingSubresourceRequest;
 
 // WebBundleManager manages the lifetime of a WebBundleURLLoaderFactory object,
@@ -33,7 +36,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebBundleManager {
   WebBundleManager(const WebBundleManager&) = delete;
   WebBundleManager& operator=(const WebBundleManager&) = delete;
 
-  base::WeakPtr<WebBundleURLLoaderFactory> CreateWebBundleURLLoaderFactory(
+  base::WeakPtr<web_package::WebBundleURLLoaderFactory>
+  CreateWebBundleURLLoaderFactory(
       const GURL& bundle_url,
       const ResourceRequest::WebBundleTokenParams& params,
       int32_t process_id,
@@ -57,11 +61,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebBundleManager {
   // Key is a tuple of (Process id, WebBundle token)
   using Key = std::pair<int32_t, base::UnguessableToken>;
 
-  base::WeakPtr<WebBundleURLLoaderFactory> GetWebBundleURLLoaderFactory(
-      const ResourceRequest::WebBundleTokenParams& params,
-      int32_t process_id);
+  static Key GetKey(const ResourceRequest::WebBundleTokenParams& token_params,
+                    int32_t process_id);
+  base::WeakPtr<web_package::WebBundleURLLoaderFactory>
+  GetWebBundleURLLoaderFactory(const Key& key);
 
-  void DisconnectHandler(base::UnguessableToken token, int32_t process_id);
+  void DisconnectHandler(Key key);
 
   bool AllocateMemoryForProcess(int32_t process_id, uint64_t num_bytes);
   void ReleaseMemoryForProcess(int32_t process_id, uint64_t num_bytes);
@@ -69,7 +74,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebBundleManager {
     max_memory_per_process_ = max_memory_per_process;
   }
 
-  std::map<Key, std::unique_ptr<WebBundleURLLoaderFactory>> factories_;
+  std::map<Key, std::unique_ptr<web_package::WebBundleURLLoaderFactory>>
+      factories_;
   // Pending subresource requests for each key, which should be processed when
   // a request for the bundle arrives later.
   std::map<Key,

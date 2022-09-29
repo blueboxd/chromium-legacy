@@ -18,6 +18,7 @@ class Disk;
 namespace file_manager {
 
 class Volume;
+class VolumeManager;
 
 // Observer interface of volume related events.
 class VolumeManagerObserver {
@@ -37,11 +38,11 @@ class VolumeManagerObserver {
   virtual void OnDeviceRemoved(const std::string& device_path) {}
 
   // Fired when a volume is mounted.
-  virtual void OnVolumeMounted(chromeos::MountError error_code,
+  virtual void OnVolumeMounted(ash::MountError error_code,
                                const Volume& volume) {}
 
   // Fired when a volume is unmounted.
-  virtual void OnVolumeUnmounted(chromeos::MountError error_code,
+  virtual void OnVolumeUnmounted(ash::MountError error_code,
                                  const Volume& volume) {}
 
   // Fired when formatting a device is started (or failed to start).
@@ -73,6 +74,9 @@ class VolumeManagerObserver {
   virtual void OnRenameCompleted(const std::string& device_path,
                                  const std::string& device_label,
                                  bool success) {}
+
+  // Fired when the observed VolumeManager is starting to shut down.
+  virtual void OnShutdownStart(VolumeManager* volume_manager) {}
 };
 
 }  // namespace file_manager

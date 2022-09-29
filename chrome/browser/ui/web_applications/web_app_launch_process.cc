@@ -184,6 +184,10 @@ std::tuple<GURL, bool /*is_file_handling*/> WebAppLaunchProcess::GetLaunchUrl(
 
 WindowOpenDisposition WebAppLaunchProcess::GetNavigationDisposition(
     bool is_new_browser) const {
+  if (provider_.registrar().IsTabbedWindowModeEnabled(params_.app_id)) {
+    return WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  }
+
   if (is_new_browser) {
     // By opening a new window we've already performed part of a "disposition",
     // the only remaining thing for Navigate() to do is navigate the new window.
@@ -199,7 +203,7 @@ WindowOpenDisposition WebAppLaunchProcess::GetNavigationDisposition(
 
   // If launch handler is routing to an existing client, we want to use the
   // existing WebContents rather than opening a new tab.
-  if (RouteToExistingClient()) {
+  if (LaunchInExistingClient()) {
     return WindowOpenDisposition::CURRENT_TAB;
   }
 
@@ -210,33 +214,33 @@ WindowOpenDisposition WebAppLaunchProcess::GetNavigationDisposition(
              : WindowOpenDisposition::NEW_FOREGROUND_TAB;
 }
 
-LaunchHandler::RouteTo WebAppLaunchProcess::GetLaunchRouteTo() const {
+LaunchHandler::ClientMode WebAppLaunchProcess::GetLaunchClientMode() const {
   DCHECK(web_app_);
   LaunchHandler launch_handler =
       web_app_->launch_handler().value_or(LaunchHandler());
-  if (launch_handler.route_to == LaunchHandler::RouteTo::kAuto)
-    return LaunchHandler::RouteTo::kNewClient;
-  return launch_handler.route_to;
+  if (launch_handler.client_mode == LaunchHandler::ClientMode::kAuto)
+    return LaunchHandler::ClientMode::kNavigateNew;
+  return launch_handler.client_mode;
 }
 
-bool WebAppLaunchProcess::RouteToExistingClient() const {
-  switch (GetLaunchRouteTo()) {
-    case LaunchHandler::RouteTo::kAuto:
-    case LaunchHandler::RouteTo::kNewClient:
+bool WebAppLaunchProcess::LaunchInExistingClient() const {
+  switch (GetLaunchClientMode()) {
+    case LaunchHandler::ClientMode::kAuto:
+    case LaunchHandler::ClientMode::kNavigateNew:
       return false;
-    case LaunchHandler::RouteTo::kExistingClientNavigate:
-    case LaunchHandler::RouteTo::kExistingClientRetain:
+    case LaunchHandler::ClientMode::kNavigateExisting:
+    case LaunchHandler::ClientMode::kFocusExisting:
       return true;
   }
 }
 
 bool WebAppLaunchProcess::NeverNavigateExistingClients() const {
-  switch (GetLaunchRouteTo()) {
-    case LaunchHandler::RouteTo::kAuto:
-    case LaunchHandler::RouteTo::kNewClient:
-    case LaunchHandler::RouteTo::kExistingClientNavigate:
+  switch (GetLaunchClientMode()) {
+    case LaunchHandler::ClientMode::kAuto:
+    case LaunchHandler::ClientMode::kNavigateNew:
+    case LaunchHandler::ClientMode::kNavigateExisting:
       return false;
-    case LaunchHandler::RouteTo::kExistingClientRetain:
+    case LaunchHandler::ClientMode::kFocusExisting:
       return true;
   }
 }
@@ -257,13 +261,18 @@ WebAppLaunchProcess::EnsureBrowser() {
 
 Browser* WebAppLaunchProcess::MaybeFindBrowserForLaunch() const {
   if (params_.container == apps::LaunchContainer::kLaunchContainerTab) {
+    // If launching the app in the current tab, find the most recently used
+    // browser for the current profile, rather than limiting the search to
+    // windows on whatever screen we would want to open new windows.
     return chrome::FindTabbedBrowser(
         &profile_, /*match_original_profiles=*/false,
-        display::Screen::GetScreen()->GetDisplayForNewWindows().id());
+        params_.disposition == WindowOpenDisposition::CURRENT_TAB
+            ? display::kInvalidDisplayId
+            : display::Screen::GetScreen()->GetDisplayForNewWindows().id());
   }
 
   if (!provider_.registrar().IsTabbedWindowModeEnabled(params_.app_id) &&
-      GetLaunchRouteTo() == LaunchHandler::RouteTo::kNewClient) {
+      GetLaunchClientMode() == LaunchHandler::ClientMode::kNavigateNew) {
     return nullptr;
   }
 

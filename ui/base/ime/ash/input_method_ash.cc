@@ -27,7 +27,7 @@
 #include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/ime/ash/typing_session_manager.h"
 #include "ui/base/ime/composition_text.h"
-#include "ui/base/ime/input_method_delegate.h"
+#include "ui/base/ime/ime_key_event_dispatcher.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -41,8 +41,8 @@ ui::IMEEngineHandlerInterface* GetEngine() {
 }
 
 // InputMethodAsh implementation -----------------------------------------
-InputMethodAsh::InputMethodAsh(internal::InputMethodDelegate* delegate)
-    : InputMethodBase(delegate),
+InputMethodAsh::InputMethodAsh(ImeKeyEventDispatcher* ime_key_event_dispatcher)
+    : InputMethodBase(ime_key_event_dispatcher),
       typing_session_manager_(base::DefaultClock::GetInstance()) {
   ResetContext();
 }
@@ -373,8 +373,9 @@ bool InputMethodAsh::SetCompositionRange(
   if (!client->GetEditableSelectionRange(&range))
     return false;
 
-  const gfx::Range composition_range(range.start() - before,
-                                     range.end() + after);
+  const gfx::Range composition_range(
+      range.start() >= before ? range.start() - before : 0,
+      range.end() + after);
 
   // Check that the composition range is valid.
   gfx::Range text_range;
@@ -504,7 +505,7 @@ void InputMethodAsh::ConfirmCompositionText(bool reset_engine,
     composition_changed_ = false;
   }
   if (client && client->HasCompositionText()) {
-    const uint32_t characters_committed =
+    const size_t characters_committed =
         client->ConfirmCompositionText(keep_selection);
     typing_session_manager_.CommitCharacters(characters_committed);
   }
@@ -934,9 +935,12 @@ CompositionText InputMethodAsh::ExtractCompositionText(
   }
 
   DCHECK(text.selection.start() <= text.selection.end());
+  DCHECK(text.selection.end() <= char_length);
   if (text.selection.start() < text.selection.end()) {
-    const uint32_t start = text.selection.start();
-    const uint32_t end = text.selection.end();
+    const size_t start =
+        std::min(text.selection.start(), static_cast<size_t>(char_length));
+    const size_t end =
+        std::min(text.selection.end(), static_cast<size_t>(char_length));
     ImeTextSpan ime_text_span(
         ui::ImeTextSpan::Type::kComposition, char16_offsets[start],
         char16_offsets[end], ui::ImeTextSpan::Thickness::kThick,
@@ -1002,6 +1006,30 @@ ukm::SourceId InputMethodAsh::GetClientSourceForMetrics() {
 
 InputMethod* InputMethodAsh::GetInputMethod() {
   return this;
+}
+
+std::vector<gfx::Rect> InputMethodAsh::GetCompositionBounds(
+    const TextInputClient* client) {
+  std::vector<gfx::Rect> bounds;
+  if (client->HasCompositionText()) {
+    uint32_t i = 0;
+    gfx::Rect rect;
+    while (client->GetCompositionCharacterBounds(i++, &rect))
+      bounds.push_back(rect);
+  } else {
+    // For case of no composition at present, use caret bounds which is required
+    // by the IME extension for certain features (e.g. physical keyboard
+    // auto-correct).
+    bounds.push_back(client->GetCaretBounds());
+  }
+  return bounds;
+}
+
+bool InputMethodAsh::SendFakeProcessKeyEvent(bool pressed) const {
+  KeyEvent evt(pressed ? ET_KEY_PRESSED : ET_KEY_RELEASED,
+               pressed ? VKEY_PROCESSKEY : VKEY_UNKNOWN, EF_IME_FABRICATED_KEY);
+  std::ignore = DispatchKeyEventPostIME(&evt);
+  return evt.stopped_propagation();
 }
 
 }  // namespace ui

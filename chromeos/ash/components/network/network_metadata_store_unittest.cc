@@ -9,6 +9,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "chromeos/ash/components/dbus/shill/shill_clients.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/ash/components/network/network_connection_handler_impl.h"
@@ -16,8 +18,6 @@
 #include "chromeos/ash/components/network/network_metadata_store.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
-#include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -29,7 +29,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-namespace chromeos {
+namespace ash {
 
 class TestNetworkMetadataObserver : public NetworkMetadataObserver {
  public:
@@ -309,7 +309,8 @@ TEST_F(NetworkMetadataStoreTest, ConfigurationUpdated) {
   ASSERT_EQ(0, metadata_observer()->GetNumberOfUpdates(kGuid));
 
   base::Value properties(base::Value::Type::DICTIONARY);
-  properties.SetKey(shill::kSecurityProperty, base::Value(shill::kSecurityPsk));
+  properties.SetKey(shill::kSecurityClassProperty,
+                    base::Value(shill::kSecurityClassPsk));
   properties.SetKey(shill::kPassphraseProperty, base::Value("secret"));
 
   network_configuration_handler()->SetShillProperties(
@@ -461,8 +462,7 @@ TEST_F(NetworkMetadataStoreTest, OwnOobeNetworks_NotFirstLogin) {
 
 TEST_F(NetworkMetadataStoreTest, NetworkCreationTimestampDefault) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      ash::features::kHiddenNetworkMigration);
+  scoped_feature_list.InitAndEnableFeature(features::kHiddenNetworkMigration);
   ConfigureService(kConfigWifi0Connectable);
   EXPECT_EQ(metadata_store()->UpdateAndRetrieveWiFiTimestamp(kGuid),
             base::Time::Now().UTCMidnight());
@@ -471,8 +471,7 @@ TEST_F(NetworkMetadataStoreTest, NetworkCreationTimestampDefault) {
 TEST_F(NetworkMetadataStoreTest,
        NetworkCreationTimestampIsEventuallyOverwritten) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      ash::features::kHiddenNetworkMigration);
+  scoped_feature_list.InitAndEnableFeature(features::kHiddenNetworkMigration);
   ConfigureService(kConfigWifi0Connectable);
   EXPECT_EQ(metadata_store()->UpdateAndRetrieveWiFiTimestamp(kGuid),
             base::Time::Now().UTCMidnight());
@@ -485,8 +484,7 @@ TEST_F(NetworkMetadataStoreTest,
 
 TEST_F(NetworkMetadataStoreTest, NetworkCreationTimestampNonWifi) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      ash::features::kHiddenNetworkMigration);
+  scoped_feature_list.InitAndEnableFeature(features::kHiddenNetworkMigration);
   ConfigureService(kConfigEthernet);
   EXPECT_EQ(metadata_store()->UpdateAndRetrieveWiFiTimestamp(kGuid3),
             base::Time::UnixEpoch());
@@ -494,8 +492,7 @@ TEST_F(NetworkMetadataStoreTest, NetworkCreationTimestampNonWifi) {
 
 TEST_F(NetworkMetadataStoreTest, NetworkCreationTimestampNonExistentNetwork) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      ash::features::kHiddenNetworkMigration);
+  scoped_feature_list.InitAndEnableFeature(features::kHiddenNetworkMigration);
   EXPECT_EQ(metadata_store()->UpdateAndRetrieveWiFiTimestamp(kGuid),
             base::Time::UnixEpoch());
   // Fast forward 2 weeks to check that creation timestamp is always
@@ -614,4 +611,4 @@ TEST_F(NetworkMetadataStoreTest, SetTrafficCountersAutoResetDay) {
   EXPECT_TRUE(value->is_none());
 }
 
-}  // namespace chromeos
+}  // namespace ash

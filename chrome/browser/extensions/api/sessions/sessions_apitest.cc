@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -39,7 +40,7 @@
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sync_enums.pb.h"
-#include "components/sync/test/engine/mock_model_type_worker.h"
+#include "components/sync/test/mock_model_type_worker.h"
 #include "components/sync_sessions/session_store.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "content/public/test/browser_test.h"
@@ -77,7 +78,7 @@ void BuildWindowSpecifics(int window_id,
   sync_pb::SessionWindow* window = header->add_window();
   window->set_window_id(window_id);
   window->set_selected_tab_index(0);
-  window->set_browser_type(sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
+  window->set_browser_type(sync_pb::SyncEnums_BrowserType_TYPE_TABBED);
   for (auto iter = tab_list.cbegin(); iter != tab_list.cend(); ++iter) {
     window->add_tab(*iter);
   }
@@ -381,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetRecentlyClosedMaxResults) {
     content::WebContentsDestroyedWatcher destroyed_watcher(
         browser()->tab_strip_model()->GetWebContentsAt(tab_index));
     browser()->tab_strip_model()->CloseWebContentsAt(
-        tab_index, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+        tab_index, TabCloseTypes::CLOSE_CREATE_HISTORICAL_TAB);
     destroyed_watcher.Wait();
   }
 

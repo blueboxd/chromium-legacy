@@ -17,6 +17,10 @@
 #include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
 #include "components/security_state/core/security_state.h"
 
+namespace blink {
+enum class PermissionType;
+}
+
 namespace permissions {
 class ObjectPermissionContextBase;
 class PermissionDecisionAutoBlocker;
@@ -29,6 +33,10 @@ class PasswordProtectionService;
 namespace ui {
 class Event;
 }  // namespace ui
+
+namespace url {
+class Origin;
+}
 
 class HostContentSettingsMap;
 class StatefulSSLHostStateDelegate;
@@ -54,9 +62,9 @@ class PageInfoDelegate {
 #endif
   // Get permission status for the permission associated with ContentSetting of
   // type |type|.
-  virtual permissions::PermissionResult GetPermissionStatus(
-      ContentSettingsType type,
-      const GURL& site_url) = 0;
+  virtual permissions::PermissionResult GetPermissionResult(
+      blink::PermissionType permission,
+      const url::Origin& origin) = 0;
 #if !BUILDFLAG(IS_ANDROID)
   // Creates an infobars::ContentInfoBarManager and an InfoBarDelegate using it,
   // if possible. Returns true if an InfoBarDelegate was created, false
@@ -64,6 +72,7 @@ class PageInfoDelegate {
   virtual bool CreateInfoBarDelegate() = 0;
 
   virtual void ShowSiteSettings(const GURL& site_url) = 0;
+  virtual void ShowCookiesSettings() = 0;
   virtual void OpenCookiesDialog() = 0;
   virtual void OpenCertificateDialog(net::X509Certificate* certificate) = 0;
   virtual void OpenConnectionHelpCenterPage(const ui::Event& event) = 0;

@@ -17,10 +17,16 @@
 class PasswordChangeRunDisplay;
 class AssistantDisplayDelegate;
 class ApcScrimManager;
+class GURL;
 
 namespace autofill_assistant {
 struct RectF;
-}
+class WebsiteLoginManager;
+}  // namespace autofill_assistant
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 // Receives actions from the `HeadlessScriptController` and passes them on an
 // implementation of a `PasswordChangeRunDisplay`.
@@ -31,8 +37,11 @@ class ApcExternalActionDelegate
     : public autofill_assistant::ExternalActionDelegate,
       public PasswordChangeRunController {
  public:
-  explicit ApcExternalActionDelegate(AssistantDisplayDelegate* display_delegate,
-                                     ApcScrimManager* apc_scrim_manager);
+  explicit ApcExternalActionDelegate(
+      content::WebContents* web_contents,
+      AssistantDisplayDelegate* display_delegate,
+      ApcScrimManager* apc_scrim_manager,
+      autofill_assistant::WebsiteLoginManager* website_login_manager);
   ApcExternalActionDelegate(const ApcExternalActionDelegate&) = delete;
   ApcExternalActionDelegate& operator=(const ApcExternalActionDelegate&) =
       delete;
@@ -40,7 +49,7 @@ class ApcExternalActionDelegate
 
   // Sets up the display to render a password change run UI,
   // needs to be called BEFORE starting a script.
-  void SetupDisplay();
+  virtual void SetupDisplay();
 
   // ExternalActionDelegate:
   void OnActionRequested(
@@ -74,6 +83,11 @@ class ApcExternalActionDelegate
       const std::u16string& generated_password) override;
   void OnGeneratedPasswordSelected(bool selected) override;
   void ShowStartingScreen(const GURL& url) override;
+  void ShowCompletionScreen(
+      base::RepeatingClosure onShowCompletionScreenDoneButtonClicked) override;
+  void OpenPasswordManager() override;
+  void ShowErrorScreen() override;
+  bool PasswordWasSuccessfullyChanged() override;
 
  private:
   friend class ApcExternalActionDelegateTest;
@@ -105,6 +119,9 @@ class ApcExternalActionDelegate
   void OnBasePromptDomUpdateReceived(
       const autofill_assistant::external::ElementConditionsUpdate& update);
 
+  // The `WebContents` on which the run is performed.
+  const raw_ptr<content::WebContents> web_contents_;
+
   // The callback that terminates the current action.
   base::OnceCallback<void(const autofill_assistant::external::Result& result)>
       end_action_callback_;
@@ -134,6 +151,10 @@ class ApcExternalActionDelegate
 
   // The scrim manager to update the overlay and html elements showcasting.
   raw_ptr<ApcScrimManager> apc_scrim_manager_ = nullptr;
+
+  // Use to handle interactions with the password manager.
+  raw_ptr<autofill_assistant::WebsiteLoginManager> website_login_manager_ =
+      nullptr;
 
   // Factory for weak pointers to this class.
   base::WeakPtrFactory<PasswordChangeRunController> weak_ptr_factory_{this};

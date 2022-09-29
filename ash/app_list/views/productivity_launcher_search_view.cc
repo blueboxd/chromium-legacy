@@ -4,8 +4,10 @@
 
 #include "ash/app_list/views/productivity_launcher_search_view.h"
 
+#include <algorithm>
 #include <limits>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "ash/app_list/app_list_model_provider.h"
@@ -143,8 +145,6 @@ ProductivityLauncherSearchView::ProductivityLauncherSearchView(
 
   AppListModelProvider* const model_provider = AppListModelProvider::Get();
   model_provider->AddObserver(this);
-  search_box_model_observer_.Observe(
-      model_provider->search_model()->search_box());
 }
 
 ProductivityLauncherSearchView::~ProductivityLauncherSearchView() {
@@ -172,6 +172,8 @@ void ProductivityLauncherSearchView::OnSearchResultContainerResultsChanged() {
   }
 
   SearchResultBaseView* first_result_view = nullptr;
+  std::vector<SearchResultContainerView::SearchResultAimationMetadata>
+      search_result_metadata;
 
   // If the user cleared the search box text, skip animating the views. The
   // visible views will animate out and the whole search page will be hidden.
@@ -192,11 +194,33 @@ void ProductivityLauncherSearchView::OnSearchResultContainerResultsChanged() {
     }
 
     for (SearchResultContainerView* view : result_container_views_) {
+      view->AppendShownResultMetadata(&search_result_metadata);
+    }
+
+    int first_animated_result_view_index = 0;
+    for (size_t i = 0; i < std::min(search_result_metadata.size(),
+                                    last_result_metadata_.size());
+         ++i) {
+      const bool matching_result_id = search_result_metadata[i].result_id ==
+                                      last_result_metadata_[i].result_id;
+      const bool skip_animations = search_result_metadata[i].skip_animations &&
+                                   last_result_metadata_[i].skip_animations;
+      if (!skip_animations && !matching_result_id)
+        break;
+      first_animated_result_view_index += 1;
+    }
+
+    aggregate_animation_info.first_animated_result_view_index =
+        first_animated_result_view_index;
+
+    for (SearchResultContainerView* view : result_container_views_) {
       absl::optional<AnimationInfo> container_animation_info =
           view->ScheduleResultAnimations(aggregate_animation_info);
       DCHECK(container_animation_info);
       aggregate_animation_info.total_views +=
           container_animation_info->total_views;
+      aggregate_animation_info.total_result_views +=
+          container_animation_info->total_result_views;
       aggregate_animation_info.animating_views +=
           container_animation_info->animating_views;
       // Fetch the first visible search result view for search box autocomplete.
@@ -216,6 +240,7 @@ void ProductivityLauncherSearchView::OnSearchResultContainerResultsChanged() {
   Layout();
 
   last_search_result_count_ = result_count;
+  last_result_metadata_.swap(search_result_metadata);
 
   ScheduleResultsChangedA11yNotification();
 
@@ -241,8 +266,7 @@ void ProductivityLauncherSearchView::GetAccessibleNodeData(
   node_data->role = ax::mojom::Role::kListBox;
 
   std::u16string value;
-  std::u16string query =
-      AppListModelProvider::Get()->search_model()->search_box()->text();
+  const std::u16string& query = search_box_view_->current_query();
   if (!query.empty()) {
     if (last_search_result_count_ == 1) {
       value = l10n_util::GetStringFUTF16(
@@ -268,25 +292,23 @@ void ProductivityLauncherSearchView::OnActiveAppListModelsChanged(
     SearchModel* search_model) {
   for (auto* container : result_container_views_)
     container->SetResults(search_model->results());
-  search_box_model_observer_.Reset();
-  search_box_model_observer_.Observe(search_model->search_box());
 }
 
-void ProductivityLauncherSearchView::Update() {
+void ProductivityLauncherSearchView::UpdateForNewSearch(bool search_active) {
   if (app_list_features::IsDynamicSearchUpdateAnimationEnabled()) {
-    // Scan result_container_views_ to see if there are any in progress
-    // animations when the search model is updated.
-    for (SearchResultContainerView* view : result_container_views_) {
-      if (view->HasAnimatingChildView()) {
-        search_result_fast_update_time_ = base::TimeTicks::Now();
+    if (search_active) {
+      // Scan result_container_views_ to see if there are any in progress
+      // animations when the search model is updated.
+      for (SearchResultContainerView* view : result_container_views_) {
+        if (view->HasAnimatingChildView()) {
+          search_result_fast_update_time_ = base::TimeTicks::Now();
+        }
       }
+    } else {
+      search_result_fast_update_time_.reset();
     }
   }
 }
-
-void ProductivityLauncherSearchView::SearchEngineChanged() {}
-
-void ProductivityLauncherSearchView::ShowAssistantChanged() {}
 
 void ProductivityLauncherSearchView::OnSelectedResultChanged() {
   if (!result_selection_controller_->selected_result()) {

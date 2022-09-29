@@ -8,7 +8,7 @@
  * settings.
  */
 
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
@@ -265,29 +265,14 @@ class SettingsManageA11YPageElement extends SettingsManageA11YPageElementBase {
             'computeShowShelfNavigationButtonsSettings_(isKioskModeActive_)',
       },
 
-      /** @protected */
+      /**
+       * Whether the user is in guest mode.
+       * @protected
+       */
       isGuest_: {
         type: Boolean,
         value() {
           return loadTimeData.getBoolean('isGuest');
-        },
-      },
-
-      /** @protected */
-      screenMagnifierHintLabel_: {
-        type: String,
-        value() {
-          return this.i18n(
-              'screenMagnifierHintLabel',
-              this.i18n('screenMagnifierHintSearchKey'));
-        },
-      },
-
-      /** @protected */
-      dictationSubtitle_: {
-        type: String,
-        value() {
-          return loadTimeData.getString('dictationDescription');
         },
       },
 
@@ -512,11 +497,36 @@ class SettingsManageA11YPageElement extends SettingsManageA11YPageElementBase {
   }
 
   /**
-   * Updates the Select-to-Speak description text based on:
+   * Return ChromeVox description text based on whether ChromeVox is enabled.
+   * @param {boolean} enabled
+   * @return {string}
+   * @private
+   */
+  getChromeVoxDescription_(enabled) {
+    return this.i18n(
+        enabled ? 'chromeVoxDescriptionOn' : 'chromeVoxDescriptionOff');
+  }
+
+  /**
+   * Return Fullscreen magnifier description text based on whether Fullscreen
+   * magnifier is enabled.
+   * @param {boolean} enabled
+   * @return {string}
+   * @private
+   */
+  getScreenMagnifierDescription_(enabled) {
+    return this.i18n(
+        enabled ? 'screenMagnifierDescriptionOn' :
+                  'screenMagnifierDescriptionOff');
+  }
+
+  /**
+   * Return Select-to-Speak description text based on:
    *    1. Whether Select-to-Speak is enabled.
    *    2. If it is enabled, whether a physical keyboard is present.
    * @param {boolean} enabled
    * @param {boolean} hasKeyboard
+   * @return {string}
    * @private
    */
   getSelectToSpeakDescription_(enabled, hasKeyboard) {

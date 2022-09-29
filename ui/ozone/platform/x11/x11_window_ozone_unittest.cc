@@ -36,7 +36,7 @@ ACTION_P(StoreWidget, widget_ptr) {
 }
 
 ACTION_P(CloneEvent, event_ptr) {
-  *event_ptr = Event::Clone(*arg0);
+  *event_ptr = arg0->Clone();
 }
 
 // TestScreen implementation. We need to set a screen instance, because
@@ -292,8 +292,10 @@ TEST_F(X11WindowOzoneTest, ToggleFullscreen) {
   FakeX11ExtensionDelegateForSize x11_extension_delegate(screen_bounds_in_px);
   auto window =
       CreatePlatformWindow(&delegate, bounds, &widget, &x11_extension_delegate);
+  EXPECT_CALL(
+      delegate,
+      OnBoundsChanged(testing::Eq(PlatformWindowDelegate::BoundsChange{true})));
 
-  EXPECT_CALL(delegate, OnBoundsChanged(testing::Eq(screen_bounds_in_px)));
   window->ToggleFullscreen();
 }
 

@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/views/user_education/browser_feature_promo_controller.h"
 #include "chrome/common/buildflags.h"
 #include "components/infobars/core/infobar_container.h"
+#include "components/user_education/common/feature_promo_handle.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -183,6 +184,10 @@ class BrowserView : public BrowserWindow,
 
   // Container for the tabstrip, toolbar, etc.
   TopContainerView* top_container() { return top_container_; }
+
+#if BUILDFLAG(IS_MAC)
+  views::Widget* overlay_widget() { return overlay_widget_.get(); }
+#endif
 
   // Container for the web contents.
   views::View* contents_container() { return contents_container_; }
@@ -385,9 +390,16 @@ class BrowserView : public BrowserWindow,
   // window-controls-overlay.
   bool AppUsesWindowControlsOverlay() const;
 
+  // Returns true when an app's effective display mode is borderless.
+  bool AppUsesBorderlessMode() const;
+
   // Returns true when the window controls overlay should be displayed instead
   // of a full titlebar. This is only supported for desktop web apps.
   bool IsWindowControlsOverlayEnabled() const;
+
+  // Returns true when the borderless mode should be displayed instead
+  // of a full titlebar. This is only supported for desktop web apps.
+  bool IsBorderlessModeEnabled() const;
 
   // Enable or disable the window controls overlay and notify the browser frame
   // view of the update.
@@ -591,8 +603,8 @@ class BrowserView : public BrowserWindow,
       user_education::FeaturePromoController::BubbleCloseCallback
           close_callback = base::DoNothing()) override;
   bool CloseFeaturePromo(const base::Feature& iph_feature) override;
-  user_education::FeaturePromoController::PromoHandle
-  CloseFeaturePromoAndContinue(const base::Feature& iph_feature) override;
+  user_education::FeaturePromoHandle CloseFeaturePromoAndContinue(
+      const base::Feature& iph_feature) override;
   void NotifyFeatureEngagementEvent(const char* event_name) override;
 
   void ShowIncognitoClearBrowsingDataDialog() override;
@@ -632,6 +644,9 @@ class BrowserView : public BrowserWindow,
   views::View* GetContentsView() override;
   views::ClientView* CreateClientView(views::Widget* widget) override;
   views::View* CreateOverlayView() override;
+#if BUILDFLAG(IS_MAC)
+  views::View* CreateMacOverlayView();
+#endif
   void OnWindowBeginUserBoundsChange() override;
   void OnWindowEndUserBoundsChange() override;
   void OnWidgetMove() override;
@@ -910,6 +925,10 @@ class BrowserView : public BrowserWindow,
   // Updates the visibility of the Window Controls Overlay toggle button.
   void UpdateWindowControlsOverlayToggleVisible();
 
+  // Updates the variable keeping track of the borderless mode visibility, which
+  // controls whether the title bar is shown or not.
+  void UpdateBorderlessModeEnabled();
+
   // The BrowserFrame that hosts this view.
   raw_ptr<BrowserFrame> frame_ = nullptr;
 
@@ -964,10 +983,19 @@ class BrowserView : public BrowserWindow,
   // The Toolbar containing the navigation buttons, menus and the address bar.
   raw_ptr<ToolbarView> toolbar_ = nullptr;
 
-  // The OverlayView for the widget, which is used to host |top_container_|
+  // The OverlayView for the widget, which is used to host `top_container_`
   // during immersive reveal.
+  // On Aura, this view is owned by the browser frame. On mac, this view is
+  // owned by `overlay_widget_`.
   std::unique_ptr<views::ViewTargeterDelegate> overlay_view_targeter_;
   raw_ptr<views::View> overlay_view_ = nullptr;
+
+#if BUILDFLAG(IS_MAC)
+  // Used when calling CreateMacOverlayView(). This widget owns `overlay_view_`.
+  // Its content NSView will be reparented to a NSToolbarFullScreenWindow
+  // during fullscreen.
+  raw_ptr<views::Widget> overlay_widget_;
+#endif
 
   // The Bookmark Bar View for this window. Lazily created. May be null for
   // non-tabbed browsers like popups. May not be visible.
@@ -1147,6 +1175,7 @@ class BrowserView : public BrowserWindow,
 
   bool window_controls_overlay_enabled_ = false;
   bool should_show_window_controls_overlay_toggle_ = false;
+  bool borderless_mode_enabled_ = false;
 
   mutable base::WeakPtrFactory<BrowserView> weak_ptr_factory_{this};
 };

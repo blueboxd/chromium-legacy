@@ -18,13 +18,13 @@
 #include "components/segmentation_platform/internal/constants.h"
 #include "components/segmentation_platform/internal/database/mock_ukm_database.h"
 #include "components/segmentation_platform/internal/dummy_ukm_data_manager.h"
-#include "components/segmentation_platform/internal/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/internal/segmentation_platform_service_test_base.h"
 #include "components/segmentation_platform/internal/selection/segmentation_result_prefs.h"
 #include "components/segmentation_platform/internal/signals/ukm_observer.h"
 #include "components/segmentation_platform/internal/ukm_data_manager_impl.h"
 #include "components/segmentation_platform/public/config.h"
 #include "components/segmentation_platform/public/local_state_helper.h"
+#include "components/segmentation_platform/public/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/public/segment_selection_result.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -97,9 +97,6 @@ class SegmentationPlatformServiceImplTest
     ASSERT_EQ(expected, actual);
     std::move(closure).Run();
   }
-
-  void OnOnDemandSegmentSelection(const SegmentSelectionResult& result,
-                                  const TriggerContext& trigger_context) {}
 
   void AssertSelectedSegment(
       const std::string& segmentation_key,
@@ -265,38 +262,6 @@ TEST_F(SegmentationPlatformServiceImplTest,
       base::BindOnce(&SegmentationPlatformServiceImplTest::OnGetSelectedSegment,
                      base::Unretained(this), loop.QuitClosure(), expected));
   loop.Run();
-}
-
-TEST_F(SegmentationPlatformServiceImplTest, RegisterAndUnregisterCallback) {
-  CallbackId callback_id1 =
-      segmentation_platform_service_impl_
-          ->RegisterOnDemandSegmentSelectionCallback(
-              kTestSegmentationKey1,
-              base::BindRepeating(&SegmentationPlatformServiceImplTest::
-                                      OnOnDemandSegmentSelection,
-                                  base::Unretained(this)));
-  CallbackId callback_id2 =
-      segmentation_platform_service_impl_
-          ->RegisterOnDemandSegmentSelectionCallback(
-              kTestSegmentationKey1,
-              base::BindRepeating(&SegmentationPlatformServiceImplTest::
-                                      OnOnDemandSegmentSelection,
-                                  base::Unretained(this)));
-  ASSERT_EQ(callback_id2.value(), callback_id1.value() + 1);
-
-  segmentation_platform_service_impl_
-      ->UnregisterOnDemandSegmentSelectionCallback(callback_id1,
-                                                   kTestSegmentationKey1);
-  segmentation_platform_service_impl_
-      ->UnregisterOnDemandSegmentSelectionCallback(callback_id2,
-                                                   kTestSegmentationKey1);
-
-  // Calling unregister multiple times have no effect.
-  segmentation_platform_service_impl_
-      ->UnregisterOnDemandSegmentSelectionCallback(callback_id2,
-                                                   kTestSegmentationKey1);
-
-  // TODO(shaktisahu): Add test for OnTrigger that invokes the callback.
 }
 
 class SegmentationPlatformServiceImplEmptyConfigTest

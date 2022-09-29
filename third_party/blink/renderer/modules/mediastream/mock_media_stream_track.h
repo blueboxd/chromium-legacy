@@ -107,7 +107,7 @@ class MockMediaStreamTrack : public blink::MediaStreamTrack {
   }
 
   MOCK_METHOD1(stopTrack, void(ExecutionContext*));
-  MOCK_METHOD1(clone, MediaStreamTrack*(ScriptState*));
+  MOCK_METHOD1(clone, MediaStreamTrack*(ExecutionContext*));
   MOCK_METHOD2(applyConstraintsScriptState,
                ScriptPromise(ScriptState*, const MediaTrackConstraints*));
   MOCK_METHOD2(applyConstraintsResolver,
@@ -117,6 +117,7 @@ class MockMediaStreamTrack : public blink::MediaStreamTrack {
   MOCK_METHOD1(UnregisterMediaStream, void(MediaStream*));
   MOCK_METHOD2(AddedEventListener,
                void(const AtomicString&, RegisteredEventListener&));
+  MOCK_METHOD1(BeingTransferred, void(const base::UnguessableToken&));
 
 #if !BUILDFLAG(IS_ANDROID)
   MOCK_METHOD0(CloseFocusWindowOfOpportunity, void());

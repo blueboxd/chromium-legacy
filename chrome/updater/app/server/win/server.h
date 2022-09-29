@@ -18,7 +18,6 @@
 
 namespace updater {
 
-class Configurator;
 struct RegistrationRequest;
 
 // The COM objects involved in this server are free threaded. Incoming COM calls
@@ -41,6 +40,9 @@ struct RegistrationRequest;
 class ComServerApp : public AppServer {
  public:
   ComServerApp();
+
+  using AppServer::config;
+  using AppServer::prefs;
 
   scoped_refptr<base::SequencedTaskRunner> main_task_runner() {
     return main_task_runner_;

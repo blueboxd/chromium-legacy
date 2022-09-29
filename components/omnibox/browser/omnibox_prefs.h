@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_PREFS_H_
 #define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_PREFS_H_
 
+#include <string>
+
 class PrefRegistrySimple;
 class PrefService;
 
@@ -37,24 +39,42 @@ extern const char kKeywordSpaceTriggeringEnabled[];
 extern const char kSuggestionGroupVisibility[];
 extern const char kPreventUrlElisionsInOmnibox[];
 extern const char kZeroSuggestCachedResults[];
+extern const char kZeroSuggestCachedResultsWithURL[];
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 // Returns the stored visibility preference for |suggestion_group_id|.
 // If |suggestion_group_id| has never been manually hidden or shown by the user,
-// this method returns DEFAULT.
+// this method returns SuggestionGroupVisibility::DEFAULT.
 //
-// Warning: UI code should use AutocompleteResult::IsSuggestionGroupIdHidden()
-// instead, which uses the server-provided hint on default-hidden groups.
-// This method is accessible for testing only.
+// Warning: UI code should use AutocompleteResult::IsSuggestionGroupHidden()
+// instead, which passes the server-provided group ID to this method and takes
+// the server-provided hint on default visibility of the group into account.
 SuggestionGroupVisibility GetUserPreferenceForSuggestionGroupVisibility(
     PrefService* prefs,
     int suggestion_group_id);
 
-// Sets the group visibility of |suggestion_group_id| to |new_value|.
-void SetSuggestionGroupVisibility(PrefService* prefs,
-                                  int suggestion_group_id,
-                                  SuggestionGroupVisibility new_value);
+// Sets the stored visibility preference for |suggestion_group_id| to
+// |visibility|.
+//
+// Warning: UI code should use AutocompleteResult::SetSuggestionGroupHidden()
+// instead, which passes the server-provided group ID to this method.
+void SetUserPreferenceForSuggestionGroupVisibility(
+    PrefService* prefs,
+    int suggestion_group_id,
+    SuggestionGroupVisibility visibility);
+
+// Updates the ZPS dictionary preference to cache the given |response| value
+// using the |page_url| as the cache key.
+void SetUserPreferenceForZeroSuggestCachedResponse(PrefService* prefs,
+                                                   const std::string& page_url,
+                                                   const std::string& response);
+
+// Returns the cached response from the ZPS dictionary preference associated
+// with the given |page_url|.
+std::string GetUserPreferenceForZeroSuggestCachedResponse(
+    PrefService* prefs,
+    const std::string& page_url);
 
 }  // namespace omnibox
 

@@ -189,9 +189,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // field.
   virtual std::u16string GetValueForControl() const = 0;
 
-  // Get the unignored selection from the tree, meaning the selection whose
-  // endpoints are on unignored nodes. (An ignored node means that the node
-  // should not be exposed to platform APIs: See `IsIgnored`.)
+  // See `AXNode::GetUnignoredSelection`.
   virtual const AXTree::Selection GetUnignoredSelection() const = 0;
 
   // Creates a text position rooted at this object if it's a leaf node, or a
@@ -463,7 +461,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get whether this node is marked as read-only or is disabled.
   virtual bool IsReadOnlyOrDisabled() const = 0;
 
-  // Returns true if the caret or selection is visible on this object.
+  // See `AXNode::HasVisibleCaretOrSelection`.
   virtual bool HasVisibleCaretOrSelection() const = 0;
 
   // Get another node from this same tree.
@@ -563,8 +561,8 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // or treegrid.
   virtual bool IsCellOrHeaderOfAriaGrid() const = 0;
 
-  // True if this is a web area, and its grandparent is a presentational iframe.
-  virtual bool IsWebAreaForPresentationalIframe() const = 0;
+  // See `AXNode::IsRootWebAreaForPresentationalIframe()`.
+  virtual bool IsRootWebAreaForPresentationalIframe() const = 0;
 
   // Ordered-set-like and item-like nodes.
   virtual bool IsOrderedSetItem() const = 0;

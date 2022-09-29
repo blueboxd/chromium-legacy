@@ -5,8 +5,12 @@
 /**
  * @fileoverview Handles math output and exploration.
  */
+import {AutomationPredicate} from '../../common/automation_predicate.js';
 import {CursorRange} from '../../common/cursors/range.js';
 import {Msgs} from '../common/msgs.js';
+import {QueueMode} from '../common/tts_interface.js';
+
+import {ChromeVox} from './chromevox.js';
 
 /**
  * Initializes math for output and exploration.

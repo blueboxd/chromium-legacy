@@ -29,10 +29,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ActionsSubmenuTest) {
   RunTestURL("foreground/js/ui/actions_submenu_unittest.js");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Breadcrumb) {
-  RunTestURL("foreground/js/ui/breadcrumb_unittest.js");
-}
-
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, BannerController) {
   RunTestURL("foreground/js/banner_controller_unittest.js");
 }
@@ -165,6 +161,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTransferController) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTypeFiltersController) {
   RunTestURL("foreground/js/file_type_filters_controller_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, AsyncUtil) {
+  RunTestURL("common/js/async_util_unittest.js");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileType) {
@@ -309,4 +309,12 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileGridTest) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, EmptyFolderControllerTest) {
   RunTestURL("foreground/js/empty_folder_controller_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, BaseStore) {
+  RunTestURL("lib/base_store_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ReducerAllEntries) {
+  RunTestURL("state/reducers/all_entries_unittest.js");
 }

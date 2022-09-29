@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_view_state_observer.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/views/controls/combobox/combobox.h"
 
 using testing::_;
 
@@ -133,6 +134,100 @@ TEST_F(SidePanelCoordinatorTest, ToggleSidePanel) {
 
   coordinator_->Toggle();
   EXPECT_FALSE(browser_view()->right_aligned_side_panel()->GetVisible());
+}
+
+TEST_F(SidePanelCoordinatorTest, ChangeSidePanelWidth) {
+  // Set side panel to right-aligned
+  browser_view()->GetProfile()->GetPrefs()->SetBoolean(
+      prefs::kSidePanelHorizontalAlignment, true);
+  coordinator_->Toggle();
+  const int starting_width = 500;
+  browser_view()->right_aligned_side_panel()->SetPanelWidth(starting_width);
+  browser_view()->Layout();
+  EXPECT_EQ(browser_view()->right_aligned_side_panel()->width(),
+            starting_width);
+
+  const int increment = 50;
+  browser_view()->right_aligned_side_panel()->OnResize(increment, true);
+  browser_view()->Layout();
+  EXPECT_EQ(browser_view()->right_aligned_side_panel()->width(),
+            starting_width - increment);
+
+  // Set side panel to left-aligned
+  browser_view()->GetProfile()->GetPrefs()->SetBoolean(
+      prefs::kSidePanelHorizontalAlignment, false);
+  browser_view()->right_aligned_side_panel()->SetPanelWidth(starting_width);
+  browser_view()->Layout();
+  EXPECT_EQ(browser_view()->right_aligned_side_panel()->width(),
+            starting_width);
+
+  browser_view()->right_aligned_side_panel()->OnResize(increment, true);
+  browser_view()->Layout();
+  EXPECT_EQ(browser_view()->right_aligned_side_panel()->width(),
+            starting_width + increment);
+}
+
+TEST_F(SidePanelCoordinatorTest, ChangeSidePanelWidthMaxMin) {
+  coordinator_->Toggle();
+  const int starting_width = 500;
+  browser_view()->right_aligned_side_panel()->SetPanelWidth(starting_width);
+  browser_view()->Layout();
+  EXPECT_EQ(browser_view()->right_aligned_side_panel()->width(),
+            starting_width);
+
+  // Use an increment large enough to hit side panel and browser contents
+  // minimum width constraints.
+  const int large_increment = 1000000000;
+  browser_view()->right_aligned_side_panel()->OnResize(large_increment, true);
+  browser_view()->Layout();
+  EXPECT_EQ(
+      browser_view()->right_aligned_side_panel()->width(),
+      browser_view()->right_aligned_side_panel()->GetMinimumSize().width());
+
+  browser_view()->right_aligned_side_panel()->OnResize(-large_increment, true);
+  browser_view()->Layout();
+  BrowserViewLayout* layout_manager =
+      static_cast<BrowserViewLayout*>(browser_view()->GetLayoutManager());
+  const int min_web_contents_width =
+      layout_manager->GetMinWebContentsWidthForTesting();
+  EXPECT_EQ(browser_view()->contents_web_view()->width(),
+            min_web_contents_width);
+}
+
+TEST_F(SidePanelCoordinatorTest, ChangeSidePanelWidthWindowResize) {
+  coordinator_->Toggle();
+  const int starting_width = 500;
+  browser_view()->right_aligned_side_panel()->SetPanelWidth(starting_width);
+  browser_view()->Layout();
+  EXPECT_EQ(browser_view()->right_aligned_side_panel()->width(),
+            starting_width);
+
+  // Shrink browser window enough that side panel should also shrink in
+  // observance of web contents minimum width.
+  gfx::Rect original_bounds(browser_view()->GetBounds());
+  gfx::Size new_size(starting_width, starting_width);
+  gfx::Rect new_bounds(original_bounds);
+  new_bounds.set_size(new_size);
+  // Explicitly restore the browser window on ChromeOS, as it would otherwise
+  // be maximized and the SetBounds call would be a no-op.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  browser_view()->Restore();
+#endif
+  browser_view()->SetBounds(new_bounds);
+  EXPECT_LT(browser_view()->right_aligned_side_panel()->width(),
+            starting_width);
+  BrowserViewLayout* layout_manager =
+      static_cast<BrowserViewLayout*>(browser_view()->GetLayoutManager());
+  const int min_web_contents_width =
+      layout_manager->GetMinWebContentsWidthForTesting();
+  EXPECT_EQ(browser_view()->contents_web_view()->width(),
+            min_web_contents_width);
+
+  // Return browser window to original size, side panel should also return to
+  // size prior to window resize.
+  browser_view()->SetBounds(original_bounds);
+  EXPECT_EQ(browser_view()->right_aligned_side_panel()->width(),
+            starting_width);
 }
 
 TEST_F(SidePanelCoordinatorTest, ChangeSidePanelAlignment) {
@@ -803,6 +898,38 @@ TEST_F(SidePanelCoordinatorTest, GlobalEntryDeregisteredWhenClosed) {
 
   EXPECT_FALSE(browser_view()->right_aligned_side_panel()->GetVisible());
   EXPECT_FALSE(GetLastActiveEntryId().has_value());
+}
+
+TEST_F(SidePanelCoordinatorTest, ComboboxAdditionsDoNotChangeSelection) {
+  SidePanelEntry::Id earlier_sorted_entry =
+      std::min(SidePanelEntry::Id::kSideSearch, SidePanelEntry::Id::kLens);
+  SidePanelEntry::Id later_sorted_entry =
+      std::max(SidePanelEntry::Id::kSideSearch, SidePanelEntry::Id::kLens);
+  browser_view()->browser()->tab_strip_model()->ActivateTabAt(1);
+  content::WebContents* active_contents =
+      browser_view()->GetActiveWebContents();
+  auto* contextual_registry = SidePanelRegistry::Get(active_contents);
+  contextual_registry->Deregister(earlier_sorted_entry);
+  coordinator_->Show(later_sorted_entry);
+  // Verify the selected index in the combobox is the later entry.
+  absl::optional<size_t> selected_index =
+      coordinator_->GetComboboxForTesting()->GetSelectedIndex();
+  EXPECT_TRUE(selected_index.has_value());
+  EXPECT_EQ(coordinator_->GetComboboxModelForTesting()->GetIdAt(
+                selected_index.value()),
+            later_sorted_entry);
+  // Add back the earlier entry and verify the selected index is still correct.
+  contextual_registry->Register(std::make_unique<SidePanelEntry>(
+      earlier_sorted_entry, u"testing1",
+      ui::ImageModel::FromVectorIcon(kReadLaterIcon, ui::kColorIcon),
+      base::BindRepeating([]() { return std::make_unique<views::View>(); })));
+  EXPECT_EQ(coordinator_->GetCurrentSidePanelEntryForTesting()->id(),
+            later_sorted_entry);
+  selected_index = coordinator_->GetComboboxForTesting()->GetSelectedIndex();
+  EXPECT_TRUE(selected_index.has_value());
+  EXPECT_EQ(coordinator_->GetComboboxModelForTesting()->GetIdAt(
+                selected_index.value()),
+            later_sorted_entry);
 }
 
 // Test that the SidePanelCoordinator behaves and updates corrected when dealing

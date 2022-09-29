@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/html/parser/html_preload_scanner.h"
 #include "third_party/blink/renderer/core/html/parser/html_token.h"
 #include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
-#include "third_party/blink/renderer/core/html/parser/html_tokenizer_metrics_reporter.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/html/parser/preload_request.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
@@ -59,6 +58,7 @@ class BackgroundHTMLScanner;
 class Document;
 class DocumentFragment;
 class Element;
+class FetchBatchScope;
 class HTMLDocument;
 class HTMLParserMetrics;
 class HTMLParserScriptRunner;
@@ -82,6 +82,8 @@ size_t CORE_EXPORT GetDiscardedTokenCountForTesting();
 
 class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
                                        private HTMLParserScriptRunnerHost {
+  friend FetchBatchScope;
+
  public:
   HTMLDocumentParser(HTMLDocument&,
                      ParserSynchronizationPolicy,
@@ -108,16 +110,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   bool HasPendingWorkScheduledForTesting() const;
 
   HTMLTokenizer* Tokenizer() const { return tokenizer_.get(); }
-
-  void SetTokenizerState(const AtomicHTMLToken& token,
-                         HTMLTokenizer::State state) {
-    DCHECK(tokenizer_);
-    if (tokenizer_metrics_reporter_) {
-      tokenizer_metrics_reporter_->WillChangeTokenizerState(input_.Current(),
-                                                            token, state);
-    }
-    tokenizer_->SetState(state);
-  }
 
   TextPosition GetTextPosition() const final;
   OrdinalNumber LineNumber() const final;
@@ -169,7 +161,10 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   }
   void AppendCurrentInputStreamToPreloadScannerAndScan() final;
 
-  NextTokenStatus CanTakeNextToken();
+  // This function may end up running script. If it does,
+  // `time_executing_script` is incremented by the amount of time it takes to
+  // execute script.
+  NextTokenStatus CanTakeNextToken(base::TimeDelta& time_executing_script);
   bool PumpTokenizer();
   void PumpTokenizerIfPossible();
   void DeferredPumpTokenizerIfPossible();
@@ -224,7 +219,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   Member<HTMLParserReentryPermit> reentry_permit_ =
       MakeGarbageCollected<HTMLParserReentryPermit>();
 
-  std::unique_ptr<HTMLTokenizerMetricsReporter> tokenizer_metrics_reporter_;
   std::unique_ptr<HTMLToken> token_;
   std::unique_ptr<HTMLTokenizer> tokenizer_;
   Member<HTMLParserScriptRunner> script_runner_;
@@ -255,6 +249,20 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
       GUARDED_BY(pending_preload_lock_);
 
   ThreadScheduler* scheduler_;
+
+  // Handle the ref counting of nested batch fetches. Usually the batching is
+  // handled by a scope-lock for the duration of the batch (and can be nested
+  // within other batches).
+  //
+  // When the parser gets detached from the document, if it happens during a
+  // scope-locked batch operation, the scope-based batching will not be able
+  // to end the batches properly. By keeping track of how deep the request
+  // batching is, the outstanding batches can be cleared outside of the scope
+  // lock at the time that the document is detached from the parser.
+  void StartFetchBatch();
+  void EndFetchBatch();
+  void FlushFetchBatch();
+  uint32_t pending_batch_operations_ = 0u;
 };
 
 }  // namespace blink

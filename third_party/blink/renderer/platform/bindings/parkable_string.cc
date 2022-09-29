@@ -4,11 +4,6 @@
 
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 
-// parkable_string.h is a widely included header and its size impacts build
-// time. Try not to raise this limit unless necessary. See
-// https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
-#pragma clang max_tokens_here 760000
-
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/bind.h"
@@ -652,7 +647,7 @@ void ParkableStringImpl::PostBackgroundCompressionTask() {
   // |params| keeps |this| alive until |OnParkingCompleteOnMainThread()|.
   auto params = std::make_unique<BackgroundTaskParams>(
       this, string_.Bytes(), string_.CharactersSizeInBytes(),
-      Thread::Current()->GetTaskRunner());
+      Thread::Current()->GetDeprecatedTaskRunner());
   worker_pool::PostTask(
       FROM_HERE, CrossThreadBindOnce(&ParkableStringImpl::CompressInBackground,
                                      std::move(params)));
@@ -804,7 +799,7 @@ void ParkableStringImpl::PostBackgroundWritingTask() {
     metadata_->background_task_in_progress_ = true;
     auto params = std::make_unique<BackgroundTaskParams>(
         this, metadata_->compressed_->data(), metadata_->compressed_->size(),
-        Thread::Current()->GetTaskRunner());
+        Thread::Current()->GetDeprecatedTaskRunner());
     worker_pool::PostTask(
         FROM_HERE, {base::MayBlock()},
         CrossThreadBindOnce(&ParkableStringImpl::WriteToDiskInBackground,

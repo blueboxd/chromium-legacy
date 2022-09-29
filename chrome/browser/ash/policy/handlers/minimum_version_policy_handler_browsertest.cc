@@ -53,10 +53,10 @@
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_type.h"
@@ -188,9 +188,8 @@ class MinimumVersionPolicyTest : public MinimumVersionPolicyTestBase {
     MinimumVersionPolicyTestBase::SetUpOnMainThread();
     display_service_tester_ =
         std::make_unique<NotificationDisplayServiceTester>(nullptr /*profile*/);
-    network_state_test_helper_ =
-        std::make_unique<chromeos::NetworkStateTestHelper>(
-            false /*use_default_devices_and_services*/);
+    network_state_test_helper_ = std::make_unique<ash::NetworkStateTestHelper>(
+        false /*use_default_devices_and_services*/);
     network_state_test_helper_->manager_test()->SetupDefaultEnvironment();
     tray_test_api_ = ash::SystemTrayTestApi::Create();
   }
@@ -218,7 +217,7 @@ class MinimumVersionPolicyTest : public MinimumVersionPolicyTestBase {
   ash::UserPolicyMixin user_policy_mixin_{&mixin_host_,
                                           managed_user.account_id};
   ash::LoginManagerMixin login_manager_{&mixin_host_, {managed_user}};
-  std::unique_ptr<chromeos::NetworkStateTestHelper> network_state_test_helper_;
+  std::unique_ptr<ash::NetworkStateTestHelper> network_state_test_helper_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;
   std::unique_ptr<ash::SystemTrayTestApi> tray_test_api_;
 };

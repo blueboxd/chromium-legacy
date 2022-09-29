@@ -24,6 +24,7 @@ class BookmarkSpecifics;
 class ClientConfigParams;
 class ClientToServerMessage;
 class ClientToServerResponse;
+class ContactInfoSpecifics;
 class DebugEventInfo;
 class DebugInfo;
 class DeviceInfoSpecifics;
@@ -114,6 +115,9 @@ std::unique_ptr<base::DictionaryValue> BookmarkSpecificsToValue(
 
 std::unique_ptr<base::DictionaryValue> ClientConfigParamsToValue(
     const sync_pb::ClientConfigParams& proto);
+
+std::unique_ptr<base::DictionaryValue> ContactInfoSpecificsToValue(
+    const sync_pb::ContactInfoSpecifics& proto);
 
 std::unique_ptr<base::DictionaryValue> DebugEventInfoToValue(
     const sync_pb::DebugEventInfo& proto);
@@ -265,19 +269,27 @@ std::unique_ptr<base::DictionaryValue> WifiConfigurationSpecificsToValue(
 std::unique_ptr<base::DictionaryValue> WorkspaceDeskSpecificsToValue(
     const sync_pb::WorkspaceDeskSpecifics& workspace_desk_specifics);
 
-// ToValue functions that allow omitting specifics.
+// ToValue functions that allow omitting specifics and other fields.
+
+struct ProtoValueConversionOptions {
+  // Whether to include specifics.
+  bool include_specifics = true;
+
+  // Whether to include default values which are set in GetUpdateTriggers.
+  bool include_full_get_update_triggers = true;
+};
 
 std::unique_ptr<base::DictionaryValue> ClientToServerMessageToValue(
     const sync_pb::ClientToServerMessage& proto,
-    bool include_specifics);
+    const ProtoValueConversionOptions& options);
 
 std::unique_ptr<base::DictionaryValue> ClientToServerResponseToValue(
     const sync_pb::ClientToServerResponse& proto,
-    bool include_specifics);
+    const ProtoValueConversionOptions& options);
 
 std::unique_ptr<base::DictionaryValue> SyncEntityToValue(
     const sync_pb::SyncEntity& entity,
-    bool include_specifics);
+    const ProtoValueConversionOptions& options);
 
 }  // namespace syncer
 

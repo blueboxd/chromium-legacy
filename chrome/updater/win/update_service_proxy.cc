@@ -68,8 +68,13 @@ HRESULT CreateUpdater(UpdaterScope scope,
   if (FAILED(hr))
     return hr;
   hr = server.As(&updater);
-  VLOG_IF(2, FAILED(hr)) << "Failed to query the updater interface: "
+
+  // TODO(crbug.com/1341471) - revert the CL that introduced the check after
+  // the bug is resolved.
+  VLOG_IF(2, FAILED(hr)) << "Failed to query the updater interface. "
                          << std::hex << hr;
+  CHECK(SUCCEEDED(hr));
+
   return hr;
 }
 
@@ -198,6 +203,23 @@ class UpdaterObserver
       HRESULT hr = update_state->get_extraCode1(&extra_code1);
       if (SUCCEEDED(hr))
         update_service_state.extra_code1 = extra_code1;
+    }
+    {
+      base::win::ScopedBstr installer_text;
+      HRESULT hr = update_state->get_installerText(installer_text.Receive());
+      if (SUCCEEDED(hr)) {
+        update_service_state.installer_text =
+            base::WideToUTF8(installer_text.Get());
+      }
+    }
+    {
+      base::win::ScopedBstr installer_cmd_line;
+      HRESULT hr =
+          update_state->get_installerCommandLine(installer_cmd_line.Receive());
+      if (SUCCEEDED(hr)) {
+        update_service_state.installer_cmd_line =
+            base::WideToUTF8(installer_cmd_line.Get());
+      }
     }
 
     VLOG(4) << update_service_state;

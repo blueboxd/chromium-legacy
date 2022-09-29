@@ -7,9 +7,9 @@
  * SWA.
  */
 
-import {emptyState, IFrameApi, PersonalizationState, setAmbientProviderForTesting, setKeyboardBacklightProviderForTesting, setThemeProviderForTesting, setUserProviderForTesting, setWallpaperProviderForTesting} from 'chrome://personalization/trusted/personalization_app.js';
+import {emptyState, PersonalizationState, setAmbientProviderForTesting, setKeyboardBacklightProviderForTesting, setThemeProviderForTesting, setUserProviderForTesting, setWallpaperProviderForTesting} from 'chrome://personalization/js/personalization_app.js';
+import {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js';
 import {flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 import {flushTasks} from 'chrome://webui-test/test_util.js';
 
 import {TestAmbientProvider} from './test_ambient_interface_provider.js';
@@ -73,11 +73,11 @@ export function baseSetup(initialState: PersonalizationState = emptyState()) {
   };
 }
 
-/**
- * Helper function to setup a mock `IFrameApi` singleton.
- */
-export function setupTestIFrameApi(): IFrameApi&TestBrowserProxy<IFrameApi> {
-  const testProxy = TestBrowserProxy.fromClass(IFrameApi);
-  IFrameApi.setInstance(testProxy);
-  return testProxy;
+/** Returns a |String16| from the specified |value|. */
+export function toString16(value: string): String16 {
+  const data = [];
+  for (let i = 0; i < value.length; ++i) {
+    data[i] = value.charCodeAt(i);
+  }
+  return {data};
 }

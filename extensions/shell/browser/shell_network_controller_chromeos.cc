@@ -34,7 +34,7 @@ void HandleEnableWifiError(const std::string& error_name) {
 }
 
 // Returns a human-readable name for the network described by |network|.
-std::string GetNetworkName(const chromeos::NetworkState& network) {
+std::string GetNetworkName(const ash::NetworkState& network) {
   return !network.name().empty()
              ? network.name()
              : base::StringPrintf("[%s]", network.type().c_str());
@@ -42,12 +42,12 @@ std::string GetNetworkName(const chromeos::NetworkState& network) {
 
 // Returns true if shill is either connected or connecting to a network.
 bool IsConnectedOrConnecting() {
-  chromeos::NetworkStateHandler* state_handler =
-      chromeos::NetworkHandler::Get()->network_state_handler();
+  ash::NetworkStateHandler* state_handler =
+      ash::NetworkHandler::Get()->network_state_handler();
   return state_handler->ConnectedNetworkByType(
-             chromeos::NetworkTypePattern::Default()) ||
+             ash::NetworkTypePattern::Default()) ||
          state_handler->ConnectingNetworkByType(
-             chromeos::NetworkTypePattern::Default());
+             ash::NetworkTypePattern::Default());
 }
 
 }  // namespace
@@ -57,11 +57,11 @@ ShellNetworkController::ShellNetworkController(
     : state_(STATE_IDLE),
       preferred_network_name_(preferred_network_name),
       preferred_network_is_active_(false) {
-  chromeos::NetworkStateHandler* state_handler =
-      chromeos::NetworkHandler::Get()->network_state_handler();
+  ash::NetworkStateHandler* state_handler =
+      ash::NetworkHandler::Get()->network_state_handler();
   state_handler->AddObserver(this, FROM_HERE);
   state_handler->SetTechnologyEnabled(
-      chromeos::NetworkTypePattern::Primitive(shill::kTypeWifi), true,
+      ash::NetworkTypePattern::Primitive(shill::kTypeWifi), true,
       base::BindRepeating(&HandleEnableWifiError));
 
   // If we're unconnected, trigger a connection attempt and start scanning.
@@ -69,7 +69,7 @@ ShellNetworkController::ShellNetworkController(
 }
 
 ShellNetworkController::~ShellNetworkController() {
-  chromeos::NetworkHandler::Get()->network_state_handler()->RemoveObserver(
+  ash::NetworkHandler::Get()->network_state_handler()->RemoveObserver(
       this, FROM_HERE);
 }
 
@@ -79,7 +79,7 @@ void ShellNetworkController::NetworkListChanged() {
 }
 
 void ShellNetworkController::NetworkConnectionStateChanged(
-    const chromeos::NetworkState* network) {
+    const ash::NetworkState* network) {
   if (network) {
     VLOG(1) << "Network connection state changed:"
             << " name=" << GetNetworkName(*network)
@@ -89,7 +89,7 @@ void ShellNetworkController::NetworkConnectionStateChanged(
     VLOG(1) << "Network connection state changed: [none]";
   }
 
-  const chromeos::NetworkState* wifi_network = GetActiveWiFiNetwork();
+  const ash::NetworkState* wifi_network = GetActiveWiFiNetwork();
   preferred_network_is_active_ =
       wifi_network && wifi_network->name() == preferred_network_name_;
   VLOG(2) << "Active WiFi network is "
@@ -105,28 +105,28 @@ void ShellNetworkController::NetworkConnectionStateChanged(
 }
 
 void ShellNetworkController::SetCellularAllowRoaming(bool allow_roaming) {
-  chromeos::NetworkHandler* handler = chromeos::NetworkHandler::Get();
-  chromeos::NetworkStateHandler::NetworkStateList network_list;
+  ash::NetworkHandler* handler = ash::NetworkHandler::Get();
+  ash::NetworkStateHandler::NetworkStateList network_list;
 
   base::DictionaryValue properties;
   properties.SetKey(shill::kCellularAllowRoamingProperty,
                     base::Value(allow_roaming));
 
   handler->network_state_handler()->GetVisibleNetworkListByType(
-      chromeos::NetworkTypePattern::Cellular(), &network_list);
+      ash::NetworkTypePattern::Cellular(), &network_list);
 
-  for (const chromeos::NetworkState* network : network_list) {
+  for (const ash::NetworkState* network : network_list) {
     handler->network_configuration_handler()->SetShillProperties(
         network->path(), properties, base::DoNothing(),
-        chromeos::network_handler::ErrorCallback());
+        ash::network_handler::ErrorCallback());
   }
 }
 
-const chromeos::NetworkState* ShellNetworkController::GetActiveWiFiNetwork() {
-  chromeos::NetworkStateHandler* state_handler =
-      chromeos::NetworkHandler::Get()->network_state_handler();
-  const chromeos::NetworkState* network = state_handler->FirstNetworkByType(
-      chromeos::NetworkTypePattern::Primitive(shill::kTypeWifi));
+const ash::NetworkState* ShellNetworkController::GetActiveWiFiNetwork() {
+  ash::NetworkStateHandler* state_handler =
+      ash::NetworkHandler::Get()->network_state_handler();
+  const ash::NetworkState* network = state_handler->FirstNetworkByType(
+      ash::NetworkTypePattern::Primitive(shill::kTypeWifi));
   return network &&
                  (network->IsConnectedState() || network->IsConnectingState())
              ? network
@@ -150,8 +150,8 @@ void ShellNetworkController::SetScanningEnabled(bool enabled) {
 
 void ShellNetworkController::RequestScan() {
   VLOG(1) << "Requesting scan";
-  chromeos::NetworkHandler::Get()->network_state_handler()->RequestScan(
-      chromeos::NetworkTypePattern::Default());
+  ash::NetworkHandler::Get()->network_state_handler()->RequestScan(
+      ash::NetworkTypePattern::Default());
 }
 
 void ShellNetworkController::ConnectIfUnconnected() {
@@ -161,18 +161,17 @@ void ShellNetworkController::ConnectIfUnconnected() {
       state_ == STATE_WAITING_FOR_PREFERRED_RESULT)
     return;
 
-  const chromeos::NetworkState* best_network = NULL;
+  const ash::NetworkState* best_network = NULL;
   bool can_connect_to_preferred_network = false;
 
-  chromeos::NetworkHandler* handler = chromeos::NetworkHandler::Get();
-  chromeos::NetworkStateHandler::NetworkStateList network_list;
+  ash::NetworkHandler* handler = ash::NetworkHandler::Get();
+  ash::NetworkStateHandler::NetworkStateList network_list;
   handler->network_state_handler()->GetVisibleNetworkListByType(
-      chromeos::NetworkTypePattern::WiFi(), &network_list);
-  for (chromeos::NetworkStateHandler::NetworkStateList::const_iterator it =
+      ash::NetworkTypePattern::WiFi(), &network_list);
+  for (ash::NetworkStateHandler::NetworkStateList::const_iterator it =
            network_list.begin();
-       it != network_list.end();
-       ++it) {
-    const chromeos::NetworkState* network = *it;
+       it != network_list.end(); ++it) {
+    const ash::NetworkState* network = *it;
     if (!network->connectable())
       continue;
 
@@ -209,8 +208,7 @@ void ShellNetworkController::ConnectIfUnconnected() {
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&ShellNetworkController::HandleConnectionError,
                           weak_ptr_factory_.GetWeakPtr()),
-      false /* check_error_state */,
-      chromeos::ConnectCallbackMode::ON_COMPLETED);
+      false /* check_error_state */, ash::ConnectCallbackMode::ON_COMPLETED);
 }
 
 void ShellNetworkController::HandleConnectionSuccess() {

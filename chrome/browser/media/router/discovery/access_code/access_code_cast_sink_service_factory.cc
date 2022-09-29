@@ -8,7 +8,6 @@
 #include "chrome/browser/media/router/chrome_media_router_factory.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_sink_service.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/media_router/browser/media_router_factory.h"
 
 namespace media_router {
@@ -17,7 +16,7 @@ namespace media_router {
 AccessCodeCastSinkService* AccessCodeCastSinkServiceFactory::GetForProfile(
     Profile* profile) {
   DCHECK(profile);
-  if (!GetAccessCodeCastEnabledPref(profile)) {
+  if (!GetAccessCodeCastEnabledPref(profile->GetPrefs())) {
     return nullptr;
   }
   DCHECK(MediaRouterFactory::GetApiForBrowserContext(profile))
@@ -50,9 +49,7 @@ AccessCodeCastSinkServiceFactory::GetInstance() {
 }
 
 AccessCodeCastSinkServiceFactory::AccessCodeCastSinkServiceFactory()
-    : BrowserContextKeyedServiceFactory(
-          "AccessCodeSinkService",
-          BrowserContextDependencyManager::GetInstance()) {
+    : ProfileKeyedServiceFactory("AccessCodeSinkService") {
   // TODO(b/238212430): Add a browsertest case to ensure that all media router
   // objects are created before the ACCSS.
   DependsOn(media_router::ChromeMediaRouterFactory::GetInstance());
@@ -61,12 +58,12 @@ AccessCodeCastSinkServiceFactory::AccessCodeCastSinkServiceFactory()
 AccessCodeCastSinkServiceFactory::~AccessCodeCastSinkServiceFactory() = default;
 
 KeyedService* AccessCodeCastSinkServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* context) const {
-  // TODO(b/243973085): Remove profile init duplication.
-  if (!GetAccessCodeCastEnabledPref(Profile::FromBrowserContext(context))) {
+    content::BrowserContext* profile) const {
+  if (!GetAccessCodeCastEnabledPref(
+          Profile::FromBrowserContext(profile)->GetPrefs())) {
     return nullptr;
   }
-  return new AccessCodeCastSinkService(static_cast<Profile*>(context));
+  return new AccessCodeCastSinkService(static_cast<Profile*>(profile));
 }
 
 bool AccessCodeCastSinkServiceFactory::ServiceIsCreatedWithBrowserContext()

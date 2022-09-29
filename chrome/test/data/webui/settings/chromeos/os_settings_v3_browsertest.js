@@ -57,7 +57,7 @@ TEST_F(
     'OSSettingsDevicePageV3Test', 'All',
     () => mocha.grep('/^((?!arrow_key_arrangement_disabled).)*$/').run());
 
-// TODO(crbug.com/1275568): move this to the generic test lists below after the
+// TODO(crbug.com/1347746): move this to the generic test lists below after the
 // feature is launched.
 var OSSettingsPeoplePageAccountManagerV3Test =
     class extends OSSettingsV3BrowserTest {
@@ -70,7 +70,6 @@ var OSSettingsPeoplePageAccountManagerV3Test =
   get featureList() {
     return {
       disabled: [
-        'chromeos::features::kArcAccountRestrictions',
         'chromeos::features::kLacrosSupport',
       ],
     };
@@ -90,7 +89,6 @@ var OSSettingsPeoplePageAccountManagerWithArcAccountRestrictionsEnabledV3Test =
   get featureList() {
     return {
       enabled: [
-        'chromeos::features::kArcAccountRestrictions',
         'chromeos::features::kLacrosSupport',
       ],
     };
@@ -151,6 +149,7 @@ var OSSettingsOsBluetoothDevicesSubpageV3Test =
     return {
       enabled: super.featureList.enabled.concat([
         'ash::features::kFastPair',
+        'ash::features::kFastPairSavedDevices',
         'ash::features::kFastPairSoftwareScanning',
       ]),
     };
@@ -158,6 +157,58 @@ var OSSettingsOsBluetoothDevicesSubpageV3Test =
 };
 
 TEST_F('OSSettingsOsBluetoothDevicesSubpageV3Test', 'AllJsTests', () => {
+  mocha.run();
+});
+
+// TODO (b/238647706) Move this test back into the list of tests below once
+// Fast pair is launched.
+var OSSettingsOsBluetoothSavedDevicesSubpageV3Test =
+    class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_saved_devices_subpage_tests.js&host=test';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: super.featureList.enabled.concat([
+        'ash::features::kFastPair',
+        'ash::features::kFastPairSavedDevices',
+        'ash::features::kFastPairSoftwareScanning',
+      ]),
+    };
+  }
+};
+
+// TODO (b/238647706) Move this test back into the list of tests below once
+// Fast pair is launched.
+TEST_F('OSSettingsOsBluetoothSavedDevicesSubpageV3Test', 'AllJsTests', () => {
+  mocha.run();
+});
+
+// TODO(crbug.com/1234871) Move this test back into the list of tests below once
+// Fast pair is launched.
+var OSSettingsOsBluetoothSavedDevicesListV3Test =
+    class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_saved_devices_list_tests.js&host=test';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: super.featureList.enabled.concat([
+        'ash::features::kFastPair',
+        'ash::features::kFastPairSavedDevices',
+        'ash::features::kFastPairSoftwareScanning',
+      ]),
+    };
+  }
+};
+
+TEST_F('OSSettingsOsBluetoothSavedDevicesListV3Test', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -238,16 +289,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
 [['AccessibilityPage', 'os_a11y_page_tests.js'],
  ['AboutPage', 'os_about_page_tests.js'],
  ['AccountsPage', 'add_users_tests.js'],
- [
-   'AmbientModePage',
-   'ambient_mode_page_test.js',
-   {disabled: ['ash::features::kPersonalizationHub']},
- ],
- [
-   'AmbientModePhotosPage',
-   'ambient_mode_photos_page_test.js',
-   {disabled: ['ash::features::kPersonalizationHub']},
- ],
  ['AppsPage', 'apps_page_test.js'],
  ['AppNotificationsSubpage', 'app_notifications_subpage_tests.js'],
  ['AppManagementAppDetailsItem', 'app_management/app_details_item_test.js'],
@@ -395,7 +436,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  [
    'PrivacyHubSubpage',
    'privacy_hub_subpage_tests.js',
-   {enabled: ['features::kCrosPrivacyHub']},
+   {enabled: ['ash::features::kCrosPrivacyHub']},
  ],
  ['PrivacyPage', 'os_privacy_page_test.js'],
  ['ResetPage', 'os_reset_page_test.js'],
@@ -412,7 +453,9 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['SwitchAccessSetupGuideDialog', 'switch_access_setup_guide_dialog_test.js'],
  ['SwitchAccessSubpage', 'switch_access_subpage_tests.js'],
  ['TetherConnectionDialog', 'tether_connection_dialog_test.js'],
- ['TextToSpeechPage', 'text_to_speech_page_tests.js',
+ [
+   'TextToSpeechPage',
+   'text_to_speech_page_tests.js',
    {enabled: ['features::kAccessibilityOSSettingsVisibility']},
  ],
  ['TextToSpeechSubpage', 'text_to_speech_subpage_tests.js'],

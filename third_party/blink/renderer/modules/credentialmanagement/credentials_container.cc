@@ -7,17 +7,12 @@
 #include <memory>
 #include <utility>
 
-#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/numerics/safe_conversions.h"
-#include "base/rand_util.h"
 #include "build/build_config.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/sms/webotp_constants.h"
-#include "third_party/blink/public/common/sms/webotp_service_outcome.h"
 #include "third_party/blink/public/mojom/credentialmanagement/credential_manager.mojom-blink.h"
 #include "third_party/blink/public/mojom/payments/payment_credential.mojom-blink.h"
-#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/sms/webotp_service.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -35,7 +30,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_provider.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_otp_credential_request_options.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_credential_instrument.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_parameters.h"
@@ -44,12 +38,10 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_user_entity.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_htmlformelement_passwordcredentialdata.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
-#include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -60,7 +52,7 @@
 #include "third_party/blink/renderer/modules/credentialmanagement/authenticator_attestation_response.h"
 #include "third_party/blink/renderer/modules/credentialmanagement/credential.h"
 #include "third_party/blink/renderer/modules/credentialmanagement/credential_manager_proxy.h"
-#include "third_party/blink/renderer/modules/credentialmanagement/credential_manager_type_converters.h"
+#include "third_party/blink/renderer/modules/credentialmanagement/credential_manager_type_converters.h"  // IWYU pragma: keep
 #include "third_party/blink/renderer/modules/credentialmanagement/federated_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanagement/identity_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanagement/otp_credential.h"
@@ -72,7 +64,6 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -926,13 +917,14 @@ bool IsPaymentExtensionValid(const CredentialCreationOptions* options,
   if ((!authenticator->hasResidentKey() &&
        !authenticator->hasRequireResidentKey()) ||
       (authenticator->hasResidentKey() &&
-       authenticator->residentKey() != "required") ||
+       authenticator->residentKey() == "discouraged") ||
       (!authenticator->hasResidentKey() &&
        authenticator->hasRequireResidentKey() &&
        !authenticator->requireResidentKey())) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError,
-        "A resident key is required for 'payment' extension."));
+        "A resident key must be 'preferred' or 'required' for 'payment' "
+        "extension."));
     return false;
   }
 
@@ -1126,8 +1118,9 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
           WTF::Bind(&AbortPublicKeyRequest, WrapPersistent(script_state)));
     }
 
-    bool is_conditional_ui_request = conditionalMediationSupported() &&
-                                     options->mediation() == "conditional";
+    bool is_conditional_ui_request =
+        RuntimeEnabledFeatures::WebAuthenticationConditionalUIEnabled() &&
+        options->mediation() == "conditional";
     if (is_conditional_ui_request &&
         options->publicKey()->hasAllowCredentials() &&
         !options->publicKey()->allowCredentials().IsEmpty()) {
@@ -1217,7 +1210,6 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
     // Some of this has not been spec'd yet.
     KURL provider_url(provider->configURL());
     String client_id = provider->clientId();
-    String nonce = provider->getNonceOr("");
 
     if (!provider_url.IsValid() || client_id == "") {
       resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -1242,12 +1234,14 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
       options->signal()->AddAlgorithm(WTF::Bind(&AbortIdentityCredentialRequest,
                                                 WrapPersistent(script_state)));
     }
+    mojom::blink::IdentityProviderPtr identity_provider =
+        blink::mojom::blink::IdentityProvider::From(*provider);
     bool prefer_auto_sign_in = options->identity()->preferAutoSignIn();
     auto* auth_request =
         CredentialManagerProxy::From(script_state)->FederatedAuthRequest();
 
     auth_request->RequestToken(
-        provider_url, client_id, nonce, prefer_auto_sign_in,
+        std::move(identity_provider), prefer_auto_sign_in,
         WTF::Bind(&OnRequestToken, WrapPersistent(resolver), provider_url,
                   client_id, WrapPersistent(options)));
 
@@ -1678,10 +1672,6 @@ ScriptPromise CredentialsContainer::preventSilentAccess(
                 std::make_unique<ScopedPromiseResolver>(resolver)));
 
   return promise;
-}
-
-bool CredentialsContainer::conditionalMediationSupported() {
-  return RuntimeEnabledFeatures::WebAuthenticationConditionalUIEnabled();
 }
 
 void CredentialsContainer::Trace(Visitor* visitor) const {

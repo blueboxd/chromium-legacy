@@ -55,7 +55,7 @@ ScriptPromise FontMetadata::blob(ScriptState* script_state) {
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  Thread::Current()->GetTaskRunner()->PostTask(
+  Thread::Current()->GetDeprecatedTaskRunner()->PostTask(
       FROM_HERE, WTF::Bind(&FontMetadata::BlobImpl, WrapPersistent(resolver),
                            postscriptName_));
 
@@ -102,8 +102,6 @@ void FontMetadata::BlobImpl(ScriptPromiseResolver* resolver,
     // For reference, the UMA metric "Blink.Fonts.HarfBuzzFaceZeroCopyAccess"
     // indicates that the success rate is close to 100% on all platforms where
     // it applies, but failures do happen.
-    base::UmaHistogramBoolean("Blink.Fonts.DataAccess.StreamCreation", false);
-
     auto message = String::Format("Font data for %s could not be accessed.",
                                   postscriptName.Latin1().c_str());
     ScriptState::Scope scope(resolver->GetScriptState());
@@ -112,7 +110,6 @@ void FontMetadata::BlobImpl(ScriptPromiseResolver* resolver,
     return;
   }
 
-  base::UmaHistogramBoolean("Blink.Fonts.DataAccess.StreamCreation", true);
   wtf_size_t font_byte_size =
       base::checked_cast<wtf_size_t>(stream->getLength());
 

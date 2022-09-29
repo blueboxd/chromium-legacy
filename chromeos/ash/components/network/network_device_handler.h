@@ -16,7 +16,7 @@ namespace base {
 class Value;
 }
 
-namespace chromeos {
+namespace ash {
 
 class NetworkStateHandler;
 
@@ -181,11 +181,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
       NetworkStateHandler* network_state_handler);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash {
-using ::chromeos::NetworkDeviceHandler;
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos {
+using ::ash::NetworkDeviceHandler;
 }
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_NETWORK_DEVICE_HANDLER_H_

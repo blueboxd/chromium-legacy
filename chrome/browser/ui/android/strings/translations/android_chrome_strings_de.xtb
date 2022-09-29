@@ -105,7 +105,6 @@ Wenn du deinen Browserverlauf löschst – entweder komplett oder für eine bes
 <translation id="1474893630593443211">Mehr Kontrolle über angezeigte Werbung</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> konnte aufgrund von Serverproblemen nicht heruntergeladen werden.</translation>
 <translation id="148482509007564431">Ablauf zum Speichern von Lesezeichen</translation>
-<translation id="1488775391433859242">Du kannst dich über dieses Smartphone auf dem Computer anmelden, auf dem dieser QR-Code angezeigt wird.</translation>
 <translation id="1492417797159476138">Du hast diesen Nutzernamen für diese Website bereits gespeichert</translation>
 <translation id="1493287004536771723">Du folgst „<ph name="SITE_NAME" />“</translation>
 <translation id="1502010315804028179">Damit du deine Passwörter verwalten kannst, musst du die Google Play-Dienste aktualisieren</translation>
@@ -215,7 +214,7 @@ Wenn du deinen Browserverlauf löschst – entweder komplett oder für eine bes
 <translation id="2132122640199389833">Alle verknüpften Geräte entfernen</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> geschlossen</translation>
 <translation id="2134927169889348449">Wenn du Chrome verwendest, stimmst du den <ph name="BEGIN_TOS_LINK" />Nutzungsbedingungen von Google<ph name="END_TOS_LINK" /> und den <ph name="BEGIN_ATOS_LINK" />zusätzlichen Nutzungsbedingungen für Google Chrome und Chrome OS<ph name="END_ATOS_LINK" /> zu.</translation>
-<translation id="2139186145475833000">Zum Startbildschirm hinzufügen</translation>
+<translation id="2139186145475833000">Zum Startbildschirm zufügen</translation>
 <translation id="2141396931810938595">Auf Grundlage deiner Nutzung</translation>
 <translation id="214888715418183969">Wähle aus, welche Messwerte für Chrome freigegeben werden sollen. Die freigegebenen Messwerte werden verwendet, um die Funktionen, die Leistung und die Stabilität von Chrome zu verbessern.</translation>
 <translation id="2149973817440762519">Lesezeichen bearbeiten</translation>
@@ -235,6 +234,7 @@ Wenn du deinen Browserverlauf löschst – entweder komplett oder für eine bes
 <translation id="2239812875700136898">Über die Schaltfläche "Optionen für Discover" kannst du festlegen, welche Meldungen dir angezeigt werden</translation>
 <translation id="2248941474044011069">Deine Passwörter werden auf deinem Gerät verschlüsselt, bevor sie im Passwortmanager von Google gespeichert werden</translation>
 <translation id="2259659629660284697">Passwörter exportieren…</translation>
+<translation id="2276231040576210443">In den <ph name="BEGIN_LINK1" />Einstellungen<ph name="END_LINK1" /> kannst du auswählen, was synchronisiert werden soll. Google kann die Google Suche und andere Dienste auf der Grundlage deines Verlaufs personalisieren.</translation>
 <translation id="2276696007612801991">Melde dich in deinem Google-Konto an, um deine Passwörter zu prüfen</translation>
 <translation id="2278052315791335171">Durch das Entfernen dieses Passworts wird dein Konto auf <ph name="SITE" /> nicht gelöscht</translation>
 <translation id="2279146068164892489">App für <ph name="APPNAME" /> öffnen?</translation>
@@ -282,7 +282,6 @@ Wenn du deinen Browserverlauf löschst – entweder komplett oder für eine bes
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> Einträge gelöscht</translation>
 <translation id="2536728043171574184">Eine Offline-Kopie dieser Seite wird angezeigt.</translation>
 <translation id="2546283357679194313">Cookies und Websitedaten</translation>
-<translation id="2549516196460093976">Du kannst dich über dieses Tablet auf dem Computer anmelden, auf dem dieser QR-Code angezeigt wird.</translation>
 <translation id="2558569818338050235">Dein Browserverlauf hat Einfluss darauf, welche Werbung dir gezeigt wird</translation>
 <translation id="2561519700418191927">Videovorschauen</translation>
 <translation id="2567385386134582609">BILD</translation>
@@ -308,6 +307,7 @@ Wenn du deinen Browserverlauf löschst – entweder komplett oder für eine bes
 <translation id="2702516483241149200">Neu: Link teilen, der direkt zu diesem Text führt</translation>
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2707726405694321444">Seite aktualisieren</translation>
+<translation id="2709516037105925701">Automatisches Ausfüllen</translation>
 <translation id="271033894570825754">Neu</translation>
 <translation id="2711073837061989559">Tests</translation>
 <translation id="2718352093833049315">Nur bei WLAN</translation>
@@ -396,6 +396,7 @@ Wenn du deinen Browserverlauf löschst – entweder komplett oder für eine bes
 <translation id="3114507951000454849">Nachrichten von heute lesen <ph name="NEWS_ICON" /></translation>
 <translation id="311958134571892113">verknüpft mit</translation>
 <translation id="3123734510202723619">Ankündigungen</translation>
+<translation id="3130863904455712965">Verlauf und mehr</translation>
 <translation id="3134784203083076891">“</translation>
 <translation id="314939179385989105">Chrome-Startseite</translation>
 <translation id="3166827708714933426">Tastenkombinationen für Tabs und Fenster</translation>
@@ -587,7 +588,6 @@ Wenn du deinen Browserverlauf löschst – entweder komplett oder für eine bes
 <translation id="4256782883801055595">Open Source-Lizenzen</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Welche Daten werden verwendet?<ph name="END_BOLD" /> Dein Browserverlauf, das heißt eine Liste der von dir auf diesem Gerät in Chrome besuchten Websites.</translation>
 <translation id="4263656433980196874">Benutzeroberfläche für die Einwilligung in die Sprachsuche von Assistant ganz geöffnet</translation>
-<translation id="4266054596873078491">Melde dich bei dieser Website und in Chrome mit deinem Google-Konto an.</translation>
 <translation id="4269820728363426813">URL kopieren</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Displaysperre in den Android-Einstellungen aktivieren<ph name="END_LINK" /></translation>
 <translation id="4293476595220860475">Wenn du Chrome verwendest, stimmst du den <ph name="BEGIN_TOS_LINK" />Nutzungsbedingungen von Google<ph name="END_TOS_LINK" /> und den <ph name="BEGIN_ATOS_LINK" />zusätzlichen Nutzungsbedingungen für Google Chrome und Chrome OS<ph name="END_ATOS_LINK" /> zu. Außerdem gilt die <ph name="BEGIN_PRIVACY_LINK" />Datenschutzerklärung<ph name="END_PRIVACY_LINK" />.</translation>
@@ -1051,6 +1051,7 @@ Trust Tokens verbessern den Datenschutz im Web und können nicht dazu verwendet 
 <translation id="6671495933530132209">Bild kopieren</translation>
 <translation id="6674571176963658787">Gib deine Passphrase ein, um die Synchronisierung zu starten</translation>
 <translation id="6676840375528380067">Deine Chrome-Daten vom Gerät löschen?</translation>
+<translation id="6676927815633975364">Auf dieser Website und in Chrome anmelden</translation>
 <translation id="6684809838922667136">Chrome verbessern</translation>
 <translation id="670498945988402717">Gestern geprüft</translation>
 <translation id="6710213216561001401">Zurück</translation>
@@ -1140,6 +1141,7 @@ Trust Tokens verbessern den Datenschutz im Web und können nicht dazu verwendet 
 <translation id="7196215469483532480">Erläuterungen zum Datenschutz-Leitfaden sind vollständig geöffnet</translation>
 <translation id="7207760545532569765"><ph name="TAB_COUNT" /> Tabs als neue Tabs im Hintergrund wiederherstellen.</translation>
 <translation id="7208109991155904980">Reaktion verschoben</translation>
+<translation id="7217781228893594884">Inkognitotabs werden gesperrt, wenn du Chrome schließt</translation>
 <translation id="7222235798733126207">Eingeschränkte Datenweitergabe zwischen Websites</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 Download ausstehend}other{# Downloads ausstehend}}</translation>
 <translation id="7242755609445462077">Stilisierte Markierung <ph name="CURRENT_DATE" /></translation>
@@ -1300,6 +1302,7 @@ Trust Tokens verbessern den Datenschutz im Web und können nicht dazu verwendet 
 <translation id="8037801708772278989">Zuletzt geprüft: gerade eben</translation>
 <translation id="804335162455518893">SD-Karte nicht gefunden</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> Inkognitotab}other{<ph name="TAB_COUNT_NORMAL" /> Inkognitotabs}}</translation>
+<translation id="8048728378294435881">Möchtest du deine Daten sichern und auf jedem Gerät verwenden?</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB verfügbar</translation>
 <translation id="8058655154417507695">Ablaufjahr</translation>
 <translation id="8058746566562539958">In neuem Chrome-Tab öffnen</translation>

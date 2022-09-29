@@ -15,12 +15,9 @@
 #include "components/google/core/common/google_util.h"
 #include "components/optimization_guide/core/hint_cache.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/push_notification_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-
-#if BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/optimization_guide/android/android_push_notification_manager.h"
-#endif
 
 namespace {
 

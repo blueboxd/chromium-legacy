@@ -45,12 +45,55 @@ enum class Semantics {
   kSocketAllowBroker    // Allows brokering of sockets.
 };
 
+// Policy configuration that can be shared over multiple targets of the same tag
+// (see BrokerServicesBase::CreatePolicy(tag)). Methods in TargetConfig will
+// only need to be called the first time a TargetPolicy object with a given tag
+// is configured.
+//
+// We need [[clang::lto_visibility_public]] because instances of this class are
+// passed across module boundaries. This means different modules must have
+// compatible definitions of the class even when LTO is enabled.
+class [[clang::lto_visibility_public]] TargetConfig {
+ public:
+  virtual ~TargetConfig() {}
+
+  // Returns `true` when the TargetConfig of this policy object has been
+  // populated. Methods in TargetConfig should not be called.
+  //
+  // Returns `false` if TargetConfig methods do need to be called to configure
+  // this policy object.
+  virtual bool IsConfigured() const = 0;
+
+  // Adds a policy rule effective for processes spawned using this policy.
+  // subsystem: One of the above enumerated windows subsystems.
+  // semantics: One of the above enumerated FileSemantics.
+  // pattern: A specific full path or a full path with wildcard patterns.
+  //   The valid wildcards are:
+  //   '*' : Matches zero or more character. Only one in series allowed.
+  //   '?' : Matches a single character. One or more in series are allowed.
+  // Examples:
+  //   "c:\\documents and settings\\vince\\*.dmp"
+  //   "c:\\documents and settings\\*\\crashdumps\\*.dmp"
+  //   "c:\\temp\\app_log_?????_chrome.txt"
+  virtual ResultCode AddRule(SubSystem subsystem,
+                             Semantics semantics,
+                             const wchar_t* pattern) = 0;
+
+  // Adds a dll that will be unloaded in the target process before it gets
+  // a chance to initialize itself. Typically, dlls that cause the target
+  // to crash go here.
+  virtual ResultCode AddDllToUnload(const wchar_t* dll_name) = 0;
+};
+
 // We need [[clang::lto_visibility_public]] because instances of this class are
 // passed across module boundaries. This means different modules must have
 // compatible definitions of the class even when LTO is enabled.
 class [[clang::lto_visibility_public]] TargetPolicy {
  public:
   virtual ~TargetPolicy() {}
+
+  // Fetches the backing TargetConfig for this policy.
+  virtual TargetConfig* GetConfig() = 0;
 
   // Sets the security level for the target process' two tokens.
   // This setting is permanent and cannot be changed once the target process is
@@ -194,26 +237,6 @@ class [[clang::lto_visibility_public]] TargetPolicy {
   // file handles, but not console handles.
   virtual ResultCode SetStdoutHandle(HANDLE handle) = 0;
   virtual ResultCode SetStderrHandle(HANDLE handle) = 0;
-
-  // Adds a policy rule effective for processes spawned using this policy.
-  // subsystem: One of the above enumerated windows subsystems.
-  // semantics: One of the above enumerated FileSemantics.
-  // pattern: A specific full path or a full path with wildcard patterns.
-  //   The valid wildcards are:
-  //   '*' : Matches zero or more character. Only one in series allowed.
-  //   '?' : Matches a single character. One or more in series are allowed.
-  // Examples:
-  //   "c:\\documents and settings\\vince\\*.dmp"
-  //   "c:\\documents and settings\\*\\crashdumps\\*.dmp"
-  //   "c:\\temp\\app_log_?????_chrome.txt"
-  virtual ResultCode AddRule(SubSystem subsystem,
-                             Semantics semantics,
-                             const wchar_t* pattern) = 0;
-
-  // Adds a dll that will be unloaded in the target process before it gets
-  // a chance to initialize itself. Typically, dlls that cause the target
-  // to crash go here.
-  virtual ResultCode AddDllToUnload(const wchar_t* dll_name) = 0;
 
   // Adds a handle that will be closed in the target process after lockdown.
   // A nullptr value for handle_name indicates all handles of the specified

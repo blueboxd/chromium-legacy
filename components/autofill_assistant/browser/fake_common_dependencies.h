@@ -28,20 +28,29 @@ class FakeCommonDependencies : public CommonDependencies {
       content::BrowserContext* browser_context) const override;
   bool IsSupervisedUser(
       content::BrowserContext* browser_context) const override;
+  bool IsAllowedForMachineLearning(
+      content::BrowserContext* browser_context) const override;
   AnnotateDomModelService* GetOrCreateAnnotateDomModelService(
       content::BrowserContext* browser_context) const override;
   bool IsWebLayer() const override;
   signin::IdentityManager* GetIdentityManager(
       content::BrowserContext* browser_context) const override;
   version_info::Channel GetChannel() const override;
+  bool GetMakeSearchesAndBrowsingBetterEnabled(
+      content::BrowserContext* browser_context) const override;
+  bool GetMetricsReportingEnabled(
+      content::BrowserContext* browser_context) const override;
 
   // Intentionally public to allow tests direct access.
   std::string locale_;
   std::string country_code_;
   std::string signed_in_email_;
   bool is_supervised_user_ = false;
+  bool is_allowed_for_machine_learning_ = true;
   bool is_weblayer_ = false;
   version_info::Channel channel_ = version_info::Channel::UNKNOWN;
+  bool msbb_enabled_ = true;
+  bool uma_enabled_ = true;
 };
 
 }  // namespace autofill_assistant

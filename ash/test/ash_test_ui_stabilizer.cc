@@ -8,7 +8,8 @@
 #include "ash/shell.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
-#include "base/time/time_override.h"
+#include "base/command_line.h"
+#include "base/i18n/base_i18n_switches.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -18,18 +19,8 @@ namespace ash {
 
 namespace {
 
-// The fake user account only used for pixel tests.
-constexpr char kUserForPixelTest[] = "user1@test.com";
-
-// The fake file ids for wallpaper setting in pixel tests.
-constexpr char kFakeFileId[] = "file-hash";
-constexpr char kWallpaperFileName[] = "test-file";
-
 // The color of the default wallpaper in pixel tests.
 constexpr SkColor kWallPaperColor = SK_ColorMAGENTA;
-
-// The string that represents the current time. Used in pixel tests.
-constexpr char kFakeNowTimeString[] = "Sun, 6 May 2018 14:30:00 CDT";
 
 // Specify the locale and the time zone used in pixel tests.
 constexpr char kLocale[] = "en_US";
@@ -44,24 +35,17 @@ gfx::ImageSkia CreateImage(const gfx::Size& image_size, SkColor color) {
   return image;
 }
 
-// TimeOverrideHelper ----------------------------------------------------------
-
-struct TimeOverrideHelper {
-  static base::Time TimeNow() { return current_time; }
-
-  // Used as the current time in ash pixel diff tests.
-  static base::Time current_time;
-};
-
-base::Time TimeOverrideHelper::current_time;
-
 }  // namespace
 
-AshTestUiStabilizer::AshTestUiStabilizer()
-    : scoped_locale_(base::test::ScopedRestoreICUDefaultLocale(kLocale)),
-      time_zone_(base::test::ScopedRestoreDefaultTimezone(kTimeZone)),
-      account_id_(
-          AccountId::FromUserEmailGaiaId(kUserForPixelTest, "test-hash")) {}
+AshTestUiStabilizer::AshTestUiStabilizer(const pixel_test::InitParams& params)
+    : params_(params),
+      scoped_locale_(base::test::ScopedRestoreICUDefaultLocale(kLocale)),
+      time_zone_(base::test::ScopedRestoreDefaultTimezone(kTimeZone)) {
+  if (params.under_rtl) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        ::switches::kForceUIDirection, ::switches::kForceDirectionRTL);
+  }
+}
 
 AshTestUiStabilizer::~AshTestUiStabilizer() = default;
 
@@ -69,15 +53,6 @@ void AshTestUiStabilizer::StabilizeUi(const gfx::Size& wallpaper_size) {
   MaybeSetDarkMode();
   SetWallPaper(wallpaper_size);
   SetBatteryState();
-}
-
-// Overrides the current time. It ensures that `Time::Now()` is constant.
-void AshTestUiStabilizer::OverrideTime() {
-  ASSERT_TRUE(base::Time::FromString(kFakeNowTimeString,
-                                     &TimeOverrideHelper::current_time));
-  time_override_ = std::make_unique<base::subtle::ScopedTimeClockOverrides>(
-      &TimeOverrideHelper::TimeNow, /*time_ticks_override=*/nullptr,
-      /*thread_ticks_override=*/nullptr);
 }
 
 void AshTestUiStabilizer::MaybeSetDarkMode() {
@@ -92,22 +67,30 @@ void AshTestUiStabilizer::MaybeSetDarkMode() {
 }
 
 void AshTestUiStabilizer::SetWallPaper(const gfx::Size& wallpaper_size) {
-  ASSERT_TRUE(user_data_dir_.CreateUniqueTempDir());
-  ASSERT_TRUE(online_wallpaper_dir_.CreateUniqueTempDir());
-  ASSERT_TRUE(custom_wallpaper_dir_.CreateUniqueTempDir());
-
   auto* controller = Shell::Get()->wallpaper_controller();
-  controller->Init(user_data_dir_.GetPath(), online_wallpaper_dir_.GetPath(),
-                   custom_wallpaper_dir_.GetPath(),
-                   /*device_policy_wallpaper=*/base::FilePath());
   controller->set_wallpaper_reload_no_delay_for_test();
-  controller->SetClient(&client_);
-  client_.set_fake_files_id_for_account_id(account_id_, kFakeFileId);
 
-  gfx::ImageSkia wallpaper_image = CreateImage(wallpaper_size, kWallPaperColor);
-  controller->SetCustomWallpaper(account_id_, kWallpaperFileName,
-                                 WALLPAPER_LAYOUT_STRETCH, wallpaper_image,
-                                 /*preview_mode=*/false);
+  switch (params_.wallpaper_init_type) {
+    case pixel_test::WallpaperInitType::kRegular: {
+      gfx::ImageSkia wallpaper_image =
+          CreateImage(wallpaper_size, kWallPaperColor);
+      controller->ShowWallpaperImage(
+          wallpaper_image,
+          WallpaperInfo{/*in_location=*/std::string(),
+                        /*in_layout=*/WALLPAPER_LAYOUT_STRETCH,
+                        /*in_type=*/WallpaperType::kDefault,
+                        /*in_date=*/base::Time::Now().LocalMidnight()},
+          /*preview_mode=*/false, /*always_on_top=*/false);
+      break;
+    }
+    case pixel_test::WallpaperInitType::kPolicy:
+      controller->set_bypass_decode_for_testing();
+
+      // A dummy file path is sufficient for setting a default policy wallpaper.
+      controller->SetDevicePolicyWallpaperPath(base::FilePath("tmp.png"));
+
+      break;
+  }
 }
 
 void AshTestUiStabilizer::SetBatteryState() {

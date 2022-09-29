@@ -1762,7 +1762,7 @@ TEST_F(NetworkContextTest, NotifyExternalCacheHit) {
         // We expect that every cache operation below is done synchronously
         // because we're using an in-memory backend.
 
-        // The disk cache is lazily instanitated, force it and ensure it's
+        // The disk cache is lazily instantiated, force it and ensure it's
         // valid.
         ASSERT_EQ(cache->GetBackend(&backend, base::BindOnce([](int rv) {})),
                   net::OK);
@@ -1778,7 +1778,7 @@ TEST_F(NetworkContextTest, NotifyExternalCacheHit) {
             is_subframe_document_resource;
         request_info.network_isolation_key = isolation_key;
         disk_cache::EntryResult result = backend->OpenOrCreateEntry(
-            net::HttpCache::GenerateCacheKeyForRequest(&request_info),
+            *net::HttpCache::GenerateCacheKeyForRequest(&request_info),
             net::LOWEST, base::BindOnce([](disk_cache::EntryResult) {}));
         ASSERT_EQ(result.net_error(), net::OK);
 
@@ -1837,7 +1837,7 @@ TEST_F(NetworkContextTest, ClearHostCache) {
       "domain3",
   };
 
-  // Each bit correponds to one of the 4 domains above.
+  // Each bit corresponds to one of the 4 domains above.
   enum Domains {
     NO_DOMAINS = 0x0,
     DOMAIN0 = 0x1,
@@ -1903,7 +1903,7 @@ TEST_F(NetworkContextTest, ClearHostCache) {
           net::HostCache::Key(domain, net::DnsQueryType::UNSPECIFIED, 0,
                               net::HostResolverSource::ANY,
                               net::NetworkIsolationKey()),
-          net::HostCache::Entry(net::OK, net::AddressList(),
+          net::HostCache::Entry(net::OK, /*ip_endpoints=*/{}, /*aliases=*/{},
                                 net::HostCache::Entry::SOURCE_UNKNOWN),
           base::TimeTicks::Now(), base::Days(1));
       host_cache->Set(
@@ -1911,7 +1911,7 @@ TEST_F(NetworkContextTest, ClearHostCache) {
               url::SchemeHostPort(url::kHttpsScheme, domain, 443),
               net::DnsQueryType::UNSPECIFIED, 0, net::HostResolverSource::ANY,
               net::NetworkIsolationKey()),
-          net::HostCache::Entry(net::OK, net::AddressList(),
+          net::HostCache::Entry(net::OK, /*ip_endpoints=*/{}, /*aliases=*/{},
                                 net::HostCache::Entry::SOURCE_UNKNOWN),
           base::TimeTicks::Now(), base::Days(1));
     }
@@ -4175,11 +4175,11 @@ TEST_F(NetworkContextTest, CanSetCookieFalseIfCookiesBlocked) {
       net::COOKIE_PRIORITY_LOW, false);
   EXPECT_TRUE(
       network_context->url_request_context()->network_delegate()->CanSetCookie(
-          *request, *cookie, nullptr, true));
+          *request, *cookie, nullptr));
   SetDefaultContentSetting(CONTENT_SETTING_BLOCK, network_context.get());
   EXPECT_FALSE(
       network_context->url_request_context()->network_delegate()->CanSetCookie(
-          *request, *cookie, nullptr, true));
+          *request, *cookie, nullptr));
 }
 
 TEST_F(NetworkContextTest, CanSetCookieTrueIfCookiesAllowed) {
@@ -4197,7 +4197,7 @@ TEST_F(NetworkContextTest, CanSetCookieTrueIfCookiesAllowed) {
   SetDefaultContentSetting(CONTENT_SETTING_ALLOW, network_context.get());
   EXPECT_TRUE(
       network_context->url_request_context()->network_delegate()->CanSetCookie(
-          *request, *cookie, nullptr, true));
+          *request, *cookie, nullptr));
 }
 
 TEST_F(NetworkContextTest,
@@ -4212,15 +4212,15 @@ TEST_F(NetworkContextTest,
   net::CookieAccessResultList included;
   net::CookieAccessResultList excluded;
 
-  EXPECT_TRUE(network_context->url_request_context()
-                  ->network_delegate()
-                  ->AnnotateAndMoveUserBlockedCookies(*request, included,
-                                                      excluded, true));
+  EXPECT_TRUE(
+      network_context->url_request_context()
+          ->network_delegate()
+          ->AnnotateAndMoveUserBlockedCookies(*request, included, excluded));
   SetDefaultContentSetting(CONTENT_SETTING_BLOCK, network_context.get());
-  EXPECT_FALSE(network_context->url_request_context()
-                   ->network_delegate()
-                   ->AnnotateAndMoveUserBlockedCookies(*request, included,
-                                                       excluded, true));
+  EXPECT_FALSE(
+      network_context->url_request_context()
+          ->network_delegate()
+          ->AnnotateAndMoveUserBlockedCookies(*request, included, excluded));
 }
 
 TEST_F(NetworkContextTest,
@@ -4235,10 +4235,10 @@ TEST_F(NetworkContextTest,
   net::CookieAccessResultList excluded;
 
   SetDefaultContentSetting(CONTENT_SETTING_ALLOW, network_context.get());
-  EXPECT_TRUE(network_context->url_request_context()
-                  ->network_delegate()
-                  ->AnnotateAndMoveUserBlockedCookies(*request, included,
-                                                      excluded, true));
+  EXPECT_TRUE(
+      network_context->url_request_context()
+          ->network_delegate()
+          ->AnnotateAndMoveUserBlockedCookies(*request, included, excluded));
 }
 
 // Gets notified by the EmbeddedTestServer on incoming connections being
@@ -5362,7 +5362,7 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotifiedOfPacError) {
   // mock ProxyResolverFactory which doesn't actually evaluate it. It just
   // needs to be a data: URL to ensure the network fetch doesn't fail.
   //
-  // That said, the mock PAC evalulator being used behaves similarly to the
+  // That said, the mock PAC evaluator being used behaves similarly to the
   // script embedded in the data URL below.
   net::ProxyConfig proxy_config = net::ProxyConfig::CreateFromCustomPacURL(
       GURL("data:,function FindProxyForURL(url,host){throw url}"));

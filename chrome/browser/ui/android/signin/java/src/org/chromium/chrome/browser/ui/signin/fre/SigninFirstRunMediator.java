@@ -9,15 +9,20 @@ import android.content.Context;
 import android.text.SpannableString;
 import android.text.TextUtils;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.firstrun.MobileFreProgress;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.services.FREMobileIdentityConsistencyFieldTrial;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninManager.SignInCallback;
+import org.chromium.chrome.browser.signin.services.SigninPreferencesManager;
 import org.chromium.chrome.browser.ui.signin.R;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerCoordinator;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerDialogCoordinator;
@@ -37,11 +42,30 @@ import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.util.ColorUtils;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
-class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache.Observer,
-                                        AccountPickerCoordinator.Listener {
+@VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+public class SigninFirstRunMediator
+        implements AccountsChangeObserver, ProfileDataCache.Observer,
+                   AccountPickerCoordinator.Listener, FreUMADialogCoordinator.Listener {
+    /**
+     * Used for MobileFre.SlowestLoadPoint histogram. Should be treated as append-only.
+     * See {@code LoadPoint} in tools/metrics/histograms/enums.xml.
+     */
+    @VisibleForTesting
+    @IntDef({LoadPoint.NATIVE_INITIALIZATION, LoadPoint.POLICY_LOAD, LoadPoint.CHILD_STATUS_LOAD,
+            LoadPoint.MAX})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface LoadPoint {
+        int NATIVE_INITIALIZATION = 0;
+        int POLICY_LOAD = 1;
+        int CHILD_STATUS_LOAD = 2;
+        int MAX = 3;
+    }
+
     private final Context mContext;
     private final ModalDialogManager mModalDialogManager;
     private final AccountManagerFacade mAccountManagerFacade;
@@ -49,9 +73,16 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
     private final PrivacyPreferencesManager mPrivacyPreferencesManager;
     private final PropertyModel mModel;
     private final ProfileDataCache mProfileDataCache;
+    private boolean mDestroyed;
+
+    private @LoadPoint int mSlowestLoadPoint;
+    /** Whether the initial load phase has been completed. See {@link #onInitialLoadCompleted}. */
+    private boolean mInitialLoadCompleted;
+
     private AccountPickerDialogCoordinator mDialogCoordinator;
     private @Nullable String mSelectedAccountName;
     private @Nullable String mDefaultAccountName;
+    private boolean mAllowCrashUpload;
 
     SigninFirstRunMediator(Context context, ModalDialogManager modalDialogManager,
             Delegate delegate, PrivacyPreferencesManager privacyPreferencesManager) {
@@ -63,6 +94,11 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
         mModel = SigninFirstRunProperties.createModel(this::onSelectedAccountClicked,
                 this::onContinueAsClicked, this::onDismissClicked,
                 ExternalAuthUtils.getInstance().canUseGooglePlayServices(), getFooterString(false));
+
+        mDelegate.getNativeInitializationPromise().then(result -> { onNativeLoaded(); });
+        mDelegate.getPolicyLoadListener().onAvailable(hasPolicies -> onPolicyLoad());
+        mDelegate.getChildAccountStatusSupplier().onAvailable(
+                ignored -> onChildAccountStatusAvailable());
 
         mProfileDataCache.addObserver(this);
 
@@ -77,8 +113,10 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
     }
 
     void destroy() {
+        assert !mDestroyed;
         mProfileDataCache.removeObserver(this);
         mAccountManagerFacade.removeObserver(this);
+        mDestroyed = true;
     }
 
     void reset() {
@@ -86,27 +124,88 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
         mModel.set(SigninFirstRunProperties.SHOW_SIGNIN_PROGRESS_SPINNER, false);
     }
 
-    void onNativeAndPolicyLoaded(boolean hasPolicies) {
-        mModel.set(SigninFirstRunProperties.ARE_NATIVE_AND_POLICY_LOADED, true);
-        mModel.set(SigninFirstRunProperties.FRE_POLICY, hasPolicies ? new FrePolicy() : null);
-        final boolean isSigninSupported = ExternalAuthUtils.getInstance().canUseGooglePlayServices()
-                && !IdentityServicesProvider.get()
-                            .getSigninManager(Profile.getLastUsedRegularProfile())
-                            .isSigninDisabledByPolicy();
-        mModel.set(SigninFirstRunProperties.IS_SIGNIN_SUPPORTED, isSigninSupported);
+    private void onNativeLoaded() {
+        // This happens asynchronously, so this check is necessary to ensure we don't interact with
+        // the delegate after the mediator is destroyed. See https://crbug.com/1294998.
+        if (mDestroyed) return;
 
-        if (!mPrivacyPreferencesManager.isUsageAndCrashReportingPermittedByPolicy()) {
-            // If metrics reporting is disabled by policy then there is at least one policy.
-            // Therefore, policies have loaded and frePolicy is not null.
-            assert hasPolicies;
+        mSlowestLoadPoint = LoadPoint.NATIVE_INITIALIZATION;
+        mDelegate.recordNativeInitializedHistogram();
+        checkWhetherInitialLoadCompleted();
+    }
 
-            final FrePolicy frePolicy = mModel.get(SigninFirstRunProperties.FRE_POLICY);
-            frePolicy.metricsReportingDisabledByPolicy = true;
+    private void onChildAccountStatusAvailable() {
+        mSlowestLoadPoint = LoadPoint.CHILD_STATUS_LOAD;
+        checkWhetherInitialLoadCompleted();
+    }
+
+    private void onPolicyLoad() {
+        mSlowestLoadPoint = LoadPoint.POLICY_LOAD;
+        checkWhetherInitialLoadCompleted();
+    }
+
+    /** Checks the initial load status. See {@link #onInitialLoadCompleted} for details. */
+    private void checkWhetherInitialLoadCompleted() {
+        // This happens asynchronously, so this check is necessary to ensure we don't interact with
+        // the delegate after the mediator is destroyed. See https://crbug.com/1294998.
+        if (mDestroyed) return;
+
+        if (!shouldUseNewInitializationFlow()) {
+            // Old initialization flow requires native to be ready before the initial loading
+            // spinner can be hidden.
+            if (!mDelegate.getNativeInitializationPromise().isFulfilled()) return;
         }
 
-        final boolean isChild = mModel.get(SigninFirstRunProperties.IS_SELECTED_ACCOUNT_SUPERVISED);
+        if (mDelegate.getChildAccountStatusSupplier().get() != null
+                && mDelegate.getPolicyLoadListener().get() != null && !mInitialLoadCompleted) {
+            mInitialLoadCompleted = true;
+            onInitialLoadCompleted(mDelegate.getPolicyLoadListener().get());
+            // TODO(https://crbug.com/1353330): Rename this method and the corresponding histogram.
+            mDelegate.recordNativePolicyAndChildStatusLoadedHistogram();
+            RecordHistogram.recordEnumeratedHistogram(
+                    "MobileFre.SlowestLoadPoint", mSlowestLoadPoint, LoadPoint.MAX);
+        }
+    }
+
+    /**
+     * Called when the initial load phase is completed.
+     *
+     * After creation, {@link SigninFirstRunView} displays a loading spinner that is shown until
+     * policies and the child account status are being checked. If needed, that phase also waits for
+     * the native to be loaded (for example, if any app restrictions are detected). This method is
+     * invoked when this initial waiting phase is over and the "Continue" button can be displayed.
+     * It checks policies and child accounts to decide which version of the UI to display.
+     *
+     * @param hasPolicies Whether any enterprise policies have been found on the device. 'true' here
+     *                    also means that native has been initialized.
+     */
+    void onInitialLoadCompleted(boolean hasPolicies) {
+        mModel.set(SigninFirstRunProperties.SHOW_INITIAL_LOAD_PROGRESS_SPINNER, false);
+
+        boolean isSigninDisabledByPolicy = false;
+        boolean isMetricsReportingDisabledByPolicy = false;
+        if (hasPolicies) {
+            assert mDelegate.getNativeInitializationPromise().isFulfilled()
+                : "Must wait for native initialization if enterprise policies were found!";
+            isSigninDisabledByPolicy =
+                    IdentityServicesProvider.get()
+                            .getSigninManager(Profile.getLastUsedRegularProfile())
+                            .isSigninDisabledByPolicy();
+            isMetricsReportingDisabledByPolicy =
+                    !mPrivacyPreferencesManager.isUsageAndCrashReportingPermittedByPolicy();
+
+            final FrePolicy frePolicy = new FrePolicy();
+            frePolicy.metricsReportingDisabledByPolicy = isMetricsReportingDisabledByPolicy;
+            mModel.set(SigninFirstRunProperties.FRE_POLICY, frePolicy);
+        }
+
+        mModel.set(SigninFirstRunProperties.IS_SIGNIN_SUPPORTED,
+                ExternalAuthUtils.getInstance().canUseGooglePlayServices()
+                        && !isSigninDisabledByPolicy);
+        mAllowCrashUpload = !isMetricsReportingDisabledByPolicy;
+
         mModel.set(SigninFirstRunProperties.FOOTER_STRING,
-                getFooterString(isMetricsReportingDisabledByPolicy()));
+                getFooterString(isMetricsReportingDisabledByPolicy));
     }
 
     /** Implements {@link ProfileDataCache.Observer}. */
@@ -132,10 +231,14 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
         mDelegate.addAccount();
     }
 
-    protected boolean isMetricsReportingDisabledByPolicy() {
-        @Nullable
-        FrePolicy frePolicy = mModel.get(SigninFirstRunProperties.FRE_POLICY);
-        return frePolicy != null && frePolicy.metricsReportingDisabledByPolicy;
+    /** Implements {@link FreUMADialogCoordinator.Listener} */
+    @Override
+    public void onAllowCrashUploadChecked(boolean allowCrashUpload) {
+        mAllowCrashUpload = allowCrashUpload;
+    }
+
+    private void openUmaDialog() {
+        new FreUMADialogCoordinator(mContext, mModalDialogManager, this, mAllowCrashUpload);
     }
 
     /**
@@ -152,9 +255,22 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
      */
     private void onContinueAsClicked() {
         if (isContinueOrDismissClicked()) return;
+        assert !mModel.get(SigninFirstRunProperties.SHOW_INITIAL_LOAD_PROGRESS_SPINNER)
+            : "The continue button shouldn't be visible while the load spinner is shown!";
+
         if (!mModel.get(SigninFirstRunProperties.IS_SIGNIN_SUPPORTED)) {
-            mDelegate.acceptTermsOfService();
-            mDelegate.advanceToNextPage();
+            if (mDelegate.getNativeInitializationPromise().isFulfilled()) {
+                mDelegate.acceptTermsOfService(mAllowCrashUpload);
+                mDelegate.advanceToNextPage();
+            } else {
+                // Show the progress spinner while the native finishes loading.
+                mModel.set(SigninFirstRunProperties.SHOW_SIGNIN_PROGRESS_SPINNER, true);
+                mDelegate.getNativeInitializationPromise().then(ignored -> {
+                    // When the native is loaded - mark ToS as accepted and move to the next page.
+                    mDelegate.acceptTermsOfService(mAllowCrashUpload);
+                    mDelegate.advanceToNextPage();
+                });
+            }
             return;
         }
         if (mSelectedAccountName == null) {
@@ -162,16 +278,24 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
             return;
         }
 
-        // In all other cases, the button text is "Continue as ...", so mark ToS as accepted.
+        if (mDelegate.getNativeInitializationPromise().isFulfilled()) {
+            handleContinueWithNative();
+            return;
+        }
+        mModel.set(SigninFirstRunProperties.SHOW_SIGNIN_PROGRESS_SPINNER_WITH_TEXT, true);
+        mDelegate.getNativeInitializationPromise().then(ignored -> { handleContinueWithNative(); });
+    }
+
+    private void handleContinueWithNative() {
+        assert mDelegate.getNativeInitializationPromise().isFulfilled();
+
         // This is needed to get metrics/crash reports from the sign-in flow itself.
-        mDelegate.acceptTermsOfService();
+        mDelegate.acceptTermsOfService(mAllowCrashUpload);
         if (mModel.get(SigninFirstRunProperties.IS_SELECTED_ACCOUNT_SUPERVISED)) {
             // Don't perform the sign-in here, as it will be handled by SigninChecker.
             mDelegate.advanceToNextPage();
             return;
         }
-        assert mModel.get(SigninFirstRunProperties.ARE_NATIVE_AND_POLICY_LOADED)
-            : "The continue button shouldn't be visible before the native is not initialized!";
         mDelegate.recordFreProgressHistogram(
                 TextUtils.equals(mDefaultAccountName, mSelectedAccountName)
                         ? MobileFreProgress.WELCOME_SIGNIN_WITH_DEFAULT_ACCOUNT
@@ -215,10 +339,23 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
      */
     private void onDismissClicked() {
         if (isContinueOrDismissClicked()) return;
-        assert mModel.get(SigninFirstRunProperties.ARE_NATIVE_AND_POLICY_LOADED)
-            : "The dismiss button shouldn't be visible before the native is not initialized!";
+        assert !mModel.get(SigninFirstRunProperties.SHOW_INITIAL_LOAD_PROGRESS_SPINNER)
+            : "The dismiss button shouldn't be visible while the load spinner is shown!";
+
+        if (mDelegate.getNativeInitializationPromise().isFulfilled()) {
+            handleDismissWithNative();
+            return;
+        }
+        mModel.set(SigninFirstRunProperties.SHOW_SIGNIN_PROGRESS_SPINNER, true);
+        mDelegate.getNativeInitializationPromise().then(ignored -> { handleDismissWithNative(); });
+    }
+
+    private void handleDismissWithNative() {
+        assert mDelegate.getNativeInitializationPromise().isFulfilled();
+
         mDelegate.recordFreProgressHistogram(MobileFreProgress.WELCOME_DISMISS);
-        mDelegate.acceptTermsOfService();
+        mDelegate.acceptTermsOfService(mAllowCrashUpload);
+        SigninPreferencesManager.getInstance().temporarilySuppressNewTabPagePromos();
         if (IdentityServicesProvider.get()
                         .getIdentityManager(Profile.getLastUsedRegularProfile())
                         .hasPrimaryAccount(ConsentLevel.SIGNIN)) {
@@ -279,8 +416,6 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
 
     private void onChildAccountStatusReady(boolean isChild, @Nullable Account childAccount) {
         mModel.set(SigninFirstRunProperties.IS_SELECTED_ACCOUNT_SUPERVISED, isChild);
-        mModel.set(SigninFirstRunProperties.FOOTER_STRING,
-                getFooterString(isMetricsReportingDisabledByPolicy()));
         // Selected account data will be updated in {@link #onProfileDataUpdated}
         mProfileDataCache.setBadge(isChild ? R.drawable.ic_account_child_20dp : 0);
     }
@@ -308,12 +443,16 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
         if (!isMetricsReportingDisabled) {
             footerString += " " + mContext.getString(R.string.signin_fre_footer_metrics_reporting);
             final NoUnderlineClickableSpan clickableUMADialogSpan =
-                    new NoUnderlineClickableSpan(mContext, view -> mDelegate.openUmaDialog());
+                    new NoUnderlineClickableSpan(mContext, view -> openUmaDialog());
             spans.add(
                     new SpanApplier.SpanInfo("<UMA_LINK>", "</UMA_LINK>", clickableUMADialogSpan));
         }
 
         // Apply spans to footer string.
         return SpanApplier.applySpans(footerString, spans.toArray(new SpanApplier.SpanInfo[0]));
+    }
+
+    private static boolean shouldUseNewInitializationFlow() {
+        return FREMobileIdentityConsistencyFieldTrial.shouldUseNewInitializationFlow();
     }
 }

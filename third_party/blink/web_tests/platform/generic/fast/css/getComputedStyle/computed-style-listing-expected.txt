@@ -15,7 +15,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 -webkit-box-reflect: none
 -webkit-font-smoothing: auto
 -webkit-highlight: none
--webkit-hyphenate-character: auto
 -webkit-line-break: auto
 -webkit-line-clamp: none
 -webkit-locale: auto
@@ -197,8 +196,7 @@ grid-template-areas: none
 grid-template-columns: none
 grid-template-rows: none
 height: 0px
-hover-pop-up-delay: 0.5s
-hover-pop-up-hide-delay: infinity * 1s
+hyphenate-character: auto
 hyphens: manual
 image-orientation: from-image
 image-rendering: auto
@@ -281,6 +279,8 @@ paint-order: normal
 perspective: none
 perspective-origin: 384.5px 0px
 pointer-events: auto
+pop-up-hide-delay: infinity * 1s
+pop-up-show-delay: 0.5s
 position: static
 position-fallback: none
 r: 0px

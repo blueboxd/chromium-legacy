@@ -585,6 +585,14 @@ void PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
   if (EqualIgnoringASCIICase(params.as, "document") &&
       !document.GetExecutionContext()->GetSecurityOrigin()->IsOpaque()) {
     resource_request.SetPrefetchMaybeForTopLevelNavigation(true);
+
+    bool is_same_origin =
+        document.GetExecutionContext()->GetSecurityOrigin()->IsSameOriginWith(
+            SecurityOrigin::Create(params.href).get());
+    UseCounter::Count(document,
+                      is_same_origin
+                          ? WebFeature::kLinkRelPrefetchAsDocumentSameOrigin
+                          : WebFeature::kLinkRelPrefetchAsDocumentCrossOrigin);
   }
 
   // This request could have originally been a preload header on a prefetch
@@ -698,11 +706,12 @@ void PreloadHelper::LoadLinksFromHeader(
         // used by the next navigation only when they requested the same URL
         // with the same association mapping.
         change_rel_to_prefetch = true;
-        // Prefetch requests for alternate SXG should be made with no-cors,
-        // regardless of the crossorigin attribute of Link:rel=preload header
-        // that triggered the prefetch. See step 19.6.8 of
+        // Prefetch requests for alternate SXG should be made with a
+        // corsAttributeState of Anonymous, regardless of the crossorigin
+        // attribute of Link:rel=preload header that triggered the prefetch. See
+        // step 19.6.8 of
         // https://wicg.github.io/webpackage/loading.html#mp-link-type-prefetch.
-        params.cross_origin = kCrossOriginAttributeNotSet;
+        params.cross_origin = kCrossOriginAttributeAnonymous;
       }
     }
 

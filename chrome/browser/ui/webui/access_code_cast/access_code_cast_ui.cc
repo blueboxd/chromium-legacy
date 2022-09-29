@@ -61,7 +61,7 @@ AccessCodeCastUI::AccessCodeCastUI(content::WebUI* web_ui)
 
   Profile* const profile = Profile::FromWebUI(web_ui);
   source->AddInteger("rememberedDeviceDuration",
-                     GetAccessCodeDeviceDurationPref(profile).InSeconds());
+      GetAccessCodeDeviceDurationPref(profile->GetPrefs()).InSeconds());
 
   // Add a handler to provide pluralized strings.
   auto plural_string_handler = std::make_unique<PluralStringHandler>();

@@ -4,8 +4,10 @@
 
 /**
  * @fileoverview ChromeVox log page.
- *
  */
+
+import {BackgroundBridge} from '../common/background_bridge.js';
+import {BaseLog, LogType, SerializableLog} from '../common/log_types.js';
 
 /**
  * Class to manage the log page.
@@ -104,7 +106,7 @@ export class LogPage {
 
   /**
    * Updates the log section.
-   * @param {Array<BaseLog>} log Array of speech.
+   * @param {Array<!SerializableLog>} log Array of logs to record.
    * @param {Element} div
    */
   static updateLog(log, div) {
@@ -122,7 +124,7 @@ export class LogPage {
       timeStamp.className = 'log-time-tag';
       /** textWrapper should be in block scope, not function scope. */
       const textWrapper = document.createElement('pre');
-      textWrapper.textContent = log[i].toString();
+      textWrapper.textContent = log[i].value;
       textWrapper.className = 'log-text';
 
       p.appendChild(typeName);

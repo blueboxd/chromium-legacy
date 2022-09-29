@@ -14,25 +14,31 @@
 
 namespace {
 
-// Query parameter names of the sync confirmtaion URL.
-const char kIsModalParamKey[] = "is_modal";
+// Query parameter names of the sync confirmation and the profile customization
+// URL.
+const char kStyleParamKey[] = "style";
 
 // Query parameter names of the reauth confirmation URL.
 const char kAccessPointParamKey[] = "access_point";
 
 }  // namespace
 
-bool IsSyncConfirmationModal(const GURL& url) {
-  std::string is_modal_str;
-  int is_modal = 1;  // Default to modal if the parameter is missing.
-  if (net::GetValueForKeyInQuery(url, kIsModalParamKey, &is_modal_str))
-    base::StringToInt(is_modal_str, &is_modal);
-  return is_modal != 0;
+SyncConfirmationStyle GetSyncConfirmationStyle(const GURL& url) {
+  std::string style_str;
+  int style_int;
+  // Default to modal if the parameter is missing.
+  SyncConfirmationStyle style = SyncConfirmationStyle::kDefaultModal;
+  if (net::GetValueForKeyInQuery(url, kStyleParamKey, &style_str) &&
+      base::StringToInt(style_str, &style_int)) {
+    style = static_cast<SyncConfirmationStyle>(style_int);
+  }
+  return style;
 }
 
-GURL AppendSyncConfirmationQueryParams(const GURL& url, bool is_modal) {
+GURL AppendSyncConfirmationQueryParams(const GURL& url,
+                                       SyncConfirmationStyle style) {
   GURL url_with_params = net::AppendQueryParameter(
-      url, kIsModalParamKey, base::NumberToString(is_modal));
+      url, kStyleParamKey, base::NumberToString(static_cast<int>(style)));
   return url_with_params;
 }
 
@@ -61,3 +67,24 @@ GURL GetReauthConfirmationURL(signin_metrics::ReauthAccessPoint access_point) {
       base::NumberToString(static_cast<int>(access_point)));
   return url;
 }
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
+ProfileCustomizationStyle GetProfileCustomizationStyle(const GURL& url) {
+  std::string style_str;
+  int style_int;
+  // Default style if the parameter is missing.
+  ProfileCustomizationStyle style = ProfileCustomizationStyle::kDefault;
+  if (net::GetValueForKeyInQuery(url, kStyleParamKey, &style_str) &&
+      base::StringToInt(style_str, &style_int)) {
+    style = static_cast<ProfileCustomizationStyle>(style_int);
+  }
+  return style;
+}
+
+GURL AppendProfileCustomizationQueryParams(const GURL& url,
+                                           ProfileCustomizationStyle style) {
+  GURL url_with_params = net::AppendQueryParameter(
+      url, kStyleParamKey, base::NumberToString(static_cast<int>(style)));
+  return url_with_params;
+}
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)

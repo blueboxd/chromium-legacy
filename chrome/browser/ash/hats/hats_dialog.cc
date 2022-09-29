@@ -19,7 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/dbus/util/version_loader.h"
+#include "chromeos/version/version_loader.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/prefs/pref_service.h"
@@ -97,10 +97,11 @@ std::string HatsDialog::GetFormattedSiteContext(
       version_info::GetVersionNumber();
 
   context[KeyEnumToString(DeviceInfoKey::PLATFORM)] =
-      version_loader::GetVersion(version_loader::VERSION_FULL);
+      chromeos::version_loader::GetVersion(
+          chromeos::version_loader::VERSION_FULL);
 
   context[KeyEnumToString(DeviceInfoKey::FIRMWARE)] =
-      version_loader::GetFirmware();
+      chromeos::version_loader::GetFirmware();
 
   context[KeyEnumToString(DeviceInfoKey::LOCALE)] = user_locale;
 

@@ -30,12 +30,11 @@ namespace policy {
 
 // Class responsible for uploading the information about the current ESim
 // profiles to DMServer.
-class EuiccStatusUploader
-    : public chromeos::NetworkPolicyObserver,
-      public ash::HermesManagerClient::Observer,
-      public ash::HermesEuiccClient::Observer,
-      public chromeos::ManagedCellularPrefHandler::Observer,
-      public CloudPolicyClient::Observer {
+class EuiccStatusUploader : public ash::NetworkPolicyObserver,
+                            public ash::HermesManagerClient::Observer,
+                            public ash::HermesEuiccClient::Observer,
+                            public ash::ManagedCellularPrefHandler::Observer,
+                            public CloudPolicyClient::Observer {
  public:
   EuiccStatusUploader(CloudPolicyClient* client, PrefService* local_state);
   ~EuiccStatusUploader() override;
@@ -73,7 +72,7 @@ class EuiccStatusUploader
   ConstructRequestFromStatus(const base::Value& status,
                              bool clear_profile_list);
 
-  // chromeos::NetworkPolicyObserver:
+  // ash::NetworkPolicyObserver:
   void PoliciesApplied(const std::string& userhash) override;
   void OnManagedNetworkConfigurationHandlerShuttingDown() override;
 
@@ -90,7 +89,7 @@ class EuiccStatusUploader
   // ash::HermesEuiccClient:
   void OnEuiccReset(const dbus::ObjectPath& euicc_path) override;
 
-  // chromeos::ManagedCellularPrefHandler:
+  // ash::ManagedCellularPrefHandler:
   void OnManagedCellularPrefChanged() override;
 
   base::Value GetCurrentEuiccStatus() const;
@@ -125,7 +124,7 @@ class EuiccStatusUploader
   base::ScopedObservation<CloudPolicyClient, CloudPolicyClient::Observer>
       cloud_policy_client_observation_{this};
 
-  chromeos::ManagedNetworkConfigurationHandler*
+  ash::ManagedNetworkConfigurationHandler*
       managed_network_configuration_handler_ = nullptr;
 
   base::WeakPtrFactory<EuiccStatusUploader> weak_ptr_factory_{this};

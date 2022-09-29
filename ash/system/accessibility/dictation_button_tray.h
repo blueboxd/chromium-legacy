@@ -11,6 +11,7 @@
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/tray_background_view.h"
+#include "ui/base/ime/input_method_observer.h"
 #include "ui/events/event_constants.h"
 
 namespace views {
@@ -28,7 +29,8 @@ class ProgressIndicator;
 class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
                                        public ShellObserver,
                                        public AccessibilityObserver,
-                                       public SessionObserver {
+                                       public SessionObserver,
+                                       public ui::InputMethodObserver {
  public:
   explicit DictationButtonTray(Shelf* shelf);
 
@@ -62,6 +64,13 @@ class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
   // views::View:
   const char* GetClassName() const override;
 
+  // ui::InputMethodObserver:
+  void OnFocus() override {}
+  void OnBlur() override {}
+  void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
+  void OnTextInputStateChanged(const ui::TextInputClient* client) override;
+  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
+
   // Updates this button's state and progress indicator when speech recognition
   // file download state changes.
   void UpdateOnSpeechRecognitionDownloadChanged(int download_progress);
@@ -76,10 +85,6 @@ class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
   // Also updates visibility when Dictation is enabled / disabled.
   void UpdateIcon(bool dictation_active);
 
-  // Updates opacity and transform for `icon_` to prevent overlap with the
-  // `progress_indicator_` when downloading is in progress.
-  void UpdateIconOpacityAndTransform();
-
   // Updates bounds for `progress_indicator_`.
   void UpdateProgressIndicatorBounds();
 
@@ -89,6 +94,10 @@ class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
   // Actively looks up dictation status and calls UpdateIcon.
   void CheckDictationStatusAndUpdateIcon();
 
+  // Called when text input state changes to determine whether Dictation
+  // should still be enabled and update the icon.
+  void TextInputChanged(const ui::TextInputClient* client);
+
   // Weak pointer, will be parented by TrayContainer for its lifetime.
   views::ImageView* icon_;
 
@@ -96,10 +105,11 @@ class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
   // in-progress.
   int download_progress_;
 
-  // A progress indicator to indicate SODA download progress and a subscription
-  // to be notified of progress changed events.
+  // A progress indicator to indicate SODA download progress.
   std::unique_ptr<ProgressIndicator> progress_indicator_;
-  base::CallbackListSubscription progress_changed_subscription_;
+
+  // Whether the cursor and focus is currently in a text input field.
+  bool in_text_input_ = false;
 };
 
 }  // namespace ash

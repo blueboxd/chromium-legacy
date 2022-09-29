@@ -87,9 +87,9 @@ source_set("onc") {
   if (is_chromeos_ash) {
     deps += [
       "//ash/components/settings:settings",
-      "//ash/components/tpm",
       "//ash/constants:constants",
       "//base",
+      "//chromeos/ash/components/install_attributes",
       "//chromeos/ash/components/network",
       "//chromeos/system:system",
       "//components/policy/core/common:common_constants",
@@ -227,6 +227,7 @@ source_set("policy_specific_browser_tests") {
       "test/hide_webstore_icon_policy_browsertest.cc",
       "test/local_fonts_policy_browsertest.cc",
       "test/media_stream_policy_browsertest.cc",
+      "test/prefixed_storage_info_policy_browsertest.cc",
       "test/set_timeout_without_1ms_clamp_policy_browsertest.cc",
       "test/signed_exchange_browsertest.cc",
       "test/task_manager_end_process_enabled_browsertest.cc",
@@ -258,7 +259,7 @@ source_set("policy_specific_browser_tests") {
     ]
   }
 
-  if (!is_chromeos_ash) {
+  if (!is_chromeos) {
     sources += [ "test/variation_restrict_parameter_policy_browsertest.cc" ]
     deps += [ "//components/variations/service" ]
   }
@@ -347,10 +348,10 @@ source_set("browser_tests") {
       "//ash/components/arc:arc_test_support",
       "//ash/components/arc:prefs",
       "//ash/components/arc/session:session",
-      "//ash/components/audio:audio",
       "//ash/components/cryptohome",
       "//chrome/browser/ash",
       "//chrome/browser/ash/system_web_apps/test_support",
+      "//chromeos/ash/components/audio",
       "//chromeos/ash/components/dbus/userdataauth",
       "//chromeos/ash/services/assistant/public/cpp",
       "//chromeos/dbus/constants",
@@ -406,7 +407,7 @@ source_set("browser_tests") {
     ]
   }
 
-  if (!is_android && !is_mac) {
+  if (is_win || is_linux || is_chromeos) {
     sources += [ "test/full_screen_allowed_policy_browsertest.cc" ]
   }
 

@@ -53,12 +53,19 @@
 
 #if BUILDFLAG(IS_MAC)
 #include "chrome/services/mac_notifications/mac_notification_provider_impl.h"
+#include "chrome/services/system_signals/mac/mac_system_signals_service.h"
 #endif  // BUILDFLAG(IS_MAC)
+
+#if BUILDFLAG(IS_LINUX)
+#include "chrome/services/system_signals/linux/linux_system_signals_service.h"
+#endif  // BUILDFLAG(IS_LINUX)
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/common/importer/profile_import.mojom.h"
 #include "chrome/utility/importer/profile_import_impl.h"
 #include "components/mirroring/service/mirroring_service.h"
+#include "components/password_manager/services/password_strength/password_strength_calculator_impl.h"
+#include "components/password_manager/services/password_strength/public/mojom/password_strength_calculator.mojom.h"
 #include "services/proxy_resolver/proxy_resolver_factory_impl.h"  // nogncheck
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #endif  // !BUILDFLAG(IS_ANDROID)
@@ -189,13 +196,6 @@ auto RunWindowsUtility(mojo::PendingReceiver<chrome::mojom::UtilWin> receiver) {
   return std::make_unique<UtilWinImpl>(std::move(receiver));
 }
 
-auto RunSystemSignalsService(
-    mojo::PendingReceiver<device_signals::mojom::SystemSignalsService>
-        receiver) {
-  return std::make_unique<system_signals::WinSystemSignalsService>(
-      std::move(receiver));
-}
-
 auto RunWindowsIconReader(
     mojo::PendingReceiver<chrome::mojom::UtilReadIcon> receiver) {
   return std::make_unique<UtilReadIcon>(std::move(receiver));
@@ -218,6 +218,23 @@ auto RunMacNotificationService(
 }
 #endif  // BUILDFLAG(IS_MAC)
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+auto RunSystemSignalsService(
+    mojo::PendingReceiver<device_signals::mojom::SystemSignalsService>
+        receiver) {
+#if BUILDFLAG(IS_WIN)
+  return std::make_unique<system_signals::WinSystemSignalsService>(
+      std::move(receiver));
+#elif BUILDFLAG(IS_MAC)
+  return std::make_unique<system_signals::MacSystemSignalsService>(
+      std::move(receiver));
+#else
+  return std::make_unique<system_signals::LinuxSystemSignalsService>(
+      std::move(receiver));
+#endif  // BUILDFLAG(IS_WIN)
+}
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+
 #if !BUILDFLAG(IS_ANDROID)
 auto RunProxyResolver(
     mojo::PendingReceiver<proxy_resolver::mojom::ProxyResolverFactory>
@@ -235,6 +252,15 @@ auto RunMirroringService(
     mojo::PendingReceiver<mirroring::mojom::MirroringService> receiver) {
   return std::make_unique<mirroring::MirroringService>(
       std::move(receiver), content::UtilityThread::Get()->GetIOTaskRunner());
+}
+
+auto RunPasswordStrengthCalculator(
+    mojo::PendingReceiver<password_manager::mojom::PasswordStrengthCalculator>
+        receiver) {
+  DCHECK(base::FeatureList::IsEnabled(
+      password_manager::features::kPasswordStrengthIndicator));
+  return std::make_unique<password_manager::PasswordStrengthCalculatorImpl>(
+      std::move(receiver));
 }
 
 #endif  // !BUILDFLAG(IS_ANDROID)
@@ -376,9 +402,9 @@ auto RunQuickPairService(
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 auto RunAssistantAudioDecoder(
-    mojo::PendingReceiver<
-        chromeos::assistant::mojom::AssistantAudioDecoderFactory> receiver) {
-  return std::make_unique<chromeos::assistant::AssistantAudioDecoderFactory>(
+    mojo::PendingReceiver<ash::assistant::mojom::AssistantAudioDecoderFactory>
+        receiver) {
+  return std::make_unique<ash::assistant::AssistantAudioDecoderFactory>(
       std::move(receiver));
 }
 
@@ -423,6 +449,10 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
 #if !BUILDFLAG(IS_ANDROID)
   services.Add(RunProfileImporter);
   services.Add(RunMirroringService);
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordStrengthIndicator)) {
+    services.Add(RunPasswordStrengthCalculator);
+  }
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_BROWSER_SPEECH_SERVICE)
@@ -438,9 +468,12 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
   services.Add(RunProcessorMetrics);
   services.Add(RunQuarantineService);
   services.Add(RunWindowsUtility);
-  services.Add(RunSystemSignalsService);
   services.Add(RunWindowsIconReader);
 #endif  // BUILDFLAG(IS_WIN)
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  services.Add(RunSystemSignalsService);
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
 #if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(IS_CHROMEOS_ASH)
   services.Add(RunCupsIppParser);

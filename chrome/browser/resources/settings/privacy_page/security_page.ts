@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import './collapse_radio_button.js';
@@ -24,7 +24,7 @@ import {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js
 import {FocusConfig} from '../focus_config.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions, SafeBrowsingInteractions} from '../metrics_browser_proxy.js';
-// <if expr="chromeos_ash or chromeos_lacros or chrome_root_store_supported">
+// <if expr="is_chromeos or chrome_root_store_supported">
 import {OpenWindowProxyImpl} from '../open_window_proxy.js';
 // </if>
 
@@ -121,7 +121,7 @@ export class SettingsSecurityPageElement extends
         },
       },
 
-      // <if expr="chromeos_ash or chromeos_lacros">
+      // <if expr="is_chromeos">
       /**
        * Whether a link to secure DNS OS setting should be displayed.
        */
@@ -177,7 +177,7 @@ export class SettingsSecurityPageElement extends
   private showHttpsOnlyModeSetting_: boolean;
   private showSecureDnsSetting_: boolean;
 
-  // <if expr="chromeos_ash or chromeos_lacros">
+  // <if expr="is_chromeos">
   private showSecureDnsSettingLink_: boolean;
   // </if>
 
@@ -368,7 +368,7 @@ export class SettingsSecurityPageElement extends
     this.recordActionOnExpandButtonClicked_(SafeBrowsingSetting.STANDARD);
   }
 
-  // <if expr="chromeos_ash or chromeos_lacros">
+  // <if expr="is_chromeos">
   private onOpenChromeOSSecureDnsSettingsClicked_() {
     const path =
         loadTimeData.getString('chromeOSPrivacyAndSecuritySectionPath');

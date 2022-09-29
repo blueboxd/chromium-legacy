@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_coordinator.h"
+#import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
+#import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_constants.h"
 #import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_view_controller.h"
 #import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_view_controller_delegate.h"
@@ -24,6 +26,9 @@
 @property(nonatomic, strong)
     IncognitoInterstitialViewController* incognitoInterstitialViewController;
 
+@property(nonatomic, assign)
+    IncognitoInterstitialActions incognitoInterstitialAction;
+
 @end
 
 @implementation IncognitoInterstitialCoordinator
@@ -33,13 +38,18 @@
       [[IncognitoInterstitialViewController alloc] init];
   self.incognitoInterstitialViewController.delegate = self;
   self.incognitoInterstitialViewController.URLLoaderDelegate = self;
-  self.incognitoInterstitialViewController.subtitleText =
+  self.incognitoInterstitialViewController.URLText =
       base::SysUTF8ToNSString(self.urlLoadParams.web_params.url.spec());
 
   [self.baseViewController
       presentViewController:self.incognitoInterstitialViewController
                    animated:YES
                  completion:completion];
+
+  // The default recorded action is "Cancel".
+  // This value is changed right before the "Open in Chrome Incognito" or
+  // "Open in Chrome" action buttons trigger the dismissal of the interstitial.
+  self.incognitoInterstitialAction = IncognitoInterstitialActions::kCancel;
 }
 
 - (void)stopWithCompletion:(ProceduralBlock)completion {
@@ -50,6 +60,9 @@
                            weakSelf.incognitoInterstitialViewController = nil;
                            completion();
                          }];
+
+  UMA_HISTOGRAM_ENUMERATION(kIncognitoInterstitialActionsHistogram,
+                            self.incognitoInterstitialAction);
 }
 
 - (void)start {
@@ -65,14 +78,17 @@
 - (void)didTapPrimaryActionButton {
   // Dismiss modals (including interstitial) and open link in incognito tab.
   __weak __typeof(self) weakSelf = self;
-  UrlLoadParams params = self.urlLoadParams;
-  BOOL dismissOmnibox = self.shouldDismissOmnibox;
+  UrlLoadParams copyOfUrlLoadParams = self.urlLoadParams;
   void (^dismissModalsAndOpenTab)() = ^{
-    [weakSelf.tabOpener dismissModalsAndOpenSelectedTabInMode:
-                            ApplicationModeForTabOpening::INCOGNITO
-                                            withUrlLoadParams:params
-                                               dismissOmnibox:dismissOmnibox
-                                                   completion:nil];
+    __typeof(self) strongSelf = weakSelf;
+    strongSelf.incognitoInterstitialAction =
+        IncognitoInterstitialActions::kOpenInChromeIncognito;
+    [strongSelf.tabOpener
+        dismissModalsAndMaybeOpenSelectedTabInMode:
+            ApplicationModeForTabOpening::INCOGNITO
+                                 withUrlLoadParams:copyOfUrlLoadParams
+                                    dismissOmnibox:YES
+                                        completion:nil];
   };
 
   SceneState* sceneState =
@@ -93,11 +109,13 @@
 
 - (void)didTapSecondaryActionButton {
   // Dismiss modals (including interstitial) and open link in regular tab.
-  [self.tabOpener
-      dismissModalsAndOpenSelectedTabInMode:ApplicationModeForTabOpening::NORMAL
-                          withUrlLoadParams:self.urlLoadParams
-                             dismissOmnibox:self.shouldDismissOmnibox
-                                 completion:nil];
+  self.incognitoInterstitialAction =
+      IncognitoInterstitialActions::kOpenInChrome;
+  [self.tabOpener dismissModalsAndMaybeOpenSelectedTabInMode:
+                      ApplicationModeForTabOpening::NORMAL
+                                           withUrlLoadParams:self.urlLoadParams
+                                              dismissOmnibox:YES
+                                                  completion:nil];
 }
 
 - (void)didTapCancelButton {
@@ -108,11 +126,12 @@
 
 - (void)loadURLInTab:(const GURL&)URL {
   [self.tabOpener
-      dismissModalsAndOpenSelectedTabInMode:ApplicationModeForTabOpening::
-                                                INCOGNITO
-                          withUrlLoadParams:UrlLoadParams::InCurrentTab(URL)
-                             dismissOmnibox:YES
-                                 completion:nil];
+      dismissModalsAndMaybeOpenSelectedTabInMode:ApplicationModeForTabOpening::
+                                                     INCOGNITO
+                               withUrlLoadParams:UrlLoadParams::InCurrentTab(
+                                                     URL)
+                                  dismissOmnibox:YES
+                                      completion:nil];
 }
 
 @end

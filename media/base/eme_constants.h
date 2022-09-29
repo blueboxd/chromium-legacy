@@ -9,6 +9,7 @@
 
 #include "media/base/media_export.h"
 #include "media/media_buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 
@@ -20,9 +21,9 @@ enum class EmeInitDataType { UNKNOWN, WEBM, CENC, KEYIDS, MAX = KEYIDS };
 // Defines bitmask values that specify codecs used in Encrypted Media Extensions
 // (EME). Generally codec profiles are not specified and it is assumed that the
 // profile support for encrypted playback is the same as for clear playback.
-// The only exception is VP9 where we have older CDMs only supporting profile 0,
-// while new CDMs could support profile 2. Profile 1 and 3 are not supported by
-// EME, see https://crbug.com/898298.
+// For VP9 we have older CDMs only supporting profile 0, while new CDMs could
+// support profile 2. Profile 1 and 3 are not supported by EME, see
+// https://crbug.com/898298.
 enum EmeCodec : uint32_t {
   EME_CODEC_NONE = 0,
   EME_CODEC_OPUS = 1 << 0,
@@ -33,22 +34,34 @@ enum EmeCodec : uint32_t {
   EME_CODEC_AVC1 = 1 << 5,
   EME_CODEC_VP9_PROFILE2 = 1 << 6,  // VP9 profiles 2
   EME_CODEC_HEVC_PROFILE_MAIN = 1 << 7,
-  EME_CODEC_DOLBY_VISION_AVC = 1 << 8,
-  EME_CODEC_DOLBY_VISION_HEVC = 1 << 9,
-  EME_CODEC_AC3 = 1 << 10,
-  EME_CODEC_EAC3 = 1 << 11,
-  EME_CODEC_MPEG_H_AUDIO = 1 << 12,
-  EME_CODEC_FLAC = 1 << 13,
-  EME_CODEC_AV1 = 1 << 14,
-  EME_CODEC_HEVC_PROFILE_MAIN10 = 1 << 15,
-  EME_CODEC_DTS = 1 << 16,
-  EME_CODEC_DTSXP2 = 1 << 17,
+  EME_CODEC_DOLBY_VISION_PROFILE0 = 1 << 8,
+  EME_CODEC_DOLBY_VISION_PROFILE4 = 1 << 9,
+  EME_CODEC_DOLBY_VISION_PROFILE5 = 1 << 10,
+  EME_CODEC_DOLBY_VISION_PROFILE7 = 1 << 11,
+  EME_CODEC_DOLBY_VISION_PROFILE8 = 1 << 12,
+  EME_CODEC_DOLBY_VISION_PROFILE9 = 1 << 13,
+  EME_CODEC_AC3 = 1 << 14,
+  EME_CODEC_EAC3 = 1 << 15,
+  EME_CODEC_MPEG_H_AUDIO = 1 << 16,
+  EME_CODEC_FLAC = 1 << 17,
+  EME_CODEC_AV1 = 1 << 18,
+  EME_CODEC_HEVC_PROFILE_MAIN10 = 1 << 19,
+  EME_CODEC_DTS = 1 << 20,
+  EME_CODEC_DTSXP2 = 1 << 21,
 };
 
 // *_ALL values should only be used for masking, do not use them to specify
 // codec support because they may be extended to include more codecs.
 
 using SupportedCodecs = uint32_t;
+
+// Dolby Vision profile 0 and 9 are based on AVC while profile 4, 5, 7 and 8 are
+// based on HEVC.
+constexpr SupportedCodecs EME_CODEC_DOLBY_VISION_AVC =
+    EME_CODEC_DOLBY_VISION_PROFILE0 | EME_CODEC_DOLBY_VISION_PROFILE9;
+constexpr SupportedCodecs EME_CODEC_DOLBY_VISION_HEVC =
+    EME_CODEC_DOLBY_VISION_PROFILE4 | EME_CODEC_DOLBY_VISION_PROFILE5 |
+    EME_CODEC_DOLBY_VISION_PROFILE7 | EME_CODEC_DOLBY_VISION_PROFILE8;
 
 namespace {
 
@@ -148,35 +161,45 @@ enum class EmeMediaType {
 };
 
 enum class EmeConfigRuleState {
-  // To correctly identify the EmeConfigRule as Supported,
-  // we use the enum value kUnset for each of the rules so
-  // that it is easy to check for, and cannot be confused.
+  // To correctly identify the EmeConfig as Supported, we use the enum value
+  // kUnset for each of the rules so that it is easy to check for, and cannot be
+  // confused.
   kUnset,
 
-  // Not Allowed represents when the rule in the collection of
-  // EmeConfigRules is not allowed by the current system.
+  // Not Allowed represents when the rule in the collection of EmeConfigRules is
+  // not allowed by the current system.
   kNotAllowed,
 
-  // Recommended represents when the rule in the collection of
-  // EmeConfigRules is recommended by the current system. In
-  // our design, the recommended takes a second priority and
-  // cannot override the NotAllowed or Required value.
+  // Recommended represents when the rule in the collection of EmeConfigRules is
+  // recommended by the current system. In our design, the recommended takes a
+  // second priority and cannot override the NotAllowed or Required value.
   kRecommended,
 
-  // Required represents when the rule in the collection of
-  // EmeConfigRules is required by the current system.
+  // Required represents when the rule in the collection of EmeConfigRules is
+  // required by the current system.
   kRequired,
 };
 
-struct MEDIA_EXPORT EmeConfigRule {
-  // Refer to the EME spec for definitions on what
-  // identifier, persistence, and hw_secure_codecs represent.
+struct MEDIA_EXPORT EmeConfig {
+  using Rule = absl::optional<EmeConfig>;
+
+  // Refer to the EME spec for definitions on what identifier, persistence, and
+  // hw_secure_codecs represent.
   EmeConfigRuleState identifier = EmeConfigRuleState::kUnset;
   EmeConfigRuleState persistence = EmeConfigRuleState::kUnset;
   EmeConfigRuleState hw_secure_codecs = EmeConfigRuleState::kUnset;
+
+  // To represent an EmeConfig::Rule where the feature is supported without any
+  // special requirements. This type adds nothing during the AddRule() function.
+  // Internally, we represent Supported as all the States set to kUnset.
+  static EmeConfig::Rule SupportedRule() { return EmeConfig(); }
+
+  // To represent an EmeConfig::Rule where the feature is not supported.
+  // Internally, we represent Unsupported as absl::nullopt.
+  static EmeConfig::Rule UnsupportedRule() { return absl::nullopt; }
 };
 
-inline bool operator==(EmeConfigRule const& lhs, EmeConfigRule const& rhs) {
+inline bool operator==(EmeConfig const& lhs, EmeConfig const& rhs) {
   return lhs.persistence == rhs.persistence &&
          lhs.identifier == rhs.identifier &&
          lhs.hw_secure_codecs == rhs.hw_secure_codecs;

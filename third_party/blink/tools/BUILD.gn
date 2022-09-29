@@ -33,9 +33,6 @@ group("wpt_tests_isolate") {
     # Include the results processor.
     "//third_party/blink/tools/wpt_process_results.py",
 
-    # Include the results viewer
-    "//third_party/blink/web_tests/fast/harness/results.html",
-
     # Include the various Test Expectations files.
     "//third_party/blink/web_tests/ASANExpectations",
     "//third_party/blink/web_tests/LeakExpectations",
@@ -103,4 +100,17 @@ group("wpt_tests_mojo_bindings") {
     "//skia/public/mojom:mojom_js_data_deps",
     "//third_party/blink/public/mojom:mojom_platform_js_data_deps",
   ]
+}
+
+group("blink_pytype") {
+  testonly = true
+
+  data = [
+    "//third_party/blink/tools/run_pytype.py",
+
+    "//testing/unexpected_passes_common/",
+    "//third_party/blink/tools/blinkpy/web_tests/stale_expectation_removal/",
+  ]
+
+  data_deps = [ "//testing:pytype_dependencies" ]
 }

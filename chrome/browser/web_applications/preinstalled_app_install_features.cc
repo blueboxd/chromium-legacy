@@ -21,18 +21,32 @@ namespace web_app {
 constexpr const base::Feature* kPreinstalledAppInstallFeatures[] = {
     &kMigrateDefaultChromeAppToWebAppsGSuite,
     &kMigrateDefaultChromeAppToWebAppsNonGSuite,
-    &kDefaultCalculatorWebApp,
 #if BUILDFLAG(IS_CHROMEOS)
     &kCursiveStylusPreinstall,
     &kCursiveManagedStylusPreinstall,
     &kMessagesPreinstall,
-    &::chromeos::features::kCloudGamingDevice,
 #endif
 };
 
 bool g_always_enabled_for_testing = false;
 
 namespace {
+
+struct FeatureWithEnabledFunction {
+  const char* const name;
+  bool (*enabled_func)();
+};
+
+// Features which have a function to be run to determine whether they are
+// enabled. Prefer using a base::Feature with |kPreinstalledAppInstallFeatures|
+// when possible.
+const FeatureWithEnabledFunction
+    kPreinstalledAppInstallFeaturesWithEnabledFunctions[] = {
+#if BUILDFLAG(IS_CHROMEOS)
+        {chromeos::features::kCloudGamingDevice.name,
+         &chromeos::features::IsCloudGamingDeviceEnabled}
+#endif
+};
 
 // Checks if the feature being passed matches any of the migration features
 // above.
@@ -53,11 +67,6 @@ const base::Feature kMigrateDefaultChromeAppToWebAppsGSuite{
 const base::Feature kMigrateDefaultChromeAppToWebAppsNonGSuite{
     "MigrateDefaultChromeAppToWebAppsNonGSuite",
     base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables installing the PWA version of the chrome os calculator instead of the
-// deprecated chrome app.
-const base::Feature kDefaultCalculatorWebApp{"DefaultCalculatorWebApp",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_CHROMEOS)
 // Whether to allow the MigrateDefaultChromeAppToWebAppsGSuite and
@@ -109,6 +118,12 @@ bool IsPreinstalledAppInstallFeatureEnabled(base::StringPiece feature_name,
 
     if (feature->name == feature_name)
       return base::FeatureList::IsEnabled(*feature);
+  }
+
+  for (const auto& feature :
+       kPreinstalledAppInstallFeaturesWithEnabledFunctions) {
+    if (feature.name == feature_name)
+      return feature.enabled_func();
   }
 
   return false;

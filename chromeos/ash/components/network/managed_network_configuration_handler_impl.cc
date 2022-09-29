@@ -20,6 +20,9 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/cellular_policy_handler.h"
 #include "chromeos/ash/components/network/client_cert_util.h"
 #include "chromeos/ash/components/network/device_state.h"
@@ -44,13 +47,10 @@
 #include "chromeos/components/onc/onc_signature.h"
 #include "chromeos/components/onc/onc_utils.h"
 #include "chromeos/components/onc/onc_validator.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -327,17 +327,18 @@ void ManagedNetworkConfigurationHandlerImpl::SetManagedActiveProxyValues(
     base::Value* dictionary) {
   DCHECK(ui_proxy_config_service_);
   const std::string proxy_settings_key = ::onc::network_config::kProxySettings;
-  base::Value* proxy_settings = dictionary->FindKeyOfType(
-      proxy_settings_key, base::Value::Type::DICTIONARY);
+  base::Value::Dict* proxy_settings =
+      dictionary->GetDict().FindDict(proxy_settings_key);
 
   if (!proxy_settings) {
-    proxy_settings = dictionary->SetKey(
-        proxy_settings_key, base::Value(base::Value::Type::DICTIONARY));
+    proxy_settings = dictionary->GetDict()
+                         .Set(proxy_settings_key, base::Value::Dict())
+                         ->GetIfDict();
   }
   ui_proxy_config_service_->MergeEnforcedProxyConfig(guid, proxy_settings);
 
-  if (proxy_settings->DictEmpty())
-    dictionary->RemoveKey(proxy_settings_key);
+  if (proxy_settings->empty())
+    dictionary->GetDict().Remove(proxy_settings_key);
 }
 
 void ManagedNetworkConfigurationHandlerImpl::SetShillProperties(
@@ -1106,7 +1107,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetDeviceStateProperties(
   // want information about all ipv4 and ipv6 IPConfig properties.
   base::Value ip_configs(base::Value::Type::LIST);
 
-  if (!device_state || device_state->ip_configs().DictEmpty()) {
+  if (!device_state || device_state->ip_configs().empty()) {
     // Shill may not provide IPConfigs for external Cellular devices/dongles
     // (https://crbug.com/739314) or VPNs, so build a dictionary of ipv4
     // properties from cached NetworkState properties .
@@ -1118,7 +1119,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetDeviceStateProperties(
   } else {
     // Convert the DeviceState IPConfigs dictionary to a base::Value::Type::LIST
     // Value.
-    for (const auto iter : device_state->ip_configs().DictItems())
+    for (const auto iter : device_state->ip_configs())
       ip_configs.Append(iter.second.Clone());
   }
   if (!ip_configs.GetListDeprecated().empty()) {
@@ -1307,4 +1308,4 @@ void ManagedNetworkConfigurationHandlerImpl::NotifyPolicyAppliedToNetwork(
     observer.PolicyAppliedToNetwork(service_path);
 }
 
-}  // namespace chromeos
+}  // namespace ash

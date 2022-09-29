@@ -5,7 +5,6 @@
 import("//build/config/chromecast_build.gni")
 import("//build/config/locales.gni")
 import("//components/cast_streaming/features.gni")
-import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 
 # These args blocks should contain arguments used within the //chromecast
@@ -19,6 +18,10 @@ declare_args() {
   is_cast_desktop_build =
       target_os == "linux" && (target_cpu == "x86" || target_cpu == "x64") &&
       enable_cast_receiver
+
+  # chromecast_branding is used to include or exclude Google-branded components.
+  # Set it to "public" for a Chromium build.
+  chromecast_branding = "public"
 }
 
 declare_args() {
@@ -186,10 +189,6 @@ if (!(is_ios || is_chromeos)) {
     "af",
     "ur",
   ]
-}
-
-declare_args() {
-  enable_chromecast_extensions = enable_extensions
 }
 
 # Use Chromecast CDMs for protected content. Some Android platforms use

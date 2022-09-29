@@ -29,7 +29,7 @@
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_info.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quiche/spdy/core/spdy_header_block.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/http2_header_block.h"
 #include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
 
@@ -107,7 +107,7 @@ CronetBidirectionalStreamAdapter::CronetBidirectionalStreamAdapter(
     int32_t traffic_stats_tag,
     bool traffic_stats_uid_set,
     int32_t traffic_stats_uid,
-    net::NetworkChangeNotifier::NetworkHandle network)
+    net::handles::NetworkHandle network)
     : context_(context),
       owner_(env, jbidi_stream),
       send_request_headers_automatically_(send_request_headers_automatically),

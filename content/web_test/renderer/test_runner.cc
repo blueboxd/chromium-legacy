@@ -24,7 +24,6 @@
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view_impl.h"
 #include "content/web_test/common/web_test_constants.h"
 #include "content/web_test/common/web_test_string_util.h"
 #include "content/web_test/renderer/app_banner_service.h"
@@ -2149,9 +2148,10 @@ int TestRunnerBindings::WebHistoryItemCount() {
   if (invalid_)
     return 0;
 
-  // Returns the length of the session history of this RenderView. Note that
-  // this only coincides with the actual length of the session history if this
-  // RenderView is the currently active RenderView of a WebContents.
+  // Returns the length of the session history of this `blink::WebView`. Note
+  // that this only coincides with the actual length of the session history if
+  // this `blink::WebView` is the currently active `blink::WebView` of a
+  // WebContents.
   return frame_->GetWebFrame()->View()->HistoryBackListCount() +
          frame_->GetWebFrame()->View()->HistoryForwardListCount() + 1;
 }
@@ -2176,7 +2176,7 @@ void TestRunnerBindings::ForceNextDrawingBufferCreationToFail() {
 
 void TestRunnerBindings::NotImplemented(const gin::Arguments& args) {}
 
-// This class helps track active main windows and when the RenderView is
+// This class helps track active main windows and when the `blink::WebView` is
 // destroyed it will remove it from TestRunner's list.
 class TestRunner::MainWindowTracker : public blink::WebViewObserver {
  public:

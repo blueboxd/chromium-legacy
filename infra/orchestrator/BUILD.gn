@@ -19,6 +19,10 @@ group("orchestrator_all") {
     ":standard_isolated_script_merge_py",
   ]
 
+  if (is_android) {
+    data_deps += [ "//build/android:test_result_presentations_py" ]
+  }
+
   data = [
     # Various merge/collect scripts will likely need a venv specified in
     # the root vpython spec files.
@@ -36,10 +40,7 @@ group("orchestrator_all") {
 
   if (use_jacoco_coverage) {
     data += [ "//third_party/jacoco/lib/jacococli.jar" ]
-    data_deps += [
-      "//build/android:test_result_presentations_py",
-      "//third_party/jdk:java_data",
-    ]
+    data_deps += [ "//third_party/jdk:java_data" ]
   }
   write_runtime_deps = "$root_out_dir/orchestrator_all.runtime_deps"
 }
@@ -74,20 +75,12 @@ python_library("code_coverage_merge_steps_py") {
 python_library("process_perf_results_py") {
   pydeps_file = "//tools/perf/process_perf_results.pydeps"
 
+  # Telemetry fails if catapult's vendored libs aren't present on the
+  # filesystem. But since process_perf_results.py doesn't ever import any of
+  # them, build/print_python_deps.py doesn't detect them. So to appease
+  # telemetry, just add the needed dirs directly.
   data = [
-      # Telemetry fails if catapult's vendored libs aren't present on the
-      # filesystem. But since process_perf_results.py doesn't ever import any of
-      # them, build/print_python_deps.py doesn't detect them. So to appease
-      # telemetry, just add the needed dirs directly.
       "//third_party/catapult/telemetry/third_party/",
-      "//third_party/catapult/third_party/polymer/",
       "//third_party/catapult/third_party/six/",
-      "//third_party/catapult/third_party/vinn/",
-      "//third_party/catapult/tracing/bin/add_reserved_diagnostics",
-      "//third_party/catapult/tracing/third_party/",
-      "//third_party/catapult/tracing/tracing/",
-
-      # This file is read at script run-time.
-      "//tools/perf/core/perf_dashboard_machine_group_mapping.json",
   ]
 }

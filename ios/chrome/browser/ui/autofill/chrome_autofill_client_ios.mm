@@ -9,7 +9,6 @@
 #import "base/bind.h"
 #import "base/callback.h"
 #import "base/check.h"
-#import "base/feature_list.h"
 #import "base/memory/ptr_util.h"
 #import "base/notreached.h"
 #import "base/strings/string_util.h"
@@ -20,6 +19,8 @@
 #import "components/autofill/core/browser/logging/log_manager.h"
 #import "components/autofill/core/browser/payments/autofill_credit_card_filling_infobar_delegate_mobile.h"
 #import "components/autofill/core/browser/payments/autofill_save_card_infobar_delegate_mobile.h"
+#import "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
+#import "components/autofill/core/browser/payments/credit_card_otp_authenticator.h"
 #import "components/autofill/core/browser/payments/payments_client.h"
 #import "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
 #import "components/autofill/core/common/autofill_features.h"
@@ -48,7 +49,7 @@
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/autofill/card_expiration_date_fix_flow_view_bridge.h"
 #import "ios/chrome/browser/ui/autofill/card_name_fix_flow_view_bridge.h"
-#import "ios/chrome/browser/ui/autofill/legacy_card_unmask_prompt_view_bridge.h"
+#import "ios/chrome/browser/ui/autofill/create_card_unmask_prompt_view_bridge.h"
 #import "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 #import "ios/chrome/common/channel_info.h"
 #import "ios/public/provider/chrome/browser/risk_data/risk_data_api.h"
@@ -69,13 +70,6 @@ std::unique_ptr<infobars::InfoBar> CreateSaveCardInfoBarMobile(
     std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile> delegate) {
   return std::make_unique<InfoBarIOS>(InfobarType::kInfobarTypeSaveCard,
                                       std::move(delegate));
-}
-
-CardUnmaskPromptView* CreateCardUnmaskPromptViewBridge(
-    CardUnmaskPromptControllerImpl* unmask_controller,
-    UIViewController* base_view_controller) {
-  return new LegacyCardUnmaskPromptViewBridge(unmask_controller,
-                                              base_view_controller);
 }
 
 }  // namespace
@@ -138,6 +132,18 @@ PersonalDataManager* ChromeAutofillClientIOS::GetPersonalDataManager() {
 AutocompleteHistoryManager*
 ChromeAutofillClientIOS::GetAutocompleteHistoryManager() {
   return autocomplete_history_manager_;
+}
+
+CreditCardCVCAuthenticator* ChromeAutofillClientIOS::GetCVCAuthenticator() {
+  if (!cvc_authenticator_)
+    cvc_authenticator_ = std::make_unique<CreditCardCVCAuthenticator>(this);
+  return cvc_authenticator_.get();
+}
+
+CreditCardOtpAuthenticator* ChromeAutofillClientIOS::GetOtpAuthenticator() {
+  if (!otp_authenticator_)
+    otp_authenticator_ = std::make_unique<CreditCardOtpAuthenticator>(this);
+  return otp_authenticator_.get();
 }
 
 PrefService* ChromeAutofillClientIOS::GetPrefs() {
@@ -230,7 +236,7 @@ void ChromeAutofillClientIOS::ShowUnmaskPrompt(
     UnmaskCardReason reason,
     base::WeakPtr<CardUnmaskDelegate> delegate) {
   unmask_controller_.ShowPrompt(
-      base::BindOnce(&CreateCardUnmaskPromptViewBridge,
+      base::BindOnce(&autofill::CreateCardUnmaskPromptViewBridge,
                      base::Unretained(&unmask_controller_),
                      base::Unretained(base_view_controller_)),
       card, reason, delegate);

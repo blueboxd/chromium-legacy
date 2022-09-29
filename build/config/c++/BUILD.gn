@@ -34,10 +34,6 @@ config("runtime_library") {
     "_LIBCPP_ABI_VERSION=2",
   ]
 
-  # Disable usages of __builtin_assume(...) when building libc++, as it causes
-  # some msan errors (crbug.com/1344905).
-  defines += [ "_LIBCPP_ASSERTIONS_DISABLE_ASSUME" ]
-
   if (!libcxx_is_shared) {
     # Don't leak any symbols on a static build.
     defines += [ "_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS" ]
@@ -70,6 +66,8 @@ config("runtime_library") {
     }
   }
 
+  defines += [ "CR_LIBCXX_REVISION=$libcxx_revision" ]
+
   if (is_win) {
     # Intentionally not using libc++abi on Windows because libc++abi only
     # implements the Itanium C++ ABI, and not the Microsoft ABI which we use on
@@ -101,8 +99,6 @@ config("runtime_library") {
       "-isystem" + rebase_path("$libcxxabi_prefix/include", root_build_dir),
     ]
     cflags_objcc = cflags_cc
-
-    defines += [ "CR_LIBCXX_REVISION=$libcxx_revision" ]
 
     # Make sure we don't link against the system libstdc++ or libc++.
     if (is_clang) {

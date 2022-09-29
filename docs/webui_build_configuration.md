@@ -52,8 +52,7 @@ out_folder: Specifies the location to write the wrapped files. If not specified,
             |target_gen_dir| is used.
 minify: Whether to minify HTML/CSS with
         third_party/node/node_modules/html-minifier. Defaults to false.
-use_js: html_to_wrapper only. Whether to output .js files instead of .ts files.
-        Defaults to false.
+use_js: Whether to output .js files instead of .ts files. Defaults to false.
 ```
 
 #### **Example**
@@ -411,9 +410,11 @@ from other parts of the build.
 ```
 
 List of files params:
-static_files: List of HTML/CSS files that don't need any processing and will be
-              included in the build verbatim. Don't confuse with |css_files|
-              below. Required parameter.
+static_files: Required parameter. List of
+              1) non Web Component HTML/CSS files (don't confuse with
+                 |css_files| below). These are passed to preprocess_if_expr()
+              2) JPG/PNG/SVG files. These are included in the build verbatim
+                 without any preprocessing.
 
 web_component_files:  List of TS files that hold Web Component definitions with
                       equivalent HTML template files. These can be either native
@@ -440,6 +441,7 @@ TypeScript (ts_library()) related params:
 ts_composite: See |composite| in ts_library(). Defaults to false, optional.
 ts_definitions: See |definitions| in ts_library(). Optional parameter.
 ts_deps: See |deps| in ts_library(). Optional parameter.
+ts_extra_deps: See |extra_deps| in ts_library(). Optional parameter.
 ts_path_mappings: See |path_mappings| in ts_library(). Optional parameter.
 ts_use_local_config: Whether to pass a local "tsconfig_base.json" file as the
                      |tsconfig_base| to ts_library(). Optional, defaults to true.

@@ -24,6 +24,7 @@
 #include "ash/webui/shimless_rma/url_constants.h"
 #include "ash/webui/shortcut_customization_ui/url_constants.h"
 #include "base/bind.h"
+#include "base/check_is_test.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
@@ -60,6 +61,7 @@
 #include "chrome/browser/ash/web_applications/terminal_system_web_app_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
@@ -75,6 +77,7 @@
 #include "chrome/browser/web_applications/web_app_system_web_app_delegate_map_utils.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/strings/grit/chromeos_strings.h"  // nogncheck
@@ -93,6 +96,7 @@
 #include "url/origin.h"
 #if !defined(OFFICIAL_BUILD)
 #include "chrome/browser/ash/web_applications/demo_mode_web_app_info.h"
+#include "chrome/browser/ash/web_applications/facial_ml_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/sample_system_web_app_info.h"
 #endif  // !defined(OFFICIAL_BUILD)
 
@@ -138,6 +142,7 @@ SystemWebAppDelegateMap CreateSystemWebApps(Profile* profile) {
 
 #if !defined(OFFICIAL_BUILD)
   info_vec.push_back(std::make_unique<DemoModeSystemAppDelegate>(profile));
+  info_vec.push_back(std::make_unique<FacialMLSystemAppDelegate>(profile));
   info_vec.push_back(std::make_unique<SampleSystemAppDelegate>(profile));
 #endif  // !defined(OFFICIAL_BUILD)
 
@@ -214,7 +219,14 @@ SystemWebAppManager::SystemWebAppManager(Profile* profile)
   // Always create delegates because many System Web App WebUIs are disabled
   // when the delegate is not present and we need them in tests. Tests can
   // override the list of delegates with SetSystemAppsForTesting().
-  system_app_delegates_ = CreateSystemWebApps(profile_);
+  //
+  // TODO(https://crbug.com/1353262): SWAM is not supported in Kiosk mode. Many
+  // components assume that SWAM always exists alongside WebAppProvider. We want
+  // to use WebAppProvider to install web apps in Kiosk without enabling SWAM.
+  if (!base::FeatureList::IsEnabled(::features::kKioskEnableAppService) ||
+      !profiles::IsKioskSession()) {
+    system_app_delegates_ = CreateSystemWebApps(profile_);
+  }
 
 #if defined(OFFICIAL_BUILD)
   const bool is_official = true;
@@ -267,6 +279,11 @@ SystemWebAppManager* SystemWebAppManager::GetForLocalAppsUnchecked(
 
 // static
 SystemWebAppManager* SystemWebAppManager::GetForTest(Profile* profile) {
+  // Running a nested base::RunLoop outside of tests causes a deadlock. Crash
+  // immediately instead of deadlocking for easier debugging (especially for
+  // TAST tests which use prod binaries).
+  CHECK_IS_TEST();
+
   web_app::WebAppProvider* provider =
       SystemWebAppManager::GetWebAppProvider(profile);
   if (!provider)

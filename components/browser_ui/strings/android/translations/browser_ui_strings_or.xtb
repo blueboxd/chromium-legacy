@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">ଡାଉନ୍‌ଲୋଡ୍ ବିରତ ହୋଇଛି</translation>
 <translation id="1409426117486808224">ଖୋଲାଥିବା ଟାବ୍‍ଗୁଡ଼ିକ ପାଇଁ ସରଳୀକୃତ ଦୃଶ୍ୟ</translation>
 <translation id="1415402041810619267">URLକୁ ଛୋଟ କରାଯାଇଛି</translation>
+<translation id="1426410128494586442">ହଁ</translation>
 <translation id="1446450296470737166">MIDI ଡିଭାଇସ୍‌ଗୁଡ଼ିକର ପୂର୍ଣ୍ଣ ନିୟନ୍ତ୍ରଣର ଅନୁମତି ଦିଅନ୍ତୁ</translation>
 <translation id="1620510694547887537">କ୍ୟାମେରା</translation>
 <translation id="1644574205037202324">ଇତିବୃତ୍ତି</translation>
@@ -32,6 +33,7 @@
 <translation id="1818308510395330587"><ph name="APP_NAME" />କୁ AR ବ୍ୟବହାର କରିବାକୁ ଅନୁମତି ଦେବା ପାଇଁ, <ph name="BEGIN_LINK" />Android ସେଟିଂସ<ph name="END_LINK" />ରେ କ୍ୟାମେରା ମଧ୍ୟ ଚାଲୁ କରନ୍ତୁ।</translation>
 <translation id="1864927262126810325"><ph name="SOURCE_NAME" />ରୁ</translation>
 <translation id="1887786770086287077">ଏହି ଡିଭାଇସ୍ ପାଇଁ ଲୋକେସନ୍ ଆକ୍ସେସ୍ ବନ୍ଦ ଅଛି। <ph name="BEGIN_LINK" />Android ସେଟିଂସ୍‍<ph name="END_LINK" />ରେ ଏହାକୁ ଚାଲୁ କରନ୍ତୁ।</translation>
+<translation id="1915307458270490472">ସମାପ୍ତ କରନ୍ତୁ</translation>
 <translation id="1919345977826869612">ବିଜ୍ଞାପନ</translation>
 <translation id="1919950603503897840">ଯୋଗାଯୋଗଗୁଡ଼ିକ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -78,6 +80,7 @@
 <translation id="2677748264148917807">ଛାଡ଼ନ୍ତୁ</translation>
 <translation id="2687403674020088961">ସମସ୍ତ କୁକୀ ବ୍ଲକ୍ କରନ୍ତୁ (ସୁପାରିଶ କରାଯାଇ ନାହିଁ)</translation>
 <translation id="2704606927547763573">କପି କରାଯାଇଛି</translation>
+<translation id="2713106313042589954">କ୍ୟାମେରା ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="2717722538473713889">ଇମେଲ୍ ଠିକଣାଗୁଡ଼ିକ</translation>
 <translation id="2750481671343847896">ପରିଚୟ ପ୍ରଦାନ କରୁଥିବା ସେବାଗୁଡ଼ିକରୁ ସାଇନ-ଇନ ପ୍ରମ୍ପ୍ଟଗୁଡ଼ିକୁ ସାଇଟଗୁଡ଼ିକ ଦେଖାଇପାରନ୍ତି।</translation>
 <translation id="2785051990912111074">ଏହି ବିକଳ୍ପକୁ ପସନ୍ଦ କଲେ ଏହା<ph name="WEBSITE" /> ପାଇଁ କୁକୀଗୁଡ଼ିକୁ ଖାଲି କରିଦେବ</translation>
@@ -97,6 +100,7 @@
 <translation id="3114012059975132928">ଭିଡିଓ ପ୍ଲେଆର୍</translation>
 <translation id="3115898365077584848">ସୂଚନା ଦେଖାନ୍ତୁ</translation>
 <translation id="3123473560110926937">କିଛି ସାଇଟ୍‍ଗୁଡ଼ିକରେ ଅବରୋଧ କରାଯାଇଛି</translation>
+<translation id="3143754809889689516">ଆରମ୍ଭରୁ ଚଲାନ୍ତୁ</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> ଷ୍ଟୋର୍ ହୋ‍ଇଥିବା ଡାଟା</translation>
 <translation id="3203366800380907218">ୱେବରୁ</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" />କୁ ଆପଣଙ୍କୁ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ପଠାଇବାକୁ ଅନୁମତି ଦେବା ପାଇଁ, <ph name="BEGIN_LINK" />Android ସେଟିଂସ<ph name="END_LINK" />ରେ ମଧ୍ୟ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ଚାଲୁ କରନ୍ତୁ।</translation>
@@ -153,10 +157,12 @@
 <translation id="4479647676395637221">ଆପଣଙ୍କର କ୍ୟାମେରା ବ୍ୟବହାର କରିବାକୁ ସାଇଟ୍‌ଗୁଡ଼ିକୁ ଅନୁମତି ଦେବା ପୂର୍ବରୁ, ପ୍ରଥମେ ପଚାରନ୍ତୁ (ସୁପାରିଶ କରାଯାଇଛି)</translation>
 <translation id="4505788138578415521">URLକୁ ବିସ୍ତାର କରାଯାଇଛି</translation>
 <translation id="4534723447064627427"><ph name="APP_NAME" />କୁ ଆପଣଙ୍କ ମାଇକ୍ରୋଫୋନ୍ ଆକ୍ସେସ୍ ଦେବା ପାଇଁ, <ph name="BEGIN_LINK" />Android ସେଟିଂସ<ph name="END_LINK" />ରେ ମାଇକ୍ରୋଫୋନ୍ ମଧ୍ୟ ଚାଲୁ କରନ୍ତୁ।</translation>
+<translation id="4566417217121906555">ମାଇକ୍ରୋଫୋନକୁ ମ୍ୟୁଟ୍ କରନ୍ତୁ</translation>
 <translation id="4570913071927164677">ବିବରଣୀ</translation>
 <translation id="4645575059429386691">ଆପଣଙ୍କର ଅଭିବାବକଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ</translation>
 <translation id="4670064810192446073">ଭର୍ଚୁଆଲ୍ ରିଆଲିଟୀ</translation>
 <translation id="4751476147751820511">ମୋସନ୍ କିମ୍ବା ଲାଇଟ୍ ସେନ୍ସର୍</translation>
+<translation id="4811450222531576619">ଏହାର ସୋର୍ସ ଏବଂ ବିଷୟ ସମ୍ବନ୍ଧରେ ଜାଣନ୍ତୁ</translation>
 <translation id="4836046166855586901">ଆପଣ କେତେବେଳେ ଏହି ଡିଭାଇସକୁ ସକ୍ରିୟ ଭାବରେ ବ୍ୟବହାର କରୁଛନ୍ତି ତାହା କୌଣସି ସାଇଟ୍ ଜାଣିବାକୁ ଚାହିଁଲେ ପଚାରନ୍ତୁ</translation>
 <translation id="4883854917563148705">ପରିଚାଳିତ ସେଟିଂଗୁଡ଼ିକୁ ରିସେଟ୍ କରାଯାଇପାରିବ ନାହିଁ</translation>
 <translation id="4887024562049524730">ସାଇଟଗୁଡ଼ିକୁ ଆପଣଙ୍କର ଭର୍ଚୁଆଲ୍ ରିଆଲିଟୀ ଡିଭାଇସ୍ ଏବଂ ଡାଟା ବ୍ୟବହାର କରିବାକୁ ଅନୁମତି ଦେବା ଆଗରୁ ପଚାରନ୍ତୁ (ସୁପାରିଶ କରାଯାଇଛି)</translation>
@@ -177,6 +183,7 @@
 <translation id="5186036860380548585">ସ୍କ୍ରିନର ଶୀର୍ଷଭାଗର ନିକଟରେ ବିକଳ୍ପ ଉପଲବ୍ଧ ଅଛି</translation>
 <translation id="5197729504361054390">ଆପଣ ଚୟନ କରିଥିବା ଯୋଗାଯୋଗଗୁଡ଼ିକ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ସହିତ ସେୟାର୍ କରାଯିବ।</translation>
 <translation id="5216942107514965959">ଆଜି ଶେଷ ଥର ଭିଜିଟ୍ କରାଯାଇଛି</translation>
+<translation id="5225463052809312700">କ୍ୟାମେରା ଚାଲୁ କରନ୍ତୁ</translation>
 <translation id="5264323282659631142">'<ph name="CHIP_LABEL" />'କୁ କାଢ଼ି ଦିଅନ୍ତୁ</translation>
 <translation id="528192093759286357">ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ୍‌ରୁ ପ୍ରସ୍ଥାନ କରିବାକୁ ଶୀର୍ଷରୁ ଟାଣନ୍ତୁ ଏବଂ ପଛପଟ ବଟନ୍‌କୁ ସ୍ପର୍ଶ କରନ୍ତୁ</translation>
 <translation id="5300589172476337783">ପ୍ରଦର୍ଶନ କରନ୍ତୁ</translation>
@@ -235,8 +242,10 @@
 <translation id="6367753977865761591">ଏକ ନିର୍ଦ୍ଦିଷ୍ଟ ସାଇଟ ପାଇଁ ତୃତୀୟ ପକ୍ଷ ସାଇନ-ଇନକୁ ବ୍ଲକ କରନ୍ତୁ।</translation>
 <translation id="6388207532828177975">ଖାଲି ଏବଂ ରିସେଟ୍ କରନ୍ତୁ</translation>
 <translation id="6398765197997659313">ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ୍‌ରୁ ପ୍ରସ୍ଥାନ କରନ୍ତୁ</translation>
+<translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">ଆପଣଙ୍କର ଭର୍ଚୁଆଲ୍ ରିଆଲିଟୀ ଡିଭାଇସ୍ ଏବଂ ଡାଟା ବ୍ୟବହାର କରିବାରୁ ସାଇଟଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="6447842834002726250">କୁକୀଗୁଡିକ</translation>
+<translation id="6467852467360539617">ଡାଟା ଖାଲି କରି ଅନୁମତିଗୁଡ଼ିକୁ ରିସେଟ କରନ୍ତୁ</translation>
 <translation id="6527303717912515753">ସେୟାର୍ କରନ୍ତୁ</translation>
 <translation id="6545864417968258051">ବ୍ଲୁଟୁଥ୍ ସ୍କାନିଂ</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ଏବଂ ଅଧିକ <ph name="NUM_MORE" />ଟିକୁ ବ୍ଲକ୍ କରାଯାଇଛି}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ଏବଂ ଅଧିକ <ph name="NUM_MORE" />ଟିକୁ ବ୍ଲକ୍ କରାଯାଇଛି}}</translation>
@@ -276,6 +285,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ଚୟନିତ</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> ଏବଂ <ph name="PERMISSION_2" />ର ଅନୁମତି ଦିଆଯାଇଛି</translation>
 <translation id="7302486331832100261">ଆପଣ ସାଧାରଣତଃ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତି। ଅନୁମତି ଦେବା ପାଇଁ, ବିବରଣୀରେ ଟାପ୍ କରନ୍ତୁ।</translation>
+<translation id="7383715096023715447"><ph name="DOMAIN" /> ପାଇଁ ସେଟିଂସ</translation>
 <translation id="7423098979219808738">ପ୍ରଥମେ ପଚାରନ୍ତୁ</translation>
 <translation id="7423538860840206698">ପଢ଼ିବା କ୍ଲିପ୍‌ବୋର୍ଡରୁ ଅବରୋଧ କରାଯାଇଛି</translation>
 <translation id="7425915948813553151">ସାଇଟଗୁଡ଼ିକ ପାଇଁ ଗାଢ଼ା ଥିମ</translation>
@@ -335,6 +345,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1ଟି କୁକୀ ବ୍ୟବହାର କରାଯାଉଛି}other{#ଟି କୁକୀ ବ୍ୟବହାର କରାଯାଉଛି}}</translation>
 <translation id="8487700953926739672">ଅଫ୍‍ଲାଇନ୍‌ରେ ଉପଲବ୍ଧ</translation>
 <translation id="848952951823693243">ସର୍ବଦା ମୋବାଇଲ ସାଇଟର ଅନୁରୋଧ କରନ୍ତୁ</translation>
+<translation id="8499083585497694743">ମାଇକ୍ରୋଫୋନକୁ ଅନମ୍ୟୁଟ୍ କରନ୍ତୁ</translation>
 <translation id="851751545965956758">ସାଇଟ୍‌ଗୁଡ଼ିକୁ ଡିଭାଇସ୍‌ଗୁଡ଼ିକ ସହିତ ସଂଯୋଗ ହେବାରୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="8525306231823319788">ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ୍‌</translation>
 <translation id="857943718398505171">ଅନୁମୋଦିତ (ସୁପାରିଶ କରାଯାଇଛି)</translation>

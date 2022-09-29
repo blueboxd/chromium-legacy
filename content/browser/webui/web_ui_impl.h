@@ -75,31 +75,14 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   void AddMessageHandler(std::unique_ptr<WebUIMessageHandler> handler) override;
   void RegisterMessageCallback(base::StringPiece message,
                                MessageCallback callback) override;
-  void RegisterDeprecatedMessageCallback(
-      base::StringPiece message,
-      const DeprecatedMessageCallback& callback) override;
   void ProcessWebUIMessage(const GURL& source_url,
                            const std::string& message,
                            base::Value::List args) override;
   bool CanCallJavascript() override;
-  void CallJavascriptFunctionUnsafe(const std::string& function_name) override;
-  void CallJavascriptFunctionUnsafe(const std::string& function_name,
-                                    const base::Value& arg) override;
-  void CallJavascriptFunctionUnsafe(const std::string& function_name,
-                                    const base::Value& arg1,
-                                    const base::Value& arg2) override;
-  void CallJavascriptFunctionUnsafe(const std::string& function_name,
-                                    const base::Value& arg1,
-                                    const base::Value& arg2,
-                                    const base::Value& arg3) override;
-  void CallJavascriptFunctionUnsafe(const std::string& function_name,
-                                    const base::Value& arg1,
-                                    const base::Value& arg2,
-                                    const base::Value& arg3,
-                                    const base::Value& arg4) override;
+  void CallJavascriptFunctionUnsafe(base::StringPiece function_name) override;
   void CallJavascriptFunctionUnsafe(
-      const std::string& function_name,
-      const std::vector<const base::Value*>& args) override;
+      base::StringPiece function_name,
+      base::span<const base::ValueView> args) override;
   std::vector<std::unique_ptr<WebUIMessageHandler>>* GetHandlersForTesting()
       override;
 
@@ -126,12 +109,6 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
 
   // A map of message name -> message handling callback.
   std::map<std::string, MessageCallback> message_callbacks_;
-
-  // A map of message name -> message handling callback.
-  // TODO(crbug.com/1243386): Remove once RegisterDeprecatedMessageCallback()
-  // instances are migrated to RegisterMessageCallback().
-  std::map<std::string, DeprecatedMessageCallback>
-      deprecated_message_callbacks_;
 
   // Options that may be overridden by individual Web UI implementations. The
   // bool options default to false. See the public getters for more information.

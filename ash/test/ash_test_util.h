@@ -7,8 +7,16 @@
 
 #include <cstddef>
 
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/image/image_skia.h"
+
 namespace base {
 class FilePath;
+class TimeDelta;
+}
+
+namespace gfx {
+class Size;
 }
 
 namespace ash {
@@ -22,9 +30,18 @@ namespace ash {
 // file matching `file_path`, the existing file will be overwritten.
 bool TakePrimaryDisplayScreenshotAndSave(const base::FilePath& file_path);
 
+// Waits for the specified time duration.
+// NOTE: this function should only be used for debugging. It should not be used
+// in tests or product code.
+void GiveItSomeTimeForDebugging(base::TimeDelta time_duration);
+
 // Returns true if the system tray of the root window specified by
 // `root_window_index` is visible.
 bool IsSystemTrayForRootWindowVisible(size_t root_window_index);
+
+// Creates a pure color image of the specified size.
+gfx::ImageSkia CreateSolidColorTestImage(const gfx::Size& image_size,
+                                         SkColor color);
 
 }  // namespace ash
 

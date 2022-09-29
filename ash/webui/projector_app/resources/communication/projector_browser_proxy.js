@@ -110,11 +110,12 @@ export class ProjectorBrowserProxy {
   openFeedbackDialog() {}
 
   /**
-   * Gets information about the specified screencast from DriveFS.
-   * @param {string} screencastId The Drive item id of container folder.
-   * @return {!Promise<projectorApp.Screencast>}
+   * Gets information about the specified video from DriveFS.
+   * @param {string} videoFileId The Drive item id of the video file.
+   * @param {string|undefined} resourceKey The Drive item resource key.
+   * @return {!Promise<!projectorApp.Video>}
    */
-  getScreencast(screencastId) {}
+  getVideo(videoFileId, resourceKey) {}
 }
 
 /**
@@ -181,10 +182,9 @@ export class ProjectorBrowserProxyImpl {
   openFeedbackDialog() {
     return sendWithPromise('openFeedbackDialog');
   }
-
   /** @override */
-  getScreencast(screencastId) {
-    return sendWithPromise('getScreencast', [screencastId]);
+  getVideo(videoFileId, resourceKey) {
+    return sendWithPromise('getVideo', [videoFileId, resourceKey]);
   }
 }
 

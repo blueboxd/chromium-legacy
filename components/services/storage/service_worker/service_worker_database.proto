@@ -22,6 +22,7 @@ message ServiceWorkerNavigationPreloadState {
   optional string header = 2;
 }
 
+// NEXT ID TO USE: 23
 message ServiceWorkerRegistrationData {
   enum ServiceWorkerScriptType {
     CLASSIC = 0;
@@ -41,6 +42,11 @@ message ServiceWorkerRegistrationData {
     NORMAL_FRAME = 0;
     FENCED_FRAME = 1;
   }
+  enum FetchHandlerSkippableType {
+    reserved 0;  // Deprecated UNKNOWN_FETCH_HANDLER.
+    NOT_SKIPPABLE = 1;
+    SKIPPABLE_EMPTY_FETCH_HANDLER = 2;
+  }
 
   required int64 registration_id = 1;
   required string scope_url = 2;
@@ -53,6 +59,7 @@ message ServiceWorkerRegistrationData {
 
   required bool is_active = 5;
   required bool has_fetch_handler = 6;
+  optional FetchHandlerSkippableType fetch_handler_skippable_type = 22;
 
   // Serialized by Time::FromDeltaSinceWindowsEpoch().
   required int64 last_update_check_time = 7;

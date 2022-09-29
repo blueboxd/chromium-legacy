@@ -132,6 +132,11 @@ const base::Feature kFocusTriggersSRPZeroSuggest{
 extern const base::Feature kLocalHistorySuggestRevamp{
     "LocalHistorySuggestRevamp", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables local history zero-prefix suggestions in every context in which the
+// remote zero-prefix suggestions are enabled.
+const base::Feature kLocalHistoryZeroSuggestBeyondNTP{
+    "LocalHistoryZeroSuggestBeyondNTP", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Used to adjust the age threshold since the last visit in order to consider a
 // normalized keyword search term as a zero-prefix suggestion. If disabled, the
 // default value of 60 days for Desktop and 7 days for Android and iOS is used.
@@ -148,6 +153,15 @@ const base::Feature kZeroSuggestOnNTPForSignedOutUsers{
 // Enables prefetching of the zero prefix suggestions for eligible users on NTP.
 const base::Feature kZeroSuggestPrefetching{"ZeroSuggestPrefetching",
                                             enabled_by_default_desktop_only};
+
+// Enables prefetching of the zero prefix suggestions for eligible users on SRP.
+const base::Feature kZeroSuggestPrefetchingOnSRP{
+    "ZeroSuggestPrefetchingOnSRP", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables prefetching of the zero prefix suggestions for eligible users on the
+// Web (i.e. non-NTP and non-SRP URLs).
+const base::Feature kZeroSuggestPrefetchingOnWeb{
+    "ZeroSuggestPrefetchingOnWeb", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Features to provide non personalized head search suggestion from a compact
 // on device model. More specifically, feature name with suffix Incognito /
@@ -205,7 +219,7 @@ const base::Feature kBookmarkPaths{"OmniboxBookmarkPaths",
 // duplicate shortcuts are given an aggregate score, as if they had been a
 // single shortcut.
 const base::Feature kAggregateShortcuts{"OmniboxAggregateShortcuts",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, when updating or creating a shortcut, the last word of the input
 // is expanded, if possible, to a complete word in the suggestion description.
@@ -250,7 +264,7 @@ const base::Feature kDocumentProviderDedupingOptimization{
 // "loss" to represent colors red and green in a way that is appropriate for a
 // given country/culture
 const base::Feature kSuggestionAnswersColorReverse = {
-    "SuggestionAnswersColorReverse", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SuggestionAnswersColorReverse", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, frequently visited sites are presented in form of a single row
 // with a carousel of tiles, instead of one URL per row.
@@ -291,10 +305,29 @@ const base::Feature kNtpRealboxTailSuggest{"NtpRealboxTailSuggest",
 const base::Feature kOmniboxFuzzyUrlSuggestions{
     "OmniboxFuzzyUrlSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to update the left and bottom padding of the omnibox suggestion
+// header.
+const base::Feature kOmniboxHeaderPaddingUpdate{
+    "OmniboxHeaderPaddingUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used to remove the capitalization of the suggestion header text.
+const base::Feature kOmniboxRemoveSuggestionHeaderCapitalization{
+    "OmniboxRemoveSuggestionHeaderCapitalization",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to remove the chevron on the right side of suggestion list
 // header under omnibox.
 const base::Feature kOmniboxRemoveSuggestionHeaderChevron{
     "OmniboxRemoveSuggestionHeaderChevron", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used to add fading effect to most visited tiles on tablet.
+const base::Feature kOmniboxMostVisitedTilesFadingOnTablet{
+    "OmniboxMostVisitedTilesFadingOnTablet", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used to add most visited tiles to the suggestions when the user is on
+// a search result page that does not do search term replacement.
+const base::Feature kOmniboxMostVisitedTilesOnSrp{
+    "OmniboxMostVisitedTilesOnSrp", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature to enable memoizing URLs when replacing search terms in
 // `AutocompleteMatch::GURLToStrippedGURL()`.

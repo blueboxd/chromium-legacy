@@ -25,6 +25,7 @@ O seu motor de pesquisa é o <ph name="DSE_NAME" />. Se aplicável, consulte as 
 <translation id="1112015203684611006">Falha ao imprimir.</translation>
 <translation id="1125564390852150847">Criar novo separador</translation>
 <translation id="1126809382673880764">Não protege contra transferências, extensões ou Websites perigosos. Continuará a obter a proteção da Navegação segura, quando disponível, noutros Serviços Google, como o Gmail e a Pesquisa.</translation>
+<translation id="1135212215217513471">Obtenha o Chrome para iOS</translation>
 <translation id="1145536944570833626">Eliminar dados existentes.</translation>
 <translation id="1147031633655575115">Sessão iniciada como <ph name="USER" /></translation>
 <translation id="1154984953698510061">Ver outros separadores</translation>
@@ -113,6 +114,7 @@ O seu motor de pesquisa é o <ph name="DSE_NAME" />. Se aplicável, consulte as 
 <translation id="1832848789136765277">Para se certificar de que pode sempre aceder aos seus dados de sincronização, valide a sua identidade</translation>
 <translation id="1870148520156231997">Mostrar palavra-passe</translation>
 <translation id="1872096359983322073">Lanterna</translation>
+<translation id="1910975740091000991">Chrome para iOS</translation>
 <translation id="1911619930368729126">Carregar p/ Google Drive</translation>
 <translation id="1923342640370224680">Última Hora</translation>
 <translation id="1930989359703290198">A sua organização permite-lhe iniciar sessão apenas com determinadas contas. As contas que não estão autorizadas estão ocultas. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
@@ -140,6 +142,7 @@ O seu motor de pesquisa é o <ph name="DSE_NAME" />. Se aplicável, consulte as 
 <translation id="2139867232736819575">Pesquisar o texto que copiou</translation>
 <translation id="214201757571129614">Iniciar sessão…</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
+<translation id="2155145621546387786">Partilhar o Chrome</translation>
 <translation id="2175927920773552910">Código QR</translation>
 <translation id="2218443599109088993">Diminuir zoom</translation>
 <translation id="2230173723195178503">Página Web carregada</translation>
@@ -308,6 +311,7 @@ Se aplicável, consulte as instruções do motor de pesquisa para eliminar o his
 <translation id="3529024052484145543">Inseguro</translation>
 <translation id="3533202363250687977">Fechar todos os separadores de navegação anónima</translation>
 <translation id="3533436815740441613">Novo separador</translation>
+<translation id="3547799431091898961">Para terminar sessão na sua Conta Google em todos os Websites, <ph name="BEGIN_LINK" />termine sessão no Chrome<ph name="END_LINK" />.</translation>
 <translation id="3551320343578183772">Fechar Separador</translation>
 <translation id="3581564640715911333">Proponha a tradução de páginas noutros idiomas</translation>
 <translation id="3588820906588687999">Abrir imagem num novo separador</translation>
@@ -374,6 +378,7 @@ Se aplicável, consulte as instruções do motor de pesquisa para eliminar o his
 <translation id="4172051516777682613">Mostrar sempre</translation>
 <translation id="418156467088430727">Ver versão offline num novo separador</translation>
 <translation id="4181841719683918333">Idiomas</translation>
+<translation id="4187450337729239226">Colar e pesquisar</translation>
 <translation id="4223967053752765281">A sua organização desativou o início de sessão. Ainda pode ver os seus marcadores, histórico, palavras-passe e outras definições neste dispositivo. Se fizer alterações, estes não serão sincronizadas com a sua conta.</translation>
 <translation id="4233831822770018312">Edite as autorizações</translation>
 <translation id="4237377247299956313">Toque em <ph name="BEGIN_BOLD" />App de navegador predefinida<ph name="END_BOLD" /></translation>
@@ -436,6 +441,7 @@ Os dados estão encriptados com a sua frase de acesso de sincronização. Introd
 <translation id="473775607612524610">Atualizar</translation>
 <translation id="4747097190499141774">A encriptação da frase de acesso não inclui métodos de pagamento nem endereços do Google Pay. Apenas alguém que conheça a sua frase de acesso pode ler os seus dados encriptados. A frase de acesso não é enviada para a Google nem armazenada pela mesma. Se se esquecer da frase de acesso ou pretender alterar esta definição, tem de repor a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4751645464639803239">Novo separador anónimo</translation>
+<translation id="4766112107778026136">Discover e A seguir</translation>
 <translation id="4775879719735953715">Navegador predefinido</translation>
 <translation id="4778644898150334464">Utilize outra palavra-passe</translation>
 <translation id="478808905805139173">Abrir na Navegação anónima?</translation>
@@ -490,6 +496,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5118764316110575523">Desativado</translation>
 <translation id="5132942445612118989">Sincronize as suas palavras-passe, o histórico e muito mais em todos os dispositivos</translation>
 <translation id="5140288047769711648">O Chrome memorizará esta palavra-passe por si. Não tem de a memorizar.</translation>
+<translation id="5149188072385105201">Adicionar palavra-passe…</translation>
 <translation id="5150492518600715772">Enviar para o dispositivo</translation>
 <translation id="5168414296986405587">Criado para o iPadOS</translation>
 <translation id="5173088371991956744">A sincronização precisa de validar a sua identidade</translation>
@@ -642,6 +649,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="6374469231428023295">Tentar novamente</translation>
 <translation id="6377118281273296434">Segurança do site</translation>
 <translation id="6380866119319257197">Se se esquecer da frase de acesso ou pretender alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" /></translation>
+<translation id="6387994324662817823">As palavras-passe são guardadas no Gestor de palavras-passe da Google apenas neste dispositivo.</translation>
 <translation id="6389470377220713856">Nome no cartão</translation>
 <translation id="6406506848690869874">Sincronização</translation>
 <translation id="6410390304316730527">A Navegação segura permite-lhe proteger-se contra os atacantes que o podem enganar no sentido de fazer algo perigoso, como instalar software malicioso, ou revelar informações pessoais, como palavras-passe, números de telefone ou cartões de crédito. Se a desativar, tenha cuidado ao navegar em sites desconhecidos ou pouco credíveis.</translation>

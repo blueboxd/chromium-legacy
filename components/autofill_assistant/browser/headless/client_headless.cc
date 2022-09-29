@@ -12,13 +12,12 @@
 #include "base/containers/flat_set.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/time/default_tick_clock.h"
 #include "components/autofill_assistant/browser/autofill_assistant_tts_controller.h"
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/display_strings_util.h"
 #include "components/autofill_assistant/browser/features.h"
-#include "components/autofill_assistant/browser/headless/headless_script_controller_impl.h"
 #include "components/autofill_assistant/browser/public/password_change/empty_website_login_manager_impl.h"
+#include "components/autofill_assistant/browser/public/password_change/website_login_manager.h"
 #include "components/autofill_assistant/browser/public/password_change/website_login_manager_impl.h"
 #include "components/autofill_assistant/browser/public/ui_state.h"
 #include "components/autofill_assistant/browser/service/access_token_fetcher.h"
@@ -45,33 +44,40 @@ ClientHeadless::ClientHeadless(
     content::WebContents* web_contents,
     const CommonDependencies* common_dependencies,
     ExternalActionDelegate* action_extension_delegate,
-    HeadlessScriptControllerImpl* external_script_controller)
+    WebsiteLoginManager* website_login_manager,
+    const base::TickClock* tick_clock,
+    base::WeakPtr<RuntimeManager> runtime_manager,
+    ukm::UkmRecorder* ukm_recorder,
+    AnnotateDomModelService* annotate_dom_model_service)
     : web_contents_(web_contents),
       common_dependencies_(common_dependencies),
-      external_script_controller_(external_script_controller) {
-  auto* password_manager_client =
-      common_dependencies_->GetPasswordManagerClient(web_contents);
-  if (password_manager_client) {
-    website_login_manager_ = std::make_unique<WebsiteLoginManagerImpl>(
-        password_manager_client, web_contents);
-  } else {
-    website_login_manager_ = std::make_unique<EmptyWebsiteLoginManagerImpl>();
-  }
+      website_login_manager_(website_login_manager),
+      tick_clock_(tick_clock),
+      runtime_manager_(runtime_manager),
+      ukm_recorder_(ukm_recorder),
+      annotate_dom_model_service_(annotate_dom_model_service) {
   headless_ui_controller_ =
       std::make_unique<HeadlessUiController>(action_extension_delegate);
 }
 
 ClientHeadless::~ClientHeadless() = default;
 
-void ClientHeadless::Start(const GURL& url,
-                           std::unique_ptr<TriggerContext> trigger_context) {
+void ClientHeadless::Start(
+    const GURL& url,
+    std::unique_ptr<TriggerContext> trigger_context,
+    std::unique_ptr<Service> service,
+    std::unique_ptr<WebController> web_controller,
+    base::OnceCallback<void(Metrics::DropOutReason reason)>
+        script_ended_callback) {
+  // Ignore the call if a script is already running.
+  if (script_ended_callback_) {
+    return;
+  }
+  script_ended_callback_ = std::move(script_ended_callback);
   controller_ = std::make_unique<Controller>(
-      web_contents_, /* client= */ this, base::DefaultTickClock::GetInstance(),
-      RuntimeManager::GetForWebContents(web_contents_)->GetWeakPtr(),
-      /* service= */ nullptr, ukm::UkmRecorder::Get(),
-      /* annotate_dom_model_service= */
-      common_dependencies_->GetOrCreateAnnotateDomModelService(
-          GetWebContents()->GetBrowserContext()));
+      web_contents_, /* client= */ this, tick_clock_, runtime_manager_,
+      std::move(service), std::move(web_controller), ukm_recorder_,
+      annotate_dom_model_service_);
   controller_->AddObserver(headless_ui_controller_.get());
   controller_->Start(url, std::move(trigger_context));
 }
@@ -155,6 +161,16 @@ bool ClientHeadless::IsSpokenFeedbackAccessibilityServiceEnabled() const {
   return false;
 }
 
+bool ClientHeadless::IsXmlSigned(const std::string& xml_string) const {
+  return false;
+}
+
+const std::vector<std::string> ClientHeadless::ExtractValuesFromSingleTagXml(
+    const std::string& xml_string,
+    const std::vector<std::string>& keys) const {
+  return (const std::vector<std::string>){};
+}
+
 content::WebContents* ClientHeadless::GetWebContents() const {
   return web_contents_;
 }
@@ -187,7 +203,9 @@ void ClientHeadless::Shutdown(Metrics::DropOutReason reason) {
 }
 
 void ClientHeadless::NotifyScriptEnded(Metrics::DropOutReason reason) {
-  external_script_controller_->NotifyScriptEnded(reason);
+  if (script_ended_callback_) {
+    std::move(script_ended_callback_).Run(reason);
+  }
 
   // This instance can be destroyed by the above call, so nothing should be
   // added here.
@@ -230,6 +248,16 @@ void ClientHeadless::InvalidateAccessToken(const std::string& access_token) {
   identity_manager->RemoveAccessTokenFromCache(
       identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSync),
       {kOAuth2Scope}, access_token);
+}
+
+bool ClientHeadless::GetMakeSearchesAndBrowsingBetterEnabled() const {
+  return common_dependencies_->GetMakeSearchesAndBrowsingBetterEnabled(
+      GetWebContents()->GetBrowserContext());
+}
+
+bool ClientHeadless::GetMetricsReportingEnabled() const {
+  return common_dependencies_->GetMetricsReportingEnabled(
+      GetWebContents()->GetBrowserContext());
 }
 
 }  // namespace autofill_assistant

@@ -465,13 +465,8 @@ void ExtractUnderlines(NSAttributedString* string,
   if (!text)
     return;
 
-  if(@available(macOS 10.11, *)) {
-    [self insertText:text.localizedUppercaseString
-        replacementRange:_textSelectionRange.ToNSRange()];
-  } else {
-    [self insertText:text.uppercaseString
-        replacementRange:_textSelectionRange.ToNSRange()];
-  }
+  [self insertText:text.localizedUppercaseString
+      replacementRange:_textSelectionRange.ToNSRange()];
 }
 
 - (void)lowercaseWord:(id)sender {
@@ -479,26 +474,17 @@ void ExtractUnderlines(NSAttributedString* string,
   if (!text)
     return;
 
-  if(@available(macOS 10.11, *)) {
-    [self insertText:text.localizedLowercaseString
-        replacementRange:_textSelectionRange.ToNSRange()];
-  } else {
-    [self insertText:text.lowercaseString
-        replacementRange:_textSelectionRange.ToNSRange()];
-  }
+  [self insertText:text.localizedLowercaseString
+      replacementRange:_textSelectionRange.ToNSRange()];
 }
 
 - (void)capitalizeWord:(id)sender {
   NSString *text = base::SysUTF16ToNSString([self selectedText]);
   if (!text)
     return;
-  if(@available(macOS 10.11, *)) {
-    [self insertText:text.localizedCapitalizedString
-        replacementRange:_textSelectionRange.ToNSRange()];
-  } else {
-    [self insertText:text.capitalizedString
-        replacementRange:_textSelectionRange.ToNSRange()];
-  }
+
+  [self insertText:text.localizedCapitalizedString
+      replacementRange:_textSelectionRange.ToNSRange()];
 }
 
 - (void)setTextSelectionText:(std::u16string)text

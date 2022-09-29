@@ -61,6 +61,10 @@ constexpr size_t kMinFragmentSize = 64;
 // onto a different allocation scheme which does not use a BlockAllocator.
 constexpr size_t kMaxFragmentSizeForBlockAllocation = 16 * 1024;
 
+// The minimum fallback fragment size to attempt for best-effort allocations
+// when the requested size cannot be accommodated.
+constexpr size_t kMinBestEffortFallbackBlockSize = 4096;
+
 // The number of fixed RouterLinkState locations in the primary buffer. This
 // limits the maximum number of initial portals supported by the ConnectNode()
 // API. Note that these states reside in a fixed location at the end of the
@@ -150,6 +154,7 @@ NodeLinkMemory::NodeLinkMemory(Ref<Node> node,
   // Consistency check here, because PrimaryBuffer is private to NodeLinkMemory.
   static_assert(sizeof(PrimaryBuffer) <= kPrimaryBufferSize,
                 "PrimaryBuffer structure is too large.");
+  ABSL_HARDENING_ASSERT(primary_buffer_memory_.size() >= kPrimaryBufferSize);
 
   const BlockAllocator allocators[] = {
       primary_buffer_.block_allocator_64(),
@@ -166,21 +171,37 @@ NodeLinkMemory::NodeLinkMemory(Ref<Node> node,
 NodeLinkMemory::~NodeLinkMemory() = default;
 
 void NodeLinkMemory::SetNodeLink(Ref<NodeLink> link) {
-  absl::MutexLock lock(&mutex_);
-  node_link_ = std::move(link);
+  std::vector<size_t> block_sizes_needed;
+  {
+    absl::MutexLock lock(&mutex_);
+    node_link_ = std::move(link);
+    if (!node_link_) {
+      return;
+    }
+
+    // Any capcity requests accumulated before NodeLink activation can be
+    // carried out now.
+    for (auto& [size, callbacks] : capacity_callbacks_) {
+      block_sizes_needed.push_back(size);
+    }
+  }
+
+  for (size_t size : block_sizes_needed) {
+    RequestBlockCapacity(size, [](bool) {});
+  }
 }
 
 // static
-NodeLinkMemory::Allocation NodeLinkMemory::Allocate(Ref<Node> node) {
-  DriverMemory primary_buffer_memory(node->driver(), sizeof(PrimaryBuffer));
-  if (!primary_buffer_memory.is_valid()) {
-    return {.node_link_memory = nullptr, .primary_buffer_memory = {}};
+DriverMemoryWithMapping NodeLinkMemory::AllocateMemory(
+    const IpczDriver& driver) {
+  DriverMemory memory(driver, kPrimaryBufferSize);
+  if (!memory.is_valid()) {
+    return {};
   }
 
-  auto memory = AdoptRef(
-      new NodeLinkMemory(std::move(node), primary_buffer_memory.Map()));
-
-  PrimaryBuffer& primary_buffer = memory->primary_buffer_;
+  DriverMemoryMapping mapping = memory.Map();
+  PrimaryBuffer& primary_buffer =
+      *reinterpret_cast<PrimaryBuffer*>(mapping.bytes().data());
 
   // The first allocable BufferId is 1, because the primary buffer uses 0.
   primary_buffer.header.next_buffer_id.store(1, std::memory_order_relaxed);
@@ -201,17 +222,13 @@ NodeLinkMemory::Allocation NodeLinkMemory::Allocate(Ref<Node> node) {
   primary_buffer.block_allocator_1024().InitializeRegion();
   primary_buffer.block_allocator_2048().InitializeRegion();
 
-  return {
-      .node_link_memory = std::move(memory),
-      .primary_buffer_memory = std::move(primary_buffer_memory),
-  };
+  return {std::move(memory), std::move(mapping)};
 }
 
 // static
-Ref<NodeLinkMemory> NodeLinkMemory::Adopt(Ref<Node> node,
-                                          DriverMemory primary_buffer_memory) {
-  return AdoptRef(
-      new NodeLinkMemory(std::move(node), primary_buffer_memory.Map()));
+Ref<NodeLinkMemory> NodeLinkMemory::Create(Ref<Node> node,
+                                           DriverMemoryMapping memory) {
+  return AdoptRef(new NodeLinkMemory(std::move(node), std::move(memory)));
 }
 
 BufferId NodeLinkMemory::AllocateNewBufferId() {
@@ -268,6 +285,23 @@ Fragment NodeLinkMemory::AllocateFragment(size_t size) {
     }
   }
   return fragment;
+}
+
+Fragment NodeLinkMemory::AllocateFragmentBestEffort(size_t size) {
+  // TODO: Support an alternative allocation scheme for larger requests.
+  const size_t ideal_block_size = GetBlockSizeForFragmentSize(size);
+  const size_t largest_block_size =
+      std::min(ideal_block_size, kMaxFragmentSizeForBlockAllocation);
+  const size_t smallest_block_size = kMinBestEffortFallbackBlockSize;
+  for (size_t block_size = largest_block_size;
+       block_size >= smallest_block_size; block_size /= 2) {
+    const Fragment fragment = AllocateFragment(block_size);
+    if (!fragment.is_null()) {
+      return fragment;
+    }
+  }
+
+  return {};
 }
 
 bool NodeLinkMemory::FreeFragment(const Fragment& fragment) {
@@ -347,6 +381,13 @@ void NodeLinkMemory::RequestBlockCapacity(
       // will be run when that request completes.
       return;
     }
+
+    if (!node_link_) {
+      // Allocation requests will be fulfilled once the NodeLink is activated
+      // and we're given a reference to it via SetNodeLink().
+      return;
+    }
+
     link = node_link_;
   }
 

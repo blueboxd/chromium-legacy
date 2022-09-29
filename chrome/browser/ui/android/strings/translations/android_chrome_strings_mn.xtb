@@ -105,7 +105,6 @@
 <translation id="1474893630593443211">Хардаг зараа илүү сайн хянаарай</translation>
 <translation id="1477626028522505441">Серверийн алдаанаас шалтгаалан <ph name="FILE_NAME" />-г татаж чадсангүй.</translation>
 <translation id="148482509007564431">Хавчуурганы хадгалах урсгал</translation>
-<translation id="1488775391433859242">Та энэ QR кодыг үзүүлж буй компьютерт нэвтрэхийн тулд энэ утсыг ашиглах боломжтой.</translation>
 <translation id="1492417797159476138">Та энэ сайтад аль хэдийн энэ хэрэглэгчийн нэрийг хадгалсан байна</translation>
 <translation id="1493287004536771723">Та <ph name="SITE_NAME" />-г дагаж байна</translation>
 <translation id="1502010315804028179">Нууц үгнүүдээ удирдахын тулд Google Play үйлчилгээг шинэчилнэ үү</translation>
@@ -235,6 +234,7 @@
 <translation id="2239812875700136898">Мэдээ, нийтлэлээ Discover-н сонголтуудын товчлуураас хянана уу</translation>
 <translation id="2248941474044011069">Таны нууц үгнүүдийг Google-н Нууц үгний менежерт хадгалахаас нь өмнө төхөөрөмж дээр тань шифрлэдэг</translation>
 <translation id="2259659629660284697">Нууц үгийг экспортлох...</translation>
+<translation id="2276231040576210443">Та синк хийх зүйлээ <ph name="BEGIN_LINK1" />тохиргоо<ph name="END_LINK1" /> хэсгээс хүссэн үедээ сонгох боломжтой. Google таны түүхэд тулгуурлан Хайлт болон бусад үйлчилгээг хувийн болгож магадгүй.</translation>
 <translation id="2276696007612801991">Нууц үгээ шалгахын тулд Google Бүртгэлдээ нэвтэрнэ үү</translation>
 <translation id="2278052315791335171">Энэ нууц үгийг устгаснаар таны бүртгэлийг <ph name="SITE" /> дээрээс устгахгүй</translation>
 <translation id="2279146068164892489"><ph name="APPNAME" />-н аппыг нээх үү?</translation>
@@ -282,7 +282,6 @@
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> зүйлийг устгасан</translation>
 <translation id="2536728043171574184">Энэ хуудсын офлайн хуулбарыг харж байна</translation>
 <translation id="2546283357679194313">Cookies болон сайтын дата</translation>
-<translation id="2549516196460093976">Та энэ QR кодыг үзүүлж буй компьютерт нэвтрэхийн тулд энэ таблетыг ашиглах боломжтой.</translation>
 <translation id="2558569818338050235">Таны хөтчийн түүх таны хардаг зард нөлөөлнө</translation>
 <translation id="2561519700418191927">Видеоны урьдчилан үзэлтүүд</translation>
 <translation id="2567385386134582609">ЗУРАГ</translation>
@@ -308,6 +307,7 @@
 <translation id="2702516483241149200">Шинэ: энэ текст рүү гүйлгэж очих холбоосыг хуваалцаарай</translation>
 <translation id="2704606927547763573">Хуулсан</translation>
 <translation id="2707726405694321444">Хуудсыг дахин шинэчлэх</translation>
+<translation id="2709516037105925701">Автоматаар бөглөх</translation>
 <translation id="271033894570825754">Шинэ</translation>
 <translation id="2711073837061989559">Туршилтын хугацаа</translation>
 <translation id="2718352093833049315">Зөвхөн Wi-Fi-аар</translation>
@@ -396,6 +396,7 @@
 <translation id="3114507951000454849">Өнөөдрийн мэдээг уншаарай <ph name="NEWS_ICON" /></translation>
 <translation id="311958134571892113">дараахтай холбогдсон</translation>
 <translation id="3123734510202723619">Зарлал</translation>
+<translation id="3130863904455712965">Түүх болон бусад</translation>
 <translation id="3134784203083076891">”</translation>
 <translation id="314939179385989105">Chrome-н нүүр хуудас</translation>
 <translation id="3166827708714933426">Таб, цонхны товчлол</translation>
@@ -472,6 +473,7 @@
 <translation id="3557336313807607643">Харилцагчид нэмэх</translation>
 <translation id="3560491354538957576">Сайт сонирхлыг тодорхойлох боломжтой</translation>
 <translation id="3563767357928833671">Түр санах ойн контентуудыг харуулсан</translation>
+<translation id="3566639033325271639">Тохиргоог шинэчлэх</translation>
 <translation id="3566923219790363270">Chrome Виртуал бодит байдлыг бэлтгэсээр байна. Chrome-г дараа дахин эхлүүлнэ үү.</translation>
 <translation id="3568688522516854065">Бусад төхөөрөмжөөсөө чихтэй хуудсаа авахын тулд нэвтрээд синкийг асаана уу`</translation>
 <translation id="357465026686164600">Утсыг аюулгүй байдлын түлхүүрээр ашиглах</translation>
@@ -566,6 +568,7 @@
 <translation id="4116038641877404294">Хуудсыг офлайн үед ашиглахын тулд татна уу</translation>
 <translation id="4135200667068010335">Таб хуваалцах төхөөрөмжийн жагсаалтыг хаалаа.</translation>
 <translation id="4137746084635924146">Төхөөрөмжийн одоогийн хэл</translation>
+<translation id="414128724510021958">Өгөгдмөлөөр хүссэн компьютерын сайтууд</translation>
 <translation id="4141536112466364990">Chrome-г судлах</translation>
 <translation id="4162867837470729563">Бүтэн хэмжээтэйгээр хуваалцах сонголтын жагсаалт.</translation>
 <translation id="4165986682804962316">Сайтын тохиргоо</translation>
@@ -587,7 +590,6 @@
 <translation id="4256782883801055595">Source licenses-г нээх</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Ямар өгөгдлийг ашигладаг вэ?:<ph name="END_BOLD" /> Таны хөтчийн түүх буюу энэ төхөөрөмж дээр Chrome-г ашиглан зочилсон сайтуудын бүртгэл.</translation>
 <translation id="4263656433980196874">Туслахын дуут хайлтын зөвшөөрлийн ui-г бүтэн өндрөөр нээсэн</translation>
-<translation id="4266054596873078491">Google Бүртгэлээрээ энэ сайт болон Chrome-д нэвтэрнэ үү.</translation>
 <translation id="4269820728363426813">Холбоосын хаягийг хуулах</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Android-н тохиргоонд дэлгэцийн түгжээг асаана уу<ph name="END_LINK" /></translation>
 <translation id="4293476595220860475">Chrome-г ашигласнаар та <ph name="BEGIN_TOS_LINK" />Google-н үйлчилгээний нөхцөл<ph name="END_TOS_LINK" /> болон <ph name="BEGIN_ATOS_LINK" />Google Chrome, ChromeOS-н нэмэлт нөхцөлийг<ph name="END_ATOS_LINK" /> зөвшөөрч байна. <ph name="BEGIN_PRIVACY_LINK" />Нууцлалын бодлого<ph name="END_PRIVACY_LINK" /> мөн хэрэгжинэ.</translation>
@@ -1050,6 +1052,7 @@ Privacy Sandbox-н туршилт нь идэвхтэй хөгжүүлэлтэд
 <translation id="6671495933530132209">Зургийг хуулах</translation>
 <translation id="6674571176963658787">Синк хийж эхлэхийн тулд нэвтрэх үгээ оруулна уу</translation>
 <translation id="6676840375528380067">Энэ төхөөрөмжөөс Chrome-н өгөгдлөө устгах уу?</translation>
+<translation id="6676927815633975364">Энэ сайт болон Chrome-д нэвтэрнэ үү</translation>
 <translation id="6684809838922667136">Chrome-г сайжруулаарай</translation>
 <translation id="670498945988402717">Өчигдөр шалгасан</translation>
 <translation id="6710213216561001401">Өмнөх</translation>
@@ -1139,6 +1142,7 @@ Privacy Sandbox-н туршилт нь идэвхтэй хөгжүүлэлтэд
 <translation id="7196215469483532480">Нууцлалын хөтчийн тайлбарыг бүтэн хэмжээгээр нээсэн</translation>
 <translation id="7207760545532569765"><ph name="TAB_COUNT" /> табыг шинэ дэвсгэр табаар сэргээнэ үү.</translation>
 <translation id="7208109991155904980">Хариу үйлдлийг зөөсөн</translation>
+<translation id="7217781228893594884">Таныг Chrome-с гарах үед нууцлалтай табуудыг түгжинэ</translation>
 <translation id="7222235798733126207">Сайт хооронд хуваалцахыг хязгаарлаарай</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 таталт хүлээгдэж байна}other{# таталт хүлээгдэж байна}}</translation>
 <translation id="7242755609445462077">Стильжүүлсэн тодруулга <ph name="CURRENT_DATE" /></translation>
@@ -1299,6 +1303,7 @@ Privacy Sandbox-н туршилт нь идэвхтэй хөгжүүлэлтэд
 <translation id="8037801708772278989">Дөнгөж сая шалгасан</translation>
 <translation id="804335162455518893">SD карт олдсонгүй</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> нууцлалтай таб}other{<ph name="TAB_COUNT_NORMAL" /> нууцлалтай таб}}</translation>
+<translation id="8048728378294435881">Зүйлсээ хуулбарлаж, үүнийг дурын төхөөрөмж дээр ашиглана уу</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> МБ боломжтой</translation>
 <translation id="8058655154417507695">Дуусах он</translation>
 <translation id="8058746566562539958">Chrome-н шинэ табад нээх</translation>

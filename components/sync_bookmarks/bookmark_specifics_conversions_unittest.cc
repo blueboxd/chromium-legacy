@@ -94,6 +94,7 @@ TEST(BookmarkSpecificsConversionsTest, ShouldCreateSpecificsFromBookmarkNode) {
       kUrl);
   ASSERT_THAT(node, NotNull());
   model->SetDateAdded(node, kTime);
+  model->UpdateLastUsedTime(node, kTime);
   model->SetNodeMetaInfo(node, kKey1, kValue1);
   model->SetNodeMetaInfo(node, kKey2, kValue2);
 
@@ -110,6 +111,9 @@ TEST(BookmarkSpecificsConversionsTest, ShouldCreateSpecificsFromBookmarkNode) {
   EXPECT_THAT(base::Time::FromDeltaSinceWindowsEpoch(
                   base::Microseconds(bm_specifics.creation_time_us())),
               Eq(kTime));
+  EXPECT_THAT(base::Time::FromDeltaSinceWindowsEpoch(
+                  base::Microseconds(bm_specifics.last_used_time_us())),
+              Eq(kTime));
   EXPECT_TRUE(syncer::UniquePosition::FromProto(bm_specifics.unique_position())
                   .Equals(kUniquePosition));
   for (const sync_pb::MetaInfo& meta_info : bm_specifics.meta_info()) {
@@ -117,6 +121,32 @@ TEST(BookmarkSpecificsConversionsTest, ShouldCreateSpecificsFromBookmarkNode) {
     node->GetMetaInfo(meta_info.key(), &value);
     EXPECT_THAT(meta_info.value(), Eq(value));
   }
+}
+
+TEST(BookmarkSpecificsConversionsTest,
+     ShouldCreateSpecificsFromBookmarkNodeNoDateLastUsed) {
+  const GURL kUrl("http://www.url.com");
+  const std::string kTitle = "Title";
+  const syncer::UniquePosition kUniquePosition =
+      syncer::UniquePosition::InitialPosition(
+          syncer::UniquePosition::RandomSuffix());
+
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  const bookmarks::BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* node = model->AddURL(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16(kTitle),
+      kUrl);
+
+  sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
+      node, model.get(), kUniquePosition.ToProto(),
+      /*force_favicon_load=*/false);
+  const sync_pb::BookmarkSpecifics& bm_specifics = specifics.bookmark();
+  EXPECT_THAT(bm_specifics.guid(), Eq(node->guid().AsLowercaseString()));
+  EXPECT_THAT(bm_specifics.parent_guid(),
+              Eq(bookmarks::BookmarkNode::kBookmarkBarNodeGuid));
+  EXPECT_FALSE(bm_specifics.has_last_used_time_us());
 }
 
 TEST(BookmarkSpecificsConversionsTest,
@@ -156,6 +186,7 @@ TEST(BookmarkSpecificsConversionsTest,
   const sync_pb::BookmarkSpecifics& bm_specifics = specifics.bookmark();
   EXPECT_FALSE(bm_specifics.has_url());
   EXPECT_THAT(bm_specifics.type(), Eq(sync_pb::BookmarkSpecifics::FOLDER));
+  EXPECT_FALSE(bm_specifics.has_last_used_time_us());
 }
 
 TEST(BookmarkSpecificsConversionsTest,
@@ -307,6 +338,8 @@ TEST(BookmarkSpecificsConversionsTest,
   bm_specifics.set_legacy_canonicalized_title(kTitle);
   bm_specifics.set_creation_time_us(
       kTime.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  bm_specifics.set_last_used_time_us(
+      kTime.ToDeltaSinceWindowsEpoch().InMicroseconds());
   bm_specifics.set_type(sync_pb::BookmarkSpecifics::URL);
 
   // Parent GUID and unique position are ignored by
@@ -339,6 +372,7 @@ TEST(BookmarkSpecificsConversionsTest,
   EXPECT_FALSE(node->is_folder());
   EXPECT_THAT(node->url(), Eq(kUrl));
   EXPECT_THAT(node->date_added(), Eq(kTime));
+  EXPECT_THAT(node->date_last_used(), Eq(kTime));
   std::string value1;
   node->GetMetaInfo(kKey1, &value1);
   EXPECT_THAT(value1, Eq(kValue1));
@@ -568,6 +602,8 @@ TEST(BookmarkSpecificsConversionsTest, ShouldUpdateBookmarkNodeFromSpecifics) {
   bm_specifics.set_favicon("PNG");
   bm_specifics.set_legacy_canonicalized_title(kNewTitle);
   bm_specifics.set_creation_time_us(
+      kTime.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  bm_specifics.set_last_used_time_us(
       kTime.ToDeltaSinceWindowsEpoch().InMicroseconds());
   sync_pb::MetaInfo* meta_info1 = bm_specifics.add_meta_info();
   meta_info1->set_key(kKey1);
@@ -932,7 +968,7 @@ TEST(BookmarkSpecificsConversionsTest, ReplaceUrlNodeWithUpdatedGUID) {
   EXPECT_EQ(kGuid, new_url->guid());
   EXPECT_EQ(kTitle, new_url->GetTitle());
   EXPECT_EQ(bookmark_bar_node, new_url->parent());
-  EXPECT_EQ(0, bookmark_bar_node->GetIndexOf(new_url));
+  EXPECT_EQ(0u, bookmark_bar_node->GetIndexOf(new_url));
   EXPECT_EQ(kUrl, new_url->url());
   EXPECT_EQ(kCreationTime, new_url->date_added());
   std::string out_value_url;
@@ -968,13 +1004,13 @@ TEST(BookmarkSpecificsConversionsTest, ReplaceFolderNodeWithUpdatedGUID) {
   EXPECT_EQ(kGuid, new_folder->guid());
   EXPECT_EQ(kTitle, new_folder->GetTitle());
   EXPECT_EQ(bookmark_bar_node, new_folder->parent());
-  EXPECT_EQ(0, bookmark_bar_node->GetIndexOf(new_folder));
+  EXPECT_EQ(0u, bookmark_bar_node->GetIndexOf(new_folder));
   std::string out_value_folder;
   EXPECT_TRUE(new_folder->GetMetaInfo(kKey, &out_value_folder));
   EXPECT_EQ(kValue, out_value_folder);
   EXPECT_EQ(2u, new_folder->children().size());
-  EXPECT_EQ(0, new_folder->GetIndexOf(url1));
-  EXPECT_EQ(1, new_folder->GetIndexOf(url2));
+  EXPECT_EQ(0u, new_folder->GetIndexOf(url1));
+  EXPECT_EQ(1u, new_folder->GetIndexOf(url2));
 }
 
 TEST(BookmarkSpecificsConversionsTest,

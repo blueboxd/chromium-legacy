@@ -4,7 +4,7 @@
 
 import './icons.js';
 import './shortcut_customization_shared_css.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
@@ -25,10 +25,6 @@ import {AcceleratorConfigResult, AcceleratorInfo, AcceleratorKeys, AcceleratorSo
 export class AcceleratorEditViewElement extends PolymerElement {
   static get is() {
     return 'accelerator-edit-view';
-  }
-
-  static get template() {
-    return html`{__html_template__}`;
   }
 
   static get properties() {
@@ -157,6 +153,10 @@ export class AcceleratorEditViewElement extends PolymerElement {
    */
   computeIsAddView_() {
     return this.viewState === ViewState.ADD;
+  }
+
+  static get template() {
+    return html`{__html_template__}`;
   }
 }
 

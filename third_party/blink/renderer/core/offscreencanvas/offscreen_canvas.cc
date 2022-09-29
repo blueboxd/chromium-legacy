@@ -13,6 +13,7 @@
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/offscreen_font_selector.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -94,7 +95,7 @@ OffscreenCanvas::~OffscreenCanvas() {
       -memory_usage_);
 }
 
-void OffscreenCanvas::Commit(scoped_refptr<CanvasResource> canvas_resource,
+void OffscreenCanvas::Commit(scoped_refptr<CanvasResource>&& canvas_resource,
                              const SkIRect& damage_rect) {
   if (!HasPlaceholderCanvas() || !canvas_resource)
     return;
@@ -383,11 +384,22 @@ CanvasResourceDispatcher* OffscreenCanvas::GetOrCreateResourceDispatcher() {
   // If we don't have a valid placeholder_canvas_id_, then this is a standalone
   // OffscreenCanvas, and it should not have a placeholder.
   if (!frame_dispatcher_) {
+    scoped_refptr<base::SingleThreadTaskRunner>
+        agent_group_scheduler_compositor_task_runner =
+            GetTopExecutionContext()
+                ->GetAgentGroupSchedulerCompositorTaskRunner();
+
+    // AgentGroupSchedulerCompositorTaskRunner will be null for
+    // SharedWorkers, but for windows and other workers it should be non-null.
+    DCHECK(GetTopExecutionContext()->IsSharedWorkerGlobalScope() ||
+           agent_group_scheduler_compositor_task_runner);
+
     // The frame dispatcher connects the current thread of OffscreenCanvas
     // (either main or worker) to the browser process and remains unchanged
     // throughout the lifetime of this OffscreenCanvas.
     frame_dispatcher_ = std::make_unique<CanvasResourceDispatcher>(
-        this, client_id_, sink_id_, placeholder_canvas_id_, size_);
+        this, std::move(agent_group_scheduler_compositor_task_runner),
+        client_id_, sink_id_, placeholder_canvas_id_, size_);
 
     if (HasPlaceholderCanvas())
       frame_dispatcher_->SetPlaceholderCanvasDispatcher(placeholder_canvas_id_);
@@ -511,7 +523,7 @@ bool OffscreenCanvas::PushFrameIfNeeded() {
   return false;
 }
 
-bool OffscreenCanvas::PushFrame(scoped_refptr<CanvasResource> canvas_resource,
+bool OffscreenCanvas::PushFrame(scoped_refptr<CanvasResource>&& canvas_resource,
                                 const SkIRect& damage_rect) {
   TRACE_EVENT0("blink", "OffscreenCanvas::PushFrame");
   DCHECK(needs_push_frame_);

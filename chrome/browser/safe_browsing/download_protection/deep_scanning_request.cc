@@ -267,6 +267,28 @@ bool ResultIsRetriable(BinaryUploadService::Result result) {
   }
 }
 
+enterprise_connectors::ContentAnalysisAcknowledgement::FinalAction
+GetFinalAction(EventResult event_result) {
+  auto final_action =
+      enterprise_connectors::ContentAnalysisAcknowledgement::ALLOW;
+  switch (event_result) {
+    case EventResult::UNKNOWN:
+    case EventResult::ALLOWED:
+    case EventResult::BYPASSED:
+      break;
+    case EventResult::WARNED:
+      final_action =
+          enterprise_connectors::ContentAnalysisAcknowledgement::WARN;
+      break;
+    case EventResult::BLOCKED:
+      final_action =
+          enterprise_connectors::ContentAnalysisAcknowledgement::BLOCK;
+      break;
+  }
+
+  return final_action;
+}
+
 }  // namespace
 
 /* static */
@@ -539,6 +561,7 @@ void DeepScanningRequest::OnScanComplete(
       /*response=*/response);
   DownloadCheckResult download_result = DownloadCheckResult::UNKNOWN;
   if (result == BinaryUploadService::Result::SUCCESS) {
+    request_tokens_.push_back(response.request_token());
     ResponseToDownloadCheckResult(response, &download_result);
     base::UmaHistogramEnumeration(
         "SBClientDownload.MalwareDeepScanResult." + GetTriggerName(trigger_),
@@ -637,10 +660,11 @@ void DeepScanningRequest::MaybeFinishRequest(DownloadCheckResult result) {
 }
 
 void DeepScanningRequest::FinishRequest(DownloadCheckResult result) {
+  EventResult event_result = EventResult::UNKNOWN;
+
   if (!report_callbacks_.empty()) {
     DCHECK_EQ(trigger_, DeepScanTrigger::TRIGGER_POLICY);
 
-    EventResult event_result;
     if (ReportOnlyScan()) {
       // The event result in report-only will always match whatever danger type
       // known before deep scanning since the UI will never be updated based on
@@ -669,6 +693,8 @@ void DeepScanningRequest::FinishRequest(DownloadCheckResult result) {
 
   for (auto& observer : observers_)
     observer.OnFinish(this);
+
+  AcknowledgeRequest(event_result);
 
   if (!callback_.is_null())
     callback_.Run(result);
@@ -711,6 +737,28 @@ bool DeepScanningRequest::ReportOnlyScan() {
   return base::FeatureList::IsEnabled(kConnectorsScanningReportOnlyUI) &&
          analysis_settings_.block_until_verdict ==
              enterprise_connectors::BlockUntilVerdict::kNoBlock;
+}
+
+void DeepScanningRequest::AcknowledgeRequest(EventResult event_result) {
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(item_));
+  BinaryUploadService* binary_upload_service =
+      download_service_->GetBinaryUploadService(profile, analysis_settings_);
+  if (!binary_upload_service)
+    return;
+
+  // Calculate final action applied to all requests.
+  auto final_action = GetFinalAction(event_result);
+
+  for (auto& token : request_tokens_) {
+    auto ack = std::make_unique<BinaryUploadService::Ack>(
+        analysis_settings_.cloud_or_local_settings);
+    ack->set_request_token(token);
+    ack->set_status(
+        enterprise_connectors::ContentAnalysisAcknowledgement::SUCCESS);
+    ack->set_final_action(final_action);
+    binary_upload_service->MaybeAcknowledge(std::move(ack));
+  }
 }
 
 }  // namespace safe_browsing

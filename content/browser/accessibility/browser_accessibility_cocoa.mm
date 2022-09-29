@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-
 #include <algorithm>
 #include <iterator>
 #include <map>
@@ -962,6 +961,7 @@ bool content::IsNSRange(id value) {
     return nil;
 
   const AXRange range = GetSelectedRange(*_owner);
+
   // If the selection is not collapsed, then there is no visible caret.
   if (!range.IsCollapsed())
     return nil;
@@ -975,10 +975,20 @@ bool content::IsNSRange(id value) {
          "is a valid selection focus inside the current object.";
   const std::vector<int> lineStarts =
       _owner->GetIntListAttribute(ax::mojom::IntListAttribute::kLineStarts);
+
+  // Find the text offset that starts the next line after the current caret
+  // position, then subtract 1 to get the current line number.
   auto iterator =
-      std::lower_bound(lineStarts.begin(), lineStarts.end(),
+      std::upper_bound(lineStarts.begin(), lineStarts.end(),
                        caretPosition->AsTextPosition()->text_offset());
-  return @(std::distance(lineStarts.begin(), iterator));
+
+  // If the caret is on a single line and the line is empty, then
+  // the iterator will be equal to lineStarts.begin() because the lineStarts
+  // vector will be empty. The line number should be 0 in this case.
+  if (iterator == lineStarts.begin())
+    return @(0);
+
+  return @(std::distance(lineStarts.begin(), std::prev(iterator)));
 }
 
 - (NSString*)language {
@@ -1199,9 +1209,6 @@ bool content::IsNSRange(id value) {
   return [self role];
 }
 - (NSString*)role {
-  content::BrowserAccessibilityStateImpl::GetInstance()
-      ->OnAccessibilityApiUsage();
-
   if (![self instanceActive]) {
     TRACE_EVENT0("accessibility", "BrowserAccessibilityCocoa::role nil");
     return nil;
@@ -1215,13 +1222,13 @@ bool content::IsNSRange(id value) {
   } else if (_owner->IsTextField() &&
              _owner->HasState(ax::mojom::State::kMultiline)) {
     cocoa_role = NSAccessibilityTextAreaRole;
-  } else if (role == ax::mojom::Role::kImage && _owner->GetChildCount()) {
+  } else if (ui::IsImage(_owner->GetRole()) && _owner->GetChildCount()) {
     // An image map is an image with children, and exposed on Mac as a group.
     cocoa_role = NSAccessibilityGroupRole;
-  } else if (role == ax::mojom::Role::kImage &&
+  } else if (ui::IsImage(_owner->GetRole()) &&
              _owner->HasExplicitlyEmptyName()) {
     cocoa_role = NSAccessibilityUnknownRole;
-  } else if (_owner->IsWebAreaForPresentationalIframe()) {
+  } else if (_owner->IsRootWebAreaForPresentationalIframe()) {
     cocoa_role = NSAccessibilityGroupRole;
   } else {
     cocoa_role = [AXPlatformNodeCocoa nativeRoleFromAXRole:role];
@@ -1658,13 +1665,12 @@ bool content::IsNSRange(id value) {
   if (![self instanceActive])
     return nil;
 
-  BrowserAccessibilityManagerMac* manager =
+  BrowserAccessibilityManagerMac* root_manager =
       _owner->manager()->GetRootManager()->ToBrowserAccessibilityManagerMac();
-  CHECK(manager) << "There should always be a root manager whenever an object "
-                    "is instanceActive.";
-  CHECK(manager->GetParentView());
-  DCHECK(manager->GetWindow());
-  return manager->GetWindow();
+  CHECK(root_manager) << "There should always be a root manager whenever an "
+                         "object is instanceActive.";
+  CHECK(root_manager->GetParentView());
+  return root_manager->GetWindow();  // Can be null for inactive tabs.
 }
 
 - (void)getTreeItemDescendantNodeIds:(std::vector<int32_t>*)tree_item_ids {

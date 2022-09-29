@@ -84,6 +84,7 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
+#include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/stub_icon_loader.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -92,8 +93,8 @@
 #include "components/sync/model/sync_data.h"
 #include "components/sync/protocol/arc_package_specifics.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
-#include "components/sync/test/model/fake_sync_change_processor.h"
-#include "components/sync/test/model/sync_error_factory_mock.h"
+#include "components/sync/test/fake_sync_change_processor.h"
+#include "components/sync/test/sync_error_factory_mock.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -114,6 +115,7 @@
 namespace {
 
 constexpr char kTestPackageName[] = "fake.package.name2";
+constexpr char kTestPackageName4[] = "fake.package.name4";
 constexpr char kFrameworkPackageName[] = "android";
 
 constexpr int kFrameworkNycVersion = 25;
@@ -788,6 +790,12 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     FlushMojoCallsForAppService();
   }
 
+  void UpdatePackage(const arc::mojom::ArcPackageInfoPtr& package) {
+    arc_test_.UpdatePackage(package->Clone());
+    app_instance()->SendPackageModified(package->Clone());
+    FlushMojoCallsForAppService();
+  }
+
   void RemovePackage(const std::string& package_name) {
     arc_test_.RemovePackage(package_name);
     app_instance()->SendPackageUninstalled(package_name);
@@ -1450,6 +1458,10 @@ TEST_P(ArcAppModelBuilderTest, ArcPackagePref) {
   package->last_backup_android_id = 2;
   package->last_backup_time = 2;
   AddPackage(package);
+  ValidateHavePackages(fake_packages());
+
+  // Update web_app_info of the last package to null.
+  UpdatePackage(CreatePackage(kTestPackageName4));
   ValidateHavePackages(fake_packages());
 }
 
@@ -3143,7 +3155,7 @@ TEST_P(ArcAppModelBuilderTest, AppLauncher) {
       app2.package_name, app2.activity,
       std::vector<std::string>{"S.org.chromium.arc.start_type=initialStart"});
   {
-    auto launch_intent2 = apps_util::CreateIntentForActivity(
+    auto launch_intent2 = apps_util::MakeIntentForActivity(
         app2.activity, arc::kInitialStartParam, arc::kCategoryLauncher);
     ArcAppLauncher launcher2(profile(), id2, std::move(launch_intent2), false,
                              display::kInvalidDisplayId,
@@ -3332,7 +3344,8 @@ TEST_P(ArcAppModelBuilderTest, DontRemoveRuntimeAppOnPackageChange) {
 }
 
 TEST_P(ArcAppModelBuilderTest, PackageSyncableServiceEnabled) {
-  EXPECT_TRUE(SyncServiceFactory::GetAsSyncServiceImplForProfile(profile_.get())
+  EXPECT_TRUE(SyncServiceFactory::GetAsSyncServiceImplForProfileForTesting(
+                  profile_.get())
                   ->GetRegisteredDataTypesForTest()
                   .Has(syncer::ARC_PACKAGE));
 }
@@ -3341,10 +3354,10 @@ TEST_P(ArcAppModelBuilderTest, PackageSyncableServiceDisabled) {
   base::test::ScopedCommandLine command_line;
   command_line.GetProcessCommandLine()->AppendSwitch(
       ash::switches::kArcDisableAppSync);
-  EXPECT_FALSE(
-      SyncServiceFactory::GetAsSyncServiceImplForProfile(profile_.get())
-          ->GetRegisteredDataTypesForTest()
-          .Has(syncer::ARC_PACKAGE));
+  EXPECT_FALSE(SyncServiceFactory::GetAsSyncServiceImplForProfileForTesting(
+                   profile_.get())
+                   ->GetRegisteredDataTypesForTest()
+                   .Has(syncer::ARC_PACKAGE));
 }
 
 TEST_P(ArcDefaultAppTest, DefaultApps) {

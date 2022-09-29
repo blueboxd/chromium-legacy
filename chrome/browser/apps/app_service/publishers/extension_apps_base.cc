@@ -306,10 +306,10 @@ IconEffects ExtensionAppsBase::GetIconEffects(
 content::WebContents* ExtensionAppsBase::LaunchAppWithIntentImpl(
     const std::string& app_id,
     int32_t event_flags,
-    apps::mojom::IntentPtr intent,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info,
-    LaunchAppWithIntentCallback callback) {
+    IntentPtr intent,
+    LaunchSource launch_source,
+    WindowInfoPtr window_info,
+    base::OnceCallback<void(bool)> callback) {
   const auto* extension = MaybeGetExtension(app_id);
   if (!extension || !extensions::util::IsAppLaunchable(app_id, profile_)) {
     std::move(callback).Run(/*success=*/false);
@@ -319,7 +319,7 @@ content::WebContents* ExtensionAppsBase::LaunchAppWithIntentImpl(
   if (!extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile_)) {
     RunExtensionEnableFlow(
         app_id,
-        base::BindOnce(&ExtensionAppsBase::LaunchAppWithIntentMojom,
+        base::BindOnce(&ExtensionAppsBase::LaunchAppWithIntentWhenEnabled,
                        weak_factory_.GetWeakPtr(), app_id, event_flags,
                        std::move(intent), launch_source, std::move(window_info),
                        CallbackWrapper(std::move(callback))));
@@ -327,12 +327,11 @@ content::WebContents* ExtensionAppsBase::LaunchAppWithIntentImpl(
   }
 
   auto params = apps::CreateAppLaunchParamsForIntent(
-      app_id, event_flags,
-      ConvertMojomLaunchSourceToLaunchSource(launch_source),
+      app_id, event_flags, launch_source,
       window_info ? window_info->display_id : display::kInvalidDisplayId,
       extensions::GetLaunchContainer(extensions::ExtensionPrefs::Get(profile_),
                                      extension),
-      ConvertMojomIntentToIntent(intent), profile_);
+      std::move(intent), profile_);
   std::move(callback).Run(/*success=*/true);
   return LaunchImpl(std::move(params));
 }
@@ -502,6 +501,33 @@ void ExtensionAppsBase::Launch(const std::string& app_id,
   LaunchImpl(std::move(params));
 }
 
+void ExtensionAppsBase::LaunchAppWithFiles(
+    const std::string& app_id,
+    int32_t event_flags,
+    LaunchSource launch_source,
+    std::vector<base::FilePath> file_paths) {
+  const auto* extension = MaybeGetExtension(app_id);
+  AppLaunchParams params(
+      app_id,
+      extensions::GetLaunchContainer(extensions::ExtensionPrefs::Get(profile_),
+                                     extension),
+      ui::DispositionFromEventFlags(event_flags), launch_source,
+      display::kDefaultDisplayId);
+  params.launch_files = std::move(file_paths);
+  LaunchImpl(std::move(params));
+}
+
+void ExtensionAppsBase::LaunchAppWithIntent(
+    const std::string& app_id,
+    int32_t event_flags,
+    IntentPtr intent,
+    LaunchSource launch_source,
+    WindowInfoPtr window_info,
+    base::OnceCallback<void(bool)> callback) {
+  LaunchAppWithIntentImpl(app_id, event_flags, std::move(intent), launch_source,
+                          std::move(window_info), std::move(callback));
+}
+
 void ExtensionAppsBase::LaunchAppWithParams(AppLaunchParams&& params,
                                             LaunchCallback callback) {
   auto app_id = params.app_id;
@@ -519,6 +545,47 @@ void ExtensionAppsBase::LaunchAppWithParams(AppLaunchParams&& params,
   }
 
   LaunchAppWithParamsImpl(std::move(params), std::move(callback));
+}
+
+void ExtensionAppsBase::Uninstall(const std::string& app_id,
+                                  UninstallSource uninstall_source,
+                                  bool clear_site_data,
+                                  bool report_abuse) {
+  // TODO(crbug.com/1009248): We need to add the error code, which could be used
+  // by ExtensionFunction, ManagementUninstallFunctionBase on the callback
+  // OnExtensionUninstallDialogClosed
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionRegistry::Get(profile())->GetInstalledExtension(
+          app_id);
+  if (!extension.get()) {
+    return;
+  }
+
+  // If the extension doesn't belong to this publisher, do nothing.
+  if (!Accepts(extension.get())) {
+    return;
+  }
+
+  std::u16string error;
+  extensions::ExtensionSystem::Get(profile())
+      ->extension_service()
+      ->UninstallExtension(
+          app_id, GetExtensionUninstallReason(uninstall_source), &error);
+
+  if (!report_abuse) {
+    return;
+  }
+
+  // If the extension specifies a custom uninstall page via
+  // chrome.runtime.setUninstallURL, then at uninstallation its uninstall
+  // page opens. To ensure that the CWS Report Abuse page is the active
+  // tab at uninstallation, navigates to the url to report abuse.
+  constexpr char kReferrerId[] = "chrome-remove-extension-dialog";
+  NavigateParams params(
+      profile(), extension_urls::GetWebstoreReportAbuseUrl(app_id, kReferrerId),
+      ui::PAGE_TRANSITION_LINK);
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  Navigate(&params);
 }
 
 void ExtensionAppsBase::Connect(
@@ -656,48 +723,21 @@ void ExtensionAppsBase::LaunchAppWithIntent(
     apps::mojom::LaunchSource launch_source,
     apps::mojom::WindowInfoPtr window_info,
     LaunchAppWithIntentCallback callback) {
-  LaunchAppWithIntentImpl(app_id, event_flags, std::move(intent), launch_source,
-                          std::move(window_info), std::move(callback));
+  LaunchAppWithIntentImpl(
+      app_id, event_flags, ConvertMojomIntentToIntent(intent),
+      ConvertMojomLaunchSourceToLaunchSource(launch_source),
+      ConvertMojomWindowInfoToWindowInfo(window_info), std::move(callback));
 }
 
-void ExtensionAppsBase::Uninstall(const std::string& app_id,
-                                  apps::mojom::UninstallSource uninstall_source,
-                                  bool clear_site_data,
-                                  bool report_abuse) {
-  // TODO(crbug.com/1009248): We need to add the error code, which could be used
-  // by ExtensionFunction, ManagementUninstallFunctionBase on the callback
-  // OnExtensionUninstallDialogClosed
-  scoped_refptr<const extensions::Extension> extension =
-      extensions::ExtensionRegistry::Get(profile())->GetInstalledExtension(
-          app_id);
-  if (!extension.get()) {
-    return;
-  }
-
-  // If the extension doesn't belong to this publisher, do nothing.
-  if (!Accepts(extension.get())) {
-    return;
-  }
-
-  std::u16string error;
-  extensions::ExtensionSystem::Get(profile())
-      ->extension_service()
-      ->UninstallExtension(
-          app_id, GetExtensionUninstallReason(uninstall_source), &error);
-
-  if (!report_abuse)
-    return;
-
-  // If the extension specifies a custom uninstall page via
-  // chrome.runtime.setUninstallURL, then at uninstallation its uninstall
-  // page opens. To ensure that the CWS Report Abuse page is the active
-  // tab at uninstallation, navigates to the url to report abuse.
-  constexpr char kReferrerId[] = "chrome-remove-extension-dialog";
-  NavigateParams params(
-      profile(), extension_urls::GetWebstoreReportAbuseUrl(app_id, kReferrerId),
-      ui::PAGE_TRANSITION_LINK);
-  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  Navigate(&params);
+void ExtensionAppsBase::Uninstall(
+    const std::string& app_id,
+    apps::mojom::UninstallSource mojom_uninstall_source,
+    bool clear_site_data,
+    bool report_abuse) {
+  Uninstall(
+      app_id,
+      ConvertMojomUninstallSourceToUninstallSource(mojom_uninstall_source),
+      clear_site_data, report_abuse);
 }
 
 void ExtensionAppsBase::OpenNativeSettings(const std::string& app_id) {
@@ -910,6 +950,18 @@ void ExtensionAppsBase::LaunchWhenEnabled(const std::string& app_id,
                                           LaunchSource launch_source,
                                           WindowInfoPtr window_info) {
   Launch(app_id, event_flags, launch_source, std::move(window_info));
+}
+
+void ExtensionAppsBase::LaunchAppWithIntentWhenEnabled(
+    const std::string& app_id,
+    int32_t event_flags,
+    IntentPtr intent,
+    LaunchSource launch_source,
+    WindowInfoPtr window_info,
+    CallbackWrapper wrapper) {
+  LaunchAppWithIntent(app_id, event_flags, std::move(intent),
+                      std::move(launch_source), std::move(window_info),
+                      std::move(wrapper.callback));
 }
 
 void ExtensionAppsBase::LaunchMojom(const std::string& app_id,

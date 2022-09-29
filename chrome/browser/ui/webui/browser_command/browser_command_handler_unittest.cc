@@ -21,6 +21,7 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_education/common/help_bubble_factory_registry.h"
+#include "components/user_education/common/tutorial_identifier.h"
 #include "components/user_education/common/tutorial_registry.h"
 #include "components/user_education/common/tutorial_service.h"
 #include "content/public/test/browser_task_environment.h"
@@ -45,6 +46,7 @@ std::vector<Command> supported_commands = {
     Command::kOpenPrivacyGuide,
     Command::kStartTabGroupTutorial,
     Command::kOpenPasswordManager,
+    Command::kNoOpCommand,
 };
 
 const ui::ElementContext kTestContext1(1);
@@ -89,8 +91,27 @@ class TestCommandHandler : public BrowserCommandHandler {
     tutorial_service_ = service;
   }
 
+  void SetBrowserSupportsTabGroups(bool is_supported) {
+    tab_groups_feature_supported_ = is_supported;
+  }
+
+  void SetBrowserHasTabGroups(bool has_tab_groups) {
+    has_tab_groups_ = has_tab_groups;
+  }
+
+ protected:
+  bool BrowserSupportsTabGroups() override {
+    return tab_groups_feature_supported_;
+  }
+
+  bool BrowserHasTabGroups() override { return has_tab_groups_; }
+
+ private:
   user_education::TutorialService* tutorial_service_;
   std::unique_ptr<CommandUpdater> command_updater_;
+
+  bool tab_groups_feature_supported_ = true;
+  bool has_tab_groups_ = false;
 };
 
 class TestTutorialService : public user_education::TutorialService {
@@ -127,6 +148,8 @@ class MockTutorialService : public TestTutorialService {
                     ui::ElementContext,
                     base::OnceClosure,
                     base::OnceClosure));
+  MOCK_METHOD2(LogStartedFromWhatsNewPage,
+               void(user_education::TutorialIdentifier, bool));
 };
 
 class MockCommandHandler : public TestCommandHandler {
@@ -421,13 +444,39 @@ TEST_F(BrowserCommandHandlerTest, StartTabGroupTutorialCommand) {
   user_education::TutorialRegistry registry;
   MockTutorialService service(&registry, bubble_factory_registry.get());
   command_handler_->SetTutorialService(&service);
+
+  // If the browsers Tab Strip does not support tutorials, dont run the command.
+  command_handler_->SetBrowserSupportsTabGroups(false);
+  EXPECT_FALSE(CanExecuteCommand(Command::kStartTabGroupTutorial));
+
+  // If the browser supports tab groups and has a tutorial service it should
+  // allow running commands.
+  command_handler_->SetBrowserSupportsTabGroups(true);
   EXPECT_TRUE(CanExecuteCommand(Command::kStartTabGroupTutorial));
 
-  // The StartTabGroupTutorial command should start the tab group tutorial.
+  // The StartTabGroupTutorial command should start the tab group tutorial. if
+  // there are no tab groups in the tabstrip
+  command_handler_->SetBrowserHasTabGroups(false);
   ClickInfoPtr info = ClickInfo::New();
   EXPECT_CALL(service, StartTutorial(kTabGroupTutorialId, kTestContext1,
-                                     testing::_, testing::_));
+                                     testing::_, testing::_))
+      .WillOnce(testing::Return(true));
+  EXPECT_CALL(service, LogStartedFromWhatsNewPage(kTabGroupTutorialId, true));
   EXPECT_TRUE(ExecuteCommand(Command::kStartTabGroupTutorial, std::move(info)));
+
+  // The StartTabGroupTutorial command should start the "existing tab groups"
+  // tab group tutorial. if there are tab groups in the tabstrip
+  {
+    command_handler_->SetBrowserHasTabGroups(true);
+    ClickInfoPtr info = ClickInfo::New();
+    EXPECT_CALL(service, StartTutorial(kTabGroupWithExistingGroupTutorialId,
+                                       kTestContext1, testing::_, testing::_))
+        .WillOnce(testing::Return(true));
+    EXPECT_CALL(service, LogStartedFromWhatsNewPage(
+                             kTabGroupWithExistingGroupTutorialId, true));
+    EXPECT_TRUE(
+        ExecuteCommand(Command::kStartTabGroupTutorial, std::move(info)));
+  }
 }
 
 TEST_F(BrowserCommandHandlerTest, OpenPasswordManagerCommand) {

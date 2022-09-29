@@ -7,11 +7,13 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/persisted_state_db/session_proto_db_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
 #include "components/commerce/core/shopping_service.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/storage_partition.h"
 
 namespace commerce {
 
@@ -36,25 +38,29 @@ ShoppingService* ShoppingServiceFactory::GetForBrowserContextIfExists(
 }
 
 ShoppingServiceFactory::ShoppingServiceFactory()
-    : BrowserContextKeyedServiceFactory(
+    : ProfileKeyedServiceFactory(
           "ShoppingService",
-          BrowserContextDependencyManager::GetInstance()) {
+          ProfileSelections::BuildRedirectedInIncognito()) {
   DependsOn(BookmarkModelFactory::GetInstance());
   DependsOn(OptimizationGuideKeyedServiceFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
+  DependsOn(SessionProtoDBFactory<
+            commerce_subscription_db::CommerceSubscriptionContentProto>::
+                GetInstance());
 }
 
 KeyedService* ShoppingServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  PrefService* prefs = profile ? profile->GetPrefs() : nullptr;
   return new ShoppingService(
       BookmarkModelFactory::GetInstance()->GetForBrowserContext(context),
-      OptimizationGuideKeyedServiceFactory::GetForProfile(profile), prefs);
-}
-
-content::BrowserContext* ShoppingServiceFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+      OptimizationGuideKeyedServiceFactory::GetForProfile(profile),
+      profile->GetPrefs(), IdentityManagerFactory::GetForProfile(profile),
+      profile->GetDefaultStoragePartition()
+          ->GetURLLoaderFactoryForBrowserProcess(),
+      SessionProtoDBFactory<commerce_subscription_db::
+                                CommerceSubscriptionContentProto>::GetInstance()
+          ->GetForProfile(context));
 }
 
 bool ShoppingServiceFactory::ServiceIsCreatedWithBrowserContext() const {

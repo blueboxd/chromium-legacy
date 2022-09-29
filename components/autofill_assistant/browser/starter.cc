@@ -17,6 +17,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "components/autofill_assistant/browser/assistant_field_trial_util.h"
+#include "components/autofill_assistant/browser/common_dependencies.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/intent_strings.h"
 #include "components/autofill_assistant/browser/service/api_key_fetcher.h"
@@ -57,14 +58,6 @@ constexpr size_t kMaxUserDenylistedCacheSize = 100;
 constexpr base::TimeDelta kMaxFailedTriggerScriptsCacheDuration =
     base::Hours(1);
 constexpr base::TimeDelta kMaxUserDenylistedCacheDuration = base::Hours(1);
-
-// Synthetic field trial names and group names should match those specified
-// in google3/analysis/uma/dashboards/variations/
-// .../generate_server_hashes.py and
-// .../synthetic_trials.py
-const char kTriggeredSyntheticTrial[] = "AutofillAssistantTriggered";
-const char kEnabledGroupName[] = "Enabled";
-const char kExperimentsSyntheticTrial[] = "AutofillAssistantExperimentsTrial";
 
 // String parameter containing the JSON-encoded parameter dictionary.
 const char kUrlHeuristicParametersKey[] = "json_parameters";
@@ -330,6 +323,7 @@ void Starter::OnHeuristicMatch(const GURL& url,
           /* initial_url = */ std::string(),
           /* is_in_chrome_triggered = */ true,
           /* is_externally_triggered = */ false,
+          /* skip_autofill_assistant_onboarding = */ false,
       }));
 }
 
@@ -353,15 +347,8 @@ void Starter::RegisterSyntheticFieldTrials(
     NOTREACHED();
     return;
   }
-
-  field_trial_util->RegisterSyntheticFieldTrial(kTriggeredSyntheticTrial,
-                                                kEnabledGroupName);
-  // Synthetic trial for experiments.
-  for (const std::string& experiment_id :
-       trigger_context.GetScriptParameters().GetExperiments()) {
-    field_trial_util->RegisterSyntheticFieldTrial(kExperimentsSyntheticTrial,
-                                                  experiment_id);
-  }
+  field_trial_util->RegisterSyntheticFieldTrialsForParameters(
+      trigger_context.GetScriptParameters());
 }
 
 void Starter::OnTabInteractabilityChanged(bool is_interactable) {
@@ -385,15 +372,17 @@ void Starter::Init() {
   bool switched_from_cct_to_tab = prev_is_custom_tab && !is_custom_tab_;
   bool proactive_help_setting_enabled =
       platform_delegate_->GetProactiveHelpSettingEnabled();
-  bool msbb_setting_enabled =
-      platform_delegate_->GetMakeSearchesAndBrowsingBetterEnabled();
+  bool msbb_setting_enabled = platform_delegate_->GetCommonDependencies()
+                                  ->GetMakeSearchesAndBrowsingBetterEnabled(
+                                      web_contents()->GetBrowserContext());
   bool feature_module_installed =
       platform_delegate_->GetFeatureModuleInstalled();
   bool prev_fetch_trigger_scripts_on_navigation =
       fetch_trigger_scripts_on_navigation_;
 
-  starter_heuristic_->InitFromHeuristicConfigs(heuristic_configs_,
-                                               platform_delegate_.get());
+  starter_heuristic_->InitFromHeuristicConfigs(
+      heuristic_configs_, platform_delegate_.get(),
+      web_contents()->GetBrowserContext());
   fetch_trigger_scripts_on_navigation_ = starter_heuristic_->HasConditionSets();
 
   // If there is a pending startup, re-check that the settings are still
@@ -473,7 +462,8 @@ void Starter::Start(std::unique_ptr<TriggerContext> trigger_context) {
     return;
   }
 
-  if (platform_delegate_->GetIsSupervisedUser()) {
+  if (platform_delegate_->GetIsSupervisedUser() ||
+      !platform_delegate_->GetIsAllowedForMachineLearning()) {
     OnStartDone(/* start_script= */ false);
     return;
   }
@@ -489,7 +479,9 @@ void Starter::Start(std::unique_ptr<TriggerContext> trigger_context) {
 
   StartupMode startup_mode = StartupUtil().ChooseStartupModeForIntent(
       *pending_trigger_context_,
-      {platform_delegate_->GetMakeSearchesAndBrowsingBetterEnabled(),
+      {platform_delegate_->GetCommonDependencies()
+           ->GetMakeSearchesAndBrowsingBetterEnabled(
+               web_contents()->GetBrowserContext()),
        platform_delegate_->GetProactiveHelpSettingEnabled(),
        platform_delegate_->GetFeatureModuleInstalled()});
   Metrics::RecordStartRequest(ukm_recorder_, current_ukm_source_id_,
@@ -717,9 +709,10 @@ void Starter::OnTriggerScriptFinished(
 
 void Starter::MaybeShowOnboarding(
     absl::optional<TriggerScriptProto> trigger_script) {
-  // The onboarding is handled externally for external runs.
+  // For external runs, the onboarding is handled externally unless specified
+  // otherwise.
   if (pending_trigger_context_ &&
-      pending_trigger_context_->GetIsExternallyTriggered()) {
+      pending_trigger_context_->GetSkipAutofillAssistantOnboarding()) {
     Metrics::RecordRegularScriptOnboarding(ukm_recorder_,
                                            current_ukm_source_id_,
                                            Metrics::Onboarding::OB_EXTERNAL);

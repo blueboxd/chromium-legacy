@@ -2723,6 +2723,128 @@ TEST_F(HistoryBackendDBTest,
   }
 }
 
+TEST_F(HistoryBackendDBTest, MigrateClustersAddColumns) {
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(56));
+
+  sql::Database db;
+  ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+
+  // Confirm the old 'clusters' columns exist.
+  ASSERT_TRUE(db.DoesColumnExist("clusters", "cluster_id"));
+  ASSERT_TRUE(db.DoesColumnExist("clusters", "score"));
+
+  // Confirm the new 'clusters' columns don't exist.
+  ASSERT_FALSE(
+      db.DoesColumnExist("clusters", "should_show_on_prominent_ui_surfaces"));
+  ASSERT_FALSE(db.DoesColumnExist("clusters", "label"));
+  ASSERT_FALSE(db.DoesColumnExist("clusters", "raw_label"));
+
+  // Confirm the old 'clusters_and_visits' columns exist.
+  ASSERT_TRUE(db.DoesColumnExist("clusters_and_visits", "cluster_id"));
+  ASSERT_TRUE(db.DoesColumnExist("clusters_and_visits", "visit_id"));
+  ASSERT_TRUE(db.DoesColumnExist("clusters_and_visits", "score"));
+
+  // Confirm the new 'clusters_and_visits' columns don't exist.
+  ASSERT_FALSE(db.DoesColumnExist("clusters_and_visits", "engagement_score"));
+  ASSERT_FALSE(db.DoesColumnExist("clusters_and_visits", "url_for_deduping"));
+  ASSERT_FALSE(db.DoesColumnExist("clusters_and_visits", "normalized_url"));
+  ASSERT_FALSE(db.DoesColumnExist("clusters_and_visits", "url_for_display"));
+
+  // Re-open the db, triggering migration.
+  CreateBackendAndDatabase();
+
+  // The version should have been updated.
+  ASSERT_GE(HistoryDatabase::GetCurrentVersion(), 57);
+
+  // Confirm the tables still exist.
+  ASSERT_TRUE(db.DoesTableExist("clusters"));
+  ASSERT_TRUE(db.DoesTableExist("clusters_and_visits"));
+
+  // Confirm the new 'clusters' columns exist.
+  ASSERT_TRUE(db.DoesColumnExist("clusters", "cluster_id"));
+  ASSERT_TRUE(
+      db.DoesColumnExist("clusters", "should_show_on_prominent_ui_surfaces"));
+  ASSERT_TRUE(db.DoesColumnExist("clusters", "label"));
+  ASSERT_TRUE(db.DoesColumnExist("clusters", "raw_label"));
+
+  // Confirm 'score' column was removed from 'clusters'.
+  ASSERT_FALSE(db.DoesColumnExist("clusters", "score"));
+
+  // Confirm the new 'clusters_and_visits' columns exist.
+  ASSERT_TRUE(db.DoesColumnExist("clusters_and_visits", "cluster_id"));
+  ASSERT_TRUE(db.DoesColumnExist("clusters_and_visits", "visit_id"));
+  ASSERT_TRUE(db.DoesColumnExist("clusters_and_visits", "score"));
+  ASSERT_TRUE(db.DoesColumnExist("clusters_and_visits", "engagement_score"));
+  ASSERT_TRUE(db.DoesColumnExist("clusters_and_visits", "url_for_deduping"));
+  ASSERT_TRUE(db.DoesColumnExist("clusters_and_visits", "normalized_url"));
+  ASSERT_TRUE(db.DoesColumnExist("clusters_and_visits", "url_for_display"));
+}
+
+TEST_F(HistoryBackendDBTest, MigrateAnnotationsAddColumnsForSync) {
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(57));
+
+  // Precondition: Open the old version of the DB and make sure the new columns
+  // don't exist yet.
+  {
+    sql::Database db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+
+    ASSERT_FALSE(db.DoesColumnExist("context_annotations", "browser_type"));
+    ASSERT_FALSE(db.DoesColumnExist("context_annotations", "window_id"));
+    ASSERT_FALSE(db.DoesColumnExist("context_annotations", "tab_id"));
+    ASSERT_FALSE(db.DoesColumnExist("context_annotations", "task_id"));
+    ASSERT_FALSE(db.DoesColumnExist("context_annotations", "root_task_id"));
+    ASSERT_FALSE(db.DoesColumnExist("context_annotations", "parent_task_id"));
+    ASSERT_FALSE(db.DoesColumnExist("context_annotations", "response_code"));
+
+    ASSERT_FALSE(db.DoesColumnExist("content_annotations", "page_language"));
+    ASSERT_FALSE(db.DoesColumnExist("content_annotations", "password_state"));
+  }
+
+  // Re-open the db, triggering migration.
+  CreateBackendAndDatabase();
+
+  // The version should have been updated.
+  ASSERT_GE(HistoryDatabase::GetCurrentVersion(), 58);
+
+  DeleteBackend();
+
+  // Open the db manually again and make sure the new columns exist.
+  {
+    sql::Database db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+
+    // Confirm that the new columns exist now.
+    EXPECT_TRUE(db.DoesColumnExist("context_annotations", "browser_type"));
+    EXPECT_TRUE(db.DoesColumnExist("context_annotations", "window_id"));
+    EXPECT_TRUE(db.DoesColumnExist("context_annotations", "tab_id"));
+    EXPECT_TRUE(db.DoesColumnExist("context_annotations", "task_id"));
+    EXPECT_TRUE(db.DoesColumnExist("context_annotations", "root_task_id"));
+    EXPECT_TRUE(db.DoesColumnExist("context_annotations", "parent_task_id"));
+    EXPECT_TRUE(db.DoesColumnExist("context_annotations", "response_code"));
+
+    EXPECT_TRUE(db.DoesColumnExist("content_annotations", "page_language"));
+    EXPECT_TRUE(db.DoesColumnExist("content_annotations", "password_state"));
+  }
+}
+
+// ^^^ NEW MIGRATION TESTS GO HERE ^^^
+
+// Preparation for the next DB migration: This test verifies that the test DB
+// file for the current version exists and can be loaded.
+// In the past, we only added a history.57.sql file to the repo while adding a
+// migration to the NEXT version 58. That's confusing because then the developer
+// has to reverse engineer what the migration for 57 was. This test looks like
+// a no-op, but verifies that the test file for the current version always
+// pre-exists, so adding the NEXT migration doesn't require reverse engineering.
+// If you introduce a new migration, add a test for it above, and add a new
+// history.n.sql file for the new DB layout so that this test keeps passing.
+TEST_F(HistoryBackendDBTest, VerifyTestSQLFileForCurrentVersionAlreadyExists) {
+  ASSERT_NO_FATAL_FAILURE(
+      CreateDBVersion(HistoryDatabase::GetCurrentVersion()));
+  CreateBackendAndDatabase();
+}
+
 bool FilterURL(const GURL& url) {
   return url.SchemeIsHTTPOrHTTPS();
 }

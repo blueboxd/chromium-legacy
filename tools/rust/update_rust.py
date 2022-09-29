@@ -27,14 +27,31 @@ sys.path.append(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'clang',
                  'scripts'))
 
-RUST_REVISION = 'f342bea9'
+RUST_REVISION = '55f46419'
 RUST_SUB_REVISION = 1
+
+# Trunk on 2022-07-14.
+#
+# The revision specified below should typically be the same as the
+# `crubit_revision` specified in the //DEPS file.  More details and roll
+# instructions can be found in tools/rust/README.md.
+CRUBIT_REVISION = 'd9b0ad4c09b46328dcc7a5ec28ce86cca56e0389'
+CRUBIT_SUB_REVISION = 1
+
+# If not None, use a Rust package built with an older LLVM version than
+# specified in tools/clang/scripts/update.py. This is a fallback for when an
+# LLVM update breaks the Rust build.
+#
+# This should almost always be None. When a breakage happens the fallback should
+# be temporary. Once fixed, the applicable revision(s) above should be updated
+# and FALLBACK_CLANG_VERSION should be reset to None.
+FALLBACK_CLANG_VERSION = None
 
 # Hash of src/stage0.json, which itself contains the stage0 toolchain hashes.
 # We trust the Rust build system checks, but to ensure it is not tampered with
 # itself check the hash.
 STAGE0_JSON_SHA256 = (
-    '6dc57c3a21867514f82b16cc3c9adc81c537fd5eab7dcfd9e5e4c0f77e4b0a5f')
+    'fd23038d8e54263d0284b513c5b242d2fabc70103e6afdbfb3cb27da889d6e21')
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 CHROMIUM_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', '..'))
@@ -45,9 +62,15 @@ VERSION_STAMP_PATH = os.path.join(RUST_TOOLCHAIN_OUT_DIR, 'VERSION')
 
 # Get the target version as specified above.
 def GetPackageVersion():
-    from update import (CLANG_REVISION, CLANG_SUB_REVISION)
-    return '%s-%s-%s-%s' % (RUST_REVISION, RUST_SUB_REVISION, CLANG_REVISION,
-                            CLANG_SUB_REVISION)
+    if FALLBACK_CLANG_VERSION:
+        clang_version = FALLBACK_CLANG_VERSION
+    else:
+        from update import (CLANG_REVISION, CLANG_SUB_REVISION)
+        clang_version = f'{CLANG_REVISION}-{CLANG_SUB_REVISION}'
+    # TODO(lukasza): Include CRUBIT_REVISION and CRUBIT_SUB_REVISION once we
+    # include Crubit binaries in the generated package.  See also a TODO comment
+    # in BuildCrubit in package_rust.py.
+    return '%s-%s-%s' % (RUST_REVISION, RUST_SUB_REVISION, clang_version)
 
 
 # Get the version of the toolchain package we already have.

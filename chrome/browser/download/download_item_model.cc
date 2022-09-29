@@ -648,7 +648,8 @@ void DownloadItemModel::OpenUsingPlatformHandler() {
   if (!delegate)
     return;
   delegate->OpenDownloadUsingPlatformHandler(download_);
-  RecordDownloadOpenMethod(DOWNLOAD_OPEN_METHOD_USER_PLATFORM);
+  RecordDownloadOpen(DOWNLOAD_OPEN_METHOD_USER_PLATFORM,
+                     download_->GetMimeType());
 }
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -809,12 +810,14 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
         std::string token =
             safe_browsing::DownloadProtectionService::GetDownloadPingToken(
                 download_);
-        if (!token.empty())
-          report->set_token(token);
+        if (sb_service) {
+          if (!token.empty())
+            report->set_token(token);
 
-        ReportThreatDetailsResult result =
-            sb_service->SendDownloadReport(profile(), std::move(report));
-        DCHECK(result == ReportThreatDetailsResult::SUCCESS);
+          ReportThreatDetailsResult result =
+              sb_service->SendDownloadReport(profile(), std::move(report));
+          DCHECK(result == ReportThreatDetailsResult::SUCCESS);
+        }
       }
 #endif
       download_->ValidateDangerousDownload();
@@ -867,7 +870,14 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
       ChromeDownloadManagerDelegate* delegate =
           download_core_service->GetDownloadManagerDelegate();
       DCHECK(delegate);
+
+      // Create an analysis settings object for UploadForDeepScanning().
+      // Make sure it specifies a cloud analysis is required and does not
+      // specify a DM token, which is what triggers an APP scan.
       enterprise_connectors::AnalysisSettings settings;
+      settings.cloud_or_local_settings =
+          enterprise_connectors::CloudOrLocalAnalysisSettings(
+              enterprise_connectors::CloudAnalysisSettings());
       settings.tags = {{"malware", enterprise_connectors::TagSettings()}};
       protection_service->UploadForDeepScanning(
           download_,

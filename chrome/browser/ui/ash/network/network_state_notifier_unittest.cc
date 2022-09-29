@@ -16,14 +16,14 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_clients.h"
+#include "chromeos/ash/components/dbus/shill/shill_device_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/cellular_metrics_logger.h"
 #include "chromeos/ash/components/network/network_connect.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/platform_test.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -124,8 +124,8 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
     NetworkHandler::Get()
         ->network_state_handler()
         ->set_stub_cellular_networks_provider(nullptr);
-    ShillServiceClient::TestInterface* service_test =
-        ShillServiceClient::Get()->GetTestInterface();
+    ash::ShillServiceClient::TestInterface* service_test =
+        ash::ShillServiceClient::Get()->GetTestInterface();
     service_test->ClearServices();
 
     hermes_manager_test_ = HermesManagerClient::Get()->GetTestInterface();
@@ -138,8 +138,8 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
     hermes_euicc_test_->AddCarrierProfile(
         dbus::ObjectPath(kCellularEsimServicePath),
         dbus::ObjectPath(kTestEuiccPath), kTestIccid, kTestEsimProfileName,
-        "service_provider", "activation_code", kCellularEsimServicePath,
-        hermes::profile::State::kActive,
+        kTestEsimProfileName, "service_provider", "activation_code",
+        kCellularEsimServicePath, hermes::profile::State::kActive,
         hermes::profile::ProfileClass::kOperational,
         HermesEuiccClient::TestInterface::AddCarrierProfileBehavior::
             kAddProfileWithService);
@@ -147,7 +147,7 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
   }
 
   void SetCellularDeviceLocked(bool is_locked) {
-    ShillDeviceClient::TestInterface* device_test =
+    ash::ShillDeviceClient::TestInterface* device_test =
         network_handler_test_helper_->device_test();
 
     std::string lock_pin = is_locked ? shill::kSIMLockPin : "";
@@ -160,11 +160,11 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
   }
 
   void SetupDefaultShillState() {
-    ShillDeviceClient::TestInterface* device_test =
+    ash::ShillDeviceClient::TestInterface* device_test =
         network_handler_test_helper_->device_test();
     device_test->ClearDevices();
 
-    ShillServiceClient::TestInterface* service_test =
+    ash::ShillServiceClient::TestInterface* service_test =
         network_handler_test_helper_->service_test();
     service_test->ClearServices();
 
@@ -176,7 +176,7 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
                              shill::kTypeWifi, shill::kStateIdle, true);
     service_test->SetServiceProperty(kWiFi1ServicePath,
                                      shill::kSecurityClassProperty,
-                                     base::Value(shill::kSecurityWep));
+                                     base::Value(shill::kSecurityClassWep));
     service_test->SetServiceProperty(
         kWiFi1ServicePath, shill::kConnectableProperty, base::Value(true));
     service_test->SetServiceProperty(
@@ -276,8 +276,8 @@ TEST_F(NetworkStateNotifierTest, CellularEsimConnectionFailure) {
                 IDS_NETWORK_CONNECTION_ERROR_MESSAGE, kTestEsimProfileName16,
                 l10n_util::GetStringUTF16(IDS_NETWORK_LIST_SIM_CARD_LOCKED)));
 
-  ShillServiceClient::TestInterface* service_test =
-      ShillServiceClient::Get()->GetTestInterface();
+  ash::ShillServiceClient::TestInterface* service_test =
+      ash::ShillServiceClient::Get()->GetTestInterface();
   service_test->SetServiceProperty(
       kCellularEsimServicePath, shill::kConnectableProperty, base::Value(true));
 

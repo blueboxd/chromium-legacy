@@ -19,11 +19,13 @@
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/services/app_service/public/cpp/app_capability_access_cache.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_cache.h"
 #include "components/services/app_service/public/cpp/icon_coalescer.h"
 #include "components/services/app_service/public/cpp/intent.h"
+#include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
@@ -129,6 +131,12 @@ class AppServiceProxyLacros : public KeyedService,
   // TODO(crbug.com/1264164): Remove this method.
   void LaunchAppWithFiles(const std::string& app_id,
                           int32_t event_flags,
+                          LaunchSource launch_source,
+                          std::vector<base::FilePath> file_paths);
+  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+  // interface.
+  void LaunchAppWithFiles(const std::string& app_id,
+                          int32_t event_flags,
                           apps::mojom::LaunchSource launch_source,
                           apps::mojom::FilePathsPtr file_paths);
 
@@ -137,6 +145,13 @@ class AppServiceProxyLacros : public KeyedService,
   // app (e.g. a middle click indicating opening a background tab).
   // |launch_source| is the possible app launch sources. |window_info| is the
   // window information to launch an app, e.g. display_id, window bounds.
+  void LaunchAppWithIntent(const std::string& app_id,
+                           int32_t event_flags,
+                           IntentPtr intent,
+                           LaunchSource launch_source,
+                           WindowInfoPtr window_info = nullptr);
+  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+  // interface.
   void LaunchAppWithIntent(const std::string& app_id,
                            int32_t event_flags,
                            apps::mojom::IntentPtr intent,
@@ -151,6 +166,13 @@ class AppServiceProxyLacros : public KeyedService,
   void LaunchAppWithUrl(const std::string& app_id,
                         int32_t event_flags,
                         GURL url,
+                        LaunchSource launch_source,
+                        WindowInfoPtr window_info = nullptr);
+  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+  // interface.
+  void LaunchAppWithUrl(const std::string& app_id,
+                        int32_t event_flags,
+                        GURL url,
                         apps::mojom::LaunchSource launch_source,
                         apps::mojom::WindowInfoPtr window_info = nullptr);
 
@@ -160,6 +182,9 @@ class AppServiceProxyLacros : public KeyedService,
                            LaunchCallback callback = base::DoNothing());
 
   // Sets |permission| for the app identified by |app_id|.
+  void SetPermission(const std::string& app_id, PermissionPtr permission);
+  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+  // interface.
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission);
 
@@ -167,11 +192,20 @@ class AppServiceProxyLacros : public KeyedService,
   // the uninstall dialog will be created as a modal dialog anchored at
   // |parent_window|. Otherwise, the browser window will be used as the anchor.
   void Uninstall(const std::string& app_id,
+                 UninstallSource uninstall_source,
+                 gfx::NativeWindow parent_window);
+  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+  // interface.
+  void Uninstall(const std::string& app_id,
                  apps::mojom::UninstallSource uninstall_source,
                  gfx::NativeWindow parent_window);
 
   // Uninstalls an app for the given |app_id| without prompting the user to
   // confirm.
+  void UninstallSilently(const std::string& app_id,
+                         UninstallSource uninstall_source);
+  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+  // interface.
   void UninstallSilently(const std::string& app_id,
                          apps::mojom::UninstallSource uninstall_source);
 

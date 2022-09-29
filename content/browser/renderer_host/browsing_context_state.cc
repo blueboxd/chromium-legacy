@@ -116,7 +116,8 @@ RenderFrameProxyHost* BrowsingContextState::CreateRenderFrameProxyHost(
     SiteInstance* site_instance,
     const scoped_refptr<RenderViewHostImpl>& rvh,
     FrameTreeNode* frame_tree_node,
-    ProxyAccessMode proxy_access_mode) {
+    ProxyAccessMode proxy_access_mode,
+    const blink::RemoteFrameToken& frame_token) {
   TRACE_EVENT_BEGIN(
       "navigation", "BrowsingContextState::CreateRenderFrameProxyHost",
       ChromeTrackEvent::kBrowsingContextState, this,
@@ -145,8 +146,8 @@ RenderFrameProxyHost* BrowsingContextState::CreateRenderFrameProxyHost(
       static_cast<SiteInstanceImpl*>(site_instance)->group()->GetId();
   CHECK(proxy_hosts_.find(site_instance_group_id) == proxy_hosts_.end())
       << "A proxy already existed for this SiteInstanceGroup.";
-  RenderFrameProxyHost* proxy_host =
-      new RenderFrameProxyHost(site_instance, std::move(rvh), frame_tree_node);
+  RenderFrameProxyHost* proxy_host = new RenderFrameProxyHost(
+      site_instance, std::move(rvh), frame_tree_node, frame_token);
   proxy_hosts_[site_instance_group_id] = base::WrapUnique(proxy_host);
   static_cast<SiteInstanceImpl*>(site_instance)->group()->AddObserver(this);
 
@@ -157,11 +158,13 @@ RenderFrameProxyHost* BrowsingContextState::CreateRenderFrameProxyHost(
 
 RenderFrameProxyHost* BrowsingContextState::CreateOuterDelegateProxy(
     SiteInstance* outer_contents_site_instance,
-    FrameTreeNode* frame_tree_node) {
+    FrameTreeNode* frame_tree_node,
+    const blink::RemoteFrameToken& frame_token) {
   // We only get here when Delegate for this manager is an inner delegate.
   return CreateRenderFrameProxyHost(outer_contents_site_instance,
                                     /*rvh=*/nullptr, frame_tree_node,
-                                    ProxyAccessMode::kAllowOuterDelegate);
+                                    ProxyAccessMode::kAllowOuterDelegate,
+                                    frame_token);
 }
 
 void BrowsingContextState::DeleteOuterDelegateProxy(
@@ -350,18 +353,18 @@ void BrowsingContextState::OnSetHadStickyUserActivationBeforeNavigation(
   replication_state_->has_received_user_gesture_before_nav = value;
 }
 
-void BrowsingContextState::SetIsAdSubframe(bool is_ad_subframe) {
-  if (is_ad_subframe == replication_state_->is_ad_subframe)
+void BrowsingContextState::SetIsAdFrame(bool is_ad_frame) {
+  if (is_ad_frame == replication_state_->is_ad_frame)
     return;
 
-  replication_state_->is_ad_subframe = is_ad_subframe;
+  replication_state_->is_ad_frame = is_ad_frame;
   ExecuteRemoteFramesBroadcastMethod(
       base::BindRepeating(
-          [](bool is_ad_subframe, RenderFrameProxyHost* proxy) {
-            proxy->GetAssociatedRemoteFrame()->SetReplicatedIsAdSubframe(
-                is_ad_subframe);
+          [](bool is_ad_frame, RenderFrameProxyHost* proxy) {
+            proxy->GetAssociatedRemoteFrame()->SetReplicatedIsAdFrame(
+                is_ad_frame);
           },
-          is_ad_subframe),
+          is_ad_frame),
       /*instance_to_skip=*/nullptr, /*outer_delegate_proxy=*/nullptr);
 }
 

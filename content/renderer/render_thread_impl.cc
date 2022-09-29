@@ -68,6 +68,7 @@
 #include "content/common/buildflags.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/main_frame_counter.h"
 #include "content/common/partition_alloc_support.h"
 #include "content/common/process_visibility_tracker.h"
 #include "content/common/pseudonymization_salt.h"
@@ -78,6 +79,7 @@
 #include "content/public/common/gpu_stream_constants.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "content/renderer/agent_scheduling_group.h"
 #include "content/renderer/browser_exposed_renderer_interfaces.h"
@@ -86,9 +88,7 @@
 #include "content/renderer/media/media_factory.h"
 #include "content/renderer/media/render_media_client.h"
 #include "content/renderer/net_info_helper.h"
-#include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process_impl.h"
-#include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
 #include "content/renderer/variations_render_thread_observer.h"
@@ -610,8 +610,9 @@ void RenderThreadImpl::Init() {
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           blink::URLLoaderThrottleProviderType::kFrame);
 
-  GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
-      &RenderThreadImpl::OnRendererInterfaceReceiver, base::Unretained(this)));
+  GetAssociatedInterfaceRegistry()->AddInterface<mojom::Renderer>(
+      base::BindRepeating(&RenderThreadImpl::OnRendererInterfaceReceiver,
+                          base::Unretained(this)));
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -1691,7 +1692,8 @@ void RenderThreadImpl::OnRendererBackgrounded() {
 void RenderThreadImpl::OnRendererForegrounded() {
   main_thread_scheduler_->SetRendererBackgrounded(false);
   discardable_memory_allocator_->OnForegrounded();
-  internal::PartitionAllocSupport::Get()->OnForegrounded();
+  internal::PartitionAllocSupport::Get()->OnForegrounded(
+      MainFrameCounter::has_main_frame());
   process_foregrounded_count_++;
 }
 

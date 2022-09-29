@@ -34,13 +34,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
-#include "components/autofill/core/browser/autofill_regex_constants.h"
-#include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/buildflags.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
-#include "components/autofill/core/browser/form_processing/autocomplete_attribute_processing_util.h"
 #include "components/autofill/core/browser/form_processing/label_processing_util.h"
 #include "components/autofill/core/browser/form_processing/name_processing_util.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
@@ -49,11 +46,14 @@
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/browser/rationalization_util.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autocomplete_parsing_util.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_internals/log_message.h"
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/common/autofill_regex_constants.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/dense_set.h"
@@ -73,9 +73,6 @@ namespace autofill {
 using mojom::SubmissionIndicatorEvent;
 
 namespace {
-
-// Default section name for the fields.
-constexpr char kDefaultSection[] = "-default";
 
 // Returns true if the scheme given by |url| is one for which autofill is
 // allowed to activate. By default this only returns true for HTTP and HTTPS.
@@ -298,7 +295,7 @@ void PopulateRandomizedFieldMetadata(
 ServerFieldTypeSet GetNecessaryTypesFor(ServerFieldType type) {
   switch (type) {
     case PHONE_HOME_COUNTRY_CODE:
-      return {PHONE_HOME_NUMBER,
+      return {PHONE_HOME_NUMBER, PHONE_HOME_NUMBER_PREFIX,
               base::FeatureList::IsEnabled(
                   features::kAutofillEnableSupportForPhoneNumberTrunkTypes)
                   ? PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX
@@ -306,31 +303,6 @@ ServerFieldTypeSet GetNecessaryTypesFor(ServerFieldType type) {
     default:
       return {};
   }
-}
-
-// Creates a unique name for the section that starts with |field|.
-//
-// The section name is a string of the form "%s_%u_%u", where the first string
-// is the field's name and the two integers are the field's frame ID and its
-// renderer ID.
-//
-// For the frame ID, we do not use LocalFrameTokens but instead map them to
-// consecutive integers using |frame_token_ids|, which uniquely identify a frame
-// within a given FormStructure. Since we do not intend to compare sections from
-// different FormStructures, this is sufficient.
-//
-// We intentionally do not include the LocalFrameToken in the section string
-// because frame tokens should not be sent to a renderer.
-//
-// TODO(crbug.com/1257141): Remove special handling of FrameTokens.
-std::u16string GetSectionName(
-    const AutofillField& field,
-    base::flat_map<LocalFrameToken, size_t>& frame_token_ids) {
-  size_t id = frame_token_ids.emplace(field.host_frame, frame_token_ids.size())
-                  .first->second;
-  return base::StrCat(
-      {field.name, u"_", base::NumberToString16(id), u"_",
-       base::NumberToString16(field.unique_renderer_id.value())});
 }
 
 }  // namespace
@@ -741,7 +713,7 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
       annotated_field.overall_type = field->Type().ToString();
       annotated_field.parseable_name =
           base::UTF16ToUTF8(field->parseable_name());
-      annotated_field.section = field->section;
+      annotated_field.section = field->section.ToString();
       form.fields.push_back(annotated_field);
     }
 
@@ -839,24 +811,21 @@ bool FormStructure::ShouldBeParsed(LogManager* log_manager) const {
   }
 
   // Rule out search forms.
-  if (MatchesPattern(base::UTF8ToUTF16(target_url_.path_piece()),
-                     kUrlSearchActionRe)) {
+  if (MatchesRegex<kUrlSearchActionRe>(
+          base::UTF8ToUTF16(target_url_.path_piece()))) {
     LOG_AF(log_manager) << LoggingScope::kAbortParsing
                         << LogMessage::kAbortParsingUrlMatchesSearchRegex
                         << *this;
     return false;
   }
 
-  bool has_text_field = false;
-  for (const auto& it : *this) {
-    has_text_field |= it->form_control_type != "select-one";
-  }
-
+  bool has_text_field = base::ranges::any_of(*this, [](const auto& field) {
+    return field->form_control_type != "select-one";
+  });
   if (!has_text_field) {
     LOG_AF(log_manager) << LoggingScope::kAbortParsing
                         << LogMessage::kAbortParsingFormHasNoTextfield << *this;
   }
-
   return has_text_field;
 }
 
@@ -865,10 +834,8 @@ bool FormStructure::ShouldRunHeuristics() const {
          HasAllowedScheme(source_url_);
 }
 
-bool FormStructure::ShouldRunPromoCodeHeuristics() const {
-  return base::FeatureList::IsEnabled(
-             features::kAutofillParseMerchantPromoCodeFields) &&
-         active_field_count() > 0 && HasAllowedScheme(source_url_);
+bool FormStructure::ShouldRunHeuristicsForSingleFieldForms() const {
+  return active_field_count() > 0 && HasAllowedScheme(source_url_);
 }
 
 bool FormStructure::ShouldBeQueried() const {
@@ -1286,16 +1253,7 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
   has_author_specified_sections_ = false;
   has_author_specified_upi_vpa_hint_ = false;
   for (const std::unique_ptr<AutofillField>& field : fields_) {
-    // To prevent potential section name collisions, add a default suffix for
-    // other fields. Without this, 'autocomplete' attribute values
-    // "section--shipping street-address" and "shipping street-address" would be
-    // parsed identically, given the section handling code below. We do this
-    // before any validation so that fields with invalid attributes still end up
-    // in the default section. These default section names will be overridden
-    // by subsequent heuristic parsing steps if there are no author-specified
-    // section names.
-    field->section = kDefaultSection;
-
+    field->section = Section();
     auto parsing_result = ParseAutocompleteAttribute(*field);
     if (!parsing_result)
       continue;
@@ -1315,16 +1273,12 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
     }
 
     // Compute a section name based on the specified hints and apply the result.
-    field->section =
-        parsing_result->section +
-        (parsing_result->mode != HTML_MODE_NONE
-             ? "-" +
-                   std::string(HtmlFieldModeToStringPiece(parsing_result->mode))
-             : kDefaultSection);
-    field->SetHtmlType(parsing_result->field_type, parsing_result->mode);
-
-    if (field->section != kDefaultSection)
+    if (field->section.SetPrefixFromAutocomplete(
+            {.section = parsing_result->section,
+             .mode = parsing_result->mode})) {
       has_author_specified_sections_ = true;
+    }
+    field->SetHtmlType(parsing_result->field_type, parsing_result->mode);
   }
   was_parsed_for_autocomplete_attributes_ = true;
 }
@@ -1333,13 +1287,12 @@ void FormStructure::ParseFieldTypesWithPatterns(PatternSource pattern_source,
                                                 LogManager* log_manager) {
   FieldCandidatesMap field_type_map;
   if (ShouldRunHeuristics()) {
-    field_type_map =
-        FormField::ParseFormFields(fields_, current_page_language_,
-                                   is_form_tag_, pattern_source, log_manager);
-  } else if (ShouldRunPromoCodeHeuristics()) {
-    field_type_map = FormField::ParseFormFieldsForPromoCodes(
-        fields_, current_page_language_, is_form_tag_, pattern_source,
-        log_manager);
+    FormField::ParseFormFields(fields_, current_page_language_, is_form_tag_,
+                               pattern_source, field_type_map, log_manager);
+  } else if (ShouldRunHeuristicsForSingleFieldForms()) {
+    FormField::ParseSingleFieldForms(fields_, current_page_language_,
+                                     is_form_tag_, pattern_source,
+                                     field_type_map, log_manager);
   }
   if (field_type_map.empty())
     return;
@@ -1608,9 +1561,8 @@ void FormStructure::RationalizeStreetAddressAndAddressLine(
   }
 }
 
-void FormStructure::RationalizePhoneNumbersInSection(
-    const std::string& section) {
-  if (phone_rationalized_[section])
+void FormStructure::RationalizePhoneNumbersInSection(const Section& section) {
+  if (base::Contains(phone_rationalized_, section))
     return;
   std::vector<AutofillField*> fields;
   for (size_t i = 0; i < field_count(); ++i) {
@@ -1619,7 +1571,7 @@ void FormStructure::RationalizePhoneNumbersInSection(
     fields.push_back(field(i));
   }
   rationalization_util::RationalizePhoneNumberFields(fields);
-  phone_rationalized_[section] = true;
+  phone_rationalized_.insert(section);
 }
 
 void FormStructure::ApplyRationalizationsToFieldAndLog(
@@ -1923,9 +1875,8 @@ void FormStructure::RationalizeRepeatedFields(
 void FormStructure::RationalizeFieldTypePredictions(LogManager* log_manager) {
   RationalizeCreditCardFieldPredictions(log_manager);
   RationalizeStreetAddressAndAddressLine(log_manager);
-  for (const auto& field : fields_) {
+  for (const auto& field : fields_)
     field->SetTypeTo(field->Type());
-  }
   RationalizeTypeRelationships(log_manager);
 }
 
@@ -2078,9 +2029,11 @@ void FormStructure::IdentifySectionsWithNewMethod() {
       base::FeatureList::IsEnabled(
           features::kAutofillSectionUponRedundantNameInfo);
 
+  // Create a unique identifier for the section based on the field.
   base::flat_map<LocalFrameToken, size_t> frame_token_ids;
-  std::u16string current_section =
-      GetSectionName(*fields_.front(), frame_token_ids);
+  Section current_section;
+  current_section.SetPrefixFromFieldIdentifier(*fields_.front(),
+                                               frame_token_ids);
 
   // Keep track of the types we've seen in this section.
   ServerFieldTypeSet seen_types;
@@ -2091,13 +2044,13 @@ void FormStructure::IdentifySectionsWithNewMethod() {
   bool previous_autocomplete_section_present = false;
 
   bool is_hidden_section = false;
-  std::u16string last_visible_section;
+  Section last_visible_section;
   for (const auto& field : fields_) {
     const ServerFieldType current_type = field->Type().GetStorableType();
     // All credit card fields belong to the same section that's different
     // from address sections.
     if (AutofillType(current_type).group() == FieldTypeGroup::kCreditCard) {
-      field->section = "credit-card";
+      field->section.SetPrefixToCreditCard();
       continue;
     }
 
@@ -2148,24 +2101,20 @@ void FormStructure::IdentifySectionsWithNewMethod() {
     if (current_type == previous_type)
       already_saw_current_type = false;
 
-    // Boolean flag that is set to true when the |field| has
-    // autocomplete-section attribute defined.
-    bool autocomplete_section_attribute_present =
-        (field->section != kDefaultSection);
+    // Boolean flag that is set to true when the section of the `field` is
+    // derived from the autocomplete attribute and its section is different than
+    // the previous field's section.
+    bool different_autocomplete_section_than_previous_field_section =
+        field->section.is_from_autocomplete() &&
+        (field_index == 0 ||
+         fields_[field_index - 1]->section != field->section);
 
-    // Boolean flag that is set to true when the |field| has
-    // autocomplete-section attribute defined and is different than the
-    // previous field.
-    bool different_autocomplete_section_than_previous =
-        (autocomplete_section_attribute_present &&
-         (!field_index || fields_[field_index - 1]->section != field->section));
-
-    // Start a new section if the |current_type| was already seen or the
-    // autocomplete-section attribute is defined for the |field| which is
-    // different than the previous field's.
+    // Start a new section if the `current_type` was already seen or the section
+    // is derived from the autocomplete attribute which is different than the
+    // previous field's section.
     if (current_type != UNKNOWN_TYPE &&
         (already_saw_current_type ||
-         different_autocomplete_section_than_previous)) {
+         different_autocomplete_section_than_previous_field_section)) {
       // Keep track of seen_types if the new section is hidden. The next
       // visible section might be the continuation of the previous visible
       // section.
@@ -2174,33 +2123,34 @@ void FormStructure::IdentifySectionsWithNewMethod() {
         last_visible_section = current_section;
       }
 
-      if (!is_hidden_section && (!autocomplete_section_attribute_present ||
-                                 different_autocomplete_section_than_previous))
+      if (!is_hidden_section &&
+          (!field->section.is_from_autocomplete() ||
+           different_autocomplete_section_than_previous_field_section)) {
         seen_types.clear();
+      }
 
-      if (autocomplete_section_attribute_present &&
+      if (field->section.is_from_autocomplete() &&
           !previous_autocomplete_section_present) {
         // If this field is the first field within the section with a defined
         // autocomplete section, then change the section attribute of all the
-        // parsed fields in the current section to |field->section|.
+        // parsed fields in the current section to `field->section`.
         int i = static_cast<int>(field_index - 1);
-        while (i >= 0 &&
-               base::UTF8ToUTF16(fields_[i]->section) == current_section) {
+        while (i >= 0 && fields_[i]->section == current_section) {
           fields_[i]->section = field->section;
           i--;
         }
       }
 
       // The end of a section, so start a new section.
-      current_section = GetSectionName(*field, frame_token_ids);
+      current_section.SetPrefixFromFieldIdentifier(*field, frame_token_ids);
 
       // The section described in the autocomplete section attribute
       // overrides the value determined by the heuristic.
-      if (autocomplete_section_attribute_present)
-        current_section = base::UTF8ToUTF16(field->section);
+      if (field->section.is_from_autocomplete())
+        current_section = field->section;
 
       previous_autocomplete_section_present =
-          autocomplete_section_attribute_present;
+          field->section.is_from_autocomplete();
     }
 
     // Only consider a type "seen" if it was not ignored. Some forms have
@@ -2216,17 +2166,17 @@ void FormStructure::IdentifySectionsWithNewMethod() {
       is_hidden_section = false;
     }
 
-    field->section = base::UTF16ToUTF8(current_section);
+    field->section = current_section;
   }
 
   // Ensure that credit card and address fields are in separate sections.
   // This simplifies the section-aware logic in autofill_manager.cc.
   for (const auto& field : fields_) {
     FieldTypeGroup field_type_group = field->Type().group();
-    if (field_type_group == FieldTypeGroup::kCreditCard)
-      field->section = field->section + "-cc";
-    else
-      field->section = field->section + "-default";
+    field->section.set_field_type_group(
+        field_type_group == FieldTypeGroup::kCreditCard
+            ? Section::FieldTypeGroupSuffix::kCreditCard
+            : Section::FieldTypeGroupSuffix::kDefault);
   }
 
   // Since this function has changed the sections, subsequent calls to
@@ -2250,22 +2200,24 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
           features::kAutofillSectionUponRedundantNameInfo);
 
   if (!has_author_specified_sections) {
+    // Create a unique identifier based on the field for the section.
     base::flat_map<LocalFrameToken, size_t> frame_token_ids;
-    std::u16string current_section =
-        GetSectionName(*fields_.front(), frame_token_ids);
+    Section current_section;
+    current_section.SetPrefixFromFieldIdentifier(*fields_.front(),
+                                                 frame_token_ids);
 
     // Keep track of the types we've seen in this section.
     ServerFieldTypeSet seen_types;
     ServerFieldType previous_type = UNKNOWN_TYPE;
 
     bool is_hidden_section = false;
-    std::u16string last_visible_section;
+    Section last_visible_section;
     for (const auto& field : fields_) {
       const ServerFieldType current_type = field->Type().GetStorableType();
       // All credit card fields belong to the same section that's different
       // from address sections.
       if (AutofillType(current_type).group() == FieldTypeGroup::kCreditCard) {
-        field->section = "credit-card";
+        field->section.SetPrefixToCreditCard();
         continue;
       }
 
@@ -2330,7 +2282,7 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
           seen_types.clear();
 
         // The end of a section, so start a new section.
-        current_section = GetSectionName(*field, frame_token_ids);
+        current_section.SetPrefixFromFieldIdentifier(*field, frame_token_ids);
       }
 
       // Only consider a type "seen" if it was not ignored. Some forms have
@@ -2346,7 +2298,7 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
         is_hidden_section = false;
       }
 
-      field->section = base::UTF16ToUTF8(current_section);
+      field->section = current_section;
     }
   }
 
@@ -2354,10 +2306,10 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
   // This simplifies the section-aware logic in autofill_manager.cc.
   for (const auto& field : fields_) {
     FieldTypeGroup field_type_group = field->Type().group();
-    if (field_type_group == FieldTypeGroup::kCreditCard)
-      field->section = field->section + "-cc";
-    else
-      field->section = field->section + "-default";
+    field->section.set_field_type_group(
+        field_type_group == FieldTypeGroup::kCreditCard
+            ? Section::FieldTypeGroupSuffix::kCreditCard
+            : Section::FieldTypeGroupSuffix::kDefault);
   }
 
   // Since this function has changed the sections, subsequent calls to
@@ -2606,8 +2558,14 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
     buffer << Tr{} << "Section:" << field->section;
 
     constexpr size_t kMaxLabelSize = 100;
+    // TODO(crbug/1165780): Remove once shared labels are launched.
+    const std::u16string& label =
+        base::FeatureList::IsEnabled(
+            features::kAutofillEnableSupportForParsingWithSharedLabels)
+            ? field->parseable_label()
+            : field->label;
     const std::u16string truncated_label =
-        field->label.substr(0, std::min(field->label.length(), kMaxLabelSize));
+        label.substr(0, std::min(label.length(), kMaxLabelSize));
     buffer << Tr{} << "Label:" << truncated_label;
 
     buffer << Tr{} << "Is empty:" << (field->IsEmpty() ? "Yes" : "No");

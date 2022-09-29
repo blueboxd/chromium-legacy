@@ -155,6 +155,68 @@ void StandaloneBrowserExtensionApps::Launch(const std::string& app_id,
   }
 }
 
+void StandaloneBrowserExtensionApps::LaunchAppWithFiles(
+    const std::string& app_id,
+    int32_t event_flags,
+    LaunchSource launch_source,
+    std::vector<base::FilePath> file_paths) {
+  // It is possible that Lacros is briefly unavailable, for example if it shuts
+  // down for an update.
+  if (!controller_.is_bound())
+    return;
+
+  std::vector<base::FilePath> file_paths_for_restore = file_paths;
+  auto launch_params = crosapi::mojom::LaunchParams::New();
+  launch_params->app_id = app_id;
+  launch_params->launch_source = launch_source;
+  launch_params->intent =
+      apps_util::CreateCrosapiIntentForViewFiles(std::move(file_paths));
+  controller_->Launch(std::move(launch_params),
+                      /*callback=*/base::DoNothing());
+
+  if (ShouldSaveToFullRestore(proxy(), app_id)) {
+    auto launch_info = std::make_unique<app_restore::AppLaunchInfo>(
+        app_id, apps::LaunchContainer::kLaunchContainerNone,
+        WindowOpenDisposition::UNKNOWN, display::kInvalidDisplayId,
+        std::move(file_paths_for_restore), nullptr);
+    full_restore::SaveAppLaunchInfo(proxy()->profile()->GetPath(),
+                                    std::move(launch_info));
+  }
+}
+
+void StandaloneBrowserExtensionApps::LaunchAppWithIntent(
+    const std::string& app_id,
+    int32_t event_flags,
+    IntentPtr intent,
+    LaunchSource launch_source,
+    WindowInfoPtr window_info,
+    base::OnceCallback<void(bool)> callback) {
+  // It is possible that Lacros is briefly unavailable, for example if it shuts
+  // down for an update.
+  if (!controller_.is_bound()) {
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
+  auto launch_params = crosapi::mojom::LaunchParams::New();
+  launch_params->app_id = app_id;
+  launch_params->launch_source = launch_source;
+  launch_params->intent = apps_util::ConvertAppServiceToCrosapiIntent(
+      intent, ProfileManager::GetPrimaryUserProfile());
+  controller_->Launch(std::move(launch_params),
+                      /*callback=*/base::DoNothing());
+  std::move(callback).Run(/*success=*/true);
+
+  if (ShouldSaveToFullRestore(proxy(), app_id)) {
+    auto launch_info = std::make_unique<app_restore::AppLaunchInfo>(
+        app_id, apps::LaunchContainer::kLaunchContainerNone,
+        WindowOpenDisposition::UNKNOWN, display::kInvalidDisplayId,
+        std::vector<base::FilePath>{}, std::move(intent));
+    full_restore::SaveAppLaunchInfo(proxy()->profile()->GetPath(),
+                                    std::move(launch_info));
+  }
+}
+
 void StandaloneBrowserExtensionApps::LaunchAppWithParams(
     AppLaunchParams&& params,
     LaunchCallback callback) {
@@ -175,6 +237,19 @@ void StandaloneBrowserExtensionApps::LaunchAppWithParams(
     full_restore::SaveAppLaunchInfo(proxy()->profile()->GetPath(),
                                     std::move(launch_info));
   }
+}
+
+void StandaloneBrowserExtensionApps::Uninstall(const std::string& app_id,
+                                               UninstallSource uninstall_source,
+                                               bool clear_site_data,
+                                               bool report_abuse) {
+  // It is possible that Lacros is briefly unavailable, for example if it shuts
+  // down for an update.
+  if (!controller_.is_bound())
+    return;
+
+  controller_->Uninstall(app_id, uninstall_source, clear_site_data,
+                         report_abuse);
 }
 
 void StandaloneBrowserExtensionApps::Connect(
@@ -348,18 +423,15 @@ void StandaloneBrowserExtensionApps::StopApp(const std::string& app_id) {
 
   controller_->StopApp(app_id);
 }
+
 void StandaloneBrowserExtensionApps::Uninstall(
     const std::string& app_id,
     apps::mojom::UninstallSource uninstall_source,
     bool clear_site_data,
     bool report_abuse) {
-  // It is possible that Lacros is briefly unavailable, for example if it shuts
-  // down for an update.
-  if (!controller_.is_bound())
-    return;
-
-  controller_->Uninstall(app_id, uninstall_source, clear_site_data,
-                         report_abuse);
+  Uninstall(app_id,
+            ConvertMojomUninstallSourceToUninstallSource(uninstall_source),
+            clear_site_data, report_abuse);
 }
 
 void StandaloneBrowserExtensionApps::SetWindowMode(

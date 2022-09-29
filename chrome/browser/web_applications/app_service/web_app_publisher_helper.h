@@ -92,7 +92,7 @@ typedef base::IdTypeU32<ShortcutIdTypeMarker> ShortcutId;
 
 void UninstallImpl(WebAppProvider* provider,
                    const std::string& app_id,
-                   apps::mojom::UninstallSource uninstall_source,
+                   apps::UninstallSource uninstall_source,
                    gfx::NativeWindow parent_window);
 
 class WebAppPublisherHelper : public AppRegistrarObserver,
@@ -139,7 +139,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
   // Converts |uninstall_source| to a |WebappUninstallSource|.
   static webapps::WebappUninstallSource
   ConvertUninstallSourceToWebAppUninstallSource(
-      apps::mojom::UninstallSource uninstall_source);
+      apps::UninstallSource uninstall_source);
 
   // Must be called before profile keyed services are destroyed.
   void Shutdown();
@@ -185,7 +185,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
   // If |report_abuse| is true, the app will be reported for abuse to the Web
   // Store.
   void UninstallWebApp(const WebApp* web_app,
-                       apps::mojom::UninstallSource uninstall_source,
+                       apps::UninstallSource uninstall_source,
                        bool clear_site_data,
                        bool report_abuse);
 
@@ -212,8 +212,8 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
 
   void LaunchAppWithFiles(const std::string& app_id,
                           int32_t event_flags,
-                          apps::mojom::LaunchSource launch_source,
-                          apps::mojom::FilePathsPtr file_paths);
+                          apps::LaunchSource launch_source,
+                          std::vector<base::FilePath> file_paths);
 
   void LaunchAppWithIntent(const std::string& app_id,
                            int32_t event_flags,
@@ -224,8 +224,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
 
   content::WebContents* LaunchAppWithParams(apps::AppLaunchParams params);
 
-  void SetPermission(const std::string& app_id,
-                     apps::mojom::PermissionPtr permission);
+  void SetPermission(const std::string& app_id, apps::PermissionPtr permission);
 
 #if BUILDFLAG(IS_CHROMEOS)
   void StopApp(const std::string& app_id);
@@ -290,6 +289,15 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
   WebAppInstallManager& install_manager() const;
 
   bool IsShuttingDown() const;
+
+  // Create intent filters for `app_id`. The `app_scope` is needed because
+  // currently the correct app scope is not provided through WebApp API for
+  // shortcuts.
+  static apps::IntentFilters CreateIntentFiltersForWebApp(
+      const web_app::AppId& app_id,
+      const GURL& app_scope,
+      const apps::ShareTarget* app_share_target,
+      const apps::FileHandlers* enabled_file_handlers);
 
  private:
 #if BUILDFLAG(IS_CHROMEOS)

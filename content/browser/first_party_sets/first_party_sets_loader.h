@@ -6,15 +6,13 @@
 #define CONTENT_BROWSER_FIRST_PARTY_SETS_FIRST_PARTY_SETS_LOADER_H_
 
 #include "base/callback.h"
-#include "base/containers/flat_map.h"
-#include "base/containers/flat_set.h"
 #include "base/files/file.h"
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
 #include "base/timer/elapsed_timer.h"
 #include "content/browser/first_party_sets/first_party_set_parser.h"
 #include "content/common/content_export.h"
-#include "net/base/schemeful_site.h"
+#include "services/network/public/mojom/first_party_sets.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
@@ -26,11 +24,10 @@ namespace content {
 // `SetManuallySpecifiedSet`.
 class CONTENT_EXPORT FirstPartySetsLoader {
  public:
-  using LoadCompleteOnceCallback = base::OnceCallback<void(
-      base::flat_map<net::SchemefulSite, net::SchemefulSite>)>;
-  using FlattenedSets = base::flat_map<net::SchemefulSite, net::SchemefulSite>;
-  using SingleSet =
-      std::pair<net::SchemefulSite, base::flat_set<net::SchemefulSite>>;
+  using LoadCompleteOnceCallback =
+      base::OnceCallback<void(network::mojom::PublicFirstPartySetsPtr)>;
+  using FlattenedSets = FirstPartySetParser::SetsMap;
+  using SingleSet = FirstPartySetParser::SingleSet;
 
   explicit FirstPartySetsLoader(LoadCompleteOnceCallback on_load_complete);
 
@@ -54,19 +51,6 @@ class CONTENT_EXPORT FirstPartySetsLoader {
 
   // Close the file on thread pool that allows blocking.
   void DisposeFile(base::File sets_file);
-
-  // Handles addition sets which overlap by intersecting with the same existing
-  // set, known as a transitive-overlap.
-  //
-  // This uses a Union-Find algorithm to select the earliest-provided addition
-  // set as the representative of all other addition sets that
-  // transitively-overlap with it.
-  //
-  // The "earliest-provided" tie-breaker is determined using a set's index in
-  // `addition_sets`.
-  static std::vector<SingleSet> NormalizeAdditionSets(
-      const FlattenedSets& existing_sets,
-      const std::vector<SingleSet>& addition_sets);
 
  private:
   // Parses the contents of `raw_sets` as a collection of First-Party Set
@@ -94,12 +78,17 @@ class CONTENT_EXPORT FirstPartySetsLoader {
   // manually specified) have been merged, and then holds the merged data.
   FlattenedSets sets_ GUARDED_BY_CONTEXT(sequence_checker_);
 
+  // Aliases that were defined by the public set declarations.
+  FirstPartySetParser::Aliases aliases_ GUARDED_BY_CONTEXT(sequence_checker_);
+
   // Holds the set that was provided on the command line (if any). There are two
   // layers of absl::optional here because the value is initially unset (outer
   // optional), and may be empty if no command-line flag was provided (or one
-  // was provided but invalid) (inner optional).
-  absl::optional<absl::optional<SingleSet>> manually_specified_set_
-      GUARDED_BY_CONTEXT(sequence_checker_);
+  // was provided but invalid) (inner optional). For convenience, we store the
+  // primary domain separately, *and* store it and its entry within the
+  // `FlattenedSets`.
+  absl::optional<absl::optional<std::pair<net::SchemefulSite, FlattenedSets>>>
+      manually_specified_set_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   enum Progress {
     kNotStarted,

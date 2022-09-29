@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
@@ -79,31 +79,31 @@ enum ChromeCleanupOngoingAction {
   CLEANING = 2,
 }
 
-type ChromeCleanupCardActionButton = {
-  label: string,
-  doAction: () => void,
-};
+interface ChromeCleanupCardActionButton {
+  label: string;
+  doAction: () => void;
+}
 
-type ChromeCleanupCardComponents = {
-  title: string|null,
-  explanation: string|null,
-  actionButton: ChromeCleanupCardActionButton|null,
-  flags: number,
-};
+interface ChromeCleanupCardComponents {
+  title: string|null;
+  explanation: string|null;
+  actionButton: ChromeCleanupCardActionButton|null;
+  flags: number;
+}
 
 /**
  * Represents the file path structure of a base::FilePath.
  * dirname ends with a separator.
  */
-export type ChromeCleanupFilePath = {
-  dirname: string,
-  basename: string,
-};
+export interface ChromeCleanupFilePath {
+  dirname: string;
+  basename: string;
+}
 
-export type ChromeCleanerScannerResults = {
-  files: ChromeCleanupFilePath[],
-  registryKeys: string[],
-};
+export interface ChromeCleanerScannerResults {
+  files: ChromeCleanupFilePath[];
+  registryKeys: string[];
+}
 
 /**
  * @fileoverview

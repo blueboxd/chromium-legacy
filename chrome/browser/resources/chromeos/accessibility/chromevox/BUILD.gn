@@ -19,43 +19,29 @@ closure_library_dir =
 #
 # These files all use older Closure provide/require support for dependency management and will be transitioned to ES6 modules (see below).
 chromevox_modules = [
-  "../common/automation_predicate.js",
-  "../common/automation_util.js",
-  "../common/constants.js",
-  "../common/cursors/recovery_strategy.js",
-  "../common/key_code.js",
-  "../common/tree_walker.js",
   "background/braille/cursor_dots.js",
   "background/braille/pan_strategy.js",
-  "background/chromevox.js",
-  "common/abstract_earcons.js",
-  "common/background_bridge.js",
-  "common/braille/braille_interface.js",
-  "common/braille/braille_key_types.js",
-  "common/braille/nav_braille.js",
-  "common/bridge_constants.js",
-  "common/bridge_helper.js",
   "common/extension_bridge.js",
-  "common/log_types.js",
-  "common/panel_menu_data.js",
-  "common/spannable.js",
-  "common/tree_dumper.js",
-  "common/tts_interface.js",
   "injected/api_implementation.js",
   "injected/extension_bridge.js",
   "injected/loader.js",
   "injected/script_installer.js",
-  "options/bluetooth_braille_display_manager.js",
   "third_party/tamachiyomi/ja_phonetic_data.js",
 ]
 
 # ES6 modules.
 chromevox_es6_modules = [
+  "../common/automation_predicate.js",
+  "../common/automation_util.js",
+  "../common/constants.js",
   "../common/cursors/cursor.js",
   "../common/cursors/range.js",
+  "../common/cursors/recovery_strategy.js",
   "../common/event_generator.js",
   "../common/instance_checker.js",
+  "../common/key_code.js",
   "../common/string_util.js",
+  "../common/tree_walker.js",
   "background/automation_object_constructor_installer.js",
   "background/auto_scroll_handler.js",
   "background/background.js",
@@ -73,6 +59,7 @@ chromevox_es6_modules = [
   "background/braille/pan_strategy.js",
   "background/braille/spans.js",
   "background/chromevox_state.js",
+  "background/chromevox.js",
   "background/classic_background.js",
   "background/color.js",
   "background/command_handler.js",
@@ -122,9 +109,17 @@ chromevox_es6_modules = [
   "background/smart_sticky_mode.js",
   "background/tts_background.js",
   "background/user_action_monitor.js",
+  "common/abstract_earcons.js",
   "common/abstract_tts.js",
+  "common/background_bridge.js",
   "common/braille/braille_command_data.js",
+  "common/braille/braille_interface.js",
+  "common/braille/braille_key_types.js",
   "common/braille/braille_table.js",
+  "common/braille/nav_braille.js",
+  "common/bridge_callback_manager.js",
+  "common/bridge_constants.js",
+  "common/bridge_helper.js",
   "common/command_store.js",
   "common/composite_tts.js",
   "common/custom_automation_event.js",
@@ -136,12 +131,18 @@ chromevox_es6_modules = [
   "common/key_util.js",
   "common/keyboard_handler.js",
   "common/locale_output_helper.js",
+  "common/log_types.js",
   "common/msgs.js",
   "common/panel_bridge.js",
   "common/panel_command.js",
+  "common/panel_menu_data.js",
+  "common/spannable.js",
+  "common/tree_dumper.js",
   "common/tts_base.js",
+  "common/tts_interface.js",
   "learn_mode/learn_mode.js",
   "log_page/log.js",
+  "options/bluetooth_braille_display_manager.js",
   "options/bluetooth_braille_display_ui.js",
   "options/options.js",
   "panel/i_search_ui.js",
@@ -291,6 +292,7 @@ template("compress_js") {
   }
 }
 
+# TODO once these loaders are all empty, we will need to re-work the entry points.
 compress_js("chromevox_learn_mode_script") {
   sources = [ chromevox_learn_mode_loader_file ]
   output_file = "$chromevox_out_dir/chromeVoxKbExplorerScript.js"
@@ -326,10 +328,7 @@ if (is_chromeos_ash) {
     testonly = true
     assert(enable_extensions)
 
-    deps = [
-      ":chromevox_extension_js_tests",
-      ":chromevox_webui_js_tests",
-    ]
+    deps = [ ":chromevox_extension_js_tests" ]
 
     # TODO(jamescook): Figure out which of these are really necessary.
     data = [
@@ -393,43 +392,19 @@ if (is_chromeos_ash) {
       "../common/testing/assert_additions.js",
       "../common/testing/callback_helper.js",
       "../common/closure_shim.js",
-      "../common/key_code.js",
-      "background/chromevox.js",
       "background/braille/expanding_braille_translator.js",
       "background/braille/pan_strategy.js",
       "background/braille/spans.js",
       "background/braille/liblouis.js",
       "background/editing/editable_text_base.js",
       "background/phonetic_data.js",
-      "common/abstract_earcons.js",
-      "common/braille/braille_interface.js",
-      "common/braille/nav_braille.js",
       "common/key_sequence.js",
       "common/msgs.js",
       "common/spannable.js",
-      "common/tts_interface.js",
       "testing/fake_dom.js",
       "testing/mock_feedback.js",
       "third_party/tamachiyomi/ja_phonetic_data.js",
     ]
-  }
-
-  # These tests need a Blink renderer (e.g. DOM), but not a full extension
-  # renderer.
-  js2gtest("chromevox_webui_js_tests") {
-    test_type = "webui"
-    sources = [ "options/bluetooth_braille_display_manager_test.js" ]
-    gen_include_files = [
-      "../common/testing/accessibility_test_base.js",
-      "../common/testing/assert_additions.js",
-      "../common/testing/callback_helper.js",
-      "testing/chromevox_webui_test_base.js",
-      "testing/mock_feedback.js",
-    ]
-    test_deps_js_outputs = get_target_outputs(":chromevox_test_deps_js")
-    deps_js = test_deps_js_outputs[0]
-    deps = [ ":chromevox_test_deps_js" ]
-    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   }
 
   # These tests need a full extension renderer.
@@ -462,6 +437,7 @@ if (is_chromeos_ash) {
       "common/braille/braille_table_test.js",
       "common/locale_output_helper_test.js",
       "learn_mode/learn_mode_test.js",
+      "options/bluetooth_braille_display_manager_test.js",
       "options/bluetooth_braille_display_ui_test.js",
       "options/options_test.js",
       "panel/panel_test.js",

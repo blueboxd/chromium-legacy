@@ -366,6 +366,10 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                     POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                     base::Value(container.transfer_saml_cookies()), nullptr);
     }
+  }
+
+  if (policy.has_saml_username()) {
+    const em::SAMLUsernameProto& container(policy.saml_username());
     if (container.has_url_parameter_to_autofill_saml_username()) {
       policies->Set(
           key::kDeviceAutofillSAMLUsername, POLICY_LEVEL_MANDATORY,
@@ -515,17 +519,6 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
-  if (policy.has_saml_login_authentication_type()) {
-    const em::SamlLoginAuthenticationTypeProto& container(
-        policy.saml_login_authentication_type());
-    if (container.has_saml_login_authentication_type()) {
-      policies->Set(
-          key::kDeviceSamlLoginAuthenticationType, POLICY_LEVEL_MANDATORY,
-          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-          base::Value(container.saml_login_authentication_type()), nullptr);
-    }
-  }
-
   if (policy.has_device_reboot_on_user_signout()) {
     const em::DeviceRebootOnUserSignoutProto& container(
         policy.device_reboot_on_user_signout());
@@ -554,14 +547,32 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     if (GetPolicyLevel(container.has_policy_options(),
                        container.policy_options(), &level)) {
       base::Value urls(base::Value::Type::LIST);
-      for (const std::string& entry : container.value().entries()) {
-        urls.Append(entry);
+
+      if (container.has_value()) {
+        for (const std::string& entry : container.value().entries()) {
+          urls.Append(entry);
+        }
       }
 
       policies->Set(key::kDeviceWebBasedAttestationAllowedUrls, level,
                     POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, std::move(urls),
                     nullptr);
     }
+  }
+
+  if (policy.has_device_login_screen_context_aware_access_signals_allowlist()) {
+    const em::StringListPolicyProto& container(
+        policy.device_login_screen_context_aware_access_signals_allowlist());
+    base::Value allowlist(base::Value::Type::LIST);
+    if (container.has_value()) {
+      for (const std::string& entry : container.value().entries()) {
+        allowlist.Append(entry);
+      }
+    }
+
+    policies->Set(key::kDeviceLoginScreenContextAwareAccessSignalsAllowlist,
+                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                  POLICY_SOURCE_CLOUD, std::move(allowlist), nullptr);
   }
 
   if (policy.has_required_client_certificate_for_device()) {

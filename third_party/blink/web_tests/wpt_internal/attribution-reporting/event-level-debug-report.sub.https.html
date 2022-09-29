@@ -1,5 +1,6 @@
 <!doctype html>
 <meta charset=utf-8>
+<meta name=timeout content=long>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <script src="resources/helpers.js"></script>
@@ -10,7 +11,6 @@ attribution_reporting_promise_test(async t => {
   const trigger_debug_key = '357';
   await registerAttributionSrc(t, {
     source: {
-      source_event_id: '1',
       destination: `https://{{host}}`,
       debug_key: source_debug_key,
     },

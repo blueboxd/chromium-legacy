@@ -17,6 +17,10 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "chromeos/ash/components/dbus/shill/shill_clients.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/network_configuration_observer.h"
 #include "chromeos/ash/components/network/network_profile_handler.h"
 #include "chromeos/ash/components/network/network_state.h"
@@ -24,15 +28,11 @@
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "chromeos/ash/components/network/shill_property_util.h"
 #include "chromeos/ash/components/network/tether_constants.h"
-#include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -138,8 +138,7 @@ class TestNetworkConfigurationObserver : public NetworkConfigurationObserver {
   std::map<std::string, std::string> updated_configurations_;
 };
 
-class TestNetworkStateHandlerObserver
-    : public chromeos::NetworkStateHandlerObserver {
+class TestNetworkStateHandlerObserver : public NetworkStateHandlerObserver {
  public:
   TestNetworkStateHandlerObserver() = default;
 
@@ -160,7 +159,7 @@ class TestNetworkStateHandlerObserver
     return iter == property_updates_.end() ? 0 : iter->second;
   }
 
-  // chromeos::NetworkStateHandlerObserver overrides:
+  // NetworkStateHandlerObserver overrides:
   void NetworkListChanged() override { ++network_list_changed_count_; }
   void NetworkPropertiesUpdated(const NetworkState* network) override {
     property_updates_[network->path()]++;
@@ -761,7 +760,8 @@ TEST_F(NetworkConfigurationHandlerTest, NetworkConfigurationObserver_Updated) {
       network_configuration_observer->HasUpdatedConfiguration(service_path));
 
   base::Value properties(base::Value::Type::DICTIONARY);
-  properties.SetKey(shill::kSecurityProperty, base::Value(shill::kSecurityPsk));
+  properties.SetKey(shill::kSecurityClassProperty,
+                    base::Value(shill::kSecurityClassPsk));
   properties.SetKey(shill::kPassphraseProperty, base::Value("secret"));
 
   network_configuration_handler_->SetShillProperties(
@@ -793,4 +793,4 @@ TEST_F(NetworkConfigurationHandlerTest, AlwaysOnVpn) {
   EXPECT_EQ(vpn_package, package_result);
 }
 
-}  // namespace chromeos
+}  // namespace ash

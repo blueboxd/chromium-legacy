@@ -27,7 +27,6 @@
 #include "chromeos/ash/components/dbus/seneschal/fake_seneschal_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/ash/components/dbus/vm_applications/apps.pb.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/test/browser_task_environment.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -44,7 +43,6 @@ using ::ash::FakeCiceroneClient;
 using ::ash::FakeConciergeClient;
 using ::ash::FakeSeneschalClient;
 using ::chromeos::DBusMethodCallback;
-using ::chromeos::DBusThreadManager;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::IsEmpty;
@@ -169,7 +167,6 @@ class CrostiniPackageServiceTest : public testing::Test {
             kDifferentContainerContainerName)) {}
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
     ash::ChunneldClient::InitializeFake();
     ash::CiceroneClient::InitializeFake();
     ash::ConciergeClient::InitializeFake();
@@ -233,7 +230,6 @@ class CrostiniPackageServiceTest : public testing::Test {
     ash::ConciergeClient::Shutdown();
     ash::CiceroneClient::Shutdown();
     ash::ChunneldClient::Shutdown();
-    DBusThreadManager::Shutdown();
   }
 
  protected:
@@ -2023,7 +2019,6 @@ TEST_F(CrostiniPackageServiceTest, GetLinuxPackageInfoSendsCorrectRequest) {
   EXPECT_EQ(request.container_name(), kDifferentContainerContainerName);
   EXPECT_EQ(request.owner_id(), CryptohomeIdForProfile(profile_.get()));
   EXPECT_EQ(request.file_path(), kPackageFileContainerPath);
-  EXPECT_TRUE(fake_seneschal_client_->share_path_called());
 }
 
 TEST_F(CrostiniPackageServiceTest, GetLinuxPackageInfoReturnsInfoOnSuccess) {
@@ -2078,6 +2073,10 @@ TEST_F(CrostiniPackageServiceTest, GetLinuxPackageInfoSharePathFailure) {
   service_->GetLinuxPackageInfo(
       kDifferentContainerId, package_file_url_,
       base::BindOnce(&RecordPackageInfoResult, base::Unretained(&result)));
+  CrostiniManager::GetForProfile(profile_.get())
+      ->CallRestarterStartLxdContainerFinishedForTesting(
+          service_->GetRestartIdForTesting(),
+          CrostiniResult::CONTAINER_START_FAILED);
 
   base::RunLoop().RunUntilIdle();
 

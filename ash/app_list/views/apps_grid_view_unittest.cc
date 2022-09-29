@@ -43,6 +43,8 @@
 #include "ash/app_list/views/search_result_tile_item_view.h"
 #include "ash/app_list/views/suggestion_chip_container_view.h"
 #include "ash/constants/ash_features.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -54,6 +56,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
+#include "ash/style/system_shadow.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/layer_animation_stopped_waiter.h"
 #include "ash/utility/haptics_tracking_test_input_controller.h"
@@ -78,6 +81,7 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace ash {
 namespace test {
@@ -255,7 +259,7 @@ class BoundsChangeCounter : public views::ViewObserver {
 
 // Subclasses should set `is_rtl_`, `create_as_tablet_mode_`, etc. in their
 // constructors to indicate which mode to test.
-class AppsGridViewTest : public AshTestBase {
+class AppsGridViewTest : public AshTestBase, views::WidgetObserver {
  public:
   AppsGridViewTest() = default;
   AppsGridViewTest(const AppsGridViewTest&) = delete;
@@ -343,14 +347,35 @@ class AppsGridViewTest : public AshTestBase {
     test_api_ = std::make_unique<AppsGridViewTestApi>(apps_grid_view_);
     ui::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
         true);
+
+    // When root window where app list was last shown gets removed, the app list
+    // view hierarchy gets reset (and rebuilt on next show). If a test removes a
+    // display where app list is shown, all view pointers cached will become
+    // invalid - add a app list widget observer to clean up the state if the app
+    // list view gets removed before the test end.
+    apps_grid_view_->GetWidget()->AddObserver(this);
   }
 
   void TearDown() override {
+    if (apps_grid_view_)
+      apps_grid_view_->GetWidget()->RemoveObserver(this);
     page_flip_waiter_.reset();
     ui::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
         false);
     haptics_tracker_.reset();
     AshTestBase::TearDown();
+  }
+
+  // views::WidgetObserver:
+  void OnWidgetDestroying(views::Widget* widget) override {
+    apps_grid_view_ = nullptr;
+    paged_apps_grid_view_ = nullptr;
+    app_list_folder_view_ = nullptr;
+    search_box_view_ = nullptr;
+    suggestions_container_ = nullptr;
+    expand_arrow_view_ = nullptr;
+    test_api_.reset();
+    page_flip_waiter_.reset();
   }
 
  protected:
@@ -1453,6 +1478,47 @@ TEST_P(AppsGridViewClamshellTest, RemoveItemsInFolderShouldUpdateBounds) {
 }
 
 TEST_P(AppsGridViewClamshellTest, AddItemsToFolderShouldUpdateBounds) {
+  // Populate two folders with different number of apps.
+  AppListFolderItem* folder_1 = model_->CreateAndPopulateFolderWithApps(2);
+  model_->CreateAndPopulateFolderWithApps(4);
+
+  // Record the bounds of the folder view with 4 items in it.
+  AppsGridView* items_grid_view = app_list_folder_view()->items_grid_view();
+  test_api_->PressItemAt(1);
+  EXPECT_TRUE(GetAppListTestHelper()->IsInFolderView());
+  gfx::Rect two_rows_folder_view = items_grid_view->GetBoundsInScreen();
+  app_list_folder_view()->CloseFolderPage();
+
+  // Record the bounds of the folder view with 2 items in it and keep the folder
+  // view open for further testing.
+  test_api_->PressItemAt(0);
+  EXPECT_TRUE(GetAppListTestHelper()->IsInFolderView());
+  gfx::Rect one_row_folder_view = items_grid_view->GetBoundsInScreen();
+  EXPECT_NE(one_row_folder_view.size(), two_rows_folder_view.size());
+
+  // Add an item to the folder so that there are two rows in the folder view.
+  model_->AddItemToFolder(model_->CreateItem("Extra 1"), folder_1->id());
+  EXPECT_TRUE(GetAppListTestHelper()->IsInFolderView());
+  items_grid_view->GetWidget()->LayoutRootViewIfNecessary();
+  EXPECT_EQ(items_grid_view->GetBoundsInScreen().size(),
+            two_rows_folder_view.size());
+  app_list_folder_view()->CloseFolderPage();
+
+  // Create a folder with a full page of apps. Add an item to the folder should
+  // not change the size of the folder view.
+  AppListFolderItem* folder_full =
+      model_->CreateAndPopulateFolderWithApps(kMaxItemsPerFolderPage);
+  test_api_->PressItemAt(2);
+  EXPECT_TRUE(GetAppListTestHelper()->IsInFolderView());
+  gfx::Rect full_folder_view = items_grid_view->GetBoundsInScreen();
+
+  model_->AddItemToFolder(model_->CreateItem("Extra 2"), folder_full->id());
+  EXPECT_EQ(items_grid_view->GetBoundsInScreen().size(),
+            full_folder_view.size());
+  app_list_folder_view()->CloseFolderPage();
+}
+
+TEST_P(AppsGridViewClamshellAndTabletTest, AddItemsToFolderShouldUpdateBounds) {
   // Populate two folders with different number of apps.
   AppListFolderItem* folder_1 = model_->CreateAndPopulateFolderWithApps(2);
   model_->CreateAndPopulateFolderWithApps(4);
@@ -4434,6 +4500,199 @@ TEST_P(AppsGridViewDragTest, DragAnItemFromFolderToAndFromShelf) {
   EXPECT_TRUE(ShelfModel::Get()->items().empty());
 }
 
+TEST_P(AppsGridViewDragTest, RemoveDisplayWhileDraggingItemOntoShelf) {
+  UpdateDisplay("1024x768,1024x768");
+  model_->PopulateApps(3);
+
+  // Show the app list on the secondary display.
+  GetAppListTestHelper()->Dismiss();
+  GetAppListTestHelper()->ShowAndRunLoop(GetSecondaryDisplay().id());
+  if (!is_productivity_launcher_enabled_) {
+    GetAppListTestHelper()->GetAppListView()->SetState(
+        AppListViewState::kFullscreenAllApps);
+  }
+
+  AppListItemView* const item_view = GetItemViewInTopLevelGrid(1);
+
+  auto* generator = GetEventGenerator();
+  generator->MoveMouseTo(item_view->GetBoundsInScreen().CenterPoint());
+  generator->PressLeftButton();
+  item_view->FireMouseDragTimerForTest();
+  generator->MoveMouseBy(10, 10);
+  EXPECT_EQ(1, GetHapticTickEventsCount());
+
+  // Verify that item drag has started.
+  ASSERT_TRUE(apps_grid_view_->drag_item());
+  ASSERT_TRUE(apps_grid_view_->IsDragging());
+  ASSERT_EQ(item_view->item(), apps_grid_view_->drag_item());
+
+  Shelf* const secondary_shelf =
+      Shell::GetRootWindowControllerWithDisplayId(GetSecondaryDisplay().id())
+          ->shelf();
+
+  // Shelf should start handling the drag if it moves within its bounds.
+  ShelfView* shelf_view = secondary_shelf->GetShelfViewForTesting();
+  generator->MoveMouseTo(shelf_view->GetBoundsInScreen().left_center());
+  ASSERT_TRUE(apps_grid_view_->FireDragToShelfTimerForTest());
+
+  EXPECT_EQ("Item 1", shelf_view->drag_and_drop_shelf_id().app_id);
+
+  // Enable animations to catch potential crashes during display removal.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Remove display while drag is over the shelf bounds, verify that the shelf
+  // model does not change.
+  UpdateDisplay("1024x768");
+  EXPECT_FALSE(ShelfModel::Get()->IsAppPinned("Item 1"));
+  EXPECT_TRUE(ShelfModel::Get()->items().empty());
+}
+
+TEST_P(AppsGridViewDragTest, RemoveDisplayWhileDraggingFolderItemOntoShelf) {
+  UpdateDisplay("1024x768,1024x768");
+
+  // Creates a folder item - the folder size was chosen arbitrarily.
+  model_->CreateAndPopulateFolderWithApps(5);
+  // Add more apps to the root apps grid.
+  model_->PopulateApps(2);
+
+  // Show the app list on the secondary display.
+  GetAppListTestHelper()->Dismiss();
+  GetAppListTestHelper()->ShowAndRunLoop(GetSecondaryDisplay().id());
+  if (!is_productivity_launcher_enabled_) {
+    GetAppListTestHelper()->GetAppListView()->SetState(
+        AppListViewState::kFullscreenAllApps);
+  }
+
+  // Open the folder.
+  test_api_->PressItemAt(0);
+
+  AppListItemView* const item_view =
+      GetItemViewInAppsGridAt(1, folder_apps_grid_view());
+
+  auto* generator = GetEventGenerator();
+  generator->MoveMouseTo(item_view->GetBoundsInScreen().CenterPoint());
+  generator->PressLeftButton();
+  item_view->FireMouseDragTimerForTest();
+  generator->MoveMouseBy(10, 10);
+  EXPECT_EQ(1, GetHapticTickEventsCount());
+
+  // Verify app list item drag has started.
+  ASSERT_TRUE(folder_apps_grid_view()->drag_item());
+  ASSERT_TRUE(folder_apps_grid_view()->IsDragging());
+  ASSERT_EQ(item_view->item(), folder_apps_grid_view()->drag_item());
+
+  generator->MoveMouseTo(
+      app_list_folder_view()->GetBoundsInScreen().right_center() +
+      gfx::Vector2d(20, 0));
+
+  // Fire the reparent timer that should be started when an item is dragged out
+  // of folder bounds.
+  ASSERT_TRUE(folder_apps_grid_view()->FireFolderItemReparentTimerForTest());
+
+  Shelf* const secondary_shelf =
+      Shell::GetRootWindowControllerWithDisplayId(GetSecondaryDisplay().id())
+          ->shelf();
+
+  // Shelf should start handling the drag if it moves within its bounds.
+  ShelfView* shelf_view = secondary_shelf->GetShelfViewForTesting();
+  generator->MoveMouseTo(shelf_view->GetBoundsInScreen().left_center());
+  ASSERT_TRUE(folder_apps_grid_view()->FireDragToShelfTimerForTest());
+
+  EXPECT_EQ("Item 1", shelf_view->drag_and_drop_shelf_id().app_id);
+
+  // Enable animations to catch potential crashes during display removal.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Remove display while drag is over the shelf bounds, verify that the shelf
+  // model does not change.
+  UpdateDisplay("1024x768");
+  EXPECT_FALSE(ShelfModel::Get()->IsAppPinned("Item 1"));
+  EXPECT_TRUE(ShelfModel::Get()->items().empty());
+}
+
+TEST_P(AppsGridViewDragTest, MousePointerIsGrabbingDuringDrag) {
+  auto* cursor_manager = Shell::Get()->cursor_manager();
+  auto previous_cursor_type = cursor_manager->GetCursor().type();
+
+  // Populate the apps grid and start dragging one of the items.
+  model_->PopulateApps(3);
+  UpdateLayout();
+  AppListItemView* const item_view = GetItemViewInTopLevelGrid(1);
+  auto* generator = GetEventGenerator();
+  generator->MoveMouseTo(item_view->GetBoundsInScreen().CenterPoint());
+  generator->PressLeftButton();
+  item_view->FireMouseDragTimerForTest();
+
+  // Ensure the cursor type is set to grabbing during the drag.
+  EXPECT_EQ(ui::mojom::CursorType::kGrabbing,
+            cursor_manager->GetCursor().type());
+
+  // Release the left mouse button to cancel the drag and verify that the cursor
+  // type is reset.
+  generator->ReleaseLeftButton();
+  EXPECT_EQ(previous_cursor_type, cursor_manager->GetCursor().type());
+}
+
+TEST_P(AppsGridViewDragTest, MousePointerIsResetOnCanceledDrag) {
+  auto* cursor_manager = Shell::Get()->cursor_manager();
+  auto previous_cursor_type = cursor_manager->GetCursor().type();
+
+  // Populate the apps grid and start dragging one of the items.
+  model_->PopulateApps(3);
+  UpdateLayout();
+  AppListItemView* const item_view = GetItemViewInTopLevelGrid(1);
+  auto* generator = GetEventGenerator();
+  generator->MoveMouseTo(item_view->GetBoundsInScreen().CenterPoint());
+  generator->PressLeftButton();
+  item_view->FireMouseDragTimerForTest();
+
+  // The cursor type should be set to grabbing during the drag.
+  ASSERT_EQ(ui::mojom::CursorType::kGrabbing,
+            cursor_manager->GetCursor().type());
+
+  // Cancel the drag without releasing the left mouse button and verify that the
+  // cursor is still reset in this case.
+  generator->PressAndReleaseKey(ui::VKEY_ESCAPE);
+  EXPECT_EQ(previous_cursor_type, cursor_manager->GetCursor().type());
+}
+
+// Verify the cursor type when dragging one item over another item and back.
+TEST_P(AppsGridViewDragTest, MouseDragItemToOtherItemAndBack) {
+  auto* cursor_manager = Shell::Get()->cursor_manager();
+  model_->PopulateApps(3);
+  UpdateLayout();
+
+  // Start dragging the first item.
+  AppListItemView* const item0 = GetItemViewInTopLevelGrid(0);
+  gfx::Point starting_point = item0->GetBoundsInScreen().CenterPoint();
+  AppListItemView* const item1 = GetItemViewInTopLevelGrid(1);
+  auto* generator = GetEventGenerator();
+  generator->MoveMouseTo(starting_point);
+  generator->PressLeftButton();
+  item0->FireMouseDragTimerForTest();
+
+  // Verify the cursor is grabbing now that the drag has started.
+  ASSERT_EQ(ui::mojom::CursorType::kGrabbing,
+            cursor_manager->GetCursor().type());
+
+  // Move the first item on top of the second item as if to create a folder, but
+  // don't actually create a folder.
+  generator->MoveMouseTo(item1->GetBoundsInScreen().CenterPoint());
+
+  // Verify the cursor is still grabbing in this state.
+  ASSERT_EQ(ui::mojom::CursorType::kGrabbing,
+            cursor_manager->GetCursor().type());
+
+  // Move the first item back to its original position.
+  generator->MoveMouseTo(starting_point);
+
+  // The cursor should still be grabbing.
+  EXPECT_EQ(ui::mojom::CursorType::kGrabbing,
+            cursor_manager->GetCursor().type());
+}
+
 TEST_P(AppsGridViewTabletTest, Basic) {
   base::HistogramTester histogram_tester;
 
@@ -5898,6 +6157,94 @@ TEST_P(AppsGridViewClamshellTest,
       GetItemViewInAppsGridAt(0, folder_apps_grid_view());
   SimulateRightClickOrLongPressAt(item_view->GetBoundsInScreen().CenterPoint());
   EXPECT_FALSE(app_list_folder_view()->folder_header_view()->HasTextFocus());
+}
+
+// Tests that right clicking an app will remove focus from other apps within the
+// apps grid. See https://crbug.com/1146365.
+TEST_P(AppsGridViewClamshellTest, FocusNotRestoredIfNoViewWasFocused) {
+  // Create a folder with a couple items.
+  model_->CreateAndPopulateFolderWithApps(2);
+  UpdateLayout();
+
+  // Open the folder item.
+  test_api_->PressItemAt(0);
+  ASSERT_TRUE(folder_apps_grid_view());
+
+  // Force focus on the title name of the folder.
+  app_list_folder_view()->FocusNameInput();
+  ASSERT_TRUE(app_list_folder_view()->folder_header_view()->HasTextFocus());
+
+  // Press Enter, the title should not have focus.
+  GetEventGenerator()->PressAndReleaseKey(ui::VKEY_RETURN);
+  ASSERT_FALSE(app_list_folder_view()->folder_header_view()->HasTextFocus());
+
+  // Right click on another element.
+  AppListItemView* const item_view =
+      GetItemViewInAppsGridAt(0, folder_apps_grid_view());
+  SimulateRightClickOrLongPressAt(item_view->GetBoundsInScreen().CenterPoint());
+  EXPECT_FALSE(app_list_folder_view()->folder_header_view()->HasTextFocus());
+
+  // Exit context menu. The focus should not get restored to the text.
+  item_view->CancelContextMenu();
+  EXPECT_FALSE(app_list_folder_view()->folder_header_view()->HasTextFocus());
+}
+
+TEST_P(AppsGridViewTabletTest, ChangeFolderNameShouldUpdateShadows) {
+  SetVirtualKeyboardEnabled(true);
+
+  const int kMaxAppsInGrid = test_api_->TilesPerPage(0);
+  model_->PopulateApps(kMaxAppsInGrid - 1);
+  UpdateLayout();
+
+  // Create a folder on the second row with kMaxItemsInFolder to be big enough
+  // to displace the apps grid bounds on keyboard shown. Open the folder.
+  model_->CreateAndPopulateFolderWithApps(kMaxItemsInFolder);
+  test_api_->PressItemAt(kMaxAppsInGrid - 1);
+  EXPECT_TRUE(GetAppListTestHelper()->IsInFolderView());
+  gfx::Rect initial_folder_bounds =
+      folder_apps_grid_view()->GetBoundsInScreen();
+  gfx::Rect initial_shadow =
+      app_list_folder_view()->shadow()->GetContentBounds();
+  views::View::ConvertRectToScreen(app_list_folder_view(), &initial_shadow);
+
+  // Show the virtual keyboard. The grid view should displace with the folder
+  // and shadow bounds.
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
+  keyboard_controller->ShowKeyboard(false);
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  gfx::Rect folder_bounds_with_keyboard =
+      folder_apps_grid_view()->GetBoundsInScreen();
+  gfx::Rect shadow_with_keyboard =
+      app_list_folder_view()->shadow()->GetContentBounds();
+  views::View::ConvertRectToScreen(app_list_folder_view(),
+                                   &shadow_with_keyboard);
+
+  EXPECT_NE(initial_folder_bounds, folder_bounds_with_keyboard);
+  EXPECT_NE(initial_shadow, shadow_with_keyboard);
+
+  // Start typing to change the folder name. The folder and shadow bounds must
+  // stay unchanged from previous step.
+  views::Textfield* folder_header =
+      app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest();
+  folder_header->RequestFocus();
+  ASSERT_TRUE(folder_header->HasFocus());
+  const std::u16string folder_name = folder_header->GetText();
+
+  GetEventGenerator()->PressAndReleaseKey(ui::VKEY_A);
+  // Force app list to Update Layout to catch potential crashes.
+  UpdateLayout();
+
+  EXPECT_NE(folder_name, folder_header->GetText());
+
+  gfx::Rect folder_bounds_after_type =
+      folder_apps_grid_view()->GetBoundsInScreen();
+  gfx::Rect shadow_after_type =
+      app_list_folder_view()->shadow()->GetContentBounds();
+  views::View::ConvertRectToScreen(app_list_folder_view(), &shadow_after_type);
+
+  EXPECT_EQ(folder_bounds_with_keyboard, folder_bounds_after_type);
+  EXPECT_EQ(shadow_with_keyboard, shadow_after_type);
 }
 
 }  // namespace test

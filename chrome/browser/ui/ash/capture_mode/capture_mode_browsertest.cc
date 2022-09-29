@@ -6,6 +6,8 @@
 #include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shell.h"
 #include "base/callback_forward.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
@@ -361,6 +363,14 @@ IN_PROC_BROWSER_TEST_F(CaptureModeBrowserTest,
       events_[1],
       policy::IsDlpPolicyEvent(policy::CreateDlpPolicyWarningProceededEvent(
           kSrcPattern, policy::DlpRulesManager::Restriction::kScreenshot)));
+}
+
+// A regression test for https://crbug.com/1350711 in which a session is started
+// quickly after clicking the sign out button.
+IN_PROC_BROWSER_TEST_F(CaptureModeBrowserTest,
+                       SimulateStartingSessionAfterSignOut) {
+  ash::Shell::Get()->session_controller()->RequestSignOut();
+  ash::CaptureModeTestApi().StartForFullscreen(false);
 }
 
 // Parametrize capture mode browser tests to check both making screenshots and
@@ -768,12 +778,6 @@ class CaptureModeCameraBrowserTests : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   }
 
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        ash::features::kCaptureModeSelfieCamera);
-    InProcessBrowserTest::SetUp();
-  }
-
   void SetUpOnMainThread() override {
     ash::CaptureModeTestApi test_api;
     ASSERT_EQ(1u, test_api.GetNumberOfAvailableCameras());
@@ -793,9 +797,6 @@ class CaptureModeCameraBrowserTests : public InProcessBrowserTest {
       loop.Run();
     }
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(CaptureModeCameraBrowserTests, VerifyFrames) {

@@ -38,6 +38,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -131,6 +132,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
+#include "third_party/blink/renderer/platform/scheduler/public/non_main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/widget/input/main_thread_event_queue.h"
 #include "third_party/blink/renderer/platform/widget/input/widget_input_handler_manager.h"
@@ -2521,10 +2523,15 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
   DCHECK(!WebInputEvent::IsTouchEventType(input_event.GetType()));
   CHECK(LocalRootImpl());
 
+  // Clients shouldn't be dispatching events to a provisional frame but this
+  // can happen. Ensure that event handling can assume we're in a committed
+  // frame.
+  if (IsProvisional())
+    return WebInputEventResult::kHandledSuppressed;
+
   // Only record metrics for the root frame.
-  if (ForTopMostMainFrame()) {
+  if (ForTopMostMainFrame())
     GetPage()->GetVisualViewport().StartTrackingPinchStats();
-  }
 
   // If a drag-and-drop operation is in progress, ignore input events except
   // PointerCancel and GestureLongPress.
@@ -2847,14 +2854,14 @@ void WebFrameWidgetImpl::DidMeaningfulLayout(WebMeaningfulLayout layout_type) {
 }
 
 void WebFrameWidgetImpl::PresentationCallbackForMeaningfulLayout(
-    base::TimeTicks) {
+    base::TimeTicks first_paint_time) {
   // |local_root_| may be null if the widget has shut down between when this
   // callback was requested and when it was resolved by the compositor.
   if (local_root_)
     local_root_->ViewImpl()->DidFirstVisuallyNonEmptyPaint();
 
   if (widget_base_)
-    widget_base_->DidFirstVisuallyNonEmptyPaint();
+    widget_base_->DidFirstVisuallyNonEmptyPaint(first_paint_time);
 }
 
 void WebFrameWidgetImpl::RequestAnimationAfterDelay(
@@ -3600,9 +3607,11 @@ WebFrameWidgetImpl::GetImeTextSpansInfo(
 
   for (const auto& ime_text_span : ime_text_spans) {
     gfx::Rect rect;
-    unsigned length = ime_text_span.end_offset - ime_text_span.start_offset;
-    focused_frame->FirstRectForCharacterRange(ime_text_span.start_offset,
-                                              length, rect);
+    auto length = base::checked_cast<wtf_size_t>(ime_text_span.end_offset -
+                                                 ime_text_span.start_offset);
+    focused_frame->FirstRectForCharacterRange(
+        base::checked_cast<wtf_size_t>(ime_text_span.start_offset), length,
+        rect);
 
     ime_text_spans_info.push_back(ui::mojom::blink::ImeTextSpanInfo::New(
         ime_text_span, widget_base_->BlinkSpaceToEnclosedDIPs(rect)));

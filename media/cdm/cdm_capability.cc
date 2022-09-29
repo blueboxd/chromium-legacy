@@ -8,10 +8,31 @@
 
 namespace media {
 
+VideoCodecInfo::VideoCodecInfo() = default;
+
+VideoCodecInfo::VideoCodecInfo(
+    base::flat_set<VideoCodecProfile> supported_profiles,
+    bool supports_clear_lead)
+    : supported_profiles(std::move(supported_profiles)),
+      supports_clear_lead(supports_clear_lead) {}
+
+VideoCodecInfo::VideoCodecInfo(
+    base::flat_set<VideoCodecProfile> supported_profiles)
+    : supported_profiles(std::move(supported_profiles)) {}
+
+VideoCodecInfo::VideoCodecInfo(const VideoCodecInfo& other) = default;
+
+VideoCodecInfo::~VideoCodecInfo() = default;
+
+bool operator==(const VideoCodecInfo& lhs, const VideoCodecInfo& rhs) {
+  return lhs.supported_profiles == rhs.supported_profiles &&
+         lhs.supports_clear_lead == rhs.supports_clear_lead;
+}
+
 CdmCapability::CdmCapability() = default;
 
 CdmCapability::CdmCapability(
-    std::vector<AudioCodec> audio_codecs,
+    base::flat_set<AudioCodec> audio_codecs,
     VideoCodecMap video_codecs,
     base::flat_set<EncryptionScheme> encryption_schemes,
     base::flat_set<CdmSessionType> session_types)

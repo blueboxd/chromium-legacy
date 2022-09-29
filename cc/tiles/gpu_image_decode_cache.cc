@@ -988,13 +988,12 @@ GpuImageDecodeCache::GpuImageDecodeCache(
     SkColorType color_type,
     size_t max_working_set_bytes,
     int max_texture_size,
-    PaintImage::GeneratorClientId generator_client_id,
     RasterDarkModeFilter* const dark_mode_filter)
     : color_type_(color_type),
       use_transfer_cache_(use_transfer_cache),
       context_(context),
       max_texture_size_(max_texture_size),
-      generator_client_id_(generator_client_id),
+      generator_client_id_(PaintImage::GetNextGeneratorClientId()),
       enable_clipped_image_scaling_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kEnableClippedImageScaling)),
@@ -3028,16 +3027,12 @@ bool GpuImageDecodeCache::NeedsDarkModeFilterForTesting(
 
 void GpuImageDecodeCache::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel level) {
+  if (!ImageDecodeCacheUtils::ShouldEvictCaches(level))
+    return;
+
   base::AutoLock lock(lock_);
-  switch (level) {
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
-      break;
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
-      base::AutoReset<bool> reset(&aggressively_freeing_resources_, true);
-      EnsureCapacity(0);
-      break;
-  }
+  base::AutoReset<bool> reset(&aggressively_freeing_resources_, true);
+  EnsureCapacity(0);
 }
 
 bool GpuImageDecodeCache::SupportsColorSpaceConversion() const {

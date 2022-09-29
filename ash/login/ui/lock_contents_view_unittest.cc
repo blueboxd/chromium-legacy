@@ -34,6 +34,7 @@
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/cpp/login_types.h"
+#include "ash/public/cpp/reauth_reason.h"
 #include "ash/public/mojom/tray_action.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -56,6 +57,7 @@
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/known_user.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -122,8 +124,8 @@ AuthDisabledData GetTestDisabledAuthData() {
 using LockContentsViewKeyboardUnitTest = LoginKeyboardTestBase;
 
 class LockContentsViewUnitTest : public LoginTestBase {
- protected:
-  LockContentsViewUnitTest() = default;
+ public:
+  LockContentsViewUnitTest() { set_start_session(true); }
   LockContentsViewUnitTest(LockContentsViewUnitTest&) = delete;
   LockContentsViewUnitTest& operator=(LockContentsViewUnitTest&) = delete;
   ~LockContentsViewUnitTest() override = default;
@@ -1229,7 +1231,9 @@ TEST_F(LockContentsViewUnitTest, AuthErrorLockscreenLearnMoreButton) {
 TEST_F(LockContentsViewUnitTest, AuthErrorLoginScreenForgotPasswordButton) {
   // Enable the "forgot password" button.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kCryptohomeRecoveryFlowUI);
+  feature_list.InitWithFeatures(
+      {features::kCryptohomeRecoveryFlowUI, features::kCryptohomeRecoveryFlow},
+      {});
 
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLogin,
@@ -1282,6 +1286,13 @@ TEST_F(LockContentsViewUnitTest, AuthErrorLoginScreenForgotPasswordButton) {
 
   // The error bubble should be hidden because of the button press.
   EXPECT_FALSE(test_api.auth_error_bubble()->GetVisible());
+
+  absl::optional<int> reauth_reason =
+      user_manager::KnownUser(Shell::Get()->local_state())
+          .FindReauthReason(users()[0].basic_user_info.account_id);
+  EXPECT_TRUE(reauth_reason.has_value());
+  EXPECT_EQ(reauth_reason.value(),
+            static_cast<int>(ReauthReason::FORGOT_PASSWORD));
 }
 
 // Gaia is never shown on lock, no mater how many times auth fails.
@@ -1307,6 +1318,50 @@ TEST_F(LockContentsViewUnitTest, GaiaNeverShownOnLockAfterFailedAuth) {
   EXPECT_CALL(*client, ShowGaiaSignin(_)).Times(0);
   for (int i = 0; i < LockContentsView::kLoginAttemptsBeforeGaiaDialog + 1; ++i)
     submit_password();
+}
+
+// Gaia should not be shown after first failed login attempt for a user, even if
+// there are many failed login attempts made by other users on the same device.
+TEST_F(LockContentsViewUnitTest, GaiaNeverShownAfterFirstFailedLoginAttempt) {
+  // Build lock screen with two users.
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLogin,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  SetUserCount(2);
+  SetWidget(CreateWidgetWithContent(contents));
+
+  auto client = std::make_unique<MockLoginScreenClient>();
+  client->set_authenticate_user_callback_result(false);
+
+  auto submit_password = [&]() {
+    PressAndReleaseKey(ui::KeyboardCode::VKEY_A);
+    PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
+    base::RunLoop().RunUntilIdle();
+  };
+
+  // ShowGaiaSignin is never triggered.
+  EXPECT_CALL(*client, ShowGaiaSignin(_)).Times(0);
+  for (int i = 0; i < LockContentsView::kLoginAttemptsBeforeGaiaDialog - 1; ++i)
+    submit_password();
+  Mock::VerifyAndClearExpectations(client.get());
+
+  // Simulate a button click on the secondary UserView.
+  LoginAuthUserView::TestApi secondary_user(LockContentsView::TestApi(contents)
+                                                .opt_secondary_big_view()
+                                                ->auth_user());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(
+      secondary_user.user_view()->GetBoundsInScreen().CenterPoint());
+  generator->ClickLeftButton();
+  EXPECT_TRUE(LoginPasswordView::TestApi(secondary_user.password_view())
+                  .textfield()
+                  ->HasFocus());
+
+  // Verify ShowGaiaSignin is not triggered for other users.
+  EXPECT_CALL(*client, ShowGaiaSignin(_)).Times(0);
+  submit_password();
+  Mock::VerifyAndClearExpectations(client.get());
 }
 
 // Gaia is shown in login on the 4th bad password attempt.
@@ -3318,7 +3373,6 @@ class LockContentsViewWithKioskLicenseTest : public LoginTestBase {
   ~LockContentsViewWithKioskLicenseTest() override = default;
 
   void SetUp() override {
-    set_start_session(false);
     LoginTestBase::SetUp();
     login_shelf_view_ = GetPrimaryShelf()->shelf_widget()->GetLoginShelfView();
     // Set initial states.

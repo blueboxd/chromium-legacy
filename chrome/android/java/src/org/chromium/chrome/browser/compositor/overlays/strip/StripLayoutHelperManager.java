@@ -462,20 +462,6 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
         return getActiveStripLayoutHelper().getRightFadeOpacity();
     }
 
-    /**
-     * @return The brightness of background tabs in the tabstrip.
-     */
-    public float getBackgroundTabBrightness() {
-        return getActiveStripLayoutHelper().getBackgroundTabBrightness();
-    }
-
-    /**
-     * @return The brightness of the entire tabstrip.
-     */
-    public float getBrightness() {
-        return getActiveStripLayoutHelper().getBrightness();
-    }
-
     /** Update the title cache for the available tabs in the model. */
     private void updateTitleCacheForInit() {
         LayerTitleCache titleCache = mLayerTitleCacheSupplier.get();
@@ -586,7 +572,7 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
             }
 
             @Override
-            public void didCloseTab(Tab tab) {
+            public void onFinishingTabClosure(Tab tab) {
                 getStripLayoutHelper(tab.isIncognito()).tabClosed(time(), tab.getId());
                 updateModelSwitcherButton();
             }
@@ -615,9 +601,10 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
             public void didAddTab(Tab tab, int type, int creationState) {
                 boolean selected = type != TabLaunchType.FROM_LONGPRESS_BACKGROUND
                         || (mTabModelSelector.isIncognitoSelected() && tab.isIncognito());
+                boolean onStartup = type == TabLaunchType.FROM_RESTORE;
                 getStripLayoutHelper(tab.isIncognito())
                         .tabCreated(time(), tab.getId(), mTabModelSelector.getCurrentTabId(),
-                                selected, false);
+                                selected, false, onStartup);
             }
         };
 

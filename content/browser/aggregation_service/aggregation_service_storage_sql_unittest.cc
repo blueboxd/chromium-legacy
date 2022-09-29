@@ -24,6 +24,7 @@
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/test/test_helpers.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
@@ -32,6 +33,11 @@
 namespace content {
 
 namespace {
+
+using aggregation_service::RequestIdIs;
+using testing::ElementsAre;
+
+using RequestId = AggregationServiceStorage::RequestId;
 
 const char kExampleUrl[] =
     "https://helper.test/.well-known/aggregation-service/keys.json";
@@ -457,8 +463,7 @@ TEST_F(AggregationServiceStorageSqlTest, StoreRequest_ExpectedResult) {
   ASSERT_EQ(stored_requests_and_ids.size(), 1u);
 
   // IDs autoincrement from 1.
-  EXPECT_EQ(stored_requests_and_ids[0].id,
-            AggregationServiceStorage::RequestId(1));
+  EXPECT_EQ(stored_requests_and_ids[0].id, RequestId(1));
   EXPECT_TRUE(aggregation_service::ReportRequestsEqual(
       stored_requests_and_ids[0].request, request));
 }
@@ -474,7 +479,7 @@ TEST_F(AggregationServiceStorageSqlTest, DeleteRequest_ExpectedResult) {
             1u);
 
   // IDs autoincrement from 1.
-  storage_->DeleteRequest(AggregationServiceStorage::RequestId(1));
+  storage_->DeleteRequest(RequestId(1));
   EXPECT_TRUE(
       storage_->GetRequestsReportingOnOrBefore(base::Time::Max()).empty());
 }
@@ -555,6 +560,22 @@ TEST_F(AggregationServiceStorageSqlTest,
   }
 }
 
+TEST_F(AggregationServiceStorageSqlTest, GetRequests_ReturnValuesAlignWithIds) {
+  OpenDatabase();
+
+  AggregatableReportRequest request =
+      aggregation_service::CreateExampleRequest();
+
+  storage_->StoreRequest(aggregation_service::CloneReportRequest(request));
+  storage_->StoreRequest(aggregation_service::CloneReportRequest(request));
+  storage_->StoreRequest(std::move(request));
+
+  // IDs autoincrement from 1.
+  EXPECT_THAT(
+      storage_->GetRequests({RequestId(1), RequestId(3), RequestId(4)}),
+      ElementsAre(RequestIdIs(RequestId(1)), RequestIdIs(RequestId(3))));
+}
+
 TEST_F(AggregationServiceStorageSqlTest,
        NextReportTimeAfter_ReturnValuesAlignWithReportTime) {
   OpenDatabase();
@@ -627,12 +648,10 @@ TEST_F(AggregationServiceStorageSqlTest,
       storage_->GetRequestsReportingOnOrBefore(kExampleTime);
   ASSERT_EQ(example_time_reports.size(), 2u);
 
-  EXPECT_EQ(base::flat_set<AggregationServiceStorage::RequestId>(
+  EXPECT_EQ(base::flat_set<RequestId>(
                 {example_time_reports[0].id, example_time_reports[1].id}),
             // Request IDs autoincrement from 1.
-            base::flat_set<AggregationServiceStorage::RequestId>(
-                {AggregationServiceStorage::RequestId(1),
-                 AggregationServiceStorage::RequestId(2)}));
+            base::flat_set<RequestId>({RequestId(1), RequestId(2)}));
 
   ASSERT_TRUE(storage_->NextReportTimeAfter(kExampleTime).has_value());
   EXPECT_EQ(storage_->NextReportTimeAfter(kExampleTime).value(),
@@ -647,7 +666,7 @@ TEST_F(AggregationServiceStorageSqlTest,
   std::vector<AggregationServiceStorage::RequestAndId> all_reports =
       storage_->GetRequestsReportingOnOrBefore(kExampleTime + base::Hours(1));
   ASSERT_EQ(all_reports.size(), 3u);
-  EXPECT_EQ(all_reports[2].id, AggregationServiceStorage::RequestId(3));
+  EXPECT_EQ(all_reports[2].id, RequestId(3));
 
   EXPECT_FALSE(
       storage_->NextReportTimeAfter(kExampleTime + base::Hours(1)).has_value());
@@ -698,7 +717,7 @@ TEST_F(AggregationServiceStorageSqlTest,
   ASSERT_EQ(stored_reports.size(), 1u);
 
   // Only the last request should be left. Request IDs start from 1.
-  EXPECT_EQ(stored_reports[0].id, AggregationServiceStorage::RequestId(3));
+  EXPECT_EQ(stored_reports[0].id, RequestId(3));
 }
 
 TEST_F(AggregationServiceStorageSqlTest,
@@ -737,7 +756,143 @@ TEST_F(AggregationServiceStorageSqlTest,
   ASSERT_EQ(stored_reports.size(), 1u);
 
   // Only the last request should be left. Request IDs start from 1.
-  EXPECT_EQ(stored_reports[0].id, AggregationServiceStorage::RequestId(3));
+  EXPECT_EQ(stored_reports[0].id, RequestId(3));
+}
+
+TEST_F(AggregationServiceStorageSqlTest,
+       AdjustOfflineReportTimes_AffectsPastReportsOnly) {
+  OpenDatabase();
+
+  AggregatableReportRequest request =
+      aggregation_service::CreateExampleRequest();
+
+  base::Time original_report_time = request.shared_info().scheduled_report_time;
+
+  storage_->StoreRequest(aggregation_service::CloneReportRequest(request));
+  EXPECT_EQ(storage_->NextReportTimeAfter(base::Time::Min()),
+            original_report_time);
+
+  // As `now` is before the report time, the report shouldn't be affected.
+  EXPECT_EQ(storage_->AdjustOfflineReportTimes(
+                /*now=*/original_report_time - base::Minutes(1),
+                /*min_delay=*/base::Minutes(1),
+                /*max_delay=*/base::Minutes(2)),
+            original_report_time);
+  EXPECT_EQ(storage_->NextReportTimeAfter(base::Time::Min()),
+            original_report_time);
+
+  // Report times equal to `now` are also unaffected.
+  EXPECT_EQ(storage_->AdjustOfflineReportTimes(/*now=*/original_report_time,
+                                               /*min_delay=*/base::Minutes(1),
+                                               /*max_delay=*/base::Minutes(2)),
+            original_report_time);
+  EXPECT_EQ(storage_->NextReportTimeAfter(base::Time::Min()),
+            original_report_time);
+
+  {
+    // The report time is now considered in the past so it is adjusted.
+    absl::optional<base::Time> new_report_time =
+        storage_->AdjustOfflineReportTimes(
+            /*now=*/original_report_time + base::Minutes(1),
+            /*min_delay=*/base::Minutes(1),
+            /*max_delay=*/base::Minutes(2));
+    EXPECT_EQ(storage_->NextReportTimeAfter(base::Time::Min()),
+              new_report_time);
+    ASSERT_TRUE(new_report_time.has_value());
+    EXPECT_GE(new_report_time.value(), original_report_time + base::Minutes(2));
+    EXPECT_LE(new_report_time.value(), original_report_time + base::Minutes(3));
+  }
+}
+
+TEST_F(AggregationServiceStorageSqlTest,
+       AdjustOfflineReportTimes_SupportsZeroMinAndConstantDelay) {
+  OpenDatabase();
+
+  AggregatableReportRequest request =
+      aggregation_service::CreateExampleRequest();
+
+  base::Time original_report_time = request.shared_info().scheduled_report_time;
+
+  storage_->StoreRequest(aggregation_service::CloneReportRequest(request));
+  EXPECT_EQ(storage_->NextReportTimeAfter(base::Time::Min()),
+            original_report_time);
+
+  {
+    // The delay can be constant (i.e. min delay can be equal to max delay)
+    absl::optional<base::Time> new_report_time =
+        storage_->AdjustOfflineReportTimes(
+            /*now=*/original_report_time + base::Minutes(1),
+            /*min_delay=*/base::Minutes(1),
+            /*max_delay=*/base::Minutes(1));
+
+    EXPECT_EQ(storage_->NextReportTimeAfter(base::Time::Min()),
+              new_report_time);
+    ASSERT_TRUE(new_report_time.has_value());
+    EXPECT_EQ(new_report_time.value(), original_report_time + base::Minutes(2));
+  }
+
+  {
+    // The min delay can be zero
+    absl::optional<base::Time> new_report_time =
+        storage_->AdjustOfflineReportTimes(
+            /*now=*/original_report_time + base::Minutes(5),
+            /*min_delay=*/base::Minutes(0),
+            /*max_delay=*/base::Minutes(1));
+    EXPECT_EQ(storage_->NextReportTimeAfter(base::Time::Min()),
+              new_report_time);
+    ASSERT_TRUE(new_report_time.has_value());
+    EXPECT_GE(new_report_time.value(), original_report_time + base::Minutes(5));
+    EXPECT_LE(new_report_time.value(), original_report_time + base::Minutes(6));
+  }
+}
+
+TEST_F(AggregationServiceStorageSqlTest,
+       AdjustOfflineReportTimes_MultipleReports) {
+  OpenDatabase();
+
+  const base::Time kExampleTime = base::Time::FromJavaTime(1652984901234);
+
+  std::vector<base::Time> scheduled_report_times = {
+      kExampleTime, kExampleTime + base::Hours(1),
+      kExampleTime - base::Hours(1)};
+
+  for (base::Time scheduled_report_time : scheduled_report_times) {
+    AggregatableReportRequest example_request =
+        aggregation_service::CreateExampleRequest();
+    AggregatableReportSharedInfo shared_info =
+        example_request.shared_info().Clone();
+    shared_info.scheduled_report_time = scheduled_report_time;
+
+    absl::optional<AggregatableReportRequest> request =
+        AggregatableReportRequest::Create(example_request.payload_contents(),
+                                          std::move(shared_info));
+    ASSERT_TRUE(request.has_value());
+
+    storage_->StoreRequest(std::move(request.value()));
+  }
+
+  EXPECT_EQ(storage_->NextReportTimeAfter(base::Time::Min()),
+            kExampleTime - base::Hours(1));
+  EXPECT_EQ(storage_->GetRequestsReportingOnOrBefore(base::Time::Max()).size(),
+            3u);
+
+  // Should only affect the third report.
+  EXPECT_EQ(storage_->AdjustOfflineReportTimes(
+                /*now=*/kExampleTime,
+                /*min_delay=*/base::Minutes(1),
+                /*max_delay=*/base::Minutes(1)),
+            kExampleTime);
+
+  // Next report is now the first.
+  EXPECT_EQ(storage_->NextReportTimeAfter(base::Time::Min()), kExampleTime);
+
+  // After that is the third report with a delay applied
+  EXPECT_EQ(storage_->NextReportTimeAfter(kExampleTime),
+            kExampleTime + base::Minutes(1));
+
+  // Finally there's the unaffected second report.
+  EXPECT_EQ(storage_->NextReportTimeAfter(kExampleTime + base::Minutes(1)),
+            kExampleTime + base::Hours(1));
 }
 
 TEST_F(AggregationServiceStorageSqlInMemoryTest,

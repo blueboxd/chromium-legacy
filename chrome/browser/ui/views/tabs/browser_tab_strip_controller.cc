@@ -337,8 +337,8 @@ void BrowserTabStripController::CloseTab(int model_index) {
   hover_tab_selector_.CancelTabTransition();
 
   model_->CloseWebContentsAt(model_index,
-                             TabStripModel::CLOSE_USER_GESTURE |
-                             TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+                             TabCloseTypes::CLOSE_USER_GESTURE |
+                                 TabCloseTypes::CLOSE_CREATE_HISTORICAL_TAB);
 
   // Try to show reading list IPH if needed.
   if (tabstrip_->GetTabCount() >= 7) {
@@ -430,9 +430,8 @@ void BrowserTabStripController::ShowContextMenuForTab(
     ui::MenuSourceType source_type) {
   context_menu_contents_ = std::make_unique<TabContextMenuContents>(tab, this);
   context_menu_contents_->RunMenuAt(p, source_type);
-  base::UmaHistogramEnumeration(
-      "TabStrip.Tab.Views.ActivationAction",
-      TabStripModel::TabActivationTypes::kContextMenu);
+  base::UmaHistogramEnumeration("TabStrip.Tab.Views.ActivationAction",
+                                TabActivationTypes::kContextMenu);
 }
 
 void BrowserTabStripController::CloseContextMenuForTesting() {

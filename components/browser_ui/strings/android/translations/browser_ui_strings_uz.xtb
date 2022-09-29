@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">Yuklab olish pauza qilindi.</translation>
 <translation id="1409426117486808224">Ochiq varaqlarni ko‘rish uchun oddiy rejim</translation>
 <translation id="1415402041810619267">URL manzil qisqartirildi</translation>
+<translation id="1426410128494586442">Ha</translation>
 <translation id="1446450296470737166">MIDI qurilmalarini boshqarishga to‘liq ruxsat berish</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1644574205037202324">Tarix</translation>
@@ -32,6 +33,7 @@
 <translation id="1818308510395330587"><ph name="APP_NAME" /> AR ishlatishi uchun <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali kamerani yoqing.</translation>
 <translation id="1864927262126810325"><ph name="SOURCE_NAME" />dan</translation>
 <translation id="1887786770086287077">Bu qurilmada Joylashuvni aniqlash xizmati yoqilmagan, uni <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali yoqing.</translation>
+<translation id="1915307458270490472">Tugatish</translation>
 <translation id="1919345977826869612">Reklamalar</translation>
 <translation id="1919950603503897840">Kontaktlarni tanlash</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -78,6 +80,7 @@
 <translation id="2677748264148917807">Tark etish</translation>
 <translation id="2687403674020088961">Barcha cookie fayllarini taqiqlash (tavsiya etilmaydi)</translation>
 <translation id="2704606927547763573">Nusxa olindi</translation>
+<translation id="2713106313042589954">Kamerani faolsizlantirish</translation>
 <translation id="2717722538473713889">Email manzillar</translation>
 <translation id="2750481671343847896">Saytlar shaxsni tasdiqlash xizmatlariga kirish oynalarini chiqarishi mumkin</translation>
 <translation id="2785051990912111074">Bunda <ph name="WEBSITE" /> cookie fayllari tozalanadi</translation>
@@ -97,6 +100,7 @@
 <translation id="3114012059975132928">Video pleyer</translation>
 <translation id="3115898365077584848">Ma’lumotlarni ko‘rsatish</translation>
 <translation id="3123473560110926937">Ayrim saytlarda bloklangan</translation>
+<translation id="3143754809889689516">Boshidan ijro etish</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> xotira band</translation>
 <translation id="3203366800380907218">Internetdan</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> sizga bildirishnomalar yuborishi uchun <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali bildirishnomalarni yoqing.</translation>
@@ -153,10 +157,12 @@
 <translation id="4479647676395637221">Kameradan foydalanishga ruxsat so‘ralsin (tavsiya etiladi)</translation>
 <translation id="4505788138578415521">URL manzil yoyildi</translation>
 <translation id="4534723447064627427"><ph name="APP_NAME" /> mikrofondan foydalanishiga ruxsat berish uchun <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali mikrofonni yoqing.</translation>
+<translation id="4566417217121906555">Mikrofonni ovozsiz qilish</translation>
 <translation id="4570913071927164677">Tafsilotlar</translation>
 <translation id="4645575059429386691">Ota-onangiz tomonidan boshqariladi</translation>
 <translation id="4670064810192446073">Virtual reallik</translation>
 <translation id="4751476147751820511">Harakat va yorug‘lik sensorlari</translation>
+<translation id="4811450222531576619">Manbasi va mavzusi haqida batafsil</translation>
 <translation id="4836046166855586901">Sayt bu qurilmadan faol foydalanishingiz haqidagi axborotni yuborishdan oldin sizdan ruxsat oladi</translation>
 <translation id="4883854917563148705">Boshqariladigan sozlamalarni oʻzgartirish imkonsiz</translation>
 <translation id="4887024562049524730">Saytlar virtual reallik qurilmalari yoki maʼlumotlaridan foydalanishi oldidan ruxsat olsin (tavsiya etiladi)</translation>
@@ -177,6 +183,7 @@
 <translation id="5186036860380548585">Parametr ekranning yuqoriroq qismida joylashgan</translation>
 <translation id="5197729504361054390">Tanlangan kontaktlar <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> saytiga ulashiladi.</translation>
 <translation id="5216942107514965959">Oxirgi tashrif: bugun</translation>
+<translation id="5225463052809312700">Kamerani yoqish</translation>
 <translation id="5264323282659631142">Olib tashlash: <ph name="CHIP_LABEL" /></translation>
 <translation id="528192093759286357">To‘liq ekran rejimidan chiqish uchun ekranni tepadan pastga torting va “Orqaga” tugmasini bosing.</translation>
 <translation id="5300589172476337783">Ko‘rsatish</translation>
@@ -235,8 +242,10 @@
 <translation id="6367753977865761591">Muayyan sayt uchun tashqi xizmatga kirishni bloklang.</translation>
 <translation id="6388207532828177975">Tozalash va asl holiga qaytarish</translation>
 <translation id="6398765197997659313">To‘liq ekran rejimidan chiqish</translation>
+<translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Saytlarga virtual reallik qurilmalari yoki maʼlumotlaridan foydalanishni taqiqlash</translation>
 <translation id="6447842834002726250">Cookie fayllari</translation>
+<translation id="6467852467360539617">Maʼlumotlarni tozalash va ruxsatlarni tiklash</translation>
 <translation id="6527303717912515753">Ulashish</translation>
 <translation id="6545864417968258051">Bluetooth qurilmalarni qidirish</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{Bloklandi: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> va yana <ph name="NUM_MORE" /> ta}other{Bloklandi: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> va yana <ph name="NUM_MORE" /> ta}}</translation>
@@ -276,6 +285,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ta element tanlandi</translation>
 <translation id="7260727271532453612">Ruxsat berildi: <ph name="PERMISSION_1" /> va <ph name="PERMISSION_2" /></translation>
 <translation id="7302486331832100261">Odatda bildirishnomalarni bloklaysiz. Ruxsat berish uchun Tafsilotlar ustiga bosing.</translation>
+<translation id="7383715096023715447"><ph name="DOMAIN" /> sozlamalari</translation>
 <translation id="7423098979219808738">Avval so‘ralsin</translation>
 <translation id="7423538860840206698">Klipborddan o‘qish taqiqlangan</translation>
 <translation id="7425915948813553151">Saytlar uchun tungi mavzu</translation>
@@ -335,6 +345,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 ta cookie fayl ishlatilmoqda}other{# ta cookie fayl ishlatilmoqda}}</translation>
 <translation id="8487700953926739672">Internetsiz foydalanish mumkin</translation>
 <translation id="848952951823693243">Har doim mobil versiya ochilsin</translation>
+<translation id="8499083585497694743">Mikrofon ovozini yoqish</translation>
 <translation id="851751545965956758">Saytlarga qurilmalarga ulanishni taqiqlash</translation>
 <translation id="8525306231823319788">To‘liq ekran rejimi</translation>
 <translation id="857943718398505171">Ruxsat berilgan (tavsiya etiladi)</translation>

@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
@@ -22,7 +23,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
-#include "build/branding_buildflags.h"
 #include "chrome/installer/util/install_service_work_item.h"
 #include "chrome/installer/util/registry_util.h"
 #include "chrome/installer/util/work_item_list.h"
@@ -114,18 +114,30 @@ std::vector<IID> GetSideBySideInterfaces() {
 
 std::vector<IID> GetActiveInterfaces() {
   return {
-    __uuidof(IUpdateState), __uuidof(IUpdater), __uuidof(IUpdaterObserver),
-        __uuidof(IUpdaterRegisterAppCallback), __uuidof(IUpdaterCallback),
+      __uuidof(IUpdateState),
+      __uuidof(IUpdater),
+      __uuidof(IUpdaterObserver),
+      __uuidof(IUpdaterRegisterAppCallback),
+      __uuidof(IUpdaterCallback),
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-        __uuidof(IAppBundleWeb), __uuidof(IAppWeb), __uuidof(IAppCommandWeb),
-        __uuidof(ICompleteStatus), __uuidof(ICurrentState),
-        __uuidof(IGoogleUpdate3Web), __uuidof(IPolicyStatus),
-        __uuidof(IPolicyStatus2), __uuidof(IPolicyStatus3),
-        __uuidof(IPolicyStatusValue), __uuidof(IProcessLauncher),
-        __uuidof(IProcessLauncher2),
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+      // legacy interfaces.
+      __uuidof(IAppBundleWeb),
+      __uuidof(IAppWeb),
+      __uuidof(IAppCommandWeb),
+      __uuidof(ICompleteStatus),
+      __uuidof(ICurrentState),
+      __uuidof(IGoogleUpdate3Web),
+      __uuidof(IPolicyStatus),
+      __uuidof(IPolicyStatus2),
+      __uuidof(IPolicyStatus3),
+      __uuidof(IPolicyStatusValue),
+      __uuidof(IProcessLauncher),
+      __uuidof(IProcessLauncher2),
   };
+}
+
+std::vector<IID> GetInterfaces(bool is_internal) {
+  return is_internal ? GetSideBySideInterfaces() : GetActiveInterfaces();
 }
 
 std::vector<CLSID> GetSideBySideServers(UpdaterScope scope) {
@@ -141,22 +153,22 @@ std::vector<CLSID> GetActiveServers(UpdaterScope scope) {
   switch (scope) {
     case UpdaterScope::kUser:
       return {
-        __uuidof(UpdaterUserClass),
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-            __uuidof(GoogleUpdate3WebUserClass)
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+          __uuidof(UpdaterUserClass),
+          __uuidof(GoogleUpdate3WebUserClass),
+          __uuidof(PolicyStatusUserClass),
       };
     case UpdaterScope::kSystem:
       return {
-        __uuidof(UpdaterSystemClass),
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-            __uuidof(GoogleUpdate3WebSystemClass),
-            __uuidof(ProcessLauncherClass)
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+          __uuidof(UpdaterSystemClass),
+          __uuidof(GoogleUpdate3WebSystemClass),
+          __uuidof(PolicyStatusSystemClass),
+          __uuidof(ProcessLauncherClass),
       };
   }
+}
+
+std::vector<CLSID> GetServers(bool is_internal, UpdaterScope scope) {
+  return is_internal ? GetSideBySideServers(scope) : GetActiveServers(scope);
 }
 
 void AddInstallComInterfaceWorkItems(HKEY root,
@@ -234,7 +246,26 @@ void AddInstallServerWorkItems(HKEY root,
       run_com_server_command.GetCommandLineString(), true);
 }
 
-// Adds work items to register the COM Service with Windows.
+void AddComServerWorkItems(const base::FilePath& com_server_path,
+                           bool is_internal,
+                           WorkItemList* list) {
+  DCHECK(list);
+  if (com_server_path.empty()) {
+    LOG(DFATAL) << "com_server_path is invalid.";
+    return;
+  }
+
+  for (const auto& clsid : GetServers(is_internal, UpdaterScope::kUser)) {
+    AddInstallServerWorkItems(HKEY_CURRENT_USER, clsid, com_server_path,
+                              is_internal, list);
+  }
+
+  for (const auto& iid : GetInterfaces(is_internal)) {
+    AddInstallComInterfaceWorkItems(HKEY_CURRENT_USER, com_server_path, iid,
+                                    list);
+  }
+}
+
 void AddComServiceWorkItems(const base::FilePath& com_service_path,
                             bool internal_service,
                             WorkItemList* list) {
@@ -264,13 +295,9 @@ void AddComServiceWorkItems(const base::FilePath& com_service_path,
       GetServiceName(internal_service).c_str(),
       GetServiceDisplayName(internal_service).c_str(), SERVICE_AUTO_START,
       com_service_command, com_switch, UPDATER_KEY,
-      internal_service ? GetSideBySideServers(UpdaterScope::kSystem)
-                       : GetActiveServers(UpdaterScope::kSystem),
-      {}));
+      GetServers(internal_service, UpdaterScope::kSystem), {}));
 
-  const std::vector<GUID> com_interfaces_to_install =
-      internal_service ? GetSideBySideInterfaces() : GetActiveInterfaces();
-  for (const auto& iid : com_interfaces_to_install) {
+  for (const auto& iid : GetInterfaces(internal_service)) {
     AddInstallComInterfaceWorkItems(HKEY_LOCAL_MACHINE, com_service_path, iid,
                                     list);
   }

@@ -24,6 +24,7 @@ import android.support.test.runner.lifecycle.Stage;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Pair;
+import android.widget.TextView;
 
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.SmallTest;
@@ -41,6 +42,7 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
@@ -51,7 +53,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.PackageManagerWrapper;
 import org.chromium.base.test.util.Restriction;
@@ -1086,7 +1087,7 @@ public class UrlOverridingTest {
         final CallbackHelper frameFinishCallback = new CallbackHelper();
         WebContentsObserver observer = new WebContentsObserver() {
             @Override
-            public void documentLoadedInFrame(GlobalRenderFrameHostId rfhId,
+            public void didFinishLoad(GlobalRenderFrameHostId rfhId, GURL url, boolean isKnownValid,
                     boolean isInPrimaryMainFrame, @LifecycleState int rfhLifecycleState) {
                 if (!isInPrimaryMainFrame) frameFinishCallback.notifyCalled();
             }
@@ -1170,14 +1171,31 @@ public class UrlOverridingTest {
         mActivityTestRule.startMainActivityOnBlankPage();
 
         String url = mTestServer.getURL(NAVIGATION_FROM_TIMEOUT_PAGE);
-        @OverrideUrlLoadingResultType
-        int result = loadUrlAndWaitForIntentUrl(url, true, null, PageTransition.AUTO_BOOKMARK);
+        if (RedirectHandler.isRefactoringEnabled()) {
+            @OverrideUrlLoadingResultType
+            int result = loadUrlAndWaitForIntentUrl(url, false, null, PageTransition.AUTO_BOOKMARK);
+            Assert.assertEquals(OverrideUrlLoadingResultType.OVERRIDE_WITH_ASYNC_ACTION, result);
+            assertMessagePresent();
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                TextView button = mActivityTestRule.getActivity().findViewById(
+                        org.chromium.components.messages.R.id.message_primary_button);
+                button.performClick();
+            });
+            CriteriaHelper.pollUiThread(() -> {
+                Criteria.checkThat(mActivityMonitor.getHits(), Matchers.is(1));
+                Criteria.checkThat(
+                        mActivityTestRule.getActivity().getActivityTab().getUrl().getSpec(),
+                        Matchers.is("about:blank"));
+            });
+        } else {
+            loadUrlAndWaitForIntentUrl(url, true, null, PageTransition.AUTO_BOOKMARK);
+        }
     }
 
     @Test
     @LargeTest
-    @DisabledTest(message = "Re-enable when crbug.com/1300539 is fixed.")
     public void testRedirectFromBookmarkWithFallback() throws Exception {
+        if (!RedirectHandler.isRefactoringEnabled()) return;
         mActivityTestRule.startMainActivityOnBlankPage();
 
         String fallbackUrl = mTestServer.getURL(FALLBACK_LANDING_PATH);

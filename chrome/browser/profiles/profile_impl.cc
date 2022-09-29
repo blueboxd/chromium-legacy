@@ -89,6 +89,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
+#include "chrome/browser/reduce_accept_language/reduce_accept_language_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/sessions/exit_type_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
@@ -178,7 +179,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/account_manager/account_manager_factory.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
 #include "chrome/browser/ash/app_mode/app_launch_utils.h"
@@ -194,6 +194,7 @@
 #include "chrome/browser/ash/secure_channel/secure_channel_client_provider.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
+#include "chromeos/ash/components/account_manager/account_manager_factory.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
@@ -244,6 +245,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/file_system/volume_list_provider_lacros.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -592,6 +594,12 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
     user_policy_provider_->Init(schema_registry_service_->registry());
     policy_provider = user_policy_provider_.get();
     user_cloud_policy_manager = nullptr;
+
+    // Start lacros-chrome volume list provider, which is robust against
+    // API unavailability in ash-chrome.
+    volume_list_provider_ =
+        std::make_unique<extensions::VolumeListProviderLacros>(this);
+    volume_list_provider_->Start();
   } else {
 #else
   {
@@ -771,10 +779,6 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
   HeavyAdServiceFactory::GetForBrowserContext(this)->Initialize(GetPath());
 
   PushMessagingServiceImpl::InitializeForProfile(this);
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
-  signin_ui_util::InitializePrefsForProfile(this);
-#endif
 
   site_isolation::SiteIsolationPolicy::ApplyPersistedIsolatedOrigins(this);
 
@@ -1343,6 +1347,11 @@ ProfileImpl::GetFederatedIdentityActiveSessionPermissionContext() {
 content::FederatedIdentitySharingPermissionContextDelegate*
 ProfileImpl::GetFederatedIdentitySharingPermissionContext() {
   return FederatedIdentitySharingPermissionContextFactory::GetForProfile(this);
+}
+
+content::ReduceAcceptLanguageControllerDelegate*
+ProfileImpl::GetReduceAcceptLanguageControllerDelegate() {
+  return ReduceAcceptLanguageFactory::GetForProfile(this);
 }
 
 std::string ProfileImpl::GetMediaDeviceIDSalt() {

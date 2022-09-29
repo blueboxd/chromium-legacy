@@ -46,8 +46,8 @@ class RuntimeApplicationBase : public RuntimeApplication,
 
   // Stops the running application. Must be called before destruction of any
   // instance of the implementing object.
-  virtual void StopApplication(
-      cast::v2::ApplicationStatusRequest::StopReason stop_reason);
+  virtual void StopApplication(cast::common::StopReason::Type stop_reason,
+                               int32_t net_error_code);
 
   // Returns current TaskRunner.
   scoped_refptr<base::SequencedTaskRunner> task_runner() {
@@ -99,10 +99,21 @@ class RuntimeApplicationBase : public RuntimeApplication,
   std::vector<int> GetFeaturePermissions() const;
   // Returns additional feature permission origins.
   std::vector<std::string> GetAdditionalFeaturePermissionOrigins() const;
+  // Returns if current session is enabled for dev.
+  bool GetEnabledForDev() const;
+
   // Loads the page at the given |url| in the CastWebContents.
   void LoadPage(const GURL& url);
-  // Notifies the application has launched.
-  void OnApplicationLaunched();
+  // Called by the actual implementation as Cast application page has loaded.
+  void OnPageLoaded();
+
+  // Notifies Cast Core that application has started.
+  void NotifyApplicationStarted();
+  // Notifies Cast Core that application has stopped.
+  void NotifyApplicationStopped(cast::common::StopReason::Type stop_reason,
+                                int32_t net_error_code);
+  // Notifies Cast Core about media playback state changed.
+  void NotifyMediaPlaybackChanged(bool playing);
 
  private:
   // RuntimeApplicationService handlers:
@@ -117,6 +128,10 @@ class RuntimeApplicationBase : public RuntimeApplication,
   void HandleSetVisibility(
       cast::v2::SetVisibilityRequest request,
       cast::v2::RuntimeApplicationServiceHandler::SetVisibility::Reactor*
+          reactor);
+  void HandleSetTouchInput(
+      cast::v2::SetTouchInputRequest request,
+      cast::v2::RuntimeApplicationServiceHandler::SetTouchInput::Reactor*
           reactor);
 
   // RuntimeMessagePortApplicationService handlers:
@@ -133,6 +148,7 @@ class RuntimeApplicationBase : public RuntimeApplication,
   // Sets content window state.
   void SetMediaState(cast::common::MediaState::Type media_state);
   void SetVisibility(cast::common::Visibility::Type visibility);
+  void SetTouchInput(cast::common::TouchInput::Type touch_input);
 
   const std::string cast_session_id_;
   const cast::common::ApplicationConfig app_config_;
@@ -160,6 +176,8 @@ class RuntimeApplicationBase : public RuntimeApplication,
   cast::common::MediaState::Type media_state_ =
       cast::common::MediaState::LOAD_BLOCKED;
   cast::common::Visibility::Type visibility_ = cast::common::Visibility::HIDDEN;
+  cast::common::TouchInput::Type touch_input_ =
+      cast::common::TouchInput::DISABLED;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<RuntimeApplicationBase> weak_factory_{this};

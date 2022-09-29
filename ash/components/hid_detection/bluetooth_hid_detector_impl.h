@@ -10,6 +10,7 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/elapsed_timer.h"
 #include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -98,6 +99,7 @@ class BluetoothHidDetectorImpl
 
   void ProcessQueue();
   void OnPairDevice(
+      std::unique_ptr<base::ElapsedTimer> pairing_timer,
       chromeos::bluetooth_config::mojom::PairingResult pairing_result);
 
   // Removes any state related to the current pairing device. This will cancel
@@ -134,6 +136,11 @@ class BluetoothHidDetectorImpl
 
   InputDevicesStatus input_devices_status_;
   State state_ = kNotStarted;
+
+  // This is a counter used to emit a count of the number of pairing attempts
+  // that occur while HID detection is active. The count is reset to zero each
+  // time a HID detection session is started.
+  size_t num_pairing_attempts_ = 0;
 
   mojo::Remote<chromeos::bluetooth_config::mojom::CrosBluetoothConfig>
       cros_bluetooth_config_remote_;

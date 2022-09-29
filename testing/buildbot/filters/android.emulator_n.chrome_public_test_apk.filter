@@ -9,3 +9,21 @@
 
 # TODO(crbug/1345504)
 -org.chromium.chrome.browser.shape_detection.ShapeDetectionTest.testTextDetection
+
+# TODO(crbug/1347614)
+-org.chromium.chrome.browser.tasks.tab_management.TabSuggestionMessageCardTest.closeTabSuggestionReviewedAndAccepted
+
+# TODO(crbug/1347615)
+-org.chromium.chrome.browser.site_settings.SiteSettingsTest.testProtectedContentAllowThenBlock
+
+# TODO(crbug/1347903)
+-org.chromium.chrome.features.start_surface.StartSurfaceBackButtonTest.testShow_SingleAsHomepage_BackButtonWithTabSwitcher__NoInstant_Return
+
+# TODO(crbug/1349083)
+-org.chromium.chrome.browser.sync.SyncErrorCardPreferenceTest.testSyncErrorCardForPassphraseRequiredWithTitleFeatureDisabled__NightModeEnabled
+
+# TODO(crbug/1349958)
+-org.chromium.chrome.browser.autofill_assistant.AutofillAssistantOverlayIntegrationTest.testShowCastOnIFrameElementInScrollIFrame
+
+# TODO(crbug/1349966)
+-org.chromium.chrome.browser.signin.SyncConsentFragmentTest.testFRESyncConsentScreenWhenSelectedAccountIsRemoved

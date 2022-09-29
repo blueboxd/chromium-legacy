@@ -24,13 +24,9 @@ interface PendingBeaconHost {
   // side `PendingBeacon` object.
   // `url` is the target url for the beacon.
   // `method` is the method used to send the beacon.
-  // `timeout` is the timeout after running the page hide event on the current
-  // document after which the beacon will be sent (or zero to not send after
-  // page hide, instead only send on document discard).
   CreateBeacon(pending_receiver<blink.mojom.PendingBeacon> receiver,
                url.mojom.Url url,
-               BeaconMethod method,
-               mojo_base.mojom.TimeDelta timeout);
+               BeaconMethod method);
 
 };
 
@@ -48,6 +44,11 @@ interface PendingBeacon {
   // `content_type` must be empty string or a safelisted one.
   SetRequestData(network.mojom.URLRequestBody request_body,
                  string content_type);
+
+  // Sets request url for the pending beacon.
+  // The spec only allows GET beacons to update its own URL. So the receiving
+  // pending beacon's `BeaconMethod` must be kGet.
+  SetRequestURL(url.mojom.Url url);
 
   // Sends the pending beacon immediately.
   // Calling this will close the message pipe for the interface as well, so no

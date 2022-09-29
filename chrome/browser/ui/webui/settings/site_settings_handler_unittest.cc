@@ -30,6 +30,8 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
+#include "chrome/browser/privacy_sandbox/mock_privacy_sandbox_service.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/settings/site_settings_helper.h"
@@ -58,11 +60,10 @@
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/test/object_permission_context_base_mock_permission_observer.h"
+#include "components/permissions/test/permission_test_util.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
-#include "components/services/app_service/public/cpp/features.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -92,6 +93,8 @@
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #endif
 
+using ::testing::Return;
+
 namespace {
 
 constexpr char kCallbackId[] = "test-callback-id";
@@ -120,6 +123,34 @@ const struct PatternContentTypeTestCase {
     {{"http://127.0.0.1", "location"}, {true, ""}},  // Localhost is secure.
     {{"http://[::1]", "location"}, {true, ""}}};
 
+// Converts |etld_plus1| into an HTTPS SchemefulSite.
+net::SchemefulSite ConvertEtldToSchemefulSite(const std::string etld_plus1) {
+  return net::SchemefulSite(GURL(std::string(url::kHttpsScheme) +
+                                 url::kStandardSchemeSeparator + etld_plus1 +
+                                 "/"));
+}
+
+// Validates that the list of sites are aligned with the first party sets
+// mapping.
+void ValidateSitesWithFps(
+    const base::Value::List& storage_and_cookie_list,
+    base::flat_map<net::SchemefulSite, net::SchemefulSite>& first_party_sets) {
+  for (const base::Value& site_group : storage_and_cookie_list) {
+    std::string etld_plus1 = *site_group.GetDict().FindString("etldPlus1");
+    auto schemeful_site = ConvertEtldToSchemefulSite(etld_plus1);
+
+    if (first_party_sets.count(schemeful_site)) {
+      // Ensure that the `fpsOwner` is set correctly and aligned with
+      // |first_party_sets| mapping of site group owners.
+      ASSERT_EQ(first_party_sets[schemeful_site].Serialize(),
+                *site_group.GetDict().FindString("fpsOwner"));
+    } else {
+      // The site doesn't have `fpsOwner` set, `FindString` should return null.
+      ASSERT_FALSE(site_group.GetDict().FindString("fpsOwner"));
+    }
+  }
+}
+
 apps::AppPtr MakeApp(const std::string& app_id,
                      apps::AppType app_type,
                      const std::string& publisher_id,
@@ -140,15 +171,8 @@ void InstallWebApp(Profile* profile, const GURL& start_url) {
       MakeApp(web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, start_url),
               apps::AppType::kWeb, start_url.spec(), apps::Readiness::kReady,
               apps::InstallReason::kSync));
-  if (base::FeatureList::IsEnabled(apps::kAppServiceOnAppUpdateWithoutMojom)) {
-    cache.OnApps(std::move(deltas), apps::AppType::kWeb,
-                 /*should_notify_initialized=*/true);
-  } else {
-    std::vector<apps::mojom::AppPtr> mojom_deltas;
-    mojom_deltas.push_back(apps::ConvertAppToMojomApp(deltas[0]));
-    cache.OnApps(std::move(mojom_deltas), apps::mojom::AppType::kWeb,
-                 /*should_notify_initialized=*/true);
-  }
+  cache.OnApps(std::move(deltas), apps::AppType::kWeb,
+               /*should_notify_initialized=*/true);
 }
 
 }  // namespace
@@ -160,10 +184,7 @@ class ContentSettingSourceSetter {
  public:
   ContentSettingSourceSetter(TestingProfile* profile,
                              ContentSettingsType content_type)
-      : prefs_(profile->GetTestingPrefService()),
-        host_content_settings_map_(
-            HostContentSettingsMapFactory::GetForProfile(profile)),
-        content_type_(content_type) {}
+      : prefs_(profile->GetTestingPrefService()), content_type_(content_type) {}
   ContentSettingSourceSetter(const ContentSettingSourceSetter&) = delete;
   ContentSettingSourceSetter& operator=(const ContentSettingSourceSetter&) =
       delete;
@@ -186,7 +207,6 @@ class ContentSettingSourceSetter {
 
  private:
   raw_ptr<sync_preferences::TestingPrefServiceSyncable> prefs_;
-  raw_ptr<HostContentSettingsMap> host_content_settings_map_;
   ContentSettingsType content_type_;
 };
 
@@ -225,7 +245,14 @@ class SiteSettingsHandlerTest : public testing::Test,
               return mock_browsing_topics_service;
             }));
 
-    handler_ = std::make_unique<SiteSettingsHandler>(profile_.get());
+    mock_privacy_sandbox_service_ = static_cast<MockPrivacySandboxService*>(
+        PrivacySandboxServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile(), base::BindRepeating(&BuildMockPrivacySandboxService)));
+
+    profile()->SetPermissionControllerDelegate(
+        permissions::GetPermissionControllerDelegate(profile()));
+
+    handler_ = std::make_unique<SiteSettingsHandler>(profile());
     handler()->set_web_ui(web_ui());
     handler()->AllowJavascript();
     // AllowJavascript() adds a callback to create leveldb_env::ChromiumEnv
@@ -249,6 +276,9 @@ class SiteSettingsHandlerTest : public testing::Test,
   SiteSettingsHandler* handler() { return handler_.get(); }
   browsing_topics::MockBrowsingTopicsService* mock_browsing_topics_service() {
     return mock_browsing_topics_service_;
+  }
+  MockPrivacySandboxService* mock_privacy_sandbox_service() {
+    return mock_privacy_sandbox_service_.get();
   }
 
   void ValidateBlockAutoplay(bool expected_value, bool expected_enabled) {
@@ -604,6 +634,7 @@ class SiteSettingsHandlerTest : public testing::Test,
 #endif
   raw_ptr<browsing_topics::MockBrowsingTopicsService>
       mock_browsing_topics_service_;
+  raw_ptr<MockPrivacySandboxService> mock_privacy_sandbox_service_;
 };
 
 // True if testing for handle clear unpartitioned usage with HTTPS scheme URL.
@@ -2490,7 +2521,8 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
 TEST_F(SiteSettingsHandlerTest, HandleClearEtldPlus1DataAndCookies) {
   SetUpCookiesTreeModel();
 
-  EXPECT_EQ(31, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(31u,
+            handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
 
   auto verify_site_group = [](const base::Value& site_group,
                               std::string expected_etld_plus1) {
@@ -2529,7 +2561,8 @@ TEST_F(SiteSettingsHandlerTest, HandleClearEtldPlus1DataAndCookies) {
     EXPECT_TRUE(cookie->IsPartitioned());
   }
 
-  EXPECT_EQ(22, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(22u,
+            handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
 
   storage_and_cookie_list = GetOnStorageFetchedSentList();
   EXPECT_EQ(3U, storage_and_cookie_list.size());
@@ -2540,7 +2573,8 @@ TEST_F(SiteSettingsHandlerTest, HandleClearEtldPlus1DataAndCookies) {
 
   handler()->HandleClearEtldPlus1DataAndCookies(args);
 
-  EXPECT_EQ(14, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(14u,
+            handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
 
   storage_and_cookie_list = GetOnStorageFetchedSentList();
   EXPECT_EQ(2U, storage_and_cookie_list.size());
@@ -2585,7 +2619,8 @@ TEST_F(SiteSettingsHandlerTest, HandleClearEtldPlus1DataAndCookies) {
 TEST_P(SiteSettingsHandlerTest, HandleClearUnpartitionedUsage) {
   SetUpCookiesTreeModel();
 
-  EXPECT_EQ(31, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(31u,
+            handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
 
   base::Value::List args;
   args.Append(GetParam() ? "https://www.example.com/"
@@ -2710,11 +2745,91 @@ TEST_F(SiteSettingsHandlerTest, ClearClientHints) {
   EXPECT_EQ(0U, client_hints_settings.size());
 }
 
+TEST_F(SiteSettingsHandlerTest, ClearReducedAcceptLanguage) {
+  // Confirm that when the user clears unpartitioned storage, or the eTLD+1
+  // group, reduce accept language are also cleared.
+  SetUpCookiesTreeModel();
+  handler()->OnStorageFetched();
+
+  GURL hosts[] = {GURL("https://example.com/"), GURL("https://www.example.com"),
+                  GURL("https://google.com/"), GURL("https://www.google.com/")};
+
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  ContentSettingsForOneType accept_language_settings;
+
+  std::string language = "en-us";
+  base::Value accept_language_dictionary(base::Value::Type::DICTIONARY);
+  accept_language_dictionary.SetKey("reduce-accept-language",
+                                    base::Value(language));
+
+  // Add setting for the hosts.
+  for (const auto& host : hosts) {
+    host_content_settings_map->SetWebsiteSettingDefaultScope(
+        host, GURL(), ContentSettingsType::REDUCED_ACCEPT_LANGUAGE,
+        accept_language_dictionary.Clone());
+  }
+
+  // Clear at the eTLD+1 level and ensure affected origins are cleared.
+  base::Value args(base::Value::Type::LIST);
+  args.Append("example.com");
+  handler()->HandleClearEtldPlus1DataAndCookies(args.GetList());
+  host_content_settings_map->GetSettingsForOneType(
+      ContentSettingsType::REDUCED_ACCEPT_LANGUAGE, &accept_language_settings);
+  EXPECT_EQ(2U, accept_language_settings.size());
+
+  EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(hosts[2]),
+            accept_language_settings.at(0).primary_pattern);
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            accept_language_settings.at(0).secondary_pattern);
+  EXPECT_EQ(accept_language_dictionary,
+            accept_language_settings.at(0).setting_value);
+
+  EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(hosts[3]),
+            accept_language_settings.at(1).primary_pattern);
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            accept_language_settings.at(1).secondary_pattern);
+  EXPECT_EQ(accept_language_dictionary,
+            accept_language_settings.at(1).setting_value);
+
+  // Clear unpartitioned usage data, which should only affect the specific
+  // origin.
+  args.ClearList();
+  args.Append("https://google.com/");
+  handler()->HandleClearUnpartitionedUsage(args.GetList());
+
+  // Validate the reduce accept language has been cleared.
+  host_content_settings_map->GetSettingsForOneType(
+      ContentSettingsType::REDUCED_ACCEPT_LANGUAGE, &accept_language_settings);
+  EXPECT_EQ(1U, accept_language_settings.size());
+
+  // www.google.com should be the only remainining entry.
+  EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(hosts[3]),
+            accept_language_settings.at(0).primary_pattern);
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            accept_language_settings.at(0).secondary_pattern);
+  EXPECT_EQ(accept_language_dictionary,
+            accept_language_settings.at(0).setting_value);
+
+  // Clear unpartitioned usage data through HTTPS scheme, make sure https site
+  // reduced accept language have been cleared when the specific origin HTTPS
+  // scheme exist.
+  args.ClearList();
+  args.Append("http://www.google.com/");
+  handler()->HandleClearUnpartitionedUsage(args.GetList());
+
+  // Validate the reduced accept language has been cleared.
+  host_content_settings_map->GetSettingsForOneType(
+      ContentSettingsType::REDUCED_ACCEPT_LANGUAGE, &accept_language_settings);
+  EXPECT_EQ(0U, accept_language_settings.size());
+}
+
 TEST_F(SiteSettingsHandlerTest, HandleClearPartitionedUsage) {
   // Confirm that removing unpartitioned storage correctly removes the
   // appropriate nodes.
   SetUpCookiesTreeModel();
-  EXPECT_EQ(31, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(31u,
+            handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
 
   base::Value::List args;
   args.Append("https://www.example.com/");
@@ -2862,7 +2977,8 @@ TEST_F(SiteSettingsHandlerTest, HandleGetUsageInfo) {
   // Confirm that usage info only returns unpartitioned storage.
   SetUpCookiesTreeModel();
 
-  EXPECT_EQ(31, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(31u,
+            handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
 
   base::Value::List args;
   args.Append("www.example.com");
@@ -2904,4 +3020,31 @@ TEST_F(SiteSettingsHandlerTest, NonTreeModelDeletion) {
             browsing_data_remover->GetLastUsedOriginTypeMaskForTesting());
 }
 
+TEST_F(SiteSettingsHandlerTest, FirstPartySetsMembership) {
+  base::flat_map<net::SchemefulSite, net::SchemefulSite> first_party_sets = {
+      {ConvertEtldToSchemefulSite("google.com"),
+       ConvertEtldToSchemefulSite("google.com")},
+      {ConvertEtldToSchemefulSite("google.com.au"),
+       ConvertEtldToSchemefulSite("google.com")},
+  };
+  EXPECT_CALL(*mock_privacy_sandbox_service(), GetFirstPartySets())
+      .WillOnce(Return(first_party_sets));
+
+  SetUpCookiesTreeModel();
+
+  handler()->ClearAllSitesMapForTesting();
+
+  handler()->OnStorageFetched();
+  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
+
+  ASSERT_TRUE(data.arg1()->is_string());
+  EXPECT_EQ("onStorageListFetched", data.arg1()->GetString());
+
+  ASSERT_TRUE(data.arg2()->is_list());
+  const base::Value::List& storage_and_cookie_list = data.arg2()->GetList();
+  EXPECT_EQ(4U, storage_and_cookie_list.size());
+
+  ValidateSitesWithFps(storage_and_cookie_list, first_party_sets);
+}
 }  // namespace settings

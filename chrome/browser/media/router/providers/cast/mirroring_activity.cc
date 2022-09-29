@@ -56,8 +56,6 @@ constexpr char kHistogramSessionLength[] =
     "MediaRouter.CastStreaming.Session.Length";
 constexpr char kHistogramSessionLengthAccessCode[] =
     "MediaRouter.CastStreaming.Session.Length.AccessCode";
-constexpr char kHistogramSessionLengthFile[] =
-    "MediaRouter.CastStreaming.Session.Length.File";
 constexpr char kHistogramSessionLengthOffscreenTab[] =
     "MediaRouter.CastStreaming.Session.Length.OffscreenTab";
 constexpr char kHistogramSessionLengthScreen[] =
@@ -95,44 +93,34 @@ const std::string GetMirroringNamespace(const base::Value& message) {
   }
 }
 
-// Get the mirroring type for a media route.  Note that |target_tab_id| is
-// usually ignored here, because mirroring typically only happens with a special
-// URL that includes the tab ID it needs, which should be the same as the tab ID
-// selected by the media router.
 absl::optional<MirroringActivity::MirroringType> GetMirroringType(
-    const MediaRoute& route,
-    int target_tab_id) {
+    const MediaRoute& route) {
   if (!route.is_local())
     return absl::nullopt;
 
   const auto source = route.media_source();
-  if (source.IsTabMirroringSource() || source.IsLocalFileSource())
+  if (source.IsTabMirroringSource())
     return MirroringActivity::MirroringType::kTab;
   if (source.IsDesktopMirroringSource())
     return MirroringActivity::MirroringType::kDesktop;
 
-  if (source.url().is_valid()) {
-    if (source.IsCastPresentationUrl()) {
-      const auto cast_source = CastMediaSource::FromMediaSource(source);
-      if (cast_source && cast_source->ContainsStreamingApp()) {
-        // This is a weird case.  Normally if the source is a presentation URL,
-        // we use 2-UA mode rather than mirroring, but if the app ID it
-        // specifies is one of the special streaming app IDs, we activate
-        // mirroring instead. This only happens when a Cast SDK client requests
-        // a mirroring app ID, which causes its own tab to be mirrored.  This is
-        // a strange thing to do and it's not officially supported, but some
-        // apps, like, Google Slides rely on it.  Unlike a proper tab-based
-        // MediaSource, this kind of MediaSource doesn't specify a tab in the
-        // URL, so we choose the tab that was active when the request was made.
-        DCHECK_GE(target_tab_id, 0);
-        return MirroringActivity::MirroringType::kTab;
-      } else {
-        NOTREACHED() << "Non-mirroring Cast app: " << source;
-        return absl::nullopt;
-      }
-    } else if (source.url().SchemeIsHTTPOrHTTPS()) {
-      return MirroringActivity::MirroringType::kOffscreenTab;
+  if (!source.url().is_valid()) {
+    NOTREACHED() << "Invalid source: " << source;
+    return absl::nullopt;
+  }
+
+  if (source.IsCastPresentationUrl()) {
+    const auto cast_source = CastMediaSource::FromMediaSource(source);
+    if (cast_source && cast_source->ContainsStreamingApp()) {
+      // Site-initiated Mirroring has a Cast Presentatino URL and contains
+      // StreamingApp. We should return Tab Mirroring here.
+      return MirroringActivity::MirroringType::kTab;
+    } else {
+      NOTREACHED() << "Non-mirroring Cast app: " << source;
+      return absl::nullopt;
     }
+  } else if (source.url().SchemeIsHTTPOrHTTPS()) {
+    return MirroringActivity::MirroringType::kOffscreenTab;
   }
 
   NOTREACHED() << "Invalid source: " << source;
@@ -146,16 +134,14 @@ MirroringActivity::MirroringActivity(
     const std::string& app_id,
     cast_channel::CastMessageHandler* message_handler,
     CastSessionTracker* session_tracker,
-    int target_tab_id,
+    int frame_tree_node_id,
     const CastSinkExtraData& cast_data,
     OnStopCallback callback)
     : CastActivity(route, app_id, message_handler, session_tracker),
-      mirroring_type_(GetMirroringType(route, target_tab_id)),
+      mirroring_type_(GetMirroringType(route)),
+      frame_tree_node_id_(frame_tree_node_id),
       cast_data_(cast_data),
-      on_stop_(std::move(callback)) {
-  if (target_tab_id != -1)
-    mirroring_tab_id_ = target_tab_id;
-}
+      on_stop_(std::move(callback)) {}
 
 MirroringActivity::~MirroringActivity() {
   if (!did_start_mirroring_timestamp_) {
@@ -164,11 +150,6 @@ MirroringActivity::~MirroringActivity() {
 
   auto cast_duration = base::Time::Now() - *did_start_mirroring_timestamp_;
   base::UmaHistogramLongTimes(kHistogramSessionLength, cast_duration);
-
-  if (route().media_source().IsLocalFileSource()) {
-    base::UmaHistogramLongTimes(kHistogramSessionLengthFile, cast_duration);
-    return;
-  }
 
   if (!mirroring_type_) {
     // The mirroring activity should always be set by now, but check anyway
@@ -205,13 +186,12 @@ void MirroringActivity::CreateMojoBindings(mojom::MediaRouter* media_router) {
       auto stream_id = route_.media_source().DesktopStreamId();
       DCHECK(stream_id);
       media_router->GetMirroringServiceHostForDesktop(
-          /* tab_id */ -1, *stream_id, host_.BindNewPipeAndPassReceiver());
+          *stream_id, host_.BindNewPipeAndPassReceiver());
       break;
     }
     case MirroringType::kTab:
-      DCHECK(mirroring_tab_id_.has_value());
       media_router->GetMirroringServiceHostForTab(
-          *mirroring_tab_id_, host_.BindNewPipeAndPassReceiver());
+          frame_tree_node_id_, host_.BindNewPipeAndPassReceiver());
       break;
     case MirroringType::kOffscreenTab:
       media_router->GetMirroringServiceHostForOffscreenTab(

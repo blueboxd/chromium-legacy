@@ -23,9 +23,14 @@ FrameTreeNode* CreateDelegateFrameTreeNode(
   return owner_render_frame_host->frame_tree()->AddFrame(
       &*owner_render_frame_host, owner_render_frame_host->GetProcess()->GetID(),
       owner_render_frame_host->GetProcess()->GetNextRoutingID(),
+      // We're creating an dummy outer delegate node which will never have a
+      // corresponding `RenderFrameImpl`, and therefore we pass null
+      // remotes/receivers for connections that it would normally have to a
+      // renderer process.
       /*frame_remote=*/mojo::NullAssociatedRemote(),
       /*browser_interface_broker_receiver=*/mojo::NullReceiver(),
       /*policy_container_bind_params=*/nullptr,
+      /*associated_interface_provider_receiver=*/mojo::NullAssociatedReceiver(),
       blink::mojom::TreeScopeType::kDocument, "", "", true,
       blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), false,
@@ -37,7 +42,8 @@ FrameTreeNode* CreateDelegateFrameTreeNode(
 
 FencedFrame::FencedFrame(
     base::SafeRef<RenderFrameHostImpl> owner_render_frame_host,
-    blink::mojom::FencedFrameMode mode)
+    blink::mojom::FencedFrameMode mode,
+    const base::UnguessableToken& devtools_frame_token)
     : web_contents_(static_cast<WebContentsImpl*>(
           WebContents::FromRenderFrameHost(&*owner_render_frame_host))),
       owner_render_frame_host_(owner_render_frame_host),
@@ -53,37 +59,9 @@ FencedFrame::FencedFrame(
                                       /*render_widget_delegate=*/web_contents_,
                                       /*manager_delegate=*/web_contents_,
                                       /*page_delegate=*/web_contents_,
-                                      FrameTree::Type::kFencedFrame)),
-      mode_(mode) {
-  scoped_refptr<SiteInstance> site_instance =
-      SiteInstanceImpl::CreateForFencedFrame(
-          owner_render_frame_host->GetSiteInstance());
-
-  // Set the mandatory sandbox flags from the beginning.
-  blink::FramePolicy frame_policy;
-  frame_policy.sandbox_flags = blink::kFencedFrameForcedSandboxFlags;
-  // Note that even though this is happening in response to an event in the
-  // renderer (i.e., the creation of a <fencedframe> element), we are still
-  // putting `renderer_initiated_creation` as false. This is because that
-  // parameter is only used when a renderer is creating a new window and has
-  // already created the main frame for the window, but wants the browser to
-  // refrain from showing the main frame until the renderer signals the browser
-  // via the mojom.LocalMainFrameHost.ShowCreatedWindow(). This flow does not
-  // apply for fenced frames, portals, and prerendered nested FrameTrees, hence
-  // the decision to mark it as false.
-  frame_tree_->Init(site_instance.get(), /*renderer_initiated_creation=*/false,
-                    /*main_frame_name=*/"", /*opener_for_origin=*/nullptr,
-                    frame_policy);
-  // Note that pending frame policy will be passed as `frame_policy` in
-  // `replication_state` in `mojom::CreateFrameParams`.
-  // See `RenderFrameHostImpl::CreateRenderFrame`.
-  frame_tree_->root()->SetPendingFramePolicy(frame_policy);
-
-  // TODO(crbug.com/1199679): This should be moved to FrameTree::Init.
-  web_contents_->NotifySwappedFromRenderManager(
-      /*old_frame=*/nullptr,
-      frame_tree_->root()->render_manager()->current_frame_host());
-}
+                                      FrameTree::Type::kFencedFrame,
+                                      devtools_frame_token)),
+      mode_(mode) {}
 
 FencedFrame::~FencedFrame() {
   DCHECK(frame_tree_);
@@ -173,10 +151,42 @@ FrameTree* FencedFrame::LoadingTree() {
   return web_contents_->LoadingTree();
 }
 
-RenderFrameProxyHost* FencedFrame::CreateProxyAndAttachToOuterFrameTree(
-    mojom::RemoteFrameInterfacesFromRendererPtr remote_frame_interfaces) {
+RenderFrameProxyHost*
+FencedFrame::InitInnerFrameTreeAndReturnProxyToOuterFrameTree(
+    blink::mojom::RemoteFrameInterfacesFromRendererPtr remote_frame_interfaces,
+    const blink::RemoteFrameToken& frame_token) {
   DCHECK(remote_frame_interfaces);
   DCHECK(outer_delegate_frame_tree_node_);
+
+  scoped_refptr<SiteInstance> site_instance =
+      SiteInstanceImpl::CreateForFencedFrame(
+          owner_render_frame_host_->GetSiteInstance());
+
+  // Set the mandatory sandbox flags from the beginning.
+  blink::FramePolicy frame_policy;
+  frame_policy.sandbox_flags = blink::kFencedFrameForcedSandboxFlags;
+  // Note that even though this is happening in response to an event in the
+  // renderer (i.e., the creation of a <fencedframe> element), we are still
+  // putting `renderer_initiated_creation` as false. This is because that
+  // parameter is only used when a renderer is creating a new window and has
+  // already created the main frame for the window, but wants the browser to
+  // refrain from showing the main frame until the renderer signals the browser
+  // via the mojom.LocalMainFrameHost.ShowCreatedWindow(). This flow does not
+  // apply for fenced frames, portals, and prerendered nested FrameTrees, hence
+  // the decision to mark it as false.
+  frame_tree_->Init(site_instance.get(), /*renderer_initiated_creation=*/false,
+                    /*main_frame_name=*/"", /*opener_for_origin=*/nullptr,
+                    frame_policy);
+  // Note that pending frame policy will be passed as `frame_policy` in
+  // `replication_state` in `mojom::CreateFrameParams`.
+  // See `RenderFrameHostImpl::CreateRenderFrame`.
+  frame_tree_->root()->SetPendingFramePolicy(frame_policy);
+
+  // TODO(crbug.com/1199679): This should be moved to FrameTree::Init.
+  web_contents_->NotifySwappedFromRenderManager(
+      /*old_frame=*/nullptr,
+      frame_tree_->root()->render_manager()->current_frame_host());
+
   // Connect the outer delegate RenderFrameHost with the inner main
   // FrameTreeNode. This allows us to traverse from the outer delegate RFH
   // inward, to the inner fenced frame FrameTree.
@@ -191,7 +201,8 @@ RenderFrameProxyHost* FencedFrame::CreateProxyAndAttachToOuterFrameTree(
       inner_root->current_frame_host()
           ->browsing_context_state()
           ->CreateOuterDelegateProxy(
-              owner_render_frame_host_->GetSiteInstance(), inner_root);
+              owner_render_frame_host_->GetSiteInstance(), inner_root,
+              frame_token);
 
   proxy_host->BindRemoteFrameInterfaces(
       std::move(remote_frame_interfaces->frame),

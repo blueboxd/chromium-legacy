@@ -2359,9 +2359,9 @@
     {
       name: "container-type",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      keywords: ["normal", "inline-size", "size", "style"],
+      keywords: ["normal", "inline-size", "size"],
       field_group: "*",
-      field_size: 3,
+      field_size: 2,
       field_template: "primitive",
       default_value: "kContainerTypeNormal",
       type_name: "unsigned",
@@ -2815,7 +2815,7 @@
       valid_for_position_fallback: true,
     },
     {
-      name: "hover-pop-up-delay",
+      name: "pop-up-show-delay",
       runtime_flag: "HTMLPopupAttribute",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       field_group: "*",
@@ -2828,7 +2828,7 @@
       supports_incremental_style: true,
     },
     {
-      name: "hover-pop-up-hide-delay",
+      name: "pop-up-hide-delay",
       runtime_flag: "HTMLPopupAttribute",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       field_group: "*",
@@ -3716,7 +3716,6 @@
       field_template: "external",
       keywords: ["auto"],
       typedom_types: ["Keyword"],
-      runtime_flag: "NamedPages",
       computable: false,
     },
     {
@@ -3728,7 +3727,6 @@
       field_size: 2,
       default_value: "PageOrientation::kUpright",
       include_paths: ["third_party/blink/public/common/css/page_orientation.h"],
-      runtime_flag: "NamedPages",
       computable: false,
     },
     {
@@ -3843,7 +3841,7 @@
       name: "content-visibility",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       field_template: "keyword",
-      keywords: ["visible", "auto", "hidden", "hidden-matchable"],
+      keywords: ["visible", "auto", "hidden"],
       default_value: "visible",
       typedom_types: ["Keyword"],
       computable: false,
@@ -3930,7 +3928,6 @@
         "auto", "stable", "both-edges"
       ],
       typedom_types: ["Keyword"],
-      runtime_flag: "ScrollbarGutter",
     },
     {
       name: "scrollbar-width",
@@ -5216,7 +5213,7 @@
       converter: "ConvertString<CSSValueID::kNone>",
     },
     {
-      name: "-webkit-hyphenate-character",
+      name: "hyphenate-character",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
@@ -7572,6 +7569,10 @@
     {
       name: "-webkit-font-feature-settings",
       alias_for: "font-feature-settings",
+    },
+    {
+      name: "-webkit-hyphenate-character",
+      alias_for: "hyphenate-character",
     },
     {
       name: "-webkit-justify-content",

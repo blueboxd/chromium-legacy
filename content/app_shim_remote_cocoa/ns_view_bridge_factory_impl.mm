@@ -37,9 +37,12 @@ class RenderWidgetHostNSViewBridgeOwner
       mojo::PendingAssociatedRemote<mojom::RenderWidgetHostNSViewHost> client,
       mojo::PendingAssociatedReceiver<mojom::RenderWidgetHostNSView>
           bridge_receiver)
-      : host_(std::move(client)) {
+      : host_(std::move(client),
+              ui::WindowResizeHelperMac::Get()->task_runner()) {
     bridge_ = std::make_unique<remote_cocoa::RenderWidgetHostNSViewBridge>(
-        host_.get(), this, view_id);
+        host_.get(), this, view_id,
+        base::BindOnce(&RenderWidgetHostNSViewBridgeOwner::OnMojoDisconnect,
+                       base::Unretained(this)));
     bridge_->BindReceiver(std::move(bridge_receiver));
     host_.set_disconnect_handler(
         base::BindOnce(&RenderWidgetHostNSViewBridgeOwner::OnMojoDisconnect,
@@ -171,10 +174,9 @@ void CreateWebContentsNSView(
       std::move(view_request_handle));
   // Note that the resulting object will be destroyed when its underlying pipe
   // is closed.
-  mojo::MakeSelfOwnedAssociatedReceiver(
-      std::make_unique<WebContentsNSViewBridge>(view_id, std::move(host)),
-      std::move(ns_view_receiver),
-      ui::WindowResizeHelperMac::Get()->task_runner());
+  (new WebContentsNSViewBridge(view_id, std::move(host)))
+      ->Bind(std::move(ns_view_receiver),
+             ui::WindowResizeHelperMac::Get()->task_runner());
 }
 
 }  // namespace remote_cocoa

@@ -28,7 +28,6 @@
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/ash/components/dbus/vm_applications/apps.pb.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_task_environment.h"
@@ -66,7 +65,6 @@ namespace crostini {
 class CrostiniSshfsHelperTest : public testing::Test {
  public:
   CrostiniSshfsHelperTest() {
-    chromeos::DBusThreadManager::Initialize();
     ash::ChunneldClient::InitializeFake();
     ash::CiceroneClient::InitializeFake();
     ash::ConciergeClient::InitializeFake();
@@ -108,7 +106,6 @@ class CrostiniSshfsHelperTest : public testing::Test {
     ash::ConciergeClient::Shutdown();
     ash::CiceroneClient::Shutdown();
     ash::ChunneldClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
   }
 
   TestingProfile* profile() { return profile_.get(); }
@@ -125,24 +122,23 @@ class CrostiniSshfsHelperTest : public testing::Test {
       const std::string& source_format,
       const std::string& mount_label,
       const std::vector<std::string>& mount_options,
-      chromeos::MountType type,
-      chromeos::MountAccessMode access_mode,
+      ash::MountType type,
+      ash::MountAccessMode access_mode,
       ash::disks::DiskMountManager::MountPathCallback callback) {
     auto event = DiskMountManager::MountEvent::MOUNTING;
-    auto code = chromeos::MountError::MOUNT_ERROR_NONE;
-    auto info = DiskMountManager::MountPointInfo(
+    auto code = ash::MountError::kNone;
+    DiskMountManager::MountPoint info{
         "sshfs://username@hostname:", "/media/fuse/" + kMountName,
-        chromeos::MOUNT_TYPE_NETWORK_STORAGE, ash::disks::MOUNT_CONDITION_NONE);
+        ash::MountType::kNetworkStorage};
     disk_manager_->NotifyMountEvent(event, code, info);
     std::move(callback).Run(code, info);
   }
 
   void ExpectMountCalls(int n) {
-    EXPECT_CALL(
-        *disk_manager_,
-        MountPath("sshfs://username@hostname:", "", kMountName,
-                  default_mount_options_, chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-                  chromeos::MOUNT_ACCESS_MODE_READ_WRITE, _))
+    EXPECT_CALL(*disk_manager_, MountPath("sshfs://username@hostname:", "",
+                                          kMountName, default_mount_options_,
+                                          ash::MountType::kNetworkStorage,
+                                          ash::MountAccessMode::kReadWrite, _))
         .Times(n)
         .WillRepeatedly(
             Invoke(this, &CrostiniSshfsHelperTest::NotifyMountEvent));
@@ -282,7 +278,7 @@ TEST_F(CrostiniSshfsHelperTest, CanRemountAfterUnmount) {
           [this](const std::string& mount_path,
                  DiskMountManager::UnmountPathCallback callback) {
             EXPECT_EQ(mount_path, "/media/fuse/" + kMountName);
-            std::move(callback).Run(chromeos::MOUNT_ERROR_NONE);
+            std::move(callback).Run(ash::MountError::kNone);
           }));
 
   crostini_sshfs_->MountCrostiniFiles(

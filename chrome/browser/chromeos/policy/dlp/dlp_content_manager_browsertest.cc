@@ -74,10 +74,8 @@ constexpr char kPrintBlockedNotificationId[] = "print_dlp_blocked";
 
 constexpr char kExampleUrl[] = "https://example.com";
 constexpr char kSrcPattern[] = "example.com";
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr char kLabel[] = "label";
 const std::u16string kApplicationTitle = u"example.com";
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }  // namespace
 
 class DlpContentManagerBrowserTest : public InProcessBrowserTest {
@@ -109,9 +107,9 @@ class DlpContentManagerBrowserTest : public InProcessBrowserTest {
                             base::Unretained(this)));
     ASSERT_TRUE(DlpRulesManagerFactory::GetForPrimaryProfile());
 
-    EXPECT_CALL(*mock_rules_manager_, GetSourceUrlPattern(_, _, _))
+    EXPECT_CALL(*mock_rules_manager_, GetSourceUrlPattern)
         .WillRepeatedly(testing::Return(kSrcPattern));
-    EXPECT_CALL(*mock_rules_manager_, IsRestricted(_, _))
+    EXPECT_CALL(*mock_rules_manager_, IsRestricted)
         .WillRepeatedly(testing::Return(DlpRulesManager::Level::kAllow));
   }
 
@@ -148,17 +146,11 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerBrowserTest, PrintingNotRestricted) {
 
   NotificationDisplayServiceTester display_service_tester(browser()->profile());
 
-  absl::optional<bool> is_printing_allowed;
+  base::MockCallback<OnDlpRestrictionCheckedCallback> cb;
+  EXPECT_CALL(cb, Run(true)).Times(1);
 
-  helper_->GetContentManager()->CheckPrintingRestriction(
-      web_contents,
-      base::BindOnce(
-          [](absl::optional<bool>* out_result, bool should_proceed) {
-            *out_result = absl::make_optional(should_proceed);
-          },
-          &is_printing_allowed));
-  EXPECT_TRUE(is_printing_allowed);
-  EXPECT_TRUE(is_printing_allowed.value());
+  helper_->GetContentManager()->CheckPrintingRestriction(web_contents,
+                                                         cb.Get());
 
   // Start printing and check that there is no notification when printing is not
   // restricted.
@@ -553,9 +545,14 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerReportingBrowserTest,
       display_service_tester.GetNotification(kPrintBlockedNotificationId));
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-// TODO(crbug.com/1262948): Enable and modify for lacros.
-IN_PROC_BROWSER_TEST_F(DlpContentManagerReportingBrowserTest, PrintingWarned) {
+// Test is flaky on Lacros: https://crbug.com/1344827
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_PrintingWarned DISABLED_PrintingWarned
+#else
+#define MAYBE_PrintingWarned PrintingWarned
+#endif
+IN_PROC_BROWSER_TEST_F(DlpContentManagerReportingBrowserTest,
+                       MAYBE_PrintingWarned) {
   SetupDlpRulesManager();
   SetupReportQueue();
   NotificationDisplayServiceTester display_service_tester(browser()->profile());
@@ -608,8 +605,14 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerReportingBrowserTest, PrintingWarned) {
   EXPECT_EQ(helper_->ActiveWarningDialogsCount(), 0);
 }
 
+// Test is flaky on Lacros: https://crbug.com/1344827
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_TabShareWarnedDuringAllowed DISABLED_TabShareWarnedDuringAllowed
+#else
+#define MAYBE_TabShareWarnedDuringAllowed TabShareWarnedDuringAllowed
+#endif
 IN_PROC_BROWSER_TEST_F(DlpContentManagerReportingBrowserTest,
-                       TabShareWarnedDuringAllowed) {
+                       MAYBE_TabShareWarnedDuringAllowed) {
   SetupReporting();
   NotificationDisplayServiceTester display_service_tester(browser()->profile());
 
@@ -634,7 +637,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerReportingBrowserTest,
   EXPECT_CALL(state_change_cb,
               Run(testing::_, blink::mojom::MediaStreamStateChange::PAUSE))
       .Times(1);
-  EXPECT_CALL(source_cb, Run(testing::_)).Times(1);
+  EXPECT_CALL(source_cb, Run).Times(1);
   // Although the share should be paused and resumed, DLP will only call
   // state_change_cb_ once to pause it. When it's supposed to be resumed, it
   // will call source_cb which also resumes the share after a successful source
@@ -668,7 +671,5 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerReportingBrowserTest,
   EXPECT_EQ(helper_->ActiveWarningDialogsCount(), 0);
   EXPECT_EQ(events_.size(), 2u);
 }
-
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace policy

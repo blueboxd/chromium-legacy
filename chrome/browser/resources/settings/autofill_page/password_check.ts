@@ -14,11 +14,10 @@ import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import '../i18n_setup.js';
 import '../route.js';
 import '../prefs/prefs.js';
-import './password_check_edit_dialog.js';
 import './password_check_edit_disclaimer_dialog.js';
 import './password_check_list_item.js';
 import './password_remove_confirmation_dialog.js';
-// <if expr="chromeos_ash or chromeos_lacros">
+// <if expr="is_chromeos">
 import '../controls/password_prompt_dialog.js';
 
 // </if>
@@ -26,33 +25,21 @@ import '../controls/password_prompt_dialog.js';
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
-import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
-// <if expr="chromeos_ash or chromeos_lacros">
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-// </if>
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-// <if expr="chromeos_ash or chromeos_lacros">
-import {loadTimeData} from '../i18n_setup.js';
-// </if>
-
-import {StoredAccount, SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '../people_page/sync_browser_proxy.js';
 import {PrefsMixin, PrefsMixinInterface} from '../prefs/prefs_mixin.js';
 import {routes} from '../route.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 
-// <if expr="chromeos_ash or chromeos_lacros">
-import {BlockingRequestManager} from './blocking_request_manager.js';
-// </if>
-
+import {MergePasswordsStoreCopiesMixin, MergePasswordsStoreCopiesMixinInterface} from './merge_passwords_store_copies_mixin.js';
 import {getTemplate} from './password_check.html.js';
 import {PasswordCheckListItemElement} from './password_check_list_item.js';
 import {PasswordCheckMixin, PasswordCheckMixinInterface} from './password_check_mixin.js';
 import {PasswordCheckInteraction, SavedPasswordListChangedListener} from './password_manager_proxy.js';
 import {PasswordRequestorMixin, PasswordRequestorMixinInterface} from './password_requestor_mixin.js';
-
+import {UserUtilMixin, UserUtilMixinInterface} from './user_util_mixin.js';
 
 const CheckState = chrome.passwordsPrivate.PasswordCheckState;
 
@@ -78,12 +65,14 @@ export interface SettingsPasswordCheckElement {
 }
 
 const SettingsPasswordCheckElementBase =
-    RouteObserverMixin(WebUIListenerMixin(I18nMixin(PrefsMixin(
-        PasswordRequestorMixin(PasswordCheckMixin((PolymerElement))))))) as {
+    UserUtilMixin(MergePasswordsStoreCopiesMixin(RouteObserverMixin(
+        WebUIListenerMixin(I18nMixin(PrefsMixin(PasswordRequestorMixin(
+            PasswordCheckMixin((PolymerElement))))))))) as {
       new (): PolymerElement & I18nMixinInterface &
           WebUIListenerMixinInterface & PrefsMixinInterface &
           PasswordCheckMixinInterface & PasswordRequestorMixinInterface &
-          RouteObserverMixinInterface,
+          RouteObserverMixinInterface &
+          MergePasswordsStoreCopiesMixinInterface & UserUtilMixinInterface,
     };
 
 export class SettingsPasswordCheckElement extends
@@ -98,8 +87,6 @@ export class SettingsPasswordCheckElement extends
 
   static get properties() {
     return {
-      storedAccounts_: Array,
-
       title_: {
         type: String,
         computed: 'computeTitle_(status, canUsePasswordCheckup_)',
@@ -110,25 +97,15 @@ export class SettingsPasswordCheckElement extends
         computed: 'computeMutedLeakedCredentialsTitle_(mutedPasswords)',
       },
 
-      isSignedOut_: {
-        type: Boolean,
-        computed: 'computeIsSignedOut_(syncStatus_, storedAccounts_)',
-      },
-
-      isSyncingPasswords_: {
-        type: Boolean,
-        computed: 'computeIsSyncingPasswords_(syncPrefs_, syncStatus_)',
-      },
-
       canUsePasswordCheckup_: {
         type: Boolean,
-        computed: 'computeCanUsePasswordCheckup_(syncPrefs_, syncStatus_)',
+        computed: 'computeCanUsePasswordCheckup_(syncPrefs, ' +
+            'isSyncingPasswords)',
       },
 
       isButtonHidden_: {
         type: Boolean,
-        computed:
-            'computeIsButtonHidden_(status, isSignedOut_, isInitialStatus)',
+        computed: 'computeIsButtonHidden_(status, signedIn, isInitialStatus)',
       },
 
       isMutePasswordButtonEnabled_: {
@@ -141,8 +118,6 @@ export class SettingsPasswordCheckElement extends
         computed: 'computeIsUnmutePasswordButtonEnabled_(activePassword_)',
       },
 
-      syncPrefs_: Object,
-      syncStatus_: Object,
       showPasswordEditDialog_: Boolean,
       showPasswordRemoveDialog_: Boolean,
       showPasswordEditDisclaimer_: Boolean,
@@ -155,7 +130,7 @@ export class SettingsPasswordCheckElement extends
       showCompromisedCredentialsBody_: {
         type: Boolean,
         computed: 'computeShowCompromisedCredentialsBody_(' +
-            'isSignedOut_, leakedPasswords, mutedPasswords)',
+            'signedIn, leakedPasswords, mutedPasswords)',
       },
 
       showMutedPasswordsSection_: {
@@ -166,7 +141,7 @@ export class SettingsPasswordCheckElement extends
       showNoCompromisedPasswordsLabel_: {
         type: Boolean,
         computed: 'computeShowNoCompromisedPasswordsLabel_(' +
-            'syncStatus_, prefs.*, status, leakedPasswords)',
+            'signedIn, prefs.*, status, leakedPasswords)',
       },
 
       showHideMenuTitle_: {
@@ -177,7 +152,7 @@ export class SettingsPasswordCheckElement extends
       iconHaloClass_: {
         type: String,
         computed: 'computeIconHaloClass_(' +
-            'status, isSignedOut_, leakedPasswords, weakPasswords)',
+            'status, signedIn, leakedPasswords, weakPasswords)',
       },
 
       /**
@@ -188,28 +163,19 @@ export class SettingsPasswordCheckElement extends
         type: Object,
         value: new Set(),
       },
-
-      // <if expr="chromeos_ash or chromeos_lacros">
-      showPasswordPromptDialog_: Boolean,
-      // </if>
     };
   }
 
-  private storedAccounts_: StoredAccount[];
   private title_: string;
   private mutedPasswordsTitle_: string;
-  private isSignedOut_: boolean;
-  private isSyncingPasswords_: boolean;
   private canUsePasswordCheckup_: boolean;
   private isButtonHidden_: boolean;
   private isMutePasswordButtonEnabled_: boolean;
   private isUnmutePasswordButtonEnabled_: boolean;
-  private syncPrefs_: SyncPrefs;
-  private syncStatus_: SyncStatus;
   private showPasswordEditDialog_: boolean;
   private showPasswordRemoveDialog_: boolean;
   private showPasswordEditDisclaimer_: boolean;
-  private activePassword_: chrome.passwordsPrivate.InsecureCredential|null;
+  private activePassword_: chrome.passwordsPrivate.PasswordUiEntry|null;
   private showCompromisedCredentialsBody_: boolean;
   private showMutedPasswordsSection_: boolean;
   private showNoCompromisedPasswordsLabel_: boolean;
@@ -217,26 +183,12 @@ export class SettingsPasswordCheckElement extends
   private iconHaloClass_: string;
   private clickedChangePasswordIds_: Set<number>;
 
-  // <if expr="chromeos_ash or chromeos_lacros">
-  private showPasswordPromptDialog_: boolean;
-  // </if>
-
-  private activeDialogAnchorStack_: HTMLElement[]|null;
   private activeListItem_: PasswordCheckListItemElement|null;
   startCheckAutomaticallySucceeded: boolean = false;
   private setSavedPasswordsListener_: SavedPasswordListChangedListener|null;
 
   constructor() {
     super();
-
-    /**
-     * A stack of the elements that triggered dialog to open and should
-     * therefore receive focus when that dialog is closed. The bottom of the
-     * stack is the element that triggered the earliest open dialog and top of
-     * the stack is the element that triggered the most recent (i.e. active)
-     * dialog. If no dialog is open, the stack is empty.
-     */
-    this.activeDialogAnchorStack_ = null;
 
     /**
      * The password_check_list_item that the user is interacting with now.
@@ -254,19 +206,6 @@ export class SettingsPasswordCheckElement extends
   override connectedCallback() {
     super.connectedCallback();
 
-    // <if expr="chromeos_ash or chromeos_lacros">
-    // If the user's account supports the password check, an auth token will be
-    // required in order for them to view or export passwords. Otherwise there
-    // is no additional security so |tokenRequestManager_| will immediately
-    // resolve requests.
-    this.tokenRequestManager =
-        loadTimeData.getBoolean('userCannotManuallyEnterPassword') ?
-        new BlockingRequestManager() :
-        new BlockingRequestManager(() => this.openPasswordPromptDialog_());
-
-    // </if>
-    this.activeDialogAnchorStack_ = [];
-
     const setSavedPasswordsListener: SavedPasswordListChangedListener =
         _list => {
           this.startCheckAutomaticallySucceeded = false;
@@ -274,30 +213,6 @@ export class SettingsPasswordCheckElement extends
     this.setSavedPasswordsListener_ = setSavedPasswordsListener;
     this.passwordManager!.addSavedPasswordListChangedListener(
         setSavedPasswordsListener);
-
-    // Set the manager. These can be overridden by tests.
-    const syncBrowserProxy = SyncBrowserProxyImpl.getInstance();
-
-    const syncStatusChanged = (syncStatus: SyncStatus) => this.syncStatus_ =
-        syncStatus;
-    const syncPrefsChanged = (syncPrefs: SyncPrefs) => this.syncPrefs_ =
-        syncPrefs;
-
-    // Listen for changes.
-    this.addWebUIListener('sync-status-changed', syncStatusChanged);
-    this.addWebUIListener('sync-prefs-changed', syncPrefsChanged);
-
-    // Request initial data.
-    syncBrowserProxy.getSyncStatus().then(syncStatusChanged);
-    syncBrowserProxy.sendSyncPrefsChanged();
-
-    // For non-ChromeOS, also check whether accounts are available.
-    // <if expr="not (chromeos_ash or chromeos_lacros)">
-    const storedAccountsChanged = (accounts: StoredAccount[]) =>
-        this.storedAccounts_ = accounts;
-    syncBrowserProxy.getStoredAccounts().then(storedAccountsChanged);
-    this.addWebUIListener('stored-accounts-updated', storedAccountsChanged);
-    // </if>
   }
 
   override disconnectedCallback() {
@@ -404,15 +319,14 @@ export class SettingsPasswordCheckElement extends
    */
   private getWeakPasswordsHelpText_(): string {
     return this.i18nAdvanced(
-        this.isSyncingPasswords_ ? 'weakPasswordsDescriptionGeneration' :
-                                   'weakPasswordsDescription');
+        this.isSyncingPasswords ? 'weakPasswordsDescriptionGeneration' :
+                                  'weakPasswordsDescription');
   }
 
   private onMoreActionsClick_(
       event: CustomEvent<{moreActionsButton: HTMLElement}>) {
     const target = event.detail.moreActionsButton;
     this.$.moreActionsMenu.showAt(target);
-    this.activeDialogAnchorStack_!.push(target);
     this.activeListItem_ = event.target as PasswordCheckListItemElement;
     this.activePassword_ = this.activeListItem_!.item;
   }
@@ -422,20 +336,22 @@ export class SettingsPasswordCheckElement extends
                                      this.activeListItem_!.showPassword();
     this.$.moreActionsMenu.close();
     this.activePassword_ = null;
-    this.activeDialogAnchorStack_!.pop();
   }
 
   private onEditPasswordClick_() {
     assert(this.activePassword_);
-    this.getPlaintextInsecurePassword(
-            this.activePassword_, chrome.passwordsPrivate.PlaintextReason.EDIT)
+    this.requestPlaintextPassword(
+            this.activePassword_.id,
+            chrome.passwordsPrivate.PlaintextReason.EDIT)
         .then(
-            insecureCredential => {
-              this.activePassword_ = insecureCredential;
+            password => {
+              this.activePassword_!.password = password;
               this.showPasswordEditDialog_ = true;
+              this.passwordManager!.recordPasswordCheckInteraction(
+                  PasswordCheckInteraction.EDIT_PASSWORD);
             },
             _error => {
-              // <if expr="not (chromeos_ash or chromeos_lacros)">
+              // <if expr="not is_chromeos">
               this.activePassword_ = null;
               this.onPasswordEditDialogClosed_();
               // </if>
@@ -464,22 +380,14 @@ export class SettingsPasswordCheckElement extends
 
   private onPasswordRemoveDialogClosed_() {
     this.showPasswordRemoveDialog_ = false;
-    const toFocus = this.activeDialogAnchorStack_!.pop();
-    assert(toFocus);
-    focusWithoutInk(toFocus);
   }
 
   private onPasswordEditDialogClosed_() {
     this.showPasswordEditDialog_ = false;
-    const toFocus = this.activeDialogAnchorStack_!.pop();
-    assert(toFocus);
-    focusWithoutInk(toFocus);
   }
 
   private onAlreadyChangedClick_(event: CustomEvent<HTMLElement>) {
-    const target = event.detail;
     // Setting required properties for Password Check Edit dialog
-    this.activeDialogAnchorStack_!.push(target);
     this.activeListItem_ = event.target as PasswordCheckListItemElement;
     this.activePassword_ = this.activeListItem_.item;
 
@@ -488,9 +396,6 @@ export class SettingsPasswordCheckElement extends
 
   private onEditDisclaimerClosed_() {
     this.showPasswordEditDisclaimer_ = false;
-    const toFocus = this.activeDialogAnchorStack_!.pop();
-    assert(toFocus);
-    focusWithoutInk(toFocus);
   }
 
   private computeShowHideMenuTitle(): string {
@@ -770,7 +675,7 @@ export class SettingsPasswordCheckElement extends
    * exist.
    */
   private getPasswordsCount_(): string {
-    return this.isSignedOut_ && this.leakedPasswords.length === 0 ?
+    return !this.signedIn && this.leakedPasswords.length === 0 ?
         this.weakPasswordsCount :
         this.insecurePasswordsCount;
   }
@@ -797,41 +702,22 @@ export class SettingsPasswordCheckElement extends
   }
 
   /**
-   * @return true iff the user is signed out.
-   */
-  private computeIsSignedOut_(): boolean {
-    if (!this.syncStatus_ || !this.syncStatus_.signedIn) {
-      return !this.storedAccounts_ || this.storedAccounts_.length === 0;
-    }
-    return !!this.syncStatus_.hasError;
-  }
-
-  /**
-   * @return true iff the user is syncing passwords.
-   */
-  private computeIsSyncingPasswords_(): boolean {
-    return !!this.syncStatus_ && !!this.syncStatus_.signedIn &&
-        !this.syncStatus_.hasError && !!this.syncPrefs_ &&
-        this.syncPrefs_.passwordsSynced;
-  }
-
-  /**
    * @return whether the user can use the online Password Checkup.
    */
   private computeCanUsePasswordCheckup_(): boolean {
-    return !!this.syncStatus_ && !!this.syncStatus_.signedIn &&
-        (!this.syncPrefs_ || !this.syncPrefs_.encryptAllData);
+    return this.isSyncingPasswords &&
+        (!this.syncPrefs || !this.syncPrefs.encryptAllData);
   }
 
   private computeShowCompromisedCredentialsBody_(): boolean {
     // Always shows compromised credentials section if user is signed out.
-    return this.isSignedOut_ || this.hasLeakedCredentials_() ||
+    return !this.signedIn || this.hasLeakedCredentials_() ||
         this.computeShowMutedLeakedCredentials_();
   }
 
   private computeShowNoCompromisedPasswordsLabel_(): boolean {
     // Check if user isn't signed in.
-    if (!this.syncStatus_ || !this.syncStatus_.signedIn) {
+    if (!this.signedIn) {
       return false;
     }
 
@@ -851,37 +737,10 @@ export class SettingsPasswordCheckElement extends
     this.notifyPath('clickedChangePasswordIds_.size');
   }
 
-  private clickedChangePassword_(
-      item: chrome.passwordsPrivate.InsecureCredential): boolean {
+  private clickedChangePassword_(item: chrome.passwordsPrivate.PasswordUiEntry):
+      boolean {
     return this.clickedChangePasswordIds_.has(item.id);
   }
-
-  // <if expr="chromeos_ash or chromeos_lacros">
-  /**
-   * Copied from passwords_section.js.
-   * TODO(crbug.com/1074228): Extract to a separate behavior
-   *
-   * @param e Contains newly created auth token
-   *     chrome.quickUnlockPrivate.TokenInfo. Note that its precise value is
-   *     not relevant here, only the facts that it's created.
-   */
-  private onTokenObtained_(e: CustomEvent<any>) {
-    assert(e.detail);
-    this.tokenRequestManager.resolve();
-  }
-
-  private onPasswordPromptClosed_() {
-    this.showPasswordPromptDialog_ = false;
-    const toFocus = this.activeDialogAnchorStack_!.pop();
-    assert(toFocus);
-    focusWithoutInk(toFocus);
-  }
-
-  private openPasswordPromptDialog_() {
-    this.activeDialogAnchorStack_!.push(getDeepActiveElement() as HTMLElement);
-    this.showPasswordPromptDialog_ = true;
-  }
-  // </if>
 }
 
 declare global {

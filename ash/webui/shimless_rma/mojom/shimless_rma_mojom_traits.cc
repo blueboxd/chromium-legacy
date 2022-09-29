@@ -403,6 +403,10 @@ EnumTraits<MojomOsUpdateOperation, ProtoOsUpdateOperation>::ToMojom(
       return MojomOsUpdateOperation::kDisabled;
     case update_engine::NEED_PERMISSION_TO_UPDATE:
       return MojomOsUpdateOperation::kNeedPermissionToUpdate;
+    case update_engine::CLEANUP_PREVIOUS_UPDATE:
+      return MojomOsUpdateOperation::kCleanupPreviousUpdate;
+    case update_engine::UPDATED_BUT_DEFERRED:
+      return MojomOsUpdateOperation::kUpdatedButDeferred;
     case update_engine::ERROR:
     case update_engine::Operation_INT_MIN_SENTINEL_DO_NOT_USE_:
     case update_engine::Operation_INT_MAX_SENTINEL_DO_NOT_USE_:
@@ -450,6 +454,12 @@ bool EnumTraits<MojomOsUpdateOperation, ProtoOsUpdateOperation>::FromMojom(
       return true;
     case MojomOsUpdateOperation::kNeedPermissionToUpdate:
       *out = update_engine::NEED_PERMISSION_TO_UPDATE;
+      return true;
+    case MojomOsUpdateOperation::kCleanupPreviousUpdate:
+      *out = update_engine::CLEANUP_PREVIOUS_UPDATE;
+      return true;
+    case MojomOsUpdateOperation::kUpdatedButDeferred:
+      *out = update_engine::UPDATED_BUT_DEFERRED;
       return true;
   }
   NOTREACHED();
@@ -811,6 +821,18 @@ EnumTraits<MojomProvisioningError, ProtoProvisioningError>::ToMojom(
       return MojomProvisioningError::kCannotWrite;
     case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_GENERATE_SECRET:
       return MojomProvisioningError::kGenerateSecret;
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_MISSING_BASE_ACCELEROMETER:
+      return MojomProvisioningError::kMissingBaseAccelerometer;
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_MISSING_LID_ACCELEROMETER:
+      return MojomProvisioningError::kMissingLidAccelerometer;
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_MISSING_BASE_GYROSCOPE:
+      return MojomProvisioningError::kMissingBaseGyroscope;
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_MISSING_LID_GYROSCOPE:
+      return MojomProvisioningError::kMissingLidGyroscope;
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_CR50:
+      return MojomProvisioningError::kCr50;
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_GBB:
+      return MojomProvisioningError::kGbb;
 
     default:
       NOTREACHED();
@@ -842,6 +864,26 @@ bool EnumTraits<MojomProvisioningError, ProtoProvisioningError>::FromMojom(
       return true;
     case MojomProvisioningError::kGenerateSecret:
       *out = rmad::ProvisionStatus::RMAD_PROVISION_ERROR_GENERATE_SECRET;
+      return true;
+    case MojomProvisioningError::kMissingBaseAccelerometer:
+      *out = rmad::ProvisionStatus::
+          RMAD_PROVISION_ERROR_MISSING_BASE_ACCELEROMETER;
+      return true;
+    case MojomProvisioningError::kMissingLidAccelerometer:
+      *out =
+          rmad::ProvisionStatus::RMAD_PROVISION_ERROR_MISSING_LID_ACCELEROMETER;
+      return true;
+    case MojomProvisioningError::kMissingBaseGyroscope:
+      *out = rmad::ProvisionStatus::RMAD_PROVISION_ERROR_MISSING_BASE_GYROSCOPE;
+      return true;
+    case MojomProvisioningError::kMissingLidGyroscope:
+      *out = rmad::ProvisionStatus::RMAD_PROVISION_ERROR_MISSING_LID_GYROSCOPE;
+      return true;
+    case MojomProvisioningError::kCr50:
+      *out = rmad::ProvisionStatus::RMAD_PROVISION_ERROR_CR50;
+      return true;
+    case MojomProvisioningError::kGbb:
+      *out = rmad::ProvisionStatus::RMAD_PROVISION_ERROR_GBB;
       return true;
   }
   NOTREACHED();

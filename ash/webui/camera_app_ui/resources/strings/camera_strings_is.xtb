@@ -7,6 +7,7 @@
 <translation id="1258009455399840361">Snúa um 90 gráður réttsælis</translation>
 <translation id="1276998909102132017">Myndir úr galleríi</translation>
 <translation id="1300209025925956156">Skannaðu skjalið</translation>
+<translation id="1309250603447638106">Sækir uppfærslur fyrir skjalaskönnun</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Leit + Vinstri ör til að opna.</translation>
 <translation id="1393338179284529051">Quad HD</translation>
 <translation id="1430915738399379752">Prenta</translation>
@@ -47,6 +48,7 @@
 <translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Forskoðun speglunar</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> er í sambandi.</translation>
+<translation id="2904654629665923749">Skjalaskönnun tiltæk</translation>
 <translation id="2968794441791257519">Myndir og myndskeið sem tekin eru með myndavélinni verða flutt í niðurhalsmöppuna. Þú getur fengið aðgang að þeim í „Skrár“.
 
         Forrit sem hafa heimild fyrir aðgangi að geymslu hafa aðgang að myndunum þínum og myndskeiðum.</translation>
@@ -72,7 +74,6 @@
 <translation id="3838931309141338733">Skanna strikamerki</translation>
 <translation id="3892148308691398805">Afrita texta</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> MP</translation>
-<translation id="4096701159033358951">Sækir eiginleika til að skanna skjöl</translation>
 <translation id="4118525110028899586">Gera hlé á upptöku</translation>
 <translation id="4121305183798804752">Skjal greindist</translation>
 <translation id="414641094616694804">Myndavélin getur ekki breytt upplausn</translation>
@@ -94,7 +95,6 @@
 <translation id="5057360777601936059">Ekki er hægt að nota myndavélina eins og er.
         Athugaðu hvort myndavélin er rétt tengd.</translation>
 <translation id="5163387177077603948">Færist til hægri</translation>
-<translation id="520537883758714667">Nú er skjalaskönnun í boði</translation>
 <translation id="5235304959032763950">16 á móti 9</translation>
 <translation id="5266635337630551423">Efra, vinstra horn skjals</translation>
 <translation id="5317780077021120954">Vista</translation>

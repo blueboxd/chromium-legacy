@@ -18,9 +18,9 @@
 #include "net/log/net_log_source.h"
 #include "net/spdy/header_coalescer.h"
 #include "net/third_party/quiche/src/quiche/spdy/core/http2_frame_decoder_adapter.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/http2_header_block.h"
 #include "net/third_party/quiche/src/quiche/spdy/core/spdy_alt_svc_wire_format.h"
 #include "net/third_party/quiche/src/quiche/spdy/core/spdy_framer.h"
-#include "net/third_party/quiche/src/quiche/spdy/core/spdy_header_block.h"
 #include "net/third_party/quiche/src/quiche/spdy/core/spdy_protocol.h"
 
 namespace net {
@@ -205,6 +205,12 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                         absl::string_view priority_field_value) override {}
   bool OnUnknownFrame(spdy::SpdyStreamId stream_id,
                       uint8_t frame_type) override;
+  void OnUnknownFrameStart(spdy::SpdyStreamId stream_id,
+                           size_t length,
+                           uint8_t type,
+                           uint8_t flags) override {}
+  void OnUnknownFramePayload(spdy::SpdyStreamId stream_id,
+                             absl::string_view payload) override {}
 
   // spdy::SpdyFramer methods.
   size_t ProcessInput(const char* data, size_t len);

@@ -119,6 +119,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiler/thread_profiler.h"
 #include "chrome/common/profiler/thread_profiler_configuration.h"
+#include "chrome/common/profiler/unwind_util.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -293,7 +294,6 @@
 #endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/startup_helper.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/components/javascript_dialog_extensions_client/javascript_dialog_extension_client_impl.h"
@@ -1144,9 +1144,13 @@ void ChromeBrowserMainParts::PostCreateThreads() {
 // Sampling multiple threads might cause overhead on Android and we don't want
 // to enable it unless the data is needed.
 #if !BUILDFLAG(IS_ANDROID)
+  // We pass in CreateCoreUnwindersFactory here since it lives in the chrome/
+  // layer while TracingSamplerProfiler is outside of chrome/.
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
-      base::BindOnce(&tracing::TracingSamplerProfiler::CreateOnChildThread));
+      base::BindOnce(&tracing::TracingSamplerProfiler::
+                         CreateOnChildThreadWithCustomUnwinders,
+                     base::BindRepeating(&CreateCoreUnwindersFactory)));
 #endif
 
   tracing::SetupBackgroundTracingFieldTrial();
@@ -1408,20 +1412,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   CHECK(aura::Env::GetInstance());
 #endif  // defined(USE_AURA)
 
-  // Android doesn't support extensions.
-#if !BUILDFLAG(IS_ANDROID)
-  // If the command line specifies --pack-extension, attempt the pack extension
-  // startup action and exit.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kPackExtension)) {
-    extensions::StartupHelper extension_startup_helper;
-    if (extension_startup_helper.PackExtension(
-            *base::CommandLine::ForCurrentProcess()))
-      return content::RESULT_CODE_NORMAL_EXIT;
-    return chrome::RESULT_CODE_PACK_EXTENSION_ERROR;
-  }
-#endif  // !BUILDFLAG(IS_ANDROID)
-
 #if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
   // When another process is running, use that process instead of starting a
   // new one. NotifyOtherProcess will currently give the other process up to
@@ -1434,6 +1424,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   switch (notify_result_) {
     case ProcessSingleton::PROCESS_NONE:
       // No process already running, fall through to starting a new one.
+      process_singleton_->StartWatching();
       g_browser_process->platform_part()->PlatformSpecificCommandLineProcessing(
           *base::CommandLine::ForCurrentProcess());
       break;
@@ -1443,15 +1434,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
                          base::UTF16ToWide(l10n_util::GetStringUTF16(
                              IDS_USED_EXISTING_BROWSER)))
                          .c_str());
-
-      // Having a differentiated return type for testing allows for tests to
-      // verify proper handling of some switches. When not testing, stick to
-      // the standard Unix convention of returning zero when things went as
-      // expected.
-      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kTestType))
-        return chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED;
-      return content::RESULT_CODE_NORMAL_EXIT;
+      return chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED;
 
     case ProcessSingleton::PROFILE_IN_USE:
       return chrome::RESULT_CODE_PROFILE_IN_USE;

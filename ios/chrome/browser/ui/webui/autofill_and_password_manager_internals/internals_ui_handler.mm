@@ -67,20 +67,20 @@ void InternalsUIHandler::RegisterMessages() {
 void InternalsUIHandler::OnLoaded(const base::Value::List& args) {
   base::Value load_event(call_on_load_);
   base::Value empty;
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   {&load_event, &empty});
+  base::ValueView load_args[] = {load_event, empty};
+  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback", load_args);
 
   ChromeBrowserState* browser_state =
       ChromeBrowserState::FromWebUIIOS(web_ui());
   base::Value is_incognito(browser_state->IsOffTheRecord());
   base::Value incognito_event("notify-about-incognito");
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   {&incognito_event, &is_incognito});
+  base::ValueView incognito_args[] = {incognito_event, is_incognito};
+  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback", incognito_args);
 
   base::Value variations_event("notify-about-variations");
-  base::Value variations_list = version_ui::GetVariationsList();
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   {&variations_event, &variations_list});
+  base::Value::List variations_list = version_ui::GetVariationsList();
+  base::ValueView variations_args[] = {variations_event, variations_list};
+  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback", variations_args);
   StartSubscription();
 }
 
@@ -104,13 +104,13 @@ void InternalsUIHandler::EndSubscription() {
     log_router->UnregisterReceiver(this);
 }
 
-void InternalsUIHandler::LogEntry(const base::Value& entry) {
-  if (!registered_with_log_router_ || entry.is_none())
+void InternalsUIHandler::LogEntry(const base::Value::Dict& entry) {
+  if (!registered_with_log_router_)
     return;
 
   base::Value log_event("add-structured-log");
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   {&log_event, &entry});
+  base::ValueView args[] = {log_event, entry};
+  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback", args);
 }
 
 }  //  namespace autofill

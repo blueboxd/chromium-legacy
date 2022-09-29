@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 
 // clang-format off
-import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 
-import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 import {keyDownOn, keyUpOn, pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
-
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
@@ -27,7 +26,8 @@ suite('cr-checkbox', function() {
     `;
 
     checkbox = document.querySelector('cr-checkbox')!;
-    innerCheckbox = checkbox.$$('#checkbox') as HTMLElement;
+    innerCheckbox =
+        checkbox.shadowRoot!.querySelector('#checkbox')! as HTMLElement;
     assertNotChecked();
   });
 
@@ -135,7 +135,8 @@ suite('cr-checkbox', function() {
   });
 
   test('LabelDisplay', function() {
-    const labelContainer = checkbox.$['label-container'] as HTMLElement;
+    const labelContainer = checkbox.shadowRoot!.querySelector<HTMLElement>(
+                               '#label-container') as HTMLElement;
     // Test that there's actually a label that's more than just the padding.
     assertTrue(labelContainer.offsetWidth > 20);
 
@@ -178,7 +179,8 @@ suite('cr-checkbox', function() {
     `;
 
     checkbox = document.querySelector('cr-checkbox')!;
-    innerCheckbox = checkbox.$$('#checkbox') as HTMLElement;
+    innerCheckbox =
+        checkbox.shadowRoot!.querySelector('#checkbox')! as HTMLElement;
 
     // Should not override tabindex if it is initialized.
     assertEquals(-1, checkbox.tabIndex);
@@ -192,7 +194,8 @@ suite('cr-checkbox', function() {
     `;
 
     checkbox = document.querySelector('cr-checkbox')!;
-    innerCheckbox = checkbox.$$('#checkbox') as HTMLElement;
+    innerCheckbox =
+        checkbox.shadowRoot!.querySelector('#checkbox')! as HTMLElement;
 
     // Initializing with disabled should make tabindex="-1".
     assertEquals(-1, checkbox.tabIndex);

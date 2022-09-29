@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/test/bind.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -52,6 +53,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -390,7 +392,7 @@ class DevToolsBeforeUnloadTest: public DevToolsTest {
  public:
   void CloseInspectedTab() {
     browser()->tab_strip_model()->CloseWebContentsAt(0,
-        TabStripModel::CLOSE_NONE);
+                                                     TabCloseTypes::CLOSE_NONE);
   }
 
   void CloseDevToolsWindowAsync() {
@@ -987,24 +989,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
-// Tests that scripts tab is populated with inspected scripts even if it
-// hadn't been shown by the moment inspected paged refreshed.
-// @see http://crbug.com/26312
-// This test is flaky on windows and linux asan. See https://crbug.com/1013003
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh \
-  DISABLED_TestScriptsTabIsPopulatedOnInspectedPageRefresh
-#else
-#define MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh \
-  TestScriptsTabIsPopulatedOnInspectedPageRefresh
-#endif
-IN_PROC_BROWSER_TEST_F(DevToolsTest,
-                       MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
-  RunTest("testScriptsTabIsPopulatedOnInspectedPageRefresh",
-          kDebuggerTestPage);
-}
-
 // Tests that chrome.devtools extension is correctly exposed.
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
                        TestDevToolsExtensionAPI) {
@@ -1243,12 +1227,30 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 
   // Wait for a 'DONE' message sent from popup_iframe.html, indicating that it
   // loaded successfully.
-  content::DOMMessageQueue message_queue;
+  std::unique_ptr<content::DOMMessageQueue> message_queue;
   std::string message;
-  OpenDevToolsWindow(kDebuggerTestPage, false);
 
+  // OpenDevToolsWindow() internally creates and initializes a WebContents,
+  // which we need to listen to messages from; to ensure that we don't miss
+  // the message, listen for that WebContents being created and set up a
+  // DOMMessageQueue for it.
+  {
+    auto subscription = content::RegisterWebContentsCreationCallback(
+        // Note that we only care about the first WebContents; for all
+        // subsequent WebContents, message_queue will already be non-null.
+        base::BindLambdaForTesting([&](content::WebContents* contents) {
+          if (!message_queue) {
+            message_queue =
+                std::make_unique<content::DOMMessageQueue>(contents);
+          }
+        }));
+    OpenDevToolsWindow(kDebuggerTestPage, false);
+  }
+
+  ASSERT_TRUE(message_queue) <<
+      "OpenDevToolsWindow must create at least one WebContents";
   while (true) {
-    ASSERT_TRUE(message_queue.WaitForMessage(&message));
+    ASSERT_TRUE(message_queue->WaitForMessage(&message));
     if (message == "\"DONE\"")
       break;
   }
@@ -1631,7 +1633,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
   // Now that we know the panel is loaded, switch to it. We'll wait until we
   // see a 'DONE' message sent from popup_iframe.html, indicating that it
   // loaded successfully.
-  content::DOMMessageQueue message_queue;
+  content::DOMMessageQueue message_queue(main_web_contents());
   SwitchToExtensionPanel(window_, extension, "the_panel_name");
   std::string message;
   while (true) {
@@ -2179,8 +2181,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsAgentHostTest, TestAgentHostReleased) {
   const std::string agent_id = agent_raw->GetId();
   ASSERT_EQ(agent_raw, DevToolsAgentHost::GetForId(agent_id).get())
       << "DevToolsAgentHost cannot be found by id";
-  browser()->tab_strip_model()->
-      CloseWebContentsAt(0, TabStripModel::CLOSE_NONE);
+  browser()->tab_strip_model()->CloseWebContentsAt(0,
+                                                   TabCloseTypes::CLOSE_NONE);
   ASSERT_FALSE(DevToolsAgentHost::GetForId(agent_id).get())
       << "DevToolsAgentHost is not released when the tab is closed";
 }
@@ -3010,14 +3012,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, HostBindingsSyncIntegration) {
   )",
               DevToolsSettings::kSyncDevToolsPreferencesFrontendName)));
 
-  const base::Value* synced_settings =
-      browser()->profile()->GetPrefs()->GetDictionary(
+  const base::Value::Dict& synced_settings =
+      browser()->profile()->GetPrefs()->GetValueDict(
           prefs::kDevToolsSyncedPreferencesSyncDisabled);
-  const base::Value* unsynced_settings =
-      browser()->profile()->GetPrefs()->GetDictionary(
+  const base::Value::Dict& unsynced_settings =
+      browser()->profile()->GetPrefs()->GetValueDict(
           prefs::kDevToolsPreferences);
-  EXPECT_EQ(*synced_settings->FindStringKey("synced_setting"), "synced value");
-  EXPECT_EQ(*unsynced_settings->FindStringKey("unsynced_setting"),
+  EXPECT_EQ(*synced_settings.FindString("synced_setting"), "synced value");
+  EXPECT_EQ(*unsynced_settings.FindString("unsynced_setting"),
             "unsynced value");
 }
 

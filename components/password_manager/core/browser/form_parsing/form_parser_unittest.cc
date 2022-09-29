@@ -183,9 +183,6 @@ FormData GetFormDataAndExpectation(const FormParsingTestCase& test_case,
       field.name = std::u16string(field_description.name);
     }
     field.name_attribute = field.name;
-#if BUILDFLAG(IS_IOS)
-    field.unique_id = StampUniqueSuffix(u"unique_id");
-#endif
     field.form_control_type = field_description.form_control_type;
     field.is_focusable = field_description.is_focusable;
     field.is_enabled = field_description.is_enabled;
@@ -215,9 +212,6 @@ FormData GetFormDataAndExpectation(const FormParsingTestCase& test_case,
     if (field_description.prediction.type != autofill::MAX_VALID_FIELD_TYPE) {
       predictions->fields.push_back(field_description.prediction);
       predictions->fields.back().renderer_id = renderer_id;
-#if BUILDFLAG(IS_IOS)
-      predictions->fields.back().unique_id = field.unique_id;
-#endif
     }
     if (field_description.predicted_username >= 0) {
       size_t index = static_cast<size_t>(field_description.predicted_username);
@@ -265,13 +259,7 @@ void CheckField(const std::vector<FormFieldData>& fields,
   ASSERT_TRUE(field_it != fields.end())
       << "Could not find a field with renderer ID " << renderer_id;
 
-// On iOS |unique_id| is used for identifying DOM elements, so the parser should
-// return it. See crbug.com/896594
-#if BUILDFLAG(IS_IOS)
-  EXPECT_EQ(element_name, field_it->unique_id);
-#else
   EXPECT_EQ(element_name, field_it->name);
-#endif
 
   std::u16string expected_value =
       field_it->user_input.empty() ? field_it->value : field_it->user_input;
@@ -1800,8 +1788,7 @@ TEST(FormParserTest, CVC) {
       },
       {
           .description_for_logging = "Name of 'verification_type' matches the "
-                                     "CVC pattern, ignore that "
-                                     "one.",
+                                     "CVC pattern, ignore that one.",
           .fields =
               {
                   {.role = ElementRole::USERNAME, .form_control_type = "text"},
@@ -1823,6 +1810,68 @@ TEST(FormParserTest, CVC) {
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .name = u"verification_type",
                    .form_control_type = "password"},
+              },
+          .fallback_only = true,
+      },
+  });
+}
+
+// The parser should avoid identifying Credit Card Number fields as passwords
+// if the server identifies the fields as CC Number fields. This should be
+// relatively safe as it should be unlikely that the server misclassifies a
+// field as a CC Number field.
+TEST(FormParserTest, CCNumber) {
+  CheckTestData({
+      {
+          .description_for_logging = "Server hints: CREDIT_CARD_NUMBER.",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME, .form_control_type = "text"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password",
+                   .prediction = {.type = autofill::CREDIT_CARD_NUMBER}},
+              },
+          .fallback_only = true,
+      },
+      {
+          .description_for_logging =
+              "Name of 'ccnumber' matches the CC Number regex pattern (but "
+              "there is no confirmation from the server), ignore that one.",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME, .form_control_type = "text"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .name = u"ccnumber",
+                   .form_control_type = "password"},
+              },
+          .fallback_only = false,
+      },
+      // The following describes the status quo for documentation purposes. It
+      // is probably not desirable. If we have high confidence in all credit
+      // card fields, the password manager should probably ignore those fields
+      // entirely.
+      {
+          .description_for_logging = "Example where CC Number and Expiration "
+                                     "date are both password fields.",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME,
+                   .name = u"cardholder",
+                   .form_control_type = "text",
+                   .prediction = {.type = autofill::CREDIT_CARD_NAME_FULL}},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .name = u"ccnumber",
+                   .form_control_type = "password",
+                   .prediction = {.type = autofill::CREDIT_CARD_NUMBER}},
+                  {.name = u"expiration",
+                   .form_control_type = "text",
+                   .prediction =
+                       {.type = autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR}},
+                  {.role = ElementRole::NEW_PASSWORD,
+                   .name = u"cvc",
+                   .form_control_type = "password",
+                   .prediction = {.type =
+                                      autofill::CREDIT_CARD_VERIFICATION_CODE}},
               },
           .fallback_only = true,
       },
@@ -2592,8 +2641,6 @@ TEST(FormParserTest, ContradictingPasswordPredictionAndAutocomplete) {
 }
 
 TEST(FormParserTest, SingleUsernamePrediction) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kUsernameFirstFlowFilling);
   CheckTestData({
       {
           .description_for_logging = "1 field",

@@ -25,7 +25,6 @@
 #include "chromeos/ash/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/ash/services/assistant/public/cpp/conversation_observer.h"
 #include "chromeos/ash/services/assistant/public/cpp/device_actions.h"
-#include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/services/assistant/public/shared/utils.h"
 #include "chromeos/services/libassistant/public/cpp/assistant_notification.h"
 #include "chromeos/services/libassistant/public/mojom/notification_delegate.mojom.h"
@@ -41,11 +40,10 @@
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
 namespace ash {
+
 class AssistantNotificationController;
 class AssistantStateBase;
-}  // namespace ash
 
-namespace chromeos {
 namespace assistant {
 
 class AssistantHost;
@@ -167,7 +165,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   mojo::PendingReceiver<chromeos::libassistant::mojom::NotificationDelegate>
   GetPendingNotificationDelegate() override;
 
-  // chromeos::assistant::ConversationObserver overrides:
+  // ConversationObserver overrides:
   void OnInteractionStarted(
       const AssistantInteractionMetadata& metadata) override;
   void OnInteractionFinished(
@@ -190,13 +188,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void OnStateChanged(
       chromeos::libassistant::mojom::ServiceState new_state) override;
 
-  void OnInstallDlcComplete(
-      const absl::optional<UserInfo>& user,
-      const chromeos::DlcserviceClient::InstallResult& result);
-
-  // Optional `dlc_path`, where the DLC libassistant.so is mounted.
-  void InitAssistant(const absl::optional<UserInfo>& user,
-                     const absl::optional<std::string>& dlc_path);
+  void InitAssistant(const absl::optional<UserInfo>& user);
   void OnServiceStarted();
   void OnServiceRunning();
   bool IsServiceStarted() const;
@@ -228,9 +220,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
                                 const std::string& description,
                                 bool is_user_initiated);
 
-  ash::AssistantNotificationController* assistant_notification_controller();
-  ash::AssistantScreenContextController* assistant_screen_context_controller();
-  ash::AssistantStateBase* assistant_state();
+  AssistantNotificationController* assistant_notification_controller();
+  AssistantScreenContextController* assistant_screen_context_controller();
+  AssistantStateBase* assistant_state();
   DeviceActions* device_actions();
   scoped_refptr<base::SequencedTaskRunner> main_task_runner();
 
@@ -277,9 +269,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   chromeos::libassistant::mojom::BootupConfigPtr bootup_config_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  // Mounted path of libassistant.so. Will not change within a chrome session.
-  absl::optional<std::string> dlc_path_;
-
   base::ScopedObservation<DeviceActions,
                           AppListEventSubscriber,
                           &DeviceActions::AddAndFireAppListEventSubscriber,
@@ -291,6 +280,11 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
 };
 
 }  // namespace assistant
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos::assistant {
+using ::ash::assistant::AssistantManagerServiceImpl;
+}
 
 #endif  // CHROMEOS_ASH_SERVICES_ASSISTANT_ASSISTANT_MANAGER_SERVICE_IMPL_H_

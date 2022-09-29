@@ -188,26 +188,6 @@ class NET_EXPORT CookieInclusionStatus {
     // contexts, for cookies that are 'SameParty; SameSite=Lax'.)
     WARN_SAMEPARTY_INCLUSION_OVERRULED_SAMESITE = 11,
 
-    // This cookie was SameSite=None and was included, but would have been
-    // excluded if it had been SameParty and the SameParty context had been
-    // computed using *either* top & current or the whole ancestor tree.
-    WARN_SAMESITE_NONE_REQUIRED = 12,
-    // This cookie was SameSite=None, was included, would have been included if
-    // it had been SameParty and the SameParty context type had been computed
-    // with only the top frame & resource URL, but would have been excluded if
-    // the SameParty context type had been computed using all ancestor frames.
-    WARN_SAMESITE_NONE_INCLUDED_BY_SAMEPARTY_TOP_RESOURCE = 13,
-    // This cookie was SameSite=None, was included, and would have been included
-    // if it had been SameParty and the SameParty context type had been computed
-    // using all ancestor frames.
-    WARN_SAMESITE_NONE_INCLUDED_BY_SAMEPARTY_ANCESTORS = 14,
-    // This cookie was SameSite=None, was included, and would have been included
-    // if it had been SameSite=Lax.
-    WARN_SAMESITE_NONE_INCLUDED_BY_SAMESITE_LAX = 15,
-    // This cookie was SameSite=None, was included, and would have been included
-    // if it had been SameSite=Strict.
-    WARN_SAMESITE_NONE_INCLUDED_BY_SAMESITE_STRICT = 16,
-
     // The cookie would have been included prior to the spec change considering
     // redirects in the SameSite context calculation
     // (https://github.com/httpwg/http-extensions/pull/1348)
@@ -218,16 +198,16 @@ class NET_EXPORT CookieInclusionStatus {
     // was actually used for the inclusion decision). This is not applied if
     // the context was downgraded but the cookie would have been
     // included/excluded in both cases.
-    WARN_CROSS_SITE_REDIRECT_DOWNGRADE_CHANGES_INCLUSION = 17,
+    WARN_CROSS_SITE_REDIRECT_DOWNGRADE_CHANGES_INCLUSION = 12,
 
     // The cookie exceeded the attribute size limit. RFC6265bis indicates that
     // large attributes should be ignored instead of causing the whole cookie
     // to be rejected. This is applied by the code that parses cookie lines and
     // notifies the user that an attribute value was ignored.
-    WARN_ATTRIBUTE_VALUE_EXCEEDS_MAX_SIZE = 18,
+    WARN_ATTRIBUTE_VALUE_EXCEEDS_MAX_SIZE = 13,
 
     // Cookie was set with a Domain attribute containing non ASCII characters.
-    WARN_DOMAIN_NON_ASCII = 19,
+    WARN_DOMAIN_NON_ASCII = 14,
 
     // This should be kept last.
     NUM_WARNING_REASONS
@@ -235,30 +215,30 @@ class NET_EXPORT CookieInclusionStatus {
 
   // These enums encode the context downgrade warnings + the secureness of the
   // url sending/setting the cookie. They're used for metrics only. The format
-  // is {context}_{schemeful_context}_{samesite_value}_{securness}.
-  // NO_DOWNGRADE_{securness} indicates that a cookie didn't have a breaking
+  // is k{context}{schemeful_context}{samesite_value}{securness}.
+  // kNoDowngrade{securness} indicates that a cookie didn't have a breaking
   // context downgrade and was A) included B) excluded only due to insufficient
   // same-site context. I.e. the cookie wasn't excluded due to other reasons
   // such as third-party cookie blocking. Keep this in line with
   // SameSiteCookieContextBreakingDowngradeWithSecureness in enums.xml.
-  enum ContextDowngradeMetricValues {
-    NO_DOWNGRADE_INSECURE = 0,
-    NO_DOWNGRADE_SECURE = 1,
+  enum class ContextDowngradeMetricValues {
+    kNoDowngradeInsecure = 0,
+    kNoDowngradeSecure = 1,
 
-    STRICT_LAX_STRICT_INSECURE = 2,
-    STRICT_CROSS_STRICT_INSECURE = 3,
-    STRICT_CROSS_LAX_INSECURE = 4,
-    LAX_CROSS_STRICT_INSECURE = 5,
-    LAX_CROSS_LAX_INSECURE = 6,
+    kStrictLaxStrictInsecure = 2,
+    kStrictCrossStrictInsecure = 3,
+    kStrictCrossLaxInsecure = 4,
+    kLaxCrossStrictInsecure = 5,
+    kLaxCrossLaxInsecure = 6,
 
-    STRICT_LAX_STRICT_SECURE = 7,
-    STRICT_CROSS_STRICT_SECURE = 8,
-    STRICT_CROSS_LAX_SECURE = 9,
-    LAX_CROSS_STRICT_SECURE = 10,
-    LAX_CROSS_LAX_SECURE = 11,
+    kStrictLaxStrictSecure = 7,
+    kStrictCrossStrictSecure = 8,
+    kStrictCrossLaxSecure = 9,
+    kLaxCrossStrictSecure = 10,
+    kLaxCrossLaxSecure = 11,
 
     // Keep last.
-    kMaxValue = LAX_CROSS_LAX_SECURE
+    kMaxValue = kLaxCrossLaxSecure
   };
 
   using ExclusionReasonBitset =

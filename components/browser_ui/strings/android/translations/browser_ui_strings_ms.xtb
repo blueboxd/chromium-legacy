@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">Muat turun dijeda</translation>
 <translation id="1409426117486808224">Paparan ringkas bagi tab terbuka</translation>
 <translation id="1415402041810619267">URL terpangkas</translation>
+<translation id="1426410128494586442">Ya</translation>
 <translation id="1446450296470737166">Benarkan kawalan penuh peranti MIDI</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1644574205037202324">Sejarah</translation>
@@ -32,6 +33,7 @@
 <translation id="1818308510395330587">Untuk membolehkan <ph name="APP_NAME" /> menggunakan AR, hidupkan juga kamera dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
 <translation id="1864927262126810325">Daripada <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">Akses lokasi dimatikan untuk peranti ini. Hidupkannya dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
+<translation id="1915307458270490472">Tamatkan panggilan</translation>
 <translation id="1919345977826869612">Iklan</translation>
 <translation id="1919950603503897840">Pilih kenalan</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -78,6 +80,7 @@
 <translation id="2677748264148917807">Tinggalkan</translation>
 <translation id="2687403674020088961">Sekat semua kuki (tidak disyorkan)</translation>
 <translation id="2704606927547763573">Disalin</translation>
+<translation id="2713106313042589954">Matikan kamera</translation>
 <translation id="2717722538473713889">Alamat e-mel</translation>
 <translation id="2750481671343847896">Laman boleh menunjukkan gesaan log masuk daripada perkhidmatan identiti.</translation>
 <translation id="2785051990912111074">Pilihan ini akan mengosongkan kuki untuk <ph name="WEBSITE" /></translation>
@@ -97,6 +100,7 @@
 <translation id="3114012059975132928">Pemain video</translation>
 <translation id="3115898365077584848">Tunjukkan Maklumat</translation>
 <translation id="3123473560110926937">Disekat di sesetengah tapak</translation>
+<translation id="3143754809889689516">Mainkan dari permulaan</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> data disimpan</translation>
 <translation id="3203366800380907218">Daripada web</translation>
 <translation id="321187648315454507">Untuk membolehkan <ph name="APP_NAME" /> menghantar pemberitahuan kepada anda, hidupkan juga pemberitahuan dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
@@ -153,10 +157,12 @@
 <translation id="4479647676395637221">Tanya dahulu sebelum membenarkan tapak menggunakan kamera anda (disyorkan)</translation>
 <translation id="4505788138578415521">URL dikembangkan</translation>
 <translation id="4534723447064627427">Untuk membolehkan <ph name="APP_NAME" /> mengakses mikrofon anda, hidupkan juga mikrofon dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
+<translation id="4566417217121906555">Redamkan mikrofon</translation>
 <translation id="4570913071927164677">Butiran</translation>
 <translation id="4645575059429386691">Diurus oleh ibu bapa anda</translation>
 <translation id="4670064810192446073">Realiti maya</translation>
 <translation id="4751476147751820511">Penderia gerakan atau cahaya</translation>
+<translation id="4811450222531576619">Ketahui tentang sumber dan topik halaman ini</translation>
 <translation id="4836046166855586901">Tanya apabila laman ingin mengetahui waktu anda menggunakan peranti ini dengan aktif</translation>
 <translation id="4883854917563148705">Tetapan yang diurus tidak dapat ditetapkan semula</translation>
 <translation id="4887024562049524730">Tanya sebelum membenarkan tapak menggunakan peranti dan data realiti maya anda (disyorkan)</translation>
@@ -177,6 +183,7 @@
 <translation id="5186036860380548585">Pilihan tersedia berhampiran bahagian atas skrin</translation>
 <translation id="5197729504361054390">Kenalan yang anda pilih akan dikongsi dengan <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Terakhir dilawati hari ini</translation>
+<translation id="5225463052809312700">Hidupkan kamera</translation>
 <translation id="5264323282659631142">Alih keluar '<ph name="CHIP_LABEL" />'</translation>
 <translation id="528192093759286357">Seret dari atas dan sentuh butang kembali untuk keluar daripada skrin penuh.</translation>
 <translation id="5300589172476337783">Paparkan</translation>
@@ -235,8 +242,10 @@
 <translation id="6367753977865761591">Sekat log masuk pihak ketiga untuk laman tertentu.</translation>
 <translation id="6388207532828177975">Kosongkan &amp; tetapkan semula</translation>
 <translation id="6398765197997659313">Keluar daripada skrin penuh</translation>
+<translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Sekat tapak daripada menggunakan peranti dan data realiti maya anda</translation>
 <translation id="6447842834002726250">Kuki</translation>
+<translation id="6467852467360539617">Kosongkan data &amp; tetapkan semula kebenaran</translation>
 <translation id="6527303717912515753">Kongsi</translation>
 <translation id="6545864417968258051">Pengimbasan Bluetooth</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> dan <ph name="NUM_MORE" /> lagi disekat}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> dan <ph name="NUM_MORE" /> lagi disekat}}</translation>
@@ -276,6 +285,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> dipilih</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> dan <ph name="PERMISSION_2" /> dibenarkan</translation>
 <translation id="7302486331832100261">Anda biasanya menyekat pemberitahuan. Untuk membenarkan pemberitahuan, ketik Butiran.</translation>
+<translation id="7383715096023715447">Tetapan untuk <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Tanya dahulu</translation>
 <translation id="7423538860840206698">Disekat daripada membaca papan keratan</translation>
 <translation id="7425915948813553151">Tema gelap untuk laman</translation>
@@ -335,6 +345,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 kuki sedang digunakan}other{# kuki sedang digunakan}}</translation>
 <translation id="8487700953926739672">Tersedia di luar talian</translation>
 <translation id="848952951823693243">Sentiasa minta laman mudah alih</translation>
+<translation id="8499083585497694743">Nyahredamkan mikrofon</translation>
 <translation id="851751545965956758">Sekat tapak daripada menyambung ke peranti</translation>
 <translation id="8525306231823319788">Skrin penuh</translation>
 <translation id="857943718398505171">Dibenarkan (disyorkan)</translation>

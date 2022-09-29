@@ -10,8 +10,11 @@
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "components/autofill_assistant/browser/assistant_field_trial_util.h"
 #include "components/autofill_assistant/browser/public/public_script_parameters.h"
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/value_util.h"
@@ -80,13 +83,14 @@ const char kSendAnnotateDomModelVersion[] = "SEND_ANNOTATE_DOM_MODEL_VERSION";
 // to send to the backend i.e., they do not require explicit approval in the
 // autofill-assistant onboarding. Even so, please always reach out to Chrome
 // privacy when you plan to make use of this list, and/or adjust it.
-constexpr std::array<const char*, 6> kNonSensitiveScriptParameters = {
+constexpr std::array<const char*, 7> kNonSensitiveScriptParameters = {
     public_script_parameters::kDebugBundleIdParameterName,
     "DEBUG_BUNDLE_VERSION",
     public_script_parameters::kDebugSocketIdParameterName,
     "FALLBACK_BUNDLE_ID",
     "FALLBACK_BUNDLE_VERSION",
-    public_script_parameters::kIntentParameterName};
+    public_script_parameters::kIntentParameterName,
+    "CAPABILITIES_REQUEST_ID"};
 
 // Parameters to specify details before the first backend roundtrip.
 const char kDetailsShowInitialParameterName[] = "DETAILS_SHOW_INITIAL";
@@ -104,6 +108,7 @@ const char kDetailsImageClickthroughUrl[] = "DETAILS_IMAGE_CLICKTHROUGH_URL";
 const char kDetailsTotalPriceLabel[] = "DETAILS_TOTAL_PRICE_LABEL";
 const char kDetailsTotalPrice[] = "DETAILS_TOTAL_PRICE";
 const char kRunHeadless[] = "RUN_HEADLESS";
+const char kFieldTrialPrefix[] = "FIELD_TRIAL_";
 
 ScriptParameters::ScriptParameters(
     const base::flat_map<std::string, std::string>& parameters) {
@@ -262,6 +267,16 @@ absl::optional<bool> ScriptParameters::GetSendAnnotateDomModelVersion() const {
 
 absl::optional<bool> ScriptParameters::GetRunHeadless() const {
   return GetTypedParameter<bool>(parameters_, kRunHeadless);
+}
+
+absl::optional<std::string> ScriptParameters::GetFieldTrialGroup(
+    const int field_trial_slot) const {
+  DCHECK_GE(field_trial_slot, 1);
+  DCHECK_LE(field_trial_slot,
+            AssistantFieldTrialUtil::kSyntheticTrialParamCount);
+  return GetTypedParameter<std::string>(
+      parameters_, base::StrCat({kFieldTrialPrefix,
+                                 base::NumberToString(field_trial_slot)}));
 }
 
 absl::optional<bool> ScriptParameters::GetDetailsShowInitial() const {

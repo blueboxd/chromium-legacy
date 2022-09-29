@@ -51,7 +51,7 @@ enum NetworkStatus {
 const bool kDefaultAutoUpdateDisabled = false;
 
 NetworkStatus GetNetworkStatus(bool interactive,
-                               const chromeos::NetworkState* network,
+                               const ash::NetworkState* network,
                                bool metered) {
   if (!network || !network->IsConnectedState())  // Offline state.
     return NETWORK_STATUS_OFFLINE;
@@ -78,19 +78,19 @@ bool IsAutoUpdateDisabled() {
   return update_disabled;
 }
 
-std::u16string GetConnectionTypeAsUTF16(const chromeos::NetworkState* network,
+std::u16string GetConnectionTypeAsUTF16(const ash::NetworkState* network,
                                         bool metered) {
   const std::string type = network->type();
-  if (chromeos::NetworkTypePattern::WiFi().MatchesType(type)) {
+  if (ash::NetworkTypePattern::WiFi().MatchesType(type)) {
     if (metered)
       return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_METERED_WIFI);
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_WIFI);
   }
-  if (chromeos::NetworkTypePattern::Ethernet().MatchesType(type))
+  if (ash::NetworkTypePattern::Ethernet().MatchesType(type))
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_ETHERNET);
-  if (chromeos::NetworkTypePattern::Mobile().MatchesType(type))
+  if (ash::NetworkTypePattern::Mobile().MatchesType(type))
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_MOBILE_DATA);
-  if (chromeos::NetworkTypePattern::VPN().MatchesType(type))
+  if (ash::NetworkTypePattern::VPN().MatchesType(type))
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_VPN);
   NOTREACHED();
   return std::u16string();
@@ -108,10 +108,9 @@ bool EnsureCanUpdate(bool interactive,
     return false;
   }
 
-  chromeos::NetworkStateHandler* network_state_handler =
-      chromeos::NetworkHandler::Get()->network_state_handler();
-  const chromeos::NetworkState* network =
-      network_state_handler->DefaultNetwork();
+  ash::NetworkStateHandler* network_state_handler =
+      ash::NetworkHandler::Get()->network_state_handler();
+  const ash::NetworkState* network = network_state_handler->DefaultNetwork();
   const bool metered = network_state_handler->default_network_is_metered();
   // Don't allow an update if we're currently offline or connected
   // to a network for which updates are disallowed.
@@ -149,6 +148,15 @@ void VersionUpdaterCros::GetUpdateStatus(StatusCallback callback) {
     update_engine_client->AddObserver(this);
 
   this->UpdateStatusChanged(update_engine_client->GetLastStatus());
+}
+
+void VersionUpdaterCros::ApplyDeferredUpdate() {
+  UpdateEngineClient* update_engine_client = UpdateEngineClient::Get();
+
+  DCHECK(update_engine_client->GetLastStatus().current_operation() ==
+         update_engine::Operation::UPDATED_BUT_DEFERRED);
+
+  update_engine_client->ApplyDeferredUpdate(base::DoNothing());
 }
 
 void VersionUpdaterCros::CheckForUpdate(StatusCallback callback,
@@ -304,6 +312,7 @@ void VersionUpdaterCros::UpdateStatusChanged(
     case update_engine::Operation::ERROR:
     case update_engine::Operation::REPORTING_ERROR_EVENT:
     case update_engine::Operation::ATTEMPTING_ROLLBACK:
+    case update_engine::Operation::CLEANUP_PREVIOUS_UPDATE:
       // Update engine reports errors for some conditions that shouldn't
       // actually be displayed as errors to users so leave the status as
       // UPDATED. However for some specific errors use the specific FAILED
@@ -345,6 +354,9 @@ void VersionUpdaterCros::UpdateStatusChanged(
       break;
     case update_engine::Operation::UPDATED_NEED_REBOOT:
       my_status = NEARLY_UPDATED;
+      break;
+    case update_engine::Operation::UPDATED_BUT_DEFERRED:
+      my_status = DEFERRED;
       break;
     default:
       NOTREACHED();

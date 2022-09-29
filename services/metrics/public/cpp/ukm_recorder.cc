@@ -57,6 +57,14 @@ ukm::SourceId UkmRecorder::GetSourceIdForDesktopWebAppStartUrl(
 }
 
 // static
+ukm::SourceId UkmRecorder::GetSourceIdForWebsiteUrl(
+    base::PassKey<apps::WebsiteMetrics>,
+    const GURL& start_url) {
+  return UkmRecorder::GetSourceIdFromScopeImpl(
+      start_url, SourceIdType::DESKTOP_WEB_APP_ID);
+}
+
+// static
 ukm::SourceId UkmRecorder::GetSourceIdForWebIdentityFromScope(
     base::PassKey<content::FedCmMetrics>,
     const GURL& provider_url) {

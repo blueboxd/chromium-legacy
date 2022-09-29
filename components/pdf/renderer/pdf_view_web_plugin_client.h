@@ -49,9 +49,7 @@ class PdfViewWebPluginClient : public chrome_pdf::PdfViewWebPlugin::Client {
   void ReportFindInPageMatchCount(int identifier,
                                   int total,
                                   bool final_update) override;
-  void ReportFindInPageSelection(int identifier,
-                                 int index,
-                                 bool final_update) override;
+  void ReportFindInPageSelection(int identifier, int index) override;
   void ReportFindInPageTickmarks(
       const std::vector<gfx::Rect>& tickmarks) override;
   float DeviceScaleFactor() override;

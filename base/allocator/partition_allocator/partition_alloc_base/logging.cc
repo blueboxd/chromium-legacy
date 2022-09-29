@@ -66,7 +66,6 @@
 #include <ostream>
 #include <string>
 
-#include "base/allocator/partition_allocator/partition_alloc_base/debug/alias.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/posix/eintr_wrapper.h"
 
 #if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
@@ -108,13 +107,13 @@ void WriteToFd(int fd, const char* data, size_t length) {
 
 }  // namespace
 
-#if defined(DCHECK_IS_CONFIGURABLE)
+#if BUILDFLAG(PA_DCHECK_IS_CONFIGURABLE)
 // In DCHECK-enabled Chrome builds, allow the meaning of LOGGING_DCHECK to be
 // determined at run-time. We default it to INFO, to avoid it triggering
 // crashes before the run-time has explicitly chosen the behaviour.
 PA_COMPONENT_EXPORT(PARTITION_ALLOC)
 logging::LogSeverity LOGGING_DCHECK = LOGGING_INFO;
-#endif  // defined(DCHECK_IS_CONFIGURABLE)
+#endif  // BUILDFLAG(PA_DCHECK_IS_CONFIGURABLE)
 
 // This is never instantiated, it's just used for EAT_STREAM_PARAMETERS to have
 // an object of the correct type on the LHS of the unused part of the ternary

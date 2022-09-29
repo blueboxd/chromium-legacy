@@ -44,8 +44,10 @@ class PrefRegistrySimple;
 
 namespace ash {
 
+class AmbientAnimationProgressTracker;
 class AmbientBackendController;
 class AmbientContainerView;
+class AmbientMultiScreenMetricsRecorder;
 class AmbientPhotoController;
 class AmbientWeatherController;
 
@@ -202,6 +204,8 @@ class ASH_EXPORT AmbientController
   std::unique_ptr<AmbientBackendController> ambient_backend_controller_;
   std::unique_ptr<AmbientPhotoController> ambient_photo_controller_;
   std::unique_ptr<AmbientWeatherController> ambient_weather_controller_;
+  std::unique_ptr<AmbientAnimationProgressTracker>
+      ambient_animation_progress_tracker_;
 
   // Monitors the device inactivity and controls the auto-show of ambient.
   base::OneShotTimer inactivity_timer_;
@@ -247,6 +251,9 @@ class ASH_EXPORT AmbientController
   // Not set until the AmbientAnimationTheme is initially read from pref
   // storage when ambient mode is enabled.
   absl::optional<AmbientAnimationTheme> current_theme_from_pref_;
+
+  std::unique_ptr<AmbientMultiScreenMetricsRecorder>
+      multi_screen_metrics_recorder_;
 
   base::WeakPtrFactory<AmbientController> weak_ptr_factory_{this};
 };

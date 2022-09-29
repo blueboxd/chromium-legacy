@@ -116,13 +116,13 @@ bool VerifyPskConfiguration(const base::Value& shill_properties,
   bool ok = VerifyBaseConfiguration(shill_properties, expected_ssid, out_guid);
 
   std::string actual_security_class = GetSecurityClass(shill_properties);
-  if (actual_security_class != shill::kSecurityPsk) {
-    ADD_FAILURE() << "Expected security class '" << shill::kSecurityPsk
+  if (actual_security_class != shill::kSecurityClassPsk) {
+    ADD_FAILURE() << "Expected security class '" << shill::kSecurityClassPsk
                   << "' but had '" << actual_security_class;
     ok = false;
   }
   std::string actual_passphrase = GetPassphrase(shill_properties);
-  if (actual_security_class != shill::kSecurityPsk) {
+  if (actual_security_class != shill::kSecurityClassPsk) {
     ADD_FAILURE() << "Expected passphrase '" << expected_passphrase
                   << "' but had '" << actual_passphrase;
     ok = false;
@@ -196,7 +196,7 @@ class WifiHotspotConnectorTest : public testing::Test {
     }
 
     // NetworkConnect:
-    void SetTechnologyEnabled(const chromeos::NetworkTypePattern& technology,
+    void SetTechnologyEnabled(const NetworkTypePattern& technology,
                               bool enabled_state) override {}
     void ShowMobileSetup(const std::string& network_id) override {}
     void ShowCarrierAccountDetail(const std::string& network_id) override {}
@@ -259,7 +259,7 @@ class WifiHotspotConnectorTest : public testing::Test {
         NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED);
     helper_.network_state_handler()->SetTechnologyEnabled(
         NetworkTypePattern::WiFi(), true /* enabled */,
-        chromeos::network_handler::ErrorCallback());
+        network_handler::ErrorCallback());
     base::RunLoop().RunUntilIdle();
 
     SetUpShillState();
@@ -725,7 +725,7 @@ TEST_F(WifiHotspotConnectorTest,
 TEST_F(WifiHotspotConnectorTest, TestConnect_WifiDisabled_Success) {
   network_state_handler()->SetTechnologyEnabled(
       NetworkTypePattern::WiFi(), false /* enabled */,
-      chromeos::network_handler::ErrorCallback());
+      network_handler::ErrorCallback());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
       network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
@@ -778,7 +778,7 @@ TEST_F(WifiHotspotConnectorTest,
        TestConnect_WifiDisabled_Success_OtherDeviceStatesChange) {
   network_state_handler()->SetTechnologyEnabled(
       NetworkTypePattern::WiFi(), false /* enabled */,
-      chromeos::network_handler::ErrorCallback());
+      network_handler::ErrorCallback());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
       network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
@@ -836,7 +836,7 @@ TEST_F(WifiHotspotConnectorTest,
 TEST_F(WifiHotspotConnectorTest, TestConnect_WifiDisabled_AttemptTimesOut) {
   network_state_handler()->SetTechnologyEnabled(
       NetworkTypePattern::WiFi(), false /* enabled */,
-      chromeos::network_handler::ErrorCallback());
+      network_handler::ErrorCallback());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
       network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
@@ -871,7 +871,7 @@ TEST_F(WifiHotspotConnectorTest,
        TestConnect_WifiDisabled_SecondConnectionWhileWaitingForWifiEnabled) {
   network_state_handler()->SetTechnologyEnabled(
       NetworkTypePattern::WiFi(), false /* enabled */,
-      chromeos::network_handler::ErrorCallback());
+      network_handler::ErrorCallback());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
       network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));

@@ -24,16 +24,11 @@ struct ExecutableMetadata {
 
   ~ExecutableMetadata();
 
-  // Is true if the file for which this payload was generated is indeed an
-  // executable. If this is false, all of the other properties will be
-  // absl::nullopt.
-  bool is_executable = false;
-
   // Is true if a currently running process was spawned from this file.
-  absl::optional<bool> is_running = absl::nullopt;
+  bool is_running = false;
 
-  // SHA256 hash of the public key of the certificate used to sign the
-  // executable.
+  // Byte string containing the SHA256 hash of the public key of the certificate
+  // used to sign the executable.
   absl::optional<std::string> public_key_sha256 = absl::nullopt;
 
   // Product name of this executable.
@@ -59,9 +54,9 @@ struct FileSystemItem {
   // Value indicating whether the specific resource could be found or not.
   PresenceValue presence = PresenceValue::kUnspecified;
 
-  // SHA256 hash of a file’s bytes. Ignored when `path` points to a
-  // directory. Collected only when `compute_sha256` is set to true in the
-  // corresponding GetFileSystemInfoOptions parameter.
+  // Byte string containing the SHA256 hash of a file’s bytes. Ignored when
+  // `path` points to a directory. Collected only when `compute_sha256` is set
+  // to true in the corresponding GetFileSystemInfoOptions parameter.
   absl::optional<std::string> sha256_hash = absl::nullopt;
 
   // Set of properties only relevant for executable files. Will only be
@@ -84,7 +79,7 @@ struct GetFileSystemInfoOptions {
 
   bool compute_sha256 = false;
 
-  bool compute_is_executable = false;
+  bool compute_executable_metadata = false;
 
   bool operator==(const GetFileSystemInfoOptions& other) const;
 };

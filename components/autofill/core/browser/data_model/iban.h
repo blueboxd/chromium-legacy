@@ -13,10 +13,8 @@
 
 namespace autofill {
 
-struct AutofillMetadata;
-
 // A form group that stores IBAN information.
-class Iban : public AutofillDataModel {
+class IBAN : public AutofillDataModel {
  public:
   enum RecordType {
     // An IBAN stored and editable locally.
@@ -27,18 +25,17 @@ class Iban : public AutofillDataModel {
     SERVER_IBAN,
   };
 
-  explicit Iban(const std::string& guid);
+  explicit IBAN(const std::string& guid);
 
-  // For use in STL containers.
-  Iban();
-  Iban(const Iban&);
-  ~Iban() override;
+  IBAN();
+  IBAN(const IBAN&);
+  ~IBAN() override;
 
-  void operator=(const Iban& iban);
+  IBAN& operator=(const IBAN& iban);
 
   // AutofillDataModel:
   AutofillMetadata GetMetadata() const override;
-  bool SetMetadata(const AutofillMetadata metadata) override;
+  bool SetMetadata(const AutofillMetadata& metadata) override;
 
   // Whether the IBAN is deletable. Always returns false for now as IBAN
   // never expires.
@@ -64,12 +61,12 @@ class Iban : public AutofillDataModel {
   // contents of the fields.
   // GUIDs, origins, and server id are not compared, only the values of
   // the IBANs themselves.
-  int Compare(const Iban& iban) const;
+  int Compare(const IBAN& iban) const;
 
   // Equality operators compare GUIDs, origins, |record_type_|, |value_|,
   // |nickname_| and the |server_id_|.
-  bool operator==(const Iban& iban) const;
-  virtual bool operator!=(const Iban& iban) const;
+  bool operator==(const IBAN& iban) const;
+  bool operator!=(const IBAN& iban) const;
 
   // Returns the ID assigned by the server. |server_id_| is empty if it's a
   // local IBAN.
@@ -79,24 +76,48 @@ class Iban : public AutofillDataModel {
   const std::u16string& value() const { return value_; }
   void set_value(const std::u16string& value) { value_ = value; }
 
-  // Returns a constant reference to the |nickname_| field.
   const std::u16string& nickname() const { return nickname_; }
   // Set the |nickname_| with the processed input (replace all tabs and newlines
   // with whitespaces, condense multiple whitespaces into a single one, and
   // trim leading/trailing whitespaces).
   void set_nickname(const std::u16string& nickname);
 
-  // Returns a constant reference to the |iban_account_holder_name_| field.
-  const std::u16string& iban_account_holder_name() const {
-    return iban_account_holder_name_;
+  // Converts value (E.g., CH12 1234 1234 1234 1234) of IBAN to a partial masked
+  // text formatted by the following steps:
+  // 1. Reveal the first two characters, containing the country code.
+  // 2. Obfuscate the following two check digits.
+  // 3. Arrange the remaining digits in groups of four and obfuscate them,
+  //    adding a space between each group.
+  //    Note: If the number of remaining digits is a multiple of four, reveal
+  //    the last four digits.
+  // 4. Reveal any leftover digits not in a group of four.
+  //
+  // Here are some examples:
+  // BE71 0961 2345 6769 will be shown as: BE** **** **** 6769.
+  // CH56 0483 5012 3456 7800 9 will be shown as: CH** **** **** **** **** 9.
+  // DE91 1000 0000 0123 4567 89 will be show as: DE** **** **** **** **** 89.
+  std::u16string GetIdentifierStringForAutofillDisplay() const;
+
+#if defined(UNIT_TEST)
+  // Call RepeatEllipsis for testing purposes.
+  std::u16string RepeatEllipsisForTesting(size_t number_of_groups) const {
+    return RepeatEllipsis(number_of_groups);
   }
-  void set_iban_account_holder_name(
-      const std::u16string& iban_account_holder_name) {
-    iban_account_holder_name_ = iban_account_holder_name;
-  }
+#endif
 
  private:
-  // This is the ID assigned by the server to uniquely identify this card.
+  // Returns a version of |value_| which does not have any separator characters
+  // (e.g., '-' and ' ').
+  std::u16string GetStrippedValue() const;
+
+  // This method does the following steps:
+  // 1. Adds two bullets and a space which represent the two characters after
+  //    the country code.
+  // 2. Adds |number_of_groups| groups of "**** " to obfuscate the value of
+  //    IBAN.
+  std::u16string RepeatEllipsis(size_t number_of_groups) const;
+
+  // This is the ID assigned by the server to uniquely identify this IBAN.
   // Note: server_id is empty for now as only local IBAN is supported.
   std::string server_id_;
 
@@ -109,9 +130,6 @@ class Iban : public AutofillDataModel {
 
   // The nickname of the IBAN. May be empty.
   std::u16string nickname_;
-
-  // Account holder name of the IBAN. May be empty.
-  std::u16string iban_account_holder_name_;
 };
 
 }  // namespace autofill

@@ -101,16 +101,11 @@ class SyncPrefs {
   void SetAppsSyncEnabledByOs(bool apps_sync_enabled);
 #endif
 
-  // Whether Sync is forced off by enterprise policy. Note that this only covers
-  // one out of two types of policy, "browser" policy. The second kind, "cloud"
-  // policy, is handled directly in SyncServiceImpl.
-  bool IsManaged() const;
+  // Whether Sync is disabled on the client for all profiles and accounts.
+  bool IsSyncClientDisabledByPolicy() const;
 
   // Maps |type| to its corresponding preference name.
   static const char* GetPrefNameForType(UserSelectableType type);
-
-  // For testing.
-  void SetManagedForTest(bool is_managed);
 
   // Gets the local sync backend enabled state.
   bool IsLocalSyncEnabled() const;
@@ -155,8 +150,6 @@ class SyncPrefs {
 #if BUILDFLAG(IS_ANDROID)
 void ClearObsoleteSyncDecoupledFromAndroidMasterSync(PrefService* pref_service);
 #endif  // BUILDFLAG(IS_ANDROID)
-
-void MigrateSyncSuppressedPref(PrefService* pref_service);
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 void MigrateSyncRequestedPrefPostMice(PrefService* pref_service);

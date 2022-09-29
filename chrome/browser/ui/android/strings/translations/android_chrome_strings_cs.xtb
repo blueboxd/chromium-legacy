@@ -105,7 +105,6 @@ Když smažete historii prohlížení (celou nebo na určitém webu), smažou se
 <translation id="1474893630593443211">Větší kontrola nad reklamami, které se vám zobrazují</translation>
 <translation id="1477626028522505441">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo z důvodu problémů se serverem.</translation>
 <translation id="148482509007564431">Postup uložení záložky</translation>
-<translation id="1488775391433859242">Tento telefon můžete použít k přihlášení na počítači, na kterém se zobrazuje tento QR kód.</translation>
 <translation id="1492417797159476138">Toto uživatelské jméno jste pro tento web už uložili</translation>
 <translation id="1493287004536771723">Sledujete web <ph name="SITE_NAME" /></translation>
 <translation id="1502010315804028179">Pokud chcete spravovat hesla, aktualizujte Služby Google Play</translation>
@@ -235,6 +234,7 @@ Když smažete historii prohlížení (celou nebo na určitém webu), smažou se
 <translation id="2239812875700136898">Pomocí tlačítka Možnosti funkce Objevit můžete ovládat, jaké příběhy se vám budou zobrazovat</translation>
 <translation id="2248941474044011069">Hesla jsou před uložením do Správce hesel Google v zařízení zašifrována</translation>
 <translation id="2259659629660284697">Exportovat hesla…</translation>
+<translation id="2276231040576210443">Synchronizované položky můžete kdykoliv vybrat v <ph name="BEGIN_LINK1" />nastavení<ph name="END_LINK1" />. Google může personalizovat Vyhledávání a další služby na základě vaší historie.</translation>
 <translation id="2276696007612801991">Pokud chcete zkontrolovat hesla, přihlaste se k účtu Google</translation>
 <translation id="2278052315791335171">Odstraněním tohoto hesla nesmažete svůj účet na webu <ph name="SITE" /></translation>
 <translation id="2279146068164892489">Otevřít aplikaci <ph name="APPNAME" />?</translation>
@@ -282,7 +282,6 @@ Když smažete historii prohlížení (celou nebo na určitém webu), smažou se
 <translation id="2534155362429831547">Byly smazány položky (celkem <ph name="NUMBER_OF_ITEMS" />)</translation>
 <translation id="2536728043171574184">Prohlížíte offline kopii stránky</translation>
 <translation id="2546283357679194313">Soubory cookie a data webových stránek</translation>
-<translation id="2549516196460093976">Tento tablet můžete použít k přihlášení na počítači, na kterém se zobrazuje tento QR kód.</translation>
 <translation id="2558569818338050235">Vaše historie prohlížení ovlivňuje zobrazované reklamy</translation>
 <translation id="2561519700418191927">Náhledy videí</translation>
 <translation id="2567385386134582609">OBRÁZEK</translation>
@@ -308,6 +307,7 @@ Když smažete historii prohlížení (celou nebo na určitém webu), smažou se
 <translation id="2702516483241149200">Nové: Sdílení odkazu, který obsah posune na tento text</translation>
 <translation id="2704606927547763573">Zkopírováno</translation>
 <translation id="2707726405694321444">Obnovit stránku</translation>
+<translation id="2709516037105925701">Automatické vyplňování</translation>
 <translation id="271033894570825754">Nové</translation>
 <translation id="2711073837061989559">Zkušební funkce</translation>
 <translation id="2718352093833049315">Pouze v sítích Wi-Fi</translation>
@@ -396,6 +396,7 @@ Když smažete historii prohlížení (celou nebo na určitém webu), smažou se
 <translation id="3114507951000454849">Přečtěte si dnešní zprávy <ph name="NEWS_ICON" /></translation>
 <translation id="311958134571892113">propojeno s</translation>
 <translation id="3123734510202723619">Oznámení</translation>
+<translation id="3130863904455712965">Historie a další</translation>
 <translation id="3134784203083076891">“</translation>
 <translation id="314939179385989105">Domovská stránka Chromu</translation>
 <translation id="3166827708714933426">Zkratky pro okna a karty</translation>
@@ -587,7 +588,6 @@ Když smažete historii prohlížení (celou nebo na určitém webu), smažou se
 <translation id="4256782883801055595">Licence open source</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Jaké údaje používáme:<ph name="END_BOLD" /> Vaši historii prohlížení, což je seznam webů, které jste navštívili v Chromu na tomto zařízení.</translation>
 <translation id="4263656433980196874">Uživatelské rozhraní souhlasu s hlasovým vyhledáváním pomocí Asistenta otevřené na celou výšku</translation>
-<translation id="4266054596873078491">Přihlaste se na tento web a do Chromu pomocí svého účtu Google.</translation>
 <translation id="4269820728363426813">Zkopírovat adresu odkazu</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Zapněte v nastavení systému Android zámek obrazovky<ph name="END_LINK" /></translation>
 <translation id="4293476595220860475">Používáním Chromu vyjadřujete souhlas se <ph name="BEGIN_TOS_LINK" />smluvními podmínkami společnosti Google<ph name="END_TOS_LINK" /> a <ph name="BEGIN_ATOS_LINK" />dodatečnými smluvními podmínkami prohlížeče Google Chrome a systému ChromeOS<ph name="END_ATOS_LINK" />. Platí také <ph name="BEGIN_PRIVACY_LINK" />zásady ochrany soukromí<ph name="END_PRIVACY_LINK" />.</translation>
@@ -1051,6 +1051,7 @@ Tokeny důvěry zvyšují ochranu soukromí na webu a nelze pomocí nich zjisti
 <translation id="6671495933530132209">Zkopírovat obrázek</translation>
 <translation id="6674571176963658787">Pokud chcete spustit synchronizaci, zadejte heslovou frázi</translation>
 <translation id="6676840375528380067">Vymazat z tohoto zařízení data prohlížeče Chrome?</translation>
+<translation id="6676927815633975364">Přihlásit se na tento web a do Chromu</translation>
 <translation id="6684809838922667136">Vylepšujeme Chrome</translation>
 <translation id="670498945988402717">Zkontrolováno včera</translation>
 <translation id="6710213216561001401">Předchozí</translation>
@@ -1140,6 +1141,7 @@ Tokeny důvěry zvyšují ochranu soukromí na webu a nelze pomocí nich zjisti
 <translation id="7196215469483532480">Vysvětlení průvodce ochranou soukromí otevřené na plnou výšku</translation>
 <translation id="7207760545532569765">Obnovit <ph name="TAB_COUNT" /> karet jako nové karty na pozadí.</translation>
 <translation id="7208109991155904980">Reakce byla přesunuta</translation>
+<translation id="7217781228893594884">Když Chrome opustíte, anonymní karty se uzamknou</translation>
 <translation id="7222235798733126207">Omezené sdílení mezi weby</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 nevyřízené stahování}few{# nevyřízená stahování}many{# nevyřízeného stahování}other{# nevyřízených stahování}}</translation>
 <translation id="7242755609445462077">Stylizované zvýraznění <ph name="CURRENT_DATE" /></translation>
@@ -1300,6 +1302,7 @@ Tokeny důvěry zvyšují ochranu soukromí na webu a nelze pomocí nich zjisti
 <translation id="8037801708772278989">Zkontrolováno právě teď</translation>
 <translation id="804335162455518893">SD karta nenalezena</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> anonymní karta}few{<ph name="TAB_COUNT_NORMAL" /> anonymní karty}many{<ph name="TAB_COUNT_NORMAL" /> anonymní karty}other{<ph name="TAB_COUNT_NORMAL" /> anonymních karet}}</translation>
+<translation id="8048728378294435881">Zálohujte si data a používejte je na jakémkoli zařízení</translation>
 <translation id="8051695050440594747">K dispozici: <ph name="MEGABYTES" /> MB</translation>
 <translation id="8058655154417507695">Rok vypršení platnosti</translation>
 <translation id="8058746566562539958">Otevřít na nové kartě v Chromu</translation>

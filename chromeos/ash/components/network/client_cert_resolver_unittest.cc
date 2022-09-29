@@ -19,6 +19,10 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "chromeos/ash/components/dbus/shill/shill_clients.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/ash/components/network/network_cert_loader.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
@@ -27,10 +31,6 @@
 #include "chromeos/ash/components/network/onc/onc_certificate_importer_impl.h"
 #include "chromeos/ash/components/network/system_token_cert_db_storage.h"
 #include "chromeos/components/onc/onc_test_utils.h"
-#include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_test_nss_db.h"
@@ -45,7 +45,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 using ::testing::IsEmpty;
 using ::testing::Not;
@@ -1012,4 +1012,4 @@ TEST_F(ClientCertResolverTest, ResolveByCertProfileIdFailure) {
   ResolveTestHelper(test_policy_network, true);
 }
 
-}  // namespace chromeos
+}  // namespace ash

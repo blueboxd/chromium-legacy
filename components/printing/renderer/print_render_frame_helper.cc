@@ -1191,9 +1191,10 @@ PrintRenderFrameHelper::PrintRenderFrameHelper(
   if (!delegate_->IsPrintPreviewEnabled())
     DisablePreview();
 
-  render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
-      base::BindRepeating(&PrintRenderFrameHelper::BindPrintRenderFrameReceiver,
-                          weak_ptr_factory_.GetWeakPtr()));
+  render_frame->GetAssociatedInterfaceRegistry()
+      ->AddInterface<mojom::PrintRenderFrame>(base::BindRepeating(
+          &PrintRenderFrameHelper::BindPrintRenderFrameReceiver,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 PrintRenderFrameHelper::~PrintRenderFrameHelper() {}
@@ -1205,6 +1206,9 @@ void PrintRenderFrameHelper::DisablePreview() {
 
 const mojo::AssociatedRemote<mojom::PrintManagerHost>&
 PrintRenderFrameHelper::GetPrintManagerHost() {
+  // We should not make calls back to the host while handling PrintWithParams().
+  DCHECK(!print_with_params_callback_);
+
   if (!print_manager_host_) {
     render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
         &print_manager_host_);
@@ -2205,6 +2209,10 @@ void PrintRenderFrameHelper::Reset() {
   print_pages_params_.reset();
   notify_browser_of_print_failure_ = true;
   snapshotter_.reset();
+
+  // The callback is supposed to be consumed at this point meaning we
+  // reported results to the PrintWithParams() caller.
+  DCHECK(!print_with_params_callback_);
 }
 
 void PrintRenderFrameHelper::OnFramePreparedForPrintPages() {
@@ -2227,8 +2235,10 @@ void PrintRenderFrameHelper::PrintPages() {
 
   // TODO(vitalybuka): should be page_count or valid pages from params.pages.
   // See http://crbug.com/161576
-  GetPrintManagerHost()->DidGetPrintedPagesCount(
-      print_pages_params_->params->document_cookie, page_count);
+  if (!print_with_params_callback_) {
+    GetPrintManagerHost()->DidGetPrintedPagesCount(
+        print_pages_params_->params->document_cookie, page_count);
+  }
 
   std::vector<uint32_t> pages_to_print =
       PageNumber::GetPages(print_pages_params_->pages, page_count);
@@ -2318,6 +2328,7 @@ bool PrintRenderFrameHelper::PrintPagesNative(
   if (print_with_params_callback_) {
     std::move(print_with_params_callback_)
         .Run(mojom::PrintWithParamsResult::NewParams(std::move(page_params)));
+    Reset();
     return true;
   }
 

@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/components/settings/cros_settings_names.h"
-#include "ash/components/tpm/stub_install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -21,11 +20,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
+#include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -97,8 +96,7 @@ class MinimumVersionPolicyHandlerTest
   ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   ash::ScopedStubInstallAttributes scoped_stub_install_attributes_;
   ash::FakeUpdateEngineClient* fake_update_engine_client_;
-  std::unique_ptr<chromeos::NetworkHandlerTestHelper>
-      network_handler_test_helper_;
+  std::unique_ptr<ash::NetworkHandlerTestHelper> network_handler_test_helper_;
   std::unique_ptr<base::Version> current_version_;
   std::unique_ptr<MinimumVersionPolicyHandler> minimum_version_policy_handler_;
 };
@@ -109,12 +107,11 @@ MinimumVersionPolicyHandlerTest::MinimumVersionPolicyHandlerTest()
 }
 
 void MinimumVersionPolicyHandlerTest::SetUp() {
-  chromeos::DBusThreadManager::Initialize();
   fake_update_engine_client_ = ash::UpdateEngineClient::InitializeFakeForTest();
   network_handler_test_helper_ =
-      std::make_unique<chromeos::NetworkHandlerTestHelper>();
+      std::make_unique<ash::NetworkHandlerTestHelper>();
 
-  chromeos::ShillServiceClient::TestInterface* service_test =
+  ash::ShillServiceClient::TestInterface* service_test =
       network_handler_test_helper_->service_test();
   service_test->ClearServices();
   service_test->AddService("/service/eth", "eth" /* guid */, "eth",
@@ -132,7 +129,6 @@ void MinimumVersionPolicyHandlerTest::TearDown() {
   minimum_version_policy_handler_.reset();
   network_handler_test_helper_.reset();
   ash::UpdateEngineClient::Shutdown();
-  chromeos::DBusThreadManager::Shutdown();
 }
 
 void MinimumVersionPolicyHandlerTest::CreateMinimumVersionHandler() {

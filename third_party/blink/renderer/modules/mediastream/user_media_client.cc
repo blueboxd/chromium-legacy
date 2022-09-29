@@ -31,16 +31,16 @@ static int32_t g_next_request_id = 0;
 
 // The histogram counts the number of calls to the JS APIs
 // getUserMedia() and getDisplayMedia().
-void UpdateAPICount(UserMediaRequest::MediaType media_type) {
+void UpdateAPICount(UserMediaRequestType media_type) {
   RTCAPIName api_name = RTCAPIName::kGetUserMedia;
   switch (media_type) {
-    case UserMediaRequest::MediaType::kUserMedia:
+    case UserMediaRequestType::kUserMedia:
       api_name = RTCAPIName::kGetUserMedia;
       break;
-    case UserMediaRequest::MediaType::kDisplayMedia:
+    case UserMediaRequestType::kDisplayMedia:
       api_name = RTCAPIName::kGetDisplayMedia;
       break;
-    case UserMediaRequest::MediaType::kDisplayMediaSet:
+    case UserMediaRequestType::kDisplayMediaSet:
       api_name = RTCAPIName::kGetDisplayMediaSet;
       break;
   }
@@ -82,7 +82,9 @@ UserMediaClient::UserMediaClient(
     LocalFrame* frame,
     UserMediaProcessor* user_media_processor,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : frame_(frame),
+    : Supplement<LocalDOMWindow>(*frame->DomWindow()),
+      ExecutionContextLifecycleObserver(frame->DomWindow()),
+      frame_(frame),
       user_media_processor_(user_media_processor),
       apply_constraints_processor_(
           MakeGarbageCollected<ApplyConstraintsProcessor>(
@@ -301,6 +303,8 @@ void UserMediaClient::ContextDestroyed() {
 }
 
 void UserMediaClient::Trace(Visitor* visitor) const {
+  Supplement<LocalDOMWindow>::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(frame_);
   visitor->Trace(user_media_processor_);
   visitor->Trace(apply_constraints_processor_);
@@ -325,6 +329,24 @@ UserMediaClient::GetMediaDevicesDispatcher() {
   }
 
   return media_devices_dispatcher_.get();
+}
+
+const char UserMediaClient::kSupplementName[] = "UserMediaClient";
+
+UserMediaClient* UserMediaClient::From(LocalDOMWindow* window) {
+  if (!window) {
+    return nullptr;
+  }
+  auto* client = Supplement<LocalDOMWindow>::From<UserMediaClient>(window);
+  if (!client) {
+    if (!window->GetFrame()) {
+      return nullptr;
+    }
+    client = MakeGarbageCollected<UserMediaClient>(
+        window->GetFrame(), window->GetTaskRunner(TaskType::kInternalMedia));
+    Supplement<LocalDOMWindow>::ProvideTo(*window, client);
+  }
+  return client;
 }
 
 }  // namespace blink

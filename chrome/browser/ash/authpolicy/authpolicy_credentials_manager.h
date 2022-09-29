@@ -12,11 +12,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/authpolicy/kerberos_files_handler.h"
+#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chromeos/ash/components/dbus/authpolicy/active_directory_info.pb.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "components/account_id/account_id.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -39,9 +39,8 @@ namespace ash {
 
 // A service responsible for tracking user credential status. Created for each
 // Active Directory user profile.
-class AuthPolicyCredentialsManager
-    : public KeyedService,
-      public chromeos::NetworkStateHandlerObserver {
+class AuthPolicyCredentialsManager : public KeyedService,
+                                     public NetworkStateHandlerObserver {
  public:
   explicit AuthPolicyCredentialsManager(Profile* profile);
 
@@ -54,10 +53,9 @@ class AuthPolicyCredentialsManager
   // KeyedService overrides.
   void Shutdown() override;
 
-  // chromeos::NetworkStateHandlerObserver overrides.
-  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
-  void NetworkConnectionStateChanged(
-      const chromeos::NetworkState* network) override;
+  // NetworkStateHandlerObserver overrides.
+  void DefaultNetworkChanged(const NetworkState* network) override;
+  void NetworkConnectionStateChanged(const NetworkState* network) override;
   void OnShuttingDown() override;
 
   KerberosFilesHandler* GetKerberosFilesHandlerForTesting();
@@ -97,7 +95,7 @@ class AuthPolicyCredentialsManager
 
   // Call GetUserStatus if |network_state| is connected and the previous call
   // failed.
-  void GetUserStatusIfConnected(const chromeos::NetworkState* network_state);
+  void GetUserStatusIfConnected(const NetworkState* network_state);
 
   // Callback for 'UserKerberosFilesChanged' D-Bus signal sent by authpolicyd.
   void OnUserKerberosFilesChangedCallback(dbus::Signal* signal);
@@ -116,8 +114,7 @@ class AuthPolicyCredentialsManager
   bool is_observing_network_ = false;
   KerberosFilesHandler kerberos_files_handler_;
 
-  base::ScopedObservation<chromeos::NetworkStateHandler,
-                          chromeos::NetworkStateHandlerObserver>
+  base::ScopedObservation<NetworkStateHandler, NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
 
   // Stores message ids of shown notifications. Each notification is shown at
@@ -131,8 +128,7 @@ class AuthPolicyCredentialsManager
 
 // Singleton that owns all AuthPolicyCredentialsManagers and associates them
 // with BrowserContexts.
-class AuthPolicyCredentialsManagerFactory
-    : public BrowserContextKeyedServiceFactory {
+class AuthPolicyCredentialsManagerFactory : public ProfileKeyedServiceFactory {
  public:
   static AuthPolicyCredentialsManagerFactory* GetInstance();
 

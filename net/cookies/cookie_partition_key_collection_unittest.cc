@@ -112,10 +112,12 @@ TEST(CookiePartitionKeyCollectionTest, FirstPartySetify) {
       CookiePartitionKey::FromURLForTesting(kNonMemberURL);
 
   TestCookieAccessDelegate delegate;
-  base::flat_map<SchemefulSite, std::set<SchemefulSite>> first_party_sets;
-  first_party_sets.insert(std::make_pair(
-      kOwnerSite, std::set<SchemefulSite>({kOwnerSite, kMemberSite})));
-  delegate.SetFirstPartySets(first_party_sets);
+  delegate.SetFirstPartySets({
+      {kOwnerSite, net::FirstPartySetEntry(kOwnerSite, net::SiteType::kPrimary,
+                                           absl::nullopt)},
+      {kMemberSite,
+       net::FirstPartySetEntry(kOwnerSite, net::SiteType::kAssociated, 0)},
+  });
 
   CookiePartitionKeyCollection empty_key_collection;
   EXPECT_TRUE(

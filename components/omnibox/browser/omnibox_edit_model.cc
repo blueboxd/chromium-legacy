@@ -33,6 +33,7 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/history_fuzzy_provider.h"
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/keyword_provider.h"
 #include "components/omnibox/browser/location_bar_model.h"
@@ -52,6 +53,7 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/omnibox_focus_type.h"
+#include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
@@ -113,13 +115,47 @@ const char kFocusToOpenTimeHistogram[] =
 
 // Histogram name which counts the number of times the user completes a search
 // in keyword mode, enumerated by how they enter keyword mode.
-const char kAcceptedKeywordSuggestion[] = "Omnibox.AcceptedKeywordSuggestion";
+const char kAcceptedKeywordSuggestionHistogram[] =
+    "Omnibox.AcceptedKeywordSuggestion";
 
-void EmitKeywordHistogram(
-    OmniboxEventProto::KeywordModeEntryMethod entry_method) {
+// Histogram name which counts the number of times the user completes a search
+// in keyword mode, enumerated by the type of search engine.
+const char kKeywordModeUsageByEngineTypeEnteredHistogramName[] =
+    "Omnibox.KeywordModeUsageByEngineType.Entered";
+
+// Histogram name which counts the number of times the user completes a search
+// in keyword mode, enumerated by the type of search engine.
+const char kKeywordModeUsageByEngineTypeAcceptedHistogramName[] =
+    "Omnibox.KeywordModeUsageByEngineType.Accepted";
+
+void EmitEnteredKeywordModeHistogram(
+    OmniboxEventProto::KeywordModeEntryMethod entry_method,
+    const TemplateURL* turl) {
   UMA_HISTOGRAM_ENUMERATION(
       kEnteredKeywordModeHistogram, static_cast<int>(entry_method),
       static_cast<int>(OmniboxEventProto::KeywordModeEntryMethod_MAX + 1));
+
+  if (turl != nullptr) {
+    base::UmaHistogramEnumeration(
+        kKeywordModeUsageByEngineTypeEnteredHistogramName,
+        turl->GetBuiltinEngineType(),
+        BuiltinEngineType::KEYWORD_MODE_ENGINE_TYPE_MAX);
+  }
+}
+
+void EmitAcceptedKeywordSuggestionHistogram(
+    OmniboxEventProto::KeywordModeEntryMethod entry_method,
+    const TemplateURL* turl) {
+  UMA_HISTOGRAM_ENUMERATION(
+      kAcceptedKeywordSuggestionHistogram, static_cast<int>(entry_method),
+      static_cast<int>(OmniboxEventProto::KeywordModeEntryMethod_MAX + 1));
+
+  if (turl != nullptr) {
+    base::UmaHistogramEnumeration(
+        kKeywordModeUsageByEngineTypeAcceptedHistogramName,
+        turl->GetBuiltinEngineType(),
+        BuiltinEngineType::KEYWORD_MODE_ENGINE_TYPE_MAX);
+  }
 }
 
 // `executed_position` should be set to the position of the executed
@@ -754,8 +790,9 @@ void OmniboxEditModel::EnterKeywordModeForDefaultSearchProvider(
 
   autocomplete_controller()->Stop(false);
 
-  keyword_ =
-      client_->GetTemplateURLService()->GetDefaultSearchProvider()->keyword();
+  const TemplateURL* default_search_provider =
+      client_->GetTemplateURLService()->GetDefaultSearchProvider();
+  keyword_ = default_search_provider->keyword();
   is_keyword_hint_ = false;
   keyword_mode_entry_method_ = entry_method;
 
@@ -772,7 +809,7 @@ void OmniboxEditModel::EnterKeywordModeForDefaultSearchProvider(
   if (entry_method == OmniboxEventProto::KEYBOARD_SHORTCUT)
     view_->SelectAll(false);
 
-  EmitKeywordHistogram(entry_method);
+  EmitEnteredKeywordModeHistogram(entry_method, default_search_provider);
 }
 
 void OmniboxEditModel::ExecuteAction(const AutocompleteMatch& match,
@@ -802,6 +839,12 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
                                  const std::u16string& pasted_text,
                                  size_t index,
                                  base::TimeTicks match_selection_timestamp) {
+  // NULL_RESULT_MESSAGE matches are informational only and cannot be acted
+  // upon. Immediately return when attempting to open one.
+  if (match.type == AutocompleteMatchType::NULL_RESULT_MESSAGE) {
+    return;
+  }
+
   // Switch the window disposition to SWITCH_TO_TAB for open tab matches that
   // originated while in keyword mode.  This is to support the keyword mode
   // starter pack's tab search (@tabs) feature, which should open all
@@ -828,6 +871,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   focus_resulted_in_navigation_ = true;
 
   RecordActionShownForAllActions(result(), OmniboxPopupSelection::kNoMatch);
+  HistoryFuzzyProvider::RecordOpenMatchMetrics(result(), match);
 
   std::u16string input_text(pasted_text);
   if (input_text.empty())
@@ -935,9 +979,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       }
 
       base::RecordAction(base::UserMetricsAction("AcceptedKeyword"));
-      UMA_HISTOGRAM_ENUMERATION(
-          kAcceptedKeywordSuggestion, keyword_mode_entry_method_,
-          static_cast<int>(OmniboxEventProto::KeywordModeEntryMethod_MAX + 1));
+      EmitAcceptedKeywordSuggestionHistogram(keyword_mode_entry_method_,
+                                             template_url);
       client_->GetTemplateURLService()->IncrementUsageCount(template_url);
     } else {
       DCHECK(ui::PageTransitionTypeIncludingQualifiersIs(
@@ -1069,7 +1112,9 @@ bool OmniboxEditModel::AcceptKeyword(
   }
 
   base::RecordAction(base::UserMetricsAction("AcceptedKeywordHint"));
-  EmitKeywordHistogram(entry_method);
+  const TemplateURL* turl =
+      client_->GetTemplateURLService()->GetTemplateURLForKeyword(keyword_);
+  EmitEnteredKeywordModeHistogram(entry_method, turl);
 
   return true;
 }
@@ -1607,7 +1652,9 @@ bool OmniboxEditModel::OnAfterPossibleChange(
   view_->UpdatePopup();
   if (allow_exact_keyword_match_) {
     keyword_mode_entry_method_ = OmniboxEventProto::SPACE_IN_MIDDLE;
-    EmitKeywordHistogram(OmniboxEventProto::SPACE_IN_MIDDLE);
+    const TemplateURL* turl =
+        client_->GetTemplateURLService()->GetTemplateURLForKeyword(keyword_);
+    EmitEnteredKeywordModeHistogram(OmniboxEventProto::SPACE_IN_MIDDLE, turl);
     allow_exact_keyword_match_ = false;
   }
 
@@ -1967,14 +2014,11 @@ bool OmniboxEditModel::TriggerPopupSelectionAction(
     case OmniboxPopupSelection::FOCUSED_BUTTON_HEADER: {
       DCHECK(match.suggestion_group_id.has_value());
 
-      omnibox::SuggestionGroupVisibility new_value =
-          result().IsSuggestionGroupHidden(GetPrefService(),
-                                           match.suggestion_group_id.value())
-              ? omnibox::SuggestionGroupVisibility::SHOWN
-              : omnibox::SuggestionGroupVisibility::HIDDEN;
-      omnibox::SetSuggestionGroupVisibility(
-          GetPrefService(), static_cast<int>(match.suggestion_group_id.value()),
-          new_value);
+      const bool current_visibility = result().IsSuggestionGroupHidden(
+          GetPrefService(), match.suggestion_group_id.value());
+      result().SetSuggestionGroupHidden(GetPrefService(),
+                                        match.suggestion_group_id.value(),
+                                        !current_visibility);
       break;
     }
     case OmniboxPopupSelection::FOCUSED_BUTTON_TAB_SWITCH:

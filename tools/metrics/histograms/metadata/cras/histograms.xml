@@ -34,7 +34,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.A2dp20msFailureOverStream" units="units"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>hychao@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -45,7 +45,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.A2dpExitCode" enum="CrasA2dpExitCode"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>hychao@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -55,7 +55,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cras.Busyloop" units="units" expires_after="2022-11-20">
+<histogram name="Cras.Busyloop" units="units" expires_after="2023-01-22">
 <!-- Name completed by histogram_suffixes
      name="Cras.TimePeriod" -->
 
@@ -71,7 +71,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cras.BusyloopLength" units="units" expires_after="2022-12-01">
+<histogram name="Cras.BusyloopLength" units="units" expires_after="2023-02-12">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -138,7 +138,7 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Cras.DeviceGain" units="level" expires_after="2022-11-20">
+<histogram name="Cras.DeviceGain" units="level" expires_after="2023-01-22">
 <!-- Name completed by histogram_suffixes
      name="Cras.DeviceType" -->
 
@@ -152,7 +152,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.DeviceNoiseCancellationStatus"
-    enum="CrasNoiseCancellationStatus" expires_after="2022-12-01">
+    enum="CrasNoiseCancellationStatus" expires_after="2023-02-12">
 <!-- Name completed by histogram_suffixes
      name="Cras.DeviceType" -->
 
@@ -221,7 +221,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.DeviceTypeInput" enum="CrasDeviceType"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -232,7 +232,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.DeviceTypeOutput" enum="CrasDeviceType"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -254,7 +254,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.FetchDelayMilliSeconds" units="ms"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
 <!-- Name completed by histogram_suffixes
      name="Cras.ClientType" and
      name="Cras.StreamType" -->
@@ -301,7 +301,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.HfpWidebandSpeechPacketLoss" units="units"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>enshuo@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -312,7 +312,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.HfpWidebandSpeechSupported" enum="BooleanSupported"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>hychao@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -322,7 +322,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.HighestDeviceDelayInput" units="units"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -335,7 +335,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.HighestDeviceDelayOutput" units="units"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -348,7 +348,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.HighestInputHardwareLevel" units="frames"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -359,223 +359,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.HighestOutputHardwareLevel" units="frames"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
     The highest hardware level of output device in CRAS(Chrome OS audio server).
     The hardware level is the remaining frames in the device. For output device,
     it can show the latency between writing and actual playout.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDeviceA2DPRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of input device A2DP in CRAS(ChromeOS audio server). The runtime
-    is the duration between opening and closing a device. The value is recorded
-    when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDeviceAbnormalFallbackRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of fallback device in the abnormal situation. The runtime is the
-    duration between opening and closing a device. The value is recorded when
-    the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDeviceBluetoothNarrowBandMicRuntime" units="seconds"
-    expires_after="2022-11-20">
-  <owner>hychao@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of input device Bluetooth narrowband in CRAS(ChromeOS audio
-    server). The runtime is the duration between opening and closing a device.
-    The value is recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDeviceBluetoothRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of Bluetooth input device that doesn't fall to any other
-    category we defined. i.e HSP, narrowband or wideband. The runtime is the
-    duration between opening and closing a device. The value is recorded when
-    the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDeviceBluetoothWideBandMicRuntime" units="seconds"
-    expires_after="2023-01-15">
-  <owner>hychao@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of input device Bluetooth wideband in CRAS(ChromeOS audio
-    server). The runtime is the duration between opening and closing a device.
-    The value is recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDeviceFrontMicRuntime" units="seconds"
-    expires_after="2022-09-20">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of input device InternalMic in CRAS(ChromeOS audio server). The
-    runtime is the duration between opening and closing a device. The value is
-    recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDeviceHFPRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of input device HFP in CRAS(ChromeOS audio server). The runtime
-    is the duration between opening and closing a device. The value is recorded
-    when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDeviceHotwordRuntime" units="seconds"
-    expires_after="2022-05-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of input device Hotword in CRAS(ChromeOS audio server). The
-    runtime is the duration between opening and closing a device. The value is
-    recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDeviceHSPRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of input device HSP in CRAS(ChromeOS audio server). The runtime
-    is the duration between opening and closing a device. The value is recorded
-    when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDeviceInternalMicRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of input device InternalMic in CRAS(ChromeOS audio server). The
-    runtime is the duration between opening and closing a device. The value is
-    recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDeviceKeyboardMicRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of input device InternalMic in CRAS(ChromeOS audio server). The
-    runtime is the duration between opening and closing a device. The value is
-    recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDeviceMicRuntime" units="seconds"
-    expires_after="2022-11-20">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of input device Mic in CRAS(ChromeOS audio server). The runtime
-    is the duration between opening and closing a device. The value is recorded
-    when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDeviceNormalFallbackRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of fallback device in the normal situation. The runtime is the
-    duration between opening and closing a device. The value is recorded when
-    the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDevicePostDspLoopbackRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of input device PostDspLoopback in CRAS(ChromeOS audio server).
-    The runtime is the duration between opening and closing a device. The value
-    is recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDevicePostMixLoopbackRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of input device PostMixLoopback in CRAS(ChromeOS audio server).
-    The runtime is the duration between opening and closing a device. The value
-    is recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDeviceRearMicRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of input device InternalMic in CRAS(ChromeOS audio server). The
-    runtime is the duration between opening and closing a device. The value is
-    recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDeviceSilentHotwordRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of silent hotword device in CRAS(ChromeOS audio server). The
-    runtime is the duration between opening and closing a device. The value is
-    recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDeviceUnknownRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of input device Unknown in CRAS(ChromeOS audio server). The
-    runtime is the duration between opening and closing a device. The value is
-    recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.InputDeviceUSBRuntime" units="seconds"
-    expires_after="2022-11-20">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of input device USB in CRAS(ChromeOS audio server). The runtime
-    is the duration between opening and closing a device. The value is recorded
-    when the device is closed.
   </summary>
 </histogram>
 
@@ -590,7 +380,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.MissedCallbackFirstTimeInput" units="seconds"
-    expires_after="2022-11-20">
+    expires_after="2023-02-12">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -604,7 +394,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.MissedCallbackFirstTimeOutput" units="seconds"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -618,7 +408,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.MissedCallbackFrequencyAfterReschedulingInput"
-    units="count" expires_after="2022-11-20">
+    units="count" expires_after="2023-01-22">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -629,7 +419,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.MissedCallbackFrequencyAfterReschedulingOutput"
-    units="count" expires_after="2022-11-20">
+    units="count" expires_after="2023-01-22">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -641,7 +431,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.MissedCallbackFrequencyInput" units="count"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -652,7 +442,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.MissedCallbackFrequencyOutput" units="count"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -663,7 +453,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.MissedCallbackSecondTimeInput" units="seconds"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -674,7 +464,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.MissedCallbackSecondTimeOutput" units="seconds"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -684,152 +474,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cras.OutputDeviceA2DPRuntime" units="seconds"
-    expires_after="2022-11-20">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of output device A2DP in CRAS(ChromeOS audio server). The
-    runtime is the duration between opening and closing a device. The value is
-    recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.OutputDeviceAbnormalFallbackRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of fallback device in the abnormal situation. The runtime is the
-    duration between opening and closing a device. The value is recorded when
-    the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.OutputDeviceBluetoothRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of Bluetooth output device in CRAS(ChromeOS audio server) that
-    doesn't belong to any category we defined. i.e A2DP, HFP or HSP. The runtime
-    is the duration between opening and closing a device. The value is recorded
-    when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.OutputDeviceHapticRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of output device Haptic in CRAS(ChromeOS audio server). The
-    runtime is the duration between opening and closing a device. The value is
-    recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.OutputDeviceHDMIRuntime" units="seconds"
-    expires_after="2022-11-20">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of output device HDMI in CRAS(ChromeOS audio server). The
-    runtime is the duration between opening and closing a device. The value is
-    recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.OutputDeviceHeadphoneRuntime" units="seconds"
-    expires_after="2022-11-20">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of output device Headphone in CRAS(ChromeOS audio server). The
-    runtime is the duration between opening and closing a device. The value is
-    recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.OutputDeviceHFPRuntime" units="seconds"
-    expires_after="2023-01-15">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of output device HFP in CRAS(ChromeOS audio server). The runtime
-    is the duration between opening and closing a device. The value is recorded
-    when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.OutputDeviceHSPRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of output device HSP in CRAS(ChromeOS audio server). The runtime
-    is the duration between opening and closing a device. The value is recorded
-    when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.OutputDeviceInternalSpeakerRuntime" units="seconds"
-    expires_after="2022-11-20">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of output device InternalSpeaker in CRAS(ChromeOS audio server).
-    The runtime is the duration between opening and closing a device. The value
-    is recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.OutputDeviceLineoutRuntime" units="seconds"
-    expires_after="2022-09-20">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of output device Lineout in CRAS(ChromeOS audio server). The
-    runtime is the duration between opening and closing a device. The value is
-    recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.OutputDeviceNormalFallbackRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of fallback device in the normal situation. The runtime is the
-    duration between opening and closing a device. The value is recorded when
-    the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.OutputDeviceUnknownRuntime" units="seconds"
-    expires_after="2022-12-01">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of output device Unknown in CRAS(ChromeOS audio server). The
-    runtime is the duration between opening and closing a device. The value is
-    recorded when the device is closed.
-  </summary>
-</histogram>
-
-<histogram name="Cras.OutputDeviceUSBRuntime" units="seconds"
-    expires_after="2022-11-20">
-  <owner>yuhsuan@chromium.org</owner>
-  <owner>chromeos-audio@google.com</owner>
-  <summary>
-    The runtime of output device USB in CRAS(ChromeOS audio server). The runtime
-    is the duration between opening and closing a device. The value is recorded
-    when the device is closed.
-  </summary>
-</histogram>
-
 <histogram name="Cras.RtcDevicePair" enum="CrasDevicePair"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -925,7 +571,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.StreamCallbackThreshold" units="frames"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
 <!-- Name completed by histogram_suffixes
      name="Cras.Direction" and
      name="Cras.ClientType" -->
@@ -960,7 +606,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.StreamConnectError" enum="CrasStreamConnectError"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>hychao@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -970,7 +616,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.StreamCreateError" enum="CrasStreamCreateError"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>hychao@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>Record the errors happen when CRAS server creats a stream.</summary>
@@ -1002,7 +648,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cras.StreamRuntime" units="seconds" expires_after="2022-11-20">
+<histogram name="Cras.StreamRuntime" units="seconds" expires_after="2023-01-22">
 <!-- Name completed by histogram_suffixes
      name="Cras.Direction" and
      name="Cras.ClientType" and
@@ -1032,7 +678,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.StreamSamplingRate" units="bps"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
 <!-- Name completed by histogram_suffixes
      name="Cras.Direction" and
      name="Cras.ClientType" -->
@@ -1046,7 +692,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.UnderrunsPerDevice" units="count"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -1057,7 +703,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.WebRTC.Audio.ApmCaptureInputLevelAverageRms"
-    units="dBFS (negated)" expires_after="2022-11-20">
+    units="dBFS (negated)" expires_after="2023-01-22">
   <owner>hychao@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>

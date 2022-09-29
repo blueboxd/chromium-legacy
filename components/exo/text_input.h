@@ -51,6 +51,11 @@ class TextInput : public ui::TextInputClient,
     // Called when the virtual keyboard visibility state has changed.
     virtual void OnVirtualKeyboardVisibilityChanged(bool is_visible) = 0;
 
+    // Called when the virtual keyboard's occluded bounds has changed.
+    // The bounds are in screen DIP.
+    virtual void OnVirtualKeyboardOccludedBoundsChanged(
+        const gfx::Rect& screen_bounds) = 0;
+
     // Set the 'composition text' of the current text input.
     virtual void SetCompositionText(const ui::CompositionText& composition) = 0;
 
@@ -165,7 +170,7 @@ class TextInput : public ui::TextInputClient,
 
   // ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
-  uint32_t ConfirmCompositionText(bool keep_selection) override;
+  size_t ConfirmCompositionText(bool keep_selection) override;
   void ClearCompositionText() override;
   void InsertText(const std::u16string& text,
                   InsertTextCursorBehavior cursor_behavior) override;
@@ -177,7 +182,7 @@ class TextInput : public ui::TextInputClient,
   bool CanComposeInline() const override;
   gfx::Rect GetCaretBounds() const override;
   gfx::Rect GetSelectionBoundingBox() const override;
-  bool GetCompositionCharacterBounds(uint32_t index,
+  bool GetCompositionCharacterBounds(size_t index,
                                      gfx::Rect* rect) const override;
   bool HasCompositionText() const override;
   ui::TextInputClient::FocusReason GetFocusReason() const override;

@@ -76,6 +76,7 @@ class MockPage : public new_tab_page::mojom::Page {
   MOCK_METHOD1(SetTheme, void(new_tab_page::mojom::ThemePtr));
   MOCK_METHOD2(SetDisabledModules, void(bool, const std::vector<std::string>&));
   MOCK_METHOD1(SetModulesFreVisibility, void(bool));
+  MOCK_METHOD1(CustomizeChromeSidePanelVisibilityChanged, void(bool));
 
   mojo::Receiver<new_tab_page::mojom::Page> receiver_{this};
 };
@@ -299,7 +300,7 @@ TEST_F(NewTabPageHandlerTest, SetTheme) {
       .WillByDefault(testing::Return(true));
   mock_color_provider_source_.SetColor(
       kColorNewTabPageMostVisitedTileBackground, SkColorSetRGB(0, 0, 4));
-  mock_color_provider_source_.SetColor(kColorOmniboxBackground,
+  mock_color_provider_source_.SetColor(kColorNewTabPageSearchBoxBackground,
                                        SkColorSetRGB(0, 0, 5));
   mock_color_provider_source_.SetColor(kColorOmniboxResultsIcon,
                                        SkColorSetRGB(0, 0, 6));
@@ -332,7 +333,6 @@ TEST_F(NewTabPageHandlerTest, SetTheme) {
   ASSERT_TRUE(theme);
   EXPECT_EQ(SkColorSetRGB(0, 0, 1), theme->background_color);
   EXPECT_EQ(SkColorSetRGB(0, 0, 2), theme->text_color);
-  EXPECT_FALSE(theme->is_default);
   EXPECT_FALSE(theme->is_custom_background);
   EXPECT_FALSE(theme->is_dark);
   EXPECT_EQ(SkColorSetRGB(0, 0, 3), theme->logo_color);
@@ -551,7 +551,6 @@ TEST_F(NewTabPageHandlerTest, GetInteractiveDoodle) {
 
 TEST_F(NewTabPageHandlerTest, GetPromo) {
   PromoData promo_data;
-  promo_data.promo_html = "<html/>";
   promo_data.middle_slot_json = R"({
     "part": [{
       "image": {

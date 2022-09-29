@@ -7,6 +7,7 @@ import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import {allInputsDisabledTest} from './all_inputs_disabled_test.js';
 import {criticalErrorPageTest} from './critical_error_page_test.js';
 import {fakeShimlessRmaServiceTestSuite} from './fake_shimless_rma_service_test.js';
+import {hardwareErrorPageTest} from './hardware_error_page_test.js';
 import {onboardingChooseDestinationPageTest} from './onboarding_choose_destination_page_test.js';
 import {onboardingChooseWipeDevicePageTest} from './onboarding_choose_wipe_device_page_test.js';
 import {onboardingChooseWpDisableMethodPageTest} from './onboarding_choose_wp_disable_method_page_test.js';
@@ -17,6 +18,7 @@ import {onboardingSelectComponentsPageTest} from './onboarding_select_components
 import {onboardingUpdatePageTest} from './onboarding_update_page_test.js';
 import {onboardingWaitForManualWpDisablePageTest} from './onboarding_wait_for_manual_wp_disable_page_test.js';
 import {onboardingWpDisableCompletePageTest} from './onboarding_wp_disable_complete_page_test.js';
+import {rebootPageTest} from './reboot_page_test.js';
 import {reimagingCalibrationFailedPageTest} from './reimaging_calibration_failed_page_test.js';
 import {reimagingCalibrationRunPageTest} from './reimaging_calibration_run_page_test.js';
 import {reimagingCalibrationSetupPageTest} from './reimaging_calibration_setup_page_test.js';
@@ -40,6 +42,7 @@ function runSuite(suiteName, testFn) {
 runSuite('AllInputsDisabledTest', allInputsDisabledTest);
 runSuite('CriticalErrorPageTest', criticalErrorPageTest);
 runSuite('FakeShimlessRmaServiceTestSuite', fakeShimlessRmaServiceTestSuite);
+runSuite('HardwareErrorPageTest', hardwareErrorPageTest);
 runSuite(
     'OnboardingChooseDestinationPageTest', onboardingChooseDestinationPageTest);
 runSuite(
@@ -60,6 +63,7 @@ runSuite(
     onboardingWaitForManualWpDisablePageTest);
 runSuite(
     'OnboardingWpDisableCompletePageTest', onboardingWpDisableCompletePageTest);
+runSuite('RebootPageTest', rebootPageTest);
 runSuite(
     'ReimagingCalibrationFailedPageTest', reimagingCalibrationFailedPageTest);
 runSuite('ReimagingCalibrationRunPageTest', reimagingCalibrationRunPageTest);

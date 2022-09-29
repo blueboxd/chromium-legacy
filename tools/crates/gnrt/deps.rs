@@ -1,10 +1,10 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 //! Utilities to process `cargo metadata` dependency graph.
 
-use crate::crates::{Epoch, NormalizedName};
+use crate::crates::{self, Epoch, NormalizedName};
 use crate::platforms::{self, Platform, PlatformSet};
 
 use std::collections::{hash_map::Entry, HashMap, HashSet};
@@ -53,6 +53,12 @@ pub struct ThirdPartyDep {
     /// valid packages. Returning `false` for a dependency allows better error
     /// messages later.
     pub is_local: bool,
+}
+
+impl ThirdPartyDep {
+    pub fn crate_id(&self) -> crates::ThirdPartyCrate {
+        crates::ThirdPartyCrate { name: self.package_name.clone(), epoch: self.epoch }
+    }
 }
 
 /// A dependency of a `ThirdPartyDep`. Cross-references another `ThirdPartyDep`
@@ -186,8 +192,18 @@ pub fn collect_dependencies(metadata: &cargo_metadata::Metadata) -> Vec<ThirdPar
         // TODO(crbug.com/1291994): Resolve features independently per kind
         // and platform. This may require using the unstable unit-graph feature:
         // https://doc.rust-lang.org/cargo/reference/unstable.html#unit-graph
-        for (_, kind_info) in dep.dependency_kinds.iter_mut() {
+        for (_, mut kind_info) in dep.dependency_kinds.iter_mut() {
             kind_info.features = node.features.clone();
+            // Remove "default" feature to match behavior of crates.py. Note
+            // that this is technically not correct since a crate's code may
+            // choose to check "default" directly, but virtually none actually
+            // do this.
+            //
+            // TODO(crbug.com/1291994): Revisit this behavior and maybe keep
+            // "default" features.
+            if let Some(pos) = kind_info.features.iter().position(|x| x == "default") {
+                kind_info.features.remove(pos);
+            }
         }
 
         for target in package.targets.iter() {
@@ -224,16 +240,21 @@ pub fn collect_dependencies(metadata: &cargo_metadata::Metadata) -> Vec<ThirdPar
         }
 
         dep.version = package.version.clone();
-        dep.epoch = epoch_from_version(&package.version);
+        dep.epoch = Epoch::from_version(&package.version);
 
         // Collect this package's list of resolved dependencies which will be
         // needed for build file generation later.
         for node_dep in iter_node_deps(node) {
             let dep_pkg = dep_graph.packages.get(node_dep.pkg).unwrap();
+            let mut platform = node_dep.target;
+            if let Some(p) = platform {
+                assert!(platforms::matches_supported_target(&p));
+                platform = platforms::filter_unsupported_platform_terms(p);
+            }
             let dep_of_dep = DepOfDep {
                 normalized_name: NormalizedName::from_crate_name(&dep_pkg.name),
-                epoch: epoch_from_version(&dep_pkg.version),
-                platform: node_dep.target,
+                epoch: Epoch::from_version(&dep_pkg.version),
+                platform,
             };
 
             match node_dep.kind {
@@ -350,7 +371,7 @@ fn iter_node_deps(node: &cargo_metadata::Node) -> impl Iterator<Item = Dependenc
                 match &dep_kind_info.target {
                     None => (),
                     Some(platform) => {
-                        if !platforms::is_supported(platform) {
+                        if !platforms::matches_supported_target(platform) {
                             return None;
                         }
                     }
@@ -428,12 +449,5 @@ impl std::fmt::Display for TargetType {
             Self::Bin => f.write_str("bin"),
             Self::BuildScript => f.write_str("custom-build"),
         }
-    }
-}
-
-fn epoch_from_version(version: &cargo_metadata::Version) -> Epoch {
-    match version.major {
-        0 => Epoch::Minor(version.minor.try_into().unwrap()),
-        x => Epoch::Major(x.try_into().unwrap()),
     }
 }

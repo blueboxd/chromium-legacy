@@ -29,9 +29,9 @@ class ScopedVolume {
       std::string display_name,
       std::string mount_label,
       base::FilePath remote_path,
-      const ash::disks::DiskMountManager::MountPointInfo& mount_info,
+      const ash::disks::DiskMountManager::MountPoint& mount_info,
       VmType vm_type)
-      : profile_(profile), mount_label_(mount_label) {
+      : profile_(profile), mount_label_(mount_label), vm_type_(vm_type) {
     base::FilePath mount_path = base::FilePath(mount_info.mount_path);
     if (!storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
             mount_label_, storage::kFileSystemTypeLocal,
@@ -46,7 +46,7 @@ class ScopedVolume {
     if (vmgr) {
       // vmgr is null in unit tests.
       vmgr->AddSftpGuestOsVolume(display_name, mount_path, remote_path,
-                                 vm_type);
+                                 vm_type_);
     }
   }
 
@@ -67,13 +67,14 @@ class ScopedVolume {
       // for us (and we never unregister the filesystem) hence unmount doesn't
       // seem symmetric with mount.
       vmgr->RemoveSftpGuestOsVolume(
-          file_manager::util::GetGuestOsMountDirectory(mount_label_),
+          file_manager::util::GetGuestOsMountDirectory(mount_label_), vm_type_,
           base::DoNothing());
     }
   }
 
   Profile* profile_;
   std::string mount_label_;
+  VmType vm_type_;
 };
 
 class GuestOsMountProviderInner : public CachedCallback<ScopedVolume, bool> {
@@ -115,8 +116,8 @@ class GuestOsMountProviderInner : public CachedCallback<ScopedVolume, bool> {
     std::string source_path = base::StringPrintf("sftp://%d:%d", cid, port);
 
     dmgr->MountPath(source_path, "", mount_label_, {},
-                    chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-                    chromeos::MOUNT_ACCESS_MODE_READ_WRITE,
+                    ash::MountType::kNetworkStorage,
+                    ash::MountAccessMode::kReadWrite,
                     base::BindOnce(&GuestOsMountProviderInner::OnMountEvent,
                                    weak_ptr_factory_.GetWeakPtr(),
                                    std::move(callback), remote_path));
@@ -124,13 +125,13 @@ class GuestOsMountProviderInner : public CachedCallback<ScopedVolume, bool> {
   void OnMountEvent(
       RealCallback callback,
       base::FilePath remote_path,
-      chromeos::MountError error_code,
-      const ash::disks::DiskMountManager::MountPointInfo& mount_info) {
-    if (error_code != chromeos::MountError::MOUNT_ERROR_NONE) {
+      ash::MountError error_code,
+      const ash::disks::DiskMountManager::MountPoint& mount_info) {
+    if (error_code != ash::MountError::kNone) {
       LOG(ERROR) << "Error mounting Guest OS container: error_code="
                  << error_code << ", source_path=" << mount_info.source_path
                  << ", mount_path=" << mount_info.mount_path
-                 << ", mount_type=" << mount_info.mount_type
+                 << ", mount_type=" << static_cast<int>(mount_info.mount_type)
                  << ", mount_condition=" << mount_info.mount_condition;
       std::move(callback).Run(Failure(false));
       return;

@@ -194,7 +194,8 @@ class MockHostResolverProc : public HostResolverProc {
     std::vector<std::string> dns_aliases;
     if (canonical_name != "")
       dns_aliases = {canonical_name};
-    int rv = ParseAddressList(ip_list, dns_aliases, &result);
+    int rv = ParseAddressList(ip_list, &result.endpoints());
+    result.SetDnsAliases(dns_aliases);
     DCHECK_EQ(OK, rv);
     AddRule(hostname, family, result, flags);
   }
@@ -207,7 +208,8 @@ class MockHostResolverProc : public HostResolverProc {
     std::vector<std::string> dns_aliases;
     if (canonical_name != "")
       dns_aliases = {canonical_name};
-    int rv = ParseAddressList(ip_list, dns_aliases, &result);
+    int rv = ParseAddressList(ip_list, &result.endpoints());
+    result.SetDnsAliases(dns_aliases);
     DCHECK_EQ(OK, rv);
     AddRule(hostname, ADDRESS_FAMILY_UNSPECIFIED, result, flags);
     AddRule(hostname, ADDRESS_FAMILY_IPV4, result, flags);
@@ -234,7 +236,7 @@ class MockHostResolverProc : public HostResolverProc {
     --num_slots_available_;
     --num_requests_waiting_;
     if (rules_.empty()) {
-      int rv = ParseAddressList("127.0.0.1", {} /* dns_aliases */, addrlist);
+      int rv = ParseAddressList("127.0.0.1", &addrlist->endpoints());
       DCHECK_EQ(OK, rv);
       return OK;
     }
@@ -488,7 +490,8 @@ class TestHostResolverManager : public HostResolverManager {
   }
 };
 
-bool HasAddress(const IPAddress& search_address, const AddressList& addresses) {
+bool HasAddress(const IPAddress& search_address,
+                const std::vector<IPEndPoint>& addresses) {
   for (const auto& address : addresses) {
     if (search_address == address.address())
       return true;
@@ -497,7 +500,7 @@ bool HasAddress(const IPAddress& search_address, const AddressList& addresses) {
 }
 
 void TestBothLoopbackIPs(const std::string& host) {
-  AddressList addresses;
+  std::vector<IPEndPoint> addresses;
   EXPECT_TRUE(ResolveLocalHostname(host, &addresses));
   EXPECT_EQ(2u, addresses.size());
   EXPECT_TRUE(HasAddress(IPAddress::IPv4Localhost(), addresses));
@@ -623,7 +626,7 @@ class HostResolverManagerTest : public TestWithTaskEnvironment {
 
   void PopulateCache(const HostCache::Key& key, IPEndPoint endpoint) {
     resolver_->CacheResult(resolve_context_->host_cache(), key,
-                           HostCache::Entry(OK, AddressList(endpoint),
+                           HostCache::Entry(OK, {endpoint}, /*aliases=*/{},
                                             HostCache::Entry::SOURCE_UNKNOWN),
                            base::Seconds(1));
   }
@@ -2651,6 +2654,27 @@ TEST_F(HostResolverManagerTest, IncludeCanonicalName) {
   EXPECT_THAT(response_no_flag.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
 }
 
+TEST_F(HostResolverManagerTest, FixupCanonicalName) {
+  proc_->AddRuleForAllFamilies("just.testing", "192.168.1.42", /*flags=*/0,
+                               "CANON.name");
+  proc_->SignalMultiple(1u);
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("just.testing", 80), NetworkIsolationKey(),
+      NetLogWithSource(), absl::nullopt, resolve_context_.get(),
+      resolve_context_->host_cache()));
+
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_THAT(response.request()->GetAddressResults()->endpoints(),
+              testing::ElementsAre(CreateExpected("192.168.1.42", 80)));
+  EXPECT_THAT(
+      response.request()->GetEndpointResults(),
+      testing::Pointee(testing::UnorderedElementsAre(ExpectEndpointResult(
+          testing::ElementsAre(CreateExpected("192.168.1.42", 80))))));
+  EXPECT_THAT(response.request()->GetDnsAliasResults(),
+              testing::Pointee(testing::UnorderedElementsAre("canon.name")));
+}
+
 TEST_F(HostResolverManagerTest, IncludeCanonicalNameButNotReceived) {
   proc_->AddRuleForAllFamilies("just.testing", "192.168.1.42",
                                HOST_RESOLVER_CANONNAME);
@@ -3986,9 +4010,8 @@ TEST_F(HostResolverManagerTest, NetworkIsolationKeyReadFromHostCache) {
                        cache_entry.network_isolation_key);
     IPAddress address;
     ASSERT_TRUE(address.AssignFromIPLiteral(cache_entry.cached_ip_address));
-    HostCache::Entry entry =
-        HostCache::Entry(OK, AddressList::CreateFromIPAddress(address, 80),
-                         HostCache::Entry::SOURCE_UNKNOWN);
+    HostCache::Entry entry = HostCache::Entry(
+        OK, {{address, 80}}, /*aliases=*/{}, HostCache::Entry::SOURCE_UNKNOWN);
     resolve_context_->host_cache()->Set(key, entry, base::TimeTicks::Now(),
                                         base::Days(1));
   }
@@ -7837,7 +7860,7 @@ TEST_F(HostResolverManagerDnsTest, NoAdditionalDnsAliases) {
 }
 
 TEST_F(HostResolverManagerTest, ResolveLocalHostname) {
-  AddressList addresses;
+  std::vector<IPEndPoint> addresses;
 
   TestBothLoopbackIPs("localhost");
   TestBothLoopbackIPs("localhoST");
@@ -10653,13 +10676,15 @@ TEST_F(HostResolverManagerDnsTest, HttpsInAddressQuery) {
       resolve_context_->host_cache()));
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_TRUE(response.request()->GetAddressResults());
-  EXPECT_THAT(response.request()->GetEndpointResults(),
-              testing::Pointee(testing::ElementsAre(
-                  ExpectEndpointResult(
-                      testing::SizeIs(2),
-                      ExpectConnectionEndpointMetadata(testing::ElementsAre(
-                          dns_protocol::kHttpsServiceDefaultAlpn))),
-                  ExpectEndpointResult(testing::SizeIs(2)))));
+  EXPECT_THAT(
+      response.request()->GetEndpointResults(),
+      testing::Pointee(testing::ElementsAre(
+          ExpectEndpointResult(
+              testing::SizeIs(2),
+              ExpectConnectionEndpointMetadata(
+                  testing::ElementsAre(dns_protocol::kHttpsServiceDefaultAlpn),
+                  testing::IsEmpty(), kName)),
+          ExpectEndpointResult(testing::SizeIs(2)))));
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
@@ -10703,13 +10728,15 @@ TEST_F(HostResolverManagerDnsTest, HttpsInAddressQueryWithNonstandardPort) {
       resolve_context_->host_cache()));
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_TRUE(response.request()->GetAddressResults());
-  EXPECT_THAT(response.request()->GetEndpointResults(),
-              testing::Pointee(testing::ElementsAre(
-                  ExpectEndpointResult(
-                      testing::SizeIs(2),
-                      ExpectConnectionEndpointMetadata(testing::ElementsAre(
-                          dns_protocol::kHttpsServiceDefaultAlpn))),
-                  ExpectEndpointResult(testing::SizeIs(2)))));
+  EXPECT_THAT(
+      response.request()->GetEndpointResults(),
+      testing::Pointee(testing::ElementsAre(
+          ExpectEndpointResult(
+              testing::SizeIs(2),
+              ExpectConnectionEndpointMetadata(
+                  testing::ElementsAre(dns_protocol::kHttpsServiceDefaultAlpn),
+                  testing::IsEmpty(), kName)),
+          ExpectEndpointResult(testing::SizeIs(2)))));
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
@@ -10811,7 +10838,7 @@ TEST_F(HostResolverManagerDnsTest, HttpsInAddressQueryWithAlpnAndEch) {
               ExpectConnectionEndpointMetadata(
                   testing::UnorderedElementsAre(
                       "foo1", "foo2", dns_protocol::kHttpsServiceDefaultAlpn),
-                  testing::ElementsAreArray(kEch))),
+                  testing::ElementsAreArray(kEch), kName)),
           ExpectEndpointResult(testing::SizeIs(2)))));
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
@@ -10898,13 +10925,15 @@ TEST_F(HostResolverManagerDnsTest, HttpsInAddressQueryWithMatchingPort) {
       resolve_context_->host_cache()));
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_TRUE(response.request()->GetAddressResults());
-  EXPECT_THAT(response.request()->GetEndpointResults(),
-              testing::Pointee(testing::ElementsAre(
-                  ExpectEndpointResult(
-                      testing::SizeIs(2),
-                      ExpectConnectionEndpointMetadata(testing::ElementsAre(
-                          dns_protocol::kHttpsServiceDefaultAlpn))),
-                  ExpectEndpointResult(testing::SizeIs(2)))));
+  EXPECT_THAT(
+      response.request()->GetEndpointResults(),
+      testing::Pointee(testing::ElementsAre(
+          ExpectEndpointResult(
+              testing::SizeIs(2),
+              ExpectConnectionEndpointMetadata(
+                  testing::ElementsAre(dns_protocol::kHttpsServiceDefaultAlpn),
+                  testing::IsEmpty(), kName)),
+          ExpectEndpointResult(testing::SizeIs(2)))));
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
@@ -11533,13 +11562,15 @@ TEST_F(HostResolverManagerDnsTest, HttpsInAddressQueryForWssScheme) {
       resolve_context_->host_cache()));
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_TRUE(response.request()->GetAddressResults());
-  EXPECT_THAT(response.request()->GetEndpointResults(),
-              testing::Pointee(testing::ElementsAre(
-                  ExpectEndpointResult(
-                      testing::SizeIs(2),
-                      ExpectConnectionEndpointMetadata(testing::ElementsAre(
-                          dns_protocol::kHttpsServiceDefaultAlpn))),
-                  ExpectEndpointResult(testing::SizeIs(2)))));
+  EXPECT_THAT(
+      response.request()->GetEndpointResults(),
+      testing::Pointee(testing::ElementsAre(
+          ExpectEndpointResult(
+              testing::SizeIs(2),
+              ExpectConnectionEndpointMetadata(
+                  testing::ElementsAre(dns_protocol::kHttpsServiceDefaultAlpn),
+                  testing::IsEmpty(), kName)),
+          ExpectEndpointResult(testing::SizeIs(2)))));
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
@@ -11979,13 +12010,15 @@ TEST_F(HostResolverManagerDnsTest, HttpsInInsecureAddressQuery) {
 
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_TRUE(response.request()->GetAddressResults());
-  EXPECT_THAT(response.request()->GetEndpointResults(),
-              testing::Pointee(testing::ElementsAre(
-                  ExpectEndpointResult(
-                      testing::SizeIs(2),
-                      ExpectConnectionEndpointMetadata(testing::ElementsAre(
-                          dns_protocol::kHttpsServiceDefaultAlpn))),
-                  ExpectEndpointResult(testing::SizeIs(2)))));
+  EXPECT_THAT(
+      response.request()->GetEndpointResults(),
+      testing::Pointee(testing::ElementsAre(
+          ExpectEndpointResult(
+              testing::SizeIs(2),
+              ExpectConnectionEndpointMetadata(
+                  testing::ElementsAre(dns_protocol::kHttpsServiceDefaultAlpn),
+                  testing::IsEmpty(), kName)),
+          ExpectEndpointResult(testing::SizeIs(2)))));
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
@@ -13143,13 +13176,15 @@ TEST_F(HostResolverManagerDnsTest,
   dns_client_->CompleteDelayedTransactions();
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_TRUE(response.request()->GetAddressResults());
-  EXPECT_THAT(response.request()->GetEndpointResults(),
-              testing::Pointee(testing::ElementsAre(
-                  ExpectEndpointResult(
-                      testing::SizeIs(2),
-                      ExpectConnectionEndpointMetadata(testing::ElementsAre(
-                          dns_protocol::kHttpsServiceDefaultAlpn))),
-                  ExpectEndpointResult(testing::SizeIs(2)))));
+  EXPECT_THAT(
+      response.request()->GetEndpointResults(),
+      testing::Pointee(testing::ElementsAre(
+          ExpectEndpointResult(
+              testing::SizeIs(2),
+              ExpectConnectionEndpointMetadata(
+                  testing::ElementsAre(dns_protocol::kHttpsServiceDefaultAlpn),
+                  testing::IsEmpty(), kName)),
+          ExpectEndpointResult(testing::SizeIs(2)))));
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
@@ -15026,33 +15061,31 @@ class HostResolverManagerBootstrapTest : public HostResolverManagerDnsTest {
   using MockResult = MockDnsClientRule::ResultType;
 
   void SetUp() override {
+    // The request host scheme and port are only preserved if the SVCB feature
+    // is enabled.
+    features.InitAndEnableFeature(features::kUseDnsHttpsSvcb);
+
     HostResolverManagerDnsTest::SetUp();
 
     // MockHostResolverProc only returns failure if there is at least one
     // non-matching rule.
     proc_->AddRuleForAllFamilies("other_name", {});
     proc_->SignalMultiple(1u);  // Allow up to one proc query.
-
-    // The request host scheme and port are only preserved if the SVCB feature
-    // is enabled.
-    features.InitAndEnableFeature(features::kUseDnsHttpsSvcb);
   }
 
   const NetworkIsolationKey kIsolationKey;
   const url::SchemeHostPort kEndpoint =
       url::SchemeHostPort(url::kHttpsScheme, "bootstrap", 443);
-  const AddressList kCacheAddrs = AddressList::CreateFromIPAddressList(
-      {{0x20, 0x01, 0x0d, 0xb1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-       {192, 0, 2, 1}},
-      {});
-  const AddressList kBootstrapAddrs = AddressList::CreateFromIPAddressList(
-      {{0x20, 0x01, 0x0d, 0xb1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2},
-       {192, 0, 2, 2}},
-      {});
+  const std::vector<IPEndPoint> kCacheAddrs = {
+      {{0x20, 0x01, 0x0d, 0xb1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}, 0},
+      {{192, 0, 2, 1}, 0}};
+  const std::vector<IPEndPoint> kBootstrapAddrs = {
+      {{0x20, 0x01, 0x0d, 0xb1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2}, 0},
+      {{192, 0, 2, 2}, 0}};
   // The mock DNS client always returns localhost.
-  const AddressList kRemoteAddrs = AddressList::CreateFromIPAddressList(
-      {IPAddress::IPv6Localhost(), IPAddress::IPv4Localhost()},
-      {});
+  const std::vector<IPEndPoint> kRemoteAddrs = {
+      {IPAddress::IPv6Localhost(), 0},
+      {IPAddress::IPv4Localhost(), 0}};
 
   static HostResolver::ResolveHostParameters bootstrap_params() {
     HostResolver::ResolveHostParameters params;
@@ -15083,7 +15116,8 @@ class HostResolverManagerBootstrapTest : public HostResolverManagerDnsTest {
 
   void PopulateCache(bool secure) {
     constexpr base::TimeDelta kTtl = base::Seconds(3600);
-    HostCache::Entry entry(OK, kCacheAddrs, HostCache::Entry::SOURCE_DNS, kTtl);
+    HostCache::Entry entry(OK, kCacheAddrs, /*aliases=*/{},
+                           HostCache::Entry::SOURCE_DNS, kTtl);
     resolve_context_->host_cache()->Set(MakeCacheKey(secure), std::move(entry),
                                         GetMockTickClock()->NowTicks(), kTtl);
   }

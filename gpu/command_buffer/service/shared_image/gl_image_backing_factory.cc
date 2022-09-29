@@ -210,7 +210,7 @@ std::unique_ptr<SharedImageBacking> GLImageBackingFactory::CreateSharedImage(
       for_framebuffer_attachment && texture_usage_angle_;
   return std::make_unique<GLImageBacking>(
       image, mailbox, plane_format, plane_size, color_space, surface_origin,
-      alpha_type, usage, params, attribs_, use_passthrough_);
+      alpha_type, usage, params, use_passthrough_);
 }
 
 scoped_refptr<gl::GLImage> GLImageBackingFactory::MakeGLImage(
@@ -223,8 +223,6 @@ scoped_refptr<gl::GLImage> GLImageBackingFactory::MakeGLImage(
     const gfx::Size& size) {
   if (handle.type == gfx::SHARED_MEMORY_BUFFER) {
     if (plane != gfx::BufferPlane::DEFAULT)
-      return nullptr;
-    if (!base::IsValueInRangeForNumericType<size_t>(handle.stride))
       return nullptr;
     auto image = base::MakeRefCounted<gl::GLImageSharedMemory>(size);
     if (color_space.IsValid())
@@ -371,7 +369,7 @@ GLImageBackingFactory::CreateSharedImageInternal(
   DCHECK(!format_info.swizzle);
   auto result = std::make_unique<GLImageBacking>(
       image, mailbox, format, size, color_space, surface_origin, alpha_type,
-      usage, params, attribs_, use_passthrough_);
+      usage, params, use_passthrough_);
   if (!pixel_data.empty()) {
     gl::ScopedProgressReporter scoped_progress_reporter(progress_reporter_);
     result->InitializePixels(format_info.adjusted_format, format_info.gl_type,

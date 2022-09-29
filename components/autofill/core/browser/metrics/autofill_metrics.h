@@ -19,7 +19,6 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_profile_import_process.h"
 #include "components/autofill/core/browser/autofill_progress_dialog_type.h"
-#include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_types.h"
@@ -45,7 +44,6 @@ class Autofill_CreditCardFill;
 namespace autofill {
 
 class AutofillField;
-class AutofillOfferData;
 class CreditCard;
 class FormEventLoggerBase;
 
@@ -295,36 +293,6 @@ class AutofillMetrics {
     NUM_SAVE_CARD_PROMPT_RESULT_METRICS,
   };
 
-  // Metrics to track event when the offer notification bubble is closed.
-  enum class OfferNotificationBubbleResultMetric {
-    // These values are persisted to logs. Entries should not be renumbered and
-    // numeric values should never be reused.
-
-    // The user explicitly acknowledged the bubble by clicking the ok button.
-    OFFER_NOTIFICATION_BUBBLE_ACKNOWLEDGED = 0,
-    // The user explicitly closed the prompt with the close button or ESC.
-    OFFER_NOTIFICATION_BUBBLE_CLOSED = 1,
-    // The user did not interact with the prompt.
-    OFFER_NOTIFICATION_BUBBLE_NOT_INTERACTED = 2,
-    // The prompt lost focus and was deactivated.
-    OFFER_NOTIFICATION_BUBBLE_LOST_FOCUS = 3,
-    kMaxValue = OFFER_NOTIFICATION_BUBBLE_LOST_FOCUS,
-  };
-
-  // Metrics to track event when the offer notification infobar is closed.
-  enum class OfferNotificationInfoBarResultMetric {
-    // These values are persisted to logs. Entries should not be renumbered and
-    // numeric values should never be reused.
-
-    // User acknowledged the infobar by clicking the ok button.
-    OFFER_NOTIFICATION_INFOBAR_ACKNOWLEDGED = 0,
-    // User explicitly closed the infobar with the close button.
-    OFFER_NOTIFICATION_INFOBAR_CLOSED = 1,
-    // InfoBar was shown but user did not interact with the it.
-    OFFER_NOTIFICATION_INFOBAR_IGNORED = 2,
-    kMaxValue = OFFER_NOTIFICATION_INFOBAR_IGNORED,
-  };
-
   // Metrics to track events in CardUnmaskAuthenticationSelectionDialog.
   enum class CardUnmaskAuthenticationSelectionDialogResultMetric {
     // These values are persisted to logs. Entries should not be renumbered and
@@ -545,116 +513,6 @@ class AutofillMetrics {
     // The user selected something in the dropdown besides "scan card".
     SCAN_CARD_OTHER_ITEM_SELECTED,
     NUM_SCAN_CREDIT_CARD_PROMPT_METRICS,
-  };
-
-  // Metrics to record the decision on whether to offer local card migration.
-  enum class LocalCardMigrationDecisionMetric {
-    // All the required conditions are satisfied and main prompt is shown.
-    OFFERED = 0,
-    // Migration not offered because user uses new card.
-    NOT_OFFERED_USE_NEW_CARD = 1,
-    // Migration not offered because failed migration prerequisites.
-    NOT_OFFERED_FAILED_PREREQUISITES = 2,
-    // The Autofill StrikeDatabase decided not to allow offering migration
-    // because max strike count was reached.
-    NOT_OFFERED_REACHED_MAX_STRIKE_COUNT = 3,
-    // Migration not offered because no migratable cards.
-    NOT_OFFERED_NO_MIGRATABLE_CARDS = 4,
-    // Met the migration requirements but the request to Payments for upload
-    // details failed.
-    NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED = 5,
-    // Abandoned the migration because no supported local cards were left after
-    // filtering out unsupported cards.
-    NOT_OFFERED_NO_SUPPORTED_CARDS = 6,
-    // User used a local card and they only have a single migratable local card
-    // on file, we will offer Upstream instead.
-    NOT_OFFERED_SINGLE_LOCAL_CARD = 7,
-    // User used an unsupported local card, we will abort the migration.
-    NOT_OFFERED_USE_UNSUPPORTED_LOCAL_CARD = 8,
-    // Legal message was invalid, we will abort the migration.
-    NOT_OFFERED_INVALID_LEGAL_MESSAGE = 9,
-    kMaxValue = NOT_OFFERED_INVALID_LEGAL_MESSAGE,
-  };
-
-  // Metrics to track events when local credit card migration is offered.
-  enum LocalCardMigrationBubbleOfferMetric {
-    // The bubble is requested due to a credit card being used or
-    // local card migration icon in the omnibox being clicked.
-    LOCAL_CARD_MIGRATION_BUBBLE_REQUESTED = 0,
-    // The bubble is actually shown to the user.
-    LOCAL_CARD_MIGRATION_BUBBLE_SHOWN = 1,
-    NUM_LOCAL_CARD_MIGRATION_BUBBLE_OFFER_METRICS,
-  };
-
-  // Metrics to track user action result of the bubble when the bubble is
-  // closed.
-  enum LocalCardMigrationBubbleResultMetric {
-    // The user explicitly accepted the offer.
-    LOCAL_CARD_MIGRATION_BUBBLE_ACCEPTED = 0,
-    // The user explicitly closed the bubble with the close button or ESC.
-    LOCAL_CARD_MIGRATION_BUBBLE_CLOSED = 1,
-    // The user did not interact with the bubble.
-    LOCAL_CARD_MIGRATION_BUBBLE_NOT_INTERACTED = 2,
-    // The bubble lost its focus and was deactivated.
-    LOCAL_CARD_MIGRATION_BUBBLE_LOST_FOCUS = 3,
-    // The reason why the prompt is closed is not clear. Possible reason is the
-    // logging function is invoked before the closed reason is correctly set.
-    LOCAL_CARD_MIGRATION_BUBBLE_RESULT_UNKNOWN = 4,
-    NUM_LOCAL_CARD_MIGRATION_BUBBLE_RESULT_METRICS,
-  };
-
-  // Metrics to track events when local card migration dialog is offered.
-  enum LocalCardMigrationDialogOfferMetric {
-    // The dialog is shown to the user.
-    LOCAL_CARD_MIGRATION_DIALOG_SHOWN = 0,
-    // The dialog is not shown due to legal message being invalid.
-    LOCAL_CARD_MIGRATION_DIALOG_NOT_SHOWN_INVALID_LEGAL_MESSAGE = 1,
-    // The dialog is shown when migration feedback is available.
-    LOCAL_CARD_MIGRATION_DIALOG_FEEDBACK_SHOWN = 2,
-    // The dialog is shown when migration fails due to server error.
-    LOCAL_CARD_MIGRATION_DIALOG_FEEDBACK_SERVER_ERROR_SHOWN = 3,
-    NUM_LOCAL_CARD_MIGRATION_DIALOG_OFFER_METRICS,
-  };
-
-  // Metrics to track user interactions with the dialog.
-  enum LocalCardMigrationDialogUserInteractionMetric {
-    // The user explicitly accepts the offer by clicking the save button.
-    LOCAL_CARD_MIGRATION_DIALOG_CLOSED_SAVE_BUTTON_CLICKED = 0,
-    // The user explicitly denies the offer by clicking the cancel button.
-    LOCAL_CARD_MIGRATION_DIALOG_CLOSED_CANCEL_BUTTON_CLICKED = 1,
-    // The user clicks the legal message.
-    LOCAL_CARD_MIGRATION_DIALOG_LEGAL_MESSAGE_CLICKED = 2,
-    // The user clicks the view card button after successfully migrated cards.
-    LOCAL_CARD_MIGRATION_DIALOG_CLOSED_VIEW_CARDS_BUTTON_CLICKED = 3,
-    // The user clicks the done button to close dialog after migration.
-    LOCAL_CARD_MIGRATION_DIALOG_CLOSED_DONE_BUTTON_CLICKED = 4,
-    // The user clicks the trash icon to delete invalid card.
-    LOCAL_CARD_MIGRATION_DIALOG_DELETE_CARD_ICON_CLICKED = 5,
-    NUM_LOCAL_CARD_MIGRATION_DIALOG_USER_INTERACTION_METRICS,
-  };
-
-  // These metrics are logged for each local card migration origin. These are
-  // used to derive the conversion rate for each triggering source.
-  enum LocalCardMigrationPromptMetric {
-    // The intermediate bubble is shown to the user.
-    INTERMEDIATE_BUBBLE_SHOWN = 0,
-    // The intermediate bubble is accepted by the user.
-    INTERMEDIATE_BUBBLE_ACCEPTED = 1,
-    // The main dialog is shown to the user.
-    MAIN_DIALOG_SHOWN = 2,
-    // The main dialog is accepted by the user.
-    MAIN_DIALOG_ACCEPTED = 3,
-    NUM_LOCAL_CARD_MIGRATION_PROMPT_METRICS,
-  };
-
-  // Local card migration origin denotes from where the migration is triggered.
-  enum LocalCardMigrationOrigin {
-    // Trigger when user submitted a form using local card.
-    UseOfLocalCard,
-    // Trigger when user submitted a form using server card.
-    UseOfServerCard,
-    // Trigger from settings page.
-    SettingsPage,
   };
 
   // Each of these metrics is logged only for potentially autofillable forms,
@@ -1343,6 +1201,22 @@ class AutofillMetrics {
     const raw_ptr<FormInteractionsUkmLogger> logger_;
   };
 
+  enum class PredictionState {
+    kNone = 0,
+    kServer = 1,
+    kHeuristics = 2,
+    kBoth = 3,
+    kMaxValue = kBoth
+  };
+
+  enum class AutocompleteState {
+    kNone = 0,
+    kValid = 1,
+    kGarbage = 2,
+    kOff = 3,
+    kMaxValue = kOff
+  };
+
   AutofillMetrics() = delete;
   AutofillMetrics(const AutofillMetrics&) = delete;
   AutofillMetrics& operator=(const AutofillMetrics&) = delete;
@@ -1363,11 +1237,6 @@ class AutofillMetrics {
   // When credit card save is not offered (either at all on mobile or by simply
   // not showing the bubble on desktop), logs the occurrence.
   static void LogCreditCardSaveNotOfferedDueToMaxStrikesMetric(
-      SaveTypeMetric metric);
-
-  // When local card migration is not offered due to max strike limit reached,
-  // logs the occurrence.
-  static void LogLocalCardMigrationNotOfferedDueToMaxStrikesMetric(
       SaveTypeMetric metric);
 
   // When credit card upload is offered, logs whether the card being offered is
@@ -1425,40 +1294,6 @@ class AutofillMetrics {
   static void LogCreditCardUploadFeedbackMetric(
       CreditCardUploadFeedbackMetric metric);
   static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
-  static void LogLocalCardMigrationDecisionMetric(
-      LocalCardMigrationDecisionMetric metric);
-  static void LogLocalCardMigrationBubbleOfferMetric(
-      LocalCardMigrationBubbleOfferMetric metric,
-      bool is_reshow);
-  static void LogLocalCardMigrationBubbleResultMetric(
-      LocalCardMigrationBubbleResultMetric metric,
-      bool is_reshow);
-  static void LogLocalCardMigrationDialogOfferMetric(
-      LocalCardMigrationDialogOfferMetric metric);
-  static void LogLocalCardMigrationDialogUserInteractionMetric(
-      const base::TimeDelta& duration,
-      LocalCardMigrationDialogUserInteractionMetric metric);
-  static void LogLocalCardMigrationDialogUserSelectionPercentageMetric(
-      int selected,
-      int total);
-  static void LogLocalCardMigrationPromptMetric(
-      LocalCardMigrationOrigin local_card_migration_origin,
-      LocalCardMigrationPromptMetric metric);
-  static void LogOfferNotificationBubbleOfferMetric(
-      AutofillOfferData::OfferType offer_type,
-      bool is_reshow);
-  static void LogOfferNotificationBubbleResultMetric(
-      AutofillOfferData::OfferType offer_type,
-      OfferNotificationBubbleResultMetric metric,
-      bool is_reshow);
-  static void LogOfferNotificationBubblePromoCodeButtonClicked(
-      AutofillOfferData::OfferType offer_type);
-  static void LogOfferNotificationBubbleSuppressed(
-      AutofillOfferData::OfferType offer_type);
-  static void LogOfferNotificationInfoBarDeepLinkClicked();
-  static void LogOfferNotificationInfoBarResultMetric(
-      OfferNotificationInfoBarResultMetric metric);
-  static void LogOfferNotificationInfoBarShown();
   static void LogProgressDialogResultMetric(
       bool is_canceled_by_user,
       AutofillProgressDialogType autofill_progress_dialog_type);
@@ -1718,9 +1553,6 @@ class AutofillMetrics {
       const std::vector<std::unique_ptr<CreditCard>>& server_cards,
       size_t server_card_count_with_card_art_image,
       base::TimeDelta disused_data_threshold);
-
-  // Logs whether the synced autofill offer data is valid.
-  static void LogSyncedOfferDataBeingValid(bool invalid);
 
   // Log the number of autofill credit card suggestions suppressed because they
   // have not been used for a long time and are expired. Note that these cards
@@ -2065,7 +1897,11 @@ class AutofillMetrics {
   // Logs that local heuristics matched phone number fields using `grammar_id`.
   // `suffix_matched` indicates if the special case handling for phone number
   // suffixes was triggered.
-  static void LogPhoneNumberGrammarMatched(int grammar_id, bool suffix_matched);
+  // `num_grammars` indicates the total number of phone number grammars. It is
+  // not logged and used for validation.
+  static void LogPhoneNumberGrammarMatched(int grammar_id,
+                                           bool suffix_matched,
+                                           int num_grammars);
 
   // Logs when the virtual card metadata for one card have been updated.
   static void LogVirtualCardMetadataSynced(bool existing_card);
@@ -2129,6 +1965,17 @@ class AutofillMetrics {
   // value.
   static void LogIsValueNotAutofilledOverExistingValueSameAsSubmittedValue(
       bool is_same);
+
+  // Logs a field's (PredictionState, AutocompleteState) pair on form submit.
+  static void LogAutocompletePredictionCollisionState(
+      PredictionState prediction_state,
+      AutocompleteState autocomplete_state);
+
+  // Logs a field's server and heuristic type on form submit. This is only used
+  // for fields with autocomplete=garbage.
+  static void LogAutocompletePredictionCollisionTypes(
+      ServerFieldType server_type,
+      ServerFieldType heuristic_types);
 
  private:
   static void Log(AutocompleteEvent event);

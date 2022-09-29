@@ -50,6 +50,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_prefs.h"
@@ -62,7 +63,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/dlp/dlp_policy_constants.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_impl.h"
@@ -148,7 +149,7 @@ class TestNavigationDelegate : public content::WebContentsDelegate {
   absl::optional<content::OpenURLParams> last_navigation_params_;
 };
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 class MockDlpRulesManager : public policy::DlpRulesManagerImpl {
  public:
   explicit MockDlpRulesManager(PrefService* local_state)
@@ -540,16 +541,183 @@ TEST_F(RenderViewContextMenuPrefsTest,
       menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-// Verifies that SearchWebFor field is enabled/disabled based on DLP rules.
-TEST_F(RenderViewContextMenuPrefsTest,
-       DisableSearchWebForWhenClipboardIsBlocked) {
-  content::ContextMenuParams params = CreateParams(MenuItem::SELECTION);
-  params.page_url = GURL("http://www.foo.com/");
+#if BUILDFLAG(IS_CHROMEOS)
+class RenderViewContextMenuDlpPrefsTest
+    : public RenderViewContextMenuPrefsTest {
+ public:
+  RenderViewContextMenuDlpPrefsTest() = default;
+
+  RenderViewContextMenuDlpPrefsTest(const RenderViewContextMenuDlpPrefsTest&) =
+      delete;
+  RenderViewContextMenuDlpPrefsTest& operator=(
+      const RenderViewContextMenuDlpPrefsTest&) = delete;
+
+  void SetDlpClipboardRestriction() {
+    base::Value rules(base::Value::Type::LIST);
+    base::Value src_urls(base::Value::Type::LIST);
+    src_urls.Append(PAGE_URL);
+
+    base::Value dst_urls(base::Value::Type::LIST);
+    dst_urls.Append(RESTRICTED_URL);
+
+    base::Value restrictions(base::Value::Type::LIST);
+    restrictions.Append(policy::dlp_test_util::CreateRestrictionWithLevel(
+        policy::dlp::kClipboardRestriction, policy::dlp::kBlockLevel));
+
+    rules.Append(policy::dlp_test_util::CreateRule(
+        "Rule #1", "Block", std::move(src_urls), std::move(dst_urls),
+        /*dst_components=*/base::Value(base::Value::Type::LIST),
+        std::move(restrictions)));
+    local_state()->Set(policy::policy_prefs::kDlpRulesList, std::move(rules));
+  }
+
+  static constexpr char PAGE_URL[] = "http://www.foo.com/";
+  static constexpr char RESTRICTED_URL[] = "http://www.bar.com/";
+  static constexpr char NOT_RESTRICTED_URL[] = "http://www.site.com/";
+};
+
+// Verifies that OpenLinkInNewTab field is enabled/disabled based on DLP rules.
+TEST_F(RenderViewContextMenuDlpPrefsTest,
+       DisableOpenLinkInNewTabWhenClipboardIsBlocked) {
+  content::ContextMenuParams params = CreateParams(MenuItem::LINK);
+  params.page_url = GURL(PAGE_URL);
+  params.link_url = GURL(RESTRICTED_URL);
   auto menu = std::make_unique<TestRenderViewContextMenu>(
       *web_contents()->GetPrimaryMainFrame(), params);
   menu->set_dlp_rules_manager(nullptr);
-  menu->set_selection_navigation_url(GURL("http://www.bar.com/"));
+
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+
+  MockDlpRulesManager mock_dlp_rules_manager(local_state());
+  menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+
+  SetDlpClipboardRestriction();
+  EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+
+  params.link_url = GURL(NOT_RESTRICTED_URL);
+  menu = std::make_unique<TestRenderViewContextMenu>(
+      *web_contents()->GetPrimaryMainFrame(), params);
+  menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+}
+
+// Verifies that OpenLinkInNewWindow field is enabled/disabled based on DLP
+// rules.
+TEST_F(RenderViewContextMenuDlpPrefsTest,
+       DisableOpenLinkInNewWindowWhenClipboardIsBlocked) {
+  content::ContextMenuParams params = CreateParams(MenuItem::LINK);
+  params.page_url = GURL(PAGE_URL);
+  params.link_url = GURL(RESTRICTED_URL);
+  auto menu = std::make_unique<TestRenderViewContextMenu>(
+      *web_contents()->GetPrimaryMainFrame(), params);
+  menu->set_dlp_rules_manager(nullptr);
+
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+
+  MockDlpRulesManager mock_dlp_rules_manager(local_state());
+  menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+
+  SetDlpClipboardRestriction();
+  EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+
+  params.link_url = GURL(NOT_RESTRICTED_URL);
+  menu = std::make_unique<TestRenderViewContextMenu>(
+      *web_contents()->GetPrimaryMainFrame(), params);
+  menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+}
+
+// Verifies that OpenLinkInProfileTab field is enabled/disabled based on DLP
+// rules.
+TEST_F(RenderViewContextMenuDlpPrefsTest,
+       DisableOpenLinkInProfileTabWhenClipboardIsBlocked) {
+  content::ContextMenuParams params = CreateParams(MenuItem::LINK);
+  params.page_url = GURL(PAGE_URL);
+  params.link_url = GURL(RESTRICTED_URL);
+  auto menu = std::make_unique<TestRenderViewContextMenu>(
+      *web_contents()->GetPrimaryMainFrame(), params);
+  menu->set_dlp_rules_manager(nullptr);
+
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
+
+  MockDlpRulesManager mock_dlp_rules_manager(local_state());
+  menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
+
+  SetDlpClipboardRestriction();
+  EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
+
+  params.link_url = GURL(NOT_RESTRICTED_URL);
+  menu = std::make_unique<TestRenderViewContextMenu>(
+      *web_contents()->GetPrimaryMainFrame(), params);
+  menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
+}
+
+// Verifies that OpenLinkInWebApp field is enabled/disabled based on DLP rules.
+TEST_F(RenderViewContextMenuDlpPrefsTest,
+       DisableOpenLinkInWebAppWhenClipboardIsBlocked) {
+  content::ContextMenuParams params = CreateParams(MenuItem::LINK);
+  params.page_url = GURL(PAGE_URL);
+  params.link_url = GURL(RESTRICTED_URL);
+  auto menu = std::make_unique<TestRenderViewContextMenu>(
+      *web_contents()->GetPrimaryMainFrame(), params);
+  menu->set_dlp_rules_manager(nullptr);
+
+  EXPECT_TRUE(
+      menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+
+  MockDlpRulesManager mock_dlp_rules_manager(local_state());
+  menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
+  EXPECT_TRUE(
+      menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+
+  SetDlpClipboardRestriction();
+  EXPECT_FALSE(
+      menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+
+  params.link_url = GURL(NOT_RESTRICTED_URL);
+  menu = std::make_unique<TestRenderViewContextMenu>(
+      *web_contents()->GetPrimaryMainFrame(), params);
+  menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
+  EXPECT_TRUE(
+      menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+}
+
+// Verifies that GoToURL field is enabled/disabled based on DLP rules.
+TEST_F(RenderViewContextMenuDlpPrefsTest,
+       DisableGoToURLWhenClipboardIsBlocked) {
+  content::ContextMenuParams params = CreateParams(MenuItem::SELECTION);
+  params.page_url = GURL(PAGE_URL);
+  auto menu = std::make_unique<TestRenderViewContextMenu>(
+      *web_contents()->GetPrimaryMainFrame(), params);
+  menu->set_dlp_rules_manager(nullptr);
+  menu->set_selection_navigation_url(GURL(RESTRICTED_URL));
+
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_GOTOURL));
+
+  MockDlpRulesManager mock_dlp_rules_manager(local_state());
+  menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_GOTOURL));
+
+  SetDlpClipboardRestriction();
+  EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_GOTOURL));
+
+  menu->set_selection_navigation_url(GURL(NOT_RESTRICTED_URL));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_GOTOURL));
+}
+
+// Verifies that SearchWebFor field is enabled/disabled based on DLP rules.
+TEST_F(RenderViewContextMenuDlpPrefsTest,
+       DisableSearchWebForWhenClipboardIsBlocked) {
+  content::ContextMenuParams params = CreateParams(MenuItem::SELECTION);
+  params.page_url = GURL(PAGE_URL);
+  auto menu = std::make_unique<TestRenderViewContextMenu>(
+      *web_contents()->GetPrimaryMainFrame(), params);
+  menu->set_dlp_rules_manager(nullptr);
+  menu->set_selection_navigation_url(GURL(RESTRICTED_URL));
 
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SEARCHWEBFOR));
 
@@ -557,23 +725,11 @@ TEST_F(RenderViewContextMenuPrefsTest,
   menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SEARCHWEBFOR));
 
-  base::Value rules(base::Value::Type::LIST);
-  base::Value src_urls(base::Value::Type::LIST);
-  src_urls.Append("http://www.foo.com/");
-
-  base::Value dst_urls(base::Value::Type::LIST);
-  dst_urls.Append("http://www.bar.com/");
-
-  base::Value restrictions(base::Value::Type::LIST);
-  restrictions.Append(policy::dlp_test_util::CreateRestrictionWithLevel(
-      policy::dlp::kClipboardRestriction, policy::dlp::kBlockLevel));
-
-  rules.Append(policy::dlp_test_util::CreateRule(
-      "rule #1", "Block", std::move(src_urls), std::move(dst_urls),
-      /*dst_components=*/base::Value(base::Value::Type::LIST),
-      std::move(restrictions)));
-  local_state()->Set(policy::policy_prefs::kDlpRulesList, std::move(rules));
+  SetDlpClipboardRestriction();
   EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SEARCHWEBFOR));
+
+  menu->set_selection_navigation_url(GURL(NOT_RESTRICTED_URL));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SEARCHWEBFOR));
 }
 #endif
 
@@ -888,6 +1044,45 @@ TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearch) {
   content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
   TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
                                  params);
+  menu.Init();
+
+  EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
+}
+
+TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchPdfDisabled) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures({lens::features::kLensStandalone},
+                            {lens::features::kEnableRegionSearchOnPdfViewer});
+  SetUserSelectedDefaultSearchProvider("https://www.google.com",
+                                       /*supports_image_search=*/true);
+  content::RenderFrameHost* render_frame_host =
+      web_contents()->GetPrimaryMainFrame();
+  OverrideLastCommittedOrigin(
+      render_frame_host,
+      url::Origin::Create(
+          GURL("chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai")));
+  content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
+  TestRenderViewContextMenu menu(*render_frame_host, params);
+  menu.Init();
+
+  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
+}
+
+TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchPdfEnabled) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures({lens::features::kLensStandalone,
+                             lens::features::kEnableRegionSearchOnPdfViewer},
+                            {});
+  SetUserSelectedDefaultSearchProvider("https://www.google.com",
+                                       /*supports_image_search=*/true);
+  content::RenderFrameHost* render_frame_host =
+      web_contents()->GetPrimaryMainFrame();
+  OverrideLastCommittedOrigin(
+      render_frame_host,
+      url::Origin::Create(
+          GURL("chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai")));
+  content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
+  TestRenderViewContextMenu menu(*render_frame_host, params);
   menu.Init();
 
   EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));

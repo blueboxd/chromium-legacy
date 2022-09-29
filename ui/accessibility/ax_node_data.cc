@@ -257,9 +257,14 @@ AXNodeData::AXNodeData(AXNodeData&& other) {
   html_attributes.swap(other.html_attributes);
   child_ids.swap(other.child_ids);
   relative_bounds = other.relative_bounds;
+
+  other.id = kInvalidAXNodeID;
+  other.role = ax::mojom::Role::kUnknown;
+  other.state = 0U;
+  other.actions = 0ULL;
 }
 
-AXNodeData& AXNodeData::operator=(AXNodeData other) {
+AXNodeData& AXNodeData::operator=(const AXNodeData& other) {
   id = other.id;
   role = other.role;
   state = other.state;
@@ -613,9 +618,15 @@ AXTextAttributes AXNodeData::GetTextAttributes() const {
 }
 
 void AXNodeData::SetName(const std::string& name) {
-  DCHECK_NE(role, ax::mojom::Role::kNone)
-      << "A valid role is required before setting the name attribute, because "
-         "the role is used for setting the required NameFrom attribute.";
+  // Elements with role='presentation' have Role::kNone. They should not be
+  // named. This check is only relevant if the name is not empty.
+  // TODO(accessibility): It would be nice to have a means to set the name
+  // and role at the same time to avoid this ordering requirement.
+  DCHECK(role != ax::mojom::Role::kNone || name.empty())
+      << "Cannot set name to '" << name << "' on class: '"
+      << GetStringAttribute(ax::mojom::StringAttribute::kClassName)
+      << "' because a valid role is needed to set the default NameFrom "
+         "attribute. Set the role first.";
 
   auto iter = std::find_if(string_attributes.begin(), string_attributes.end(),
                            [](const auto& string_attribute) {
@@ -627,6 +638,13 @@ void AXNodeData::SetName(const std::string& name) {
     string_attributes.emplace_back(ax::mojom::StringAttribute::kName, name);
   } else {
     iter->second = name;
+  }
+
+  // It is possible for SetName to be called after
+  // SetNameExplicitlyEmpty.
+  if (!name.empty() &&
+      GetNameFrom() == ax::mojom::NameFrom::kAttributeExplicitlyEmpty) {
+    RemoveIntAttribute(ax::mojom::IntAttribute::kNameFrom);
   }
 
   if (HasIntAttribute(ax::mojom::IntAttribute::kNameFrom))
@@ -656,6 +674,7 @@ void AXNodeData::SetName(const std::u16string& name) {
 
 void AXNodeData::SetNameExplicitlyEmpty() {
   SetNameFrom(ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
+  SetName(std::string());
 }
 
 void AXNodeData::SetDescription(const std::string& description) {

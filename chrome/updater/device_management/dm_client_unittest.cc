@@ -139,6 +139,7 @@ class DMRequestCallbackHandler
                                            init_dm_token ? kDmToken : ""));
 
     if (init_cache_info) {
+      ASSERT_TRUE(storage_->CanPersistPolicies());
       std::unique_ptr<::enterprise_management::DeviceManagementResponse>
           dm_response = GetDefaultTestingPolicyFetchDMResponse(
               /*first_request=*/true, /*rotate_to_new_key=*/false,
@@ -190,7 +191,7 @@ class DMRegisterRequestCallbackHandler : public DMRequestCallbackHandler {
     if (expect_registered_) {
       EXPECT_EQ(result, expected_result_);
       if (result == DMClient::RequestResult::kSuccess ||
-          result == DMClient::RequestResult::kAleadyRegistered) {
+          result == DMClient::RequestResult::kAlreadyRegistered) {
         EXPECT_EQ(storage_->GetDmToken(), "test-dm-token");
       } else {
         EXPECT_TRUE(storage_->GetDmToken().empty());
@@ -245,7 +246,7 @@ class DMPolicyFetchRequestCallbackHandler : public DMRequestCallbackHandler {
       EXPECT_EQ(omaha_settings->proxy_mode(), "pac_script");
       const ::wireless_android_enterprise_devicemanagement::ApplicationSettings&
           chrome_settings = omaha_settings->application_settings()[0];
-      EXPECT_EQ(chrome_settings.app_guid(), kChromeAppId);
+      EXPECT_EQ(chrome_settings.app_guid(), test::kChromeAppId);
       EXPECT_EQ(chrome_settings.update(),
                 ::wireless_android_enterprise_devicemanagement::
                     AUTOMATIC_UPDATES_ONLY);
@@ -489,7 +490,7 @@ TEST_F(DMRegisterClientTest, AlreadyRegistered) {
   callback_handler_->CreateStorage(/*init_dm_token=*/true,
                                    /*init_cache_info=*/false);
   callback_handler_->SetExpectedRequestResult(
-      DMClient::RequestResult::kAleadyRegistered);
+      DMClient::RequestResult::kAlreadyRegistered);
   StartTestServerWithResponse(net::HTTP_OK, GetDefaultResponse());
 
   base::RunLoop run_loop;

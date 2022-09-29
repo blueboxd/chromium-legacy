@@ -313,7 +313,9 @@ class VIEWS_EXPORT Textfield : public View,
   // Set extra spacing placed between glyphs; used for obscured text styling.
   void SetObscuredGlyphSpacing(int spacing);
 
-  int GetPasswordCharRevealIndex() const { return password_char_reveal_index_; }
+  absl::optional<size_t> GetPasswordCharRevealIndex() const {
+    return password_char_reveal_index_;
+  }
 
   void SetExtraInsets(const gfx::Insets& insets);
 
@@ -407,7 +409,7 @@ class VIEWS_EXPORT Textfield : public View,
 
   // ui::TextInputClient overrides:
   void SetCompositionText(const ui::CompositionText& composition) override;
-  uint32_t ConfirmCompositionText(bool keep_selection) override;
+  size_t ConfirmCompositionText(bool keep_selection) override;
   void ClearCompositionText() override;
   void InsertText(const std::u16string& text,
                   InsertTextCursorBehavior cursor_behavior) override;
@@ -419,7 +421,7 @@ class VIEWS_EXPORT Textfield : public View,
   bool CanComposeInline() const override;
   gfx::Rect GetCaretBounds() const override;
   gfx::Rect GetSelectionBoundingBox() const override;
-  bool GetCompositionCharacterBounds(uint32_t index,
+  bool GetCompositionCharacterBounds(size_t index,
                                      gfx::Rect* rect) const override;
   bool HasCompositionText() const override;
   FocusReason GetFocusReason() const override;
@@ -496,7 +498,7 @@ class VIEWS_EXPORT Textfield : public View,
   // Offsets the double-clicked word's range. This is only used in the unusual
   // case where the text changes on the second mousedown of a double-click.
   // This is harmless if there is not a currently double-clicked word.
-  void OffsetDoubleClickWord(int offset);
+  void OffsetDoubleClickWord(size_t offset);
 
   // Returns true if the drop cursor is for insertion at a target text location,
   // the standard behavior/style. Returns false when drop will do something
@@ -619,9 +621,10 @@ class VIEWS_EXPORT Textfield : public View,
   bool ImeEditingAllowed() const;
 
   // Reveals the password character at |index| for a set duration.
-  // If |index| is -1, the existing revealed character will be reset.
+  // If |index| is nullopt, the existing revealed character will be reset.
   // |duration| is the time to remain the password char to be visible.
-  void RevealPasswordChar(int index, base::TimeDelta duration);
+  void RevealPasswordChar(absl::optional<size_t> index,
+                          base::TimeDelta duration);
 
   void CreateTouchSelectionControllerAndNotifyIt();
 
@@ -776,7 +779,7 @@ class VIEWS_EXPORT Textfield : public View,
       ui::TextInputClient::FOCUS_REASON_NONE;
 
   // The password char reveal index, for testing only.
-  int password_char_reveal_index_ = -1;
+  absl::optional<size_t> password_char_reveal_index_;
 
   // Extra insets, useful to make room for a button for example.
   gfx::Insets extra_insets_ = gfx::Insets();

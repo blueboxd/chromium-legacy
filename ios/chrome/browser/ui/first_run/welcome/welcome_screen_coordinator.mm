@@ -114,7 +114,7 @@
     base::RecordAction(base::UserMetricsAction("MobileFreUMALinkTapped"));
   }
 
-  [self.delegate willFinishPresenting];
+  [self.delegate screenWillFinishPresenting];
 }
 
 #pragma mark - TOSCommands
@@ -127,7 +127,7 @@
   [self.TOSCoordinator start];
 }
 
-- (void)hideTOSPage {
+- (void)closeTOSPage {
   [self.TOSCoordinator stop];
   self.TOSCoordinator = nil;
 }

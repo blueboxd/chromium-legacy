@@ -169,6 +169,7 @@
 #include "third_party/blink/renderer/core/testing/type_conversions.h"
 #include "third_party/blink/renderer/core/testing/union_types_test.h"
 #include "third_party/blink/renderer/core/timezone/timezone_controller.h"
+#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
@@ -2040,6 +2041,20 @@ int Internals::lastSpellCheckProcessedSequence(
   return requester->LastProcessedSequence();
 }
 
+int Internals::spellCheckedTextLength(Document* document,
+                                      ExceptionState& exception_state) {
+  SpellCheckRequester* requester = GetSpellCheckRequester(document);
+
+  if (!requester) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidAccessError,
+        "No spell check requestor can be obtained for the provided document.");
+    return -1;
+  }
+
+  return requester->SpellCheckedTextLength();
+}
+
 void Internals::cancelCurrentSpellCheckRequest(
     Document* document,
     ExceptionState& exception_state) {
@@ -3738,35 +3753,6 @@ void Internals::addEmbedderCustomElementName(const AtomicString& name,
   CustomElement::AddEmbedderCustomElementNameForTesting(name, exception_state);
 }
 
-String Internals::resolveModuleSpecifier(const String& specifier,
-                                         const String& base_url_string,
-                                         Document* document,
-                                         ExceptionState& exception_state) {
-  Modulator* modulator =
-      Modulator::From(ToScriptStateForMainWorld(document->GetFrame()));
-
-  if (!modulator) {
-    V8ThrowException::ThrowTypeError(
-        v8::Isolate::GetCurrent(),
-        "Failed to resolve module specifier " + specifier + ": No modulator");
-    return NullURL();
-  }
-
-  const KURL base_url = document->CompleteURL(base_url_string);
-  String failure_reason = "Failed";
-  const KURL result =
-      modulator->ResolveModuleSpecifier(specifier, base_url, &failure_reason);
-
-  if (!result.IsValid()) {
-    V8ThrowException::ThrowTypeError(v8::Isolate::GetCurrent(),
-                                     "Failed to resolve module specifier " +
-                                         specifier + ": " + failure_reason);
-    return NullURL();
-  }
-
-  return result.GetString();
-}
-
 String Internals::getParsedImportMap(Document* document,
                                      ExceptionState& exception_state) {
   Modulator* modulator =
@@ -3847,8 +3833,8 @@ void Internals::generateTestReport(const String& message) {
   ReportingContext::From(document_->domWindow())->QueueReport(report);
 }
 
-void Internals::setIsAdSubframe(HTMLIFrameElement* iframe,
-                                ExceptionState& exception_state) {
+void Internals::setIsAdFrame(HTMLIFrameElement* iframe,
+                             ExceptionState& exception_state) {
   if (!iframe->ContentFrame() || !iframe->ContentFrame()->IsLocalFrame()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Frame cannot be accessed.");
@@ -3856,8 +3842,7 @@ void Internals::setIsAdSubframe(HTMLIFrameElement* iframe,
   }
   LocalFrame* parent_frame = iframe->GetDocument().GetFrame();
   LocalFrame* child_frame = To<LocalFrame>(iframe->ContentFrame());
-  blink::FrameAdEvidence ad_evidence(parent_frame &&
-                                     parent_frame->IsAdSubframe());
+  blink::FrameAdEvidence ad_evidence(parent_frame && parent_frame->IsAdFrame());
   ad_evidence.set_created_by_ad_script(
       mojom::FrameCreationStackEvidence::kCreatedByAdScript);
   ad_evidence.set_is_complete();
@@ -3948,6 +3933,12 @@ void Internals::setAllowPerChunkTransferring(ReadableStream* stream) {
   }
   stream->SetAllowPerChunkTransferringForTesting(
       AllowPerChunkTransferring(true));
+}
+
+void Internals::setBackForwardCacheRestorationBufferSize(unsigned int maxSize) {
+  WindowPerformance& perf =
+      *DOMWindowPerformance::performance(*document_->domWindow());
+  perf.setBackForwardCacheRestorationBufferSizeForTest(maxSize);
 }
 
 }  // namespace blink

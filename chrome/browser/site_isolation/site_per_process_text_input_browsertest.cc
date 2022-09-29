@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -637,7 +638,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 
   // Now destroy the tab. We should exit without crashing.
   browser()->tab_strip_model()->CloseWebContentsAt(
-      0, TabStripModel::CLOSE_USER_GESTURE);
+      0, TabCloseTypes::CLOSE_USER_GESTURE);
 }
 
 // The following test verifies that when the active widget changes value, it is
@@ -1172,7 +1173,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   EXPECT_EQ(child, web_contents->GetFocusedFrame());
 
   // Generate a couple of keystrokes, which will be routed to the subframe.
-  content::DOMMessageQueue msg_queue;
+  content::DOMMessageQueue msg_queue(web_contents);
   std::string reply;
   SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('1'),
                    ui::DomCode::DIGIT1, ui::VKEY_1, false, false, false, false);
@@ -1314,7 +1315,7 @@ IN_PROC_BROWSER_TEST_F(
           active_contents()->GetBrowserContext(), nullptr));
   content::WebContents* raw_new_contents = new_contents.get();
   browser()->tab_strip_model()->InsertWebContentsAt(1, std::move(new_contents),
-                                                    TabStripModel::ADD_ACTIVE);
+                                                    AddTabTypes::ADD_ACTIVE);
   EXPECT_EQ(active_contents(), raw_new_contents);
 
   // Simple page with 1 cross origin (out-of-process) <iframe>.
@@ -1382,7 +1383,7 @@ IN_PROC_BROWSER_TEST_F(
           active_contents()->GetBrowserContext(), nullptr));
   content::WebContents* raw_new_contents = new_contents.get();
   browser()->tab_strip_model()->InsertWebContentsAt(1, std::move(new_contents),
-                                                    TabStripModel::ADD_ACTIVE);
+                                                    AddTabTypes::ADD_ACTIVE);
   EXPECT_EQ(active_contents(), raw_new_contents);
 
   // Simple page with no <iframe>s.

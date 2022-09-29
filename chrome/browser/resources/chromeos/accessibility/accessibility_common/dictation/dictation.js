@@ -19,6 +19,7 @@ const StartOptions = chrome.speechRecognitionPrivate.StartOptions;
 const StopEvent = chrome.speechRecognitionPrivate.SpeechRecognitionStopEvent;
 const SpeechRecognitionType =
     chrome.speechRecognitionPrivate.SpeechRecognitionType;
+const PrefObject = chrome.settingsPrivate.PrefObject;
 
 /** Main class for the Chrome OS dictation feature. */
 export class Dictation {
@@ -50,6 +51,9 @@ export class Dictation {
     /** @private {Audio} */
     this.endTone_ = new Audio('dictation/earcons/audio_end.wav');
 
+    /** @private {number} */
+    this.noSpeechTimeoutMs_ = Dictation.Timeouts.NO_SPEECH_NETWORK_MS;
+
     /** @private {?number} */
     this.stopTimeoutId_ = null;
 
@@ -70,6 +74,23 @@ export class Dictation {
 
     /** @private {?FocusHandler} */
     this.focusHandler_ = null;
+
+    // API Listeners //
+
+    /** @private {?function(StopEvent):void} */
+    this.speechRecognitionStopListener_ = null;
+
+    /** @private {?function(ResultEvent):Promise} */
+    this.speechRecognitionResultListener_ = null;
+
+    /** @private {?function(ErrorEvent):void} */
+    this.speechRecognitionErrorListener_ = null;
+
+    /** @private {?function(!Array<!PrefObject>):void} */
+    this.prefsListener_ = null;
+
+    /** @private {?function(boolean):void} */
+    this.onToggleDictationListener_ = null;
 
     this.initialize_();
   }
@@ -94,24 +115,61 @@ export class Dictation {
       interimResults: true,
     };
 
+    this.speechRecognitionStopListener_ = event =>
+        this.onSpeechRecognitionStopped_(event);
+    this.speechRecognitionResultListener_ = event =>
+        this.onSpeechRecognitionResult_(event);
+    this.speechRecognitionErrorListener_ = event =>
+        this.onSpeechRecognitionError_(event);
+    this.prefsListener_ = prefs => this.updateFromPrefs_(prefs);
+    this.onToggleDictationListener_ = activated =>
+        this.onToggleDictation_(activated);
+
     // Setup speechRecognitionPrivate API listeners.
     chrome.speechRecognitionPrivate.onStop.addListener(
-        event => this.onSpeechRecognitionStopped_(event));
+        this.speechRecognitionStopListener_);
     chrome.speechRecognitionPrivate.onResult.addListener(
-        event => this.onSpeechRecognitionResult_(event));
+        this.speechRecognitionResultListener_);
     chrome.speechRecognitionPrivate.onError.addListener(
-        event => this.onSpeechRecognitionError_(event));
+        this.speechRecognitionErrorListener_);
 
     chrome.settingsPrivate.getAllPrefs(prefs => this.updateFromPrefs_(prefs));
-    chrome.settingsPrivate.onPrefsChanged.addListener(
-        prefs => this.updateFromPrefs_(prefs));
+    chrome.settingsPrivate.onPrefsChanged.addListener(this.prefsListener_);
 
     // Listen for Dictation toggles (activated / deactivated) from the Ash
     // Browser process.
     chrome.accessibilityPrivate.onToggleDictation.addListener(
-        activated => this.onToggleDictation_(activated));
+        this.onToggleDictationListener_);
 
     this.maybeInstallPumpkin_();
+  }
+
+  /**
+   * Performs any destruction before dictation object is destroyed.
+   */
+  onDictationDisabled() {
+    if (this.speechRecognitionStopListener_) {
+      chrome.speechRecognitionPrivate.onStop.removeListener(
+          this.speechRecognitionStopListener_);
+    }
+    if (this.speechRecognitionResultListener_) {
+      chrome.speechRecognitionPrivate.onResult.removeListener(
+          this.speechRecognitionResultListener_);
+    }
+    if (this.speechRecognitionErrorListener_) {
+      chrome.speechRecognitionPrivate.onError.removeListener(
+          this.speechRecognitionErrorListener_);
+    }
+    if (this.prefsListener_) {
+      chrome.settingsPrivate.onPrefsChanged.removeListener(this.prefsListener_);
+    }
+    if (this.onToggleDictationListener_) {
+      chrome.accessibilityPrivate.onToggleDictation.removeListener(
+          this.onToggleDictationListener_);
+    }
+    if (this.inputController_) {
+      this.inputController_.removeListeners();
+    }
   }
 
   /** @private */
@@ -144,7 +202,13 @@ export class Dictation {
   /** @private */
   startDictation_() {
     this.active_ = true;
-    this.startTone_.play();
+    if (this.chromeVoxEnabled_) {
+      // Silence ChromeVox in case it was speaking. It can speak over the start
+      // tone and also cause a feedback loop if the user is not using
+      // headphones. This does not stop ChromeVox from speaking additional
+      // utterances added to the queue later.
+      chrome.accessibilityPrivate.silenceSpokenFeedback();
+    }
     this.setStopTimeout_(
         Dictation.Timeouts.NO_FOCUSED_IME_MS,
         'Dictation stopped automatically: No focused IME');
@@ -162,7 +226,6 @@ export class Dictation {
       chrome.speechRecognitionPrivate.start(
           /** @type {!StartOptions} */ (this.speechRecognitionOptions_),
           type => this.onSpeechRecognitionStarted_(type));
-      this.setStopTimeout_(Dictation.Timeouts.NO_SPEECH_MS);
     } else {
       // We are no longer starting up - perhaps a stop came
       // through during the async callbacks. Ensure cleanup
@@ -238,7 +301,7 @@ export class Dictation {
     const transcript = event.transcript;
     const isFinal = event.isFinal;
     this.setStopTimeout_(
-        isFinal ? Dictation.Timeouts.NO_SPEECH_MS :
+        isFinal ? this.noSpeechTimeoutMs_ :
                   Dictation.Timeouts.NO_NEW_SPEECH_MS);
     await this.processSpeechRecognitionResult_(transcript, isFinal);
   }
@@ -303,6 +366,12 @@ export class Dictation {
       return;
     }
 
+    this.noSpeechTimeoutMs_ = type === SpeechRecognitionType.NETWORK ?
+        Dictation.Timeouts.NO_SPEECH_NETWORK_MS :
+        Dictation.Timeouts.NO_SPEECH_ONDEVICE_MS;
+    this.setStopTimeout_(this.noSpeechTimeoutMs_);
+
+    this.startTone_.play();
     this.clearInterimText_();
 
     // Record metrics.
@@ -342,7 +411,7 @@ export class Dictation {
   }
 
   /**
-   * @param {!Array<!chrome.settingsPrivate.PrefObject>} prefs
+   * @param {!Array<!PrefObject>} prefs
    * @private
    */
   updateFromPrefs_(prefs) {
@@ -362,6 +431,8 @@ export class Dictation {
           } else {
             this.chromeVoxEnabled_ = false;
           }
+          // Use a longer hints timeout when ChromeVox is enabled.
+          this.uiController_.setHintsTimeoutDuration(this.chromeVoxEnabled_);
           break;
         default:
           return;
@@ -520,7 +591,8 @@ Dictation.SPOKEN_FEEDBACK_PREF = 'settings.accessibility';
  * @type {!Object<string, number>}
  */
 Dictation.Timeouts = {
-  NO_SPEECH_MS: 10 * 1000,
+  NO_SPEECH_NETWORK_MS: 10 * 1000,
+  NO_SPEECH_ONDEVICE_MS: 20 * 1000,
   NO_NEW_SPEECH_MS: 5 * 1000,
   NO_FOCUSED_IME_MS: 500,
 };

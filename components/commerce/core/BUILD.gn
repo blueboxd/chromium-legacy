@@ -79,11 +79,6 @@ if (is_android) {
     proto_in_dir = "//"
     sources = [ "proto/merchant_signal_db_content.proto" ]
   }
-
-  proto_library("commerce_subscription_db_content_proto") {
-    proto_in_dir = "//"
-    sources = [ "proto/commerce_subscription_db_content.proto" ]
-  }
 } else {
   proto_library("cart_db_content_proto") {
     proto_in_dir = "//"
@@ -99,6 +94,11 @@ if (is_android) {
 proto_library("persisted_state_db_content_proto") {
   proto_in_dir = "//"
   sources = [ "proto/persisted_state_db_content.proto" ]
+}
+
+proto_library("commerce_subscription_db_content_proto") {
+  proto_in_dir = "//"
+  sources = [ "proto/commerce_subscription_db_content.proto" ]
 }
 
 source_set("commerce_heuristics_data") {
@@ -149,6 +149,8 @@ static_library("shopping_service") {
   sources = [
     "pref_names.cc",
     "pref_names.h",
+    "price_tracking_utils.cc",
+    "price_tracking_utils.h",
     "shopping_bookmark_model_observer.cc",
     "shopping_bookmark_model_observer.h",
     "shopping_service.cc",
@@ -157,18 +159,24 @@ static_library("shopping_service") {
   ]
 
   deps = [
+    ":commerce_subscription_db_content_proto",
     ":feature_list",
     ":metrics",
     ":proto",
-    ":subscriptions",
     "//base",
     "//components/bookmarks/browser",
+    "//components/commerce/core/subscriptions:subscriptions",
     "//components/keyed_service/core",
+    "//components/leveldb_proto",
     "//components/optimization_guide/core",
     "//components/optimization_guide/proto:optimization_guide_proto",
+    "//components/power_bookmarks/core",
+    "//components/power_bookmarks/core:proto",
     "//components/prefs:prefs",
     "//components/resources:components_resources_grit",
+    "//components/session_proto_db:core",
     "//services/data_decoder/public/cpp",
+    "//services/network/public/cpp:cpp",
     "//ui/base",
     "//url:url",
   ]
@@ -196,6 +204,8 @@ source_set("shopping_service_test_support") {
   testonly = true
 
   sources = [
+    "mock_shopping_service.cc",
+    "mock_shopping_service.h",
     "shopping_service_test_base.cc",
     "shopping_service_test_base.h",
   ]
@@ -208,10 +218,16 @@ source_set("shopping_service_test_support") {
     "//components/bookmarks/browser",
     "//components/bookmarks/test",
     "//components/commerce/core:proto",
+    "//components/commerce/core/subscriptions",
     "//components/optimization_guide/core",
     "//components/optimization_guide/proto:optimization_guide_proto",
+    "//components/power_bookmarks/core",
     "//components/prefs:test_support",
+    "//components/signin/public/identity_manager:test_support",
     "//services/data_decoder/public/cpp:test_support",
+    "//services/network:network_service",
+    "//services/network:test_support",
+    "//services/network/public/cpp",
     "//testing/gtest",
     "//url:url",
   ]
@@ -222,25 +238,13 @@ source_set("shopping_service_unit_tests") {
 
   sources = [
     "pdp_metrics_unittest.cc",
+    "price_tracking_utils_unittest.cc",
+    "shopping_service_metrics_unittest.cc",
     "shopping_service_unittest.cc",
   ]
 
   deps = [
     ":metrics",
     ":shopping_service_test_support",
-  ]
-}
-
-source_set("subscriptions") {
-  sources = [
-    "subscriptions/commerce_subscription.cc",
-    "subscriptions/commerce_subscription.h",
-    "subscriptions/subscriptions_manager.cc",
-    "subscriptions/subscriptions_manager.h",
-  ]
-
-  deps = [
-    ":feature_list",
-    "//base",
   ]
 }

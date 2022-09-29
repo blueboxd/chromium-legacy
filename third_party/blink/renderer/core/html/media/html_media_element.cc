@@ -38,7 +38,6 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "cc/layers/layer.h"
-#include "media/base/logging_override_if_enabled.h"
 #include "media/base/media_content_type.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/media_session.mojom-blink.h"
@@ -49,34 +48,26 @@
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_audio_source_provider.h"
-#include "third_party/blink/public/platform/web_content_decryption_module.h"
 #include "third_party/blink/public/platform/web_inband_text_track.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/core_probes_inl.h"
-#include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
-#include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/fileapi/url_file_api.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
-#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
@@ -105,9 +96,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
-#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/layout/layout_media.h"
-#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -118,7 +107,6 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_from_url.h"
@@ -127,7 +115,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/display/screen_info.h"
 
@@ -350,7 +337,7 @@ bool CanLoadURL(const KURL& url, const String& content_type_str) {
       content_type_codecs.IsEmpty()) {
     return MIMETypeRegistry::SupportsMediaMIMEType(content_mime_type,
                                                    content_type_codecs) !=
-           MIMETypeRegistry::kIsNotSupported;
+           MIMETypeRegistry::kNotSupported;
   }
 
   return false;
@@ -407,13 +394,13 @@ MIMETypeRegistry::SupportsType HTMLMediaElement::GetSupportsType(
   String type_codecs = content_type.Parameter("codecs");
 
   if (type.IsEmpty())
-    return MIMETypeRegistry::kIsNotSupported;
+    return MIMETypeRegistry::kNotSupported;
 
   // 4.8.12.3 MIME types - The canPlayType(type) method must return the empty
   // string if type is a type that the user agent knows it cannot render or is
   // the type "application/octet-stream"
   if (type == "application/octet-stream")
-    return MIMETypeRegistry::kIsNotSupported;
+    return MIMETypeRegistry::kNotSupported;
 
   // |contentType| could be handled using ParsedContentType, but there are
   // still a lot of sites using codec strings that don't work with the
@@ -605,8 +592,9 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
   // media element to a new document. This is a work in progress, and may cause
   // security and/or stability issues.
   const bool reuse_player =
-      RuntimeEnabledFeatures::PictureInPictureV2Enabled() && new_origin &&
-      old_origin && old_origin->IsSameOriginWith(new_origin.get());
+      RuntimeEnabledFeatures::DocumentPictureInPictureAPIEnabled() &&
+      new_origin && old_origin &&
+      old_origin->IsSameOriginWith(new_origin.get());
   if (!reuse_player) {
     // Don't worry about notifications from any previous document if we're not
     // re-using the player.
@@ -911,13 +899,13 @@ String HTMLMediaElement::canPlayType(ExecutionContext* context,
 
   // 4.8.12.3
   switch (support) {
-    case MIMETypeRegistry::kIsNotSupported:
+    case MIMETypeRegistry::kNotSupported:
       can_play = g_empty_string;
       break;
-    case MIMETypeRegistry::kMayBeSupported:
+    case MIMETypeRegistry::kMaybeSupported:
       can_play = "maybe";
       break;
-    case MIMETypeRegistry::kIsSupported:
+    case MIMETypeRegistry::kSupported:
       can_play = "probably";
       break;
   }
@@ -2016,6 +2004,7 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
           frame,
           HasVideo() ? mojom::blink::RequestContextType::VIDEO
                      : mojom::blink::RequestContextType::AUDIO,
+          network::mojom::blink::IPAddressSpace::kUnknown,
           current_src_for_check,
           // Strictly speaking, this check is an approximation; a request could
           // have have redirected back to its original URL, for example.

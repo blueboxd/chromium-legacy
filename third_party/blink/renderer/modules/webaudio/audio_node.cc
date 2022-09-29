@@ -25,6 +25,8 @@
 
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 
+#include <inttypes.h>
+
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_node_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
@@ -518,6 +520,14 @@ void AudioNode::disconnect(AudioParam* destination_param,
                            ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(context());
+
+  if (context() != destination_param->Context()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidAccessError,
+        "cannot disconnect from an AudioParam belonging to a different "
+        "BaseAudioContext.");
+    return;
+  }
 
   if (output_index >= Handler().NumberOfOutputs()) {
     // The output index is out of range. Throw an exception.

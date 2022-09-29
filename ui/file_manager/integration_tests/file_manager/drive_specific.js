@@ -38,6 +38,9 @@ const ENABLE_DOCS_OFFLINE_MESSAGE =
     'Enable Google Docs Offline to make Docs, Sheets and Slides ' +
     'available offline.';
 
+/** The query selector for the search box input field. */
+const searchBox = '#search-box cr-input';
+
 /**
  * Returns the steps to start a search for 'hello' and wait for the
  * autocomplete results to appear.
@@ -237,18 +240,50 @@ testcase.drivePressEnterToSearch = async () => {
 };
 
 /**
+ * Tests that the breadcrumbs always shows "My Drive" when searching inside any
+ * folder in Drive.
+ */
+testcase.driveSearchAlwaysDisplaysMyDrive = async () => {
+  // Open Files app on Drive.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET);
+
+  // Start the search from a sub-folder.
+  await navigateWithDirectoryTree(appId, '/My Drive/photos');
+
+  // Search the text.
+  remoteCall.typeSearchText(appId, 'hello');
+
+  // Wait for the auto complete list to appear;
+  await remoteCall.waitForSearchAutoComplete(appId);
+
+  // Send Enter to perform the search.
+  const enterKey = ['Enter', false, false, false];
+  await remoteCall.fakeKeyDown(appId, searchBox, ...enterKey);
+
+  // Wait for the result in the file list.
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows(SEARCH_RESULTS_ENTRY_SET));
+
+  // When displaying the search result the breadcrumbs should always display "My
+  // drive".
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/My Drive');
+
+  return appId;
+};
+
+/**
  * Tests that pressing the clear search button announces an a11y message and
  * shows all files/folders.
  */
 testcase.drivePressClearSearch = async () => {
-  const appId = await testcase.drivePressEnterToSearch();
+  const appId = await testcase.driveSearchAlwaysDisplaysMyDrive();
 
   // Click on the clear search button.
   await remoteCall.waitAndClickElement(appId, '#search-box cr-input .clear');
 
   // Wait for fil list to display all files.
-  await remoteCall.waitForFiles(
-      appId, TestEntryInfo.getExpectedRows(BASIC_DRIVE_ENTRY_SET));
+  await remoteCall.waitForFiles(appId, []);
 
   // Check that a11y message for clearing the search term has been issued.
   const a11yMessages =
@@ -256,10 +291,15 @@ testcase.drivePressClearSearch = async () => {
   chrome.test.assertEq(2, a11yMessages.length, 'Missing a11y message');
   chrome.test.assertEq(
       'Search text cleared, showing all files and folders.', a11yMessages[1]);
+
+  // The breadcrumbs should return back to the previous original folder.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(
+      appId, '/My Drive/photos');
 };
 
 /**
- * Tests that pinning multiple files affects the pin action of individual files.
+ * Tests that pinning multiple files affects the pin action of individual
+ * files.
  */
 testcase.drivePinMultiple = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
@@ -396,7 +436,7 @@ testcase.drivePinFileMobileNetwork = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
   const caller = getCaller();
   await sendTestMessage({name: 'useCellularNetwork'});
-  await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']);
+  await remoteCall.waitUntilSelected(appId, 'hello.txt');
   await repeatUntil(() => {
     return navigator.connection.type != 'cellular' ?
         pending(caller, 'Network state is not changed to cellular.') :
@@ -492,8 +532,8 @@ testcase.drivePinToggleUpdatesInFakeEntries = async () => {
 };
 
 /**
- * Tests that pressing Ctrl+A (select all files) from the search box doesn't put
- * the Files App into check-select mode (crbug.com/849253).
+ * Tests that pressing Ctrl+A (select all files) from the search box doesn't
+ * put the Files App into check-select mode (crbug.com/849253).
  */
 testcase.drivePressCtrlAFromSearch = async () => {
   // Open Files app on Drive.
@@ -591,9 +631,7 @@ testcase.driveAvailableOfflineGearMenu = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DRIVE, []);
 
   // Select a file.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']),
-      'selectFile failed');
+  await remoteCall.waitUntilSelected(appId, 'hello.txt');
 
   // Wait for the entry to be selected.
   await remoteCall.waitForElement(appId, '.table-row[selected]');
@@ -629,9 +667,7 @@ testcase.driveAvailableOfflineDirectoryGearMenu = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DRIVE, []);
 
   // Select a file.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['photos']),
-      'selectFile failed');
+  await remoteCall.waitUntilSelected(appId, 'photos');
 
   // Wait for the entry to be selected.
   await remoteCall.waitForElement(appId, '.table-row[selected]');
@@ -748,9 +784,7 @@ testcase.driveLinkToDirectory = async () => {
       ]));
 
   // Select the link
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['G']),
-      'selectFile failed');
+  await remoteCall.waitUntilSelected(appId, 'G');
   await remoteCall.waitForElement(appId, '.table-row[selected]');
 
   // Open the link

@@ -9,6 +9,7 @@
 
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/accessibility/page_colors_factory.h"
 #include "chrome/browser/accuracy_tips/accuracy_service_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/history_ui_favicon_request_handler_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
+#include "chrome/browser/first_party_sets/first_party_sets_policy_service_factory.h"
 #include "chrome/browser/google/google_search_domain_mixing_metrics_emitter_factory.h"
 #include "chrome/browser/history/domain_diversity_reporter_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -78,6 +80,7 @@
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/renderer_updater_factory.h"
+#include "chrome/browser/reduce_accept_language/reduce_accept_language_factory.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
 #include "chrome/browser/safe_browsing/tailored_security/tailored_security_service_factory.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
@@ -117,6 +120,7 @@
 #include "chrome/common/chrome_features.h"
 #include "components/breadcrumbs/core/breadcrumbs_status.h"
 #include "components/captive_portal/core/buildflags.h"
+#include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
 #include "components/commerce/core/proto/persisted_state_db_content.pb.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
@@ -130,6 +134,7 @@
 #include "media/base/media_switches.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/network/public/cpp/features.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/android/explore_sites/explore_sites_service_factory.h"
@@ -140,7 +145,6 @@
 #include "chrome/browser/commerce/merchant_viewer/merchant_viewer_data_manager_factory.h"
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager_factory.h"
 #include "components/commerce/core/commerce_feature_list.h"
-#include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
 #include "components/commerce/core/proto/merchant_signal_db_content.pb.h"
 #else
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -349,7 +353,9 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   CertDbInitializerFactory::GetInstance();
 #endif
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   CertificateReportingServiceFactory::GetInstance();
+#endif
 #if !BUILDFLAG(IS_ANDROID)
   ChromeBrowsingDataLifetimeManagerFactory::GetInstance();
 #endif
@@ -380,6 +386,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   feedback::FeedbackUploaderFactoryChrome::GetInstance();
 #endif
   FindBarStateFactory::GetInstance();
+  first_party_sets::FirstPartySetsPolicyServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   GAIAInfoUpdateServiceFactory::GetInstance();
 #endif
@@ -444,6 +451,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   NTPResourceCacheFactory::GetInstance();
 #endif
   OptimizationGuideKeyedServiceFactory::GetInstance();
+#if !BUILDFLAG(IS_ANDROID)
+  PageColorsFactory::GetInstance();
+#endif
   if (optimization_guide::switches::ShouldValidateModel())
     optimization_guide::ModelValidatorKeyedServiceFactory::GetInstance();
   page_load_metrics::PageLoadMetricsMemoryTrackerFactory::GetInstance();
@@ -463,10 +473,8 @@ void ChromeBrowserMainExtraPartsProfiles::
   SessionProtoDBFactory<cart_db::ChromeCartContentProto>::GetInstance();
   SessionProtoDBFactory<coupon_db::CouponContentProto>::GetInstance();
 #endif
-#if BUILDFLAG(IS_ANDROID)
   SessionProtoDBFactory<commerce_subscription_db::
                             CommerceSubscriptionContentProto>::GetInstance();
-#endif
 #if BUILDFLAG(IS_ANDROID)
   SessionProtoDBFactory<
       merchant_signal_db::MerchantSignalContentProto>::GetInstance();
@@ -514,6 +522,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   ReadingListManagerFactory::GetInstance();
   ReadingListNotificationServiceFactory::GetInstance();
 #endif
+
+  if (base::FeatureList::IsEnabled(network::features::kReduceAcceptLanguage))
+    ReduceAcceptLanguageFactory::GetInstance();
 
   RendererUpdaterFactory::GetInstance();
 

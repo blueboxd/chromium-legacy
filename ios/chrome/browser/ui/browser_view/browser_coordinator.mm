@@ -25,7 +25,9 @@
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/feature_engagement/tracker_util.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
+#import "ios/chrome/browser/follow/follow_browser_agent.h"
 #import "ios/chrome/browser/follow/follow_tab_helper.h"
+#import "ios/chrome/browser/follow/followed_web_site.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
@@ -55,6 +57,7 @@
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller+private.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
+#import "ios/chrome/browser/ui/browser_view/tab_events_mediator.h"
 #import "ios/chrome/browser/ui/browser_view/tab_lifecycle_mediator.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
@@ -93,7 +96,6 @@
 #import "ios/chrome/browser/ui/find_bar/find_bar_coordinator.h"
 #import "ios/chrome/browser/ui/follow/first_follow_coordinator.h"
 #import "ios/chrome/browser/ui/follow/follow_iph_coordinator.h"
-#import "ios/chrome/browser/ui/follow/followed_web_channel.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_mediator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
@@ -131,6 +133,7 @@
 #import "ios/chrome/browser/ui/toolbar/secondary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_adaptor.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/page_animation_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
@@ -164,6 +167,9 @@
 // Duration of the toolbar animation.
 constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
     base::Milliseconds(300);
+
+// URL to share when user selects "Share Chrome"
+const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
 
 @interface BrowserCoordinator () <ActivityServiceCommands,
                                   BrowserCoordinatorCommands,
@@ -208,6 +214,9 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
 
 // Mediator for tab lifecylce.
 @property(nonatomic, strong) TabLifecycleMediator* tabLifecycleMediator;
+
+// Mediator for tab events.
+@property(nonatomic, strong) TabEventsMediator* tabEventsMediator;
 
 // =================================================
 // Child Coordinators, listed in alphabetical order.
@@ -409,6 +418,7 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   [self uninstallDelegatesForBrowserState];
   [self uninstallDelegatesForBrowser];
   [self uninstallDelegatesForAllWebStates];
+  [self.tabEventsMediator disconnect];
   [self.tabLifecycleMediator disconnect];
   self.viewController.commandDispatcher = nil;
   [self.dispatcher stopDispatchingToTarget:self];
@@ -585,13 +595,14 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   _keyCommandsProvider =
       [[KeyCommandsProvider alloc] initWithBrowser:self.browser];
   _keyCommandsProvider.dispatcher =
-      static_cast<id<ApplicationCommands, BrowserCommands,
-                     BrowserCoordinatorCommands, FindInPageCommands>>(
+      static_cast<id<ApplicationCommands, BrowserCommands, FindInPageCommands>>(
           _dispatcher);
   _keyCommandsProvider.omniboxHandler =
       static_cast<id<OmniboxCommands>>(_dispatcher);
   _keyCommandsProvider.bookmarksCommandsHandler =
       static_cast<id<BookmarksCommands>>(_dispatcher);
+  _keyCommandsProvider.browserCoordinatorCommandsHandler =
+      HandlerForProtocol(_dispatcher, BrowserCoordinatorCommands);
 
   _prerenderService = PrerenderServiceFactory::GetForBrowserState(browserState);
   if (!browserState->IsOffTheRecord()) {
@@ -1034,6 +1045,10 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
       snapshotGeneratorDelegate:self
                    dependencies:dependencies];
 
+  self.tabEventsMediator = [[TabEventsMediator alloc]
+      initWithWebStateList:self.browser->GetWebStateList()
+            ntpCoordinator:_ntpCoordinator];
+
   self.viewController.reauthHandler =
       HandlerForProtocol(self.dispatcher, IncognitoReauthCommands);
 
@@ -1077,6 +1092,29 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
                       originView:positioner.sourceView
                       originRect:positioner.sourceRect
                           anchor:anchor];
+  [self.sharingCoordinator start];
+}
+
+- (void)shareChromeApp {
+  GURL URL = GURL(kChromeAppStoreUrl);
+  NSString* title =
+      l10n_util::GetNSString(IDS_IOS_OVERFLOW_MENU_SHARE_CHROME_TITLE);
+  NSString* additionalText =
+      l10n_util::GetNSString(IDS_IOS_OVERFLOW_MENU_SHARE_CHROME_DESC);
+  ActivityParams* params =
+      [[ActivityParams alloc] initWithURL:URL
+                                    title:title
+                           additionalText:additionalText
+                                 scenario:ActivityScenario::ShareChrome];
+
+  // Exit fullscreen if needed to make sure that share button is visible.
+  FullscreenController::FromBrowser(self.browser)->ExitFullscreen();
+
+  self.sharingCoordinator = [[SharingCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                          params:params
+                      originView:self.viewController.view];
   [self.sharingCoordinator start];
 }
 
@@ -1245,6 +1283,42 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
 }
 #endif  // !defined(NDEBUG)
 
+- (void)focusFakebox {
+  if ([self isNTPActiveForCurrentWebState]) {
+    [_ntpCoordinator focusFakebox];
+  }
+}
+
+// TODO(crbug.com/1272498): Refactor this command away, and add a mediator to
+// observe the active web state closing and push updates into the BVC for UI
+// work.
+- (void)closeCurrentTab {
+  WebStateList* webStateList = self.browser->GetWebStateList();
+
+  int active_index = webStateList->active_index();
+  if (active_index == WebStateList::kInvalidIndex)
+    return;
+
+  BOOL canShowTabStrip = IsRegularXRegularSizeClass(self.viewController);
+
+  UIView* contentArea = self.browserContainerCoordinator.viewController.view;
+  UIView* snapshotView = nil;
+
+  if (!canShowTabStrip) {
+    snapshotView = [contentArea snapshotViewAfterScreenUpdates:NO];
+    snapshotView.frame = contentArea.frame;
+  }
+
+  webStateList->CloseWebStateAt(active_index, WebStateList::CLOSE_USER_ACTION);
+
+  if (!canShowTabStrip) {
+    [contentArea addSubview:snapshotView];
+    page_animation_util::AnimateOutWithCompletion(snapshotView, ^{
+      [snapshotView removeFromSuperview];
+    });
+  }
+}
+
 #pragma mark - DefaultPromoCommands
 
 - (void)showTailoredPromoStaySafe {
@@ -1281,11 +1355,11 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
 
 #pragma mark - FeedCommands
 
-- (void)showFirstFollowUIForWebChannel:(FollowedWebChannel*)followedWebChannel {
+- (void)showFirstFollowUIForWebSite:(FollowedWebSite*)followedWebSite {
   self.firstFollowCoordinator = [[FirstFollowCoordinator alloc]
       initWithBaseViewController:self.viewController
-                         browser:self.browser];
-  self.firstFollowCoordinator.followedWebChannel = followedWebChannel;
+                         browser:self.browser
+                 followedWebSite:followedWebSite];
   [self.firstFollowCoordinator start];
 }
 
@@ -1615,6 +1689,15 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
       self.browser->GetCommandDispatcher(), ApplicationCommands);
   AccountConsistencyBrowserAgent::CreateForBrowser(
       self.browser, self.viewController, applicationCommandHandler);
+
+  if (FollowBrowserAgent::FromBrowser(self.browser)) {
+    CommandDispatcher* commandDispatcher = self.browser->GetCommandDispatcher();
+    FollowBrowserAgent::FromBrowser(self.browser)
+        ->SetUIProviders(
+            HandlerForProtocol(commandDispatcher, NewTabPageCommands),
+            static_cast<id<SnackbarCommands>>(commandDispatcher),
+            HandlerForProtocol(commandDispatcher, FeedCommands));
+  }
 }
 
 // Installs delegates for self.browser->GetBrowserState()
@@ -1648,6 +1731,10 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
   WebStateDelegateBrowserAgent::FromBrowser(self.browser)->ClearUIProviders();
 
   SyncErrorBrowserAgent::FromBrowser(self.browser)->ClearUIProviders();
+
+  if (FollowBrowserAgent::FromBrowser(self.browser)) {
+    FollowBrowserAgent::FromBrowser(self.browser)->ClearUIProviders();
+  }
 }
 
 // Uninstalls delegates for each WebState in WebStateList.
@@ -1691,9 +1778,9 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
         self.storeKitCoordinator);
   }
 
-  if (FollowTabHelper::FromWebState(webState)) {
-    FollowTabHelper::FromWebState(webState)->set_follow_iph_presenter(
-        self.followIPHCoordinator);
+  FollowTabHelper* followTabHelper = FollowTabHelper::FromWebState(webState);
+  if (followTabHelper) {
+    followTabHelper->set_follow_iph_presenter(self.followIPHCoordinator);
   }
 
   if (CaptivePortalTabHelper::FromWebState(webState)) {
@@ -1732,8 +1819,9 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
     StoreKitTabHelper::FromWebState(webState)->SetLauncher(nil);
   }
 
-  if (FollowTabHelper::FromWebState(webState)) {
-    FollowTabHelper::FromWebState(webState)->set_follow_iph_presenter(nil);
+  FollowTabHelper* followTabHelper = FollowTabHelper::FromWebState(webState);
+  if (followTabHelper) {
+    followTabHelper->set_follow_iph_presenter(nil);
   }
 
   if (CaptivePortalTabHelper::FromWebState(webState)) {

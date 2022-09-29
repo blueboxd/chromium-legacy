@@ -45,8 +45,7 @@ struct AccessTokenInfo;
 class IdentityManager;
 }  // namespace signin
 
-namespace chromeos {
-namespace assistant {
+namespace ash::assistant {
 
 class AssistantInteractionLogger;
 class ScopedAshSessionObserver;
@@ -60,8 +59,8 @@ constexpr auto kUpdateAssistantManagerDelay = base::Seconds(1);
 class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
     : public AssistantService,
       public chromeos::PowerManagerClient::Observer,
-      public ash::SessionActivationObserver,
-      public ash::AssistantStateObserver,
+      public SessionActivationObserver,
+      public AssistantStateObserver,
       public AssistantManagerService::StateObserver,
       public AuthenticationStateObserver {
  public:
@@ -102,11 +101,11 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void PowerChanged(const power_manager::PowerSupplyProperties& prop) override;
   void SuspendDone(base::TimeDelta sleep_duration) override;
 
-  // ash::SessionActivationObserver overrides:
+  // SessionActivationObserver overrides:
   void OnSessionActivated(bool activated) override;
   void OnLockStateChanged(bool locked) override;
 
-  // ash::AssistantStateObserver overrides:
+  // AssistantStateObserver overrides:
   void OnAssistantConsentStatusChanged(int consent_status) override;
   void OnAssistantContextEnabled(bool enabled) override;
   void OnAssistantHotwordAlwaysOn(bool hotword_always_on) override;
@@ -151,6 +150,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   // for the device.
   bool ShouldEnableHotword();
 
+  void LoadLibassistant();
+  void OnLibassistantLoaded(bool success);
+
   // |ServiceContext| object passed to child classes so they can access some of
   // our functionality without depending on us.
   // Note: this is used by the other members here, so it must be defined first
@@ -175,6 +177,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   bool locked_ = false;
   // Whether the power source is connected.
   bool power_source_connected_ = false;
+  // Whether the libassistant library is loaded.
+  bool libassistant_loaded_ = false;
 
   // The value passed into |SetAssistantManagerServiceForTesting|.
   // Will be moved into |assistant_manager_service_| when the service is
@@ -199,7 +203,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   base::WeakPtrFactory<Service> weak_ptr_factory_{this};
 };
 
-}  // namespace assistant
-}  // namespace chromeos
+}  // namespace ash::assistant
 
 #endif  // CHROMEOS_ASH_SERVICES_ASSISTANT_SERVICE_H_

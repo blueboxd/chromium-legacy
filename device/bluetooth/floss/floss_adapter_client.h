@@ -80,25 +80,6 @@ class DEVICE_BLUETOOTH_EXPORT FlossAdapterClient : public FlossDBusClient {
     kRemoteDeviceTimestamp = 0xFF,
   };
 
-  // Adopted from bt_status_t in system/include/hardware/bluetooth.h
-  enum class BtifStatus {
-    kSuccess = 0,
-    kFail,
-    kNotReady,
-    kNomem,
-    kBusy,
-    kDone,
-    kUnsupported,
-    kParmInvalid,
-    kUnhandled,
-    kAuthFailure,
-    kRmtDevDown,
-    kAuthRejected,
-    kJniEnvironmentError,
-    kJniThreadAttachError,
-    kWakelockError,
-  };
-
   class Observer : public base::CheckedObserver {
    public:
     Observer(const Observer&) = delete;
@@ -320,8 +301,7 @@ class DEVICE_BLUETOOTH_EXPORT FlossAdapterClient : public FlossDBusClient {
       dbus::ExportedObject::ResponseSender response_sender);
 
   // Handle GetBondedDevices
-  void OnGetBondedDevices(const absl::optional<std::vector<FlossDeviceId>>& ret,
-                          const absl::optional<Error>& error);
+  void OnGetBondedDevices(DBusResult<std::vector<FlossDeviceId>> ret);
 
   // List of observers interested in event notifications from this client.
   base::ObserverList<Observer> observers_;

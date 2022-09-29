@@ -60,7 +60,8 @@ class FinchStarterHeuristicConfig : public StarterHeuristicConfig {
   // Overrides HeuristicConfig:
   const std::string& GetIntent() const override;
   const base::Value::List& GetConditionSetsForClientState(
-      StarterPlatformDelegate* platform_delegate) const override;
+      StarterPlatformDelegate* platform_delegate,
+      content::BrowserContext* browser_context) const override;
   const base::flat_set<std::string>& GetDenylistedDomains() const override;
 
  private:
@@ -78,8 +79,6 @@ class FinchStarterHeuristicConfig : public StarterHeuristicConfig {
   bool enabled_in_weblayer_ = false;
   bool enabled_for_signed_out_users_ = false;
   bool enabled_without_msbb_ = false;
-  const base::Value empty_condition_sets_ =
-      base::Value(base::Value::Type::LIST);
   std::string intent_;
   base::Value condition_sets_ = base::Value(base::Value::Type::LIST);
   base::flat_set<std::string> denylisted_domains_;

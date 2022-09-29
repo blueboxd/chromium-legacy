@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/time/tick_clock.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/ash/components/feature_usage/feature_usage_metrics.h"
@@ -21,7 +22,7 @@
 #include "components/prefs/pref_service.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -75,12 +76,20 @@ const char CellularMetricsLogger::kSimPinRemoveLockSuccessHistogram[] =
     "Network.Cellular.Pin.RemoveLockSuccess";
 
 // static
-const char CellularMetricsLogger::kSimPinUnlockSuccessHistogram[] =
-    "Network.Cellular.Pin.UnlockSuccess";
+const char CellularMetricsLogger::kUnmanagedSimPinUnlockSuccessHistogram[] =
+    "Network.Cellular.Pin.Unmanaged.UnlockSuccess";
 
 // static
-const char CellularMetricsLogger::kSimPinUnblockSuccessHistogram[] =
-    "Network.Cellular.Pin.UnblockSuccess";
+const char CellularMetricsLogger::kManagedSimPinUnlockSuccessHistogram[] =
+    "Network.Cellular.Pin.Managed.UnlockSuccess";
+
+// static
+const char CellularMetricsLogger::kUnmanagedSimPinUnblockSuccessHistogram[] =
+    "Network.Cellular.Pin.Unmanaged.UnblockSuccess";
+
+// static
+const char CellularMetricsLogger::kManagedSimPinUnblockSuccessHistogram[] =
+    "Network.Cellular.Pin.Managed.UnblockSuccess";
 
 // static
 const char CellularMetricsLogger::kSimPinChangeSuccessHistogram[] =
@@ -89,6 +98,34 @@ const char CellularMetricsLogger::kSimPinChangeSuccessHistogram[] =
 // static
 const char CellularMetricsLogger::kSimLockNotificationEventHistogram[] =
     "Network.Ash.Cellular.SimLock.Policy.Notification.Event";
+
+// static
+const char CellularMetricsLogger::kUnrestrictedSimPinUnlockSuccessHistogram[] =
+    "Network.Cellular.Pin.Unrestricted.UnlockSuccess";
+
+// static
+const char CellularMetricsLogger::kRestrictedSimPinUnlockSuccessHistogram[] =
+    "Network.Cellular.Pin.Restricted.UnlockSuccess";
+
+// static
+const char CellularMetricsLogger::kUnrestrictedSimPinUnblockSuccessHistogram[] =
+    "Network.Cellular.Pin.Unrestricted.UnblockSuccess";
+
+// static
+const char CellularMetricsLogger::kRestrictedSimPinUnblockSuccessHistogram[] =
+    "Network.Cellular.Pin.Restricted.UnblockSuccess";
+
+// static
+const char CellularMetricsLogger::kSimLockNotificationLockType[] =
+    "Network.Ash.Cellular.SimLock.Policy.Notification.LockType";
+
+// static
+const char CellularMetricsLogger::kUnrestrictedActiveNetworkSIMLockStatus[] =
+    "Network.Ash.Cellular.SimLock.Policy.Unrestricted.ActiveSIMLockStatus";
+
+// static
+const char CellularMetricsLogger::kRestrictedActiveNetworkSIMLockStatus[] =
+    "Network.Ash.Cellular.SimLock.Policy.Restricted.ActiveSIMLockStatus";
 
 // static
 const base::TimeDelta CellularMetricsLogger::kInitializationTimeout =
@@ -127,13 +164,29 @@ void CellularMetricsLogger::RecordSimLockNotificationEvent(
 }
 
 // static
+void CellularMetricsLogger::RecordSimLockNotificationLockType(
+    const std::string& sim_lock_type) {
+  if (sim_lock_type == shill::kSIMLockPin) {
+    base::UmaHistogramEnumeration(kSimLockNotificationLockType,
+                                  SimPinLockType::kPinLocked);
+  } else if (sim_lock_type == shill::kSIMLockPuk) {
+    base::UmaHistogramEnumeration(kSimLockNotificationLockType,
+                                  SimPinLockType::kPukLocked);
+  } else {
+    NOTREACHED();
+  }
+}
+
+// static
 void CellularMetricsLogger::RecordSimPinOperationResult(
     const SimPinOperation& pin_operation,
+    const bool allow_cellular_sim_lock,
     const absl::optional<std::string>& shill_error_name) {
   SimPinOperationResult result =
       shill_error_name.has_value()
           ? GetSimPinOperationResultForShillError(*shill_error_name)
           : SimPinOperationResult::kSuccess;
+  bool is_enterprise_managed = NetworkHandler::Get()->is_enterprise_managed();
 
   switch (pin_operation) {
     case SimPinOperation::kRequireLock:
@@ -143,10 +196,30 @@ void CellularMetricsLogger::RecordSimPinOperationResult(
       base::UmaHistogramEnumeration(kSimPinRemoveLockSuccessHistogram, result);
       return;
     case SimPinOperation::kUnlock:
-      base::UmaHistogramEnumeration(kSimPinUnlockSuccessHistogram, result);
+      if (is_enterprise_managed) {
+        base::UmaHistogramEnumeration(kManagedSimPinUnlockSuccessHistogram,
+                                      result);
+        base::UmaHistogramEnumeration(
+            allow_cellular_sim_lock ? kUnrestrictedSimPinUnlockSuccessHistogram
+                                    : kRestrictedSimPinUnlockSuccessHistogram,
+            result);
+      } else {
+        base::UmaHistogramEnumeration(kUnmanagedSimPinUnlockSuccessHistogram,
+                                      result);
+      }
       return;
     case SimPinOperation::kUnblock:
-      base::UmaHistogramEnumeration(kSimPinUnblockSuccessHistogram, result);
+      if (is_enterprise_managed) {
+        base::UmaHistogramEnumeration(kManagedSimPinUnblockSuccessHistogram,
+                                      result);
+        base::UmaHistogramEnumeration(
+            allow_cellular_sim_lock ? kUnrestrictedSimPinUnblockSuccessHistogram
+                                    : kRestrictedSimPinUnblockSuccessHistogram,
+            result);
+      } else {
+        base::UmaHistogramEnumeration(kUnmanagedSimPinUnblockSuccessHistogram,
+                                      result);
+      }
       return;
     case SimPinOperation::kChange:
       base::UmaHistogramEnumeration(kSimPinChangeSuccessHistogram, result);
@@ -379,9 +452,12 @@ CellularMetricsLogger::~CellularMetricsLogger() {
 void CellularMetricsLogger::Init(
     NetworkStateHandler* network_state_handler,
     NetworkConnectionHandler* network_connection_handler,
-    CellularESimProfileHandler* cellular_esim_profile_handler) {
+    CellularESimProfileHandler* cellular_esim_profile_handler,
+    ManagedNetworkConfigurationHandler* managed_network_configuration_handler) {
   network_state_handler_ = network_state_handler;
   cellular_esim_profile_handler_ = cellular_esim_profile_handler;
+  managed_network_configuration_handler_ =
+      managed_network_configuration_handler;
   network_state_handler_observer_.Observe(network_state_handler_);
 
   if (network_connection_handler) {
@@ -496,6 +572,44 @@ void CellularMetricsLogger::NetworkConnectionStateChanged(
   // chrome layers.
   CheckForShillConnectionFailureMetric(network);
   CheckForConnectionStateMetric(network);
+  CheckForSIMStatusMetric(network);
+}
+
+void CellularMetricsLogger::CheckForSIMStatusMetric(
+    const NetworkState* network) {
+  const DeviceState* cellular_device =
+      network_state_handler_->GetDeviceState(network->device_path());
+  if (!cellular_device || network->IsConnectingState()) {
+    return;
+  }
+
+  const std::string& sim_lock_type = cellular_device->sim_lock_type();
+
+  if (last_active_network_iccid_ == network->iccid() ||
+      (!network->IsConnectedState() && sim_lock_type.empty())) {
+    return;
+  }
+
+  last_active_network_iccid_ = network->iccid();
+  SimPinLockType lock_type;
+
+  if (sim_lock_type == shill::kSIMLockPin) {
+    lock_type = SimPinLockType::kPinLocked;
+  } else if (sim_lock_type == shill::kSIMLockPuk) {
+    lock_type = SimPinLockType::kPukLocked;
+  } else if (sim_lock_type.empty()) {
+    lock_type = SimPinLockType::kUnlocked;
+  } else {
+    NOTREACHED();
+  }
+
+  if (managed_network_configuration_handler_->AllowCellularSimLock()) {
+    base::UmaHistogramEnumeration(kUnrestrictedActiveNetworkSIMLockStatus,
+                                  lock_type);
+  } else {
+    base::UmaHistogramEnumeration(kRestrictedActiveNetworkSIMLockStatus,
+                                  lock_type);
+  }
 }
 
 void CellularMetricsLogger::CheckForTimeToConnectedMetric(
@@ -774,10 +888,21 @@ void CellularMetricsLogger::CheckForCellularServiceCountMetric() {
         esim_policy_profiles++;
     }
   }
-  UMA_HISTOGRAM_COUNTS_100("Network.Cellular.PSim.ServiceAtLogin.Count",
-                           psim_networks);
-  UMA_HISTOGRAM_COUNTS_100("Network.Cellular.ESim.ServiceAtLogin.Count",
-                           esim_profiles);
+
+  if (managed_network_configuration_handler_->AllowCellularSimLock()) {
+    UMA_HISTOGRAM_COUNTS_100(
+        "Network.Cellular.Unrestricted.PSim.ServiceAtLogin.Count",
+        psim_networks);
+    UMA_HISTOGRAM_COUNTS_100(
+        "Network.Cellular.Unrestricted.ESim.ServiceAtLogin.Count",
+        esim_profiles);
+  } else {
+    UMA_HISTOGRAM_COUNTS_100(
+        "Network.Cellular.Restricted.PSim.ServiceAtLogin.Count", psim_networks);
+    UMA_HISTOGRAM_COUNTS_100(
+        "Network.Cellular.Restricted.ESim.ServiceAtLogin.Count", esim_profiles);
+  }
+
   UMA_HISTOGRAM_COUNTS_100("Network.Cellular.ESim.Policy.ServiceAtLogin.Count",
                            esim_policy_profiles);
   is_service_count_logged_ = true;
@@ -928,4 +1053,4 @@ void CellularMetricsLogger::OnShuttingDown() {
   esim_feature_usage_metrics_.reset();
 }
 
-}  // namespace chromeos
+}  // namespace ash

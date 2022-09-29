@@ -15,6 +15,7 @@
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/webui/customize_themes/chrome_customize_themes_handler.h"
 #include "chrome/browser/ui/webui/signin/profile_customization_handler.h"
+#include "chrome/browser/ui/webui/signin/signin_url_utils.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -46,6 +47,8 @@ ProfileCustomizationUI::ProfileCustomizationUI(content::WebUI* web_ui)
        IDR_SIGNIN_PROFILE_CUSTOMIZATION_PROFILE_CUSTOMIZATION_BROWSER_PROXY_JS},
       {"images/profile_customization_illustration.svg",
        IDR_SIGNIN_PROFILE_CUSTOMIZATION_IMAGES_PROFILE_CUSTOMIZATION_ILLUSTRATION_SVG},
+      {"images/profile_customization_illustration_dark.svg",
+       IDR_SIGNIN_PROFILE_CUSTOMIZATION_IMAGES_PROFILE_CUSTOMIZATION_ILLUSTRATION_DARK_SVG},
       {"signin_shared.css.js", IDR_SIGNIN_SIGNIN_SHARED_CSS_JS},
       {"signin_vars.css.js", IDR_SIGNIN_SIGNIN_VARS_CSS_JS},
   };
@@ -60,10 +63,14 @@ ProfileCustomizationUI::ProfileCustomizationUI(content::WebUI* web_ui)
       {"profileCustomizationInputLabel", IDS_PROFILE_CUSTOMIZATION_INPUT_LABEL},
       {"profileCustomizationText", IDS_PROFILE_CUSTOMIZATION_TEXT},
       {"profileCustomizationTitle", IDS_PROFILE_CUSTOMIZATION_TITLE_V2},
+      {"localProfileCreationTitle",
+       IDS_PROFILE_CUSTOMIZATION_LOCAL_PROFILE_CREATION_TITLE},
 
       // Color picker strings:
       {"colorPickerLabel", IDS_NTP_CUSTOMIZE_COLOR_PICKER_LABEL},
       {"defaultThemeLabel", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
+      {"themesContainerLabel",
+       IDS_PROFILE_CUSTOMIZATION_THEMES_CONTAINER_LABEL},
       {"thirdPartyThemeDescription", IDS_NTP_CUSTOMIZE_3PT_THEME_DESC},
       {"uninstallThirdPartyThemeButton", IDS_NTP_CUSTOMIZE_3PT_THEME_UNINSTALL},
   };
@@ -80,8 +87,12 @@ ProfileCustomizationUI::ProfileCustomizationUI(content::WebUI* web_ui)
   source->AddBoolean(
       "profileCustomizationInDialogDesign",
       base::FeatureList::IsEnabled(kSyncPromoAfterSigninIntercept));
+  const GURL& url = web_ui->GetWebContents()->GetVisibleURL();
+  source->AddBoolean("isLocalProfileCreation",
+                     GetProfileCustomizationStyle(url) ==
+                         ProfileCustomizationStyle::kLocalProfileCreation);
 
-  if (web_ui->GetWebContents()->GetVisibleURL().query() == "debug") {
+  if (url.query() == "debug") {
     // Not intended to be hooked to anything. The bubble will not initialize it
     // so we force it here.
     Initialize(base::DoNothing());

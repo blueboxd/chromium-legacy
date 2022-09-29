@@ -139,13 +139,12 @@ class NetworkIconTest : public AshTestBase {
 
     base::RunLoop().RunUntilIdle();
 
-    ASSERT_EQ(
-        chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
-        helper().network_state_handler()->GetTechnologyState(
-            chromeos::NetworkTypePattern::Cellular()));
+    ASSERT_EQ(NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
+              helper().network_state_handler()->GetTechnologyState(
+                  NetworkTypePattern::Cellular()));
   }
 
-  chromeos::NetworkStateTestHelper& helper() {
+  NetworkStateTestHelper& helper() {
     return network_config_helper_.network_state_helper();
   }
 

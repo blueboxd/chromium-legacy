@@ -27,7 +27,7 @@ namespace app_list {
 
 namespace {
 
-using chromeos::assistant::AssistantAllowedState;
+using ::ash::assistant::AssistantAllowedState;
 
 constexpr char kIdPrefix[] = "googleassistant_text://";
 
@@ -55,6 +55,7 @@ class AssistantTextSearchResult : public ChromeSearchResult {
     SetResultType(ash::AppListSearchResultType::kAssistantText);
     SetMetricsType(ash::SearchResultType::ASSISTANT_OMNIBOX_RESULT);
     SetTitle(text);
+    SetDetails(l10n_util::GetStringUTF16(IDS_APP_LIST_START_ASSISTANT));
     SetAccessibleName(l10n_util::GetStringFUTF16(
         IDS_ASH_ASSISTANT_QUERY_ACCESSIBILITY_ANNOUNCEMENT, text));
     SetIcon(IconInfo(
@@ -62,6 +63,7 @@ class AssistantTextSearchResult : public ChromeSearchResult {
                               gfx::kPlaceholderColor),
         kSystemIconDimension));
 
+    SetSkipUpdateAnimation(true);
     set_dismiss_view_on_open(false);
   }
 
@@ -113,7 +115,7 @@ void AssistantTextSearchProvider::OnAssistantControllerDestroying() {
 }
 
 void AssistantTextSearchProvider::OnAssistantFeatureAllowedChanged(
-    chromeos::assistant::AssistantAllowedState allowed_state) {
+    AssistantAllowedState allowed_state) {
   UpdateResults();
 }
 

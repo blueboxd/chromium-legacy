@@ -7,6 +7,7 @@
 <translation id="1258009455399840361">ໝຸນ 90 ອົງສາຕາມເຂັມໂມງ</translation>
 <translation id="1276998909102132017">ຮູບພາບໃນຄັງ</translation>
 <translation id="1300209025925956156">ສະແກນເອກະສານຂອງທ່ານ</translation>
+<translation id="1309250603447638106">ກຳລັງດາວໂຫຼດການອັບເດດສຳລັບການສະແກນເອກະສານ</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. ຊອກຫາ + ລູກສອນຊ້າຍເພື່ອເຂົ້າເຖິງ.</translation>
 <translation id="1393338179284529051">Quad HD</translation>
 <translation id="1430915738399379752">ພິມ</translation>
@@ -47,6 +48,7 @@
 <translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">ຕົວຢ່າງການສະທ້ອນ</translation>
 <translation id="2879583609344924966">ສຽບສາຍ <ph name="CAMERA" /> ແລ້ວ.</translation>
+<translation id="2904654629665923749">ສະແກນເອກະສານໄດ້</translation>
 <translation id="2968794441791257519">ຮູບພາບ ແລະ ວິດີໂອທີ່ຖ່າຍດ້ວຍກ້ອງຖ່າຍຮູບຈະຖືກຍ້າຍໄປໃສ່ໂຟນເດີດາວໂຫຼດ. ທ່ານສາມາດເຂົ້າເຖິງພວກມັນໄດ້ໃນໄຟລ໌.
 
        ແອັບທີ່ມີການອະນຸຍາດບ່ອນເກັບຂໍ້ມູນຈະມີສິດເຂົ້າເຖິງຮູບພາບ ແລະ ວິດີໂອຂອງທ່ານໄດ້.</translation>
@@ -72,7 +74,6 @@
 <translation id="3838931309141338733">ສະແກນບາໂຄດ</translation>
 <translation id="3892148308691398805">ສຳເນົາຂໍ້ຄວາມ</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> MP</translation>
-<translation id="4096701159033358951">ກຳລັງດາວໂຫຼດຄຸນສົມບັດການສະແກນເອກະສານ</translation>
 <translation id="4118525110028899586">ຢຸດການບັນທຶກໄວ້ຊົ່ວຄາວ</translation>
 <translation id="4121305183798804752">ກວດພົບເອກະສານ</translation>
 <translation id="414641094616694804">ກ້ອງຖ່າຍຮູບນີ້ບໍ່ສາມາດປ່ຽນຄວາມລະອຽດໄດ້</translation>
@@ -94,7 +95,6 @@
 <translation id="5057360777601936059">ກ້ອງຖ່າຍຮູບຂອງທ່ານບໍ່ສາມາດໃຊ້ໄດ້ໃນຂະນະນີ້.
         ກະລຸນາກວດເບິ່ງວ່າໄດ້ເຊື່ອມຕໍ່ກ້ອງຖ່າຍຮູບຢ່າງຖືກຕ້ອງຫຼືບໍ່.</translation>
 <translation id="5163387177077603948">ກຳລັງຍ້າຍໄປທາງຂວາ</translation>
-<translation id="520537883758714667">ຕອນນີ້ສາມາດສະແກນເອກະສານໄດ້ແລ້ວ</translation>
 <translation id="5235304959032763950">16 ຕໍ່ 9</translation>
 <translation id="5266635337630551423">ມຸມຊ້າຍເທິງຂອງເອກະສານ</translation>
 <translation id="5317780077021120954">ບັນທຶກ</translation>

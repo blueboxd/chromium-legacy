@@ -16,10 +16,10 @@
 #include "base/logging.h"
 #include "base/ranges/ranges.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/form_parsing/buildflags.h"
 #include "components/autofill/core/browser/form_parsing/regex_patterns_inl.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -59,10 +59,12 @@ MatchPatternRefTestApi test_api(MatchPatternRef p) {
   return MatchPatternRefTestApi(p);
 }
 
-auto Matches(base::StringPiece16 pattern) {
-  return ::testing::Truly([pattern](base::StringPiece actual) {
-    return MatchesPattern(base::UTF8ToUTF16(actual), pattern);
-  });
+auto Matches(base::StringPiece16 regex) {
+  icu::RegexPattern regex_pattern = *CompileRegex(regex);
+  return ::testing::Truly(
+      [regex_pattern = std::move(regex_pattern)](base::StringPiece actual) {
+        return MatchesRegex(base::UTF8ToUTF16(actual), regex_pattern);
+      });
 }
 
 auto Matches(MatchingPattern pattern) {

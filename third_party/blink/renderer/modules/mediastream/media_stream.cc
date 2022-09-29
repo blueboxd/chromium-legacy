@@ -305,7 +305,7 @@ void MediaStream::addTrack(MediaStreamTrack* track,
   if (getTrackById(track->id()))
     return;
 
-  switch (track->Component()->Source()->GetType()) {
+  switch (track->Component()->GetSourceType()) {
     case MediaStreamSource::kTypeAudio:
       audio_tracks_.push_back(track);
       break;
@@ -335,7 +335,7 @@ void MediaStream::removeTrack(MediaStreamTrack* track,
   }
 
   wtf_size_t pos = kNotFound;
-  switch (track->Component()->Source()->GetType()) {
+  switch (track->Component()->GetSourceType()) {
     case MediaStreamSource::kTypeAudio:
       pos = audio_tracks_.Find(track);
       if (pos != kNotFound)
@@ -383,10 +383,10 @@ MediaStream* MediaStream::clone(ScriptState* script_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   for (MediaStreamTrackVector::iterator iter = audio_tracks_.begin();
        iter != audio_tracks_.end(); ++iter)
-    tracks.push_back((*iter)->clone(script_state));
+    tracks.push_back((*iter)->clone(ExecutionContext::From(script_state)));
   for (MediaStreamTrackVector::iterator iter = video_tracks_.begin();
        iter != video_tracks_.end(); ++iter)
-    tracks.push_back((*iter)->clone(script_state));
+    tracks.push_back((*iter)->clone(ExecutionContext::From(script_state)));
   return MediaStream::Create(context, tracks);
 }
 
@@ -463,7 +463,7 @@ void MediaStream::RemoveTrackByComponentAndFireEvents(
     return;
 
   MediaStreamTrackVector* tracks = nullptr;
-  switch (component->Source()->GetType()) {
+  switch (component->GetSourceType()) {
     case MediaStreamSource::kTypeAudio:
       tracks = &audio_tracks_;
       break;
@@ -511,7 +511,7 @@ void MediaStream::RemoveTrackByComponentAndFireEvents(
 void MediaStream::AddTrackAndFireEvents(MediaStreamTrack* track,
                                         DispatchEventTiming event_timing) {
   DCHECK(track);
-  switch (track->Component()->Source()->GetType()) {
+  switch (track->Component()->GetSourceType()) {
     case MediaStreamSource::kTypeAudio:
       audio_tracks_.push_back(track);
       break;

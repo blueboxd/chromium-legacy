@@ -71,14 +71,14 @@ cryptauthv2::ClientDirective CreateDefaultClientDirective() {
 
 cryptauthv2::ClientDirective BuildClientDirective(PrefService* pref_service) {
   DCHECK(pref_service);
-  const base::Value* encoded_client_directive =
-      pref_service->Get(prefs::kCryptAuthSchedulerClientDirective);
-  if (encoded_client_directive->GetString() == kNoClientDirective)
+  const base::Value& encoded_client_directive =
+      pref_service->GetValue(prefs::kCryptAuthSchedulerClientDirective);
+  if (encoded_client_directive.GetString() == kNoClientDirective)
     return CreateDefaultClientDirective();
 
   absl::optional<cryptauthv2::ClientDirective> client_directive_from_pref =
       util::DecodeProtoMessageFromValueString<cryptauthv2::ClientDirective>(
-          encoded_client_directive);
+          &encoded_client_directive);
 
   return client_directive_from_pref.value_or(CreateDefaultClientDirective());
 }
@@ -473,12 +473,12 @@ bool CryptAuthSchedulerImpl::DoesMachineHaveNetworkConnectivity() const {
 void CryptAuthSchedulerImpl::InitializePendingRequest(
     RequestType request_type) {
   // Queue up the persisted scheduled request if applicable.
-  const base::Value* client_metadata_from_pref =
-      pref_service_->Get(GetPendingRequestPrefName(request_type));
-  if (client_metadata_from_pref->GetString() != kNoClientMetadata) {
+  const base::Value& client_metadata_from_pref =
+      pref_service_->GetValue(GetPendingRequestPrefName(request_type));
+  if (client_metadata_from_pref.GetString() != kNoClientMetadata) {
     pending_requests_[request_type] =
         util::DecodeProtoMessageFromValueString<cryptauthv2::ClientMetadata>(
-            client_metadata_from_pref);
+            &client_metadata_from_pref);
   }
 
   // If we are recovering from a failure, reset the failure count to 1 in the

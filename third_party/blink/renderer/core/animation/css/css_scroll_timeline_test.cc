@@ -244,10 +244,10 @@ TEST_F(CSSScrollTimelineTest, MultipleLifecyclePasses) {
         animation: anim 10s timeline;
       }
     </style>
-    <div id=element></div>
     <div id=scroller>
       <div id=contents></div>
     </div>
+    <div id=element></div>
   )HTML");
 
   Element* element = GetDocument().getElementById("element");
@@ -265,7 +265,7 @@ TEST_F(CSSScrollTimelineTest, MultipleLifecyclePasses) {
   //
   // [1] https://drafts.csswg.org/scroll-animations-1/#avoiding-cycles
   // [2] https://github.com/w3c/csswg-drafts/issues/5261
-  EXPECT_EQ(MakeRGB(0, 128, 0),
+  EXPECT_EQ(Color::FromRGB(0, 128, 0),
             element->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()));
 }
@@ -335,8 +335,8 @@ TEST_F(CSSScrollTimelineTest, ResizeObserverTriggeredTimelines) {
   Element* main = GetDocument().getElementById("main");
   ASSERT_TRUE(main);
   main->AppendChild(style);
-  main->AppendChild(element);
   main->AppendChild(scroller);
+  main->AppendChild(element);
 
   auto* delegate = MakeGarbageCollected<AnimationTriggeringDelegate>(style);
   ResizeObserver* observer =

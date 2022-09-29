@@ -19,10 +19,13 @@
 #include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/raw_scoped_refptr_mismatch_checker.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
+#include "base/types/always_false.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/functional/function_ref.h"
 
 #if BUILDFLAG(IS_APPLE) && !HAS_FEATURE(objc_arc)
 #include "base/mac/scoped_block.h"
@@ -75,6 +78,9 @@ struct BindUnwrapTraits;
 template <typename Functor, typename BoundArgsTuple, typename SFINAE = void>
 struct CallbackCancellationTraits;
 
+template <typename Signature>
+class FunctionRef;
+
 namespace internal {
 
 template <typename Functor, typename SFINAE = void>
@@ -85,13 +91,16 @@ class UnretainedWrapper {
  public:
   explicit UnretainedWrapper(T* o) : ptr_(o) {}
 
-  // Trick to only instantiate this constructor if it is used. Otherwise,
+  // Trick to only instantiate these constructors if they are used. Otherwise,
   // instantiating UnretainedWrapper with a T that is not supported by
   // raw_ptr would trigger raw_ptr<T>'s static_assert.
-  template <typename U = T, typename Option>
+  template <typename U = T, typename I>
   // Avoids having a raw_ptr<T> -> T* -> raw_ptr<T> round trip, which
   // would trigger the raw_ptr error detector if T* was dangling.
-  explicit UnretainedWrapper(const raw_ptr<U, Option>& o) : ptr_(o) {}
+  explicit UnretainedWrapper(const raw_ptr<U, I>& o) : ptr_(o) {}
+  template <typename U = T, typename I>
+  explicit UnretainedWrapper(raw_ptr<U, I>&& o) : ptr_(std::move(o)) {}
+
   T* get() const { return ptr_; }
 
  private:
@@ -120,25 +129,45 @@ class UnretainedWrapper {
 // std::reference_wrapper<T> and T& do not work, since the reference lifetime is
 // not safely protected by MiraclePtr.
 //
-// UnretainedWrapper<T> and raw_ptr<T> do not work, since BindUnwrapTraits
-// would try to pass by T* rather than T&.
-template <typename T>
+// UnretainedWrapper<T> and raw_ptr<T> do not work, since BindUnwrapTraits would
+// try to pass by T* rather than T&.
+//
+// raw_ref<T> is not used to differentiate between storing a `raw_ref<T>`
+// explicitly versus storing a `T&` or `std::ref()`.
+template <typename T, bool = raw_ptr_traits::IsSupportedType<T>::value>
 class UnretainedRefWrapper {
  public:
-  explicit UnretainedRefWrapper(T& o) : ptr_(std::addressof(o)) {}
-  T& get() const { return *ptr_; }
+  explicit UnretainedRefWrapper(T& o) : ref_(o) {}
+  T& get() const { return ref_; }
 
  private:
-#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
-  // As above.
-  using ImplType = T*;
-#else
-  using ImplType = std::conditional_t<raw_ptr_traits::IsSupportedType<T>::value,
-                                      raw_ptr<T, DanglingUntriaged>,
-                                      T*>;
-#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
-  ImplType const ptr_;
+  T& ref_;
 };
+
+#if !defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+// Implementation of UnretainedRefWrapper for `T` where raw_ref<T> is supported.
+template <typename T>
+class UnretainedRefWrapper<T, true> {
+ public:
+  explicit UnretainedRefWrapper(T& o) : ref_(o) {}
+  T& get() const { return *ref_; }
+
+ private:
+  const raw_ref<T, DanglingUntriaged> ref_;
+};
+
+// Implementation of UnretainedRefWrapper for `raw_ref<T>`.
+template <typename T, typename I, bool b>
+class UnretainedRefWrapper<raw_ref<T, I>, b> {
+ public:
+  explicit UnretainedRefWrapper(const raw_ref<T, I>& ref) : ref_(ref) {}
+  explicit UnretainedRefWrapper(raw_ref<T, I>&& ref) : ref_(std::move(ref)) {}
+  T& get() const { return *ref_; }
+
+ private:
+  const raw_ref<T, I> ref_;
+};
+#endif
 
 template <typename T>
 class RetainedRefWrapper {
@@ -208,8 +237,7 @@ class OwnedRefWrapper {
 template <typename T>
 class PassedWrapper {
  public:
-  explicit PassedWrapper(T&& scoper)
-      : is_valid_(true), scoper_(std::move(scoper)) {}
+  explicit PassedWrapper(T&& scoper) : scoper_(std::move(scoper)) {}
   PassedWrapper(PassedWrapper&& other)
       : is_valid_(other.is_valid_), scoper_(std::move(other.scoper_)) {}
   T Take() const {
@@ -219,7 +247,7 @@ class PassedWrapper {
   }
 
  private:
-  mutable bool is_valid_;
+  mutable bool is_valid_ = true;
   mutable T scoper_;
 };
 
@@ -1049,6 +1077,11 @@ struct MakeBindStateTypeImpl<true, Functor, Receiver, BoundArgs...> {
   static_assert(!std::is_array_v<std::remove_reference_t<Receiver>>,
                 "First bound argument to a method cannot be an array.");
   static_assert(
+      !IsRawRefV<DecayedReceiver>,
+      "Receivers may not be raw_ref<T>. If using a raw_ref<T> here is safe"
+      " and has no lifetime concerns, use base::Unretained() and document why"
+      " it's safe.");
+  static_assert(
       !IsPointerV<DecayedReceiver> ||
           IsRefCountedType<RemovePointerT<DecayedReceiver>>::value,
       "Receivers may not be raw pointers. If using a raw pointer here is safe"
@@ -1354,6 +1387,26 @@ template <template <typename> class CallbackT,
 RepeatingCallback<Signature> BindImpl(RepeatingCallback<Signature> callback) {
   CHECK(callback);
   return callback;
+}
+
+template <template <typename> class CallbackT, typename Signature>
+auto BindImpl(absl::FunctionRef<Signature>, ...) {
+  static_assert(
+      AlwaysFalse<Signature>,
+      "base::Bind{Once,Repeating} require strong ownership: non-owning "
+      "function references may not bound as the functor due to potential "
+      "lifetime issues.");
+  return nullptr;
+}
+
+template <template <typename> class CallbackT, typename Signature>
+auto BindImpl(FunctionRef<Signature>, ...) {
+  static_assert(
+      AlwaysFalse<Signature>,
+      "base::Bind{Once,Repeating} require strong ownership: non-owning "
+      "function references may not bound as the functor due to potential "
+      "lifetime issues.");
+  return nullptr;
 }
 
 }  // namespace internal

@@ -67,8 +67,8 @@ TEST(PhoneNumberTest, Matcher) {
                      {u"16502345678", {PHONE_HOME_WHOLE_NUMBER}},
                      {u"650", {PHONE_HOME_CITY_CODE}},
                      {u"2345678", {PHONE_HOME_NUMBER}},
-                     {u"234", {PHONE_HOME_NUMBER}},
-                     {u"5678", {PHONE_HOME_NUMBER}},
+                     {u"234", {PHONE_HOME_NUMBER_PREFIX}},
+                     {u"5678", {PHONE_HOME_NUMBER_SUFFIX}},
                      {u"2345", {}},
                      {u"6502345678", {PHONE_HOME_CITY_AND_NUMBER}},
                      {u"(650)2345678", {PHONE_HOME_CITY_AND_NUMBER}}});
@@ -272,8 +272,8 @@ TEST(PhoneNumberTest, PhoneCombineHelper) {
 
   PhoneNumber::PhoneCombineHelper number6;
   EXPECT_TRUE(number6.SetInfo(AutofillType(PHONE_HOME_CITY_CODE), u"650"));
-  EXPECT_TRUE(number6.SetInfo(AutofillType(PHONE_HOME_NUMBER), u"234"));
-  EXPECT_TRUE(number6.SetInfo(AutofillType(PHONE_HOME_NUMBER), u"5682"));
+  EXPECT_TRUE(number6.SetInfo(AutofillType(PHONE_HOME_NUMBER_PREFIX), u"234"));
+  EXPECT_TRUE(number6.SetInfo(AutofillType(PHONE_HOME_NUMBER_SUFFIX), u"5682"));
   EXPECT_TRUE(number6.ParseNumber(profile, "en-US", &parsed_phone));
   EXPECT_EQ(u"(650) 234-5682", parsed_phone);
 
@@ -281,8 +281,8 @@ TEST(PhoneNumberTest, PhoneCombineHelper) {
   // based on the app locale.
   PhoneNumber::PhoneCombineHelper number7;
   EXPECT_TRUE(number7.SetInfo(AutofillType(PHONE_HOME_CITY_CODE), u"650"));
-  EXPECT_TRUE(number7.SetInfo(AutofillType(PHONE_HOME_NUMBER), u"234"));
-  EXPECT_TRUE(number7.SetInfo(AutofillType(PHONE_HOME_NUMBER), u"5682"));
+  EXPECT_TRUE(number7.SetInfo(AutofillType(PHONE_HOME_NUMBER_PREFIX), u"234"));
+  EXPECT_TRUE(number7.SetInfo(AutofillType(PHONE_HOME_NUMBER_SUFFIX), u"5682"));
   EXPECT_TRUE(number7.ParseNumber(AutofillProfile(), "en-US", &parsed_phone));
   EXPECT_EQ(u"(650) 234-5682", parsed_phone);
 }
@@ -392,7 +392,7 @@ TEST(PhoneNumberTest, NumberPreAndSuffixes) {
     // The `locale` is irrelevant, as the `profile` has country information.
     const std::string locale = "en-US";
     PhoneNumber phone_number(&profile);
-    phone_number.SetInfo(PHONE_HOME_WHOLE_NUMBER, number, locale);
+    EXPECT_TRUE(phone_number.SetInfo(PHONE_HOME_WHOLE_NUMBER, number, locale));
     EXPECT_EQ(prefix, phone_number.GetInfo(PHONE_HOME_NUMBER_PREFIX, locale));
     EXPECT_EQ(suffix, phone_number.GetInfo(PHONE_HOME_NUMBER_SUFFIX, locale));
   };
@@ -409,6 +409,24 @@ TEST(PhoneNumberTest, NumberPreAndSuffixes) {
     TestNumber(u"090-1234-5678", u"1234", u"5678");  // Mobile
     TestNumber(u"+81 824-86-3123", u"86", u"3123");  // Different length prefix
   }
+  // DE
+  {
+    // Emergency numbers can be shorter than 4 digits. Make sure we don't crash.
+    profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"DE");
+    TestNumber(u"110", u"", u"110");
+  }
+}
+
+// Tests that extensions are not stored and even stripped from the raw info.
+TEST(PhoneNumberTest, Extension) {
+  AutofillProfile profile;
+  PhoneNumber phone(&profile);
+  const std::string locale = "en-US";
+  EXPECT_TRUE(phone.SetInfo(PHONE_HOME_WHOLE_NUMBER, u"(650) 234-2345 ext. 234",
+                            locale));
+  EXPECT_EQ(u"(650) 234-2345", phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_EQ(u"6502342345", phone.GetInfo(PHONE_HOME_WHOLE_NUMBER, locale));
+  EXPECT_TRUE(phone.GetInfo(PHONE_HOME_EXTENSION, locale).empty());
 }
 
 // Tests whether the |PHONE_HOME_COUNTRY_CODE| is added to the set of matching

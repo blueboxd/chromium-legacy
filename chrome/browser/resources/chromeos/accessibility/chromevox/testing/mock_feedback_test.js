@@ -27,6 +27,20 @@ MockFeedbackUnitTest = class extends AccessibilityTestBase {
     this.expectedCalls = [];
   }
 
+  async setUpDeferred() {
+    await super.setUpDeferred();
+    await importModule('ChromeVox', '/chromevox/background/chromevox.js');
+    await importModule(
+        'BrailleInterface', '/chromevox/common/braille/braille_interface.js');
+    await importModule(
+        'NavBraille', '/chromevox/common/braille/nav_braille.js');
+    await importModule('Spannable', '/chromevox/common/spannable.js');
+    await importModule(
+        ['QueueMode', 'TtsInterface'], '/chromevox/common/tts_interface.js');
+    await importModule(
+        ['AbstractEarcons', 'Earcon'], '/chromevox/common/abstract_earcons.js');
+  }
+
   /** @override */
   setUp() {
     super.setUp();
@@ -37,12 +51,6 @@ MockFeedbackUnitTest = class extends AccessibilityTestBase {
 MockFeedbackUnitTest.prototype.extraLibraries = [
   '../../common/testing/assert_additions.js',
   '../testing/fake_dom.js',  // Must come before other files
-  '../common/braille/nav_braille.js',
-  '../background/chromevox.js',
-  '../common/abstract_earcons.js',
-  '../common/braille/braille_interface.js',
-  '../common/spannable.js',
-  '../common/tts_interface.js',
   'mock_feedback.js',
 ];
 

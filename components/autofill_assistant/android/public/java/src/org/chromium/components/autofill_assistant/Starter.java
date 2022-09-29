@@ -32,7 +32,6 @@ public class Starter implements AssistantTabObserver, UserData {
 
     private final AssistantStaticDependencies mStaticDependencies;
     private final AssistantIsGsaFunction mIsGsaFunction;
-    private final AssistantIsMsbbEnabledFunction mIsMsbbEnabledFunction;
     private final AssistantModuleInstallUi.Provider mModuleInstallUiProvider;
 
     /**
@@ -70,12 +69,10 @@ public class Starter implements AssistantTabObserver, UserData {
      */
     public Starter(Supplier<Activity> activitySupplier, @Nullable WebContents webContents,
             AssistantStaticDependencies staticDependencies, AssistantIsGsaFunction isGsaFunction,
-            AssistantIsMsbbEnabledFunction isMsbbEnabledFunction,
             AssistantModuleInstallUi.Provider moduleInstallUiProvider) {
         mActivitySupplier = activitySupplier;
         mStaticDependencies = staticDependencies;
         mIsGsaFunction = isGsaFunction;
-        mIsMsbbEnabledFunction = isMsbbEnabledFunction;
         mModuleInstallUiProvider = moduleInstallUiProvider;
         detectWebContentsChange(webContents);
     }
@@ -246,7 +243,7 @@ public class Starter implements AssistantTabObserver, UserData {
     @CalledByNative
     private void showOnboarding(AssistantOnboardingHelper onboardingHelper,
             boolean useDialogOnboarding, String experimentIds, String[] parameterKeys,
-            String[] parameterValues) {
+            String[] parameterValues, boolean hideBottomSheetOnOnboardingAccepted) {
         if (!AutofillAssistantPreferencesUtil.getShowOnboarding()) {
             safeNativeOnOnboardingFinished(
                     /* shown = */ false, 3 /* AssistantOnboardingResult.ACCEPTED*/);
@@ -259,6 +256,7 @@ public class Starter implements AssistantTabObserver, UserData {
             parameters.put(parameterKeys[i], parameterValues[i]);
         }
         onboardingHelper.showOnboarding(useDialogOnboarding, experimentIds, parameters,
+                hideBottomSheetOnOnboardingAccepted,
                 result -> safeNativeOnOnboardingFinished(true, result));
     }
 
@@ -282,11 +280,6 @@ public class Starter implements AssistantTabObserver, UserData {
     @CalledByNative
     private static void setProactiveHelpSettingEnabled(boolean enabled) {
         AutofillAssistantPreferencesUtil.setProactiveHelpPreference(enabled);
-    }
-
-    @CalledByNative
-    private boolean getMakeSearchesAndBrowsingBetterSettingEnabled() {
-        return mIsMsbbEnabledFunction.getAsBoolean();
     }
 
     private AutofillAssistantModuleEntry getModuleOrThrow() {

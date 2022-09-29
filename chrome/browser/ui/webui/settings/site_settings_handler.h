@@ -127,6 +127,7 @@ class SiteSettingsHandler
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
                            HandleClearUnpartitionedUsage);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ClearClientHints);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ClearReducedAcceptLanguage);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
                            HandleClearPartitionedUsage);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, CookieSettingDescription);
@@ -138,6 +139,7 @@ class SiteSettingsHandler
                            IncludeWebUISchemesInGetOriginPermissions);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, HandleGetUsageInfo);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, NonTreeModelDeletion);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, FirstPartySetsMembership);
 
   // Creates the CookiesTreeModel if necessary.
   void EnsureCookiesTreeModelCreated();

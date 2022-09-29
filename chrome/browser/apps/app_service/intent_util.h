@@ -31,11 +31,6 @@ class IntentFilter;
 }
 #endif
 
-namespace apps {
-struct ShareTarget;
-}
-
-class GURL;
 class Profile;
 
 namespace base {
@@ -49,7 +44,7 @@ class Extension;
 namespace apps_util {
 
 // Creates a file filter.
-apps::mojom::IntentFilterPtr CreateFileFilter(
+apps::IntentFilterPtr CreateFileFilter(
     const std::vector<std::string>& intent_actions,
     const std::vector<std::string>& mime_types,
     const std::vector<std::string>& file_extensions,
@@ -62,25 +57,6 @@ apps::IntentFilters CreateIntentFiltersFromArcBridge(
     const std::string& package_name,
     arc::ArcIntentHelperBridge* intent_helper_bridge);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-// Create intent filters for `app_id`. The `app_scope` is needed because
-// currently the correct app scope is not provided through WebApp API for
-// shortcuts.
-apps::IntentFilters CreateIntentFiltersForWebApp(
-    const web_app::AppId& app_id,
-    const GURL& app_scope,
-    const apps::ShareTarget* app_share_target,
-    const apps::FileHandlers* enabled_file_handlers);
-
-// Create intent filters for |web_app|.
-// The |scope| is needed because currently the correct app scope is not
-// provided through WebApp API for shortcuts.
-// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
-std::vector<apps::mojom::IntentFilterPtr> CreateWebAppIntentFilters(
-    const web_app::AppId& app_id,
-    const GURL& app_scope,
-    const apps::ShareTarget* app_share_target,
-    const apps::FileHandlers* enabled_file_handlers);
 
 // Create intent filters for a Chrome app (extension-based) e.g. for
 // file_handlers.
@@ -218,6 +194,11 @@ apps::mojom::IntentPtr ConvertCrosapiToAppServiceIntent(
     const crosapi::mojom::IntentPtr& crosapi_intent,
     Profile* profile);
 
+crosapi::mojom::IntentPtr CreateCrosapiIntentForViewFiles(
+    std::vector<base::FilePath> file_paths);
+
+// TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+// interface.
 crosapi::mojom::IntentPtr CreateCrosapiIntentForViewFiles(
     const apps::mojom::FilePathsPtr& file_paths);
 #endif

@@ -2,15 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {AutomationPredicate} from '../../common/automation_predicate.js';
+import {AutomationUtil} from '../../common/automation_util.js';
+import {constants} from '../../common/constants.js';
 import {CursorRange} from '../../common/cursors/range.js';
 import {InstanceChecker} from '../../common/instance_checker.js';
+import {AbstractEarcons} from '../common/abstract_earcons.js';
 import {ExtensionBridge} from '../common/extension_bridge.js';
 import {LocaleOutputHelper} from '../common/locale_output_helper.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
+import {QueueMode, TtsSpeechProperties} from '../common/tts_interface.js';
 import {JaPhoneticMap} from '../third_party/tamachiyomi/ja_phonetic_map.js';
 
 import {BrailleCommandHandler} from './braille/braille_command_handler.js';
+import {ChromeVox} from './chromevox.js';
 import {ChromeVoxState} from './chromevox_state.js';
 import {ChromeVoxBackground} from './classic_background.js';
 import {CommandHandler} from './command_handler.js';
@@ -45,7 +51,6 @@ import {TtsBackground} from './tts_background.js';
 const Dir = constants.Dir;
 const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
-
 /** ChromeVox background page. */
 export class Background extends ChromeVoxState {
   constructor() {
@@ -233,14 +238,14 @@ export class Background extends ChromeVoxState {
    * Navigate to the given range - it both sets the range and outputs it.
    * @param {!CursorRange} range The new range.
    * @param {boolean=} opt_focus Focus the range; defaults to true.
-   * @param {Object=} opt_speechProps Speech properties.
+   * @param {TtsSpeechProperties=} opt_speechProps Speech properties.
    * @param {boolean=} opt_skipSettingSelection If true, does not set
    *     the selection, otherwise it does by default.
    * @override
    */
   navigateToRange(range, opt_focus, opt_speechProps, opt_skipSettingSelection) {
     opt_focus = opt_focus === undefined ? true : opt_focus;
-    opt_speechProps = opt_speechProps || {};
+    opt_speechProps = opt_speechProps || new TtsSpeechProperties();
     opt_skipSettingSelection = opt_skipSettingSelection || false;
     const prevRange = this.currentRange_;
 
@@ -413,10 +418,9 @@ export class Background extends ChromeVoxState {
           AutomationUtil.getUniqueAncestors(prevRange.start.node, start);
 
       entered
-          .filter(f => {
-            return f.role === RoleType.PLUGIN_OBJECT ||
-                f.role === RoleType.IFRAME;
-          })
+          .filter(
+              ancestor => ancestor.role === RoleType.PLUGIN_OBJECT ||
+                  ancestor.role === RoleType.IFRAME)
           .forEach(container => {
             if (!container.state[StateType.FOCUSED]) {
               container.focus();

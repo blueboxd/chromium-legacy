@@ -91,6 +91,18 @@ ENUM(InstallSource,
      kBrowser          // Installed from browser.
 )
 
+// What caused the app to be uninstalled.
+// This should be kept in sync with UninstallSource in enums.xml, so entries
+// should not be re-ordered or removed. New entries should be added at the
+// bottom.
+ENUM(UninstallSource,
+     kUnknown,
+     kAppList,        // Uninstall by the user from the App List (Launcher)
+     kAppManagement,  // Uninstall by the user from the App Management page
+     kShelf,          // Uninstall by the user from the Shelf
+     kMigration       // Uninstall by app migration.
+)
+
 // The window mode that each app will open in.
 ENUM(WindowMode,
      kUnknown,
@@ -262,6 +274,22 @@ AppPtr ConvertMojomAppToApp(const apps::mojom::AppPtr& mojom_app);
 
 COMPONENT_EXPORT(APP_TYPES)
 apps::mojom::AppPtr ConvertAppToMojomApp(const AppPtr& app);
+
+COMPONENT_EXPORT(APP_TYPES)
+std::vector<base::FilePath> ConvertMojomFilePathsToFilePaths(
+    apps::mojom::FilePathsPtr mojom_file_paths);
+
+COMPONENT_EXPORT(APP_TYPES)
+UninstallSource ConvertMojomUninstallSourceToUninstallSource(
+    apps::mojom::UninstallSource mojom_uninstall_source);
+
+COMPONENT_EXPORT(APP_TYPES)
+apps::mojom::UninstallSource ConvertUninstallSourceToMojomUninstallSource(
+    UninstallSource uninstall_source);
+
+COMPONENT_EXPORT(APP_TYPES)
+apps::mojom::UninstallSource ConvertUninstallSourceToMojomUninstallSource(
+    UninstallSource uninstall_source);
 
 }  // namespace apps
 

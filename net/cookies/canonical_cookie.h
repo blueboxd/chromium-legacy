@@ -429,6 +429,11 @@ class NET_EXPORT CanonicalCookie {
   // (ignores the access result).
   static std::string BuildCookieLine(const CookieAccessResultList& cookies);
 
+  // Takes a single CanonicalCookie and returns a cookie line containing the
+  // attributes of |cookie| formatted like a http set cookie header.
+  // (e.g. "cookie1=value1; domain=abc.com; path=/; secure").
+  static std::string BuildCookieAttributesLine(const CanonicalCookie& cookie);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(CanonicalCookieTest, TestPrefixHistograms);
   FRIEND_TEST_ALL_PREFIXES(CanonicalCookieTest, TestHasHiddenPrefixName);
@@ -512,14 +517,13 @@ class NET_EXPORT CanonicalCookie {
 
   // Returns true iff the cookie is a partitioned cookie with a nonce or that
   // does not violate the semantics of the Partitioned attribute:
-  // - Must have the Secure and Path=/ attributes
-  // - Must not have the Domain or SameParty attributes
+  // - Must have the Secure attribute
+  // - Must not have the SameParty attribute
   static bool IsCookiePartitionedValid(const GURL& url,
                                        const ParsedCookie& parsed_cookie,
                                        bool partition_has_nonce);
   static bool IsCookiePartitionedValid(const GURL& url,
                                        bool secure,
-                                       const std::string& path,
                                        bool is_partitioned,
                                        bool is_same_party,
                                        bool partition_has_nonce);

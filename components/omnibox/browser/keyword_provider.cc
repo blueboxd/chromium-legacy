@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/containers/cxx20_erase.h"
@@ -25,6 +26,7 @@
 #include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/search_engines/template_url_starter_pack_data.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
@@ -87,7 +89,8 @@ KeywordProvider::KeywordProvider(AutocompleteProviderClient* client,
                                  AutocompleteProviderListener* listener)
     : AutocompleteProvider(AutocompleteProvider::TYPE_KEYWORD),
       model_(client->GetTemplateURLService()),
-      extensions_delegate_(client->GetKeywordExtensionsDelegate(this)) {
+      extensions_delegate_(client->GetKeywordExtensionsDelegate(this)),
+      client_(client) {
   AddListener(listener);
 }
 
@@ -179,24 +182,30 @@ const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
 }
 
 // static
-AutocompleteInput KeywordProvider::AdjustInputForStarterPackEngines(
+std::pair<AutocompleteInput, const TemplateURL*>
+KeywordProvider::AdjustInputForStarterPackEngines(
     const AutocompleteInput& input,
     TemplateURLService* model) {
   DCHECK(model);
 
-  // If we're in a starter pack scope, we want to run the provider with only
-  // the user text AFTER the keyword.  i.e. if the input is "@history text",
+  // If the feature is disabled, or not in keyword mode, then `input` is
+  // definitely not in a starter pack scope, so early exit.
+  if (!OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() ||
+      !input.prefer_keyword()) {
+    return {input, nullptr};
+  }
+
+  // If in a starter pack scope, should run the provider with only
+  // the user text AFTER the keyword.  E.g. if the input is "@history text",
   // set the autocomplete input to just "text".
   AutocompleteInput keyword_input = input;
   const TemplateURL* keyword_provider =
       KeywordProvider::GetSubstitutingTemplateURLForInput(model,
                                                           &keyword_input);
-  if (OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() &&
-      input.prefer_keyword() && keyword_provider &&
-      keyword_provider->starter_pack_id() > 0) {
-    return keyword_input;
-  }
-  return input;
+  if (keyword_provider && keyword_provider->starter_pack_id() > 0)
+    return {keyword_input, keyword_provider};
+
+  return {input, nullptr};
 }
 
 std::u16string KeywordProvider::GetKeywordForText(
@@ -235,6 +244,13 @@ std::u16string KeywordProvider::GetKeywordForText(
   if (template_url->type() != TemplateURL::OMNIBOX_API_EXTENSION &&
       template_url->prepopulate_id() == 0 &&
       template_url->is_active() != TemplateURLData::ActiveStatus::kTrue) {
+    return std::u16string();
+  }
+
+  // The built-in history keyword mode is disabled in incognito mode.  Don't
+  // provide a keyword in that case.
+  if (client_->IsOffTheRecord() &&
+      template_url->starter_pack_id() == TemplateURLStarterPackData::kHistory) {
     return std::u16string();
   }
 

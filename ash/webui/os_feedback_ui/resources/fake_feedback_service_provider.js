@@ -4,7 +4,7 @@
 
 import {FakeMethodResolver} from 'chrome://resources/ash/common/fake_method_resolver.js';
 
-import {FeedbackContext, FeedbackServiceProviderInterface, Report, SendReportStatus} from './feedback_types.js';
+import {FeedbackAppPostSubmitAction, FeedbackAppPreSubmitAction, FeedbackContext, FeedbackServiceProviderInterface, Report, SendReportStatus} from './feedback_types.js';
 
 /**
  * @fileoverview
@@ -44,7 +44,15 @@ export class FakeFeedbackServiceProvider {
       openMetricsDialog: 0,
       /** @type {number} */
       openSystemInfoDialog: 0,
+      /** @type {number} */
+      openBluetoothLogsInfoDialog: 0,
     };
+
+    /** @type {?FeedbackAppPostSubmitAction} */
+    this.postSubmitAction_ = null;
+
+    /** @type {Map<FeedbackAppPreSubmitAction, number>} */
+    this.preSubmitActionMap_ = new Map();
   }
 
   /**
@@ -178,5 +186,51 @@ export class FakeFeedbackServiceProvider {
    */
   openSystemInfoDialog() {
     this.callCounts_.openSystemInfoDialog++;
+  }
+
+  /**
+   * @return {number}
+   */
+  getOpenBluetoothLogsInfoDialogCallCount() {
+    return this.callCounts_.openBluetoothLogsInfoDialog;
+  }
+
+  openBluetoothLogsInfoDialog() {
+    this.callCounts_.openBluetoothLogsInfoDialog++;
+  }
+
+  /**
+   * @param {!FeedbackAppPostSubmitAction} action
+   * @return {boolean}
+   */
+  isRecordPostSubmitActionCalled(action) {
+    return this.postSubmitAction_ === action;
+  }
+
+  /**
+   * @param {!FeedbackAppPostSubmitAction} action
+   * @return {void}
+   */
+  recordPostSubmitAction(action) {
+    if (this.postSubmitAction_ === null) {
+      this.postSubmitAction_ = action;
+    }
+  }
+
+  /**
+   * @param {!FeedbackAppPreSubmitAction} action
+   * @return {number}
+   */
+  getRecordPreSubmitActionCallCount(action) {
+    return this.preSubmitActionMap_.get(action) || 0;
+  }
+
+  /**
+   * @param {!FeedbackAppPreSubmitAction} action
+   * @return {void}
+   */
+  recordPreSubmitAction(action) {
+    this.preSubmitActionMap_.set(
+        action, this.preSubmitActionMap_.get(action) + 1 || 1);
   }
 }

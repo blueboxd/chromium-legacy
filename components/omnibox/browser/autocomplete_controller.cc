@@ -147,6 +147,22 @@ void RecordMatchDeletion(const AutocompleteMatch& match) {
   }
 }
 
+// Return if preservation is enabled for sync/async updates, and this is a
+// sync/async update. Sync updates may have a minimum input length as well.
+bool ShouldPreserveDefault(bool in_start, size_t input_length) {
+  if (in_start) {
+    static const size_t min_input_length =
+        OmniboxFieldTrial::
+            kAutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength
+                .Get();
+    return min_input_length >= 0 &&
+           input_length >= static_cast<size_t>(min_input_length);
+  } else {
+    return OmniboxFieldTrial::
+        kAutocompleteStabilityPreserveDefaultForAsyncUpdates.Get();
+  }
+}
+
 }  // namespace
 
 // static
@@ -281,7 +297,8 @@ void AutocompleteController::GetMatchTypeAndExtendSubtypes(
 
 AutocompleteController::AutocompleteController(
     std::unique_ptr<AutocompleteProviderClient> provider_client,
-    int provider_types)
+    int provider_types,
+    bool is_cros_launcher)
     : provider_client_(std::move(provider_client)),
       bookmark_provider_(nullptr),
       document_provider_(nullptr),
@@ -291,8 +308,14 @@ AutocompleteController::AutocompleteController(
       zero_suggest_provider_(nullptr),
       on_device_head_provider_(nullptr),
       stop_timer_duration_(OmniboxFieldTrial::StopTimerFieldTrialDuration()),
+      update_debouncer_(
+          OmniboxFieldTrial::
+              kAutocompleteStabilityUpdateResultDebounceFromLastRun.Get(),
+          OmniboxFieldTrial::kAutocompleteStabilityUpdateResultDebounceDelay
+              .Get()),
       done_(true),
       in_start_(false),
+      is_cros_launcher_(is_cros_launcher),
       search_service_worker_signal_sent_(false),
       template_url_service_(provider_client_->GetTemplateURLService()) {
   provider_types &= ~OmniboxFieldTrial::GetDisabledProviderTypes();
@@ -437,8 +460,7 @@ AutocompleteController::AutocompleteController(
     providers_.push_back(voice_suggest_provider_.get());
   }
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_FUZZY) {
-    providers_.push_back(new HistoryFuzzyProvider(
-        provider_client_.get(), history_quick_provider_, bookmark_provider_));
+    providers_.push_back(new HistoryFuzzyProvider(provider_client_.get()));
   }
   if (provider_types & AutocompleteProvider::TYPE_OPEN_TAB) {
     open_tab_provider_ = new OpenTabProvider(provider_client_.get());
@@ -598,7 +620,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   // signals to the controller so it doesn't realize that anything was
   // cleared or changed.  Even if the default match hasn't changed, we
   // need the edit model to update the display.
-  UpdateResult(false, true);
+  DelayedUpdateResult(false, true);
 
   in_start_ = false;
 
@@ -624,22 +646,26 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
 }
 
 void AutocompleteController::StartPrefetch(const AutocompleteInput& input) {
-  // Start prefetch requests iff no non-prefetch request is in progress. Though
-  // not likely, it is possible for the providers to have an active non-prefetch
-  // request when a prefetch request is about to be started. In such scenarios,
-  // starting a prefetch request will cause the providers to invalidate their
-  // active non-prefetch requests and never get a chance to notify the
-  // controller of their status; thus resulting in the controller to remain in
-  // an invalid state.
-  if (!done_) {
-    return;
-  }
+  TRACE_EVENT1("omnibox", "AutocompleteController::StartPrefetch", "text",
+               base::UTF16ToUTF8(input.text()));
 
   for (auto provider : providers_) {
-    if (!ShouldRunProvider(provider.get()))
+    if (!ShouldRunProvider(provider.get())) {
       continue;
+    }
+
+    // Avoid starting a prefetch request if a non-prefetch request is in
+    // progress. Though explicitly discouraged as per documentation in
+    // AutocompleteProvider::StartPrefetch(), a provider may still cancel its
+    // in-flight non-prefetch request when a prefetch request is started. This
+    // may cause the provider to never get a chance to notify the controller of
+    // its status; resulting in the controller to remain in an invalid state.
+    if (!provider->done()) {
+      continue;
+    }
 
     provider->StartPrefetch(input);
+    DCHECK(provider->done());
   }
 }
 
@@ -684,7 +710,7 @@ void AutocompleteController::ExpireCopiedEntries() {
   // The first true makes UpdateResult() clear out the results and
   // regenerate them, thus ensuring that no results from the previous
   // result set remain.
-  UpdateResult(true, false);
+  DelayedUpdateResult(true, false);
 }
 
 void AutocompleteController::OnProviderUpdate(
@@ -709,8 +735,10 @@ void AutocompleteController::OnProviderUpdate(
   CheckIfDone();
   // Multiple providers may provide synchronous results, so we only update the
   // results if we're not in Start().
-  if (updated_matches || done_)
+  if (done_)
     UpdateResult(false, false);
+  else if (updated_matches)
+    DelayedUpdateResult(false, false);
 }
 
 void AutocompleteController::AddProviderAndTriggeringLogs(
@@ -849,6 +877,7 @@ void AutocompleteController::UpdateResult(
     bool regenerate_result,
     bool force_notify_default_match_changed) {
   TRACE_EVENT0("omnibox", "AutocompleteController::UpdateResult");
+  update_debouncer_.CancelRequest();
 
   absl::optional<AutocompleteMatch> last_default_match;
   std::u16string last_default_associated_keyword;
@@ -886,16 +915,11 @@ void AutocompleteController::UpdateResult(
   if (perform_tab_match)
     result_.ConvertOpenTabMatches(provider_client_.get(), &input_);
 
-  // Sort the matches and trim to a small number of "best" matches. Do this only
-  // if preservation is enabled for sync/async updates, and this is a sync/async
-  // update.
+  // Sort the matches and trim to a small number of "best" matches.
+  // Conditionally preserve the default match.
   const AutocompleteMatch* preserve_default_match = nullptr;
-  if ((in_start_
-           ? OmniboxFieldTrial::
-                 kAutocompleteStabilityPreserveDefaultForSyncUpdates.Get()
-           : OmniboxFieldTrial::
-                 kAutocompleteStabilityPreserveDefaultForAsyncUpdates.Get()) &&
-      last_default_match) {
+  if (last_default_match &&
+      ShouldPreserveDefault(in_start_, input_.text().length())) {
     preserve_default_match = &last_default_match.value();
   }
   result_.SortAndCull(input_, template_url_service_, preserve_default_match);
@@ -986,6 +1010,14 @@ void AutocompleteController::UpdateResult(
   NotifyChanged(force_notify_default_match_changed || notify_default_match);
 }
 
+void AutocompleteController::DelayedUpdateResult(
+    bool regenerate_result,
+    bool force_notify_default_match_changed) {
+  update_debouncer_.RequestRun(base::BindOnce(
+      &AutocompleteController::UpdateResult, base::Unretained(this),
+      regenerate_result, force_notify_default_match_changed));
+}
+
 void AutocompleteController::UpdateAssociatedKeywords(
     AutocompleteResult* result) {
   if (!keyword_provider_)
@@ -1057,21 +1089,13 @@ void AutocompleteController::UpdateKeywordDescriptions(
         const TemplateURL* template_url =
             i->GetTemplateURL(template_url_service_, false);
         if (template_url) {
-          if (OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() &&
-              template_url->starter_pack_id() > 0) {
-            i->description =
-                TemplateURLStarterPackData::GetDestinationUrlForStarterPackID(
-                    template_url->starter_pack_id());
-          } else {
-            // For extension keywords, just make the description the extension
-            // name -- don't assume that the normal search keyword description
-            // is applicable.
-            i->description =
-                template_url->AdjustedShortNameForLocaleDirection();
-            if (template_url->type() != TemplateURL::OMNIBOX_API_EXTENSION) {
-              i->description = l10n_util::GetStringFUTF16(
-                  IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION, i->description);
-            }
+          // For extension keywords, just make the description the extension
+          // name -- don't assume that the normal search keyword description
+          // is applicable.
+          i->description = template_url->AdjustedShortNameForLocaleDirection();
+          if (template_url->type() != TemplateURL::OMNIBOX_API_EXTENSION) {
+            i->description = l10n_util::GetStringFUTF16(
+                IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION, i->description);
           }
           i->description_class.push_back(
               ACMatchClassification(0, ACMatchClassification::DIM));
@@ -1280,11 +1304,10 @@ void AutocompleteController::SetStartStopTimerDurationForTesting(
 bool AutocompleteController::ShouldRunProvider(
     AutocompleteProvider* provider) const {
   if (OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() &&
-      input_.keyword_mode_entry_method() !=
-          metrics::OmniboxEventProto_KeywordModeEntryMethod_INVALID) {
-    // We're in keyword mode. Only a subset of providers are run when we're in a
-    // starter pack keyword mode. Try to grab the TemplateURL to determine if
-    // we're in starter pack mode and whether this provider should be run.
+      provider->InKeywordMode(input_)) {
+    // Only a subset of providers are run when we're in a starter pack keyword
+    // mode. Try to grab the TemplateURL to determine if we're in starter pack
+    // mode and whether this provider should be run.
     AutocompleteInput keyword_input = input_;
     const TemplateURL* keyword_turl =
         KeywordProvider::GetSubstitutingTemplateURLForInput(
@@ -1324,13 +1347,10 @@ bool AutocompleteController::ShouldRunProvider(
   }
 
   // Open Tab Provider should only be run for @tabs starter pack mode and in the
-  // CrOS launcher.  As a temporary condition, we don't run the open tab
-  // provider when IsSiteSearchStarterPackEnabled() is true, even though that
-  // could interfere with the launcher.
-  // TODO(crbug/1287313): This needs to be updated before running live
-  // experiments.
+  // CrOS launcher.  If we reach here, we're not in starter pack mode, so
+  // disable the Open Tab Provider unless we're in the CrOS launcher.
   if (provider->type() == AutocompleteProvider::TYPE_OPEN_TAB &&
-      OmniboxFieldTrial::IsSiteSearchStarterPackEnabled()) {
+      !is_cros_launcher_) {
     return false;
   }
 

@@ -115,9 +115,8 @@ void PdfViewWebPluginClient::ReportFindInPageMatchCount(int identifier,
 }
 
 void PdfViewWebPluginClient::ReportFindInPageSelection(int identifier,
-                                                       int index,
-                                                       bool final_update) {
-  plugin_container_->ReportFindInPageSelection(identifier, index, final_update);
+                                                       int index) {
+  plugin_container_->ReportFindInPageSelection(identifier, index);
 }
 
 void PdfViewWebPluginClient::ReportFindInPageTickmarks(

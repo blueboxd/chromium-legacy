@@ -17,12 +17,12 @@
 #include "components/segmentation_platform/internal/execution/default_model_manager.h"
 #include "components/segmentation_platform/internal/execution/mock_model_provider.h"
 #include "components/segmentation_platform/internal/mock_ukm_data_manager.h"
-#include "components/segmentation_platform/internal/proto/aggregation.pb.h"
-#include "components/segmentation_platform/internal/proto/types.pb.h"
 #include "components/segmentation_platform/internal/signals/histogram_signal_handler.h"
 #include "components/segmentation_platform/internal/signals/history_service_observer.h"
 #include "components/segmentation_platform/internal/signals/mock_histogram_signal_handler.h"
 #include "components/segmentation_platform/internal/signals/user_action_signal_handler.h"
+#include "components/segmentation_platform/public/proto/aggregation.pb.h"
+#include "components/segmentation_platform/public/proto/types.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -61,11 +61,11 @@ class MockHistoryObserver : public HistoryServiceObserver {
 class TestDefaultModelManager : public DefaultModelManager {
  public:
   TestDefaultModelManager()
-      : DefaultModelManager(nullptr, std::vector<SegmentId>()) {}
+      : DefaultModelManager(nullptr, base::flat_set<SegmentId>()) {}
   ~TestDefaultModelManager() override = default;
 
   void GetAllSegmentInfoFromDefaultModel(
-      const std::vector<SegmentId>& segment_ids,
+      const base::flat_set<SegmentId>& segment_ids,
       MultipleSegmentInfoCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
@@ -73,7 +73,7 @@ class TestDefaultModelManager : public DefaultModelManager {
   }
 
   void GetAllSegmentInfoFromBothModels(
-      const std::vector<SegmentId>& segment_ids,
+      const base::flat_set<SegmentId>& segment_ids,
       SegmentInfoDatabase* segment_database,
       MultipleSegmentInfoCallback callback) override {
     segment_database->GetSegmentInfoForSegments(
@@ -104,7 +104,7 @@ class SignalFilterProcessorTest : public testing::Test {
     base::SetRecordActionTaskRunner(
         task_environment_.GetMainThreadTaskRunner());
 
-    std::vector<SegmentId> segment_ids(
+    base::flat_set<SegmentId> segment_ids(
         {SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB,
          SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHARE});
     user_action_signal_handler_ =

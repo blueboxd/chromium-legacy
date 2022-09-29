@@ -60,6 +60,7 @@ const CGFloat kTouchDownAlpha = 0.25f;
     self.queryLabel.translatesAutoresizingMaskIntoConstraints = NO;
     self.queryLabel.numberOfLines = 2;
     self.queryLabel.adjustsFontForContentSizeCategory = YES;
+    //      self.userInteractionEnabled = YES;
 
     if (!config) {
       // If there is no config, then this is a placeholder tile.

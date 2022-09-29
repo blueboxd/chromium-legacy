@@ -113,17 +113,32 @@ void RecordPrerenderHostFinalStatus(PrerenderHost::FinalStatus status,
         .Record(ukm::UkmRecorder::Get());
   }
 
-  // The kActivated case is recorded in `PrerenderHost::Activate`. Browser
-  // initiated prerendering doesn't report cancellation reasons to the DevTools
-  // as it doesn't have the initiator frame associated with DevTools agents.
+  // The kActivated case is recorded in `PrerenderHost::Activate`, and the
+  // kMojoBinderPolicy case is recorded in
+  // RenderFrameHostImpl::CancelPrerenderingByMojoBinderPolicy for storing the
+  // interface detail. Browser initiated prerendering doesn't report
+  // cancellation reasons to the DevTools as it doesn't have the initiator frame
+  // associated with DevTools agents.
   if (!attributes.IsBrowserInitiated() &&
-      status != PrerenderHost::FinalStatus::kActivated) {
+      status != PrerenderHost::FinalStatus::kActivated &&
+      status != PrerenderHost::FinalStatus::kMojoBinderPolicy) {
     auto* ftn = FrameTreeNode::GloballyFindByID(
         attributes.initiator_frame_tree_node_id);
     DCHECK(ftn);
     devtools_instrumentation::DidCancelPrerender(attributes.prerendering_url,
-                                                 ftn, status);
+                                                 ftn, status, "");
   }
+}
+
+void RecordPrerenderActivationNavigationParamsMatch(
+    PrerenderHost::ActivationNavigationParamsMatch result,
+    PrerenderTriggerType trigger_type,
+    const std::string& embedder_suffix) {
+  base::UmaHistogramEnumeration(
+      GenerateHistogramName(
+          "Prerender.Experimental.ActivationNavigationParamsMatch",
+          trigger_type, embedder_suffix),
+      result);
 }
 
 }  // namespace content

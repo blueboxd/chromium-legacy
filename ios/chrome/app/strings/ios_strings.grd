@@ -777,6 +777,9 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_DISCOVER_FEED_HEADER_TURNED_OFF_LABEL" desc="The message that appears in the feed header when the feed is turned off from the header menu. IMPORTANT: The 'Turn On' part of this string should match the content of IDS_IOS_DISCOVER_FEED_MENU_TURN_ON_ITEM so that users understand what menu option to select.">
         To see content, select Turn On from the menu
       </message>
+      <message name="IDS_IOS_DISCOVER_AND_FOLLOWING_FEED_TITLE" desc="The title in the Discover and Following feed menu if Following is enabled. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager (TC ID 1799975766543019278).">
+        Discover &amp; Following
+      </message>
       <message name="IDS_IOS_DISCOVER_FEED_TITLE" desc="The title in the Discover feed menu.">
         Discover
       </message>
@@ -1148,6 +1151,9 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_INCOGNITO_INTERSTITIAL_TITLE" desc="Title of interstitial which lets the user choose, when they open a link from an external app, whether to open it in Incognito mode or in a regular tab. [iOS only]">
         Open in Incognito?
+      </message>
+      <message name="IDS_IOS_INCOGNITO_INTERSTITIAL_URL_READ_MORE_BUTTON" desc="Button to unfold a URL which is being truncated, so as to let the user read more of the URL. [iOS only]">
+        more
       </message>
       <message name="IDS_IOS_INCOGNITO_INTERSTITIAL_OPEN_IN_CHROME_INCOGNITO" desc="Button to open a link from an external app in Incognito mode rather than a regular tab. [iOS only]">
         Open in Chrome Incognito
@@ -2286,6 +2292,12 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SAVE_PASSWORDS_MANAGE_ACCOUNT_HEADER" desc="Header text with link for the view in Settings for managing saved passwords. [Length: unlimited] [iOS only]">
         Create, save, and manage your passwords so you can easily sign in to sites and apps. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
+      <message name="IDS_IOS_PASSWORD_MANAGER_HEADER_NOT_SYNCING" desc="Header text for the view in Settings for managing saved passwords. This string only appears when the user is not syncing their passwords. [Length: unlimited] [iOS only]">
+        Passwords are saved to Google Password Manager on this device only.
+      </message>
+      <message name="IDS_IOS_ADD_PASSWORD" desc="Text on a button which allows the user to save a password for a website in their Password Manager.">
+        Add Password...
+      </message>
       <message name="IDS_IOS_CHECK_PASSWORDS" desc="Title for the item in Settings for Password Check feature" meaning="Label tells the user about status of Password Check [CHAR_LIMIT=25] [iOS only]">
         Check Passwords
       </message>
@@ -2551,6 +2563,9 @@ Try to use a unique password for every site.
       </message>
       <message name="IDS_IOS_SETTINGS_TOOLBAR_ADD" desc="Label of the button displayed on the bottom toolbar of the settings' collections. Pressing this button opens the Add view. For example: Clicking this button in the Password settings would open the add password view.">
         Add
+      </message>
+      <message name="IDS_IOS_SETTINGS_TOOLBAR_SETTINGS_SUBMENU" desc="Button text in a toolbar that will take the user to a submenu with settings related to the currently-displayed content.">
+        Settings
       </message>
         <message name="IDS_IOS_SETTINGS_SWIPE_DOWN_MESSAGE" desc="Message displayed whenever a user tries to dismiss a Settings screen which is being edited, or information is being added to it.">
         Are you sure you want to discard your changes?
@@ -3212,6 +3227,15 @@ New Search
       <message name="IDS_IOS_TOOLS_MENU_RECENT_TABS" desc="The iOS menu item for opening the panel showing the recently closed tabs and the tabs from other devices." meaning="[In Title case] [iOS only] [Length: Unlimited]">
         Recent Tabs
       </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_SHARE_CHROME" desc="The iOS menu item for opening a share sheet with the URL to the Chrome app in the iOS app store" meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Share Chrome
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_SHARE_CHROME_TITLE" desc="The title displayed along with the app store link to Chrome, when sharing the chrome app" meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Chrome for iOS
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_SHARE_CHROME_DESC" desc="The description displayed along with the app store link to Chrome, when sharing the chrome app" meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Get Chrome for iOS
+      </message>
       <message name="IDS_IOS_TOOLS_MENU_RELOAD" desc="The title of the button in the menu allowing the user to reload the page.">
         Reload
       </message>
@@ -3495,6 +3519,9 @@ New Search
       </message>
       <message name="IDS_IOS_PASSWORD_SUGGESTIONS_TIP_TITLE" desc="The title of the tip explaining to the user they can tap on Autofill password suggestions. Used as a title in an info bubble." meaning="Used as a title in an info bubble.">
         Autofill Passwords
+      </message>
+      <message name="IDS_IOS_KEYBOARD_ACCESSORY_VIEW_PASTE_SEARCH" desc="Accessibility label for a button that starts a Paste and Search [iOS only]">
+        Paste and Search
       </message>
     </messages>
   </release>

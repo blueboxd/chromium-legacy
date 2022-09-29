@@ -124,6 +124,39 @@
       "use_thin_lto": true
     }
   },
+  "fuchsia-builder-perf-arm64": {
+    "gn_args": {
+      "ffmpeg_branding": "Chrome",
+      "fuchsia_additional_boot_images": [
+        "//third_party/fuchsia-sdk/images-internal/astro-release/",
+        "//third_party/fuchsia-sdk/images-internal/sherlock-release/"
+      ],
+      "is_chrome_branded": true,
+      "is_official_build": true,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "target_cpu": "arm64",
+      "target_os": "fuchsia",
+      "test_isolate_uses_emulator": false,
+      "use_goma": true
+    }
+  },
+  "fuchsia-builder-perf-x64": {
+    "gn_args": {
+      "ffmpeg_branding": "Chrome",
+      "fuchsia_additional_boot_images": [
+        "//third_party/fuchsia-sdk/images-internal/chromebook-x64-release/"
+      ],
+      "is_chrome_branded": true,
+      "is_official_build": true,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "target_cpu": "x64",
+      "target_os": "fuchsia",
+      "test_isolate_uses_emulator": false,
+      "use_goma": true
+    }
+  },
   "linux-builder-perf": {
     "gn_args": {
       "chrome_pgo_phase": 0,
@@ -163,7 +196,7 @@
       "is_chrome_branded": true,
       "is_official_build": true,
       "strip_absolute_paths_from_debug_symbols": true,
-      "symbol_level": 2,
+      "symbol_level": 1,
       "target_cpu": "arm64",
       "use_goma": true
     }
@@ -174,7 +207,7 @@
       "ignore_missing_widevine_signing_cert": true,
       "is_chrome_branded": true,
       "is_official_build": true,
-      "symbol_level": 2,
+      "symbol_level": 1,
       "target_cpu": "arm64",
       "use_goma": true
     }
@@ -187,7 +220,7 @@
       "is_chrome_branded": true,
       "is_official_build": true,
       "strip_absolute_paths_from_debug_symbols": true,
-      "symbol_level": 2,
+      "symbol_level": 1,
       "use_goma": true
     }
   },
@@ -197,7 +230,7 @@
       "ignore_missing_widevine_signing_cert": true,
       "is_chrome_branded": true,
       "is_official_build": true,
-      "symbol_level": 2,
+      "symbol_level": 1,
       "use_goma": true
     }
   },

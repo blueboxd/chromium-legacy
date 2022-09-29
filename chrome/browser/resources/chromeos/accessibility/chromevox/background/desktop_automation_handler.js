@@ -5,14 +5,19 @@
 /**
  * @fileoverview Handles automation from a desktop automation node.
  */
+import {AutomationPredicate} from '../../common/automation_predicate.js';
+import {AutomationUtil} from '../../common/automation_util.js';
+import {constants} from '../../common/constants.js';
 import {WrappingCursor} from '../../common/cursors/cursor.js';
 import {CursorRange} from '../../common/cursors/range.js';
 import {ChromeVoxEvent, CustomAutomationEvent} from '../common/custom_automation_event.js';
 import {EventSourceType} from '../common/event_source_type.js';
 import {Msgs} from '../common/msgs.js';
+import {QueueMode, TtsCategory} from '../common/tts_interface.js';
 
 import {AutoScrollHandler} from './auto_scroll_handler.js';
 import {AutomationObjectConstructorInstaller} from './automation_object_constructor_installer.js';
+import {ChromeVox} from './chromevox.js';
 import {ChromeVoxState} from './chromevox_state.js';
 import {CommandHandlerInterface} from './command_handler_interface.js';
 import {DesktopAutomationInterface} from './desktop_automation_interface.js';

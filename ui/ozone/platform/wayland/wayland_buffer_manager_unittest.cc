@@ -404,7 +404,7 @@ TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
 
     buffer_manager_gpu_->CommitBuffer(
         widget, kBufferId1, kBufferId1, window_->GetBoundsInPixels(),
-        kDefaultScale, window_->GetBoundsInPixels());
+        gfx::RoundedCornersF(), kDefaultScale, gfx::Rect(window_->size_px()));
 
     CreateDmabufBasedBufferAndSetTerminateExpectation(true /*fail*/,
                                                       kBufferId1);
@@ -427,7 +427,7 @@ TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
 
     buffer_manager_gpu_->CommitBuffer(
         widget, kBufferId1, kBufferId1, window_->GetBoundsInPixels(),
-        kDefaultScale, window_->GetBoundsInPixels());
+        gfx::RoundedCornersF(), kDefaultScale, gfx::Rect(window_->size_px()));
 
     DestroyBufferAndSetTerminateExpectation(kBufferId1, false /*fail*/);
   }
@@ -449,7 +449,7 @@ TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
     // Attach to a surface.
     buffer_manager_gpu_->CommitBuffer(
         widget, kBufferId1, kBufferId1, window_->GetBoundsInPixels(),
-        kDefaultScale, window_->GetBoundsInPixels());
+        gfx::RoundedCornersF(), kDefaultScale, gfx::Rect(window_->size_px()));
 
     // Created non-attached buffer as well.
     CreateDmabufBasedBufferAndSetTerminateExpectation(false /*fail*/,
@@ -488,9 +488,9 @@ TEST_P(WaylandBufferManagerTest, CommitBufferNonExistingBufferId) {
   EXPECT_CALL(*mock_surface, Frame(_)).Times(kNumberOfCommits);
   EXPECT_CALL(*mock_surface, Commit()).Times(kNumberOfCommits);
 
-  buffer_manager_gpu_->CommitBuffer(window_->GetWidget(), 1u, 5u,
-                                    window_->GetBoundsInPixels(), kDefaultScale,
-                                    window_->GetBoundsInPixels());
+  buffer_manager_gpu_->CommitBuffer(
+      window_->GetWidget(), 1u, 5u, window_->GetBoundsInPixels(),
+      gfx::RoundedCornersF(), kDefaultScale, gfx::Rect(window_->size_px()));
 
   Sync();
 }
@@ -555,9 +555,9 @@ TEST_P(WaylandBufferManagerTest, CommitBufferNullWidget) {
 
   // Can't commit for non-existing widget.
   SetTerminateCallbackExpectationAndDestroyChannel(&callback_, true /*fail*/);
-  buffer_manager_gpu_->CommitBuffer(gfx::kNullAcceleratedWidget, 1u, kBufferId,
-                                    window_->GetBoundsInPixels(), kDefaultScale,
-                                    window_->GetBoundsInPixels());
+  buffer_manager_gpu_->CommitBuffer(
+      gfx::kNullAcceleratedWidget, 1u, kBufferId, window_->GetBoundsInPixels(),
+      gfx::RoundedCornersF(), kDefaultScale, gfx::Rect(window_->size_px()));
 
   Sync();
 }
@@ -600,7 +600,7 @@ TEST_P(WaylandBufferManagerTest, EnsureCorrectOrderOfCallbacks) {
 
   const gfx::AcceleratedWidget widget = window_->GetWidget();
   const gfx::Rect bounds = gfx::Rect({0, 0}, kDefaultSize);
-  window_->SetBoundsInPixels(bounds);
+  window_->SetBoundsInDIP(bounds);
 
   MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget_);
 
@@ -633,7 +633,8 @@ TEST_P(WaylandBufferManagerTest, EnsureCorrectOrderOfCallbacks) {
   EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId1, _)).Times(1);
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, kBufferId1, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
 
   Sync();
 
@@ -645,7 +646,8 @@ TEST_P(WaylandBufferManagerTest, EnsureCorrectOrderOfCallbacks) {
 
   // Commit second buffer now.
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId2, kBufferId2, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
 
   Sync();
 
@@ -675,7 +677,8 @@ TEST_P(WaylandBufferManagerTest, EnsureCorrectOrderOfCallbacks) {
 
   // Commit second buffer now.
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, kBufferId1, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
 
   Sync();
 
@@ -712,7 +715,7 @@ TEST_P(WaylandBufferManagerTest,
 
   const gfx::AcceleratedWidget widget = window_->GetWidget();
   const gfx::Rect bounds = gfx::Rect({0, 0}, kDefaultSize);
-  window_->SetBoundsInPixels(bounds);
+  window_->SetBoundsInDIP(bounds);
 
   MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget_);
 
@@ -753,7 +756,8 @@ TEST_P(WaylandBufferManagerTest,
               OnSubmission(kBufferId1, gfx::SwapResult::SWAP_ACK, _))
       .Times(1);
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, kBufferId1, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   mock_surface->SendFrameCallback();
   Sync();
 
@@ -763,7 +767,8 @@ TEST_P(WaylandBufferManagerTest,
 
   // Commit second buffer now.
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId2, kBufferId2, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   mock_surface->SendFrameCallback();
   Sync();
 
@@ -785,7 +790,8 @@ TEST_P(WaylandBufferManagerTest,
   // not call OnPresentation as OnSubmission hasn't been called yet.
   EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(0);
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId3, kBufferId3, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   mock_surface->SendFrameCallback();
   mock_wp_presentation->SendPresentationCallback();
   Sync();
@@ -836,7 +842,7 @@ TEST_P(WaylandBufferManagerTest,
 
   const gfx::AcceleratedWidget widget = window_->GetWidget();
   const gfx::Rect bounds = gfx::Rect({0, 0}, kDefaultSize);
-  window_->SetBoundsInPixels(bounds);
+  window_->SetBoundsInDIP(bounds);
 
   MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget_);
 
@@ -868,7 +874,8 @@ TEST_P(WaylandBufferManagerTest,
 
   // Commit first buffer
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, kBufferId1, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
 
   Sync();
 
@@ -887,7 +894,8 @@ TEST_P(WaylandBufferManagerTest,
 
   // Commit second buffer
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId2, kBufferId2, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
 
   Sync();
 
@@ -908,7 +916,8 @@ TEST_P(WaylandBufferManagerTest,
 
   // Commit third buffer
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId3, kBufferId3, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
 
   Sync();
 
@@ -992,9 +1001,9 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditions) {
   EXPECT_CALL(*mock_surface, Frame(_)).Times(0);
   EXPECT_CALL(*mock_surface, Commit()).Times(0);
 
-  buffer_manager_gpu_->CommitBuffer(widget, kDmabufBufferId, kDmabufBufferId,
-                                    window_->GetBoundsInPixels(), kDefaultScale,
-                                    window_->GetBoundsInPixels());
+  buffer_manager_gpu_->CommitBuffer(
+      widget, kDmabufBufferId, kDmabufBufferId, window_->GetBoundsInPixels(),
+      gfx::RoundedCornersF(), kDefaultScale, gfx::Rect(window_->size_px()));
   Sync();
 
   EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(1);
@@ -1026,9 +1035,9 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditions) {
   EXPECT_CALL(*mock_surface, Frame(_)).Times(0);
   EXPECT_CALL(*mock_surface, Commit()).Times(0);
 
-  buffer_manager_gpu_->CommitBuffer(widget, kDmabufBufferId2, kDmabufBufferId2,
-                                    window_->GetBoundsInPixels(), kDefaultScale,
-                                    window_->GetBoundsInPixels());
+  buffer_manager_gpu_->CommitBuffer(
+      widget, kDmabufBufferId2, kDmabufBufferId2, window_->GetBoundsInPixels(),
+      gfx::RoundedCornersF(), kDefaultScale, gfx::Rect(window_->size_px()));
 
   Sync();
 
@@ -1095,7 +1104,7 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditionsAckConfigured) {
 
     buffer_manager_gpu_->CommitBuffer(
         widget, kDmabufBufferId, kDmabufBufferId, window_->GetBoundsInPixels(),
-        kDefaultScale, window_->GetBoundsInPixels());
+        gfx::RoundedCornersF(), kDefaultScale, window_->GetBoundsInPixels());
     Sync();
     testing::Mock::VerifyAndClearExpectations(mock_surface);
 
@@ -1103,9 +1112,7 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditionsAckConfigured) {
     EXPECT_CALL(*xdg_surface, AckConfigure(_)).Times(1);
     EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(1);
     EXPECT_CALL(*mock_surface, Frame(_)).Times(1);
-    // Commit() can be called a second time as part of the configure -> ack
-    // sequence.
-    EXPECT_CALL(*mock_surface, Commit()).Times(testing::Between(1, 2));
+    EXPECT_CALL(*mock_surface, Commit()).Times(1);
 
     ActivateSurface(mock_surface->xdg_surface());
     Sync();
@@ -1202,15 +1209,15 @@ TEST_P(WaylandBufferManagerTest,
   EXPECT_CALL(*mock_surface, Commit()).Times(1);
 
   buffer_manager_gpu_->CommitBuffer(widget, kDmabufBufferId, kDmabufBufferId,
-                                    gfx::Rect{55, 55}, kDefaultScale,
-                                    gfx::Rect{55, 55});
+                                    gfx::Rect{55, 55}, gfx::RoundedCornersF(),
+                                    kDefaultScale, gfx::Rect{55, 55});
   ActivateSurface(mock_surface->xdg_surface());
 
   Sync();
 
   buffer_manager_gpu_->CommitBuffer(widget, kDmabufBufferId, kDmabufBufferId,
-                                    kRestoredBounds, kDefaultScale,
-                                    kRestoredBounds);
+                                    kRestoredBounds, gfx::RoundedCornersF(),
+                                    kDefaultScale, kRestoredBounds);
   Sync();
 
   SetPointerFocusedWindow(nullptr);
@@ -1231,7 +1238,7 @@ TEST_P(WaylandBufferManagerTest, AnonymousBufferAttachedAndReleased) {
 
   const gfx::AcceleratedWidget widget = window_->GetWidget();
   const gfx::Rect bounds = gfx::Rect({0, 0}, kDefaultSize);
-  window_->SetBoundsInPixels(bounds);
+  window_->SetBoundsInDIP(bounds);
 
   MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget_);
 
@@ -1261,7 +1268,8 @@ TEST_P(WaylandBufferManagerTest, AnonymousBufferAttachedAndReleased) {
 
   // Commit second buffer now.
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, kBufferId1, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
 
   Sync();
 
@@ -1286,7 +1294,8 @@ TEST_P(WaylandBufferManagerTest, AnonymousBufferAttachedAndReleased) {
 
   // Commit second buffer now.
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId2, kBufferId2, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
 
   Sync();
 
@@ -1311,7 +1320,8 @@ TEST_P(WaylandBufferManagerTest, AnonymousBufferAttachedAndReleased) {
   EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId3, _)).Times(0);
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId3, kBufferId3, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
 
   Sync();
 
@@ -1349,7 +1359,7 @@ TEST_P(WaylandBufferManagerTest, DestroyBufferForDestroyedWindow) {
 
   buffer_manager_gpu_->CommitBuffer(
       widget, kBufferId, kBufferId, temp_window->GetBoundsInPixels(),
-      kDefaultScale, temp_window->GetBoundsInPixels());
+      gfx::RoundedCornersF(), kDefaultScale, temp_window->GetBoundsInPixels());
 
   Sync();
 
@@ -1382,7 +1392,8 @@ TEST_P(WaylandBufferManagerTest, DestroyedWindowNoSubmissionSingleBuffer) {
   temp_window.reset();
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId, kBufferId, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
 
   Sync();
 
@@ -1424,7 +1435,8 @@ TEST_P(WaylandBufferManagerTest, DestroyedWindowNoSubmissionMultipleBuffers) {
   EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(1);
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, kBufferId1, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
 
   Sync();
 
@@ -1445,7 +1457,8 @@ TEST_P(WaylandBufferManagerTest, DestroyedWindowNoSubmissionMultipleBuffers) {
   EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId2, _)).Times(1);
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId2, kBufferId2, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
 
   Sync();
 
@@ -1458,7 +1471,8 @@ TEST_P(WaylandBufferManagerTest, DestroyedWindowNoSubmissionMultipleBuffers) {
   temp_window.reset();
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, kBufferId1, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
 
   Sync();
 
@@ -1495,7 +1509,8 @@ TEST_P(WaylandBufferManagerTest, DestroyBufferCommittedTwiceInARow) {
   EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId1, _)).Times(1);
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, kBufferId1, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   mock_surface->SendFrameCallback();
   Sync();
   testing::Mock::VerifyAndClearExpectations(&mock_surface_gpu);
@@ -1505,12 +1520,14 @@ TEST_P(WaylandBufferManagerTest, DestroyBufferCommittedTwiceInARow) {
   EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(0);
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId2, kBufferId2, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   mock_surface->SendFrameCallback();
   Sync();
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId2, kBufferId2, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   mock_surface->SendFrameCallback();
   Sync();
 
@@ -1562,7 +1579,8 @@ TEST_P(WaylandBufferManagerTest, ReleaseBufferCommittedTwiceInARow) {
   EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId1, _)).Times(1);
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, kBufferId1, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   mock_surface->SendFrameCallback();
   Sync();
   testing::Mock::VerifyAndClearExpectations(&mock_surface_gpu);
@@ -1573,12 +1591,14 @@ TEST_P(WaylandBufferManagerTest, ReleaseBufferCommittedTwiceInARow) {
   EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(0);
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId2, kBufferId2, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   mock_surface->SendFrameCallback();
   Sync();
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId2, kBufferId2, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   mock_surface->SendFrameCallback();
   Sync();
 
@@ -1630,7 +1650,8 @@ TEST_P(WaylandBufferManagerTest, ReleaseOrderDifferentToCommitOrder) {
   EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(1);
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, kBufferId1, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   mock_surface->SendFrameCallback();
   Sync();
   testing::Mock::VerifyAndClearExpectations(&mock_surface_gpu);
@@ -1642,13 +1663,15 @@ TEST_P(WaylandBufferManagerTest, ReleaseOrderDifferentToCommitOrder) {
   EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(2);
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId2, kBufferId2, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   mock_surface->SendFrameCallback();
   Sync();
   auto* wl_buffer2 = mock_surface->attached_buffer();
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId3, kBufferId3, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   mock_surface->SendFrameCallback();
   Sync();
 
@@ -1719,7 +1742,8 @@ TEST_P(WaylandBufferManagerTest,
   EXPECT_CALL(*mock_surface, Commit()).Times(1);
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, kBufferId1, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
 
   Sync();
 
@@ -1742,7 +1766,8 @@ TEST_P(WaylandBufferManagerTest,
 
   // Commit second buffer now.
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId2, kBufferId2, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
 
   Sync();
 
@@ -1784,7 +1809,8 @@ TEST_P(WaylandBufferManagerTest,
 
   // Commit second buffer now.
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId2, kBufferId2, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
 
   Sync();
 
@@ -1819,7 +1845,8 @@ TEST_P(WaylandBufferManagerTest,
   EXPECT_CALL(*mock_surface, Commit()).Times(1);
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, kBufferId1, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
 
   Sync();
 
@@ -1869,7 +1896,8 @@ TEST_P(WaylandBufferManagerTest, OnSubmissionCalledForSingleBuffer) {
   EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId1, _)).Times(1);
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, kBufferId1, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   Sync();
 
   DestroyBufferAndSetTerminateExpectation(kBufferId1, false /*fail*/);
@@ -1947,7 +1975,7 @@ TEST_P(WaylandBufferManagerTest, FencedRelease) {
 
   const gfx::AcceleratedWidget widget = window_->GetWidget();
   const gfx::Rect bounds = gfx::Rect({0, 0}, kDefaultSize);
-  window_->SetBoundsInPixels(bounds);
+  window_->SetBoundsInDIP(bounds);
 
   MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget_);
 
@@ -1981,13 +2009,15 @@ TEST_P(WaylandBufferManagerTest, FencedRelease) {
                    Truly([](const auto& fence) { return fence.is_null(); })))
       .Times(1);
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, kBufferId1, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   mock_surface->SendFrameCallback();
   Sync();
 
   // Commit the second buffer now.
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId2, kBufferId2, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   mock_surface->SendFrameCallback();
   Sync();
 
@@ -2008,7 +2038,8 @@ TEST_P(WaylandBufferManagerTest, FencedRelease) {
 
   // Commit the third buffer now.
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId3, kBufferId3, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   mock_surface->SendFrameCallback();
   Sync();
 
@@ -2064,7 +2095,8 @@ TEST_P(WaylandBufferManagerTest,
   EXPECT_CALL(*mock_surface_gpu.get(), OnPresentation(kBufferId1, _)).Times(1);
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, kBufferId1, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   Sync();
 
   // The root surface shouldn't get null buffer attached.
@@ -2114,7 +2146,8 @@ TEST_P(WaylandBufferManagerTest,
   EXPECT_CALL(*mock_surface_gpu.get(), OnPresentation(kBufferId1, _)).Times(1);
 
   buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, kBufferId1, bounds,
-                                    kDefaultScale, bounds);
+                                    gfx::RoundedCornersF(), kDefaultScale,
+                                    bounds);
   Sync();
 
   DestroyBufferAndSetTerminateExpectation(kBufferId1, false /*fail*/);
@@ -2419,7 +2452,7 @@ TEST_P(WaylandBufferManagerTest, FeedbacksAreDiscardedIfClientMisbehaves) {
 
   const gfx::AcceleratedWidget widget = window_->GetWidget();
   const gfx::Rect bounds = gfx::Rect({0, 0}, kDefaultSize);
-  window_->SetBoundsInPixels(bounds);
+  window_->SetBoundsInDIP(bounds);
 
   MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget_);
 
@@ -2479,9 +2512,9 @@ TEST_P(WaylandBufferManagerTest, FeedbacksAreDiscardedIfClientMisbehaves) {
       EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(0);
     }
 
-    buffer_manager_gpu_->CommitBuffer(widget, next_buffer_id_commit,
-                                      next_buffer_id_commit, bounds,
-                                      kDefaultScale, bounds);
+    buffer_manager_gpu_->CommitBuffer(
+        widget, next_buffer_id_commit, next_buffer_id_commit, bounds,
+        gfx::RoundedCornersF(), kDefaultScale, bounds);
 
     Sync();
 
@@ -2513,10 +2546,10 @@ TEST_P(WaylandBufferManagerTest, ExecutesTasksAfterInitialization) {
   constexpr uint32_t kDmabufBufferId = 1;
   CreateDmabufBasedBufferAndSetTerminateExpectation(false /*fail*/,
                                                     kDmabufBufferId);
-  buffer_manager_gpu_->CommitBuffer(window_->GetWidget(), kDmabufBufferId,
-                                    kDmabufBufferId,
-                                    window_->GetBoundsInPixels(), kDefaultScale,
-                                    window_->GetBoundsInPixels());
+  buffer_manager_gpu_->CommitBuffer(
+      window_->GetWidget(), kDmabufBufferId, kDmabufBufferId,
+      window_->GetBoundsInPixels(), gfx::RoundedCornersF(), kDefaultScale,
+      window_->GetBoundsInPixels());
   DestroyBufferAndSetTerminateExpectation(kDmabufBufferId, false /*fail*/);
 
   base::RunLoop().RunUntilIdle();

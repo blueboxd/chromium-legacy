@@ -22,9 +22,9 @@
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/protocol/entity_data.h"
 #include "components/sync/protocol/model_type_state.pb.h"
-#include "components/sync/test/model/mock_model_type_change_processor.h"
-#include "components/sync/test/model/model_type_store_test_util.h"
-#include "components/sync/test/model/test_matchers.h"
+#include "components/sync/test/mock_model_type_change_processor.h"
+#include "components/sync/test/model_type_store_test_util.h"
+#include "components/sync/test/test_matchers.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_util.h"
 #include "components/sync_device_info/fake_device_info_tracker.h"
@@ -917,6 +917,18 @@ TEST_F(SendTabToSelfBridgeTest,
   ASSERT_FALSE(device_info_tracker()->IsSyncing());
 
   EXPECT_FALSE(bridge()->HasValidTargetDevice());
+}
+
+TEST_F(SendTabToSelfBridgeTest, CollapseWhitespacesOfEntryTitle) {
+  InitializeBridge();
+
+  const SendTabToSelfEntry* result =
+      bridge()->AddEntry(GURL("http://a.com"), " a  b ", kLocalDeviceCacheGuid);
+  EXPECT_EQ("a b", result->GetTitle());
+
+  result =
+      bridge()->AddEntry(GURL("http://b.com"), "입", kLocalDeviceCacheGuid);
+  EXPECT_EQ("입", result->GetTitle());
 }
 
 }  // namespace

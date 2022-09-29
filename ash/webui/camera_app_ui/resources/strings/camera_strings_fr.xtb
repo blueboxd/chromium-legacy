@@ -7,6 +7,7 @@
 <translation id="1258009455399840361">Faire pivoter de 90 degrés vers la droite</translation>
 <translation id="1276998909102132017">Images de la galerie</translation>
 <translation id="1300209025925956156">Scanner votre document</translation>
+<translation id="1309250603447638106">Téléchargement des mises à jour pour la numérisation de documents</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Recherche+Flèche vers la gauche pour y accéder.</translation>
 <translation id="1393338179284529051">Quad HD</translation>
 <translation id="1430915738399379752">Imprimer</translation>
@@ -47,6 +48,7 @@
 <translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Aperçu en mode miroir</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> est branchée.</translation>
+<translation id="2904654629665923749">Numérisation de documents disponible</translation>
 <translation id="2968794441791257519">Les photos et les vidéos prises avec l'appareil photo seront déplacées vers le dossier "Téléchargements". Vous pouvez y accéder via l'application Fichiers.
 
         Les applications disposant d'autorisations d'accès à l'espace de stockage pourront accéder à vos photos et vidéos.</translation>
@@ -72,7 +74,6 @@
 <translation id="3838931309141338733">Lire le code-barres</translation>
 <translation id="3892148308691398805">Copier le texte</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> Mpx</translation>
-<translation id="4096701159033358951">Téléchargement de la fonctionnalité de numérisation de documents</translation>
 <translation id="4118525110028899586">Suspendre l'enregistrement</translation>
 <translation id="4121305183798804752">Document détecté</translation>
 <translation id="414641094616694804">Impossible de modifier la résolution de cet appareil photo</translation>
@@ -94,7 +95,6 @@
 <translation id="5057360777601936059">Votre appareil photo est actuellement indisponible.
         Vérifiez qu'il est bien connecté.</translation>
 <translation id="5163387177077603948">Déplacement vers la droite</translation>
-<translation id="520537883758714667">Numérisation de documents désormais disponible</translation>
 <translation id="5235304959032763950">Seize neuvièmes</translation>
 <translation id="5266635337630551423">Angle supérieur gauche du document</translation>
 <translation id="5317780077021120954">Enregistrer</translation>

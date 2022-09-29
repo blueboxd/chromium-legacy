@@ -120,7 +120,7 @@ void AutoEnrollmentCheckScreen::HideImpl() {
   network_portal_detector::GetInstance()->RemoveObserver(this);
 }
 
-bool AutoEnrollmentCheckScreen::MaybeSkip(WizardContext* context) {
+bool AutoEnrollmentCheckScreen::MaybeSkip(WizardContext& context) {
   // If the decision got made already, don't show the screen at all.
   if (!policy::AutoEnrollmentTypeChecker::IsEnabled() || IsCompleted()) {
     RunExitCallback(Result::NOT_APPLICABLE);
@@ -141,7 +141,6 @@ void AutoEnrollmentCheckScreen::OnAutoEnrollmentCheckProgressed(
     SignalCompletion();
     return;
   }
-
   UpdateState();
 }
 
@@ -242,6 +241,7 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
       auto_enrollment_controller_->auto_enrollment_check_type() !=
       policy::AutoEnrollmentTypeChecker::CheckType::
           kForcedReEnrollmentExplicitlyRequired);
+
   error_screen_->SetErrorState(error_state,
                                network ? network->name() : std::string());
   connect_request_subscription_ = error_screen_->RegisterConnectRequestCallback(

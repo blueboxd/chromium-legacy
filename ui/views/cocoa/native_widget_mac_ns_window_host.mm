@@ -11,6 +11,7 @@
 #include "base/containers/contains.h"
 #include "base/mac/foundation_util.h"
 #include "base/no_destructor.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "components/remote_cocoa/app_shim/mouse_capture.h"
@@ -34,6 +35,7 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/native_theme/native_theme_mac.h"
+#include "ui/views/cocoa/immersive_mode_delegate_mac.h"
 #include "ui/views/cocoa/text_input_host.h"
 #include "ui/views/cocoa/tooltip_manager_mac.h"
 #include "ui/views/controls/label.h"
@@ -42,6 +44,7 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_utils_mac.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/word_lookup_client.h"
 
@@ -213,16 +216,39 @@ std::map<uint64_t, NativeWidgetMacNSWindowHost*>& GetIdToWidgetHostImplMap() {
 
 uint64_t g_last_bridged_native_widget_id = 0;
 
+NSWindow* OriginalHostingWindowFromFullScreenWindow(
+    NSWindow* full_screen_window) {
+  if ([full_screen_window.delegate
+          conformsToProtocol:@protocol(ImmersiveModeDelegate)]) {
+    return base::mac::ObjCCastStrict<NSObject<ImmersiveModeDelegate>>(
+               full_screen_window.delegate)
+        .originalHostingWindow;
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 // static
 NativeWidgetMacNSWindowHost* NativeWidgetMacNSWindowHost::GetFromNativeWindow(
     gfx::NativeWindow native_window) {
   NSWindow* window = native_window.GetNativeNSWindow();
+
   if (NativeWidgetMacNSWindow* widget_window =
           base::mac::ObjCCast<NativeWidgetMacNSWindow>(window)) {
     return GetFromId([widget_window bridgedNativeWidgetId]);
   }
+
+  // If the window is a system created NSToolbarFullScreenWindow we need to do
+  // some additional work to find the original window.
+  if (views::IsNSToolbarFullScreenWindow(window)) {
+    NSWindow* original = OriginalHostingWindowFromFullScreenWindow(window);
+    if (NativeWidgetMacNSWindow* widget_window =
+            base::mac::ObjCCast<NativeWidgetMacNSWindow>(original)) {
+      return GetFromId([widget_window bridgedNativeWidgetId]);
+    }
+  }
+
   return nullptr;  // Not created by NativeWidgetMac.
 }
 
@@ -231,6 +257,10 @@ NativeWidgetMacNSWindowHost* NativeWidgetMacNSWindowHost::GetFromNativeView(
     gfx::NativeView native_view) {
   return GetFromNativeWindow([native_view.GetNativeNSView() window]);
 }
+
+// static
+const char NativeWidgetMacNSWindowHost::kImmersiveContentNSView[] =
+    "kImmersiveContentNSView";
 
 // static
 NativeWidgetMacNSWindowHost* NativeWidgetMacNSWindowHost::GetFromId(
@@ -525,8 +555,7 @@ void NativeWidgetMacNSWindowHost::CreateCompositor(
   ui::ContextFactory* context_factory =
       ViewsDelegate::GetInstance()->GetContextFactory();
   DCHECK(context_factory);
-  compositor_ = ui::RecyclableCompositorMacFactory::Get()->CreateCompositor(
-      context_factory);
+  compositor_ = std::make_unique<ui::RecyclableCompositorMac>(context_factory);
   compositor_->widget()->SetNSView(this);
   compositor_->compositor()->SetBackgroundColor(
       translucent ? SK_ColorTRANSPARENT : SK_ColorWHITE);
@@ -583,8 +612,7 @@ void NativeWidgetMacNSWindowHost::DestroyCompositor() {
     return;
   compositor_->widget()->ResetNSView();
   compositor_->compositor()->SetRootLayer(nullptr);
-  ui::RecyclableCompositorMacFactory::Get()->RecycleCompositor(
-      std::move(compositor_));
+  compositor_.reset();
 }
 
 bool NativeWidgetMacNSWindowHost::SetWindowTitle(const std::u16string& title) {
@@ -611,6 +639,20 @@ bool NativeWidgetMacNSWindowHost::RedispatchKeyEvent(NSEvent* event) {
   // handled (because it should never be handled in this process).
   GetNSWindowMojo()->RedispatchKeyEvent(ui::EventToData(event));
   return true;
+}
+
+gfx::Rect NativeWidgetMacNSWindowHost::GetContentBoundsInScreen() const {
+  NSView* contentView =
+      (NSView*)GetNativeWindowProperty(kImmersiveContentNSView);
+  if (!contentView)
+    return content_bounds_in_screen_;
+
+  // In immersive fullscreen, the content view is hosted in another NSWindow.
+  NSRect boundsInWindow = [contentView convertRect:contentView.bounds
+                                            toView:nil];
+  NSRect boundsInScreen =
+      [contentView.window convertRectToScreen:boundsInWindow];
+  return gfx::ScreenRectFromNSRect(boundsInScreen);
 }
 
 gfx::Rect NativeWidgetMacNSWindowHost::GetRestoredBounds() const {
@@ -1129,7 +1171,8 @@ void NativeWidgetMacNSWindowHost::OnWindowDisplayChanged(
                                display_.color_spaces());
   }
   if (display_id_changed) {
-    display_link_ = ui::DisplayLinkMac::GetForDisplay(display_.id());
+    display_link_ = ui::DisplayLinkMac::GetForDisplay(
+        base::checked_cast<CGDirectDisplayID>(display_.id()));
     if (!display_link_) {
       // Note that on some headless systems, the display link will fail to be
       // created, so this should not be a fatal error.

@@ -27,6 +27,11 @@ export class NetworkUIBrowserProxy {
   getShillNetworkProperties(guid) {}
 
   /**
+   * @return {Promise<!Array>}
+   */
+  getFirstWifiNetworkProperties() {}
+
+  /**
    * @param {string} content
    * @return {Promise<!Array>}
    */
@@ -72,6 +77,38 @@ export class NetworkUIBrowserProxy {
   disableActiveESimProfile() {}
 
   resetEuicc() {}
+
+  /**
+   * @return {Promise<string>}
+   */
+  getTetheringCapabilities() {}
+
+  /**
+   * @return {Promise<string>}
+   */
+  getTetheringStatus() {}
+
+  /**
+   * @return {Promise<string>}
+   */
+  getTetheringConfig() {}
+
+  /**
+   * @param {string} config
+   * @return {Promise<string>}
+   */
+  setTetheringConfig(config) {}
+
+  /**
+   * @return {Promise<string>}
+   */
+  checkTetheringReadiness() {}
+
+  /**
+   * @param {boolean} enabled
+   * @return {Promise<string>}
+   */
+  setTetheringEnabled(enabled) {}
 }
 
 /**
@@ -96,6 +133,11 @@ export class NetworkUIBrowserProxyImpl {
   /** @override */
   getShillNetworkProperties(guid) {
     return sendWithPromise('getShillNetworkProperties', guid);
+  }
+
+  /** @override */
+  getFirstWifiNetworkProperties() {
+    return sendWithPromise('getFirstWifiNetworkProperties');
   }
 
   /** @override */
@@ -160,6 +202,50 @@ export class NetworkUIBrowserProxyImpl {
   /** @override */
   resetEuicc() {
     chrome.send('resetEuicc');
+  }
+
+  /**
+   * @return {Promise<string>}
+   */
+  getTetheringCapabilities() {
+    return sendWithPromise('getTetheringCapabilities');
+  }
+
+  /**
+   * @return {Promise<string>}
+   */
+  getTetheringStatus() {
+    return sendWithPromise('getTetheringStatus');
+  }
+
+  /**
+   * @return {Promise<string>}
+   */
+  getTetheringConfig() {
+    return sendWithPromise('getTetheringConfig');
+  }
+
+  /**
+   * @param {string} config
+   * @return {Promise<string>}
+   */
+  setTetheringConfig(config) {
+    return sendWithPromise('setTetheringConfig', config);
+  }
+
+  /**
+   * @return {Promise<string>}
+   */
+  checkTetheringReadiness() {
+    return sendWithPromise('checkTetheringReadiness');
+  }
+
+  /**
+   * @param {boolean} enabled
+   * @return {Promise<string>}
+   */
+  setTetheringEnabled(enabled) {
+    return sendWithPromise('setTetheringEnabled', enabled);
   }
 }
 

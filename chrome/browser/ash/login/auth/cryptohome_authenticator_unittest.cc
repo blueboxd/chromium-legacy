@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/cryptohome/common_types.h"
 #include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/components/cryptohome/cryptohome_util.h"
 #include "ash/components/cryptohome/system_salt_getter.h"
@@ -37,10 +38,10 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
+#include "chromeos/ash/components/dbus/cryptohome/account_identifier_operators.h"
+#include "chromeos/ash/components/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
-#include "chromeos/dbus/cryptohome/account_identifier_operators.h"
-#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -58,10 +59,11 @@
 namespace ash {
 namespace {
 
+using ::cryptohome::KeyLabel;
+using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::WithArg;
-using ::testing::_;
 
 // A fake sanitized username used for testing.
 constexpr char kFakeSanitizedUsername[] = "01234567890ABC";
@@ -373,7 +375,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   void ExpectGetKeyDataExCall(std::unique_ptr<int64_t> key_type,
                               std::unique_ptr<std::string> salt) {
     auto key_definition = cryptohome::KeyDefinition::CreateForPassword(
-        std::string() /* secret */, kCryptohomeGaiaKeyLabel,
+        std::string() /* secret */, KeyLabel(kCryptohomeGaiaKeyLabel),
         cryptohome::PRIV_DEFAULT);
     key_definition.revision = 1;
     if (key_type) {

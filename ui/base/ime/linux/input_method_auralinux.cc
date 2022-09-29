@@ -44,8 +44,8 @@ bool IsSameKeyEvent(const ui::KeyEvent& lhs, const ui::KeyEvent& rhs) {
 namespace ui {
 
 InputMethodAuraLinux::InputMethodAuraLinux(
-    internal::InputMethodDelegate* delegate)
-    : InputMethodBase(delegate),
+    ImeKeyEventDispatcher* ime_key_event_dispatcher)
+    : InputMethodBase(ime_key_event_dispatcher),
       text_input_type_(TEXT_INPUT_TYPE_NONE),
       is_sync_mode_(false),
       composition_changed_(false) {
@@ -438,6 +438,9 @@ bool InputMethodAuraLinux::IsCandidatePopupOpen() const {
 
 VirtualKeyboardController*
 InputMethodAuraLinux::GetVirtualKeyboardController() {
+  // This should only be not null when set via testing.
+  if (auto* controller = InputMethodBase::GetVirtualKeyboardController())
+    return controller;
   return context_->GetVirtualKeyboardController();
 }
 
@@ -477,6 +480,10 @@ void InputMethodAuraLinux::OnCommit(const std::u16string& text) {
     last_commit_result_ = MaybeCommitResult(/*filtered=*/true, event);
     composition_ = CompositionText();
   }
+}
+
+void InputMethodAuraLinux::OnConfirmCompositionText(bool keep_selection) {
+  ConfirmCompositionText(keep_selection);
 }
 
 void InputMethodAuraLinux::OnDeleteSurroundingText(size_t before,
@@ -543,12 +550,17 @@ void InputMethodAuraLinux::OnSetAutocorrectRange(const gfx::Range& range) {
 #endif
 }
 
+void InputMethodAuraLinux::OnSetVirtualKeyboardOccludedBounds(
+    const gfx::Rect& screen_bounds) {
+  SetVirtualKeyboardBounds(screen_bounds);
+}
+
 // Overridden from InputMethodBase.
 
 void InputMethodAuraLinux::OnWillChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
-  ConfirmCompositionText();
+  ResetContext();
 }
 
 void InputMethodAuraLinux::OnDidChangeFocusedClient(
@@ -611,8 +623,13 @@ ui::EventDispatchDetails InputMethodAuraLinux::SendFakeProcessKeyEvent(
   return details;
 }
 
-void InputMethodAuraLinux::ConfirmCompositionText() {
-  ResetContext();
+void InputMethodAuraLinux::ConfirmCompositionText(bool keep_selection) {
+  auto* client = GetTextInputClient();
+  if (client)
+    client->ConfirmCompositionText(keep_selection);
+  composition_ = CompositionText();
+  composition_changed_ = false;
+  result_text_.reset();
 }
 
 }  // namespace ui

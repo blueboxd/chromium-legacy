@@ -5,6 +5,8 @@
 #ifndef ASH_WEBUI_PROJECTOR_APP_PROJECTOR_MESSAGE_HANDLER_H_
 #define ASH_WEBUI_PROJECTOR_APP_PROJECTOR_MESSAGE_HANDLER_H_
 
+#include <memory>
+
 #include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
 #include "ash/webui/projector_app/projector_app_client.h"
 #include "ash/webui/projector_app/projector_oauth_token_fetcher.h"
@@ -22,6 +24,7 @@ class PrefService;
 namespace ash {
 
 class ProjectorXhrSender;
+struct ProjectorScreencastVideo;
 
 // Enum to record the different errors that may occur in the Projector app.
 enum class ProjectorError {
@@ -42,6 +45,7 @@ class ProjectorMessageHandler : public content::WebUIMessageHandler,
   base::WeakPtr<ProjectorMessageHandler> GetWeakPtr();
 
   // content::WebUIMessageHandler:
+  // TODO(b/237337607): chrome.send() is banned on ash. Migrate to Mojo instead.
   void RegisterMessages() override;
 
   // ProjectorAppClient:Observer:
@@ -120,9 +124,16 @@ class ProjectorMessageHandler : public content::WebUIMessageHandler,
   // upload or failed to upload.
   void GetPendingScreencasts(const base::Value::List& args);
 
-  // Requested by the Projector SWA to fetch a single screencast with the
-  // screencast id specified by `args`.
-  void GetScreencast(const base::Value::List& args);
+  // Requested by the Projector SWA to fetch a single video from DriveFS with
+  // the Drive item id specified by `args`.
+  void GetVideo(const base::Value::List& args);
+
+  // Called when video file fetch by item id request is complete. Resolves the
+  // javascript promise created by ProjectorBrowserProxy.getScreencast by
+  // calling the `js_callback_id`.
+  void OnVideoLocated(const std::string& js_callback_id,
+                      std::unique_ptr<ProjectorScreencastVideo> video,
+                      const std::string& error_message);
 
   ProjectorOAuthTokenFetcher oauth_token_fetcher_;
   std::unique_ptr<ProjectorXhrSender> xhr_sender_;

@@ -31,9 +31,9 @@
 #include "components/user_manager/user_manager.h"
 #include "ui/display/types/display_constants.h"
 
-using chromeos::NetworkHandler;
-using chromeos::NetworkStateHandler;
-using chromeos::NetworkTypePattern;
+using ::ash::NetworkHandler;
+using ::ash::NetworkStateHandler;
+using ::ash::NetworkTypePattern;
 using chromeos::assistant::AndroidAppInfo;
 using chromeos::assistant::AppStatus;
 
@@ -101,8 +101,7 @@ std::vector<AndroidAppInfo> GetAppsInfo() {
 }
 
 void NotifyAndroidAppListRefreshed(
-    base::ObserverList<chromeos::assistant::AppListEventSubscriber>*
-        subscribers) {
+    base::ObserverList<ash::assistant::AppListEventSubscriber>* subscribers) {
   std::vector<AndroidAppInfo> android_apps_info = GetAppsInfo();
   for (auto& subscriber : *subscribers)
     subscriber.OnAndroidAppListRefreshed(android_apps_info);
@@ -126,7 +125,7 @@ void DeviceActions::SetWifiEnabled(bool enabled) {
   NET_LOG(USER) << __func__ << ":" << enabled;
   NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
       NetworkTypePattern::WiFi(), enabled,
-      chromeos::network_handler::ErrorCallback());
+      ash::network_handler::ErrorCallback());
 }
 
 void DeviceActions::SetBluetoothEnabled(bool enabled) {
@@ -198,10 +197,13 @@ bool DeviceActions::OpenAndroidApp(const AndroidAppInfo& app_info) {
     return false;
 
   auto* app = ARC_GET_INSTANCE_FOR_METHOD(
-      arc::ArcServiceManager::Get()->arc_bridge_service()->app(), LaunchIntent);
+      arc::ArcServiceManager::Get()->arc_bridge_service()->app(),
+      LaunchIntentWithWindowInfo);
   if (app) {
-    app->LaunchIntent(GetLaunchIntent(std::move(app_info)),
-                      display::kDefaultDisplayId);
+    arc::mojom::WindowInfoPtr window_info = arc::mojom::WindowInfo::New();
+    window_info->display_id = display::kDefaultDisplayId;
+    app->LaunchIntentWithWindowInfo(GetLaunchIntent(std::move(app_info)),
+                                    std::move(window_info));
   } else {
     LOG(ERROR) << "Android container is not running. Discard request for launch"
                << app_info.package_name;
@@ -216,17 +218,20 @@ AppStatus DeviceActions::GetAndroidAppStatus(const AndroidAppInfo& app_info) {
 
 void DeviceActions::LaunchAndroidIntent(const std::string& intent) {
   auto* app = ARC_GET_INSTANCE_FOR_METHOD(
-      arc::ArcServiceManager::Get()->arc_bridge_service()->app(), LaunchIntent);
+      arc::ArcServiceManager::Get()->arc_bridge_service()->app(),
+      LaunchIntentWithWindowInfo);
   if (!app) {
     LOG(ERROR) << "Android container is not running.";
     return;
   }
 
-  app->LaunchIntent(intent, display::kDefaultDisplayId);
+  arc::mojom::WindowInfoPtr window_info = arc::mojom::WindowInfo::New();
+  window_info->display_id = display::kDefaultDisplayId;
+  app->LaunchIntentWithWindowInfo(intent, std::move(window_info));
 }
 
 void DeviceActions::AddAndFireAppListEventSubscriber(
-    chromeos::assistant::AppListEventSubscriber* subscriber) {
+    ash::assistant::AppListEventSubscriber* subscriber) {
   auto* prefs = ArcAppListPrefs::Get(ProfileManager::GetActiveUserProfile());
   if (prefs && prefs->package_list_initial_refreshed()) {
     std::vector<AndroidAppInfo> android_apps_info = GetAppsInfo();
@@ -240,7 +245,7 @@ void DeviceActions::AddAndFireAppListEventSubscriber(
 }
 
 void DeviceActions::RemoveAppListEventSubscriber(
-    chromeos::assistant::AppListEventSubscriber* subscriber) {
+    ash::assistant::AppListEventSubscriber* subscriber) {
   app_list_subscribers_.RemoveObserver(subscriber);
 }
 

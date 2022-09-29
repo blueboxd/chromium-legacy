@@ -50,8 +50,6 @@ class MODULES_EXPORT UDPSocket final
  public:
   // IDL definitions
   static UDPSocket* Create(ScriptState*,
-                           const String& address,
-                           const uint16_t port,
                            const UDPSocketOptions*,
                            ExceptionState&);
 
@@ -62,10 +60,7 @@ class MODULES_EXPORT UDPSocket final
   // Validates options and calls
   // DirectSocketsServiceMojoRemote::OpenUdpSocket(...) with Init(...) passed as
   // callback.
-  bool Open(const String& address,
-            const uint16_t port,
-            const UDPSocketOptions*,
-            ExceptionState&);
+  bool Open(const UDPSocketOptions*, ExceptionState&);
 
   // On net::OK initializes readable/writable streams and resolves opened
   // promise. Otherwise rejects the opened promise. Serves as callback for
@@ -95,13 +90,11 @@ class MODULES_EXPORT UDPSocket final
 
   void CloseOnError();
 
-  void OnBothStreamsClosed(std::vector<bool> args);
+  void OnBothStreamsClosed(std::vector<ScriptValue> args);
 
   const Member<UDPSocketMojoRemote> udp_socket_;
   HeapMojoReceiver<network::mojom::blink::UDPSocketListener, UDPSocket>
       socket_listener_;
-
-  absl::optional<uint32_t> readable_stream_buffer_size_;
 };
 
 }  // namespace blink

@@ -6,16 +6,16 @@
 #define CHROMEOS_ASH_COMPONENTS_DBUS_USERDATAAUTH_FAKE_USERDATAAUTH_CLIENT_H_
 
 #include "base/memory/raw_ptr.h"
+#include "chromeos/ash/components/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
-#include "chromeos/dbus/cryptohome/rpc.pb.h"
 
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
-#include "chromeos/dbus/cryptohome/account_identifier_operators.h"
+#include "chromeos/ash/components/dbus/cryptohome/UserDataAuth.pb.h"
+#include "chromeos/ash/components/dbus/cryptohome/account_identifier_operators.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
@@ -55,8 +55,8 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
       supports_low_entropy_credentials_ = supports;
     }
 
-    // If enable_auth_check is true, then CheckKey will actually check the
-    // authorization.
+    // If enable_auth_check is true, then authentication requests actually check
+    // the key.
     void set_enable_auth_check(bool enable_auth_check) {
       enable_auth_check_ = enable_auth_check;
     }
@@ -93,7 +93,17 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
 
     // Marks a user as existing and creates the user's home directory. No auth
     // factors are added.
-    void AddExistingUser(cryptohome::AccountIdentifier account_id);
+    void AddExistingUser(const cryptohome::AccountIdentifier& account_id);
+
+    // Returns the user's home directory, or an empty optional if the user data
+    // directory is not initialized or the user doesn't exist.
+    absl::optional<base::FilePath> GetUserProfileDir(
+        const cryptohome::AccountIdentifier& account_id) const;
+
+    // Adds the given key as a fake auth factor to the user (the user must
+    // already exist).
+    void AddKey(const cryptohome::AccountIdentifier& account_id,
+                const cryptohome::Key& key);
 
    private:
     friend class FakeUserDataAuthClient;
@@ -111,7 +121,7 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
     // that GetSupportedKeyPolicies() returns.
     bool supports_low_entropy_credentials_ = false;
 
-    // Controls if CheckKeyEx actually checks the key.
+    // If true, authentication requests actually check the key.
     bool enable_auth_check_ = false;
 
     // If true, fails if |create| field is not provided
@@ -132,6 +142,9 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   struct AuthSessionData {
     // AuthSession id.
     std::string id;
+    // Whether the `AUTH_SESSION_FLAGS_EPHEMERAL_USER` flag was passed on
+    // creation.
+    bool ephemeral = false;
     // Account associated with the session.
     cryptohome::AccountIdentifier account;
     // True if session is authenticated.
@@ -316,6 +329,13 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
  private:
   struct UserCryptohomeState;
 
+  enum class AuthResult {
+    kAuthSuccess,
+    kUserNotFound,
+    kFactorNotFound,
+    kAuthFailed,
+  };
+
   // Helper that returns the protobuf reply.
   template <typename ReplyType>
   void ReturnProtobufMethodCallback(const ReplyType& reply,
@@ -338,6 +358,17 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
       ::user_data_auth::CryptohomeErrorCode* error) const;
 
   void RunPendingWaitForServiceToBeAvailableCallbacks();
+
+  // Checks the given credentials against the fake factors configured for the
+  // given user. If `wildcard_allowed` is true and `factor_label` is empty,
+  // every configured factor is attempted; `matched_factor_label` can be passed
+  // in order to know the found factor's label.
+  AuthResult AuthenticateViaAuthFactors(
+      const cryptohome::AccountIdentifier& account_id,
+      const std::string& factor_label,
+      const std::string& secret,
+      bool wildcard_allowed,
+      std::string* matched_factor_label = nullptr) const;
 
   ::user_data_auth::CryptohomeErrorCode cryptohome_error_ =
       ::user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_NOT_SET;

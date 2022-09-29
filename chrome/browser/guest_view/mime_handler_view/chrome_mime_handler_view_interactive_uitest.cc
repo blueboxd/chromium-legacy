@@ -54,11 +54,8 @@ class ChromeMimeHandlerViewInteractiveUITest : public ExtensionApiTest {
   TestGuestViewManager* GetGuestViewManager() {
     TestGuestViewManager* manager = static_cast<TestGuestViewManager*>(
         TestGuestViewManager::FromBrowserContext(browser()->profile()));
-    // TestGuestViewManager::WaitForSingleGuestCreated can and will get called
-    // before a guest is created. Since GuestViewManager is usually not created
-    // until the first guest is created, this means that |manager| will be
-    // nullptr if trying to use the manager to wait for the first guest. Because
-    // of this, the manager must be created here if it does not already exist.
+    // Test code may access the TestGuestViewManager before it would be created
+    // during creation of the first guest.
     if (!manager) {
       manager = static_cast<TestGuestViewManager*>(
           GuestViewManager::CreateWithDelegate(
@@ -83,8 +80,7 @@ class ChromeMimeHandlerViewInteractiveUITest : public ExtensionApiTest {
 
   void RunTestWithUrl(const GURL& url) {
     // Use the testing subclass of MimeHandlerViewGuest.
-    GetGuestViewManager()->RegisterTestGuestViewType<MimeHandlerViewGuest>(
-        base::BindRepeating(&TestMimeHandlerViewGuest::Create));
+    TestMimeHandlerViewGuest::RegisterTestGuestViewType(GetGuestViewManager());
 
     const Extension* extension = LoadTestExtension();
     ASSERT_TRUE(extension);
@@ -141,8 +137,7 @@ void WaitForFullscreenAnimation() {
 IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewInteractiveUITest,
                        MAYBE_EscapeExitsFullscreen) {
   // Use the testing subclass of MimeHandlerViewGuest.
-  GetGuestViewManager()->RegisterTestGuestViewType<MimeHandlerViewGuest>(
-      base::BindRepeating(&TestMimeHandlerViewGuest::Create));
+  TestMimeHandlerViewGuest::RegisterTestGuestViewType(GetGuestViewManager());
 
   const Extension* extension = LoadTestExtension();
   ASSERT_TRUE(extension);
@@ -157,7 +152,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewInteractiveUITest,
 
   // Make sure we have a guestviewmanager.
   auto* embedder_contents = browser()->tab_strip_model()->GetWebContentsAt(0);
-  auto* guest_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  auto* guest_contents =
+      GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated();
   auto* guest_rwh =
       guest_contents->GetRenderWidgetHostView()->GetRenderWidgetHost();
 

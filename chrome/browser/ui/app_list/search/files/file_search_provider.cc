@@ -22,9 +22,10 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace app_list {
+
 namespace {
 
-using chromeos::string_matching::TokenizedString;
+using ::ash::string_matching::TokenizedString;
 
 constexpr char kFileSearchSchema[] = "file_search://";
 constexpr int kMaxResults = 25;
@@ -60,7 +61,7 @@ std::string CreateFnmatchQuery(const std::string& query) {
 
 // Returns a vector of matched filepaths and a bool indicating whether or not
 // the path is a directory.
-std::vector<FileSearchProvider::PathInfo> SearchFilesByPattern(
+std::vector<FileSearchProvider::FileInfo> SearchFilesByPattern(
     const base::FilePath& root_path,
     const std::string& query,
     const base::TimeTicks& query_start_time) {
@@ -72,7 +73,7 @@ std::vector<FileSearchProvider::PathInfo> SearchFilesByPattern(
 
   const auto time_limit = base::Milliseconds(kSearchTimeoutMs);
   bool timed_out = false;
-  std::vector<FileSearchProvider::PathInfo> matched_paths;
+  std::vector<FileSearchProvider::FileInfo> matched_paths;
   for (base::FilePath path = enumerator.Next(); !path.empty();
        path = enumerator.Next()) {
     matched_paths.emplace_back(
@@ -127,7 +128,7 @@ void FileSearchProvider::Start(const std::u16string& query) {
 }
 
 void FileSearchProvider::OnSearchComplete(
-    std::vector<FileSearchProvider::PathInfo> paths) {
+    std::vector<FileSearchProvider::FileInfo> paths) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   SearchProvider::Results results;
@@ -144,7 +145,7 @@ void FileSearchProvider::OnSearchComplete(
 }
 
 std::unique_ptr<FileResult> FileSearchProvider::MakeResult(
-    const FileSearchProvider::PathInfo& path,
+    const FileSearchProvider::FileInfo& path,
     const double relevance) {
   const auto type = path.is_directory ? FileResult::Type::kDirectory
                                       : FileResult::Type::kFile;

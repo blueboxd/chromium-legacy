@@ -38,7 +38,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/navigator_media_stream.h"
-#include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
@@ -61,7 +61,7 @@ const char kFeaturePolicyBlocked[] =
 class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
  public:
   PromiseResolverCallbacks(
-      UserMediaRequest::MediaType media_type,
+      UserMediaRequestType media_type,
       ScriptPromiseResolver* resolver,
       base::OnceCallback<void(const String&, MediaStreamTrack*)>
           on_success_follow_up)
@@ -71,7 +71,7 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
   ~PromiseResolverCallbacks() override = default;
 
   void OnSuccess(const MediaStreamVector& streams) override {
-    if (media_type_ == UserMediaRequest::MediaType::kDisplayMediaSet) {
+    if (media_type_ == UserMediaRequestType::kDisplayMediaSet) {
       OnSuccessGetDisplayMediaSet(streams);
       return;
     }
@@ -85,7 +85,7 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
       // Only getDisplayMedia() calls set |on_success_follow_up_|.
       // Successful invocations of getDisplayMedia() always have exactly
       // one video track.
-      DCHECK_EQ(UserMediaRequest::MediaType::kDisplayMedia, media_type_);
+      DCHECK_EQ(UserMediaRequestType::kDisplayMedia, media_type_);
       MediaStreamTrackVector video_tracks = stream->getVideoTracks();
       DCHECK_EQ(video_tracks.size(), 1u);
       video_track = video_tracks[0];
@@ -113,11 +113,11 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
  private:
   void OnSuccessGetDisplayMediaSet(const MediaStreamVector& streams) {
     DCHECK(!streams.IsEmpty());
-    DCHECK_EQ(UserMediaRequest::MediaType::kDisplayMediaSet, media_type_);
+    DCHECK_EQ(UserMediaRequestType::kDisplayMediaSet, media_type_);
     resolver_->Resolve(streams);
   }
 
-  const UserMediaRequest::MediaType media_type_;
+  const UserMediaRequestType media_type_;
 
   Member<ScriptPromiseResolver> resolver_;
   base::OnceCallback<void(const String&, MediaStreamTrack*)>
@@ -217,19 +217,18 @@ MediaTrackSupportedConstraints* MediaDevices::getSupportedConstraints() const {
 ScriptPromise MediaDevices::getUserMedia(ScriptState* script_state,
                                          const MediaStreamConstraints* options,
                                          ExceptionState& exception_state) {
-  return SendUserMediaRequest(script_state,
-                              UserMediaRequest::MediaType::kUserMedia, options,
-                              exception_state);
+  return SendUserMediaRequest(script_state, UserMediaRequestType::kUserMedia,
+                              options, exception_state);
 }
 
 ScriptPromise MediaDevices::SendUserMediaRequest(
     ScriptState* script_state,
-    UserMediaRequest::MediaType media_type,
+    UserMediaRequestType media_type,
     const MediaStreamConstraints* options,
     ExceptionState& exception_state) {
   if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "No media device controller available; "
+                                      "No media device client available; "
                                       "is this a detached window?");
     return ScriptPromise();
   }
@@ -239,7 +238,7 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
   base::OnceCallback<void(const String&, MediaStreamTrack*)>
       on_success_follow_up;
 #if !BUILDFLAG(IS_ANDROID)
-  if (media_type == UserMediaRequest::MediaType::kDisplayMedia) {
+  if (media_type == UserMediaRequestType::kDisplayMedia) {
     on_success_follow_up = WTF::Bind(
         &MediaDevices::EnqueueMicrotaskToCloseFocusWindowOfOpportunity,
         WrapWeakPersistent(this));
@@ -250,7 +249,7 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
       media_type, resolver, std::move(on_success_follow_up));
 
   LocalDOMWindow* window = LocalDOMWindow::From(script_state);
-  UserMediaController* user_media = UserMediaController::From(window);
+  UserMediaClient* user_media_client = UserMediaClient::From(window);
   constexpr IdentifiableSurface::Type surface_type =
       IdentifiableSurface::Type::kMediaDevices_GetUserMedia;
   IdentifiableSurface surface;
@@ -259,8 +258,9 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
         surface_type, TokenFromConstraints(options));
   }
   MediaErrorState error_state;
-  UserMediaRequest* request = UserMediaRequest::Create(
-      window, user_media, media_type, options, callbacks, error_state, surface);
+  UserMediaRequest* request =
+      UserMediaRequest::Create(window, user_media_client, media_type, options,
+                               callbacks, error_state, surface);
   if (!request) {
     DCHECK(error_state.HadException());
     if (error_state.CanGenerateException()) {
@@ -294,13 +294,13 @@ ScriptPromise MediaDevices::getDisplayMediaSet(
   if (!context) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
-        "No media device controller available; is this a detached window?");
+        "No media device client available; is this a detached window?");
     return ScriptPromise();
   }
 
   return SendUserMediaRequest(script_state,
-                              UserMediaRequest::MediaType::kDisplayMediaSet,
-                              options, exception_state);
+                              UserMediaRequestType::kDisplayMediaSet, options,
+                              exception_state);
 }
 
 ScriptPromise MediaDevices::getDisplayMedia(
@@ -311,7 +311,7 @@ ScriptPromise MediaDevices::getDisplayMedia(
   if (!context) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
-        "No media device controller available; is this a detached window?");
+        "No media device client available; is this a detached window?");
     return ScriptPromise();
   }
 
@@ -344,8 +344,7 @@ ScriptPromise MediaDevices::getDisplayMedia(
     return ScriptPromise();
   }
 
-  return SendUserMediaRequest(script_state,
-                              UserMediaRequest::MediaType::kDisplayMedia,
+  return SendUserMediaRequest(script_state, UserMediaRequestType::kDisplayMedia,
                               options, exception_state);
 }
 

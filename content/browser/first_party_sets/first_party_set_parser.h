@@ -10,15 +10,15 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "base/containers/flat_set.h"
-#include "base/files/file_path.h"
 #include "base/strings/string_piece_forward.h"
+#include "base/types/expected.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/first_party_sets_handler.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
+class FirstPartySetEntry;
 class SchemefulSite;
 }
 
@@ -26,9 +26,11 @@ namespace content {
 
 class CONTENT_EXPORT FirstPartySetParser {
  public:
-  using SetsMap = base::flat_map<net::SchemefulSite, net::SchemefulSite>;
-  using SingleSet =
-      std::pair<net::SchemefulSite, base::flat_set<net::SchemefulSite>>;
+  using SetsMap = base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>;
+  // Keys are alias sites, values are their canonical representatives.
+  using Aliases = base::flat_map<net::SchemefulSite, net::SchemefulSite>;
+  using SingleSet = SetsMap;
+  using SetsAndAliases = std::pair<SetsMap, Aliases>;
   using ParseError = FirstPartySetsHandler::ParseError;
   using PolicySetType = FirstPartySetsHandler::PolicySetType;
   using PolicyParsingError = FirstPartySetsHandler::PolicyParsingError;
@@ -63,7 +65,7 @@ class CONTENT_EXPORT FirstPartySetParser {
   // received by Component Updater.
   //
   // Returns an empty map if parsing or validation of any set failed.
-  static SetsMap ParseSetsFromStream(std::istream& input);
+  static SetsAndAliases ParseSetsFromStream(std::istream& input);
 
   // Canonicalizes the passed in origin to a registered domain. In particular,
   // this ensures that the origin is non-opaque, is HTTPS, and has a registered
@@ -89,15 +91,10 @@ class CONTENT_EXPORT FirstPartySetParser {
   // Parses two lists of First-Party Sets from `policy` using the "replacements"
   // and "additions" list fields if present.
   //
-  // Returns an optional PolicyParsingError encoding an error and its location
-  // if any set in these lists violates the required invariants of a First-Party
-  // Set.
-  //
-  // If no errors are found and `out_sets` is non-null, then `out_sets` will
-  // be populated with the parsed replacement sets and parsed addition sets.
-  [[nodiscard]] static absl::optional<PolicyParsingError>
-  ParseSetsFromEnterprisePolicy(const base::Value::Dict& policy,
-                                ParsedPolicySetLists* out_sets);
+  // Returns the parsed lists if successful; otherwise, returns a
+  // PolicyParsingError encoding the error and its location.
+  [[nodiscard]] static base::expected<ParsedPolicySetLists, PolicyParsingError>
+  ParseSetsFromEnterprisePolicy(const base::Value::Dict& policy);
 };
 
 }  // namespace content

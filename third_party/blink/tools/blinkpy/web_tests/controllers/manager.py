@@ -211,6 +211,8 @@ class Manager(object):
             initial_results,
             all_retry_results,
             only_include_failing=True)
+        run_histories = test_run_results.test_run_histories(
+            self._port, self._expectations, initial_results, all_retry_results)
 
         exit_code = summarized_failing_results['num_regressions']
         if exit_code > exit_codes.MAX_FAILURES_EXIT_STATUS:
@@ -221,7 +223,7 @@ class Manager(object):
         if not self._options.dry_run:
             self._write_json_files(summarized_full_results,
                                    summarized_failing_results, initial_results,
-                                   running_all_tests)
+                                   running_all_tests, run_histories)
 
             self._upload_json_files()
 
@@ -612,7 +614,7 @@ class Manager(object):
 
     def _write_json_files(self, summarized_full_results,
                           summarized_failing_results, initial_results,
-                          running_all_tests):
+                          running_all_tests, run_histories):
         _log.debug("Writing JSON files in %s.", self._artifacts_directory)
 
         # FIXME: Upload stats.json to the server and delete times_ms.
@@ -648,14 +650,14 @@ class Manager(object):
             summarized_full_results,
             full_results_jsonp_path,
             callback='ADD_FULL_RESULTS')
-        full_results_path = self._filesystem.join(self._artifacts_directory,
-                                                  'failing_results.json')
+        failing_results_path = self._filesystem.join(self._artifacts_directory,
+                                                     'failing_results.json')
         # We write failing_results.json out as jsonp because we need to load it
         # from a file url for results.html and Chromium doesn't allow that.
         json_results_generator.write_json(
             self._filesystem,
             summarized_failing_results,
-            full_results_path,
+            failing_results_path,
             callback='ADD_RESULTS')
 
         # Write out the JSON files suitable for other tools to process.
@@ -671,6 +673,10 @@ class Manager(object):
             json_results_generator.write_json(self._filesystem,
                                               summarized_full_results,
                                               self._options.json_test_results)
+        if self._options.write_run_histories_to:
+            json_results_generator.write_json(
+                self._filesystem, run_histories,
+                self._options.write_run_histories_to)
 
         _log.debug('Finished writing JSON files.')
 
@@ -716,7 +722,8 @@ class Manager(object):
 
     def _copy_results_html_file(self, destination_dir, filename):
         """Copies a file from the template directory to the results directory."""
-        template_dir = self._path_finder.path_from_web_tests('fast', 'harness')
+        template_dir = self._path_finder.path_from_blink_tools(
+            'blinkpy', 'web_tests')
         source_path = self._filesystem.join(template_dir, filename)
         destination_path = self._filesystem.join(destination_dir, filename)
         # Note that the results.html template file won't exist when

@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">Stahování pozastaveno</translation>
 <translation id="1409426117486808224">Zjednodušené zobrazení otevřených karet</translation>
 <translation id="1415402041810619267">Zkrácená adresa URL</translation>
+<translation id="1426410128494586442">Ano</translation>
 <translation id="1446450296470737166">Povolit úplné ovládání zařízení MIDI</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1644574205037202324">Historie</translation>
@@ -32,6 +33,7 @@
 <translation id="1818308510395330587">Pokud aplikaci <ph name="APP_NAME" /> chcete povolit používání rozšířené reality, zapněte také v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" /> fotoaparát.</translation>
 <translation id="1864927262126810325">Od <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">Přístup k poloze je v tomto zařízení vypnut. Zapnete jej v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
+<translation id="1915307458270490472">Zavěsit</translation>
 <translation id="1919345977826869612">Reklamy</translation>
 <translation id="1919950603503897840">Vyberte kontakty</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -78,6 +80,7 @@
 <translation id="2677748264148917807">Odejít</translation>
 <translation id="2687403674020088961">Blokovat všechny soubory cookie (nedoporučujeme)</translation>
 <translation id="2704606927547763573">Zkopírováno</translation>
+<translation id="2713106313042589954">Vypnout kameru</translation>
 <translation id="2717722538473713889">E‑mailové adresy</translation>
 <translation id="2750481671343847896">Weby mohou zobrazovat výzvy k přihlášení od služeb zjišťujících identitu</translation>
 <translation id="2785051990912111074">Výběrem této možnosti vymažete soubory cookie webu <ph name="WEBSITE" /></translation>
@@ -97,6 +100,7 @@
 <translation id="3114012059975132928">Přehrávač videa</translation>
 <translation id="3115898365077584848">Zobrazit informace</translation>
 <translation id="3123473560110926937">Na některých webech blokováno</translation>
+<translation id="3143754809889689516">Přehrát od začátku</translation>
 <translation id="3198916472715691905">Uložená data: <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3203366800380907218">Z webu</translation>
 <translation id="321187648315454507">Pokud aplikaci <ph name="APP_NAME" /> chcete povolit, aby vám zasílala oznámení, zapněte oznámení také v <ph name="BEGIN_LINK" />Natavení Android<ph name="END_LINK" />.</translation>
@@ -153,10 +157,12 @@
 <translation id="4479647676395637221">Pokud web bude chtít použít vaši kameru, zobrazit dotaz (doporučeno)</translation>
 <translation id="4505788138578415521">Rozbalená adresa URL</translation>
 <translation id="4534723447064627427">Pokud aplikaci <ph name="APP_NAME" /> chcete umožnit přístup k mikrofonu, zapněte mikrofon také v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
+<translation id="4566417217121906555">Vypnout mikrofon</translation>
 <translation id="4570913071927164677">Podrobnosti</translation>
 <translation id="4645575059429386691">Spravováno vaším rodičem</translation>
 <translation id="4670064810192446073">Virtuální realita</translation>
 <translation id="4751476147751820511">Senzory pohybu nebo světla</translation>
+<translation id="4811450222531576619">Informace o zdroji a tématu</translation>
 <translation id="4836046166855586901">Zeptat se, když chce web zjistit, kdy aktivně používáte toto zařízení</translation>
 <translation id="4883854917563148705">Spravovaná nastavení nelze resetovat</translation>
 <translation id="4887024562049524730">Předtím, než webům bude povoleno použít zařízení a data pro virtuální realitu, se zeptat (doporučeno)</translation>
@@ -177,6 +183,7 @@
 <translation id="5186036860380548585">Možnost je k dispozici u horního okraje obrazovky</translation>
 <translation id="5197729504361054390">Vybrané kontakty budou sdíleny s webem <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Naposledy navštíveno dnes</translation>
+<translation id="5225463052809312700">Zapnout kameru</translation>
 <translation id="5264323282659631142">Odstranit položku <ph name="CHIP_LABEL" /></translation>
 <translation id="528192093759286357">Režim celé obrazovky ukončíte přetažením z horního okraje obrazovky a klepnutím na tlačítko Zpět.</translation>
 <translation id="5300589172476337783">Zobrazit</translation>
@@ -235,8 +242,10 @@
 <translation id="6367753977865761591">Blokování přihlášení třetích stran na konkrétní web.</translation>
 <translation id="6388207532828177975">Vymazat a resetovat</translation>
 <translation id="6398765197997659313">Ukončit režim celé obrazovky</translation>
+<translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Bránit webům v používání zařízení a dat pro virtuální realitu</translation>
 <translation id="6447842834002726250">Soubory cookie</translation>
+<translation id="6467852467360539617">Vymazat data a resetovat oprávnění</translation>
 <translation id="6527303717912515753">Sdílet</translation>
 <translation id="6545864417968258051">Vyhledávání Bluetooth</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{Blokovaná oprávnění: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> a další (<ph name="NUM_MORE" />)}few{Blokovaná oprávnění: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> a další (<ph name="NUM_MORE" />)}many{Blokovaná oprávnění: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> a další (<ph name="NUM_MORE" />)}other{Blokovaná oprávnění: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> a další (<ph name="NUM_MORE" />)}}</translation>
@@ -276,6 +285,7 @@
 <translation id="7250468141469952378">Vybráno: <ph name="ITEM_COUNT" /></translation>
 <translation id="7260727271532453612">Oprávnění <ph name="PERMISSION_1" /> a <ph name="PERMISSION_2" /> jsou povolena</translation>
 <translation id="7302486331832100261">Obvykle oznámení blokujete. Chcete-li je povolit, klepněte na Podrobnosti.</translation>
+<translation id="7383715096023715447">Nastavení zařízení <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Nejprve se dotázat</translation>
 <translation id="7423538860840206698">Čtení schránky je blokováno</translation>
 <translation id="7425915948813553151">Tmavý motiv pro weby</translation>
@@ -335,6 +345,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Je používán 1 soubor cookie}few{Jsou používány # soubory cookie}many{Je používáno # souboru cookie}other{Je používáno # souborů cookie}}</translation>
 <translation id="8487700953926739672">Dostupné offline</translation>
 <translation id="848952951823693243">Vždy požadovat zobrazení na mobilu</translation>
+<translation id="8499083585497694743">Zapnout mikrofon</translation>
 <translation id="851751545965956758">Bránit webům v připojení k zařízením</translation>
 <translation id="8525306231823319788">Celá obrazovka</translation>
 <translation id="857943718398505171">Povoleno (doporučeno)</translation>

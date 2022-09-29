@@ -7,6 +7,7 @@
 <translation id="1258009455399840361">Rotiraj za 90 stepeni udesno</translation>
 <translation id="1276998909102132017">Slike u galeriji</translation>
 <translation id="1300209025925956156">Skenirajte dokument</translation>
+<translation id="1309250603447638106">Preuzimaju se ažuriranja za skeniranje dokumenata</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Taster za pretragu + strelica nalevo da biste pristupili.</translation>
 <translation id="1393338179284529051">Quad HD</translation>
 <translation id="1430915738399379752">Štampaj</translation>
@@ -47,6 +48,7 @@
 <translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Pregled preslikavanja</translation>
 <translation id="2879583609344924966">Kamera <ph name="CAMERA" /> je priključena.</translation>
+<translation id="2904654629665923749">Dostupno je skeniranje dokumenata</translation>
 <translation id="2968794441791257519">Slike i video snimci koji su snimljeni pomoću kamere će se premestiti u direktorijum Preuzimanja. Možete da im pristupite u Datotekama.
 
         Aplikacije sa dozvolama za pristup memorijskom prostoru će imati pristup slikama i video snimcima.</translation>
@@ -72,7 +74,6 @@
 <translation id="3838931309141338733">Skeniraj bar-kod</translation>
 <translation id="3892148308691398805">Kopiraj tekst</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> MP</translation>
-<translation id="4096701159033358951">Preuzima se funkcija skeniranja dokumenata</translation>
 <translation id="4118525110028899586">Pauziraj snimanje</translation>
 <translation id="4121305183798804752">Dokument je otkriven</translation>
 <translation id="414641094616694804">Ova kamera ne može da promeni rezoluciju</translation>
@@ -94,7 +95,6 @@
 <translation id="5057360777601936059">Kamera trenutno nije dostupna.
         Proverite da li je kamera ispravno povezana.</translation>
 <translation id="5163387177077603948">Kreće se udesno</translation>
-<translation id="520537883758714667">Sada je dostupno skeniranje dokumenata</translation>
 <translation id="5235304959032763950">16 prema 9</translation>
 <translation id="5266635337630551423">Gornji levi ugao dokumenta</translation>
 <translation id="5317780077021120954">Sačuvaj</translation>

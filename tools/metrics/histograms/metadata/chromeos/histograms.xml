@@ -205,7 +205,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Attestation.AttestationFlowStatus"
-    enum="AttestationFlowStatus" expires_after="2022-12-11">
+    enum="AttestationFlowStatus" expires_after="2023-02-12">
   <owner>cylai@chromium.org</owner>
   <owner>cros-hwsec+umas@chromium.org</owner>
   <summary>
@@ -254,7 +254,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.ErrorType" enum="ChromeOSCameraErrorType"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>wtlee@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -285,7 +285,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.Facing" enum="ChromeOSCameraFacing"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>wtlee@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -474,7 +474,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Camera.SessionDuration" units="seconds"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>wtlee@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>Records the session duration in Chrome OS camera service.</summary>
@@ -599,7 +599,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.CWP.ParsePSIMemory" enum="ChromeOSParsePSIMemStatus"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>raging@google.com</owner>
   <owner>chromeos-memory@google.com</owner>
   <summary>
@@ -694,7 +694,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.DiagnosticsUi.MemoryRoutineDuration" units="s"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>ashleydp@google.com</owner>
   <owner>gavinwill@chromium.org</owner>
   <owner>zentaro@chromium.org</owner>
@@ -706,7 +706,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.DiagnosticsUi.OpenDuration" units="ms"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>ashleydp@google.com</owner>
   <owner>gavinwill@chromium.org</owner>
   <owner>zentaro@chromium.org</owner>
@@ -718,7 +718,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.DiagnosticsUi.RoutineCount" units="routines"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>ashleydp@google.com</owner>
   <owner>gavinwill@chromium.org</owner>
   <owner>zentaro@chromium.org</owner>
@@ -833,6 +833,16 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   <token key="Severity">
     <variant name="Critical"/>
   </token>
+</histogram>
+
+<histogram name="ChromeOS.Gaia.Done.ElapsedTime" units="ms"
+    expires_after="2023-03-01">
+  <owner>bchikhaoui@google.com</owner>
+  <owner>cros-oac@google.com</owner>
+  <summary>
+    Records the amount of time spent by user to complete GAIA login. Recorded
+    during user sign-in when Chrome received all the signals from Gaia.
+  </summary>
 </histogram>
 
 <histogram name="ChromeOS.Gaia.Message.{GaiaAuthFlow}.{MessageName}"
@@ -956,7 +966,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Intents.IntentPickerAction"
-    enum="IntentPickerDialogAction" expires_after="2023-01-15">
+    enum="IntentPickerDialogAction" expires_after="2023-02-12">
   <owner>tsergeant@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -984,7 +994,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Intents.IntentPickerIconEvent"
-    enum="IntentPickerIconEvent" expires_after="2022-12-04">
+    enum="IntentPickerIconEvent" expires_after="2023-02-12">
   <owner>tsergeant@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -995,6 +1005,9 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ChromeOS.Intents.LinkCapturingEvent" enum="LinkCapturingEvent"
     expires_after="2022-12-01">
+  <obsolete>
+    Replaced by ChromeOS.Intents.LinkCapturingEvent2 in M106.
+  </obsolete>
   <owner>vpao@google.com</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -1006,6 +1019,9 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ChromeOS.Intents.LinkCapturingEvent.{AppType}App"
     enum="LinkCapturingEvent" expires_after="2022-12-01">
+  <obsolete>
+    Replaced by ChromeOS.Intents.LinkCapturingEvent2 in M106.
+  </obsolete>
   <owner>vpao@google.com</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -1013,6 +1029,39 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     type, when a link is successfully captured and results in opening a/ an
     {AppType} app, and when the user changes their settings to automatically
     capture similar links in the future.
+  </summary>
+  <token key="AppType">
+    <variant name="Arc"/>
+    <variant name="Web"/>
+  </token>
+</histogram>
+
+<histogram name="ChromeOS.Intents.LinkCapturingEvent2"
+    enum="LinkCapturingEvent" expires_after="2023-02-12">
+  <owner>vpao@google.com</owner>
+  <owner>chromeos-apps-foundation-team@google.com</owner>
+  <summary>
+    Records when the link capturing entry point is shown, when a link is
+    successfully captured and results in opening an app, and when the user
+    changes their settings to automatically capture similar links in the future.
+
+    Replaces ChromeOS.Intents.LinkCapturingEvent, which incorrectly recorded
+    events when the user changed settings to stay in Chrome.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Intents.LinkCapturingEvent2.{AppType}App"
+    enum="LinkCapturingEvent" expires_after="2022-12-01">
+  <owner>vpao@google.com</owner>
+  <owner>chromeos-apps-foundation-team@google.com</owner>
+  <summary>
+    Records when the link capturing entry point is shown for the {AppType} app
+    type, when a link is successfully captured and results in opening a/ an
+    {AppType} app, and when the user changes their settings to automatically
+    capture similar links in the future.
+
+    Replaces ChromeOS.Intents.LinkCapturingEvent.{AppType}App, which incorrectly
+    recorded events when the user changed settings to stay in Chrome.
   </summary>
   <token key="AppType">
     <variant name="Arc"/>
@@ -1134,6 +1183,16 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.LanguagePacks.Mojo.BasePackStateResponse"
+    enum="LanguagePackMojoPackState" expires_after="2022-12-11">
+  <owner>mlcui@google.com</owner>
+  <owner>cros-borders-eng@google.com</owner>
+  <summary>
+    Records the state of what state a base pack is in (whether it's installed or
+    not) when the language packs Mojo interface responds to an IPC.
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.LanguagePacks.Mojo.GetPackInfo.Feature"
     enum="LanguagePackMojoFeatureId" expires_after="2022-12-04">
   <owner>mlcui@google.com</owner>
@@ -1141,6 +1200,16 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records which feature was requested by callers of the language packs Mojo
     interface's &quot;GetPackInfo&quot; IPC call.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.LanguagePacks.Mojo.InstallBasePack.Feature"
+    enum="LanguagePackMojoFeatureId" expires_after="2022-12-11">
+  <owner>mlcui@google.com</owner>
+  <owner>cros-borders-eng@google.com</owner>
+  <summary>
+    Records which feature was requested by callers of the language packs Mojo
+    interface's &quot;InstallBasePack&quot; IPC call.
   </summary>
 </histogram>
 
@@ -1192,7 +1261,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Liveness.PingResponseTime" units="ms"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>rtinkoff@google.com</owner>
   <owner>xiyuan@google.com</owner>
   <summary>
@@ -1321,7 +1390,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.MessageCenter.ScrollActionReason"
-    enum="ChromeOSMessageCenterScrollActionReason" expires_after="2022-11-22">
+    enum="ChromeOSMessageCenterScrollActionReason" expires_after="2023-01-22">
   <owner>yoshiki@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <owner>leandre@chromium.org</owner>
@@ -1451,7 +1520,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SAML.Scraping.PasswordCountAll" units="passwords"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>mslus@chromium.org</owner>
   <owner>emaxx@chromium.org</owner>
   <summary>
@@ -1474,7 +1543,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.SecurityAnomaly" enum="SecurityAnomaly"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>jorgelo@chromium.org</owner>
   <owner>chromeos-security-core@google.com</owner>
   <summary>
@@ -1544,7 +1613,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.FormFactor"
-    enum="ChromeOSSharesheetFormFactor" expires_after="2022-12-11">
+    enum="ChromeOSSharesheetFormFactor" expires_after="2023-02-12">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>Records the form factor when the Sharesheet is invoked.</summary>
@@ -1571,7 +1640,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.LaunchSource"
-    enum="ChromeOSSharesheetLaunchSource" expires_after="2022-12-11">
+    enum="ChromeOSSharesheetLaunchSource" expires_after="2023-02-12">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>
@@ -1593,7 +1662,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.UserAction"
-    enum="ChromeOSSharesheetAction" expires_after="2022-12-11">
+    enum="ChromeOSSharesheetAction" expires_after="2023-02-12">
   <owner>dominickn@chromium.org</owner>
   <owner>melzhang@chromium.org</owner>
   <summary>Records user action on sharesheet invocations.</summary>
@@ -1620,7 +1689,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sync.PreferencesMigrated" enum="BooleanMigrated"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>rsorokin@chromium.org</owner>
   <owner>jamescook@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
@@ -1859,7 +1928,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.TypeC.UsbDeviceSpeed" enum="UsbDeviceSpeedMetric"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>wonchung@google.com</owner>
   <owner>chromeos-usb@google.com</owner>
   <summary>
@@ -1880,7 +1949,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.UrlXattrsCount" units="units"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>jorgelo@chromium.org</owner>
   <owner>tnagel@chromium.org</owner>
   <summary>
@@ -1991,7 +2060,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.WXMountCount" units="count"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>jorgelo@chromium.org</owner>
   <owner>chromeos-security-core@google.com</owner>
   <summary>

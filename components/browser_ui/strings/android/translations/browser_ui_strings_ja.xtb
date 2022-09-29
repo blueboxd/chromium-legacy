@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">ダウンロードを一時停止しました</translation>
 <translation id="1409426117486808224">開いているタブの簡易表示</translation>
 <translation id="1415402041810619267">URL の短縮バージョンです</translation>
+<translation id="1426410128494586442">はい</translation>
 <translation id="1446450296470737166">MIDI機器のフルコントロールを許可</translation>
 <translation id="1620510694547887537">カメラ</translation>
 <translation id="1644574205037202324">履歴</translation>
@@ -32,6 +33,7 @@
 <translation id="1818308510395330587"><ph name="APP_NAME" /> に AR の使用を許可するには、<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でもカメラをオンにしてください。</translation>
 <translation id="1864927262126810325">ソース: <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">位置情報へのアクセスがデバイスでオフになっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でオンにしてください。</translation>
+<translation id="1915307458270490472">通話を終了</translation>
 <translation id="1919345977826869612">広告</translation>
 <translation id="1919950603503897840">連絡先を選択</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -78,6 +80,7 @@
 <translation id="2677748264148917807">このページを離れる</translation>
 <translation id="2687403674020088961">すべての Cookie をブロックする（推奨されません）</translation>
 <translation id="2704606927547763573">コピーしました</translation>
+<translation id="2713106313042589954">カメラをオフにする</translation>
 <translation id="2717722538473713889">メールアドレス</translation>
 <translation id="2750481671343847896">サイトで ID サービスからのログイン メッセージを表示できるようにします。</translation>
 <translation id="2785051990912111074">これを選択すると、<ph name="WEBSITE" /> の Cookie が消去されます</translation>
@@ -97,6 +100,7 @@
 <translation id="3114012059975132928">動画プレーヤー</translation>
 <translation id="3115898365077584848">情報を表示</translation>
 <translation id="3123473560110926937">一部のサイトでブロックされています</translation>
+<translation id="3143754809889689516">最初から再生</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> の保存データ</translation>
 <translation id="3203366800380907218">ウェブから</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> に通知の送信を許可するには、<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でも通知をオンにしてください。</translation>
@@ -153,10 +157,12 @@
 <translation id="4479647676395637221">サイトにカメラの使用を許可する前に確認する（推奨）</translation>
 <translation id="4505788138578415521">URL のフルバージョンです</translation>
 <translation id="4534723447064627427"><ph name="APP_NAME" /> にマイクへのアクセスを許可するには、<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でもマイクをオンにしてください。</translation>
+<translation id="4566417217121906555">マイクをミュート</translation>
 <translation id="4570913071927164677">詳細</translation>
 <translation id="4645575059429386691">保護者により管理されています</translation>
 <translation id="4670064810192446073">バーチャル リアリティ（VR）</translation>
 <translation id="4751476147751820511">モーション センサーまたは光センサー</translation>
+<translation id="4811450222531576619">ソースとトピックの詳細</translation>
 <translation id="4836046166855586901">サイトからこのデバイスのアクティブ状態の検出を求められたときに確認する</translation>
 <translation id="4883854917563148705">管理者による設定はリセットできません</translation>
 <translation id="4887024562049524730">サイトにバーチャル リアリティ デバイスとデータの使用を許可する前に確認する（推奨）</translation>
@@ -177,6 +183,7 @@
 <translation id="5186036860380548585">設定は画面上部にあります</translation>
 <translation id="5197729504361054390">選択した連絡先が <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> と共有されます。</translation>
 <translation id="5216942107514965959">最終アクセス日: 今日</translation>
+<translation id="5225463052809312700">カメラをオンにする</translation>
 <translation id="5264323282659631142"><ph name="CHIP_LABEL" /> を削除</translation>
 <translation id="528192093759286357">全画面表示を終了するには、上からドラッグして、戻るボタンをタップします。</translation>
 <translation id="5300589172476337783">表示</translation>
@@ -235,8 +242,10 @@
 <translation id="6367753977865761591">特定のサイトのサードパーティのログインをブロックします。</translation>
 <translation id="6388207532828177975">データを削除してリセット</translation>
 <translation id="6398765197997659313">全画面表示を終了</translation>
+<translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">サイトによるバーチャル リアリティ デバイスとデータの使用をブロックする</translation>
 <translation id="6447842834002726250">Cookie</translation>
+<translation id="6467852467360539617">データを消去して権限をリセット</translation>
 <translation id="6527303717912515753">共有</translation>
 <translation id="6545864417968258051">Bluetooth のスキャン</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />、<ph name="PERMISSION_2" />、他 <ph name="NUM_MORE" /> 個の権限がブロックされています}other{<ph name="PERMISSION_1" />、<ph name="PERMISSION_2" />、他 <ph name="NUM_MORE" /> 個の権限がブロックされています}}</translation>
@@ -276,6 +285,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> 件選択されています</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" />、<ph name="PERMISSION_2" />を許可</translation>
 <translation id="7302486331832100261">通知はデフォルトでブロックされています。許可するには [詳細] をタップしてください。</translation>
+<translation id="7383715096023715447"><ph name="DOMAIN" /> の設定</translation>
 <translation id="7423098979219808738">最初に確認する</translation>
 <translation id="7423538860840206698">クリップボードの読み取りがブロックされています</translation>
 <translation id="7425915948813553151">サイトのダークモード</translation>
@@ -335,6 +345,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 個の Cookie が使用中です}other{# 個の Cookie が使用中です}}</translation>
 <translation id="8487700953926739672">オフラインでの利用</translation>
 <translation id="848952951823693243">常にモバイル版サイトを表示する</translation>
+<translation id="8499083585497694743">マイクのミュートを解除</translation>
 <translation id="851751545965956758">サイトからデバイスへの接続をブロックする</translation>
 <translation id="8525306231823319788">全画面表示</translation>
 <translation id="857943718398505171">許可（推奨）</translation>

@@ -95,6 +95,7 @@
     "reclient": {
       "gn_args": {
         "dcheck_always_on": false,
+        "enable_nacl": false,
         "ffmpeg_branding": "Chrome",
         "is_component_build": false,
         "is_debug": false,
@@ -422,18 +423,6 @@
       "use_remoteexec": true
     }
   },
-  "Mac Builder (py2 less)": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "enable_nacl": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "use_goma": true
-    }
-  },
   "Mac Builder (reclient compare)": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -462,7 +451,7 @@
       "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
-      "is_debug": false,
+      "is_debug": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "target_cpu": "arm64",
@@ -490,6 +479,7 @@
   "Mac deterministic (reclient shadow)": {
     "gn_args": {
       "dcheck_always_on": false,
+      "enable_nacl": false,
       "enable_stripping": true,
       "is_component_build": false,
       "is_debug": false,
@@ -1056,7 +1046,7 @@
       "is_component_build": false,
       "is_debug": true,
       "symbol_level": 1,
-      "target_cpu": "arm64",
+      "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
       "use_goma": true
@@ -1069,7 +1059,7 @@
       "is_component_build": false,
       "is_debug": true,
       "symbol_level": 1,
-      "target_cpu": "arm64",
+      "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
       "treat_warnings_as_errors": false,
@@ -1373,6 +1363,17 @@
       "use_remoteexec": true
     }
   },
+  "linux-rel-no-external-ip": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "devtools_skip_typecheck": false,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "use_remoteexec": true
+    }
+  },
   "linux-upload-perfetto": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -1418,6 +1419,19 @@
       "use_remoteexec": true
     }
   },
+  "mac-backuprefptr-x64-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "enable_backup_ref_ptr_slow_checks": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 1,
+      "target_cpu": "x64",
+      "use_allocator": "partition",
+      "use_backup_ref_ptr": true,
+      "use_remoteexec": true
+    }
+  },
   "mac-code-coverage": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -1447,27 +1461,6 @@
       "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
-      "use_goma": true
-    }
-  },
-  "mac-paeverywhere-x64-fyi-dbg": {
-    "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_cpu": "x64",
-      "use_allocator": "none",
-      "use_goma": true
-    }
-  },
-  "mac-paeverywhere-x64-fyi-rel": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "symbol_level": 1,
-      "target_cpu": "x64",
-      "use_allocator": "none",
       "use_goma": true
     }
   },
@@ -1549,6 +1542,17 @@
       "is_debug": false,
       "symbol_level": 0,
       "use_clang_coverage": true,
+      "use_remoteexec": true
+    }
+  },
+  "win10-rel-no-external-ip": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
       "use_remoteexec": true
     }
   },

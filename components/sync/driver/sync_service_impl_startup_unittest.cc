@@ -16,7 +16,7 @@
 #include "components/sync/driver/fake_sync_api_component_factory.h"
 #include "components/sync/driver/sync_client_mock.h"
 #include "components/sync/driver/sync_service_impl_bundle.h"
-#include "components/sync/test/engine/fake_sync_engine.h"
+#include "components/sync/test/fake_sync_engine.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -508,7 +508,7 @@ TEST_F(SyncServiceImplStartupTest, StartDontRecoverDatatypePrefs) {
 TEST_F(SyncServiceImplStartupTest, ManagedStartup) {
   // Sync was previously enabled, but a policy was set while Chrome wasn't
   // running.
-  sync_prefs()->SetManagedForTest(true);
+  pref_service()->SetBoolean(prefs::kSyncManaged, true);
   sync_prefs()->SetSyncRequested(true);
   sync_prefs()->SetFirstSetupComplete();
 
@@ -548,7 +548,7 @@ TEST_F(SyncServiceImplStartupTest, SwitchManaged) {
   ASSERT_EQ(0, get_controller(BOOKMARKS)->model()->clear_metadata_call_count());
 
   // The service should stop when switching to managed mode.
-  sync_prefs()->SetManagedForTest(true);
+  pref_service()->SetBoolean(prefs::kSyncManaged, true);
   // Give re-startup a chance to happen (it shouldn't!).
   base::RunLoop().RunUntilIdle();
   // Sync was disabled due to the policy, setting SyncRequested to false and
@@ -567,7 +567,7 @@ TEST_F(SyncServiceImplStartupTest, SwitchManaged) {
   // When switching back to unmanaged, Sync-the-transport should start up
   // automatically, which causes (re)creation of SyncEngine and
   // DataTypeManager.
-  sync_prefs()->SetManagedForTest(false);
+  pref_service()->SetBoolean(prefs::kSyncManaged, false);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(

@@ -359,11 +359,11 @@ bool OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() {
 }
 
 size_t OmniboxFieldTrial::GetMaxURLMatches() {
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-  constexpr size_t kDefaultMaxURLMatches = 5;
-#else
+#if !BUILDFLAG(IS_ANDROID)
   constexpr size_t kDefaultMaxURLMatches = 7;
-#endif
+#else   // BUILDFLAG(IS_ANDROID)
+  constexpr size_t kDefaultMaxURLMatches = 5;
+#endif  // BUILDFLAG(IS_ANDROID)
   return base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kOmniboxMaxURLMatches,
       OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, kDefaultMaxURLMatches);
@@ -595,6 +595,18 @@ bool OmniboxFieldTrial::IsFuzzyUrlSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxFuzzyUrlSuggestions);
 }
 
+const base::FeatureParam<bool>
+    OmniboxFieldTrial::kFuzzyUrlSuggestionsCounterfactual(
+        &omnibox::kOmniboxFuzzyUrlSuggestions,
+        "FuzzyUrlSuggestionsCounterfactual",
+        false);
+
+const base::FeatureParam<bool>
+    OmniboxFieldTrial::kFuzzyUrlSuggestionsLowEndBypass(
+        &omnibox::kOmniboxFuzzyUrlSuggestions,
+        "FuzzyUrlSuggestionsLowEndBypass",
+        false);
+
 bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kExperimentalKeywordMode);
 }
@@ -725,11 +737,11 @@ const base::FeatureParam<bool>
         &omnibox::kAutocompleteStability,
         "AutocompleteStabilityPreserveDefaultAfterTransfer",
         false);
-const base::FeatureParam<bool>
-    kAutocompleteStabilityPreserveDefaultForSyncUpdates(
+const base::FeatureParam<int>
+    kAutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength(
         &omnibox::kAutocompleteStability,
-        "AutocompleteStabilityPreserveDefaultForSyncUpdates",
-        false);
+        "AutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength",
+        -1);
 const base::FeatureParam<bool>
     kAutocompleteStabilityPreserveDefaultForAsyncUpdates(
         &omnibox::kAutocompleteStability,
@@ -743,6 +755,15 @@ const base::FeatureParam<bool> kAutocompleteStabilityAsyncProvidersFirst(
     &omnibox::kAutocompleteStability,
     "AutocompleteStabilityAsyncProvidersFirst",
     false);
+const base::FeatureParam<bool>
+    kAutocompleteStabilityUpdateResultDebounceFromLastRun(
+        &omnibox::kAutocompleteStability,
+        "AutocompleteStabilityUpdateResultDebounceFromLastRun",
+        false);
+const base::FeatureParam<int> kAutocompleteStabilityUpdateResultDebounceDelay(
+    &omnibox::kAutocompleteStability,
+    "AutocompleteStabilityUpdateResultDebounceDelay",
+    0);
 
 // Local history zero-prefix (aka zero-suggest) and prefix suggestions:
 
@@ -761,6 +782,12 @@ bool UseSharedInstanceForZeroSuggestPrefetching() {
   return base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetching) &&
          base::FeatureList::IsEnabled(
              kUseSharedInstanceForZeroSuggestPrefetching);
+}
+
+bool IsZeroSuggestPrefetchingEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetching) ||
+         base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetchingOnSRP) ||
+         base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetchingOnWeb);
 }
 
 const base::FeatureParam<bool> kZeroSuggestIgnoreDuplicateVisits(

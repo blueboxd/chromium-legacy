@@ -151,17 +151,6 @@ class WebUITabContextMenu : public ui::SimpleMenuModel::Delegate,
   const int tab_index_;
 };
 
-bool IsSortedAndContiguous(base::span<const int> sequence) {
-  if (sequence.size() < 2)
-    return true;
-
-  if (!std::is_sorted(sequence.begin(), sequence.end()))
-    return false;
-
-  return sequence.back() ==
-         sequence.front() + static_cast<int>(sequence.size()) - 1;
-}
-
 }  // namespace
 
 TabStripPageHandler::~TabStripPageHandler() {
@@ -281,6 +270,14 @@ void TabStripPageHandler::OnTabStripModelChanged(
   if (tab_strip_model->empty())
     return;
 
+  // The context menu model is created when the menu is first shown. However, if
+  // the tab strip model changes, the context menu model may not longer reflect
+  // the current state of the tab strip. Actions then taken from the context
+  // menu may leave the tab strip in an inconsistent state, or result in DCHECK
+  // crashes. To ensure this does not occur close the context menu on a tab
+  // strip model change.
+  embedder_->CloseContextMenu();
+
   switch (change.type()) {
     case TabStripModelChange::kInserted: {
       for (const auto& contents : change.GetInsert()->contents) {
@@ -297,32 +294,6 @@ void TabStripPageHandler::OnTabStripModelChanged(
     }
     case TabStripModelChange::kMoved: {
       auto* move = change.GetMove();
-
-      absl::optional<tab_groups::TabGroupId> tab_group_id =
-          tab_strip_model->GetTabGroupForTab(move->to_index);
-      if (tab_group_id.has_value()) {
-        const gfx::Range tabs_in_group = tab_strip_model->group_model()
-                                             ->GetTabGroup(tab_group_id.value())
-                                             ->ListTabs();
-
-        const ui::ListSelectionModel::SelectedIndices& sel =
-            selection.new_model.selected_indices();
-        const auto& selected_tabs = std::vector<int>(sel.begin(), sel.end());
-        const bool all_tabs_in_group =
-            IsSortedAndContiguous(base::make_span(selected_tabs)) &&
-            selected_tabs.front() == static_cast<int>(tabs_in_group.start()) &&
-            selected_tabs.size() == tabs_in_group.length();
-
-        if (all_tabs_in_group) {
-          // If the selection includes all the tabs within the changed tab's
-          // group, it is an indication that the entire group is being moved.
-          // To prevent sending multiple events for each tab in the group,
-          // ignore these tabs moving as entire group moves will be handled by
-          // TabGroupChange::kMoved.
-          break;
-        }
-      }
-
       page_->TabMoved(extensions::ExtensionTabUtil::GetTabId(move->contents),
                       move->to_index,
                       tab_strip_model->IsTabPinned(move->to_index));
@@ -786,9 +757,8 @@ void TabStripPageHandler::ShowTabContextMenu(int32_t tab_id,
           browser, embedder_->GetAcceleratorProvider(), tab_index),
       base::BindRepeating(&TabStripPageHandler::NotifyContextMenuClosed,
                           weak_ptr_factory_.GetWeakPtr()));
-  base::UmaHistogramEnumeration(
-      "TabStrip.Tab.WebUI.ActivationAction",
-      TabStripModel::TabActivationTypes::kContextMenu);
+  base::UmaHistogramEnumeration("TabStrip.Tab.WebUI.ActivationAction",
+                                TabActivationTypes::kContextMenu);
 }
 
 void TabStripPageHandler::GetLayout(GetLayoutCallback callback) {
@@ -817,7 +787,7 @@ void TabStripPageHandler::ReportTabActivationDuration(uint32_t duration_ms) {
   UMA_HISTOGRAM_TIMES("WebUITabStrip.TabActivation",
                       base::Milliseconds(duration_ms));
   base::UmaHistogramEnumeration("TabStrip.Tab.WebUI.ActivationAction",
-                                TabStripModel::TabActivationTypes::kTab);
+                                TabActivationTypes::kTab);
 }
 
 void TabStripPageHandler::ReportTabDataReceivedDuration(uint32_t tab_count,

@@ -145,8 +145,8 @@ IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, Upload) {
 
   {
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-    GetNetworkContext()->AddDomainReliabilityContextForTesting(
-        test_server()->base_url().DeprecatedGetOriginAsURL(), upload_url);
+    GetNetworkContext()->AddDomainReliabilityContextForTesting(  // IN-TEST
+        test_server()->GetOrigin(), upload_url);
   }
 
   // Trigger an error.
@@ -163,24 +163,20 @@ IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, Upload) {
   EXPECT_EQ(1, request_count);
   EXPECT_NE("", last_request_content);
 
-  auto body = base::JSONReader::ReadDeprecated(last_request_content);
+  auto body = base::JSONReader::Read(last_request_content);
   ASSERT_TRUE(body);
+  ASSERT_TRUE(body->is_dict());
 
-  const base::DictionaryValue* dict;
-  ASSERT_TRUE(body->GetAsDictionary(&dict));
+  const base::Value::Dict& dict = body->GetDict();
 
-  const base::ListValue* entries;
-  ASSERT_TRUE(dict->GetList("entries", &entries));
-  ASSERT_EQ(1u, entries->GetListDeprecated().size());
+  const base::Value::List* entries = dict.FindList("entries");
+  ASSERT_TRUE(entries);
+  ASSERT_EQ(1u, entries->size());
 
-  const base::Value& entry_value = entries->GetListDeprecated()[0u];
-  ASSERT_TRUE(entry_value.is_dict());
-  const base::DictionaryValue& entry =
-      base::Value::AsDictionaryValue(entry_value);
-
-  std::string url;
-  ASSERT_TRUE(entry.GetString("url", &url));
-  EXPECT_EQ(url, error_url);
+  const base::Value& entry = (*entries)[0u];
+  ASSERT_TRUE(entry.is_dict());
+  ASSERT_TRUE(entry.GetDict().FindString("url"));
+  EXPECT_EQ(*(entry.GetDict().FindString("url")), error_url);
 }
 
 IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, UploadAtShutdown) {
@@ -189,8 +185,8 @@ IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, UploadAtShutdown) {
   GURL upload_url = test_server()->GetURL("/hung");
   {
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-    GetNetworkContext()->AddDomainReliabilityContextForTesting(
-        GURL("https://localhost/"), upload_url);
+    GetNetworkContext()->AddDomainReliabilityContextForTesting(  // IN-TEST
+        url::Origin::Create(GURL("https://localhost/")), upload_url);
   }
 
   ASSERT_TRUE(
@@ -215,8 +211,8 @@ IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, RequestAtShutdown) {
   GURL hung_url = test_server()->GetURL("/hung");
   {
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-    GetNetworkContext()->AddDomainReliabilityContextForTesting(hung_url,
-                                                               hung_url);
+    GetNetworkContext()->AddDomainReliabilityContextForTesting(  // IN-TEST
+        url::Origin::Create(hung_url), hung_url);
   }
 
   // Use a SimpleURLLoader so we can leak the mojo pipe, ensuring that URLLoader

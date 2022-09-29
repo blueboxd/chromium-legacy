@@ -23,7 +23,6 @@
 #include "ash/assistant/assistant_view_delegate_impl.h"
 #include "ash/assistant/assistant_web_ui_controller.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
-#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
@@ -34,6 +33,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_service.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -81,7 +81,7 @@ class ASH_EXPORT AssistantControllerImpl
   void OpenAssistantSettings() override;
   void OpenUrl(const GURL& url, bool in_background, bool from_server) override;
   base::WeakPtr<ash::AssistantController> GetWeakPtr() override;
-  void SetAssistant(chromeos::assistant::Assistant* assistant) override;
+  void SetAssistant(assistant::Assistant* assistant) override;
   void StartSpeakerIdEnrollmentFlow() override;
   void SendAssistantFeedback(bool assistant_debug_info_allowed,
                              const std::string& feedback_description,
@@ -140,8 +140,7 @@ class ASH_EXPORT AssistantControllerImpl
   void NotifyUrlOpened(const GURL& url, bool from_server);
 
   // AssistantStateObserver:
-  void OnAssistantStatusChanged(
-      chromeos::assistant::AssistantStatus status) override;
+  void OnAssistantStatusChanged(assistant::AssistantStatus status) override;
   void OnLockedFullScreenStateChanged(bool enabled) override;
 
   // AssistantInterfaceBinder implementation:
@@ -158,7 +157,7 @@ class ASH_EXPORT AssistantControllerImpl
 
   // |assistant_| can be nullptr if libassistant creation is not yet completed,
   // i.e. it cannot take a request.
-  chromeos::assistant::Assistant* assistant_ = nullptr;
+  assistant::Assistant* assistant_ = nullptr;
 
   // Assistant sub-controllers.
   AssistantAlarmTimerControllerImpl assistant_alarm_timer_controller_{this};

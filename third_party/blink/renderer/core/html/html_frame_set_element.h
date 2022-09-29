@@ -31,6 +31,9 @@
 
 namespace blink {
 
+class FrameEdgeInfo;
+class MouseEvent;
+
 class HTMLFrameSetElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -49,14 +52,23 @@ class HTMLFrameSetElement final : public HTMLElement {
   wtf_size_t TotalCols() const {
     return std::max<wtf_size_t>(1, col_lengths_.size());
   }
-  int Border() const { return HasFrameBorder() ? border_ : 0; }
+  int Border(const ComputedStyle& style) const;
+  FrameEdgeInfo EdgeInfo() const;
+  void CollectEdgeInfo();
 
   bool HasBorderColor() const { return border_color_set_; }
 
   const Vector<HTMLDimension>& RowLengths() const { return row_lengths_; }
   const Vector<HTMLDimension>& ColLengths() const { return col_lengths_; }
+  const Vector<int>& RowDeltas() const { return resize_rows_.deltas_; }
+  const Vector<int>& ColDeltas() const { return resize_cols_.deltas_; }
+  const Vector<bool>& AllowBorderRows() const { return allow_border_rows_; }
+  const Vector<bool>& AllowBorderColumns() const { return allow_border_cols_; }
 
   bool HasNonInBodyInsertionMode() const override { return true; }
+
+  bool CanResizeRow(const gfx::Point& p) const;
+  bool CanResizeColumn(const gfx::Point& p) const;
 
   DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(blur, kBlur)
   DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(error, kError)
@@ -83,8 +95,51 @@ class HTMLFrameSetElement final : public HTMLElement {
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void WillRecalcStyle(const StyleRecalcChange) override;
 
+  void ResizeChildrenData();
+
+  class ResizeAxis {
+    DISALLOW_NEW();
+
+   public:
+    ResizeAxis() = default;
+    ResizeAxis(const ResizeAxis&) = delete;
+    ResizeAxis& operator=(const ResizeAxis&) = delete;
+
+    void Resize(wtf_size_t number_of_frames);
+    // Returns true if a split is being resized now.
+    bool IsResizingSplit() const { return split_being_resized_ != kNoSplit; }
+    // Returns true if a split is being resized now.
+    bool CanResizeSplitAt(int split_index) const;
+
+    static constexpr int kNoSplit = -1;
+
+    Vector<int> deltas_;
+    Vector<bool> prevent_resize_;
+    int split_being_resized_ = kNoSplit;
+    int split_resize_offset_;
+  };
+
+  bool UserResize(const MouseEvent& event);
+  void SetIsResizing(bool is_resizing);
+  void StartResizing(const Vector<LayoutUnit>& sizes,
+                     int position,
+                     ResizeAxis& resize_axis);
+  void ContinueResizing(const Vector<LayoutUnit>& sizes,
+                        int position,
+                        ResizeAxis& resize_axis);
+  int SplitPosition(const Vector<LayoutUnit>& sizes, int split) const;
+  int HitTestSplit(const Vector<LayoutUnit>& sizes, int position) const;
+
+  void FillFromEdgeInfo(const FrameEdgeInfo& edge_info,
+                        wtf_size_t r,
+                        wtf_size_t c);
+
   Vector<HTMLDimension> row_lengths_;
   Vector<HTMLDimension> col_lengths_;
+  ResizeAxis resize_rows_;
+  ResizeAxis resize_cols_;
+  Vector<bool> allow_border_rows_;
+  Vector<bool> allow_border_cols_;
 
   int border_;
   bool border_set_;
@@ -94,6 +149,8 @@ class HTMLFrameSetElement final : public HTMLElement {
   bool frameborder_;
   bool frameborder_set_;
   bool noresize_;
+
+  bool is_resizing_ = false;
 };
 
 }  // namespace blink

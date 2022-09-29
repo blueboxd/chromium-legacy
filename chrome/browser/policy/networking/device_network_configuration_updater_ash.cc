@@ -6,7 +6,6 @@
 
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/cros_settings_provider.h"
-#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_device_handler.h"
 #include "chromeos/components/onc/onc_parsed_certificates.h"
@@ -46,8 +46,8 @@ DeviceNetworkConfigurationUpdaterAsh::~DeviceNetworkConfigurationUpdaterAsh() =
 std::unique_ptr<DeviceNetworkConfigurationUpdaterAsh>
 DeviceNetworkConfigurationUpdaterAsh::CreateForDevicePolicy(
     PolicyService* policy_service,
-    chromeos::ManagedNetworkConfigurationHandler* network_config_handler,
-    chromeos::NetworkDeviceHandler* network_device_handler,
+    ash::ManagedNetworkConfigurationHandler* network_config_handler,
+    ash::NetworkDeviceHandler* network_device_handler,
     ash::CrosSettings* cros_settings,
     const DeviceNetworkConfigurationUpdaterAsh::DeviceAssetIDFetcher&
         device_asset_id_fetcher) {
@@ -61,8 +61,8 @@ DeviceNetworkConfigurationUpdaterAsh::CreateForDevicePolicy(
 
 DeviceNetworkConfigurationUpdaterAsh::DeviceNetworkConfigurationUpdaterAsh(
     PolicyService* policy_service,
-    chromeos::ManagedNetworkConfigurationHandler* network_config_handler,
-    chromeos::NetworkDeviceHandler* network_device_handler,
+    ash::ManagedNetworkConfigurationHandler* network_config_handler,
+    ash::NetworkDeviceHandler* network_device_handler,
     ash::CrosSettings* cros_settings,
     const DeviceNetworkConfigurationUpdaterAsh::DeviceAssetIDFetcher&
         device_asset_id_fetcher)

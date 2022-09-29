@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/crosapi/mojom/networking_private.mojom-forward.h"
 #include "chromeos/crosapi/mojom/networking_private.mojom.h"
@@ -16,9 +17,9 @@
 #include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-using chromeos::NetworkHandler;
-using chromeos::NetworkState;
-using chromeos::NetworkStateHandler;
+using ::ash::NetworkHandler;
+using ::ash::NetworkState;
+using ::ash::NetworkStateHandler;
 
 namespace crosapi {
 
@@ -238,7 +239,7 @@ mojom::CaptivePortalStatus GetCaptivePortalStatusFromNetworkState(
     return mojom::CaptivePortalStatus::kOnline;
   }
 
-  switch (network->portal_state()) {
+  switch (network->GetPortalState()) {
     case NetworkState::PortalState::kUnknown:
       return mojom::CaptivePortalStatus::kUnknown;
     case NetworkState::PortalState::kOnline:
@@ -439,7 +440,7 @@ void NetworkingPrivateAsh::DeviceListChanged() {
 }
 
 void NetworkingPrivateAsh::DevicePropertiesUpdated(
-    const chromeos::DeviceState* device) {
+    const ash::DeviceState* device) {
   // networkingPrivate uses a single event for device changes.
   DeviceListChanged();
 
@@ -449,9 +450,9 @@ void NetworkingPrivateAsh::DevicePropertiesUpdated(
 
   NetworkStateHandler::NetworkStateList cellular_networks;
   NetworkHandler::Get()->network_state_handler()->GetNetworkListByType(
-      chromeos::NetworkTypePattern::Cellular(), false /* configured_only */,
+      ash::NetworkTypePattern::Cellular(), false /* configured_only */,
       true /* visible_only */, -1 /* default limit */, &cellular_networks);
-  for (const chromeos::NetworkState* network : cellular_networks) {
+  for (const NetworkState* network : cellular_networks) {
     NetworkPropertiesUpdated(network);
   }
 }
@@ -473,7 +474,7 @@ void NetworkingPrivateAsh::NetworkListChanged() {
 }
 
 void NetworkingPrivateAsh::NetworkPropertiesUpdated(
-    const chromeos::NetworkState* network) {
+    const NetworkState* network) {
   for (auto& observer : observers_) {
     observer->OnNetworksChangedEvent(
         std::vector<std::string>(1, network->guid()));

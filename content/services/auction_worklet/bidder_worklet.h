@@ -18,9 +18,11 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
+#include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom-forward.h"
 #include "content/services/auction_worklet/trusted_signals.h"
 #include "content/services/auction_worklet/trusted_signals_request_manager.h"
 #include "content/services/auction_worklet/worklet_loader.h"
@@ -41,6 +43,8 @@ class UnboundScript;
 
 namespace auction_worklet {
 
+class ContextRecycler;
+
 // Represents a bidder worklet for FLEDGE
 // (https://github.com/WICG/turtledove/blob/main/FLEDGE.md). Loads and runs the
 // bidder worklet's Javascript.
@@ -56,12 +60,15 @@ namespace auction_worklet {
 // to both be used for two generateBid() calls for different interest groups
 // with the same owner in the same auction, and to be used to bid for the same
 // interest group in different auctions.
-class BidderWorklet : public mojom::BidderWorklet {
+class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet {
  public:
   // Deletes the worklet immediately and resets the BidderWorklet's Mojo pipe
   // with the provided description. See mojo::Receiver::ResetWithReason().
   using ClosePipeCallback =
       base::OnceCallback<void(const std::string& description)>;
+
+  using PrivateAggregationRequests =
+      std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>;
 
   // Starts loading the worklet script on construction, as well as the trusted
   // bidding data, if necessary. Will then call the script's generateBid()
@@ -97,6 +104,7 @@ class BidderWorklet : public mojom::BidderWorklet {
   // mojom::BidderWorklet implementation:
   void GenerateBid(
       mojom::BidderWorkletNonSharedParamsPtr bidder_worklet_non_shared_params,
+      const url::Origin& interest_group_join_origin,
       const absl::optional<std::string>& auction_signals_json,
       const absl::optional<std::string>& per_buyer_signals_json,
       const absl::optional<base::TimeDelta> per_buyer_timeout,
@@ -132,6 +140,7 @@ class BidderWorklet : public mojom::BidderWorklet {
     ~GenerateBidTask();
 
     mojom::BidderWorkletNonSharedParamsPtr bidder_worklet_non_shared_params;
+    url::Origin interest_group_join_origin;
     absl::optional<std::string> auction_signals_json;
     absl::optional<std::string> per_buyer_signals_json;
     absl::optional<base::TimeDelta> per_buyer_timeout;
@@ -202,10 +211,12 @@ class BidderWorklet : public mojom::BidderWorklet {
         absl::optional<GURL> debug_loss_report_url,
         absl::optional<GURL> debug_win_report_url,
         absl::optional<double> set_priority,
+        PrivateAggregationRequests pa_requests,
         std::vector<std::string> error_msgs)>;
     using ReportWinCallbackInternal =
         base::OnceCallback<void(absl::optional<GURL> report_url,
                                 base::flat_map<std::string, GURL> ad_beacon_map,
+                                PrivateAggregationRequests pa_requests,
                                 std::vector<std::string> errors)>;
 
     void ReportWin(const std::string& interest_group_name,
@@ -225,6 +236,7 @@ class BidderWorklet : public mojom::BidderWorklet {
 
     void GenerateBid(
         mojom::BidderWorkletNonSharedParamsPtr bidder_worklet_non_shared_params,
+        const url::Origin& interest_group_join_origin,
         const absl::optional<std::string>& auction_signals_json,
         const absl::optional<std::string>& per_buyer_signals_json,
         const absl::optional<base::TimeDelta> per_buyer_timeout,
@@ -250,12 +262,14 @@ class BidderWorklet : public mojom::BidderWorklet {
         ReportWinCallbackInternal callback,
         const absl::optional<GURL>& report_url,
         base::flat_map<std::string, GURL> ad_beacon_map,
+        PrivateAggregationRequests pa_requests,
         std::vector<std::string> errors);
 
     void PostErrorBidCallbackToUserThread(
         GenerateBidCallbackInternal callback,
         std::vector<std::string> error_msgs = std::vector<std::string>(),
-        absl::optional<GURL> debug_loss_report_url = absl::nullopt);
+        absl::optional<GURL> debug_loss_report_url = absl::nullopt,
+        PrivateAggregationRequests private_aggregation_requests = {});
 
     static void PostResumeToUserThread(
         base::WeakPtr<BidderWorklet> parent,
@@ -279,6 +293,9 @@ class BidderWorklet : public mojom::BidderWorklet {
     const url::Origin top_window_origin_;
     const absl::optional<GURL> wasm_helper_url_;
     const absl::optional<GURL> trusted_bidding_signals_url_;
+
+    std::unique_ptr<ContextRecycler> context_recycler_for_origin_group_mode_;
+    url::Origin join_origin_for_origin_group_mode_;
 
     SEQUENCE_CHECKER(v8_sequence_checker_);
   };
@@ -315,6 +332,7 @@ class BidderWorklet : public mojom::BidderWorklet {
       absl::optional<GURL> debug_loss_report_url,
       absl::optional<GURL> debug_win_report_url,
       absl::optional<double> set_priority,
+      PrivateAggregationRequests pa_requests,
       std::vector<std::string> error_msgs);
 
   // Invokes the `callback` of `task` with the provided values, and removes
@@ -323,6 +341,7 @@ class BidderWorklet : public mojom::BidderWorklet {
       ReportWinTaskList::iterator task,
       absl::optional<GURL> report_url,
       base::flat_map<std::string, GURL> ad_beacon_map,
+      PrivateAggregationRequests pa_requests,
       std::vector<std::string> errors);
 
   // Returns true if unpaused and the script and WASM helper (if needed) have

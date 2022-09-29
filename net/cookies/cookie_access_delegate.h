@@ -15,6 +15,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_partition_key.h"
+#include "net/cookies/first_party_set_entry.h"
 #include "net/cookies/first_party_set_metadata.h"
 #include "net/cookies/same_party_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -67,34 +68,21 @@ class NET_EXPORT CookieAccessDelegate {
       const std::set<net::SchemefulSite>& party_context,
       base::OnceCallback<void(FirstPartySetMetadata)> callback) const = 0;
 
-  // Computes the owner of a `site`'s First-Party Set if `site` is in a
-  // non-trivial set; `nullopt` otherwise.
-  //
-  // This may return a result synchronously, or asynchronously invoke `callback`
-  // with the result. The callback will be invoked iff the return value is
-  // nullopt; i.e. a result will be provided via return value or callback, but
-  // not both, and not neither.
-  [[nodiscard]] virtual absl::optional<absl::optional<net::SchemefulSite>>
-  FindFirstPartySetOwner(
-      const net::SchemefulSite& site,
-      base::OnceCallback<void(absl::optional<net::SchemefulSite>)> callback)
-      const = 0;
-
-  // Computes the owners of a set of sites' First-Party Sets if the site are in
-  // non-trivial sets. If a given site is not in a non-trivial set, the output
-  // does not contain a corresponding owner.
+  // Returns the entries of a set of sites if the sites are in non-trivial sets.
+  // If a given site is not in a non-trivial set, the output does not contain a
+  // corresponding entry.
   //
   // This may return a result synchronously, or asynchronously invoke `callback`
   // with the result. The callback will be invoked iff the return value is
   // nullopt; i.e. a result will be provided via return value or callback, but
   // not both, and not neither.
   [[nodiscard]] virtual absl::optional<
-      base::flat_map<net::SchemefulSite, net::SchemefulSite>>
+      base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>>
   FindFirstPartySetOwners(
       const base::flat_set<net::SchemefulSite>& sites,
-      base::OnceCallback<void(
-          base::flat_map<net::SchemefulSite, net::SchemefulSite>)> callback)
-      const = 0;
+      base::OnceCallback<
+          void(base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>)>
+          callback) const = 0;
 
   // Converts the CookiePartitionKey's site to its First-Party Set owner if
   // the site is in a nontrivial set.
@@ -108,19 +96,6 @@ class NET_EXPORT CookieAccessDelegate {
       const CookieAccessDelegate* delegate,
       const CookiePartitionKey& cookie_partition_key,
       base::OnceCallback<void(CookiePartitionKey)> callback);
-
-  // Computes the First-Party Sets.
-  //
-  // This may return a result synchronously, or asynchronously invoke `callback`
-  // with the result. The callback will be invoked iff the return value is
-  // nullopt; i.e. a result will be provided via return value or callback, but
-  // not both, and not neither.
-  [[nodiscard]] virtual absl::optional<
-      base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>>
-  RetrieveFirstPartySets(
-      base::OnceCallback<void(
-          base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>)>
-          callback) const = 0;
 };
 
 }  // namespace net

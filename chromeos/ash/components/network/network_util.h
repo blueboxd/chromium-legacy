@@ -20,12 +20,11 @@
 #include "base/component_export.h"
 #include "base/time/time.h"
 #include "base/values.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "chromeos/ash/components/network/network_state.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "chromeos/ash/components/network/network_type_pattern.h"
 
 namespace ash {
+
+class NetworkState;
+class NetworkTypePattern;
 
 // Struct for passing wifi access point data.
 struct COMPONENT_EXPORT(CHROMEOS_NETWORK) WifiAccessPoint {
@@ -158,12 +157,6 @@ std::string TranslateShillTypeToONC(const std::string& type);
 
 // TODO(https://crbug.com/1164001): remove when the migration is finished.
 namespace chromeos {
-using ::ash::CellTower;
-using ::ash::CellTowerVector;
-using ::ash::CellularScanResult;
-using ::ash::CellularSIMSlotInfo;
-using ::ash::WifiAccessPoint;
-using ::ash::WifiAccessPointVector;
 namespace network_util = ::ash::network_util;
 }  // namespace chromeos
 

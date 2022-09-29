@@ -13,7 +13,7 @@
 class PrefService;
 class PrefRegistrySimple;
 
-namespace chromeos {
+namespace ash {
 
 class NetworkStateHandler;
 
@@ -68,6 +68,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedCellularPrefHandler {
   base::ObserverList<Observer> observer_list_;
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_MANAGED_CELLULAR_PREF_HANDLER_H_

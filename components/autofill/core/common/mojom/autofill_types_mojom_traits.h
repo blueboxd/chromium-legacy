@@ -14,7 +14,6 @@
 #include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
-#include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_field_data_predictions.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
@@ -89,6 +88,89 @@ struct StructTraits<autofill::mojom::SelectOptionDataView,
 
   static bool Read(autofill::mojom::SelectOptionDataView data,
                    autofill::SelectOption* out);
+};
+
+template <>
+struct UnionTraits<autofill::mojom::SectionPrefixDataView,
+                   autofill::Section::SectionPrefix> {
+  static autofill::mojom::SectionPrefixDataView::Tag GetTag(
+      const autofill::Section::SectionPrefix& r);
+
+  static bool default_prefix(const autofill::Section::SectionPrefix& r) {
+    DCHECK(absl::holds_alternative<autofill::Section::Default>(r));
+    return true;
+  }
+
+  static autofill::Section::Autocomplete autocomplete_section_prefix(
+      const autofill::Section::SectionPrefix& r) {
+    return absl::get<autofill::Section::Autocomplete>(r);
+  }
+
+  static autofill::Section::FieldIdentifier from_field_prefix(
+      const autofill::Section::SectionPrefix& r) {
+    return absl::get<autofill::Section::FieldIdentifier>(r);
+  }
+
+  static bool credit_card_prefix(const autofill::Section::SectionPrefix& r) {
+    DCHECK(absl::holds_alternative<autofill::Section::CreditCard>(r));
+    return true;
+  }
+
+  static bool Read(autofill::mojom::SectionPrefixDataView data,
+                   autofill::Section::SectionPrefix* out);
+};
+
+template <>
+struct StructTraits<autofill::mojom::SectionAutocompleteDataView,
+                    autofill::Section::Autocomplete> {
+  static const std::string& section(const autofill::Section::Autocomplete& r) {
+    return r.section;
+  }
+
+  static uint8_t html_field_mode(const autofill::Section::Autocomplete& r) {
+    static_assert(sizeof(r.mode) <= sizeof(uint8_t));
+    return r.mode;
+  }
+
+  static bool Read(autofill::mojom::SectionAutocompleteDataView data,
+                   autofill::Section::Autocomplete* out);
+};
+
+template <>
+struct StructTraits<autofill::mojom::SectionFieldIdentifierDataView,
+                    autofill::Section::FieldIdentifier> {
+  static const std::string& field_name(
+      const autofill::Section::FieldIdentifier& r) {
+    return r.field_name;
+  }
+
+  static size_t local_frame_id(const autofill::Section::FieldIdentifier& r) {
+    return r.local_frame_id;
+  }
+
+  static autofill::FieldRendererId field_renderer_id(
+      const autofill::Section::FieldIdentifier& r) {
+    return r.field_renderer_id;
+  }
+
+  static bool Read(autofill::mojom::SectionFieldIdentifierDataView data,
+                   autofill::Section::FieldIdentifier* out);
+};
+
+template <>
+struct StructTraits<autofill::mojom::SectionDataView, autofill::Section> {
+  static uint8_t field_type_group(const autofill::Section& r) {
+    static_assert(sizeof(r.field_type_group_) <= sizeof(uint8_t));
+    return static_cast<uint8_t>(r.field_type_group_);
+  }
+
+  static const autofill::Section::SectionPrefix& prefix(
+      const autofill::Section& r) {
+    return r.prefix_;
+  }
+
+  static bool Read(autofill::mojom::SectionDataView data,
+                   autofill::Section* out);
 };
 
 template <>
@@ -168,7 +250,7 @@ struct StructTraits<autofill::mojom::FormFieldDataDataView,
     return r.is_autofilled;
   }
 
-  static const std::string& section(const autofill::FormFieldData& r) {
+  static const autofill::Section& section(const autofill::FormFieldData& r) {
     return r.section;
   }
 

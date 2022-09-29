@@ -23,9 +23,11 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/network/network_portal_notification_controller.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
-#include "chromeos/ash/components/network/portal_detector/network_portal_detector_strategy.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "components/account_id/account_id.h"
 #include "components/captive_portal/core/captive_portal_testing_utils.h"
 #include "components/prefs/pref_service.h"
@@ -50,7 +52,6 @@ constexpr char kTestUser[] = "test-user@gmail.com";
 constexpr char kTestUserGaiaId[] = "1234567890";
 constexpr char kWifiServicePath[] = "/service/wifi";
 constexpr char kWifiGuid[] = "wifi";
-constexpr char kProbeUrl[] = "http://play.googleapis.com/generate_204";
 
 void ErrorCallbackFunction(const std::string& error_name,
                            const std::string& error_message) {
@@ -61,6 +62,14 @@ void SetConnected(const std::string& service_path) {
   ShillServiceClient::Get()->Connect(dbus::ObjectPath(service_path),
                                      base::DoNothing(),
                                      base::BindOnce(&ErrorCallbackFunction));
+  base::RunLoop().RunUntilIdle();
+}
+
+void SetPortal(const std::string& service_path) {
+  ShillServiceClient::Get()->SetProperty(
+      dbus::ObjectPath(kWifiServicePath), shill::kStateProperty,
+      base::Value(shill::kStateRedirectFound), base::DoNothing(),
+      base::BindOnce(&ErrorCallbackFunction));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -90,16 +99,8 @@ class NetworkPortalDetectorImplBrowserTest
         ShillServiceClient::Get()->GetTestInterface();
     service_test->ClearServices();
     service_test->AddService(kWifiServicePath, kWifiGuid, "wifi",
-                             shill::kTypeEthernet, shill::kStateIdle,
+                             shill::kTypeWifi, shill::kStateIdle,
                              true /* add_to_visible */);
-    ShillServiceClient::Get()->SetProperty(
-        dbus::ObjectPath(kWifiServicePath), shill::kStateProperty,
-        base::Value(shill::kStateRedirectFound), base::DoNothing(),
-        base::BindOnce(&ErrorCallbackFunction));
-    ShillServiceClient::Get()->SetProperty(
-        dbus::ObjectPath(kWifiServicePath), shill::kProbeUrlProperty,
-        base::Value(kProbeUrl), base::DoNothing(),
-        base::BindOnce(&ErrorCallbackFunction));
 
     display_service_ = std::make_unique<NotificationDisplayServiceTester>(
         nullptr /* profile */);
@@ -110,8 +111,6 @@ class NetworkPortalDetectorImplBrowserTest
     network_portal_detector::InitializeForTesting(network_portal_detector_);
     network_portal_detector_->enabled_ = true;
     set_detector(network_portal_detector_->captive_portal_detector_.get());
-    PortalDetectorStrategy::set_delay_till_next_attempt_for_testing(
-        base::TimeDelta());
     network_portal_notification_controller_ =
         std::make_unique<NetworkPortalNotificationController>(
             network_portal_detector_);
@@ -126,10 +125,6 @@ class NetworkPortalDetectorImplBrowserTest
     network_portal_detector_->StopDetection();
     network_portal_detector_->StartDetection();
     base::RunLoop().RunUntilIdle();
-  }
-
-  PortalDetectorStrategy* strategy() {
-    return network_portal_detector_->strategy_.get();
   }
 
   void SetIgnoreNoNetworkForTesting() {
@@ -155,7 +150,6 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
                        PRE_InSessionDetection) {
   RegisterUser(test_account_id_);
   StartupUtils::MarkOobeCompleted();
-  ASSERT_EQ(PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN, strategy()->Id());
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
@@ -163,24 +157,35 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
   LoginUser(test_account_id_);
   content::RunAllPendingInMessageLoop();
 
-  // User connects to wifi.
+  EXPECT_FALSE(display_service_->GetNotification(kNotificationId));
+
+  // Set connected should not trigger portal detection.
   SetConnected(kWifiServicePath);
 
-  ASSERT_EQ(PortalDetectorStrategy::STRATEGY_ID_SESSION, strategy()->Id());
-
-  // No notification until portal detection is completed.
+  chromeos::NetworkStateHandler* network_state_handler =
+      chromeos::NetworkHandler::Get()->network_state_handler();
+  const chromeos::NetworkState* default_network =
+      network_state_handler->DefaultNetwork();
+  ASSERT_TRUE(default_network);
+  EXPECT_EQ(default_network->GetPortalState(),
+            chromeos::NetworkState::PortalState::kOnline);
   EXPECT_FALSE(display_service_->GetNotification(kNotificationId));
-  RestartDetection();
-  EXPECT_EQ(kProbeUrl, get_probe_url());
-  CompleteURLFetch(net::OK, 200, nullptr);
+  EXPECT_EQ(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE,
+            network_portal_detector::GetInstance()->GetCaptivePortalStatus());
 
-  // Check that the default network is detected as behind a portal and that
-  // notification is displayed.
+  // Setting a portal state should set portal detection and display a
+  // notification
+  SetPortal(kWifiServicePath);
+
+  default_network = network_state_handler->DefaultNetwork();
+  ASSERT_TRUE(default_network);
+  EXPECT_EQ(default_network->GetPortalState(),
+            chromeos::NetworkState::PortalState::kPortal);
   EXPECT_TRUE(display_service_->GetNotification(kNotificationId));
   EXPECT_EQ(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL,
             network_portal_detector::GetInstance()->GetCaptivePortalStatus());
 
-  // User explicitly closes the notification.
+  // Explicitly close the notification.
   display_service_->RemoveNotification(NotificationHandler::Type::TRANSIENT,
                                        kNotificationId, true);
 }
@@ -211,15 +216,9 @@ void NetworkPortalDetectorImplBrowserTestIgnoreProxy::TestImpl(
   ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
       prefs::kCaptivePortalAuthenticationIgnoresProxy, preference_value);
 
-  // User connects to wifi.
+  // User connects to portalled wifi.
   SetConnected(kWifiServicePath);
-
-  EXPECT_EQ(PortalDetectorStrategy::STRATEGY_ID_SESSION, strategy()->Id());
-
-  // No notification until portal detection is completed.
-  EXPECT_FALSE(display_service_->GetNotification(kNotificationId));
-  RestartDetection();
-  CompleteURLFetch(net::OK, 200, nullptr);
+  SetPortal(kWifiServicePath);
 
   // Check that the network is behind a portal and a notification is displayed.
   EXPECT_TRUE(display_service_->GetNotification(kNotificationId));
@@ -239,7 +238,6 @@ IN_PROC_BROWSER_TEST_P(NetworkPortalDetectorImplBrowserTestIgnoreProxy,
                        PRE_TestWithPreference) {
   RegisterUser(test_account_id_);
   StartupUtils::MarkOobeCompleted();
-  EXPECT_EQ(PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN, strategy()->Id());
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkPortalDetectorImplBrowserTestIgnoreProxy,

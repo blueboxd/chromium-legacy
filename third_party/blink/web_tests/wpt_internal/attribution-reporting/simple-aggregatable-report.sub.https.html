@@ -1,12 +1,12 @@
 <!doctype html>
 <meta charset=utf-8>
+<meta name=timeout content=long>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <script src="resources/helpers.js"></script>
 <script>
 attribution_reporting_promise_test(async t => {
   const source = {
-    source_event_id: '9153495207648170476',
     destination: `https://{{host}}`,
     aggregation_keys: {
       campaignCounts: "0x159",

@@ -13,23 +13,30 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.view.ContextThemeWrapper;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
+
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.Robolectric;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
+import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -38,8 +45,14 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 public class HeaderViewBinderUnitTest {
+    @Rule
+    public ActivityScenarioRule<TestActivity> mActivityScenarioRule =
+            new ActivityScenarioRule<>(TestActivity.class);
+
     Activity mActivity;
     PropertyModel mModel;
+    Context mContext;
+    Resources mResources;
 
     HeaderView mHeaderView;
     @Mock
@@ -49,9 +62,12 @@ public class HeaderViewBinderUnitTest {
 
     @Before
     public void setUp() {
+        mContext = new ContextThemeWrapper(
+                ContextUtils.getApplicationContext(), R.style.Theme_BrowserUI_DayNight);
+        mResources = mContext.getResources();
+
         MockitoAnnotations.initMocks(this);
-        mActivity = Robolectric.buildActivity(Activity.class).setup().get();
-        mActivity.setTheme(R.style.Theme_BrowserUI_DayNight);
+        mActivityScenarioRule.getScenario().onActivity((activity) -> mActivity = activity);
 
         mHeaderView = mock(HeaderView.class,
                 Mockito.withSettings().useConstructor(mActivity).defaultAnswer(
@@ -152,5 +168,47 @@ public class HeaderViewBinderUnitTest {
         // Restore Chevron.
         mModel.set(HeaderViewProperties.SHOULD_REMOVE_CHEVRON, false);
         verify(mHeaderView, times(1)).setShouldRemoveSuggestionHeaderChevron(false);
+    }
+
+    @Test
+    public void headerView_removeSuggestionHeaderCapitalizationTrue() {
+        // Remove Capitalization.
+        mModel.set(HeaderViewProperties.SHOULD_REMOVE_CAPITALIZATION, true);
+        verify(mHeaderView, times(1)).setShouldRemoveSuggestionHeaderCapitalization(true);
+    }
+
+    @Test
+    public void headerView_removeSuggestionHeaderCapitalizationFalse() {
+        // Restore Capitalization.
+        mModel.set(HeaderViewProperties.SHOULD_REMOVE_CAPITALIZATION, false);
+        verify(mHeaderView, times(1)).setShouldRemoveSuggestionHeaderCapitalization(false);
+    }
+
+    @Test
+    public void headerView_updateHeaderPaddingTrue() {
+        // Update Header Padding.
+        mModel.set(HeaderViewProperties.USE_UPDATED_HEADER_PADDING, true);
+
+        int minHeight =
+                mResources.getDimensionPixelSize(R.dimen.omnibox_suggestion_header_height_modern);
+        int paddingMarginStart = mResources.getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_header_margin_start_modern);
+        int paddingMarginTop =
+                mResources.getDimensionPixelSize(R.dimen.omnibox_suggestion_header_margin_top);
+        verify(mHeaderView, times(1))
+                .setUpdateHeaderPadding(minHeight, paddingMarginStart, paddingMarginTop);
+    }
+
+    @Test
+    public void headerView_updateHeaderPaddingFalse() {
+        // Update Header Padding.
+        mModel.set(HeaderViewProperties.USE_UPDATED_HEADER_PADDING, false);
+
+        int minHeight = mResources.getDimensionPixelSize(R.dimen.omnibox_suggestion_header_height);
+        int paddingMarginStart =
+                mResources.getDimensionPixelSize(R.dimen.omnibox_suggestion_header_margin_start);
+        int paddingMarginTop = 0;
+        verify(mHeaderView, times(1))
+                .setUpdateHeaderPadding(minHeight, paddingMarginStart, paddingMarginTop);
     }
 }

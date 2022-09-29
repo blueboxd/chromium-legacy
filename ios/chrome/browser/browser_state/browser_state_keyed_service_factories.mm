@@ -26,6 +26,7 @@
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
+#import "ios/chrome/browser/follow/follow_service_factory.h"
 #include "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
 #include "ios/chrome/browser/google/google_logo_service_factory.h"
 #include "ios/chrome/browser/history/domain_diversity_reporter_factory.h"
@@ -69,6 +70,7 @@
 #include "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/tabs_search/tabs_search_service_factory.h"
+#import "ios/chrome/browser/text_selection/text_classifier_model_service_factory.h"
 #include "ios/chrome/browser/translate/translate_ranker_factory.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
@@ -130,6 +132,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   DiscoverFeedServiceFactory::GetInstance();
   DomainDiversityReporterFactory::GetInstance();
   BackgroundDownloadServiceFactory::GetInstance();
+  FollowServiceFactory::GetInstance();
   GoogleLogoServiceFactory::GetInstance();
   IdentityManagerFactory::GetInstance();
   IOSChromeContentSuggestionsServiceFactory::GetInstance();
@@ -165,6 +168,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   VerdictCacheManagerFactory::GetInstance();
   PolicyBlocklistServiceFactory::GetInstance();
   TrustedVaultClientBackendFactory::GetInstance();
+  TextClassifierModelServiceFactory::GetInstance();
 
 #if BUILDFLAG(IOS_CREDENTIAL_PROVIDER_ENABLED)
   CredentialProviderServiceFactory::GetInstance();

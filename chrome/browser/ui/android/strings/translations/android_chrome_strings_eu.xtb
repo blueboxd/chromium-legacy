@@ -105,7 +105,6 @@ Arakatze-historia ezabatzen duzunean (osorik nahiz webgune zehatz bat), neurketa
 <translation id="1474893630593443211">Ikusten dituzun iragarkien gaineko kontrol handiagoa</translation>
 <translation id="1477626028522505441">Ezin izan da deskargatu <ph name="FILE_NAME" />, zerbitzariarekin arazoak daudelako.</translation>
 <translation id="148482509007564431">Laster-marka gordetzeko fluxua</translation>
-<translation id="1488775391433859242">Telefono hau erabil dezakezu QR kode hau erakusten ari den ordenagailuan saioa hasteko.</translation>
 <translation id="1492417797159476138">Dagoeneko gorde duzu erabiltzaile-izen hau webgune honetarako</translation>
 <translation id="1493287004536771723">Hasi zara <ph name="SITE_NAME" /> webguneari jarraitzen</translation>
 <translation id="1502010315804028179">Pasahitza kudeatzeko, eguneratu Google Play Services</translation>
@@ -235,6 +234,7 @@ Arakatze-historia ezabatzen duzunean (osorik nahiz webgune zehatz bat), neurketa
 <translation id="2239812875700136898">Istorioak kontrolatzeko, sakatu "Discover-en aukerak" botoia</translation>
 <translation id="2248941474044011069">Pasahitzak gailuan bertan enkriptatzen dira Google-ren Pasahitz-kudeatzailea zerbitzuan gorde aurretik</translation>
 <translation id="2259659629660284697">Esportatu pasahitzak…</translation>
+<translation id="2276231040576210443">Zer sinkronizatu nahi duzun aukeratzeko, joan <ph name="BEGIN_LINK1" />Ezarpenak<ph name="END_LINK1" /> atalera. Baliteke Google-k Bilaketa eta beste zerbitzu batzuk pertsonalizatzea zure historiaren arabera.</translation>
 <translation id="2276696007612801991">Hasi saioa Google-ko kontuan pasahitzak egiaztatzeko</translation>
 <translation id="2278052315791335171">Pasahitza ezabatzen baduzu ere, ez da ezabatuko <ph name="SITE" /> webguneko kontua</translation>
 <translation id="2279146068164892489"><ph name="APPNAME" /> aplikazioa ireki nahi duzu?</translation>
@@ -282,7 +282,6 @@ Arakatze-historia ezabatzen duzunean (osorik nahiz webgune zehatz bat), neurketa
 <translation id="2534155362429831547">Ezabatu dira <ph name="NUMBER_OF_ITEMS" /> elementu</translation>
 <translation id="2536728043171574184">Orriaren konexiorik gabeko kopia ikusten ari zara</translation>
 <translation id="2546283357679194313">Cookieak eta webguneetako datuak</translation>
-<translation id="2549516196460093976">Tableta hau erabil dezakezu QR kode hau erakusten ari den ordenagailuan saioa hasteko.</translation>
 <translation id="2558569818338050235">Arakatze-historiak agertzen zaizkizun iragarkietan eragina du</translation>
 <translation id="2561519700418191927">Bideoen aurrebistak</translation>
 <translation id="2567385386134582609">IRUDIA</translation>
@@ -308,6 +307,7 @@ Arakatze-historia ezabatzen duzunean (osorik nahiz webgune zehatz bat), neurketa
 <translation id="2702516483241149200">Berria: partekatu testu honetan gora eta behera egiteko esteka bat</translation>
 <translation id="2704606927547763573">Kopiatuta</translation>
 <translation id="2707726405694321444">Freskatu orria</translation>
+<translation id="2709516037105925701">Betetze automatikoa</translation>
 <translation id="271033894570825754">Berria</translation>
 <translation id="2711073837061989559">Probak</translation>
 <translation id="2718352093833049315">Wifi bidez soilik</translation>
@@ -396,6 +396,7 @@ Arakatze-historia ezabatzen duzunean (osorik nahiz webgune zehatz bat), neurketa
 <translation id="3114507951000454849">Irakurri gaurko albisteak <ph name="NEWS_ICON" /></translation>
 <translation id="311958134571892113">Honekin lotuta:</translation>
 <translation id="3123734510202723619">Iragarpenak</translation>
+<translation id="3130863904455712965">Historia eta beste</translation>
 <translation id="3134784203083076891">"</translation>
 <translation id="314939179385989105">Chrome-ren hasierako pantaila</translation>
 <translation id="3166827708714933426">Fitxetarako eta leihoetarako lasterbideak</translation>
@@ -472,6 +473,7 @@ Arakatze-historia ezabatzen duzunean (osorik nahiz webgune zehatz bat), neurketa
 <translation id="3557336313807607643">Gehitu kontaktuetan</translation>
 <translation id="3560491354538957576">Webguneak interesak defini ditzake</translation>
 <translation id="3563767357928833671">Ezarri dira ikusgai arbeleko edukiak</translation>
+<translation id="3566639033325271639">Eguneratu ezarpenak</translation>
 <translation id="3566923219790363270">Errealitate birtualerako prestatzen ari da oraindik Chrome. Berrabiaraz ezazu geroago.</translation>
 <translation id="3568688522516854065">Beste gailuetako fitxak eskura izateko, hasi saioa eta aktibatu sinkronizazioa</translation>
 <translation id="357465026686164600">Telefonoa segurtasun-giltza gisa</translation>
@@ -566,6 +568,7 @@ Arakatze-historia ezabatzen duzunean (osorik nahiz webgune zehatz bat), neurketa
 <translation id="4116038641877404294">Deskargatu orriak konexiorik gabe erabiltzeko</translation>
 <translation id="4135200667068010335">Fitxa partekatzeko hautatutako gailuen zerrenda itxita dago.</translation>
 <translation id="4137746084635924146">Gailuak une honetan darabilen hizkuntza</translation>
+<translation id="414128724510021958">Ordenagailuetarako webguneak modu lehenetsian eskatzen dira</translation>
 <translation id="4141536112466364990">Ikasi Chrome erabiltzen</translation>
 <translation id="4162867837470729563">Partekatze-aukeren zerrenda altuera osoan irekita dago.</translation>
 <translation id="4165986682804962316">Webgunearen ezarpenak</translation>
@@ -587,7 +590,6 @@ Arakatze-historia ezabatzen duzunean (osorik nahiz webgune zehatz bat), neurketa
 <translation id="4256782883801055595">Kode irekiko lizentziak</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Zein datu erabiltzen dira?<ph name="END_BOLD" /> Zure arakatze-historia eta gailu hau erabili bitartean Chrome-ren bidez bisitatutako webguneen erregistro bat.</translation>
 <translation id="4263656433980196874">Ahozko bilaketa egite aldera Laguntzailea zerbitzuari baimena emateko erabiltzaile-interfazea altuera osoan irekita dago</translation>
-<translation id="4266054596873078491">Google-ko kontuarekin, hasi saioa webgune honetan eta Chrome-n.</translation>
 <translation id="4269820728363426813">Kopiatu estekaren helbidea</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Aktibatu pantailaren blokeoa Android-en ezarpenetan<ph name="END_LINK" /></translation>
 <translation id="4293476595220860475">Chrome erabiltzen baduzu, onartu egingo dituzu <ph name="BEGIN_TOS_LINK" />Google-ren Zerbitzu-baldintzak<ph name="END_TOS_LINK" /> eta <ph name="BEGIN_ATOS_LINK" />Google Chrome-ren eta Chrome OS-ren Zerbitzu-baldintza gehigarriak<ph name="END_ATOS_LINK" />. <ph name="BEGIN_PRIVACY_LINK" />Pribatutasun-gidalerroak<ph name="END_PRIVACY_LINK" /> ere aplikatuko dira.</translation>
@@ -1051,6 +1053,7 @@ Fidagarritasun-tokenek sareko pribatutasuna hobetzen dute eta ezin dira erabili 
 <translation id="6671495933530132209">Kopiatu irudia</translation>
 <translation id="6674571176963658787">Sinkronizatzen hasteko, idatzi pasaesaldia</translation>
 <translation id="6676840375528380067">Gailu honetan dituzun Chrome-ko datuak garbitu nahi dituzu?</translation>
+<translation id="6676927815633975364">Hasi saioa webgune honetan eta Chrome-n</translation>
 <translation id="6684809838922667136">Hobetu Chrome</translation>
 <translation id="670498945988402717">Atzo egiaztatu zuen</translation>
 <translation id="6710213216561001401">Aurrekoa</translation>
@@ -1140,6 +1143,7 @@ Fidagarritasun-tokenek sareko pribatutasuna hobetzen dute eta ezin dira erabili 
 <translation id="7196215469483532480">Pribatutasun-gidaren azalpena altuera osoan irekita dago</translation>
 <translation id="7207760545532569765">Leheneratu <ph name="TAB_COUNT" /> fitxa atzeko planoko fitxa gisa.</translation>
 <translation id="7208109991155904980">Mugitu da erreakzioa</translation>
+<translation id="7217781228893594884">Ezkutuko moduko fitxak blokeatu egingo dira Chrome-tik irteten zarenean</translation>
 <translation id="7222235798733126207">Webguneen artean informazioa partekatzeko aukera mugatua</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{Bat deskargatzeko zain}other{# deskargatzeko zain}}</translation>
 <translation id="7242755609445462077">Nabarmentze estilizatua <ph name="CURRENT_DATE" /></translation>
@@ -1300,6 +1304,7 @@ Fidagarritasun-tokenek sareko pribatutasuna hobetzen dute eta ezin dira erabili 
 <translation id="8037801708772278989">Oraintxe bertan egiaztatu da</translation>
 <translation id="804335162455518893">Ez da aurkitu SD txartela</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{Ezkutuko moduko <ph name="TAB_COUNT_ONE" /> fitxa}other{Ezkutuko moduko <ph name="TAB_COUNT_NORMAL" /> fitxa}}</translation>
+<translation id="8048728378294435881">Egin zure gauzen babeskopiak, edozein gailutan erabil ditzazun</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB erabilgarri</translation>
 <translation id="8058655154417507695">Iraungitze-urtea</translation>
 <translation id="8058746566562539958">Ireki Chrome-ko beste fitxa batean</translation>

@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 
+#import "base/metrics/field_trial_params.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,9 +16,6 @@ const base::Feature kEnableDiscoverFeedPreview{
 
 const base::Feature kDiscoverFeedGhostCardsEnabled{
     "DiscoverFeedGhostCardsEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kEnableDiscoverFeedShorterCache{
-    "EnableDiscoverFeedShorterCache", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnableDiscoverFeedDiscoFeedEndpoint{
     "EnableDiscoFeedEndpoint", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -52,16 +50,18 @@ bool IsDiscoverFeedGhostCardsEnabled() {
   return base::FeatureList::IsEnabled(kDiscoverFeedGhostCardsEnabled);
 }
 
-bool IsDiscoverFeedShorterCacheEnabled() {
-  return base::FeatureList::IsEnabled(kEnableDiscoverFeedShorterCache);
-}
-
 bool IsNTPViewHierarchyRepairEnabled() {
   return base::FeatureList::IsEnabled(kNTPViewHierarchyRepair);
 }
 
 bool IsDiscoverFeedTopSyncPromoEnabled() {
   return base::FeatureList::IsEnabled(kEnableDiscoverFeedTopSyncPromo);
+}
+
+bool IsDiscoverFeedTopSyncPromoCompact() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kEnableDiscoverFeedTopSyncPromo, kDiscoverFeedTopSyncPromoStyleCompact,
+      false);
 }
 
 bool IsFeedAblationEnabled() {

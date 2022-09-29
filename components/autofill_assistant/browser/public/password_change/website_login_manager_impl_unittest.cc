@@ -240,8 +240,9 @@ TEST_F(WebsiteLoginManagerImplTest, SaveGeneratedPassword) {
       password_manager::PasswordForm::Scheme::kHtml, kFakeUrl, GURL(kFakeUrl));
   // Presave generated password. Form with empty username is presaved.
   EXPECT_CALL(*store(), GetLogins(form_digest, _));
-  EXPECT_CALL(*store(),
-              AddLogin(FormMatches(MakeSimplePasswordFormWithoutUsername())));
+  EXPECT_CALL(
+      *store(),
+      AddLogin(FormMatches(MakeSimplePasswordFormWithoutUsername()), _));
   manager_->PresaveGeneratedPassword(
       {GURL(kFakeUrl), kFakeUsername}, kFakeNewPassword,
       MakeFormDataWithPasswordField(), base::OnceClosure());
@@ -406,14 +407,14 @@ TEST_F(WebsiteLoginManagerImplTest, SaveSubmittedPasswordNewLogin) {
 
   // The user submits the an entirely new credential.
   password_manager_->OnPasswordFormsParsed(&driver_, {form.form_data});
-  password_manager_->OnPasswordFormsRendered(&driver_, {form.form_data}, true);
+  password_manager_->OnPasswordFormsRendered(&driver_, {form.form_data});
   password_manager_->OnPasswordFormSubmitted(&driver_, form.form_data);
   EXPECT_TRUE(password_manager_->GetSubmittedManagerForTest());
   EXPECT_TRUE(manager_->ReadyToSaveSubmittedPassword());
   EXPECT_FALSE(manager_->SubmittedPasswordIsSame());
 
   // Expect the password to get saved.
-  EXPECT_CALL(*store(), AddLogin(FormMatches(form)));
+  EXPECT_CALL(*store(), AddLogin(FormMatches(form), _));
   EXPECT_TRUE(manager_->SaveSubmittedPassword());
 }
 
@@ -426,6 +427,14 @@ TEST_F(WebsiteLoginManagerImplTest, SaveSubmittedPasswordFailure) {
   EXPECT_FALSE(manager_->ReadyToSaveSubmittedPassword());
   EXPECT_FALSE(manager_->SubmittedPasswordIsSame());
   EXPECT_FALSE(manager_->SaveSubmittedPassword());
+}
+
+TEST_F(WebsiteLoginManagerImplTest, GeneratePasswordForNullRenderFrameHost) {
+  EXPECT_EQ(
+      absl::nullopt,
+      // The arguments other than the `render_frame_host` are arbitrary.
+      manager_->GeneratePassword(/*rfh=*/nullptr, autofill::FormSignature(123),
+                                 autofill::FieldSignature(456), 10));
 }
 
 }  // namespace autofill_assistant

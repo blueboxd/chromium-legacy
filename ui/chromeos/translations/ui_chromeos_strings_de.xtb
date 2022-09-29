@@ -5,6 +5,7 @@
 <translation id="1047956942837015229"><ph name="COUNT" /> Elemente werden gelöscht...</translation>
 <translation id="1049926623896334335">Word-Dokument</translation>
 <translation id="1056775291175587022">Keine Netzw.</translation>
+<translation id="1056898198331236512">Warnung</translation>
 <translation id="1060368002126861100">Wenn du Dateien mit der App „<ph name="APP_NAME" />“ öffnen möchtest, verschiebe sie zuerst in den Ordner mit Windows-Dateien.</translation>
 <translation id="1062407476771304334">Ersetzen</translation>
 <translation id="1119447706177454957">Interner Fehler</translation>
@@ -104,7 +105,6 @@
 <translation id="1832073788765803750">Katakana mit halber Breite</translation>
 <translation id="1834290891154666894">Ungültige Übereinstimmung für den alternativen Betreffnamen</translation>
 <translation id="1838709767668011582">Google Sites-Website</translation>
-<translation id="1844692022597038441">Diese Datei ist offline nicht verfügbar.</translation>
 <translation id="1853795129690976061">Dieser Ordner wird für Linux freigegeben</translation>
 <translation id="1864756863218646478">Die Datei wurde nicht gefunden.</translation>
 <translation id="1884013283844450420">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Verbinden</translation>
@@ -149,7 +149,6 @@
 <translation id="2282155092769082568">URL für Autokonfiguration:</translation>
 <translation id="2288278176040912387">Plattenspieler</translation>
 <translation id="2291538123825441971"><ph name="NUMBER_OF_FILES" /> Dateien werden geöffnet.</translation>
-<translation id="2303282178633578561">SIM-Karte sperren</translation>
 <translation id="2303301624314357662">Datei "<ph name="FILE_NAME" />" wird geöffnet.</translation>
 <translation id="2304820083631266885">Planet</translation>
 <translation id="2305020378527873881">"<ph name="VOLUME_NAME" />" wurde ausgeworfen.</translation>
@@ -185,13 +184,10 @@
 <translation id="2544853746127077729">Ablehnung des Authentifizierungszertifikats durch das Netzwerk</translation>
 <translation id="255937426064304553">USA – international</translation>
 <translation id="2563185590376525700">Frosch</translation>
-<translation id="2570012981255377263">Hier werden deine zuletzt verwendeten Dateien angezeigt</translation>
 <translation id="2578394532502990878">Tamil (phonetisch)</translation>
 <translation id="2579959351793446050">Oriya</translation>
-<translation id="2593644851255584939">Dein Administrator verlangt, dass du die SIM-Sperre deaktivierst.</translation>
 <translation id="2602810353103180630">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Signalstärke <ph name="SIGNAL_STRENGTH" /> %, vom Administrator blockiert, Details</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" />-Video</translation>
-<translation id="2617342710774726426">SIM-Karte ist gesperrt</translation>
 <translation id="2620090360073999360">Google Drive ist momentan nicht erreichbar.</translation>
 <translation id="2621713457727696555">Gesichert</translation>
 <translation id="2638942478653899953">Google Drive konnte nicht erreicht werden. Bitte <ph name="BEGIN_LINK" />melde dich ab<ph name="END_LINK" /> und melde dich dann erneut an.</translation>
@@ -249,13 +245,13 @@
 <translation id="3138624403379688522">Ungültige PIN. Du hast noch <ph name="RETRIES" /> Versuche.</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (hardwaregestützt)</translation>
 <translation id="3188257591659621405">Meine Dateien</translation>
+<translation id="3194553149358267393">Keine zuletzt wiedergegebenen Audiodateien</translation>
 <translation id="3197563288998582412">UK – Dvorak</translation>
 <translation id="3202131003361292969">Pfad</translation>
 <translation id="3205852408225871810">Portugiesisch (Brasilien)</translation>
 <translation id="3224239078034945833">Kanadisch – mehrsprachig</translation>
 <translation id="3236289833370040187">Die Eigentümerschaft geht auf <ph name="DESTINATION_DOMAIN" /> über.</translation>
 <translation id="3241720467332021590">Irisch</translation>
-<translation id="3245321423178950146">Unbekannter Künstler</translation>
 <translation id="3248185426436836442">Ausstehend</translation>
 <translation id="3252266817569339921">Französisch</translation>
 <translation id="3253225298092156258">Nicht verfügbar</translation>
@@ -290,10 +286,12 @@
 <translation id="3479552764303398839">Jetzt nicht</translation>
 <translation id="3486821258960016770">Mongolisch</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> Fehler</translation>
+<translation id="3495810061346586977">Diese Datei ist vertraulich und unterliegt den Einschränkungen durch die Administratorrichtlinie. <ph name="BEGIN_LINK_HELP" />Weitere Informationen<ph name="END_LINK_HELP" /></translation>
 <translation id="3509680540198371098">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Signalstärke bei <ph name="SIGNAL_STRENGTH" /> %, Details</translation>
 <translation id="3522708245912499433">Portugiesisch</translation>
 <translation id="3524311639100184459">Vorsicht: Dies sind temporäre Dateien, die möglicherweise automatisch gelöscht werden, um Speicherplatz freizugeben.  <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Ordner</translation>
+<translation id="3548125359243647069">Es wurde zu oft die falsche PIN eingegeben.</translation>
 <translation id="3549797760399244642">Zu drive.google.com wechseln...</translation>
 <translation id="3553048479571901246">Wenn du Dateien mit der App „<ph name="APP_NAME" />“ öffnen möchtest, kopiere sie zuerst in den Ordner mit Windows-Dateien.</translation>
 <translation id="3556731189587832921">Englisch (USA) mit internationaler PC-Tastatur</translation>
@@ -306,6 +304,7 @@
 <translation id="3606220979431771195">Türkisch-F</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
+<translation id="3619593063686672873">Keine zuletzt angesehenen Videos</translation>
 <translation id="3620292326130836921">Alle Daten gesichert</translation>
 <translation id="3634507049637220048">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, von deinem Administrator verwaltet, Details</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> Elemente verschoben.</translation>
@@ -343,7 +342,6 @@
 <translation id="3943857333388298514">Einfügen</translation>
 <translation id="3952872973865944257">Telugu (phonetisch)</translation>
 <translation id="3958548648197196644">Kiwi</translation>
-<translation id="3966388904776714213">Audio-Player</translation>
 <translation id="3971140002794351170">Mobiles Profil herunterladen, Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Englisch (Vereinigtes Königreich)</translation>
 <translation id="3975895378829046965">Bengalisch (phonetisch)</translation>
@@ -353,7 +351,6 @@
 <translation id="4057991113334098539">Wird aktiviert...</translation>
 <translation id="4092890906744441904">Irisch</translation>
 <translation id="4124935795427217608">Einhorn</translation>
-<translation id="4158739975813877944">Wiedergabeliste öffnen</translation>
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> verschoben.</translation>
 <translation id="4186579485882418952">Offline-Modus aktivieren</translation>
 <translation id="4193154014135846272">Google-Dokument</translation>
@@ -406,6 +403,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-Datei</translation>
 <translation id="457386861538956877">Mehr...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> wurde zur Auswahl hinzugefügt.</translation>
+<translation id="4583436353463424810">Keine kürzlich verwendeten Dokumente</translation>
 <translation id="4594543368593301662">Ergebnisse für <ph name="SEARCH_TERM" />.</translation>
 <translation id="4599600860674643278">Filter wurde zurückgesetzt.</translation>
 <translation id="4603392156942865207"><ph name="FILE_NAME" /> wird in den Ordner "<ph name="FOLDER_NAME" />" kopiert</translation>
@@ -492,7 +490,9 @@
 <translation id="5159560892333415631">Papierkorb leeren</translation>
 <translation id="5163869187418756376">Fehler bei der Freigabe. Bitte überprüfe deine Verbindung und versuche es später erneut.</translation>
 <translation id="516592729076796170">USA – Programmer Dvorak</translation>
+<translation id="5172749059808361023">Einschränkungsdetails</translation>
 <translation id="5177526793333269655">Miniaturbildansicht</translation>
+<translation id="5181896909298187506">Keine kürzlich verwendeten Dateien</translation>
 <translation id="5194713942430106590">Klicken, um die Spalte in aufsteigender Reihenfolge zu sortieren.</translation>
 <translation id="5211614973734216083">Färöisch</translation>
 <translation id="5218183485292899140">Schweizer Französisch</translation>
@@ -533,7 +533,6 @@
 <translation id="5489067830765222292">Lettisch</translation>
 <translation id="5489965683297092283"><ph name="FILTER_NAME" />-Filter ist aus.</translation>
 <translation id="5494920125229734069">Alle auswählen</translation>
-<translation id="5500104704744051184">Du kannst dieses Mobilfunknetz erst verwenden, wenn du die PUK eingegeben hast</translation>
 <translation id="5500122897333236901">Isländisch</translation>
 <translation id="5508696409934741614">Punkte</translation>
 <translation id="5522908512596376669">Die Dateiliste wird jetzt in der Listenansicht angezeigt.</translation>
@@ -549,7 +548,6 @@
 <translation id="5625294776298156701">Tamil mit Tamil99-Tastatur</translation>
 <translation id="5633226425545095130">Wenn du dieses Element verschiebst, wird es für alle Personen freigegeben, die den freigegebenen Ordner „<ph name="DESTINATION_NAME" />“ sehen können.</translation>
 <translation id="5649768706273821470">Anhören</translation>
-<translation id="5665074015635552640">Hier werden deine zuletzt verwendeten Videos angezeigt</translation>
 <translation id="5669691691057771421">Neue PIN eingeben</translation>
 <translation id="5678784840044122290">Die Linux-Anwendung ist in deinem Terminal verfügbar. Möglicherweise siehst du auch ein Symbol in deinem Launcher.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Die Verbindung zu einem Archiv oder einem virtuellen Datenträger kann nicht getrennt werden<ph name="END_BOLD" />
@@ -618,11 +616,11 @@
 <translation id="6220423280121890987">Punjabi</translation>
 <translation id="6224240818060029162">Dänisch</translation>
 <translation id="6224253798271602650"><ph name="DRIVE_NAME" /> formatieren</translation>
-<translation id="6227235786875481728">Diese Datei kann nicht wiedergegeben werden.</translation>
 <translation id="6241349547798190358">Niederländisch (Belgien)</translation>
 <translation id="6267547857941397424">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, Signalstärke bei <ph name="SIGNAL_STRENGTH" /> %, Smartphone-Akku bei <ph name="BATTERY_STATUS" /> %, Verbinden</translation>
 <translation id="6269630227984243955">Malaiisch</translation>
 <translation id="6287852322318138013">App zum Öffnen der Datei auswählen</translation>
+<translation id="6295542640242147836">SIM-Karte sperren</translation>
 <translation id="6296410173147755564">Ungültiger PUK</translation>
 <translation id="6312403991423642364">Unbekannter Netzwerkfehler</translation>
 <translation id="6317608858038767920">Benutzerdefinierter Nameserver <ph name="INPUT_INDEX" /></translation>
@@ -634,6 +632,7 @@
 <translation id="6356685157277930264">Feedbackfenster für "Meine Dateien"</translation>
 <translation id="6358884629796491903">Drache</translation>
 <translation id="636254897931573416">Ungültige Übereinstimmung für das Domain-Suffix</translation>
+<translation id="6364301859968397756">Speicher der Organisation voll</translation>
 <translation id="6367976544441405720">Transporter</translation>
 <translation id="637062427944097960">Diese Datei wurde auf einem anderen Desktop geöffnet. Wechsle zu <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />), um die Datei anzusehen.</translation>
 <translation id="6394388407447716302">Schreibgeschützt</translation>
@@ -694,7 +693,6 @@
     <ph name="FILE_COUNT" /> gefunden</translation>
 <translation id="6935521024859866267">Auf dem Kopf</translation>
 <translation id="6943836128787782965">HTTP-Abruf fehlgeschlagen</translation>
-<translation id="6945604978460872381">Hier werden deine zuletzt verwendeten Dokumente angezeigt</translation>
 <translation id="6949408524333579394">Serbisch (Transliteration)</translation>
 <translation id="6954309393500027528">Das Einfügen dieser Datei wurde vom Administrator blockiert</translation>
 <translation id="6960565108681981554">Nicht aktiviert. Wende dich bitte an deinen Mobilfunkanbieter.</translation>
@@ -731,6 +729,7 @@
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> GB</translation>
 <translation id="7191454237977785534">Datei speichern unter</translation>
 <translation id="7229570126336867161">EVDO erforderlich</translation>
+<translation id="7230898482850090046">Dein Administrator bittet dich, die Einstellung „SIM-Karte sperren“ zu deaktivieren</translation>
 <translation id="7238097264433196391">Name des Laufwerks</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, Details</translation>
 <translation id="7246947237293279874">FTP-Proxy</translation>
@@ -742,7 +741,6 @@
 <translation id="7295662345261934369">Mit anderen teilen</translation>
 <translation id="7297443947353982503">Nutzername/Passwort falsch oder Fehler bei EAP-Authentifizierung</translation>
 <translation id="7309413087278791451">Deutsch (Belgien)</translation>
-<translation id="7313374447885864533">Hier werden deine zuletzt verwendeten Audiodateien angezeigt</translation>
 <translation id="7339898014177206373">Neues Fenster</translation>
 <translation id="7343393116438664539">Vietnamesisch (Telex)</translation>
 <translation id="7357762654218998920">Dieser Dateityp wird nicht unterstützt. <ph name="BEGIN_LINK_HELP" />Weitere Informationen zum Öffnen von Dateien unter Chrome OS<ph name="END_LINK_HELP" /></translation>
@@ -752,6 +750,7 @@
 <translation id="7408870451288633753">Tschechisch</translation>
 <translation id="7417453074306512035">Äthiopische Tastatur</translation>
 <translation id="7417705661718309329">Google-Karte</translation>
+<translation id="7458955835361612701">Keine zuletzt angesehenen Bilder</translation>
 <translation id="7460898608667578234">Ukrainisch</translation>
 <translation id="7469894403370665791">Verbindung zu diesem Netzwerk automatisch herstellen</translation>
 <translation id="7486315294984620427">Um Dateien in Parallels Desktop per Drag-and-drop abzulegen, muss die Datei in „Windows-Dateien“ kopiert werden.</translation>
@@ -763,9 +762,9 @@
 <translation id="7505167922889582512">Versteckte Dateien anzeigen</translation>
 <translation id="7514365320538308">Herunterladen</translation>
 <translation id="751507702149411736">Belarussisch</translation>
+<translation id="7521790570754130607">Zur Nutzung mobiler Daten ist eine PIN erforderlich</translation>
 <translation id="7532029025027028521">Persisch (Transliteration)</translation>
 <translation id="7544830582642184299">Du gibst Linux-Apps die Berechtigung, auf Dateien in Google Drive zuzugreifen. Änderungen werden mit deinen anderen Geräten synchronisiert.</translation>
-<translation id="7544853251252956727">Zufallsmix</translation>
 <translation id="7547009467130558110">Turnschuh</translation>
 <translation id="7547780573915868306">Litauisch</translation>
 <translation id="7547811415869834682">Niederländisch</translation>
@@ -788,6 +787,7 @@
 <translation id="76959938259365003">Der Papierkorb konnte nicht geleert werden.</translation>
 <translation id="770015031906360009">Griechisch</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> kopiert.</translation>
+<translation id="7708271999969613024">Wenn du dieses Netzwerk nutzen möchtest, musst du den 8-stelligen PUK (Personal Unblocking Key) eingeben, den du vom Mobilfunkanbieter erhalten hast.</translation>
 <translation id="7711920809702896782">Bildinformationen</translation>
 <translation id="7724603315864178912">Ausschneiden</translation>
 <translation id="7730494089396812859">Details der Cloudsicherung anzeigen</translation>
@@ -815,7 +815,6 @@
 <translation id="7831491651892296503">Fehler bei der Netzwerkkonfiguration</translation>
 <translation id="7839804798877833423">Zum Abrufen dieser Dateien werden etwa <ph name="FILE_SIZE" /> mobile Daten benötigt.</translation>
 <translation id="7846076177841592234">Auswahl aufheben</translation>
-<translation id="7847617962681804761">Zur Nutzung mobiler Daten ist eine PIN erforderlich</translation>
 <translation id="7853966320808728790">Französisch – Bépo</translation>
 <translation id="7857117644404132472">Ausnahme hinzufügen</translation>
 <translation id="7868774406711971383">Polnisch</translation>
@@ -841,7 +840,6 @@
 <translation id="8045462269890919536">Rumänisch</translation>
 <translation id="8049184478152619004">PIN-Entsperrschlüssel (PUK) eingeben</translation>
 <translation id="807187749540895545"><ph name="FILE_NAME" /> wird extrahiert...</translation>
-<translation id="8079530767338315840">Wiederholen</translation>
 <translation id="8087576439476816834">Herunterladen, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Für mich freigegeben</translation>
 <translation id="8116072619078571545">Wasser mit Eis</translation>
@@ -855,7 +853,6 @@
 <translation id="8175731104491895765">Französisch (Belgien)</translation>
 <translation id="8179976553408161302">Eingabetaste</translation>
 <translation id="8193175696669055101">Gerätemodell</translation>
-<translation id="8208580316430297579">Artwork</translation>
 <translation id="8223479393428528563">Wenn du diese Dateien zur Offline-Nutzung speichern möchtest, gehe online, klicke mit der rechten Maustaste auf die Dateien und wähle die Option „<ph name="OFFLINE_CHECKBOX_NAME" />“ aus.</translation>
 <translation id="8249296373107784235">Abbrechen</translation>
 <translation id="8250690786522693009">Latein</translation>
@@ -876,7 +873,6 @@
 <translation id="8342318071240498787">Es ist bereits eine Datei oder ein Verzeichnis mit dem gleichen Namen vorhanden.</translation>
 <translation id="8372369524088641025">Ungültiger WEP-Schlüssel</translation>
 <translation id="8372852072747894550">Griechisch</translation>
-<translation id="8384716930968677505">Hier werden deine zuletzt verwendeten Bilder angezeigt</translation>
 <translation id="8386903983509584791">Suche abgeschlossen</translation>
 <translation id="8387733224523483503"><ph name="FILE_NAME" /> extrahiert.</translation>
 <translation id="8395901698320285466">Abmessungen</translation>
@@ -886,6 +882,7 @@
 <translation id="8437209419043462667">USA</translation>
 <translation id="8452135315243592079">Keine SIM-Karte vorhanden</translation>
 <translation id="8456681095658380701">Ungültiger Name</translation>
+<translation id="8457767749626250697">Deine SIM-Karte ist gesperrt</translation>
 <translation id="8459404855768962328">Wenn du dieses Element kopierst, wird es für alle Personen freigegeben, die den freigegebenen Ordner „<ph name="DESTINATION_NAME" />“ sehen können.</translation>
 <translation id="8461467696380332069">Klicke mit der rechten Maustaste auf eine Datei und wähle „An Ablage anpinnen“ aus, um über die Ablage schnell auf deine Dateien zugreifen zu können.</translation>
 <translation id="8461914792118322307">Proxy</translation>
@@ -912,7 +909,6 @@
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> Elemente werden synchronisiert...</translation>
 <translation id="8600173386174225982">Die Dateiliste wird jetzt in der Miniaturansicht angezeigt.</translation>
 <translation id="8601932370724196034">Crostini-Bilddatei</translation>
-<translation id="8608515571837163082">Es wurde zu oft die falsche PIN eingegeben. Gib den achtstelligen PIN-Entsperrschlüssel (PUK) ein, den du vom Mobilfunkanbieter erhalten hast.</translation>
 <translation id="8609695766746872526">Isländisch</translation>
 <translation id="863903787380594467">Falsche PIN. Du hast noch <ph name="RETRIES" /> Versuche.</translation>
 <translation id="8639391553632924850"><ph name="INPUT_LABEL" /> – Port</translation>
@@ -950,7 +946,6 @@
 <translation id="9034924485347205037">Linux-Dateien</translation>
 <translation id="9035012421917565900">Diese Elemente können nicht in "<ph name="DESTINATION_NAME" />" zurückverschoben werden. Diese Aktion lässt sich also nicht rückgängig machen.</translation>
 <translation id="9035689366572880647">Aktuelle PIN eingeben</translation>
-<translation id="9037777873893411148">*Speicher der Organisation belegt</translation>
 <translation id="9038620279323455325">Die Datei mit dem Namen "<ph name="FILE_NAME" />" existiert bereits. Wähle einen anderen Namen aus.</translation>
 <translation id="9046895021617826162">Verbindungsaufbau fehlgeschlagen</translation>
 <translation id="9065512565307033593">Ohne diese Bestätigung wird der Netzwerkzugriff deaktiviert.</translation>

@@ -87,7 +87,6 @@ if (!is_win) {
       "//mojo/public/cpp/system",
       "//third_party/openscreen/src/cast/common:public",
       "//third_party/openscreen/src/cast/streaming:receiver",
-      "//third_party/openscreen/src/util",
     ]
     public_deps = [ "//components/cast/message_port" ]
     visibility = [ ":*" ]
@@ -113,7 +112,6 @@ if (!is_win) {
       "//media/mojo/mojom",
       "//mojo/public/cpp/system",
       "//third_party/openscreen/src/platform:api",
-      "//third_party/openscreen/src/util",
     ]
     public_deps = [
       "//base",
@@ -145,7 +143,6 @@ if (!is_win) {
       "//third_party/openscreen/src/cast/common:public",
       "//third_party/openscreen/src/cast/streaming:receiver",
       "//third_party/openscreen/src/platform:api",
-      "//third_party/openscreen/src/util",
     ]
     visibility = [ ":*" ]
     sources = [
@@ -179,6 +176,7 @@ source_set("demuxer_stream_data_provider") {
   deps = [
     ":demuxer_stream_client",
     "//base",
+    "//components/cast_streaming/public:demuxer_stream_traits",
     "//components/cast_streaming/public/mojom",
     "//media",
     "//media/mojo/common",

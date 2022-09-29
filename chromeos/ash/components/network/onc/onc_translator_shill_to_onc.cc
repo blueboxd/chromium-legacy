@@ -458,7 +458,7 @@ void ShillToONCTranslator::TranslateWiFiWithState() {
       shill_dictionary_->FindStringKey(shill::kSecurityClassProperty);
   const std::string* shill_key_mgmt =
       shill_dictionary_->FindStringKey(shill::kEapKeyMgmtProperty);
-  if (shill_security && *shill_security == shill::kSecurityWep &&
+  if (shill_security && *shill_security == shill::kSecurityClassWep &&
       shill_key_mgmt && *shill_key_mgmt == shill::kKeyManagementIEEE8021X) {
     onc_object_.SetKey(::onc::wifi::kSecurity,
                        base::Value(::onc::wifi::kWEP_8021X));
@@ -619,7 +619,10 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
 
   if (network_state_) {
     // Only visible networks set RestrictedConnectivity, and only if true.
-    if (network_state_->IsCaptivePortal()) {
+    auto portal_state = network_state_->GetPortalState();
+    if (network_state_->IsConnectedState() &&
+        portal_state != NetworkState::PortalState::kUnknown &&
+        portal_state != NetworkState::PortalState::kOnline) {
       onc_object_.SetKey(::onc::network_config::kRestrictedConnectivity,
                          base::Value(true));
     }

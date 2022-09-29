@@ -40,6 +40,9 @@ class PageInfoViewFactory {
     VIEW_ID_PAGE_INFO_BUTTON_ALLOWLIST_PASSWORD_REUSE,
     VIEW_ID_PAGE_INFO_LABEL_EV_CERTIFICATE_DETAILS,
     VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG,
+    VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIES_SUBPAGE,
+    VIEW_ID_PAGE_INFO_COOKIES_DESCRIPTION_LABEL,
+    VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_FPS_SETTINGS,
     VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS,
     VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER,
     VIEW_ID_PAGE_INFO_BUTTON_END_VR,
@@ -129,6 +132,7 @@ class PageInfoViewFactory {
   [[nodiscard]] std::unique_ptr<views::View> CreateAboutThisSitePageView(
       const page_info::proto::SiteInfo& info);
   [[nodiscard]] std::unique_ptr<views::View> CreateAdPersonalizationPageView();
+  [[nodiscard]] std::unique_ptr<views::View> CreateCookiesPageView();
 
  private:
   // Creates a subpage header with back button that opens the main page, a

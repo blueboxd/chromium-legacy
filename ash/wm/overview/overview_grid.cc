@@ -331,6 +331,9 @@ float GetWantedDropTargetOpacity(
     case SplitViewDragIndicators::WindowDraggingState::kFromTop:
     case SplitViewDragIndicators::WindowDraggingState::kFromShelf:
       return 1.f;
+    case SplitViewDragIndicators::WindowDraggingState::kFromFloat:
+      NOTREACHED();
+      return 0.f;
   }
 }
 
@@ -1872,13 +1875,13 @@ void OverviewGrid::UpdateSaveDeskButtons() {
       window_list_.empty() ||
       (window_list_.size() == 1u && window_list_.front()->animating_to_close());
 
-  // Do not create or show the save desk as template button if there are no
-  // windows in this grid, during a window drag or in tablet mode, or the desks
-  // templates grid is visible.
+  // Do not create or show the save desk buttons if there are no
+  // windows in this grid, during a window drag or in tablet mode, the desks
+  // templates grid is visible, or if the desks bar hasn't been created yet.
   const bool target_visible =
       !no_items && !overview_session_->GetCurrentDraggedOverviewItem() &&
       !Shell::Get()->tablet_mode_controller()->InTabletMode() &&
-      !IsShowingDesksTemplatesGrid();
+      !IsShowingDesksTemplatesGrid() && desks_widget_;
 
   const bool visibility_changed =
       target_visible != IsSaveDeskButtonContainerVisible();
@@ -2132,6 +2135,8 @@ void OverviewGrid::MaybeInitDesksWidget() {
   // the container.
   auto* window = desks_widget_->GetNativeWindow();
   window->parent()->StackChildAtBottom(window);
+
+  UpdateSaveDeskButtons();
 }
 
 std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
@@ -2393,25 +2398,25 @@ size_t OverviewGrid::GetOverviewItemIndex(OverviewItem* item) const {
 size_t OverviewGrid::FindInsertionIndex(const aura::Window* window) {
   const auto mru_windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
-  if (mru_windows.empty())
-    return 0u;
 
-  size_t index = 0u;
-  for (aura::Window* mru_window : mru_windows) {
-    if (index == size() ||
-        IsDropTargetWindow(window_list_[index]->GetWindow()) ||
-        mru_window == window) {
-      return index;
-    }
-    // As we iterate over the whole MRU window list, the windows in this grid
-    // will be encountered in the same order, but possibly with other windows in
-    // between. Ignore those other windows, and only increment |index| when we
-    // reach the next window in this grid.
-    if (mru_window == window_list_[index]->GetWindow())
-      ++index;
+  // As we iterate over the whole MRU window list, the windows in this grid
+  // will be encountered in the same order, but possibly with other windows in
+  // between. Ignore those other windows, and only increment `grid_item_index`
+  // when we reach the next window in this grid.
+  size_t grid_item_index = 0, mru_window_index = 0;
+  while (grid_item_index < size() && mru_window_index < mru_windows.size()) {
+    aura::Window* grid_item_window = window_list_[grid_item_index]->GetWindow();
+    aura::Window* mru_window = mru_windows[mru_window_index];
+    if (IsDropTargetWindow(grid_item_window) || mru_window == window)
+      return grid_item_index;
+    if (mru_window == grid_item_window)
+      grid_item_index++;
+    mru_window_index++;
   }
-  NOTREACHED();
-  return 0u;
+
+  // If there is no drop target window and `window` is not in the MRU window
+  // list, insert at the end.
+  return size();
 }
 
 void OverviewGrid::AddDraggedWindowIntoOverviewOnDragEnd(
@@ -2431,7 +2436,8 @@ void OverviewGrid::AddDraggedWindowIntoOverviewOnDragEnd(
     // its changed bounds.
     dragged_window->SetProperty(chromeos::kCanAttachToAnotherWindowKey, false);
     TabletModeWindowState::UpdateWindowPosition(
-        WindowState::Get(dragged_window), /*animate=*/false);
+        WindowState::Get(dragged_window),
+        WindowState::BoundsChangeAnimationType::kNone);
     const gfx::Rect new_bounds = dragged_window->bounds();
     if (old_bounds != new_bounds) {
       // It's for smoother animation.

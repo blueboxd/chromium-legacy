@@ -237,14 +237,14 @@ class CC_EXPORT CompositorFrameReportingController {
   // interval of last begin frame args.
   base::TimeDelta last_interval_;
 
-  // These variables store the breakdown stage latency predictions made based
-  // on impl and main reporter's previous frames.
-  std::vector<base::TimeDelta> previous_latency_predictions_main_;
-  std::vector<base::TimeDelta> previous_latency_predictions_impl_;
+  CompositorFrameReporter::CompositorLatencyInfo
+      previous_latency_predictions_main_;
+  CompositorFrameReporter::CompositorLatencyInfo
+      previous_latency_predictions_impl_;
 
-  // Container that stores the EventLatency dispatch stage latency predictions
-  // based on previous event traces.
-  std::vector<base::TimeDelta> dispatch_latency_predictions_;
+  // Container that stores the EventLatency stage latency predictions based on
+  // previous event traces.
+  CompositorFrameReporter::EventLatencyInfo event_latency_predictions_;
 };
 
 }  // namespace cc

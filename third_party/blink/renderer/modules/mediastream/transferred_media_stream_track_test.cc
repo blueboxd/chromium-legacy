@@ -17,6 +17,7 @@ namespace blink {
 
 namespace {
 using testing::_;
+using testing::Return;
 
 class TestObserver : public GarbageCollected<TestObserver>,
                      public MediaStreamTrack::Observer {
@@ -33,6 +34,7 @@ class TestObserver : public GarbageCollected<TestObserver>,
 class TransferredMediaStreamTrackTest : public testing::Test {
  public:
   void CustomSetUp(V8TestingScope& scope) {
+    mock_impl_ = MakeGarbageCollected<MockMediaStreamTrack>();
     transferred_track_ = MakeGarbageCollected<TransferredMediaStreamTrack>(
         scope.GetExecutionContext(),
         MediaStreamTrack::TransferredValues{
@@ -47,6 +49,7 @@ class TransferredMediaStreamTrackTest : public testing::Test {
 
   void TearDown() override { WebHeap::CollectAllGarbageForTesting(); }
 
+  WeakPersistent<MockMediaStreamTrack> mock_impl_;
   Persistent<TransferredMediaStreamTrack> transferred_track_;
 };
 
@@ -94,27 +97,25 @@ TEST_F(TransferredMediaStreamTrackTest, PropertiesInheritFromImplementation) {
   Persistent<MediaTrackSettings> settings = MediaTrackSettings::Create();
   Persistent<CaptureHandle> capture_handle = CaptureHandle::Create();
 
-  MockMediaStreamTrack* mock_impl =
-      MakeGarbageCollected<MockMediaStreamTrack>();
-  mock_impl->SetKind(kKind);
-  mock_impl->SetId(kId);
-  mock_impl->SetLabel(kLabel);
-  mock_impl->setEnabled(kEnabled);
-  mock_impl->SetMuted(kMuted);
-  mock_impl->SetContentHint(kContentHint);
-  mock_impl->SetReadyState(kReadyState);
-  mock_impl->SetCapabilities(capabilities);
-  mock_impl->SetConstraints(constraints);
-  mock_impl->SetSettings(settings);
-  mock_impl->SetCaptureHandle(capture_handle);
-  mock_impl->SetReadyState(kReadyStateEnum);
-  mock_impl->SetComponent(nullptr);
-  mock_impl->SetEnded(kEnded);
-  mock_impl->SetSerializableSessionId(kSerializableSessionId);
-  mock_impl->SetExecutionContext(scope.GetExecutionContext());
+  mock_impl_->SetKind(kKind);
+  mock_impl_->SetId(kId);
+  mock_impl_->SetLabel(kLabel);
+  mock_impl_->setEnabled(kEnabled);
+  mock_impl_->SetMuted(kMuted);
+  mock_impl_->SetContentHint(kContentHint);
+  mock_impl_->SetReadyState(kReadyState);
+  mock_impl_->SetCapabilities(capabilities);
+  mock_impl_->SetConstraints(constraints);
+  mock_impl_->SetSettings(settings);
+  mock_impl_->SetCaptureHandle(capture_handle);
+  mock_impl_->SetReadyState(kReadyStateEnum);
+  mock_impl_->SetComponent(nullptr);
+  mock_impl_->SetEnded(kEnded);
+  mock_impl_->SetSerializableSessionId(kSerializableSessionId);
+  mock_impl_->SetExecutionContext(scope.GetExecutionContext());
 
-  EXPECT_CALL(*mock_impl, AddedEventListener(_, _)).Times(4);
-  transferred_track_->SetImplementation(mock_impl);
+  EXPECT_CALL(*mock_impl_, AddedEventListener(_, _)).Times(4);
+  transferred_track_->SetImplementation(mock_impl_);
 
   EXPECT_EQ(transferred_track_->kind(), kKind);
   EXPECT_EQ(transferred_track_->id(), kId);
@@ -136,17 +137,15 @@ TEST_F(TransferredMediaStreamTrackTest, EventsArePropagated) {
   transferred_track_->addEventListener(event_type_names::kEnded,
                                        mock_event_handler);
 
-  MockMediaStreamTrack* mock_impl =
-      MakeGarbageCollected<MockMediaStreamTrack>();
-  mock_impl->SetExecutionContext(scope.GetExecutionContext());
-  EXPECT_CALL(*mock_impl, AddedEventListener(_, _)).Times(4);
-  transferred_track_->SetImplementation(mock_impl);
+  mock_impl_->SetExecutionContext(scope.GetExecutionContext());
+  EXPECT_CALL(*mock_impl_, AddedEventListener(_, _)).Times(4);
+  transferred_track_->SetImplementation(mock_impl_);
 
   // Dispatching an event on the actual track underneath the
   // TransferredMediaStreamTrack should get propagated to be an event fired on
   // the TMST itself.
   EXPECT_CALL(*mock_event_handler, Invoke(_, _));
-  ASSERT_EQ(mock_impl->DispatchEvent(*Event::Create(event_type_names::kEnded)),
+  ASSERT_EQ(mock_impl_->DispatchEvent(*Event::Create(event_type_names::kEnded)),
             DispatchEventResult::kNotCanceled);
 }
 
@@ -155,33 +154,96 @@ TEST_F(TransferredMediaStreamTrackTest,
   V8TestingScope scope;
   CustomSetUp(scope);
 
-  MockMediaStreamTrack* mock_impl =
-      MakeGarbageCollected<MockMediaStreamTrack>();
-  mock_impl->SetExecutionContext(scope.GetExecutionContext());
+  mock_impl_->SetExecutionContext(scope.GetExecutionContext());
   transferred_track_->applyConstraints(scope.GetScriptState(),
                                        MediaTrackConstraints::Create());
-  EXPECT_CALL(*mock_impl, AddedEventListener(_, _)).Times(4);
+  EXPECT_CALL(*mock_impl_, AddedEventListener(_, _)).Times(4);
 
-  EXPECT_CALL(*mock_impl, applyConstraintsScriptState(_, _)).Times(0);
-  EXPECT_CALL(*mock_impl, applyConstraintsResolver(_, _)).Times(1);
-  transferred_track_->SetImplementation(mock_impl);
+  EXPECT_CALL(*mock_impl_, applyConstraintsScriptState(_, _)).Times(0);
+  EXPECT_CALL(*mock_impl_, applyConstraintsResolver(_, _)).Times(1);
+  transferred_track_->SetImplementation(mock_impl_);
 }
 
 TEST_F(TransferredMediaStreamTrackTest, ConstraintsAppliedAfterImplementation) {
   V8TestingScope scope;
   CustomSetUp(scope);
 
-  MockMediaStreamTrack* mock_impl =
-      MakeGarbageCollected<MockMediaStreamTrack>();
-  mock_impl->SetExecutionContext(scope.GetExecutionContext());
-  EXPECT_CALL(*mock_impl, AddedEventListener(_, _)).Times(4);
+  mock_impl_->SetExecutionContext(scope.GetExecutionContext());
+  EXPECT_CALL(*mock_impl_, AddedEventListener(_, _)).Times(4);
 
-  EXPECT_CALL(*mock_impl, applyConstraintsScriptState(_, _)).Times(1);
-  EXPECT_CALL(*mock_impl, applyConstraintsResolver(_, _)).Times(0);
-  transferred_track_->SetImplementation(mock_impl);
+  EXPECT_CALL(*mock_impl_, applyConstraintsScriptState(_, _)).Times(1);
+  EXPECT_CALL(*mock_impl_, applyConstraintsResolver(_, _)).Times(0);
+  transferred_track_->SetImplementation(mock_impl_);
 
   transferred_track_->applyConstraints(scope.GetScriptState(),
                                        MediaTrackConstraints::Create());
+}
+
+TEST_F(TransferredMediaStreamTrackTest, ContentHintSetBeforeImplementation) {
+  V8TestingScope scope;
+  CustomSetUp(scope);
+
+  mock_impl_->SetExecutionContext(scope.GetExecutionContext());
+  const String kContentHint = "music";
+  transferred_track_->SetContentHint(kContentHint);
+  ASSERT_EQ(transferred_track_->ContentHint(), "");
+  transferred_track_->SetImplementation(mock_impl_);
+  EXPECT_EQ(transferred_track_->ContentHint(), kContentHint);
+}
+
+TEST_F(TransferredMediaStreamTrackTest, ContentHintSetAfterImplementation) {
+  V8TestingScope scope;
+  CustomSetUp(scope);
+
+  mock_impl_->SetExecutionContext(scope.GetExecutionContext());
+  const String kContentHint = "speech";
+  transferred_track_->SetImplementation(mock_impl_);
+  ASSERT_TRUE(transferred_track_->ContentHint().IsNull());
+  transferred_track_->SetContentHint(kContentHint);
+  EXPECT_EQ(transferred_track_->ContentHint(), kContentHint);
+}
+
+TEST_F(TransferredMediaStreamTrackTest, SetEnabledBeforeImplementation) {
+  V8TestingScope scope;
+  CustomSetUp(scope);
+
+  mock_impl_->SetExecutionContext(scope.GetExecutionContext());
+  transferred_track_->setEnabled(/*enabled=*/true);
+  ASSERT_TRUE(transferred_track_->enabled());
+  ASSERT_FALSE(mock_impl_->enabled());
+  transferred_track_->SetImplementation(mock_impl_);
+  EXPECT_TRUE(transferred_track_->enabled());
+}
+
+TEST_F(TransferredMediaStreamTrackTest, SetEnabledAfterImplementation) {
+  V8TestingScope scope;
+  CustomSetUp(scope);
+
+  mock_impl_->SetExecutionContext(scope.GetExecutionContext());
+  ASSERT_TRUE(transferred_track_->enabled());
+  transferred_track_->SetImplementation(mock_impl_);
+  EXPECT_FALSE(transferred_track_->enabled());
+  transferred_track_->setEnabled(/*enabled=*/true);
+  EXPECT_TRUE(transferred_track_->enabled());
+}
+
+TEST_F(TransferredMediaStreamTrackTest, MultipleSetterFunctions) {
+  V8TestingScope scope;
+  CustomSetUp(scope);
+
+  EXPECT_CALL(*mock_impl_, applyConstraintsResolver(_, _)).Times(1);
+  mock_impl_->SetExecutionContext(scope.GetExecutionContext());
+  transferred_track_->SetContentHint("speech");
+  transferred_track_->applyConstraints(scope.GetScriptState(),
+                                       MediaTrackConstraints::Create());
+  transferred_track_->setEnabled(/*enabled=*/true);
+  transferred_track_->SetContentHint("music");
+  transferred_track_->setEnabled(/*enabled=*/false);
+  ASSERT_TRUE(transferred_track_->enabled());
+  ASSERT_EQ(transferred_track_->ContentHint(), "");
+  transferred_track_->SetImplementation(mock_impl_);
+  EXPECT_EQ(transferred_track_->ContentHint(), "music");
+  EXPECT_FALSE(transferred_track_->enabled());
 }
 
 TEST_F(TransferredMediaStreamTrackTest, SetImplementationTriggersObservers) {
@@ -198,10 +260,92 @@ TEST_F(TransferredMediaStreamTrackTest, ObserversAddedToImpl) {
   V8TestingScope scope;
   CustomSetUp(scope);
   transferred_track_->AddObserver(MakeGarbageCollected<TestObserver>());
-  MockMediaStreamTrack* mock_impl =
+  MockMediaStreamTrack* mock_impl_ =
       MakeGarbageCollected<testing::NiceMock<MockMediaStreamTrack>>();
-  EXPECT_CALL(*mock_impl, AddObserver(_));
-  transferred_track_->SetImplementation(mock_impl);
+  EXPECT_CALL(*mock_impl_, AddObserver(_));
+  transferred_track_->SetImplementation(mock_impl_);
+}
+
+TEST_F(TransferredMediaStreamTrackTest, CloneInitialProperties) {
+  V8TestingScope scope;
+  CustomSetUp(scope);
+
+  MediaStreamTrack* clone =
+      transferred_track_->clone(scope.GetExecutionContext());
+
+  EXPECT_EQ(clone->kind(), "video");
+  EXPECT_EQ(clone->id(), "");
+  EXPECT_EQ(clone->label(), "dummy");
+  EXPECT_EQ(clone->enabled(), true);
+  EXPECT_EQ(clone->muted(), false);
+  EXPECT_EQ(clone->ContentHint(), "");
+  EXPECT_EQ(clone->readyState(), "live");
+  EXPECT_EQ(clone->GetReadyState(), MediaStreamSource::kReadyStateLive);
+  EXPECT_EQ(clone->Ended(), false);
+  EXPECT_EQ(clone->serializable_session_id(), absl::nullopt);
+}
+
+TEST_F(TransferredMediaStreamTrackTest, CloneSetImplementation) {
+  V8TestingScope scope;
+  CustomSetUp(scope);
+  TransferredMediaStreamTrack* clone =
+      static_cast<TransferredMediaStreamTrack*>(
+          transferred_track_->clone(scope.GetExecutionContext()));
+  MockMediaStreamTrack* mock_impl_ =
+      MakeGarbageCollected<testing::NiceMock<MockMediaStreamTrack>>();
+  EXPECT_CALL(*mock_impl_, clone(_))
+      .WillOnce(Return(
+          MakeGarbageCollected<testing::NiceMock<MockMediaStreamTrack>>()));
+
+  transferred_track_->SetImplementation(mock_impl_);
+
+  EXPECT_TRUE(clone->HasImplementation());
+}
+
+TEST_F(TransferredMediaStreamTrackTest, CloneMutationsReplayed) {
+  V8TestingScope scope;
+  CustomSetUp(scope);
+
+  transferred_track_->setEnabled(false);
+
+  TransferredMediaStreamTrack* clone =
+      static_cast<TransferredMediaStreamTrack*>(
+          transferred_track_->clone(scope.GetExecutionContext()));
+
+  MockMediaStreamTrack* mock_impl_ =
+      MakeGarbageCollected<testing::NiceMock<MockMediaStreamTrack>>();
+  EXPECT_CALL(*mock_impl_, clone(_))
+      .WillOnce(Return(
+          MakeGarbageCollected<testing::NiceMock<MockMediaStreamTrack>>()));
+  transferred_track_->SetImplementation(mock_impl_);
+
+  EXPECT_EQ(transferred_track_->enabled(), false);
+  EXPECT_EQ(clone->enabled(), false);
+}
+
+TEST_F(TransferredMediaStreamTrackTest, CloneDoesntIncludeLaterMutations) {
+  V8TestingScope scope;
+  CustomSetUp(scope);
+
+  // Clone, the track, then disable the original. The clone should still be
+  // enabled.
+  transferred_track_->setEnabled(true);
+  MediaStreamTrack* clone =
+      transferred_track_->clone(scope.GetExecutionContext());
+  transferred_track_->setEnabled(false);
+
+  MockMediaStreamTrack* mock_impl_ =
+      MakeGarbageCollected<testing::NiceMock<MockMediaStreamTrack>>();
+  EXPECT_CALL(*mock_impl_, clone(_)).WillOnce([&](ExecutionContext*) {
+    MockMediaStreamTrack* mock_clone_impl_ =
+        MakeGarbageCollected<testing::NiceMock<MockMediaStreamTrack>>();
+    mock_clone_impl_->setEnabled(mock_impl_->enabled());
+    return mock_clone_impl_;
+  });
+  transferred_track_->SetImplementation(mock_impl_);
+
+  EXPECT_EQ(transferred_track_->enabled(), false);
+  EXPECT_EQ(clone->enabled(), true);
 }
 
 }  // namespace blink

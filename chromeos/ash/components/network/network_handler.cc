@@ -16,6 +16,8 @@
 #include "chromeos/ash/components/network/cellular_policy_handler.h"
 #include "chromeos/ash/components/network/client_cert_resolver.h"
 #include "chromeos/ash/components/network/geolocation_handler.h"
+#include "chromeos/ash/components/network/hidden_network_handler.h"
+#include "chromeos/ash/components/network/hotspot_state_handler.h"
 #include "chromeos/ash/components/network/managed_cellular_pref_handler.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/ash/components/network/metrics/connection_info_metrics_logger.h"
@@ -38,7 +40,7 @@
 #include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/ash/components/network/stub_cellular_networks_provider.h"
 
-namespace chromeos {
+namespace ash {
 
 static NetworkHandler* g_network_handler = NULL;
 
@@ -63,6 +65,12 @@ NetworkHandler::NetworkHandler()
   cellular_metrics_logger_.reset(new CellularMetricsLogger());
   connection_info_metrics_logger_.reset(new ConnectionInfoMetricsLogger());
   vpn_network_metrics_helper_.reset(new VpnNetworkMetricsHelper());
+  if (base::FeatureList::IsEnabled(features::kHiddenNetworkMigration)) {
+    hidden_network_handler_.reset(new HiddenNetworkHandler());
+  }
+  if (ash::features::IsHotspotEnabled()) {
+    hotspot_state_handler_ = std::make_unique<HotspotStateHandler>();
+  }
   if (NetworkCertLoader::IsInitialized()) {
     network_cert_migrator_.reset(new NetworkCertMigrator());
     client_cert_resolver_.reset(new ClientCertResolver());
@@ -118,13 +126,21 @@ void NetworkHandler::Init() {
       network_profile_handler_.get(), network_state_handler_.get(),
       managed_cellular_pref_handler_.get(),
       managed_network_configuration_handler_.get());
+  if (base::FeatureList::IsEnabled(features::kHiddenNetworkMigration)) {
+    hidden_network_handler_->Init(network_state_handler_.get(),
+                                  network_configuration_handler_.get());
+  }
+  if (ash::features::IsHotspotEnabled()) {
+    hotspot_state_handler_->Init();
+  }
   managed_cellular_pref_handler_->Init(network_state_handler_.get());
   esim_policy_login_metrics_logger_->Init(
       network_state_handler_.get(),
       managed_network_configuration_handler_.get());
   cellular_metrics_logger_->Init(network_state_handler_.get(),
                                  network_connection_handler_.get(),
-                                 cellular_esim_profile_handler_.get());
+                                 cellular_esim_profile_handler_.get(),
+                                 managed_network_configuration_handler_.get());
   connection_info_metrics_logger_->Init(network_state_handler_.get(),
                                         network_connection_handler_.get());
   vpn_network_metrics_helper_->Init(network_configuration_handler_.get());
@@ -238,6 +254,15 @@ CellularPolicyHandler* NetworkHandler::cellular_policy_handler() {
   return cellular_policy_handler_.get();
 }
 
+HiddenNetworkHandler* NetworkHandler::hidden_network_handler() {
+  DCHECK(base::FeatureList::IsEnabled(features::kHiddenNetworkMigration));
+  return hidden_network_handler_.get();
+}
+
+HotspotStateHandler* NetworkHandler::hotspot_state_handler() {
+  return hotspot_state_handler_.get();
+}
+
 ManagedCellularPrefHandler* NetworkHandler::managed_cellular_pref_handler() {
   return managed_cellular_pref_handler_.get();
 }
@@ -298,4 +323,4 @@ void NetworkHandler::SetIsEnterpriseManaged(bool is_enterprise_managed) {
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

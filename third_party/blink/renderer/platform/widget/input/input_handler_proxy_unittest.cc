@@ -323,6 +323,7 @@ const cc::InputHandler::ScrollStatus kRequiresMainThreadHitTestState(
 
 constexpr auto kSampleMainThreadScrollingReason =
     cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
+
 const cc::InputHandler::ScrollStatus kMainThreadScrollState(
     cc::InputHandler::ScrollThread::SCROLL_ON_MAIN_THREAD,
     kSampleMainThreadScrollingReason);
@@ -481,7 +482,8 @@ InputHandlerProxy::EventDisposition HandleInputEventWithLatencyInfo(
               std::unique_ptr<blink::WebCoalescedInputEvent> event,
               std::unique_ptr<InputHandlerProxy::DidOverscrollParams> callback,
               const WebInputEventAttribution& attribution,
-              std::unique_ptr<cc::EventMetrics> metrics) {
+              std::unique_ptr<cc::EventMetrics> metrics,
+              mojom::blink::ScrollResultDataPtr scroll_result_data) {
             event_disposition = disposition;
           }));
   return event_disposition;
@@ -508,7 +510,8 @@ InputHandlerProxy::EventDisposition HandleInputEventAndFlushEventQueue(
               std::unique_ptr<blink::WebCoalescedInputEvent> event,
               std::unique_ptr<InputHandlerProxy::DidOverscrollParams> callback,
               const WebInputEventAttribution& attribution,
-              std::unique_ptr<cc::EventMetrics> metrics) {
+              std::unique_ptr<cc::EventMetrics> metrics,
+              mojom::blink::ScrollResultDataPtr scroll_result_data) {
             event_disposition = disposition;
           }));
 
@@ -567,7 +570,8 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
       std::unique_ptr<WebCoalescedInputEvent> input_event,
       std::unique_ptr<InputHandlerProxy::DidOverscrollParams> overscroll_params,
       const WebInputEventAttribution& attribution,
-      std::unique_ptr<cc::EventMetrics> metrics) {
+      std::unique_ptr<cc::EventMetrics> metrics,
+      mojom::blink::ScrollResultDataPtr scroll_result_data) {
     event_disposition_recorder_.push_back(event_disposition);
     latency_info_recorder_.push_back(input_event->latency_info());
   }
@@ -2108,7 +2112,8 @@ class UnifiedScrollingInputHandlerProxyTest : public testing::Test {
       std::unique_ptr<WebCoalescedInputEvent> input_event,
       std::unique_ptr<InputHandlerProxy::DidOverscrollParams> overscroll_params,
       const WebInputEventAttribution& attribution,
-      std::unique_ptr<cc::EventMetrics> metrics) {
+      std::unique_ptr<cc::EventMetrics> metrics,
+      mojom::blink::ScrollResultDataPtr scroll_result_data) {
     if (out_disposition)
       *out_disposition = event_disposition;
   }
@@ -3453,9 +3458,6 @@ class InputHandlerProxyMainThreadScrollingReasonTest
   }
 
   base::HistogramBase::Sample GetBucketSample(uint32_t reason) {
-    if (reason == cc::MainThreadScrollingReason::kNotScrollingOnMain)
-      return 0;
-
     uint32_t bucket = 0;
     while (reason >>= 1)
       bucket++;
@@ -3471,16 +3473,38 @@ class InputHandlerProxyMainThreadScrollingReasonTest
   WebGestureEvent gesture_scroll_end_;
 };
 
+// Bucket 0: non-main-thread scrolls
+// Bucket 1: main-thread scrolls for any reason.
+#define EXPECT_NON_MAIN_THREAD_GESTURE_SCROLL_SAMPLE()         \
+  EXPECT_THAT(histogram_tester().GetAllSamples(                \
+                  "Renderer4.MainThreadGestureScrollReason2"), \
+              testing::ElementsAre(base::Bucket(0, 1)))
+#define EXPECT_NON_MAIN_THREAD_WHEEL_SCROLL_SAMPLE()         \
+  EXPECT_THAT(histogram_tester().GetAllSamples(              \
+                  "Renderer4.MainThreadWheelScrollReason2"), \
+              testing::ElementsAre(base::Bucket(0, 1)))
+#define EXPECT_MAIN_THREAD_GESTURE_SCROLL_SAMPLE(reason)       \
+  EXPECT_THAT(histogram_tester().GetAllSamples(                \
+                  "Renderer4.MainThreadGestureScrollReason2"), \
+              testing::ElementsAre(base::Bucket(1, 1),         \
+                                   base::Bucket(GetBucketSample(reason), 1)))
+#define EXPECT_MAIN_THREAD_WHEEL_SCROLL_SAMPLE(reason)       \
+  EXPECT_THAT(histogram_tester().GetAllSamples(              \
+                  "Renderer4.MainThreadWheelScrollReason2"), \
+              testing::ElementsAre(base::Bucket(1, 1),       \
+                                   base::Bucket(GetBucketSample(reason), 1)))
+#define EXPECT_MAIN_THREAD_WHEEL_SCROLL_SAMPLE_2(reason1, reason2)            \
+  EXPECT_THAT(histogram_tester().GetAllSamples(                               \
+                  "Renderer4.MainThreadWheelScrollReason2"),                  \
+              testing::ElementsAre(base::Bucket(1, 1),                        \
+                                   base::Bucket(GetBucketSample(reason1), 1), \
+                                   base::Bucket(GetBucketSample(reason2), 1)))
+
 // Tests GetBucketSample() returns the corresponding values defined in
 // enums.xml, to ensure correctness of the tests using the function.
 TEST_P(InputHandlerProxyMainThreadScrollingReasonTest, ReasonToBucket) {
-  EXPECT_EQ(
-      0, GetBucketSample(cc::MainThreadScrollingReason::kNotScrollingOnMain));
-  EXPECT_EQ(
-      1,
-      GetBucketSample(
-          cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
-  EXPECT_EQ(25, GetBucketSample(
+  EXPECT_EQ(2, GetBucketSample(kSampleMainThreadScrollingReason));
+  EXPECT_EQ(14, GetBucketSample(
                     cc::MainThreadScrollingReason::kTouchEventHandlerRegion));
 }
 
@@ -3519,12 +3543,8 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
       expected_disposition_,
       HandleInputEventAndFlushEventQueue(
           mock_input_handler_, input_handler_.get(), gesture_scroll_begin_));
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples(
-          "Renderer4.MainThreadGestureScrollReason"),
-      testing::ElementsAre(base::Bucket(
-          GetBucketSample(cc::MainThreadScrollingReason::kNotScrollingOnMain),
-          1)));
+
+  EXPECT_NON_MAIN_THREAD_GESTURE_SCROLL_SAMPLE();
 
   EXPECT_CALL(mock_input_handler_, ScrollEnd(true));
   EXPECT_CALL(mock_input_handler_, RecordScrollEnd(_)).Times(1);
@@ -3569,12 +3589,7 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
       HandleInputEventAndFlushEventQueue(
           mock_input_handler_, input_handler_.get(), gesture_scroll_begin_));
 
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples(
-          "Renderer4.MainThreadGestureScrollReason"),
-      testing::ElementsAre(base::Bucket(
-          GetBucketSample(cc::MainThreadScrollingReason::kNotScrollingOnMain),
-          1)));
+  EXPECT_NON_MAIN_THREAD_GESTURE_SCROLL_SAMPLE();
 
   EXPECT_CALL(mock_input_handler_, ScrollEnd(true));
   EXPECT_CALL(mock_input_handler_, RecordScrollEnd(_)).Times(1);
@@ -3621,10 +3636,7 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
             HandleInputEventWithLatencyInfo(input_handler_.get(),
                                             gesture_scroll_begin_));
 
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Renderer4.MainThreadGestureScrollReason"),
-              testing::ElementsAre(base::Bucket(
-                  GetBucketSample(kSampleMainThreadScrollingReason), 1)));
+  EXPECT_MAIN_THREAD_GESTURE_SCROLL_SAMPLE(kSampleMainThreadScrollingReason);
 
   // Handle touch end event so that input handler proxy is out of the state of
   // DID_NOT_HANDLE.
@@ -3674,10 +3686,7 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
             HandleInputEventWithLatencyInfo(input_handler_.get(),
                                             gesture_scroll_begin_));
 
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Renderer4.MainThreadGestureScrollReason"),
-              testing::ElementsAre(base::Bucket(
-                  GetBucketSample(kSampleMainThreadScrollingReason), 1)));
+  EXPECT_MAIN_THREAD_GESTURE_SCROLL_SAMPLE(kSampleMainThreadScrollingReason);
 
   expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
   EXPECT_CALL(mock_input_handler_, RecordScrollEnd(_)).Times(1);
@@ -3711,10 +3720,8 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
 
   VERIFY_AND_RESET_MOCKS();
 
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples("Renderer4.MainThreadWheelScrollReason"),
-      testing::ElementsAre(base::Bucket(
-          GetBucketSample(cc::MainThreadScrollingReason::kFailedHitTest), 1)));
+  EXPECT_MAIN_THREAD_WHEEL_SCROLL_SAMPLE(
+      cc::MainThreadScrollingReason::kFailedHitTest);
 }
 
 TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
@@ -3726,7 +3733,8 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
   VERIFY_AND_RESET_MOCKS();
 
   cc::InputHandler::ScrollStatus scroll_status = kImplThreadScrollState;
-  scroll_status.needs_main_thread_repaint = true;
+  scroll_status.main_thread_repaint_reasons =
+      cc::MainThreadScrollingReason::kNoScrollingLayer;
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
       .WillOnce(testing::Return(scroll_status));
@@ -3741,11 +3749,8 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
 
   VERIFY_AND_RESET_MOCKS();
 
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples("Renderer4.MainThreadWheelScrollReason"),
-      testing::ElementsAre(base::Bucket(
-          GetBucketSample(cc::MainThreadScrollingReason::kNoScrollingLayer),
-          1)));
+  EXPECT_MAIN_THREAD_WHEEL_SCROLL_SAMPLE(
+      cc::MainThreadScrollingReason::kNoScrollingLayer);
 }
 
 TEST_P(InputHandlerProxyMainThreadScrollingReasonTest, WheelScrollHistogram) {
@@ -3757,20 +3762,12 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest, WheelScrollHistogram) {
       .Times(1);
   input_handler_->RecordMainThreadScrollingReasonsForTest(
       WebGestureDevice::kTouchpad,
-      cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects |
+      kSampleMainThreadScrollingReason |
           cc::MainThreadScrollingReason::kThreadedScrollingDisabled);
 
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples("Renderer4.MainThreadWheelScrollReason"),
-      testing::ElementsAre(
-          base::Bucket(
-              GetBucketSample(cc::MainThreadScrollingReason::
-                                  kHasBackgroundAttachmentFixedObjects),
-              1),
-          base::Bucket(
-              GetBucketSample(
-                  cc::MainThreadScrollingReason::kThreadedScrollingDisabled),
-              1)));
+  EXPECT_MAIN_THREAD_WHEEL_SCROLL_SAMPLE_2(
+      kSampleMainThreadScrollingReason,
+      cc::MainThreadScrollingReason::kThreadedScrollingDisabled);
 }
 
 TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
@@ -3800,11 +3797,7 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
             HandleInputEventWithLatencyInfo(input_handler_.get(),
                                             gesture_scroll_begin_));
 
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples("Renderer4.MainThreadWheelScrollReason"),
-      testing::ElementsAre(base::Bucket(
-          GetBucketSample(cc::MainThreadScrollingReason::kNotScrollingOnMain),
-          1)));
+  EXPECT_NON_MAIN_THREAD_WHEEL_SCROLL_SAMPLE();
 
   EXPECT_CALL(mock_input_handler_, ScrollEnd(true));
   EXPECT_CALL(mock_input_handler_, RecordScrollEnd(_)).Times(1);
@@ -3838,12 +3831,8 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
             HandleInputEventWithLatencyInfo(input_handler_.get(),
                                             gesture_scroll_begin_));
 
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples("Renderer4.MainThreadWheelScrollReason"),
-      testing::ElementsAre(base::Bucket(
-          GetBucketSample(
-              cc::MainThreadScrollingReason::kWheelEventHandlerRegion),
-          1)));
+  EXPECT_MAIN_THREAD_WHEEL_SCROLL_SAMPLE(
+      cc::MainThreadScrollingReason::kWheelEventHandlerRegion);
 
   EXPECT_CALL(mock_input_handler_, ScrollEnd(true));
   EXPECT_CALL(mock_input_handler_, RecordScrollEnd(_)).Times(1);
@@ -3875,14 +3864,9 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
             HandleInputEventWithLatencyInfo(input_handler_.get(),
                                             gesture_scroll_begin_));
 
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples("Renderer4.MainThreadWheelScrollReason"),
-      testing::ElementsAre(
-          base::Bucket(GetBucketSample(kSampleMainThreadScrollingReason), 1),
-          base::Bucket(
-              GetBucketSample(
-                  cc::MainThreadScrollingReason::kWheelEventHandlerRegion),
-              1)));
+  EXPECT_MAIN_THREAD_WHEEL_SCROLL_SAMPLE_2(
+      kSampleMainThreadScrollingReason,
+      cc::MainThreadScrollingReason::kWheelEventHandlerRegion);
 
   expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
   EXPECT_CALL(mock_input_handler_, RecordScrollEnd(_)).Times(1);
@@ -3916,10 +3900,7 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
             HandleInputEventWithLatencyInfo(input_handler_.get(),
                                             gesture_scroll_begin_));
 
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples("Renderer4.MainThreadWheelScrollReason"),
-      testing::ElementsAre(
-          base::Bucket(GetBucketSample(kSampleMainThreadScrollingReason), 1)));
+  EXPECT_MAIN_THREAD_WHEEL_SCROLL_SAMPLE(kSampleMainThreadScrollingReason);
 
   expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
   EXPECT_CALL(mock_input_handler_, RecordScrollEnd(_)).Times(1);

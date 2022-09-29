@@ -75,6 +75,7 @@
   E_CPONLY(kColorExtensionMenuIconDisabled) \
   E_CPONLY(kColorExtensionMenuPinButtonIcon) \
   E_CPONLY(kColorExtensionMenuPinButtonIconDisabled) \
+  E_CPONLY(kColorExtensionsToolbarControlsBackground) \
   /* Eyedropper colors. */ \
   E_CPONLY(kColorEyedropperBoundary) \
   E_CPONLY(kColorEyedropperCentralPixelInnerRing) \
@@ -87,6 +88,8 @@
   E_CPONLY(kColorFeaturePromoBubbleDefaultButtonBackground) \
   E_CPONLY(kColorFeaturePromoBubbleDefaultButtonForeground) \
   E_CPONLY(kColorFeaturePromoBubbleForeground) \
+  E_CPONLY(kColorFeatureLensPromoBubbleBackground) \
+  E_CPONLY(kColorFeatureLensPromoBubbleForeground) \
   /* Find bar colors. */ \
   E_CPONLY(kColorFindBarBackground) \
   E_CPONLY(kColorFindBarButtonIcon) \
@@ -112,6 +115,8 @@
   E_CPONLY(kColorIntentPickerItemBackgroundHovered) \
   E_CPONLY(kColorIntentPickerItemBackgroundSelected) \
   /* Location bar colors. */ \
+  E_CPONLY(kColorLocationBarBackground) \
+  E_CPONLY(kColorLocationBarBackgroundHovered) \
   E_CPONLY(kColorLocationBarBorder) \
   E_CPONLY(kColorLocationBarBorderOpaque) \
   E_CPONLY(kColorLocationBarClearAllButtonIcon) \
@@ -136,14 +141,14 @@
   E_CPONLY(kColorNewTabPageMostVisitedTileBackground) \
   E_CPONLY(kColorNewTabPageMostVisitedTileBackgroundUnthemed) \
   E_CPONLY(kColorNewTabPageSectionBorder) \
+  E_CPONLY(kColorNewTabPageSearchBoxBackground) \
+  E_CPONLY(kColorNewTabPageSearchBoxBackgroundHovered) \
   E_CPONLY(kColorNewTabPageText) \
   E_CPONLY(kColorNewTabPageTextUnthemed) \
   E_CPONLY(kColorNewTabPageTextLight) \
   /* Omnibox colors. */ \
   E_CPONLY(kColorOmniboxAnswerIconBackground) \
   E_CPONLY(kColorOmniboxAnswerIconForeground) \
-  E_CPONLY(kColorOmniboxBackground) \
-  E_CPONLY(kColorOmniboxBackgroundHovered) \
   E_CPONLY(kColorOmniboxBubbleOutline) \
   E_CPONLY(kColorOmniboxBubbleOutlineExperimentalKeywordMode) \
   E_CPONLY(kColorOmniboxChipBackgroundLowVisibility) \
@@ -344,6 +349,8 @@
   E_CPONLY(kColorThumbnailTabStripTabGroupFrameInactiveOrange) \
   /* Toolbar colors. */ \
   E_CPONLY(kColorToolbar) \
+  E_CPONLY(kColorToolbarBackgroundSubtleEmphasis) \
+  E_CPONLY(kColorToolbarBackgroundSubtleEmphasisHovered) \
   E_CPONLY(kColorToolbarButtonBackgroundHighlightedDefault) \
   E_CPONLY(kColorToolbarButtonBorder) \
   E_CPONLY(kColorToolbarButtonIcon) \
@@ -440,6 +447,8 @@ enum ChromeColorIds : ui::ColorId {
   kChromeColorsEnd,
 };
 
+// Note that this second include is not redundant. The second inclusion of the
+// .inc file serves to undefine the macros the first inclusion defined.
 #include "ui/color/color_id_macros.inc"
 
 // clang-format on

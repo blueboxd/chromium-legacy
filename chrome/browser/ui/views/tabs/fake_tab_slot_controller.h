@@ -45,6 +45,9 @@ class FakeTabSlotController : public TabSlotController {
       const tab_groups::TabGroupId group,
       ToggleTabGroupCollapsedStateOrigin origin =
           ToggleTabGroupCollapsedStateOrigin::kImplicitAction) override;
+  void NotifyTabGroupEditorBubbleOpened() override {}
+  void NotifyTabGroupEditorBubbleClosed() override {}
+
   void ShowContextMenuForTab(Tab* tab,
                              const gfx::Point& p,
                              ui::MenuSourceType source_type) override {}
@@ -79,7 +82,6 @@ class FakeTabSlotController : public TabSlotController {
   SkColor GetTabForegroundColor(TabActive active) const override;
   absl::optional<int> GetCustomBackgroundId(
       BrowserFrameActiveState active_state) const override;
-  gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override;
   std::u16string GetAccessibleTabName(const Tab* tab) const override;
   float GetHoverOpacityForTab(float range_parameter) const override;
   float GetHoverOpacityForRadialHighlight() const override;

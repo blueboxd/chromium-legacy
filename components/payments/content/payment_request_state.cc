@@ -23,8 +23,6 @@
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
-#include "components/payments/content/autofill_payment_app.h"
-#include "components/payments/content/autofill_payment_app_factory.h"
 #include "components/payments/content/content_payment_request_delegate.h"
 #include "components/payments/content/payment_app.h"
 #include "components/payments/content/payment_app_service.h"
@@ -32,12 +30,12 @@
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/content/service_worker_payment_app.h"
-#include "components/payments/core/autofill_card_validation.h"
 #include "components/payments/core/error_strings.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/method_strings.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payments_experimental_features.h"
+#include "components/webauthn/core/browser/internal_authenticator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
@@ -81,8 +79,6 @@ PaymentRequestState::PaymentRequestState(
       delegate_(delegate),
       journey_logger_(journey_logger),
       personal_data_manager_(personal_data_manager),
-      are_requested_methods_supported_(
-          !spec_->supported_card_networks().empty()),
       payment_request_delegate_(payment_request_delegate),
       profile_comparator_(app_locale, *spec) {
   PopulateProfileCache();
@@ -167,21 +163,14 @@ bool PaymentRequestState::IsRequestedAutofillDataAvailable() {
   return is_requested_autofill_data_available_;
 }
 
-bool PaymentRequestState::MayCrawlForInstallablePaymentApps() {
-  return !spec_ || !spec_->supports_basic_card();
-}
-
 bool PaymentRequestState::IsOffTheRecord() const {
   return GetPaymentRequestDelegate()->IsOffTheRecord();
 }
 
 void PaymentRequestState::OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) {
   if (journey_logger_) {
-    if (app->type() == PaymentApp::Type::AUTOFILL) {
-      journey_logger_->SetAvailableMethod(
-          JourneyLogger::PaymentMethodCategory::kBasicCard);
-    } else if (base::Contains(app->GetAppMethodNames(), methods::kGooglePay) ||
-               base::Contains(app->GetAppMethodNames(), methods::kAndroidPay)) {
+    if (base::Contains(app->GetAppMethodNames(), methods::kGooglePay) ||
+        base::Contains(app->GetAppMethodNames(), methods::kAndroidPay)) {
       journey_logger_->SetAvailableMethod(
           JourneyLogger::PaymentMethodCategory::kGoogle);
     } else {
@@ -438,24 +427,8 @@ void PaymentRequestState::SetAvailablePaymentAppForRetry() {
 void PaymentRequestState::AddAutofillPaymentApp(
     bool selected,
     const autofill::CreditCard& card) {
-  if (!base::FeatureList::IsEnabled(::features::kPaymentRequestBasicCard))
-    return;
-
-  auto app =
-      AutofillPaymentAppFactory::ConvertCardToPaymentAppIfSupportedNetwork(
-          card, weak_ptr_factory_.GetWeakPtr());
-  if (!app)
-    return;
-
-  available_apps_.push_back(std::move(app));
-  if (journey_logger_) {
-    journey_logger_->SetAvailableMethod(
-        JourneyLogger::PaymentMethodCategory::kBasicCard);
-  }
-
-  if (selected) {
-    SetSelectedApp(available_apps_.back()->AsWeakPtr());
-  }
+  // TODO(https://crbug.com/1209835): Remove this method.
+  return;
 }
 
 void PaymentRequestState::AddAutofillShippingProfile(
@@ -691,23 +664,6 @@ void PaymentRequestState::SetDefaultProfileSelections() {
   if (!available_apps_.empty() && available_apps_[0]->CanPreselect()) {
     selected_app_ = available_apps_[0]->AsWeakPtr();
     UpdateIsReadyToPayAndNotifyObservers();
-  }
-
-  // Record the missing required payment fields when no complete payment
-  // info exists.
-  if (available_apps_.empty()) {
-    if (spec_ && spec_->supports_basic_card()) {
-      // All fields are missing when basic-card is requested but no card exits.
-      base::UmaHistogramSparse("PaymentRequest.MissingPaymentFields",
-                               CREDIT_CARD_EXPIRED | CREDIT_CARD_NO_CARDHOLDER |
-                                   CREDIT_CARD_NO_NUMBER |
-                                   CREDIT_CARD_NO_BILLING_ADDRESS);
-    }
-  } else if (available_apps_[0]->type() == PaymentApp::Type::AUTOFILL) {
-    // Record the missing fields (if any) of the most complete app when
-    // it's autofill based. SW based apps are always complete.
-    static_cast<const AutofillPaymentApp*>(available_apps_[0].get())
-        ->RecordMissingFieldsForApp();
   }
 
   SelectDefaultShippingAddressAndNotifyObservers();

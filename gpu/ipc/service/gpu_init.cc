@@ -55,7 +55,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "gpu/config/gpu_driver_bug_workarounds.h"
-#include "ui/gl/direct_composition_surface_win.h"
+#include "ui/gl/direct_composition_support.h"
 #include "ui/gl/gl_surface_egl.h"
 #endif
 
@@ -95,22 +95,18 @@ void InitializePlatformOverlaySettings(GPUInfo* gpu_info,
   // |disable_direct_composition| may not be correctly applied.
   // Also, this has to be called after falling back to SwiftShader decision is
   // finalized because this function depends on GL is ANGLE's GLES or not.
-  if (gpu_feature_info.IsWorkaroundEnabled(
-          gpu::ENABLE_BGRA8_OVERLAYS_WITH_YUV_OVERLAY_SUPPORT)) {
-    gl::DirectCompositionSurfaceWin::EnableBGRA8OverlaysWithYUVOverlaySupport();
-  }
-  if (gpu_feature_info.IsWorkaroundEnabled(gpu::FORCE_NV12_OVERLAY_SUPPORT)) {
-    gl::DirectCompositionSurfaceWin::ForceNV12OverlaySupport();
-  }
-  if (gpu_feature_info.IsWorkaroundEnabled(
-          gpu::FORCE_RGB10A2_OVERLAY_SUPPORT_FLAGS)) {
-    gl::DirectCompositionSurfaceWin::ForceRgb10a2OverlaySupport();
-  }
-  if (gpu_feature_info.IsWorkaroundEnabled(
-          gpu::CHECK_YCBCR_STUDIO_G22_LEFT_P709_FOR_NV12_SUPPORT)) {
-    gl::DirectCompositionSurfaceWin::
-        SetCheckYCbCrStudioG22LeftP709ForNv12Support();
-  }
+  gl::DirectCompositionOverlayWorkarounds workarounds = {
+      .enable_bgra8_overlays_with_yuv_overlay_support =
+          gpu_feature_info.IsWorkaroundEnabled(
+              gpu::ENABLE_BGRA8_OVERLAYS_WITH_YUV_OVERLAY_SUPPORT),
+      .force_nv12_overlay_support =
+          gpu_feature_info.IsWorkaroundEnabled(gpu::FORCE_NV12_OVERLAY_SUPPORT),
+      .force_rgb10a2_overlay_support = gpu_feature_info.IsWorkaroundEnabled(
+          gpu::FORCE_RGB10A2_OVERLAY_SUPPORT_FLAGS),
+      .check_ycbcr_studio_g22_left_p709_for_nv12_support =
+          gpu_feature_info.IsWorkaroundEnabled(
+              gpu::CHECK_YCBCR_STUDIO_G22_LEFT_P709_FOR_NV12_SUPPORT)};
+  SetDirectCompositionOverlayWorkarounds(workarounds);
 
   DCHECK(gpu_info);
   CollectHardwareOverlayInfo(&gpu_info->overlay_info);
@@ -189,6 +185,75 @@ uint64_t CHROME_LUID_to_uint64_t(const CHROME_LUID& luid) {
 }
 #endif  // BUILDFLAG(IS_WIN)
 
+#if defined(USE_EGL) && (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC))
+// GPU picking is only effective with ANGLE/Metal backend on Mac and
+// on Windows with EGL.
+// Returns the default GPU's system_device_id.
+uint64_t SetupGLDisplayManagerEGL(const GPUInfo& gpu_info,
+                                  const GpuFeatureInfo& gpu_feature_info) {
+  const GPUInfo::GPUDevice* gpu_high_perf =
+      gpu_info.GetGpuByPreference(gl::GpuPreference::kHighPerformance);
+  const GPUInfo::GPUDevice* gpu_low_power =
+      gpu_info.GetGpuByPreference(gl::GpuPreference::kLowPower);
+#if BUILDFLAG(IS_WIN)
+  // On Windows the default GPU may not be the low power GPU.
+  const GPUInfo::GPUDevice* gpu_default = &(gpu_info.gpu);
+  uint64_t system_device_id_high_perf =
+      gpu_high_perf ? CHROME_LUID_to_uint64_t(gpu_high_perf->luid) : 0;
+  uint64_t system_device_id_low_power =
+      gpu_low_power ? CHROME_LUID_to_uint64_t(gpu_low_power->luid) : 0;
+  uint64_t system_device_id_default =
+      CHROME_LUID_to_uint64_t(gpu_default->luid);
+#else  // IS_MAC
+  const GPUInfo::GPUDevice* gpu_default =
+      gpu_low_power ? gpu_low_power : &(gpu_info.gpu);
+  uint64_t system_device_id_high_perf =
+      gpu_high_perf ? gpu_high_perf->register_id : 0;
+  uint64_t system_device_id_low_power =
+      gpu_low_power ? gpu_low_power->register_id : 0;
+  uint64_t system_device_id_default = gpu_default->register_id;
+#endif
+  DCHECK(gpu_default);
+
+  if (gpu_info.GpuCount() <= 1) {
+    gl::SetGpuPreferenceEGL(gl::GpuPreference::kDefault,
+                            system_device_id_default);
+    return system_device_id_default;
+  }
+  if (gpu_feature_info.IsWorkaroundEnabled(FORCE_LOW_POWER_GPU) &&
+      system_device_id_low_power) {
+    gl::SetGpuPreferenceEGL(gl::GpuPreference::kDefault,
+                            system_device_id_low_power);
+    return system_device_id_low_power;
+  }
+  if (gpu_feature_info.IsWorkaroundEnabled(FORCE_HIGH_PERFORMANCE_GPU) &&
+      system_device_id_high_perf) {
+    gl::SetGpuPreferenceEGL(gl::GpuPreference::kDefault,
+                            system_device_id_high_perf);
+    return system_device_id_high_perf;
+  }
+  if (gpu_default == gpu_high_perf) {
+    // If the default GPU is already the high performance GPU, then it's better
+    // for Chrome to always use this GPU.
+    gl::SetGpuPreferenceEGL(gl::GpuPreference::kDefault,
+                            system_device_id_high_perf);
+    return system_device_id_high_perf;
+  }
+
+  // Chrome uses the default GPU for internal rendering and the high
+  // performance GPU for WebGL/WebGPU contexts that prefer high performance.
+  // At this moment, a low power GPU different from the default GPU is not
+  // supported.
+  gl::SetGpuPreferenceEGL(gl::GpuPreference::kDefault,
+                          system_device_id_default);
+  if (system_device_id_high_perf && features::SupportsEGLDualGpuRendering()) {
+    gl::SetGpuPreferenceEGL(gl::GpuPreference::kHighPerformance,
+                            system_device_id_high_perf);
+  }
+  return system_device_id_default;
+}
+#endif  // USE_EGL && (IS_WIN || IS_MAC)
+
 }  // namespace
 
 GpuInit::GpuInit() = default;
@@ -242,39 +307,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
                                               command_line, &needs_more_info);
   }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-  // GPU picking is only effective with ANGLE/Metal backend on Mac and
-  // on Windows.
-  bool force_low_power_gpu =
-      gpu_feature_info_.IsWorkaroundEnabled(FORCE_LOW_POWER_GPU);
-  bool force_high_performance_gpu =
-      gpu_feature_info_.IsWorkaroundEnabled(FORCE_HIGH_PERFORMANCE_GPU);
-#if BUILDFLAG(IS_MAC)
-  // Default to the integrated gpu on a multi-gpu Mac.
-  if (!force_high_performance_gpu)
-    force_low_power_gpu = true;
-#endif  // IS_MAC
-  GPUInfo::GPUDevice* preferred_gpu = nullptr;
-  if (force_high_performance_gpu) {
-    preferred_gpu =
-        gpu_info_.GetGpuByPreference(gl::GpuPreference::kHighPerformance);
-  } else if (force_low_power_gpu) {
-    preferred_gpu = gpu_info_.GetGpuByPreference(gl::GpuPreference::kLowPower);
-  }
-  if (preferred_gpu) {
-#if BUILDFLAG(IS_WIN)
-    system_device_id = CHROME_LUID_to_uint64_t(preferred_gpu->luid);
-#else  // IS_MAC
-    system_device_id = preferred_gpu->register_id;
-#endif
-  }
-
-#if defined(USE_EGL)
-  if (system_device_id != 0) {
-    gl::SetGpuPreferenceEGL(gl::GpuPreference::kDefault, system_device_id);
-  }
-#endif  // USE_EGL
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if defined(USE_EGL) && (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC))
+  system_device_id = SetupGLDisplayManagerEGL(gpu_info_, gpu_feature_info_);
+#endif  // USE_EGL && (IS_WIN || IS_MAC)
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CASTOS)
 
   gpu_info_.in_process_gpu = false;
@@ -629,7 +664,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       return false;
     }
     default_offscreen_surface_ =
-        gl::init::CreateOffscreenGLSurface(gfx::Size());
+        gl::init::CreateOffscreenGLSurface(gl_display, gfx::Size());
     if (!default_offscreen_surface_) {
       VLOG(1) << "gl::init::CreateOffscreenGLSurface failed";
       return false;
@@ -725,10 +760,10 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 
 #if BUILDFLAG(IS_WIN)
   if (gpu_feature_info_.IsWorkaroundEnabled(DISABLE_DECODE_SWAP_CHAIN))
-    gl::DirectCompositionSurfaceWin::DisableDecodeSwapChain();
+    gl::DisableDirectCompositionDecodeSwapChain();
   if (gpu_feature_info_.IsWorkaroundEnabled(
           DISABLE_DIRECT_COMPOSITION_SW_VIDEO_OVERLAYS)) {
-    gl::DirectCompositionSurfaceWin::DisableSoftwareOverlays();
+    gl::DisableDirectCompositionSoftwareOverlays();
   }
 #endif
 
@@ -749,8 +784,8 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
       command_line, gpu_feature_info_,
       gpu_preferences_.disable_software_rasterizer, false));
 
-  InitializeGLThreadSafe(command_line, gpu_preferences_, &gpu_info_,
-                         &gpu_feature_info_);
+  gl::GLDisplay* gl_display = InitializeGLThreadSafe(
+      command_line, gpu_preferences_, &gpu_info_, &gpu_feature_info_);
 
   if (command_line->HasSwitch(switches::kWebViewDrawFunctorUsesVulkan) &&
       base::FeatureList::IsEnabled(features::kWebViewVulkan)) {
@@ -760,7 +795,9 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   } else {
     DisableInProcessGpuVulkan(&gpu_feature_info_, &gpu_preferences_);
   }
-  default_offscreen_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
+
+  default_offscreen_surface_ =
+      gl::init::CreateOffscreenGLSurface(gl_display, gfx::Size());
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GLImplementation", gl::GetGLImplementation());
 }
@@ -864,7 +901,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
       VLOG(1) << "gl::init::InitializeExtensionSettingsOneOffPlatform failed";
     }
     default_offscreen_surface_ =
-        gl::init::CreateOffscreenGLSurface(gfx::Size());
+        gl::init::CreateOffscreenGLSurface(gl_display, gfx::Size());
     if (!default_offscreen_surface_) {
       VLOG(1) << "gl::init::CreateOffscreenGLSurface failed";
     }
@@ -914,7 +951,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
 
 #if BUILDFLAG(IS_WIN)
   if (gpu_feature_info_.IsWorkaroundEnabled(DISABLE_DECODE_SWAP_CHAIN))
-    gl::DirectCompositionSurfaceWin::DisableDecodeSwapChain();
+    gl::DisableDirectCompositionDecodeSwapChain();
 #endif
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GLImplementation", gl::GetGLImplementation());

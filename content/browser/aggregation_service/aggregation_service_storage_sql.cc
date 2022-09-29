@@ -31,6 +31,7 @@
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
+#include "sql/statement_id.h"
 #include "sql/transaction.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -466,6 +467,12 @@ absl::optional<base::Time> AggregationServiceStorageSql::NextReportTimeAfter(
   if (!EnsureDatabaseOpen(DbCreationPolicy::kFailIfAbsent))
     return absl::nullopt;
 
+  return NextReportTimeAfterImpl(strictly_after_time);
+}
+
+absl::optional<base::Time>
+AggregationServiceStorageSql::NextReportTimeAfterImpl(
+    base::Time strictly_after_time) {
   static constexpr char kGetRequestsSql[] =
       "SELECT MIN(report_time) FROM report_requests WHERE report_time>?";
 
@@ -518,6 +525,75 @@ AggregationServiceStorageSql::GetRequestsReportingOnOrBefore(
     return {};
 
   return result;
+}
+
+std::vector<AggregationServiceStorage::RequestAndId>
+AggregationServiceStorageSql::GetRequests(
+    const std::vector<AggregationServiceStorage::RequestId>& ids) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!EnsureDatabaseOpen(DbCreationPolicy::kFailIfAbsent))
+    return {};
+
+  static constexpr char kGetRequestSql[] =
+      "SELECT request_id,request_proto FROM report_requests "
+      "WHERE request_id=?";
+  sql::Statement statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kGetRequestSql));
+
+  std::vector<AggregationServiceStorage::RequestAndId> result;
+  for (AggregationServiceStorage::RequestId id : ids) {
+    statement.Reset(/*clear_bound_vars=*/true);
+    statement.BindInt64(0, *id);
+    if (!statement.Step())
+      continue;
+    absl::optional<AggregatableReportRequest> parsed_request =
+        AggregatableReportRequest::Deserialize(statement.ColumnBlob(1));
+    if (!parsed_request)
+      continue;
+    result.push_back(AggregationServiceStorage::RequestAndId{
+        .request = std::move(*parsed_request),
+        .id = id,
+    });
+  }
+  return result;
+}
+
+absl::optional<base::Time>
+AggregationServiceStorageSql::AdjustOfflineReportTimes(
+    base::Time now,
+    base::TimeDelta min_delay,
+    base::TimeDelta max_delay) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  DCHECK_GE(min_delay, base::TimeDelta());
+  DCHECK_GE(max_delay, base::TimeDelta());
+  DCHECK_LE(min_delay, max_delay);
+
+  if (!EnsureDatabaseOpen(DbCreationPolicy::kFailIfAbsent))
+    return absl::nullopt;
+
+  // Set the report time for all reports that should have been sent before `now`
+  // to `now` + a random number of microseconds between `min_delay` and
+  // `max_delay`, both inclusive. We use RANDOM, instead of a C++ method to
+  // avoid having to pull all reports into memory and update them one by one. We
+  // use ABS because RANDOM may return a negative integer. We add 1 to the
+  // difference between `max_delay` and `min_delay` to ensure that the range of
+  // generated values is inclusive. If `max_delay == min_delay`, we take the
+  // remainder modulo 1, which is always 0.
+  static constexpr char kAdjustOfflineReportTimesSql[] =
+      "UPDATE report_requests SET report_time=?+ABS(RANDOM()%?)"
+      "WHERE report_time<?";
+
+  sql::Statement statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kAdjustOfflineReportTimesSql));
+  statement.BindTime(0, now + min_delay);
+  statement.BindInt64(1, 1 + (max_delay - min_delay).InMicroseconds());
+  statement.BindTime(2, now);
+
+  statement.Run();
+
+  return NextReportTimeAfterImpl(base::Time::Min());
 }
 
 void AggregationServiceStorageSql::ClearDataBetween(

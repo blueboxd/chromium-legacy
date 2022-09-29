@@ -16,9 +16,13 @@
 
 #include "base/check.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
+#include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/trace_event.h"
 #include "components/history/core/browser/history_database.h"
@@ -28,8 +32,10 @@
 #include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
-#include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/bookmark_provider.h"
+#include "components/omnibox/browser/history_quick_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_triggered_feature_service.h"
 #include "components/search_engines/omnibox_focus_type.h"
 #include "components/url_formatter/elide_url.h"
 #include "url/gurl.h"
@@ -38,11 +44,18 @@ namespace {
 
 // Histogram names for measuring sub-provider match conversion efficacy.
 // Reminder in case other sub-providers or metrics are added: update
-// the `Omnibox.FuzzyMatchConversion` entry in histograms.xml.
+// the `Omnibox.HistoryFuzzy.MatchConversion` entry in histograms.xml.
 const char kMetricMatchConversionHistoryQuick[] =
-    "Omnibox.FuzzyMatchConversion.HistoryQuick";
+    "Omnibox.HistoryFuzzy.MatchConversion.HistoryQuick";
 const char kMetricMatchConversionBookmark[] =
-    "Omnibox.FuzzyMatchConversion.Bookmark";
+    "Omnibox.HistoryFuzzy.MatchConversion.Bookmark";
+
+// Histogram name for time spent on the fuzzy search portion of provider time.
+const char kMetricSearchDuration[] = "Omnibox.HistoryFuzzy.SearchDuration";
+
+// Histogram name for whether a presented fuzzy match was the one taken by the
+// user at the moment a match was opened.
+const char kMetricPrecision[] = "Omnibox.HistoryFuzzy.Precision";
 
 // This cap ensures the search trie will not grow without bound. Up to half
 // the total capacity may be filled at startup from loaded significant URLs.
@@ -77,7 +90,6 @@ std::u16string ReduceInputTextForMatching(const std::u16string& input) {
   // Long inputs are not fuzzy matched; doing so could be costly, and the
   // length of input itself is a signal that it may not have been typed but
   // simply pasted or edited in place.
-  // TODO(orinj): Consider tracking trie depth for use as maximum here.
   if (input.length() > kMaximumFuzzyMatchInputLength) {
     return std::u16string();
   }
@@ -125,6 +137,13 @@ std::u16string ReduceInputTextForMatching(const std::u16string& input) {
   }
 
   return remaining;
+}
+
+// Indicates whether to deactivate fuzzy processing due to device performance
+// and memory constraints. This prevents loading, updating, and fuzzy search.
+bool ShouldBypassForLowEndDevice() {
+  return OmniboxFieldTrial::kFuzzyUrlSuggestionsLowEndBypass.Get() &&
+         base::SysInfo::IsLowEndDevice();
 }
 
 }  // namespace
@@ -185,9 +204,6 @@ std::unique_ptr<Correction> Correction::GetApplicableCorrection() {
     DCHECK(!next || next->kind != Kind::KEEP);
     return next ? std::make_unique<Correction>(*next) : nullptr;
   } else {
-    // TODO(orinj): Consider a shared ownership model or preallocated pool to
-    //  eliminate lots of copy allocations. For now this is kept simple with
-    //  direct ownership of the full correction chain.
     return std::make_unique<Correction>(*this);
   }
 }
@@ -297,7 +313,6 @@ bool Node::FindCorrections(const std::u16string& text,
 
     // Backtracking data to enable text correction (from end of string back
     // to beginning, i.e. correction chains are applied in reverse).
-    // TODO(orinj): This should be optimized in final algorithm; stop copying.
     Correction correction;
 
     // std::priority_queue keeps the greatest element on top, so we want this
@@ -334,9 +349,6 @@ bool Node::FindCorrections(const std::u16string& text,
     pq.pop();
     DVLOG(1) << i << "(" << step.distance << "," << step.index << ","
              << step.length << "," << step.correction << ")";
-    // TODO(orinj): Enforce a tolerance schedule with index versus distance;
-    //  this would allow more errors for longer inputs and prevents searching
-    //  through long corrections near start of input.
     // Strictly greater should not be possible for this comparison.
     if (step.index >= text.length()) {
       if (step.distance == 0) {
@@ -493,13 +505,31 @@ class LoadSignificantUrls : public history::HistoryDBTask {
 
 }  // namespace fuzzy
 
-HistoryFuzzyProvider::HistoryFuzzyProvider(
-    AutocompleteProviderClient* client,
-    HistoryQuickProvider* history_quick_provider,
-    BookmarkProvider* bookmark_provider)
-    : HistoryProvider(AutocompleteProvider::TYPE_HISTORY_FUZZY, client),
-      history_quick_provider_(history_quick_provider),
-      bookmark_provider_(bookmark_provider) {
+// static
+void HistoryFuzzyProvider::RecordOpenMatchMetrics(
+    const AutocompleteResult& result,
+    const AutocompleteMatch& match_opened) {
+  if (std::any_of(result.begin(), result.end(),
+                  [](const AutocompleteMatch& match) {
+                    return match.provider->type() ==
+                           AutocompleteProvider::TYPE_HISTORY_FUZZY;
+                  })) {
+    const bool opened_fuzzy_match = match_opened.provider->type() ==
+                                    AutocompleteProvider::TYPE_HISTORY_FUZZY;
+    UMA_HISTOGRAM_BOOLEAN(kMetricPrecision, opened_fuzzy_match);
+  }
+}
+
+HistoryFuzzyProvider::HistoryFuzzyProvider(AutocompleteProviderClient* client)
+    : HistoryProvider(AutocompleteProvider::TYPE_HISTORY_FUZZY, client) {
+  if (ShouldBypassForLowEndDevice()) {
+    // Note, this early return will prevent loading from database, which saves
+    // memory and prevents this provider from working to find fuzzy matches.
+    // See also the early return in `Start` below; `urls_loaded_event_` never
+    // signals because the signaling task is never run.
+    return;
+  }
+
   history_service_observation_.Observe(client->GetHistoryService());
   client->GetHistoryService()->ScheduleDBTask(
       FROM_HERE,
@@ -519,12 +549,9 @@ void HistoryFuzzyProvider::Start(const AutocompleteInput& input,
     return;
   }
 
+  // Note this will always return early when bypassing for low-end devices;
+  // see comment in constructor.
   if (!urls_loaded_event_.IsSignaled()) {
-    return;
-  }
-
-  // When there are no sub-providers, bypass fuzzy search completely.
-  if (history_quick_provider_ == nullptr && bookmark_provider_ == nullptr) {
     return;
   }
 
@@ -541,6 +568,22 @@ void HistoryFuzzyProvider::Start(const AutocompleteInput& input,
       match.provider = this;
     }
   }
+
+  if (!matches_.empty()) {
+    // This will likely produce some false positives.
+    client()->GetOmniboxTriggeredFeatureService()->FeatureTriggered(
+        OmniboxTriggeredFeatureService::Feature::kFuzzyUrlSuggestions);
+
+    // When in the counterfactual group, we do all the work of finding fuzzy
+    // matches, but do not provide the benefit. To reduce risk of unintended
+    // consequences downstream (for example showing fewer suggestions than
+    // normal), the matches are cleared here instead of at end of result
+    // processing pipeline so they won't interact or dedupe with other matches.
+    if (OmniboxFieldTrial::kFuzzyUrlSuggestionsCounterfactual.Get()) {
+      DVLOG(1) << "Clearing matches_ for counterfactual";
+      matches_.clear();
+    }
+  }
 }
 
 size_t HistoryFuzzyProvider::EstimateMemoryUsage() const {
@@ -553,7 +596,6 @@ size_t HistoryFuzzyProvider::EstimateMemoryUsage() const {
 HistoryFuzzyProvider::~HistoryFuzzyProvider() = default;
 
 void HistoryFuzzyProvider::DoAutocomplete() {
-  // TODO(orinj): This schedule may want some measurement and tinkering.
   constexpr fuzzy::ToleranceSchedule kToleranceSchedule = {
       .start_index = 1,
       .step_length = 4,
@@ -569,10 +611,18 @@ void HistoryFuzzyProvider::DoAutocomplete() {
   }
   std::vector<fuzzy::Correction> corrections;
   DVLOG(1) << "FindCorrections: <" << text << "> ---> ?{";
+  const base::TimeTicks time_start = base::TimeTicks::Now();
   if (root_.FindCorrections(text, kToleranceSchedule, corrections)) {
     DVLOG(1) << "Trie contains input; no fuzzy results needed";
   }
+  const base::TimeTicks time_end = base::TimeTicks::Now();
+  UMA_HISTOGRAM_TIMES(kMetricSearchDuration, time_end - time_start);
   if (!corrections.empty()) {
+    // Use of `scoped_refptr` is required here because destructor is private.
+    scoped_refptr<HistoryQuickProvider> history_quick_provider =
+        new HistoryQuickProvider(client());
+    scoped_refptr<BookmarkProvider> bookmark_provider =
+        new BookmarkProvider(client());
     int count_history_quick = 0;
     int count_bookmark = 0;
     for (const auto& correction : corrections) {
@@ -590,17 +640,14 @@ void HistoryFuzzyProvider::DoAutocomplete() {
           autocomplete_input_.current_page_classification(),
           client()->GetSchemeClassifier());
 
-      if (history_quick_provider_) {
-        history_quick_provider_->Start(corrected_input, false);
-        DCHECK(history_quick_provider_->done());
-        count_history_quick +=
-            AddConvertedMatches(history_quick_provider_->matches());
-      }
-      if (bookmark_provider_) {
-        bookmark_provider_->Start(corrected_input, false);
-        DCHECK(bookmark_provider_->done());
-        count_bookmark += AddConvertedMatches(bookmark_provider_->matches());
-      }
+      history_quick_provider->Start(corrected_input, false);
+      DCHECK(history_quick_provider->done());
+      bookmark_provider->Start(corrected_input, false);
+      DCHECK(bookmark_provider->done());
+
+      count_history_quick +=
+          AddConvertedMatches(history_quick_provider->matches());
+      count_bookmark += AddConvertedMatches(bookmark_provider->matches());
     }
     if (matches_.size() > provider_max_matches_) {
       // When too many matches are generated, take only the most relevant
@@ -609,11 +656,10 @@ void HistoryFuzzyProvider::DoAutocomplete() {
                         matches_.begin() + provider_max_matches_,
                         matches_.end(), AutocompleteMatch::MoreRelevant);
       for (size_t i = provider_max_matches_; i < matches_.size(); i++) {
-        DCHECK(matches_[i].provider != nullptr &&
-                   matches_[i].provider == history_quick_provider_ ||
-               matches_[i].provider == bookmark_provider_)
+        DCHECK(matches_[i].provider == history_quick_provider ||
+               matches_[i].provider == bookmark_provider)
             << matches_[i].provider->GetName();
-        if (matches_[i].provider == history_quick_provider_) {
+        if (matches_[i].provider == history_quick_provider) {
           count_history_quick--;
         } else {
           count_bookmark--;
@@ -649,8 +695,12 @@ int HistoryFuzzyProvider::AddConvertedMatches(const ACMatches& matches) {
   // Update match in place. Note, `match.provider` will be reassigned after
   // `DoAutocomplete` because source sub-provider must be kept for metrics.
   AutocompleteMatch& match = matches_.back();
-  match.inline_autocompletion.clear();
+
+  // It's important that fuzzy matches do not try to become default and inline
+  // autocomplete because the input/match-data mismatch can cause problems
+  // with user interaction and omnibox text editing; see crbug/1347440.
   match.allowed_to_be_default_match = false;
+  match.inline_autocompletion.clear();
 
   // Apply relevance penalty; all corrections are equal and we only apply this
   // to the most relevant result, so edit distance isn't needed.
@@ -661,9 +711,6 @@ int HistoryFuzzyProvider::AddConvertedMatches(const ACMatches& matches) {
   // HQP result that was bumped down to ~770. Using 95/100 lets this
   // result compete in the navsuggest range.
   match.relevance = match.relevance * 95 / 100;
-  match.contents_class.clear();
-  match.contents_class.push_back(
-      {0, AutocompleteMatch::ACMatchClassification::DIM});
 
   return 1;
 }
@@ -674,20 +721,25 @@ void HistoryFuzzyProvider::OnUrlsLoaded(fuzzy::Node node) {
 
 void HistoryFuzzyProvider::OnURLVisited(
     history::HistoryService* history_service,
-    ui::PageTransition transition,
-    const history::URLRow& row,
-    base::Time visit_time) {
-  DVLOG(1) << "URL Visit: " << row.url();
+    const history::URLRow& url_row,
+    const history::VisitRow& new_visit) {
+  if (ShouldBypassForLowEndDevice()) {
+    return;
+  }
+  DVLOG(1) << "URL Visit: " << url_row.url();
   if (root_.TerminalCount() <
       std::min(OmniboxFieldTrial::MaxNumHQPUrlsIndexedAtStartup(),
                kMaxTerminalCount)) {
-    root_.Insert(UrlDomainReduction(row.url()), 0);
+    root_.Insert(UrlDomainReduction(url_row.url()), 0);
   }
 }
 
 void HistoryFuzzyProvider::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
+  if (ShouldBypassForLowEndDevice()) {
+    return;
+  }
   // Note, this implementation is conservative in terms of user privacy; it
   // deletes hosts from the trie if any URL with the given host is deleted.
   if (deletion_info.IsAllHistory()) {

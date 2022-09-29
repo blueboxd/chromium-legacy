@@ -12,15 +12,26 @@
 #include "base/unguessable_token.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/tts_client_factory_lacros.h"
 #include "chrome/browser/speech/tts_crosapi_util.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_platform.h"
+#include "extensions/browser/event_router.h"
+
+namespace {
+
+bool IsOffline(net::NetworkChangeNotifier::ConnectionType type) {
+  return type == net::NetworkChangeNotifier::CONNECTION_NONE;
+}
+
+}  // namespace
 
 TtsClientLacros::TtsClientLacros(content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {
+    : browser_context_(browser_context),
+      is_offline_(IsOffline(net::NetworkChangeNotifier::GetConnectionType())) {
   auto* service = chromeos::LacrosService::Get();
   if (!service->IsAvailable<crosapi::mojom::Tts>())
     return;
@@ -31,10 +42,20 @@ TtsClientLacros::TtsClientLacros(content::BrowserContext* browser_context)
 
   // TODO(crbug.com/1251979): Support secondary profiles when it becomes
   // available for Lacros.
-  DCHECK(is_primary_profile);
+  if (!is_primary_profile)
+    return;
+
   service->GetRemote<crosapi::mojom::Tts>()->RegisterTtsClient(
       receiver_.BindNewPipeAndPassRemoteWithVersion(), browser_context_id_,
       /*is_primary_profile=*/is_primary_profile);
+
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+
+  extensions::EventRouter* event_router = extensions::EventRouter::Get(
+      Profile::FromBrowserContext(browser_context_));
+  DCHECK(event_router);
+  event_router->RegisterObserver(this, tts_engine_events::kOnSpeak);
+  event_router->RegisterObserver(this, tts_engine_events::kOnStop);
 
   // Push Lacros voices to Ash.
   NotifyLacrosVoicesChanged();
@@ -60,11 +81,59 @@ void TtsClientLacros::GetAllVoices(
     out_voices->push_back(voice);
 }
 
-TtsClientLacros::~TtsClientLacros() = default;
+void TtsClientLacros::Shutdown() {
+  extensions::EventRouter::Get(Profile::FromBrowserContext(browser_context_))
+      ->UnregisterObserver(this);
+}
+
+TtsClientLacros::~TtsClientLacros() {
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+}
 
 TtsClientLacros* TtsClientLacros::GetForBrowserContext(
     content::BrowserContext* context) {
   return TtsClientFactoryLacros::GetForBrowserContext(context);
+}
+
+void TtsClientLacros::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  // Since the remote voices are NOT returned by TtsExtensionEngine::GetVoices()
+  // if the system is offline, threfore, when the network status changes, the
+  // Lacros voices need to be refreshed to ensure the remote voices to be
+  // included or excluded according to the current network state.
+  bool is_offline = IsOffline(type);
+  if (is_offline_ != is_offline) {
+    is_offline_ = is_offline;
+    NotifyLacrosVoicesChanged();
+  }
+}
+
+void TtsClientLacros::OnListenerAdded(
+    const extensions::EventListenerInfo& details) {
+  if (!IsLoadedTtsEngine(details.extension_id))
+    return;
+
+  NotifyLacrosVoicesChanged();
+}
+
+void TtsClientLacros::OnListenerRemoved(
+    const extensions::EventListenerInfo& details) {
+  if (details.event_name != tts_engine_events::kOnSpeak &&
+      details.event_name != tts_engine_events::kOnStop) {
+    return;
+  }
+
+  NotifyLacrosVoicesChanged();
+}
+
+bool TtsClientLacros::IsLoadedTtsEngine(const std::string& extension_id) const {
+  extensions::EventRouter* event_router = extensions::EventRouter::Get(
+      Profile::FromBrowserContext(browser_context_));
+  DCHECK(event_router);
+  return event_router->ExtensionHasEventListener(extension_id,
+                                                 tts_engine_events::kOnSpeak) &&
+         event_router->ExtensionHasEventListener(extension_id,
+                                                 tts_engine_events::kOnStop);
 }
 
 void TtsClientLacros::NotifyLacrosVoicesChanged() {

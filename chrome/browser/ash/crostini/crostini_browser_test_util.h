@@ -48,8 +48,8 @@ class CrostiniBrowserTestBase : public InProcessBrowserTest {
                      const std::string& source_format,
                      const std::string& mount_label,
                      const std::vector<std::string>& mount_options,
-                     chromeos::MountType type,
-                     chromeos::MountAccessMode access_mode,
+                     ash::MountType type,
+                     ash::MountAccessMode access_mode,
                      ash::disks::DiskMountManager::MountPathCallback callback);
 
   // Owned by ash::disks::DiskMountManager;

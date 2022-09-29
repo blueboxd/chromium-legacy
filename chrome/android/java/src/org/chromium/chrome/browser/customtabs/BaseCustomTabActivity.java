@@ -23,6 +23,7 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplicationImpl;
+import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.app.tabmodel.TabModelOrchestrator;
@@ -186,8 +187,9 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
                 ModuleFactoryOverrides.getOverrideFor(BaseCustomTabActivityModule.Factory.class);
 
         // mIntentHandler comes from the base class.
-        IntentIgnoringCriterion intentIgnoringCriterion =
-                (intent) -> mIntentHandler.shouldIgnoreIntent(intent, /*startedActivity=*/true);
+        IntentIgnoringCriterion intentIgnoringCriterion = (intent)
+                -> mIntentHandler.shouldIgnoreIntent(
+                        intent, /*startedActivity=*/true, isCustomTab());
 
         BaseCustomTabActivityModule baseCustomTabsModule = overridenBaseCustomTabFactory != null
                 ? overridenBaseCustomTabFactory.create(mIntentDataProvider,
@@ -495,6 +497,8 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
         if (mWebappActivityCoordinator != null) {
             mWebappActivityCoordinator.initDeferredStartupForActivity();
         }
+        DeferredStartupHandler.getInstance().addDeferredTask(
+                () -> { mBaseCustomTabRootUiCoordinator.onDeferredStartup(); });
         super.initDeferredStartupForActivity();
     }
 

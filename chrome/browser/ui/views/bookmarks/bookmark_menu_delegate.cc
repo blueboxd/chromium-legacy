@@ -117,20 +117,17 @@ class BookmarkModelDropObserver : public bookmarks::BaseBookmarkModelObserver {
 
 }  // namespace
 
-BookmarkMenuDelegate::BookmarkMenuDelegate(
-    Browser* browser,
-    base::RepeatingCallback<content::PageNavigator*()> get_navigator,
-    views::Widget* parent)
+BookmarkMenuDelegate::BookmarkMenuDelegate(Browser* browser,
+                                           views::Widget* parent)
     : browser_(browser),
       profile_(browser->profile()),
-      get_navigator_(std::move(get_navigator)),
       parent_(parent),
       menu_(nullptr),
       parent_menu_item_(nullptr),
       next_menu_id_(IDC_FIRST_UNBOUNDED_MENU),
       real_delegate_(nullptr),
       is_mutating_model_(false),
-      location_(BOOKMARK_LAUNCH_LOCATION_NONE) {}
+      location_(BookmarkLaunchLocation::kNone) {}
 
 BookmarkMenuDelegate::~BookmarkMenuDelegate() {
   GetBookmarkModel()->RemoveObserver(this);
@@ -228,7 +225,7 @@ void BookmarkMenuDelegate::ExecuteCommand(int id, int mouse_event_flags) {
 
   RecordBookmarkLaunch(location_,
                        profile_metrics::GetBrowserProfileType(profile_));
-  chrome::OpenAllIfAllowed(browser_, get_navigator_, selection,
+  chrome::OpenAllIfAllowed(browser_, selection,
                            ui::DispositionFromEventFlags(mouse_event_flags),
                            false);
 }
@@ -304,7 +301,7 @@ ui::mojom::DragOperation BookmarkMenuDelegate::GetDropOperation(
 
   const BookmarkNode* node = menu_id_to_node_map_[item->GetCommand()];
   const BookmarkNode* drop_parent = node->parent();
-  size_t index_to_drop_at = static_cast<size_t>(drop_parent->GetIndexOf(node));
+  size_t index_to_drop_at = drop_parent->GetIndexOf(node).value();
   BookmarkModel* model = GetBookmarkModel();
   switch (*position) {
     case views::MenuDelegate::DropPosition::kAfter:
@@ -345,8 +342,7 @@ views::View::DropCallback BookmarkMenuDelegate::GetDropCallback(
   DCHECK(model);
   const BookmarkNode* drop_parent = drop_node->parent();
   DCHECK(drop_parent);
-  size_t index_to_drop_at =
-      static_cast<size_t>(drop_parent->GetIndexOf(drop_node));
+  size_t index_to_drop_at = drop_parent->GetIndexOf(drop_node).value();
   switch (position) {
     case views::MenuDelegate::DropPosition::kAfter:
       index_to_drop_at++;
@@ -391,8 +387,7 @@ bool BookmarkMenuDelegate::ShowContextMenu(MenuItemView* source,
   const BookmarkNode* node = menu_id_to_node_map_[id];
   std::vector<const BookmarkNode*> nodes(1, node);
   context_menu_ = std::make_unique<BookmarkContextMenu>(
-      parent_, browser_, profile_, get_navigator_,
-      BOOKMARK_LAUNCH_LOCATION_APP_MENU, node->parent(), nodes,
+      parent_, browser_, profile_, location_, node->parent(), nodes,
       ShouldCloseOnRemove(node));
   context_menu_->set_observer(this);
   context_menu_->RunMenuAt(p, source_type);

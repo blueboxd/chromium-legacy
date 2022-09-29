@@ -121,15 +121,13 @@ cr.define('cr.login', function() {
   const SAML_REDIRECTION_PATH = 'samlredirect';
   const BLANK_PAGE_URL = 'about:blank';
 
+  const GAIA_DONE_ELAPSED_TIME = 'ChromeOS.Gaia.Done.ElapsedTime';
+
   // Metric names for messages we get from Gaia.
   const GAIA_MESSAGE_SAML_USER_INFO = 'ChromeOS.Gaia.Message.Saml.UserInfo';
   const GAIA_MESSAGE_GAIA_USER_INFO = 'ChromeOS.Gaia.Message.Gaia.UserInfo';
   const GAIA_MESSAGE_SAML_CLOSE_VIEW = 'ChromeOS.Gaia.Message.Saml.CloseView';
   const GAIA_MESSAGE_GAIA_CLOSE_VIEW = 'ChromeOS.Gaia.Message.Gaia.CloseView';
-
-  // Regular expressions used to check for Azure AD-related hosts
-  const AZURE_AD_HOST = /login\.microsoftonline\.com$/;
-  const AZURE_AD_B2B_HOST = /b2clogin\.com$/;
 
   /**
    * The source URL parameter for the constrained signin flow.
@@ -441,8 +439,7 @@ cr.define('cr.login', function() {
       /** @private {?SyncTrustedVaultKeys} */
       this.syncTrustedVaultKeys_ = null;
       this.closeViewReceived_ = false;
-      /** @private {string|null} */
-      this.urlParameterToAutofillSAMLUsername_ = null;
+      this.gaiaStartTime = null;
 
       window.addEventListener(
           'message', e => this.onMessageFromWebview_(e), false);
@@ -485,7 +482,6 @@ cr.define('cr.login', function() {
       this.maybeClearGaiaTimeout_();
       this.syncTrustedVaultKeys_ = null;
       this.closeViewReceived_ = false;
-      this.urlParameterToAutofillSAMLUsername_ = null;
     }
 
     /**
@@ -652,8 +648,6 @@ cr.define('cr.login', function() {
       this.clientId_ = data.clientId;
       this.dontResizeNonEmbeddedPages = data.dontResizeNonEmbeddedPages;
       this.enableGaiaActionButtons_ = data.enableGaiaActionButtons;
-      this.urlParameterToAutofillSAMLUsername_ =
-          data.urlParameterToAutofillSAMLUsername;
 
       this.initialFrameUrl_ = this.constructInitialFrameUrl_(data);
       this.reloadUrl_ = data.frameUrl || this.initialFrameUrl_;
@@ -669,6 +663,9 @@ cr.define('cr.login', function() {
           this.idpOrigin_.startsWith('https://');
       this.samlHandler_.extractSamlPasswordAttributes =
           data.extractSamlPasswordAttributes;
+      this.samlHandler_.email = data.email;
+      this.samlHandler_.urlParameterToAutofillSAMLUsername =
+          data.urlParameterToAutofillSAMLUsername;
 
       this.needPassword = !('needPassword' in data) || data.needPassword;
 
@@ -891,39 +888,6 @@ cr.define('cr.login', function() {
     }
 
     /**
-     * Check url's host to determine if it comes from Azure AD
-     * @param {URL?} url
-     * @private
-     */
-    isAzureAD_(url) {
-      return Boolean(
-          url.host.match(AZURE_AD_HOST) || url.host.match(AZURE_AD_B2B_HOST));
-    }
-
-    /**
-     * Try to auto-fill email on sign-in page if IdP is Azure AD
-     * @param {string} url url from location header
-     * @private
-     */
-    maybeAutofillUsernameIfAzureAD_(url) {
-      if (!this.urlParameterToAutofillSAMLUsername_ ||
-          this.urlParameterToAutofillSAMLUsername_.length === 0) {
-        return;
-      }
-      if (!url.startsWith('https')) {
-        return;
-      }
-      if (!this.email_) {
-        return;
-      }
-      if (this.isAzureAD_(new URL(url))) {
-        url = appendParam(
-            url, this.urlParameterToAutofillSAMLUsername_, this.email_);
-        this.webview_.src = url;
-      }
-    }
-
-    /**
      * Invoked when headers are received in the main frame of the webview. It
      * 1) reads the authenticated user info from a signin header,
      * 2) signals the start of a saml flow upon receiving a saml header.
@@ -964,7 +928,6 @@ cr.define('cr.login', function() {
           assert(header.value !== undefined);
           const location = decodeURIComponent(header.value);
           this.chooseWhatToSync_ = !!location.match(/(\?|&)source=3($|&)/);
-          this.maybeAutofillUsernameIfAzureAD_(header.value);
         }
       }
     }
@@ -1074,11 +1037,13 @@ cr.define('cr.login', function() {
           !this.waitApiPasswordConfirm_;
 
       if (gaiaDone) {
+        this.maybeRecordGaiaElapsedTime_();
         this.maybeClearGaiaTimeout_();
       } else if (this.gaiaDoneTimer_) {
         // Early out if `gaiaDoneTimer_` is running.
         return;
       } else {
+        this.gaiaStartTime = Date.now();
         // Start `gaiaDoneTimer_` if Gaia is not yet done.
         this.gaiaDoneTimer_ = window.setTimeout(
             () => this.onGaiaDoneTimeout_(), GAIA_DONE_WAIT_TIMEOUT_MS);
@@ -1444,6 +1409,20 @@ cr.define('cr.login', function() {
 
       this.maybeClearGaiaTimeout_();
       this.maybeCompleteAuth_();
+    }
+
+    /**
+     * @private
+     */
+    maybeRecordGaiaElapsedTime_() {
+      if (!this.gaiaStartTime) {
+        return;
+      }
+      chrome.send('metricsHandler:recordTime', [
+        GAIA_DONE_ELAPSED_TIME,
+        Date.now() - this.gaiaStartTime,
+      ]);
+      this.gaiaStartTime = null;
     }
 
     /**

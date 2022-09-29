@@ -25,8 +25,8 @@ class FakeDiskMountManager : public ash::disks::DiskMountManager {
                  const std::string& source_format,
                  const std::string& mount_label,
                  const std::vector<std::string>& mount_options,
-                 chromeos::MountType type,
-                 chromeos::MountAccessMode access_mode);
+                 ash::MountType type,
+                 ash::MountAccessMode access_mode);
     MountRequest(const MountRequest& other);
     ~MountRequest();
 
@@ -34,13 +34,13 @@ class FakeDiskMountManager : public ash::disks::DiskMountManager {
     std::string source_format;
     std::string mount_label;
     std::vector<std::string> mount_options;
-    chromeos::MountType type;
-    chromeos::MountAccessMode access_mode;
+    ash::MountType type;
+    ash::MountAccessMode access_mode;
   };
 
   struct RemountAllRequest {
-    explicit RemountAllRequest(chromeos::MountAccessMode access_mode);
-    chromeos::MountAccessMode access_mode;
+    explicit RemountAllRequest(ash::MountAccessMode access_mode);
+    ash::MountAccessMode access_mode;
   };
 
   FakeDiskMountManager();
@@ -67,31 +67,30 @@ class FakeDiskMountManager : public ash::disks::DiskMountManager {
 
   // Fails a future unmount request for |mount_path| with |error_code|.
   void FailUnmountRequest(const std::string& mount_path,
-                          chromeos::MountError error_code);
+                          ash::MountError error_code);
 
   // DiskMountManager overrides.
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  const DiskMap& disks() const override;
+  const Disks& disks() const override;
   const ash::disks::Disk* FindDiskBySourcePath(
       const std::string& source_path) const override;
-  const MountPointMap& mount_points() const override;
+  const MountPoints& mount_points() const override;
   void EnsureMountInfoRefreshed(EnsureMountInfoRefreshedCallback callback,
                                 bool force) override;
   void MountPath(const std::string& source_path,
                  const std::string& source_format,
                  const std::string& mount_label,
                  const std::vector<std::string>& mount_options,
-                 chromeos::MountType type,
-                 chromeos::MountAccessMode access_mode,
+                 ash::MountType type,
+                 ash::MountAccessMode access_mode,
                  MountPathCallback) override;
   // In order to simulate asynchronous invocation of callbacks after unmount
   // is finished, |callback| will be invoked only when
   // |FinishAllUnmountRequest()| is called.
   void UnmountPath(const std::string& mount_path,
                    UnmountPathCallback callback) override;
-  void RemountAllRemovableDrives(
-      chromeos::MountAccessMode access_mode) override;
+  void RemountAllRemovableDrives(ash::MountAccessMode access_mode) override;
   void FormatMountedDevice(const std::string& mount_path,
                            ash::disks::FormatFileSystemType filesystem,
                            const std::string& label) override;
@@ -105,20 +104,20 @@ class FakeDiskMountManager : public ash::disks::DiskMountManager {
       UnmountDeviceRecursivelyCallbackType callback) override;
 
   bool AddDiskForTest(std::unique_ptr<ash::disks::Disk> disk) override;
-  bool AddMountPointForTest(const MountPointInfo& mount_point) override;
+  bool AddMountPointForTest(const MountPoint& mount_point) override;
   void InvokeDiskEventForTest(DiskEvent event, const ash::disks::Disk* disk);
 
  private:
   base::ObserverList<Observer> observers_;
   base::queue<base::OnceClosure> pending_unmount_callbacks_;
 
-  DiskMap disks_;
-  MountPointMap mount_points_;
+  Disks disks_;
+  MountPoints mount_points_;
 
   std::vector<MountRequest> mount_requests_;
   std::vector<std::string> unmount_requests_;
   std::vector<RemountAllRequest> remount_all_requests_;
-  std::map<std::string, chromeos::MountError> unmount_errors_;
+  std::map<std::string, ash::MountError> unmount_errors_;
 };
 
 }  // namespace file_manager

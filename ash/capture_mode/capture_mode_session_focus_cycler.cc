@@ -64,14 +64,15 @@ std::vector<aura::Window*> GetWindowListIgnoreModalForActiveDesk() {
 }
 
 views::Widget* GetCameraPreviewWidget() {
-  auto* camera_controller = CaptureModeController::Get()->camera_controller();
-  return camera_controller ? camera_controller->camera_preview_widget()
-                           : nullptr;
+  return CaptureModeController::Get()
+      ->camera_controller()
+      ->camera_preview_widget();
 }
 
 CameraPreviewView* GetCameraPreviewView() {
-  auto* camera_controller = CaptureModeController::Get()->camera_controller();
-  return camera_controller ? camera_controller->camera_preview_view() : nullptr;
+  return CaptureModeController::Get()
+      ->camera_controller()
+      ->camera_preview_view();
 }
 
 // Returns true if the `value` is within the inclusive range of `low` and
@@ -545,6 +546,24 @@ void CaptureModeSessionFocusCycler::OnSettingsMenuWidgetCreated() {
 }
 
 void CaptureModeSessionFocusCycler::OnWidgetClosing(views::Widget* widget) {
+  OnWidgetDestroying(widget);
+}
+
+void CaptureModeSessionFocusCycler::OnWidgetDestroying(views::Widget* widget) {
+  // Note that we implement both `OnWidgetClosing()` and `OnWidgetDestroying()`.
+  // - `OnWidgetClosing()` is called synchronously when either `Close()` or
+  //   `CloseNow()` are called on the widget.
+  // - `OnWidgetDestroying()` is called:
+  //     - Synchronously if `CloseNow()` is used.
+  //     - Asynchronously if `Close()` is used.
+  // - However, `OnWidgetClosing()` may never get called at all if the native
+  //   window of the widget gets deleted without calling either `Close()` or
+  //   `CloseNow()`. See https://crbug.com/1350743.
+  // Implementing both let's us handle the closing synchronously via
+  // `OnWidgetClosing()`, and avoid any crashes or UAFs if it was never called.
+  if (!settings_menu_widget_observeration_.IsObserving())
+    return;
+
   settings_menu_opened_with_keyboard_nav_ = false;
   settings_menu_widget_observeration_.Reset();
 

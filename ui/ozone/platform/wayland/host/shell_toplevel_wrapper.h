@@ -17,6 +17,7 @@ class Rect;
 namespace ui {
 
 class WaylandConnection;
+enum class ZOrderLevel;
 
 // A wrapper around different versions of xdg toplevels. Allows
 // WaylandToplevelWindow to set window-like properties such as maximize,
@@ -127,6 +128,14 @@ class ShellToplevelWrapper {
   // Enables screen coordinates support. This is no-op if the server does not
   // support the screen coordinates.
   virtual void EnableScreenCoordinates() = 0;
+
+  // Sets/usets a native window to float state. This places it on top of other
+  // windows.
+  virtual void SetFloat() = 0;
+  virtual void UnSetFloat() = 0;
+
+  // Sets the z order of the window.
+  virtual void SetZOrder(ZOrderLevel z_order) = 0;
 };
 
 // Look for |value| in |wl_array| in C++ style.

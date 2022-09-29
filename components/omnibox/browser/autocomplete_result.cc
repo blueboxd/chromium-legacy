@@ -83,7 +83,7 @@ struct MatchGURLHash {
 // static
 size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
 #if BUILDFLAG(IS_ANDROID)
-  constexpr size_t kDefaultMaxAutocompleteMatches = 8;
+  constexpr size_t kDefaultMaxAutocompleteMatches = 10;
   constexpr size_t kDefaultMaxZeroSuggestMatches = 15;
 #elif BUILDFLAG(IS_IOS)
   constexpr size_t kDefaultMaxAutocompleteMatches = 6;
@@ -169,9 +169,11 @@ void AutocompleteResult::TransferOldMatches(const AutocompleteInput& input,
   // input changes, e.g. 'gooooooooo[oogle.com]'.
   if (OmniboxFieldTrial::kAutocompleteStabilityDontCopyDoneProviders.Get()) {
     old_matches->matches_.erase(
-        base::ranges::remove_if(
-            *old_matches,
-            [](const auto& old_match) { return old_match.provider->done(); }),
+        base::ranges::remove_if(*old_matches,
+                                [](const auto& old_match) {
+                                  return old_match.provider &&
+                                         old_match.provider->done();
+                                }),
         old_matches->matches_.end());
   }
 
@@ -967,9 +969,15 @@ std::u16string AutocompleteResult::GetHeaderForSuggestionGroup(
 bool AutocompleteResult::IsSuggestionGroupHidden(
     PrefService* prefs,
     SuggestionGroupId suggestion_group_id) const {
+  const auto& it = suggestion_groups_map_.find(suggestion_group_id);
+  DCHECK(it != suggestion_groups_map_.end());
+  if (!it->second.original_group_id.has_value()) {
+    return false;
+  }
+
   omnibox::SuggestionGroupVisibility user_preference =
       omnibox::GetUserPreferenceForSuggestionGroupVisibility(
-          prefs, static_cast<int>(suggestion_group_id));
+          prefs, it->second.original_group_id.value());
 
   if (user_preference == omnibox::SuggestionGroupVisibility::HIDDEN)
     return true;
@@ -977,9 +985,21 @@ bool AutocompleteResult::IsSuggestionGroupHidden(
     return false;
 
   DCHECK_EQ(user_preference, omnibox::SuggestionGroupVisibility::DEFAULT);
+  return it->second.hidden;
+}
+
+void AutocompleteResult::SetSuggestionGroupHidden(
+    PrefService* prefs,
+    SuggestionGroupId suggestion_group_id,
+    bool hidden) const {
   const auto& it = suggestion_groups_map_.find(suggestion_group_id);
   DCHECK(it != suggestion_groups_map_.end());
-  return it->second.hidden;
+  DCHECK(it->second.original_group_id.has_value());
+
+  omnibox::SetUserPreferenceForSuggestionGroupVisibility(
+      prefs, it->second.original_group_id.value(),
+      hidden ? omnibox::SuggestionGroupVisibility::HIDDEN
+             : omnibox::SuggestionGroupVisibility::SHOWN);
 }
 
 SuggestionGroupPriority AutocompleteResult::GetPriorityForSuggestionGroup(

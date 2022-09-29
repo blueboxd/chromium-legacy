@@ -19,7 +19,7 @@
 #include "dbus/object_path.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
 class CellularESimProfileHandler;
 class CellularInhibitor;
@@ -197,8 +197,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularConnectionHandler
   base::OneShotTimer timer_;
 
   NetworkStateHandler* network_state_handler_ = nullptr;
-  base::ScopedObservation<chromeos::NetworkStateHandler,
-                          chromeos::NetworkStateHandlerObserver>
+  base::ScopedObservation<NetworkStateHandler, NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
   CellularInhibitor* cellular_inhibitor_ = nullptr;
   CellularESimProfileHandler* cellular_esim_profile_handler_ = nullptr;
@@ -209,11 +208,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularConnectionHandler
   base::WeakPtrFactory<CellularConnectionHandler> weak_ptr_factory_{this};
 };
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when this file is moved to ash.
-namespace ash {
-using ::chromeos::CellularConnectionHandler;
 }  // namespace ash
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_CELLULAR_CONNECTION_HANDLER_H_

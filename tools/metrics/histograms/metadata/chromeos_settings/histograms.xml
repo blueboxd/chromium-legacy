@@ -108,7 +108,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.Languages.Interaction"
-    enum="SettingsLanguagesPageInteraction" expires_after="2022-12-11">
+    enum="SettingsLanguagesPageInteraction" expires_after="2023-02-12">
   <owner>myy@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -137,7 +137,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="ChromeOS.Settings.Languages.Toggle"
-    enum="BooleanToggled" expires_after="2022-12-11">
+    enum="BooleanToggled" expires_after="2023-02-12">
 <!-- Name completed by histogram_suffixes name="SettingsLanguagesPageToggle" -->
 
   <owner>myy@chromium.org</owner>
@@ -228,6 +228,9 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ChromeOS.Settings.OsBannerInteraction"
     enum="CrosSettingsOsBannerInteraction" expires_after="2020-12-20">
+  <obsolete>
+    Removed as of 07/2022 (crbug/1231142).
+  </obsolete>
   <owner>jamescook@chromium.org</owner>
   <owner>cros-system-services@google.com</owner>
   <summary>
@@ -237,8 +240,8 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="ChromeOS.Settings.PathVisited" enum="WebUISettingsPathHashes"
-    expires_after="2023-04-17">
+<histogram name="ChromeOS.Settings.PathVisited"
+    enum="WebUIOSSettingsPathHashes" expires_after="2023-04-17">
   <owner>xiaohuic@chromium.org</owner>
   <owner>cros-settings@google.com</owner>
   <summary>
@@ -408,7 +411,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.WindowOpenDuration" units="ms"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>khorimoto@chromium.org</owner>
   <owner>cros-customization@google.com</owner>
   <summary>

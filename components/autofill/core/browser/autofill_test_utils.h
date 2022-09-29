@@ -93,6 +93,9 @@ FormGlobalId MakeFormGlobalId(
 FieldGlobalId MakeFieldGlobalId(
     RandomizeFrame randomize_frame = RandomizeFrame(false));
 
+// Returns a copy of `form` with cleared values.
+FormData WithoutValues(FormData form);
+
 // Helper function to set values and verification statuses to a form group.
 void SetFormGroupValues(FormGroup& form_group,
                         const std::vector<FormGroupValue>& values);
@@ -204,7 +207,7 @@ AutofillProfile GetServerProfile();
 AutofillProfile GetServerProfile2();
 
 // Returns an IBAN full of dummy info.
-Iban GetIban();
+IBAN GetIBAN();
 
 // Returns a credit card full of dummy info.
 CreditCard GetCreditCard();
@@ -225,7 +228,6 @@ CreditCard GetMaskedServerCardWithNonLegacyId();
 CreditCard GetMaskedServerCardWithLegacyId();
 CreditCard GetMaskedServerCardAmex();
 CreditCard GetMaskedServerCardWithNickname();
-CreditCard GetMaskedServerCardWithInvalidNickname();
 
 // Returns a full server card full of dummy info.
 CreditCard GetFullServerCard();

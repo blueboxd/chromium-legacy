@@ -52,6 +52,25 @@ ElementCheckPseudoHasResultMap& CheckPseudoHasCacheScope::GetResultMap(
   return *entry.stored_value->value;
 }
 
+// static
+ElementCheckPseudoHasFastRejectFilterMap&
+CheckPseudoHasCacheScope::GetFastRejectFilterMap(
+    const Document* document,
+    CheckPseudoHasArgumentTraversalType traversal_type) {
+  DCHECK(document);
+  DCHECK(document->GetCheckPseudoHasCacheScope());
+
+  auto entry = document->GetCheckPseudoHasCacheScope()
+                   ->GetFastRejectFilterCache()
+                   .insert(traversal_type, nullptr);
+  if (entry.is_new_entry) {
+    entry.stored_value->value =
+        MakeGarbageCollected<ElementCheckPseudoHasFastRejectFilterMap>();
+  }
+  DCHECK(entry.stored_value->value);
+  return *entry.stored_value->value;
+}
+
 CheckPseudoHasCacheScope::Context::Context(
     const Document* document,
     const CheckPseudoHasArgumentContext& argument_context)
@@ -64,6 +83,9 @@ CheckPseudoHasCacheScope::Context::Context(
       cache_allowed_ = true;
       result_map_ = &CheckPseudoHasCacheScope::GetResultMap(
           document, argument_context.HasArgument());
+      fast_reject_filter_map_ =
+          &CheckPseudoHasCacheScope::GetFastRejectFilterMap(
+              document, argument_context.TraversalType());
       break;
     default:
       cache_allowed_ = false;
@@ -223,6 +245,101 @@ bool CheckPseudoHasCacheScope::Context::AlreadyChecked(Element* element) const {
       break;
   }
   return false;
+}
+
+CheckPseudoHasFastRejectFilter&
+CheckPseudoHasCacheScope::Context::EnsureFastRejectFilter(Element* element,
+                                                          bool& is_new_entry) {
+  DCHECK(element);
+  DCHECK(cache_allowed_);
+  DCHECK(fast_reject_filter_map_);
+
+  is_new_entry = false;
+
+  // In order to minimize memory consumption, if the traversal scope of an
+  // other element is a superset of the traversal scope of the target element,
+  // use the less accurate fast reject filter of the other element.
+  switch (argument_context_.TraversalScope()) {
+    case CheckPseudoHasArgumentTraversalScope::kSubtree:
+      for (Element* parent = element->parentElement(); parent;
+           parent = parent->parentElement()) {
+        auto iterator = fast_reject_filter_map_->find(parent);
+        if (iterator == fast_reject_filter_map_->end())
+          continue;
+        if (!iterator->value->BloomFilterAllocated())
+          continue;
+        return *iterator->value.get();
+      }
+      break;
+    case CheckPseudoHasArgumentTraversalScope::kOneNextSiblingSubtree:
+      for (Element* parent = element->parentElement(); parent;
+           parent = parent->parentElement()) {
+        Element* sibling = ElementTraversal::PreviousSibling(*parent);
+        for (int i = argument_context_.AdjacentDistanceLimit() - 1;
+             sibling && i >= 0;
+             sibling = ElementTraversal::PreviousSibling(*sibling), --i) {
+        }
+        if (!sibling)
+          continue;
+        auto iterator = fast_reject_filter_map_->find(sibling);
+        if (iterator == fast_reject_filter_map_->end())
+          continue;
+        if (!iterator->value->BloomFilterAllocated())
+          continue;
+        return *iterator->value.get();
+      }
+      break;
+    case CheckPseudoHasArgumentTraversalScope::kAllNextSiblingSubtrees:
+      for (Element* parent = element->parentElement(); parent;
+           parent = parent->parentElement()) {
+        for (Element* sibling = ElementTraversal::PreviousSibling(*parent);
+             sibling; sibling = ElementTraversal::PreviousSibling(*sibling)) {
+          auto iterator = fast_reject_filter_map_->find(sibling);
+          if (iterator == fast_reject_filter_map_->end())
+            continue;
+          if (!iterator->value->BloomFilterAllocated())
+            continue;
+          return *iterator->value.get();
+        }
+      }
+      break;
+    case CheckPseudoHasArgumentTraversalScope::kAllNextSiblings:
+      for (Element* sibling = ElementTraversal::PreviousSibling(*element);
+           sibling; sibling = ElementTraversal::PreviousSibling(*sibling)) {
+        auto iterator = fast_reject_filter_map_->find(sibling);
+        if (iterator == fast_reject_filter_map_->end())
+          continue;
+        if (!iterator->value->BloomFilterAllocated())
+          continue;
+        return *iterator->value.get();
+      }
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  auto entry = fast_reject_filter_map_->insert(element, nullptr);
+  if (entry.is_new_entry) {
+    entry.stored_value->value =
+        std::make_unique<CheckPseudoHasFastRejectFilter>();
+    is_new_entry = true;
+  }
+  DCHECK(entry.stored_value->value);
+  return *entry.stored_value->value.get();
+}
+
+size_t
+CheckPseudoHasCacheScope::Context::GetBloomFilterAllocationCountForTesting()
+    const {
+  if (!cache_allowed_)
+    return 0;
+  size_t bloom_filter_allocation_count = 0;
+  for (const auto& iterator : *fast_reject_filter_map_) {
+    if (iterator.value->BloomFilterAllocated())
+      bloom_filter_allocation_count++;
+  }
+  return bloom_filter_allocation_count;
 }
 
 }  // namespace blink

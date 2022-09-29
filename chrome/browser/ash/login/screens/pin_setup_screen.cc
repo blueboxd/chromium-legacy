@@ -91,35 +91,31 @@ bool PinSetupScreen::ShouldSkipBecauseOfPolicy() {
   return false;
 }
 
-PinSetupScreen::PinSetupScreen(PinSetupScreenView* view,
+PinSetupScreen::PinSetupScreen(base::WeakPtr<PinSetupScreenView> view,
                                const ScreenExitCallback& exit_callback)
     : BaseScreen(PinSetupScreenView::kScreenId, OobeScreenPriority::DEFAULT),
-      view_(view),
+      view_(std::move(view)),
       exit_callback_(exit_callback) {
   DCHECK(view_);
-  view_->Bind(this);
 
   quick_unlock::PinBackend::GetInstance()->HasLoginSupport(base::BindOnce(
       &PinSetupScreen::OnHasLoginSupport, weak_ptr_factory_.GetWeakPtr()));
 }
 
-PinSetupScreen::~PinSetupScreen() {
-  if (view_)
-    view_->Bind(nullptr);
-}
+PinSetupScreen::~PinSetupScreen() = default;
 
-bool PinSetupScreen::SkipScreen(WizardContext* context) {
+bool PinSetupScreen::SkipScreen(WizardContext& context) {
   ClearAuthData(context);
   exit_callback_.Run(Result::NOT_APPLICABLE);
   return true;
 }
 
-bool PinSetupScreen::MaybeSkip(WizardContext* context) {
-  if (context->skip_post_login_screens_for_tests || ShouldSkipBecauseOfPolicy())
+bool PinSetupScreen::MaybeSkip(WizardContext& context) {
+  if (context.skip_post_login_screens_for_tests || ShouldSkipBecauseOfPolicy())
     return SkipScreen(context);
 
   // Just a precaution:
-  if (!context->extra_factors_auth_session)
+  if (!context.extra_factors_auth_session)
     return SkipScreen(context);
 
   // If cryptohome takes very long to respond, `has_login_support_` may be null
@@ -142,11 +138,10 @@ bool PinSetupScreen::MaybeSkip(WizardContext* context) {
 }
 
 void PinSetupScreen::ShowImpl() {
-  token_lifetime_timeout_.Start(
-      FROM_HERE,
-      base::Seconds(quick_unlock::AuthToken::kTokenExpirationSeconds),
-      base::BindOnce(&PinSetupScreen::OnTokenTimedOut,
-                     weak_ptr_factory_.GetWeakPtr()));
+  token_lifetime_timeout_.Start(FROM_HERE,
+                                quick_unlock::AuthToken::kTokenExpiration,
+                                base::BindOnce(&PinSetupScreen::OnTokenTimedOut,
+                                               weak_ptr_factory_.GetWeakPtr()));
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
       quick_unlock::QuickUnlockFactory::GetForProfile(
           ProfileManager::GetActiveUserProfile());
@@ -172,12 +167,12 @@ void PinSetupScreen::ShowImpl() {
 }
 
 void PinSetupScreen::HideImpl() {
-  view_->Hide();
   token_lifetime_timeout_.Stop();
-  ClearAuthData(context());
+  ClearAuthData(*context());
 }
 
-void PinSetupScreen::OnUserActionDeprecated(const std::string& action_id) {
+void PinSetupScreen::OnUserAction(const base::Value::List& args) {
+  const std::string& action_id = args[0].GetString();
   if (action_id == kUserActionDoneButtonClicked) {
     RecordUserAction(action_id);
     token_lifetime_timeout_.Stop();
@@ -191,11 +186,11 @@ void PinSetupScreen::OnUserActionDeprecated(const std::string& action_id) {
     exit_callback_.Run(Result::USER_SKIP);
     return;
   }
-  BaseScreen::OnUserActionDeprecated(action_id);
+  BaseScreen::OnUserAction(args);
 }
 
-void PinSetupScreen::ClearAuthData(WizardContext* context) {
-  context->extra_factors_auth_session.reset();
+void PinSetupScreen::ClearAuthData(WizardContext& context) {
+  context.extra_factors_auth_session.reset();
 }
 
 void PinSetupScreen::OnHasLoginSupport(bool login_available) {
@@ -205,7 +200,7 @@ void PinSetupScreen::OnHasLoginSupport(bool login_available) {
 }
 
 void PinSetupScreen::OnTokenTimedOut() {
-  ClearAuthData(context());
+  ClearAuthData(*context());
   exit_callback_.Run(Result::TIMED_OUT);
 }
 

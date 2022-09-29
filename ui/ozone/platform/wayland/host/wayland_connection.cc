@@ -55,6 +55,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_zwp_pointer_constraints.h"
 #include "ui/ozone/platform/wayland/host/wayland_zwp_pointer_gestures.h"
 #include "ui/ozone/platform/wayland/host/wayland_zwp_relative_pointer_manager.h"
+#include "ui/ozone/platform/wayland/host/xdg_activation.h"
 #include "ui/ozone/platform/wayland/host/xdg_foreign_wrapper.h"
 #include "ui/ozone/platform/wayland/host/zwp_idle_inhibit_manager.h"
 #include "ui/ozone/platform/wayland/host/zwp_primary_selection_device_manager.h"
@@ -75,12 +76,12 @@ namespace {
 // advertised by the server.
 constexpr uint32_t kMaxCompositorVersion = 4;
 constexpr uint32_t kMaxKeyboardExtensionVersion = 2;
-constexpr uint32_t kMaxXdgShellVersion = 3;
+constexpr uint32_t kMaxXdgShellVersion = 5;
 constexpr uint32_t kMaxZXdgShellVersion = 1;
 constexpr uint32_t kMaxWpPresentationVersion = 1;
 constexpr uint32_t kMaxWpViewporterVersion = 1;
 constexpr uint32_t kMaxTextInputManagerVersion = 1;
-constexpr uint32_t kMaxTextInputExtensionVersion = 4;
+constexpr uint32_t kMaxTextInputExtensionVersion = 5;
 constexpr uint32_t kMaxExplicitSyncVersion = 2;
 constexpr uint32_t kMaxAlphaCompositingVersion = 1;
 constexpr uint32_t kMaxXdgDecorationVersion = 1;
@@ -196,6 +197,8 @@ bool WaylandConnection::Initialize() {
                               &WaylandZwpPointerGestures::Instantiate);
   RegisterGlobalObjectFactory(WaylandZwpRelativePointerManager::kInterfaceName,
                               &WaylandZwpRelativePointerManager::Instantiate);
+  RegisterGlobalObjectFactory(XdgActivation::kInterfaceName,
+                              &XdgActivation::Instantiate);
   RegisterGlobalObjectFactory(XdgForeignWrapper::kInterfaceNameV1,
                               &XdgForeignWrapper::Instantiate);
   RegisterGlobalObjectFactory(XdgForeignWrapper::kInterfaceNameV2,
@@ -212,7 +215,7 @@ bool WaylandConnection::Initialize() {
 
   display_.reset(wl_display_connect(nullptr));
   if (!display_) {
-    LOG(ERROR) << "Failed to connect to Wayland display";
+    PLOG(ERROR) << "Failed to connect to Wayland display";
     return false;
   }
 

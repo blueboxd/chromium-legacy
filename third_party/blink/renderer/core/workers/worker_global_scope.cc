@@ -591,6 +591,8 @@ WorkerGlobalScope::WorkerGlobalScope(
       user_agent_(creation_params->user_agent),
       ua_metadata_(creation_params->ua_metadata),
       thread_(thread),
+      agent_group_scheduler_compositor_task_runner_(std::move(
+          creation_params->agent_group_scheduler_compositor_task_runner)),
       time_origin_(time_origin),
       font_selector_(MakeGarbageCollected<OffscreenFontSelector>(this)),
       script_eval_state_(ScriptEvalState::kPauseAfterFetch),
@@ -636,7 +638,7 @@ void WorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {
 void WorkerGlobalScope::RemoveURLFromMemoryCache(const KURL& url) {
   // MemoryCache can be accessed only from the main thread.
   PostCrossThreadTask(
-      *Thread::MainThread()->GetTaskRunner(), FROM_HERE,
+      *Thread::MainThread()->GetDeprecatedTaskRunner(), FROM_HERE,
       CrossThreadBindOnce(&RemoveURLFromMemoryCacheInternal, url));
 }
 
@@ -675,7 +677,6 @@ void WorkerGlobalScope::queueMicrotask(V8VoidFunction* callback) {
 void WorkerGlobalScope::SetWorkerSettings(
     std::unique_ptr<WorkerSettings> worker_settings) {
   worker_settings_ = std::move(worker_settings);
-  worker_settings_->MakeGenericFontFamilySettingsAtomic();
   font_selector_->UpdateGenericFontFamilySettings(
       worker_settings_->GetGenericFontFamilySettings());
 }

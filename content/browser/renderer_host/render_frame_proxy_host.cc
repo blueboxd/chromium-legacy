@@ -103,10 +103,19 @@ RenderFrameProxyHost* RenderFrameProxyHost::FromFrameToken(
              : nullptr;
 }
 
+// static
+bool RenderFrameProxyHost::IsFrameTokenInUse(
+    const blink::RemoteFrameToken& frame_token) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  TokenFrameMap* frames = g_token_frame_proxy_map.Pointer();
+  return frames->find(frame_token) != frames->end();
+}
+
 RenderFrameProxyHost::RenderFrameProxyHost(
     SiteInstance* site_instance,
     scoped_refptr<RenderViewHostImpl> render_view_host,
-    FrameTreeNode* frame_tree_node)
+    FrameTreeNode* frame_tree_node,
+    const blink::RemoteFrameToken& frame_token)
     : routing_id_(site_instance->GetProcess()->GetNextRoutingID()),
       site_instance_(site_instance),
       site_instance_group_(
@@ -115,6 +124,7 @@ RenderFrameProxyHost::RenderFrameProxyHost(
       frame_tree_node_(frame_tree_node),
       render_frame_proxy_created_(false),
       render_view_host_(std::move(render_view_host)),
+      frame_token_(frame_token),
       post_message_counter_(blink::PostMessagePartition::kCrossProcess) {
   TRACE_EVENT_BEGIN("navigation", "RenderFrameProxyHost",
                     perfetto::Track::FromPointer(this),
@@ -229,7 +239,12 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
   if (!GetProcess()->IsInitializedAndNotDead())
     return false;
 
-  absl::optional<blink::RemoteFrameToken> parent_frame_token;
+  absl::optional<blink::FrameToken> opener_frame_token;
+  if (frame_tree_node_->opener()) {
+    opener_frame_token =
+        frame_tree_node_->render_manager()->GetOpenerFrameToken(
+            site_instance_group());
+  }
   if (frame_tree_node_->parent()) {
     // It is safe to use GetRenderFrameProxyHost to get the parent proxy, since
     // new child frames always start out as local frames, so a new proxy should
@@ -241,30 +256,26 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
     CHECK(parent_proxy);
 
     // Proxies that aren't live in the parent node should not be initialized
-    // here, since there is no valid parent RenderFrameProxy on the renderer
+    // here, since there is no valid parent `blink::RemoteFrame` on the renderer
     // side.  This can happen when adding a new child frame after an opener
     // process crashed and was reloaded.  See https://crbug.com/501152.
     if (!parent_proxy->is_render_frame_proxy_live())
       return false;
 
-    parent_frame_token = parent_proxy->GetFrameToken();
-  }
+    parent_proxy->GetAssociatedRemoteFrame()->CreateRemoteChild(
+        frame_token_, opener_frame_token, frame_tree_node_->tree_scope_type(),
+        frame_tree_node_->current_replication_state().Clone(),
+        frame_tree_node_->devtools_frame_token(),
+        CreateAndBindRemoteFrameInterfaces());
 
-  absl::optional<blink::FrameToken> opener_frame_token;
-  if (frame_tree_node_->opener()) {
-    opener_frame_token =
-        frame_tree_node_->render_manager()->GetOpenerFrameToken(
-            site_instance_group());
+  } else {
+    GetRenderViewHost()->GetAssociatedPageBroadcast()->CreateRemoteMainFrame(
+        frame_token_, opener_frame_token,
+        frame_tree_node_->current_replication_state().Clone(),
+        frame_tree_node_->devtools_frame_token(),
+        CreateAndBindRemoteFrameInterfaces(),
+        CreateAndBindRemoteMainFrameInterfaces());
   }
-
-  int view_routing_id = GetRenderViewHost()->GetRoutingID();
-  GetAgentSchedulingGroup().CreateFrameProxy(
-      frame_token_, opener_frame_token, view_routing_id, parent_frame_token,
-      frame_tree_node_->tree_scope_type(),
-      frame_tree_node_->current_replication_state().Clone(),
-      frame_tree_node_->devtools_frame_token(),
-      CreateAndBindRemoteFrameInterfaces(),
-      CreateAndBindRemoteMainFrameInterfaces());
 
   SetRenderFrameProxyCreated(true);
 
@@ -751,18 +762,18 @@ RenderFrameProxyHost::BindRemoteMainFrameReceiverForTesting() {
   return remote_main_frame_.BindNewEndpointAndPassDedicatedReceiver();
 }
 
-mojom::RemoteFrameInterfacesFromBrowserPtr
+blink::mojom::RemoteFrameInterfacesFromBrowserPtr
 RenderFrameProxyHost::CreateAndBindRemoteFrameInterfaces() {
-  auto params = mojom::RemoteFrameInterfacesFromBrowser::New();
+  auto params = blink::mojom::RemoteFrameInterfacesFromBrowser::New();
   BindRemoteFrameInterfaces(
       params->frame_receiver.InitWithNewEndpointAndPassRemote(),
       params->frame_host.InitWithNewEndpointAndPassReceiver());
   return params;
 }
 
-mojom::RemoteMainFrameInterfacesPtr
+blink::mojom::RemoteMainFrameInterfacesPtr
 RenderFrameProxyHost::CreateAndBindRemoteMainFrameInterfaces() {
-  auto params = mojom::RemoteMainFrameInterfaces::New();
+  auto params = blink::mojom::RemoteMainFrameInterfaces::New();
   BindRemoteMainFrameInterfaces(
       params->main_frame.InitWithNewEndpointAndPassRemote(),
       params->main_frame_host.InitWithNewEndpointAndPassReceiver());

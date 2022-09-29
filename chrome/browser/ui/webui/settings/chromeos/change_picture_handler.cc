@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/components/audio/sounds.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -36,6 +35,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/ash/components/audio/sounds.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
@@ -126,12 +126,9 @@ void ChangePictureHandler::OnJavascriptDisallowed() {
 }
 
 void ChangePictureHandler::SendDefaultImages() {
-  base::DictionaryValue result;
-  std::unique_ptr<base::ListValue> current_default_images =
-      default_user_image::GetCurrentImageSetAsListValue();
-  result.SetKey(
-      "current_default_images",
-      base::Value::FromUniquePtrValue(std::move(current_default_images)));
+  base::Value::Dict result;
+  result.Set("current_default_images",
+             default_user_image::GetCurrentImageSetAsListValue());
   FireWebUIListener("default-images-changed", result);
 }
 
@@ -238,17 +235,16 @@ void ChangePictureHandler::SendSelectedImage() {
         previous_image_bytes_ = nullptr;
         previous_image_format_ = user_manager::UserImage::FORMAT_UNKNOWN;
 
-        base::DictionaryValue result;
-        result.SetStringPath(
-            "url", default_user_image::GetDefaultImageUrl(previous_image_index_)
+        base::Value::Dict result;
+        result.Set("url",
+                   default_user_image::GetDefaultImageUrl(previous_image_index_)
                        .spec());
-        auto source_info = default_user_image::GetDefaultImageSourceInfo(
-            previous_image_index_);
+        auto source_info =
+            default_user_image::GetDeprecatedDefaultImageSourceInfo(
+                previous_image_index_);
         if (source_info.has_value()) {
-          result.SetStringPath("author", l10n_util::GetStringUTF16(std::move(
-                                             source_info.value().author_id)));
-          result.SetStringPath("website", l10n_util::GetStringUTF16(std::move(
-                                              source_info.value().website_id)));
+          result.Set("author", std::move(source_info.value().author));
+          result.Set("website", source_info.value().website.spec());
         }
         FireWebUIListener("preview-deprecated-image", result);
       }

@@ -46,6 +46,8 @@ public final class BrowserFragment extends RemoteFragment {
     // Nonnull between onCreate() and onDestroy().
     private Browser mBrowser;
 
+    private boolean mIgnoreViewModel;
+
     /**
      * This constructor is for the system FragmentManager only. Please use
      * {@link WebLayer#createBrowserFragment}.
@@ -74,7 +76,7 @@ public final class BrowserFragment extends RemoteFragment {
             throw new RuntimeException("BrowserFragment was created without arguments.");
         }
         // If there is saved state, then it should be used and this method should not be called.
-        assert !(new ViewModelProvider(this)).get(BrowserViewModel.class).hasSavedState();
+        assert !getViewModel().hasSavedState();
         try {
             mWebLayer = WebLayer.loadSync(appContext);
         } catch (Exception e) {
@@ -96,28 +98,51 @@ public final class BrowserFragment extends RemoteFragment {
     @Override
     public void onAttach(Context context) {
         ThreadCheck.ensureOnUiThread();
-        BrowserViewModel browserViewModel = new ViewModelProvider(this).get(BrowserViewModel.class);
+        BrowserViewModel browserViewModel = getViewModel();
         if (browserViewModel.hasSavedState()) {
             configureFromViewModel(browserViewModel);
         }
         super.onAttach(context);
     }
 
+    // Method for browserfragment to inject the {@code tabListCallback} on startup of the weblayer
+    // browser.
+    void onCreate(Bundle savedInstanceState, @Nullable TabListCallback tabListCallback) {
+        onCreateInternal(savedInstanceState, tabListCallback);
+
+        // Set |mForwardCreateDestroyEvents| to true so subsequent `onCreate` calls from the host
+        // process don't recreate the internal objects.
+        mForwardCreateDestroyEvents = false;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        onCreateInternal(savedInstanceState, null);
+    }
+
+    private void onCreateInternal(
+            Bundle savedInstanceState, @Nullable TabListCallback tabListCallback) {
         super.onCreate(savedInstanceState);
         if (mBrowser != null) {
             // If mBrowser is non-null, it means mBrowser came from a ViewModel.
             return;
         }
         try {
-            mBrowser = new Browser(mImpl.getBrowser(), this);
+            mBrowser = new Browser(mImpl.getBrowser(), this, tabListCallback);
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
         if (useViewModel()) {
-            saveToViewModel(new ViewModelProvider(this).get(BrowserViewModel.class));
+            saveToViewModel(getViewModel());
         }
+    }
+
+    void onDestroy(boolean force) {
+        if (force) {
+            mForwardCreateDestroyEvents = true;
+        }
+
+        onDestroy();
     }
 
     @Override
@@ -163,8 +188,21 @@ public final class BrowserFragment extends RemoteFragment {
     }
 
     private boolean useViewModel() {
+        if (mIgnoreViewModel) {
+            return false;
+        }
         Bundle args = getArguments();
         return args == null ? false : args.getBoolean(BrowserFragmentArgs.USE_VIEW_MODEL, false);
+    }
+
+    private BrowserViewModel getViewModel() {
+        return mIgnoreViewModel ? new BrowserViewModel()
+                                : new ViewModelProvider(this).get(BrowserViewModel.class);
+    }
+
+    // TODO(rayankans): Remove ViewModel from this class.
+    void ignoreViewModel() {
+        mIgnoreViewModel = true;
     }
 
     /**

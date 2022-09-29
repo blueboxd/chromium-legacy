@@ -24,7 +24,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.commerce.shopping_list.ShoppingFeatures;
+import org.chromium.chrome.browser.commerce.ShoppingFeatures;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsServiceFactory;
@@ -536,7 +536,7 @@ public class BookmarkManager
     public void openSearchUI() {
         setState(BookmarkUIState.createSearchState());
         mSelectableListLayout.onStartSearch(R.string.bookmark_no_result);
-        mToolbar.showSearchView();
+        mToolbar.showSearchView(true);
     }
 
     @Override

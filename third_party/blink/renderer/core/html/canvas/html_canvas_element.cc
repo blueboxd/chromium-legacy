@@ -103,6 +103,7 @@
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image_to_video_frame_copier.h"
+#include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_video_frame_pool.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -122,17 +123,6 @@ namespace {
 const base::Feature kOneCopyCanvasCapture {
   "OneCopyCanvasCapture",
 #if BUILDFLAG(IS_MAC)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
-
-const base::Feature kTwoCopyCanvasCapture {
-  "TwoCopyCanvasCapture",
-// For ChromeOS, currently just enable this feature on X86 CPU, see b/203695564.
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || \
-    (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY))
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -423,7 +413,12 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
       return nullptr;
     SetNeedsUnbufferedInputEvents(true);
     frame_dispatcher_ = std::make_unique<CanvasResourceDispatcher>(
-        nullptr, surface_layer_bridge_->GetFrameSinkId().client_id(),
+        nullptr,
+        GetPage()
+            ->GetPageScheduler()
+            ->GetAgentGroupScheduler()
+            .CompositorTaskRunner(),
+        surface_layer_bridge_->GetFrameSinkId().client_id(),
         surface_layer_bridge_->GetFrameSinkId().sink_id(),
         CanvasResourceDispatcher::kInvalidPlaceholderCanvasId, size_);
     // We don't actually need the begin frame signal when in low latency mode,
@@ -484,6 +479,13 @@ bool HTMLCanvasElement::IsWebGLBlocked() const {
   return blocked;
 }
 
+void HTMLCanvasElement::SetContextCreationWasBlocked() {
+  context_creation_was_blocked_ = true;
+  // This canvas's cc::Layer (or whether it has one at all) has likely
+  // changed, so schedule a compositing update.
+  SetNeedsCompositingUpdate();
+}
+
 void HTMLCanvasElement::DidDraw(const SkIRect& rect) {
   if (rect.isEmpty())
     return;
@@ -527,7 +529,7 @@ void HTMLCanvasElement::PostFinalizeFrame() {
   if (LowLatencyEnabled() && !dirty_rect_.IsEmpty() &&
       GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)) {
     const base::TimeTicks start_time = base::TimeTicks::Now();
-    const scoped_refptr<CanvasResource> canvas_resource =
+    scoped_refptr<CanvasResource> canvas_resource =
         ResourceProvider()->ProduceCanvasResource();
     const gfx::RectF src_rect((gfx::SizeF(Size())));
     dirty_rect_.Intersect(src_rect);
@@ -723,8 +725,14 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
   scoped_refptr<StaticBitmapImage> source_image;
   if (!copier_) {
     copier_ = std::make_unique<StaticBitmapImageToVideoFrameCopier>(
-        base::FeatureList::IsEnabled(kTwoCopyCanvasCapture));
+        WebGraphicsContext3DVideoFramePool::
+            IsGpuMemoryBufferReadbackFromTextureEnabled());
   }
+
+  const bool context_color_is_opaque =
+      context_ ? context_->CanvasRenderingContextSkColorInfo().isOpaque()
+               : false;
+
   for (CanvasDrawListener* listener : listeners_) {
     if (!listener->NeedsNewFrame())
       continue;
@@ -738,7 +746,7 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
     // First attempt to copy directly from the rendering context to a video
     // frame. Not all rendering contexts need to support this (for contexts
     // where GetSourceImageForCanvasInternal is zero-copy, this is superfluous).
-    if (context_ && can_discard_alpha &&
+    if (context_ && (context_color_is_opaque || can_discard_alpha) &&
         base::FeatureList::IsEnabled(kOneCopyCanvasCapture)) {
       if (context_->CopyRenderingResultsToVideoFrame(
               copier_->GetAcceleratedVideoFramePool(
@@ -746,18 +754,21 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
               kBackBuffer, gfx::ColorSpace::CreateREC709(),
               std::move(split_callback.first))) {
         TRACE_EVENT1("blink", "HTMLCanvasElement::NotifyListenersCanvasChanged",
-                     "OneCopyCanvasCapture", true);
+                     "one_copy_canvas_capture", true);
         continue;
       }
     }
 
     // If that fails, then create a StaticBitmapImage for the contents of
     // the RenderingContext.
+    TRACE_EVENT1("blink", "HTMLCanvasElement::NotifyListenersCanvasChanged",
+                 "one_copy_canvas_capture", false);
+
     if (!source_image) {
       SourceImageStatus status;
       source_image = GetSourceImageForCanvasInternal(&status);
       if (status != kNormalSourceImageStatus)
-        return;
+        continue;
     }
 
     // Here we need to use the SharedGpuContext as some of the images may
@@ -807,8 +818,9 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
                               bool flatten_composited_layers) {
   if (context_creation_was_blocked_ ||
       (context_ && context_->isContextLost())) {
+    float dpr = GetDocument().DevicePixelRatio();
     std::pair<Image*, float> broken_canvas_and_image_scale_factor =
-        BrokenCanvas(GetDocument().DevicePixelRatio());
+        BrokenCanvas(dpr);
     Image* broken_canvas = broken_canvas_and_image_scale_factor.first;
     context.Save();
     context.FillRect(
@@ -823,6 +835,8 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
     gfx::PointF upper_left =
         gfx::PointF(r.PixelSnappedOffset()) +
         gfx::Vector2dF(icon_size.width(), icon_size.height());
+    // Make the icon more visually prominent on high-DPI displays.
+    icon_size.Scale(dpr);
     context.DrawImage(broken_canvas, Image::kSyncDecode,
                       ImageAutoDarkMode::Disabled(),
                       gfx::RectF(upper_left, icon_size));
@@ -1146,11 +1160,14 @@ void HTMLCanvasElement::CollectStyleForPresentationAttribute(
 }
 
 void HTMLCanvasElement::AddListener(CanvasDrawListener* listener) {
+  // The presence of a listener forces OffscrenCanvas animations to be active
   listeners_.insert(listener);
+  UpdateSuspendOffscreenCanvasAnimation();
 }
 
 void HTMLCanvasElement::RemoveListener(CanvasDrawListener* listener) {
   listeners_.erase(listener);
+  UpdateSuspendOffscreenCanvasAnimation();
 }
 
 bool HTMLCanvasElement::OriginClean() const {
@@ -1174,7 +1191,7 @@ CanvasResourceDispatcher* HTMLCanvasElement::GetOrCreateResourceDispatcher() {
   return frame_dispatcher_.get();
 }
 
-bool HTMLCanvasElement::PushFrame(scoped_refptr<CanvasResource> image,
+bool HTMLCanvasElement::PushFrame(scoped_refptr<CanvasResource>&& image,
                                   const SkIRect& damage_rect) {
   NOTIMPLEMENTED();
   return false;
@@ -1316,17 +1333,21 @@ void HTMLCanvasElement::DiscardResourceProvider() {
   dirty_rect_ = gfx::RectF();
 }
 
-void HTMLCanvasElement::PageVisibilityChanged() {
-  bool hidden = !GetPage()->IsPageVisible();
-  // If we are still painting, then continue to allow animations, even if the
-  // page is otherwise hidden.
+void HTMLCanvasElement::UpdateSuspendOffscreenCanvasAnimation() {
   SetSuspendOffscreenCanvasAnimation(
       GetPage()->GetVisibilityState() ==
-      mojom::blink::PageVisibilityState::kHidden);
+          mojom::blink::PageVisibilityState::kHidden &&
+      !HasCanvasCapture());
+}
 
+void HTMLCanvasElement::PageVisibilityChanged() {
+  // If we are still painting, then continue to allow animations, even if the
+  // page is otherwise hidden.
+  UpdateSuspendOffscreenCanvasAnimation();
   if (!context_)
     return;
 
+  bool hidden = !GetPage()->IsPageVisible();
   context_->SetIsInHiddenPage(hidden);
   if (hidden && (IsWebGL() || IsWebGPU()))
     DiscardResourceProvider();
@@ -1494,7 +1515,7 @@ ScriptPromise HTMLCanvasElement::CreateImageBitmap(
 }
 
 void HTMLCanvasElement::SetOffscreenCanvasResource(
-    scoped_refptr<CanvasResource> image,
+    scoped_refptr<CanvasResource>&& image,
     viz::ResourceId resource_id) {
   OffscreenCanvasPlaceholder::SetOffscreenCanvasResource(std::move(image),
                                                          resource_id);

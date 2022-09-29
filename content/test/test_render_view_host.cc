@@ -333,7 +333,6 @@ TestRenderViewHost::TestRenderViewHost(
     RenderViewHostDelegate* delegate,
     int32_t routing_id,
     int32_t main_frame_routing_id,
-    bool swapped_out,
     scoped_refptr<BrowsingContextState> main_browsing_context_state)
     : RenderViewHostImpl(frame_tree,
                          group,
@@ -342,7 +341,6 @@ TestRenderViewHost::TestRenderViewHost(
                          delegate,
                          routing_id,
                          main_frame_routing_id,
-                         swapped_out,
                          false /* has_initialized_audio_host */,
                          std::move(main_browsing_context_state)),
       delete_counter_(nullptr) {
@@ -372,8 +370,8 @@ bool TestRenderViewHost::CreateRenderView(
     int proxy_route_id,
     bool window_was_created_with_opener) {
   DCHECK(!IsRenderViewLive());
-  // Mark the RenderView as live, though there's nothing to do here since we
-  // don't yet use mojo to talk to the RenderView.
+  // Mark the `blink::WebView` as live, though there's nothing to do here since
+  // we don't yet use mojo to talk to the RenderView.
   renderer_view_created_ = true;
 
   // When the RenderViewHost has a main frame host attached, the RenderView

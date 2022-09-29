@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -323,6 +324,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoRightPage:
     case kPseudoInRange:
     case kPseudoOutOfRange:
+    case kPseudoToggle:
     case kPseudoWebKitCustomElement:
     case kPseudoBlinkInternalElement:
     case kPseudoCue:
@@ -505,11 +507,14 @@ const static NameToPseudoStruct kPseudoTypeWithArgumentsMap[] = {
      CSSSelector::kPseudoPageTransitionOutgoingImage},
     {"part", CSSSelector::kPseudoPart},
     {"slotted", CSSSelector::kPseudoSlotted},
+    {"toggle", CSSSelector::kPseudoToggle},
     {"where", CSSSelector::kPseudoWhere},
 };
 
-CSSSelector::PseudoType CSSSelector::NameToPseudoType(const AtomicString& name,
-                                                      bool has_arguments) {
+CSSSelector::PseudoType CSSSelector::NameToPseudoType(
+    const AtomicString& name,
+    bool has_arguments,
+    const Document* document) {
   if (name.IsNull() || !name.Is8Bit())
     return CSSSelector::kPseudoUnknown;
 
@@ -562,12 +567,17 @@ CSSSelector::PseudoType CSSSelector::NameToPseudoType(const AtomicString& name,
       !RuntimeEnabledFeatures::CSSPseudoPlayingPausedEnabled())
     return CSSSelector::kPseudoUnknown;
 
-  if (match->type == CSSSelector::kPseudoTopLayer &&
-      !RuntimeEnabledFeatures::HTMLPopupAttributeEnabled())
+  // We enable parsing of the pop-up pseudo classes in the case that we *don't*
+  // have a document, since that mostly/always occurs when parsing UA
+  // stylesheets.
+  bool popup_attribute_enabled =
+      !document || RuntimeEnabledFeatures::HTMLPopupAttributeEnabled(
+                       document->GetExecutionContext());
+  if (match->type == CSSSelector::kPseudoTopLayer && !popup_attribute_enabled)
     return CSSSelector::kPseudoUnknown;
 
   if (match->type == CSSSelector::kPseudoPopupHidden &&
-      !RuntimeEnabledFeatures::HTMLPopupAttributeEnabled())
+      !popup_attribute_enabled)
     return CSSSelector::kPseudoUnknown;
 
   if (match->type == CSSSelector::kPseudoHighlight &&
@@ -583,6 +593,11 @@ CSSSelector::PseudoType CSSSelector::NameToPseudoType(const AtomicString& name,
 
   if (match->type == CSSSelector::kPseudoHas &&
       !RuntimeEnabledFeatures::CSSPseudoHasEnabled()) {
+    return CSSSelector::kPseudoUnknown;
+  }
+
+  if (match->type == CSSSelector::kPseudoToggle &&
+      !RuntimeEnabledFeatures::CSSTogglesEnabled()) {
     return CSSSelector::kPseudoUnknown;
   }
 
@@ -623,10 +638,11 @@ void CSSSelector::Show() const {
 }
 #endif
 
-void CSSSelector::UpdatePseudoPage(const AtomicString& value) {
+void CSSSelector::UpdatePseudoPage(const AtomicString& value,
+                                   const Document* document) {
   DCHECK_EQ(Match(), kPagePseudoClass);
   SetValue(value);
-  PseudoType type = CSSSelectorParser::ParsePseudoType(value, false);
+  PseudoType type = CSSSelectorParser::ParsePseudoType(value, false, document);
   if (type != kPseudoFirstPage && type != kPseudoLeftPage &&
       type != kPseudoRightPage) {
     type = kPseudoUnknown;
@@ -640,8 +656,8 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
                                    CSSParserMode mode) {
   DCHECK(match_ == kPseudoClass || match_ == kPseudoElement);
   AtomicString lower_value = value.LowerASCII();
-  PseudoType pseudo_type =
-      CSSSelectorParser::ParsePseudoType(lower_value, has_arguments);
+  PseudoType pseudo_type = CSSSelectorParser::ParsePseudoType(
+      lower_value, has_arguments, context.GetDocument());
   SetPseudoType(pseudo_type);
   SetValue(pseudo_type == kPseudoState ? value : lower_value);
 
@@ -774,6 +790,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoStart:
     case kPseudoState:
     case kPseudoTarget:
+    case kPseudoToggle:
     case kPseudoTopLayer:
     case kPseudoUnknown:
     case kPseudoValid:
@@ -793,32 +810,6 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
       pseudo_type_ = kPseudoUnknown;
       break;
   }
-}
-
-bool CSSSelector::operator==(const CSSSelector& other) const {
-  const CSSSelector* sel1 = this;
-  const CSSSelector* sel2 = &other;
-
-  while (sel1 && sel2) {
-    if (sel1->Attribute() != sel2->Attribute() ||
-        sel1->Relation() != sel2->Relation() || sel1->match_ != sel2->match_ ||
-        sel1->Value() != sel2->Value() ||
-        sel1->GetPseudoType() != sel2->GetPseudoType() ||
-        sel1->Argument() != sel2->Argument()) {
-      return false;
-    }
-    if (sel1->match_ == kTag) {
-      if (sel1->TagQName() != sel2->TagQName())
-        return false;
-    }
-    sel1 = sel1->TagHistory();
-    sel2 = sel2->TagHistory();
-  }
-
-  if (sel1 || sel2)
-    return false;
-
-  return true;
 }
 
 static void SerializeIdentifierOrAny(const AtomicString& identifier,
@@ -897,6 +888,15 @@ const CSSSelector* CSSSelector::SerializeCompound(
         case kPseudoLang:
           builder.Append('(');
           SerializeIdentifier(simple_selector->Argument(), builder);
+          builder.Append(')');
+          break;
+        case kPseudoToggle:
+          builder.Append('(');
+          SerializeIdentifier(simple_selector->Argument(), builder);
+          if (const ToggleRoot::State* value = simple_selector->ToggleValue()) {
+            builder.Append(" ");
+            builder.Append(value->ToString());
+          }
           builder.Append(')');
           break;
         case kPseudoHas:
@@ -1077,6 +1077,13 @@ void CSSSelector::SetSelectorList(
   data_.rare_data_->selector_list_ = std::move(selector_list);
 }
 
+void CSSSelector::SetToggle(const AtomicString& name,
+                            std::unique_ptr<ToggleRoot::State>&& value) {
+  CreateRareData();
+  data_.rare_data_->argument_ = name;
+  data_.rare_data_->toggle_value_ = std::move(value);
+}
+
 void CSSSelector::SetContainsPseudoInsideHasPseudoClass() {
   CreateRareData();
   data_.rare_data_->bits_.has_.contains_pseudo_ = true;
@@ -1135,6 +1142,15 @@ static bool ValidateSubSelector(const CSSSelector* selector) {
     case CSSSelector::kPseudoIsHtml:
     case CSSSelector::kPseudoListBox:
     case CSSSelector::kPseudoHostHasAppearance:
+    case CSSSelector::kPseudoToggle:
+      // TODO(https://crbug.com/1346456): Many pseudos should probably be
+      // added to this list.  The default: case below should also be removed
+      // so that those adding new pseudos know they need to choose one path or
+      // the other here.
+      //
+      // However, it's not clear why a pseudo should be in one list or the
+      // other.  It's also entirely possible that this entire switch() should
+      // be removed and all cases should return true.
       return true;
     default:
       return false;

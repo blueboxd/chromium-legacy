@@ -88,6 +88,7 @@ class ChannelWin : public Channel,
              scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
       : Channel(delegate, handle_policy),
         base::MessagePumpForIO::IOHandler(FROM_HERE),
+        is_untrusted_process_(connection_params.is_untrusted_process()),
         self_(this),
         io_task_runner_(io_task_runner) {
     if (connection_params.server_endpoint().is_valid()) {
@@ -123,8 +124,12 @@ class ChannelWin : public Channel,
       // to the process now rewriting them in the message.
       std::vector<PlatformHandleInTransit> handles = message->TakeHandles();
       for (auto& handle : handles) {
-        if (handle.handle().is_valid())
-          handle.TransferToProcess(remote_process().Duplicate());
+        if (handle.handle().is_valid()) {
+          handle.TransferToProcess(
+              remote_process().Duplicate(),
+              is_untrusted_process_ ? PlatformHandleInTransit::kUntrustedTarget
+                                    : PlatformHandleInTransit::kTrustedTarget);
+        }
       }
       message->SetHandles(std::move(handles));
     }
@@ -187,6 +192,14 @@ class ChannelWin : public Channel,
       handles->emplace_back(base::win::ScopedHandle(std::move(handle_value)));
     }
     return true;
+  }
+
+  bool GetReadPlatformHandlesForIpcz(
+      size_t num_handles,
+      std::vector<PlatformHandle>& handles) override {
+    // Always a validation failure if we're asked for handles on Windows,
+    // because ChannelWin for ipcz never sends handles out-of-band from data.
+    return false;
   }
 
  private:
@@ -398,6 +411,8 @@ class ChannelWin : public Channel,
 
     OnError(error);
   }
+
+  const bool is_untrusted_process_;
 
   // Keeps the Channel alive at least until explicit shutdown on the IO thread.
   scoped_refptr<Channel> self_;

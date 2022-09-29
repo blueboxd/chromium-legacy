@@ -41,9 +41,6 @@ bool IsIdentifierDefaultProtocolClient(NSString* identifier,
 // applies only for the current user. Returns false if this cannot be done, or
 // if the operation fails.
 bool SetAsDefaultBrowser() {
-  if (!CanSetAsDefaultBrowser())
-    return false;
-
   // We really do want the outer bundle here, not the main bundle since setting
   // a shortcut to Chrome as the default browser doesn't make sense.
   NSString* identifier = [base::mac::OuterBundle() bundleIdentifier];
@@ -96,10 +93,6 @@ bool SetAsDefaultProtocolClient(const std::string& protocol) {
 }
 
 DefaultWebClientSetPermission GetDefaultWebClientSetPermission() {
-  if (chrome::GetChannel() == version_info::Channel::CANARY) {
-    return SET_DEFAULT_NOT_ALLOWED;
-  }
-
   return SET_DEFAULT_UNATTENDED;
 }
 

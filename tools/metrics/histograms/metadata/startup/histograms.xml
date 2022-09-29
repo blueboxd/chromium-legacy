@@ -90,7 +90,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.Cold.FirstSafeBrowsingResponseTime.Tabbed"
-    units="ms" expires_after="2022-11-27">
+    units="ms" expires_after="2023-01-29">
   <owner>pasko@chromium.org</owner>
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
@@ -102,7 +102,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Startup.Android.Cold.TimeToFirstContentfulPaint"
-    units="ms" expires_after="2022-11-27">
+    units="ms" expires_after="2023-01-29">
   <owner>pasko@chromium.org</owner>
   <owner>alexilin@chromium.org</owner>
   <summary>
@@ -115,7 +115,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Startup.Android.Cold.TimeToFirstNavigationCommit"
-    units="ms" expires_after="2022-11-27">
+    units="ms" expires_after="2023-01-29">
   <owner>pasko@chromium.org</owner>
   <owner>alexilin@chromium.org</owner>
   <summary>
@@ -188,7 +188,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.Cold.TimeToVisibleContent" units="ms"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>ckitagawa@chromium.org</owner>
   <summary>
     Android: The time from the activity creation point to the moment the content
@@ -245,7 +245,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Startup.Android.FeedStreamCreatedTime" units="ms"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
 <!-- Name completed by histogram_suffixes name="JavaStartMode" -->
 
   <owner>hanxi@chromium.org</owner>
@@ -281,7 +281,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.LastVisitedTabIsSRPWhenOverviewShownAtLaunch"
-    enum="Boolean" expires_after="2022-12-11">
+    enum="Boolean" expires_after="2023-02-12">
   <owner>hanxi@chromium.org</owner>
   <owner>spdonghao@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -344,7 +344,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.StartSurfaceShownAtStartup" enum="Boolean"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>hanxi@chromium.org</owner>
   <owner>spdonghao@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
@@ -417,7 +417,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.BringToForegroundReason"
-    enum="BooleanBringToForegroundReason" expires_after="2022-12-11">
+    enum="BooleanBringToForegroundReason" expires_after="2023-02-12">
   <owner>peter@chromium.org</owner>
   <summary>
     Records the cause, each time Chrome is brought to the foreground. Currently
@@ -789,7 +789,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.MobileSessionStartAction"
-    enum="MobileSessionStartAction" expires_after="2022-11-20">
+    enum="MobileSessionStartAction" expires_after="2023-01-22">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -869,7 +869,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.PreMainMessageLoopRunImplLongTime" units="ms"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>rkaplow@chromium.org</owner>
   <summary>
     The amount of time that elapsed during

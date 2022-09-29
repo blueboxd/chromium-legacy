@@ -5,6 +5,7 @@
 <translation id="1047956942837015229">正在删除<ph name="COUNT" />项内容…</translation>
 <translation id="1049926623896334335">Word 文档</translation>
 <translation id="1056775291175587022">没有网络</translation>
+<translation id="1056898198331236512">警告</translation>
 <translation id="1060368002126861100">如需使用 <ph name="APP_NAME" /> 打开文件，请先将文件移至“Windows 文件”文件夹。</translation>
 <translation id="1062407476771304334">替换</translation>
 <translation id="1119447706177454957">内部错误</translation>
@@ -104,7 +105,6 @@
 <translation id="1832073788765803750">半角片假名</translation>
 <translation id="1834290891154666894">主题备用名称的匹配条目无效</translation>
 <translation id="1838709767668011582">Google 网站</translation>
-<translation id="1844692022597038441">此文件无法在离线模式下播放。</translation>
 <translation id="1853795129690976061">已与 Linux 共享此文件夹</translation>
 <translation id="1864756863218646478">找不到该文件。</translation>
 <translation id="1884013283844450420">第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），<ph name="NETWORK_NAME" />，连接</translation>
@@ -149,7 +149,6 @@
 <translation id="2282155092769082568">自动配置网址：</translation>
 <translation id="2288278176040912387">电唱机</translation>
 <translation id="2291538123825441971">正在打开 <ph name="NUMBER_OF_FILES" /> 个文件。</translation>
-<translation id="2303282178633578561">锁定 SIM 卡</translation>
 <translation id="2303301624314357662">正在打开文件“<ph name="FILE_NAME" />”</translation>
 <translation id="2304820083631266885">星球</translation>
 <translation id="2305020378527873881">已移除 <ph name="VOLUME_NAME" />。</translation>
@@ -185,13 +184,10 @@
 <translation id="2544853746127077729">身份验证证书遭到网络拒绝</translation>
 <translation id="255937426064304553">美国英语（国际）</translation>
 <translation id="2563185590376525700">青蛙</translation>
-<translation id="2570012981255377263">您最近用过的文件会显示在此处</translation>
 <translation id="2578394532502990878">泰米尔语注音</translation>
 <translation id="2579959351793446050">奥里亚语</translation>
-<translation id="2593644851255584939">您的管理员要求您停用 SIM 卡锁定功能。</translation>
 <translation id="2602810353103180630">第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），<ph name="NETWORK_NAME" />，<ph name="CONNECTION_STATUS" />，信号强度为 <ph name="SIGNAL_STRENGTH" />%，由您的管理员管理，详细信息</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> 视频</translation>
-<translation id="2617342710774726426">SIM 卡已被锁定</translation>
 <translation id="2620090360073999360">Google 云端硬盘目前无法访问。</translation>
 <translation id="2621713457727696555">受保护</translation>
 <translation id="2638942478653899953">无法访问 Google 云端硬盘。请先<ph name="BEGIN_LINK" />退出<ph name="END_LINK" />，然后再重新登录。</translation>
@@ -249,13 +245,13 @@
 <translation id="3138624403379688522">PIN 码无效。您还有 <ph name="RETRIES" /> 次尝试机会。</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]（由硬件支持）</translation>
 <translation id="3188257591659621405">我的文件</translation>
+<translation id="3194553149358267393">没有任何近期音频文件</translation>
 <translation id="3197563288998582412">英国英语(Dvorak)</translation>
 <translation id="3202131003361292969">路径</translation>
 <translation id="3205852408225871810">葡萄牙语（巴西）</translation>
 <translation id="3224239078034945833">加拿大多语言</translation>
 <translation id="3236289833370040187">所有权将被转移到 <ph name="DESTINATION_DOMAIN" />。</translation>
 <translation id="3241720467332021590">爱尔兰语</translation>
-<translation id="3245321423178950146">未知艺术家</translation>
 <translation id="3248185426436836442">待处理</translation>
 <translation id="3252266817569339921">法语</translation>
 <translation id="3253225298092156258">无法选择</translation>
@@ -290,10 +286,12 @@
 <translation id="3479552764303398839">以后再说</translation>
 <translation id="3486821258960016770">蒙古语</translation>
 <translation id="3495304270784461826"><ph name="COUNT" />个错误。</translation>
+<translation id="3495810061346586977">此文件属于机密信息，受管理员政策的限制。<ph name="BEGIN_LINK_HELP" />了解详情<ph name="END_LINK_HELP" /></translation>
 <translation id="3509680540198371098">第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），<ph name="NETWORK_NAME" />，<ph name="SECURITY_STATUS" />，<ph name="CONNECTION_STATUS" />，信号强度为 <ph name="SIGNAL_STRENGTH" />%，详细信息</translation>
 <translation id="3522708245912499433">葡萄牙语</translation>
 <translation id="3524311639100184459">警告：这些都是临时文件，可能会被系统自动删除以释放磁盘空间。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">文件夹</translation>
+<translation id="3548125359243647069">您输错 PIN 码的次数过多。</translation>
 <translation id="3549797760399244642">转到 drive.google.com...</translation>
 <translation id="3553048479571901246">如需使用 <ph name="APP_NAME" /> 打开文件，请先将文件复制到“Windows 文件”文件夹。</translation>
 <translation id="3556731189587832921">英语（美国）国际 PC 键盘</translation>
@@ -306,6 +304,7 @@
 <translation id="3606220979431771195">土耳其语 F</translation>
 <translation id="3616113530831147358">音频</translation>
 <translation id="3619115746895587757">卡布奇诺</translation>
+<translation id="3619593063686672873">没有任何近期视频</translation>
 <translation id="3620292326130836921">所有文件都已备份！</translation>
 <translation id="3634507049637220048">第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），<ph name="NETWORK_NAME" />，<ph name="CONNECTION_STATUS" />，由您的管理员管理，详细信息</translation>
 <translation id="3645233063072417428">已移动 <ph name="NUMBER_OF_ITEMS" /> 项。</translation>
@@ -343,7 +342,6 @@
 <translation id="3943857333388298514">粘贴</translation>
 <translation id="3952872973865944257">泰卢固语注音</translation>
 <translation id="3958548648197196644">猕猴桃</translation>
-<translation id="3966388904776714213">音频播放器</translation>
 <translation id="3971140002794351170">下载移动网络配置文件，第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），网络名称为“<ph name="NETWORK_NAME" />”，网络服务提供商为“<ph name="NETWORK_PROVIDER_NAME" />”</translation>
 <translation id="3973925058222872294">英语（英国）</translation>
 <translation id="3975895378829046965">孟加拉语注音</translation>
@@ -353,7 +351,6 @@
 <translation id="4057991113334098539">正在激活...</translation>
 <translation id="4092890906744441904">爱尔兰语</translation>
 <translation id="4124935795427217608">独角兽</translation>
-<translation id="4158739975813877944">打开播放列表</translation>
 <translation id="4159731583141908892">已移动 <ph name="FILE_NAME" />。</translation>
 <translation id="4186579485882418952">启用离线功能</translation>
 <translation id="4193154014135846272">Google 文档</translation>
@@ -406,6 +403,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> 文件</translation>
 <translation id="457386861538956877">更多...</translation>
 <translation id="4579744207439506346">已将<ph name="ENTRY_NAME" />增加到已选项。</translation>
+<translation id="4583436353463424810">没有任何近期文档</translation>
 <translation id="4594543368593301662">目前显示的是与“<ph name="SEARCH_TERM" />”相符的搜索结果。</translation>
 <translation id="4599600860674643278">已重置过滤器。</translation>
 <translation id="4603392156942865207">正在将 <ph name="FILE_NAME" /> 复制到“<ph name="FOLDER_NAME" />”</translation>
@@ -492,7 +490,9 @@
 <translation id="5159560892333415631">清空回收站</translation>
 <translation id="5163869187418756376">共享失败。请检查连接是否正常，然后重试。</translation>
 <translation id="516592729076796170">美式 Programmer Dvorak 键盘</translation>
+<translation id="5172749059808361023">限制详情</translation>
 <translation id="5177526793333269655">缩略图视图</translation>
+<translation id="5181896909298187506">没有任何近期文件</translation>
 <translation id="5194713942430106590">点击即可按升序对此列排序。</translation>
 <translation id="5211614973734216083">法罗语</translation>
 <translation id="5218183485292899140">瑞士法语</translation>
@@ -528,7 +528,6 @@
 <translation id="5489067830765222292">拉脱维亚语</translation>
 <translation id="5489965683297092283"><ph name="FILTER_NAME" />过滤器已关闭。</translation>
 <translation id="5494920125229734069">全选</translation>
-<translation id="5500104704744051184">在输入正确的 PUK 之前，您将无法使用此网络</translation>
 <translation id="5500122897333236901">冰岛语</translation>
 <translation id="5508696409934741614">圆点</translation>
 <translation id="5522908512596376669">文件列表已切换到列表视图。</translation>
@@ -544,7 +543,6 @@
 <translation id="5625294776298156701">泰米尔语 Tamil99 键盘</translation>
 <translation id="5633226425545095130">移动此内容会将其分享给所有能看到共享文件夹“<ph name="DESTINATION_NAME" />”的人。</translation>
 <translation id="5649768706273821470">收听</translation>
-<translation id="5665074015635552640">您最近用过的视频会显示在此处</translation>
 <translation id="5669691691057771421">请输入新的 PIN 码</translation>
 <translation id="5678784840044122290">此 Linux 应用将可以在您的终端上使用，且可能在启动器中显示图标。</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />无法断开与档案或虚拟磁盘的连接<ph name="END_BOLD" />
@@ -613,11 +611,11 @@
 <translation id="6220423280121890987">旁遮普语</translation>
 <translation id="6224240818060029162">丹麦语</translation>
 <translation id="6224253798271602650">将“<ph name="DRIVE_NAME" />”格式化</translation>
-<translation id="6227235786875481728">此文件无法播放。</translation>
 <translation id="6241349547798190358">荷兰语（比利时）</translation>
 <translation id="6267547857941397424">第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），<ph name="PHONE_NAME" />，信号强度为 <ph name="SIGNAL_STRENGTH" />%，剩余电量为 <ph name="BATTERY_STATUS" />%，连接</translation>
 <translation id="6269630227984243955">马来语</translation>
 <translation id="6287852322318138013">选择用于打开此文件的应用</translation>
+<translation id="6295542640242147836">锁定 SIM 卡</translation>
 <translation id="6296410173147755564">PUK 无效</translation>
 <translation id="6312403991423642364">未知网络错误</translation>
 <translation id="6317608858038767920">自定义域名服务器 <ph name="INPUT_INDEX" /></translation>
@@ -629,6 +627,7 @@
 <translation id="6356685157277930264">文件反馈窗口</translation>
 <translation id="6358884629796491903">龙</translation>
 <translation id="636254897931573416">域名后缀的匹配值无效</translation>
+<translation id="6364301859968397756">贵组织的存储空间已用尽</translation>
 <translation id="6367976544441405720">客货车</translation>
 <translation id="637062427944097960">此文件已在其他桌面打开。请转至<ph name="USER_NAME" />(<ph name="MAIL_ADDRESS" />)查看此文件。</translation>
 <translation id="6394388407447716302">只读</translation>
@@ -689,7 +688,6 @@
     找到了 <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">倒栽葱蝴蝶</translation>
 <translation id="6943836128787782965">HTTP 获取请求失败</translation>
-<translation id="6945604978460872381">您最近用过的文档会显示在此处</translation>
 <translation id="6949408524333579394">塞尔维亚语音译</translation>
 <translation id="6954309393500027528">您的管理员已禁止粘贴此文件</translation>
 <translation id="6960565108681981554">未激活。请联系您的运营商。</translation>
@@ -726,6 +724,7 @@
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> GB</translation>
 <translation id="7191454237977785534">文件另存为</translation>
 <translation id="7229570126336867161">需要 EVDO</translation>
+<translation id="7230898482850090046">您的管理员要求您关闭“锁定 SIM 卡”设置</translation>
 <translation id="7238097264433196391">驱动器名称</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />，详细信息</translation>
 <translation id="7246947237293279874">FTP 代理</translation>
@@ -737,7 +736,6 @@
 <translation id="7295662345261934369">与他人共享</translation>
 <translation id="7297443947353982503">用户名/密码错误或 EAP 身份验证失败</translation>
 <translation id="7309413087278791451">德语（比利时）</translation>
-<translation id="7313374447885864533">您最近用过的音频文件会显示在此处</translation>
 <translation id="7339898014177206373">打开新的窗口</translation>
 <translation id="7343393116438664539">越南语电传机键盘</translation>
 <translation id="7357762654218998920">此文件类型不受支持。<ph name="BEGIN_LINK_HELP" />详细了解<ph name="END_LINK_HELP" />如何在 Chrome 操作系统中打开文件。</translation>
@@ -747,6 +745,7 @@
 <translation id="7408870451288633753">捷克语</translation>
 <translation id="7417453074306512035">埃塞俄比亚语键盘</translation>
 <translation id="7417705661718309329">Google 地图</translation>
+<translation id="7458955835361612701">没有任何近期图片</translation>
 <translation id="7460898608667578234">乌克兰语</translation>
 <translation id="7469894403370665791">自动连接到该网络</translation>
 <translation id="7486315294984620427">若要将某个文件拖放到 Parallels Desktop，必须先将此文件复制到“Windows 文件”文件夹。</translation>
@@ -758,9 +757,9 @@
 <translation id="7505167922889582512">显示隐藏文件</translation>
 <translation id="7514365320538308">下载</translation>
 <translation id="751507702149411736">白俄罗斯语</translation>
+<translation id="7521790570754130607">必须输入 PIN 码才能使用移动流量</translation>
 <translation id="7532029025027028521">波斯语音译</translation>
 <translation id="7544830582642184299">授权 Linux 应用访问您 Google 云端硬盘中的文件。相关更改会同步到您的其他设备。</translation>
-<translation id="7544853251252956727">随机播放</translation>
 <translation id="7547009467130558110">运动鞋</translation>
 <translation id="7547780573915868306">立陶宛语</translation>
 <translation id="7547811415869834682">荷兰语</translation>
@@ -783,6 +782,7 @@
 <translation id="76959938259365003">未能清空回收站。</translation>
 <translation id="770015031906360009">希腊语</translation>
 <translation id="7705251383879779343">已复制 <ph name="FILE_NAME" />。</translation>
+<translation id="7708271999969613024">若要使用此网络，您需输入运营商提供的 8 位数个人解锁密钥 (PUK)。</translation>
 <translation id="7711920809702896782">图片信息</translation>
 <translation id="7724603315864178912">剪切</translation>
 <translation id="7730494089396812859">显示云端备份详情</translation>
@@ -810,7 +810,6 @@
 <translation id="7831491651892296503">配置网络时出错</translation>
 <translation id="7839804798877833423">抓取这些文件将使用约 <ph name="FILE_SIZE" /> 移动数据。</translation>
 <translation id="7846076177841592234">取消选择</translation>
-<translation id="7847617962681804761">必须输入 PIN 码才能使用移动数据</translation>
 <translation id="7853966320808728790">法语 BÉPO</translation>
 <translation id="7857117644404132472">添加例外情况</translation>
 <translation id="7868774406711971383">波兰语</translation>
@@ -836,7 +835,6 @@
 <translation id="8045462269890919536">罗马尼亚语</translation>
 <translation id="8049184478152619004">输入个人解锁密钥 (PUK)</translation>
 <translation id="807187749540895545">正在提取 <ph name="FILE_NAME" />…</translation>
-<translation id="8079530767338315840">重复播放</translation>
 <translation id="8087576439476816834">下载，<ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">与我共享</translation>
 <translation id="8116072619078571545">冰水</translation>
@@ -850,7 +848,6 @@
 <translation id="8175731104491895765">法语（比利时）</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">设备型号</translation>
-<translation id="8208580316430297579">图片</translation>
 <translation id="8223479393428528563">要保存这些文件以供离线使用，请恢复联网状态，右键点击文件，然后选择<ph name="OFFLINE_CHECKBOX_NAME" />选项。</translation>
 <translation id="8249296373107784235">取消</translation>
 <translation id="8250690786522693009">拉丁文</translation>
@@ -871,7 +868,6 @@
 <translation id="8342318071240498787">已存在具有相同名称的文件或目录。</translation>
 <translation id="8372369524088641025">WEP 密钥错误</translation>
 <translation id="8372852072747894550">希腊语</translation>
-<translation id="8384716930968677505">您最近用过的图片会显示在此处</translation>
 <translation id="8386903983509584791">已完成扫描</translation>
 <translation id="8387733224523483503">已提取 <ph name="FILE_NAME" />。</translation>
 <translation id="8395901698320285466">尺寸</translation>
@@ -881,6 +877,7 @@
 <translation id="8437209419043462667">美国英语</translation>
 <translation id="8452135315243592079">缺少 SIM 卡</translation>
 <translation id="8456681095658380701">名称无效</translation>
+<translation id="8457767749626250697">您的 SIM 卡已锁定</translation>
 <translation id="8459404855768962328">复制此内容会将其分享给所有能看到共享文件夹“<ph name="DESTINATION_NAME" />”的人。</translation>
 <translation id="8461467696380332069">右键点击某个文件，然后选择“固定到任务栏”，以便在任务栏中快速访问您的文件。</translation>
 <translation id="8461914792118322307">代理</translation>
@@ -907,7 +904,6 @@
 <translation id="8579285237314169903">正在同步 <ph name="NUMBER_OF_FILES" /> 个文件…</translation>
 <translation id="8600173386174225982">文件列表已切换到缩略图视图。</translation>
 <translation id="8601932370724196034">Crostini 映像文件</translation>
-<translation id="8608515571837163082">您输错 PIN 码的次数过多。请输入运营商提供的 8 位数个人解锁密钥 (PUK)。</translation>
 <translation id="8609695766746872526">冰岛语</translation>
 <translation id="863903787380594467">PIN 码不正确。您还有 <ph name="RETRIES" /> 次尝试机会。</translation>
 <translation id="8639391553632924850"><ph name="INPUT_LABEL" /> - 端口</translation>
@@ -945,7 +941,6 @@
 <translation id="9034924485347205037">Linux 文件</translation>
 <translation id="9035012421917565900">这些内容一旦移出“<ph name="DESTINATION_NAME" />”便无法移回，因此您将无法撤消这项操作。</translation>
 <translation id="9035689366572880647">输入当前 PIN 码</translation>
-<translation id="9037777873893411148">*贵组织的存储空间已用尽</translation>
 <translation id="9038620279323455325">已有名为“<ph name="FILE_NAME" />”的文件。请另选一个名称。</translation>
 <translation id="9046895021617826162">连接失败</translation>
 <translation id="9065512565307033593">如果您未通过验证，我们将禁止您访问网络。</translation>

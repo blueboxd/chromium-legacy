@@ -149,6 +149,15 @@ class ASH_EXPORT ShellDelegate {
   // window when that window is closed.
   virtual void ForceSkipWarningUserOnClose(
       const std::vector<aura::Window*>& windows) = 0;
+
+  // Retrieves the official Chrome version string e.g. 105.0.5178.0.
+  virtual std::string GetVersionString() = 0;
+
+  // Forwards the ShouldExitFullscreenBeforeLock() call to the crosapi browser
+  // manager.
+  using ShouldExitFullscreenCallback = base::OnceCallback<void(bool)>;
+  virtual void ShouldExitFullscreenBeforeLock(
+      ShouldExitFullscreenCallback callback);
 };
 
 }  // namespace ash

@@ -5,12 +5,12 @@
 #include "third_party/blink/renderer/core/script/classic_script.h"
 
 #include "third_party/blink/public/web/web_script_source.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
-#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_evaluation_result.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
-#include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/cached_metadata_handler.h"
 
 namespace blink {
 
@@ -92,13 +92,24 @@ ClassicScript* ClassicScript::Create(
 
 ClassicScript* ClassicScript::CreateFromResource(
     ScriptResource* resource,
-    const KURL& base_url,
-    const ScriptFetchOptions& fetch_options,
-    ResourceScriptStreamer* streamer,
-    ScriptStreamer::NotStreamingReason not_streamed_reason,
-    ScriptCacheConsumer* cache_consumer) {
+    const ScriptFetchOptions& fetch_options) {
+  // Check if we can use the script streamer.
+  ResourceScriptStreamer* streamer;
+  ScriptStreamer::NotStreamingReason not_streamed_reason;
+  std::tie(streamer, not_streamed_reason) = ResourceScriptStreamer::TakeFrom(
+      resource, mojom::blink::ScriptType::kClassic);
   DCHECK_EQ(!streamer, not_streamed_reason !=
                            ScriptStreamer::NotStreamingReason::kInvalid);
+
+  ScriptCacheConsumer* cache_consumer = resource->TakeCacheConsumer();
+
+  KURL source_url = StripFragmentIdentifier(resource->Url());
+
+  // The base URL for external classic script is
+  //
+  // <spec href="https://html.spec.whatwg.org/C/#concept-script-base-url">
+  // ... the URL from which the script was obtained, ...</spec>
+  KURL base_url = resource->GetResponse().ResponseUrl();
 
   ParkableString source;
   if (resource->IsWebSnapshot()) {
@@ -109,7 +120,7 @@ ClassicScript* ClassicScript::CreateFromResource(
   // We lose the encoding information from ScriptResource.
   // Not sure if that matters.
   return MakeGarbageCollected<ClassicScript>(
-      source, StripFragmentIdentifier(resource->Url()), base_url, fetch_options,
+      source, source_url, base_url, fetch_options,
       ScriptSourceLocationType::kExternalFile,
       resource->GetResponse().IsCorsSameOrigin()
           ? SanitizeScriptErrors::kDoNotSanitize
@@ -169,6 +180,34 @@ void ClassicScript::Trace(Visitor* visitor) const {
   visitor->Trace(cache_handler_);
   visitor->Trace(streamer_);
   visitor->Trace(cache_consumer_);
+}
+
+v8::Local<v8::Data> ClassicScript::CreateHostDefinedOptions(
+    v8::Isolate* isolate) const {
+  const ReferrerScriptInfo referrer_info(BaseUrl(), FetchOptions());
+
+  v8::Local<v8::Data> host_defined_options =
+      referrer_info.ToV8HostDefinedOptions(isolate, SourceUrl());
+
+  return host_defined_options;
+}
+
+v8::ScriptOrigin ClassicScript::CreateScriptOrigin(v8::Isolate* isolate) const {
+  // NOTE: For compatibility with WebCore, ClassicScript's line starts at
+  // 1, whereas v8 starts at 0.
+  // NOTE(kouhei): Probably this comment is no longer relevant and Blink lines
+  // start at 1 only for historic reasons now. I guess we could change it, but
+  // there's not much benefit doing so.
+  return v8::ScriptOrigin(
+      isolate, V8String(isolate, SourceUrl()),
+      StartPosition().line_.ZeroBasedInt(),
+      StartPosition().column_.ZeroBasedInt(),
+      GetSanitizeScriptErrors() == SanitizeScriptErrors::kDoNotSanitize, -1,
+      V8String(isolate, SourceMapUrl()),
+      GetSanitizeScriptErrors() == SanitizeScriptErrors::kSanitize,
+      false,  // is_wasm
+      false,  // is_module
+      CreateHostDefinedOptions(isolate));
 }
 
 ScriptEvaluationResult ClassicScript::RunScriptOnScriptStateAndReturnValue(

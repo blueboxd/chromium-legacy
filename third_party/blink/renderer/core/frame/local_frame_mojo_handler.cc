@@ -12,6 +12,7 @@
 #include "components/power_scheduler/power_mode_arbiter.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/data_decoder/public/mojom/resource_snapshot_for_web_bundle.mojom-blink.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/features.h"
@@ -224,8 +225,7 @@ v8::MaybeLocal<v8::Value> CallMethodOnFrame(LocalFrame* local_frame,
 
 // A wrapper class used as the callback for JavaScript executed
 // in an isolated world.
-class JavaScriptIsolatedWorldRequest : public PausableScriptExecutor::Executor,
-                                       public WebScriptExecutionCallback {
+class JavaScriptIsolatedWorldRequest : public PausableScriptExecutor::Executor {
   using JavaScriptExecuteRequestInIsolatedWorldCallback =
       mojom::blink::LocalFrame::JavaScriptExecuteRequestInIsolatedWorldCallback;
 
@@ -248,10 +248,12 @@ class JavaScriptIsolatedWorldRequest : public PausableScriptExecutor::Executor,
 
   void Trace(Visitor* visitor) const override;
 
-  // WebScriptExecutionCallback overrides.
-  void Completed(const WebVector<v8::Local<v8::Value>>& result) override;
+  WebScriptExecutionCallback Callback();
 
  private:
+  void Completed(const WebVector<v8::Local<v8::Value>>& result,
+                 base::TimeTicks);
+
   Member<LocalFrame> local_frame_;
   int32_t world_id_;
   String script_;
@@ -293,7 +295,8 @@ Vector<v8::Local<v8::Value>> JavaScriptIsolatedWorldRequest::Execute(
 }
 
 void JavaScriptIsolatedWorldRequest::Completed(
-    const WebVector<v8::Local<v8::Value>>& result) {
+    const WebVector<v8::Local<v8::Value>>& result,
+    base::TimeTicks start_time) {
   base::Value value;
   if (!result.empty() && !result.begin()->IsEmpty() && wants_result_) {
     // It's safe to always use the main world context when converting
@@ -312,6 +315,11 @@ void JavaScriptIsolatedWorldRequest::Completed(
       value = base::Value::FromUniquePtrValue(std::move(new_value));
   }
   std::move(callback_).Run(std::move(value));
+}
+
+WebScriptExecutionCallback JavaScriptIsolatedWorldRequest::Callback() {
+  return WTF::Bind(&JavaScriptIsolatedWorldRequest::Completed,
+                   WrapWeakPersistent(this));
 }
 
 HitTestResult HitTestResultForRootFramePos(
@@ -1124,7 +1132,7 @@ void LocalFrameMojoHandler::JavaScriptExecuteRequestInIsolatedWorld(
 
   auto* executor = MakeGarbageCollected<PausableScriptExecutor>(
       DomWindow(), ToScriptState(frame_, *isolated_world),
-      /*callback=*/execution_request,
+      execution_request->Callback(),
       /*executor=*/execution_request);
   executor->Run();
 
@@ -1160,8 +1168,8 @@ void LocalFrameMojoHandler::GetFirstRectForRange(const gfx::Range& range) {
                            : GetCurrentCursorPositionInFrame(frame_);
 
       WebLocalFrameImpl::FromFrame(frame_)->FirstRectForCharacterRange(
-          base::checked_cast<unsigned>(start),
-          base::checked_cast<unsigned>(range.length()), rect);
+          base::checked_cast<uint32_t>(start),
+          base::checked_cast<uint32_t>(range.length()), rect);
     }
   }
 

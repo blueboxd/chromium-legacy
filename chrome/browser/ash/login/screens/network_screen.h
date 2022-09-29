@@ -78,7 +78,7 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenUnitTest, ContinuesOnlyOnce);
 
   // BaseScreen:
-  bool MaybeSkip(WizardContext* context) override;
+  bool MaybeSkip(WizardContext& context) override;
   void ShowImpl() override;
   void HideImpl() override;
   void OnUserActionDeprecated(const std::string& action_id) override;
@@ -154,8 +154,7 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   ScreenExitCallback exit_callback_;
   std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 
-  base::ScopedObservation<chromeos::NetworkStateHandler,
-                          chromeos::NetworkStateHandlerObserver>
+  base::ScopedObservation<NetworkStateHandler, NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
 
   base::WeakPtrFactory<NetworkScreen> weak_ptr_factory_{this};

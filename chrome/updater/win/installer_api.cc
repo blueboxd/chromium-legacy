@@ -19,6 +19,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/win/registry.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/enum_traits.h"
@@ -31,15 +32,6 @@
 namespace updater {
 namespace {
 
-HKEY RootKey(UpdaterScope updater_scope) {
-  switch (updater_scope) {
-    case UpdaterScope::kUser:
-      return HKEY_CURRENT_USER;
-    case UpdaterScope::kSystem:
-      return HKEY_LOCAL_MACHINE;
-  }
-}
-
 // Opens the registry ClientState subkey for the `app_id`.
 absl::optional<base::win::RegKey> ClientStateAppKeyOpen(
     UpdaterScope updater_scope,
@@ -48,7 +40,7 @@ absl::optional<base::win::RegKey> ClientStateAppKeyOpen(
   std::wstring subkey;
   if (!base::UTF8ToWide(app_id.c_str(), app_id.size(), &subkey))
     return absl::nullopt;
-  base::win::RegKey key(RootKey(updater_scope), CLIENT_STATE_KEY,
+  base::win::RegKey key(UpdaterScopeToHKeyRoot(updater_scope), CLIENT_STATE_KEY,
                         Wow6432(regsam));
   if (key.OpenKey(subkey.c_str(), Wow6432(regsam)) != ERROR_SUCCESS)
     return absl::nullopt;
@@ -65,7 +57,7 @@ absl::optional<base::win::RegKey> ClientStateAppKeyCreate(
   std::wstring subkey;
   if (!base::UTF8ToWide(app_id.c_str(), app_id.size(), &subkey))
     return absl::nullopt;
-  base::win::RegKey key(RootKey(updater_scope), CLIENT_STATE_KEY,
+  base::win::RegKey key(UpdaterScopeToHKeyRoot(updater_scope), CLIENT_STATE_KEY,
                         Wow6432(regsam));
   if (key.CreateKey(subkey.c_str(), Wow6432(regsam)) != ERROR_SUCCESS)
     return absl::nullopt;
@@ -83,8 +75,8 @@ bool ClientStateAppKeyDelete(UpdaterScope updater_scope,
   std::wstring subkey;
   if (!base::UTF8ToWide(app_id.c_str(), app_id.size(), &subkey))
     return false;
-  return base::win::RegKey(RootKey(updater_scope), CLIENT_STATE_KEY,
-                           Wow6432(KEY_WRITE))
+  return base::win::RegKey(UpdaterScopeToHKeyRoot(updater_scope),
+                           CLIENT_STATE_KEY, Wow6432(KEY_WRITE))
              .DeleteKey(subkey.c_str()) == ERROR_SUCCESS;
 }
 
@@ -328,6 +320,7 @@ AppInstallerResult RunApplicationInstaller(
     const base::FilePath& app_installer,
     const std::string& arguments,
     const absl::optional<base::FilePath>& installer_data_file,
+    const base::TimeDelta& timeout,
     InstallProgressCallback progress_callback) {
   if (!base::PathExists(app_installer))
     return AppInstallerResult(kErrorMissingRunableFile);
@@ -360,7 +353,7 @@ AppInstallerResult RunApplicationInstaller(
   }
 
   int exit_code = -1;
-  const auto time_begin = base::Time::NowFromSystemTime();
+  const base::ElapsedTimer timer;
   do {
     bool wait_result = process.WaitForExitWithTimeout(
         base::Seconds(kWaitForInstallerProgressSec), &exit_code);
@@ -371,8 +364,7 @@ AppInstallerResult RunApplicationInstaller(
       VLOG(1) << "Installer exit code " << exit_code;
       break;
     }
-  } while (base::Time::NowFromSystemTime() - time_begin <=
-           base::Seconds(kWaitForAppInstallerSec));
+  } while (timer.Elapsed() < timeout);
 
   return MakeInstallerResult(
       GetInstallerOutcome(app_info.scope, app_info.app_id), exit_code);

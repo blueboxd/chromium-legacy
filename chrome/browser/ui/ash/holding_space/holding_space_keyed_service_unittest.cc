@@ -349,7 +349,7 @@ class HoldingSpaceKeyedServiceTest : public BrowserWithTestWindowTest {
   }
 
   TestingProfile* CreateProfile() override {
-    const std::string kPrimaryProfileName = "primary_profile";
+    const std::string kPrimaryProfileName = "primary_profile@test";
     const AccountId account_id(AccountId::FromUserEmail(kPrimaryProfileName));
 
     fake_user_manager_->AddUser(account_id);
@@ -786,11 +786,9 @@ TEST_F(HoldingSpaceKeyedServiceTest, PersistenceOfInProgressItems) {
             persisted_holding_space_items);
 }
 
-// TODO(crbug.com/1315122): Fix flakes and re-enable.
 // Verifies that when a file backing a holding space item is moved, the holding
 // space item is updated in place and persistence storage is updated.
-TEST_F(HoldingSpaceKeyedServiceTest,
-       DISABLED_UpdatePersistentStorageAfterMove) {
+TEST_F(HoldingSpaceKeyedServiceTest, UpdatePersistentStorageAfterMove) {
   // Create a file system mount point.
   std::unique_ptr<ScopedTestMountPoint> downloads_mount =
       ScopedTestMountPoint::CreateAndMountDownloads(GetProfile());

@@ -66,17 +66,13 @@
         <part file="resources/supervised_user_error_page_resources.grdp" />
       </if>
 
-      <if expr="chromeos_ash">
-        <part file="resources/web_time_limit_error_page_resources.grdp" />
-      </if>
-
       <if expr="enable_hangout_services_extension">
         <!-- Hangout Services extension, included in Google Chrome builds only. -->
         <include name="IDR_HANGOUT_SERVICES_MANIFEST" file="resources\hangout_services\manifest.json" type="BINDATA" />
       </if>
 
       <!-- Contact Center Insights extension, enabled on managed ChromeOS devices -->
-      <if expr="chromeos_ash or chromeos_lacros">
+      <if expr="is_chromeos">
         <include name="IDR_CONTACT_CENTER_INSIGHTS_MANIFEST" file="resources\chromeos\contact_center_insights\manifest.json" type="BINDATA" />
       </if>
 
@@ -90,7 +86,7 @@
         <include name="IDR_GAIA_AUTH_WEBVIEW_SAML_INJECTED_JS" file="resources\gaia_auth_host\webview_saml_injected.js" flattenhtml="true" type="BINDATA" />
       </if>
 
-      <if expr="chromeos_ash or chromeos_lacros">
+      <if expr="is_chromeos">
         <include name="IDR_CHROME_URLS_DISABLED_PAGE_HTML" file="resources\chromeos\chrome_urls_disabled_page\app.html" type="BINDATA" />
       </if>
 
@@ -134,7 +130,7 @@
       <include name="IDR_USB_DEVICE_MANAGER_CLIENT_MOJOM_WEBUI_JS" file="${root_gen_dir}\mojom-webui\services\device\public\mojom\usb_manager_client.mojom-webui.js" use_base_dir="false" type="BINDATA" />
       <include name="IDR_WEBSTORE_MANIFEST" file="resources\webstore_app\manifest.json" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_MANIFEST" file="resources\cryptotoken\manifest.json" type="BINDATA" />
-      <if expr="chromeos_ash or chromeos_lacros">
+      <if expr="is_chromeos">
         <include name="IDR_ECHO_MANIFEST" file="resources\chromeos\echo\manifest.json" type="BINDATA" />
       </if>
       <if expr="chromeos_ash">
@@ -174,7 +170,7 @@
         <include name="IDR_CONFIRM_PASSWORD_CHANGE_HTML" file="resources\chromeos\password_change\confirm_password_change.html" type="chrome_html" />
         <include name="IDR_CONFIRM_PASSWORD_CHANGE_JS" file="resources\chromeos\password_change\confirm_password_change.js" type="chrome_html" />
         <include name="IDR_URGENT_PASSWORD_EXPIRY_NOTIFICATION_HTML" file="resources\chromeos\password_change\urgent_password_expiry_notification.html" type="chrome_html" />
-        <include name="IDR_URGENT_PASSWORD_EXPIRY_NOTIFICATION_JS" file="resources\chromeos\password_change\urgent_password_expiry_notification.js" type="chrome_html" />
+        <include name="IDR_URGENT_PASSWORD_EXPIRY_NOTIFICATION_APP_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\password_change\urgent_password_expiry_notification_app.js" type="chrome_html" use_base_dir="false" />
         <include name="IDR_GAIA_AUTH_AUTHENTICATOR_JS" file="resources\gaia_auth_host\authenticator.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_LOCK_SCREEN_REAUTH_HTML" file="resources\chromeos\password_change\lock_screen_reauth.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_LOCK_SCREEN_REAUTH_JS" file="resources\chromeos\password_change\lock_screen_reauth.js" type="BINDATA" />
@@ -214,8 +210,6 @@
         <include type="BINDATA" compress="gzip" name="IDR_FINGERPRINT_LAPTOP_BOTTOM_LEFT_ANIMATION_LIGHT" file="resources\chromeos\quick_unlock\fingerprint_laptop_bottom_left_light.json"/>
         <include type="BINDATA" compress="gzip" name="IDR_FINGERPRINT_LAPTOP_BOTTOM_RIGHT_ANIMATION_DARK" file="resources\chromeos\quick_unlock\fingerprint_laptop_bottom_right_dark.json"/>
         <include type="BINDATA" compress="gzip" name="IDR_FINGERPRINT_LAPTOP_BOTTOM_RIGHT_ANIMATION_LIGHT" file="resources\chromeos\quick_unlock\fingerprint_laptop_bottom_right_light.json"/>
-        <include type="BINDATA" compress="gzip" name="IDR_FINGERPRINT_LAPTOP_LEFT_OF_POWER_BUTTON_TOP_RIGHT_ANIMATION_LIGHT" file="resources\chromeos\quick_unlock\fingerprint_left_of_power_button_top_right_light.json"/>
-        <include type="BINDATA" compress="gzip" name="IDR_FINGERPRINT_LAPTOP_LEFT_OF_POWER_BUTTON_TOP_RIGHT_ANIMATION_DARK" file="resources\chromeos\quick_unlock\fingerprint_left_of_power_button_top_right_dark.json"/>
         <include type="BINDATA" compress="gzip" name="IDR_FINGERPRINT_TABLET_ANIMATION_DARK" file="resources\chromeos\quick_unlock\fingerprint_tablet_dark.json"/>
         <include type="BINDATA" compress="gzip" name="IDR_FINGERPRINT_TABLET_ANIMATION_LIGHT" file="resources\chromeos\quick_unlock\fingerprint_tablet_light.json"/>
         <include type="BINDATA" compress="gzip" name="IDR_FINGERPRINT_DEFAULT_ANIMATION_DARK" file="resources\chromeos\quick_unlock\fingerprint_default_dark.json"/>
@@ -231,7 +225,7 @@
         <include name="IDR_PRODUCT_CHROMEOS_SYNC_CONSENT_SCREEN_ICONS" file="internal\resources\chromeos-sync-consent-icons.html" type="BINDATA" />
         <include name="IDR_PRODUCT_CHROMEOS_SYNC_CONSENT_SCREEN_ICONS_M_JS" file="internal\resources\chromeos-sync-consent-icons.m.js" type="BINDATA" />
       </if>
-      <if expr="chromeos_ash or chromeos_lacros">
+      <if expr="is_chromeos">
         <if expr="_google_chrome">
           <include name="IDR_QUICKOFFICE_MANIFEST" file="resources\chromeos\quickoffice\manifest.json" type="BINDATA" />
         </if>
@@ -263,9 +257,6 @@
         <include name="IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_HIGH_WAV" file="resources\chromeos\sounds\spoken_feedback_toggle_countdown_high.wav" type="BINDATA" />
         <include name="IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW_WAV" file="resources\chromeos\sounds\spoken_feedback_toggle_countdown_low.wav" type="BINDATA" />
         <include name="IDR_SOUND_TOUCH_TYPE_WAV" file="resources\chromeos\sounds\touch_type.wav" type="BINDATA" />
-        <include name="IDR_SOUND_DICTATION_END_WAV" file="resources\chromeos\sounds\earcons\audio_end.wav" type="BINDATA" />
-        <include name="IDR_SOUND_DICTATION_START_WAV" file="resources\chromeos\sounds\earcons\audio_initiate.wav" type="BINDATA" />
-        <include name="IDR_SOUND_DICTATION_CANCEL_WAV" file="resources\chromeos\sounds\earcons\null_selection.wav" type="BINDATA" />
       </if>
       <if expr="chromeos_ash">
         <include name="IDR_ABOUT_POWER_HTML" file="resources\chromeos\power.html" type="BINDATA" />
@@ -283,7 +274,8 @@
       </if>
       <if expr="chromeos_ash">
         <include name="IDR_SET_TIME_HTML" file="resources\chromeos\set_time_dialog\set_time.html" type="BINDATA" />
-        <include name="IDR_SET_TIME_DIALOG_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\set_time_dialog\set_time_dialog.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_SET_TIME_DIALOG_HTML_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\set_time_dialog\set_time_dialog.html.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_SET_TIME_DIALOG_JS" file="resources\chromeos\set_time_dialog\set_time_dialog.js" type="BINDATA" />
         <include name="IDR_SET_TIME_BROWSER_PROXY_JS" file="resources\chromeos\set_time_dialog\set_time_browser_proxy.js" type="BINDATA" />
       </if>
       <if expr="chromeos_ash">

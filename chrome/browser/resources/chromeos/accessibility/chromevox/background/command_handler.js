@@ -5,21 +5,33 @@
 /**
  * @fileoverview ChromeVox commands.
  */
+import {AutomationPredicate} from '../../common/automation_predicate.js';
+import {AutomationUtil} from '../../common/automation_util.js';
+import {constants} from '../../common/constants.js';
 import {Cursor, CursorUnit} from '../../common/cursors/cursor.js';
 import {CursorRange} from '../../common/cursors/range.js';
 import {EventGenerator} from '../../common/event_generator.js';
+import {KeyCode} from '../../common/key_code.js';
+import {Earcon} from '../common/abstract_earcons.js';
 import {AbstractTts} from '../common/abstract_tts.js';
+import {NavBraille} from '../common/braille/nav_braille.js';
+import {BridgeConstants} from '../common/bridge_constants.js';
+import {BridgeHelper} from '../common/bridge_helper.js';
 import {CommandStore} from '../common/command_store.js';
 import {ChromeVoxEvent, CustomAutomationEvent} from '../common/custom_automation_event.js';
 import {EventSourceType} from '../common/event_source_type.js';
 import {GestureGranularity} from '../common/gesture_command_data.js';
 import {ChromeVoxKbHandler} from '../common/keyboard_handler.js';
+import {LogType} from '../common/log_types.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
+import {TreeDumper} from '../common/tree_dumper.js';
+import {QueueMode, TtsSpeechProperties} from '../common/tts_interface.js';
 
 import {AutoScrollHandler} from './auto_scroll_handler.js';
 import {BrailleBackground} from './braille/braille_background.js';
 import {BrailleCaptionsBackground} from './braille/braille_captions_background.js';
+import {ChromeVox} from './chromevox.js';
 import {ChromeVoxState} from './chromevox_state.js';
 import {ChromeVoxBackground} from './classic_background.js';
 import {Color} from './color.js';
@@ -86,14 +98,12 @@ export class CommandHandler extends CommandHandlerInterface {
         chrome.automation.getDesktop(function(d) {
           // First, try speaking the on-screen time.
           const allTime = d.findAll({role: RoleType.TIME});
-          allTime.filter(function(t) {
-            return t.root.role === RoleType.DESKTOP;
-          });
+          allTime.filter(time => time.root.role === RoleType.DESKTOP);
 
           let timeString = '';
-          allTime.forEach(function(t) {
-            if (t.name) {
-              timeString = t.name;
+          allTime.forEach(time => {
+            if (time.name) {
+              timeString = time.name;
             }
           });
           if (timeString) {
@@ -414,7 +424,7 @@ export class CommandHandler extends CommandHandlerInterface {
     let rootPred = AutomationPredicate.rootOrEditableRoot;
     let unit = null;
     let shouldWrap = true;
-    const speechProps = {};
+    const speechProps = new TtsSpeechProperties();
     let skipSync = false;
     let didNavigate = false;
     let tryScrolling = true;
@@ -423,14 +433,14 @@ export class CommandHandler extends CommandHandlerInterface {
     switch (command) {
       case 'nextCharacter':
         didNavigate = true;
-        speechProps['phoneticCharacters'] = true;
+        speechProps.phoneticCharacters = true;
         unit = CursorUnit.CHARACTER;
         current = current.move(CursorUnit.CHARACTER, Dir.FORWARD);
         break;
       case 'previousCharacter':
         dir = Dir.BACKWARD;
         didNavigate = true;
-        speechProps['phoneticCharacters'] = true;
+        speechProps.phoneticCharacters = true;
         unit = CursorUnit.CHARACTER;
         current = current.move(CursorUnit.CHARACTER, dir);
         break;

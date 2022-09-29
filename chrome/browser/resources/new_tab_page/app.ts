@@ -30,16 +30,16 @@ import {Action as VoiceAction, recordVoiceAction} from './voice_search_overlay.j
 import {WindowProxy} from './window_proxy.js';
 
 
-type ExecutePromoBrowserCommandData = {
-  commandId: Command,
-  clickInfo: ClickInfo,
-};
+interface ExecutePromoBrowserCommandData {
+  commandId: Command;
+  clickInfo: ClickInfo;
+}
 
-type CanShowPromoWithBrowserCommandData = {
-  frameType: string,
-  messageType: string,
-  commandId: Command,
-};
+interface CanShowPromoWithBrowserCommandData {
+  frameType: string;
+  messageType: string;
+  commandId: Command;
+}
 
 /**
  * Elements on the NTP. This enum must match the numbering for NTPElement in
@@ -161,6 +161,15 @@ export class AppElement extends PolymerElement {
         type: Object,
       },
 
+      customizeChromeEnabled_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('customizeChromeEnabled'),
+      },
+
+      customizeChromeSidePanelShowing_: {
+        type: Boolean,
+      },
+
       logoColor_: {
         type: String,
         computed: 'computeLogoColor_(theme_)',
@@ -265,6 +274,8 @@ export class AppElement extends PolymerElement {
   private backgroundImageAttribution2_: string;
   private backgroundImageAttributionUrl_: string;
   private backgroundColor_: SkColor;
+  private customizeChromeEnabled_: boolean;
+  private customizeChromeSidePanelShowing_: boolean;
   private logoColor_: string;
   private singleColoredLogo_: boolean;
   private realboxShown_: boolean;
@@ -286,6 +297,8 @@ export class AppElement extends PolymerElement {
   private pageHandler_: PageHandlerRemote;
   private backgroundManager_: BackgroundManager;
   private setThemeListenerId_: number|null = null;
+  private customizeChromeSidePanelVisibilityChangedListener_: number|null =
+      null;
   private eventTracker_: EventTracker = new EventTracker();
   private shouldPrintPerformance_: boolean;
   private backgroundImageLoadStartEpoch_: number;
@@ -324,6 +337,10 @@ export class AppElement extends PolymerElement {
           performance.measure('theme-set');
           this.theme_ = theme;
         });
+    this.customizeChromeSidePanelVisibilityChangedListener_ =
+        this.callbackRouter_.customizeChromeSidePanelVisibilityChanged
+            .addListener(
+                this.onCustomizeChromeSidePanelVisibilityChanged_.bind(this));
     this.eventTracker_.add(window, 'message', (event: MessageEvent) => {
       const data = event.data;
       // Something in OneGoogleBar is sending a message that is received here.
@@ -362,6 +379,8 @@ export class AppElement extends PolymerElement {
   override disconnectedCallback() {
     super.disconnectedCallback();
     this.callbackRouter_.removeListener(this.setThemeListenerId_!);
+    this.callbackRouter_.removeListener(
+        this.customizeChromeSidePanelVisibilityChangedListener_!);
     this.eventTracker_.removeAll();
   }
 
@@ -429,7 +448,15 @@ export class AppElement extends PolymerElement {
   }
 
   private onCustomizeClick_() {
-    this.showCustomizeDialog_ = true;
+    if (this.customizeChromeEnabled_) {
+      this.pageHandler_.showCustomizeChromeSidePanel();
+    } else {
+      this.showCustomizeDialog_ = true;
+    }
+  }
+
+  private onCustomizeChromeSidePanelVisibilityChanged_(visible: boolean) {
+    this.customizeChromeSidePanelShowing_ = visible;
   }
 
   private onCustomizeDialogClose_() {

@@ -17,7 +17,7 @@
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/history_clusters_types.h"
 
-namespace history_clusters {
+namespace {
 
 // Is the transition user-visible.
 bool IsTransitionUserVisible(int32_t transition) {
@@ -27,6 +27,10 @@ bool IsTransitionUserVisible(int32_t transition) {
          !ui::PageTransitionCoreTypeIs(page_transition,
                                        ui::PAGE_TRANSITION_KEYWORD_GENERATED);
 }
+
+}  // namespace
+
+namespace history_clusters {
 
 // static
 base::Time GetAnnotatedVisitsToCluster::GetBeginTimeOnDayBoundary(
@@ -47,6 +51,7 @@ GetAnnotatedVisitsToCluster::GetAnnotatedVisitsToCluster(
     QueryClustersContinuationParams continuation_params,
     bool recent_first,
     int days_of_clustered_visits,
+    bool recluster,
     Callback callback)
     : incomplete_visit_map_(incomplete_visit_map),
       begin_time_limit_(
@@ -54,6 +59,7 @@ GetAnnotatedVisitsToCluster::GetAnnotatedVisitsToCluster(
       continuation_params_(continuation_params),
       recent_first_(recent_first),
       days_of_clustered_visits_(days_of_clustered_visits),
+      recluster_(recluster),
       callback_(std::move(callback)) {
   // Callers shouldn't ask for more visits if they've been exhausted.
   DCHECK(!continuation_params.exhausted_unclustered_visits);
@@ -121,12 +127,14 @@ history::QueryOptions GetAnnotatedVisitsToCluster::GetHistoryQueryOptions(
   // 1st, set `continuation_time`, either from `continuation_params_`for
   // continuation requests or computed for initial requests.
   base::Time continuation_time;
-  if (continuation_params_.is_continuation)
+  if (continuation_params_.is_continuation) {
     continuation_time = continuation_params_.continuation_time;
-  else if (recent_first_)
+  } else if (recent_first_) {
     continuation_time = now;
-  else
-    continuation_time = backend->FindMostRecentClusteredTime();
+  } else {
+    continuation_time =
+        std::max(backend->FindMostRecentClusteredTime(), begin_time_limit_);
+  }
 
   // 2nd, derive the other boundary, approximately 1 day before or after
   // `continuation_time`, depending on `recent_first`, and rounded to a day
@@ -159,12 +167,15 @@ bool GetAnnotatedVisitsToCluster::AddUnclusteredVisits(
 
   for (const auto& visit :
        backend->GetAnnotatedVisits(options, &limited_by_max_count)) {
+    const bool is_clustered =
+        GetConfig().persist_clusters_in_history_db && !recluster_
+            ? db->GetClusterIdContainingVisit(visit.visit_row.visit_id) > 0
+            : false;
+    if (is_clustered && recent_first_)
+      continuation_params_.exhausted_unclustered_visits = true;
     // Filter out visits from sync.
     // TODO(manukh): Consider allowing the clustering backend to handle sync
     //  visits.
-    const bool is_clustered = db->IsVisitClustered(visit.visit_row.visit_id);
-    if (is_clustered && recent_first_)
-      continuation_params_.exhausted_unclustered_visits = true;
     if (!is_clustered && visit.source != history::SOURCE_SYNCED)
       annotated_visits_.push_back(std::move(visit));
   }
@@ -279,8 +290,9 @@ void GetAnnotatedVisitsToCluster::IncrementContinuationParams(
     // added all visits; e.g. `begin_time_limit_` can be more recent than 90
     // days ago or the initial `continuation_end_time_` could have been older
     // than now.
-    if (continuation_params_.continuation_time <= begin_time_limit_ ||
-        continuation_params_.continuation_time >= now) {
+    if ((continuation_params_.continuation_time <= begin_time_limit_ &&
+         recent_first_) ||
+        (continuation_params_.continuation_time >= now && !recent_first_)) {
       continuation_params_.exhausted_unclustered_visits = true;
       continuation_params_.exhausted_all_visits = true;
     }
@@ -300,8 +312,9 @@ void GetAnnotatedVisitsToCluster::AddClusteredVisits(
 
   // Get the clusters within `days_of_clustered_visits_` days older than the
   // unclustered visits.
-  const auto cluster_ids = db->GetRecentClusterIds(
-      unclustered_begin_time - base::Days(days_of_clustered_visits_));
+  const auto cluster_ids = db->GetMostRecentClusterIds(
+      unclustered_begin_time - base::Days(days_of_clustered_visits_),
+      unclustered_begin_time, 1000);
 
   // If we found a cluster and are iterating recent_first_, then we've reached
   // the cluster threshold and have no more unclustered visits remaining.

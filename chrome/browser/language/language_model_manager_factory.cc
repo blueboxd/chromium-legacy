@@ -10,10 +10,8 @@
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/language/content/browser/geo_language_model.h"
 #include "components/language/content/browser/geo_language_provider.h"
@@ -33,6 +31,8 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/language/android/language_bridge.h"
+
+using language::ULPMetricsLogger;
 #endif
 
 namespace {
@@ -48,12 +48,13 @@ void RecordULPInitMetrics(Profile* profile,
   PrefService* pref_service = profile->GetPrefs();
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   logger.RecordInitiationUILanguageInULP(
-      logger.DetermineLanguageStatus(app_locale, ulp_languages));
+      ULPMetricsLogger::DetermineLanguageStatus(app_locale, ulp_languages));
 
   const std::string target_language =
       translate::TranslatePrefs(pref_service).GetRecentTargetLanguage();
   logger.RecordInitiationTranslateTargetInULP(
-      logger.DetermineLanguageStatus(target_language, ulp_languages));
+      ULPMetricsLogger::DetermineLanguageStatus(target_language,
+                                                ulp_languages));
 
   std::vector<std::string> accept_languages;
   language::LanguagePrefs(pref_service)
@@ -62,17 +63,17 @@ void RecordULPInitMetrics(Profile* profile,
   language::ULPLanguageStatus accept_language_status =
       language::ULPLanguageStatus::kLanguageEmpty;
   if (accept_languages.size() > 0) {
-    accept_language_status =
-        logger.DetermineLanguageStatus(accept_languages[0], ulp_languages);
+    accept_language_status = ULPMetricsLogger::DetermineLanguageStatus(
+        accept_languages[0], ulp_languages);
   }
   logger.RecordInitiationTopAcceptLanguageInULP(accept_language_status);
 
   logger.RecordInitiationAcceptLanguagesULPOverlap(
-      logger.ULPLanguagesInAcceptLanguagesRatio(accept_languages,
-                                                ulp_languages));
+      ULPMetricsLogger::ULPLanguagesInAcceptLanguagesRatio(accept_languages,
+                                                           ulp_languages));
 
   std::vector<std::string> never_languages_not_in_ulp =
-      logger.RemoveULPLanguages(
+      ULPMetricsLogger::RemoveULPLanguages(
           translate::TranslatePrefs(pref_service).GetNeverTranslateLanguages(),
           ulp_languages);
   logger.RecordInitiationNeverLanguagesMissingFromULP(
@@ -147,9 +148,10 @@ LanguageModelManagerFactory::GetForBrowserContext(
 }
 
 LanguageModelManagerFactory::LanguageModelManagerFactory()
-    : BrowserContextKeyedServiceFactory(
+    : ProfileKeyedServiceFactory(
           "LanguageModelManager",
-          BrowserContextDependencyManager::GetInstance()) {}
+          // Use the original profile's language model even in Incognito mode.
+          ProfileSelections::BuildRedirectedInIncognito()) {}
 
 LanguageModelManagerFactory::~LanguageModelManagerFactory() {}
 
@@ -160,10 +162,4 @@ KeyedService* LanguageModelManagerFactory::BuildServiceInstanceFor(
       profile->GetPrefs(), g_browser_process->GetApplicationLocale());
   PrepareLanguageModels(profile, manager);
   return manager;
-}
-
-content::BrowserContext* LanguageModelManagerFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  // Use the original profile's language model even in Incognito mode.
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }

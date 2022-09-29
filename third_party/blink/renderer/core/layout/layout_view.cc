@@ -344,8 +344,7 @@ void LayoutView::UpdateLayout() {
   }
 
   if (PageLogicalHeight() && ShouldUsePrintingLayout()) {
-    if (RuntimeEnabledFeatures::NamedPagesEnabled())
-      named_pages_mapper_ = std::make_unique<NamedPagesMapper>();
+    named_pages_mapper_ = std::make_unique<NamedPagesMapper>();
     intrinsic_logical_widths_ = LogicalWidth();
     if (!fragmentation_context_) {
       fragmentation_context_ =
@@ -659,7 +658,8 @@ void LayoutView::CalculateScrollbarModes(
   Document& document = GetDocument();
   if (Node* body = document.body()) {
     // Framesets can't scroll.
-    if (body->GetLayoutObject() && body->GetLayoutObject()->IsFrameSet())
+    if (body->GetLayoutObject() &&
+        body->GetLayoutObject()->IsFrameSetIncludingNG())
       RETURN_SCROLLBAR_MODE(mojom::blink::ScrollbarMode::kAlwaysOff);
   }
 

@@ -369,10 +369,11 @@ WebViewImpl::WebViewImpl(const std::string& id,
   // Child WebViews should not have their own navigation_tracker, but defer
   // all related calls to their parent. All WebViews must have either parent_
   // or navigation_tracker_
-  if (!parent_)
+  if (!parent_) {
     navigation_tracker_ = std::unique_ptr<PageLoadStrategy>(
         PageLoadStrategy::Create(page_load_strategy, client_.get(), this,
                                  browser_info, dialog_manager_.get()));
+  }
   client_->SetOwner(this);
 }
 
@@ -388,11 +389,8 @@ WebViewImpl* WebViewImpl::CreateChild(const std::string& session_id,
   // hierarchy for DevToolsClientImpl is flat - there's a root which
   // sends/receives over the socket, and all child sessions are considered
   // its children (one level deep at most).
-  DevToolsClientImpl* root_client =
-      static_cast<DevToolsClientImpl*>(client_.get()->GetRootClient());
-  std::unique_ptr<DevToolsClient> child_client(
-      std::make_unique<DevToolsClientImpl>(session_id, session_id,
-                                           root_client));
+  std::unique_ptr<DevToolsClientImpl> child_client =
+      std::make_unique<DevToolsClientImpl>(session_id, session_id);
   WebViewImpl* child = new WebViewImpl(
       target_id, w3c_compliant_, this, browser_info_, std::move(child_client),
       nullptr,
@@ -418,11 +416,35 @@ bool WebViewImpl::WasCrashed() {
 }
 
 Status WebViewImpl::ConnectIfNecessary() {
+  // The root client must never be IsNull as it has an instance of socket_.
+  // The child client can be IsNull but, by definition, the view has a parent.
+  DCHECK(!client_->IsNull() || parent_ != nullptr);
+  if (client_->IsNull() && parent_ == nullptr) {
+    return Status{kUnknownError, "Root WebView cannot be IsNull"};
+  }
+
+  if (parent_ != nullptr && client_->IsNull()) {
+    DevToolsClientImpl* root_client = static_cast<DevToolsClientImpl*>(
+        parent_->client_.get()->GetRootClient());
+    DevToolsClientImpl* client =
+        static_cast<DevToolsClientImpl*>(client_.get());
+    Status status = client->AttachTo(root_client);
+    if (status.IsError()) {
+      return status;
+    }
+  }
+  DCHECK(!client_->IsNull());
   return client_->ConnectIfNecessary();
 }
 
-Status WebViewImpl::SetUpDevTools() {
-  return client_->SetUpDevTools();
+Status WebViewImpl::AttachTo(DevToolsClient* parent) {
+  return static_cast<DevToolsClientImpl*>(client_.get())
+      ->AttachTo(static_cast<DevToolsClientImpl*>(parent));
+}
+
+Status WebViewImpl::HandleEventsUntil(const ConditionalFunc& conditional_func,
+                                      const Timeout& timeout) {
+  return client_->HandleEventsUntil(conditional_func, timeout);
 }
 
 Status WebViewImpl::HandleReceivedEvents() {
@@ -593,6 +615,12 @@ Status WebViewImpl::EvaluateScriptWithTimeout(
   Status status = GetContextIdForFrame(this, frame, &context_id);
   if (status.IsError())
     return status;
+  // If the target associated with the current view or its ancestor is detached
+  // during the script execution we don't want deleting the current WebView
+  // because we are executing the code in its method.
+  // Instead we lock the WebView with target holder and only label the view as
+  // detached.
+  WebViewImplHolder target_holder(this);
   return internal::EvaluateScriptAndGetValue(
       client_.get(), context_id, expression, timeout, awaitPromise, result);
 }
@@ -608,7 +636,7 @@ Status WebViewImpl::EvaluateScript(const std::string& frame,
 Status WebViewImpl::CallFunctionWithTimeout(
     const std::string& frame,
     const std::string& function,
-    const base::ListValue& args,
+    const base::Value::List& args,
     const base::TimeDelta& timeout,
     std::unique_ptr<base::Value>* result) {
   std::string json;
@@ -631,7 +659,7 @@ Status WebViewImpl::CallFunctionWithTimeout(
 
 Status WebViewImpl::CallFunction(const std::string& frame,
                                  const std::string& function,
-                                 const base::ListValue& args,
+                                 const base::Value::List& args,
                                  std::unique_ptr<base::Value>* result) {
   // Timeout set to Max is treated as no timeout.
   return CallFunctionWithTimeout(frame, function, args, base::TimeDelta::Max(),
@@ -640,7 +668,7 @@ Status WebViewImpl::CallFunction(const std::string& frame,
 
 Status WebViewImpl::CallAsyncFunction(const std::string& frame,
                                       const std::string& function,
-                                      const base::ListValue& args,
+                                      const base::Value::List& args,
                                       const base::TimeDelta& timeout,
                                       std::unique_ptr<base::Value>* result) {
   return CallAsyncFunctionInternal(
@@ -649,10 +677,10 @@ Status WebViewImpl::CallAsyncFunction(const std::string& frame,
 
 Status WebViewImpl::CallUserSyncScript(const std::string& frame,
                                        const std::string& script,
-                                       const base::ListValue& args,
+                                       const base::Value::List& args,
                                        const base::TimeDelta& timeout,
                                        std::unique_ptr<base::Value>* result) {
-  base::ListValue sync_args;
+  base::Value::List sync_args;
   sync_args.Append(script);
   // Clone needed since Append only accepts Value as an rvalue.
   sync_args.Append(args.Clone());
@@ -663,7 +691,7 @@ Status WebViewImpl::CallUserSyncScript(const std::string& frame,
 Status WebViewImpl::CallUserAsyncFunction(
     const std::string& frame,
     const std::string& function,
-    const base::ListValue& args,
+    const base::Value::List& args,
     const base::TimeDelta& timeout,
     std::unique_ptr<base::Value>* result) {
   return CallAsyncFunctionInternal(
@@ -672,7 +700,7 @@ Status WebViewImpl::CallUserAsyncFunction(
 
 Status WebViewImpl::GetFrameByFunction(const std::string& frame,
                                        const std::string& function,
-                                       const base::ListValue& args,
+                                       const base::Value::List& args,
                                        std::string* out_frame) {
   WebViewImpl* target = GetTargetForFrame(this, frame);
   if (target != nullptr && target != this) {
@@ -734,16 +762,18 @@ Status WebViewImpl::DispatchTouchEventsForMouseEvents(
         break;
     }
 
-    std::unique_ptr<base::ListValue> touchPoints(new base::ListValue);
+    base::Value::List touchPoints;
     if (it->type != kReleasedMouseEventType) {
       std::unique_ptr<base::DictionaryValue> touchPoint(
           new base::DictionaryValue);
       touchPoint->GetDict().Set("x", it->x);
       touchPoint->GetDict().Set("y", it->y);
-      touchPoints->Append(
+      touchPoints.Append(
           base::Value::FromUniquePtrValue(std::move(touchPoint)));
     }
-    params.SetList("touchPoints", std::move(touchPoints));
+    params.SetList("touchPoints",
+                   base::ListValue::From(
+                       std::make_unique<base::Value>(std::move(touchPoints))));
     params.GetDict().Set("modifiers", it->modifiers);
     Status status = client_->SendCommand("Input.dispatchTouchEvent", params);
     if (status.IsError())
@@ -800,7 +830,7 @@ Status WebViewImpl::DispatchTouchEvent(const TouchEvent& event,
   base::DictionaryValue params;
   std::string type = GetAsString(event.type);
   params.GetDict().Set("type", type);
-  base::ListValue point_list;
+  base::Value::List point_list;
   Status status(kOk);
   if (type == "touchStart" || type == "touchMove") {
     std::unique_ptr<base::DictionaryValue> point = GenerateTouchPoint(event);
@@ -838,7 +868,7 @@ Status WebViewImpl::DispatchTouchEventWithMultiPoints(
   Status status(kOk);
   size_t touch_count = 1;
   for (const TouchEvent& event : events) {
-    base::ListValue point_list;
+    base::Value::List point_list;
     int32_t current_time =
         (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds();
     params.GetDict().Set("timestamp", current_time);
@@ -926,9 +956,11 @@ Status WebViewImpl::DispatchKeyEvents(const std::vector<KeyEvent>& events,
           command = "Undo";
       }
 
-      std::unique_ptr<base::ListValue> command_list(new base::ListValue);
-      command_list->Append(command);
-      params.SetList("commands", std::move(command_list));
+      base::Value::List command_list;
+      command_list.Append(command);
+      params.SetList("commands",
+                     base::ListValue::From(std::make_unique<base::Value>(
+                         std::move(command_list))));
     }
 
     if (it->location != 0) {
@@ -961,7 +993,7 @@ Status WebViewImpl::GetCookies(base::Value* cookies,
   base::DictionaryValue result;
 
   if (browser_info_->browser_name != "webview") {
-    base::ListValue url_list;
+    base::Value::List url_list;
     url_list.Append(current_page_url);
     params.GetDict().Set("urls", url_list.Clone());
     Status status =
@@ -1041,6 +1073,11 @@ Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,
   const auto not_pending_navigation = base::BindRepeating(
       &WebViewImpl::IsNotPendingNavigation, base::Unretained(this), frame_id,
       base::Unretained(&timeout));
+  // If the target associated with the current view or its ancestor is detached
+  // while we are waiting for the pending navigation we don't want deleting the
+  // current WebView because we are executing the code in its method. Instead we
+  // lock the WebView with target holder and only label the view as detached.
+  WebViewImplHolder target_holder(this);
   Status status = client_->HandleEventsUntil(not_pending_navigation, timeout);
   if (status.code() == kTimeout && stop_load_on_timeout) {
     VLOG(0) << "Timed out. Stopping navigation...";
@@ -1142,7 +1179,7 @@ Status WebViewImpl::GetBackendNodeIdByElement(const std::string& frame,
   Status status = GetContextIdForFrame(this, frame, &context_id);
   if (status.IsError())
     return status;
-  base::ListValue args;
+  base::Value::List args;
   args.Append(element.Clone());
   bool found_node = false;
   status = internal::GetBackendNodeIdFromFunction(
@@ -1174,7 +1211,7 @@ Status WebViewImpl::SetFileInputFiles(const std::string& frame,
   if (status.IsError())
     return status;
 
-  base::ListValue file_list;
+  base::Value::List file_list;
   // if the append flag is true, we need to retrieve the files that
   // already exist in the element and add them too.
   // Additionally, we need to add the old files first so that it looks
@@ -1355,11 +1392,11 @@ Status WebViewImpl::SynthesizeScrollGesture(int x,
 Status WebViewImpl::CallAsyncFunctionInternal(
     const std::string& frame,
     const std::string& function,
-    const base::ListValue& args,
+    const base::Value::List& args,
     bool is_user_supplied,
     const base::TimeDelta& timeout,
     std::unique_ptr<base::Value>* result) {
-  base::ListValue async_args;
+  base::Value::List async_args;
   async_args.Append("return (" + function + ").apply(null, arguments);");
   async_args.Append(args.Clone());
   async_args.Append(is_user_supplied);
@@ -1387,7 +1424,7 @@ Status WebViewImpl::CallAsyncFunctionInternal(
   const base::TimeDelta kOneHundredMs = base::Milliseconds(100);
 
   while (true) {
-    base::ListValue no_args;
+    base::Value::List no_args;
     std::unique_ptr<base::Value> query_value;
     status = CallFunction(frame, kQueryResult, no_args, &query_value);
     if (status.IsError()) {
@@ -1655,7 +1692,7 @@ Status ParseCallFunctionResult(const base::Value& temp_result,
 Status GetBackendNodeIdFromFunction(DevToolsClient* client,
                                     const std::string& context_id,
                                     const std::string& function,
-                                    const base::ListValue& args,
+                                    const base::Value::List& args,
                                     bool* found_node,
                                     int* backend_node_id,
                                     bool w3c_compliant) {
@@ -1720,7 +1757,7 @@ Status GetBackendNodeIdFromFunction(DevToolsClient* client,
 Status GetFrameIdFromFunction(DevToolsClient* client,
                               const std::string& context_id,
                               const std::string& function,
-                              const base::ListValue& args,
+                              const base::Value::List& args,
                               bool* found_node,
                               std::string* frame_id,
                               bool w3c_compliant) {

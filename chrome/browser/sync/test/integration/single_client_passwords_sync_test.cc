@@ -25,7 +25,7 @@
 #include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/engine/cycle/entity_change_metric_recording.h"
 #include "components/sync/nigori/cryptographer_impl.h"
-#include "components/sync/test/fake_server/fake_server_nigori_helper.h"
+#include "components/sync/test/fake_server_nigori_helper.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_launcher.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -119,6 +119,21 @@ class SingleClientPasswordsSyncTestWithBaseSpecificsInMetadataAndNotes
   }
   ~SingleClientPasswordsSyncTestWithBaseSpecificsInMetadataAndNotes() override =
       default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+class SingleClientPasswordsSyncTestWithCachingSpecificsEnabledAfterRestart
+    : public SyncTest {
+ public:
+  SingleClientPasswordsSyncTestWithCachingSpecificsEnabledAfterRestart()
+      : SyncTest(SINGLE_CLIENT) {
+    feature_list_.InitWithFeatureState(
+        syncer::kCacheBaseEntitySpecificsInMetadata, GetTestPreCount() == 0);
+  }
+  ~SingleClientPasswordsSyncTestWithCachingSpecificsEnabledAfterRestart()
+      override = default;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -759,6 +774,54 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_EQ("new note value", decrypted_note.value());
     EXPECT_EQ(kUnsupportedNoteField, decrypted_note.unknown_fields());
   }
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientPasswordsSyncTestWithCachingSpecificsEnabledAfterRestart,
+    PRE_PasswordBridgeIgnoresEntriesWithoutCachedBaseSpecificOnRestart) {
+  // Disabled by the test fixture.
+  ASSERT_FALSE(base::FeatureList::IsEnabled(
+      syncer::kCacheBaseEntitySpecificsInMetadata));
+
+  // Add password entity with caching entity specifics disabled in the PRE test.
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  PasswordForm form = CreateTestPasswordForm(0);
+  GetProfilePasswordStoreInterface(0)->AddLogin(form);
+  ASSERT_EQ(1, GetPasswordCount(0));
+
+  // Setup sync, wait for its completion, and make sure changes were synced.
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+}
+
+// Regression test for crrev.com/c/3755526. Checks that password bridge ignores
+// entries without a password field in entity specifics cache (added by the PRE
+// test with `syncer::kCacheBaseEntitySpecificsInMetadata` disabled).
+IN_PROC_BROWSER_TEST_F(
+    SingleClientPasswordsSyncTestWithCachingSpecificsEnabledAfterRestart,
+    PasswordBridgeIgnoresEntriesWithoutCachedBaseSpecificOnRestart) {
+  // Enabled by the test fixture.
+  ASSERT_TRUE(base::FeatureList::IsEnabled(
+      syncer::kCacheBaseEntitySpecificsInMetadata));
+
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  ASSERT_EQ(1, GetPasswordCount(0));
+  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
+
+  // After restart, the last sync cycle snapshot should be empty. Once a sync
+  // request happened (e.g. by a poll), that snapshot is populated. We use the
+  // following checker to simply wait for an non-empty snapshot.
+  EXPECT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+
+  // The original metric is defined in password_sync_bridge.cc.
+  const int kNone = 0;
+  // Since the local base entity specifics cache doesn't contain supported
+  // fields, running into the initial sync flow is not expected. Since the
+  // bridge is initialized for both account and profile store, the metric is
+  // expected to be recorded twice.
+  histogram_tester.ExpectUniqueSample("PasswordManager.SyncMetadataReadError",
+                                      kNone, /*expected_bucket_count=*/2);
 }
 
 }  // namespace

@@ -6,6 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PAUSABLE_SCRIPT_EXECUTOR_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/mojom/script/script_evaluation_params.mojom-blink.h"
+#include "third_party/blink/public/web/web_script_execution_callback.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
@@ -20,21 +22,18 @@ namespace blink {
 
 class LocalDOMWindow;
 class ScriptState;
-class WebScriptExecutionCallback;
 
 class CORE_EXPORT PausableScriptExecutor final
     : public GarbageCollected<PausableScriptExecutor>,
       public ExecutionContextLifecycleObserver {
  public:
-  enum BlockingOption { kNonBlocking, kOnloadBlocking };
-
   static void CreateAndRun(LocalDOMWindow*,
                            v8::Local<v8::Context>,
                            v8::Local<v8::Function>,
                            v8::Local<v8::Value> receiver,
                            int argc,
                            v8::Local<v8::Value> argv[],
-                           WebScriptExecutionCallback*);
+                           WebScriptExecutionCallback);
 
   class Executor : public GarbageCollected<Executor> {
    public:
@@ -48,21 +47,22 @@ class CORE_EXPORT PausableScriptExecutor final
   PausableScriptExecutor(LocalDOMWindow*,
                          scoped_refptr<DOMWrapperWorld>,
                          Vector<WebScriptSource>,
-                         bool,
-                         WebScriptExecutionCallback*);
+                         mojom::blink::UserActivationOption,
+                         WebScriptExecutionCallback);
   PausableScriptExecutor(LocalDOMWindow*,
                          ScriptState*,
-                         WebScriptExecutionCallback*,
+                         WebScriptExecutionCallback,
                          Executor*);
   ~PausableScriptExecutor() override;
 
   void Run();
-  void RunAsync(BlockingOption);
+  void RunAsync(mojom::blink::LoadEventBlockingOption);
   void ContextDestroyed() override;
 
   void Trace(Visitor*) const override;
 
-  void set_wait_for_promise(bool wait_for_promise) {
+  void set_wait_for_promise(
+      mojom::blink::PromiseResultOption wait_for_promise) {
     wait_for_promise_ = wait_for_promise;
   }
 
@@ -74,15 +74,17 @@ class CORE_EXPORT PausableScriptExecutor final
   void HandleResults(const Vector<v8::Local<v8::Value>>& results);
 
   Member<ScriptState> script_state_;
-  WebScriptExecutionCallback* callback_;
-  BlockingOption blocking_option_;
+  WebScriptExecutionCallback callback_;
+  base::TimeTicks start_time_;
+  mojom::blink::LoadEventBlockingOption blocking_option_;
   TaskHandle task_handle_;
 
   Member<Executor> executor_;
 
   // Whether to wait for a promise to resolve, if the executed script evaluates
   // to a promise.
-  bool wait_for_promise_ = false;
+  mojom::blink::PromiseResultOption wait_for_promise_ =
+      mojom::blink::PromiseResultOption::kDoNotWait;
 
   // A keepalive used when waiting on promises to settle.
   SelfKeepAlive<PausableScriptExecutor> keep_alive_;

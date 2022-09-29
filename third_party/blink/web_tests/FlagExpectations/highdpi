@@ -237,6 +237,7 @@ external/wpt/css/css-break/out-of-flow-in-multicolumn-082.html [ Pass ]
 external/wpt/css/css-break/flexbox/button-in-multicol-crash.html [ Pass ]
 external/wpt/css/css-break/grid/grid-item-fragmentation-023.html [ Pass ]
 external/wpt/css/css-break/parsing/widows-invalid.html [ Pass ]
+external/wpt/css/css-break/table/table-cell-expansion-003.html [ Pass ]
 external/wpt/css/css-cascade/revert-layer-010.html [ Pass ]
 external/wpt/css/css-cascade/parsing/layer-import-parsing.html [ Pass ]
 external/wpt/css/css-color/rgb-003.html [ Pass ]
@@ -1308,7 +1309,6 @@ virtual/text-antialias/whitespace/024.html [ Pass ]
 virtual/text-antialias/whitespace/025.html [ Pass ]
 virtual/text-antialias/whitespace/nowrap-clear-float.html [ Pass ]
 virtual/text-antialias/whitespace/pre-newline-box-test.html [ Pass ]
-virtual/layout_ng_table_frag/external/wpt/css/css-break/table/table-cell-expansion-003.html [ Pass ]
 virtual/threaded-composited-iframes/external/wpt/is-input-pending/tentative/same-origin-subframe.sub.html [ Pass ]
 virtual/threaded/external/wpt/requestidlecallback/basic.html [ Pass ]
 
@@ -1378,6 +1378,7 @@ crbug.com/1295281 virtual/document-transition/wpt_internal/document-transition/n
 crbug.com/1329180 virtual/document-transition/wpt_internal/document-transition/new-and-old-sizes-match.html [ Failure ]
 crbug.com/1295280 virtual/document-transition/wpt_internal/document-transition/old-content-with-overflow-zoomed.html [ Failure ]
 crbug.com/1295280 virtual/document-transition/wpt_internal/document-transition/new-content-with-overflow-zoomed.html [ Failure ]
+crbug.com/1351422 virtual/document-transition/wpt_internal/document-transition/content-visibility-auto-shared-element.html [ Failure ]
 
 crbug.com/1314903 external/wpt/css/css-sizing/contain-intrinsic-size/animation/contain-intrinsic-size-interpolation.html [ Failure ]
 

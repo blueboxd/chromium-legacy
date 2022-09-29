@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//chrome/common/chromeos/extensions/api/api_sources.gni")
 import("//chrome/common/features.gni")
 import("//extensions/buildflags/buildflags.gni")
@@ -33,10 +34,8 @@ source_set("api") {
   ]
 
   deps = [
-    "//ash/webui/telemetry_extension_ui/mojom",
-    "//ash/webui/telemetry_extension_ui/services:telemetry_services",
     "//base",
-    "//chrome/browser/ash/telemetry_extension",
+    "//build:chromeos_buildflags",
     "//chrome/browser/extensions",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/ui",
@@ -51,6 +50,22 @@ source_set("api") {
     "//extensions/common",
     "//url",
   ]
+
+  if (is_chromeos_ash) {
+    deps += [
+      "//chrome/browser/ash/crosapi",
+      "//chrome/browser/ash/telemetry_extension",
+      "//components/user_manager",
+    ]
+  }
+
+  if (is_chromeos_lacros) {
+    deps += [
+      "//chromeos/lacros",
+      "//chromeos/startup",
+      "//components/policy/core/common",
+    ]
+  }
 }
 
 function_registration("api_registration") {
@@ -78,6 +93,10 @@ source_set("browser_tests") {
     "diagnostics_api_browsertest.cc",
     "fake_api_guard_delegate.cc",
     "fake_api_guard_delegate.h",
+    "fake_diagnostics_service.cc",
+    "fake_diagnostics_service.h",
+    "fake_probe_service.cc",
+    "fake_probe_service.h",
     "telemetry_api_browsertest.cc",
     "telemetry_extension_capabilities_browser_test.cc",
   ]
@@ -85,17 +104,11 @@ source_set("browser_tests") {
   deps = [
     ":api",
     ":fake_hardware_info_delegate",
-    "//ash/webui/telemetry_extension_ui/services:telemetry_services",
-    "//ash/webui/telemetry_extension_ui/services:telemetry_services_test",
     "//base",
-    "//chrome/browser/ash/telemetry_extension",
-    "//chrome/browser/ash/telemetry_extension:test_support",
-    "//chrome/browser/ash/wilco_dtc_supportd:mojo_utils",
     "//chrome/common/chromeos/extensions",
     "//chrome/test:test_support",
     "//chromeos/crosapi/mojom",
-    "//chromeos/dbus",
-    "//chromeos/dbus/debug_daemon",
+    "//chromeos/startup",
     "//components/user_manager",
     "//content/test:test_support",
     "//extensions:test_support",
@@ -104,8 +117,29 @@ source_set("browser_tests") {
     "//extensions/common",
     "//net",
     "//net:test_support",
+    "//testing/gtest",
     "//url",
   ]
+
+  data = [ "//chrome/test/data" ]
+
+  if (is_chromeos_ash) {
+    sources += [
+      "fake_diagnostics_service_factory.cc",
+      "fake_diagnostics_service_factory.h",
+      "fake_probe_service_factory.cc",
+      "fake_probe_service_factory.h",
+    ]
+
+    deps += [
+      "//chrome/browser/ash/telemetry_extension",
+      "//chrome/browser/ash/wilco_dtc_supportd:mojo_utils",
+    ]
+  }
+
+  if (is_chromeos_lacros) {
+    deps += [ "//chromeos/lacros" ]
+  }
 }
 
 source_set("unit_tests") {
@@ -117,11 +151,11 @@ source_set("unit_tests") {
 
   deps = [
     ":api",
-    "//ash/webui/telemetry_extension_ui/mojom",
     "//base",
     "//chrome/common/chromeos/extensions/api",
     "//chrome/test:test_support",
     "//chromeos/crosapi/mojom",
+    "//testing/gtest",
   ]
 }
 

@@ -290,7 +290,8 @@ ParseSheetResult CSSParserImpl::ParseStyleSheet(
     const CSSParserContext* context,
     StyleSheetContents* style_sheet,
     CSSDeferPropertyParsing defer_property_parsing,
-    bool allow_import_rules) {
+    bool allow_import_rules,
+    std::unique_ptr<CachedCSSTokenizer> cached_tokenizer) {
   absl::optional<LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer> timer;
   if (context->GetDocument() && context->GetDocument()->View()) {
     timer.emplace(
@@ -303,8 +304,15 @@ ParseSheetResult CSSParserImpl::ParseStyleSheet(
 
   TRACE_EVENT_BEGIN0("blink,blink_style",
                      "CSSParserImpl::parseStyleSheet.parse");
-  CSSTokenizer tokenizer(string);
-  CSSParserTokenStream stream(tokenizer);
+  absl::optional<CSSTokenizerWrapper> tokenizer;
+  absl::optional<CSSTokenizer> uncached_tokenizer;
+  if (cached_tokenizer) {
+    tokenizer.emplace(*cached_tokenizer);
+  } else {
+    uncached_tokenizer.emplace(string);
+    tokenizer.emplace(*uncached_tokenizer);
+  }
+  CSSParserTokenStream stream(*tokenizer);
   CSSParserImpl parser(context, style_sheet);
   if (defer_property_parsing == CSSDeferPropertyParsing::kYes) {
     parser.lazy_state_ = MakeGarbageCollected<CSSLazyParsingState>(
@@ -329,14 +337,16 @@ ParseSheetResult CSSParserImpl::ParseStyleSheet(
   TRACE_EVENT_END0("blink,blink_style", "CSSParserImpl::parseStyleSheet.parse");
 
   TRACE_EVENT_END2("blink,blink_style", "CSSParserImpl::parseStyleSheet",
-                   "tokenCount", tokenizer.TokenCount(), "length",
+                   "tokenCount", tokenizer->TokenCount(), "length",
                    string.length());
   return result;
 }
 
+// static
 CSSSelectorList CSSParserImpl::ParsePageSelector(
     CSSParserTokenRange range,
-    StyleSheetContents* style_sheet) {
+    StyleSheetContents* style_sheet,
+    const CSSParserContext& context) {
   // We only support a small subset of the css-page spec.
   range.ConsumeWhitespace();
   AtomicString type_selector;
@@ -363,7 +373,7 @@ CSSSelectorList CSSParserImpl::ParsePageSelector(
     selector = std::make_unique<CSSParserSelector>();
     if (!pseudo.IsNull()) {
       selector->SetMatch(CSSSelector::kPagePseudoClass);
-      selector->UpdatePseudoPage(pseudo.LowerASCII());
+      selector->UpdatePseudoPage(pseudo.LowerASCII(), context.GetDocument());
       if (selector->GetPseudoType() == CSSSelector::kPseudoUnknown)
         return CSSSelectorList();
     }
@@ -991,7 +1001,8 @@ StyleRulePage* CSSParserImpl::ConsumePageRule(CSSParserTokenStream& stream) {
     return nullptr;
   CSSParserTokenStream::BlockGuard guard(stream);
 
-  CSSSelectorList selector_list = ParsePageSelector(prelude, style_sheet_);
+  CSSSelectorList selector_list =
+      ParsePageSelector(prelude, style_sheet_, *context_);
   if (!selector_list.IsValid())
     return nullptr;  // Parse error, invalid @page selector
 
@@ -1569,13 +1580,14 @@ bool CSSParserImpl::RemoveImportantAnnotationIfPresent(
       tokenized_value.range = tokenized_value.range.MakeSubRange(first, last);
 
       // Truncate the text to remove the delimiter and everything after it.
-      DCHECK_NE(tokenized_value.text.ToString().find('!'), kNotFound);
-      unsigned truncated_length = tokenized_value.text.length() - 1;
-      while (tokenized_value.text[truncated_length] != '!')
-        --truncated_length;
-      tokenized_value.text =
-          StringView(tokenized_value.text, 0, truncated_length);
-
+      if (!tokenized_value.text.IsEmpty()) {
+        DCHECK_NE(tokenized_value.text.ToString().find('!'), kNotFound);
+        unsigned truncated_length = tokenized_value.text.length() - 1;
+        while (tokenized_value.text[truncated_length] != '!')
+          --truncated_length;
+        tokenized_value.text =
+            StringView(tokenized_value.text, 0, truncated_length);
+      }
       return true;
     }
   }

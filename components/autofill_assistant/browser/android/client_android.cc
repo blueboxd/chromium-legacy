@@ -18,6 +18,7 @@
 #include "base/json/json_writer.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/time/default_tick_clock.h"
+#include "components/autofill_assistant/android/jni_headers/AssistantParseSingleTagXmlUtilWrapper_jni.h"
 #include "components/autofill_assistant/android/jni_headers/AutofillAssistantClient_jni.h"
 #include "components/autofill_assistant/android/jni_headers/AutofillAssistantDirectActionImpl_jni.h"
 #include "components/autofill_assistant/browser/android/ui_controller_android_utils.h"
@@ -41,6 +42,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
 
+using ::base::android::AppendJavaStringArrayToStringVector;
 using ::base::android::AttachCurrentThread;
 using ::base::android::ConvertJavaStringToUTF8;
 using ::base::android::ConvertUTF8ToJavaString;
@@ -48,12 +50,20 @@ using ::base::android::JavaParamRef;
 using ::base::android::JavaRef;
 using ::base::android::ScopedJavaGlobalRef;
 using ::base::android::ScopedJavaLocalRef;
+using ::base::android::ToJavaArrayOfStrings;
 
 namespace autofill_assistant {
 namespace {
 
+// Experiment for "Data Input via QR Code Scanning". This is an Experiment id
+// which is passed as part of the script parameters and is used to indicate
+// whether QR Code Scan can be used for data input.
+const char kDataInputViaQrCodeScanningExperiment[] = "4835818";
+
 // Strings for Synthetic Field Trials.
 const char kAutofillAssistantTtsTrialName[] = "AutofillAssistantEnableTtsParam";
+const char kAutofillAssistantQrCodeScanningTrialName[] =
+    "AutofillAssistantQrCodeScanning";
 const char kEnabledGroupName[] = "Enabled";
 const char kDisabledGroupName[] = "Disabled";
 
@@ -167,6 +177,16 @@ void ClientAndroid::Start(
       ->RegisterSyntheticFieldTrial(
           kAutofillAssistantTtsTrialName,
           enable_tts ? kEnabledGroupName : kDisabledGroupName);
+
+  // Register QR Code Scanning Synthetic Field Trial.
+  const bool can_use_qr_code_scanning =
+      trigger_context->GetScriptParameters().HasExperimentId(
+          kDataInputViaQrCodeScanningExperiment);
+  dependencies_->GetCommonDependencies()
+      ->CreateFieldTrialUtil()
+      ->RegisterSyntheticFieldTrial(
+          kAutofillAssistantQrCodeScanningTrialName,
+          can_use_qr_code_scanning ? kEnabledGroupName : kDisabledGroupName);
 
   DCHECK(!trigger_context->GetDirectAction());
   if (VLOG_IS_ON(2)) {
@@ -628,6 +648,28 @@ void ClientAndroid::GetAnnotateDomModelVersion(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+bool ClientAndroid::IsXmlSigned(const std::string& xml_string) const {
+  JNIEnv* env = AttachCurrentThread();
+  jboolean j_output = Java_AssistantParseSingleTagXmlUtilWrapper_isXmlSigned(
+      env, ConvertUTF8ToJavaString(env, xml_string));
+
+  return (j_output == JNI_TRUE);
+}
+
+const std::vector<std::string> ClientAndroid::ExtractValuesFromSingleTagXml(
+    const std::string& xml_string,
+    const std::vector<std::string>& keys) const {
+  JNIEnv* env = AttachCurrentThread();
+  auto j_output_values =
+      Java_AssistantParseSingleTagXmlUtilWrapper_extractValuesFromSingleTagXml(
+          env, ConvertUTF8ToJavaString(env, xml_string),
+          ToJavaArrayOfStrings(env, std::move(keys)));
+
+  std::vector<std::string> output_values;
+  AppendJavaStringArrayToStringVector(env, j_output_values, &output_values);
+  return output_values;
+}
+
 void ClientAndroid::OnAnnotateDomModelFileAvailable(
     base::OnceCallback<void(absl::optional<int64_t>)> callback,
     bool available) {
@@ -708,7 +750,8 @@ void ClientAndroid::CreateController(
       GetWebContents(), /* client= */ this,
       base::DefaultTickClock::GetInstance(),
       RuntimeManager::GetForWebContents(GetWebContents())->GetWeakPtr(),
-      std::move(service), ukm::UkmRecorder::Get(), annotate_dom_model_service_);
+      std::move(service), /* web_controller= */ nullptr,
+      ukm::UkmRecorder::Get(), annotate_dom_model_service_);
   ui_controller_ = std::make_unique<UiController>(
       /* client= */ this, controller_.get(), std::move(tts_controller));
   ui_controller_->StartListening();
@@ -731,6 +774,17 @@ void ClientAndroid::DestroyController() {
 
 bool ClientAndroid::NeedsUI() {
   return !ui_controller_android_ && controller_ && controller_->NeedsUI();
+}
+
+bool ClientAndroid::GetMakeSearchesAndBrowsingBetterEnabled() const {
+  return dependencies_->GetCommonDependencies()
+      ->GetMakeSearchesAndBrowsingBetterEnabled(
+          GetWebContents()->GetBrowserContext());
+}
+
+bool ClientAndroid::GetMetricsReportingEnabled() const {
+  return dependencies_->GetCommonDependencies()->GetMetricsReportingEnabled(
+      GetWebContents()->GetBrowserContext());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ClientAndroid);

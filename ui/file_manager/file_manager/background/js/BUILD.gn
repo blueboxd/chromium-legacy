@@ -14,10 +14,7 @@ import("//ui/webui/resources/js/cr.gni")
 # document externally-exposed targets visible with this helper, and hide
 # transitive dependencies (but note those transitive dependencies should move
 # elsewhere too).
-related_apps = [
-  "//ui/file_manager/audio_player/*",
-  "//ui/file_manager/file_manager/*",
-]
+related_apps = [ "//ui/file_manager/file_manager/*" ]
 
 group("closure_compile") {
   testonly = true
@@ -87,6 +84,7 @@ js_type_check("closure_compile_jsmodules") {
 
   closure_flags =
       strict_error_checking_closure_args + [
+        "language_in=ECMASCRIPT_2020",
         "js_module_root=./gen/ui",
         "js_module_root=../../ui",
         "browser_resolver_prefix_replacements=\"chrome://webui-test/=./\"",
@@ -108,6 +106,7 @@ js_type_check("test_support_modules_type_check") {
   ]
   closure_flags =
       strict_error_checking_closure_args + [
+        "language_in=ECMASCRIPT_2020",
         "js_module_root=./gen/ui",
         "js_module_root=../../ui",
         "browser_resolver_prefix_replacements=\"chrome://webui-test/=./\"",
@@ -341,6 +340,7 @@ js_library("entry_location_impl") {
 
 js_library("file_operation_handler") {
   deps = [
+    "//ui/file_manager/file_manager/common/js:api",
     "//ui/file_manager/file_manager/common/js:file_operation_common",
     "//ui/file_manager/file_manager/common/js:progress_center_common",
     "//ui/file_manager/file_manager/common/js:util",
@@ -798,6 +798,7 @@ js_test_type_check("js_test_type_check") {
 
   closure_flags =
       strict_error_checking_closure_args + [
+        "language_in=ECMASCRIPT_2020",
         "js_module_root=./gen/ui",
         "js_module_root=../../ui",
         "browser_resolver_prefix_replacements=\"chrome://webui-test/=./\"",

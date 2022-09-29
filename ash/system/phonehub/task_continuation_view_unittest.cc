@@ -13,6 +13,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/events/test/test_event.h"
 #include "ui/views/test/button_test_api.h"
 
 namespace ash {
@@ -24,12 +25,10 @@ using BrowserTabsModel = phonehub::BrowserTabsModel;
 class MockNewWindowDelegate : public testing::NiceMock<TestNewWindowDelegate> {
  public:
   // TestNewWindowDelegate:
-  MOCK_METHOD(void, OpenUrl, (const GURL& url, OpenUrlFrom from), (override));
-};
-
-class DummyEvent : public ui::Event {
- public:
-  DummyEvent() : Event(ui::ET_UNKNOWN, base::TimeTicks(), 0) {}
+  MOCK_METHOD(void,
+              OpenUrl,
+              (const GURL& url, OpenUrlFrom from, Disposition disposition),
+              (override));
 };
 
 }  // namespace
@@ -120,9 +119,10 @@ TEST_F(TaskContinuationViewTest, TaskChipsView) {
     // OpenUrl is expected to call after button pressed simulation.
     EXPECT_CALL(new_window_delegate(),
                 OpenUrl(GURL("https://www.example.com/tab1"),
-                        NewWindowDelegate::OpenUrlFrom::kUserInteraction));
+                        NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+                        NewWindowDelegate::Disposition::kNewForegroundTab));
     // Simulate clicking button using dummy event.
-    views::test::ButtonTestApi(chip).NotifyClick(DummyEvent());
+    views::test::ButtonTestApi(chip).NotifyClick(ui::test::TestEvent());
   }
 }
 

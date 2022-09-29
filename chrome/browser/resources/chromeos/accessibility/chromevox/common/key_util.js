@@ -6,6 +6,8 @@
  * @fileoverview A collection of JavaScript utilities used to simplify working
  * with keyboard events.
  */
+import {KeyCode} from '../../common/key_code.js';
+
 import {KeySequence} from './key_sequence.js';
 import {Msgs} from './msgs.js';
 
@@ -143,9 +145,8 @@ export class KeyUtil {
    */
   static cvoxModKeyCodes() {
     const modKeyCombo = KeySequence.modKeyStr.split(/\+/g);
-    const modKeyCodes = modKeyCombo.map(function(keyString) {
-      return KeyUtil.modStringToKeyCode(keyString);
-    });
+    const modKeyCodes =
+        modKeyCombo.map(keyString => KeyUtil.modStringToKeyCode(keyString));
     return modKeyCodes;
   }
 

@@ -13,17 +13,17 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/client_cert_util.h"
 #include "chromeos/ash/components/network/network_event_log.h"
 #include "chromeos/ash/components/network/network_handler_callbacks.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "dbus/object_path.h"
 #include "net/cert/x509_util_nss.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 // Migrates each network of |networks| with an invalid or missing slot ID in
 // their client certificate configuration.
@@ -47,7 +47,7 @@ class NetworkCertMigrator::MigrationTask
     // Request properties for each network that could be configured with a
     // client certificate.
     for (const NetworkState* network : networks) {
-      if (network->security_class() != shill::kSecurity8021x &&
+      if (network->security_class() != shill::kSecurityClass8021x &&
           network->type() != shill::kTypeVPN &&
           network->type() != shill::kTypeEthernetEap) {
         continue;
@@ -93,17 +93,15 @@ class NetworkCertMigrator::MigrationTask
 
     int configured_slot_id = -1;
     std::string pkcs11_id;
-    chromeos::client_cert::ConfigType config_type =
-        chromeos::client_cert::ConfigType::kNone;
-    chromeos::client_cert::GetClientCertFromShillProperties(
+    client_cert::ConfigType config_type = client_cert::ConfigType::kNone;
+    client_cert::GetClientCertFromShillProperties(
         properties.GetDict(), &config_type, &configured_slot_id, &pkcs11_id);
-    if (config_type == chromeos::client_cert::ConfigType::kNone ||
-        pkcs11_id.empty()) {
+    if (config_type == client_cert::ConfigType::kNone || pkcs11_id.empty()) {
       return result;
     }
 
     // OpenVPN configuration doesn't have a slot id to migrate.
-    if (config_type == chromeos::client_cert::ConfigType::kOpenVpn)
+    if (config_type == client_cert::ConfigType::kOpenVpn)
       return result;
 
     int real_slot_id = -1;
@@ -113,8 +111,7 @@ class NetworkCertMigrator::MigrationTask
       LOG(WARNING) << "No matching cert found, removing the certificate "
                       "configuration from network "
                    << service_path;
-      chromeos::client_cert::SetEmptyShillProperties(config_type,
-                                                     result.GetDict());
+      client_cert::SetEmptyShillProperties(config_type, result.GetDict());
       return result;
     }
     if (real_slot_id == -1) {
@@ -125,8 +122,8 @@ class NetworkCertMigrator::MigrationTask
     if (cert && real_slot_id != configured_slot_id) {
       VLOG(1) << "Network " << service_path
               << " is configured with no or an incorrect slot id.";
-      chromeos::client_cert::SetShillProperties(config_type, real_slot_id,
-                                                pkcs11_id, result.GetDict());
+      client_cert::SetShillProperties(config_type, real_slot_id, pkcs11_id,
+                                      result.GetDict());
     }
     return result;
   }
@@ -218,4 +215,4 @@ void NetworkCertMigrator::OnCertificatesLoaded() {
   NetworkListChanged();
 }
 
-}  // namespace chromeos
+}  // namespace ash

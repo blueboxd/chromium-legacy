@@ -99,16 +99,16 @@ base::Value DefaultManifest() {
 void CheckVideoCodecs(const media::CdmCapability::VideoCodecMap& actual,
                       const std::vector<media::VideoCodec>& expected) {
   EXPECT_EQ(expected.size(), actual.size());
-  for (const auto& codec : actual) {
-    EXPECT_TRUE(base::Contains(expected, codec.first));
+  for (const auto& [video_codec, video_codec_info] : actual) {
+    EXPECT_TRUE(base::Contains(expected, video_codec));
 
     // As the manifest only specifies codecs and not profiles, the list of
     // profiles should be empty to indicate that all profiles are supported.
-    EXPECT_TRUE(codec.second.empty());
+    EXPECT_TRUE(video_codec_info.supported_profiles.empty());
   }
 }
 
-void CheckAudioCodecs(const std::vector<media::AudioCodec>& actual,
+void CheckAudioCodecs(const base::flat_set<media::AudioCodec>& actual,
                       const std::vector<media::AudioCodec>& expected) {
   EXPECT_EQ(actual, expected);
 }

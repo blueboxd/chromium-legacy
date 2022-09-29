@@ -91,8 +91,9 @@ void ProjectorSodaInstallationController::OnSodaInstalled(
   app_client_->OnSodaInstalled();
 }
 
-void ProjectorSodaInstallationController::OnSodaError(
-    speech::LanguageCode language_code) {
+void ProjectorSodaInstallationController::OnSodaInstallError(
+    speech::LanguageCode language_code,
+    speech::SodaInstaller::ErrorCode error_code) {
   // Check that language code matches the selected language for projector or is
   // LanguageCode::kNone (signifying the SODA binary failed).
   if (language_code != speech::GetLanguageCode(GetLocale()) &&
@@ -100,8 +101,19 @@ void ProjectorSodaInstallationController::OnSodaError(
     return;
   }
 
-  projector_controller_->OnSpeechRecognitionAvailabilityChanged(
-      ash::SpeechRecognitionAvailability::kSodaInstallationError);
+  switch (error_code) {
+    case speech::SodaInstaller::ErrorCode::kUnspecifiedError:
+      projector_controller_->OnSpeechRecognitionAvailabilityChanged(
+          ash::SpeechRecognitionAvailability::
+              kSodaInstallationErrorUnspecified);
+      break;
+    case speech::SodaInstaller::ErrorCode::kNeedsReboot:
+      projector_controller_->OnSpeechRecognitionAvailabilityChanged(
+          ash::SpeechRecognitionAvailability::
+              kSodaInstallationErrorNeedsReboot);
+      break;
+  }
+
   app_client_->OnSodaInstallError();
 }
 

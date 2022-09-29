@@ -146,6 +146,21 @@ MaxRegularSlotSpanSize() {
   return kMaxPartitionPagesPerRegularSlotSpan << PartitionPageShift();
 }
 
+// The maximum size that is used in an alternate bucket distribution. After this
+// threshold, we only have 1 slot per slot-span, so external fragmentation
+// doesn't matter. So, using the alternate bucket distribution after this
+// threshold has no benefit, and only increases internal fragmentation.
+//
+// We would like this to be |MaxRegularSlotSpanSize()| on all platforms, but
+// this is not constexpr on all platforms, so on other platforms we hardcode it,
+// even though this may be too low, e.g. on systems with a page size >4KiB.
+constexpr size_t kHighThresholdForAlternateDistribution =
+#if PAGE_ALLOCATOR_CONSTANTS_ARE_CONSTEXPR
+    MaxRegularSlotSpanSize();
+#else
+    1 << 16;
+#endif
+
 // We reserve virtual address space in 2 MiB chunks (aligned to 2 MiB as well).
 // These chunks are called *super pages*. We do this so that we can store
 // metadata in the first few pages of each 2 MiB-aligned section. This makes
@@ -242,22 +257,23 @@ constexpr size_t kSuperPageAlignment = kSuperPageSize;
 constexpr size_t kSuperPageOffsetMask = kSuperPageAlignment - 1;
 constexpr size_t kSuperPageBaseMask = ~kSuperPageOffsetMask;
 
-// GigaCage is split into two pools, one which supports BackupRefPtr (BRP) and
-// one that doesn't.
+// GigaCage is generally split into two pools, one which supports BackupRefPtr
+// (BRP) and one that doesn't.
 #if defined(PA_HAS_64_BITS_POINTERS)
-// The Configurable Pool is only available in 64-bit mode
+// The 3rd, Configurable Pool is only available in 64-bit mode.
 constexpr size_t kNumPools = 3;
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-// Special-case macOS. Contrary to other platforms, there is no sandbox limit
-// there, meaning that a single renderer could "happily" consume >8GiB. So the
-// 8GiB pool size is a regression. Make the limit higher on this platform only
-// to be consistent with previous behavior. See crbug.com/1232567 for details.
+// Maximum GigaCage pool size. With exception of Configurable Pool, it is also
+// the actual size, unless PA_USE_DYNAMICALLY_SIZED_GIGA_CAGE is set, which
+// allows to choose a different size at initialization time for certain
+// configurations.
 //
-// On Linux, reserving memory is not costly, and we have cases where heaps can
-// grow to more than 8GiB without being a memory leak.
-constexpr size_t kPoolMaxSize = 16 * kGiB;
-#else
+// Special-case Android and iOS, which incur test failures with larger
+// GigaCage. Regardless, allocating >8GiB with malloc() on these platforms is
+// unrealistic as of 2022.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 constexpr size_t kPoolMaxSize = 8 * kGiB;
+#else
+constexpr size_t kPoolMaxSize = 16 * kGiB;
 #endif
 #else  // defined(PA_HAS_64_BITS_POINTERS)
 constexpr size_t kNumPools = 2;
@@ -367,8 +383,10 @@ constexpr size_t kMinDirectMappedDownsize = kMaxBucketed + 1;
 // fails. This is a security choice in Chrome, to help making size_t vs int bugs
 // harder to exploit.
 
-PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR PA_ALWAYS_INLINE size_t
-MaxDirectMapped() {
+// The definition of MaxDirectMapped does only depend on constants that are
+// unconditionally constexpr. Therefore it is not necessary to use
+// PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR here.
+constexpr PA_ALWAYS_INLINE size_t MaxDirectMapped() {
   // Subtract kSuperPageSize to accommodate for granularity inside
   // PartitionRoot::GetDirectMapReservationSize.
   return (1UL << 31) - kSuperPageSize;

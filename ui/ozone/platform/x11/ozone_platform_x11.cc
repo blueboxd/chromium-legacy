@@ -30,7 +30,6 @@
 #include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/switches.h"
-#include "ui/linux/linux_ui.h"
 #include "ui/linux/linux_ui_delegate.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/x11/gl_egl_utility_x11.h"
@@ -131,12 +130,12 @@ class OzonePlatformX11 : public OzonePlatform,
   }
 
   std::unique_ptr<InputMethod> CreateInputMethod(
-      internal::InputMethodDelegate* delegate,
+      ImeKeyEventDispatcher* ime_key_event_dispatcher,
       gfx::AcceleratedWidget) override {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    return std::make_unique<InputMethodAsh>(delegate);
+    return std::make_unique<InputMethodAsh>(ime_key_event_dispatcher);
 #else
-    return std::make_unique<InputMethodAuraLinux>(delegate);
+    return std::make_unique<InputMethodAuraLinux>(ime_key_event_dispatcher);
 #endif
   }
 

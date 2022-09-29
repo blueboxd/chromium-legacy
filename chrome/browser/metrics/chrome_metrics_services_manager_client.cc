@@ -24,7 +24,6 @@
 #include "chrome/browser/metrics/variations/ui_string_overrider_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/ui/browser_otr_state.h"
-#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -34,7 +33,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/variations_associated_data.h"
-#include "components/version_info/channel.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
@@ -144,11 +142,10 @@ bool IsClientInSampleImpl(PrefService* local_state) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Callback to update the metrics reporting state when the Chrome OS metrics
 // reporting setting changes.
-void OnCrosMetricsReportingSettingChange() {
+void OnCrosMetricsReportingSettingChange(
+    ChangeMetricsReportingStateCalledFrom called_from) {
   bool enable_metrics = ash::StatsReportingController::Get()->IsEnabled();
-  ChangeMetricsReportingState(
-      enable_metrics,
-      ChangeMetricsReportingStateCalledFrom::kCrosMetricsSettingsChange);
+  ChangeMetricsReportingState(enable_metrics, called_from);
 
   // TODO(crbug.com/1234538): This call ensures that structured metrics' state
   // is deleted when the reporting state is disabled. Long-term this should
@@ -243,11 +240,14 @@ bool ChromeMetricsServicesManagerClient::GetSamplingRatePerMille(int* rate) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void ChromeMetricsServicesManagerClient::OnCrosSettingsCreated() {
+  // Listen for changes to metrics reporting state.
   reporting_setting_subscription_ =
-      ash::StatsReportingController::Get()->AddObserver(
-          base::BindRepeating(&OnCrosMetricsReportingSettingChange));
+      ash::StatsReportingController::Get()->AddObserver(base::BindRepeating(
+          &OnCrosMetricsReportingSettingChange,
+          ChangeMetricsReportingStateCalledFrom::kCrosMetricsSettingsChange));
   // Invoke the callback once initially to set the metrics reporting state.
-  OnCrosMetricsReportingSettingChange();
+  OnCrosMetricsReportingSettingChange(
+      ChangeMetricsReportingStateCalledFrom::kCrosMetricsSettingsCreated);
 }
 #endif
 
@@ -309,7 +309,7 @@ ChromeMetricsServicesManagerClient::GetMetricsStateManager() {
 
     metrics_state_manager_ = metrics::MetricsStateManager::Create(
         local_state_, enabled_state_provider_.get(), GetRegistryBackupKey(),
-        user_data_dir, startup_visibility, chrome::GetChannel(),
+        user_data_dir, startup_visibility,
         base::BindRepeating(&PostStoreMetricsClientInfo),
         base::BindRepeating(&GoogleUpdateSettings::LoadMetricsClientInfo),
         client_id);

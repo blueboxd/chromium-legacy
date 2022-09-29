@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AmbientModeAlbum, AmbientObserverInterface, AmbientObserverRemote, AmbientProviderInterface, AnimationTheme, TemperatureUnit, TopicSource} from 'chrome://personalization/trusted/personalization_app.js';
+import {AmbientModeAlbum, AmbientObserverInterface, AmbientObserverRemote, AmbientProviderInterface, AnimationTheme, TemperatureUnit, TopicSource} from 'chrome://personalization/js/personalization_app.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
@@ -64,6 +64,7 @@ export class TestAmbientProvider extends TestBrowserProxy implements
       'setTopicSource',
       'setTemperatureUnit',
       'setAlbumSelected',
+      'fetchSettingsAndAlbums',
     ]);
   }
 
@@ -116,5 +117,9 @@ export class TestAmbientProvider extends TestBrowserProxy implements
 
   setPageViewed() {
     this.methodCalled('setPageViewed');
+  }
+
+  fetchSettingsAndAlbums() {
+    this.methodCalled('fetchSettingsAndAlbums');
   }
 }

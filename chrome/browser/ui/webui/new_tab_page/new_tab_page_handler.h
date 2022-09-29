@@ -98,6 +98,8 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void ChooseLocalCustomBackground(
       ChooseLocalCustomBackgroundCallback callback) override;
   void GetPromo(GetPromoCallback callback) override;
+  void BlocklistPromo(const std::string& promo_id) override;
+  void UndoBlocklistPromo(const std::string& promo_id) override;
   void OnDismissModule(const std::string& module_id) override;
   void OnRestoreModule(const std::string& module_id) override;
   void SetModulesVisible(bool visible) override;
@@ -111,6 +113,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void UpdateModulesFreVisibility() override;
   void LogModulesFreOptInStatus(
       new_tab_page::mojom::OptInStatus opt_in_status) override;
+  void ShowCustomizeChromeSidePanel() override;
   void OnAppRendered(double time) override;
   void OnOneGoogleBarRendered(double time) override;
   void OnPromoRendered(double time,
@@ -175,6 +178,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
 
   bool IsCustomLinksEnabled() const;
   bool IsShortcutsVisible() const;
+  void NotifyCustomizeChromeSidePanelVisibilityChanged(bool is_open);
 
   ChooseLocalCustomBackgroundCallback choose_local_custom_background_callback_;
   raw_ptr<NtpBackgroundService> ntp_background_service_;

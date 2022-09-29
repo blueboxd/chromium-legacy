@@ -25,6 +25,7 @@ Usas el buscador <ph name="DSE_NAME" />. Consulta las instrucciones del buscador
 <translation id="1112015203684611006">Error al imprimir.</translation>
 <translation id="1125564390852150847">Crear nueva pestaña.</translation>
 <translation id="1126809382673880764">No te protege frente a descargas, extensiones ni sitios web peligrosos. Seguirás disfrutando de protección con la función Navegación segura, si está disponible, en otros servicios de Google, como Gmail y la Búsqueda.</translation>
+<translation id="1135212215217513471">Descarga Chrome para iOS</translation>
 <translation id="1145536944570833626">Elimina los datos actuales.</translation>
 <translation id="1147031633655575115">Has iniciado sesión como <ph name="USER" /></translation>
 <translation id="1154984953698510061">Ver otras pestañas</translation>
@@ -113,6 +114,7 @@ Usas el buscador <ph name="DSE_NAME" />. Consulta las instrucciones del buscador
 <translation id="1832848789136765277">Verifica tu identidad para asegurarte de que siempre puedas acceder a tus datos sincronizados</translation>
 <translation id="1870148520156231997">Mostrar contraseña</translation>
 <translation id="1872096359983322073">Linterna</translation>
+<translation id="1910975740091000991">Chrome para iOS</translation>
 <translation id="1911619930368729126">Subir a Google Drive</translation>
 <translation id="1923342640370224680">Última hora</translation>
 <translation id="1930989359703290198">Tu organización solo te permite iniciar sesión con determinadas cuentas. Las cuentas no permitidas están ocultas. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
@@ -140,6 +142,7 @@ Usas el buscador <ph name="DSE_NAME" />. Consulta las instrucciones del buscador
 <translation id="2139867232736819575">Buscar el texto que has copiado</translation>
 <translation id="214201757571129614">Iniciar sesión…</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
+<translation id="2155145621546387786">Compartir Chrome</translation>
 <translation id="2175927920773552910">Código QR</translation>
 <translation id="2218443599109088993">Reducir</translation>
 <translation id="2230173723195178503">Página web cargada</translation>
@@ -308,6 +311,7 @@ Consulta las instrucciones del buscador para eliminar tu historial de búsqueda 
 <translation id="3529024052484145543">No es seguro</translation>
 <translation id="3533202363250687977">Cerrar todas las pestañas de incógnito</translation>
 <translation id="3533436815740441613">Nueva pestaña</translation>
+<translation id="3547799431091898961">Para cerrar sesión en tu cuenta de Google en todos los sitios web, <ph name="BEGIN_LINK" />cierra sesión en Chrome<ph name="END_LINK" />.</translation>
 <translation id="3551320343578183772">Cerrar pestaña</translation>
 <translation id="3581564640715911333">Ofrecer la traducción de páginas que estén en otros idiomas</translation>
 <translation id="3588820906588687999">Abrir imagen en una pestaña nueva</translation>
@@ -374,6 +378,7 @@ Consulta las instrucciones del buscador para eliminar tu historial de búsqueda 
 <translation id="4172051516777682613">Mostrar siempre</translation>
 <translation id="418156467088430727">Ver versión sin conexión en una nueva pestaña</translation>
 <translation id="4181841719683918333">Idiomas</translation>
+<translation id="4187450337729239226">Pegar y buscar</translation>
 <translation id="4223967053752765281">Tu organización ha desactivado el inicio de sesión. Podrás seguir viendo tus marcadores, el historial, las contraseñas y otros ajustes en este dispositivo. Si realizas cambios, no se sincronizarán con tu cuenta.</translation>
 <translation id="4233831822770018312">Editar permisos</translation>
 <translation id="4237377247299956313">Toca <ph name="BEGIN_BOLD" />App del navegador por omisión<ph name="END_BOLD" /></translation>
@@ -436,6 +441,7 @@ Tus datos se han cifrado con tu frase de contraseña de sincronización. Introd�
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4747097190499141774">El cifrado mediante frase de contraseña no incluye los métodos de pago ni las direcciones de Google Pay. Solo alguien que tenga tu frase de contraseña puede leer tus datos cifrados. La frase de contraseña no se envía a Google, que tampoco la guarda. Si la olvidas o quieres cambiar esta opción, deberás restablecer la sincronización. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="4751645464639803239">Nueva pestaña de Incógnito</translation>
+<translation id="4766112107778026136">Discover y Siguiendo</translation>
 <translation id="4775879719735953715">Navegador predeterminado</translation>
 <translation id="4778644898150334464">Usar otra contraseña</translation>
 <translation id="478808905805139173">¿Abrir en modo Incógnito?</translation>
@@ -490,6 +496,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5118764316110575523">Desactivado</translation>
 <translation id="5132942445612118989">Sincroniza tus contraseñas, tu historial y más en todos tus dispositivos</translation>
 <translation id="5140288047769711648">Chrome recordará esta contraseña. Así no tendrás que recordarla.</translation>
+<translation id="5149188072385105201">Añadir contraseña...</translation>
 <translation id="5150492518600715772">Enviar a tu dispositivo</translation>
 <translation id="5168414296986405587">Diseñado para iPadOS</translation>
 <translation id="5173088371991956744">Verifica tu identidad para usar la sincronización</translation>
@@ -642,6 +649,7 @@ Handoff también debe estar habilitado en la sección General de Configuración,
 <translation id="6374469231428023295">Reintentar</translation>
 <translation id="6377118281273296434">Seguridad del sitio web</translation>
 <translation id="6380866119319257197">Si has olvidado tu frase de contraseña o quieres cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /></translation>
+<translation id="6387994324662817823">Las contraseñas se guardan en el gestor de contraseñas de Google solo en este dispositivo.</translation>
 <translation id="6389470377220713856">Nombre de la tarjeta</translation>
 <translation id="6406506848690869874">Sincronización</translation>
 <translation id="6410390304316730527">La función Navegación segura te protege frente a atacantes que pueden intentar engañarte para que realices alguna acción peligrosa, como instalar software malicioso o revelar información personal, incluidas contraseñas, números de teléfono o tarjetas de crédito. Si desactivas esta función, debes tener cuidado al navegar por sitios desconocidos o que no sean de confianza.</translation>

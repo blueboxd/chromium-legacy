@@ -405,12 +405,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       scheduling_client_(scheduling_client),
       task_runner_provider_(task_runner_provider),
       current_begin_frame_tracker_(FROM_HERE),
-      compositor_frame_reporting_controller_(
-          std::make_unique<CompositorFrameReportingController>(
-              /*should_report_histograms=*/!settings
-                  .single_thread_proxy_scheduler,
-              /*should_report_ukm=*/!settings.single_thread_proxy_scheduler,
-              id)),
       settings_(settings),
       is_synchronous_single_threaded_(!task_runner_provider->HasImplThread() &&
                                       !settings_.single_thread_proxy_scheduler),
@@ -438,7 +432,12 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       image_animation_controller_(GetTaskRunner(),
                                   this,
                                   settings_.enable_image_animation_resync),
-      paint_image_generator_client_id_(PaintImage::GetNextGeneratorClientId()),
+      compositor_frame_reporting_controller_(
+          std::make_unique<CompositorFrameReportingController>(
+              /*should_report_histograms=*/!settings
+                  .single_thread_proxy_scheduler,
+              /*should_report_ukm=*/!settings.single_thread_proxy_scheduler,
+              id)),
       frame_trackers_(settings.single_thread_proxy_scheduler,
                       compositor_frame_reporting_controller_.get()),
       lcd_text_metrics_reporter_(LCDTextMetricsReporter::CreateIfNeeded(this)),
@@ -483,11 +482,11 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   if (is_ui) {
     compositor_frame_reporting_controller_->set_event_latency_tracker(this);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
     dropped_frame_counter_.EnableReporForUI();
     compositor_frame_reporting_controller_->SetThreadAffectsSmoothness(
         FrameInfo::SmoothEffectDrivingThread::kMain, true);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
   }
 
   dropped_frame_counter_.set_total_counter(&total_frame_counter_);
@@ -533,7 +532,15 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   // Clear the UKM Manager so that we do not try to report when the
   // UKM System has shut down.
   compositor_frame_reporting_controller_->SetUkmManager(nullptr);
-  compositor_frame_reporting_controller_ = nullptr;
+  // `frame_trackers_` holds a pointer to
+  // `compositor_frame_reporting_controller_`. Setting
+  // `compositor_frame_reporting_controller_` to nullptr here leads to
+  // `frame_trackers_` holding a dangling ptr. Don't set to null here and let
+  // members be destroyed in reverse order of declaration.
+  // Since `frame_trackers_` is destroyed first, we need to clear the ptr that
+  // `compositor_frame_reporting_controller_` holds.
+  compositor_frame_reporting_controller_->SetFrameSequenceTrackerCollection(
+      nullptr);
 }
 
 InputHandler& LayerTreeHostImpl::GetInputHandler() {
@@ -567,8 +574,10 @@ void LayerTreeHostImpl::BeginMainFrameAborted(
   // If the begin frame data was handled, then scroll and scale set was applied
   // by the main thread, so the active tree needs to be updated as if these sent
   // values were applied and committed.
-  if (CommitEarlyOutHandledCommit(reason)) {
-    active_tree_->ApplySentScrollAndScaleDeltasFromAbortedCommit();
+  bool main_frame_applied_deltas = MainFrameAppliedDeltas(reason);
+  active_tree_->ApplySentScrollAndScaleDeltasFromAbortedCommit(
+      main_frame_applied_deltas);
+  if (main_frame_applied_deltas) {
     if (pending_tree_) {
       pending_tree_->AppendSwapPromises(std::move(swap_promises));
     } else {
@@ -630,14 +639,6 @@ void LayerTreeHostImpl::FinishCommit(
   TRACE_EVENT0("cc,benchmark", "LayerTreeHostImpl::FinishCommit");
   LayerTreeImpl* tree = sync_tree();
   tree->PullPropertiesFrom(state, unsafe_state);
-
-  // Check whether the impl scroll animating node was removed by the commit.
-  if (ElementId impl_only_scrolling_element =
-          mutator_host()->ImplOnlyScrollAnimatingElement()) {
-    if (!tree->property_trees()->HasElement(impl_only_scrolling_element)) {
-      mutator_host()->ImplOnlyScrollAnimatingElementRemoved();
-    }
-  }
   PullLayerTreeHostPropertiesFrom(state);
 
   // Transfer image decode requests to the impl thread.
@@ -714,7 +715,7 @@ void LayerTreeHostImpl::CommitComplete() {
 
   // Start animations before UpdateDrawProperties and PrepareTiles, as they can
   // change the results. When doing commit to the active tree, this must happen
-  // after ActivateAnimations() in order for this ticking to be propogated
+  // after ActivateAnimations() in order for this ticking to be propagated
   // to layers on the active tree.
   if (CommitToActiveTree())
     Animate();
@@ -3422,7 +3423,7 @@ void LayerTreeHostImpl::OnMemoryPressure(
   if (!base::SysInfo::IsLowEndDevice())
     return;
 
-  if (level != base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL)
+  if (!ImageDecodeCacheUtils::ShouldEvictCaches(level))
     return;
 
     // TODO(crbug.com/1189208): Unlocking decoded-image-tracker images causes
@@ -3440,14 +3441,15 @@ void LayerTreeHostImpl::OnMemoryPressure(
     recycle_tree_->OnPurgeMemory();
 
   EvictAllUIResources();
-  if (image_decode_cache_) {
-    image_decode_cache_->SetShouldAggressivelyFreeResources(true);
-    image_decode_cache_->SetShouldAggressivelyFreeResources(false);
-  }
   if (resource_pool_)
     resource_pool_->OnMemoryPressure(level);
 
   tile_manager_.decoded_image_tracker().UnlockAllImages();
+
+  // There is no need to notify the |image_decode_cache| about the memory
+  // pressure as it (the gpu one as the software one doesn't keep outstanding
+  // images pinned) listens to memory pressure events and purges memory base on
+  // the ImageDecodeCacheUtils::ShouldEvictCaches' return value.
 }
 
 void LayerTreeHostImpl::SetVisible(bool visible) {
@@ -3560,7 +3562,7 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
         viz::ResourceFormatToClosestSkColorType(/*gpu_compositing=*/true,
                                                 tile_format),
         settings_.decoded_image_working_set_budget_bytes, max_texture_size_,
-        paint_image_generator_client_id_, dark_mode_filter_);
+        dark_mode_filter_);
 
     pending_raster_queries_ = std::make_unique<RasterQueryQueue>(
         layer_tree_frame_sink_->worker_context_provider());
@@ -3569,8 +3571,7 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
     bool gpu_compositing = !!layer_tree_frame_sink_->context_provider();
     image_decode_cache_ = std::make_unique<SoftwareImageDecodeCache>(
         viz::ResourceFormatToClosestSkColorType(gpu_compositing, tile_format),
-        settings_.decoded_image_working_set_budget_bytes,
-        paint_image_generator_client_id_);
+        settings_.decoded_image_working_set_budget_bytes);
   }
 
   raster_buffer_provider_ = CreateRasterBufferProvider();
@@ -4111,8 +4112,12 @@ void LayerTreeHostImpl::CollectScrollbarUpdatesForCommit(
     CompositorCommitData* commit_data) const {
   commit_data->scrollbars.reserve(scrollbar_animation_controllers_.size());
   for (auto& pair : scrollbar_animation_controllers_) {
-    commit_data->scrollbars.push_back(
-        {pair.first, pair.second->ScrollbarsHidden()});
+    if (pair.second->visibility_changed() ||
+        !settings_.enable_scroll_update_optimizations) {
+      commit_data->scrollbars.push_back(
+          {pair.first, pair.second->ScrollbarsHidden()});
+      pair.second->ClearVisibilityChanged();
+    }
   }
 }
 

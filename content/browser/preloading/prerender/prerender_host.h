@@ -28,6 +28,7 @@ namespace content {
 
 class FrameTree;
 class PrerenderHostRegistry;
+class PrerenderPageHolder;
 class RenderFrameHostImpl;
 class WebContentsImpl;
 
@@ -91,13 +92,51 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
     // kEmbedderTriggeredAndRedirected = 32,
     kEmbedderTriggeredAndSameOriginRedirected = 33,
     kEmbedderTriggeredAndCrossOriginRedirected = 34,
-    kEmbedderTriggeredAndDestroyed = 35,
-    kMaxValue = kEmbedderTriggeredAndDestroyed,
+    // Deprecated. This has the same meaning as kTriggerDestroyed because the
+    // metric's name includes trigger type.
+    // kEmbedderTriggeredAndDestroyed = 35,
+    kMemoryLimitExceeded = 36,
+    kFailToGetMemoryUsage = 37,
+    kDataSaverEnabled = 38,
+    kMaxValue = kDataSaverEnabled,
+  };
+
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused. This enum corresponds to
+  // PrerenderActivationNavigationParamsMatch in
+  // tools/metrics/histograms/test_data/enums.xml
+  enum class ActivationNavigationParamsMatch {
+    kOk = 0,
+    kInitiatorFrameToken = 1,
+    kHttpRequestHeader = 2,
+    kCacheLoadFlags = 3,
+    kLoadFlags = 4,
+    kSkipServiceWorker = 5,
+    kMixedContentContextType = 6,
+    kIsFormSubmission = 7,
+    kSearchableFormUrl = 8,
+    kSearchableFormEncoding = 9,
+    kTrustTokenParams = 10,
+    kWebBundleToken = 11,
+    kRequestContextType = 12,
+    kImpressionHasValue = 13,
+    kInitiatorOrigin = 14,
+    kTransition = 15,
+    kNavigationType = 16,
+    kBaseUrlForDataUrl = 17,
+    kPostData = 18,
+    kStartedFromContextMenu = 19,
+    kInitiatorOriginTrialFeature = 20,
+    kHrefTranslate = 21,
+    kIsHistoryNavigationInNewChildFrame = 22,
+    kReferrerPolicy = 23,
+    kRequestDestination = 24,
+    kMaxValue = kRequestDestination,
   };
 
   PrerenderHost(const PrerenderAttributes& attributes,
                 WebContents& web_contents,
-                PreloadingAttemptImpl* attempt);
+                base::WeakPtr<PreloadingAttempt> attempt);
   ~PrerenderHost() override;
 
   PrerenderHost(const PrerenderHost&) = delete;
@@ -173,6 +212,8 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   }
   const GURL& initiator_url() const { return attributes_.initiator_url; }
 
+  const GURL& prerendering_url() const { return attributes_.prerendering_url; }
+
   bool IsBrowserInitiated() { return attributes_.IsBrowserInitiated(); }
 
   int frame_tree_node_id() const { return frame_tree_node_id_; }
@@ -193,8 +234,6 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   }
 
  private:
-  class PageHolder;
-
   // Records the status to UMA and UKM. `initiator_ukm_id` represents the page
   // that starts prerendering and `prerendered_ukm_id` represents the
   // prerendered page. `prerendered_ukm_id` is valid after the page is
@@ -215,9 +254,11 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   void SetEligibility(PreloadingEligibility eligibility);
   void SetFailureReason(FinalStatus status);
 
-  bool AreBeginNavigationParamsCompatibleWithNavigation(
+  ActivationNavigationParamsMatch
+  AreBeginNavigationParamsCompatibleWithNavigation(
       const blink::mojom::BeginNavigationParams& potential_activation);
-  bool AreCommonNavigationParamsCompatibleWithNavigation(
+  ActivationNavigationParamsMatch
+  AreCommonNavigationParamsCompatibleWithNavigation(
       const blink::mojom::CommonNavigationParams& potential_activation);
 
   const PrerenderAttributes attributes_;
@@ -232,13 +273,14 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
 
   absl::optional<FinalStatus> final_status_;
 
-  std::unique_ptr<PageHolder> page_holder_;
+  std::unique_ptr<PrerenderPageHolder> page_holder_;
 
   base::ObserverList<Observer> observers_;
 
   // Stores the attempt corresponding to this prerender to log various metrics.
-  raw_ptr<PreloadingAttemptImpl, DanglingUntriaged> attempt_;
-
+  // We use a WeakPtr here to avoid inadvertent UAF. `attempt_` can get deleted
+  // before `PrerenderHostRegistry::DeleteAbandonedHosts` is scheduled.
+  base::WeakPtr<PreloadingAttempt> attempt_;
   // Navigation parameters for the navigation which loaded the main document of
   // the prerendered page, copied immediately after BeginNavigation when
   // throttles are created. They will be compared with the navigation parameters

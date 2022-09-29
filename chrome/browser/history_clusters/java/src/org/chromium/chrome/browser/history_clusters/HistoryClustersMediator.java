@@ -21,6 +21,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Promise;
@@ -86,7 +87,8 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
     private final PropertyModel mToolbarModel;
     private final RoundedIconGenerator mIconGenerator;
     private final LargeIconBridge mLargeIconBridge;
-    private final int mFaviconSize;
+    private final int mMinFaviconSize;
+    private final int mDisplayedFaviconSize;
     private Promise<HistoryClustersResult> mPromise;
     private final HistoryClustersDelegate mDelegate;
     private final CallbackController mCallbackController = new CallbackController();
@@ -102,6 +104,7 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
     private final Map<String, PropertyModel> mLabelToModelMap = new LinkedHashMap<>();
     private final Map<ClusterVisit, VisitMetadata> mVisitMetadataMap = new HashMap<>();
     private final AccessibilityUtil mAccessibilityUtil;
+    private final Callback<String> mAnnounceForAccessibilityCallback;
     private final boolean mIsScrollToLoadDisabled;
 
     /**
@@ -121,13 +124,15 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
      *         items in the list we're displaying.
      * @param metricsLogger Object that records metrics about user interactions.
      * @param accessibilityUtil Utility object that tells us about the current accessibility state.
+     * @param announceForAccessibilityCallback Callback that announces the given string for a11y.
      */
     HistoryClustersMediator(@NonNull HistoryClustersBridge historyClustersBridge,
             LargeIconBridge largeIconBridge, @NonNull Context context, @NonNull Resources resources,
             @NonNull ModelList modelList, @NonNull PropertyModel toolbarModel,
             HistoryClustersDelegate historyClustersDelegate, Clock clock,
             TemplateUrlService templateUrlService, SelectionDelegate selectionDelegate,
-            HistoryClustersMetricsLogger metricsLogger, AccessibilityUtil accessibilityUtil) {
+            HistoryClustersMetricsLogger metricsLogger, AccessibilityUtil accessibilityUtil,
+            Callback<String> announceForAccessibilityCallback) {
         mHistoryClustersBridge = historyClustersBridge;
         mLargeIconBridge = largeIconBridge;
         mModelList = modelList;
@@ -135,13 +140,15 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
         mResources = resources;
         mToolbarModel = toolbarModel;
         mDelegate = historyClustersDelegate;
-        mFaviconSize = mResources.getDimensionPixelSize(R.dimen.default_favicon_min_size);
+        mMinFaviconSize = mResources.getDimensionPixelSize(R.dimen.default_favicon_min_size);
+        mDisplayedFaviconSize = mResources.getDimensionPixelSize(R.dimen.default_favicon_size);
         mIconGenerator = FaviconUtils.createCircularIconGenerator(mContext);
         mClock = clock;
         mTemplateUrlService = templateUrlService;
         mSelectionDelegate = selectionDelegate;
         mMetricsLogger = metricsLogger;
         mAccessibilityUtil = accessibilityUtil;
+        mAnnounceForAccessibilityCallback = announceForAccessibilityCallback;
 
         PropertyModel toggleModel = new PropertyModel(HistoryClustersItemProperties.ALL_KEYS);
         mToggleItem = new ListItem(ItemType.TOGGLE, toggleModel);
@@ -279,9 +286,13 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
                     isIncognito, true, inTabGroup, additionalUrls);
             ContextUtils.getApplicationContext().startActivity(intent);
         } else {
-            Tab parent = createNewTab(visits.get(0).getNormalizedUrl(), isIncognito, null);
+            Tab parent = createNewTab(visits.get(0).getNormalizedUrl(), isIncognito, null,
+                    TabLaunchType.FROM_CHROME_UI);
+            @TabLaunchType
+            int tabLaunchType = inTabGroup ? TabLaunchType.FROM_LONGPRESS_BACKGROUND_IN_GROUP
+                                           : TabLaunchType.FROM_CHROME_UI;
             for (int i = 1; i < visits.size(); i++) {
-                createNewTab(visits.get(i).getNormalizedUrl(), false, parent);
+                createNewTab(visits.get(i).getNormalizedUrl(), isIncognito, parent, tabLaunchType);
             }
         }
     }
@@ -309,6 +320,14 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
             removeVisit(visit);
         }
 
+        if (visits.size() == 1) {
+            announceForAccessibility(
+                    mResources.getString(R.string.delete_message, visits.get(0).getTitle()));
+        } else {
+            announceForAccessibility(
+                    mResources.getString(R.string.multiple_history_items_deleted, visits.size()));
+        }
+
         mDelegate.removeMarkedItems();
     }
 
@@ -334,11 +353,10 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
         mVisitMetadataMap.remove(visit);
     }
 
-    private Tab createNewTab(GURL gurl, boolean incognito, Tab parentTab) {
+    private Tab createNewTab(GURL gurl, boolean incognito, Tab parentTab, int tabLaunchType) {
         TabCreator tabCreator = mDelegate.getTabCreator(incognito);
         assert tabCreator != null;
-        return tabCreator.createNewTab(
-                new LoadUrlParams(gurl), TabLaunchType.FROM_CHROME_UI, parentTab);
+        return tabCreator.createNewTab(new LoadUrlParams(gurl), tabLaunchType, parentTab);
     }
 
     private void queryComplete(HistoryClustersResult result) {
@@ -432,12 +450,12 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
                                         (v) -> deleteVisits(Arrays.asList(visit)))
                                 .build();
                 if (mLargeIconBridge != null) {
-                    mLargeIconBridge.getLargeIconForUrl(visit.getNormalizedUrl(), mFaviconSize,
+                    mLargeIconBridge.getLargeIconForUrl(visit.getNormalizedUrl(), mMinFaviconSize,
                             (Bitmap icon, int fallbackColor, boolean isFallbackColorDefault,
                                     int iconType) -> {
                                 Drawable drawable = FaviconUtils.getIconDrawableWithoutFilter(icon,
                                         visit.getNormalizedUrl(), fallbackColor, mIconGenerator,
-                                        mResources, mFaviconSize);
+                                        mResources, mDisplayedFaviconSize);
                                 visitModel.set(
                                         HistoryClustersItemProperties.ICON_DRAWABLE, drawable);
                             });
@@ -528,6 +546,10 @@ class HistoryClustersMediator extends RecyclerView.OnScrollListener implements S
         if (shouldShow) {
             mModelList.add(mMoreProgressItem);
         }
+    }
+
+    private void announceForAccessibility(String messsage) {
+        mAnnounceForAccessibilityCallback.onResult(messsage);
     }
 
     @VisibleForTesting

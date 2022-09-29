@@ -6,11 +6,13 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
-#include "chrome/browser/ash/drive/drive_integration_service.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "components/prefs/pref_service.h"
 
 namespace {
@@ -58,7 +60,10 @@ bool IsProjectorAppEnabled(const Profile* profile) {
           profile->GetPrefs()->GetBoolean(ash::prefs::kProjectorAllowByPolicy));
 }
 
-drive::DriveIntegrationService* GetDriveIntegrationServiceForActiveProfile() {
-  return drive::DriveIntegrationServiceFactory::FindForProfile(
-      ProfileManager::GetActiveUserProfile());
+void LaunchProjectorAppWithFiles(std::vector<base::FilePath> files) {
+  auto* profile = ProfileManager::GetActiveUserProfile();
+  ash::SystemAppLaunchParams params;
+  params.launch_paths = std::move(files);
+  ash::LaunchSystemWebAppAsync(profile, ash::SystemWebAppType::PROJECTOR,
+                               params);
 }

@@ -16,11 +16,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/check.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/notreached.h"
+#include "chromeos/ash/components/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
-#include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_names.h"
@@ -39,7 +40,11 @@ AuthSessionAuthenticator::AuthSessionAuthenticator(
       auth_factor_editor_(std::make_unique<AuthFactorEditor>()),
       auth_performer_(
           std::make_unique<AuthPerformer>(UserDataAuthClient::Get())),
-      mount_performer_(std::make_unique<MountPerformer>()) {}
+      hibernate_manager_(std::make_unique<HibernateManager>()),
+      mount_performer_(std::make_unique<MountPerformer>()) {
+  DCHECK(safe_mode_delegate_);
+  DCHECK(!user_recorder_.is_null());
+}
 
 AuthSessionAuthenticator::~AuthSessionAuthenticator() = default;
 
@@ -119,6 +124,8 @@ void AuthSessionAuthenticator::RemoveStaleUserForEphemeral(
     const std::string& auth_session_id,
     std::unique_ptr<UserContext> original_context,
     StartAuthSessionCallback callback) {
+  if (auth_session_id.empty())
+    NOTREACHED() << "Auth session should exist";
   LOGIN_LOG(EVENT) << "Deleting stale ephemeral user";
   user_data_auth::RemoveRequest remove_request;
   remove_request.set_auth_session_id(auth_session_id);
@@ -201,6 +208,9 @@ void AuthSessionAuthenticator::DoCompleteLogin(
     } else {  // New persistent user
       steps.push_back(base::BindOnce(&MountPerformer::CreateNewUser,
                                      mount_performer_->AsWeakPtr()));
+      steps.push_back(base::BindOnce(
+          &HibernateManager::PrepareHibernateAndMaybeResumeAuthOp,
+          hibernate_manager_->AsWeakPtr()));
       steps.push_back(base::BindOnce(&MountPerformer::MountPersistentDirectory,
                                      mount_performer_->AsWeakPtr()));
     }
@@ -242,6 +252,11 @@ void AuthSessionAuthenticator::DoCompleteLogin(
           base::BindOnce(&AuthPerformer::AuthenticateUsingKnowledgeKey,
                          auth_performer_->AsWeakPtr()));
     }
+    // TODO(b/233103309): Abort resume from hibernate here as the user just went
+    // through online login and may need auth tokens synced.
+    steps.push_back(
+        base::BindOnce(&HibernateManager::PrepareHibernateAndMaybeResumeAuthOp,
+                       hibernate_manager_->AsWeakPtr()));
     steps.push_back(base::BindOnce(&MountPerformer::MountPersistentDirectory,
                                    mount_performer_->AsWeakPtr()));
     if (safe_mode_delegate_->IsSafeMode()) {
@@ -335,6 +350,9 @@ void AuthSessionAuthenticator::DoLoginAsExistingUser(
         base::BindOnce(&AuthPerformer::AuthenticateUsingKnowledgeKey,
                        auth_performer_->AsWeakPtr()));
   }
+  steps.push_back(
+      base::BindOnce(&HibernateManager::PrepareHibernateAndMaybeResumeAuthOp,
+                     hibernate_manager_->AsWeakPtr()));
   steps.push_back(base::BindOnce(&MountPerformer::MountPersistentDirectory,
                                  mount_performer_->AsWeakPtr()));
   if (safe_mode_delegate_->IsSafeMode()) {
@@ -539,7 +557,7 @@ void AuthSessionAuthenticator::RecoverEncryptedData(
   const cryptohome::KeyDefinition* password_key_def =
       context->GetAuthFactorsData().FindOnlinePasswordKey();
   DCHECK(password_key_def);
-  const std::string key_label = password_key_def->label;
+  const std::string key_label = password_key_def->label.value();
 
   if (!context->HasReplacementKey()) {
     // Assume that there was an attempt to use the key, so it is was already
@@ -577,6 +595,12 @@ void AuthSessionAuthenticator::RecoverEncryptedData(
                                  auth_performer_->AsWeakPtr()));
   steps.push_back(base::BindOnce(&AuthFactorEditor::ReplaceContextKey,
                                  auth_factor_editor_->AsWeakPtr()));
+  // TODO(b/233103309): Abort resume from hibernate here as the user just went
+  // through the recovery flow and online login, so they may have tokens that
+  // need to be synced.
+  steps.push_back(
+      base::BindOnce(&HibernateManager::PrepareHibernateAndMaybeResumeAuthOp,
+                     hibernate_manager_->AsWeakPtr()));
   steps.push_back(base::BindOnce(&MountPerformer::MountPersistentDirectory,
                                  mount_performer_->AsWeakPtr()));
   if (safe_mode_delegate_->IsSafeMode()) {

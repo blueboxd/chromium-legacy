@@ -33,6 +33,15 @@ namespace gfx {
 class Vector2dF;
 }
 
+namespace wl {
+
+enum class EventDispatchPolicy {
+  kImmediate,
+  kOnFrame,
+};
+
+}  // namespace wl
+
 namespace ui {
 
 class WaylandConnection;
@@ -104,7 +113,8 @@ class WaylandEventSource : public PlatformEventSource,
 
   // WaylandPointer::Delegate
   void OnPointerFocusChanged(WaylandWindow* window,
-                             const gfx::PointF& location) override;
+                             const gfx::PointF& location,
+                             wl::EventDispatchPolicy dispatch_policy) override;
   void OnPointerButtonEvent(EventType evtype,
                             int changed_button,
                             WaylandWindow* window = nullptr) override;
@@ -120,19 +130,18 @@ class WaylandEventSource : public PlatformEventSource,
   const WaylandWindow* GetPointerTarget() const override;
 
   // WaylandTouch::Delegate
-  using DispatchPolicy = WaylandTouch::Delegate::EventDispatchPolicy;
   void OnTouchPressEvent(WaylandWindow* window,
                          const gfx::PointF& location,
                          base::TimeTicks timestamp,
                          PointerId id,
-                         EventDispatchPolicy dispatch_policy) override;
+                         wl::EventDispatchPolicy dispatch_policy) override;
   void OnTouchReleaseEvent(base::TimeTicks timestamp,
                            PointerId id,
-                           EventDispatchPolicy dispatch_policy) override;
+                           wl::EventDispatchPolicy dispatch_policy) override;
   void OnTouchMotionEvent(const gfx::PointF& location,
                           base::TimeTicks timestamp,
                           PointerId id,
-                          EventDispatchPolicy dispatch_policy) override;
+                          wl::EventDispatchPolicy dispatch_policy) override;
   void OnTouchCancelEvent() override;
   void OnTouchFrame() override;
   void OnTouchFocusChanged(WaylandWindow* window) override;
@@ -156,16 +165,15 @@ class WaylandEventSource : public PlatformEventSource,
   void OnRelativePointerMotion(const gfx::Vector2dF& delta) override;
 
  private:
-  struct PointerFrame {
-    PointerFrame();
-    PointerFrame(const PointerFrame& other);
-    PointerFrame(PointerFrame&&);
-    ~PointerFrame();
+  struct PointerScrollData {
+    PointerScrollData();
+    PointerScrollData(const PointerScrollData& other);
+    PointerScrollData(PointerScrollData&&);
+    ~PointerScrollData();
 
-    PointerFrame& operator=(const PointerFrame&);
-    PointerFrame& operator=(PointerFrame&&);
+    PointerScrollData& operator=(const PointerScrollData&);
+    PointerScrollData& operator=(PointerScrollData&&);
 
-    WaylandWindow* target = nullptr;
     absl::optional<uint32_t> axis_source;
     float dx = 0.0f;
     float dy = 0.0f;
@@ -173,14 +181,13 @@ class WaylandEventSource : public PlatformEventSource,
     bool is_axis_stop = false;
   };
 
-  struct TouchFrame {
-    TouchFrame(const TouchEvent& event,
-               base::OnceCallback<void()> completion_cb);
-    TouchFrame(const TouchFrame& other) = delete;
-    TouchFrame(TouchFrame&&) = delete;
-    ~TouchFrame();
+  struct FrameData {
+    FrameData(const Event& event, base::OnceCallback<void()> completion_cb);
+    FrameData(const FrameData& other) = delete;
+    FrameData(FrameData&&) = delete;
+    ~FrameData();
 
-    TouchEvent event;
+    std::unique_ptr<Event> event;
     base::OnceCallback<void()> completion_cb;
   };
 
@@ -190,7 +197,6 @@ class WaylandEventSource : public PlatformEventSource,
   // WaylandWindowObserver:
   void OnWindowRemoved(WaylandWindow* window) override;
 
-  void UpdateKeyboardModifiers(int modifier, bool down);
   void HandleTouchFocusChange(WaylandWindow* window,
                               bool focused,
                               absl::optional<PointerId> id = absl::nullopt);
@@ -210,6 +216,11 @@ class WaylandEventSource : public PlatformEventSource,
   // Wrap up method to support async touch release processing.
   void OnTouchReleaseInternal(PointerId id);
 
+  // Ensure a valid instance of the PointerScrollData class member.
+  PointerScrollData& EnsurePointerScrollData();
+
+  void ProcessPointerScrollData();
+
   // Set the target to the event, then dispatch the event.
   void SetTargetAndDispatchEvent(Event* event, EventTarget* target);
 
@@ -227,6 +238,7 @@ class WaylandEventSource : public PlatformEventSource,
   int last_pointer_button_pressed_ = 0;
 
   // Bitmask of EventFlags used to keep track of the the keyboard state.
+  // See ui/events/event_constants.h for examples and details.
   int keyboard_modifiers_ = 0;
 
   // Last known pointer location.
@@ -235,8 +247,12 @@ class WaylandEventSource : public PlatformEventSource,
   // Last known relative pointer location (used for pointer lock).
   absl::optional<gfx::PointF> relative_pointer_location_;
 
-  // Current frame
-  PointerFrame current_pointer_frame_;
+  // Accumulates the scroll data within a pointer frame internal.
+  absl::optional<PointerScrollData> pointer_scroll_data_;
+
+  // Latest set of pointer scroll data to compute fling scroll.
+  // Front is newer, and back is older.
+  std::deque<PointerScrollData> pointer_scroll_data_set_;
 
   // Time of the last pointer frame event.
   base::TimeTicks last_pointer_frame_time_;
@@ -252,13 +268,13 @@ class WaylandEventSource : public PlatformEventSource,
   };
   base::flat_map<PointerId, absl::optional<StylusData>> last_touch_stylus_data_;
 
-  // Recent pointer frames to compute fling scroll.
-  // Front is newer, and back is older.
-  std::deque<PointerFrame> recent_pointer_frames_;
-
   // Order set of touch events to be dispatching on the next
   // wl_touch::frame event.
-  std::deque<std::unique_ptr<TouchFrame>> touch_frames_;
+  std::deque<std::unique_ptr<FrameData>> touch_frames_;
+
+  // Order set of pointer events to be dispatching on the next
+  // wl_pointer::frame event.
+  std::deque<std::unique_ptr<FrameData>> pointer_frames_;
 
   // Map that keeps track of the current touch points, associating touch IDs to
   // to the surface/location where they happened.

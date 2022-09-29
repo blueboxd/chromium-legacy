@@ -24,10 +24,10 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "chromeos/ash/components/dbus/cryptohome/account_identifier_operators.h"
 #include "chromeos/ash/components/dbus/login_manager/policy_descriptor.pb.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
-#include "chromeos/dbus/cryptohome/account_identifier_operators.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/sha2.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -382,6 +382,24 @@ void FakeSessionManagerClient::StartRemoteDeviceWipe(
 void FakeSessionManagerClient::ClearForcedReEnrollmentVpd(
     VoidDBusMethodCallback callback) {
   clear_forced_re_enrollment_vpd_call_count_++;
+  PostReply(FROM_HERE, std::move(callback), true);
+}
+
+void FakeSessionManagerClient::UnblockDevModeForEnrollment(
+    VoidDBusMethodCallback callback) {
+  unblock_dev_mode_enrollment_call_count_++;
+  PostReply(FROM_HERE, std::move(callback), true);
+}
+
+void FakeSessionManagerClient::UnblockDevModeForInitialStateDetermination(
+    VoidDBusMethodCallback callback) {
+  unblock_dev_mode_init_state_call_count_++;
+  PostReply(FROM_HERE, std::move(callback), true);
+}
+
+void FakeSessionManagerClient::UnblockDevModeForCarrierLock(
+    VoidDBusMethodCallback callback) {
+  unblock_dev_mode_carrier_lock_call_count_++;
   PostReply(FROM_HERE, std::move(callback), true);
 }
 

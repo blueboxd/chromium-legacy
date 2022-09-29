@@ -26,11 +26,11 @@
 #include "components/segmentation_platform/internal/execution/model_execution_status.h"
 #include "components/segmentation_platform/internal/execution/processing/feature_list_query_processor.h"
 #include "components/segmentation_platform/internal/metadata/metadata_utils.h"
-#include "components/segmentation_platform/internal/proto/aggregation.pb.h"
-#include "components/segmentation_platform/internal/proto/model_metadata.pb.h"
-#include "components/segmentation_platform/internal/proto/types.pb.h"
 #include "components/segmentation_platform/public/model_provider.h"
+#include "components/segmentation_platform/public/proto/aggregation.pb.h"
+#include "components/segmentation_platform/public/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
+#include "components/segmentation_platform/public/proto/types.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,7 +57,7 @@ class MockSegmentInfoDatabase : public test::TestSegmentInfoDatabase {
               (override));
   MOCK_METHOD(void,
               GetSegmentInfoForSegments,
-              (const std::vector<SegmentId>& segment_ids,
+              (const base::flat_set<SegmentId>& segment_ids,
                MultipleSegmentInfoCallback callback),
               (override));
   MOCK_METHOD(void,
@@ -100,7 +100,7 @@ class ModelExecutionManagerTest : public testing::Test {
   }
 
   void CreateModelExecutionManager(
-      std::vector<SegmentId> segment_ids,
+      const base::flat_set<SegmentId>& segment_ids,
       const ModelExecutionManager::SegmentationModelUpdatedCallback& callback) {
     model_execution_manager_ = std::make_unique<ModelExecutionManagerImpl>(
         segment_ids, &model_provider_factory_, &clock_, segment_database_.get(),

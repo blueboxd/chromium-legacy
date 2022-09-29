@@ -766,18 +766,11 @@ TEST_P(FormDataImporterTest, GetPredictedCountryCode) {
       ConstructProfileFromTypeValuePairs({{ADDRESS_HOME_COUNTRY, "US"}});
   const AutofillProfile empty_profile;
   // Test prioritization: profile > variation service state > app locale
-  EXPECT_EQ(FormDataImporter::GetPredictedCountryCode(us_profile, "DE", "de-AT",
-                                                      nullptr),
-            "US");
-  EXPECT_EQ(FormDataImporter::GetPredictedCountryCode(us_profile, "", "de-AT",
-                                                      nullptr),
-            "US");
-  EXPECT_EQ(FormDataImporter::GetPredictedCountryCode(empty_profile, "DE",
-                                                      "de-AT", nullptr),
+  EXPECT_EQ(GetPredictedCountryCode(us_profile, "DE", "de-AT", nullptr), "US");
+  EXPECT_EQ(GetPredictedCountryCode(us_profile, "", "de-AT", nullptr), "US");
+  EXPECT_EQ(GetPredictedCountryCode(empty_profile, "DE", "de-AT", nullptr),
             "DE");
-  EXPECT_EQ(FormDataImporter::GetPredictedCountryCode(empty_profile, "",
-                                                      "de-AT", nullptr),
-            "AT");
+  EXPECT_EQ(GetPredictedCountryCode(empty_profile, "", "de-AT", nullptr), "AT");
 }
 
 TEST_P(FormDataImporterTest, ComplementCountry) {
@@ -1214,7 +1207,8 @@ TEST_P(FormDataImporterTest, ImportAddressProfileFromUnifiedSection) {
       ConstructDefaultProfileFormStructure();
 
   // Assign the address field another section than the other fields.
-  form_structure->field(4)->section = "another_section";
+  form_structure->field(4)->section.SetPrefixFromAutocomplete(
+      {.section = "another_section", .mode = HtmlFieldMode::HTML_MODE_NONE});
 
   ImportAddressProfileAndVerifyImportOfDefaultProfile(*form_structure);
 }
@@ -1305,7 +1299,9 @@ TEST_P(FormDataImporterTest,
       {{NAME_FIRST, kDefaultFirstName},
        {NAME_LAST, kDefaultLastName},
        {EMAIL_ADDRESS, kDefaultMail},
-       // Add six phone number fields.
+       // Add two phone number fields, split across 3 fields each.
+       // They are all declared as PHONE_HOME_WHOLE_NUMBER, which only affects
+       // the label. Local heuristics will classify them correctly.
        {PHONE_HOME_WHOLE_NUMBER, kDefaultPhoneAreaCode},
        {PHONE_HOME_WHOLE_NUMBER, kDefaultPhonePrefix},
        {PHONE_HOME_WHOLE_NUMBER, kDefaultPhoneSuffix},

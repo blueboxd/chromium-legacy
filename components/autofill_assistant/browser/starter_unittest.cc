@@ -590,7 +590,7 @@ TEST_F(StarterTest, RegularStartupFailsIfOnboardingRejected) {
 
 TEST_F(StarterTest, RpcTriggerScriptFailsIfMsbbIsDisabled) {
   SetupPlatformDelegateForReturningUser();
-  fake_platform_delegate_.msbb_enabled_ = false;
+  fake_platform_delegate_.fake_common_dependencies_.msbb_enabled_ = false;
   base::flat_map<std::string, std::string> script_parameters = {
       {"ENABLED", "true"},
       {"START_IMMEDIATELY", "false"},
@@ -970,7 +970,7 @@ TEST_F(StarterTest, ImplicitStartupOnSupportedDomainWithoutLogin) {
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list->InitAndEnableFeature(
       features::kAutofillAssistantInCCTTriggering);
-  fake_platform_delegate_.msbb_enabled_ = true;
+  fake_platform_delegate_.fake_common_dependencies_.msbb_enabled_ = true;
   fake_platform_delegate_.proactive_help_enabled_ = true;
   fake_platform_delegate_.is_logged_in_ = false;
   fake_platform_delegate_.is_web_layer_ = false;
@@ -1078,7 +1078,7 @@ TEST_F(StarterTest, DoNotStartImplicitlyIfNotLoggedInForWebLayer) {
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list->InitAndEnableFeature(
       features::kAutofillAssistantInCCTTriggering);
-  fake_platform_delegate_.msbb_enabled_ = true;
+  fake_platform_delegate_.fake_common_dependencies_.msbb_enabled_ = true;
   fake_platform_delegate_.proactive_help_enabled_ = true;
   fake_platform_delegate_.is_logged_in_ = false;
   fake_platform_delegate_.is_web_layer_ = true;
@@ -1096,7 +1096,7 @@ TEST_F(StarterTest, ImplicitStartupOnSupportedDomainWithLoginForWebLayer) {
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list->InitAndEnableFeature(
       features::kAutofillAssistantInCCTTriggering);
-  fake_platform_delegate_.msbb_enabled_ = true;
+  fake_platform_delegate_.fake_common_dependencies_.msbb_enabled_ = true;
   fake_platform_delegate_.proactive_help_enabled_ = true;
   fake_platform_delegate_.is_logged_in_ = true;
   fake_platform_delegate_.is_web_layer_ = true;
@@ -2210,7 +2210,9 @@ TEST_F(StarterTest, StartupRegistersTriggerFieldTrial) {
 
 TEST_F(StarterTest, StartupRegistersExperimentFieldTrials) {
   base::flat_map<std::string, std::string> script_parameters = {
-      {"EXPERIMENT_IDS", "1001,1002"}};
+      {"EXPERIMENT_IDS", "1002,1001"},
+      {"FIELD_TRIAL_2", "1002"},
+      {"FIELD_TRIAL_1", "1001"}};
   auto mock_field_trial_util =
       std::make_unique<NiceMock<MockAssistantFieldTrialUtil>>();
   const auto* mock_field_trial_util_ptr = mock_field_trial_util.get();
@@ -2220,13 +2222,20 @@ TEST_F(StarterTest, StartupRegistersExperimentFieldTrials) {
 
   EXPECT_CALL(*mock_field_trial_util_ptr,
               RegisterSyntheticFieldTrial(
-                  base::StringPiece("AutofillAssistantExperimentsTrial"),
+                  base::StringPiece("AutofillAssistantExperimentsTrial-1"),
                   base::StringPiece("1001")));
 
   EXPECT_CALL(*mock_field_trial_util_ptr,
               RegisterSyntheticFieldTrial(
-                  base::StringPiece("AutofillAssistantExperimentsTrial"),
+                  base::StringPiece("AutofillAssistantExperimentsTrial-2"),
                   base::StringPiece("1002")));
+
+  // Backwards compatibility.
+  // TODO(b/242171397): Remove
+  EXPECT_CALL(*mock_field_trial_util_ptr,
+              RegisterSyntheticFieldTrial(
+                  base::StringPiece("AutofillAssistantExperimentsTrial"),
+                  base::StringPiece("1001")));
 
   starter_->Start(std::make_unique<TriggerContext>(
       std::make_unique<ScriptParameters>(script_parameters),
@@ -2285,6 +2294,7 @@ TEST_F(StarterTest, FirstTimeUserNotShowOnboardingIfHandledExternally) {
   TriggerContext::Options options;
   options.initial_url = "https://redirect.com/to/www/example/com";
   options.is_externally_triggered = true;
+  options.skip_autofill_assistant_onboarding = true;
   base::MockCallback<
       base::OnceCallback<void(bool success, absl::optional<GURL> url,
                               std::unique_ptr<TriggerContext> trigger_context)>>
@@ -2314,6 +2324,45 @@ TEST_F(StarterTest, FirstTimeUserNotShowOnboardingIfHandledExternally) {
                   {{navigation_ids_[0], {Metrics::Onboarding::OB_EXTERNAL}}})));
 }
 
+TEST_F(StarterTest,
+       FirstTimeUserShowOnboardingIfHandledExternallyWithUseOnboardingFlag) {
+  SetupPlatformDelegateForFirstTimeUser();
+  base::flat_map<std::string, std::string> script_parameters = {
+      {"ENABLED", "true"},
+      {"START_IMMEDIATELY", "true"},
+      {"ORIGINAL_DEEPLINK", kExampleDeeplink}};
+  TriggerContext::Options options;
+  options.initial_url = "https://redirect.com/to/www/example/com";
+  options.is_externally_triggered = true;
+  options.skip_autofill_assistant_onboarding = false;
+  base::MockCallback<
+      base::OnceCallback<void(bool success, absl::optional<GURL> url,
+                              std::unique_ptr<TriggerContext> trigger_context)>>
+      mock_preconditions_checked_callback;
+  EXPECT_CALL(mock_preconditions_checked_callback,
+              Run(true, Optional(GURL(kExampleDeeplink)), _));
+
+  starter_->CanStart(
+      std::make_unique<TriggerContext>(
+          std::make_unique<ScriptParameters>(script_parameters), options),
+      mock_preconditions_checked_callback.Get());
+
+  EXPECT_EQ(fake_platform_delegate_.num_install_feature_module_called_, 1);
+  EXPECT_THAT(fake_platform_delegate_.num_show_onboarding_called_, Eq(1));
+  EXPECT_TRUE(fake_platform_delegate_.GetOnboardingAccepted());
+  EXPECT_THAT(GetUkmTriggerScriptStarted(ukm_recorder_), IsEmpty());
+  EXPECT_THAT(GetUkmTriggerScriptFinished(ukm_recorder_), IsEmpty());
+  EXPECT_THAT(GetUkmTriggerScriptOnboarding(ukm_recorder_), IsEmpty());
+  histogram_tester_.ExpectUniqueSample(
+      "Android.AutofillAssistant.FeatureModuleInstallation",
+      Metrics::FeatureModuleInstallation::DFM_FOREGROUND_INSTALLATION_SUCCEEDED,
+      1u);
+  EXPECT_THAT(GetUkmRegularScriptOnboarding(ukm_recorder_),
+              ElementsAreArray(ToHumanReadableMetrics(
+                  {{navigation_ids_[0], {Metrics::Onboarding::OB_ACCEPTED}},
+                   {navigation_ids_[0], {Metrics::Onboarding::OB_SHOWN}}})));
+}
+
 TEST_F(StarterTest, RegularStartupFailsForSupervisedUser) {
   SetupPlatformDelegateForFirstTimeUser();
   fake_platform_delegate_.is_supervised_user_ = true;
@@ -2333,6 +2382,42 @@ TEST_F(StarterTest, RegularStartupFailsForSupervisedUser) {
 TEST_F(StarterTest, RpcTriggerScriptStartupFailsForSupervisedUser) {
   SetupPlatformDelegateForReturningUser();
   fake_platform_delegate_.is_supervised_user_ = true;
+
+  base::flat_map<std::string, std::string> script_parameters = {
+      {"ENABLED", "true"},
+      {"START_IMMEDIATELY", "false"},
+      {"REQUEST_TRIGGER_SCRIPT", "true"},
+      {"ORIGINAL_DEEPLINK", kExampleDeeplink}};
+  EXPECT_CALL(*mock_trigger_script_ui_delegate_, Attach).Times(0);
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .Times(0);
+  EXPECT_CALL(mock_start_regular_script_callback_, Run).Times(0);
+
+  starter_->Start(std::make_unique<TriggerContext>(
+      std::make_unique<ScriptParameters>(script_parameters),
+      TriggerContext::Options()));
+}
+
+TEST_F(StarterTest, RegularStartupFailsForNotAllowedForMachineLearningUsers) {
+  SetupPlatformDelegateForReturningUser();
+  fake_platform_delegate_.is_allowed_for_machine_learning_ = false;
+
+  base::flat_map<std::string, std::string> script_parameters = {
+      {"ENABLED", "true"},
+      {"START_IMMEDIATELY", "true"},
+      {"ORIGINAL_DEEPLINK", kExampleDeeplink}};
+  TriggerContext::Options options;
+  options.initial_url = "https://redirect.com/to/www/example/com";
+  EXPECT_CALL(mock_start_regular_script_callback_, Run).Times(0);
+
+  starter_->Start(std::make_unique<TriggerContext>(
+      std::make_unique<ScriptParameters>(script_parameters), options));
+}
+
+TEST_F(StarterTest,
+       RpcTriggerScriptStartupFailsForAllowedForMachineLearningUsers) {
+  SetupPlatformDelegateForReturningUser();
+  fake_platform_delegate_.is_allowed_for_machine_learning_ = false;
 
   base::flat_map<std::string, std::string> script_parameters = {
       {"ENABLED", "true"},

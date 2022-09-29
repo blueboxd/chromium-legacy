@@ -5,12 +5,9 @@
 #ifndef COMPONENTS_TRANSLATE_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_HANDLER_H_
 #define COMPONENTS_TRANSLATE_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_HANDLER_H_
 
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "base/callback.h"
 #include "base/callback_list.h"
+#include "base/strings/string_piece.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_language_list.h"
 #include "components/translate/core/browser/translate_manager.h"
@@ -18,6 +15,7 @@
 
 namespace base {
 class Value;
+class ValueView;
 }  // namespace base
 
 namespace translate {
@@ -39,20 +37,20 @@ class TranslateInternalsHandler {
 
   // Returns a dictionary of languages where each key is a language
   // code and each value is a language name in the locale.
-  static base::Value GetLanguages();
+  static base::Value::Dict GetLanguages();
 
   virtual TranslateClient* GetTranslateClient() = 0;
   virtual variations::VariationsService* GetVariationsService() = 0;
   // Registers to handle |message| from JavaScript with |callback|.
   using MessageCallback =
       base::RepeatingCallback<void(const base::Value::List&)>;
-  virtual void RegisterMessageCallback(const std::string& message,
+  virtual void RegisterMessageCallback(base::StringPiece message,
                                        MessageCallback callback) = 0;
 
   // Calls a Javascript function with the given name and arguments.
   virtual void CallJavascriptFunction(
-      const std::string& function_name,
-      const std::vector<const base::Value*>& args) = 0;
+      base::StringPiece function_name,
+      base::span<const base::ValueView> args) = 0;
 
  protected:
   // Subclasses should call this in order to handle messages from JavaScript.
@@ -90,7 +88,8 @@ class TranslateInternalsHandler {
   void OnRequestInfo(const base::Value::List& args);
 
   // Sends a message to Javascript.
-  void SendMessageToJs(const std::string& message, const base::Value& value);
+  void SendMessageToJs(base::StringPiece message,
+                       const base::Value::Dict& value);
 
   // Sends the current preference to Javascript.
   void SendPrefsToJs();

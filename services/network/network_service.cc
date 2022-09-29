@@ -73,6 +73,7 @@
 #include "services/network/public/cpp/load_info_util.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/parsed_headers.h"
+#include "services/network/public/mojom/first_party_sets.mojom.h"
 #include "services/network/public/mojom/key_pinning.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/network/url_loader.h"
@@ -98,6 +99,10 @@
 #include "services/network/ct_log_list_distributor.h"
 #include "services/network/sct_auditing/sct_auditing_cache.h"
 #endif
+
+namespace net {
+class FirstPartySetEntry;
+}
 
 namespace network {
 
@@ -800,9 +805,8 @@ void NetworkService::BindTestInterface(
   }
 }
 
-void NetworkService::SetFirstPartySets(
-    const base::flat_map<net::SchemefulSite, net::SchemefulSite>& sets) {
-  first_party_sets_manager_->SetCompleteSets(sets);
+void NetworkService::SetFirstPartySets(mojom::PublicFirstPartySetsPtr sets) {
+  first_party_sets_manager_->SetCompleteSets(std::move(sets));
 }
 
 void NetworkService::SetExplicitlyAllowedPorts(

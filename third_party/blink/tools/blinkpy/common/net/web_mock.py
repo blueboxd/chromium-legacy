@@ -26,25 +26,42 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import json
 from six.moves.urllib.error import HTTPError
+
+from blinkpy.common.net.rpc import RESPONSE_PREFIX
 
 
 class MockWeb(object):
     def __init__(self, urls=None, responses=None):
         self.urls = urls or {}
         self.urls_fetched = []
+        self.requests = []
         self.responses = responses or []
 
-    def get_binary(self, url, return_none_on_404=False):
+    def get_binary(self, url, return_none_on_404=False, retries=0):  # pylint: disable=unused-argument
         self.urls_fetched.append(url)
         if url in self.urls:
             return self.urls[url]
         if return_none_on_404:
             return None
-        return 'MOCK Web result, 404 Not found'
+        return b'MOCK Web result, 404 Not found'
 
     def request(self, method, url, data=None, headers=None):  # pylint: disable=unused-argument
+        self.requests.append((url, data))
         return MockResponse(self.responses.pop(0))
+
+    def append_prpc_response(self, payload, status_code=200, headers=None):
+        headers = headers or {}
+        headers.setdefault('Content-Type', 'application/json')
+        self.responses.append({
+            'status_code':
+            200,
+            'body':
+            RESPONSE_PREFIX + json.dumps(payload).encode(),
+            'headers':
+            headers,
+        })
 
 
 class MockResponse(object):

@@ -9,13 +9,14 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/cryptohome/common_types.h"
 #include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/components/cryptohome/userdataauth_util.h"
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "chromeos/ash/components/dbus/cryptohome/key.pb.h"
+#include "chromeos/ash/components/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/constants/cryptohome_key_delegate_constants.h"
-#include "chromeos/dbus/cryptohome/key.pb.h"
-#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "components/device_event_log/device_event_log.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -96,7 +97,7 @@ KeyDefinition KeyDataToKeyDefinition(const KeyData& key_data) {
       result.type = KeyDefinition::TYPE_PUBLIC_MOUNT;
       break;
   }
-  result.label = key_data.label();
+  result.label = KeyLabel(key_data.label());
   result.revision = key_data.revision();
 
   // Extract |privileges|.
@@ -139,7 +140,7 @@ std::vector<KeyDefinition> RepeatedKeyDataToKeyDefinitions(
   return key_definitions;
 }
 
-AuthorizationRequest CreateAuthorizationRequest(const std::string& label,
+AuthorizationRequest CreateAuthorizationRequest(const KeyLabel& label,
                                                 const std::string& secret) {
   return CreateAuthorizationRequestFromKeyDef(
       KeyDefinition::CreateForPassword(secret, label, PRIV_DEFAULT));
@@ -173,8 +174,8 @@ AuthorizationRequest CreateAuthorizationRequestFromKeyDef(
 // TODO(crbug.com/797848): Finish testing this method.
 void KeyDefinitionToKey(const KeyDefinition& key_def, Key* key) {
   KeyData* data = key->mutable_data();
-  if (!key_def.label.empty())
-    data->set_label(key_def.label);
+  if (!key_def.label.value().empty())
+    data->set_label(key_def.label.value());
 
   switch (key_def.type) {
     case KeyDefinition::TYPE_PASSWORD:

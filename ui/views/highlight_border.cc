@@ -19,15 +19,17 @@ namespace views {
 // static
 void HighlightBorder::PaintBorderToCanvas(
     gfx::Canvas* canvas,
-    SkColor highlight_color,
-    SkColor border_color,
+    const views::View& view,
     const gfx::Rect& bounds,
     const gfx::RoundedCornersF& corner_radii,
     Type type,
     bool use_light_colors) {
+  SkColor inner_color = GetHighlightColor(view, type, use_light_colors);
+  SkColor outer_color = GetBorderColor(view, type, use_light_colors);
+
   cc::PaintFlags flags;
   flags.setStrokeWidth(kHighlightBorderThickness);
-  flags.setColor(border_color);
+  flags.setColor(outer_color);
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setAntiAlias(true);
 
@@ -54,23 +56,10 @@ void HighlightBorder::PaintBorderToCanvas(
   gfx::RectF inner_border_bounds(pixel_bounds);
   inner_border_bounds.Inset(kHighlightBorderThickness);
   inner_border_bounds.Inset(half_thickness);
-  flags.setColor(highlight_color);
+  flags.setColor(inner_color);
   SkPath inner_path;
   inner_path.addRoundRect(gfx::RectFToSkRect(inner_border_bounds), radii);
   canvas->DrawPath(inner_path, flags);
-}
-
-// static
-void HighlightBorder::PaintBorderToCanvas(
-    gfx::Canvas* canvas,
-    const views::View& view,
-    const gfx::Rect& bounds,
-    const gfx::RoundedCornersF& corner_radii,
-    Type type,
-    bool use_light_colors) {
-  PaintBorderToCanvas(canvas, GetHighlightColor(view, type, use_light_colors),
-                      GetBorderColor(view, type, use_light_colors), bounds,
-                      corner_radii, type, use_light_colors);
 }
 
 // static

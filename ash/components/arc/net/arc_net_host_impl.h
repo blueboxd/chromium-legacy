@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
+#include "chromeos/ash/components/dbus/patchpanel/patchpanel_client.h"
 #include "chromeos/ash/components/dbus/patchpanel/patchpanel_service.pb.h"
 #include "chromeos/ash/components/network/network_connection_observer.h"
 #include "chromeos/ash/components/network/network_profile_handler.h"
@@ -38,8 +39,9 @@ class ArcBridgeService;
 // Private implementation of ArcNetHost.
 class ArcNetHostImpl : public KeyedService,
                        public ConnectionObserver<mojom::NetInstance>,
-                       public chromeos::NetworkConnectionObserver,
-                       public chromeos::NetworkStateHandlerObserver,
+                       public ash::NetworkConnectionObserver,
+                       public ash::NetworkStateHandlerObserver,
+                       public ash::PatchPanelClient::Observer,
                        public mojom::NetHost {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -101,16 +103,15 @@ class ArcNetHostImpl : public KeyedService,
 
   void DisconnectHostVpn() override;
 
-  // Overridden from chromeos::NetworkStateHandlerObserver.
-  void ScanCompleted(const chromeos::DeviceState* /*unused*/) override;
+  // Overridden from ash::NetworkStateHandlerObserver.
+  void ScanCompleted(const ash::DeviceState* /*unused*/) override;
   void OnShuttingDown() override;
-  void NetworkConnectionStateChanged(
-      const chromeos::NetworkState* network) override;
+  void NetworkConnectionStateChanged(const ash::NetworkState* network) override;
   void NetworkListChanged() override;
   void DeviceListChanged() override;
-  void NetworkPropertiesUpdated(const chromeos::NetworkState* network) override;
+  void NetworkPropertiesUpdated(const ash::NetworkState* network) override;
 
-  // Overridden from chromeos::NetworkConnectionObserver.
+  // Overridden from ash::NetworkConnectionObserver.
   void DisconnectRequested(const std::string& service_path) override;
 
   // Overridden from ConnectionObserver<mojom::NetInstance>:
@@ -118,7 +119,7 @@ class ArcNetHostImpl : public KeyedService,
   void OnConnectionClosed() override;
 
  private:
-  const chromeos::NetworkState* GetDefaultNetworkFromChrome();
+  const ash::NetworkState* GetDefaultNetworkFromChrome();
   void UpdateActiveNetworks(
       const std::vector<patchpanel::NetworkDevice>& devices);
   void DefaultNetworkSuccessCallback(const std::string& service_path,
@@ -212,9 +213,12 @@ class ArcNetHostImpl : public KeyedService,
       base::OnceCallback<void(const std::string&)> callback,
       const std::string& error_name);
 
-  // Callback for chromeos::NetworkHandler::GetShillProperties
+  // Callback for ash::NetworkHandler::GetShillProperties
   void ReceiveShillProperties(const std::string& service_path,
                               absl::optional<base::Value> shill_properties);
+
+  // PatchPanelClient::Observer implementation:
+  void NetworkConfigurationChanged() override;
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 

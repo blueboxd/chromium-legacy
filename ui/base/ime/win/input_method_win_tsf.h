@@ -18,7 +18,7 @@ class TSFEventRouter;
 class COMPONENT_EXPORT(UI_BASE_IME_WIN) InputMethodWinTSF
     : public InputMethodWinBase {
  public:
-  InputMethodWinTSF(internal::InputMethodDelegate* delegate,
+  InputMethodWinTSF(ImeKeyEventDispatcher* ime_key_event_dispatcher,
                     HWND attached_window_handle);
 
   InputMethodWinTSF(const InputMethodWinTSF&) = delete;
@@ -35,6 +35,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) InputMethodWinTSF
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;
   void DetachTextInputClient(TextInputClient* client) override;
+  void OnInputLocaleChanged() override;
   bool IsInputLocaleCJK() const override;
   bool IsCandidatePopupOpen() const override;
 

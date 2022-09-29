@@ -59,6 +59,15 @@ export class UntrustedAppClient extends PostMessageAPIClient {
   onScreencastsStateChange(pendingScreencasts) {
     return this.callApiFn('onScreencastsStateChange', pendingScreencasts);
   }
+
+  /**
+   * Notifies the untrusted context when a new video file is available.
+   * @param {?File} videoFile to provide to the untrusted context
+   * @param {?DOMException} error if retrieving the video file failed
+   */
+  onFileLoaded(videoFile, error) {
+    return this.callApiFn('onFileLoaded', [videoFile, error]);
+  }
 }
 
 /**
@@ -131,11 +140,11 @@ export class TrustedAppRequestHandler extends RequestHandler {
     this.registerMethod('openFeedbackDialog', (args) => {
       return this.browserProxy_.openFeedbackDialog();
     });
-    this.registerMethod('getScreencast', (args) => {
-      if (!args || args.length != 1) {
-        return Promise.reject('Incorrect args for getScreencast');
+    this.registerMethod('getVideo', (args) => {
+      if (!args || args.length != 2) {
+        return Promise.reject('Incorrect args for getVideo');
       }
-      return this.browserProxy_.getScreencast(args[0]);
+      return this.browserProxy_.getVideo(args[0], args[1]);
     });
   }
 }

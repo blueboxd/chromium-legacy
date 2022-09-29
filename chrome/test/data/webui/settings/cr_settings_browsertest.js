@@ -127,30 +127,28 @@ TEST_F('CrSettingsLanguagesPageTest', 'LanguageMenu', function() {
   mocha.grep(languages_page_tests.TestNames.LanguageMenu).run();
 });
 
-GEN('#if !BUILDFLAG(IS_CHROMEOS_LACROS)');
-var CrSettingsLanguagesPageDetailedTest =
-    class extends CrSettingsBrowserTest {
+var CrSettingsTranslatePageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/languages_page_details_tests.js';
+    return 'chrome://settings/test_loader.html?module=settings/translate_page_tests.js';
   }
 };
 
-TEST_F(
-    'CrSettingsLanguagesPageDetailedTest', 'AlwaysTranslateDialog',
-    function() {
-      mocha
-          .grep(languages_page_details_tests.TestNames.AlwaysTranslateDialog)
-          .run();
-    });
+TEST_F('CrSettingsTranslatePageTest', 'TargetLanguageSelect', function() {
+  mocha.grep(translate_page_tests.TestNames.TargetLanguageSelect).run();
+});
 
-TEST_F(
-    'CrSettingsLanguagesPageDetailedTest', 'NeverTranslateDialog',
-    function() {
-      mocha.grep(languages_page_details_tests.TestNames.NeverTranslateDialog)
-          .run();
-    });
-GEN('#endif');
+TEST_F('CrSettingsTranslatePageTest', 'AlwaysTranslateDialog', function() {
+  mocha.grep(translate_page_tests.TestNames.AlwaysTranslateDialog).run();
+});
+
+TEST_F('CrSettingsTranslatePageTest', 'NeverTranslateDialog', function() {
+  mocha.grep(translate_page_tests.TestNames.NeverTranslateDialog).run();
+});
+
+TEST_F('CrSettingsTranslatePageTest', 'TranslateToggle', function() {
+  mocha.grep(translate_page_tests.TestNames.TranslateToggle).run();
+});
 
 var CrSettingsLanguagesPageMetricsTest = class extends CrSettingsBrowserTest {
   /** @override */
@@ -164,6 +162,41 @@ TEST_F(
     function() {
       runMochaSuite('LanguagesPageMetricsBrowser');
     });
+
+var CrSettingsTranslatePageMetricsTest = class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/translate_page_metrics_test_browser.js';
+  }
+};
+
+TEST_F(
+    'CrSettingsTranslatePageMetricsTest', 'TranslatePageMetricsBrowser',
+    function() {
+      runMochaSuite('TranslatePageMetricsBrowser');
+    });
+var CrSettingsSpellCheckPageMetricsTest = class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/spell_check_page_metrics_test_browser.js';
+  }
+};
+
+TEST_F('CrSettingsSpellCheckPageMetricsTest', 'SpellCheckMetrics', function() {
+  mocha.grep(spell_check_page_metrics_test_browser.TestNames.SpellCheckMetrics).run();
+});
+
+GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+TEST_F('CrSettingsSpellCheckPageMetricsTest', 'SpellCheckMetricsOfficialBuild', function() {
+  mocha.grep(spell_check_page_metrics_test_browser.TestNames.SpellCheckMetricsOfficialBuild).run();
+});
+GEN('#endif');
+
+GEN('#if !BUILDFLAG(IS_MAC)');
+TEST_F('CrSettingsSpellCheckPageMetricsTest', 'SpellCheckMetricsNotMacOSx', function() {
+  mocha.grep(spell_check_page_metrics_test_browser.TestNames.SpellCheckMetricsNotMacOSx).run();
+});
+GEN('#endif');
 
 GEN('#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)');
 
@@ -267,18 +300,6 @@ TEST_F('CrSettingsPasswordsSectionTest', 'MAYBE_All', function() {
 });
 GEN('#undef MAYBE_All');
 
-var CrSettingsMultiStorePasswordUiEntryTest =
-    class extends CrSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/multi_store_password_ui_entry_test.js';
-  }
-};
-
-TEST_F('CrSettingsMultiStorePasswordUiEntryTest', 'All', function() {
-  mocha.run();
-});
-
 var CrSettingsPasswordsDeviceSectionTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
@@ -321,6 +342,26 @@ var CrSettingsSafetyCheckPageTest = class extends CrSettingsBrowserTest {
 };
 
 TEST_F('CrSettingsSafetyCheckPageTest', 'All', function() {
+  mocha.run();
+});
+
+var CrSettingsSafetyCheckPermissionsTest = class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/safety_check_permissions_test.js';
+  }
+
+  /** @override */
+  get featureListInternal() {
+    return {
+      enabled: [
+        'features::kSafetyCheckPermissions',
+      ],
+    };
+  }
+};
+
+TEST_F('CrSettingsSafetyCheckPermissionsTest', 'All', function() {
   mocha.run();
 });
 
@@ -425,13 +466,13 @@ var CrSettingsPrivacyPageTest = class extends CrSettingsBrowserTest {
   }
 };
 
-// TODO(crbug.com/1263420): Flaky on Linux Tests(dbg).
+// TODO(crbug.com/1351019): Flaky on Linux Tests(dbg).
 GEN('#if BUILDFLAG(IS_LINUX)');
 GEN('#define MAYBE_PrivacyPageTests DISABLED_PrivacyPageTests');
 GEN('#else');
 GEN('#define MAYBE_PrivacyPageTests PrivacyPageTests');
 GEN('#endif');
-TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageTests', function() {
+TEST_F('CrSettingsPrivacyPageTest', 'MAYBE_PrivacyPageTests', function() {
   runMochaSuite('PrivacyPage');
 });
 
@@ -741,7 +782,6 @@ TEST_F('CrSettingsSiteDataDetailsSubpageTest', 'All', function() {
 });
 
 [['AppearanceFontsPage', 'appearance_fonts_page_test.js'],
- ['AppearancePage', 'appearance_page_test.js'],
  [
    'SettingsCategoryDefaultRadioGroup',
    'settings_category_default_radio_group_tests.js',
@@ -827,6 +867,8 @@ GEN('#if !BUILDFLAG(IS_CHROMEOS)');
 [['DefaultBrowser', 'default_browser_test.js'],
  ['ImportDataDialog', 'import_data_dialog_test.js'],
  ['SystemPage', 'system_page_tests.js'],
+ // TODO(crbug.com/1350019) Test is flaky on ChromeOS
+ ['AppearancePage', 'appearance_page_test.js'],
 ].forEach(test => registerTest(...test));
 GEN('#endif');
 
@@ -834,6 +876,11 @@ GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
 [['PeoplePageManageProfile', 'people_page_manage_profile_test.js'],
  ['Languages', 'languages_tests.js'],
  ['RelaunchConfirmationDialog', 'relaunch_confirmation_dialog_test.js'],
+].forEach(test => registerTest(...test));
+GEN('#endif');
+
+GEN('#if BUILDFLAG(IS_WIN)');
+[['PasskeysSubpage', 'passkeys_subpage_test.js'],
 ].forEach(test => registerTest(...test));
 GEN('#endif');
 

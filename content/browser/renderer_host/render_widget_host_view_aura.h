@@ -157,8 +157,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   gfx::Rect GetBoundsInRootWindow() override;
   void WheelEventAck(const blink::WebMouseWheelEvent& event,
                      blink::mojom::InputEventResultState ack_result) override;
-  void GestureEventAck(const blink::WebGestureEvent& event,
-                       blink::mojom::InputEventResultState ack_result) override;
+  void GestureEventAck(
+      const blink::WebGestureEvent& event,
+      blink::mojom::InputEventResultState ack_result,
+      blink::mojom::ScrollResultDataPtr scroll_result_data) override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
   void ProcessAckedTouchEvent(
       const TouchEventWithLatencyInfo& touch,
@@ -211,7 +213,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
-  uint32_t ConfirmCompositionText(bool keep_selection) override;
+  size_t ConfirmCompositionText(bool keep_selection) override;
   void ClearCompositionText() override;
   void InsertText(const std::u16string& text,
                   InsertTextCursorBehavior cursor_behavior) override;
@@ -223,7 +225,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool CanComposeInline() const override;
   gfx::Rect GetCaretBounds() const override;
   gfx::Rect GetSelectionBoundingBox() const override;
-  bool GetCompositionCharacterBounds(uint32_t index,
+  bool GetCompositionCharacterBounds(size_t index,
                                      gfx::Rect* rect) const override;
   bool HasCompositionText() const override;
   ui::TextInputClient::FocusReason GetFocusReason() const override;
@@ -334,8 +336,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                        aura::Window* lost_focus) override;
 
   // Overridden from aura::WindowTreeHostObserver:
-  void OnHostMovedInPixels(aura::WindowTreeHost* host,
-                           const gfx::Point& new_origin_in_pixels) override;
+  void OnHostMovedInPixels(aura::WindowTreeHost* host) override;
 
   // RenderFrameMetadataProvider::Observer implementation.
   void OnRenderFrameMetadataChangedBeforeActivation(

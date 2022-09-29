@@ -198,7 +198,7 @@
 #include "ui/base/device_form_factor.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
 #include "content/browser/media/session/pepper_playback_observer.h"
 #endif
 
@@ -216,9 +216,8 @@ constexpr auto kUpdateLoadStatesInterval = base::Milliseconds(250);
 using LifecycleState = RenderFrameHost::LifecycleState;
 using LifecycleStateImpl = RenderFrameHostImpl::LifecycleStateImpl;
 
-base::LazyInstance<std::vector<
-    WebContentsImpl::FriendWrapper::CreatedCallback>>::DestructorAtExit
-    g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::RepeatingCallbackList<void(WebContents*)>>::
+    DestructorAtExit g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
 
 bool HasMatchingWidgetHost(FrameTree* tree, RenderWidgetHostImpl* host) {
   // This method scans the frame tree rather than checking whether
@@ -603,19 +602,10 @@ std::unique_ptr<WebContents> WebContents::CreateWithSessionStorage(
   return new_contents;
 }
 
-void WebContentsImpl::FriendWrapper::AddCreatedCallbackForTesting(
+base::CallbackListSubscription
+WebContentsImpl::FriendWrapper::AddCreatedCallbackForTesting(
     const CreatedCallback& callback) {
-  g_created_callbacks.Get().push_back(callback);
-}
-
-void WebContentsImpl::FriendWrapper::RemoveCreatedCallbackForTesting(
-    const CreatedCallback& callback) {
-  for (size_t i = 0; i < g_created_callbacks.Get().size(); ++i) {
-    if (g_created_callbacks.Get().at(i) == callback) {
-      g_created_callbacks.Get().erase(g_created_callbacks.Get().begin() + i);
-      return;
-    }
-  }
+  return g_created_callbacks.Get().Add(callback);
 }
 
 WebContents* WebContents::FromRenderViewHost(RenderViewHost* rvh) {
@@ -914,7 +904,8 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
                           this,
                           this,
                           this,
-                          FrameTree::Type::kPrimary),
+                          FrameTree::Type::kPrimary,
+                          base::UnguessableToken::Create()),
       node_(this),
       primary_main_frame_process_status_(
           base::TERMINATION_STATUS_STILL_RUNNING),
@@ -950,7 +941,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
           power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
               "PowerModeVoter.Audible")) {
   TRACE_EVENT0("content", "WebContentsImpl::WebContentsImpl");
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
   pepper_playback_observer_ = std::make_unique<PepperPlaybackObserver>(this);
 #endif
 
@@ -1074,7 +1065,7 @@ WebContentsImpl::~WebContentsImpl() {
   // prerendering. Shutdown them by destructing PrerenderHostRegistry.
   prerender_host_registry_.reset();
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
   // Call this before WebContentsDestroyed() is broadcasted since
   // AudioFocusManager will be destroyed after that.
   pepper_playback_observer_.reset();
@@ -2514,7 +2505,7 @@ void WebContentsImpl::AttachInnerWebContents(
   auto* proxy =
       inner_main_frame->browsing_context_state()->CreateOuterDelegateProxy(
           render_frame_host_impl->GetSiteInstance(),
-          inner_main_frame->frame_tree_node());
+          inner_main_frame->frame_tree_node(), blink::RemoteFrameToken());
   if (remote_frame && remote_frame_host_receiver) {
     proxy->BindRemoteFrameInterfaces(std::move(remote_frame),
                                      std::move(remote_frame_host_receiver));
@@ -2861,6 +2852,9 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
       static_cast<int>(min_width / display.device_scale_factor()));
 #endif  // BUILDFLAG(IS_ANDROID)
 
+  // GuestViews in the same StoragePartition need to find each other's frames.
+  prefs.renderer_wide_named_frame_lookup = IsGuest();
+
   GetContentClient()->browser()->OverrideWebkitPrefs(this, &prefs);
   return prefs;
 }
@@ -3118,8 +3112,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params,
   if (browser_plugin_guest_)
     browser_plugin_guest_->Init();
 
-  for (auto& i : g_created_callbacks.Get())
-    i.Run(this);
+  g_created_callbacks.Get().Notify(this);
 
   // Create the renderer process in advance if requested.
   if (params.desired_renderer_state ==
@@ -6366,15 +6359,6 @@ void WebContentsImpl::DomOperationResponse(RenderFrameHost* render_frame_host,
                         "render_frame_host", render_frame_host, "json_string",
                         json_string);
 
-  // TODO(lukasza): The notification below should probably indicate which
-  // RenderFrameHostImpl the message is coming from. This can enable tests to
-  // talk to 2 frames at the same time, without being confused which frame a
-  // given response comes from.  See also a corresponding TODO in the
-  // ExecuteScriptHelper in //content/public/test/browser_test_utils.cc
-  NotificationService::current()->Notify(
-      NOTIFICATION_DOM_OPERATION_RESPONSE, Source<WebContents>(this),
-      Details<const std::string>(&json_string));
-
   observers_.NotifyObservers(&WebContentsObserver::DomOperationResponse,
                              render_frame_host, json_string);
 }
@@ -6463,7 +6447,7 @@ void WebContentsImpl::OpenColorChooser(
 }
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
 void WebContentsImpl::OnPepperInstanceCreated(RenderFrameHostImpl* source,
                                               int32_t pp_instance) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::OnPepperInstanceCreated",
@@ -6517,7 +6501,7 @@ void WebContentsImpl::OnPepperPluginCrashed(RenderFrameHostImpl* source,
                              plugin_pid);
 }
 
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PPAPI)
 
 void WebContentsImpl::UpdateFaviconURL(
     RenderFrameHostImpl* source,
@@ -6868,7 +6852,7 @@ void WebContentsImpl::RenderFrameDeleted(
     observers_.NotifyObservers(&WebContentsObserver::RenderFrameDeleted,
                                render_frame_host);
   }
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
   pepper_playback_observer_->RenderFrameDeleted(render_frame_host);
 #endif
 
@@ -6938,7 +6922,7 @@ void WebContentsImpl::RunJavaScriptDialog(
     JavaScriptDialogCallback response_callback) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::RunJavaScriptDialog",
                         "render_frame_host", render_frame_host);
-  DCHECK(render_frame_host->GetPage().IsPrimary());
+  DCHECK(render_frame_host->GetPage().IsPrimary() && !IsPortal());
 
   // Ensure that if showing a dialog is the first thing that a page does, that
   // the contents of the previous page aren't shown behind it. This is required
@@ -7047,7 +7031,7 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::RunBeforeUnloadConfirm",
                         "render_frame_host", render_frame_host, "is_reload",
                         is_reload);
-  DCHECK(render_frame_host->GetPage().IsPrimary());
+  DCHECK(render_frame_host->GetPage().IsPrimary() && !IsPortal());
 
   // Ensure that if showing a dialog is the first thing that a page does, that
   // the contents of the previous page aren't shown behind it. This is required
@@ -7594,12 +7578,12 @@ std::unique_ptr<NavigationUIData> WebContentsImpl::GetNavigationUIData(
   return GetContentClient()->browser()->GetNavigationUIData(navigation_handle);
 }
 
-void WebContentsImpl::RegisterExistingOriginToPreventOptInIsolation(
+void WebContentsImpl::RegisterExistingOriginAsHavingDefaultIsolation(
     const url::Origin& origin,
     NavigationRequest* navigation_request_to_exclude) {
   OPTIONAL_TRACE_EVENT2(
       "content",
-      "WebContentsImpl::RegisterExistingOriginToPreventOptInIsolation",
+      "WebContentsImpl::RegisterExistingOriginAsHavingDefaultIsolation",
       "origin", origin, "navigation_request_to_exclude",
       navigation_request_to_exclude);
   // Note: This function can be made static if we ever need call it without
@@ -7611,7 +7595,7 @@ void WebContentsImpl::RegisterExistingOriginToPreventOptInIsolation(
       continue;
 
     // Walk the frame trees to notify each one's NavigationController about the
-    // opting-in origin, and also pick up any frames without
+    // opting-in or opting-out `origin`, and also pick up any frames without
     // FrameNavigationEntries.
     // * Some frames won't have FrameNavigationEntries (Issues 524208, 608402).
     // * Some pending navigations won't have NavigationEntries.
@@ -7619,7 +7603,7 @@ void WebContentsImpl::RegisterExistingOriginToPreventOptInIsolation(
         [](const url::Origin& origin,
            NavigationRequest* navigation_request_to_exclude,
            FrameTree* frame_tree) {
-          frame_tree->RegisterExistingOriginToPreventOptInIsolation(
+          frame_tree->RegisterExistingOriginAsHavingDefaultIsolation(
               origin, navigation_request_to_exclude);
         },
         origin, navigation_request_to_exclude));
@@ -7907,10 +7891,10 @@ void WebContentsImpl::DidCallFocus() {
 void WebContentsImpl::OnAdvanceFocus(RenderFrameHostImpl* source_rfh) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::OnAdvanceFocus",
                         "render_frame_host", source_rfh);
-  // When a RenderFrame needs to advance focus to a RenderFrameProxy (by hitting
-  // TAB), the RenderFrameProxy sends an IPC to RenderFrameProxyHost. When this
-  // RenderFrameProxyHost represents an inner WebContents, the outer WebContents
-  // needs to focus the inner WebContents.
+  // When a RenderFrame needs to advance focus to a `blink::RemoteFrame` (by
+  // hitting TAB), the `blink::RemoteFrame` sends an IPC to
+  // RenderFrameProxyHost. When this RenderFrameProxyHost represents an inner
+  // WebContents, the outer WebContents needs to focus the inner WebContents.
   if (GetOuterWebContents() &&
       GetOuterWebContents() == WebContents::FromRenderFrameHost(source_rfh) &&
       GetFocusedWebContents() == GetOuterWebContents()) {

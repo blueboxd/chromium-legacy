@@ -3,17 +3,18 @@
 // found in the LICENSE file.
 
 // clang-format off
-import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 
-import {CrExpandButtonElement} from 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
-import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
-
+import {CrExpandButtonElement} from 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
+import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 // clang-format on
 
 suite('cr-expand-button', function() {
   let button: CrExpandButtonElement;
   let icon: CrIconButtonElement;
+  const expandTitle = 'expand title';
+  const collapseTitle = 'collapse title';
 
   setup(() => {
     document.body.innerHTML = '';
@@ -33,10 +34,14 @@ suite('cr-expand-button', function() {
   });
 
   test('changing |expanded|', () => {
+    button.expandTitle = expandTitle;
+    button.collapseTitle = collapseTitle;
     assertFalse(button.expanded);
+    assertEquals(expandTitle, button.title);
     assertEquals('false', icon.getAttribute('aria-expanded'));
     assertEquals('cr:expand-more', icon.ironIcon);
     button.expanded = true;
+    assertEquals(collapseTitle, button.title);
     assertEquals('true', icon.getAttribute('aria-expanded'));
     assertEquals('cr:expand-less', icon.ironIcon);
   });
@@ -71,5 +76,15 @@ suite('cr-expand-button', function() {
     assertEquals(expandIconName, icon.ironIcon);
     button.expanded = true;
     assertEquals(collapseIconName, icon.ironIcon);
+  });
+
+  test('setting |expand-title| and |collapse-title|', () => {
+    assertFalse(button.expanded);
+    button.expandTitle = expandTitle;
+    assertEquals(expandTitle, button.title);
+
+    button.click();
+    button.collapseTitle = collapseTitle;
+    assertEquals(collapseTitle, button.title);
   });
 });

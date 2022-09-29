@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import './critical_error_page.js';
+import './hardware_error_page.js';
 import './onboarding_choose_destination_page.js';
 import './onboarding_choose_wipe_device_page.js';
 import './onboarding_choose_wp_disable_method_page.js';
@@ -13,6 +14,7 @@ import './onboarding_select_components_page.js';
 import './onboarding_update_page.js';
 import './onboarding_wait_for_manual_wp_disable_page.js';
 import './onboarding_wp_disable_complete_page.js';
+import './reboot_page.js';
 import './reimaging_calibration_failed_page.js';
 import './reimaging_calibration_run_page.js';
 import './reimaging_calibration_setup_page.js';
@@ -218,6 +220,20 @@ export const StateComponentMapping = {
     buttonExit: ButtonState.HIDDEN,
     buttonBack: ButtonState.HIDDEN,
   },
+  [State.kHardwareError]: {
+    componentIs: 'hardware-error-page',
+    requiresReloadWhenShown: false,
+    buttonNext: ButtonState.HIDDEN,
+    buttonExit: ButtonState.HIDDEN,
+    buttonBack: ButtonState.HIDDEN,
+  },
+  [State.kReboot]: {
+    componentIs: 'reboot-page',
+    requiresReloadWhenShown: false,
+    buttonNext: ButtonState.HIDDEN,
+    buttonExit: ButtonState.HIDDEN,
+    buttonBack: ButtonState.HIDDEN,
+  },
 };
 
 /**
@@ -412,6 +428,24 @@ export class ShimlessRma extends ShimlessRmaBase {
       this.currentPage_.buttonNextLabelKey = e.detail;
       this.notifyPath('currentPage_.buttonNextLabelKey');
     };
+
+    /**
+     * The fatalHardwareErrorCallback_ callback is used by the finalization
+     * page and the provisioning page to tell the app that there is a fatal
+     * hardware error.
+     * @private {?Function}
+     */
+    this.fatalHardwareErrorCallback_ = (event) => {
+      const errorState = {
+        stateResult: {
+          state: State.kHardwareError,
+          canExit: false,
+          canGoBack: false,
+          error: event.detail,
+        },
+      };
+      this.showState_(errorState);
+    };
   }
 
   /** @override */
@@ -428,6 +462,8 @@ export class ShimlessRma extends ShimlessRmaBase {
         'enable-all-buttons', this.enableAllButtonsCallback_);
     window.addEventListener('click-exit-button', this.exitButtonCallback_);
     window.addEventListener('click-next-button', this.nextButtonCallback_);
+    window.addEventListener(
+        'fatal-hardware-error', this.fatalHardwareErrorCallback_);
   }
 
   /** @override */
@@ -444,6 +480,8 @@ export class ShimlessRma extends ShimlessRmaBase {
         'enable-all-buttons', this.enableAllButtonsCallback_);
     window.removeEventListener('click-exit-button', this.exitButtonCallback_);
     window.removeEventListener('click-next-button', this.nextButtonCallback_);
+    window.removeEventListener(
+        'fatal-hardware-error', this.fatalHardwareErrorCallback_);
   }
 
   /** @override */
@@ -493,6 +531,23 @@ export class ShimlessRma extends ShimlessRmaBase {
     if (this.handleStandardAndCriticalError_(stateResult.stateResult.error)) {
       return;
     }
+
+    // This is a special case for showing the reboot page when the platform
+    // sends the error code for expecting a reboot or a shut down.
+    if (stateResult.stateResult.error === RmadErrorCode.kExpectReboot ||
+        stateResult.stateResult.error === RmadErrorCode.kExpectShutdown) {
+      const rebootState = {
+        stateResult: {
+          state: State.kReboot,
+          canExit: false,
+          canGoBack: false,
+          error: stateResult.stateResult.error,
+        },
+      };
+      this.showState_(rebootState);
+      return;
+    }
+
     this.showState_(stateResult);
   }
 

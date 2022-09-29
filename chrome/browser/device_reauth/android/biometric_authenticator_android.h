@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "chrome/browser/device_reauth/android/biometric_authenticator_bridge.h"
+#include "chrome/browser/device_reauth/chrome_biometric_authenticator_common.h"
 #include "chrome/browser/device_reauth/chrome_biometric_authenticator_factory.h"
 #include "components/device_reauth/biometric_authenticator.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
@@ -46,7 +47,7 @@ enum class BiometricAuthFinalResult {
 
 // Android implementation of the BiometricAuthenticator interface.
 class BiometricAuthenticatorAndroid
-    : public device_reauth::BiometricAuthenticator {
+    : public ChromeBiometricAuthenticatorCommon {
  public:
   // Returns true, when biometrics are available and also the device screen lock
   // is set up, false otherwise. When the |requester| is kIncognitoReauthPage,
@@ -82,7 +83,7 @@ class BiometricAuthenticatorAndroid
       std::unique_ptr<BiometricAuthenticatorBridge> bridge);
 
  private:
-  friend class BiometricAuthenticatorAndroidFactory;
+  friend class ChromeBiometricAuthenticatorFactory;
 
   explicit BiometricAuthenticatorAndroid(
       std::unique_ptr<BiometricAuthenticatorBridge> bridge);
@@ -91,9 +92,6 @@ class BiometricAuthenticatorAndroid
   // Called when the authentication compeletes with the result
   void OnAuthenticationCompleted(
       device_reauth::BiometricAuthUIResult ui_result);
-
-  // Time of last successful re-auth. nullopt if there hasn't been an auth yet.
-  absl::optional<base::TimeTicks> last_good_auth_timestamp_;
 
   // Callback to be executed after the authentication completes.
   AuthenticateCallback callback_;

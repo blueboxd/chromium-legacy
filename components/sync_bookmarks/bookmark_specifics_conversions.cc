@@ -298,6 +298,10 @@ sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
   bm_specifics->set_creation_time_us(
       node->date_added().ToDeltaSinceWindowsEpoch().InMicroseconds());
   *bm_specifics->mutable_unique_position() = unique_position;
+  if (!node->is_folder() && node->date_last_used() != base::Time()) {
+    bm_specifics->set_last_used_time_us(
+        node->date_last_used().ToDeltaSinceWindowsEpoch().InMicroseconds());
+  }
 
   if (node->GetMetaInfoMap()) {
     UpdateBookmarkSpecificsMetaInfo(node->GetMetaInfoMap(), bm_specifics);
@@ -372,6 +376,15 @@ const bookmarks::BookmarkNode* CreateBookmarkNodeFromSpecifics(
       const bookmarks::BookmarkNode* node =
           model->AddURL(parent, index, NodeTitleFromSpecifics(specifics),
                         GURL(specifics.url()), &metainfo, creation_time, guid);
+      if (specifics.has_last_used_time_us()) {
+        const int64_t last_used_time_us = specifics.last_used_time_us();
+        const base::Time last_used_time =
+            base::Time::FromDeltaSinceWindowsEpoch(
+                // Use FromDeltaSinceWindowsEpoch because last_used_time_us has
+                // always used the Windows epoch.
+                base::Microseconds(last_used_time_us));
+        model->UpdateLastUsedTime(node, last_used_time);
+      }
       SetBookmarkFaviconFromSpecifics(specifics, node, favicon_service);
       return node;
     }
@@ -404,6 +417,15 @@ void UpdateBookmarkNodeFromSpecifics(
   if (!node->is_folder()) {
     model->SetURL(node, GURL(specifics.url()));
     SetBookmarkFaviconFromSpecifics(specifics, node, favicon_service);
+
+    if (specifics.has_last_used_time_us()) {
+      const int64_t last_used_time_us = specifics.last_used_time_us();
+      const base::Time last_used_time = base::Time::FromDeltaSinceWindowsEpoch(
+          // Use FromDeltaSinceWindowsEpoch because last_used_time_us has
+          // always used the Windows epoch.
+          base::Microseconds(last_used_time_us));
+      model->UpdateLastUsedTime(node, last_used_time);
+    }
   }
 }
 
@@ -438,13 +460,14 @@ const bookmarks::BookmarkNode* ReplaceBookmarkNodeGUID(
   const bookmarks::BookmarkNode* new_node = nullptr;
   if (node->is_folder()) {
     new_node = model->AddFolder(
-        node->parent(), node->parent()->GetIndexOf(node), node->GetTitle(),
-        node->GetMetaInfoMap(), node->date_added(), guid);
+        node->parent(), node->parent()->GetIndexOf(node).value(),
+        node->GetTitle(), node->GetMetaInfoMap(), node->date_added(), guid);
     MoveAllChildren(model, node, new_node);
   } else {
-    new_node = model->AddURL(node->parent(), node->parent()->GetIndexOf(node),
-                             node->GetTitle(), node->url(),
-                             node->GetMetaInfoMap(), node->date_added(), guid);
+    new_node =
+        model->AddURL(node->parent(), node->parent()->GetIndexOf(node).value(),
+                      node->GetTitle(), node->url(), node->GetMetaInfoMap(),
+                      node->date_added(), guid);
   }
 
   model->Remove(node);

@@ -10,7 +10,6 @@ import android.text.SpannableString;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.ViewGroup;
 
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -23,7 +22,6 @@ import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthSettingSwitch
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesSettingsFragment;
 import org.chromium.chrome.browser.privacy.secure_dns.SecureDnsSettings;
-import org.chromium.chrome.browser.privacy_review.PrivacyReviewDialog;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxBridge;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxReferrer;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSettingsFragment;
@@ -37,7 +35,6 @@ import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.settings.GoogleServicesSettings;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.chrome.browser.usage_stats.UsageStatsConsentDialog;
-import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
@@ -63,13 +60,11 @@ public class PrivacySettings
     private static final String PREF_SYNC_AND_SERVICES_LINK = "sync_and_services_link";
     private static final String PREF_CLEAR_BROWSING_DATA = "clear_browsing_data";
     private static final String PREF_PRIVACY_SANDBOX = "privacy_sandbox";
-    private static final String PREF_PRIVACY_REVIEW = "privacy_review";
+    private static final String PREF_PRIVACY_GUIDE = "privacy_guide";
     private static final String PREF_INCOGNITO_LOCK = "incognito_lock";
 
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
     private IncognitoLockSettings mIncognitoLockSettings;
-    private ViewGroup mDialogContainer;
-    private BottomSheetController mBottomSheetController;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -93,17 +88,9 @@ public class PrivacySettings
             });
         }
 
-        Preference privacyReviewPreference = findPreference(PREF_PRIVACY_REVIEW);
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_REVIEW)) {
-            getPreferenceScreen().removePreference(privacyReviewPreference);
-        } else {
-            // Display the privacy review dialog when the menu item is clicked.
-            privacyReviewPreference.setOnPreferenceClickListener(preference -> {
-                PrivacyReviewDialog dialog = new PrivacyReviewDialog(
-                        getContext(), mDialogContainer, mBottomSheetController);
-                dialog.show();
-                return true;
-            });
+        Preference privacyGuidePreference = findPreference(PREF_PRIVACY_GUIDE);
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_GUIDE)) {
+            getPreferenceScreen().removePreference(privacyGuidePreference);
         }
 
         IncognitoReauthSettingSwitchPreference incognitoReauthPreference =
@@ -283,13 +270,5 @@ public class PrivacySettings
             return true;
         }
         return false;
-    }
-
-    public void setDialogContainer(ViewGroup dialogContainer) {
-        mDialogContainer = dialogContainer;
-    }
-
-    public void setBottomSheetController(BottomSheetController controller) {
-        mBottomSheetController = controller;
     }
 }

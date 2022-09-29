@@ -87,6 +87,10 @@ class ProtocolUtils {
       const std::vector<std::string>& preexisting_payment_instrument_ids,
       const std::string& client_token);
 
+  // Create request to report progress.
+  static std::string CreateReportProgressRequest(const std::string& token,
+                                                 const std::string& payload);
+
   // Create an action from the |action|.
   static std::unique_ptr<Action> CreateAction(ActionDelegate* delegate,
                                               const ActionProto& action);
@@ -117,7 +121,8 @@ class ProtocolUtils {
                            std::vector<std::unique_ptr<Action>>* actions,
                            std::vector<std::unique_ptr<Script>>* scripts,
                            bool* should_update_scripts,
-                           std::string* js_flow_library);
+                           std::string* js_flow_library,
+                           std::string* report_token);
 
   // Parses a single serialized ActionProto. Returns nullptr in the case of
   // parsing errors.

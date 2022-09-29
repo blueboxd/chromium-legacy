@@ -25,6 +25,7 @@ Jūsu meklētājprogramma ir <ph name="DSE_NAME" />. Skatiet tās norādījumus 
 <translation id="1112015203684611006">Neizdevās drukāt.</translation>
 <translation id="1125564390852150847">Izveidot jaunu cilni.</translation>
 <translation id="1126809382673880764">Netiek nodrošināta aizsardzība pret bīstamām vietnēm, lejupielādēm un paplašinājumiem. Jūs joprojām saņemsiet drošas pārlūkošanas aizsardzību, ja tā ir pieejama, citos Google pakalpojumos, piemēram, Gmail un Meklēšana.</translation>
+<translation id="1135212215217513471">Iegūt Chrome operētājsistēmai iOS</translation>
 <translation id="1145536944570833626">Dzēst esošos datus.</translation>
 <translation id="1147031633655575115">Pierakstījies kā <ph name="USER" /></translation>
 <translation id="1154984953698510061">Skatīt citas cilnes</translation>
@@ -113,6 +114,7 @@ Jūsu meklētājprogramma ir <ph name="DSE_NAME" />. Skatiet tās norādījumus 
 <translation id="1832848789136765277">Lai vienmēr varētu piekļūt saviem sinhronizētajiem datiem, apstipriniet savu identitāti.</translation>
 <translation id="1870148520156231997">Rādīt paroli</translation>
 <translation id="1872096359983322073">Lukturītis</translation>
+<translation id="1910975740091000991">Chrome iOS ierīcēm</translation>
 <translation id="1911619930368729126">Augšupielādēt Google diskā</translation>
 <translation id="1923342640370224680">Pēdējā stunda</translation>
 <translation id="1930989359703290198">Jūsu organizācija ir atļāvusi pierakstīšanos tikai ar noteiktiem kontiem. Konti, kas nav atļauti, ir paslēpti. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
@@ -140,6 +142,7 @@ Jūsu meklētājprogramma ir <ph name="DSE_NAME" />. Skatiet tās norādījumus 
 <translation id="2139867232736819575">Meklēt kopēto tekstu</translation>
 <translation id="214201757571129614">Pierakstīties…</translation>
 <translation id="2149973817440762519">Rediģēt grāmatzīmes</translation>
+<translation id="2155145621546387786">Koplietot Chrome</translation>
 <translation id="2175927920773552910">kvadrātkods</translation>
 <translation id="2218443599109088993">Tālināt</translation>
 <translation id="2230173723195178503">Tīmekļa lapa ielādēta</translation>
@@ -308,6 +311,7 @@ Skatiet savas meklētājprogrammas norādījumus par meklēšanas vēstures dzē
 <translation id="3529024052484145543">Nav droši</translation>
 <translation id="3533202363250687977">Aizvērt visas inkognito cilnes</translation>
 <translation id="3533436815740441613">Jauna cilne</translation>
+<translation id="3547799431091898961">Lai izrakstītos no sava Google konta visās vietnēs, <ph name="BEGIN_LINK" />izrakstieties no pārlūka Chrome<ph name="END_LINK" />.</translation>
 <translation id="3551320343578183772">Aizvērt cilni</translation>
 <translation id="3581564640715911333">Piedāvāt tulkot lapas citās valodās</translation>
 <translation id="3588820906588687999">Atvērt attēlu jaunā cilnē</translation>
@@ -374,6 +378,7 @@ Skatiet savas meklētājprogrammas norādījumus par meklēšanas vēstures dzē
 <translation id="4172051516777682613">Vienmēr rādīt</translation>
 <translation id="418156467088430727">Skatīt bezsaistes versiju jaunā cilnē</translation>
 <translation id="4181841719683918333">Valodas</translation>
+<translation id="4187450337729239226">Ielīmēt un meklēt</translation>
 <translation id="4223967053752765281">Jūsu organizācija izslēdza pierakstīšanos. Šajā ierīcē joprojām varat skatīt savas grāmatzīmes, vēsturi, paroles un citus iestatījumus. Ja veiksiet izmaiņas, tās netiks sinhronizētas ar jūsu kontu.</translation>
 <translation id="4233831822770018312">Atļauju rediģēšana</translation>
 <translation id="4237377247299956313">Pieskarieties vienumam <ph name="BEGIN_BOLD" />Noklusējuma pārlūka lietotne<ph name="END_BOLD" />.</translation>
@@ -436,6 +441,7 @@ Jūsu dati ir šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi. Lai s�
 <translation id="473775607612524610">Atjaunināt</translation>
 <translation id="4747097190499141774">Ieejas frāzes šifrējumā nav iekļauti maksājumu veidi un adreses no pakalpojuma Google Pay. Jūsu šifrētos datus var lasīt tikai personas, kurām ir zināma jūsu ieejas frāze. Ieejas frāze netiek sūtīta Google serveriem un netiek tajos glabāta. Ja aizmirsīsiet ieejas frāzi vai vēlēsieties mainīt šo iestatījumu, jums būs jāatiestata sinhronizācija. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="4751645464639803239">Jauna inkognito cilne</translation>
+<translation id="4766112107778026136">Discover un sekošana</translation>
 <translation id="4775879719735953715">Noklusējuma pārlūks</translation>
 <translation id="4778644898150334464">Izmantot citu paroli</translation>
 <translation id="478808905805139173">Vai atvērt inkognito režīmā?</translation>
@@ -642,6 +648,7 @@ Funkcija Handoff ir jāiespējo arī iestatījumu sadaļā General (Vispārīgi)
 <translation id="6374469231428023295">Mēģināt vēlreiz</translation>
 <translation id="6377118281273296434">Vietnes drošība</translation>
 <translation id="6380866119319257197">Ja esat aizmirsis ieejas frāzi vai vēlaties mainīt šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāciju<ph name="END_LINK" />.</translation>
+<translation id="6387994324662817823">Paroles tiek saglabātas tikai šīs ierīces Google paroļu pārvaldniekā.</translation>
 <translation id="6389470377220713856">Vārds un uzvārds uz kartes</translation>
 <translation id="6406506848690869874">Sinhronizācija</translation>
 <translation id="6410390304316730527">Izmantojot drošu pārlūkošanu, jūs iegūstat aizsardzību pret uzbrucējiem, kuri varētu mudināt jūs veikt bīstamas darbības, piemēram, instalēt ļaunprātīgu programmatūru vai atklāt personas informāciju — paroles, tālruņa numurus, kredītkaršu datus u.tml. Ja izslēgsiet drošu pārlūkošanu, ievērojiet piesardzību, pārlūkojot nepazīstamas vietnes vai vietnes ar sliktu reputāciju.</translation>

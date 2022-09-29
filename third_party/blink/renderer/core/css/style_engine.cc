@@ -77,6 +77,7 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/nth_index_cache.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
+#include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -819,7 +820,10 @@ CSSStyleSheet* StyleEngine::ParseSheet(
   style_sheet = CSSStyleSheet::CreateInline(element, NullURL(), start_position,
                                             GetDocument().Encoding());
   style_sheet->Contents()->SetRenderBlocking(render_blocking_behavior);
-  style_sheet->Contents()->ParseString(text);
+  std::unique_ptr<CachedCSSTokenizer> tokenizer;
+  if (auto* parser = GetDocument().GetScriptableDocumentParser())
+    tokenizer = parser->TakeCSSTokenizer(text);
+  style_sheet->Contents()->ParseString(text, true, std::move(tokenizer));
   return style_sheet;
 }
 
@@ -878,9 +882,19 @@ void SetNeedsStyleRecalcForViewportUnits(TreeScope& tree_scope,
 void StyleEngine::InvalidateViewportUnitStylesIfNeeded() {
   if (!viewport_unit_dirty_flags_)
     return;
-  SetNeedsStyleRecalcForViewportUnits(GetDocument(),
-                                      viewport_unit_dirty_flags_);
-  viewport_unit_dirty_flags_ = 0;
+  unsigned dirty_flags = 0;
+  std::swap(viewport_unit_dirty_flags_, dirty_flags);
+
+  // If there are registered custom properties which depend on the invalidated
+  // viewport units, it can potentially affect every element.
+  if (initial_data_ && (initial_data_->GetViewportUnitFlags() & dirty_flags)) {
+    InvalidateInitialData();
+    MarkAllElementsForStyleRecalc(StyleChangeReasonForTracing::Create(
+        style_change_reason::kViewportUnits));
+    return;
+  }
+
+  SetNeedsStyleRecalcForViewportUnits(GetDocument(), dirty_flags);
 }
 
 void StyleEngine::InvalidateStyleAndLayoutForFontUpdates() {
@@ -1033,9 +1047,7 @@ void StyleEngine::InvalidateElementAffectedByHas(Element& element,
   if (for_pseudo_change && !element.AffectedByPseudoInHas())
     return;
 
-  const ComputedStyle* style = element.GetComputedStyle();
-
-  if (style && style->AffectedBySubjectHas()) {
+  if (element.AffectedBySubjectHas()) {
     // TODO(blee@igalia.com) Need filtering for irrelevant elements.
     // e.g. When we have '.a:has(.b) {}', '.c:has(.d) {}', mutation of class
     // value 'd' can invalidate ancestor with class value 'a' because we
@@ -1700,6 +1712,12 @@ void StyleEngine::InvalidateSlottedElements(HTMLSlotElement& slot) {
                                     style_change_reason::kStyleSheetChange));
     }
   }
+}
+
+bool StyleEngine::HasViewportDependentPropertyRegistrations() {
+  UpdateActiveStyle();
+  const PropertyRegistry* registry = GetDocument().GetPropertyRegistry();
+  return registry && registry->GetViewportUnitFlags();
 }
 
 void StyleEngine::ScheduleInvalidationsForRuleSets(
@@ -2658,7 +2676,7 @@ scoped_refptr<StyleInitialData> StyleEngine::MaybeCreateAndGetInitialData() {
     return initial_data_;
   if (const PropertyRegistry* registry = document_->GetPropertyRegistry()) {
     if (!registry->IsEmpty())
-      initial_data_ = StyleInitialData::Create(*registry);
+      initial_data_ = StyleInitialData::Create(GetDocument(), *registry);
   }
   return initial_data_;
 }
@@ -3416,7 +3434,7 @@ void StyleEngine::MarkForLayoutTreeChangesAfterDetach() {
 }
 
 void StyleEngine::ReportUseOfLegacyLayoutWithContainerQueries() {
-  DCHECK(!RuntimeEnabledFeatures::LayoutNGTableFragmentationEnabled());
+  DCHECK(!RuntimeEnabledFeatures::LayoutNGPrintingEnabled());
 
   // Only report once.
   if (legacy_layout_query_container_)

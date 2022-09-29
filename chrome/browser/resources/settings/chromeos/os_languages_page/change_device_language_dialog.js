@@ -8,7 +8,7 @@
  */
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.js';
-import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/paper-ripple/paper-ripple.js';
@@ -178,12 +178,14 @@ class OsSettingsChangeDeviceLanguageDialogElement extends
     assert(this.selectedLanguage_);
     const languageCode = this.selectedLanguage_.code;
     this.languageHelper.setProspectiveUILanguage(languageCode);
-    // If the language isn't enabled yet, it should be added and moved to top.
-    // If it's already present, we don't do anything.
+    // If the language isn't enabled yet, it should be added.
     if (!this.languageHelper.isLanguageEnabled(languageCode)) {
       this.languageHelper.enableLanguage(languageCode);
-      this.languageHelper.moveLanguageToFront(languageCode);
     }
+    // The new language should always be moved to the top, as users get confused
+    // that websites are displaying in a different language:
+    // https://crbug.com/1330209
+    this.languageHelper.moveLanguageToFront(languageCode);
     recordSettingChange();
     LanguagesMetricsProxyImpl.getInstance().recordInteraction(
         LanguagesPageInteraction.RESTART);

@@ -4,7 +4,7 @@
 
 #include "content/browser/preloading/preloading_attempt_impl.h"
 
-#include "content/common/state_transitions.h"
+#include "base/state_transitions.h"
 #include "content/public/browser/preloading.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -16,34 +16,41 @@ namespace {
 void DCHECKTriggeringOutcomeTransitions(PreloadingTriggeringOutcome old_state,
                                         PreloadingTriggeringOutcome new_state) {
 #if DCHECK_IS_ON()
-  static const base::NoDestructor<StateTransitions<PreloadingTriggeringOutcome>>
-      allowed_transitions(StateTransitions<PreloadingTriggeringOutcome>({
+  static const base::NoDestructor<
+      base::StateTransitions<PreloadingTriggeringOutcome>>
+      allowed_transitions(base::StateTransitions<PreloadingTriggeringOutcome>({
           {PreloadingTriggeringOutcome::kUnspecified,
            {PreloadingTriggeringOutcome::kDuplicate,
             PreloadingTriggeringOutcome::kRunning,
             PreloadingTriggeringOutcome::kReady,
             PreloadingTriggeringOutcome::kSuccess,
             PreloadingTriggeringOutcome::kFailure,
-            PreloadingTriggeringOutcome::kTriggeredButOutcomeUnknown}},
+            PreloadingTriggeringOutcome::kTriggeredButOutcomeUnknown,
+            PreloadingTriggeringOutcome::kTriggeredButUpgradedToPrerender}},
 
           {PreloadingTriggeringOutcome::kDuplicate, {}},
 
           {PreloadingTriggeringOutcome::kRunning,
            {PreloadingTriggeringOutcome::kReady,
-            PreloadingTriggeringOutcome::kFailure}},
+            PreloadingTriggeringOutcome::kFailure,
+            PreloadingTriggeringOutcome::kTriggeredButUpgradedToPrerender}},
 
           // It can be possible that the preloading attempt may end up failing
           // after being ready to use, for cases where we have to cancel the
           // attempt for performance and security reasons.
           {PreloadingTriggeringOutcome::kReady,
            {PreloadingTriggeringOutcome::kSuccess,
-            PreloadingTriggeringOutcome::kFailure}},
+            PreloadingTriggeringOutcome::kFailure,
+            PreloadingTriggeringOutcome::kTriggeredButUpgradedToPrerender}},
 
           {PreloadingTriggeringOutcome::kSuccess, {}},
 
           {PreloadingTriggeringOutcome::kFailure, {}},
 
           {PreloadingTriggeringOutcome::kTriggeredButOutcomeUnknown, {}},
+
+          {PreloadingTriggeringOutcome::kTriggeredButUpgradedToPrerender,
+           {PreloadingTriggeringOutcome::kFailure}},
       }));
   DCHECK_STATE_TRANSITION(allowed_transitions,
                           /*old_state=*/old_state,
@@ -96,6 +103,10 @@ void PreloadingAttemptImpl::SetFailureReason(PreloadingFailureReason reason) {
   DCHECK_NE(reason, PreloadingFailureReason::kUnspecified);
   SetTriggeringOutcome(PreloadingTriggeringOutcome::kFailure);
   failure_reason_ = reason;
+}
+
+base::WeakPtr<PreloadingAttempt> PreloadingAttemptImpl::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 PreloadingAttemptImpl::PreloadingAttemptImpl(
@@ -180,6 +191,9 @@ std::ostream& operator<<(std::ostream& os,
       break;
     case PreloadingTriggeringOutcome::kTriggeredButOutcomeUnknown:
       os << "TriggeredButOutcomeUnknown";
+      break;
+    case PreloadingTriggeringOutcome::kTriggeredButUpgradedToPrerender:
+      os << "TriggeredButUpgradedToPrerender";
       break;
   }
   return os;

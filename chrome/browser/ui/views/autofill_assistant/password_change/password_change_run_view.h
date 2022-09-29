@@ -61,6 +61,9 @@ class PasswordChangeRunView : public views::View,
   void SetDescription(const std::u16string& progress_description) override;
   void SetProgressBarStep(
       autofill_assistant::password_change::ProgressStep progress_step) override;
+  autofill_assistant::password_change::ProgressStep GetProgressStep() override;
+  void ShowBasePrompt(const std::u16string& description,
+                      const std::vector<PromptChoice>& options) override;
   void ShowBasePrompt(const std::vector<PromptChoice>& options) override;
   void ShowUseGeneratedPasswordPrompt(
       const std::u16string& title,
@@ -69,6 +72,10 @@ class PasswordChangeRunView : public views::View,
       const PromptChoice& manual_password_choice,
       const PromptChoice& generated_password_choice) override;
   void ClearPrompt() override;
+  void ShowStartingScreen(const GURL& url) override;
+  void ShowCompletionScreen(
+      base::RepeatingClosure done_button_callback) override;
+  void ShowErrorScreen() override;
   void OnControllerGone() override;
 
   // Returns a weak pointer to itself.
@@ -78,9 +85,18 @@ class PasswordChangeRunView : public views::View,
   // Creates/initialises the view.
   void CreateView();
 
+  // Renders the options for a base prompt.
+  void CreateBasePromptOptions(const std::vector<PromptChoice>& choices);
+
   // Closes the view by removing itself from the display.
   // This method destroys an instance of this class.
   void Close();
+
+  // Method that updates the UI to render the completion screen. This is called
+  // only AFTER `password_change_run_progress_` is completed, both in terms of
+  // steps and animation. Runs `show_completion_screen_done_button_callback_`
+  // when user clicks on Done.
+  void OnShowCompletionScreen();
 
   // The controller belonging to this view.
   base::WeakPtr<PasswordChangeRunController> controller_;
@@ -96,6 +112,8 @@ class PasswordChangeRunView : public views::View,
   // prompts and descriptions.
   raw_ptr<views::View> body_ = nullptr;
 
+  // Callback run when a user clicks Done after a successful run.
+  base::RepeatingClosure show_completion_screen_done_button_callback_;
   // Factory for weak pointers to this view.
   base::WeakPtrFactory<PasswordChangeRunView> weak_ptr_factory_{this};
 };

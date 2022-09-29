@@ -104,6 +104,7 @@
 #include "third_party/blink/public/common/page_state/page_state.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/frame_replication_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
@@ -917,9 +918,9 @@ WebPerformance WebLocalFrameImpl::Performance() const {
       DOMWindowPerformance::performance(*(GetFrame()->DomWindow())));
 }
 
-bool WebLocalFrameImpl::IsAdSubframe() const {
+bool WebLocalFrameImpl::IsAdFrame() const {
   DCHECK(GetFrame());
-  return GetFrame()->IsAdSubframe();
+  return GetFrame()->IsAdFrame();
 }
 
 bool WebLocalFrameImpl::IsAdScriptInStack() const {
@@ -938,9 +939,9 @@ const absl::optional<blink::FrameAdEvidence>& WebLocalFrameImpl::AdEvidence() {
   return GetFrame()->AdEvidence();
 }
 
-bool WebLocalFrameImpl::IsSubframeCreatedByAdScript() {
+bool WebLocalFrameImpl::IsFrameCreatedByAdScript() {
   DCHECK(GetFrame());
-  return GetFrame()->IsSubframeCreatedByAdScript();
+  return GetFrame()->IsFrameCreatedByAdScript();
 }
 
 void WebLocalFrameImpl::ExecuteScript(const WebScriptSource& source) {
@@ -1070,21 +1071,22 @@ void WebLocalFrameImpl::RequestExecuteV8Function(
     v8::Local<v8::Value> receiver,
     int argc,
     v8::Local<v8::Value> argv[],
-    WebScriptExecutionCallback* callback) {
+    WebScriptExecutionCallback callback) {
   DCHECK(GetFrame());
   PausableScriptExecutor::CreateAndRun(GetFrame()->DomWindow(), context,
                                        function, receiver, argc, argv,
-                                       callback);
+                                       std::move(callback));
 }
 
 void WebLocalFrameImpl::RequestExecuteScript(
     int32_t world_id,
     base::span<const WebScriptSource> sources,
-    bool user_gesture,
-    ScriptExecutionType execution_type,
-    WebScriptExecutionCallback* callback,
+    mojom::blink::UserActivationOption user_gesture,
+    mojom::blink::EvaluationTiming evaluation_timing,
+    mojom::blink::LoadEventBlockingOption blocking_option,
+    WebScriptExecutionCallback callback,
     BackForwardCacheAware back_forward_cache_aware,
-    PromiseBehavior promise_behavior) {
+    mojom::blink::PromiseResultOption promise_behavior) {
   DCHECK(GetFrame());
 
   scoped_refptr<DOMWrapperWorld> world;
@@ -1106,16 +1108,13 @@ void WebLocalFrameImpl::RequestExecuteScript(
                         base::checked_cast<wtf_size_t>(sources.size()));
   auto* executor = MakeGarbageCollected<PausableScriptExecutor>(
       GetFrame()->DomWindow(), std::move(world), std::move(script_sources),
-      user_gesture, callback);
-  executor->set_wait_for_promise(promise_behavior == PromiseBehavior::kAwait);
-  switch (execution_type) {
-    case kAsynchronousBlockingOnload:
-      executor->RunAsync(PausableScriptExecutor::kOnloadBlocking);
+      user_gesture, std::move(callback));
+  executor->set_wait_for_promise(promise_behavior);
+  switch (evaluation_timing) {
+    case mojom::blink::EvaluationTiming::kAsynchronous:
+      executor->RunAsync(blocking_option);
       break;
-    case kAsynchronous:
-      executor->RunAsync(PausableScriptExecutor::kNonBlocking);
-      break;
-    case kSynchronous:
+    case mojom::blink::EvaluationTiming::kSynchronous:
       executor->Run();
       break;
   }
@@ -1261,8 +1260,8 @@ WebRange WebLocalFrameImpl::MarkedRange() const {
 }
 
 bool WebLocalFrameImpl::FirstRectForCharacterRange(
-    unsigned location,
-    unsigned length,
+    uint32_t location,
+    uint32_t length,
     gfx::Rect& rect_in_viewport) const {
   if ((location + length < location) && (location + length))
     length = 0;
@@ -2288,14 +2287,57 @@ std::pair<RemoteFrame*, PortalToken> WebLocalFrameImpl::CreatePortal(
     HTMLPortalElement* portal,
     mojo::PendingAssociatedReceiver<mojom::blink::Portal> portal_receiver,
     mojo::PendingAssociatedRemote<mojom::blink::PortalClient> portal_client) {
-  auto [portal_frame, portal_token] = client_->CreatePortal(
-      std::move(portal_receiver), std::move(portal_client), portal);
-  return {To<WebRemoteFrameImpl>(portal_frame)->GetFrame(), portal_token};
+  mojom::blink::FrameReplicationStatePtr initial_replicated_state =
+      mojom::blink::FrameReplicationState::New();
+  PortalToken portal_token;
+  RemoteFrameToken frame_token;
+  base::UnguessableToken devtools_frame_token;
+
+  auto remote_frame_interfaces =
+      mojom::blink::RemoteFrameInterfacesFromRenderer::New();
+  mojo::PendingAssociatedRemote<mojom::blink::RemoteFrameHost>
+      remote_frame_host = remote_frame_interfaces->frame_host_receiver
+                              .InitWithNewEndpointAndPassRemote();
+  mojo::PendingAssociatedReceiver<mojom::blink::RemoteFrame>
+      remote_frame_receiver =
+          remote_frame_interfaces->frame.InitWithNewEndpointAndPassReceiver();
+
+  GetFrame()->GetLocalFrameHostRemote().CreatePortal(
+      std::move(portal_receiver), std::move(portal_client),
+      std::move(remote_frame_interfaces), &initial_replicated_state,
+      &portal_token, &frame_token, &devtools_frame_token);
+  WebRemoteFrameImpl* portal_frame =
+      WebRemoteFrameImpl::CreateForPortalOrFencedFrame(
+          mojom::blink::TreeScopeType::kDocument, frame_token,
+          devtools_frame_token, portal, std::move(remote_frame_host),
+          std::move(remote_frame_receiver),
+          std::move(initial_replicated_state));
+  return std::make_pair(portal_frame->GetFrame(), portal_token);
 }
 
 RemoteFrame* WebLocalFrameImpl::AdoptPortal(HTMLPortalElement* portal) {
-  auto* portal_frame =
-      To<WebRemoteFrameImpl>(client_->AdoptPortal(portal->GetToken(), portal));
+  mojom::blink::FrameReplicationStatePtr replicated_state =
+      mojom::blink::FrameReplicationState::New();
+  RemoteFrameToken frame_token;
+  base::UnguessableToken devtools_frame_token;
+
+  auto remote_frame_interfaces =
+      mojom::blink::RemoteFrameInterfacesFromRenderer::New();
+  mojo::PendingAssociatedRemote<mojom::blink::RemoteFrameHost>
+      remote_frame_host = remote_frame_interfaces->frame_host_receiver
+                              .InitWithNewEndpointAndPassRemote();
+  mojo::PendingAssociatedReceiver<mojom::blink::RemoteFrame>
+      remote_frame_receiver =
+          remote_frame_interfaces->frame.InitWithNewEndpointAndPassReceiver();
+
+  GetFrame()->GetLocalFrameHostRemote().AdoptPortal(
+      portal->GetToken(), std::move(remote_frame_interfaces), &replicated_state,
+      &frame_token, &devtools_frame_token);
+  WebRemoteFrameImpl* portal_frame =
+      WebRemoteFrameImpl::CreateForPortalOrFencedFrame(
+          mojom::blink::TreeScopeType::kDocument, frame_token,
+          devtools_frame_token, portal, std::move(remote_frame_host),
+          std::move(remote_frame_receiver), std::move(replicated_state));
   return portal_frame->GetFrame();
 }
 
@@ -2304,9 +2346,36 @@ RemoteFrame* WebLocalFrameImpl::CreateFencedFrame(
     mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>
         receiver,
     mojom::blink::FencedFrameMode mode) {
-  WebRemoteFrame* frame =
-      client_->CreateFencedFrame(fenced_frame, std::move(receiver), mode);
-  return To<WebRemoteFrameImpl>(frame)->GetFrame();
+  mojom::blink::FrameReplicationStatePtr initial_replicated_state =
+      mojom::blink::FrameReplicationState::New();
+  initial_replicated_state->origin = SecurityOrigin::CreateUniqueOpaque();
+  RemoteFrameToken frame_token;
+  base::UnguessableToken devtools_frame_token =
+      base::UnguessableToken::Create();
+  auto remote_frame_interfaces =
+      mojom::blink::RemoteFrameInterfacesFromRenderer::New();
+  mojo::PendingAssociatedRemote<mojom::blink::RemoteFrameHost>
+      remote_frame_host = remote_frame_interfaces->frame_host_receiver
+                              .InitWithNewEndpointAndPassRemote();
+  mojo::PendingAssociatedReceiver<mojom::blink::RemoteFrame>
+      remote_frame_receiver =
+          remote_frame_interfaces->frame.InitWithNewEndpointAndPassReceiver();
+
+  GetFrame()->GetLocalFrameHostRemote().CreateFencedFrame(
+      std::move(receiver), mode, std::move(remote_frame_interfaces),
+      frame_token, devtools_frame_token);
+
+  DCHECK(initial_replicated_state->origin->IsOpaque());
+
+  WebRemoteFrameImpl* remote_frame =
+      WebRemoteFrameImpl::CreateForPortalOrFencedFrame(
+          mojom::blink::TreeScopeType::kDocument, frame_token,
+          devtools_frame_token, fenced_frame, std::move(remote_frame_host),
+          std::move(remote_frame_receiver),
+          std::move(initial_replicated_state));
+
+  client_->DidCreateFencedFrame(frame_token);
+  return remote_frame->GetFrame();
 }
 
 void WebLocalFrameImpl::DidChangeContentsSize(const gfx::Size& size) {

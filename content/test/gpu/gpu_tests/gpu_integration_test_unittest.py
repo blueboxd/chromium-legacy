@@ -10,6 +10,7 @@ import json
 import os
 import tempfile
 import typing
+from typing import Dict, List, Optional, Set, Tuple, Type
 import unittest
 import unittest.mock as mock
 
@@ -45,7 +46,7 @@ VENDOR_INTEL = 0x8086
 VENDOR_STRING_IMAGINATION = 'Imagination Technologies'
 DEVICE_STRING_SGX = 'PowerVR SGX 554'
 
-GpuTestClassType = typing.Type[gpu_integration_test.GpuIntegrationTest]
+GpuTestClassType = Type[gpu_integration_test.GpuIntegrationTest]
 
 
 def _GetSystemInfo(  # pylint: disable=too-many-arguments
@@ -79,8 +80,7 @@ def _GetSystemInfo(  # pylint: disable=too-many-arguments
 
 
 def _GetTagsToTest(browser: fakes.FakeBrowser,
-                   test_class: typing.Optional[GpuTestClassType] = None
-                   ) -> typing.Set[str]:
+                   test_class: Optional[GpuTestClassType] = None) -> Set[str]:
   browser = typing.cast(ct.Browser, browser)
   test_class = test_class or gpu_integration_test.GpuIntegrationTest
   tags = None
@@ -93,7 +93,7 @@ def _GetTagsToTest(browser: fakes.FakeBrowser,
 def _GenerateNvidiaExampleTagsForTestClassAndArgs(test_class: GpuTestClassType,
                                                   args: mock.MagicMock,
                                                   is_asan: bool = False
-                                                  ) -> typing.Set[str]:
+                                                  ) -> Set[str]:
   tags = None
   with mock.patch.object(
       test_class, 'ExpectationsFiles', return_value=['exp.txt']):
@@ -125,10 +125,9 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self._test_state = {}
     self._test_result = {}
 
-  def _RunGpuIntegrationTests(
-      self,
-      test_name: str,
-      extra_args: typing.Optional[typing.List[str]] = None) -> None:
+  def _RunGpuIntegrationTests(self,
+                              test_name: str,
+                              extra_args: Optional[List[str]] = None) -> None:
     extra_args = extra_args or []
     unittest_config = chromium_config.ChromiumConfig(
         top_level_dir=gpu_path_util.GPU_DIR,
@@ -149,6 +148,11 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
             # We don't want the underlying typ-based tests to report their
             # results to ResultDB.
             '--disable-resultsink',
+            # These tests currently rely on some information sticking around
+            # between tests, so we need to use the older global process pool
+            # approach instead of having different pools scoped for
+            # parallel/serial execution.
+            '--use-global-pool',
         ] + extra_args
         processed_args = run_gpu_integration_test.ProcessArgs(test_argv)
         telemetry_args = browser_test_runner.ProcessConfig(
@@ -179,8 +183,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
   def _TestTagGenerationForMockPlatform(self,
                                         test_class: GpuTestClassType,
                                         args: mock.MagicMock,
-                                        is_asan: bool = False
-                                        ) -> typing.Set[str]:
+                                        is_asan: bool = False) -> Set[str]:
     tag_set = _GenerateNvidiaExampleTagsForTestClassAndArgs(
         test_class, args, is_asan)
     self.assertTrue(
@@ -244,8 +247,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
         _GetTagsToTest(browser),
         set([
             'win', 'win10', 'release', 'nvidia', 'nvidia-0x1cb3', 'angle-d3d9',
-            'no-passthrough', 'no-swiftshader-gl', 'skia-renderer-disabled',
-            'no-oop-c', 'no-asan'
+            'no-passthrough', 'skia-renderer-disabled', 'no-oop-c', 'no-asan'
         ]))
 
   @mock.patch('sys.platform', 'darwin')
@@ -262,7 +264,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
         set([
             'mac', 'mojave', 'release', 'imagination', 'no-asan',
             'imagination-PowerVR-SGX-554', 'angle-opengles', 'passthrough',
-            'no-swiftshader-gl', 'skia-renderer-disabled', 'no-oop-c'
+            'skia-renderer-disabled', 'no-oop-c'
         ]))
 
   @mock.patch('sys.platform', 'darwin')
@@ -277,8 +279,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
         set([
             'mac', 'mojave', 'release', 'imagination', 'no-asan',
             'imagination-Triangle-Monster-3000', 'angle-disabled',
-            'no-passthrough', 'no-swiftshader-gl', 'skia-renderer-disabled',
-            'no-oop-c'
+            'no-passthrough', 'skia-renderer-disabled', 'no-oop-c'
         ]))
 
   @mock.patch.dict(os.environ, clear=True)
@@ -507,6 +508,11 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
               # We don't want the underlying typ-based tests to report their
               # results to ResultDB.
               '--disable-resultsink',
+              # These tests currently rely on some information sticking around
+              # between tests, so we need to use the older global process pool
+              # approach instead of having different pools scoped for
+              # parallel/serial execution.
+              '--use-global-pool',
           ] + test_args.additional_args)
       run_browser_tests.RunTests(args)
       with open(test_results_path) as f:
@@ -520,9 +526,8 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       self.assertEqual(set(actual_skips), set(test_args.skips))
 
 
-def _ExtractTestResults(
-    test_result: typing.Dict[str, typing.Any]
-) -> typing.Tuple[typing.List[str], typing.List[str], typing.List[str]]:
+def _ExtractTestResults(test_result: Dict[str, Dict]
+                        ) -> Tuple[List[str], List[str], List[str]]:
   delimiter = test_result['path_delimiter']
   failures = []
   successes = []

@@ -13,6 +13,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_clients.h"
+#include "chromeos/ash/components/dbus/shill/shill_clients.h"
+#include "chromeos/ash/components/dbus/shill/shill_device_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "chromeos/ash/components/network/cellular_connection_handler.h"
 #include "chromeos/ash/components/network/cellular_esim_installer.h"
 #include "chromeos/ash/components/network/cellular_inhibitor.h"
@@ -27,14 +30,11 @@
 #include "chromeos/ash/components/network/shill_property_util.h"
 #include "chromeos/ash/components/network/test_cellular_esim_profile_handler.h"
 #include "chromeos/components/onc/onc_utils.h"
-#include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -175,6 +175,7 @@ class CellularPolicyHandlerTest : public testing::Test {
     HermesEuiccClient::Get()->GetTestInterface()->AddCarrierProfile(
         dbus::ObjectPath(kTestESimProfilePath),
         dbus::ObjectPath(kTestEuiccPath), kICCID, /*name=*/std::string(),
+        /*nickname=*/std::string(),
         /*service_provider=*/std::string(), /*activation_code=*/std::string(),
         kTesServicePath, hermes::profile::State::kInactive,
         hermes::profile::ProfileClass::kOperational,
@@ -373,7 +374,7 @@ TEST_F(CellularPolicyHandlerTest, InstallOnSecondEUICC) {
   // Verify esim profile get installed successfully when installing policy
   // on the external EUICC.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(ash::features::kCellularUseSecondEuicc);
+  feature_list.InitAndEnableFeature(features::kCellularUseSecondEuicc);
   SetupEuicc2();
   const std::string policy =
       GenerateCellularPolicy(HermesEuiccClient::Get()
@@ -515,4 +516,4 @@ TEST_F(CellularPolicyHandlerTest, NoInternetConnection) {
   CheckIccidSmdpPairInPref(/*is_installed=*/true);
 }
 
-}  // namespace chromeos
+}  // namespace ash

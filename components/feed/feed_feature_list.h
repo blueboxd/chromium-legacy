@@ -98,7 +98,7 @@ extern const base::Feature kEnableOpenInNewTabFromStartSurfaceFeed;
 
 // Feature that causes the WebUI version of the Feed to be enabled.
 extern const base::Feature kWebUiFeed;
-extern const base::FeatureParam<std::string> kWebUiScriptFetchUrl;
+extern const base::FeatureParam<std::string> kWebUiFeedUrl;
 extern const base::FeatureParam<bool> kWebUiDisableContentSecurityPolicy;
 
 std::string GetFeedReferrerUrl();
@@ -132,6 +132,11 @@ extern const base::FeatureParam<int> kFeedCloseRefreshDelayMinutes;
 // If true, schedule the refresh only when the user scrolls or interacts. If
 // false, schedule only when the feed surface is opened to content.
 extern const base::FeatureParam<bool> kFeedCloseRefreshRequireInteraction;
+
+// When enabled, no view cache is used.
+extern const base::Feature kFeedNoViewCache;
+// When enabled, replace all items.
+extern const base::Feature kFeedReplaceAll;
 
 }  // namespace feed
 

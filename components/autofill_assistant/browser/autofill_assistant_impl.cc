@@ -7,10 +7,15 @@
 #include <memory>
 #include <vector>
 
+#include "base/ranges/algorithm.h"
+#include "base/time/default_tick_clock.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/autofill_assistant/browser/common_dependencies.h"
 #include "components/autofill_assistant/browser/desktop/starter_delegate_desktop.h"
+#include "components/autofill_assistant/browser/headless/client_headless.h"
 #include "components/autofill_assistant/browser/headless/headless_script_controller_impl.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
+#include "components/autofill_assistant/browser/public/password_change/website_login_manager.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/service/api_key_fetcher.h"
 #include "components/autofill_assistant/browser/service/cup_impl.h"
@@ -18,6 +23,7 @@
 #include "components/autofill_assistant/browser/service/service_request_sender.h"
 #include "components/autofill_assistant/browser/service/service_request_sender_impl.h"
 #include "components/autofill_assistant/browser/service/simple_url_loader_factory.h"
+#include "components/autofill_assistant/browser/starter.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "net/http/http_status_code.h"
@@ -57,6 +63,29 @@ void OnCapabilitiesResponse(
 
     for (const auto& param : match.script_parameters_override()) {
       info.script_parameters[param.name()] = param.value();
+    }
+
+    if (match.has_bundle_capabilities_information() &&
+        match.bundle_capabilities_information().has_chrome_fast_checkout() &&
+        !match.bundle_capabilities_information()
+             .chrome_fast_checkout()
+             .trigger_form_signatures()
+             .empty()) {
+      // Source and the target vector are abbreviated due to their length.
+      auto& source = match.bundle_capabilities_information()
+                         .chrome_fast_checkout()
+                         .trigger_form_signatures();
+
+      info.bundle_capabilities_information =
+          AutofillAssistant::BundleCapabilitiesInformation();
+      std::vector<autofill::FormSignature>& target =
+          info.bundle_capabilities_information.value().trigger_form_signatures;
+
+      target.reserve(source.size());
+      base::ranges::transform(source, std::back_inserter(target),
+                              [](uint64_t signature) {
+                                return autofill::FormSignature(signature);
+                              });
     }
 
     infos.push_back(info);
@@ -137,9 +166,22 @@ void AutofillAssistantImpl::GetCapabilitiesByHashPrefix(
 std::unique_ptr<HeadlessScriptController>
 AutofillAssistantImpl::CreateHeadlessScriptController(
     content::WebContents* web_contents,
-    ExternalActionDelegate* action_extension_delegate) {
-  return std::make_unique<HeadlessScriptControllerImpl>(
-      web_contents, action_extension_delegate);
+    ExternalActionDelegate* action_extension_delegate,
+    WebsiteLoginManager* website_login_manager) {
+  auto* starter = Starter::FromWebContents(web_contents);
+  if (!starter) {
+    return nullptr;
+  }
+
+  auto client = std::make_unique<ClientHeadless>(
+      web_contents, starter->GetCommonDependencies(), action_extension_delegate,
+      website_login_manager, base::DefaultTickClock::GetInstance(),
+      RuntimeManager::GetForWebContents(web_contents)->GetWeakPtr(),
+      ukm::UkmRecorder::Get(),
+      starter->GetCommonDependencies()->GetOrCreateAnnotateDomModelService(
+          web_contents->GetBrowserContext()));
+  return std::make_unique<HeadlessScriptControllerImpl>(web_contents, starter,
+                                                        std::move(client));
 }
 
 }  // namespace autofill_assistant

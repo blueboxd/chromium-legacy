@@ -8,8 +8,8 @@
  * from the user for a device reset (aka powerwash).
  */
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
-import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import '../../settings_shared.css.js';

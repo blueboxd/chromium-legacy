@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import './base_page.js';
 import './shimless_rma_fonts_css.js';
 import './shimless_rma_shared_css.js';
 
+import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -52,6 +52,12 @@ const USBLogState = {
   LOG_SAVE_SUCCESS: 3,
   LOG_SAVE_FAIL: 4,
 };
+
+/**
+ * The starting USB state for the logs dialog.
+ * @type {!USBLogState}
+ */
+const DEFAULT_USB_LOG_STATE = USBLogState.USB_READY;
 
 /** @polymer */
 export class WrapupRepairCompletePage extends WrapupRepairCompletePageBase {
@@ -130,7 +136,7 @@ export class WrapupRepairCompletePage extends WrapupRepairCompletePageBase {
        */
       usbLogState_: {
         type: Number,
-        value: USBLogState.USB_READY,
+        value: DEFAULT_USB_LOG_STATE,
       },
 
       /** @protected */
@@ -291,15 +297,6 @@ export class WrapupRepairCompletePage extends WrapupRepairCompletePageBase {
   }
 
   /** @protected */
-  onCancelClick_() {
-    const dialogs = /** @type {!NodeList<!CrDialogElement>} */ (
-        this.shadowRoot.querySelectorAll('cr-dialog'));
-    Array.from(dialogs).map((dialog) => {
-      dialog.close();
-    });
-  }
-
-  /** @protected */
   onSaveLogClick_() {
     this.shimlessRmaService_.saveLog().then(
         /*@type {!SaveLogResponse}*/ (result) => {
@@ -307,8 +304,24 @@ export class WrapupRepairCompletePage extends WrapupRepairCompletePageBase {
             this.logSavedStatusText_ =
                 this.i18n('rmaLogsSaveSuccessText', result.savePath.path);
             this.usbLogState_ = USBLogState.LOG_SAVE_SUCCESS;
+          } else {
+            this.logSavedStatusText_ = this.i18n('rmaLogsSaveFailText');
+            this.usbLogState_ = USBLogState.LOG_SAVE_FAIL;
           }
         });
+  }
+
+  /** @protected */
+  closeLogsDialog_() {
+    this.shadowRoot.querySelector('#logsDialog').close();
+
+    // Reset the USB state back to the default.
+    this.usbLogState_ = DEFAULT_USB_LOG_STATE;
+  }
+
+  /** @protected */
+  closePowerwashDialog_() {
+    this.shadowRoot.querySelector('#powerwashDialog').close();
   }
 
   /** @protected */
@@ -415,6 +428,21 @@ export class WrapupRepairCompletePage extends WrapupRepairCompletePageBase {
   shouldShowLogSaveAttemptContainer_() {
     return this.usbLogState_ === USBLogState.LOG_SAVE_SUCCESS ||
         this.usbLogState_ === USBLogState.LOG_SAVE_FAIL;
+  }
+
+  /**
+   * @return {string}
+   * @protected
+   */
+  getSaveLogResultIcon_() {
+    switch (this.usbLogState_) {
+      case USBLogState.LOG_SAVE_SUCCESS:
+        return 'shimless-icon:check';
+      case USBLogState.LOG_SAVE_FAIL:
+        return 'shimless-icon:warning';
+      default:
+        return '';
+    }
   }
 }
 

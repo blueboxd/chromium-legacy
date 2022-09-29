@@ -114,6 +114,9 @@ class BrowserViewLayout : public views::LayoutManager {
   gfx::Size GetMinimumSize(const views::View* host) const override;
   gfx::Size GetPreferredSize(const views::View* host) const override;
 
+  // Returns the minimum acceptable width for the browser web contents.
+  int GetMinWebContentsWidthForTesting() const;
+
   // Returns true if an infobar is showing.
   bool IsInfobarVisible() const;
 
@@ -155,6 +158,9 @@ class BrowserViewLayout : public views::LayoutManager {
 
   // Returns the y coordinate of the client area.
   int GetClientAreaTop();
+
+  // Returns the minimum acceptable width for the browser web contents.
+  int GetMinWebContentsWidth() const;
 
   // The delegate interface. May be a mock in tests.
   const std::unique_ptr<BrowserViewLayoutDelegate> delegate_;

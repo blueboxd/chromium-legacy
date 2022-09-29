@@ -12,6 +12,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "net/base/net_export.h"
+#include "net/base/network_handle.h"
 #include "net/base/network_isolation_key.h"
 #include "net/dns/host_resolver.h"
 #include "net/log/net_log_with_source.h"
@@ -72,8 +73,7 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
   void SetRequestContext(URLRequestContext* request_context) override;
   HostResolverManager* GetManagerForTesting() override;
   const URLRequestContext* GetContextForTesting() const override;
-  NetworkChangeNotifier::NetworkHandle GetTargetNetworkForTesting()
-      const override;
+  handles::NetworkHandle GetTargetNetworkForTesting() const override;
 
   // Returns the number of host cache entries that were restored, or 0 if there
   // is no cache.
@@ -88,8 +88,10 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
   }
 
  private:
-  const raw_ptr<HostResolverManager, DanglingUntriaged> manager_;
   std::unique_ptr<HostResolverManager> owned_manager_;
+  // `manager_` might point to `owned_manager_`. It must be declared last and
+  // cleared first.
+  const raw_ptr<HostResolverManager> manager_;
   std::unique_ptr<ResolveContext> resolve_context_;
 
   // If true, the context is shutting down. Subsequent request Start() calls

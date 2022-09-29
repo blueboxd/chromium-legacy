@@ -236,6 +236,13 @@ void PageInfoBubbleView::OpenAdPersonalizationPage() {
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_AD_PERSONALIZATION_HEADER));
 }
 
+void PageInfoBubbleView::OpenCookiesPage() {
+  presenter_->RecordPageInfoAction(
+      PageInfo::PageInfoAction::PAGE_INFO_COOKIES_PAGE_OPENED);
+  page_container_->SwitchToPage(view_factory_->CreateCookiesPageView());
+  AnnouncePageOpened(l10n_util::GetStringUTF16(IDS_PAGE_INFO_COOKIES));
+}
+
 void PageInfoBubbleView::CloseBubble() {
   GetWidget()->CloseWithReason(
       views::Widget::ClosedReason::kCloseButtonClicked);
@@ -288,6 +295,7 @@ void PageInfoBubbleView::AnnouncePageOpened(std::u16string announcement) {
   // Announce that the subpage was opened to inform the user about the changes
   // in the UI.
 #if BUILDFLAG(IS_MAC)
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kAlert);
   GetViewAccessibility().OverrideName(announcement);
   NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 #else

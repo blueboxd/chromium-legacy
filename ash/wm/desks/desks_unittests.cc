@@ -95,6 +95,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/session_manager_types.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -206,6 +207,12 @@ void DoubleClickOnView(const views::View* view,
   const gfx::Point view_center = view->GetBoundsInScreen().CenterPoint();
   event_generator->MoveMouseTo(view_center);
   event_generator->DoubleClickLeftButton();
+}
+
+void SendAccessibleActionToView(views::View* view, ax::mojom::Action action) {
+  ui::AXActionData action_data;
+  action_data.action = action;
+  view->HandleAccessibleAction(action_data);
 }
 
 void WaitForMilliseconds(int milliseconds) {
@@ -1197,6 +1204,20 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
                       event_generator);
     waiter.Wait();
     EXPECT_EQ(0, controller->GetActiveDeskIndex());
+    EXPECT_FALSE(overview_controller->InOverviewSession());
+  }
+
+  // Test that using ChromeVox on a desk mini view does not crash.
+  {
+    EnterOverview();
+    const auto* overview_grid =
+        GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+    DeskSwitchAnimationWaiter waiter;
+    SendAccessibleActionToView(
+        overview_grid->desks_bar_view()->mini_views()[1]->desk_preview(),
+        ax::mojom::Action::kDoDefault);
+    waiter.Wait();
+    EXPECT_EQ(1, controller->GetActiveDeskIndex());
     EXPECT_FALSE(overview_controller->InOverviewSession());
   }
 }
@@ -3522,10 +3543,10 @@ class DesksMultiUserTest : public NoSessionAshTestBase,
                                      std::vector<std::string> desk_names) {
     DCHECK(prefs);
     ListPrefUpdate update(prefs, prefs::kDesksNamesList);
-    base::Value* pref_data = update.Get();
-    ASSERT_TRUE(pref_data->GetListDeprecated().empty());
+    base::Value::List& pref_data = update->GetList();
+    ASSERT_TRUE(pref_data.empty());
     for (auto desk_name : desk_names)
-      pref_data->Append(desk_name);
+      pref_data.Append(desk_name);
   }
 
   void SimulateUserLogin(const AccountId& account_id) {
@@ -7826,23 +7847,6 @@ TEST_F(DesksCloseAllTest, CombineDesksTooltipIsUpdatedOnUserActions) {
 
   const std::u16string tooltip_prefix = u"Combine with ";
   auto* event_generator = GetEventGenerator();
-
-  // Because the `DeskActionView` covers the centerpoint of the
-  // `DeskPreviewView`, we need a new function to click and drag from a part of
-  // the `DeskPreviewView` that isn't covered by the `DeskActionView`. We would
-  // not be able to simply modify `StartDragDeskPreview` because it takes a const
-  // `DeskMiniView`, which doesn't have access to its `DeskActionView`.
-  auto start_drag_on_desk_preview_for_mini_view = [event_generator](
-                                                      DeskMiniView* mini_view) {
-    gfx::Point clickable_desk_preview_point =
-        mini_view->GetPreviewBoundsInScreen().top_center();
-    clickable_desk_preview_point.set_y(
-        mini_view->desk_action_view()->GetBoundsInScreen().bottom() + 1);
-    event_generator->set_current_screen_location(clickable_desk_preview_point);
-    event_generator->PressLeftButton();
-    event_generator->MoveMouseBy(0, 50);
-  };
-
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(test_case.scope_trace);
 
@@ -7862,7 +7866,7 @@ TEST_F(DesksCloseAllTest, CombineDesksTooltipIsUpdatedOnUserActions) {
         break;
       case UpdateSource::kMoveActiveDesk:
         ASSERT_TRUE(controller->desks()[0]->is_active());
-        start_drag_on_desk_preview_for_mini_view(mini_view_1);
+        StartDragDeskPreview(mini_view_1, event_generator);
         ASSERT_TRUE(desks_bar_view->IsDraggingDesk());
         event_generator->MoveMouseTo(
             mini_view_2->GetPreviewBoundsInScreen().CenterPoint());
@@ -7870,7 +7874,7 @@ TEST_F(DesksCloseAllTest, CombineDesksTooltipIsUpdatedOnUserActions) {
         break;
       case UpdateSource::kMoveNonActiveDesk:
         ASSERT_FALSE(controller->desks()[0]->is_active());
-        start_drag_on_desk_preview_for_mini_view(mini_view_2);
+        StartDragDeskPreview(mini_view_2, event_generator);
         EXPECT_TRUE(desks_bar_view->IsDraggingDesk());
         event_generator->MoveMouseTo(
             mini_view_1->GetPreviewBoundsInScreen().CenterPoint());

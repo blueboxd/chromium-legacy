@@ -30,6 +30,7 @@
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_utils.h"
@@ -67,7 +68,7 @@ class TableViewTestHelper {
 
   const gfx::FontList& font_list() { return table_->font_list_; }
 
-  AXVirtualView* GetVirtualAccessibilityBodyRow(int row) {
+  AXVirtualView* GetVirtualAccessibilityBodyRow(size_t row) {
     return table_->GetVirtualAccessibilityBodyRow(row);
   }
 
@@ -75,17 +76,18 @@ class TableViewTestHelper {
     return table_->GetVirtualAccessibilityHeaderRow();
   }
 
-  AXVirtualView* GetVirtualAccessibilityHeaderCell(int visible_column_index) {
+  AXVirtualView* GetVirtualAccessibilityHeaderCell(
+      size_t visible_column_index) {
     return table_->GetVirtualAccessibilityCellImpl(
         GetVirtualAccessibilityHeaderRow(), visible_column_index);
   }
 
-  AXVirtualView* GetVirtualAccessibilityCell(int row,
-                                             int visible_column_index) {
+  AXVirtualView* GetVirtualAccessibilityCell(size_t row,
+                                             size_t visible_column_index) {
     return table_->GetVirtualAccessibilityCell(row, visible_column_index);
   }
 
-  gfx::Rect GetCellBounds(int row, int visible_column_index) const {
+  gfx::Rect GetCellBounds(size_t row, size_t visible_column_index) const {
     return table_->GetCellBounds(row, visible_column_index);
   }
 
@@ -452,17 +454,16 @@ class TableViewTest : public ViewsTestBase,
     table_ = table.get();
     auto scroll_view = TableView::CreateScrollViewWithTable(std::move(table));
     scroll_view->SetBounds(0, 0, 10000, 10000);
-    scroll_view->Layout();
     helper_ = std::make_unique<TableViewTestHelper>(table_);
 
     widget_ = std::make_unique<Widget>();
     Widget::InitParams params =
         CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 650, 650);
     params.delegate = GetWidgetDelegate(widget_.get());
     widget_->Init(std::move(params));
-    widget_->GetRootView()->AddChildView(std::move(scroll_view));
+    RunScheduledLayout(
+        widget_->GetRootView()->AddChildView(std::move(scroll_view)));
     widget_->Show();
   }
 
@@ -596,7 +597,7 @@ class TableViewTest : public ViewsTestBase,
 
   std::unique_ptr<TableViewTestHelper> helper_;
 
-  std::unique_ptr<Widget> widget_;
+  UniqueWidgetPtr widget_;
 
  private:
   gfx::Point GetPointForRow(int row) {
@@ -2182,7 +2183,6 @@ class TableViewDefaultConstructabilityTest : public ViewsTestBase {
     ViewsTestBase::SetUp();
     widget_ = std::make_unique<Widget>();
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 650, 650);
     widget_->Init(std::move(params));
     widget_->Show();
@@ -2196,14 +2196,13 @@ class TableViewDefaultConstructabilityTest : public ViewsTestBase {
   Widget* widget() { return widget_.get(); }
 
  private:
-  std::unique_ptr<Widget> widget_;
+  UniqueWidgetPtr widget_;
 };
 
 TEST_F(TableViewDefaultConstructabilityTest, TestFunctionalWithoutModel) {
   auto scroll_view =
       TableView::CreateScrollViewWithTable(std::make_unique<TableView>());
   scroll_view->SetBounds(0, 0, 10000, 10000);
-  scroll_view->Layout();
-  widget()->GetContentsView()->AddChildView(std::move(scroll_view));
+  widget()->client_view()->AddChildView(std::move(scroll_view));
 }
 }  // namespace views

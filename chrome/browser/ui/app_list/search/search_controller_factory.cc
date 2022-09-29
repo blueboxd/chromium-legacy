@@ -16,6 +16,9 @@
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider.h"
@@ -41,6 +44,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/ash/services/assistant/public/cpp/features.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -111,10 +115,11 @@ std::unique_ptr<SearchController> CreateSearchController(
                          profile, list_controller,
                          base::DefaultClock::GetInstance(), model_updater));
 
-  if (app_list_features::IsLauncherLacrosIntegrationEnabled()) {
+  if (crosapi::browser_util::IsLacrosEnabled()) {
     controller->AddProvider(
         omnibox_group_id,
-        std::make_unique<OmniboxLacrosProvider>(profile, list_controller));
+        std::make_unique<OmniboxLacrosProvider>(
+            profile, list_controller, crosapi::CrosapiManager::Get()));
   } else {
     controller->AddProvider(omnibox_group_id, std::make_unique<OmniboxProvider>(
                                                   profile, list_controller));
@@ -151,24 +156,25 @@ std::unique_ptr<SearchController> CreateSearchController(
             kMaxAppShortcutResults, profile, list_controller));
   }
 
-  // Enable zero-state files aka. the Continue section if:
-  // - unconditionally in the old launcher.
-  // - in the productivity launcher only if the enable_continue parameter is
-  //   true (the default).
-  if (!ash::features::IsProductivityLauncherEnabled() ||
+  if (ash::features::IsProductivityLauncherEnabled() &&
       base::GetFieldTrialParamByFeatureAsBool(
           ash::features::kProductivityLauncher, "enable_continue", false)) {
     size_t zero_state_files_group_id =
         controller->AddGroup(kMaxZeroStateFileResults);
     controller->AddProvider(zero_state_files_group_id,
                             std::make_unique<ZeroStateFileProvider>(profile));
+
     size_t drive_zero_state_group_id =
         controller->AddGroup(kMaxZeroStateDriveResults);
-    controller->AddProvider(drive_zero_state_group_id,
-                            std::make_unique<ZeroStateDriveProvider>(
-                                profile, controller.get(),
-                                profile->GetDefaultStoragePartition()
-                                    ->GetURLLoaderFactoryForBrowserProcess()));
+    controller->AddProvider(
+        drive_zero_state_group_id,
+        std::make_unique<ZeroStateDriveProvider>(
+            profile, controller.get(),
+            drive::DriveIntegrationServiceFactory::GetForProfile(profile),
+            session_manager::SessionManager::Get(),
+            std::make_unique<ItemSuggestCache>(
+                profile, profile->GetDefaultStoragePartition()
+                             ->GetURLLoaderFactoryForBrowserProcess())));
   }
 
   if (app_list_features::IsLauncherSettingsSearchEnabled()) {

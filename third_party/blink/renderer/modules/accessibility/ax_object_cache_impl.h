@@ -227,6 +227,10 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   AXID GetAXID(Node*) override;
 
+  AXID GetExistingAXID(Node*) override;
+
+  // Return an AXObject for the AccessibleNode. If the AccessibleNode is
+  // attached to an element, will return the AXObject for that element instead.
   AXObject* Get(AccessibleNode*);
   AXObject* Get(AbstractInlineTextBox*);
 
@@ -238,13 +242,16 @@ class MODULES_EXPORT AXObjectCacheImpl
   AXObject* Get(const Node*);
   AXObject* Get(const LayoutObject*);
 
-  // Get an AXObject* without making any calls into layout that could be
-  // dangerous during an unclean layout phase.
-  // Also will not do invalidations from display locking changes, unless the
-  // caller passes in true for allow_display_locking_invalidation.
-  AXObject* GetWithoutInvalidation(
-      const Node* node,
-      bool allow_display_locking_invalidation = false);
+  // Get an AXObject* in a way that is safe for the current calling context:
+  // - No calls into layout during an unclean layout phase
+  // - Does not walk the flat tree during slot reassignment.
+  // - Will not do invalidations from display locking changes, unless the
+  //   caller passes in true for allow_display_locking_invalidation.
+  //   This is generally safe to do, but may not be desirable e.g. when
+  //   simply writing a DCHECK, where a pure get is optimal so as to avoid
+  //   changing behavior.
+  AXObject* SafeGet(const Node* node,
+                    bool allow_display_locking_invalidation = false);
 
   // Return true if the object is still part of the tree, meaning that ancestors
   // exist or can be repaired all the way to the root.
@@ -592,7 +599,6 @@ class MODULES_EXPORT AXObjectCacheImpl
   void DeferTreeUpdateInternal(base::OnceClosure callback, const Node* node);
   void DeferTreeUpdateInternal(base::OnceClosure callback, AXObject* obj);
 
-  void SelectionChangedWithCleanLayout(Node* node);
   void TextChangedWithCleanLayout(Node* node);
   void ChildrenChangedWithCleanLayout(Node* node);
   // If the presence of document markers changed for the given text node, then

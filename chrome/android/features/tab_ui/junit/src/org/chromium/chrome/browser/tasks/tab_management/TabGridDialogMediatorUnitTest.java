@@ -19,6 +19,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
@@ -64,6 +65,7 @@ import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
@@ -185,8 +187,7 @@ public class TabGridDialogMediatorUnitTest {
                     ContextUtils.getApplicationContext())) {
             mTabSelectionEditorController = null;
         }
-        mActivity = Robolectric.buildActivity(Activity.class).get();
-        mActivity.setTheme(R.style.Theme_BrowserUI_DayNight);
+        mActivity = Robolectric.buildActivity(TestActivity.class).get();
         mModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
         mMediator = new TabGridDialogMediator(mActivity, mDialogController, mModel,
                 mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler,
@@ -444,7 +445,7 @@ public class TabGridDialogMediatorUnitTest {
         mModel.set(TabGridPanelProperties.HEADER_TITLE, null);
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
 
-        mTabModelObserverCaptor.getValue().willCloseTab(mTab2, false);
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab2, false, true);
 
         // Current tab ID should not update.
         assertThat(mMediator.getCurrentTabIdForTesting(), equalTo(TAB1_ID));
@@ -464,7 +465,7 @@ public class TabGridDialogMediatorUnitTest {
         mModel.set(TabGridPanelProperties.HEADER_TITLE, null);
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
 
-        mTabModelObserverCaptor.getValue().willCloseTab(mTab2, false);
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab2, false, true);
 
         // Current tab ID should be updated to TAB1_ID now.
         assertThat(mMediator.getCurrentTabIdForTesting(), equalTo(TAB1_ID));
@@ -482,7 +483,7 @@ public class TabGridDialogMediatorUnitTest {
         mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, mView);
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
 
-        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false);
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false, true);
 
         assertThat(mModel.get(TabGridPanelProperties.ANIMATION_SOURCE_VIEW), equalTo(null));
         verify(mDialogController).resetWithListOfTabs(null);
@@ -505,7 +506,7 @@ public class TabGridDialogMediatorUnitTest {
         mModel.set(TabGridPanelProperties.HEADER_TITLE, null);
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
 
-        mTabModelObserverCaptor.getValue().willCloseTab(mTab2, false);
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab2, false, true);
 
         // Current tab ID should be updated to TAB1_ID now.
         assertThat(mMediator.getCurrentTabIdForTesting(), equalTo(TAB1_ID));
@@ -537,7 +538,7 @@ public class TabGridDialogMediatorUnitTest {
         assertThat(mTabGroupTitleEditor.getTabGroupTitle(
                            CriticalPersistedTabData.from(mTab1).getRootId()),
                 equalTo(CUSTOMIZED_DIALOG_TITLE));
-        mTabModelObserverCaptor.getValue().willCloseTab(newTab, false);
+        mTabModelObserverCaptor.getValue().willCloseTab(newTab, false, true);
 
         // Dialog title should still be the stored title.
         assertThat(
@@ -562,7 +563,7 @@ public class TabGridDialogMediatorUnitTest {
         // Mock that we have a stored title stored with reference to root ID of newTab.
         doReturn(CUSTOMIZED_DIALOG_TITLE).when(mTabGroupTitleEditor).getTabGroupTitle(TAB3_ID);
 
-        mTabModelObserverCaptor.getValue().willCloseTab(newTab, false);
+        mTabModelObserverCaptor.getValue().willCloseTab(newTab, false, true);
 
         // Dialog title should still be the stored title even if the root tab is closed.
         assertThat(
@@ -585,7 +586,7 @@ public class TabGridDialogMediatorUnitTest {
         // Mock that we have a stored title stored with reference to root ID of tab1.
         doReturn(CUSTOMIZED_DIALOG_TITLE).when(mTabGroupTitleEditor).getTabGroupTitle(TAB1_ID);
 
-        mTabModelObserverCaptor.getValue().willCloseTab(mTab2, false);
+        mTabModelObserverCaptor.getValue().willCloseTab(mTab2, false, true);
 
         // Even if there is a stored title for tab1, it is now a single tab, so we won't show the
         // stored title.
@@ -695,6 +696,22 @@ public class TabGridDialogMediatorUnitTest {
         // Animation source view should not be specified.
         assertThat(mModel.get(TabGridPanelProperties.ANIMATION_SOURCE_VIEW), equalTo(null));
         verify(mDialogController).resetWithListOfTabs(eq(null));
+    }
+
+    @Test
+    public void hideDialog_WithVisibilityListener_BasicAnimation() {
+        // Mock that the animation source view is null, and the dialog is showing.
+        mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, null);
+        mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
+        // Set visibility listener.
+        mModel.set(TabGridPanelProperties.VISIBILITY_LISTENER, mMediator);
+
+        mMediator.hideDialog(false);
+
+        // Animation source view should not be specified.
+        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_SOURCE_VIEW), equalTo(null));
+        assertThat(mModel.get(TabGridPanelProperties.IS_DIALOG_VISIBLE), equalTo(false));
+        verifyZeroInteractions(mDialogController);
     }
 
     @Test
@@ -846,12 +863,30 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
-    public void hideDialog_onReset() {
+    public void onReset_hideDialog() {
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
 
         mMediator.onReset(null);
 
         assertThat(mModel.get(TabGridPanelProperties.IS_DIALOG_VISIBLE), equalTo(false));
+        verify(mDialogController).postHiding();
+    }
+
+    @Test
+    public void onReset_DialogNotVisible_NoOp() {
+        mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
+
+        mMediator.onReset(null);
+
+        verifyZeroInteractions(mDialogController);
+    }
+
+    @Test
+    public void finishedHiding() {
+        mMediator.finishedHidingDialogView();
+
+        verify(mDialogController).resetWithListOfTabs(null);
+        verify(mDialogController).postHiding();
     }
 
     @Test

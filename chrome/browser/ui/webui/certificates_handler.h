@@ -166,6 +166,7 @@ class CertificatesHandler : public content::WebUIMessageHandler,
 
   // Delete certificate and private key (if any).
   void HandleDeleteCertificate(const base::Value::List& args);
+  void OnCertificateDeleted(bool result);
 
   // Model initialization methods.
   void OnCertificateManagerModelCreated(
@@ -178,8 +179,8 @@ class CertificatesHandler : public content::WebUIMessageHandler,
   // Populate the given tab's tree.
   void PopulateTree(const std::string& tab_name, net::CertType type);
 
-  void ResolveCallback(const base::Value& response);
-  void RejectCallback(const base::Value& response);
+  void ResolveCallback(const base::ValueView response);
+  void RejectCallback(const base::ValueView response);
 
   // Reject the pending JS callback with a generic error.
   void RejectCallbackWithError(const std::string& title,

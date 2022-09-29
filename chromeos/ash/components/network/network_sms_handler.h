@@ -12,15 +12,15 @@
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chromeos/ash/components/dbus/shill/shill_property_changed_observer.h"
 #include "chromeos/dbus/common/dbus_method_call_status.h"
-#include "chromeos/dbus/shill/shill_property_changed_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class Value;
 }
 
-namespace chromeos {
+namespace ash {
 
 // Class to watch sms without Libcros.
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkSmsHandler
@@ -103,6 +103,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkSmsHandler
   base::WeakPtrFactory<NetworkSmsHandler> weak_ptr_factory_{this};
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_NETWORK_SMS_HANDLER_H_

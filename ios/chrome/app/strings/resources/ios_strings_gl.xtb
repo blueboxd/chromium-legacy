@@ -25,6 +25,7 @@ O teu motor de busca é <ph name="DSE_NAME" />. En caso aplicable, consulta as s
 <translation id="1112015203684611006">Erro impresión</translation>
 <translation id="1125564390852150847">Crear pestana nova</translation>
 <translation id="1126809382673880764">Non te protexe contra sitios web, descargas e extensións perigosos. Continuarás dispoñendo da protección da función Navegación segura, sempre que estea dispoñible, noutros servizos de Google (como Gmail e a Busca).</translation>
+<translation id="1135212215217513471">Obter Chrome para iOS</translation>
 <translation id="1145536944570833626">Elimina os datos existentes.</translation>
 <translation id="1147031633655575115">Tes a sesión iniciada como <ph name="USER" /></translation>
 <translation id="1154984953698510061">Ver outras pestanas</translation>
@@ -113,6 +114,7 @@ O teu motor de busca é <ph name="DSE_NAME" />. En caso aplicable, consulta as s
 <translation id="1832848789136765277">Para asegurarte de poder acceder sempre aos teus datos sincronizados, verifica a túa identidade</translation>
 <translation id="1870148520156231997">Mostrar contrasinal</translation>
 <translation id="1872096359983322073">Lanterna</translation>
+<translation id="1910975740091000991">Chrome para iOS</translation>
 <translation id="1911619930368729126">Cargar en Google Drive</translation>
 <translation id="1923342640370224680">Última hora</translation>
 <translation id="1930989359703290198">A túa organización só che permite iniciar sesión con certas contas. As contas que non están permitidas atópanse ocultas. <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
@@ -140,6 +142,7 @@ O teu motor de busca é <ph name="DSE_NAME" />. En caso aplicable, consulta as s
 <translation id="2139867232736819575">Buscar texto que copiaches</translation>
 <translation id="214201757571129614">Iniciar sesión…</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
+<translation id="2155145621546387786">Compartir Chrome</translation>
 <translation id="2175927920773552910">Código QR</translation>
 <translation id="2218443599109088993">Afastar</translation>
 <translation id="2230173723195178503">Cargouse a páxina web</translation>
@@ -308,6 +311,7 @@ En caso aplicable, consulta as instrucións do teu motor de busca para eliminar 
 <translation id="3529024052484145543">Contido non-seguro</translation>
 <translation id="3533202363250687977">Pechar todas as pestanas do modo de incógnito</translation>
 <translation id="3533436815740441613">Nova pestana</translation>
+<translation id="3547799431091898961">Para pechar sesión na túa Conta de Google en todos os sitios web, <ph name="BEGIN_LINK" />pecha sesión en Chrome<ph name="END_LINK" />.</translation>
 <translation id="3551320343578183772">Pechar pestana</translation>
 <translation id="3581564640715911333">Ofrece a tradución de páxinas noutros idiomas</translation>
 <translation id="3588820906588687999">Abrir imaxe nunha pestana nova</translation>
@@ -436,6 +440,7 @@ Os teus datos están encriptados co teu contrasinal de sincronización. Introdú
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4747097190499141774">A encriptación mediante frase de acceso non inclúe métodos de pago nin enderezos de Google Pay. Só alguén coa túa frase de acceso pode ler os teus datos encriptados. A frase de acceso non se envía nin se almacena en Google. Se a esqueces ou se queres cambiar esta opción de configuración, deberás restablecer a sincronización. <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
 <translation id="4751645464639803239">Nova pestana do modo de incógnito</translation>
+<translation id="4766112107778026136">Discover e Seguindo</translation>
 <translation id="4775879719735953715">Navegador predeterminado</translation>
 <translation id="4778644898150334464">Utilizar outro contrasinal</translation>
 <translation id="478808905805139173">Queres abrir a ligazón no modo de incógnito?</translation>
@@ -642,6 +647,7 @@ Handoff tamén debe estar activado na sección Xeral da configuración e os teus
 <translation id="6374469231428023295">Tentar de novo</translation>
 <translation id="6377118281273296434">Seguranza do sitio</translation>
 <translation id="6380866119319257197">Se esqueciches o contrasinal ou queres cambiar esta configuración, <ph name="BEGIN_LINK" />restablece a sincronización<ph name="END_LINK" /></translation>
+<translation id="6387994324662817823">Os contrasinais gárdanse no xestor de contrasinais de Google só neste dispositivo.</translation>
 <translation id="6389470377220713856">Nome na tarxeta</translation>
 <translation id="6406506848690869874">Sincronización</translation>
 <translation id="6410390304316730527">A función Navegación segura protéxete contra os piratas informáticos que poden enganarte para que realices accións perigosas, como instalar un software malicioso ou revelar información persoal (por exemplo, contrasinais, números de teléfono ou tarxetas de crédito). Se a desactivas, ten coidado ao consultar sitios descoñecidos ou con mala reputación.</translation>

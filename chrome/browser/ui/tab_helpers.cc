@@ -19,7 +19,6 @@
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/commerce/shopping_list/shopping_data_provider.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/complex_tasks/task_tab_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -58,9 +57,9 @@
 #include "chrome/browser/permissions/last_tab_standing_tracker_tab_helper.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/loading_predictor_tab_helper.h"
-#include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_tab_helper.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_tab_helper.h"
+#include "chrome/browser/preloading/prefetch/prefetch_proxy/prefetch_proxy_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/reputation/reputation_web_contents_observer.h"
@@ -122,7 +121,6 @@
 #include "components/history/core/browser/top_sites.h"
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"
-#include "components/metrics/content/content_stability_metrics_provider.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/optimization_guide/content/browser/page_content_annotations_web_contents_observer.h"
@@ -135,6 +133,7 @@
 #include "components/safe_browsing/content/browser/safe_browsing_navigation_observer.h"
 #include "components/safe_browsing/content/browser/safe_browsing_tab_observer.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/search/ntp_features.h"
 #include "components/segmentation_platform/content/segmentation_platform_tab_helper.h"
 #include "components/site_engagement/content/site_engagement_helper.h"
 #include "components/site_engagement/content/site_engagement_service.h"
@@ -174,10 +173,14 @@
 #include "components/accuracy_tips/accuracy_web_contents_observer.h"
 #include "components/commerce/content/browser/hint/commerce_hint_tab_helper.h"
 #include "components/commerce/core/commerce_feature_list.h"
-#include "components/omnibox/common/omnibox_features.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/zoom/zoom_controller.h"
 #endif  // BUILDFLAG(IS_ANDROID)
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_tab_helper.h"
+#endif
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/side_search/side_search_tab_contents_helper.h"
@@ -185,7 +188,6 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/child_accounts/time_limits/web_time_navigation_observer.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder_tab_tracker.h"
 #endif
 
@@ -353,8 +355,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     MediaEngagementService::CreateWebContentsObserver(web_contents);
   if (base::FeatureList::IsEnabled(media::kUseMediaHistoryStore))
     MediaHistoryContentsObserver::CreateForWebContents(web_contents);
-  metrics::ContentStabilityMetricsProvider::SetupWebContentsObserver(
-      web_contents);
   metrics::MetricsServicesWebContentsObserver::CreateForWebContents(
       web_contents);
   MixedContentSettingsTabHelper::CreateForWebContents(web_contents);
@@ -393,7 +393,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   prerender::NoStatePrefetchTabHelper::CreateForWebContents(web_contents);
   RecentlyAudibleHelper::CreateForWebContents(web_contents);
 #if BUILDFLAG(IS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kRequestDesktopSiteExceptions)) {
+  if (base::FeatureList::IsEnabled(features::kRequestDesktopSiteExceptions) ||
+      base::FeatureList::IsEnabled(features::kRequestDesktopSiteAdditions)) {
     RequestDesktopSiteWebContentsObserverAndroid::CreateForWebContents(
         web_contents);
   }
@@ -425,11 +426,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents,
       segmentation_platform::SegmentationPlatformServiceFactory::GetForProfile(
           profile));
-  if (base::FeatureList::IsEnabled(commerce::kShoppingList)) {
-    shopping_list::ShoppingDataProvider::CreateForWebContents(
-        web_contents,
-        OptimizationGuideKeyedServiceFactory::GetForProfile(profile));
-  }
   if (site_engagement::SiteEngagementService::IsEnabled()) {
     site_engagement::SiteEngagementService::Helper::CreateForWebContents(
         web_contents,
@@ -508,7 +504,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     ThumbnailTabHelper::CreateForWebContents(web_contents);
   }
   web_modal::WebContentsModalDialogManager::CreateForWebContents(web_contents);
-  if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetching)) {
+  if (OmniboxFieldTrial::IsZeroSuggestPrefetchingEnabled()) {
     ZeroSuggestPrefetchTabHelper::CreateForWebContents(web_contents);
   }
   if (commerce::isContextualConsentEnabled()) {
@@ -523,8 +519,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   app_list::CrOSActionRecorderTabTracker::CreateForWebContents(web_contents);
-  ash::app_time::WebTimeNavigationObserver::MaybeCreateForWebContents(
-      web_contents);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -576,6 +570,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #if defined(TOOLKIT_VIEWS)
   if (IsSideSearchEnabled(profile))
     SideSearchTabContentsHelper::CreateForWebContents(web_contents);
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(ntp_features::kCustomizeChromeSidePanel))
+    CustomizeChromeTabHelper::CreateForWebContents(web_contents);
 #endif
 
     // --- Section 3: Feature tab helpers behind BUILDFLAGs ---

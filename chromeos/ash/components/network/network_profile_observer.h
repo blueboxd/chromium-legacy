@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_ASH_COMPONENTS_NETWORK_NETWORK_PROFILE_OBSERVER_H_
 #define CHROMEOS_ASH_COMPONENTS_NETWORK_NETWORK_PROFILE_OBSERVER_H_
 
-namespace chromeos {
+namespace ash {
 
 struct NetworkProfile;
 
@@ -20,6 +20,6 @@ class NetworkProfileObserver {
   virtual ~NetworkProfileObserver() {}
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_NETWORK_PROFILE_OBSERVER_H_

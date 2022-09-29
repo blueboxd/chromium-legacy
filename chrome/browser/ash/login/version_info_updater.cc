@@ -21,9 +21,9 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "chromeos/system/statistics_provider.h"
+#include "chromeos/version/version_loader.h"
 #include "components/version_info/version_info.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -69,10 +69,10 @@ void VersionInfoUpdater::StartUpdate(bool is_chrome_branded) {
   if (base::SysInfo::IsRunningOnChromeOS()) {
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(&version_loader::GetVersion,
+        base::BindOnce(&chromeos::version_loader::GetVersion,
                        is_chrome_branded
-                           ? version_loader::VERSION_SHORT_WITH_DATE
-                           : version_loader::VERSION_FULL),
+                           ? chromeos::version_loader::VERSION_SHORT_WITH_DATE
+                           : chromeos::version_loader::VERSION_FULL),
         base::BindOnce(&VersionInfoUpdater::OnVersion,
                        weak_pointer_factory_.GetWeakPtr()));
   } else {

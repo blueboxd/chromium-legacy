@@ -8,6 +8,8 @@
  * rest of the code.
  */
 
+import {Earcon} from '../common/abstract_earcons.js';
+
 /**
  * EarconEngine generates ChromeVox's earcons using the web audio API.
  */
@@ -111,7 +113,7 @@ export class EarconEngine {
     this.progressTime_ = this.context_.currentTime;
 
     /**
-     * @type {?number} The window.setInterval ID for progress sounds.
+     * @type {?number} The setInterval ID for progress sounds.
      * @private
      */
     this.progressIntervalID_ = null;
@@ -132,11 +134,10 @@ export class EarconEngine {
     // Initialization: load the base sound data files asynchronously.
     const allSoundFilesToLoad =
         EarconEngine.SOUNDS.concat(EarconEngine.REVERBS);
-    allSoundFilesToLoad.forEach((function(sound) {
-                                  const url =
-                                      EarconEngine.BASE_URL + sound + '.wav';
-                                  this.loadSound(sound, url);
-                                }).bind(this));
+    allSoundFilesToLoad.forEach(sound => {
+      const url = `${EarconEngine.BASE_URL}${sound}.wav`;
+      this.loadSound(sound, url);
+    });
   }
 
   /**
@@ -812,7 +813,7 @@ export class EarconEngine {
     this.progressTime_ = this.context_.currentTime;
     this.generateProgressTickTocks_();
     this.progressIntervalID_ =
-        window.setInterval(this.generateProgressTickTocks_.bind(this), 1000);
+        setInterval(this.generateProgressTickTocks_.bind(this), 1000);
   }
 
   /**
@@ -831,7 +832,7 @@ export class EarconEngine {
     }
     this.progressSources_ = [];
 
-    window.clearInterval(this.progressIntervalID_);
+    clearInterval(this.progressIntervalID_);
     this.progressIntervalID_ = null;
   }
 

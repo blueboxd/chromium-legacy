@@ -11,6 +11,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/service/pass_through_image_transport_surface.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/direct_composition_support.h"
 #include "ui/gl/direct_composition_surface_win.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
@@ -44,6 +45,7 @@ CreateDirectCompositionSurfaceSettings(
 
 // static
 scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
+    gl::GLDisplay* display,
     base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
     SurfaceHandle surface_handle,
     gl::GLSurfaceFormat format) {
@@ -51,12 +53,12 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
   scoped_refptr<gl::GLSurface> surface;
 
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE) {
-    if (gl::DirectCompositionSurfaceWin::IsDirectCompositionSupported()) {
+    if (gl::DirectCompositionSupported()) {
       auto vsync_callback = delegate->GetGpuVSyncCallback();
       auto settings = CreateDirectCompositionSurfaceSettings(
           delegate->GetFeatureInfo()->workarounds());
       auto dc_surface = base::MakeRefCounted<gl::DirectCompositionSurfaceWin>(
-          gl::GLSurfaceEGL::GetGLDisplayEGL(), surface_handle,
+          display->GetAs<gl::GLDisplayEGL>(), surface_handle,
           std::move(vsync_callback), settings);
       if (!dc_surface->Initialize(gl::GLSurfaceFormat()))
         return nullptr;
@@ -66,13 +68,13 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
     } else {
       surface = gl::InitializeGLSurface(
           base::MakeRefCounted<gl::NativeViewGLSurfaceEGL>(
-              gl::GLSurfaceEGL::GetGLDisplayEGL(), surface_handle,
+              display->GetAs<gl::GLDisplayEGL>(), surface_handle,
               std::make_unique<gl::VSyncProviderWin>(surface_handle)));
       if (!surface)
         return nullptr;
     }
   } else {
-    surface = gl::init::CreateViewGLSurface(surface_handle);
+    surface = gl::init::CreateViewGLSurface(display, surface_handle);
     if (!surface)
       return nullptr;
   }

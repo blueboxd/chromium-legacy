@@ -22,6 +22,7 @@
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "base/i18n/rtl.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
@@ -114,10 +115,12 @@ void UnifiedMessageCenterBubble::ShowBubble() {
     content_layer->Add(border_->layer());
   }
 
-  // Create a shadow for bubble widget.
-  shadow_ = SystemShadow::CreateShadowOnNinePatchLayerForWindow(
-      bubble_widget_->GetNativeWindow(), SystemShadow::Type::kElevation12);
-  shadow_->SetRoundedCornerRadius(kBubbleCornerRadius);
+  if (features::IsSystemTrayShadowEnabled()) {
+    // Create a shadow for bubble widget.
+    shadow_ = SystemShadow::CreateShadowOnNinePatchLayerForWindow(
+        bubble_widget_->GetNativeWindow(), SystemShadow::Type::kElevation12);
+    shadow_->SetRoundedCornerRadius(kBubbleCornerRadius);
+  }
 
   bubble_view_->InitializeAndShowBubble();
   message_center_view_->Init();
@@ -174,19 +177,32 @@ void UnifiedMessageCenterBubble::UpdatePosition() {
   if (!tray_->bubble())
     return;
 
-  // Note: It's tempting to set the insets for TrayBubbleView in order to
-  // achieve the padding, but that enlarges the layer bounds and breaks rounded
-  // corner clipping for ARC notifications. This approach only modifies the
-  // position of the layer.
+  // Shelf bubbles need to be offset from the shelf, otherwise they will be
+  // flush with the shelf. The bounds can't be shifted via insets because this
+  // enlarges the layer bounds and this can break ARC notification rounded
+  // corners. Apply the offset to the anchor rect.
   gfx::Rect anchor_rect = tray_->shelf()->GetSystemTrayAnchorRect();
-
   gfx::Insets tray_bubble_insets = GetTrayBubbleInsets();
-  int left_offset = (tray_->shelf()->alignment() == ShelfAlignment::kLeft ||
-                     base::i18n::IsRTL())
-                        ? tray_bubble_insets.left()
-                        : -tray_bubble_insets.right();
 
-  anchor_rect.set_x(anchor_rect.x() + left_offset);
+  int offset;
+  switch (tray_->shelf()->alignment()) {
+    case ShelfAlignment::kLeft:
+      offset = tray_bubble_insets.left();
+      break;
+    case ShelfAlignment::kRight:
+      offset = -tray_bubble_insets.right();
+      break;
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
+      if (base::i18n::IsRTL()) {
+        offset = tray_bubble_insets.left();
+        break;
+      }
+      offset = -tray_bubble_insets.right();
+      break;
+  }
+
+  anchor_rect.set_x(anchor_rect.x() + offset);
   anchor_rect.set_y(anchor_rect.y() - tray_->bubble()->GetCurrentTrayHeight() -
                     tray_bubble_insets.bottom() -
                     kUnifiedMessageCenterBubbleSpacing);
@@ -197,12 +213,14 @@ void UnifiedMessageCenterBubble::UpdatePosition() {
     border_->layer()->SetBounds(message_center_view_->GetContentsBounds());
   }
 
-  // When the last notification is removed, the content bounds of message center
-  // may become too small such which makes the shadow's bounds smaller than its
-  // blur region. To avoid this, we hide the shadow when the message center has
-  // no notifications.
-  shadow_->GetLayer()->SetVisible(
-      message_center_view_->message_list_view()->GetTotalNotificationCount());
+  if (shadow_) {
+    // When the last notification is removed, the content bounds of message
+    // center may become too small such which makes the shadow's bounds smaller
+    // than its blur region. To avoid this, we hide the shadow when the message
+    // center has no notifications.
+    shadow_->GetLayer()->SetVisible(
+        message_center_view_->message_list_view()->GetTotalNotificationCount());
+  }
 }
 
 void UnifiedMessageCenterBubble::FocusEntered(bool reverse) {

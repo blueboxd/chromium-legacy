@@ -13,12 +13,10 @@
 #include <utility>
 #include <vector>
 
-#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/components/disks/disk_mount_manager.h"
 #include "ash/components/disks/mock_disk_mount_manager.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/timezone_settings.h"
-#include "ash/components/tpm/stub_install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/environment.h"
@@ -65,15 +63,21 @@
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/dbus/attestation/attestation_client.h"
 #include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_device_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_ipconfig_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/ash/components/dbus/vm_applications/apps.pb.h"
+#include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/components/network/network_state.h"
@@ -81,12 +85,7 @@
 #include "chromeos/ash/services/cros_healthd/public/cpp/fake_cros_healthd.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
-#include "chromeos/dbus/shill/shill_ipconfig_client.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -98,7 +97,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/upload_list/upload_list.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -125,6 +123,8 @@ namespace {
 
 using ::ash::disks::DiskMountManager;
 using ::base::test::ScopedChromeOSVersionInfo;
+using ::testing::IsEmpty;
+using ::testing::Not;
 using ::testing::Return;
 using ::testing::ReturnRef;
 namespace em = ::enterprise_management;
@@ -160,41 +160,35 @@ constexpr double kFakeBatteryCurrentNow =
 constexpr char kFakeBatteryTechnology[] = "fake_battery_technology";
 constexpr char kFakeBatteryStatus[] = "fake_battery_status";
 // System test values:
-const char kFakeFirstPowerDate[] = "2020-40";
-const char kFakeManufactureDate[] = "2019-01-01";
-const char kFakeSkuNumber[] = "ABCD&^A";
-const char kFakeSerialNumber[] = "8607G03EDF";
-constexpr char kFakeSystemModelName[] = "XX ModelName 007 XY";
-constexpr char kFakeMarketingName[] = "Latitude 1234 Chromebook Enterprise";
-constexpr char kFakeBiosVersion[] = "Google_BoardName.12200.68.0";
-constexpr char kFakeBoardName[] = "BoardName";
-constexpr char kFakeBoardVersion[] = "rev1234";
-constexpr uint64_t kFakeChassisType = 9;
-constexpr char kFakeProductName[] = "ProductName";
-constexpr char kFakeVersionMilestone[] = "87";
-constexpr char kFakeVersionBuildNumber[] = "13544";
-constexpr char kFakeVersionPatchNumber[] = "59.0";
-constexpr char kFakeVersionReleaseChannel[] = "stable-channel";
-// System V2 test values:
-constexpr char kFakeOsInfoCodeName[] = "OsInfo Code Name";
-constexpr char kFakeOSInfoMarketingName[] = "OsInfo Marketing Name";
-constexpr char kFakeOSInfoOemName[] = "OsInfo OEM Name";
-constexpr cros_healthd::BootMode kFakeOsInfoBootMode =
-    cros_healthd::BootMode::kCrosSecure;
-constexpr em::BootInfo::BootMethod kFakeOsInfoBootMethod =
-    em::BootInfo::CROS_SECURE;
-constexpr char kFakeVpdInfoRegion[] = "VpdInfo Region";
 constexpr char kFakeDmiInfoBiosVendor[] = "DMI Bios Vendor";
-constexpr char kFakeDmiInfoBiosVersion[] = "DMI Bios Version";
+constexpr char kFakeDmiInfoBiosVersion[] = "Google_BoardName.12200.68.0";
 constexpr char kFakeDmiInfoBoardName[] = "DMI Board Name";
 constexpr char kFakeDmiInfoBoardVendor[] = "DMI Board Vendor";
-constexpr char kFakeDmiInfoBoardVersion[] = "DMI Board Version";
-constexpr char kFakeDmiInfoChassisVendor[] = "DMI Chassis Vendor";
+constexpr char kFakeDmiInfoBoardVersion[] = "rev1234";
 constexpr uint64_t kFakeDmiInfoChassisType = 9;
+constexpr char kFakeDmiInfoChassisVendor[] = "DMI Chassis Vendor";
 constexpr char kFakeDmiInfoProductFamily[] = "DMI Product Family";
-constexpr char kFakeDmiInfoSysVendor[] = "DMI System Vendor";
 constexpr char kFakeDmiInfoProductName[] = "DMI Product Name";
 constexpr char kFakeDmiInfoProductVersion[] = "DMI Product Version";
+constexpr char kFakeDmiInfoSysVendor[] = "DMI System Vendor";
+constexpr em::BootInfo::BootMethod kFakeOsInfoBootMethod =
+    em::BootInfo::CROS_SECURE;
+constexpr cros_healthd::BootMode kFakeOsInfoBootMode =
+    cros_healthd::BootMode::kCrosSecure;
+constexpr char kFakeOsInfoMarketingName[] =
+    "Latitude 1234 Chromebook Enterprise";
+constexpr char kFakeOsInfoOemName[] = "OsInfo OEM Name";
+constexpr char kFakeOsInfoProductName[] = "OsInfo Code Name";
+constexpr char kFakeOsVersionBuildNumber[] = "13544";
+constexpr char kFakeOsVersionMilestone[] = "87";
+constexpr char kFakeOsVersionPatchNumber[] = "59.0";
+constexpr char kFakeOsVersionReleaseChannel[] = "stable-channel";
+constexpr char kFakeVpdInfoFirstPowerDate[] = "2020-40";
+constexpr char kFakeVpdInfoManufactureDate[] = "2019-01-01";
+constexpr char kFakeVpdInfoRegion[] = "VpdInfo Region";
+constexpr char kFakeVpdInfoSerialNumber[] = "8607G03EDF";
+constexpr char kFakeVpdInfoSkuNumber[] = "ABCD&^A";
+constexpr char kFakeVpdInfoSystemModelName[] = "XX ModelName 007 XY";
 // CPU test values:
 constexpr uint32_t kFakeNumTotalThreads = 8;
 constexpr char kFakeModelName[] = "fake_cpu_model_name";
@@ -573,27 +567,16 @@ cros_healthd::NonRemovableBlockDeviceResultPtr CreateBlockDeviceResult() {
 cros_healthd::SystemResultPtr CreateSystemResult() {
   return cros_healthd::SystemResult::NewSystemInfo(
       cros_healthd::SystemInfo::New(
-          kFakeFirstPowerDate, kFakeManufactureDate, kFakeSkuNumber,
-          kFakeSerialNumber, kFakeSystemModelName, kFakeMarketingName,
-          kFakeBiosVersion, kFakeBoardName, kFakeBoardVersion,
-          cros_healthd::NullableUint64::New(kFakeChassisType), kFakeProductName,
-          cros_healthd::OsVersion::New(
-              kFakeVersionMilestone, kFakeVersionBuildNumber,
-              kFakeVersionPatchNumber, kFakeVersionReleaseChannel)));
-}
-
-cros_healthd::SystemResultV2Ptr CreateSystemResultV2() {
-  return cros_healthd::SystemResultV2::NewSystemInfoV2(
-      cros_healthd::SystemInfoV2::New(
           cros_healthd::OsInfo::New(
-              kFakeOsInfoCodeName, kFakeOSInfoMarketingName,
+              kFakeOsInfoProductName, kFakeOsInfoMarketingName,
               cros_healthd::OsVersion::New(
-                  kFakeVersionMilestone, kFakeVersionBuildNumber,
-                  kFakeVersionPatchNumber, kFakeVersionReleaseChannel),
-              kFakeOsInfoBootMode, kFakeOSInfoOemName),
-          cros_healthd::VpdInfo::New(kFakeSerialNumber, kFakeVpdInfoRegion,
-                                     kFakeManufactureDate, kFakeFirstPowerDate,
-                                     kFakeSkuNumber, kFakeModelName),
+                  kFakeOsVersionMilestone, kFakeOsVersionBuildNumber,
+                  kFakeOsVersionPatchNumber, kFakeOsVersionReleaseChannel),
+              kFakeOsInfoBootMode, kFakeOsInfoOemName),
+          cros_healthd::VpdInfo::New(
+              kFakeVpdInfoSerialNumber, kFakeVpdInfoRegion,
+              kFakeVpdInfoManufactureDate, kFakeVpdInfoFirstPowerDate,
+              kFakeVpdInfoSkuNumber, kFakeVpdInfoSystemModelName),
           cros_healthd::DmiInfo::New(
               kFakeDmiInfoBiosVendor, kFakeDmiInfoBiosVersion,
               kFakeDmiInfoBoardName, kFakeDmiInfoBoardVendor,
@@ -763,15 +746,12 @@ cros_healthd::BusResultPtr CreateBusResult() {
 void SetFakeCrosHealthdData() {
   auto telemetry_info = cros_healthd::TelemetryInfo::New();
   cros_healthd::TelemetryInfo fake_info;
-  // Always gather system V2.
-  telemetry_info->system_result_v2 = CreateSystemResultV2();
+  // Always gather system result.
+  telemetry_info->system_result = CreateSystemResult();
   if (SettingEnabled(ash::kReportDevicePowerStatus))
     telemetry_info->battery_result = CreateBatteryResult();
   if (SettingEnabled(ash::kReportDeviceStorageStatus))
     telemetry_info->block_device_result = CreateBlockDeviceResult();
-  if (SettingEnabled(ash::kReportDeviceSystemInfo) ||
-      SettingEnabled(ash::kReportDeviceVpdInfo))
-    telemetry_info->system_result = CreateSystemResult();
   if (SettingEnabled(ash::kReportDeviceCpuInfo))
     telemetry_info->cpu_result = CreateCpuResult();
   if (SettingEnabled(ash::kReportDeviceTimezoneInfo))
@@ -889,7 +869,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     std::vector<storage::MountPoints::MountPointInfo> external_mount_points;
     storage::ExternalMountPoints::GetSystemInstance()->AddMountPointInfosTo(
         &external_mount_points);
-    EXPECT_FALSE(external_mount_points.empty());
+    EXPECT_THAT(external_mount_points, Not(IsEmpty()));
 
     // DiskMountManager takes ownership of the MockDiskMountManager.
     DiskMountManager::InitializeForTesting(mock_disk_mount_manager.release());
@@ -903,11 +883,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     ash::KioskCryptohomeRemover::RegisterPrefs(local_state_.registry());
 
     // Use FakeUpdateEngineClient.
-    chromeos::DBusThreadManager::Initialize();
     update_engine_client_ = ash::UpdateEngineClient::InitializeFakeForTest();
-    // Async tasks posted when calling `chromeos::DBusThreadManager::Initialize`
-    // need to be flushed.
-    base::RunLoop().RunUntilIdle();
 
     chromeos::CrasAudioHandler::InitializeForTesting();
     ash::UserDataAuthClient::InitializeFake();
@@ -966,10 +942,8 @@ class DeviceStatusCollectorTest : public testing::Test {
 
  protected:
   void AddMountPoint(const std::string& mount_point) {
-    mount_point_map_.insert(DiskMountManager::MountPointMap::value_type(
-        mount_point, DiskMountManager::MountPointInfo(
-                         mount_point, mount_point, chromeos::MOUNT_TYPE_DEVICE,
-                         ash::disks::MOUNT_CONDITION_NONE)));
+    mount_point_map_.insert(
+        {mount_point, mount_point, ash::MountType::kDevice});
   }
 
   virtual void RestartStatusCollector(
@@ -1198,7 +1172,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   ChromeContentClient content_client_;
   ChromeContentBrowserClient browser_content_client_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
-  DiskMountManager::MountPointMap mount_point_map_;
+  DiskMountManager::MountPoints mount_point_map_;
   ash::ScopedStubInstallAttributes scoped_stub_install_attributes_;
   ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   ash::FakeOwnerSettingsService owner_settings_service_{
@@ -1371,8 +1345,8 @@ TEST_F(DeviceStatusCollectorTest, ActivityNotWrittenToProfilePref) {
   DisableDefaultSettings();
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       ash::kReportDeviceActivityTimes, true);
-  EXPECT_TRUE(profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)
-                  ->DictEmpty());
+  EXPECT_THAT(profile_pref_service_.GetValueDict(prefs::kUserActivityTimes),
+              IsEmpty());
 
   ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
                                  ui::IDLE_STATE_ACTIVE};
@@ -1385,8 +1359,8 @@ TEST_F(DeviceStatusCollectorTest, ActivityNotWrittenToProfilePref) {
 
   // Nothing should be written to profile pref service, because it is only used
   // for consumer reporting.
-  EXPECT_TRUE(profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)
-                  ->DictEmpty());
+  EXPECT_THAT(profile_pref_service_.GetValueDict(prefs::kUserActivityTimes),
+              IsEmpty());
 }
 
 TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
@@ -1864,7 +1838,7 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
   int size = 12345678;
   for (const auto& mount_info :
        DiskMountManager::GetInstance()->mount_points()) {
-    expected_mount_points.push_back(mount_info.first);
+    expected_mount_points.push_back(mount_info.mount_path);
   }
   expected_mount_points.push_back(kExternalMountPoint);
 
@@ -1876,7 +1850,7 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
     info.set_storage_free(size++);
     expected_volume_info.push_back(info);
   }
-  EXPECT_FALSE(expected_volume_info.empty());
+  EXPECT_THAT(expected_volume_info, Not(IsEmpty()));
 
   auto options = CreateEmptyDeviceStatusCollectorOptions();
   options->volume_info_fetcher =
@@ -3626,7 +3600,7 @@ TEST_F(DeviceStatusCollectorTest, TestPartialCrosHealthdInfo) {
   EXPECT_FALSE(device_status_.has_memory_info());
   EXPECT_FALSE(device_status_.has_timezone_info());
   EXPECT_FALSE(device_status_.has_system_status());
-  // Some smbios info from SystemResult V2 is always reported by default.
+  // Some smbios info from SystemResult is always reported by default.
   EXPECT_TRUE(device_status_.has_smbios_info());
   EXPECT_FALSE(device_status_.has_boot_info());
   EXPECT_FALSE(device_status_.has_storage_status());
@@ -3649,12 +3623,13 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdVpdAndSystemInfo) {
   // Verify the only vpd info is populated.
   ASSERT_TRUE(device_status_.has_system_status());
   EXPECT_EQ(device_status_.system_status().first_power_date(),
-            kFakeFirstPowerDate);
+            kFakeVpdInfoFirstPowerDate);
   EXPECT_EQ(device_status_.system_status().manufacture_date(),
-            kFakeManufactureDate);
-  EXPECT_EQ(device_status_.system_status().vpd_sku_number(), kFakeSkuNumber);
+            kFakeVpdInfoManufactureDate);
+  EXPECT_EQ(device_status_.system_status().vpd_sku_number(),
+            kFakeVpdInfoSkuNumber);
   EXPECT_EQ(device_status_.system_status().vpd_serial_number(),
-            kFakeSerialNumber);
+            kFakeVpdInfoSerialNumber);
   ASSERT_FALSE(device_status_.system_status().has_marketing_name());
   ASSERT_FALSE(device_status_.system_status().has_bios_version());
   ASSERT_FALSE(device_status_.system_status().has_board_name());
@@ -3662,8 +3637,8 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdVpdAndSystemInfo) {
   ASSERT_FALSE(device_status_.system_status().has_chassis_type());
   ASSERT_FALSE(device_status_.system_status().has_product_name());
 
-  // Verify the system info v2 is not populated excluding vendor, product name,
-  // and product version.
+  // Verify the system info is not populated excluding vendor, product name and
+  // product version.
   ASSERT_TRUE(device_status_.has_smbios_info());
   EXPECT_TRUE(device_status_.smbios_info().has_sys_vendor());
   EXPECT_TRUE(device_status_.smbios_info().has_product_name());
@@ -3687,14 +3662,18 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdVpdAndSystemInfo) {
   ASSERT_FALSE(device_status_.system_status().has_manufacture_date());
   ASSERT_FALSE(device_status_.system_status().has_vpd_sku_number());
   EXPECT_EQ(device_status_.system_status().marketing_name(),
-            kFakeMarketingName);
-  EXPECT_EQ(device_status_.system_status().bios_version(), kFakeBiosVersion);
-  EXPECT_EQ(device_status_.system_status().board_name(), kFakeBoardName);
-  EXPECT_EQ(device_status_.system_status().board_version(), kFakeBoardVersion);
-  EXPECT_EQ(device_status_.system_status().chassis_type(), kFakeChassisType);
-  EXPECT_EQ(device_status_.system_status().product_name(), kFakeProductName);
+            kFakeOsInfoMarketingName);
+  EXPECT_EQ(device_status_.system_status().bios_version(),
+            kFakeDmiInfoBiosVersion);
+  EXPECT_EQ(device_status_.system_status().board_name(), kFakeDmiInfoBoardName);
+  EXPECT_EQ(device_status_.system_status().board_version(),
+            kFakeDmiInfoBoardVersion);
+  EXPECT_EQ(device_status_.system_status().chassis_type(),
+            kFakeDmiInfoChassisType);
+  EXPECT_EQ(device_status_.system_status().product_name(),
+            kFakeOsInfoProductName);
 
-  // Verify system info V2 exists too.
+  // Verify smbios info and boot info exist.
   ASSERT_TRUE(device_status_.has_smbios_info());
   EXPECT_EQ(device_status_.smbios_info().product_name(),
             kFakeDmiInfoProductName);
@@ -3732,21 +3711,11 @@ TEST_F(DeviceStatusCollectorTest, GenerateAppInfo) {
       apps::AppServiceProxyFactory::GetForProfile(testing_profile_.get());
   auto app1 = std::make_unique<apps::App>(apps::AppType::kChromeApp, "id");
   auto app2 = std::make_unique<apps::App>(apps::AppType::kChromeApp, "id2");
-  if (base::FeatureList::IsEnabled(apps::kAppServiceOnAppUpdateWithoutMojom)) {
-    std::vector<apps::AppPtr> apps;
-    apps.push_back(std::move(app1));
-    apps.push_back(std::move(app2));
-    app_proxy->AppRegistryCache().OnApps(std::move(apps),
-                                         apps::AppType::kUnknown,
-                                         /*should_notify_initialized=*/false);
-  } else {
-    std::vector<apps::mojom::AppPtr> mojom_deltas;
-    mojom_deltas.push_back(apps::ConvertAppToMojomApp(app1));
-    mojom_deltas.push_back(apps::ConvertAppToMojomApp(app2));
-    app_proxy->AppRegistryCache().OnApps(std::move(mojom_deltas),
-                                         apps::mojom::AppType::kUnknown,
-                                         /*should_notify_initialized=*/false);
-  }
+  std::vector<apps::AppPtr> apps;
+  apps.push_back(std::move(app1));
+  apps.push_back(std::move(app2));
+  app_proxy->AppRegistryCache().OnApps(std::move(apps), apps::AppType::kUnknown,
+                                       /*should_notify_initialized=*/false);
 
   // Start app instance
   base::Time start_time;
@@ -3885,11 +3854,11 @@ class DeviceStatusCollectorNetworkTest : public DeviceStatusCollectorTest {
   void SetUp() override {
     RestartStatusCollector();
 
-    chromeos::ShillDeviceClient::TestInterface* device_client =
+    ash::ShillDeviceClient::TestInterface* device_client =
         network_handler_test_helper_.device_test();
-    chromeos::ShillServiceClient::TestInterface* service_client =
+    ash::ShillServiceClient::TestInterface* service_client =
         network_handler_test_helper_.service_test();
-    chromeos::ShillIPConfigClient::TestInterface* ip_config_client =
+    ash::ShillIPConfigClient::TestInterface* ip_config_client =
         network_handler_test_helper_.ip_config_test();
 
     device_client->ClearDevices();
@@ -3983,11 +3952,11 @@ class DeviceStatusCollectorNetworkTest : public DeviceStatusCollectorTest {
     // Flush out pending state updates.
     base::RunLoop().RunUntilIdle();
 
-    chromeos::NetworkStateHandler::NetworkStateList state_list;
-    chromeos::NetworkStateHandler* network_state_handler =
-        chromeos::NetworkHandler::Get()->network_state_handler();
+    ash::NetworkStateHandler::NetworkStateList state_list;
+    ash::NetworkStateHandler* network_state_handler =
+        ash::NetworkHandler::Get()->network_state_handler();
     network_state_handler->GetNetworkListByType(
-        chromeos::NetworkTypePattern::Default(),
+        ash::NetworkTypePattern::Default(),
         true,   // configured_only
         false,  // visible_only,
         0,      // no limit to number of results
@@ -3998,9 +3967,9 @@ class DeviceStatusCollectorNetworkTest : public DeviceStatusCollectorTest {
   void TearDown() override { DeviceStatusCollectorTest::TearDown(); }
 
   void ClearNetworkData() {
-    chromeos::ShillDeviceClient::TestInterface* device_client =
+    ash::ShillDeviceClient::TestInterface* device_client =
         network_handler_test_helper_.device_test();
-    chromeos::ShillServiceClient::TestInterface* service_client =
+    ash::ShillServiceClient::TestInterface* service_client =
         network_handler_test_helper_.service_test();
 
     device_client->ClearDevices();
@@ -4011,7 +3980,7 @@ class DeviceStatusCollectorNetworkTest : public DeviceStatusCollectorTest {
   virtual void VerifyReporting() = 0;
 
  private:
-  chromeos::NetworkHandlerTestHelper network_handler_test_helper_;
+  ash::NetworkHandlerTestHelper network_handler_test_helper_;
 };
 
 class DeviceStatusCollectorNetworkInterfacesTest

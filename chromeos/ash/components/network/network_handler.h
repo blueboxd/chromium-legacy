@@ -13,7 +13,7 @@
 
 class PrefService;
 
-namespace chromeos {
+namespace ash {
 
 class AutoConnectHandler;
 class CellularConnectionHandler;
@@ -27,6 +27,8 @@ class ClientCertResolver;
 class ConnectionInfoMetricsLogger;
 class ESimPolicyLoginMetricsLogger;
 class GeolocationHandler;
+class HiddenNetworkHandler;
+class HotspotStateHandler;
 class ManagedCellularPrefHandler;
 class ManagedNetworkConfigurationHandler;
 class ManagedNetworkConfigurationHandlerImpl;
@@ -85,6 +87,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkHandler {
   // primary user logs in.
   void SetIsEnterpriseManaged(bool is_enterprise_managed);
 
+  // Returns a flag indicating if the device is managed by an enterprise
+  // or not.
+  bool is_enterprise_managed() { return is_enterprise_managed_; }
+
   // Returns the task runner for posting NetworkHandler calls from other
   // threads.
   base::SingleThreadTaskRunner* task_runner() { return task_runner_.get(); }
@@ -99,6 +105,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkHandler {
   CellularESimUninstallHandler* cellular_esim_uninstall_handler();
   CellularInhibitor* cellular_inhibitor();
   CellularPolicyHandler* cellular_policy_handler();
+  HiddenNetworkHandler* hidden_network_handler();
+  HotspotStateHandler* hotspot_state_handler();
   NetworkStateHandler* network_state_handler();
   NetworkDeviceHandler* network_device_handler();
   NetworkProfileHandler* network_profile_handler();
@@ -142,6 +150,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkHandler {
   std::unique_ptr<ManagedCellularPrefHandler> managed_cellular_pref_handler_;
   std::unique_ptr<CellularMetricsLogger> cellular_metrics_logger_;
   std::unique_ptr<ConnectionInfoMetricsLogger> connection_info_metrics_logger_;
+  std::unique_ptr<HiddenNetworkHandler> hidden_network_handler_;
+  std::unique_ptr<HotspotStateHandler> hotspot_state_handler_;
   std::unique_ptr<ESimPolicyLoginMetricsLogger>
       esim_policy_login_metrics_logger_;
   std::unique_ptr<VpnNetworkMetricsHelper> vpn_network_metrics_helper_;
@@ -161,11 +171,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkHandler {
   bool is_enterprise_managed_ = false;
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-// TODO(https://crbug.com/1164001): remove when moved to  ash/components/.
-namespace ash {
-using ::chromeos::NetworkHandler;
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos {
+using ::ash::NetworkHandler;
 }
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_NETWORK_HANDLER_H_

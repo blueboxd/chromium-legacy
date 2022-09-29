@@ -14,6 +14,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="1052916631016577720">Item scan</translation>
 <translation id="1056775291175587022">No networks</translation>
 <translation id="1056898198331236512">Warning</translation>
+<translation id="1058009965971887428">Report feedback</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="1062407476771304334">Replace</translation>
 <translation id="1073899992769346247">Replace or recharge the battery</translation>
@@ -48,10 +49,12 @@ Here are some things that you can try to get started.</translation>
 <translation id="1201402288615127009">Next</translation>
 <translation id="1210557957257435379">screen recording</translation>
 <translation id="121097972571826261">Forward by word</translation>
+<translation id="1217633719248931900">Go to app</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />, Play Store app</translation>
 <translation id="1225748608451425081">Your Chromebook is locked due to a known issue. You will be able to sign in after: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Stop selecting</translation>
 <translation id="1239161794459865856"><ph name="FEATURE_NAME" /> is connected.</translation>
+<translation id="1240638468526743569">An app</translation>
 <translation id="1246890715821376239">Unsupported apps</translation>
 <translation id="1247372569136754018">Microphone (internal)</translation>
 <translation id="1247519845643687288">Recent apps</translation>
@@ -83,6 +86,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="1346748346194534595">Right</translation>
 <translation id="1351937230027495976">Collapse menu</translation>
 <translation id="1364382257761975320">To unlock your Chromebook, use your fingerprint</translation>
+<translation id="1365866993922957110">Get automatic updates</translation>
 <translation id="1372545819342940910">Save desk for later</translation>
 <translation id="1383597849754832576">Can't download speech files. Try again later.</translation>
 <translation id="1383876407941801731">Search</translation>
@@ -98,6 +102,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="1455242230282523554">Show language settings</translation>
 <translation id="1460620680449458626">Volume is muted.</translation>
 <translation id="1467432559032391204">Left</translation>
+<translation id="146902737843070955">Your administrator has requested this change</translation>
 <translation id="147310119694673958">Phone battery <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="1479909375538722835">Floating accessibility menu</translation>
 <translation id="1480845547124508962"><ph name="CURRENT_TIME" />, press Enter key to open Calendar view</translation>
@@ -160,6 +165,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="1830308660060964064"><ph name="ITEM_TITLE" /> was un-pinned</translation>
 <translation id="1836215606488044471">Assistant (loading...)</translation>
 <translation id="1838895407229022812">Night Light is off.</translation>
+<translation id="1862380676329487333">Update and sign out</translation>
 <translation id="1864454756846565995">USB-C device (rear port)</translation>
 <translation id="1879018240766558464">Incognito windows aren’t currently supported. Other apps will be saved.</translation>
 <translation id="1882814835921407042">No mobile network</translation>
@@ -324,6 +330,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="2894949423239620203">Cable may impact performance</translation>
 <translation id="2903844815300039659">Connected to <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2914580577416829331">Screen captures</translation>
+<translation id="2925246975070834767">Try auto-zoom so that you'll be in the centre of the screen. Turn it on in Quick Settings.</translation>
 <translation id="2941112035454246133">Low</translation>
 <translation id="2942350706960889382">Docked Magnifier</translation>
 <translation id="2942516765047364088">Shelf position</translation>
@@ -426,15 +433,6 @@ Here are some things that you can try to get started.</translation>
 <translation id="3509391053705095206">Can’t find your phone. Make sure that your phone’s Bluetooth is on.</translation>
 <translation id="3510164367642747937">Highlight mouse cursor</translation>
 <translation id="3513798432020909783">Account managed by <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3518604429872942239">Status tray, time <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="NETWORK" />,
-        <ph name="MIC" />,
-        <ph name="CAMERA" />,
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="352245152354538528">{0,plural, =1{Update device within 1 minute}other{Update device within # minutes}}</translation>
 <translation id="353086728817903341">Connected to <ph name="NUM_DEVICES" /> devices</translation>
 <translation id="3542066395059568317">You’ll see recommendations so that you can continue where you left off. You can right-click to remove recommendations.</translation>
@@ -450,6 +448,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="3593039967545720377">Access your clipboard history by pressing <ph name="SHORTCUT_KEY_NAME" /> + V to view your clipboard. Copy an item to get started.</translation>
 <translation id="3593646411856133110">Swipe up and hold to see open apps</translation>
 <translation id="3595596368722241419">Battery full</translation>
+<translation id="3596012367874587041">App settings</translation>
 <translation id="3600061223661453002">Off</translation>
 <translation id="3604801046548457007">Desk <ph name="DESK_TITILE" /> created</translation>
 <translation id="3606978283550408104">Braille display connected.</translation>
@@ -469,17 +468,16 @@ Connect your device to power.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> managed user</translation>
 <translation id="36813544980941320">Wi-Fi networks will be shared between your phone and <ph name="DEVICE_NAME" /></translation>
 <translation id="3694122362646626770">Websites</translation>
-<translation id="3701206655856637070">You can now change where screen captures are saved</translation>
 <translation id="3702809606464356667">Showing windows from the current desk; press the Up arrow key to show windows from all desks</translation>
 <translation id="3702846122927433391">Population in Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3708186454126126312">Previously connected</translation>
 <translation id="371370241367527062">Front microphone</translation>
 <translation id="3713734891607377840">Open when complete</translation>
+<translation id="3724279623330129812">Auto-zoom centred the camera</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> and <ph name="UNAVAILABLE_APPS_COUNT" /> more aren't on this device.</translation>
 <translation id="3735740477244556633">Sort by</translation>
 <translation id="3742055079367172538">Screenshot taken</translation>
-<translation id="3761848338953536304">Your administrator is requesting that you turn off the Lock SIM setting</translation>
 <translation id="3765841986579723851">Edited today</translation>
 <translation id="3771549900096082774">High contrast mode</translation>
 <translation id="3773700760453577392">An administrator has disallowed multiple sign-in for <ph name="USER_EMAIL" />. All users must sign out to continue.</translation>
@@ -542,6 +540,7 @@ Connect your device to power.</translation>
 <translation id="4123259114412175274">To unlock your Chromebook, make sure that your phone's Bluetooth is on</translation>
 <translation id="4125970834901680537">Can't stream apps in tablet mode. Try again in laptop mode.</translation>
 <translation id="4129129681837227511">To see notifications on your lock screen, unlock to change the setting</translation>
+<translation id="4130035430755296270">Keep hovering for more layout options</translation>
 <translation id="4136724716305260864">On until sunrise</translation>
 <translation id="4146833061457621061">Play music</translation>
 <translation id="4165275524535002941">Cable may not support displays</translation>
@@ -561,6 +560,7 @@ Connect your device to power.</translation>
 <translation id="423685346499232137">Can't copy or paste content at this time</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4242533952199664413">Open settings</translation>
+<translation id="4247123849143712100">Update and shut down</translation>
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="425364040945105958">No SIM</translation>
 <translation id="4261870227682513959">Show notification settings. Notifications are off</translation>
@@ -640,6 +640,7 @@ Connect your device to power.</translation>
 <translation id="4628757576491864469">Devices</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, star rating <ph name="RATING_SCORE" /></translation>
 <translation id="4633185660152240791">{0,plural, =1{Change device to previous version within a day}other{Change device to previous version within # days}}</translation>
+<translation id="4633636853437260449">Press Ctrl+W to delete</translation>
 <translation id="4642092649622328492">Take partial screenshot</translation>
 <translation id="4644727592819780893">Region is too small to fit camera</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, app recommendation</translation>
@@ -652,6 +653,7 @@ Connect your device to power.</translation>
 <translation id="4690510401873698237">Shelf on bottom</translation>
 <translation id="4696813013609194136">Unlock device with parent code</translation>
 <translation id="4702647871202761252">Privacy screen is off</translation>
+<translation id="470644585772471629">Colour inversion</translation>
 <translation id="4717575069099566988">Your USB-C cable does not support USB4. Device performance may be limited.</translation>
 <translation id="4730374152663651037">FREQUENTLY USED</translation>
 <translation id="4731797938093519117">Parent access</translation>
@@ -687,6 +689,7 @@ Connect your device to power.</translation>
 <translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />% battery</translation>
 <translation id="4917385247580444890">Strong</translation>
 <translation id="4918086044614829423">Accept</translation>
+<translation id="4919841137949306064"><ph name="APP_NAME" /> is currently using your camera</translation>
 <translation id="4925542575807923399">The administrator for this account requires this account to be the first signed-in account in a multiple sign-in session.</translation>
 <translation id="4938176435186993759">Hide all suggestions</translation>
 <translation id="4945196315133970626">Turn off notifications</translation>
@@ -764,6 +767,16 @@ Connect your device to power.</translation>
 <translation id="5393156353051693207">Touch &amp; hold anywhere to reorder your apps</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> on top of <ph name="IN_PLACE_APP" />, release to create folder.</translation>
 <translation id="5397578532367286026">Usage and history of this user can be reviewed by the manager (<ph name="MANAGER_EMAIL" />) on chrome.com.</translation>
+<translation id="5399673806694250334">Status tray, time <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="CHANNEL" />
+        <ph name="NETWORK" />,
+        <ph name="MIC" />,
+        <ph name="CAMERA" />,
+        <ph name="MANAGED" />
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">Quick Settings: press search + left to access the notification centre.</translation>
 <translation id="5426063383988017631">Settings menu closed</translation>
 <translation id="5428899915242071344">Start selecting</translation>
@@ -830,6 +843,7 @@ Connect your device to power.</translation>
 <translation id="5779721926447984944">Pinned files</translation>
 <translation id="5788127256798019331">Play files</translation>
 <translation id="5790085346892983794">Success</translation>
+<translation id="5804651031882187592">Turn off 'Lock SIM' setting</translation>
 <translation id="5805809050170488595">Click to activate <ph name="NETWORK_NAME" /></translation>
 <translation id="5825969630400862129">Connected devices settings</translation>
 <translation id="5837036133683224804">Stop <ph name="ROUTE_TITLE" /> on <ph name="RECEIVER_NAME" /></translation>
@@ -862,7 +876,6 @@ Connect your device to power.</translation>
 <translation id="598407983968395253">Use template</translation>
 <translation id="598882571027504733">To get the update, restart your Chromebook with the keyboard attached.</translation>
 <translation id="5992218262414051481">High contrast mode enabled. Press Ctrl+Search+H again to toggle it off.</translation>
-<translation id="6009656393242168182">Disable your SIM lock setting</translation>
 <translation id="6012623610530968780">Page <ph name="SELECTED_PAGE" /> of <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">Exiting mirror mode</translation>
 <translation id="602001110135236999">Scroll left</translation>
@@ -901,9 +914,12 @@ Connect your device to power.</translation>
 <translation id="6182592640011875895">Open desk</translation>
 <translation id="619279033188484792">View your phone's recent photos, media and notifications on your <ph name="DEVICE_TYPE" /></translation>
 <translation id="619335566042889110">Fully charge now</translation>
+<translation id="6193431488227440296">Dev</translation>
+<translation id="6210042900243040400">Connect <ph name="NAME" /> previously saved to <ph name="EMAIL" /></translation>
 <translation id="6220928844947387476">You can now record yourself and your screen at the same time</translation>
 <translation id="622484624075952240">Down</translation>
 <translation id="6231419273573514727">Peripheral performance may be limited</translation>
+<translation id="6232891689835436217"><ph name="APP_NAME" /> is currently using your camera and microphone</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Locked to horizontal</translation>
 <translation id="6259254695169772643">Use your stylus to select</translation>
@@ -918,6 +934,7 @@ Connect your device to power.</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> is a managed session managed by <ph name="MANAGER" /></translation>
 <translation id="6344138931392227467"><ph name="DEVICE_NAME" /> connected</translation>
 <translation id="6351032674660237738">APP SUGGESTIONS</translation>
+<translation id="6359587239691116345">Get the latest features and security improvements. If you decline this update, your device may no longer work properly and you may experience security and performance issues.</translation>
 <translation id="6376931439017688372">Bluetooth is on</translation>
 <translation id="6381109794406942707">To unlock the device, enter your PIN.</translation>
 <translation id="639644700271529076">CAPS LOCK is off</translation>
@@ -939,6 +956,7 @@ Connect your device to power.</translation>
 <translation id="6491071886865974820"><ph name="MANAGER" /> requires you to update your <ph name="DEVICE_TYPE" /> before the deadline</translation>
 <translation id="649452524636452238">Smart card PIN</translation>
 <translation id="6495400115277918834">Picture-in-picture started, Alt+Shift+V to focus</translation>
+<translation id="6500896621837555595">Update</translation>
 <translation id="6501401484702599040">Casting screen to <ph name="RECEIVER_NAME" /></translation>
 <translation id="6515727200518652613">Camera lost; trying to reconnect.</translation>
 <translation id="6520517963145875092">Select a window to capture</translation>
@@ -1120,6 +1138,7 @@ New install</translation>
 <translation id="7544300628205093162">Keyboard backlight is on</translation>
 <translation id="7548434653388805669">Time for bed</translation>
 <translation id="7551643184018910560">Pin to shelf</translation>
+<translation id="7557816257942363084"><ph name="APP_NAME" /> is currently using your microphone</translation>
 <translation id="7561982940498449837">Close menu</translation>
 <translation id="7564874036684306347">Moving windows to another desktop may result in unexpected behaviour. Subsequent notifications, windows and dialogues may be split between desktops.</translation>
 <translation id="7569509451529460200">Braille and ChromeVox are enabled</translation>
@@ -1157,6 +1176,7 @@ New install</translation>
 <translation id="7749443890790263709">Maximum number of desks reached.</translation>
 <translation id="7749640678855296659">Your microphone is currently turned off</translation>
 <translation id="776344839111254542">Click to view update details</translation>
+<translation id="7768784765476638775">Select to Speak</translation>
 <translation id="7780094051999721182">shortcuts</translation>
 <translation id="7780159184141939021">Rotate screen</translation>
 <translation id="7796353162336583443">Tap the stylus button on the shelf to take a note, screenshot, use the Google Assistant, laser pointer or magnifying glass.</translation>
@@ -1169,6 +1189,7 @@ New install</translation>
 <translation id="7842569679327885685">Warning: Experimental feature</translation>
 <translation id="7846634333498149051">Keyboard</translation>
 <translation id="7848989271541991537">Moved to page <ph name="PAGE_NUMBER" />, row <ph name="ROW_NUMBER" />, column <ph name="COLUMN_NUMBER" />.</translation>
+<translation id="7851768487828137624">Canary</translation>
 <translation id="7860671499921112077">Swipe up with three fingers to enter Overview</translation>
 <translation id="7866482334467279021">on</translation>
 <translation id="7868900307798234037">Unlocking with fingerprint</translation>
@@ -1193,7 +1214,6 @@ New install</translation>
 <translation id="79341161159229895">Account managed by <ph name="FIRST_PARENT_EMAIL" /> and <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Press <ph name="SHORTCUT_KEY_NAME" /> + V to view your clipboard. The last five items that you've copied are saved to your clipboard.</translation>
 <translation id="7942349550061667556">Red</translation>
-<translation id="7955885781510802139">High-contrast mode</translation>
 <translation id="7968693143708939792">Select folder…</translation>
 <translation id="7977927628060636163">Searching for mobile networks...</translation>
 <translation id="7982789257301363584">Network</translation>
@@ -1215,6 +1235,7 @@ New install</translation>
 <translation id="8054466585765276473">Calculating battery time.</translation>
 <translation id="8061464966246066292">High contrast</translation>
 <translation id="8083540854303889870">Saved for later</translation>
+<translation id="8091387634532529612">Automatic updates</translation>
 <translation id="8098591350844501178">Stop casting screen to <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">On, all apps</translation>
 <translation id="8120151603115102514">Your phone doesn’t have a lock screen. To unlock your Chromebook, enter password.</translation>
@@ -1250,6 +1271,7 @@ New install</translation>
 <translation id="828708037801473432">Off</translation>
 <translation id="8297006494302853456">Weak</translation>
 <translation id="8308637677604853869">Previous menu</translation>
+<translation id="830868413617744215">Beta</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8345019317483336363"><ph name="WINDOW_TITLE" /> window selected</translation>
 <translation id="8351131234907093545">Create note</translation>
@@ -1306,7 +1328,6 @@ New install</translation>
 <translation id="8641805545866562088">Refreshing profile list. Wait a few minutes.</translation>
 <translation id="8646417893960517480"><ph name="TOTAL_TIME" /> timer</translation>
 <translation id="8647931990447795414">To add a person, enter your Family Link parental access code</translation>
-<translation id="8649101189709089199">Select to Speak</translation>
 <translation id="8649597172973390955">Shelf always shown</translation>
 <translation id="8652175077544655965">Close settings</translation>
 <translation id="8653151467777939995">Show notification settings. Notifications are on</translation>
@@ -1398,7 +1419,6 @@ New install</translation>
 <translation id="9168436347345867845">Do it later</translation>
 <translation id="9178475906033259337">Displaying one result for <ph name="QUERY" /></translation>
 <translation id="9179259655489829027">This feature allows you to quickly access any signed-in user without requiring a password. Only use this feature with accounts that you trust.</translation>
-<translation id="9180906851711123156">Press Ctrl+W to close</translation>
 <translation id="9183456764293710005">Full-screen Magnifier</translation>
 <translation id="9193626018745640770">Casting on an unknown receiver</translation>
 <translation id="9194617393863864469">Sign in another user...</translation>
@@ -1421,4 +1441,5 @@ New install</translation>
 <translation id="974545358917229949">Displaying <ph name="RESULT_COUNT" /> results for <ph name="QUERY" /></translation>
 <translation id="98515147261107953">Landscape</translation>
 <translation id="990277280839877440">Window <ph name="WINDOW_TITILE" /> closed.</translation>
+<translation id="996204416024568215">Get the latest features and security improvements. Updates happen in the background.</translation>
 </translationbundle>

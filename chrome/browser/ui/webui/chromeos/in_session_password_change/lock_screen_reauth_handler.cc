@@ -23,7 +23,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "chromeos/dbus/util/version_loader.h"
+#include "chromeos/version/version_loader.h"
 #include "components/account_id/account_id.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/user_manager/known_user.h"
@@ -134,12 +134,16 @@ void LockScreenReauthHandler::LoadAuthenticatorParam() {
 }
 
 void LockScreenReauthHandler::LoadGaia(const login::GaiaContext& context) {
+  LOG_ASSERT(Profile::FromWebUI(web_ui()) ==
+             ProfileHelper::Get()->GetLockScreenProfile());
   // Start a new session with SigninPartitionManager, generating a unique
   // StoragePartition.
   login::SigninPartitionManager* signin_partition_manager =
       login::SigninPartitionManager::Factory::GetForBrowserContext(
           Profile::FromWebUI(web_ui()));
 
+  // TODO(http://crbug/1348126): we should also close signin session after the
+  // flow is finished.
   signin_partition_manager->StartSigninSession(
       web_ui()->GetWebContents(),
       base::BindOnce(&LockScreenReauthHandler::LoadGaiaWithPartition,

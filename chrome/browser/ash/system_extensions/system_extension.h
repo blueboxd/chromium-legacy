@@ -8,6 +8,7 @@
 #include <array>
 
 #include "base/strings/string_piece_forward.h"
+#include "base/values.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -45,11 +46,7 @@ struct SystemExtension {
   // Display name of the System Extension to be used where
   // the number of characters is limited.
   absl::optional<std::string> short_name;
-  // Web App that the System Extension is allowed to communicate with.
-  absl::optional<GURL> companion_web_app_url;
-  // Entry point to the System Extension. For now, we just open a page
-  // in the background, but we'll change to a Service Worker once
-  // chrome-untrusted:// supports Service Workers.
+  // Entry point to the System Extension.
   GURL service_worker_url;
 
   // The following fields are constructed from the System Extension's manifest.
@@ -57,6 +54,9 @@ struct SystemExtension {
   // The System Extension's base URL derived from the type and the id e.g.
   // `chrome-untrusted://system-extension-echo-1234/`
   GURL base_url;
+
+  // Parsed JSON that was used to installed the System Extension.
+  base::Value::Dict manifest;
 };
 
 }  // namespace ash

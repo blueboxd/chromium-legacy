@@ -15,7 +15,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
@@ -33,7 +32,6 @@
 #include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
 #include "components/drive/drive_pref_names.h"
@@ -52,6 +50,7 @@ using blink::mojom::FileChooserFileInfoPtr;
 using blink::mojom::FileSystemFileInfo;
 using blink::mojom::NativeFileInfo;
 using testing::_;
+using testing::Mock;
 
 namespace policy {
 
@@ -69,6 +68,9 @@ bool CreateDummyFile(const base::FilePath& path) {
 }
 
 }  // namespace
+
+using MockIsFilesTransferRestrictedCallback = testing::StrictMock<
+    base::MockCallback<DlpFilesController::IsFilesTransferRestrictedCallback>>;
 
 class DlpFilesControllerTest : public testing::Test {
  public:
@@ -235,11 +237,37 @@ TEST_F(DlpFilesControllerTest, GetDisallowedTransfers_SameFileSystem) {
 
   std::vector<storage::FileSystemURL> transferred_files(
       {file_url1_, file_url2_, file_url3_});
-  std::vector<storage::FileSystemURL> disallowed_files;
 
   base::test::TestFuture<std::vector<storage::FileSystemURL>> future;
   files_controller_.GetDisallowedTransfers(transferred_files,
                                            CreateFileSystemURL("Downloads"),
+                                           future.GetCallback());
+  EXPECT_EQ(0u, future.Get().size());
+}
+
+TEST_F(DlpFilesControllerTest, GetDisallowedTransfers_ClientNotRunning) {
+  AddFilesToDlpClient();
+
+  std::vector<storage::FileSystemURL> transferred_files(
+      {file_url1_, file_url2_, file_url3_});
+
+  storage::ExternalMountPoints* mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+  mount_points->RegisterFileSystem(
+      chromeos::kSystemMountNameArchive, storage::kFileSystemTypeLocal,
+      storage::FileSystemMountOption(),
+      base::FilePath(file_manager::util::kArchiveMountPath));
+  base::ScopedClosureRunner external_mount_points_revoker(
+      base::BindOnce(&storage::ExternalMountPoints::RevokeAllFileSystems,
+                     base::Unretained(mount_points)));
+
+  auto dst_url = mount_points->CreateExternalFileSystemURL(
+      blink::StorageKey(), "archive",
+      base::FilePath("file.rar/path/in/archive"));
+
+  chromeos::DlpClient::Get()->GetTestInterface()->SetIsAlive(false);
+  base::test::TestFuture<std::vector<storage::FileSystemURL>> future;
+  files_controller_.GetDisallowedTransfers(transferred_files, dst_url,
                                            future.GetCallback());
   EXPECT_EQ(0u, future.Get().size());
 }
@@ -367,6 +395,71 @@ TEST_F(DlpFilesControllerTest, GetDlpMetadata_FileNotAvailable) {
   EXPECT_EQ(dlp_metadata, future.Take());
 }
 
+TEST_F(DlpFilesControllerTest, GetDlpRestrictionDetails_Mixed) {
+  DlpRulesManager::AggregatedDestinations destinations;
+  destinations[DlpRulesManager::Level::kBlock].insert(kExample2);
+  destinations[DlpRulesManager::Level::kAllow].insert(kExample3);
+
+  DlpRulesManager::AggregatedComponents components;
+  components[DlpRulesManager::Level::kBlock].insert(
+      DlpRulesManager::Component::kUsb);
+  components[DlpRulesManager::Level::kWarn].insert(
+      DlpRulesManager::Component::kDrive);
+
+  EXPECT_CALL(*rules_manager_, GetAggregatedDestinations)
+      .WillOnce(testing::Return(destinations));
+  EXPECT_CALL(*rules_manager_, GetAggregatedComponents)
+      .WillOnce(testing::Return(components));
+
+  auto result = files_controller_.GetDlpRestrictionDetails(kExample1);
+
+  ASSERT_EQ(result.size(), 3);
+  std::vector<std::string> expected_urls;
+  std::vector<DlpRulesManager::Component> expected_components;
+  // Block:
+  expected_urls.push_back(kExample2);
+  expected_components.push_back(DlpRulesManager::Component::kUsb);
+  EXPECT_EQ(result[0].level, DlpRulesManager::Level::kBlock);
+  EXPECT_EQ(result[0].urls, expected_urls);
+  EXPECT_EQ(result[0].components, expected_components);
+  // Allow:
+  expected_urls.clear();
+  expected_urls.push_back(kExample3);
+  expected_components.clear();
+  EXPECT_EQ(result[1].level, DlpRulesManager::Level::kAllow);
+  EXPECT_EQ(result[1].urls, expected_urls);
+  EXPECT_EQ(result[1].components, expected_components);
+  // Warn:
+  expected_urls.clear();
+  expected_components.clear();
+  expected_components.push_back(DlpRulesManager::Component::kDrive);
+  EXPECT_EQ(result[2].level, DlpRulesManager::Level::kWarn);
+  EXPECT_EQ(result[2].urls, expected_urls);
+  EXPECT_EQ(result[2].components, expected_components);
+}
+
+TEST_F(DlpFilesControllerTest, GetDlpRestrictionDetails_Components) {
+  DlpRulesManager::AggregatedDestinations destinations;
+  DlpRulesManager::AggregatedComponents components;
+  components[DlpRulesManager::Level::kBlock].insert(
+      DlpRulesManager::Component::kUsb);
+
+  EXPECT_CALL(*rules_manager_, GetAggregatedDestinations)
+      .WillOnce(testing::Return(destinations));
+  EXPECT_CALL(*rules_manager_, GetAggregatedComponents)
+      .WillOnce(testing::Return(components));
+
+  auto result = files_controller_.GetDlpRestrictionDetails(kExample1);
+
+  ASSERT_EQ(result.size(), 1);
+  std::vector<std::string> expected_urls;
+  std::vector<DlpRulesManager::Component> expected_components;
+  expected_components.push_back(DlpRulesManager::Component::kUsb);
+  EXPECT_EQ(result[0].level, DlpRulesManager::Level::kBlock);
+  EXPECT_EQ(result[0].urls, expected_urls);
+  EXPECT_EQ(result[0].components, expected_components);
+}
+
 class DlpFilesExternalDestinationTest
     : public DlpFilesControllerTest,
       public ::testing::WithParamInterface<
@@ -405,7 +498,6 @@ class DlpFilesExternalDestinationTest
     crostini_features.set_is_allowed_now(true);
     crostini_features.set_enabled(true);
 
-    chromeos::DBusThreadManager::Initialize();
     ash::ChunneldClient::InitializeFake();
     ash::CiceroneClient::InitializeFake();
     ash::ConciergeClient::InitializeFake();
@@ -441,7 +533,6 @@ class DlpFilesExternalDestinationTest
   void TearDown() override {
     DlpFilesControllerTest::TearDown();
 
-    chromeos::DBusThreadManager::Shutdown();
     ash::ChunneldClient::Shutdown();
     ash::CiceroneClient::Shutdown();
     ash::ConciergeClient::Shutdown();
@@ -477,6 +568,9 @@ TEST_P(DlpFilesExternalDestinationTest, IsFilesTransferRestricted_Component) {
       {GURL(kExample1), GURL(kExample2), GURL(kExample3)});
   std::vector<GURL> disallowed_sources({GURL(kExample1), GURL(kExample3)});
 
+  MockIsFilesTransferRestrictedCallback cb;
+  EXPECT_CALL(cb, Run(disallowed_sources)).Times(1);
+
   EXPECT_CALL(*rules_manager_,
               IsRestrictedComponent(_, expected_component, _, _))
       .WillOnce(testing::Return(DlpRulesManager::Level::kBlock))
@@ -487,9 +581,8 @@ TEST_P(DlpFilesExternalDestinationTest, IsFilesTransferRestricted_Component) {
       blink::StorageKey(), mount_name, base::FilePath(path));
   ASSERT_TRUE(dst_url.is_valid());
 
-  EXPECT_EQ(disallowed_sources,
-            files_controller_.IsFilesTransferRestricted(
-                profile_.get(), files_sources, dst_url.path().value()));
+  files_controller_.IsFilesTransferRestricted(profile_.get(), files_sources,
+                                              dst_url.path().value(), cb.Get());
 }
 
 }  // namespace policy

@@ -123,6 +123,7 @@ mojom("mojom_platform") {
     "manifest/capture_links.mojom",
     "manifest/display_mode.mojom",
     "manifest/manifest.mojom",
+    "manifest/manifest_launch_handler.mojom",
     "manifest/manifest_manager.mojom",
     "manifest/manifest_observer.mojom",
     "media/capture_handle_config.mojom",
@@ -180,6 +181,7 @@ mojom("mojom_platform") {
     "service_worker/service_worker_container_type.mojom",
     "service_worker/service_worker_error_type.mojom",
     "service_worker/service_worker_event_status.mojom",
+    "service_worker/service_worker_fetch_handler_type.mojom",
     "service_worker/service_worker_fetch_response_callback.mojom",
     "service_worker/service_worker_installed_scripts_manager.mojom",
     "service_worker/service_worker_state.mojom",
@@ -355,7 +357,7 @@ mojom("mojom_platform") {
           cpp = "::blink::ParsedPermissionsPolicyDeclaration"
         },
       ]
-      traits_headers = [ "//third_party/blink/public/common/permissions_policy/permissions_policy_forward.h" ]
+      traits_headers = [ "//third_party/blink/public/common/permissions_policy/permissions_policy_declaration.h" ]
       traits_private_headers = [ "//third_party/blink/common/permissions_policy/permissions_policy_mojom_traits.h" ]
     },
     {
@@ -1006,6 +1008,7 @@ mojom("mojom_core") {
     "frame/media_player_action.mojom",
     "frame/pending_beacon.mojom",
     "frame/policy_container.mojom",
+    "frame/remote_frame.mojom",
     "frame/reporting_observer.mojom",
     "frame/sudden_termination_disabler_type.mojom",
     "frame/text_autosizer_page_info.mojom",
@@ -1439,7 +1442,10 @@ mojom("mojom_mhtml_load_result") {
 
 mojom_component("script_type_mojo_bindings") {
   generate_java = true
-  sources = [ "script/script_type.mojom" ]
+  sources = [
+    "script/script_evaluation_params.mojom",
+    "script/script_type.mojom",
+  ]
 
   macro_prefix = "SCRIPT_TYPE_MOJOM"
   output_prefix = "script_type_mojom"

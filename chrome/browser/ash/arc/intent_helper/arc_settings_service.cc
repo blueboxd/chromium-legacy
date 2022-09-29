@@ -101,8 +101,8 @@ bool GetHttpProxyServer(const ProxyConfigDictionary* proxy_config_dict,
   return !host->empty() && *port;
 }
 
-bool IsProxyAutoDetectionConfigured(const base::Value* proxy_config_dict) {
-  ProxyConfigDictionary dict(proxy_config_dict->Clone());
+bool IsProxyAutoDetectionConfigured(const base::Value& proxy_config_dict) {
+  ProxyConfigDictionary dict(proxy_config_dict.Clone());
   ProxyPrefs::ProxyMode mode;
   dict.GetMode(&mode);
   return mode == ProxyPrefs::MODE_AUTO_DETECT;
@@ -138,7 +138,7 @@ class ArcSettingsServiceFactory
 // about and sends the new values to Android to keep the state in sync.
 class ArcSettingsServiceImpl : public TimezoneSettings::Observer,
                                public ConnectionObserver<mojom::AppInstance>,
-                               public chromeos::NetworkStateHandlerObserver {
+                               public ash::NetworkStateHandlerObserver {
  public:
   ArcSettingsServiceImpl(Profile* profile,
                          ArcBridgeService* arc_bridge_service);
@@ -154,7 +154,7 @@ class ArcSettingsServiceImpl : public TimezoneSettings::Observer,
   void TimezoneChanged(const icu::TimeZone& timezone) override;
 
   // NetworkStateHandlerObserver:
-  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
+  void DefaultNetworkChanged(const ash::NetworkState* network) override;
 
   // Retrieves Chrome's state for the settings that need to be synced on the
   // initial Android boot and send it to Android. Called by ArcSettingsService.
@@ -254,8 +254,8 @@ class ArcSettingsServiceImpl : public TimezoneSettings::Observer,
   // automatically unregisters a callback when it's destructed.
   base::CallbackListSubscription default_zoom_level_subscription_;
 
-  base::ScopedObservation<chromeos::NetworkStateHandler,
-                          chromeos::NetworkStateHandlerObserver>
+  base::ScopedObservation<ash::NetworkStateHandler,
+                          ash::NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
 
   // Name of the default network. Used to keep track of whether the default
@@ -343,7 +343,7 @@ void ArcSettingsServiceImpl::TimezoneChanged(const icu::TimeZone& timezone) {
 // - ONC policy changes;
 // - DHCP settings the WPAD URL via  option 252.
 void ArcSettingsServiceImpl::DefaultNetworkChanged(
-    const chromeos::NetworkState* network) {
+    const ash::NetworkState* network) {
   if (!network)
     return;
 
@@ -357,8 +357,9 @@ void ArcSettingsServiceImpl::DefaultNetworkChanged(
     //  configured to use the Web Proxy Auto-Discovery (WPAD) Protocol via the
     //  DHCP discovery method, the PAC URL will be propagated to Chrome via the
     //  default network properties.
-    if (dhcp_wpad_url_changed && IsProxyAutoDetectionConfigured(GetPrefs()->Get(
-                                     proxy_config::prefs::kProxy))) {
+    if (dhcp_wpad_url_changed &&
+        IsProxyAutoDetectionConfigured(
+            GetPrefs()->GetValue(proxy_config::prefs::kProxy))) {
       SyncProxySettings();
     }
     return;
@@ -382,7 +383,7 @@ void ArcSettingsServiceImpl::DefaultNetworkChanged(
   // Check if proxy auto detection is enabled. If yes, and the PAC URL set via
   // DHCP has changed, propagate the change to ARC.
   if (!default_proxy_config_.is_none() && dhcp_wpad_url_changed &&
-      IsProxyAutoDetectionConfigured(&default_proxy_config_)) {
+      IsProxyAutoDetectionConfigured(default_proxy_config_)) {
     sync_proxy = true;
   }
 
@@ -433,7 +434,7 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   TimezoneSettings::GetInstance()->AddObserver(this);
 
   network_state_handler_observer_.Observe(
-      chromeos::NetworkHandler::Get()->network_state_handler());
+      ash::NetworkHandler::Get()->network_state_handler());
 }
 
 void ArcSettingsServiceImpl::StopObservingSettingsChanges() {
@@ -567,7 +568,7 @@ void ArcSettingsServiceImpl::SyncLocationServiceEnabled() const {
 // multi-network support so we should sync per-network proxy configuration.
 void ArcSettingsServiceImpl::SyncProxySettings() const {
   std::unique_ptr<ProxyConfigDictionary> proxy_config_dict =
-      chromeos::ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
+      ash::ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
           GetPrefs(), g_browser_process->local_state());
 
   ProxyPrefs::ProxyMode mode;

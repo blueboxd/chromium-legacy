@@ -11,11 +11,14 @@
 #include <tuple>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
+#include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/optimization_guide/core/optimization_guide_decision.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
@@ -25,6 +28,9 @@ class PrefService;
 
 class PrefRegistrySimple;
 
+template <typename T>
+class SessionProtoStorage;
+
 namespace base {
 class Value;
 }
@@ -33,10 +39,18 @@ namespace bookmarks {
 class BookmarkModel;
 }  // namespace bookmarks
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace optimization_guide {
 class NewOptimizationGuideDecider;
 class OptimizationMetadata;
 }  // namespace optimization_guide
+
+namespace signin {
+class IdentityManager;
+}  // namespace signin
 
 namespace commerce {
 
@@ -48,6 +62,18 @@ extern const char kOgPriceAmount[];
 // The conversion multiplier to go from standard currency units to
 // micro-currency units.
 extern const long kToMicroCurrency;
+
+extern const char kImageAvailabilityHistogramName[];
+
+// The availability of the product image for an offer. This needs to be kept in
+// sync with the ProductImageAvailability enum in enums.xml.
+enum class ProductImageAvailability {
+  kServerOnly = 0,
+  kLocalOnly = 1,
+  kBothAvailable = 2,
+  kNeitherAvailable = 3,
+  kMaxValue = kNeitherAvailable,
+};
 
 // The type of fallback data can be used when generating product info.
 enum class ProductInfoFallback {
@@ -65,6 +91,7 @@ struct CommerceSubscription;
 
 // Information returned by the product info APIs.
 struct ProductInfo {
+ public:
   ProductInfo();
   ProductInfo(const ProductInfo&);
   ProductInfo& operator=(const ProductInfo&);
@@ -72,11 +99,20 @@ struct ProductInfo {
 
   std::string title;
   GURL image_url;
-  uint64_t product_cluster_id;
-  uint64_t offer_id;
+  uint64_t product_cluster_id{0};
+  uint64_t offer_id{0};
   std::string currency_code;
-  long amount_micros;
+  long amount_micros{0};
   std::string country_code;
+
+ private:
+  friend class ShoppingService;
+
+  // This is used to track whether the server provided an image with the rest
+  // of the product info. This value being |true| does not necessarily mean an
+  // image is available in the ProductInfo struct (as it is flag gated) and is
+  // primarily used for recording metrics.
+  bool server_image_available{false};
 };
 
 // Information returned by the merchant info APIs.
@@ -104,11 +140,22 @@ using ProductInfoCallback =
 using MerchantInfoCallback =
     base::OnceCallback<void(const GURL&, absl::optional<MerchantInfo>)>;
 
+// A callback for getting updated ProductInfo for a bookmark. This provides the
+// bookmark ID being updated, the URL, and the product info.
+using BookmarkProductInfoUpdatedCallback = base::RepeatingCallback<
+    void(const int64_t, const GURL&, absl::optional<ProductInfo>)>;
+
 class ShoppingService : public KeyedService, public base::SupportsUserData {
  public:
-  ShoppingService(bookmarks::BookmarkModel* bookmark_model,
-                  optimization_guide::NewOptimizationGuideDecider* opt_guide,
-                  PrefService* pref_service);
+  ShoppingService(
+      bookmarks::BookmarkModel* bookmark_model,
+      optimization_guide::NewOptimizationGuideDecider* opt_guide,
+      PrefService* pref_service,
+      signin::IdentityManager* identity_manager,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      SessionProtoStorage<
+          commerce_subscription_db::CommerceSubscriptionContentProto>*
+          subscription_proto_db);
   ~ShoppingService() override;
 
   ShoppingService(const ShoppingService&) = delete;
@@ -120,27 +167,44 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   // passes the payload back to the caller via |callback|. At minimum, this
   // API will wait for data from the backend but may provide a "partial" result
   // that doesn't include information from the page on-device.
-  void GetProductInfoForUrl(const GURL& url, ProductInfoCallback callback);
+  virtual void GetProductInfoForUrl(const GURL& url,
+                                    ProductInfoCallback callback);
 
   // This API returns whatever product information is currently available for
   // the specified |url|. This method is less reliable than GetProductInfoForUrl
   // above as it may return an empty or partial result prior to the page being
   // processed or information being available from the backend.
-  absl::optional<ProductInfo> GetAvailableProductInfoForUrl(const GURL& url);
+  virtual absl::optional<ProductInfo> GetAvailableProductInfoForUrl(
+      const GURL& url);
 
-  void GetMerchantInfoForUrl(const GURL& url, MerchantInfoCallback callback);
+  // Get updated product info (including price) for the provided list of
+  // bookmark IDs. The information for each bookmark will be provided via a
+  // repeating callback that provides the bookmark's ID, URL, and product info.
+  virtual void GetUpdatedProductInfoForBookmarks(
+      const std::vector<int64_t>& bookmark_ids,
+      BookmarkProductInfoUpdatedCallback info_updated_callback);
+
+  // This API fetches information about a merchant for the provided |url| and
+  // passes the payload back to the caller via |callback|. Call will run after
+  // the fetch is completed. The merchant info object will be null if there is
+  // none available.
+  virtual void GetMerchantInfoForUrl(const GURL& url,
+                                     MerchantInfoCallback callback);
 
   // Create new subscriptions in batch if needed, and will notify |callback| if
   // the operation completes successfully.
-  void Subscribe(
+  virtual void Subscribe(
       std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
       base::OnceCallback<void(bool)> callback);
 
   // Delete existing subscriptions in batch if needed, and will notify
   // |callback| if the operation completes successfully.
-  void Unsubscribe(
+  virtual void Unsubscribe(
       std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
       base::OnceCallback<void(bool)> callback);
+
+  // Get a weak pointer for this service instance.
+  base::WeakPtr<ShoppingService> AsWeakPtr();
 
   void Shutdown() override;
 
@@ -201,6 +265,23 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
       optimization_guide::OptimizationGuideDecision decision,
       const optimization_guide::OptimizationMetadata& metadata);
 
+  // Handle a response from the optimization guide on-demand API for product
+  // info.
+  void OnProductInfoUpdatedOnDemand(
+      BookmarkProductInfoUpdatedCallback callback,
+      std::unordered_map<std::string, int64_t> url_to_id_map,
+      const GURL& url,
+      const base::flat_map<
+          optimization_guide::proto::OptimizationType,
+          optimization_guide::OptimizationGuideDecisionWithMetadata>&
+          decisions);
+
+  // Produce a ProductInfo object given OptimizationGuideMeta. The returned
+  // unique_ptr is owned by the caller and will be empty if conversion failed
+  // or there was no info.
+  std::unique_ptr<ProductInfo> OptGuideResultToProductInfo(
+      const optimization_guide::OptimizationMetadata& metadata);
+
   // Handle the result of running the javascript fallback for product info.
   void OnProductInfoJavascriptResult(const GURL url, base::Value result);
 
@@ -209,6 +290,12 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   void OnProductInfoJsonSanitizationCompleted(
       const GURL url,
       data_decoder::DataDecoder::ValueOrError result);
+
+  // Merge shopping data from existing |info| and the result of on-page
+  // heuristics -- a JSON object holding key -> value pairs (a map) stored in
+  // |on_page_data_map|. The merged data is written to |info|.
+  static void MergeProductInfoData(ProductInfo* info,
+                                   const base::Value::Dict& on_page_data_map);
 
   void HandleOptGuideMerchantInfoResponse(
       const GURL& url,
@@ -237,6 +324,8 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
 
   raw_ptr<PrefService> pref_service_;
 
+  raw_ptr<bookmarks::BookmarkModel> bookmark_model_;
+
   // The service's means of observing the bookmark model which is automatically
   // removed from the model when destroyed. This will be null if no
   // BookmarkModel is provided to the service.
@@ -256,11 +345,6 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
 
   base::WeakPtrFactory<ShoppingService> weak_ptr_factory_;
 };
-
-// Merge shopping data from existing |info| and the result of on-page
-// heuristics -- a JSON object holding key -> value pairs (a map) stored in
-// |on_page_data_map|.
-void MergeProductInfoData(ProductInfo* info, base::Value& on_page_data_map);
 
 }  // namespace commerce
 

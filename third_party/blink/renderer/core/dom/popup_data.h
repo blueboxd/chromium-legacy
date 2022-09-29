@@ -43,11 +43,6 @@ class PopupData final : public GarbageCollected<PopupData> {
         << "Remove PopupData rather than setting kNone type";
   }
 
-  HidePopupFocusBehavior focusBehavior() const { return focus_behavior_; }
-  void setFocusBehavior(HidePopupFocusBehavior focus_behavior) {
-    focus_behavior_ = focus_behavior;
-  }
-
   Element* invoker() const { return invoker_; }
   void setInvoker(Element* element) { invoker_ = element; }
 
@@ -81,8 +76,14 @@ class PopupData final : public GarbageCollected<PopupData> {
     animation_finished_listener_ = listener;
   }
 
-  HeapHashMap<WeakMember<Element>, TaskHandle>& hoverPopupTasks() {
-    return hover_popup_tasks_;
+  HeapHashMap<WeakMember<const Element>, TaskHandle>& hoverShowTasks() {
+    return hover_show_tasks_;
+  }
+
+  void setHoverHideTask(TaskHandle&& task) {
+    if (hover_hide_task_.IsActive())
+      hover_hide_task_.Cancel();
+    hover_hide_task_ = std::move(task);
   }
 
   HTMLSelectMenuElement* ownerSelectMenuElement() const {
@@ -96,7 +97,7 @@ class PopupData final : public GarbageCollected<PopupData> {
     visitor->Trace(invoker_);
     visitor->Trace(previously_focused_element_);
     visitor->Trace(animation_finished_listener_);
-    visitor->Trace(hover_popup_tasks_);
+    visitor->Trace(hover_show_tasks_);
     visitor->Trace(owner_select_menu_element_);
   }
 
@@ -104,15 +105,16 @@ class PopupData final : public GarbageCollected<PopupData> {
   bool had_defaultopen_when_parsed_ = false;
   PopupVisibilityState visibility_state_ = PopupVisibilityState::kHidden;
   PopupValueType type_ = PopupValueType::kNone;
-  HidePopupFocusBehavior focus_behavior_ = HidePopupFocusBehavior::kNone;
   WeakMember<Element> invoker_;
   WeakMember<Element> previously_focused_element_;
   // We hold a strong reference to the animation finished listener, so that we
   // can confirm that the listeners get removed before cleanup.
   Member<PopupAnimationFinishedEventListener> animation_finished_listener_;
-  // Map from triggering elements to a TaskHandle for the task that will invoke
-  // the pop-up.
-  HeapHashMap<WeakMember<Element>, TaskHandle> hover_popup_tasks_;
+  // Map from elements with the 'popuphovertoggle' attribute to a task that will
+  // show the pop-up after a delay.
+  HeapHashMap<WeakMember<const Element>, TaskHandle> hover_show_tasks_;
+  // A task that hide the pop-up after a delay.
+  TaskHandle hover_hide_task_;
 
   // TODO(crbug.com/1197720): The popup position should be provided by the new
   // anchored positioning scheme.

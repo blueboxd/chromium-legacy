@@ -16,12 +16,10 @@
 #include "chromeos/ash/components/dbus/chunneld/chunneld_client.h"
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/test/test_file_system_context.h"
 
-namespace file_manager {
-namespace io_task {
+namespace file_manager::io_task {
 
 TrashBaseTest::TrashBaseTest() = default;
 
@@ -62,11 +60,10 @@ void TrashBaseTest::SetUp() {
   downloads_dir_ = my_files_dir_.Append("Downloads");
   ASSERT_TRUE(base::CreateDirectory(downloads_dir_));
 
-  chromeos::DBusThreadManager::Initialize();
   ash::ChunneldClient::InitializeFake();
   ash::CiceroneClient::InitializeFake();
   ash::ConciergeClient::InitializeFake();
-  chromeos::CrosDisksClient::InitializeFake();
+  ash::CrosDisksClient::InitializeFake();
   ash::SeneschalClient::InitializeFake();
 
   // Ensure Crostini is setup correctly.
@@ -100,11 +97,10 @@ void TrashBaseTest::TearDown() {
   scoped_user_manager_.reset();
   profile_.reset();
   ash::SeneschalClient::Shutdown();
-  chromeos::CrosDisksClient::Shutdown();
+  ash::CrosDisksClient::Shutdown();
   ash::ConciergeClient::Shutdown();
   ash::CiceroneClient::Shutdown();
   ash::ChunneldClient::Shutdown();
-  chromeos::DBusThreadManager::Shutdown();
 }
 
 drive::DriveIntegrationService* TrashBaseTest::CreateDriveIntegrationService(
@@ -135,14 +131,16 @@ storage::FileSystemURL TrashBaseTest::CreateFileSystemURL(
 
 const base::FilePath TrashBaseTest::GenerateInfoPath(
     const std::string& file_name) {
-  return GenerateTrashPath(downloads_dir_.Append(kTrashFolderName),
-                           kInfoFolderName, file_name);
+  return trash::GenerateTrashPath(
+      downloads_dir_.Append(trash::kTrashFolderName), trash::kInfoFolderName,
+      file_name);
 }
 
 const base::FilePath TrashBaseTest::GenerateFilesPath(
     const std::string& file_name) {
-  return GenerateTrashPath(downloads_dir_.Append(kTrashFolderName),
-                           kFilesFolderName, file_name);
+  return trash::GenerateTrashPath(
+      downloads_dir_.Append(trash::kTrashFolderName), trash::kFilesFolderName,
+      file_name);
 }
 
 const std::string TrashBaseTest::CreateTrashInfoContentsFromPath(
@@ -171,15 +169,14 @@ const std::string TrashBaseTest::CreateTrashInfoContentsFromPath(
 
 bool TrashBaseTest::EnsureTrashDirectorySetup(
     const base::FilePath& parent_path) {
-  base::FilePath trash_path = parent_path.Append(kTrashFolderName);
-  if (!base::CreateDirectory(trash_path.Append(kInfoFolderName))) {
+  base::FilePath trash_path = parent_path.Append(trash::kTrashFolderName);
+  if (!base::CreateDirectory(trash_path.Append(trash::kInfoFolderName))) {
     return false;
   }
-  if (!base::CreateDirectory(trash_path.Append(kFilesFolderName))) {
+  if (!base::CreateDirectory(trash_path.Append(trash::kFilesFolderName))) {
     return false;
   }
   return true;
 }
 
-}  // namespace io_task
-}  // namespace file_manager
+}  // namespace file_manager::io_task

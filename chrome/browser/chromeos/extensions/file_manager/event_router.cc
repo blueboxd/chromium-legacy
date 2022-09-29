@@ -50,7 +50,7 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_system_provider_metrics_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
-#include "chrome/browser/extensions/api/file_system/chrome_file_system_delegate.h"
+#include "chrome/browser/extensions/api/file_system/chrome_file_system_delegate_ash.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -485,62 +485,62 @@ void RecordFileSystemProviderMountMetrics(const Volume& volume) {
 }  // namespace
 
 file_manager_private::MountCompletedStatus MountErrorToMountCompletedStatus(
-    chromeos::MountError error) {
+    ash::MountError error) {
   switch (error) {
-    case chromeos::MOUNT_ERROR_NONE:
+    case ash::MountError::kNone:
       return file_manager_private::MOUNT_COMPLETED_STATUS_SUCCESS;
-    case chromeos::MOUNT_ERROR_UNKNOWN:
+    case ash::MountError::kUnknown:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_UNKNOWN;
-    case chromeos::MOUNT_ERROR_INTERNAL:
+    case ash::MountError::kInternal:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_INTERNAL;
-    case chromeos::MOUNT_ERROR_INVALID_ARGUMENT:
+    case ash::MountError::kInvalidArgument:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_INVALID_ARGUMENT;
-    case chromeos::MOUNT_ERROR_INVALID_PATH:
+    case ash::MountError::kInvalidPath:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_INVALID_PATH;
-    case chromeos::MOUNT_ERROR_PATH_ALREADY_MOUNTED:
+    case ash::MountError::kPathAlreadyMounted:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_PATH_ALREADY_MOUNTED;
-    case chromeos::MOUNT_ERROR_PATH_NOT_MOUNTED:
+    case ash::MountError::kPathNotMounted:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_PATH_NOT_MOUNTED;
-    case chromeos::MOUNT_ERROR_DIRECTORY_CREATION_FAILED:
+    case ash::MountError::kDirectoryCreationFailed:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_DIRECTORY_CREATION_FAILED;
-    case chromeos::MOUNT_ERROR_INVALID_MOUNT_OPTIONS:
+    case ash::MountError::kInvalidMountOptions:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_INVALID_MOUNT_OPTIONS;
-    case chromeos::MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS:
+    case ash::MountError::kInvalidUnmountOptions:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_INVALID_UNMOUNT_OPTIONS;
-    case chromeos::MOUNT_ERROR_INSUFFICIENT_PERMISSIONS:
+    case ash::MountError::kInsufficientPermissions:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_INSUFFICIENT_PERMISSIONS;
-    case chromeos::MOUNT_ERROR_MOUNT_PROGRAM_NOT_FOUND:
+    case ash::MountError::kMountProgramNotFound:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_MOUNT_PROGRAM_NOT_FOUND;
-    case chromeos::MOUNT_ERROR_MOUNT_PROGRAM_FAILED:
+    case ash::MountError::kMountProgramFailed:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_MOUNT_PROGRAM_FAILED;
-    case chromeos::MOUNT_ERROR_INVALID_DEVICE_PATH:
+    case ash::MountError::kInvalidDevicePath:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_INVALID_DEVICE_PATH;
-    case chromeos::MOUNT_ERROR_UNKNOWN_FILESYSTEM:
+    case ash::MountError::kUnknownFilesystem:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_UNKNOWN_FILESYSTEM;
-    case chromeos::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM:
+    case ash::MountError::kUnsupportedFilesystem:
       return file_manager_private::
           MOUNT_COMPLETED_STATUS_ERROR_UNSUPPORTED_FILESYSTEM;
-    case chromeos::MOUNT_ERROR_INVALID_ARCHIVE:
+    case ash::MountError::kInvalidArchive:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_INVALID_ARCHIVE;
-    case chromeos::MOUNT_ERROR_NEED_PASSWORD:
+    case ash::MountError::kNeedPassword:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_NEED_PASSWORD;
-    case chromeos::MOUNT_ERROR_IN_PROGRESS:
+    case ash::MountError::kInProgress:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_IN_PROGRESS;
-    case chromeos::MOUNT_ERROR_CANCELLED:
+    case ash::MountError::kCancelled:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_CANCELLED;
     // Not a real error.
-    case chromeos::MOUNT_ERROR_COUNT:
+    case ash::MountError::kCount:
       NOTREACHED();
   }
   NOTREACHED();
@@ -1015,7 +1015,7 @@ void EventRouter::OnDeviceRemoved(const std::string& device_path) {
   // Do nothing.
 }
 
-void EventRouter::OnVolumeMounted(chromeos::MountError error_code,
+void EventRouter::OnVolumeMounted(ash::MountError error_code,
                                   const Volume& volume) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // profile_ is NULL if ShutdownOnUIThread() is called earlier. This can
@@ -1037,10 +1037,10 @@ void EventRouter::OnVolumeMounted(chromeos::MountError error_code,
   // TODO(mtomasz): Move VolumeManager and part of the event router outside of
   // file_manager, so there is no dependency between File System API and the
   // file_manager code.
-  extensions::file_system_api::DispatchVolumeListChangeEvent(profile_);
+  extensions::file_system_api::DispatchVolumeListChangeEventAsh(profile_);
 }
 
-void EventRouter::OnVolumeUnmounted(chromeos::MountError error_code,
+void EventRouter::OnVolumeUnmounted(ash::MountError error_code,
                                     const Volume& volume) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DispatchMountCompletedEvent(
@@ -1050,12 +1050,12 @@ void EventRouter::OnVolumeUnmounted(chromeos::MountError error_code,
   // TODO(mtomasz): Move VolumeManager and part of the event router outside of
   // file_manager, so there is no dependency between File System API and the
   // file_manager code.
-  extensions::file_system_api::DispatchVolumeListChangeEvent(profile_);
+  extensions::file_system_api::DispatchVolumeListChangeEventAsh(profile_);
 }
 
 void EventRouter::DispatchMountCompletedEvent(
     file_manager_private::MountCompletedEventType event_type,
-    chromeos::MountError error,
+    ash::MountError error,
     const Volume& volume) {
   // Build an event object.
   file_manager_private::MountCompletedEvent event;
@@ -1298,23 +1298,28 @@ void EventRouter::OnIOTaskStatus(const io_task::ProgressStatus& status) {
     return;
   }
 
-  // Send file watch notifications on I/O task completion. inotify is flaky on
+  // Send directory change events on I/O task completion. inotify is flaky on
   // some filesystems, so send these notifications so that at least operations
-  // made from Files App are always reflected in the UI.
+  // made from Files App are always reflected in the UI. Additionally, this
+  // ensures the directory tree will be updated too, as the tree needs
+  // notifications for folders outside of those being watched by a file watcher.
   if (status.IsCompleted()) {
-    std::set<base::FilePath> updated_paths;
+    std::set<std::pair<base::FilePath, url::Origin>> updated_paths;
     if (status.destination_folder.is_valid()) {
-      updated_paths.insert(status.destination_folder.path());
+      updated_paths.emplace(status.destination_folder.virtual_path(),
+                            status.destination_folder.origin());
     }
     for (const auto& source : status.sources) {
-      updated_paths.insert(source.url.path().DirName());
+      updated_paths.emplace(source.url.virtual_path().DirName(),
+                            source.url.origin());
     }
     for (const auto& output : status.outputs) {
-      updated_paths.insert(output.url.path().DirName());
+      updated_paths.emplace(output.url.virtual_path().DirName(),
+                            output.url.origin());
     }
 
-    for (const auto& path : updated_paths) {
-      HandleFileWatchNotification(path, false);
+    for (const auto& [path, origin] : updated_paths) {
+      DispatchDirectoryChangeEvent(path, false, {origin});
     }
   }
 

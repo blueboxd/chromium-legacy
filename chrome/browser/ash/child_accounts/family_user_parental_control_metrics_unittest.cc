@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
@@ -76,10 +75,6 @@ namespace utils = time_limit_test_utils;
 class FamilyUserParentalControlMetricsTest : public testing::Test {
  public:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kWebTimeLimits},
-        /*disabled_features=*/{});
-
     base::Time start_time;
     EXPECT_TRUE(base::Time::FromString(kStartTime, &start_time));
     base::TimeDelta forward_by = start_time - base::Time::Now();
@@ -124,14 +119,13 @@ class FamilyUserParentalControlMetricsTest : public testing::Test {
   base::HistogramTester histogram_tester_;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<FamilyUserParentalControlMetrics> parental_control_metrics_;
 };
 
 TEST_F(FamilyUserParentalControlMetricsTest, BedAndScreenTimeLimitMetrics) {
   ASSERT_TRUE(ChildUserServiceFactory::GetForBrowserContext(profile_.get()));
 
-  base::Value policy_content =
+  base::Value::Dict policy_content =
       utils::CreateTimeLimitPolicy(utils::CreateTime(6, 0));
 
   // Adds bedtime policy:
@@ -146,7 +140,7 @@ TEST_F(FamilyUserParentalControlMetricsTest, BedAndScreenTimeLimitMetrics) {
       /*quota*/ kOneHour,
       /*last_updated=*/base::Time::Now());
 
-  GetPrefs()->Set(prefs::kUsageTimeLimit, policy_content);
+  GetPrefs()->SetDict(prefs::kUsageTimeLimit, policy_content.Clone());
 
   histogram_tester_.ExpectBucketCount(
       ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
@@ -186,7 +180,7 @@ TEST_F(FamilyUserParentalControlMetricsTest, OverrideTimeLimitMetrics) {
   ASSERT_TRUE(ChildUserServiceFactory::GetForBrowserContext(profile_.get()));
 
   // Adds override time policy created at 1 day ago.
-  base::Value policy_content =
+  base::Value::Dict policy_content =
       utils::CreateTimeLimitPolicy(utils::CreateTime(6, 0));
 
   utils::AddOverrideWithDuration(
@@ -194,7 +188,7 @@ TEST_F(FamilyUserParentalControlMetricsTest, OverrideTimeLimitMetrics) {
       /*action=*/usage_time_limit::TimeLimitOverride::Action::kLock,
       /*created_at=*/base::Time::Now() - kOneDay,
       /*duration=*/base::Hours(2));
-  GetPrefs()->Set(prefs::kUsageTimeLimit, policy_content);
+  GetPrefs()->SetDict(prefs::kUsageTimeLimit, policy_content.Clone());
 
   // The override time limit policy would not get reported since the difference
   // between reported and created time are greater than 1 day.
@@ -215,7 +209,7 @@ TEST_F(FamilyUserParentalControlMetricsTest, OverrideTimeLimitMetrics) {
       /*action=*/usage_time_limit::TimeLimitOverride::Action::kLock,
       /*created_at=*/base::Time::Now() - base::Hours(23),
       /*duration=*/base::Hours(2));
-  GetPrefs()->Set(prefs::kUsageTimeLimit, policy_content);
+  GetPrefs()->SetDict(prefs::kUsageTimeLimit, policy_content.Clone());
 
   // The override time limit policy would get reported since the created
   // time and reported time are within 1 day.
@@ -238,7 +232,7 @@ TEST_F(FamilyUserParentalControlMetricsTest, OverrideTimeLimitMetrics) {
       /*expected_count=*/3);
 }
 
-TEST_F(FamilyUserParentalControlMetricsTest, AppAndWebTimeLimitMetrics) {
+TEST_F(FamilyUserParentalControlMetricsTest, AppTimeLimitMetrics) {
   apps::AppServiceTest app_service_test_;
   ArcAppTest arc_test_;
 
@@ -278,11 +272,6 @@ TEST_F(FamilyUserParentalControlMetricsTest, AppAndWebTimeLimitMetrics) {
   histogram_tester_.ExpectBucketCount(
       ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
       /*sample=*/
-      ChildUserService::TimeLimitPolicyType::kWebTimeLimit,
-      /*expected_count=*/1);
-  histogram_tester_.ExpectBucketCount(
-      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
-      /*sample=*/
       ChildUserService::TimeLimitPolicyType::kAppTimeLimit,
       /*expected_count=*/1);
 
@@ -292,17 +281,12 @@ TEST_F(FamilyUserParentalControlMetricsTest, AppAndWebTimeLimitMetrics) {
   histogram_tester_.ExpectBucketCount(
       ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
       /*sample=*/
-      ChildUserService::TimeLimitPolicyType::kWebTimeLimit,
-      /*expected_count=*/2);
-  histogram_tester_.ExpectBucketCount(
-      ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
-      /*sample=*/
       ChildUserService::TimeLimitPolicyType::kAppTimeLimit,
       /*expected_count=*/2);
 
   histogram_tester_.ExpectTotalCount(
       ChildUserService::GetTimeLimitPolicyTypesHistogramNameForTest(),
-      /*expected_count=*/4);
+      /*expected_count=*/2);
 }
 
 }  // namespace ash

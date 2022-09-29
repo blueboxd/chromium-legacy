@@ -127,6 +127,8 @@ class DocumentTransitionStyleTracker
   // rules based on the current phase of the transition.
   StyleRequest::RulesToInclude StyleRulesToInclude() const;
 
+  VectorOf<Element> GetTransitioningElements() const;
+
  private:
   class ImageWrapperPseudoElement;
 
@@ -201,6 +203,8 @@ class DocumentTransitionStyleTracker
   }
   absl::optional<RootData> GetCurrentRootData() const;
   HashSet<AtomicString> AllRootTags() const;
+
+  void InvalidateHitTestingCache();
 
   Member<Document> document_;
   State state_ = State::kIdle;

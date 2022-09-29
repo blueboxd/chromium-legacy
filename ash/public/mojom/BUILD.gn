@@ -11,9 +11,9 @@ mojom("mojom") {
   disable_variants = true
 
   sources = [
+    "accelerator_info.mojom",
     "accelerator_keys.mojom",
     "assistant_volume_control.mojom",
-    "cros_display_config.mojom",
     "tray_action.mojom",
     "voice_interaction_controller.mojom",
   ]
@@ -25,7 +25,7 @@ mojom("mojom") {
     "//mojo/public/mojom/base",
     "//services/preferences/public/mojom",
     "//skia/public/mojom",
-    "//ui/display/mojom:mojom",
+    "//ui/base/accelerators/mojom",
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/image/mojom",
     "//ui/gfx/range/mojom",

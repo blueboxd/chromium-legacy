@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_NTP_FEATURES_H_
 #define IOS_CHROME_BROWSER_NTP_FEATURES_H_
 
+#import <Foundation/Foundation.h>
+
 #include "base/feature_list.h"
 
 // Feature flag to enable NTP UI pending loader blocker.
@@ -30,6 +32,10 @@ extern const char kEnableServerDrivenBackgroundRefreshSchedule[];
 // background refresh schedule.
 extern const char kEnableRecurringBackgroundRefreshSchedule[];
 
+// Feature param under `kEnableFeedBackgroundRefresh` for the max age that the
+// cache is still considered fresh.
+extern const char kMaxCacheAgeInSeconds[];
+
 // Feature param under `kEnableFeedBackgroundRefresh` for the background refresh
 // interval in seconds.
 extern const char kBackgroundRefreshIntervalInSeconds[];
@@ -44,11 +50,23 @@ bool IsWebChannelsEnabled();
 
 // Whether feed background refresh is enabled. Returns the value in
 // NSUserDefaults set by `SaveFeedBackgroundRefreshEnabledForNextColdStart()`.
+// This function always returns false if the `IOS_BACKGROUND_MODE_ENABLED`
+// buildflag is not defined.
 bool IsFeedBackgroundRefreshEnabled();
 
 // Saves the current value for feature `kEnableFeedBackgroundRefresh`. This call
 // DCHECKs on the availability of `base::FeatureList`.
 void SaveFeedBackgroundRefreshEnabledForNextColdStart();
+
+// Returns the override value from Experimental Settings in the Settings App. If
+// enabled, all values in Experimental Settings will override all corresponding
+// defaults.
+bool IsFeedOverrideDefaultsEnabled();
+
+// Returns true if the user should receive a local notification when a feed
+// background refresh is completed. Background refresh completion notifications
+// are only enabled by Experimental Settings.
+bool IsFeedBackgroundRefreshCompletedNotificationEnabled();
 
 // Whether the Following feed should also be refreshed in the background.
 bool IsFollowingFeedBackgroundRefreshEnabled();
@@ -60,7 +78,12 @@ bool IsServerDrivenBackgroundRefreshScheduleEnabled();
 // background refresh.
 bool IsRecurringBackgroundRefreshScheduleEnabled();
 
-// The earliest interval to refresh if server value is not used.
+// Returns the max age that the cache is still considered fresh. In other words,
+// the feed freshness threshold.
+double GetFeedMaxCacheAgeInSeconds();
+
+// The earliest interval to refresh if server value is not used. This value is
+// an input into the DiscoverFeedService.
 double GetBackgroundRefreshIntervalInSeconds();
 
 // Returns the background refresh max age in seconds.

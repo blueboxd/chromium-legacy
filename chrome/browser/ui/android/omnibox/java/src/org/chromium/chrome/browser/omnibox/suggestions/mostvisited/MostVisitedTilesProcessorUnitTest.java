@@ -22,6 +22,8 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,7 +34,6 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
@@ -53,6 +54,7 @@ import org.chromium.components.browser_ui.widget.tile.TileViewProperties;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteMatch.SuggestTile;
 import org.chromium.components.omnibox.AutocompleteMatchBuilder;
+import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
@@ -67,7 +69,8 @@ import java.util.List;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 @EnableFeatures({ChromeFeatureList.OMNIBOX_MOST_VISITED_TILES_TITLE_WRAP_AROUND,
-        ChromeFeatureList.HISTORY_ORGANIC_REPEATABLE_QUERIES})
+        ChromeFeatureList.HISTORY_ORGANIC_REPEATABLE_QUERIES,
+        ChromeFeatureList.OMNIBOX_MOST_VISITED_TILES_FADING_ON_TABLET})
 public final class MostVisitedTilesProcessorUnitTest {
     private static final GURL NAV_URL = JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1);
     private static final GURL NAV_URL_2 = JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_2);
@@ -77,6 +80,8 @@ public final class MostVisitedTilesProcessorUnitTest {
 
     public @Rule MockitoRule mockitoRule = MockitoJUnit.rule();
     public @Rule TestRule mFeatures = new Features.JUnitProcessor();
+    public @Rule ActivityScenarioRule<TestActivity> mActivityScenarioRule =
+            new ActivityScenarioRule<>(TestActivity.class);
 
     private Activity mActivity;
     private PropertyModel mPropertyModel;
@@ -95,8 +100,7 @@ public final class MostVisitedTilesProcessorUnitTest {
 
         // Enable logs to be printed along with possible test failures.
         ShadowLog.stream = System.out;
-        mActivity = Robolectric.buildActivity(Activity.class).setup().get();
-        mActivity.setTheme(R.style.Theme_BrowserUI_DayNight);
+        mActivityScenarioRule.getScenario().onActivity((activity) -> mActivity = activity);
 
         doNothing()
                 .when(mFaviconFetcher)

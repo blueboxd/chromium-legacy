@@ -211,8 +211,8 @@ base::span<const PageInfoUI::PermissionUIInfo> GetContentSettingsUIInfo() {
     {ContentSettingsType::SERIAL_GUARD, IDS_SITE_SETTINGS_TYPE_SERIAL_PORTS,
      IDS_SITE_SETTINGS_TYPE_SERIAL_PORTS_MID_SENTENCE},
     {ContentSettingsType::WINDOW_PLACEMENT,
-     IDS_SITE_SETTINGS_TYPE_WINDOW_PLACEMENT,
-     IDS_SITE_SETTINGS_TYPE_WINDOW_PLACEMENT_MID_SENTENCE},
+     IDS_SITE_SETTINGS_TYPE_WINDOW_MANAGEMENT,
+     IDS_SITE_SETTINGS_TYPE_WINDOW_MANAGEMENT_MID_SENTENCE},
 #endif
   };
   return kPermissionUIInfo;
@@ -331,7 +331,7 @@ std::u16string GetPermissionAskStateString(ContentSettingsType type) {
       message_id = IDS_PAGE_INFO_STATE_TEXT_AR_ASK;
       break;
     case ContentSettingsType::WINDOW_PLACEMENT:
-      message_id = IDS_PAGE_INFO_STATE_TEXT_WINDOW_PLACEMENT_ASK;
+      message_id = IDS_PAGE_INFO_STATE_TEXT_WINDOW_MANAGEMENT_ASK;
       break;
     case ContentSettingsType::LOCAL_FONTS:
       message_id = IDS_PAGE_INFO_STATE_TEXT_FONT_ACCESS_ASK;
@@ -370,6 +370,12 @@ std::u16string GetPermissionAskStateString(ContentSettingsType type) {
 }  // namespace
 
 PageInfoUI::CookieInfo::CookieInfo() : allowed(-1), blocked(-1) {}
+
+PageInfoUI::CookiesNewInfo::CookiesNewInfo() = default;
+
+PageInfoUI::CookiesFPSInfo::CookiesFPSInfo() = default;
+
+PageInfoUI::CookiesFPSInfo::~CookiesFPSInfo() = default;
 
 PageInfoUI::ChosenObjectInfo::ChosenObjectInfo(
     const PageInfo::ChooserUIInfo& ui_info,
@@ -756,7 +762,10 @@ std::u16string PageInfoUI::PermissionAutoBlockedToUIString(
         CONTENT_SETTING_DEFAULT,
         permissions::PermissionStatusSource::UNSPECIFIED);
     if (permissions::PermissionUtil::IsPermission(permission.type)) {
-      permission_result = delegate->GetPermissionStatus(permission.type);
+      blink::PermissionType permission_type =
+          permissions::PermissionUtil::ContentSettingTypeToPermissionType(
+              permission.type);
+      permission_result = delegate->GetPermissionResult(permission_type);
     } else if (permission.type == ContentSettingsType::FEDERATED_IDENTITY_API) {
       absl::optional<permissions::PermissionResult> embargo_result =
           delegate->GetEmbargoResult(permission.type);

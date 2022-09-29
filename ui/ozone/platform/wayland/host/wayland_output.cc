@@ -125,12 +125,21 @@ gfx::Size WaylandOutput::logical_size() const {
 gfx::Insets WaylandOutput::insets() const {
   return aura_output_ ? aura_output_->insets() : gfx::Insets();
 }
+
 const std::string& WaylandOutput::label() const {
   return xdg_output_ ? xdg_output_->description() : base::EmptyString();
 }
 
+const std::string& WaylandOutput::name() const {
+  return xdg_output_ ? xdg_output_->name() : base::EmptyString();
+}
+
 zaura_output* WaylandOutput::get_zaura_output() {
   return aura_output_ ? aura_output_->wl_object() : nullptr;
+}
+
+void WaylandOutput::SetScaleFactorForTesting(float scale_factor) {
+  scale_factor_ = scale_factor;
 }
 
 void WaylandOutput::TriggerDelegateNotifications() {

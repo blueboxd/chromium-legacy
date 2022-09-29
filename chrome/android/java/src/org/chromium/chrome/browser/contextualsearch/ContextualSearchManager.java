@@ -847,8 +847,7 @@ public class ContextualSearchManager
                 mSearchPanel.getSearchBarControl().getQuickActionControl().hasQuickAction();
         mReceivedContextualCardsEntityData = !quickActionShown && receivedCaptionOrThumbnail;
         ContextualSearchUma.logContextualCardsDataShown(mReceivedContextualCardsEntityData);
-        mSearchPanel.getPanelMetrics().setWasContextualCardsDataShown(
-                mReceivedContextualCardsEntityData, resolvedSearchTerm.cardTagEnum());
+        mSearchPanel.getPanelMetrics().setCardShown(resolvedSearchTerm.cardTagEnum());
         ContextualSearchUma.logQuickActionShown(
                 quickActionShown, resolvedSearchTerm.quickActionCategory());
         mSearchPanel.getPanelMetrics().setWasQuickActionShown(
@@ -1529,9 +1528,6 @@ public class ContextualSearchManager
         if (!selection.isEmpty()) {
             if (selectionValid && mSearchPanel != null) {
                 mSearchPanel.updateBasePageSelectionYPx(y);
-                if (!mSearchPanel.isShowing()) {
-                    mSearchPanel.getPanelMetrics().onSelectionEstablished(selection);
-                }
                 showSelectionAsSearchInBar(selection);
 
                 if (type == SelectionType.LONG_PRESS) {
@@ -1903,12 +1899,13 @@ public class ContextualSearchManager
                 TypedValue.COMPLEX_UNIT_SP, sp, mActivity.getResources().getDisplayMetrics());
     }
 
-    /** Returns whether the View of the Base Page is too small to show our Overlay Panel. */
-    private boolean isViewTooSmall() {
+    /**
+     * Returns whether the View of the Base Page is too small to show our Overlay Panel.
+     * @param viewHeightLimitPixels The required height in pixels.
+     */
+    private boolean isViewTooSmall(int viewHeightLimitPixels) {
         int basePageHeight = getBasePageHeight();
-        return basePageHeight > 0
-                && basePageHeight < mActivity.getResources().getDimensionPixelSize(
-                           R.dimen.contextual_search_minimum_base_page_height);
+        return basePageHeight > 0 && basePageHeight < viewHeightLimitPixels;
     }
 
     // ============================================================================================
@@ -1984,6 +1981,14 @@ public class ContextualSearchManager
 
     @VisibleForTesting
     public boolean isSuppressed() {
+        int viewHeightLimitPixels = mActivity.getResources().getDimensionPixelSize(
+                R.dimen.contextual_search_minimum_base_page_height);
+        return isSuppressed(viewHeightLimitPixels);
+    }
+
+    /** Whether triggering should be suppressed with the given view height limit. */
+    @VisibleForTesting
+    public boolean isSuppressed(int viewHeightLimitPixels) {
         boolean shouldSimplySuppress = mIsBottomSheetVisible || mIsAccessibilityModeEnabled;
         if (shouldSimplySuppress) return true;
 
@@ -1991,7 +1996,7 @@ public class ContextualSearchManager
             return false;
         }
 
-        boolean isViewTooSmall = isViewTooSmall();
+        boolean isViewTooSmall = isViewTooSmall(viewHeightLimitPixels);
         ContextualSearchUma.logViewTooSmall(isViewTooSmall);
         return isViewTooSmall;
     }

@@ -278,6 +278,14 @@ void PartitionAllocMallocHookOnAfterForkInChild() {
 
 namespace internal {
 
+namespace {
+constexpr size_t kMaxPurgeableSlotsPerSystemPage = 2;
+PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR PA_ALWAYS_INLINE size_t
+MaxPurgeableSlotSize() {
+  return SystemPageSize() / kMaxPurgeableSlotsPerSystemPage;
+}
+}  // namespace
+
 template <bool thread_safe>
 static size_t PartitionPurgeSlotSpan(
     internal::SlotSpanMetadata<thread_safe>* slot_span,
@@ -285,7 +293,11 @@ static size_t PartitionPurgeSlotSpan(
   auto* root = PartitionRoot<thread_safe>::FromSlotSpan(slot_span);
   const internal::PartitionBucket<thread_safe>* bucket = slot_span->bucket;
   size_t slot_size = bucket->slot_size;
-  if (slot_size < SystemPageSize() || !slot_span->num_allocated_slots)
+
+  // We will do nothing if slot_size is smaller than SystemPageSize() / 2
+  // because |kMaxSlotCount| will be too large in that case, which leads to
+  // |slot_usage| using up too much memory.
+  if (slot_size < MaxPurgeableSlotSize() || !slot_span->num_allocated_slots)
     return 0;
 
   size_t bucket_num_slots = bucket->get_slots_per_span();
@@ -308,7 +320,7 @@ static size_t PartitionPurgeSlotSpan(
 #if defined(PAGE_ALLOCATOR_CONSTANTS_ARE_CONSTEXPR)
   constexpr size_t kMaxSlotCount =
       (PartitionPageSize() * kMaxPartitionPagesPerRegularSlotSpan) /
-      SystemPageSize();
+      MaxPurgeableSlotSize();
 #elif BUILDFLAG(IS_APPLE) || (BUILDFLAG(IS_LINUX) && defined(ARCH_CPU_ARM64))
   // It's better for slot_usage to be stack-allocated and fixed-size, which
   // demands that its size be constexpr. On IS_APPLE and Linux on arm64,
@@ -316,10 +328,11 @@ static size_t PartitionPurgeSlotSpan(
   // what the run time page size is, kMaxSlotCount can always be simplified
   // to this expression.
   constexpr size_t kMaxSlotCount =
-      4 * internal::kMaxPartitionPagesPerRegularSlotSpan;
+      4 * kMaxPurgeableSlotsPerSystemPage *
+      internal::kMaxPartitionPagesPerRegularSlotSpan;
   PA_CHECK(kMaxSlotCount == (PartitionPageSize() *
                              internal::kMaxPartitionPagesPerRegularSlotSpan) /
-                                SystemPageSize());
+                                MaxPurgeableSlotSize());
 #endif
   PA_DCHECK(bucket_num_slots <= kMaxSlotCount);
   PA_DCHECK(slot_span->num_unprovisioned_slots < bucket_num_slots);
@@ -337,10 +350,10 @@ static size_t PartitionPurgeSlotSpan(
   // slots are not in use.
   for (PartitionFreelistEntry* entry = slot_span->get_freelist_head(); entry;
        /**/) {
-    size_t slot_index =
-        (SlotStartPtr2Addr(entry) - slot_span_start) / slot_size;
-    PA_DCHECK(slot_index < num_slots);
-    slot_usage[slot_index] = 0;
+    size_t slot_number =
+        bucket->GetSlotNumber(SlotStartPtr2Addr(entry) - slot_span_start);
+    PA_DCHECK(slot_number < num_slots);
+    slot_usage[slot_number] = 0;
 #if !BUILDFLAG(IS_WIN)
     // If we have a slot where the encoded next pointer is 0, we can actually
     // discard that entry because touching a discarded page is guaranteed to
@@ -348,7 +361,7 @@ static size_t PartitionPurgeSlotSpan(
     // effective on big-endian machines because the masking function is
     // negation.)
     if (entry->IsEncodedNextPtrZero())
-      last_slot = slot_index;
+      last_slot = slot_number;
 #endif
     entry = entry->GetNext(slot_size);
   }
@@ -367,7 +380,20 @@ static size_t PartitionPurgeSlotSpan(
     size_t unprovisioned_bytes = 0;
     uintptr_t begin_addr = slot_span_start + (num_slots * slot_size);
     uintptr_t end_addr = begin_addr + (slot_size * truncated_slots);
-    begin_addr = RoundUpToSystemPage(begin_addr);
+
+    // The slots that do not contain discarded pages should not be included to
+    // |truncated_slots|. Detects those slots and fixes |truncated_slots| and
+    // |num_slots| accordingly.
+    uintptr_t rounded_up_begin_addr = RoundUpToSystemPage(begin_addr);
+    for (size_t i = 0; i < kMaxPurgeableSlotsPerSystemPage; ++i) {
+      begin_addr += slot_size;
+      if (RoundUpToSystemPage(begin_addr) != rounded_up_begin_addr)
+        break;
+      --truncated_slots;
+      ++num_slots;
+    }
+    begin_addr = rounded_up_begin_addr;
+
     // We round the end address here up and not down because we're at the end of
     // a slot span, so we "own" all the way up the page boundary.
     end_addr = RoundUpToSystemPage(end_addr);
@@ -415,25 +441,55 @@ static size_t PartitionPurgeSlotSpan(
     }
   }
 
-  // Next, walk the slots and for any not in use, consider where the system page
-  // boundaries occur. We can release any system pages back to the system as
-  // long as we don't interfere with a freelist pointer or an adjacent slot.
+  if (slot_size < SystemPageSize()) {
+    return discardable_bytes;
+  }
+
+  // Next, walk the slots and for any not in use, consider which system pages
+  // are no longer needed. We can release any system pages back to the system as
+  // long as we don't interfere with a freelist pointer or an adjacent used
+  // slot.
   for (size_t i = 0; i < num_slots; ++i) {
-    if (slot_usage[i])
+    if (slot_usage[i]) {
       continue;
+    }
+
     // The first address we can safely discard is just after the freelist
     // pointer. There's one quirk: if the freelist pointer is actually nullptr,
     // we can discard that pointer value too.
     uintptr_t begin_addr = slot_span_start + (i * slot_size);
     uintptr_t end_addr = begin_addr + slot_size;
+
+    bool can_discard_free_list_pointer = false;
 #if !BUILDFLAG(IS_WIN)
-    if (i != last_slot)
+    if (i != last_slot) {
       begin_addr += sizeof(internal::PartitionFreelistEntry);
+    } else {
+      can_discard_free_list_pointer = true;
+    }
 #else
     begin_addr += sizeof(internal::PartitionFreelistEntry);
 #endif
-    begin_addr = RoundUpToSystemPage(begin_addr);
+
+    uintptr_t rounded_up_begin_addr = RoundUpToSystemPage(begin_addr);
+    uintptr_t rounded_down_begin_addr = RoundDownToSystemPage(begin_addr);
     end_addr = RoundDownToSystemPage(end_addr);
+
+    // |rounded_up_begin_addr| could be greater than |end_addr| only if slot
+    // size was less than system page size, or if free list pointer crossed the
+    // page boundary. Neither is possible here.
+    PA_DCHECK(rounded_up_begin_addr <= end_addr);
+
+    if (rounded_down_begin_addr < rounded_up_begin_addr && i != 0 &&
+        !slot_usage[i - 1] && can_discard_free_list_pointer) {
+      // This slot contains a partial page in the beginning. The rest of that
+      // page is contained in the slot[i-1], which is also discardable.
+      // Therefore we can discard this page.
+      begin_addr = rounded_down_begin_addr;
+    } else {
+      begin_addr = rounded_up_begin_addr;
+    }
+
     if (begin_addr < end_addr) {
       size_t partial_slot_bytes = end_addr - begin_addr;
       discardable_bytes += partial_slot_bytes;
@@ -443,6 +499,7 @@ static size_t PartitionPurgeSlotSpan(
       }
     }
   }
+
   return discardable_bytes;
 }
 
@@ -944,7 +1001,7 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForNormalBuckets(
   // new size is a significant percentage smaller. We could do the same if we
   // determine it is a win.
   if (AllocationCapacityFromRequestedSize(new_size) !=
-      AllocationCapacityFromPtr(object))
+      AllocationCapacityFromSlotStart(slot_start))
     return false;
 
   // Trying to allocate |new_size| would use the same amount of underlying
@@ -1088,7 +1145,7 @@ void PartitionRoot<thread_safe>::PurgeMemory(int flags) {
         if (bucket.slot_size == internal::kInvalidBucketSize)
           continue;
 
-        if (bucket.slot_size >= internal::SystemPageSize())
+        if (bucket.slot_size >= internal::MaxPurgeableSlotSize())
           internal::PartitionPurgeBucket(&bucket);
         else
           bucket.SortSlotSpanFreelists();

@@ -91,6 +91,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/startup/startup_tab.h"
 #include "chrome/browser/ui/startup/startup_types.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -320,14 +321,13 @@ void FocusWindowSetOnCurrentSpace(const std::set<gfx::NativeWindow>& windows) {
 
 // Returns the profile path to be used at startup.
 base::FilePath GetStartupProfilePathMac() {
-  // This profile path is used to open URLs passed in application:openFiles: and
+  // This profile path is used to open URLs passed in application:openURLs: and
   // should not default to Guest when the profile picker is shown.
   // TODO(https://crbug.com/1155158): Remove the ignore_profile_picker parameter
   // once the picker supports opening URLs.
-  StartupProfilePathInfo profile_path_info =
-      GetStartupProfilePath(/*current_directory=*/base::FilePath(),
-                            *base::CommandLine::ForCurrentProcess(),
-                            /*ignore_profile_picker=*/true);
+  StartupProfilePathInfo profile_path_info = GetStartupProfilePath(
+      /*cur_dir=*/base::FilePath(), *base::CommandLine::ForCurrentProcess(),
+      /*ignore_profile_picker=*/true);
   DCHECK_EQ(profile_path_info.mode, StartupProfileMode::kBrowserWindow);
   return profile_path_info.path;
 }
@@ -362,8 +362,6 @@ Profile* GetLastProfileMac() {
 - (void)initProfileMenu;
 - (void)updateConfirmToQuitPrefMenuItem:(NSMenuItem*)item;
 - (void)registerServicesMenuTypesTo:(NSApplication*)app;
-- (void)getUrl:(NSAppleEventDescriptor*)event
-     withReply:(NSAppleEventDescriptor*)reply;
 - (void)activeSpaceDidChange:(NSNotification*)inNotification;
 - (void)checkForAnyKeyWindows;
 - (BOOL)userWillWaitForInProgressDownloads:(int)downloadCount;
@@ -575,6 +573,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 
 - (void)dealloc {
   [[_closeTabMenuItem menu] setDelegate:nil];
+  [NSMenu cr_setMenuItemForKeyEquivalentEventPreSearchBlock:nil];
   [super dealloc];
 }
 
@@ -584,17 +583,6 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 - (void)mainMenuCreated {
   MacStartupProfiler::GetInstance()->Profile(
       MacStartupProfiler::AWAKE_FROM_NIB);
-  // We need to register the handlers early to catch events fired on launch.
-  NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
-  [em setEventHandler:self
-          andSelector:@selector(getUrl:withReply:)
-        forEventClass:kInternetEventClass
-           andEventID:kAEGetURL];
-  [em setEventHandler:self
-          andSelector:@selector(getUrl:withReply:)
-        forEventClass:'WWW!'    // A particularly ancient AppleEvent that dates
-           andEventID:'OURL'];  // back to the Spyglass days.
-
   NSNotificationCenter* notificationCenter =
       [NSNotificationCenter defaultCenter];
   [notificationCenter
@@ -635,11 +623,6 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 }
 
 - (void)unregisterEventHandlers {
-  NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
-  [em removeEventHandlerForEventClass:kInternetEventClass
-                           andEventID:kAEGetURL];
-  [em removeEventHandlerForEventClass:'WWW!'
-                           andEventID:'OURL'];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
 }
@@ -652,18 +635,6 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 
   if (@available(macOS 10.12, *)) {
     NSWindow.allowsAutomaticWindowTabbing = NO;
-  }
-
-  // If the OSX version supports this method, the system will automatically
-  // hide the item if there's no touch bar. However, for unsupported versions,
-  // we'll have to manually remove the item from the menu.
-  if (![NSApp
-          respondsToSelector:@selector(toggleTouchBarCustomizationPalette:)]) {
-    NSMenu* mainMenu = [NSApp mainMenu];
-    NSMenu* viewMenu = [[mainMenu itemWithTag:IDC_VIEW_MENU] submenu];
-    NSMenuItem* customizeItem = [viewMenu itemWithTag:IDC_CUSTOMIZE_TOUCH_BAR];
-    if (customizeItem)
-      [viewMenu removeItem:customizeItem];
   }
 
   [self initShareMenu];
@@ -1079,28 +1050,28 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
   std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
 
   std::vector<Profile*> added_profiles;
-  for (Profile* p : profiles) {
-    for (Profile* otr : p->GetAllOffTheRecordProfiles())
+  for (Profile* profile : profiles) {
+    for (Profile* otr : profile->GetAllOffTheRecordProfiles())
       added_profiles.push_back(otr);
   }
   profiles.insert(profiles.end(), added_profiles.begin(), added_profiles.end());
 
-  for (size_t i = 0; i < profiles.size(); ++i) {
+  for (Profile* profile : profiles) {
     DownloadCoreService* download_core_service =
-        DownloadCoreServiceFactory::GetForBrowserContext(profiles[i]);
+        DownloadCoreServiceFactory::GetForBrowserContext(profile);
     content::DownloadManager* download_manager =
         (download_core_service->HasCreatedDownloadManager()
-             ? profiles[i]->GetDownloadManager()
-             : NULL);
+             ? profile->GetDownloadManager()
+             : nullptr);
     if (download_manager &&
         download_manager->NonMaliciousInProgressCount() > 0) {
       int downloadCount = download_manager->NonMaliciousInProgressCount();
       if ([self userWillWaitForInProgressDownloads:downloadCount]) {
         // Create a new browser window (if necessary) and navigate to the
         // downloads page if the user chooses to wait.
-        Browser* browser = chrome::FindBrowserWithProfile(profiles[i]);
+        Browser* browser = chrome::FindBrowserWithProfile(profile);
         if (!browser) {
-          browser = Browser::Create(Browser::CreateParams(profiles[i], true));
+          browser = Browser::Create(Browser::CreateParams(profile, true));
           browser->window()->Show();
         }
         DCHECK(browser);
@@ -1434,7 +1405,6 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
                     hasVisibleWindows:(BOOL)hasVisibleWindows {
   // If the browser is currently trying to quit, don't do anything and return NO
   // to prevent AppKit from doing anything.
-  // TODO(rohitrao): Remove this code when http://crbug.com/40861 is resolved.
   if (browser_shutdown::IsTryingToQuit())
     return NO;
 
@@ -1648,38 +1618,6 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
   return ProfileManager::MaybeForceOffTheRecordMode(profile);
 }
 
-- (void)getUrl:(NSAppleEventDescriptor*)event
-     withReply:(NSAppleEventDescriptor*)reply {
-  NSString* urlStr = [[event paramDescriptorForKeyword:keyDirectObject]
-                      stringValue];
-
-  GURL gurl(base::SysNSStringToUTF8(urlStr));
-  std::vector<GURL> gurlVector;
-  gurlVector.push_back(gurl);
-
-  [self openUrlsReplacingNTP:gurlVector];
-}
-
-- (void)application:(NSApplication*)sender
-          openFiles:(NSArray*)filenames {
-  std::vector<GURL> gurlVector;
-  for (NSString* file in filenames) {
-    GURL gurl =
-        net::FilePathToFileURL(base::FilePath([file fileSystemRepresentation]));
-    gurlVector.push_back(gurl);
-  }
-
-  if (!gurlVector.empty())
-    [self openUrlsReplacingNTP:gurlVector];
-  else
-    NOTREACHED() << "Nothing to open!";
-
-  [sender replyToOpenOrPrint:NSApplicationDelegateReplySuccess];
-}
-
-// TODO(avi): When Chromium requires 10.13 as a minimum, remove the
-// -[NSApplication application:openFiles:] override and the
-// kInternetEventClass/kAEGetURL Apple Event registration in -mainMenuCreated.
 - (void)application:(NSApplication*)sender openURLs:(NSArray<NSURL*>*)urls {
   std::vector<GURL> gurlVector;
   for (NSURL* url in urls)
@@ -1687,10 +1625,6 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 
   if (!gurlVector.empty())
     [self openUrlsReplacingNTP:gurlVector];
-  else
-    NOTREACHED() << "Nothing to open!";
-
-  [sender replyToOpenOrPrint:NSApplicationDelegateReplySuccess];
 }
 
 // Show the preferences window, or bring it to the front if it's already
@@ -1934,6 +1868,14 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
   [self adjustCloseTabMenuItemKeyEquivalent:enableCloseTabShortcut];
 }
 
+// This only has an effect on macOS 12+, and requests any state restoration
+// archive to be created with secure encoding. See the article at
+// https://sector7.computest.nl/post/2022-08-process-injection-breaking-all-macos-security-layers-with-a-single-vulnerability/
+// for more details.
+- (BOOL)applicationSupportsSecureRestorableState:(NSApplication*)app {
+  return YES;
+}
+
 - (BOOL)application:(NSApplication*)application
   willContinueUserActivityWithType:(NSString*)userActivityType {
   static NSString * const*NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
@@ -2122,7 +2064,7 @@ void OpenUrlsInBrowserWithProfile(const std::vector<GURL>& urls,
       (startupContent->GetVisibleURL() == chrome::kChromeUINewTabURL ||
        startupContent->GetVisibleURL() == chrome::kChromeUINewTabPageURL)) {
     browser->tab_strip_model()->CloseWebContentsAt(startupIndex,
-                                                   TabStripModel::CLOSE_NONE);
+                                                   TabCloseTypes::CLOSE_NONE);
   }
 }
 

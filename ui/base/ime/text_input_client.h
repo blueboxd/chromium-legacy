@@ -19,7 +19,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/grammar_fragment.h"
-#include "ui/base/ime/input_method_delegate.h"
+#include "ui/base/ime/ime_key_event_dispatcher.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/native_widget_types.h"
@@ -79,8 +79,8 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   // otherwise, set it to be after the newly committed text.
   // If text was committed, return the number of characters committed.
   // If we do not know what the number of characters committed is, return
-  // UINT32_MAX.
-  virtual uint32_t ConfirmCompositionText(bool keep_selection) = 0;
+  // std::numeric_limits<size_t>::max().
+  virtual size_t ConfirmCompositionText(bool keep_selection) = 0;
 
   // Removes current composition text.
   virtual void ClearCompositionText() = 0;
@@ -146,7 +146,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   // The |index| is zero-based index of character position in composition text.
   // Returns false if there is no composition text or |index| is out of range.
   // The |rect| is not touched in the case of failure.
-  virtual bool GetCompositionCharacterBounds(uint32_t index,
+  virtual bool GetCompositionCharacterBounds(size_t index,
                                              gfx::Rect* rect) const = 0;
 
   // Returns true if there is composition text.

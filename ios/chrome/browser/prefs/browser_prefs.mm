@@ -86,49 +86,6 @@
 #endif
 
 namespace {
-const char kLastKnownGoogleURL[] = "browser.last_known_google_url";
-const char kLastPromptedGoogleURL[] = "browser.last_prompted_google_url";
-
-// Deprecated 9/2019
-const char kGoogleServicesUsername[] = "google.services.username";
-const char kGoogleServicesUserAccountId[] = "google.services.user_account_id";
-
-// Deprecated 1/2020
-const char kGCMChannelStatus[] = "gcm.channel_status";
-const char kGCMChannelPollIntervalSeconds[] = "gcm.poll_interval";
-const char kGCMChannelLastCheckTime[] = "gcm.check_time";
-
-// Deprecated 2/2020
-const char kInvalidatorClientId[] = "invalidator.client_id";
-const char kInvalidatorInvalidationState[] = "invalidator.invalidation_state";
-const char kInvalidatorSavedInvalidations[] = "invalidator.saved_invalidations";
-
-// Deprecated 9/2020
-const char kPasswordManagerOnboardingState[] =
-    "profile.password_manager_onboarding_state";
-const char kWasOnboardingFeatureCheckedBefore[] =
-    "profile.was_pwm_onboarding_feature_checked_before";
-
-// Deprecated 12/2020
-const char kDomainsWithCookiePref[] = "signin.domains_with_cookie";
-
-// Deprecated 03/2021
-const char kOmniboxGeolocationAuthorizationState[] =
-    "ios.omnibox.geolocation_authorization_state";
-const char kOmniboxGeolocationLastAuthorizationAlertVersion[] =
-    "ios.omnibox.geolocation_last_authorization_alert_version";
-
-// Deprecated 07/2021
-const char kMetricsReportingWifiOnly[] =
-    "ios.user_experience_metrics.wifi_only";
-
-// Deprecated 07/2021
-const char kLastSessionExitedCleanly[] =
-    "ios.user_experience_metrics.last_session_exited_cleanly";
-
-// Deprecated 08/2021
-const char kSigninAllowedByPolicy[] = "signin.allowed_by_policy";
-
 // Deprecated 09/2021
 const char kTrialGroupPrefName[] = "location_permissions.trial_group";
 
@@ -193,15 +150,9 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kEulaAccepted, false);
   registry->RegisterBooleanPref(metrics::prefs::kMetricsReportingEnabled,
                                 false);
-  registry->RegisterBooleanPref(kLastSessionExitedCleanly, true);
-  registry->RegisterBooleanPref(kMetricsReportingWifiOnly, true);
-  registry->RegisterBooleanPref(kGCMChannelStatus, true);
-  registry->RegisterIntegerPref(kGCMChannelPollIntervalSeconds, 0);
-  registry->RegisterInt64Pref(kGCMChannelLastCheckTime, 0);
 
-  registry->RegisterListPref(kInvalidatorSavedInvalidations);
-  registry->RegisterStringPref(kInvalidatorInvalidationState, std::string());
-  registry->RegisterStringPref(kInvalidatorClientId, std::string());
+  registry->RegisterListPref(prefs::kIosPromosManagerActivePromos);
+  registry->RegisterListPref(prefs::kIosPromosManagerImpressions);
 
   registry->RegisterBooleanPref(enterprise_reporting::kCloudReportingEnabled,
                                 false);
@@ -211,10 +162,6 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
       enterprise_reporting::kLastUploadSucceededTimestamp, base::Time());
   registry->RegisterTimeDeltaPref(
       enterprise_reporting::kCloudReportingUploadFrequency, base::Hours(24));
-
-  registry->RegisterIntegerPref(kOmniboxGeolocationAuthorizationState, 0);
-  registry->RegisterStringPref(kOmniboxGeolocationLastAuthorizationAlertVersion,
-                               "");
 
   registry->RegisterDictionaryPref(prefs::kOverflowMenuDestinationUsageHistory,
                                    PrefRegistry::LOSSY_PREF);
@@ -316,34 +263,15 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Register prefs used by Clear Browsing Data UI.
   browsing_data::prefs::RegisterBrowserUserPrefs(registry);
 
-  registry->RegisterStringPref(kLastKnownGoogleURL, std::string());
-  registry->RegisterStringPref(kLastPromptedGoogleURL, std::string());
-  registry->RegisterStringPref(kGoogleServicesUsername, std::string());
-  registry->RegisterStringPref(kGoogleServicesUserAccountId, std::string());
   registry->RegisterStringPref(prefs::kNewTabPageLocationOverride,
                                std::string());
-
-  registry->RegisterBooleanPref(kGCMChannelStatus, true);
-  registry->RegisterIntegerPref(kGCMChannelPollIntervalSeconds, 0);
-  registry->RegisterInt64Pref(kGCMChannelLastCheckTime, 0);
 
   registry->RegisterIntegerPref(prefs::kIncognitoModeAvailability,
                                 static_cast<int>(IncognitoModePrefs::kEnabled));
 
-  registry->RegisterListPref(kInvalidatorSavedInvalidations);
-  registry->RegisterStringPref(kInvalidatorInvalidationState, std::string());
-  registry->RegisterStringPref(kInvalidatorClientId, std::string());
-
   registry->RegisterBooleanPref(prefs::kPrintingEnabled, true);
 
-  registry->RegisterIntegerPref(kPasswordManagerOnboardingState, 0);
-  registry->RegisterBooleanPref(kWasOnboardingFeatureCheckedBefore, false);
-  registry->RegisterDictionaryPref(kDomainsWithCookiePref);
-
   registry->RegisterBooleanPref(prefs::kAllowChromeDataInBackups, true);
-
-  // Preference related to the browser sign-in policy that is being deprecated.
-  registry->RegisterBooleanPref(kSigninAllowedByPolicy, true);
 
   registry->RegisterBooleanPref(kShowReadingListInBookmarkBar, true);
 
@@ -363,30 +291,15 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
       policy::policy_prefs::kUserPolicyNotificationWasShown, false);
 
   registry->RegisterIntegerPref(kAccountIdMigrationState, 0);
+
+  registry->RegisterIntegerPref(prefs::kIosShareChromeCount, 0,
+                                PrefRegistry::LOSSY_PREF);
+  registry->RegisterTimePref(prefs::kIosShareChromeLastShare, base::Time(),
+                             PrefRegistry::LOSSY_PREF);
 }
 
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
-  // Added 1/2020.
-  prefs->ClearPref(kGCMChannelStatus);
-  prefs->ClearPref(kGCMChannelPollIntervalSeconds);
-  prefs->ClearPref(kGCMChannelLastCheckTime);
-
-  // Added 2/2020.
-  prefs->ClearPref(kInvalidatorSavedInvalidations);
-  prefs->ClearPref(kInvalidatorInvalidationState);
-  prefs->ClearPref(kInvalidatorClientId);
-
-  // Added 2021/03.
-  prefs->ClearPref(kOmniboxGeolocationAuthorizationState);
-  prefs->ClearPref(kOmniboxGeolocationLastAuthorizationAlertVersion);
-
-  // Added 7/2021
-  prefs->ClearPref(kMetricsReportingWifiOnly);
-
-  // Added 7/2021
-  prefs->ClearPref(kLastSessionExitedCleanly);
-
   // Added 09/2021
   prefs->ClearPref(kTrialGroupPrefName);
 
@@ -405,35 +318,8 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
   // Check MigrateDeprecatedAutofillPrefs() to see if this is safe to remove.
   autofill::prefs::MigrateDeprecatedAutofillPrefs(prefs);
 
-  // Added 07/2019.
-  syncer::MigrateSyncSuppressedPref(prefs);
-  prefs->ClearPref(kLastKnownGoogleURL);
-  prefs->ClearPref(kLastPromptedGoogleURL);
-
-  // Added 09/2019
-  prefs->ClearPref(kGoogleServicesUsername);
-  prefs->ClearPref(kGoogleServicesUserAccountId);
-
-  // Added 1/2020.
-  prefs->ClearPref(kGCMChannelStatus);
-  prefs->ClearPref(kGCMChannelPollIntervalSeconds);
-  prefs->ClearPref(kGCMChannelLastCheckTime);
-
-  // Added 2/2020.
-  prefs->ClearPref(kInvalidatorSavedInvalidations);
-  prefs->ClearPref(kInvalidatorInvalidationState);
-  prefs->ClearPref(kInvalidatorClientId);
-
   // Added 9/2020.
-  prefs->ClearPref(kPasswordManagerOnboardingState);
-  prefs->ClearPref(kWasOnboardingFeatureCheckedBefore);
   prerender_prefs::MigrateNetworkPredictionPrefs(prefs);
-
-  // Added 12/2020.
-  prefs->ClearPref(kDomainsWithCookiePref);
-
-  // Added 8/2021.
-  prefs->ClearPref(kSigninAllowedByPolicy);
 
   // Added 03/2022
   prefs->ClearPref(kShowReadingListInBookmarkBar);

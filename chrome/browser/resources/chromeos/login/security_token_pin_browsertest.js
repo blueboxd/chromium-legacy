@@ -28,17 +28,13 @@ var PolymerSecurityTokenPinTest = class extends Polymer2DeprecatedTest {
     });
   }
 
-   /** @override */
-   get featureList() {
-    return {disabled: ['ash::features::kEnableOobePolymer3']};
-  }
-
   get extraLibraries() {
     return super.extraLibraries.concat(['components/oobe_types.js']);
   }
 };
 
-TEST_F('PolymerSecurityTokenPinTest', 'All', function() {
+// TODO(crbug.com/1347183): Port this test to work with Polymer3.
+TEST_F('PolymerSecurityTokenPinTest', 'DISABLED_All', function() {
   const DEFAULT_PARAMETERS = {
     enableUserInput: true,
     hasError: false,

@@ -27,9 +27,12 @@ GLSurfaceEglReadbackWayland::PixelBuffer::PixelBuffer(
 GLSurfaceEglReadbackWayland::PixelBuffer::~PixelBuffer() = default;
 
 GLSurfaceEglReadbackWayland::GLSurfaceEglReadbackWayland(
+    gl::GLDisplayEGL* display,
     gfx::AcceleratedWidget widget,
     WaylandBufferManagerGpu* buffer_manager)
-    : widget_(widget), buffer_manager_(buffer_manager) {
+    : GLSurfaceEglReadback(display),
+      widget_(widget),
+      buffer_manager_(buffer_manager) {
   buffer_manager_->RegisterSurface(widget_, this);
 }
 
@@ -119,7 +122,8 @@ void GLSurfaceEglReadbackWayland::SwapBuffersAsync(
   const auto bounds = gfx::Rect(GetSize());
   buffer_manager_->CommitBuffer(widget_, next_buffer->buffer_id_,
                                 /*frame_id*/ next_buffer->buffer_id_, bounds,
-                                surface_scale_factor_, bounds);
+                                gfx::RoundedCornersF(), surface_scale_factor_,
+                                bounds);
 }
 
 gfx::SurfaceOrigin GLSurfaceEglReadbackWayland::GetOrigin() const {

@@ -45,7 +45,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 1
@@ -98,7 +97,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
@@ -164,7 +162,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
@@ -186,12 +183,6 @@
       "cast_runner_pkg",
       "web_runner_pkg",
       "chromium_builder_perf",
-      "base_perftests"
-    ]
-  },
-  "fuchsia-builder-perf-x64": {
-    "additional_compile_targets": [
-      "chrome_pkg",
       "base_perftests"
     ]
   },
@@ -232,7 +223,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
@@ -285,7 +275,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
@@ -338,7 +327,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
@@ -388,7 +376,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 1
@@ -438,7 +425,6 @@
           ],
           "expiration": 7200,
           "hard_timeout": 21600,
-          "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 1

@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -38,7 +38,6 @@ _CONFIG = [
             'gfx::RadToDeg',
 
             # absl
-            'absl::FunctionRef',
             'absl::MakeInt128',
             'absl::MakeUint128',
             'absl::get',
@@ -73,6 +72,7 @@ _CONFIG = [
             'base::File',
             'base::FileErrorOr',
             'base::FilePath',
+            'base::FunctionRef',
             'base::GetUniqueIdForProcess',
             'base::GUID',
             'base::HexStringToUInt64',
@@ -111,6 +111,7 @@ _CONFIG = [
             'base::SysInfo',
             'base::ThreadChecker',
             'base::ThreadTicks',
+            'base::ThreadType',
             'base::TickClock',
             'base::Time',
             'base::TimeDelta',
@@ -138,6 +139,10 @@ _CONFIG = [
 
             # //base/task/bind_post_task.h
             'base::BindPostTask',
+
+            # //base/types/expected.h
+            'base::expected',
+            'base::unexpected',
 
             # //base/bind.h
             'base::IgnoreResult',
@@ -358,6 +363,7 @@ _CONFIG = [
             'gfx::RectToSkIRect',
             'gfx::RectToSkRect',
             'gfx::ScaleToCeiledSize',
+            'gfx::ScaleToEnclosedRect',
             'gfx::ScaleToEnclosingRect',
             'gfx::ScaleToFlooredSize',
             'gfx::ScaleToRoundedRect',

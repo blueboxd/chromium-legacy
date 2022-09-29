@@ -3,11 +3,12 @@
 # found in the LICENSE file.
 
 import collections
+import fnmatch
 import logging
 import re
 import sys
 import types
-import typing
+from typing import Any, Dict, Generator, List, Optional, Set, Tuple, Type
 import unittest
 
 from telemetry.internal.results import artifact_compatibility_wrapper as acw
@@ -36,8 +37,8 @@ _SUPPORTED_WIN_INTEL_GPUS_WITH_NV12_OVERLAYS = [0x5912, 0x3e92]
 # Hardware overlays are disabled in 26.20.100.8141 per crbug.com/1079393#c105
 _UNSUPPORTED_WIN_INTEL_GPU_DRIVERS_WITH_NV12_OVERLAYS = ['5912-26.20.100.8141']
 
-TestTuple = typing.Tuple[str, ct.GeneratedTest]
-TestTupleGenerator = typing.Generator[TestTuple, None, None]
+TestTuple = Tuple[str, ct.GeneratedTest]
+TestTupleGenerator = Generator[TestTuple, None, None]
 
 
 class GpuIntegrationTest(
@@ -80,10 +81,9 @@ class GpuIntegrationTest(
     if self.artifacts is None:
       self.set_artifacts(None)
 
-  def set_artifacts(
-      self,
-      artifacts: typing.Optional[typing.Type[acw.ArtifactCompatibilityWrapper]]
-  ) -> None:
+  def set_artifacts(self,
+                    artifacts: Optional[Type[acw.ArtifactCompatibilityWrapper]]
+                    ) -> None:
     # Instead of using the default logging artifact implementation, use the
     # full logging one. This ensures we get debugging information if something
     # goes wrong before typ can set the actual artifact implementation, such
@@ -92,10 +92,46 @@ class GpuIntegrationTest(
       artifacts = acw.FullLoggingArtifactImpl()
     super().set_artifacts(artifacts)
 
+  def CanRunInParallel(self) -> bool:
+    """Returns whether a particular test instance can be run in parallel."""
+    if not self._SuiteSupportsParallelTests():
+      return False
+    name = self.shortName()
+    for glob in self._GetSerialGlobs():
+      if fnmatch.fnmatch(name, glob):
+        return False
+    return name not in self._GetSerialTests()
+
+  def _SuiteSupportsParallelTests(self) -> bool:  # pylint: disable=no-self-use
+    """Returns whether the suite in general supports parallel tests."""
+    return False
+
+  def _GetSerialGlobs(self) -> Set[str]:  # pylint: disable=no-self-use
+    """Returns a set of test name globs that should be run serially."""
+    return set()
+
+  def _GetSerialTests(self) -> Set[str]:  # pylint: disable=no-self-use
+    """Returns a set of test names that should be run serially."""
+    return set()
+
+  @classmethod
+  def _SetClassVariablesFromOptions(cls, options: ct.ParsedCmdArgs) -> None:
+    """Sets class member variables from parsed command line options.
+
+    This was historically done once in GenerateGpuTests since it was one of the
+    earliest called class methods, but that relied on the process always being
+    the same, which is not the case if running tests in parallel. Thus, the same
+    logic should be run on process setup to ensure that parallel and serial
+    execution works the same.
+
+    This should be called once in SetUpProcess and once in GenerateGpuTests.
+    """
+
   @classmethod
   def SetUpProcess(cls) -> None:
     super(GpuIntegrationTest, cls).SetUpProcess()
     cls._original_finder_options = cls._finder_options.Copy()
+    cls._SetClassVariablesFromOptions(cls._finder_options)
 
   @classmethod
   def AddCommandlineArgs(cls, parser: ct.CmdArgParser) -> None:
@@ -122,8 +158,7 @@ class GpuIntegrationTest(
                       help='The extra Intel device id with overlays')
 
   @classmethod
-  def GenerateBrowserArgs(cls, additional_args: typing.List[str]
-                          ) -> typing.List[str]:
+  def GenerateBrowserArgs(cls, additional_args: List[str]) -> List[str]:
     """Generates the browser args to use for the next browser startup.
 
     Child classes are expected to override this and add any additional default
@@ -144,8 +179,8 @@ class GpuIntegrationTest(
     return default_args + additional_args
 
   @classmethod
-  def CustomizeBrowserArgs(
-      cls, additional_args: typing.Optional[typing.List[str]] = None) -> None:
+  def CustomizeBrowserArgs(cls,
+                           additional_args: Optional[List[str]] = None) -> None:
     """Customizes the browser's command line arguments for the next startup.
 
     NOTE that redefining this method in subclasses will NOT do what
@@ -161,8 +196,7 @@ class GpuIntegrationTest(
 
   @classmethod
   def _GenerateAndSanitizeBrowserArgs(
-      cls, additional_args: typing.Optional[typing.List[str]] = None
-  ) -> typing.List[str]:
+      cls, additional_args: Optional[List[str]] = None) -> List[str]:
     """Generates browser arguments and sanitizes invalid arguments.
 
     Args:
@@ -183,7 +217,9 @@ class GpuIntegrationTest(
       if os_name in ('android', 'chromeos'):
         browser_args.remove(cba.DISABLE_GPU)
 
-    if cls._finder_options.browser_type == 'web-engine-shell':
+    if cls._finder_options.browser_type in [
+        'web-engine-shell', 'cast-streaming-shell'
+    ]:
       # Reduce number of video buffers when running tests on Fuchsia to
       # workaround crbug.com/1203580
       # TODO(https://crbug.com/1203580): Remove this once the bug is resolved.
@@ -199,8 +235,7 @@ class GpuIntegrationTest(
     return browser_args
 
   @classmethod
-  def _SetBrowserArgsForNextStartup(cls,
-                                    browser_args: typing.List[str]) -> None:
+  def _SetBrowserArgsForNextStartup(cls, browser_args: List[str]) -> None:
     """Sets the browser arguments to use for the next browser startup.
 
     Args:
@@ -222,7 +257,7 @@ class GpuIntegrationTest(
   @classmethod
   def RestartBrowserIfNecessaryWithArgs(
       cls,
-      additional_args: typing.Optional[typing.List[str]] = None,
+      additional_args: Optional[List[str]] = None,
       force_restart: bool = False) -> None:
     """Restarts the browser if it is determined to be necessary.
 
@@ -245,8 +280,8 @@ class GpuIntegrationTest(
       cls.StartBrowser()
 
   @classmethod
-  def RestartBrowserWithArgs(
-      cls, additional_args: typing.Optional[typing.List[str]] = None) -> None:
+  def RestartBrowserWithArgs(cls, additional_args: Optional[List[str]] = None
+                             ) -> None:
     cls.RestartBrowserIfNecessaryWithArgs(additional_args, force_restart=True)
 
   # The following is the rest of the framework for the GPU integration tests.
@@ -423,7 +458,7 @@ class GpuIntegrationTest(
       self._HandlePass(test_name, expected_crashes, expected_results)
 
   def _HandleExpectedFailureOrFlake(self, test_name: str,
-                                    expected_crashes: typing.Dict[str, int],
+                                    expected_crashes: Dict[str, int],
                                     should_retry_on_failure: bool) -> None:
     """Helper method for handling a failure in an expected flaky/failing test"""
     # We don't check the return value here since we'll be raising the caught
@@ -470,8 +505,8 @@ class GpuIntegrationTest(
     # propagate to the next test iteration.
     self._RestartBrowser('unexpected test failure')
 
-  def _HandlePass(self, test_name: str, expected_crashes: typing.Dict[str, int],
-                  expected_results: typing.Set[str]) -> None:
+  def _HandlePass(self, test_name: str, expected_crashes: Dict[str, int],
+                  expected_results: Set[str]) -> None:
     """Helper function for handling a passing test."""
     # Fuchsia does not have minidump support, use system info to check
     # for crash count.
@@ -540,8 +575,7 @@ class GpuIntegrationTest(
       return True
     return False
 
-  def _ClearExpectedCrashes(self,
-                            expected_crashes: typing.Dict[str, int]) -> bool:
+  def _ClearExpectedCrashes(self, expected_crashes: Dict[str, int]) -> bool:
     """Clears any expected crash minidumps so they're not caught later.
 
     Args:
@@ -577,7 +611,7 @@ class GpuIntegrationTest(
     return False
 
   # pylint: disable=no-self-use
-  def GetExpectedCrashes(self, args: ct.TestArgs) -> typing.Dict[str, int]:
+  def GetExpectedCrashes(self, args: ct.TestArgs) -> Dict[str, int]:
     """Returns which crashes, per process type, to expect for the current test.
 
     Should be overridden by child classes to actually return valid data if
@@ -609,7 +643,7 @@ class GpuIntegrationTest(
     """
     raise NotImplementedError
 
-  def GetOverlayBotConfig(self) -> typing.Dict[str, typing.Any]:
+  def _GetOverlayBotConfig(self) -> Dict[str, Any]:
     """Returns expected bot config for DirectComposition and overlay support.
 
     This is only meaningful on Windows platform.
@@ -668,7 +702,7 @@ class GpuIntegrationTest(
           config['nv12_overlay_support'] = 'SCALING'
     return config
 
-  def GetDx12VulkanBotConfig(self) -> typing.Dict[str, bool]:
+  def _GetDx12VulkanBotConfig(self) -> Dict[str, bool]:
     """Returns expected bot config for DX12 and Vulkan support.
 
     This configuration is collected on Windows platform only.
@@ -704,7 +738,7 @@ class GpuIntegrationTest(
     return config
 
   @classmethod
-  def GetPlatformTags(cls, browser: ct.Browser) -> typing.List[str]:
+  def GetPlatformTags(cls, browser: ct.Browser) -> List[str]:
     """This function will take a Browser instance as an argument.
     It will call the super classes implementation of GetPlatformTags() to get
     a list of tags. Then it will add the gpu vendor, gpu device id,
@@ -720,7 +754,6 @@ class GpuIntegrationTest(
       # it's the discrete GPU, so that test expectations can be written that
       # target the discrete GPU.
       gpu_tags.append(gpu_helper.GetANGLERenderer(gpu_info))
-      gpu_tags.append(gpu_helper.GetSwiftShaderGLRenderer(gpu_info))
       gpu_tags.append(gpu_helper.GetCommandDecoder(gpu_info))
       gpu_tags.append(gpu_helper.GetOOPCanvasStatus(gpu_info.feature_status))
       gpu_tags.append(gpu_helper.GetAsanStatus(gpu_info))
@@ -740,11 +773,11 @@ class GpuIntegrationTest(
             gpu_device_tag = '%s-%s' % (gpu_vendor, gpu_device_id)
           if ii == 0 or gpu_vendor != 'intel':
             gpu_tags.extend([gpu_vendor, gpu_device_tag])
-            # This acts as a way to add expectations for both HD 630 and UHD 630
-            # GPUs without resorting to the more generic "intel" tag.
-            if gpu_device_tag in ('intel-0x5912', 'intel-0x3e92',
-                                  'intel-0x9bc5'):
-              gpu_tags.append('intel-hd-630-family')
+            # This acts as a way to add expectations for Intel Gen9 GPUs
+            # without resorting to the more generic "intel" tag.
+            if gpu_vendor == 'intel' and (gpu_device_id & 0xFF00) in (
+                0x1900, 0x3100, 0x3E00, 0x5900, 0x5A00, 0x9B00):
+              gpu_tags.extend(['intel-gen-9', 'intel-hd-630-family'])
       # all spaces and underscores in the tag will be replaced by dashes
       tags.extend([re.sub('[ _]', '-', tag) for tag in gpu_tags])
 
@@ -791,7 +824,7 @@ class GpuIntegrationTest(
     return '/'
 
   @classmethod
-  def IgnoredTags(cls) -> typing.List[str]:
+  def IgnoredTags(cls) -> List[str]:
     return [
         # We only ever use android-webview-instrumentation if we want to specify
         # that an expectation applies to Webview.
@@ -817,10 +850,9 @@ class GpuIntegrationTest(
          'llvm-10.0.0)-(0x0000c0de)))'),
         ('google-vulkan-1.1.0-(swiftshader-device-('
          'llvm-10.0.0)-(0x0000c0de))'),
-        # These browsers are analogous to a particular OS, and specifying the
-        # OS name is clearer.
         'cros-chrome',  # ChromeOS
         'web-engine-shell',  # Fuchsia
+        'cast-streaming-shell',  # Syonymous with cast_streaming suite
         # WebGL version is already handled by having expectations in separate
         # files.
         # TODO(crbug.com/1140283): Consider merging the two files and using

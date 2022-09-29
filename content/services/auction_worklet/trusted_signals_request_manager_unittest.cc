@@ -39,6 +39,10 @@ const char kBaseBiddingJson[] = R"(
       "key1": 1,
       "key2": [2],
       "key3": "3"
+    },
+    "perInterestGroupData": {
+      "name1": { "priorityVector": { "foo": 1 } },
+      "name2": { "priorityVector": { "foo": 2 } }
     }
   }
 )";
@@ -112,19 +116,24 @@ class TrustedSignalsRequestManagerTest : public testing::Test {
   scoped_refptr<TrustedSignals::Result> FetchBiddingSignalsWithResponse(
       const GURL& url,
       const std::string& response,
-      const std::vector<std::string>& trusted_bidding_signals_keys) {
+      const std::string& interest_group_name,
+      const absl::optional<std::vector<std::string>>&
+          trusted_bidding_signals_keys) {
     AddBidderJsonResponse(&url_loader_factory_, url, response);
-    return FetchBiddingSignals(trusted_bidding_signals_keys);
+    return FetchBiddingSignals(interest_group_name,
+                               trusted_bidding_signals_keys);
   }
 
   // Fetches bidding signals and waits for completion. Returns nullptr on
   // failure.
   scoped_refptr<TrustedSignals::Result> FetchBiddingSignals(
-      const std::vector<std::string>& trusted_bidding_signals_keys) {
+      const std::string& interest_group_name,
+      const absl::optional<std::vector<std::string>>&
+          trusted_bidding_signals_keys) {
     scoped_refptr<TrustedSignals::Result> signals;
     base::RunLoop run_loop;
     auto request = bidding_request_manager_.RequestBiddingSignals(
-        std::move(trusted_bidding_signals_keys),
+        interest_group_name, trusted_bidding_signals_keys,
         base::BindOnce(&LoadSignalsCallback, &signals, &error_msg_,
                        run_loop.QuitClosure()));
     bidding_request_manager_.StartBatchedTrustedSignalsRequest();
@@ -237,11 +246,12 @@ class TrustedSignalsRequestManagerTest : public testing::Test {
 
 TEST_F(TrustedSignalsRequestManagerTest, BiddingSignalsError) {
   url_loader_factory_.AddResponse(
-      "https://url.test/?hostname=publisher&keys=key1", kBaseBiddingJson,
-      net::HTTP_NOT_FOUND);
-  EXPECT_FALSE(FetchBiddingSignals({"key1"}));
+      "https://url.test/?hostname=publisher&keys=key1&interestGroupNames=name1",
+      kBaseBiddingJson, net::HTTP_NOT_FOUND);
+  EXPECT_FALSE(FetchBiddingSignals({"name1"}, {{"key1"}}));
   EXPECT_EQ(
-      "Failed to load https://url.test/?hostname=publisher&keys=key1 "
+      "Failed to load "
+      "https://url.test/?hostname=publisher&keys=key1&interestGroupNames=name1 "
       "HTTP status = 404 Not Found.",
       error_msg_);
 }
@@ -263,27 +273,32 @@ TEST_F(TrustedSignalsRequestManagerTest, ScoringSignalsError) {
 
 TEST_F(TrustedSignalsRequestManagerTest, BiddingSignalsBatchedRequestError) {
   url_loader_factory_.AddResponse(
-      "https://url.test/?hostname=publisher&keys=key1,key2", kBaseBiddingJson,
-      net::HTTP_NOT_FOUND);
+      "https://url.test/?hostname=publisher"
+      "&keys=key1,key2&interestGroupNames=name1,name2",
+      kBaseBiddingJson, net::HTTP_NOT_FOUND);
 
   base::RunLoop run_loop1;
   scoped_refptr<TrustedSignals::Result> signals1;
   absl::optional<std::string> error_msg1;
   auto request1 = bidding_request_manager_.RequestBiddingSignals(
-      {"key1"}, base::BindOnce(&LoadSignalsCallback, &signals1, &error_msg1,
-                               run_loop1.QuitClosure()));
+      {"name1"}, {{"key1"}},
+      base::BindOnce(&LoadSignalsCallback, &signals1, &error_msg1,
+                     run_loop1.QuitClosure()));
 
   base::RunLoop run_loop2;
   scoped_refptr<TrustedSignals::Result> signals2;
   absl::optional<std::string> error_msg2;
   auto request2 = bidding_request_manager_.RequestBiddingSignals(
-      {"key2"}, base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
-                               run_loop2.QuitClosure()));
+      {"name2"}, {{"key2"}},
+      base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
+                     run_loop2.QuitClosure()));
 
   bidding_request_manager_.StartBatchedTrustedSignalsRequest();
 
   const char kExpectedError[] =
-      "Failed to load https://url.test/?hostname=publisher&keys=key1,key2 "
+      "Failed to load "
+      "https://url.test/"
+      "?hostname=publisher&keys=key1,key2&interestGroupNames=name1,name2 "
       "HTTP status = 404 Not Found.";
 
   run_loop1.Run();
@@ -335,16 +350,36 @@ TEST_F(TrustedSignalsRequestManagerTest, ScoringSignalsBatchedRequestError) {
   EXPECT_EQ(kExpectedError, error_msg2);
 }
 
+TEST_F(TrustedSignalsRequestManagerTest, BiddingSignalsOneRequestNullKeys) {
+  scoped_refptr<TrustedSignals::Result> signals =
+      FetchBiddingSignalsWithResponse(
+          GURL("https://url.test/?hostname=publisher"
+               "&interestGroupNames=name1"),
+          kBaseBiddingJson, {"name1"},
+          /*trusted_bidding_signals_keys=*/absl::nullopt);
+  ASSERT_TRUE(signals);
+  EXPECT_FALSE(error_msg_.has_value());
+  const auto* priority_vector = signals->GetPriorityVector("name1");
+  ASSERT_TRUE(priority_vector);
+  EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
+            *priority_vector);
+}
+
 TEST_F(TrustedSignalsRequestManagerTest, BiddingSignalsOneRequest) {
   const std::vector<std::string> kKeys{"key2", "key1"};
   scoped_refptr<TrustedSignals::Result> signals =
       FetchBiddingSignalsWithResponse(
-          GURL("https://url.test/?hostname=publisher&keys=key1,key2"),
-          kBaseBiddingJson, kKeys);
+          GURL("https://url.test/?hostname=publisher"
+               "&keys=key1,key2&interestGroupNames=name1"),
+          kBaseBiddingJson, {"name1"}, kKeys);
   ASSERT_TRUE(signals);
   EXPECT_FALSE(error_msg_.has_value());
   EXPECT_EQ(R"({"key2":[2],"key1":1})",
             ExtractBiddingSignals(signals.get(), kKeys));
+  const auto* priority_vector = signals->GetPriorityVector("name1");
+  ASSERT_TRUE(priority_vector);
+  EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
+            *priority_vector);
 }
 
 TEST_F(TrustedSignalsRequestManagerTest, ScoringSignalsOneRequest) {
@@ -377,21 +412,39 @@ TEST_F(TrustedSignalsRequestManagerTest, BiddingSignalsSequentialRequests) {
   // Note that these responses use different values for the shared key.
   scoped_refptr<TrustedSignals::Result> signals1 =
       FetchBiddingSignalsWithResponse(
-          GURL("https://url.test/?hostname=publisher&keys=key1,key3"),
-          R"({"keys":{"key1":1,"key3":3}})", kKeys1);
+          GURL("https://url.test/?hostname=publisher&"
+               "keys=key1,key3&interestGroupNames=name1"),
+          R"({"keys":{"key1":1,"key3":3},
+                      "perInterestGroupData":
+                          {"name1": {"priorityVector": {"foo": 1}}}
+                      })",
+          {"name1"}, kKeys1);
   ASSERT_TRUE(signals1);
   EXPECT_FALSE(error_msg_.has_value());
   EXPECT_EQ(R"({"key1":1,"key3":3})",
             ExtractBiddingSignals(signals1.get(), kKeys1));
+  const auto* priority_vector = signals1->GetPriorityVector("name1");
+  ASSERT_TRUE(priority_vector);
+  EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
+            *priority_vector);
 
   scoped_refptr<TrustedSignals::Result> signals2 =
       FetchBiddingSignalsWithResponse(
-          GURL("https://url.test/?hostname=publisher&keys=key2,key3"),
-          R"({"keys":{"key2":[2],"key3":[3]}})", kKeys2);
+          GURL("https://url.test/?hostname=publisher"
+               "&keys=key2,key3&interestGroupNames=name2"),
+          R"({"keys":{"key2":[2],"key3":[3]},
+              "perInterestGroupData":
+                  {"name2": {"priorityVector": {"foo": 2}}}
+              })",
+          {"name2"}, kKeys2);
   ASSERT_TRUE(signals1);
   EXPECT_FALSE(error_msg_.has_value());
   EXPECT_EQ(R"({"key2":[2],"key3":[3]})",
             ExtractBiddingSignals(signals2.get(), kKeys2));
+  priority_vector = signals2->GetPriorityVector("name2");
+  ASSERT_TRUE(priority_vector);
+  EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 2}}),
+            *priority_vector);
 }
 
 TEST_F(TrustedSignalsRequestManagerTest, ScoringSignalsSequentialRequests) {
@@ -467,19 +520,22 @@ TEST_F(TrustedSignalsRequestManagerTest,
   // cases.
 
   const std::vector<std::string> kKeys1{"key1", "key3"};
-  const GURL kUrl1 =
-      GURL("https://url.test/?hostname=publisher&keys=key1,key3");
+  const GURL kUrl1 = GURL(
+      "https://url.test/?hostname=publisher"
+      "&keys=key1,key3&interestGroupNames=name1");
 
   const std::vector<std::string> kKeys2{"key2", "key3"};
-  const GURL kUrl2 =
-      GURL("https://url.test/?hostname=publisher&keys=key2,key3");
+  const GURL kUrl2 = GURL(
+      "https://url.test/?hostname=publisher"
+      "&keys=key2,key3&interestGroupNames=name2");
 
   base::RunLoop run_loop1;
   scoped_refptr<TrustedSignals::Result> signals1;
   absl::optional<std::string> error_msg1;
   auto request1 = bidding_request_manager_.RequestBiddingSignals(
-      kKeys1, base::BindOnce(&LoadSignalsCallback, &signals1, &error_msg1,
-                             run_loop1.QuitClosure()));
+      {"name1"}, kKeys1,
+      base::BindOnce(&LoadSignalsCallback, &signals1, &error_msg1,
+                     run_loop1.QuitClosure()));
 
   bidding_request_manager_.StartBatchedTrustedSignalsRequest();
 
@@ -487,8 +543,9 @@ TEST_F(TrustedSignalsRequestManagerTest,
   scoped_refptr<TrustedSignals::Result> signals2;
   absl::optional<std::string> error_msg2;
   auto request2 = bidding_request_manager_.RequestBiddingSignals(
-      kKeys2, base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
-                             run_loop2.QuitClosure()));
+      {"name2"}, kKeys2,
+      base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
+                     run_loop2.QuitClosure()));
 
   bidding_request_manager_.StartBatchedTrustedSignalsRequest();
 
@@ -499,21 +556,35 @@ TEST_F(TrustedSignalsRequestManagerTest,
 
   // Note that these responses use different values for the shared key.
   AddBidderJsonResponse(&url_loader_factory_, kUrl1,
-                        R"({"keys":{"key1":1,"key3":3}})");
+                        R"({"keys":{"key1":1,"key3":3},
+                            "perInterestGroupData":
+                                {"name1": {"priorityVector": {"foo": 1}}}
+                            })");
   AddBidderJsonResponse(&url_loader_factory_, kUrl2,
-                        R"({"keys":{"key2":[2],"key3":[3]}})");
+                        R"({"keys":{"key2":[2],"key3":[3]},
+                            "perInterestGroupData":
+                                {"name2": {"priorityVector": {"foo": 2}}}
+                            })");
 
   run_loop1.Run();
   EXPECT_FALSE(error_msg1);
   ASSERT_TRUE(signals1);
   EXPECT_EQ(R"({"key1":1,"key3":3})",
             ExtractBiddingSignals(signals1.get(), kKeys1));
+  const auto* priority_vector = signals1->GetPriorityVector("name1");
+  ASSERT_TRUE(priority_vector);
+  EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
+            *priority_vector);
 
   run_loop2.Run();
   EXPECT_FALSE(error_msg2);
   ASSERT_TRUE(signals2);
   EXPECT_EQ(R"({"key2":[2],"key3":[3]})",
             ExtractBiddingSignals(signals2.get(), kKeys2));
+  priority_vector = signals2->GetPriorityVector("name2");
+  ASSERT_TRUE(priority_vector);
+  EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 2}}),
+            *priority_vector);
 }
 
 // Test the case where there are multiple network requests live at once.
@@ -615,24 +686,27 @@ TEST_F(TrustedSignalsRequestManagerTest, BiddingSignalsBatchedRequests) {
   const std::vector<std::string> kKeys1{"key1", "key3"};
   const std::vector<std::string> kKeys2{"key2", "key3"};
 
-  AddBidderJsonResponse(
-      &url_loader_factory_,
-      GURL("https://url.test/?hostname=publisher&keys=key1,key2,key3"),
-      kBaseBiddingJson);
+  AddBidderJsonResponse(&url_loader_factory_,
+                        GURL("https://url.test/?hostname=publisher"
+                             "&keys=key1,key2,key3"
+                             "&interestGroupNames=name1,name2"),
+                        kBaseBiddingJson);
 
   base::RunLoop run_loop1;
   scoped_refptr<TrustedSignals::Result> signals1;
   absl::optional<std::string> error_msg1;
   auto request1 = bidding_request_manager_.RequestBiddingSignals(
-      kKeys1, base::BindOnce(&LoadSignalsCallback, &signals1, &error_msg1,
-                             run_loop1.QuitClosure()));
+      {"name1"}, kKeys1,
+      base::BindOnce(&LoadSignalsCallback, &signals1, &error_msg1,
+                     run_loop1.QuitClosure()));
 
   base::RunLoop run_loop2;
   scoped_refptr<TrustedSignals::Result> signals2;
   absl::optional<std::string> error_msg2;
   auto request2 = bidding_request_manager_.RequestBiddingSignals(
-      kKeys2, base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
-                             run_loop2.QuitClosure()));
+      {"name2"}, kKeys2,
+      base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
+                     run_loop2.QuitClosure()));
 
   bidding_request_manager_.StartBatchedTrustedSignalsRequest();
 
@@ -641,12 +715,20 @@ TEST_F(TrustedSignalsRequestManagerTest, BiddingSignalsBatchedRequests) {
   ASSERT_TRUE(signals1);
   EXPECT_EQ(R"({"key1":1,"key3":"3"})",
             ExtractBiddingSignals(signals1.get(), kKeys1));
+  const auto* priority_vector = signals1->GetPriorityVector("name1");
+  ASSERT_TRUE(priority_vector);
+  EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
+            *priority_vector);
 
   run_loop2.Run();
   EXPECT_FALSE(error_msg2);
   ASSERT_TRUE(signals2);
   EXPECT_EQ(R"({"key2":[2],"key3":"3"})",
             ExtractBiddingSignals(signals2.get(), kKeys2));
+  priority_vector = signals2->GetPriorityVector("name2");
+  ASSERT_TRUE(priority_vector);
+  EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 2}}),
+            *priority_vector);
 }
 
 TEST_F(TrustedSignalsRequestManagerTest, ScoringSignalsBatchedRequests) {
@@ -731,9 +813,9 @@ TEST_F(TrustedSignalsRequestManagerTest, CancelAllQueuedRequests) {
   const std::vector<std::string> kKeys2{"key2"};
 
   auto request1 = bidding_request_manager_.RequestBiddingSignals(
-      kKeys1, base::BindOnce(&NeverInvokedLoadSignalsCallback));
+      {"name1"}, kKeys1, base::BindOnce(&NeverInvokedLoadSignalsCallback));
   auto request2 = bidding_request_manager_.RequestBiddingSignals(
-      kKeys2, base::BindOnce(&NeverInvokedLoadSignalsCallback));
+      {"name1"}, kKeys2, base::BindOnce(&NeverInvokedLoadSignalsCallback));
 
   request1.reset();
   request2.reset();
@@ -754,18 +836,20 @@ TEST_F(TrustedSignalsRequestManagerTest, CancelOneRequest) {
   // The request for `key1` will be cancelled before the network request is
   // created.
   AddBidderJsonResponse(&url_loader_factory_,
-                        GURL("https://url.test/?hostname=publisher&keys=key2"),
+                        GURL("https://url.test/?hostname=publisher"
+                             "&keys=key2&interestGroupNames=name2"),
                         kBaseBiddingJson);
 
   auto request1 = bidding_request_manager_.RequestBiddingSignals(
-      kKeys1, base::BindOnce(&NeverInvokedLoadSignalsCallback));
+      {"name1"}, kKeys1, base::BindOnce(&NeverInvokedLoadSignalsCallback));
 
   base::RunLoop run_loop2;
   scoped_refptr<TrustedSignals::Result> signals2;
   absl::optional<std::string> error_msg2;
   auto request2 = bidding_request_manager_.RequestBiddingSignals(
-      kKeys2, base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
-                             run_loop2.QuitClosure()));
+      {"name2"}, kKeys2,
+      base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
+                     run_loop2.QuitClosure()));
 
   request1.reset();
 
@@ -776,6 +860,10 @@ TEST_F(TrustedSignalsRequestManagerTest, CancelOneRequest) {
   EXPECT_FALSE(error_msg2);
   ASSERT_TRUE(signals2);
   EXPECT_EQ(R"({"key2":[2]})", ExtractBiddingSignals(signals2.get(), kKeys2));
+  const auto* priority_vector = signals2->GetPriorityVector("name2");
+  ASSERT_TRUE(priority_vector);
+  EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 2}}),
+            *priority_vector);
 }
 
 // Make two requests, try to start a network request, then cancel both requests.
@@ -784,13 +872,14 @@ TEST_F(TrustedSignalsRequestManagerTest, CancelOneRequest) {
 TEST_F(TrustedSignalsRequestManagerTest, CancelAllLiveRequests) {
   const std::vector<std::string> kKeys1{"key1"};
   const std::vector<std::string> kKeys2{"key2"};
-  const GURL kSignalsUrl =
-      GURL("https://url.test/?hostname=publisher&keys=key1,key2");
+  const GURL kSignalsUrl = GURL(
+      "https://url.test/?hostname=publisher"
+      "&keys=key1,key2&interestGroupNames=name1");
 
   auto request1 = bidding_request_manager_.RequestBiddingSignals(
-      kKeys1, base::BindOnce(&NeverInvokedLoadSignalsCallback));
+      {"name1"}, kKeys1, base::BindOnce(&NeverInvokedLoadSignalsCallback));
   auto request2 = bidding_request_manager_.RequestBiddingSignals(
-      kKeys2, base::BindOnce(&NeverInvokedLoadSignalsCallback));
+      {"name1"}, kKeys2, base::BindOnce(&NeverInvokedLoadSignalsCallback));
 
   // Wait for network request to be made, which should include both keys in the
   // URLs.
@@ -812,18 +901,20 @@ TEST_F(TrustedSignalsRequestManagerTest, CancelAllLiveRequests) {
 TEST_F(TrustedSignalsRequestManagerTest, CancelOneLiveRequest) {
   const std::vector<std::string> kKeys1{"key1"};
   const std::vector<std::string> kKeys2{"key2"};
-  const GURL kSignalsUrl =
-      GURL("https://url.test/?hostname=publisher&keys=key1,key2");
+  const GURL kSignalsUrl = GURL(
+      "https://url.test/?hostname=publisher"
+      "&keys=key1,key2&interestGroupNames=name1,name2");
 
   auto request1 = bidding_request_manager_.RequestBiddingSignals(
-      kKeys1, base::BindOnce(&NeverInvokedLoadSignalsCallback));
+      {"name1"}, kKeys1, base::BindOnce(&NeverInvokedLoadSignalsCallback));
 
   base::RunLoop run_loop2;
   scoped_refptr<TrustedSignals::Result> signals2;
   absl::optional<std::string> error_msg2;
   auto request2 = bidding_request_manager_.RequestBiddingSignals(
-      kKeys2, base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
-                             run_loop2.QuitClosure()));
+      {"name2"}, kKeys2,
+      base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
+                     run_loop2.QuitClosure()));
 
   // Wait for network request to be made, which should include both keys in the
   // URLs.
@@ -840,6 +931,10 @@ TEST_F(TrustedSignalsRequestManagerTest, CancelOneLiveRequest) {
   EXPECT_FALSE(error_msg2);
   ASSERT_TRUE(signals2);
   EXPECT_EQ(R"({"key2":[2]})", ExtractBiddingSignals(signals2.get(), kKeys2));
+  const auto* priority_vector = signals2->GetPriorityVector("name2");
+  ASSERT_TRUE(priority_vector);
+  EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 2}}),
+            *priority_vector);
 
   // The callback of `request1` should not be invoked, since it was cancelled.
   base::RunLoop().RunUntilIdle();
@@ -851,7 +946,7 @@ TEST_F(TrustedSignalsRequestManagerTest, AutomaticallySendRequestsDisabled) {
   const std::vector<std::string> kKeys{"key1"};
 
   auto request = bidding_request_manager_.RequestBiddingSignals(
-      kKeys, base::BindOnce(&NeverInvokedLoadSignalsCallback));
+      {"name1"}, kKeys, base::BindOnce(&NeverInvokedLoadSignalsCallback));
   task_environment_.FastForwardBy(base::Hours(1));
   EXPECT_EQ(0, url_loader_factory_.NumPending());
 }
@@ -874,8 +969,9 @@ TEST_F(TrustedSignalsRequestManagerTest, AutomaticallySendRequestsEnabled) {
   scoped_refptr<TrustedSignals::Result> signals1;
   absl::optional<std::string> error_msg1;
   auto request1 = bidding_request_manager.RequestBiddingSignals(
-      kKeys1, base::BindOnce(&LoadSignalsCallback, &signals1, &error_msg1,
-                             run_loop1.QuitClosure()));
+      {"name1"}, kKeys1,
+      base::BindOnce(&LoadSignalsCallback, &signals1, &error_msg1,
+                     run_loop1.QuitClosure()));
 
   // Wait until just before the timer triggers. No network requests should be
   // made.
@@ -888,18 +984,19 @@ TEST_F(TrustedSignalsRequestManagerTest, AutomaticallySendRequestsEnabled) {
   scoped_refptr<TrustedSignals::Result> signals2;
   absl::optional<std::string> error_msg2;
   auto request2 = bidding_request_manager.RequestBiddingSignals(
-      kKeys2, base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
-                             run_loop2.QuitClosure()));
+      {"name1"}, kKeys2,
+      base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
+                     run_loop2.QuitClosure()));
 
   // Wait until the exact time the timer should trigger. A single network
   // request should be made, covering both Requests.
   task_environment_.FastForwardBy(kTinyTime);
   ASSERT_EQ(1, url_loader_factory_.NumPending());
 
-  AddBidderJsonResponse(
-      &url_loader_factory_,
-      GURL("https://url.test/?hostname=publisher&keys=key1,key2"),
-      kBaseBiddingJson);
+  AddBidderJsonResponse(&url_loader_factory_,
+                        GURL("https://url.test/?hostname=publisher"
+                             "&keys=key1,key2&interestGroupNames=name1"),
+                        kBaseBiddingJson);
 
   run_loop1.Run();
   EXPECT_FALSE(error_msg1);
@@ -917,14 +1014,16 @@ TEST_F(TrustedSignalsRequestManagerTest, AutomaticallySendRequestsEnabled) {
   scoped_refptr<TrustedSignals::Result> signals3;
   absl::optional<std::string> error_msg3;
   auto request3 = bidding_request_manager.RequestBiddingSignals(
-      kKeys3, base::BindOnce(&LoadSignalsCallback, &signals3, &error_msg3,
-                             run_loop3.QuitClosure()));
+      {"name1"}, kKeys3,
+      base::BindOnce(&LoadSignalsCallback, &signals3, &error_msg3,
+                     run_loop3.QuitClosure()));
   task_environment_.FastForwardBy(TrustedSignalsRequestManager::kAutoSendDelay);
   EXPECT_EQ(1, url_loader_factory_.NumPending());
 
   // Complete the request.
   AddBidderJsonResponse(&url_loader_factory_,
-                        GURL("https://url.test/?hostname=publisher&keys=key3"),
+                        GURL("https://url.test/?hostname=publisher"
+                             "&keys=key3&interestGroupNames=name1"),
                         kBaseBiddingJson);
   run_loop3.Run();
   EXPECT_FALSE(error_msg3);
@@ -947,7 +1046,7 @@ TEST_F(TrustedSignalsRequestManagerTest,
 
   // Create one Request.
   auto request1 = bidding_request_manager.RequestBiddingSignals(
-      kKeys1, base::BindOnce(&NeverInvokedLoadSignalsCallback));
+      {"name1"}, kKeys1, base::BindOnce(&NeverInvokedLoadSignalsCallback));
 
   // Wait until just before the timer triggers. No network requests should be
   // made.
@@ -963,8 +1062,9 @@ TEST_F(TrustedSignalsRequestManagerTest,
   scoped_refptr<TrustedSignals::Result> signals2;
   absl::optional<std::string> error_msg2;
   auto request2 = bidding_request_manager.RequestBiddingSignals(
-      kKeys2, base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
-                             run_loop2.QuitClosure()));
+      {"name1"}, kKeys2,
+      base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
+                     run_loop2.QuitClosure()));
 
   // Wait until just before the timer triggers if it were correctly restarted.
   // No network requests should be made.
@@ -978,7 +1078,8 @@ TEST_F(TrustedSignalsRequestManagerTest,
   ASSERT_EQ(1, url_loader_factory_.NumPending());
 
   AddBidderJsonResponse(&url_loader_factory_,
-                        GURL("https://url.test/?hostname=publisher&keys=key2"),
+                        GURL("https://url.test/?hostname=publisher"
+                             "&keys=key2&interestGroupNames=name1"),
                         kBaseBiddingJson);
 
   run_loop2.Run();
@@ -1002,7 +1103,7 @@ TEST_F(TrustedSignalsRequestManagerTest,
 
   // Create one Request.
   auto request1 = bidding_request_manager.RequestBiddingSignals(
-      kKeys1, base::BindOnce(&NeverInvokedLoadSignalsCallback));
+      {"name1"}, kKeys1, base::BindOnce(&NeverInvokedLoadSignalsCallback));
 
   // Wait until just before the timer triggers. No network requests should be
   // made.
@@ -1015,8 +1116,9 @@ TEST_F(TrustedSignalsRequestManagerTest,
   scoped_refptr<TrustedSignals::Result> signals2;
   absl::optional<std::string> error_msg2;
   auto request2 = bidding_request_manager.RequestBiddingSignals(
-      kKeys2, base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
-                             run_loop2.QuitClosure()));
+      {"name1"}, kKeys2,
+      base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
+                     run_loop2.QuitClosure()));
 
   // Cancel the first request. The timer should not be stopped, since there's
   // still a request pending.
@@ -1028,7 +1130,8 @@ TEST_F(TrustedSignalsRequestManagerTest,
   ASSERT_EQ(1, url_loader_factory_.NumPending());
 
   AddBidderJsonResponse(&url_loader_factory_,
-                        GURL("https://url.test/?hostname=publisher&keys=key2"),
+                        GURL("https://url.test/?hostname=publisher"
+                             "&keys=key2&interestGroupNames=name1"),
                         kBaseBiddingJson);
 
   run_loop2.Run();
@@ -1050,21 +1153,27 @@ TEST_F(TrustedSignalsRequestManagerTest, BiddingExperimentGroupIds) {
   AddBidderJsonResponse(
       &url_loader_factory_,
       GURL("https://url.test/"
-           "?hostname=publisher&keys=key1&experimentGroupId=934"),
+           "?hostname=publisher"
+           "&keys=key1&interestGroupNames=name1&experimentGroupId=934"),
       kBaseBiddingJson);
 
   base::RunLoop run_loop;
   scoped_refptr<TrustedSignals::Result> signals;
   absl::optional<std::string> error_msg;
   auto request = bidding_request_manager.RequestBiddingSignals(
-      kKeys, base::BindOnce(&LoadSignalsCallback, &signals, &error_msg,
-                            run_loop.QuitClosure()));
+      {"name1"}, kKeys,
+      base::BindOnce(&LoadSignalsCallback, &signals, &error_msg,
+                     run_loop.QuitClosure()));
   bidding_request_manager.StartBatchedTrustedSignalsRequest();
 
   run_loop.Run();
   EXPECT_FALSE(error_msg);
   ASSERT_TRUE(signals);
   EXPECT_EQ(R"({"key1":1})", ExtractBiddingSignals(signals.get(), kKeys));
+  const auto* priority_vector = signals->GetPriorityVector("name1");
+  ASSERT_TRUE(priority_vector);
+  EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
+            *priority_vector);
 }
 
 // Test scoring signals request carries experiment ID.

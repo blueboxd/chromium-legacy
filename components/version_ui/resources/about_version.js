@@ -61,12 +61,13 @@ function returnOsFirmwareVersion(firmwareVersion) {
 }
 
 /**
- * Callback from the backend with the ARC version to display.
- * @param {string} arcVersion The ARC version to display.
+ * Callback from the backend with the ARC Android SDK version to display.
+ * @param {string} arcAndroidSdkVersion The ARC Android SDK version to display,
+ *     already localized.
  */
-function returnARCVersion(arcVersion) {
-  $('arc_version').textContent = arcVersion;
-  $('arc_holder').hidden = !arcVersion;
+function returnArcAndArcAndroidSdkVersions(arcAndroidSdkVersion) {
+  $('arc_holder').hidden = false;
+  $('arc_and_arc_android_sdk_versions').textContent = arcAndroidSdkVersion;
 }
 
 /**
@@ -82,7 +83,7 @@ function returnCustomizationId(response) {
 }
 // </if>
 
-// <if expr="chromeos_ash or chromeos_lacros">
+// <if expr="is_chromeos">
 /**
  * Callback from the backend to inform if Lacros is primary or not.
  * @param {string} isPrimary True if it is primary.
@@ -122,9 +123,11 @@ function onLoadWork() {
   // </if>
   // <if expr="chromeos_ash">
   addWebUIListener('return-os-firmware-version', returnOsFirmwareVersion);
-  addWebUIListener('return-arc-version', returnARCVersion);
+  addWebUIListener(
+      'return-arc-and-arc-android-sdk-versions',
+      returnArcAndArcAndroidSdkVersions);
   // </if>
-  // <if expr="chromeos_ash or chromeos_lacros">
+  // <if expr="is_chromeos">
   addWebUIListener('return-lacros-primary', returnLacrosPrimary);
   // </if>
 

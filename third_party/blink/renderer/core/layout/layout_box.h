@@ -2135,7 +2135,21 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // container, returns that container, so that at paint time, we can apply an
   // offset to this element when the returned scroll container is scrolled.
   // Returns nullptr otherwise.
-  const LayoutBlock* AnchorScrollContainer() const;
+  const LayoutBox* AnchorScrollContainer() const;
+
+  struct AnchorScrollData {
+    const PaintLayer* inner_most_scroll_container_layer = nullptr;
+    const PaintLayer* outer_most_scroll_container_layer = nullptr;
+    gfx::Vector2dF accumulated_scroll_offset;
+    gfx::Vector2d accumulated_scroll_origin;
+
+    STACK_ALLOCATED();
+  };
+  AnchorScrollData ComputeAnchorScrollData() const;
+
+  // Utility function that returns and rounds accumulated_scroll_offset of
+  // AnchorScrollData as a PhysicalOffset.
+  PhysicalOffset ComputeAnchorScrollOffset() const;
 
  protected:
   ~LayoutBox() override;

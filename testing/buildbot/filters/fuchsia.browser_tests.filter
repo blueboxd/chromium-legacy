@@ -44,6 +44,7 @@
 -LoadingPredictorBrowserTestWithProxy.PrepareForPageLoadWithPrediction
 -LoadingPredictorBrowserTestWithProxy.PrepareForPageLoadWithoutPrediction
 -MyIpAddressProxyScriptBrowserTest.Verify
+-SCTReportingServiceWithPersistenceBrowserTest.PersistedReportClearedOnClearBrowsingHistory
 
 # TODO(crbug.com/1326652):
 # ../../chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.cc:518: Failure
@@ -145,6 +146,7 @@
 -CrSettingsPeoplePageTest.All
 -ProfileCustomizationBubbleBrowserTest.InvokeUi_default
 -ProfileCustomizationBubbleBrowserTest.IPH
+-ProfileCustomizationDialogBrowserTest.IPH
 -ProfileHelperTest.OpenNewWindowForProfile
 -ProfileMenuViewExtensionsTest.CloseIPH
 -ProfileWindowBrowserTest.OpenBrowserWindowForProfileWithSigninRequired
@@ -176,6 +178,7 @@
 # gaia_id_for_test_example.com, network error
 -SigninInterceptFirstRunExperienceDialogBrowserTest.AcceptSync
 -SigninInterceptFirstRunExperienceDialogBrowserTest.AcceptSync_ExtensionTheme
+-SigninInterceptFirstRunExperienceDialogBrowserTest.AcceptSync_SkipCustomization
 -SigninInterceptFirstRunExperienceDialogBrowserTest.AcceptSync_SyncPassphrase
 -SigninInterceptFirstRunExperienceDialogBrowserTest.DeclineSync
 -SigninInterceptFirstRunExperienceDialogBrowserTest.ForcedIntercept
@@ -198,6 +201,14 @@
 
 # TODO(crbug.com/1306610): crbug.com/1306610: Enable once PDF rendering can be
 # enabled without PPAPI.
+-All/ChromeBackForwardCacheBrowserWithEmbedTest.DoesCachePageWithEmbeddedPdfMutatedIntoHtml/0
+-All/ChromeBackForwardCacheBrowserWithEmbedTest.DoesCachePageWithEmbeddedPdfMutatedIntoHtml/1
+-All/ChromeBackForwardCacheBrowserWithEmbedTest.DoesNotCachePageWithEmbeddedHtmlMutatedIntoPdf/0
+-All/ChromeBackForwardCacheBrowserWithEmbedTest.DoesNotCachePageWithEmbeddedHtmlMutatedIntoPdf/1
+-All/ChromeBackForwardCacheBrowserWithEmbedTest.DoesNotCachePageWithEmbeddedPdf/0
+-All/ChromeBackForwardCacheBrowserWithEmbedTest.DoesNotCachePageWithEmbeddedPdf/1
+-All/ChromeBackForwardCacheBrowserWithEmbedTest.DoesNotCachePageWithEmbeddedPdfAppendedOnPageLoaded/0
+-All/ChromeBackForwardCacheBrowserWithEmbedTest.DoesNotCachePageWithEmbeddedPdfAppendedOnPageLoaded/1
 -All/PrintBackendPrintBrowserTest.UpdatePrintSettings/0
 -All/PrintBackendPrintBrowserTest.UpdatePrintSettings/1
 -All/PrintBackendPrintBrowserTest.UpdatePrintSettings/2
@@ -205,6 +216,13 @@
 -All/PrintBackendPrintBrowserTestService.StartPrinting/1
 -All/PrintBackendPrintBrowserTestService.StartPrintingSpoolingSharedMemoryError/0
 -All/PrintBackendPrintBrowserTestService.StartPrintingSpoolingSharedMemoryError/1
+-All/SystemAccessProcessPrintBrowserTest.UpdatePrintSettings/0
+-All/SystemAccessProcessPrintBrowserTest.UpdatePrintSettings/1
+-All/SystemAccessProcessPrintBrowserTest.UpdatePrintSettings/2
+-All/SystemAccessProcessServicePrintBrowserTest.StartPrinting/0
+-All/SystemAccessProcessServicePrintBrowserTest.StartPrinting/1
+-All/SystemAccessProcessServicePrintBrowserTest.StartPrintingSpoolingSharedMemoryError/0
+-All/SystemAccessProcessServicePrintBrowserTest.StartPrintingSpoolingSharedMemoryError/1
 -BackForwardCachePrintBrowserTest.DisableCaching
 -ChromeAcceptHeaderTest.Check
 -ChromeNavigationBrowserTest.CrossSiteRedirectionToPDF
@@ -218,6 +236,9 @@
 -ExtensionApiTest.TemporaryAddressSpoof
 -HistoryManipulationInterventionBrowserTest.PDFDoNotSkipOnBackForwardDueToUserGesture
 -HistoryManipulationInterventionBrowserTest.PDFSkipOnBackForwardNoUserGesture
+-PdfPluginContextMenuBrowserTest.CopyText
+-PdfPluginContextMenuBrowserTest.CopyTextWithRestriction
+-PdfPluginContextMenuBrowserTest.CopyWithoutText
 -PdfPluginContextMenuBrowserTest.FullPagePdfFullscreenItems
 -PdfPluginContextMenuBrowserTest.FullPagePdfHasPageItems
 -PdfPluginContextMenuBrowserTest.IframedPdfHasNoPageItems
@@ -252,6 +273,10 @@
 -SitePerProcessPrintBrowserTest.SubframeUnavailableBeforePrint
 -SitePerProcessPrintBrowserTest.SubframeUnavailableDuringPrint
 -SitePerProcessPrintExtensionBrowserTest.PrintOptionPage
+-SystemAccessProcessSandboxedServicePrintBrowserTest.StartPrintingAccessDenied
+-SystemAccessProcessSandboxedServicePrintBrowserTest.StartPrintingDocumentDoneAccessDenied
+-SystemAccessProcessSandboxedServicePrintBrowserTest.StartPrintingRenderDocumentAccessDenied
+-SystemAccessProcessSandboxedServicePrintBrowserTest.StartPrintingRepeatedAccessDenied
 -WebViewTests/WebViewPdfTest.ContextMenuNavigationInMimeHandlerView/SiteIsolationForGuestsDisabled
 -WebViewTests/WebViewPdfTest.ContextMenuNavigationInMimeHandlerView/SiteIsolationForGuestsEnabled
 -WebViewTests/WebViewPdfTest.NestedGuestContainerBounds/SiteIsolationForGuestsDisabled
@@ -382,6 +407,7 @@
 -CommerceHintAgentTest.VisitCart_GeneralPattern_FromComponent
 -CommerceHintAgentTest.VisitCart_PerDomain_FromComponent
 -CommerceHintAgentTest.VisitCheckout
+-CommerceHintCacaoTest.Passed
 -CommerceHintCheckoutPatternTest.VisitCheckout
 -CommerceHintMaxCountTest.ExtractCart
 -CommerceHintOptimizeRendererDisabledTest.Rejected
@@ -422,10 +448,6 @@
 -RssLinksFetcherTest.FetchSuccessfulFromBody
 -RssLinksFetcherTest.FetchSuccessfulFromHead
 -StartupMetricsTest.ReportsValues
-
-# TODO(crbug.com/1322341): Desktop capture not yet supported
--DesktopCaptureApiTest.ChooseDesktopMedia
--DesktopCaptureApiTest.Delegation
 
 # TODO(crbug.com/1251347): Bluetooth not yet supported
 -BluetoothApiTest.DeviceEvents
@@ -481,38 +503,6 @@
 -RestoreOnStartupPolicyTestInstance/RestoreOnStartupPolicyTest.RunTest/2
 -RestoreOnStartupPolicyTestInstance/RestoreOnStartupPolicyTest.RunTest/3
 -RestoreOnStartupPolicyTestInstance/RestoreOnStartupPolicyTest.RunTest/4
-
-# TODO(crbug.com/1311066): SysInfo::GetHardwareInfo not supported by Fuchsia
--ProfileMenuClickTest_SyncError.ProfileMenuClickTest_SyncError/2
--ProfileMenuClickTest_SyncError.ProfileMenuClickTest_SyncError/4
--ProfileMenuClickTest_SyncError.ProfileMenuClickTest_SyncError/5
--ProfileMenuClickTest_SyncError.ProfileMenuClickTest_SyncError/7
--ProfileMenuClickTest_SyncError.ProfileMenuClickTest_SyncError/8
--ProfileMenuClickTest_SyncError.ProfileMenuClickTest_SyncError/9
--SaveCardBubbleViewsSyncTransportFullFormBrowserTest.Local_TransportMode_InfoTextIconDoesNotExist
--SaveCardBubbleViewsSyncTransportFullFormBrowserTest.Upload_TransportMode_ClickingSaveClosesBubble
--SaveCardBubbleViewsSyncTransportFullFormBrowserTest.Upload_TransportMode_InfoTextIconExists
--SaveCardBubbleViewsSyncTransportFullFormBrowserTest.Upload_TransportMode_RequestedCardholderNameTextfieldIsPrefilledWithFocusName
--SyncAwareCounterTest.AutofillCounter
--SyncAwareCounterTest.HistoryCounter
--SyncAwareCounterTest.PasswordCounter
--UkmBrowserTest.ConsentAddedButNoSyncCheck
--UkmBrowserTest.HistoryDeleteCheck
--UkmBrowserTest.IncognitoPlusRegularCheck
--UkmBrowserTest.LogProtoData
--UkmBrowserTest.MetricsConsentCheck
--UkmBrowserTest.MetricsReportingCheck
--UkmBrowserTest.MultiDisableExtensionsSyncCheck
--UkmBrowserTest.MultiSyncSignoutCheck
--UkmBrowserTest.NetworkProviderPopulatesSystemProfile
--UkmBrowserTest.OpenNonSyncCheck
--UkmBrowserTest.RegularPlusGuestCheck
--UkmBrowserTest.RegularPlusIncognitoCheck
--UkmBrowserTest.ServiceListenerInitFailedCheck
--UkmBrowserTest.SingleDisableExtensionsSyncCheck
--UkmBrowserTestWithSyncTransport.NotEnabledForSecondaryAccountSync
--UkmConsentParamBrowserTests/UkmConsentParamBrowserTest.GroupPolicyConsentCheck/0
--UkmConsentParamBrowserTests/UkmConsentParamBrowserTest.GroupPolicyConsentCheck/1
 
 # TODO(crbug.com/1295538): Not implemented reached in static IconLoader::IconGroup
 # IconLoader::GroupForFilepath(const base::FilePath &)
@@ -572,6 +562,9 @@
 -IntentChipButtonBrowserTest.ShowsIntentChipCollapsed
 -IntentChipButtonBrowserTest.ShowsIntentPickerWhenMultipleApps
 -IntentChipButtonIPHBubbleBrowserTest.ShowAndCloseIPH
+-IntentChipButtonSkipIntentPickerBrowserTest.ClickingChipOpensApp
+-IntentChipButtonSkipIntentPickerBrowserTest.ShowsIntentChipCollapsed
+-IntentChipButtonSkipIntentPickerBrowserTest.ShowsIntentPickerWhenMultipleApps
 
 # TODO(crbug.com/1326984): These tests pass when run locally
 -AdsPageLoadMetricsObserverResourceBrowserTest.HeavyAdInterventionFired_ReportsToAllChildren
@@ -697,3 +690,10 @@
 -InProcess/ChromeNetworkServiceBrowserTest.EncryptedCookies/0
 -OutOfProcess/ChromeNetworkServiceBrowserTest.EncryptedCookies/0
 -VariationsSafeModeEndToEndBrowserTest.ExtendedSafeModeEndToEnd
+
+# TODO(crbug.com/1349540): Missing various services, see bug for more info.
+-ProfileKeyedServiceBrowserTest.SystemProfileParent_NeededServices
+
+# TODO(crbug.com/1349546) Pref is missing for PrivacyPage JS test. The exact missing pref is not
+# yet identified.
+-CrSettingsPrivacyPageTest.PrivacyPageTests

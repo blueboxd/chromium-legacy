@@ -9,26 +9,27 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/features.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
-import("//media/cdm/library_cdm/cdm_paths.gni")
 import("//media/media_options.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/ffmpeg/ffmpeg_options.gni")
+
+if (enable_library_cdms) {
+  import("//media/cdm/library_cdm/cdm_paths.gni")
+}
 
 buildflag_header("media_buildflags") {
   header = "media_buildflags.h"
 
   flags = [
     "ALTERNATE_CDM_STORAGE_ID_KEY=\"$alternate_cdm_storage_id_key\"",
-    "CDM_PLATFORM_SPECIFIC_PATH=\"$cdm_platform_specific_path\"",
     "CHROME_WIDE_ECHO_CANCELLATION=$chrome_wide_echo_cancellation_supported",
     "ENABLE_PLATFORM_AC3_EAC3_AUDIO=$enable_platform_ac3_eac3_audio",
     "ENABLE_CAST_AUDIO_RENDERER=$enable_cast_audio_renderer",
-    "ENABLE_CDM_HOST_VERIFICATION=$enable_cdm_host_verification",
-    "ENABLE_CDM_STORAGE_ID=$enable_cdm_storage_id",
     "ENABLE_DAV1D_DECODER=$enable_dav1d_decoder",
     "ENABLE_AV1_DECODER=$enable_av1_decoder",
     "ENABLE_PLATFORM_DOLBY_VISION=$enable_platform_dolby_vision",
+    "ENABLE_PLATFORM_ENCRYPTED_DOLBY_VISION=$enable_platform_encrypted_dolby_vision",
     "ENABLE_FFMPEG=$media_use_ffmpeg",
     "ENABLE_FFMPEG_VIDEO_DECODERS=$enable_ffmpeg_video_decoders",
     "ENABLE_PLATFORM_HEVC=$enable_platform_hevc",
@@ -36,8 +37,8 @@ buildflag_header("media_buildflags") {
     "ENABLE_HLS_SAMPLE_AES=$enable_hls_sample_aes",
     "ENABLE_HLS_DEMUXER=$enable_hls_demuxer",
     "ENABLE_LIBGAV1_DECODER=$enable_libgav1_decoder",
-    "ENABLE_LIBRARY_CDMS=$enable_library_cdms",
     "ENABLE_LIBAOM=$enable_libaom",
+    "ENABLE_LIBRARY_CDMS=$enable_library_cdms",
     "ENABLE_LIBVPX=$media_use_libvpx",
     "ENABLE_LOGGING_OVERRIDE=$enable_logging_override",
     "ENABLE_MEDIA_DRM_STORAGE=$enable_media_drm_storage",
@@ -53,6 +54,14 @@ buildflag_header("media_buildflags") {
     "USE_PROPRIETARY_CODECS=$proprietary_codecs",
     "ENABLE_PLATFORM_DTS_AUDIO=$enable_platform_dts_audio",
   ]
+
+  if (enable_library_cdms) {
+    flags += [
+      "CDM_PLATFORM_SPECIFIC_PATH=\"$cdm_platform_specific_path\"",
+      "ENABLE_CDM_HOST_VERIFICATION=$enable_cdm_host_verification",
+      "ENABLE_CDM_STORAGE_ID=$enable_cdm_storage_id",
+    ]
+  }
 }
 
 if (proprietary_codecs && media_use_ffmpeg) {
@@ -206,21 +215,20 @@ test("media_unittests") {
 
   if (is_fuchsia) {
     deps += [
-      "//media/fuchsia/audio:unittests",
       "//media/fuchsia/cdm/service:unittests",
       "//media/fuchsia/video:unittests",
     ]
 
-    use_cfv2 = false
+    use_cfv1 = false
+
+    # PaintCanvasVideoRendererWithGLTest.* uses SwiftShader, which generates
+    # machine code.
+    test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
+
     additional_manifest_fragments = [
-      "//build/config/fuchsia/test/audio_capabilities.test-cmx",
-
-      # TODO(crbug.com/1185811): Figure out why
-      # PaintCanvasVideoRendererWithGLTest.CopyVideoFrameYUVDataToGLTexture
-      # crashes without "deprecated-ambient-replace-as-executable".
-      "//build/config/fuchsia/test/jit_capabilities.test-cmx",
-
-      "//build/config/fuchsia/test/vulkan_capabilities.test-cmx",
+      "//build/config/fuchsia/test/audio_output.shard.test-cml",
+      "//build/config/fuchsia/test/platform_video_codecs.shard.test-cml",
+      "//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml",
     ]
   }
 
@@ -281,9 +289,9 @@ test("audio_unittests") {
   }
 
   if (is_fuchsia) {
-    use_cfv2 = false
+    use_cfv1 = false
     additional_manifest_fragments =
-        [ "//build/config/fuchsia/test/audio_capabilities.test-cmx" ]
+        [ "//build/config/fuchsia/test/audio_output.shard.test-cml" ]
   }
 }
 

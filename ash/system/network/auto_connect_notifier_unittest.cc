@@ -15,12 +15,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/auto_connect_handler.h"
 #include "chromeos/ash/components/network/network_cert_loader.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/components/network/system_token_cert_db_storage.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -46,12 +46,11 @@ class AutoConnectNotifierTest : public AshTestBase {
   ~AutoConnectNotifierTest() override = default;
 
   void SetUp() override {
-    chromeos::SystemTokenCertDbStorage::Initialize();
-    chromeos::NetworkCertLoader::Initialize();
-    chromeos::NetworkCertLoader::ForceAvailableForNetworkAuthForTesting();
-    network_handler_test_helper_ =
-        std::make_unique<chromeos::NetworkHandlerTestHelper>();
-    CHECK(chromeos::NetworkHandler::Get()->auto_connect_handler());
+    SystemTokenCertDbStorage::Initialize();
+    NetworkCertLoader::Initialize();
+    NetworkCertLoader::ForceAvailableForNetworkAuthForTesting();
+    network_handler_test_helper_ = std::make_unique<NetworkHandlerTestHelper>();
+    CHECK(NetworkHandler::Get()->auto_connect_handler());
     network_config_helper_ = std::make_unique<
         chromeos::network_config::CrosNetworkConfigTestHelper>();
 
@@ -65,7 +64,7 @@ class AutoConnectNotifierTest : public AshTestBase {
         ->auto_connect_->set_timer_for_testing(
             base::WrapUnique(mock_notification_timer_));
 
-    chromeos::ShillServiceClient::Get()->GetTestInterface()->AddService(
+    ShillServiceClient::Get()->GetTestInterface()->AddService(
         kTestServicePath, kTestServiceGuid, kTestServiceName, shill::kTypeWifi,
         shill::kStateIdle, true /* visible*/);
     // Ensure fake DBus service initialization completes.
@@ -76,8 +75,8 @@ class AutoConnectNotifierTest : public AshTestBase {
     AshTestBase::TearDown();
     network_config_helper_.reset();
     network_handler_test_helper_.reset();
-    chromeos::NetworkCertLoader::Shutdown();
-    chromeos::SystemTokenCertDbStorage::Shutdown();
+    NetworkCertLoader::Shutdown();
+    SystemTokenCertDbStorage::Shutdown();
   }
 
   void NotifyConnectToNetworkRequested() {
@@ -88,9 +87,9 @@ class AutoConnectNotifierTest : public AshTestBase {
   }
 
   void SuccessfullyJoinWifiNetwork() {
-    chromeos::ShillServiceClient::Get()->Connect(
-        dbus::ObjectPath(kTestServicePath), base::BindOnce([]() {}),
-        chromeos::ShillServiceClient::ErrorCallback());
+    ShillServiceClient::Get()->Connect(dbus::ObjectPath(kTestServicePath),
+                                       base::BindOnce([]() {}),
+                                       ShillServiceClient::ErrorCallback());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -113,18 +112,17 @@ class AutoConnectNotifierTest : public AshTestBase {
   base::MockOneShotTimer* mock_notification_timer_;
 
  private:
-  std::unique_ptr<chromeos::NetworkHandlerTestHelper>
-      network_handler_test_helper_;
+  std::unique_ptr<NetworkHandlerTestHelper> network_handler_test_helper_;
   std::unique_ptr<chromeos::network_config::CrosNetworkConfigTestHelper>
       network_config_helper_;
   ToastManagerImpl* toast_manager_ = nullptr;
 };
 
 TEST_F(AutoConnectNotifierTest, NoExplicitConnectionRequested) {
-  chromeos::NetworkHandler::Get()
+  NetworkHandler::Get()
       ->auto_connect_handler()
       ->NotifyAutoConnectInitiatedForTest(
-          chromeos::AutoConnectHandler::AUTO_CONNECT_REASON_POLICY_APPLIED);
+          AutoConnectHandler::AUTO_CONNECT_REASON_POLICY_APPLIED);
   SuccessfullyJoinWifiNetwork();
 
   // Toast should not be displayed.
@@ -133,10 +131,10 @@ TEST_F(AutoConnectNotifierTest, NoExplicitConnectionRequested) {
 
 TEST_F(AutoConnectNotifierTest, AutoConnectDueToLoginOnly) {
   NotifyConnectToNetworkRequested();
-  chromeos::NetworkHandler::Get()
+  NetworkHandler::Get()
       ->auto_connect_handler()
       ->NotifyAutoConnectInitiatedForTest(
-          chromeos::AutoConnectHandler::AUTO_CONNECT_REASON_LOGGED_IN);
+          AutoConnectHandler::AUTO_CONNECT_REASON_LOGGED_IN);
   SuccessfullyJoinWifiNetwork();
 
   // Toast should not be displayed.
@@ -145,10 +143,10 @@ TEST_F(AutoConnectNotifierTest, AutoConnectDueToLoginOnly) {
 
 TEST_F(AutoConnectNotifierTest, NoConnectionBeforeTimerExpires) {
   NotifyConnectToNetworkRequested();
-  chromeos::NetworkHandler::Get()
+  NetworkHandler::Get()
       ->auto_connect_handler()
       ->NotifyAutoConnectInitiatedForTest(
-          chromeos::AutoConnectHandler::AUTO_CONNECT_REASON_POLICY_APPLIED);
+          AutoConnectHandler::AUTO_CONNECT_REASON_POLICY_APPLIED);
 
   // No connection occurs.
   ASSERT_TRUE(mock_notification_timer_->IsRunning());
@@ -166,10 +164,10 @@ TEST_F(AutoConnectNotifierTest, ConnectToConnectedNetwork) {
   SuccessfullyJoinWifiNetwork();
 
   NotifyConnectToNetworkRequested();
-  chromeos::NetworkHandler::Get()
+  NetworkHandler::Get()
       ->auto_connect_handler()
       ->NotifyAutoConnectInitiatedForTest(
-          chromeos::AutoConnectHandler::AUTO_CONNECT_REASON_POLICY_APPLIED);
+          AutoConnectHandler::AUTO_CONNECT_REASON_POLICY_APPLIED);
   SuccessfullyJoinWifiNetwork();
 
   // Toast should not be displayed.
@@ -178,10 +176,10 @@ TEST_F(AutoConnectNotifierTest, ConnectToConnectedNetwork) {
 
 TEST_F(AutoConnectNotifierTest, ToastDisplayed) {
   NotifyConnectToNetworkRequested();
-  chromeos::NetworkHandler::Get()
+  NetworkHandler::Get()
       ->auto_connect_handler()
       ->NotifyAutoConnectInitiatedForTest(
-          chromeos::AutoConnectHandler::AUTO_CONNECT_REASON_POLICY_APPLIED);
+          AutoConnectHandler::AUTO_CONNECT_REASON_POLICY_APPLIED);
   SuccessfullyJoinWifiNetwork();
 
   VerifyAutoConnectToastVisibility(/*visible=*/true);

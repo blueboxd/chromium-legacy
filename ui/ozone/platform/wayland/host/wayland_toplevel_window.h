@@ -74,12 +74,12 @@ class WaylandToplevelWindow : public WaylandWindow,
   void NotifyStartupComplete(const std::string& startup_id) override;
   void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
   void SetBoundsInPixels(const gfx::Rect& bounds) override;
+  void SetBoundsInDIP(const gfx::Rect& bounds) override;
 
   // Sets the window's origin.
   void SetOrigin(const gfx::Point& origin);
 
   // WaylandWindow overrides:
-  absl::optional<std::vector<gfx::Rect>> GetWindowShape() const override;
   bool IsScreenCoordinatesEnabled() const override;
 
   // Client-side decorations on Wayland take some portion of the window surface,
@@ -106,7 +106,7 @@ class WaylandToplevelWindow : public WaylandWindow,
                                    bool is_fullscreen,
                                    bool is_activated) override;
   void HandleSurfaceConfigure(uint32_t serial) override;
-  void UpdateVisualSize(const gfx::Size& size_px, float scale_factor) override;
+  void UpdateVisualSize(const gfx::Size& size_px) override;
   bool OnInitialize(PlatformWindowInitProperties properties) override;
   bool IsActive() const override;
   bool IsSurfaceConfigured() override;
@@ -155,6 +155,7 @@ class WaylandToplevelWindow : public WaylandWindow,
   void Lock(WaylandOrientationLockType lock_Type) override;
   void Unlock() override;
   bool GetTabletMode() override;
+  void SetFloat(bool value) override;
 
   // DeskExtension:
   int GetNumberOfDesks() const override;
@@ -215,6 +216,10 @@ class WaylandToplevelWindow : public WaylandWindow,
   // This must be called in SetUpShellIntegration().
   void SetInitialWorkspace();
 
+  // Sets `z_order_` in the `shell_toplevel_`.
+  // Must be called in SetUpShellIntegration().
+  void SetInitialZOrder();
+
   // Wrappers around shell surface.
   std::unique_ptr<ShellToplevelWrapper> shell_toplevel_;
 
@@ -250,8 +255,6 @@ class WaylandToplevelWindow : public WaylandWindow,
   // When use_native_frame is true, server-side decoration is set,
   // e.g. lacros-taskmanager.
   bool use_native_frame_ = false;
-
-  absl::optional<std::vector<gfx::Rect>> window_shape_in_dips_;
 
   absl::optional<std::vector<gfx::Rect>> opaque_region_px_;
   absl::optional<gfx::Rect> input_region_px_;
@@ -296,6 +299,9 @@ class WaylandToplevelWindow : public WaylandWindow,
   // The desk index for the window.
   // If |workspace_| is -1, window is visible on all workspaces.
   absl::optional<int> workspace_ = absl::nullopt;
+
+  // The z order for the window.
+  ZOrderLevel z_order_ = ZOrderLevel::kNormal;
 
   // True when screen coordinates is enabled.
   bool screen_coordinates_enabled_;

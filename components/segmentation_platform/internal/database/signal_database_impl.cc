@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
-#include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
@@ -28,9 +27,6 @@
 
 namespace segmentation_platform {
 namespace {
-
-constexpr base::Feature kSegmentationCompactionFix{
-    "SegmentationCompactionFix", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // TODO(shaktisahu): May be make this a class member for ease of testing.
 bool FilterKeyBasedOnRange(proto::SignalType signal_type,
@@ -80,10 +76,7 @@ leveldb_proto::Enums::KeyIteratorAction GetSamplesIteratorController(
 
 SignalDatabaseImpl::SignalDatabaseImpl(std::unique_ptr<SignalProtoDb> database,
                                        base::Clock* clock)
-    : database_(std::move(database)),
-      clock_(clock),
-      should_fix_compaction_(
-          base::FeatureList::IsEnabled(kSegmentationCompactionFix)) {}
+    : database_(std::move(database)), clock_(clock) {}
 
 SignalDatabaseImpl::~SignalDatabaseImpl() = default;
 
@@ -257,8 +250,7 @@ void SignalDatabaseImpl::OnGetSamplesForCompaction(
     std::unique_ptr<std::map<std::string, proto::SignalData>> entries) {
   TRACE_EVENT("segmentation_platform",
               "SignalDatabaseImpl::OnGetSamplesForCompaction");
-  if (!success || !entries || entries->empty() ||
-      (should_fix_compaction_ && entries->size() == 1)) {
+  if (!success || !entries || entries->empty()) {
     std::move(callback).Run(success);
     return;
   }
@@ -275,11 +267,7 @@ void SignalDatabaseImpl::OnGetSamplesForCompaction(
       new_sample->CopyFrom(signal_data.samples(i));
     }
 
-    // If the database was already compacted, and some entry was added with
-    // older timestamp, then append signals, and do not delete the key.
-    if (!(should_fix_compaction_ && pair.first == compact_key)) {
-      keys_to_delete->emplace_back(pair.first);
-    }
+    keys_to_delete->emplace_back(pair.first);
   }
 
   // Write to DB.

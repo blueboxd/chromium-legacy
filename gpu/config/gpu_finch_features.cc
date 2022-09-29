@@ -143,8 +143,15 @@ const base::Feature kDefaultEnableGpuRasterization{
 };
 
 // Enables the use of out of process rasterization for canvas.
-const base::Feature kCanvasOopRasterization{"CanvasOopRasterization",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kCanvasOopRasterization {
+  "CanvasOopRasterization",
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH) || \
+    (BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)) || BUILDFLAG(IS_FUCHSIA)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enables the use of MSAA in skia on Ice Lake and later intel architectures.
 const base::Feature kEnableMSAAOnNewIntelGPUs{
@@ -231,10 +238,16 @@ const base::Feature kEnableDrDcVulkan{"EnableDrDcVulkan",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_ANDROID)
 
-// Enable WebGPU on gpu service side only. This is used with origin trial
-// before gpu service is enabled by default.
-const base::Feature kWebGPUService{"WebGPUService",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+// Enable WebGPU on gpu service side only. This is used with origin trial and
+// enabled by default on supported platforms.
+const base::Feature kWebGPUService {
+  "WebGPUService",
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 #if BUILDFLAG(IS_ANDROID)
 
@@ -312,6 +325,11 @@ const base::Feature kReduceOpsTaskSplitting{
 // discardable memory.
 const base::Feature kNoDiscardableMemoryForGpuDecodePath{
     "NoDiscardableMemoryForGpuDecodePath", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Use a 100-command limit before forcing context switch per command buffer
+// instead of 20.
+const base::Feature kIncreasedCmdBufferParseSlice{
+    "IncreasedCmdBufferParseSlice", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool UseGles2ForOopR() {
 #if BUILDFLAG(IS_ANDROID)
@@ -459,11 +477,8 @@ bool NeedThreadSafeAndroidMedia() {
 }
 
 bool IsANGLEValidationEnabled() {
-  if (!UsePassthroughCommandDecoder()) {
-    return false;
-  }
-
-  return base::FeatureList::IsEnabled(kDefaultEnableANGLEValidation);
+  return base::FeatureList::IsEnabled(kDefaultEnableANGLEValidation) &&
+         UsePassthroughCommandDecoder();
 }
 
 #if BUILDFLAG(IS_ANDROID)

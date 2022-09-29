@@ -29,6 +29,7 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/autofill/android/save_update_address_profile_flow_manager.h"
+#include "chrome/browser/touch_to_fill/payments/touch_to_fill_credit_card_controller.h"
 #include "chrome/browser/ui/android/autofill/save_card_message_controller_android.h"
 #include "components/autofill/core/browser/ui/payments/card_expiration_date_fix_flow_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_name_fix_flow_controller_impl.h"
@@ -48,6 +49,8 @@ class VirtualCardEnrollmentManager;
 // ChromeAutofillClient is instantiated once per WebContents, and usages of
 // main frame refer to the primary main frame because WebContents only has a
 // primary main frame.
+// TODO(crbug.com/1351388): During prerendering in MPArch, the autofill client
+// should be attached not to the web contents but the outer-most main frame.
 class ChromeAutofillClient
     : public AutofillClient,
       public content::WebContentsUserData<ChromeAutofillClient>,
@@ -68,6 +71,8 @@ class ChromeAutofillClient
   PersonalDataManager* GetPersonalDataManager() override;
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   MerchantPromoCodeManager* GetMerchantPromoCodeManager() override;
+  CreditCardCVCAuthenticator* GetCVCAuthenticator() override;
+  CreditCardOtpAuthenticator* GetOtpAuthenticator() override;
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
   syncer::SyncService* GetSyncService() override;
@@ -86,7 +91,7 @@ class ChromeAutofillClient
   std::string GetVariationConfigCountryCode() const override;
   profile_metrics::BrowserProfileType GetProfileType() const override;
   std::unique_ptr<webauthn::InternalAuthenticator>
-  CreateCreditCardInternalAuthenticator(content::RenderFrameHost* rfh) override;
+  CreateCreditCardInternalAuthenticator(AutofillDriver* driver) override;
 
   void ShowAutofillSettings(bool show_credit_card_settings) override;
   void ShowCardUnmaskOtpInputDialog(
@@ -244,6 +249,8 @@ class ChromeAutofillClient
   std::u16string GetAccountHolderEmail();
 
   std::unique_ptr<payments::PaymentsClient> payments_client_;
+  std::unique_ptr<CreditCardCVCAuthenticator> cvc_authenticator_;
+  std::unique_ptr<CreditCardOtpAuthenticator> otp_authenticator_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
   std::unique_ptr<LogManager> log_manager_;
@@ -256,6 +263,7 @@ class ChromeAutofillClient
   CardNameFixFlowControllerImpl card_name_fix_flow_controller_;
   SaveCardMessageControllerAndroid save_card_message_controller_android_;
   SaveUpdateAddressProfileFlowManager save_update_address_profile_flow_manager_;
+  TouchToFillCreditCardController touch_to_fill_credit_card_controller_;
 #endif
   CardUnmaskPromptControllerImpl unmask_controller_;
   AutofillErrorDialogControllerImpl autofill_error_dialog_controller_;

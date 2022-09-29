@@ -5,7 +5,9 @@
 /**
  * @fileoverview Implements support for live regions in ChromeVox Next.
  */
+import {AutomationUtil} from '../../common/automation_util.js';
 import {CursorRange} from '../../common/cursors/range.js';
+import {QueueMode, TtsCategory} from '../common/tts_interface.js';
 
 import {ChromeVoxState} from './chromevox_state.js';
 import {Output} from './output/output.js';
@@ -207,7 +209,6 @@ export class LiveRegions {
     // describe their tree changes especially during page load within the
     // LiveRegions.LIVE_REGION_MIN_SAME_NODE_MS to prevent excessive chatter.
     this.addNodeToNodeSetRecursive_(node);
-    window.prev = output;
     output.go();
     this.lastLiveRegionTime_ = currentTime;
   }

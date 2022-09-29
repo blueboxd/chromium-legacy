@@ -55,4 +55,10 @@ interface IBrowser {
 
   // Added in 91.
   void setChangeVisibilityOnNextDetach(in boolean changeVisibility) = 18;
+
+  // Added in 105.
+  void setSurfaceControlViewHost(in IObjectWrapper host) = 19;
+
+  // Added in 105
+  int[] getTabIds() = 20;
 }

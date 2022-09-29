@@ -1174,11 +1174,33 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest,
       "publisher.example.com" /* inner_url_hostname */,
       "/target.html" /* page_inner_url_path */,
       "/script.js" /* script_inner_url_path */,
-      {} /* script_sxg_outer_headers */,
+      {{"Access-Control-Allow-Origin", "*"}} /* script_sxg_outer_headers */,
       "" /* additional_link_element_attributes */,
       0 /* elapsed_time_after_prefetch */, "done" /* expected_title */,
       true /* script_sxg_should_be_stored */,
       0 /* expected_script_fetch_count */);
+}
+
+IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest,
+                       MainResourceSXGAndScriptSXG_CrossOrigin_CorsError) {
+  // This test is similar to MainResourceSXGAndScriptSXG_CrossOrigin, but the
+  // script SXG is served without Access-Control-Allow-Origin. Prefetch of the
+  // script SXG should fail with CORS error.
+  RunPrefetchMainResourceSXGAndScriptSXGTest(
+      "aggregator.example.com" /* prefetch_page_hostname */,
+      "/prefetch.html" /* prefetch_page_path */,
+      "distoributor.example.com" /* page_sxg_hostname */,
+      "/target.sxg" /* page_sxg_path */,
+      "distoributor.example.com" /* script_sxg_hostname */,
+      "/script.sxg" /* script_sxg_path */,
+      "publisher.example.com" /* inner_url_hostname */,
+      "/target.html" /* page_inner_url_path */,
+      "/script.js" /* script_inner_url_path */,
+      {} /* script_sxg_outer_headers */,
+      "" /* additional_link_element_attributes */,
+      0 /* elapsed_time_after_prefetch */, "from server" /* expected_title */,
+      false /* script_sxg_should_be_stored */,
+      1 /* expected_script_fetch_count */);
 }
 
 IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest,
@@ -1202,7 +1224,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest,
       "publisher.example.com" /* inner_url_hostname */,
       "/target.html" /* page_inner_url_path */,
       "/script.js" /* script_inner_url_path */,
-      {} /* script_sxg_outer_headers */,
+      {{"Access-Control-Allow-Origin", "*"}} /* script_sxg_outer_headers */,
       "as='document'" /* additional_link_element_attributes */,
       0 /* elapsed_time_after_prefetch */, "done" /* expected_title */,
       true /* script_sxg_should_be_stored */,
@@ -1223,7 +1245,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest,
       "publisher.example.com" /* inner_url_hostname */,
       "/target.html" /* page_inner_url_path */,
       "/script.js" /* script_inner_url_path */,
-      {} /* script_sxg_outer_headers */,
+      {{"Access-Control-Allow-Origin", "*"}} /* script_sxg_outer_headers */,
       "" /* additional_link_element_attributes */,
       0 /* elapsed_time_after_prefetch */, "from server" /* expected_title */,
       true /* script_sxg_should_be_stored */,
@@ -1896,16 +1918,16 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest, CORS) {
   RegisterRequestHandler(embedded_test_server());
   RegisterRequestHandler(data_server.get());
 
-  // Prefetch requests for alternate SXG should be made with no-cors,
-  // regardless of the crossorigin attribute of Link:rel=preload header that
-  // triggered the prefetch.
+  // Prefetch requests for alternate SXG should be made with cors, regardless of
+  // the crossorigin attribute of Link:rel=preload header that triggered the
+  // prefetch.
   embedded_test_server()->RegisterRequestMonitor(
       base::BindRepeating([](const net::test_server::HttpRequest& request) {
         if (!base::EndsWith(request.relative_url, "_data.sxg"))
           return;
         auto it = request.headers.find("Sec-Fetch-Mode");
         ASSERT_TRUE(it != request.headers.end());
-        EXPECT_EQ(it->second, "no-cors");
+        EXPECT_EQ(it->second, "cors");
       }));
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -2072,18 +2094,26 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest, CORS) {
                    CreateSignedExchangeResponseEntry(
                        base::StringPrintf(R"(
 <head><title>Prefetch Target (SXG)</title><script>
-let results = [];
-(async function(requests) {
-  for (let i = 0; i < requests.length; ++i) {
-    try {
-      const res = await fetch(requests[i]);
-      results.push(await res.text());
-    } catch (err) {
-      results.push('failed');
-    }
+  const requests = [%s];
+  const promises = [];
+  for (const request of requests) {
+    promises.push((async (request) => {
+      try {
+        const res = await fetch(request);
+        const result = await res.text();
+        console.log(request.url + ': ' + result);
+        return result;
+      } catch (err) {
+        console.log(request.url + ': failed');
+        return 'failed';
+      }
+    })(request));
   }
-  document.title = 'done';
-})([%s]);
+  let results = null;
+  Promise.all(promises).then((values) => {
+    results = values;
+    document.title = 'done';
+  });
 </script></head>)",
                                           requests_list_string.c_str()),
                        {{"link", target_sxg_outer_link_header}}));

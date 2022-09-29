@@ -756,6 +756,30 @@ chrome.fileManagerPrivate.ProgressStatus;
  */
 chrome.fileManagerPrivate.DlpMetadata;
 
+/** @enum {string} */
+chrome.fileManagerPrivate.DlpLevel = {
+  BLOCK: 'block',
+  ALLOW: 'allow',
+};
+
+/**
+ * @typedef {{
+ *   level: chrome.fileManagerPrivate.DlpLevel,
+ *   urls: !Array<string>,
+ *   components: !Array<chrome.fileManagerPrivate.VolumeType>,
+ * }}
+ */
+chrome.fileManagerPrivate.DlpRestrictionDetails;
+
+/**
+ * @typedef {{
+ *   restoreEntry: !Entry,
+ *   trashInfoFileName: string,
+ *   deletionDate: Date,
+ * }}
+ */
+chrome.fileManagerPrivate.ParsedTrashInfoFile;
+
 /**
  * Logout the current user for navigating to the re-authentication screen for
  * the Google account.
@@ -979,6 +1003,18 @@ chrome.fileManagerPrivate.getDisallowedTransfers = function(
  * containing DLP information about the entries.
  */
 chrome.fileManagerPrivate.getDlpMetadata = function(entries, callback) {};
+
+/**
+ * Retrieves Data Leak Prevention (DLP) restriction details.
+ * @param {string} sourceUrl Source URL of the Entry for which the details
+ *     should be shown.
+ * @param {function(!Array<chrome.fileManagerPrivate.DlpRestrictionDetails>)}
+ * callback Callback with the list of
+ * chrome.fileManagerPrivate.DlpRestrictionDetails containing summarized
+ * restriction information about the entry.
+ */
+chrome.fileManagerPrivate.getDlpRestrictionDetails = function(
+    sourceUrl, callback) {};
 
 /**
  * Starts to copy an entry. If the source is a directory, the copy is done
@@ -1503,6 +1539,15 @@ chrome.fileManagerPrivate.openManageSyncSettings = function() {};
  *     of the title bar.
  */
 chrome.fileManagerPrivate.getFrameColor = function(callback) {};
+
+/**
+ * Parses the supplied .trashinfo files and returns the successfully parsed
+ * data.
+ * @param {!Array<!Entry>} entries
+ * @param {function(!Array<!chrome.fileManagerPrivate.ParsedTrashInfoFile>):
+ *     void} callback
+ */
+chrome.fileManagerPrivate.parseTrashInfoFiles = function(entries, callback) {};
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;

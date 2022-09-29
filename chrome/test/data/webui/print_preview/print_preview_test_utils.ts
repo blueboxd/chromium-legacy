@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {CapabilitiesResponse, Cdd, DEFAULT_MAX_COPIES, Destination, DestinationOrigin, DestinationStore, ExtensionDestinationInfo, GooglePromotedDestinationId, LocalDestinationInfo, MeasurementSystemUnitType, MediaSizeCapability, MediaSizeOption, NativeInitialSettings, VendorCapabilityValueType} from 'chrome://print/print_preview.js';
-import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
@@ -92,7 +92,7 @@ export function getCddTemplate(
       },
     },
   };
-  // <if expr="chromeos_ash or chromeos_lacros">
+  // <if expr="is_chromeos">
   template.capabilities!.printer.pin = {supported: true};
   // </if>
   return template;
@@ -226,10 +226,10 @@ export function getDefaultOrientation(device: CapabilitiesResponse): string {
   return assert(options!.find(opt => !!opt.is_default)!.type!);
 }
 
-type ExtensionPrinters = {
-  destinations: Destination[],
-  infoLists: ExtensionDestinationInfo[][],
-};
+interface ExtensionPrinters {
+  destinations: Destination[];
+  infoLists: ExtensionDestinationInfo[][];
+}
 
 export function getExtensionDestinations(): ExtensionPrinters {
   const destinations: Destination[] = [];
@@ -276,10 +276,10 @@ export function getExtensionDestinations(): ExtensionPrinters {
 export function getDestinations(localDestinations: LocalDestinationInfo[]):
     Destination[] {
   const destinations: Destination[] = [];
-  // <if expr="not chromeos_ash and not chromeos_lacros">
+  // <if expr="not is_chromeos">
   const origin = DestinationOrigin.LOCAL;
   // </if>
-  // <if expr="chromeos_ash or chromeos_lacros">
+  // <if expr="is_chromeos">
   const origin = DestinationOrigin.CROS;
   // </if>
   // Five destinations. FooDevice is the system default.
@@ -362,7 +362,7 @@ export function createDestinationStore(): DestinationStore {
       testListenerElement.addWebUIListener.bind(testListenerElement));
 }
 
-// <if expr="chromeos_ash or chromeos_lacros">
+// <if expr="is_chromeos">
 /**
  * @return The Google Drive destination.
  */

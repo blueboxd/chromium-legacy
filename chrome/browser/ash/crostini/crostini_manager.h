@@ -151,7 +151,7 @@ class CrostiniManager : public KeyedService,
                         public ash::AnomalyDetectorClient::Observer,
                         public ash::ConciergeClient::VmObserver,
                         public ash::CiceroneClient::Observer,
-                        public chromeos::NetworkStateHandlerObserver,
+                        public ash::NetworkStateHandlerObserver,
                         public chromeos::PowerManagerClient::Observer {
  public:
   using CrostiniResultCallback =
@@ -536,9 +536,9 @@ class CrostiniManager : public KeyedService,
   void OnStartLxdProgress(
       const vm_tools::cicerone::StartLxdProgressSignal& signal) override;
 
-  // chromeos::NetworkStateHandlerObserver overrides:
-  void ActiveNetworksChanged(const std::vector<const chromeos::NetworkState*>&
-                                 active_networks) override;
+  // ash::NetworkStateHandlerObserver overrides:
+  void ActiveNetworksChanged(
+      const std::vector<const ash::NetworkState*>& active_networks) override;
   void OnShuttingDown() override;
 
   // chromeos::PowerManagerClient::Observer overrides:
@@ -565,9 +565,6 @@ class CrostiniManager : public KeyedService,
                              const vm_tools::cicerone::OsRelease& os_release);
   const vm_tools::cicerone::OsRelease* GetContainerOsRelease(
       const guest_os::GuestId& container_id) const;
-  // Returns null if VM or container is not running.
-  absl::optional<ContainerInfo> GetContainerInfo(
-      const guest_os::GuestId& container_id);
   void AddRunningContainerForTesting(std::string vm_name, ContainerInfo info);
 
   // If the Crostini reporting policy is set, save the last app launch
@@ -808,8 +805,9 @@ class CrostiniManager : public KeyedService,
   // metric logging the type. Mostly happens async and best-effort.
   void EmitVmDiskTypeMetric(const std::string vm_name);
 
-  // Removes specified container id from running_containers list.
-  void RemoveStoppedContainer(const guest_os::GuestId& container_id);
+  // Runs things that should happened whenever a container shutdowns e.g.
+  // triggering observers.
+  void HandleContainerShutdown(const guest_os::GuestId& container_id);
 
   // Registers a container with GuestOsService's registries. No-op if it's
   // already registered.
@@ -859,9 +857,6 @@ class CrostiniManager : public KeyedService,
   std::map<std::string, CrostiniResultCallback> start_lxd_callbacks_;
 
   std::map<std::string, VmInfo> running_vms_;
-
-  // Running containers as keyed by vm name.
-  std::multimap<std::string, ContainerInfo> running_containers_;
 
   // OsRelease protos keyed by guest_os::GuestId. We populate this map even if a
   // container fails to start normally.
@@ -930,8 +925,8 @@ class CrostiniManager : public KeyedService,
                  guest_os::GuestOsTerminalProviderRegistry::Id>
       terminal_provider_ids_;
 
-  base::ScopedObservation<chromeos::NetworkStateHandler,
-                          chromeos::NetworkStateHandlerObserver>
+  base::ScopedObservation<ash::NetworkStateHandler,
+                          ash::NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
 
   base::flat_map<guest_os::GuestId, guest_os::GuestOsMountProviderRegistry::Id>

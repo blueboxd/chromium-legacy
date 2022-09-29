@@ -113,10 +113,9 @@ class ControllerTest : public testing::Test {
     mock_runtime_manager_ = std::make_unique<MockRuntimeManager>();
     controller_ = std::make_unique<Controller>(
         web_contents(), &mock_client_, task_environment()->GetMockTickClock(),
-        mock_runtime_manager_->GetWeakPtr(), std::move(service), &ukm_recorder_,
+        mock_runtime_manager_->GetWeakPtr(), std::move(service),
+        std::move(web_controller), &ukm_recorder_,
         &mock_annotate_dom_model_service_);
-
-    SetWebControllerForTest(controller_.get(), std::move(web_controller));
 
     ON_CALL(mock_client_, AttachUI()).WillByDefault(Invoke([this]() {
       controller_->SetUiShown(true);
@@ -2304,11 +2303,13 @@ TEST_F(ControllerTest, FlowFinishedMetricFailedRoundtrip) {
 
 TEST_F(ControllerTest, FlowFinishedMetricControllerDestroyedMidFlow) {
   auto service = std::make_unique<NiceMock<MockService>>();
+  auto web_controller = std::make_unique<NiceMock<MockWebController>>();
   auto* service_ptr = service.get();
 
   auto controller = std::make_unique<Controller>(
       web_contents(), &mock_client_, task_environment()->GetMockTickClock(),
-      mock_runtime_manager_->GetWeakPtr(), std::move(service), &ukm_recorder_,
+      mock_runtime_manager_->GetWeakPtr(), std::move(service),
+      std::move(web_controller), &ukm_recorder_,
       /* annotate_dom_model_service= */ nullptr);
   SetWebControllerForTest(controller.get(),
                           std::make_unique<NiceMock<MockWebController>>());
@@ -2633,6 +2634,20 @@ TEST_F(ControllerTest, JsFlowLibraryNotLoadedForEmpty) {
   EXPECT_CALL(*mock_service_, UpdateJsFlowLibraryLoaded(true)).Times(0);
 
   controller_->SetJsFlowLibrary("");
+}
+
+TEST_F(ControllerTest, SuccessfullyExtractsValuesFromSingleTagXml) {
+  EXPECT_CALL(mock_client_, ExtractValuesFromSingleTagXml)
+      .Times(1)
+      .WillOnce(Return((const std::vector<std::string>){}));
+  EXPECT_EQ(
+      controller_->ExtractValuesFromSingleTagXml("some_xml", {"some_key"}),
+      (const std::vector<std::string>){});
+}
+
+TEST_F(ControllerTest, SuccessfullyValidatesIfXmlIsSigned) {
+  EXPECT_CALL(mock_client_, IsXmlSigned).Times(1).WillOnce(Return(true));
+  EXPECT_EQ(controller_->IsXmlSigned("1234567890"), true);
 }
 
 }  // namespace autofill_assistant

@@ -399,6 +399,12 @@ void WebApp::SetTabStrip(absl::optional<blink::Manifest::TabStrip> tab_strip) {
   tab_strip_ = std::move(tab_strip);
 }
 
+void WebApp::SetCurrentOsIntegrationStates(
+    absl::optional<proto::WebAppOsIntegrationState>
+        current_os_integration_states) {
+  current_os_integration_states_ = std::move(current_os_integration_states);
+}
+
 void WebApp::AddPlaceholderInfoToManagementExternalConfigMap(
     WebAppManagement::Type type,
     bool is_placeholder) {
@@ -432,6 +438,10 @@ bool WebApp::RemoveInstallUrlForSource(WebAppManagement::Type type,
     management_to_external_config_map_.erase(type);
   }
   return removed;
+}
+
+void WebApp::SetAlwaysShowToolbarInFullscreen(bool show) {
+  always_show_toolbar_in_fullscreen_ = show;
 }
 
 WebApp::ClientData::ClientData() = default;
@@ -497,7 +507,7 @@ base::Value::Dict WebApp::ExternalManagementConfig::AsDebugValue() const {
 bool WebApp::operator==(const WebApp& other) const {
   auto AsTuple = [](const WebApp& app) {
     // Keep in order declared in web_app.h.
-    return std::tie(
+    return std::make_tuple(
         // Disable clang-format so diffs are clearer when fields are added.
         // clang-format off
         app.app_id_,
@@ -558,11 +568,13 @@ bool WebApp::operator==(const WebApp& other) const {
         app.app_size_in_bytes_,
         app.data_size_in_bytes_,
         app.management_to_external_config_map_,
-        app.tab_strip_
+        app.tab_strip_,
+        app.always_show_toolbar_in_fullscreen_,
+        app.current_os_integration_states_.value_or(proto::WebAppOsIntegrationState()).SerializeAsString()
         // clang-format on
     );
   };
-  return AsTuple(*this) == AsTuple(other);
+  return (AsTuple(*this) == AsTuple(other));
 }
 
 bool WebApp::operator!=(const WebApp& other) const {
@@ -743,7 +755,7 @@ base::Value WebApp::AsDebugValue() const {
     base::Value& launch_handler_json = *root.SetKey(
         "launch_handler", base::Value(base::Value::Type::DICTIONARY));
     launch_handler_json.SetStringKey(
-        "route_to", ConvertToString(launch_handler_->route_to));
+        "client_mode", ConvertToString(launch_handler_->client_mode));
   } else {
     root.SetKey("launch_handler", base::Value());
   }
@@ -867,6 +879,14 @@ base::Value WebApp::AsDebugValue() const {
     }
   } else {
     root.SetKey("tab_strip", base::Value());
+  }
+
+  root.SetBoolKey("always_show_toolbar_in_fullscreen",
+                  always_show_toolbar_in_fullscreen_);
+
+  if (current_os_integration_states_.has_value()) {
+    root.SetKey("current_os_integration_states", base::Value());
+    // TODO(crbug.com/1295044) : Add logic to parse and show data.
   }
 
   return root;

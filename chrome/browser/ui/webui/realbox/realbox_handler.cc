@@ -21,8 +21,8 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
-#include "chrome/browser/prefetch/search_prefetch/search_prefetch_service.h"
-#include "chrome/browser/prefetch/search_prefetch/search_prefetch_service_factory.h"
+#include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_service.h"
+#include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
@@ -605,7 +605,7 @@ void RealboxHandler::OpenAutocompleteMatch(
 
   auto* bookmark_model = BookmarkModelFactory::GetForBrowserContext(profile_);
   if (bookmark_model->IsBookmarked(match.destination_url)) {
-    RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_OMNIBOX,
+    RecordBookmarkLaunch(BookmarkLaunchLocation::kOmnibox,
                          profile_metrics::GetBrowserProfileType(profile_));
   }
 
@@ -693,15 +693,13 @@ void RealboxHandler::ToggleSuggestionGroupIdVisibility(
   // It should be safe to cast |suggestion_group_id| to SuggestionGroupId type,
   // since the group ID was originally passed to the page by the browser.
   // TODO(crbug.com/1343512): Investigate migrating this enum to a proto enum
-  // to take advantage of its safe built-in conversion logic.
-  omnibox::SuggestionGroupVisibility new_value =
+  // to take advantage of its built-in check for conversion from int32 type.
+  const auto& group_id = static_cast<SuggestionGroupId>(suggestion_group_id);
+  const bool current_visibility =
       autocomplete_controller_->result().IsSuggestionGroupHidden(
-          profile_->GetPrefs(),
-          static_cast<SuggestionGroupId>(suggestion_group_id))
-          ? omnibox::SuggestionGroupVisibility::SHOWN
-          : omnibox::SuggestionGroupVisibility::HIDDEN;
-  omnibox::SetSuggestionGroupVisibility(profile_->GetPrefs(),
-                                        suggestion_group_id, new_value);
+          profile_->GetPrefs(), group_id);
+  autocomplete_controller_->result().SetSuggestionGroupHidden(
+      profile_->GetPrefs(), group_id, !current_visibility);
 }
 
 void RealboxHandler::LogCharTypedToRepaintLatency(base::TimeDelta latency) {

@@ -146,19 +146,19 @@ apps::IntentFilters CreateIntentFilters() {
 
   apps::ConditionValues values1;
   values1.push_back(std::make_unique<apps::ConditionValue>(
-      apps_util::kIntentActionView, apps::PatternMatchType::kNone));
+      apps_util::kIntentActionView, apps::PatternMatchType::kLiteral));
   filter->conditions.push_back(std::make_unique<apps::Condition>(
       apps::ConditionType::kAction, std::move(values1)));
 
   apps::ConditionValues values2;
   values2.push_back(std::make_unique<apps::ConditionValue>(
-      url.scheme(), apps::PatternMatchType::kNone));
+      url.scheme(), apps::PatternMatchType::kLiteral));
   filter->conditions.push_back(std::make_unique<apps::Condition>(
       apps::ConditionType::kScheme, std::move(values2)));
 
   apps::ConditionValues values3;
   values3.push_back(std::make_unique<apps::ConditionValue>(
-      url.host(), apps::PatternMatchType::kNone));
+      url.host(), apps::PatternMatchType::kLiteral));
   filter->conditions.push_back(std::make_unique<apps::Condition>(
       apps::ConditionType::kHost, std::move(values3)));
 
@@ -166,7 +166,7 @@ apps::IntentFilters CreateIntentFilters() {
   values4.push_back(std::make_unique<apps::ConditionValue>(
       url.path(), apps::PatternMatchType::kPrefix));
   filter->conditions.push_back(std::make_unique<apps::Condition>(
-      apps::ConditionType::kPattern, std::move(values4)));
+      apps::ConditionType::kPath, std::move(values4)));
 
   filters.push_back(std::move(filter));
 
@@ -389,7 +389,7 @@ class PublisherTest : public extensions::ExtensionServiceTestBase {
     apps::IntentFilters target;
     apps::AppServiceProxyFactory::GetForProfile(profile())
         ->AppRegistryCache()
-        .ForApp(app_id, [&target](const apps::AppUpdate& update) {
+        .ForOneApp(app_id, [&target](const apps::AppUpdate& update) {
           target = update.IntentFilters();
         });
 

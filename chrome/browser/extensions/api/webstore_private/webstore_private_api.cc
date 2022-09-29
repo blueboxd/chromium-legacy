@@ -40,7 +40,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/extensions/extensions_dialogs.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -91,7 +91,6 @@ namespace IsPendingCustodianApproval =
     api::webstore_private::IsPendingCustodianApproval;
 namespace IsInIncognitoMode = api::webstore_private::IsInIncognitoMode;
 namespace LaunchEphemeralApp = api::webstore_private::LaunchEphemeralApp;
-namespace RequestExtension = api::webstore_private::RequestExtension;
 namespace SetStoreLogin = api::webstore_private::SetStoreLogin;
 
 namespace {
@@ -243,9 +242,9 @@ void ShowBlockedByParentDialog(const Extension* extension,
     return;
   }
 
-  chrome::ShowExtensionInstallBlockedByParentDialog(
-      chrome::ExtensionInstalledBlockedByParentDialogAction::kAdd, extension,
-      contents, std::move(done_callback));
+  extensions::ShowExtensionInstallBlockedByParentDialog(
+      extensions::ExtensionInstalledBlockedByParentDialogAction::kAdd,
+      extension, contents, std::move(done_callback));
 }
 
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -871,7 +870,7 @@ bool WebstorePrivateBeginInstallWithManifest3Function::ShouldShowFrictionDialog(
 void WebstorePrivateBeginInstallWithManifest3Function::
     ShowInstallFrictionDialog(content::WebContents* contents) {
   friction_dialog_shown_ = true;
-  chrome::ShowExtensionInstallFrictionDialog(
+  ShowExtensionInstallFrictionDialog(
       contents,
       base::BindOnce(&WebstorePrivateBeginInstallWithManifest3Function::
                          OnFrictionPromptDone,
@@ -933,9 +932,9 @@ void WebstorePrivateBeginInstallWithManifest3Function::
     return;
   }
 
-  chrome::ShowExtensionInstallBlockedDialog(
-      extension->id(), extension->name(), blocked_by_policy_error_message_,
-      image, contents, std::move(done_callback));
+  ShowExtensionInstallBlockedDialog(extension->id(), extension->name(),
+                                    blocked_by_policy_error_message_, image,
+                                    contents, std::move(done_callback));
 }
 
 WebstorePrivateCompleteInstallFunction::
@@ -1321,32 +1320,6 @@ void WebstorePrivateGetExtensionStatusFunction::OnManifestParsed(
   api::webstore_private::ExtensionInstallStatus api_status =
       ConvertExtensionInstallStatusForAPI(status);
   Respond(ArgumentList(GetExtensionStatus::Results::Create(api_status)));
-}
-
-WebstorePrivateRequestExtensionFunction::
-    WebstorePrivateRequestExtensionFunction() = default;
-WebstorePrivateRequestExtensionFunction::
-    ~WebstorePrivateRequestExtensionFunction() = default;
-
-ExtensionFunction::ResponseAction
-WebstorePrivateRequestExtensionFunction::Run() {
-  std::unique_ptr<RequestExtension::Params> params(
-      RequestExtension::Params::Create(args()));
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  const ExtensionId& extension_id = params->id;
-
-  if (!crx_file::id_util::IdIsValid(extension_id))
-    return RespondNow(Error(kWebstoreInvalidIdError));
-
-  Profile* profile = Profile::FromBrowserContext(browser_context());
-  ExtensionInstallStatus status =
-      AddExtensionToPendingList(extension_id, profile, std::string());
-
-  api::webstore_private::ExtensionInstallStatus api_status =
-      ConvertExtensionInstallStatusForAPI(status);
-  return RespondNow(
-      ArgumentList(RequestExtension::Results::Create(api_status)));
 }
 
 }  // namespace extensions

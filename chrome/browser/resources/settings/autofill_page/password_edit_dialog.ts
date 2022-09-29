@@ -8,9 +8,9 @@
  */
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
-import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import '../icons.html.js';
@@ -19,22 +19,20 @@ import '../settings_vars.css.js';
 import './passwords_shared.css.js';
 
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
+import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 
-import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {getTemplate} from './password_edit_dialog.html.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
 import {PasswordRequestorMixin} from './password_requestor_mixin.js';
 
-// TODO(derinel@google.com): Use a single id instead of CredentialIds.
 export type SavedPasswordEditedEvent =
-    CustomEvent<chrome.passwordsPrivate.CredentialIds>;
+    CustomEvent<chrome.passwordsPrivate.PasswordUiEntry>;
 
 const SAVED_PASSWORD_EDITED_EVENT_NAME = 'saved-password-edited';
 
@@ -269,12 +267,12 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
     };
   }
 
-  existingEntry: MultiStorePasswordUiEntry|null;
+  existingEntry: chrome.passwordsPrivate.PasswordUiEntry|null;
   isAccountStoreUser: boolean;
   accountEmail: string|null;
   readonly storeOptionAccountValue: string;
   readonly storeOptionDeviceValue: string;
-  savedPasswords: MultiStorePasswordUiEntry[];
+  savedPasswords: chrome.passwordsPrivate.PasswordUiEntry[];
   private usernamesByOrigin_: Map<string, Set<string>>|null = null;
   dialogMode: PasswordDialogMode;
   private isInFederatedViewMode_: boolean;
@@ -298,11 +296,21 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
     this.initDialog_();
   }
 
+  // <if expr="is_chromeos">
+  override onPasswordPromptClose(event: CloseEvent) {
+    super.onPasswordPromptClose(event);
+    // In chromeOS closing the password prompt dialog while the edit dialog is
+    // open also closes the edit dialog. This happens when add dialog wants to
+    // switch to edit dialog.
+    event.stopPropagation();
+  }
+  // </if>
+
   private initDialog_() {
     if (this.existingEntry) {
       this.websiteUrls_ = this.existingEntry.urls;
       this.username_ = this.existingEntry.username;
-      this.note_ = this.existingEntry.note;
+      this.note_ = this.existingEntry.note || '';
     }
     this.password_ = this.getPassword_();
     if (!this.isInFederatedViewMode_) {
@@ -452,7 +460,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
         // credential.
         return this.existingEntry!.federationText!;
       case PasswordDialogMode.EDIT:
-        return this.existingEntry!.password;
+        return this.existingEntry!.password || '';
       case PasswordDialogMode.ADD:
         return '';
       default:
@@ -521,10 +529,17 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
     }
 
     PasswordManagerImpl.getInstance()
-        .changeSavedPassword([this.existingEntry!.id], params)
-        .then(newIds => {
+        .changeSavedPassword(this.existingEntry!.id, params)
+        .then(newId => {
           if (this.isPasswordViewPageEnabled_) {
-            this.dispatchChangePasswordEvent_(newIds);
+            const newEntry = {
+              ...this.existingEntry!,
+              username: this.username_,
+              password: this.password_,
+              note: this.note_,
+              id: newId,
+            };
+            this.dispatchChangePasswordEvent_(newEntry);
           }
         })
         .finally(() => {
@@ -533,11 +548,11 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
   }
 
   private dispatchChangePasswordEvent_(
-      newIds: chrome.passwordsPrivate.CredentialIds) {
+      newEntry: chrome.passwordsPrivate.PasswordUiEntry) {
     this.dispatchEvent(new CustomEvent(SAVED_PASSWORD_EDITED_EVENT_NAME, {
       bubbles: true,
       composed: true,
-      detail: newIds,
+      detail: newEntry,
     }));
   }
 
@@ -694,7 +709,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
         AddCredentialFromSettingsUserInteractions.DUPLICATE_CREDENTIAL_VIEWED,
         AddCredentialFromSettingsUserInteractions.COUNT);
     const existingEntry = this.savedPasswords.find(entry => {
-      return entry.urls.origin === this.websiteUrls_!.origin &&
+      return entry.urls.signonRealm === this.websiteUrls_!.signonRealm &&
           entry.username === this.username_;
     })!;
     this.requestPlaintextPassword(
@@ -705,7 +720,8 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
         }, () => {});
   }
 
-  private switchToEditMode_(existingEntry: MultiStorePasswordUiEntry) {
+  private switchToEditMode_(existingEntry:
+                                chrome.passwordsPrivate.PasswordUiEntry) {
     this.existingEntry = existingEntry;
     this.initDialog_();
     this.$.dialog.focus();
@@ -725,8 +741,9 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
       return false;
     }
     // TODO(crbug.com/1264468): Consider moving duplication check to backend.
-    const isDuplicate = this.usernamesByOrigin_.has(this.websiteUrls_.origin) &&
-        this.usernamesByOrigin_.get(this.websiteUrls_.origin)!.has(
+    const isDuplicate =
+        this.usernamesByOrigin_.has(this.websiteUrls_.signonRealm) &&
+        this.usernamesByOrigin_.get(this.websiteUrls_.signonRealm)!.has(
             this.username_);
 
     if (isDuplicate && this.dialogMode === PasswordDialogMode.ADD) {
@@ -755,7 +772,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
 
     // Group existing usernames by origin.
     return relevantPasswords.reduce(function(usernamesByOrigin, entry) {
-      const origin = entry.urls.origin;
+      const origin = entry.urls.signonRealm;
       if (!usernamesByOrigin.has(origin)) {
         usernamesByOrigin.set(origin, new Set());
       }

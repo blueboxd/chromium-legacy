@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/direct_sockets/tcp_socket.h"
 
 #include "base/barrier_callback.h"
-#include "base/functional/identity.h"
 #include "base/metrics/histogram_functions.h"
 #include "net/base/net_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -53,16 +52,6 @@ mojom::blink::DirectSocketOptionsPtr CreateTCPSocketOptions(
   socket_options->remote_hostname = remote_address;
   socket_options->remote_port = remote_port;
 
-  const bool has_full_local_address =
-      options->hasLocalAddress() && options->hasLocalPort();
-
-  if (const bool has_partial_local_address =
-          options->hasLocalAddress() || options->hasLocalPort();
-      has_partial_local_address && !has_full_local_address) {
-    exception_state.ThrowTypeError("Incomplete local address specified.");
-    return {};
-  }
-
   if (!CheckSendReceiveBufferSize(options, exception_state)) {
     return {};
   }
@@ -84,11 +73,6 @@ mojom::blink::DirectSocketOptionsPtr CreateTCPSocketOptions(
           /*delay=*/options->hasKeepAliveDelay()
               ? base::Milliseconds(options->keepAliveDelay()).InSeconds()
               : 0);
-
-  if (has_full_local_address) {
-    socket_options->local_hostname = options->localAddress();
-    socket_options->local_port = options->localPort();
-  }
 
   if (options->hasSendBufferSize()) {
     socket_options->send_buffer_size = options->sendBufferSize();
@@ -153,7 +137,7 @@ void TCPSocket::Init(int32_t result,
                      mojo::ScopedDataPipeConsumerHandle receive_stream,
                      mojo::ScopedDataPipeProducerHandle send_stream) {
   if (result == net::OK && peer_addr) {
-    auto close_callback = base::BarrierCallback<bool>(
+    auto close_callback = base::BarrierCallback<ScriptValue>(
         /*num_callbacks=*/2,
         WTF::Bind(&TCPSocket::OnBothStreamsClosed, WrapWeakPersistent(this)));
 
@@ -245,16 +229,22 @@ bool TCPSocket::HasPendingActivity() const {
   return Socket::HasPendingActivity();
 }
 
-void TCPSocket::OnBothStreamsClosed(std::vector<bool> args) {
+void TCPSocket::OnBothStreamsClosed(std::vector<ScriptValue> args) {
   DCHECK_EQ(args.size(), 2U);
-  // At least one callback was invoked with error = true.
-  bool error = base::ranges::any_of(args, base::identity());
+
+  // Finds first actual exception and rejects |closed| with it.
+  // If neither of the streams was errored, resolves |closed|.
+  if (auto it = base::ranges::find_if(
+          args, [](ScriptValue exception) { return !exception.IsEmpty(); });
+      it != args.end()) {
+    RejectClosed(*it);
+  } else {
+    ResolveClosed();
+  }
+  CloseServiceAndResetFeatureHandle();
 
   tcp_socket_.reset();
   socket_observer_.reset();
-
-  CloseServiceAndResetFeatureHandle();
-  ResolveOrRejectClosed(error);
 }
 
 }  // namespace blink

@@ -30,6 +30,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import org.chromium.android_webview.devui.util.SafeIntentUtils;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.IntentUtils;
@@ -281,8 +282,7 @@ public class MainActivity extends FragmentActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.options_menu, menu);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            // Switching WebView providers is only possible for API >= 24.
+        if (!WebViewPackageError.canAccessWebViewProviderDeveloperSetting()) {
             MenuItem item = menu.findItem(R.id.options_menu_switch_provider);
             item.setVisible(false);
         }
@@ -294,7 +294,9 @@ public class MainActivity extends FragmentActivity {
         if (item.getItemId() == R.id.options_menu_switch_provider
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             logMenuSelection(MenuChoice.SWITCH_PROVIDER);
-            startActivity(new Intent(Settings.ACTION_WEBVIEW_SETTINGS));
+            SafeIntentUtils.startActivityOrShowError(this,
+                    new Intent(Settings.ACTION_WEBVIEW_SETTINGS),
+                    SafeIntentUtils.WEBVIEW_SETTINGS_ERROR);
             return true;
         } else if (item.getItemId() == R.id.options_menu_report_bug) {
             logMenuSelection(MenuChoice.REPORT_BUG);
@@ -306,7 +308,9 @@ public class MainActivity extends FragmentActivity {
                                     .appendQueryParameter("labels",
                                             "Via-WebView-DevTools,Pri-3,Type-Bug,OS-Android")
                                     .build();
-            startActivity(new Intent(Intent.ACTION_VIEW, reportUri));
+            SafeIntentUtils.startActivityOrShowError(this,
+                    new Intent(Intent.ACTION_VIEW, reportUri),
+                    SafeIntentUtils.NO_BROWSER_FOUND_ERROR);
             return true;
         } else if (item.getItemId() == R.id.options_menu_check_updates) {
             logMenuSelection(MenuChoice.CHECK_UPDATES);
@@ -324,14 +328,17 @@ public class MainActivity extends FragmentActivity {
                                         .path("/store/apps/details")
                                         .appendQueryParameter("id", this.getPackageName())
                                         .build();
-                startActivity(new Intent(Intent.ACTION_VIEW, marketUri));
+                SafeIntentUtils.startActivityOrShowError(this,
+                        new Intent(Intent.ACTION_VIEW, marketUri),
+                        SafeIntentUtils.NO_BROWSER_FOUND_ERROR);
             }
             return true;
         } else if (item.getItemId() == R.id.options_menu_about_devui) {
             logMenuSelection(MenuChoice.ABOUT_DEVTOOLS);
             Uri uri = Uri.parse(
                     "https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/developer-ui.md");
-            startActivity(new Intent(Intent.ACTION_VIEW, uri));
+            SafeIntentUtils.startActivityOrShowError(this, new Intent(Intent.ACTION_VIEW, uri),
+                    SafeIntentUtils.NO_BROWSER_FOUND_ERROR);
             return true;
         } else if (item.getItemId() == R.id.options_menu_components) {
             logMenuSelection(MenuChoice.COMPONENTS_UI);

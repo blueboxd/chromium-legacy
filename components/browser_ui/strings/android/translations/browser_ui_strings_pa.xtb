@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">ਡਾਊਨਲੋਡ ਰੋਕਿਆ ਗਿਆ</translation>
 <translation id="1409426117486808224">ਖੁੱਲ੍ਹੀਆਂ ਟੈਬਾਂ ਲਈ ਸਰਲੀਕਿਰਤ ਦ੍ਰਿਸ਼</translation>
 <translation id="1415402041810619267">URL ਛੋਟਾ ਕੀਤਾ ਗਿਆ</translation>
+<translation id="1426410128494586442">ਹਾਂ</translation>
 <translation id="1446450296470737166">MIDI ਡਿਵਾਈਸਾਂ ਦੇ ਪੂਰੇ ਨਿਯੰਤਰਣ ਦੀ ਆਗਿਆ ਦਿਓ</translation>
 <translation id="1620510694547887537">ਕੈਮਰਾ</translation>
 <translation id="1644574205037202324">ਇਤਿਹਾਸ</translation>
@@ -32,6 +33,7 @@
 <translation id="1818308510395330587"><ph name="APP_NAME" /> ਨੂੰ AR ਵਰਤਣ ਦੇਣ ਲਈ <ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ ਕੈਮਰਾ ਵੀ ਚਾਲੂ ਕਰੋ।</translation>
 <translation id="1864927262126810325"><ph name="SOURCE_NAME" /> ਤੋਂ</translation>
 <translation id="1887786770086287077">ਇਸ ਡੀਵਾਈਸ ਲਈ ਟਿਕਾਣਾ ਪਹੁੰਚ ਬੰਦ ਹੈ। ਇਸਨੂੰ <ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ ਚਾਲੂ ਕਰੋ।</translation>
+<translation id="1915307458270490472">ਸਮਾਪਤ ਕਰੋ</translation>
 <translation id="1919345977826869612">ਵਿਗਿਆਪਨ</translation>
 <translation id="1919950603503897840">ਸੰਪਰਕ ਚੁਣੋ</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -78,6 +80,7 @@
 <translation id="2677748264148917807">ਛੱਡੋ</translation>
 <translation id="2687403674020088961">ਸਾਰੀਆਂ ਕੁਕੀਜ਼ ਨੂੰ ਬਲਾਕ ਕਰੋ (ਇਸਦੀ ਸਿਫ਼ਾਰਸ਼ ਨਹੀਂ ਕੀਤੀ ਜਾਂਦੀ)</translation>
 <translation id="2704606927547763573">ਕਾਪੀ ਕੀਤਾ</translation>
+<translation id="2713106313042589954">ਕੈਮਰਾ ਬੰਦ ਕਰੋ</translation>
 <translation id="2717722538473713889">ਈਮੇਲ ਪਤੇ</translation>
 <translation id="2750481671343847896">ਸਾਈਟਾਂ ਪਛਾਣ ਸੰਬੰਧੀ ਸੇਵਾਵਾਂ ਵੱਲੋਂ ਸਾਈਨ-ਇਨ ਕਰਨ ਦੇ ਉਤਪ੍ਰੇਰਕਾਂ ਨੂੰ ਦਿਖਾ ਸਕਦੀਆਂ ਹਨ।</translation>
 <translation id="2785051990912111074">ਇਹ ਚੋਣ <ph name="WEBSITE" /> ਦੀਆਂ ਕੁਕੀਜ਼ ਨੂੰ ਕਲੀਅਰ ਕਰ ਦੇਵੇਗੀ</translation>
@@ -97,6 +100,7 @@
 <translation id="3114012059975132928">ਵੀਡੀਓ ਪਲੇਅਰ</translation>
 <translation id="3115898365077584848">ਜਾਣਕਾਰੀ ਦਿਖਾਓ</translation>
 <translation id="3123473560110926937">ਕੁਝ ਸਾਈਟਾਂ 'ਤੇ ਬਲਾਕ ਕੀਤੇ ਗਏ</translation>
+<translation id="3143754809889689516">ਸ਼ੁਰੂ ਤੋਂ ਚਲਾਓ</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> ਸਟੋਰ ਕੀਤਾ ਡਾਟਾ</translation>
 <translation id="3203366800380907218">ਵੈੱਬ ਤੋਂ</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> ਨੂੰ ਤੁਹਾਨੂੰ ਸੂਚਨਾਵਾਂ ਭੇਜਣ ਦੇਣ ਲਈ, <ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ ਸੂਚਨਾਵਾਂ ਵੀ ਚਾਲੂ ਕਰੋ।</translation>
@@ -153,10 +157,12 @@
 <translation id="4479647676395637221">ਸਾਈਟਾਂ ਨੂੰ ਤੁਹਾਡੇ ਕੈਮਰੇ ਦੀ ਵਰਤੋਂ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਤੁਹਾਡੀ ਇਜਾਜ਼ਤ ਲੈਣ ਨੂੰ ਜ਼ਰੂਰੀ ਬਣਾਓ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
 <translation id="4505788138578415521">URL ਦਾ ਵਿਸਤਾਰ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="4534723447064627427"><ph name="APP_NAME" /> ਨੂੰ ਆਪਣੇ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦੇਣ ਲਈ, <ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਵੀ ਚਾਲੂ ਕਰੋ।</translation>
+<translation id="4566417217121906555">ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਮਿਊਟ ਕਰੋ</translation>
 <translation id="4570913071927164677">ਵੇਰਵੇ</translation>
 <translation id="4645575059429386691">ਤੁਹਾਡੇ ਮਾਤਾ ਜਾਂ ਪਿਤਾ ਵੱਲੋਂ ਵਿਵਸਥਿਤ</translation>
 <translation id="4670064810192446073">ਆਭਾਸੀ ਵਾਸਤਵਿਕਤਾ</translation>
 <translation id="4751476147751820511">ਗਤੀ ਜਾਂ ਰੋਸ਼ਨੀ ਦੇ ਸੈਂਸਰ</translation>
+<translation id="4811450222531576619">ਇਸਦੇ ਸ੍ਰੋਤ ਅਤੇ ਵਿਸ਼ੇ ਬਾਰੇ ਜਾਣੋ</translation>
 <translation id="4836046166855586901">ਜਦੋਂ ਕੋਈ ਸਾਈਟ ਜਾਣਨਾ ਚਾਹੁੰਦੀ ਹੈ ਕਿ ਤੁਸੀਂ ਕਿਰਿਆਸ਼ੀਲ ਤੌਰ 'ਤੇ ਇਸ ਡੀਵਾਈਸ ਦੀ ਵਰਤੋਂ ਕਦੋਂ ਕਰਦੇ ਹੋ, ਉਸ ਵੇਲੇ ਪੁੱਛੋ</translation>
 <translation id="4883854917563148705">ਪ੍ਰਬੰਧਿਤ ਕੀਤੀਆਂ ਸੈਟਿੰਗਾਂ ਨੂੰ ਰੀਸੈੱਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ</translation>
 <translation id="4887024562049524730">ਸਾਈਟਾਂ ਨੂੰ ਤੁਹਾਡੇ ਆਭਾਸੀ ਵਾਸਤਵਿਕਤਾ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟੇ ਨੂੰ ਵਰਤਣ ਦੇਣ ਤੋਂ ਪਹਿਲਾਂ ਪੁੱਛੋ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
@@ -177,6 +183,7 @@
 <translation id="5186036860380548585">ਸਕ੍ਰੀਨ ਦੇ ਸਿਖਰ ਨੇੜੇ ਵਿਕਲਪ ਉਪਲਬਧ ਹਨ</translation>
 <translation id="5197729504361054390">ਤੁਹਾਡੇ ਵੱਲੋਂ ਚੁਣੇ ਸੰਪਰਕ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ਨਾਲ ਸਾਂਝੇ ਕੀਤੇ ਜਾਣਗੇ।</translation>
 <translation id="5216942107514965959">ਪਿਛਲੀ ਵਾਰ ਅੱਜ ਦੇਖੀ ਗਈ</translation>
+<translation id="5225463052809312700">ਕੈਮਰਾ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="5264323282659631142">'<ph name="CHIP_LABEL" />' ਨੂੰ ਹਟਾਓ</translation>
 <translation id="528192093759286357">ਉੱਪਰ ਤੋਂ ਘਸੀਟੋ ਅਤੇ ਪੂਰੀ ਸਕ੍ਰੀਨ ਤੋਂ ਬਾਹਰ ਜਾਣ ਲਈ ਪਿੱਛੇ ਜਾਓ ਬਟਨ ਨੂੰ ਸਪਰਸ਼ ਕਰੋ।</translation>
 <translation id="5300589172476337783">ਦਿਖਾਓ</translation>
@@ -235,8 +242,10 @@
 <translation id="6367753977865761591">ਕਿਸੇ ਖਾਸ ਸਾਈਟ ਲਈ ਤੀਜੀ-ਧਿਰ ਦੇ ਸਾਈਨ-ਇਨ ਨੂੰ ਬਲਾਕ ਕਰੋ।</translation>
 <translation id="6388207532828177975">ਹਟਾਓ &amp; ਰੀਸੈਟ ਕਰੋ</translation>
 <translation id="6398765197997659313">ਪੂਰੀ ਸਕ੍ਰੀਨ ਤੋਂ ਬਾਹਰ ਜਾਓ</translation>
+<translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">ਸਾਈਟਾਂ ਨੂੰ ਤੁਹਾਡੇ ਆਭਾਸੀ ਵਾਸਤਵਿਕਤਾ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟੇ ਨੂੰ ਵਰਤਣ ਤੋਂ ਬਲਾਕ ਕਰੋ</translation>
 <translation id="6447842834002726250">ਕੁਕੀਜ਼</translation>
+<translation id="6467852467360539617">ਡਾਟਾ ਕਲੀਅਰ ਕਰੋ ਅਤੇ ਇਜਾਜ਼ਤਾਂ ਰੀਸੈੱਟ ਕਰੋ</translation>
 <translation id="6527303717912515753">ਸ਼ੇਅਰ ਕਰੋ</translation>
 <translation id="6545864417968258051">ਬਲੂਟੁੱਥ ਸਕੈਨਿੰਗ</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ਅਤੇ <ph name="NUM_MORE" /> ਹੋਰ ਨੂੰ ਬਲਾਕ ਕੀਤਾ ਗਿਆ}one{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ਅਤੇ <ph name="NUM_MORE" /> ਹੋਰ ਨੂੰ ਬਲਾਕ ਕੀਤਾ ਗਿਆ}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ਅਤੇ <ph name="NUM_MORE" /> ਹੋਰ ਨੂੰ ਬਲਾਕ ਕੀਤਾ ਗਿਆ}}</translation>
@@ -276,6 +285,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ਨੂੰ ਚੁਣਿਆ ਗਿਆ</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> ਅਤੇ <ph name="PERMISSION_2" /> ਦੀ ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਗਈ</translation>
 <translation id="7302486331832100261">ਆਮ ਤੌਰ 'ਤੇ ਤੁਸੀਂ ਸੂਚਨਾਵਾਂ ਨੂੰ ਬਲਾਕ ਕਰਦੇ ਹੋ। ਇਜਾਜ਼ਤ ਦੇਣ ਲਈ, ਵੇਰਵਿਆਂ 'ਤੇ ਟੈਪ ਕਰੋ।</translation>
+<translation id="7383715096023715447"><ph name="DOMAIN" /> ਲਈ ਸੈਟਿੰਗਾਂ</translation>
 <translation id="7423098979219808738">ਪਹਿਲਾਂ ਪੁੱਛੋ</translation>
 <translation id="7423538860840206698">ਕਲਿੱਪਬੋਰਡ ਪੜ੍ਹਨ ਤੋਂ ਬਲਾਕ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="7425915948813553151">ਸਾਈਟਾਂ ਲਈ ਗੂੜ੍ਹਾ ਥੀਮ</translation>
@@ -335,6 +345,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 ਕੁਕੀ ਵਰਤੋਂ ਵਿੱਚ ਹੈ}one{# ਕੁਕੀ ਵਰਤੋਂ ਵਿੱਚ ਹੈ}other{# ਕੁਕੀਜ਼ ਵਰਤੋਂ ਵਿੱਚ ਹਨ}}</translation>
 <translation id="8487700953926739672">ਆਫ਼ਲਾਈਨ ਉਪਲਬਧ</translation>
 <translation id="848952951823693243">ਹਮੇਸ਼ਾਂ ਮੋਬਾਈਲ ਸਾਈਟ ਦੀ ਬੇਨਤੀ ਕਰੋ</translation>
+<translation id="8499083585497694743">ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਅਣਮਿਊਟ ਕਰੋ</translation>
 <translation id="851751545965956758">ਸਾਈਟਾਂ ਨੂੰ ਡੀਵਾਈਸਾਂ ਨਾਲ ਕਨੈਕਟ ਕਰਨ ਤੋਂ ਬਲਾਕ ਕਰੋ</translation>
 <translation id="8525306231823319788">ਪੂਰੀ ਸਕ੍ਰੀਨ</translation>
 <translation id="857943718398505171">ਇਜਾਜ਼ਤ ਹੈ ( ਸਿਫ਼ਾਰਸ਼  ਕੀਤੇ)</translation>

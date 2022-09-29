@@ -72,6 +72,7 @@ android_library("devui_java") {
     "java/src/org/chromium/android_webview/devui/util/ComponentsInfoLoader.java",
     "java/src/org/chromium/android_webview/devui/util/CrashBugUrlFactory.java",
     "java/src/org/chromium/android_webview/devui/util/CrashInfoLoader.java",
+    "java/src/org/chromium/android_webview/devui/util/SafeIntentUtils.java",
     "java/src/org/chromium/android_webview/devui/util/UnuploadedFilesStateLoader.java",
     "java/src/org/chromium/android_webview/devui/util/UploadedCrashesInfoLoader.java",
     "java/src/org/chromium/android_webview/devui/util/WebViewCrashInfoCollector.java",
@@ -116,6 +117,7 @@ android_library("services_java") {
     "java/src/org/chromium/android_webview/services/MetricsUploadService.java",
     "java/src/org/chromium/android_webview/services/SafeModeContentProvider.java",
     "java/src/org/chromium/android_webview/services/SafeModeService.java",
+    "java/src/org/chromium/android_webview/services/ServicesStatsHelper.java",
     "java/src/org/chromium/android_webview/services/VariationsSeedHolder.java",
     "java/src/org/chromium/android_webview/services/VariationsSeedServer.java",
   ]

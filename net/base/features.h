@@ -17,10 +17,6 @@
 
 namespace net::features {
 
-// Toggles the `Accept-Language` HTTP request header, which
-// https://github.com/WICG/lang-client-hint proposes that we deprecate.
-NET_EXPORT extern const base::Feature kAcceptLanguageHeader;
-
 // Enables ALPS extension of TLS 1.3 for HTTP/2, see
 // https://vasilvv.github.io/tls-alps/draft-vvv-tls-alps.html and
 // https://vasilvv.github.io/httpbis-alps/draft-vvv-httpbis-alps.html.
@@ -237,6 +233,24 @@ NET_EXPORT extern const base::Feature
 // testing.
 NET_EXPORT extern const base::Feature
     kPartitionNelAndReportingByNetworkIsolationKey;
+
+// Creates a <double key + is_cross_site> NetworkAnonymizationKey which is used
+// to partition the network state. This double key will have the following
+// properties: `top_frame_site` -> the schemeful site of the top level page.
+// `frame_site ` -> nullopt
+// `is_cross_site` -> true if the `top_frame_site` is cross site when compared
+// to the frame site. The frame site will not be stored in this key so the value
+// of is_cross_site will be computed at key construction. This feature overrides
+// `kEnableDoubleKeyNetworkAnonymizationKey` if both are enabled.
+NET_EXPORT extern const base::Feature
+    kEnableCrossSiteFlagNetworkAnonymizationKey;
+
+// Creates a double keyed NetworkAnonymizationKey which is used to partition the
+// network state. This double key will have the following properties:
+// `top_frame_site` -> the schemeful site of the top level page.
+// `frame_site ` -> nullopt
+// `is_cross_site` -> nullopt
+NET_EXPORT extern const base::Feature kEnableDoubleKeyNetworkAnonymizationKey;
 
 // Enables limiting the size of Expect-CT table.
 NET_EXPORT extern const base::Feature kExpectCTPruning;
@@ -465,6 +479,13 @@ NET_EXPORT extern const base::Feature kStorageAccessAPI;
 NET_EXPORT extern const int kStorageAccessAPIDefaultImplicitGrantLimit;
 NET_EXPORT extern const base::FeatureParam<int>
     kStorageAccessAPIImplicitGrantLimit;
+// Whether the Storage Access API can grant access to storage (even if it is
+// unpartitioned). When this feature is disabled, access to storage is only
+// granted if the storage is partitioned.
+NET_EXPORT extern const base::FeatureParam<bool>
+    kStorageAccessAPIGrantsUnpartitionedStorage;
+
+NET_EXPORT extern const base::Feature kThirdPartyStoragePartitioning;
 
 }  // namespace net::features
 

@@ -47,8 +47,6 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_test_util.h"
 #include "content/public/browser/gpu_data_manager.h"
-#include "extensions/browser/api/management/management_api_constants.h"
-#include "extensions/common/error_utils.h"
 #endif
 
 using extensions::mojom::ManifestLocation;
@@ -389,7 +387,7 @@ TEST_F(ManagementApiUnitTest, ManagementUninstall) {
     // If we try uninstall the extension itself, the uninstall should succeed
     // (even though we auto-cancel any dialog), because the dialog is never
     // shown.
-    uninstall_args.EraseListIter(uninstall_args.GetListDeprecated().begin());
+    uninstall_args.GetList().erase(uninstall_args.GetList().begin());
     function = new ManagementUninstallSelfFunction();
     function->set_extension(extension);
     EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_id));

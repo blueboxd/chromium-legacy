@@ -94,36 +94,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Enterprise.AppRestrictionLoadTime2" units="ms"
-    expires_after="2021-04-04">
-  <owner>twellington@google.com</owner>
-  <owner>tedchcoc@chromium.org</owner>
-  <summary>
-    Records the time it takes to retrieve applicaton restrictions from the
-    system. Android only.
-  </summary>
-</histogram>
-
-<histogram name="Enterprise.AppRestrictionLoadTime2.EmptyBundle" units="ms"
-    expires_after="2021-08-09">
-  <owner>twellington@google.com</owner>
-  <owner>tedchcoc@chromium.org</owner>
-  <summary>
-    Records the time it takes to retrieve applicaton restrictions from the
-    system when the retrieved Bundle is empty. Android only.
-  </summary>
-</histogram>
-
-<histogram name="Enterprise.AppRestrictionLoadTime2.NonEmptyBundle" units="ms"
-    expires_after="2021-08-09">
-  <owner>twellington@google.com</owner>
-  <owner>tedchcoc@chromium.org</owner>
-  <summary>
-    Records the time it takes to retrieve applicaton restrictions from the
-    system when the retrieved Bundle is not empty. Android only.
-  </summary>
-</histogram>
-
 <histogram name="Enterprise.AttributesTPMConsistency"
     enum="EnterpriseAttributesTPMConsistencyType" expires_after="never">
 <!-- expires-never: Needed for health check. -->
@@ -878,7 +848,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.ClipboardReadBlocked" enum="BooleanBlocked"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>poromov@chromium.org</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -920,7 +890,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.DlpPolicyPresent" enum="Boolean"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>poromov@chromium.org</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -930,7 +900,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.DragDropBlocked" enum="BooleanBlocked"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>poromov@chromium.org</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -949,14 +919,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.PrintingBlocked" enum="BooleanBlocked"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>poromov@chromium.org</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>Result of Data Leak Prevention evaluation for printing.</summary>
 </histogram>
 
 <histogram name="Enterprise.Dlp.PrintingWarned" enum="BooleanWarned"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>aidazolic@chromium.org</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -1047,7 +1017,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.RestrictionConfigured"
-    enum="EnterpriseDlpPolicyRestriction" expires_after="2022-12-01">
+    enum="EnterpriseDlpPolicyRestriction" expires_after="2023-02-12">
   <owner>poromov@chromium.org</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -1057,7 +1027,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.ScreenShareBlocked" enum="BooleanBlocked"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>poromov@chromium.org</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -1108,7 +1078,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.ScreenshotBlocked" enum="BooleanBlocked"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>poromov@chromium.org</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -1118,7 +1088,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.ScreenshotWarned" enum="BooleanWarned"
-    expires_after="2022-12-01">
+    expires_after="2023-02-12">
   <owner>aidazolic@chromium.org</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -1422,6 +1392,33 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.EnrollmentRollbackAttestation"
+    enum="EnterpriseEnrollmentType" expires_after="2023-07-14">
+  <owner>crisguerrero@google.com</owner>
+  <owner>mpolzer@google.com</owner>
+  <owner>chromeos-commercial-remote-management@google.com</owner>
+  <summary>
+    Events related to attestation based re-enrollment after enterprise rollback.
+
+    Events are recorded during enrollment after rollback and types are listed in
+    the MetricEnrollment enum.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.EnrollmentRollbackManualFallback"
+    enum="EnterpriseEnrollmentType" expires_after="2023-07-14">
+  <owner>crisguerrero@google.com</owner>
+  <owner>mpolzer@google.com</owner>
+  <owner>chromeos-commercial-remote-management@google.com</owner>
+  <summary>
+    Events related to manual re-enrollment after enterprise rollback. This is
+    used when attestation based enrollment fails.
+
+    Events are recorded during enrollment after rollback and types are listed in
+    the MetricEnrollment enum.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.EnrollmentTime.Cancel" units="ms"
     expires_after="2023-02-01">
   <owner>raleksandrov@google.com</owner>
@@ -1451,6 +1448,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Enterprise.EnterCriticalPolicySectionDelay.Total" units="ms"
     expires_after="2023-01-15">
+  <obsolete>
+    Remove after M105. Data is static hence there is no need to keep monitoring.
+  </obsolete>
   <owner>zmin@chromium.org</owner>
   <owner>grt@chromium.org</owner>
   <summary>
@@ -1463,6 +1463,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Enterprise.EnterCriticalPolicySectionDelay.{Scope}.{Result}"
     units="ms" expires_after="2022-06-12">
+  <obsolete>
+    Remove after 2022-06. Data is static hence there is no need to keep
+    monitoring.
+  </obsolete>
   <owner>zmin@chromium.org</owner>
   <owner>grt@chromium.org</owner>
   <summary>
@@ -1482,6 +1486,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Enterprise.EnterCriticalPolicySectionError"
     enum="WinGetLastError" expires_after="2022-08-14">
+  <obsolete>
+    Remove after M105. Data is static hence there is no need to keep monitoring.
+  </obsolete>
   <owner>zmin@chromium.org</owner>
   <owner>grt@chromium.org</owner>
   <summary>
@@ -1872,7 +1879,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Policies.IgnoredByPolicyGroup"
-    enum="EnterprisePolicies" expires_after="2022-12-04">
+    enum="EnterprisePolicies" expires_after="2023-02-12">
   <owner>ydago@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -2292,7 +2299,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.VpdUpdateStatus" units="units"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>igorcov@chromium.org</owner>
   <owner>tnagel@chromium.org</owner>
   <summary>
@@ -2301,7 +2308,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.AzureADJoinStatusCheckTime" units="ms"
-    expires_after="2022-12-12">
+    expires_after="2023-02-12">
   <owner>igorruvinov@chromium.org</owner>
   <owner>ydago@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
@@ -2393,7 +2400,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.IsJoinedToAzureAD" enum="BooleanEnabled"
-    expires_after="2022-12-12">
+    expires_after="2023-02-12">
   <owner>igorruvinov@chromium.org</owner>
   <owner>ydago@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
@@ -2430,7 +2437,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.IsManaged2" enum="BooleanEnabled"
-    expires_after="2022-12-04">
+    expires_after="2023-02-12">
   <owner>rogerta@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
@@ -2443,7 +2450,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.IsManagedOrEnterpriseDevice"
-    enum="BooleanEnabled" expires_after="2022-11-20">
+    enum="BooleanEnabled" expires_after="2023-01-22">
   <owner>pastarmovj@chromium.org</owner>
   <owner>rogerta@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
@@ -2451,16 +2458,6 @@ chromium-metrics-reviews@google.com.
     Whether the machine is managed or part of an enterprise. This includes
     devices that are either in a domain or managed via MDM. This check is
     performed once at start-up on Windows.
-  </summary>
-</histogram>
-
-<histogram name="EnterpriseCheck.IsRunningOnManagedProfileDuration" units="ms"
-    expires_after="2021-04-04">
-  <owner>twellington@google.com</owner>
-  <owner>tedchcoc@chromium.org</owner>
-  <summary>
-    Records the time it takes to calculate whether there is a profile owner app
-    on the device. Android only.
   </summary>
 </histogram>
 

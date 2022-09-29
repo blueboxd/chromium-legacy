@@ -90,9 +90,9 @@ typedef void (^FetchFormsCompletionHandler)(BOOL, const FormDataVector&);
 // modifies the field's value for the select elements.
 void GetFormField(autofill::FormFieldData* field,
                   const autofill::FormData& form,
-                  const std::u16string& fieldIdentifier) {
+                  FieldRendererId fieldIdentifier) {
   for (const auto& currentField : form.fields) {
-    if (currentField.unique_id == fieldIdentifier &&
+    if (currentField.unique_renderer_id == fieldIdentifier &&
         currentField.is_focusable) {
       *field = currentField;
       break;
@@ -151,9 +151,9 @@ void GetFormField(autofill::FormFieldData* field,
   base::WeakPtr<autofill::AutofillPopupDelegate> _popupDelegate;
 
   // The autofill data that needs to be send when the |webState_| is shown.
-  // The pair contains the frame ID and the base::Value to send.
-  // If the value is nullptr, no data needs to be sent.
-  std::pair<std::string, std::unique_ptr<base::Value>> _pendingFormData;
+  // The pair contains the frame ID and the base::Value::Dict to send.
+  // If the value is nullopt, no data needs to be sent.
+  absl::optional<std::pair<std::string, base::Value::Dict>> _pendingFormData;
 
   // Bridge to listen to pref changes.
   std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
@@ -308,7 +308,7 @@ void GetFormField(autofill::FormFieldData* field,
 // Sends a request to BrowserAutofillManager to retrieve suggestions for the
 // specified form and field.
 - (void)queryAutofillForForm:(const autofill::FormData&)form
-             fieldIdentifier:(NSString*)fieldIdentifier
+             fieldIdentifier:(FieldRendererId)fieldIdentifier
                         type:(NSString*)type
                   typedValue:(NSString*)typedValue
                      frameID:(NSString*)frameID
@@ -323,7 +323,7 @@ void GetFormField(autofill::FormFieldData* field,
 
   // Find the right field.
   autofill::FormFieldData field;
-  GetFormField(&field, form, SysNSStringToUTF16(fieldIdentifier));
+  GetFormField(&field, form, fieldIdentifier);
 
   // Save the completion and go look for suggestions.
   _suggestionsAvailableCompletion = [completion copy];
@@ -370,7 +370,7 @@ void GetFormField(autofill::FormFieldData* field,
   id completionHandler = ^(BOOL success, const FormDataVector& forms) {
     if (success && forms.size() == 1) {
       [weakSelf queryAutofillForForm:forms[0]
-                     fieldIdentifier:formQuery.fieldIdentifier
+                     fieldIdentifier:formQuery.uniqueFieldID
                                 type:formQuery.type
                           typedValue:formQuery.typedValue
                              frameID:formQuery.frameID
@@ -486,26 +486,25 @@ void GetFormField(autofill::FormFieldData* field,
 
 - (void)fillFormData:(const autofill::FormData&)form
              inFrame:(web::WebFrame*)frame {
-  auto autofillData =
-      std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
-  autofillData->SetKey("formName", base::Value(base::UTF16ToUTF8(form.name)));
-  autofillData->SetKey(
+  base::Value::Dict autofillData;
+  autofillData.Set("formName", base::Value(base::UTF16ToUTF8(form.name)));
+  autofillData.Set(
       "formRendererID",
       base::Value(static_cast<int>(form.unique_renderer_id.value())));
 
-  base::Value fieldsData(base::Value::Type::DICTIONARY);
+  base::Value::Dict fieldsData;
   for (const auto& field : form.fields) {
     // Skip empty fields and those that are not autofilled.
     if (field.value.empty() || !field.is_autofilled)
       continue;
 
-    base::Value fieldData(base::Value::Type::DICTIONARY);
-    fieldData.SetKey("value", base::Value(field.value));
-    fieldData.SetKey("section", base::Value(field.section));
-    fieldsData.SetKey(NumberToString(field.unique_renderer_id.value()),
-                      std::move(fieldData));
+    base::Value::Dict fieldData;
+    fieldData.Set("value", field.value);
+    fieldData.Set("section", field.section.ToString());
+    fieldsData.Set(NumberToString(field.unique_renderer_id.value()),
+                   std::move(fieldData));
   }
-  autofillData->SetKey("fields", std::move(fieldsData));
+  autofillData.Set("fields", std::move(fieldsData));
 
   // Store the form data when WebState is not visible, to send it as soon as it
   // becomes visible again, e.g., when the CVC unmask prompt is showing.
@@ -536,17 +535,16 @@ void GetFormField(autofill::FormFieldData* field,
     return;
   }
 
-  auto predictionData =
-      std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+  base::Value::Dict predictionData;
   for (const auto& form : forms) {
-    base::Value fieldData(base::Value::Type::DICTIONARY);
+    base::Value::Dict fieldData;
     DCHECK(form.fields.size() == form.data.fields.size());
     for (size_t i = 0; i < form.fields.size(); i++) {
-      fieldData.SetKey(base::UTF16ToUTF8(form.data.fields[i].unique_id),
-                       base::Value(form.fields[i].overall_type));
+      fieldData.Set(
+          NumberToString(form.data.fields[i].unique_renderer_id.value()),
+          base::Value(form.fields[i].overall_type));
     }
-    predictionData->SetKey(base::UTF16ToUTF8(form.data.name),
-                           std::move(fieldData));
+    predictionData.Set(base::UTF16ToUTF8(form.data.name), std::move(fieldData));
   }
   autofill::AutofillJavaScriptFeature::GetInstance()->FillPredictionData(
       frame, std::move(predictionData));
@@ -631,16 +629,19 @@ void GetFormField(autofill::FormFieldData* field,
 
 - (void)webStateWasShown:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
-  if (_pendingFormData.second) {
-    // The frameID cannot be empty.
-    DCHECK(!_pendingFormData.first.empty());
-    web::WebFrame* frame = nullptr;
-    if (!_pendingFormData.first.empty()) {
-      frame = web::GetWebFrameWithId(_webState, _pendingFormData.first);
-    }
-    [self sendData:std::move(_pendingFormData.second) toFrame:frame];
+  if (!_pendingFormData.has_value()) {
+    return;
   }
-  _pendingFormData = std::make_pair("", nullptr);
+
+  std::pair<std::string, base::Value::Dict> pendingFormData =
+      std::move(_pendingFormData).value();
+  _pendingFormData = absl::nullopt;
+
+  // The frameID cannot be empty.
+  DCHECK(!pendingFormData.first.empty());
+  web::WebFrame* frame =
+      web::GetWebFrameWithId(_webState, pendingFormData.first);
+  [self sendData:std::move(pendingFormData.second) toFrame:frame];
 }
 
 - (void)webState:(web::WebState*)webState
@@ -814,7 +815,7 @@ void GetFormField(autofill::FormFieldData* field,
   // -onFormsFetched:formsData:webFrameId:fieldIdentifier.
   __weak AutofillAgent* weakSelf = self;
   __block const std::string webFrameId = frame->GetFrameId();
-  __block const std::string fieldIdentifier = params.field_identifier;
+  __block FieldRendererId fieldIdentifier = params.unique_field_id;
   auto completionHandler = ^(BOOL success, const FormDataVector& forms) {
     [weakSelf onFormsFetched:success
                    formsData:forms
@@ -905,11 +906,11 @@ void GetFormField(autofill::FormFieldData* field,
          formName:(const std::string&)formName
             value:(const std::u16string)value
           inFrame:(web::WebFrame*)frame {
-  auto data = std::make_unique<base::DictionaryValue>();
-  data->SetInteger("unique_renderer_id", uniqueFieldID.value());
-  data->SetString("identifier", fieldIdentifier);
-  data->SetString("form", formName);
-  data->SetString("value", value);
+  base::Value::Dict data;
+  data.Set("unique_renderer_id", static_cast<int>(uniqueFieldID.value()));
+  data.Set("identifier", fieldIdentifier);
+  data.Set("form", formName);
+  data.Set("value", value);
 
   DCHECK(_suggestionHandledCompletion);
   __weak AutofillAgent* weakSelf = self;
@@ -948,8 +949,7 @@ void GetFormField(autofill::FormFieldData* field,
 }
 
 // Sends the the |data| to |frame| to actually fill the data.
-- (void)sendData:(std::unique_ptr<base::Value>)data
-         toFrame:(web::WebFrame*)frame {
+- (void)sendData:(base::Value::Dict)data toFrame:(web::WebFrame*)frame {
   DCHECK(_webState->IsVisible());
   __weak AutofillAgent* weakSelf = self;
   SuggestionHandledCompletion suggestionHandledCompletionCopy =
@@ -976,7 +976,7 @@ void GetFormField(autofill::FormFieldData* field,
 - (void)onFormsFetched:(BOOL)success
              formsData:(const FormDataVector&)forms
             webFrameId:(const std::string&)webFrameId
-       fieldIdentifier:(const std::string&)fieldIdentifier {
+       fieldIdentifier:(FieldRendererId)fieldIdentifier {
   if (!success || forms.size() != 1)
     return;
 
@@ -995,7 +995,7 @@ void GetFormField(autofill::FormFieldData* field,
     return;
 
   autofill::FormFieldData field;
-  GetFormField(&field, forms[0], base::UTF8ToUTF16(fieldIdentifier));
+  GetFormField(&field, forms[0], fieldIdentifier);
   autofillManager->OnTextFieldDidChange(
       forms[0], field, gfx::RectF(), autofill::AutofillTickClock::NowTicks());
 }

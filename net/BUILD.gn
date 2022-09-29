@@ -209,6 +209,7 @@ component("net") {
     "base/network_delegate.h",
     "base/network_delegate_impl.cc",
     "base/network_delegate_impl.h",
+    "base/network_handle.h",
     "base/network_interfaces.cc",
     "base/network_interfaces.h",
     "base/network_isolation_key.cc",
@@ -433,8 +434,12 @@ component("net") {
     "cookies/cookie_store.h",
     "cookies/cookie_util.cc",
     "cookies/cookie_util.h",
+    "cookies/first_party_set_entry.cc",
+    "cookies/first_party_set_entry.h",
     "cookies/first_party_set_metadata.cc",
     "cookies/first_party_set_metadata.h",
+    "cookies/first_party_sets_context_config.cc",
+    "cookies/first_party_sets_context_config.h",
     "cookies/parsed_cookie.cc",
     "cookies/parsed_cookie.h",
     "cookies/same_party_context.cc",
@@ -4446,10 +4451,6 @@ test("net_unittests") {
     sources += [ "base/sockaddr_util_posix_unittest.cc" ]
   }
 
-  if (is_posix || is_fuchsia) {
-    sources += [ "socket/udp_socket_posix_unittest.cc" ]
-  }
-
   if (is_android || is_chromeos_ash) {
     sources += [ "base/network_change_notifier_posix_unittest.cc" ]
   }
@@ -4543,9 +4544,9 @@ test("net_unittests") {
       "//third_party/fuchsia-sdk/sdk/pkg/fidl_cpp",
     ]
     sources += [ "base/network_change_notifier_fuchsia_unittest.cc" ]
-    use_cfv2 = false
+    use_cfv1 = false
     additional_manifest_fragments =
-        [ "//build/config/fuchsia/test/network_capabilities.test-cmx" ]
+        [ "//build/config/fuchsia/test/network.shard.test-cml" ]
   }
 
   if (use_nss_certs) {

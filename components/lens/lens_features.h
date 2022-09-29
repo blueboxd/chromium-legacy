@@ -26,9 +26,16 @@ extern const base::Feature kLensSearchOptimizations;
 // Enables a fix to properly handle transparent images in Lens Image Search
 extern const base::Feature kLensTransparentImagesFix;
 
-// Enables a fix for cursor pointer/crosshair state over overlay on Mac.
-// TODO(crbug/1266514): make default and remove feature once launched.
-extern const base::FeatureParam<bool> kRegionSearchMacCursorFix;
+// Enables Lens integration into the Chrome screenshot sharing feature by adding
+// a "Search Image" button.
+extern const base::Feature kLensSearchImageInScreenshotSharing;
+
+// Enable the Lens Region Search feature on the PDF viewer.
+extern const base::Feature kEnableRegionSearchOnPdfViewer;
+
+// Enables the modification of the instruction chip UI that is presented when
+// region search is opened.
+extern const base::Feature kLensInstructionChipImprovements;
 
 // Enables using `Google` as the visual search provider instead of `Google
 // Lens`.
@@ -53,10 +60,25 @@ extern const base::FeatureParam<bool> kEnableUKMLoggingForImageSearch;
 extern const base::FeatureParam<bool> kEnableSidePanelForLens;
 
 // Enables footer for the unified side panel
-extern const base::FeatureParam<bool> kEnableLensSidePanelFooter;
+extern const base::Feature kLensUnifiedSidePanelFooter;
 
 // Enables Lens fullscreen search on Desktop platforms.
 extern const base::FeatureParam<bool> kEnableFullscreenSearch;
+
+// Enables using side panel in the Chrome Screenshot sharing feature integration
+// instead of a new tab.
+extern const base::FeatureParam<bool> kUseSidePanelForScreenshotSharing;
+
+// Forces the Chrome Screenshot sharing dialog bubble to stay open after the
+// user clicks the Search Image button.
+extern const base::FeatureParam<bool> kEnablePersistentBubble;
+
+// Enables the use of the selection with image icon when using the instruction
+// chip improvements feature.
+extern const base::FeatureParam<bool> kUseSelectionIconWithImage;
+
+// Enables the use of an alternative string for the instruction chip.
+extern const base::FeatureParam<bool> kUseAltChipString;
 
 // Returns whether to enable UKM logging for Lens Region Search feature.
 extern bool GetEnableUKMLoggingForRegionSearch();
@@ -105,6 +127,27 @@ extern bool IsLensSidePanelEnabled();
 // Returns whether to send images to Lens Standalone as PNG
 extern bool GetSendImagesAsPng();
 
+// Returns whether the Search Image button in the Chrome Screenshot Sharing
+// feature is enabled
+extern bool IsLensInScreenshotSharingEnabled();
+
+// Returns whether the instruction chip improvement feature is enabled.
+extern bool IsLensInstructionChipImprovementsEnabled();
+
+// Returns whether to use the Chrome Side Panel for the Lens integration in
+// Chrome Screenshot Sharing feature
+extern bool UseSidePanelForScreenshotSharing();
+
+// Returns whether the Chrome Screenshot Sharing Bubble disappears after the
+// user clicks the Search Image button
+extern bool EnablePersistentBubble();
+
+// Returns if we should use the selection with image icon instead of the default
+// when using the instruction chip improvements feature.
+extern bool UseSelectionIconWithImage();
+
+// Returns whether we should use an alternative instruction chip string.
+extern bool UseAltChipString();
 }  // namespace features
 }  // namespace lens
 

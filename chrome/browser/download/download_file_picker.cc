@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_file_picker.h"
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -15,7 +16,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_WIN)
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "ui/aura/window.h"
@@ -41,7 +42,9 @@ DownloadFilePicker::DownloadFilePicker(download::DownloadItem* item,
   DCHECK(item);
   item->AddObserver(this);
   WebContents* web_contents = content::DownloadItemUtils::GetWebContents(item);
-  if (!web_contents || !web_contents->GetNativeView()) {
+  // Extension download may not have associated webcontents.
+  if (item->GetDownloadSource() != download::DownloadSource::EXTENSION_API &&
+      (!web_contents || !web_contents->GetNativeView())) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&DownloadFilePicker::FileSelectionCanceled,
                                   base::Unretained(this), nullptr));
@@ -78,10 +81,10 @@ DownloadFilePicker::DownloadFilePicker(download::DownloadItem* item,
   // If select_file_dialog_ issued by extension API,
   // (e.g. chrome.downloads.download), the |owning_window| host
   // could be null, then it will cause the select file dialog is not modal
-  // dialog in Linux. See SelectFileImpl() in select_file_dialog_linux_gtk.cc.
-  // Here we make owning_window host to browser current active window
-  // if it is null. https://crbug.com/1301898
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  // dialog in Linux (See SelectFileImpl() in select_file_dialog_linux_gtk.cc).
+  // and windows.Here we make owning_window host to browser current active
+  // window if it is null. https://crbug.com/1301898
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_WIN)
   if (!owning_window || !owning_window->GetHost()) {
     owning_window = BrowserList::GetInstance()
                         ->GetLastActive()
@@ -105,7 +108,6 @@ DownloadFilePicker::~DownloadFilePicker() {
 }
 
 void DownloadFilePicker::OnFileSelected(const base::FilePath& path) {
-  base::FilePath selected_path(path);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   auto* web_contents =
       download_item_
@@ -113,13 +115,27 @@ void DownloadFilePicker::OnFileSelected(const base::FilePath& path) {
           : nullptr;
   if (web_contents && !path.empty()) {
     DCHECK(download_item_);
-    auto restricted_urls =
-        policy::DlpFilesController::IsFilesTransferRestricted(
-            Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-            {download_item_->GetURL()}, selected_path.value());
-    if (!restricted_urls.empty())
-      selected_path.clear();
+    dlp_files_controller_.emplace();
+    dlp_files_controller_->IsFilesTransferRestricted(
+        Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+        {download_item_->GetURL()}, path.value(),
+        base::BindOnce(&DownloadFilePicker::CompleteFileSelection,
+                       base::Unretained(this), path));
+    return;
   }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  CompleteFileSelection(path, std::vector<GURL>());
+  // Deletes |this|
+}
+
+void DownloadFilePicker::CompleteFileSelection(
+    const base::FilePath& path,
+    const std::vector<GURL>& restricted_sources) {
+  base::FilePath selected_path(path);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  dlp_files_controller_.reset();
+  if (!restricted_sources.empty())
+    selected_path.clear();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   std::move(file_selected_callback_)
       .Run(selected_path.empty() ? DownloadConfirmationResult::CANCELED

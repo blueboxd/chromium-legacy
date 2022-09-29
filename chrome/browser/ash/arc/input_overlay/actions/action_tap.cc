@@ -183,7 +183,7 @@ ActionTap::~ActionTap() = default;
 
 bool ActionTap::ParseFromJson(const base::Value& value) {
   Action::ParseFromJson(value);
-  if (locations_.empty()) {
+  if (original_positions_.empty()) {
     LOG(ERROR) << "Require at least one location for tap action {" << name_
                << "}.";
     return false;
@@ -258,8 +258,7 @@ bool ActionTap::RewriteEvent(const ui::Event& origin,
 }
 
 gfx::PointF ActionTap::GetUICenterPosition(const gfx::RectF& content_bounds) {
-  auto* position = locations().front().get();
-  return position->CalculatePosition(content_bounds);
+  return original_positions().front().CalculatePosition(content_bounds);
 }
 
 std::unique_ptr<ActionView> ActionTap::CreateView(
@@ -306,10 +305,9 @@ bool ActionTap::RewriteKeyEvent(const ui::KeyEvent* key_event,
     DCHECK(touch_id_);
     if (!touch_id_)
       return false;
-    auto pos = CalculateTouchPosition(content_bounds, rotation_transform);
-    if (!pos)
+    if (current_position_idx_ >= touch_down_positions_.size())
       return false;
-    last_touch_root_location_ = *pos;
+    last_touch_root_location_ = touch_down_positions_[current_position_idx_];
 
     rewritten_events.emplace_back(
         ui::EventType::ET_TOUCH_PRESSED, last_touch_root_location_,
@@ -371,10 +369,8 @@ bool ActionTap::RewriteMouseEvent(const ui::MouseEvent* mouse_event,
 
   if (!touch_id_) {
     touch_id_ = TouchIdManager::GetInstance()->ObtainTouchID();
-    auto touch_down_pos =
-        CalculateTouchPosition(content_bounds, rotation_transform);
-    if (touch_down_pos) {
-      last_touch_root_location_ = *touch_down_pos;
+    if (current_position_idx_ < touch_down_positions_.size()) {
+      last_touch_root_location_ = touch_down_positions_[current_position_idx_];
     } else {
       // Primary click.
       auto root_location = mouse_event->root_location_f();

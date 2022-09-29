@@ -17,6 +17,7 @@ import android.app.Activity;
 import android.util.Base64;
 import android.view.View;
 
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
@@ -39,7 +40,6 @@ import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.feed.test.R;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedSnackbarController.FeedLauncher;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -55,6 +55,7 @@ import org.chromium.components.feature_engagement.TriggerDetails;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.user_prefs.UserPrefsJni;
+import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
@@ -77,6 +78,9 @@ public final class WebFeedFollowIntroControllerTest {
 
     @Rule
     public JniMocker mJniMocker = new JniMocker();
+    @Rule
+    public ActivityScenarioRule<TestActivity> mActivityScenarioRule =
+            new ActivityScenarioRule<>(TestActivity.class);
 
     @Mock
     FeedLauncher mFeedLauncher;
@@ -119,9 +123,8 @@ public final class WebFeedFollowIntroControllerTest {
         Profile.setLastUsedProfileForTesting(mProfile);
         Mockito.when(mUserPrefsJniMock.get(mProfile)).thenReturn(mPrefService);
 
-        mActivity = Robolectric.setupActivity(Activity.class);
         // Required for resolving an attribute used in AppMenuItemText.
-        mActivity.setTheme(R.style.Theme_BrowserUI_DayNight);
+        mActivityScenarioRule.getScenario().onActivity(activity -> mActivity = activity);
         mClock = new FakeClock();
         when(mTracker.shouldTriggerHelpUI(FeatureConstants.IPH_WEB_FEED_FOLLOW_FEATURE))
                 .thenReturn(true);

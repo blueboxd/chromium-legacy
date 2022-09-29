@@ -147,6 +147,10 @@ build_recipe(
 )
 
 build_recipe(
+    name = "recipe:chromium_polymorphic/launcher",
+)
+
+build_recipe(
     name = "recipe:chromium_3pp",
 )
 
@@ -160,6 +164,11 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_codesearch",
+)
+
+build_recipe(
+    name = "recipe:chromium_expectation_files/expectation_file_scripts",
+    bootstrappable = True,
 )
 
 build_recipe(
@@ -196,6 +205,10 @@ build_recipe(
 )
 
 build_recipe(
+    name = "recipe:flakiness/reproducer",
+)
+
+build_recipe(
     name = "recipe:findit/chromium/single_revision",
     bootstrappable = POLYMORPHIC,
 )
@@ -219,6 +232,11 @@ build_recipe(
 
 build_recipe(
     name = "recipe:requires_testing_checker",
+)
+
+build_recipe(
+    name = "recipe:reviver/chromium/runner",
+    bootstrappable = POLYMORPHIC,
 )
 
 build_recipe(

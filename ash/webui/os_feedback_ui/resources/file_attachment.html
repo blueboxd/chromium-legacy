@@ -13,7 +13,13 @@
   }
 
   .file-input {
+    background: none;
+    border: none;
+    color: var(--cros-color-prominent);
     cursor: pointer;
+    font-size: 13px;
+    line-height: 20px;
+    padding: 0;
   }
 
   .error-outline {
@@ -37,8 +43,11 @@
   }
 
   #replaceFileInfo {
+    font-family: var(--feedback-roboto-font-family);
+    font-size: 13px;
+    line-height: 20px;
     overflow: hidden;
-    padding-inline-end: 12px;
+    padding: 4px 12px 4px 0;
   }
 
   #selectFileDialog {
@@ -59,13 +68,7 @@
   }
 
   #addFileLabel {
-    background: none;
-    border: none;
-    color: var(--cros-color-prominent);
-    font-size: 13px;
     font-weight: var(--feedback-medium-font-weight);
-    line-height: 20px;
-    padding: 0;
   }
 
   #addFileIcon {
@@ -76,6 +79,41 @@
   dialog {
     bottom: auto;
     top: auto;
+  }
+
+  #selectFileCheckbox {
+    margin-inline-end: 10px;
+    margin-inline-start: 12px;
+  }
+
+  #selectedImageButton {
+    background: none;
+    border: none;
+    height: 48px;
+    padding: 0;
+    width: 68px;
+  }
+
+  #selectedFileImage {
+    border-radius: 0 4px 4px 0;
+    display: block;
+    height: 48px;
+    transition: all 250ms ease;
+    width: 68px;
+  }
+
+  #selectedFileName,
+  #replaceFileButton {
+    font-weight: var(--feedback-regular-font-weight);
+  }
+
+  #selectedFileName {
+    color: var(--cros-text-color-primary);
+  }
+
+  #selectedFileContainer {
+    display: flex;
+    flex-direction: row-reverse;
   }
 
 </style>
@@ -89,17 +127,24 @@
 <input id="selectFileDialog" type="file" on-change="handleFileSelectChange_"
     tabindex="-1">
 <div id="replaceFileContainer" hidden="[[!hasSelectedAFile_]]">
-  <input type="checkbox" id="selectFileCheckbox">
-  <div id="replaceFileInfo">
-    <div id="selectedFileName" class="overflow-text">[[selectedFileName_]]</div>
-    <button id="replaceFileLabel" class="file-input"
-        on-click="handleOpenFileInputClick_">
-      [[i18n('replaceFileLabel')]]
+  <cr-checkbox id="selectFileCheckbox" class="no-label">
+  </cr-checkbox>
+  <div id="selectedFileContainer">
+    <button id="selectedImageButton" on-click="handleSelectedImageClick_"
+        hidden="[[!selectedImageUrl_]]">
+      <img id="selectedFileImage" src="[[selectedImageUrl_]]">
     </button>
+    <div id="replaceFileInfo">
+      <div id="selectedFileName" class="overflow-text">
+        [[selectedFileName_]]
+      </div>
+      <button id="replaceFileButton" class="file-input"
+          aria-label="[[i18n('replaceFileArialLabel')]]"
+          on-click="handleOpenFileInputClick_">
+        [[i18n('replaceFileLabel')]]
+      </button>
+    </div>
   </div>
-  <button id="selectedImageButton" on-click="handleSelectedImageClick_">
-    <img id="selectedFileImage" src="[[selectedImageUrl_]]" hidden="[[!selectedImageUrl_]]">
-  </button>
 </div>
 <cr-toast id="fileTooBigErrorMessage" duration="5000">
   <iron-icon id="toastInfoIcon" class="error-outline" icon="cr:error-outline">

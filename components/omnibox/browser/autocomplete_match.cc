@@ -92,6 +92,31 @@ bool RichAutocompletionApplicable(bool enabled_all_providers,
          input_text.size() >= min_char;
 }
 
+// Gives a basis for match comparison that prefers some providers over others
+// while remaining neutral with a default score of zero for most providers.
+int GetDeduplicationProviderPreferenceScore(AutocompleteProvider::Type type) {
+  const static std::unordered_map<AutocompleteProvider::Type, int>
+      provider_preference = {
+          {// Prefer live document suggestions. We check provider type instead
+           // of match type in order to distinguish live suggestions from the
+           // document provider from stale suggestions from the shortcuts
+           // providers, because the latter omits changing metadata such as last
+           // access date.
+           AutocompleteProvider::TYPE_DOCUMENT, 2},
+          {// Prefer bookmark suggestions, as 1) their titles may be explicitly
+           // set, and 2) they may display enhanced information such as the
+           // bookmark folders path.
+           AutocompleteProvider::TYPE_BOOKMARK, 1},
+          {// Prefer non-fuzzy matches over fuzzy matches.
+           AutocompleteProvider::TYPE_HISTORY_FUZZY, -1},
+      };
+  const auto it = provider_preference.find(type);
+  if (it == provider_preference.end()) {
+    return 0;
+  }
+  return it->second;
+}
+
 }  // namespace
 
 RichAutocompletionParams::RichAutocompletionParams()
@@ -449,6 +474,7 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
       return omnibox::kCalculatorIcon;
 
     case Type::SEARCH_SUGGEST_TAIL:
+    case Type::NULL_RESULT_MESSAGE:
       return omnibox::kBlankIcon;
 
     case Type::DOCUMENT_SUGGESTION:
@@ -542,26 +568,13 @@ bool AutocompleteMatch::BetterDuplicate(const AutocompleteMatch& match1,
       return false;
   }
 
-  // Prefer some providers over others.
-  const std::vector<AutocompleteProvider::Type> preferred_providers = {
-      // Prefer live document suggestions. We check provider type instead of
-      // match type in order to distinguish live suggestions from the document
-      // provider from stale suggestions from the shortcuts providers, because
-      // the latter omits changing metadata such as last access date.
-      AutocompleteProvider::TYPE_DOCUMENT,
-      // Prefer bookmark suggestions, as 1) their titles may be explicitly set,
-      // and 2) they may display enhanced information such as the bookmark
-      // folders path.
-      AutocompleteProvider::TYPE_BOOKMARK,
-  };
-
-  if (match1.provider->type() != match2.provider->type()) {
-    for (const auto& preferred_provider : preferred_providers) {
-      if (match1.provider->type() == preferred_provider)
-        return true;
-      if (match2.provider->type() == preferred_provider)
-        return false;
-    }
+  // Prefer some providers above others according to score (default is zero).
+  const int match1_score =
+      GetDeduplicationProviderPreferenceScore(match1.provider->type());
+  const int match2_score =
+      GetDeduplicationProviderPreferenceScore(match2.provider->type());
+  if (match1_score != match2_score) {
+    return match1_score > match2_score;
   }
 
   // By default, simply prefer the more relevant match.
@@ -1201,6 +1214,8 @@ AutocompleteMatch::AsOmniboxEventResultType() const {
     case AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
     case AutocompleteMatchType::PEDAL_DEPRECATED:
+    // NULL_RESULT_MESSAGE suggestions cannot be acted upon, so no need to log.
+    case AutocompleteMatchType::NULL_RESULT_MESSAGE:
     case AutocompleteMatchType::NUM_TYPES:
       break;
   }

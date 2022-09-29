@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 #include "base/bind.h"
@@ -58,6 +59,10 @@
 #include "third_party/perfetto/protos/perfetto/trace/track_event/track_event.pbzero.h"
 #include "v8/include/v8.h"
 
+namespace base {
+class LazyNow;
+}
+
 namespace blink {
 namespace scheduler {
 
@@ -80,6 +85,9 @@ constexpr const char kResourceFetchPriorityExperiment[] =
 
 constexpr base::TimeDelta kPrioritizeCompositingAfterDelay =
     base::Milliseconds(100);
+
+constexpr TaskQueue::QueuePriority kPrioritizeCompositingAfterDelayPriority =
+    TaskQueue::QueuePriority::kVeryHighPriority;
 
 v8::RAILMode RAILModeToV8RAILMode(RAILMode rail_mode) {
   switch (rail_mode) {
@@ -219,6 +227,26 @@ const char* InputEventStateToString(
   }
 }
 
+TaskQueue::QueuePriority
+GetPriorityFromCompositorTQPolicyDuringThreadedScrolling(
+    CompositorTQPolicyDuringThreadedScroll policy) {
+  switch (policy) {
+    case CompositorTQPolicyDuringThreadedScroll::kLowPriorityAlways:
+    case CompositorTQPolicyDuringThreadedScroll::kLowPriorityWithAntiStarvation:
+      return TaskQueue::QueuePriority::kLowPriority;
+    case CompositorTQPolicyDuringThreadedScroll::
+        kNormalPriorityWithAntiStarvation:
+      return TaskQueue::QueuePriority::kNormalPriority;
+    case CompositorTQPolicyDuringThreadedScroll::kVeryHighPriorityAlways:
+      return TaskQueue::QueuePriority::kVeryHighPriority;
+  }
+}
+
+TaskQueue::QueuePriority MaxPriority(TaskQueue::QueuePriority priority1,
+                                     TaskQueue::QueuePriority priority2) {
+  return std::min(priority1, priority2);
+}
+
 }  // namespace
 
 MainThreadSchedulerImpl::MainThreadSchedulerImpl(
@@ -351,11 +379,15 @@ MainThreadSchedulerImpl::~MainThreadSchedulerImpl() {
 WebThreadScheduler* WebThreadScheduler::MainThreadScheduler() {
   auto* main_thread = Thread::MainThread();
   // Enforce that this is not called before the main thread is initialized.
-  DCHECK(main_thread && main_thread->Scheduler());
+  DCHECK(main_thread);
+  DCHECK(main_thread->Scheduler());
+  DCHECK(main_thread->Scheduler()->ToMainThreadScheduler());
 
   // This can return nullptr if the main thread scheduler is not a
   // MainThreadSchedulerImpl, which can happen in tests.
-  return main_thread->Scheduler()->GetWebMainThreadScheduler();
+  return main_thread->Scheduler()
+      ->ToMainThreadScheduler()
+      ->ToWebMainThreadScheduler();
 }
 
 MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
@@ -546,8 +578,6 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
 
   use_resource_fetch_priority =
       base::FeatureList::IsEnabled(kUseResourceFetchPriority);
-  use_resource_priorities_only_during_loading =
-      base::FeatureList::IsEnabled(kUseResourceFetchPriorityOnlyWhenLoading);
 
   prioritize_compositing_and_loading_during_early_loading =
       base::FeatureList::IsEnabled(
@@ -556,8 +586,7 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
   prioritize_compositing_after_input =
       base::FeatureList::IsEnabled(kPrioritizeCompositingAfterInput);
 
-  if (use_resource_fetch_priority ||
-      use_resource_priorities_only_during_loading) {
+  if (use_resource_fetch_priority) {
     base::FieldTrialParams params;
     base::GetFieldTrialParams(kResourceFetchPriorityExperiment, &params);
     for (size_t net_priority = 0;
@@ -580,6 +609,11 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
   mbi_compositor_task_runner_per_agent_scheduling_group =
       base::FeatureList::IsEnabled(
           kMbiCompositorTaskRunnerPerAgentSchedulingGroup);
+
+  compositor_tq_policy_during_threaded_scroll =
+      base::FeatureList::IsEnabled(kThreadedScrollPreventRenderingStarvation)
+          ? kCompositorTQPolicyDuringThreadedScroll.Get()
+          : CompositorTQPolicyDuringThreadedScroll::kLowPriorityAlways;
 }
 
 MainThreadSchedulerImpl::AnyThread::~AnyThread() = default;
@@ -609,20 +643,22 @@ void MainThreadSchedulerImpl::ShutdownAllQueues() {
     virtual_time_control_task_queue_->ShutdownTaskQueue();
 }
 
-bool MainThreadSchedulerImpl::IsAnyMainFrameWaitingForFirstMeaningfulPaint()
-    const {
-  return std::any_of(
-      main_thread_only().page_schedulers.begin(),
-      main_thread_only().page_schedulers.end(),
-      std::mem_fn(&PageSchedulerImpl::IsWaitingForMainFrameMeaningfulPaint));
+bool MainThreadSchedulerImpl::
+    IsAnyOrdinaryMainFrameWaitingForFirstMeaningfulPaint() const {
+  for (const PageSchedulerImpl* ps : main_thread_only().page_schedulers) {
+    if (ps->IsOrdinary() && ps->IsWaitingForMainFrameMeaningfulPaint())
+      return true;
+  }
+  return false;
 }
 
-bool MainThreadSchedulerImpl::IsAnyMainFrameWaitingForFirstContentfulPaint()
-    const {
-  return std::any_of(
-      main_thread_only().page_schedulers.begin(),
-      main_thread_only().page_schedulers.end(),
-      std::mem_fn(&PageSchedulerImpl::IsWaitingForMainFrameContentfulPaint));
+bool MainThreadSchedulerImpl::
+    IsAnyOrdinaryMainFrameWaitingForFirstContentfulPaint() const {
+  for (const PageSchedulerImpl* ps : main_thread_only().page_schedulers) {
+    if (ps->IsOrdinary() && ps->IsWaitingForMainFrameContentfulPaint())
+      return true;
+  }
+  return false;
 }
 
 void MainThreadSchedulerImpl::Shutdown() {
@@ -632,7 +668,7 @@ void MainThreadSchedulerImpl::Shutdown() {
   main_thread_only().metrics_helper.OnRendererShutdown(now);
   // This needs to be after metrics helper, to prevent it being confused by
   // potential virtual time domain shutdown!
-  ThreadSchedulerImpl::Shutdown();
+  ThreadSchedulerBase::Shutdown();
 
   ShutdownAllQueues();
 
@@ -856,10 +892,6 @@ void MainThreadSchedulerImpl::OnShutdownTaskQueue(
   task_runners_.erase(task_queue.get());
 }
 
-bool MainThreadSchedulerImpl::CanExceedIdleDeadlineIfRequired() const {
-  return idle_helper_.CanExceedIdleDeadlineIfRequired();
-}
-
 void MainThreadSchedulerImpl::AddTaskObserver(
     base::TaskObserver* task_observer) {
   helper_.AddTaskObserver(task_observer);
@@ -1074,8 +1106,8 @@ void MainThreadSchedulerImpl::OnAudioStateChanged() {
                        : power_scheduler::PowerMode::kIdle);
 }
 
-std::unique_ptr<ThreadScheduler::RendererPauseHandle>
-MainThreadSchedulerImpl::PauseRenderer() {
+std::unique_ptr<MainThreadScheduler::RendererPauseHandle>
+MainThreadSchedulerImpl::PauseScheduler() {
   return std::make_unique<RendererPauseHandleImpl>(this);
 }
 
@@ -2004,10 +2036,14 @@ void MainThreadSchedulerImpl::OnMainFramePaint() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "MainThreadSchedulerImpl::OnMainFramePaint");
   base::AutoLock lock(any_thread_lock_);
+
+  // The state of a non-ordinary page (e.g. SVG image) shouldn't affect the
+  // scheduler's global UseCase.
   any_thread().waiting_for_any_main_frame_contentful_paint =
-      IsAnyMainFrameWaitingForFirstContentfulPaint();
+      IsAnyOrdinaryMainFrameWaitingForFirstContentfulPaint();
   any_thread().waiting_for_any_main_frame_meaningful_paint =
-      IsAnyMainFrameWaitingForFirstMeaningfulPaint();
+      IsAnyOrdinaryMainFrameWaitingForFirstMeaningfulPaint();
+
   UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 }
 
@@ -2019,32 +2055,14 @@ void MainThreadSchedulerImpl::ResetForNavigationLocked() {
   any_thread().user_model.Reset(helper_.NowTicks());
   any_thread().have_seen_a_blocking_gesture = false;
   any_thread().waiting_for_any_main_frame_contentful_paint =
-      IsAnyMainFrameWaitingForFirstContentfulPaint();
+      IsAnyOrdinaryMainFrameWaitingForFirstContentfulPaint();
   any_thread().waiting_for_any_main_frame_meaningful_paint =
-      IsAnyMainFrameWaitingForFirstMeaningfulPaint();
+      IsAnyOrdinaryMainFrameWaitingForFirstMeaningfulPaint();
   any_thread().have_seen_input_since_navigation = false;
   main_thread_only().idle_time_estimator.Clear();
   main_thread_only().have_reported_blocking_intervention_since_navigation =
       false;
   UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
-}
-
-void MainThreadSchedulerImpl::SetTopLevelBlameContext(
-    base::trace_event::BlameContext* blame_context) {
-  // Any task that runs in the default task runners belongs to the context of
-  // all frames (as opposed to a particular frame). Note that the task itself
-  // may still enter a more specific blame context if necessary.
-  //
-  // Per-frame task runners (loading, timers, etc.) are configured with a more
-  // specific blame context by FrameSchedulerImpl.
-  //
-  // TODO(altimin): automatically enter top-level for all task queues associated
-  // with renderer scheduler which do not have a corresponding frame.
-  control_task_queue_->SetBlameContext(blame_context);
-  DefaultTaskQueue()->SetBlameContext(blame_context);
-  compositor_task_queue_->SetBlameContext(blame_context);
-  idle_helper_.IdleTaskRunner()->SetBlameContext(blame_context);
-  v8_task_queue_->SetBlameContext(blame_context);
 }
 
 void MainThreadSchedulerImpl::AddRAILModeObserver(RAILModeObserver* observer) {
@@ -2067,6 +2085,10 @@ MainThreadSchedulerImpl::GetPendingUserInputInfo(
     bool include_continuous) const {
   base::AutoLock lock(any_thread_lock_);
   return any_thread().pending_input_monitor.Info(include_continuous);
+}
+
+blink::MainThreadScheduler* MainThreadSchedulerImpl::ToMainThreadScheduler() {
+  return this;
 }
 
 void MainThreadSchedulerImpl::RunIdleTask(Thread::IdleTask task,
@@ -2130,6 +2152,14 @@ WebAgentGroupScheduler*
 MainThreadSchedulerImpl::GetCurrentAgentGroupScheduler() {
   helper_.CheckOnValidThread();
   return current_agent_group_scheduler_;
+}
+
+void MainThreadSchedulerImpl::SetV8Isolate(v8::Isolate* isolate) {
+  ThreadSchedulerBase::SetV8Isolate(isolate);
+}
+
+base::TimeTicks MainThreadSchedulerImpl::MonotonicallyIncreasingVirtualTime() {
+  return GetTickClock()->NowTicks();
 }
 
 void MainThreadSchedulerImpl::BeginAgentGroupSchedulerScope(
@@ -2220,12 +2250,7 @@ void MainThreadSchedulerImpl::EndAgentGroupSchedulerScope() {
   main_thread_only().agent_group_scheduler_scope_stack.pop_back();
 }
 
-std::unique_ptr<ThreadScheduler::RendererPauseHandle>
-MainThreadSchedulerImpl::PauseScheduler() {
-  return PauseRenderer();
-}
-
-WebThreadScheduler* MainThreadSchedulerImpl::GetWebMainThreadScheduler() {
+WebThreadScheduler* MainThreadSchedulerImpl::ToWebMainThreadScheduler() {
   return this;
 }
 
@@ -2255,9 +2280,9 @@ void MainThreadSchedulerImpl::AddPageScheduler(
 
   base::AutoLock lock(any_thread_lock_);
   any_thread().waiting_for_any_main_frame_contentful_paint =
-      IsAnyMainFrameWaitingForFirstContentfulPaint();
+      IsAnyOrdinaryMainFrameWaitingForFirstContentfulPaint();
   any_thread().waiting_for_any_main_frame_meaningful_paint =
-      IsAnyMainFrameWaitingForFirstMeaningfulPaint();
+      IsAnyOrdinaryMainFrameWaitingForFirstMeaningfulPaint();
   UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 }
 
@@ -2282,9 +2307,9 @@ void MainThreadSchedulerImpl::RemovePageScheduler(
 
   base::AutoLock lock(any_thread_lock_);
   any_thread().waiting_for_any_main_frame_contentful_paint =
-      IsAnyMainFrameWaitingForFirstContentfulPaint();
+      IsAnyOrdinaryMainFrameWaitingForFirstContentfulPaint();
   any_thread().waiting_for_any_main_frame_meaningful_paint =
-      IsAnyMainFrameWaitingForFirstMeaningfulPaint();
+      IsAnyOrdinaryMainFrameWaitingForFirstMeaningfulPaint();
   UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 }
 
@@ -2334,7 +2359,7 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
     base::WeakPtr<MainThreadTaskQueue> queue,
     const base::sequence_manager::Task& task,
     TaskQueue::TaskTiming* task_timing,
-    base::sequence_manager::LazyNow* lazy_now) {
+    base::LazyNow* lazy_now) {
   // Microtasks may detach the task queue and invalidate |queue|.
   PerformMicrotaskCheckpoint();
 
@@ -2558,11 +2583,30 @@ TaskQueue::QueuePriority MainThreadSchedulerImpl::ComputeCompositorPriority()
   } else {
     absl::optional<TaskQueue::QueuePriority> computed_compositor_priority =
         ComputeCompositorPriorityFromUseCase();
+    // The default behavior for compositor gestures like compositor-driven
+    // scrolling is to deprioritize compositor TQ tasks (low priority) and not
+    // apply delay-based anti-starvation. This can lead to degraded user
+    // experience due to increased checkerboarding or scrolling blank content.
+    // When `kThreadedScrollPreventRenderingStarvation` is enabled, we use the
+    // priority computed in `ComputeCompositorPriorityFromUseCase()` as well as
+    // enable the delay-based anti-starvation to mitigate these issues.
+    //
+    // Note: for other use cases, the computed priority is higher, so they are
+    // not prone to rendering starvation in the same way.
+    if (current_use_case() == UseCase::kCompositorGesture &&
+        scheduling_settings().compositor_tq_policy_during_threaded_scroll !=
+            CompositorTQPolicyDuringThreadedScroll::kLowPriorityAlways &&
+        main_thread_only()
+            .should_prioritize_compositor_task_queue_after_delay) {
+      DCHECK(computed_compositor_priority);
+      return MaxPriority(kPrioritizeCompositingAfterDelayPriority,
+                         *computed_compositor_priority);
+    }
     if (computed_compositor_priority) {
       return computed_compositor_priority.value();
     } else if (main_thread_only()
                    .should_prioritize_compositor_task_queue_after_delay) {
-      return TaskQueue::QueuePriority::kVeryHighPriority;
+      return kPrioritizeCompositingAfterDelayPriority;
     }
   }
   return TaskQueue::QueuePriority::kNormalPriority;
@@ -2632,7 +2676,16 @@ MainThreadSchedulerImpl::ComputeCompositorPriorityFromUseCase() const {
       // seem to be safe. Instead we do that by proxy by deprioritizing
       // compositor tasks. This should be safe since we've already gone to the
       // pain of fixing ordering issues with them.
-      return TaskQueue::QueuePriority::kLowPriority;
+      //
+      // During periods of main-thread contention, e.g. scrolling while loading
+      // new content, rendering can be indefinitely starved, leading user
+      // experience issues like scrolling blank/stale content and
+      // checkerboarding. We adjust the compositor TQ priority and enable
+      // delay-based rendering anti-starvation when the
+      // `kThreadedScrollPreventRenderingStarvation` experiment is enabled to
+      // mitigate these issues.
+      return GetPriorityFromCompositorTQPolicyDuringThreadedScrolling(
+          scheduling_settings().compositor_tq_policy_during_threaded_scroll);
 
     case UseCase::kSynchronizedGesture:
     case UseCase::kMainThreadCustomInputHandling:

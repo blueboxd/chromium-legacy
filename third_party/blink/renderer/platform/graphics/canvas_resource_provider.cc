@@ -1186,7 +1186,7 @@ void CanvasResourceProvider::CanvasImageProvider::CanUnlockImage(
   // post a cleanup task to run after javascript is done running.
   if (!cleanup_task_pending_) {
     cleanup_task_pending_ = true;
-    Thread::Current()->GetTaskRunner()->PostTask(
+    Thread::Current()->GetDeprecatedTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&CanvasImageProvider::CleanupLockedImages,
                                   weak_factory_.GetWeakPtr()));
   }
@@ -1548,7 +1548,7 @@ cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheF16() {
 }
 
 void CanvasResourceProvider::RecycleResource(
-    scoped_refptr<CanvasResource> resource) {
+    scoped_refptr<CanvasResource>&& resource) {
   // We don't want to keep an arbitrary large number of canvases.
   if (canvas_resources_.size() >
       static_cast<unsigned int>(kMaxRecycledCanvasResources))
@@ -1602,7 +1602,7 @@ void CanvasResourceProvider::TryEnableSingleBuffering() {
 }
 
 bool CanvasResourceProvider::ImportResource(
-    scoped_refptr<CanvasResource> resource) {
+    scoped_refptr<CanvasResource>&& resource) {
   if (!IsSingleBuffered() || !SupportsSingleBuffering())
     return false;
   canvas_resources_.clear();

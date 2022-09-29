@@ -229,6 +229,7 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
         TestRenderFrameHost::CreateStubFrameRemote(),
         TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
         TestRenderFrameHost::CreateStubPolicyContainerBindParams(),
+        TestRenderFrameHost::CreateStubAssociatedInterfaceProviderReceiver(),
         blink::mojom::TreeScopeType::kDocument, std::string(), "uniqueName0",
         false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
         frame_policy, blink::mojom::FrameOwnerProperties(), false, owner_type,
@@ -702,7 +703,10 @@ TEST_F(NavigationRequestTest, NoDnsAliases) {
 TEST_F(NavigationRequestTest, StorageKeyToCommit) {
   TestRenderFrameHost* child_document = static_cast<TestRenderFrameHost*>(
       content::RenderFrameHostTester::For(main_rfh())->AppendChild(""));
-  child_document->frame_tree_node()->SetAnonymous(true);
+  auto attributes = child_document->frame_tree_node()->attributes_->Clone();
+  // Set |anonymous| to true.
+  attributes->anonymous = true;
+  child_document->frame_tree_node()->SetAttributes(std::move(attributes));
 
   const GURL kUrl = GURL("http://chromium.org");
   auto navigation =
@@ -729,7 +733,10 @@ TEST_F(NavigationRequestTest,
   auto* child_frame = static_cast<TestRenderFrameHost*>(
       content::RenderFrameHostTester::For(main_test_rfh())
           ->AppendChild("child"));
-  child_frame->frame_tree_node()->SetAnonymous(true);
+  auto attributes = child_frame->frame_tree_node()->attributes_->Clone();
+  // Set |anonymous| to true.
+  attributes->anonymous = true;
+  child_frame->frame_tree_node()->SetAttributes(std::move(attributes));
 
   std::unique_ptr<NavigationSimulator> navigation =
       NavigationSimulator::CreateRendererInitiated(
@@ -789,13 +796,15 @@ TEST_F(NavigationRequestTest, IsolatedAppPolicyInjection) {
   // Validate CSP.
   EXPECT_EQ(1UL, policies.content_security_policies.size());
   const auto& csp = policies.content_security_policies[0];
-  EXPECT_EQ(6UL, csp->raw_directives.size());
+  EXPECT_EQ(7UL, csp->raw_directives.size());
   using Directive = network::mojom::CSPDirectiveName;
   EXPECT_EQ("'none'", csp->raw_directives[Directive::BaseURI]);
   EXPECT_EQ("'none'", csp->raw_directives[Directive::ObjectSrc]);
   EXPECT_EQ("'self'", csp->raw_directives[Directive::DefaultSrc]);
   EXPECT_EQ("'self' https:", csp->raw_directives[Directive::FrameSrc]);
   EXPECT_EQ("'self' https:", csp->raw_directives[Directive::ConnectSrc]);
+  EXPECT_EQ("'self' 'wasm-unsafe-eval'",
+            csp->raw_directives[Directive::ScriptSrc]);
   EXPECT_EQ("'script'", csp->raw_directives[Directive::RequireTrustedTypesFor]);
 }
 
@@ -820,7 +829,10 @@ class CSPEmbeddedEnforcementUnitTest : public NavigationRequestTest {
       std::vector<network::mojom::ContentSecurityPolicyPtr> policies;
       network::AddContentSecurityPolicyFromHeaders(
           *headers, GURL("https://example.com/"), &policies);
-      document->frame_tree_node()->set_csp_attribute(std::move(policies[0]));
+      auto attributes = document->frame_tree_node()->attributes_->Clone();
+      // Set csp value.
+      attributes->parsed_csp_attribute = std::move(policies[0]);
+      document->frame_tree_node()->SetAttributes(std::move(attributes));
     }
 
     // Chrome blocks a document navigating to a URL if more than one of its

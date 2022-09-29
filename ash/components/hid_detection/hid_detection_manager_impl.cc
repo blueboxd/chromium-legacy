@@ -72,12 +72,13 @@ HidDetectionManager::HidDetectionStatus
 HidDetectionManagerImpl::ComputeHidDetectionStatus() const {
   BluetoothHidDetector::BluetoothHidDetectionStatus bluetooth_status =
       bluetooth_hid_detector_->GetBluetoothHidDetectionStatus();
-  return HidDetectionManager::HidDetectionStatus{
+  return HidDetectionManager::HidDetectionStatus(
       GetInputMetadata(connected_pointer_id_, BluetoothHidType::kPointer,
                        bluetooth_status.current_pairing_device),
       GetInputMetadata(connected_keyboard_id_, BluetoothHidType::kKeyboard,
                        bluetooth_status.current_pairing_device),
-      connected_touchscreen_id_.has_value()};
+      connected_touchscreen_id_.has_value(),
+      std::move(bluetooth_status.pairing_state));
 }
 
 void HidDetectionManagerImpl::InputDeviceAdded(
@@ -86,6 +87,7 @@ void HidDetectionManagerImpl::InputDeviceAdded(
                  << ", name: " << info->name;
   const std::string& device_id = info->id;
   device_id_to_device_map_[device_id] = std::move(info);
+  hid_detection::RecordHidConnected(*device_id_to_device_map_[device_id]);
 
   if (AttemptSetDeviceAsConnectedHid(*device_id_to_device_map_[device_id])) {
     NotifyHidDetectionStatusChanged();
@@ -105,6 +107,7 @@ void HidDetectionManagerImpl::InputDeviceRemoved(const std::string& id) {
 
   HID_LOG(EVENT) << "Input device removed, id: " << id
                  << ", name: " << device_id_to_device_map_[id]->name;
+  hid_detection::RecordHidDisconnected(*device_id_to_device_map_[id]);
   device_id_to_device_map_.erase(id);
   bool was_connected_hid_disconnected_ = false;
 
@@ -165,6 +168,18 @@ void HidDetectionManagerImpl::OnGetDevicesForIsRequired(
     if (has_pointer && has_keyboard)
       break;
   }
+
+  hid_detection::HidsMissing hids_missing = hid_detection::HidsMissing::kNone;
+  if (!has_pointer) {
+    if (!has_keyboard) {
+      hids_missing = hid_detection::HidsMissing::kPointerAndKeyboard;
+    } else {
+      hids_missing = hid_detection::HidsMissing::kPointer;
+    }
+  } else if (!has_keyboard) {
+    hids_missing = hid_detection::HidsMissing::kKeyboard;
+  }
+  hid_detection::RecordInitialHidsMissing(hids_missing);
 
   HID_LOG(EVENT)
       << "Fetched " << devices.size()

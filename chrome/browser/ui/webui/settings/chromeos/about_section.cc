@@ -37,7 +37,6 @@
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
-#include "components/version_info/version_info.h"
 #include "components/version_ui/version_ui_constants.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -251,6 +250,7 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
     {"aboutFirmwareUpdates", IDS_SETTINGS_ABOUT_PAGE_FIRMWARE_UPDATES},
     {"aboutRelaunch", IDS_SETTINGS_ABOUT_PAGE_RELAUNCH},
     {"aboutUpgradeCheckStarted", IDS_SETTINGS_ABOUT_UPGRADE_CHECK_STARTED},
+    {"aboutUpgradeNotUpToDate", IDS_SETTINGS_UPGRADE_NOT_UP_TO_DATE},
     {"aboutUpgradeRelaunch", IDS_SETTINGS_UPGRADE_SUCCESSFUL_RELAUNCH},
     {"aboutUpgradeUpdating", IDS_SETTINGS_UPGRADE_UPDATING},
     {"aboutUpgradeUpdatingPercent", IDS_SETTINGS_UPGRADE_UPDATING_PERCENT},
@@ -260,6 +260,8 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
     {"aboutEndOfLifeTitle", IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_TITLE},
     {"aboutDeviceName", IDS_SETTINGS_ABOUT_PAGE_DEVICE_NAME},
+    {"aboutRelaunchAndAutoUpdate",
+     IDS_SETTINGS_ABOUT_PAGE_RELAUNCH_AND_AUTO_UPDATE},
     {"aboutRelaunchAndPowerwash",
      IDS_SETTINGS_ABOUT_PAGE_RELAUNCH_AND_POWERWASH},
     {"aboutRollbackInProgress", IDS_SETTINGS_UPGRADE_ROLLBACK_IN_PROGRESS},
@@ -272,6 +274,8 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_ABOUT_TPM_FIRMWARE_UPDATE_TITLE},
     {"aboutTPMFirmwareUpdateDescription",
      IDS_SETTINGS_ABOUT_TPM_FIRMWARE_UPDATE_DESCRIPTION},
+    {"aboutDeferredUpdate",
+     IDS_SETTINGS_ABOUT_PAGE_DEFERRED_UPDATE_DESCRIPTION},
 
     // About page, channel switcher dialog.
     {"aboutChangeChannel", IDS_SETTINGS_ABOUT_PAGE_CHANGE_CHANNEL},
@@ -408,18 +412,8 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
     html_source->AddBoolean("showConsumerAutoUpdateToggle", show_cau_toggle);
   }
 
-  html_source->AddString(
-      "aboutBrowserVersion",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_ABOUT_PAGE_BROWSER_VERSION,
-          base::UTF8ToUTF16(version_info::GetVersionNumber()),
-          l10n_util::GetStringUTF16(version_info::IsOfficialBuild()
-                                        ? IDS_VERSION_UI_OFFICIAL
-                                        : IDS_VERSION_UI_UNOFFICIAL),
-          // Extended stable channel is not supported on Chrome OS Ash.
-          base::UTF8ToUTF16(
-              chrome::GetChannelName(chrome::WithExtendedStable(false))),
-          l10n_util::GetStringUTF16(VersionUI::VersionProcessorVariation())));
+  html_source->AddString("aboutBrowserVersion",
+                         VersionUI::GetAnnotatedVersionStringForUi());
   html_source->AddString(
       "aboutProductCopyright",
       base::i18n::MessageFormatter::FormatWithNumberedArgs(

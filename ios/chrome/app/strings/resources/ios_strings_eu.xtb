@@ -25,6 +25,7 @@
 <translation id="1112015203684611006">Ezin izan da inprimatu.</translation>
 <translation id="1125564390852150847">Sortu beste fitxa bat.</translation>
 <translation id="1126809382673880764">Ez zaitu babesten webgune, deskarga eta luzapen kaltegarrien aurka. Erabilgarri dagoenean, arakatze seguruaren babesa jasotzen jarraituko duzu Google-ren beste zerbitzu batzuetan (Gmail-en eta Bilaketa zerbitzuan, esaterako).</translation>
+<translation id="1135212215217513471">Lortu iOS-erako Chrome</translation>
 <translation id="1145536944570833626">Ezabatu lehendik dauden datuak.</translation>
 <translation id="1147031633655575115"><ph name="USER" /> gisa hasi duzu saioa</translation>
 <translation id="1154984953698510061">Ikusi beste fitxa batzuk</translation>
@@ -113,6 +114,7 @@
 <translation id="1832848789136765277">Sinkronizatutako datuak edonoiz atzitu ahal izango dituzula ziurtatzeko, egiaztatu zeu zarela</translation>
 <translation id="1870148520156231997">Erakutsi pasahitza</translation>
 <translation id="1872096359983322073">Linterna</translation>
+<translation id="1910975740091000991">iOS-erako Chrome</translation>
 <translation id="1911619930368729126">Kargatu Google Drive-ra</translation>
 <translation id="1923342640370224680">Azken ordukoak</translation>
 <translation id="1930989359703290198">Erakundeak kontu jakin batzuekin soilik uzten du saioa hasten. Baimenduta ez dauden kontuak ezkutatuta daude. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
@@ -140,6 +142,7 @@
 <translation id="2139867232736819575">Bilatu kopiatu duzun testua</translation>
 <translation id="214201757571129614">Hasi saioa…</translation>
 <translation id="2149973817440762519">Editatu laster-marka</translation>
+<translation id="2155145621546387786">Partekatu Chrome</translation>
 <translation id="2175927920773552910">QR kodea</translation>
 <translation id="2218443599109088993">Txikitu</translation>
 <translation id="2230173723195178503">Kargatu da webgunea</translation>
@@ -308,6 +311,7 @@ Behar izanez gero, joan bilatzailearen argibideetara bilaketa-historia ezabatzea
 <translation id="3529024052484145543">Ez da segurua</translation>
 <translation id="3533202363250687977">Itxi ezkutuko moduko fitxa guztiak</translation>
 <translation id="3533436815740441613">Fitxa berria</translation>
+<translation id="3547799431091898961">Google-ko kontuko saioa webgune guztietan amaitzeko, <ph name="BEGIN_LINK" />amaitu Chrome-ko saioa<ph name="END_LINK" />.</translation>
 <translation id="3551320343578183772">Itxi fitxa</translation>
 <translation id="3581564640715911333">Eskaini beste hizkuntzetan dauden orriak itzultzea</translation>
 <translation id="3588820906588687999">Ireki irudia beste fitxa batean</translation>
@@ -374,6 +378,7 @@ Behar izanez gero, joan bilatzailearen argibideetara bilaketa-historia ezabatzea
 <translation id="4172051516777682613">Erakutsi beti</translation>
 <translation id="418156467088430727">Ikusi konexio gabeko bertsioa beste fitxa batean</translation>
 <translation id="4181841719683918333">Hizkuntzak</translation>
+<translation id="4187450337729239226">Itsasi eta bilatu</translation>
 <translation id="4223967053752765281">Erakundeak saioa hasteko aukera desaktibatu du. Gailuan dituzu oraindik laster-markak, historia, pasahitzak eta bestelako ezarpenak. Aldaketarik eginez gero, ez dira sinkronizatuko kontuarekin.</translation>
 <translation id="4233831822770018312">Editatu baimenak</translation>
 <translation id="4237377247299956313">Sakatu <ph name="BEGIN_BOLD" />Arakatzaile lehenetsia<ph name="END_BOLD" />.</translation>
@@ -436,6 +441,7 @@ Sinkronizatzeko pasaesaldiaren bidez daude enkriptatuta datuak. Idatz ezazu sink
 <translation id="473775607612524610">Eguneratu</translation>
 <translation id="4747097190499141774">Pasaesaldi bidezko enkriptatzeak ez ditu hartzen barne Google Pay-ko ordainketa-metodoak eta helbideak. Pasaesaldia dutenek soilik irakur ditzakete enkriptatutako datuak. Pasaesaldia ez da bidaltzen Google-ra, ezta bertan gordetzen ere. Pasaesaldia ahazten bazaizu edo ezarpena aldatu nahi baduzu, sinkronizazioa berrezarri beharko duzu. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
 <translation id="4751645464639803239">Ezkutuko moduko fitxa berria</translation>
+<translation id="4766112107778026136">Discover eta jarraitzen</translation>
 <translation id="4775879719735953715">Arakatzaile lehenetsia</translation>
 <translation id="4778644898150334464">Erabili beste pasahitz bat</translation>
 <translation id="478808905805139173">Ezkutuko moduan ireki nahi duzu?</translation>
@@ -490,6 +496,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5118764316110575523">Desaktibatuta</translation>
 <translation id="5132942445612118989">Sinkronizatu pasahitzak, historia eta beste gauza asko gailu guztietan</translation>
 <translation id="5140288047769711648">Chrome-k gogoratuko du pasahitza. Ez duzu zuk gogoratu beharko.</translation>
+<translation id="5149188072385105201">Gehitu pasahitz bat…</translation>
 <translation id="5150492518600715772">Bidali beste gailu batera</translation>
 <translation id="5168414296986405587">iPadOS-erako sortua</translation>
 <translation id="5173088371991956744">Sinkronizazioak zure identitatea egiaztatu behar du</translation>
@@ -642,6 +649,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="6374469231428023295">Saiatu berriro</translation>
 <translation id="6377118281273296434">Webgunearen segurtasuna</translation>
 <translation id="6380866119319257197">Pasaesaldia ahazten bazaizu edo ezarpena aldatu nahi baduzu, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="END_LINK" /></translation>
+<translation id="6387994324662817823">Pasahitzak gailu honetan soilik gordetzen dira Google-ren Pasahitz-kudeatzailea zerbitzuan.</translation>
 <translation id="6389470377220713856">Txartelaren titularra</translation>
 <translation id="6406506848690869874">Sinkronizazioa</translation>
 <translation id="6410390304316730527">Arakatze seguruaren helburua zu balizko erasotzaileen aurrean babestea da, litekeena baita halakoek, azpikeriaz, zu zerbait arriskutsua egitera bultzatzea; esate baterako, software gaiztoa instalatu edo informazio pertsonala ezagutzera eman (adibidez, pasahitzak, telefono-zenbakiak edo kreditu-txartelak). Arakatze segurua desaktibatuz gero, tentuz ibili ezagunak edo izen onekoak ez diren webguneak arakatzean.</translation>

@@ -55,6 +55,7 @@
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-forward.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_context.mojom.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
@@ -111,8 +112,9 @@ class VisibleTimeRequestTrigger;
 // embedders of content, and adds things only visible to content.
 //
 // Several core rendering primitives are mirrored between the browser and
-// renderer. These are RenderWidget, RenderFrame and RenderView. Their browser
-// counterparts are RenderWidgetHost, RenderFrameHost and RenderViewHost.
+// renderer. These are `blink::WidgetBase`, `RenderFrame` and `blink::WebView`.
+// Their browser counterparts are `RenderWidgetHost`, `RenderFrameHost` and
+// `RenderViewHost`.
 //
 // For simplicity and clarity, we want the object ownership graph in the
 // renderer to mirror the object ownership graph in the browser. The IPC message
@@ -125,7 +127,7 @@ class VisibleTimeRequestTrigger;
 //
 // RenderWidget represents a surface that can paint and receive input. It is
 // used in four contexts:
-//   * Main frame for webpage (root is RenderView)
+//   * Main frame for webpage (root is `blink::WebView`)
 //   * Child frame for webpage (root is RenderFrame)
 //   * Popups (root is RenderWidget)
 //   * Pepper Fullscreen (root is RenderWidget)
@@ -332,8 +334,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // blink::mojom::PopupWidgetHost implementation.
   void RequestClosePopup() override;
-  void ShowPopup(const gfx::Rect& initial_rect,
-                 const gfx::Rect& anchor_rect,
+  void ShowPopup(const gfx::Rect& initial_screen_rect,
+                 const gfx::Rect& anchor_screen_rect,
                  ShowPopupCallback callback) override;
   void SetPopupBounds(const gfx::Rect& bounds,
                       SetPopupBoundsCallback callback) override;
@@ -914,7 +916,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnGestureEventAck(
       const GestureEventWithLatencyInfo& event,
       blink::mojom::InputEventResultSource ack_source,
-      blink::mojom::InputEventResultState ack_result) override;
+      blink::mojom::InputEventResultState ack_result,
+      blink::mojom::ScrollResultDataPtr scroll_result_data) override;
 
   // virtual for testing.
   virtual void OnMouseEventAck(const MouseEventWithLatencyInfo& event,

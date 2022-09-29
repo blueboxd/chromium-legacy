@@ -14,13 +14,14 @@
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "chromeos/ash/components/network/cellular_metrics_logger.h"
 #include "chromeos/ash/components/network/network_device_handler.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_callbacks.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
 
-namespace chromeos {
+namespace ash {
 
 class NetworkStateHandler;
 
@@ -170,17 +171,18 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
   // Resets MAC address source property for secondary USB Ethernet devices.
   void ResetMacAddressSourceForSecondaryUsbEthernetDevices() const;
 
-  // On a successful SIM PUK unblock.
-  void OnUnblockPinSuccess(const std::string& device_path,
-                           const std::string& pin,
-                           base::OnceClosure callback);
+  // On a successful SIM PIN unlock, or a successful SIM PUK unblock.
+  void OnPinValidationSuccess(
+      const std::string& device_path,
+      const std::string& pin,
+      const CellularMetricsLogger::SimPinOperation& pin_operation,
+      base::OnceClosure callback);
 
   // Get the DeviceState for the wifi device, if any.
   const DeviceState* GetWifiDeviceState();
 
   NetworkStateHandler* network_state_handler_ = nullptr;
-  base::ScopedObservation<chromeos::NetworkStateHandler,
-                          chromeos::NetworkStateHandlerObserver>
+  base::ScopedObservation<NetworkStateHandler, NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
   bool allow_cellular_sim_lock_ = true;
   bool cellular_policy_allow_roaming_ = true;
@@ -201,6 +203,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
   base::WeakPtrFactory<NetworkDeviceHandlerImpl> weak_ptr_factory_{this};
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_NETWORK_DEVICE_HANDLER_IMPL_H_

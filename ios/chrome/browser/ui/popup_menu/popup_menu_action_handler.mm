@@ -30,7 +30,6 @@
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/window_activities/window_activity_helpers.h"
-#import "ios/web/public/web_state.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -76,22 +75,14 @@ using base::UserMetricsAction;
       RecordAction(UserMetricsAction("MobileMenuReadLater"));
       [self.delegate readPageLater];
       break;
-    case PopupMenuActionPageBookmark: {
+    case PopupMenuActionPageBookmark:
       RecordAction(UserMetricsAction("MobileMenuAddToBookmarks"));
       LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
-      web::WebState* currentWebState = self.delegate.currentWebState;
-      if (!currentWebState) {
-        return;
-      }
-      BookmarkAddCommand* command =
-          [[BookmarkAddCommand alloc] initWithWebState:currentWebState
-                                  presentFolderChooser:NO];
-      [self.bookmarksCommandsHandler bookmark:command];
+      [self.bookmarksCommandsHandler bookmarkCurrentPage];
       break;
-    }
     case PopupMenuActionTranslate:
       base::RecordAction(UserMetricsAction("MobileMenuTranslate"));
-      [self.dispatcher showTranslate];
+      [self.browserCoordinatorCommandsHandler showTranslate];
       break;
     case PopupMenuActionFindInPage:
       RecordAction(UserMetricsAction("MobileMenuFindInPage"));
@@ -100,7 +91,7 @@ using base::UserMetricsAction;
     case PopupMenuActionRequestDesktop:
       RecordAction(UserMetricsAction("MobileMenuRequestDesktopSite"));
       self.navigationAgent->RequestDesktopSite();
-      [self.dispatcher showDefaultSiteViewIPH];
+      [self.browserCoordinatorCommandsHandler showDefaultSiteViewIPH];
       break;
     case PopupMenuActionRequestMobile:
       RecordAction(UserMetricsAction("MobileMenuRequestMobileSite"));
@@ -121,15 +112,13 @@ using base::UserMetricsAction;
       break;
     case PopupMenuActionHelp:
       RecordAction(UserMetricsAction("MobileMenuHelp"));
-      [self.dispatcher showHelpPage];
+      [self.browserCoordinatorCommandsHandler showHelpPage];
       break;
     case PopupMenuActionOpenDownloads:
       RecordAction(
           UserMetricsAction("MobileDownloadFolderUIShownFromToolsMenu"));
       [self.delegate recordDownloadsMetricsPerProfile];
-      // TODO(crbug.com/906662): This will need to be called on the
-      // BrowserCoordinatorCommands handler.
-      [self.dispatcher showDownloadsFolder];
+      [self.browserCoordinatorCommandsHandler showDownloadsFolder];
       break;
     case PopupMenuActionTextZoom:
       RecordAction(UserMetricsAction("MobileMenuTextZoom"));
@@ -137,9 +126,7 @@ using base::UserMetricsAction;
       break;
 #if !defined(NDEBUG)
     case PopupMenuActionViewSource:
-      // TODO(crbug.com/906662): This will need to be called on the
-      // BrowserCoordinatorCommands handler.
-      [self.dispatcher viewSource];
+      [self.browserCoordinatorCommandsHandler viewSource];
       break;
 #endif  // !defined(NDEBUG)
     case PopupMenuActionOpenNewWindow:
@@ -149,24 +136,20 @@ using base::UserMetricsAction;
                                                      GURL(kChromeUINewTabURL))];
       break;
     case PopupMenuActionFollow:
-      [self.delegate updateFollowStatus];
+      [self.delegate toggleFollowed];
       break;
     case PopupMenuActionBookmarks:
       RecordAction(UserMetricsAction("MobileMenuAllBookmarks"));
       LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
-      [self.dispatcher showBookmarksManager];
+      [self.browserCoordinatorCommandsHandler showBookmarksManager];
       break;
     case PopupMenuActionReadingList:
       RecordAction(UserMetricsAction("MobileMenuReadingList"));
-      // TODO(crbug.com/906662): This will need to be called on the
-      // BrowserCoordinatorCommands handler.
-      [self.dispatcher showReadingList];
+      [self.browserCoordinatorCommandsHandler showReadingList];
       break;
     case PopupMenuActionRecentTabs:
       RecordAction(UserMetricsAction("MobileMenuRecentTabs"));
-      // TODO(crbug.com/906662): This will need to be called on the
-      // BrowserCoordinatorCommands handler.
-      [self.dispatcher showRecentTabs];
+      [self.browserCoordinatorCommandsHandler showRecentTabs];
       break;
     case PopupMenuActionHistory:
       RecordAction(UserMetricsAction("MobileMenuHistory"));
@@ -179,7 +162,7 @@ using base::UserMetricsAction;
       break;
     case PopupMenuActionCloseTab:
       RecordAction(UserMetricsAction("MobileMenuCloseTab"));
-      [self.dispatcher closeCurrentTab];
+      [self.browserCoordinatorCommandsHandler closeCurrentTab];
       break;
     case PopupMenuActionNavigate:
       // No metrics for this item.

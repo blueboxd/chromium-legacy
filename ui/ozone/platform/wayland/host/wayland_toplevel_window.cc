@@ -29,6 +29,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_window_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_zaura_shell.h"
 #include "ui/ozone/platform/wayland/host/wayland_zwp_pointer_constraints.h"
+#include "ui/ozone/platform/wayland/host/xdg_activation.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
 #include "ui/platform_window/extensions/wayland_extension.h"
 
@@ -93,9 +94,8 @@ bool WaylandToplevelWindow::CreateShellToplevel() {
                             ZAURA_SURFACE_FRAME_TYPE_SHADOW);
   }
 
-  // TODO(oshima): Change to use DIP.
   if (screen_coordinates_enabled_)
-    SetBoundsInPixels(GetBoundsInPixels());
+    SetBoundsInDIP(GetBoundsInDIP());
 
   // This could be the proper time to update window mask using
   // NonClientView::GetWindowMask, since |non_client_view| is not created yet
@@ -153,6 +153,10 @@ void WaylandToplevelWindow::Hide() {
   }
   WaylandWindow::Hide();
 
+  if (aura_surface_ && wl::get_version_of_object(aura_surface_.get()) >=
+                           ZAURA_SURFACE_RELEASE_SINCE_VERSION) {
+    aura_surface_.reset();
+  }
   shell_toplevel_.reset();
   connection()->ScheduleFlush();
 }
@@ -236,6 +240,8 @@ void WaylandToplevelWindow::Activate() {
   if (aura_surface_ && zaura_surface_get_version(aura_surface_.get()) >=
                            ZAURA_SURFACE_ACTIVATE_SINCE_VERSION) {
     zaura_surface_activate(aura_surface_.get());
+  } else if (connection()->xdg_activation()) {
+    connection()->xdg_activation()->Activate(root_surface()->surface());
   } else if (gtk_surface1_) {
     gtk_surface1_->RequestFocus();
   }
@@ -322,11 +328,6 @@ void WaylandToplevelWindow::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
     zaura_surface_set_aspect_ratio(aura_surface_.get(), aspect_ratio.width(),
                                    aspect_ratio.height());
   }
-}
-
-absl::optional<std::vector<gfx::Rect>> WaylandToplevelWindow::GetWindowShape()
-    const {
-  return window_shape_in_dips_;
 }
 
 bool WaylandToplevelWindow::IsScreenCoordinatesEnabled() const {
@@ -418,6 +419,8 @@ void WaylandToplevelWindow::HandleAuraToplevelConfigure(int32_t x,
   }
 
   set_pending_bounds_dip(AdjustBoundsToConstraintsDIP(bounds_dip));
+  set_pending_size_px(
+      delegate()->ConvertRectToPixels(pending_bounds_dip()).size());
 
   // Store the restored bounds if current state differs from the normal state.
   // It can be client or compositor side change from normal to something else.
@@ -443,36 +446,38 @@ void WaylandToplevelWindow::SetBoundsInPixels(const gfx::Rect& bounds) {
   }
 }
 
+void WaylandToplevelWindow::SetBoundsInDIP(const gfx::Rect& bounds_dip) {
+  WaylandWindow::SetBoundsInDIP(bounds_dip);
+  if (shell_toplevel_ && screen_coordinates_enabled_)
+    shell_toplevel_->RequestWindowBounds(bounds_dip);
+}
+
 void WaylandToplevelWindow::SetOrigin(const gfx::Point& origin) {
-  // TODO(crbug.com/1306688): Using UpdateBoundsInDIP changes the size of the
-  // window due to the rounding.  Change this to use SetBoundsInDIP when
-  // `bounds_px_` becomes `bounds_dip_`.
-  gfx::Point origin_px =
-      gfx::ScaleToFlooredPoint(origin, window_scale(), window_scale());
-  WaylandWindow::SetBoundsInPixels(
-      gfx::Rect(origin_px, GetBoundsInPixels().size()));
+  gfx::Rect new_bounds(origin, GetBoundsInDIP().size());
+  WaylandWindow::SetBoundsInDIP(new_bounds);
 }
 
 void WaylandToplevelWindow::HandleSurfaceConfigure(uint32_t serial) {
   ProcessPendingBoundsDip(serial);
   set_pending_bounds_dip({});
+  set_pending_size_px({});
 }
 
-void WaylandToplevelWindow::UpdateVisualSize(const gfx::Size& size_px,
-                                             float scale_factor) {
-  WaylandWindow::UpdateVisualSize(size_px, scale_factor);
+void WaylandToplevelWindow::UpdateVisualSize(const gfx::Size& size_px) {
+  WaylandWindow::UpdateVisualSize(size_px);
 
   if (!shell_toplevel_)
     return;
 
-  if (!ProcessVisualSizeUpdate(size_px, scale_factor)) {
+  if (!ProcessVisualSizeUpdate(size_px)) {
     // Early-out if shell surface is still not configure at this point, which
     // indicates it is not mapped yet, which should happen in an upcoming frame.
     if (!shell_toplevel()->IsConfigured())
       return;
 
     if (set_geometry_on_next_frame_) {
-      auto size_dip = gfx::ScaleToRoundedSize(size_px, 1.f / scale_factor);
+      auto size_dip = gfx::ScaleToRoundedSize(size_px, 1.f / window_scale());
+      // TODO(crbug.com/3814157): Use DIP bounds instead.
       SetWindowGeometry(gfx::Rect(size_dip));
       set_geometry_on_next_frame_ = false;
     }
@@ -497,6 +502,8 @@ bool WaylandToplevelWindow::OnInitialize(
   SetWorkspaceExtension(this, static_cast<WorkspaceExtension*>(this));
   SetWorkspaceExtensionDelegate(properties.workspace_extension_delegate);
   SetDeskExtension(this, static_cast<DeskExtension*>(this));
+
+  z_order_ = properties.z_order;
 
   if (!properties.workspace.empty()) {
     int workspace;
@@ -880,17 +887,21 @@ void WaylandToplevelWindow::SetOrResetRestoredBounds() {
 void WaylandToplevelWindow::SetUpShellIntegration() {
   // This method should be called after the XDG surface is initialized.
   DCHECK(shell_toplevel_);
-  if (connection()->zaura_shell() && !aura_surface_) {
-    static constexpr zaura_surface_listener zaura_surface_listener = {
-        &OcclusionChanged, &LockFrame,     &UnlockFrame, &OcclusionStateChanged,
-        &DeskChanged,      &StartThrottle, &EndThrottle,
-    };
-    aura_surface_.reset(zaura_shell_get_aura_surface(
-        connection()->zaura_shell()->wl_object(), root_surface()->surface()));
-    zaura_surface_add_listener(aura_surface_.get(), &zaura_surface_listener,
-                               this);
+  if (connection()->zaura_shell()) {
+    if (!aura_surface_) {
+      static constexpr zaura_surface_listener zaura_surface_listener = {
+          &OcclusionChanged,      &LockFrame,   &UnlockFrame,
+          &OcclusionStateChanged, &DeskChanged, &StartThrottle,
+          &EndThrottle,
+      };
+      aura_surface_.reset(zaura_shell_get_aura_surface(
+          connection()->zaura_shell()->wl_object(), root_surface()->surface()));
+      zaura_surface_add_listener(aura_surface_.get(), &zaura_surface_listener,
+                                 this);
+    }
     zaura_surface_set_occlusion_tracking(aura_surface_.get());
     SetImmersiveFullscreenStatus(false);
+    SetInitialZOrder();
     SetInitialWorkspace();
     if (restore_window_id_) {
       DCHECK(!restore_window_id_source_);
@@ -956,6 +967,10 @@ void WaylandToplevelWindow::SetInitialWorkspace() {
   }
 }
 
+void WaylandToplevelWindow::SetInitialZOrder() {
+  shell_toplevel_->SetZOrder(z_order_);
+}
+
 void WaylandToplevelWindow::UpdateWindowMask() {
   std::vector<gfx::Rect> region{gfx::Rect({}, visual_size_px())};
   root_surface()->SetOpaqueRegion(opaque_region_px_.has_value()
@@ -967,6 +982,14 @@ void WaylandToplevelWindow::UpdateWindowMask() {
 
 bool WaylandToplevelWindow::GetTabletMode() {
   return connection()->GetTabletMode();
+}
+
+void WaylandToplevelWindow::SetFloat(bool value) {
+  DCHECK(shell_toplevel_);
+  if (value)
+    shell_toplevel_->SetFloat();
+  else
+    shell_toplevel_->UnSetFloat();
 }
 
 }  // namespace ui

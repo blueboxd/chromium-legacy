@@ -6,7 +6,8 @@ import './help_resources_icons.js';
 import './os_feedback_shared_css.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/cr_elements/icons.m.js';
-import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import {stringToMojoString16} from 'chrome://resources/ash/common/mojo_utils.js';
@@ -14,7 +15,8 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {AttachedFile} from './feedback_types.js';
+import {AttachedFile, FeedbackAppPreSubmitAction, FeedbackServiceProviderInterface} from './feedback_types.js';
+import {getFeedbackServiceProvider} from './mojo_interface_provider.js';
 
 /**
  * @fileoverview
@@ -79,6 +81,18 @@ export class FileAttachmentElement extends FileAttachmentElementBase {
      * @protected {boolean}
      */
     this.hasSelectedAFile_;
+
+    /** @private {!FeedbackServiceProviderInterface} */
+    this.feedbackServiceProvider_ = getFeedbackServiceProvider();
+  }
+
+  ready() {
+    super.ready();
+    // Set the aria description works the best for screen reader.
+    // It reads the description when the checkbox is focused, and when it is
+    // checked and unchecked.
+    this.$.selectFileCheckbox.ariaDescription =
+        this.i18n('attachFileCheckboxArialLabel');
   }
 
   /**
@@ -145,6 +159,8 @@ export class FileAttachmentElement extends FileAttachmentElementBase {
   handleSelectedImageClick_() {
     this.$.selectedImageDialog.showModal();
     this.$.closeDialogButton.focus();
+    this.feedbackServiceProvider_.recordPreSubmitAction(
+        FeedbackAppPreSubmitAction.kViewedImage);
   }
 
   /** @protected */

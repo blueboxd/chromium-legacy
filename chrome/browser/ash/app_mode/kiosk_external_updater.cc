@@ -108,11 +108,11 @@ KioskExternalUpdater::~KioskExternalUpdater() {
 void KioskExternalUpdater::OnMountEvent(
     disks::DiskMountManager::MountEvent event,
     MountError error_code,
-    const disks::DiskMountManager::MountPointInfo& mount_info) {
+    const disks::DiskMountManager::MountPoint& mount_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (mount_info.mount_type != MountType::MOUNT_TYPE_DEVICE ||
-      error_code != MountError::MOUNT_ERROR_NONE) {
+  if (mount_info.mount_type != MountType::kDevice ||
+      error_code != MountError::kNone) {
     return;
   }
 

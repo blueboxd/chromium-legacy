@@ -4,31 +4,26 @@
 
 import {assert, assertInstanceof} from 'chrome://resources/js/assert.m.js';
 import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
-import {List} from 'chrome://resources/js/cr/ui/list.m.js';
-import {ListItem} from 'chrome://resources/js/cr/ui/list_item.m.js';
-import {ListSelectionModel} from 'chrome://resources/js/cr/ui/list_selection_model.m.js';
 
 import {AsyncUtil} from '../../../common/js/async_util.js';
 import {FileType} from '../../../common/js/file_type.js';
 import {importer} from '../../../common/js/importer_common.js';
 import {str, strf, util} from '../../../common/js/util.js';
 import {importerHistoryInterfaces} from '../../../externs/background/import_history.js';
-import {EntryLocation} from '../../../externs/entry_location.js';
 import {FilesAppEntry} from '../../../externs/files_app_entry_interfaces.js';
 import {VolumeManager} from '../../../externs/volume_manager.js';
+import {FilesTooltip} from '../../elements/files_tooltip.js';
 import {FileListModel} from '../file_list_model.js';
 import {ListThumbnailLoader} from '../list_thumbnail_loader.js';
 import {MetadataModel} from '../metadata/metadata_model.js';
 
 import {A11yAnnounce} from './a11y_announce.js';
 import {DragSelector} from './drag_selector.js';
-import {FileListSelectionModel, FileListSingleSelectionModel} from './file_list_selection_model.js';
 import {FileMetadataFormatter} from './file_metadata_formatter.js';
 import {filelist, FileTableList} from './file_table_list.js';
 import {Table} from './table/table.js';
 import {TableColumn} from './table/table_column.js';
 import {TableColumnModel} from './table/table_column_model.js';
-import {TableList} from './table/table_list.js';
 
 /**
  * Custom column model for advanced auto-resizing.
@@ -537,31 +532,6 @@ export class FileTable extends Table {
     }.bind(self), true);
     self.list.shouldStartDragSelection =
         self.shouldStartDragSelection_.bind(self);
-    self.list.hasDragHitElement = self.hasDragHitElement_.bind(self);
-
-    /**
-     * Obtains the index list of elements that are hit by the point or the
-     * rectangle.
-     *
-     * @param {number} x X coordinate value.
-     * @param {number} y Y coordinate value.
-     * @param {number=} opt_width Width of the coordinate.
-     * @param {number=} opt_height Height of the coordinate.
-     * @return {Array<number>} Index list of hit elements.
-     * @this {List}
-     */
-    self.list.getHitElements = function(x, y, opt_width, opt_height) {
-      const currentSelection = [];
-      const bottom = y + (opt_height || 0);
-      for (let i = 0; i < this.selectionModel_.length; i++) {
-        const itemMetrics = this.getHeightsForIndex(i);
-        if (itemMetrics.top < bottom &&
-            itemMetrics.top + itemMetrics.height >= y) {
-          currentSelection.push(i);
-        }
-      }
-      return currentSelection;
-    };
   }
 
   /**
@@ -758,19 +728,6 @@ export class FileTable extends Table {
   }
 
   /**
-   * Returns whether the drag event is inside a file entry in the list (and not
-   * the background padding area).
-   * @param {MouseEvent} event Drag start event.
-   * @return {boolean} True if the mouse is over an element in the list, False
-   *     if
-   *                   it is in the background.
-   */
-  hasDragHitElement_(event) {
-    const pos = DragSelector.getScrolledPosition(this.list, event);
-    return this.list.getHitElements(pos.x, pos.y).length !== 0;
-  }
-
-  /**
    * Obtains if the drag selection should be start or not by referring the mouse
    * event.
    * @param {MouseEvent} event Drag start event.
@@ -876,7 +833,7 @@ export class FileTable extends Table {
     label.className = 'detail-name';
     label.appendChild(
         filelist.renderFileNameLabel(this.ownerDocument, entry, locationInfo));
-    if (locationInfo.isDriveBased) {
+    if (locationInfo && locationInfo.isDriveBased) {
       label.appendChild(filelist.renderPinned(this.ownerDocument));
     }
     const isDlpRestricted = !!metadata.isDlpRestricted;
@@ -1149,11 +1106,20 @@ export class FileTable extends Table {
     const nameId = item.id + '-entry-name';
     const sizeId = item.id + '-size';
     const dateId = item.id + '-date';
+    const dlpId = item.id + '-dlp-managed-icon';
     filelist.decorateListItem(item, entry, assert(this.metadataModel_));
     item.setAttribute('file-name', entry.name);
     item.querySelector('.detail-name').setAttribute('id', nameId);
     item.querySelector('.size').setAttribute('id', sizeId);
     item.querySelector('.date').setAttribute('id', dateId);
+    const dlpManagedIcon = item.querySelector('.dlp-managed-icon');
+    if (dlpManagedIcon) {
+      dlpManagedIcon.setAttribute('id', dlpId);
+      /** @type {!FilesTooltip} */ (
+          this.ownerDocument.querySelector('files-tooltip'))
+          .addTargets(item.querySelectorAll('.dlp-managed-icon'));
+    }
+
     item.setAttribute('aria-labelledby', nameId);
     return item;
   }
@@ -1235,6 +1201,14 @@ export class FileTable extends Table {
     const icon = /** @type {!HTMLDivElement} */
         (this.ownerDocument.createElement('div'));
     icon.className = 'dlp-managed-icon';
+    icon.toggleAttribute('has-tooltip');
+    icon.setAttribute(
+        'aria-label',
+        strf(
+            'DLP_MANAGED_ICON_TOOLTIP',
+            'https://support.google.com/chrome/a/?p=chromeos_datacontrols'));
+    icon.toggleAttribute('show-link-tooltip');
+    icon.toggleAttribute('show-card-tooltip');
     return icon;
   }
 

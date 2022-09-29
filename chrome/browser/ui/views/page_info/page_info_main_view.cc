@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/views/page_info/permission_toggle_row_view.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/url_constants.h"
+#include "components/page_info/core/about_this_site_service.h"
 #include "components/page_info/core/features.h"
 #include "components/page_info/page_info_ui_delegate.h"
 #include "components/permissions/permission_util.h"
@@ -144,22 +145,32 @@ void PageInfoMainView::EnsureCookieInfo() {
     const std::u16string& tooltip =
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_COOKIES_TOOLTIP);
 
-    // Create the cookie button, leaving the secondary text blank since the
-    // cookie count is not yet known.
-    cookie_button_ =
-        std::make_unique<PageInfoHoverButton>(
-            base::BindRepeating(
-                [](PageInfoMainView* view) {
-                  view->HandleMoreInfoRequest(view->cookie_button_);
-                },
-                this),
-            icon, IDS_PAGE_INFO_COOKIES, /*secondary_text=*/u"",
-            PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG,
-            tooltip, std::u16string(), PageInfoViewFactory::GetLaunchIcon())
-            .release();
+    if (base::FeatureList::IsEnabled(page_info::kPageInfoCookiesSubpage)) {
+      // Create a simple cookie button, that opens a cookies subpage.
+      cookie_button_ = site_settings_view_->AddChildView(std::make_unique<
+                                                         PageInfoHoverButton>(
+          base::BindRepeating(&PageInfoNavigationHandler::OpenCookiesPage,
+                              base::Unretained(navigation_handler_)),
+          icon, IDS_PAGE_INFO_COOKIES, std::u16string(),
+          PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIES_SUBPAGE,
+          tooltip, std::u16string(),
+          PageInfoViewFactory::GetOpenSubpageIcon()));
+    } else {
+      // Create the cookie button, leaving the secondary text blank since the
+      // cookie count is not yet known.
+      cookie_button_ = site_settings_view_->AddChildView(std::make_unique<
+                                                         PageInfoHoverButton>(
+          base::BindRepeating(
+              [](PageInfoMainView* view) {
+                view->HandleMoreInfoRequest(view->cookie_button_);
+              },
+              this),
+          icon, IDS_PAGE_INFO_COOKIES, /*secondary_text=*/u"",
+          PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG,
+          tooltip, std::u16string(), PageInfoViewFactory::GetLaunchIcon()));
+    }
     cookie_button_->SetProperty(views::kElementIdentifierKey,
                                 kCookieButtonElementId);
-    site_settings_view_->AddChildView(cookie_button_.get());
 
     if (base::FeatureList::IsEnabled(
             privacy_sandbox::kPrivacySandboxSettings3)) {
@@ -188,7 +199,8 @@ void PageInfoMainView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
   PageInfoMainView::EnsureCookieInfo();
 
   // Update the text displaying the number of allowed cookies.
-  cookie_button_->SetTitleText(IDS_PAGE_INFO_COOKIES, num_cookies_text);
+  if (!base::FeatureList::IsEnabled(page_info::kPageInfoCookiesSubpage))
+    cookie_button_->SetTitleText(IDS_PAGE_INFO_COOKIES, num_cookies_text);
 
   PreferredSizeChanged();
 }
@@ -565,24 +577,43 @@ std::unique_ptr<views::View> PageInfoMainView::CreateAboutThisSiteSection(
   PageInfoHoverButton* about_this_site_button = nullptr;
 
   if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSiteMoreInfo)) {
+    const auto& description =
+        info.has_description()
+            ? base::UTF8ToUTF16(info.description().description())
+            : l10n_util::GetStringUTF16(
+                  IDS_PAGE_INFO_ABOUT_THIS_PAGE_DESCRIPTION_PLACEHOLDER);
+
     about_this_site_button = about_this_site_section->AddChildView(
         std::make_unique<PageInfoHoverButton>(
-            // TODO(crbug.com/1318000): Open side-panel instead.
             base::BindRepeating(
-                &ChromePageInfoUiDelegate::OpenMoreAboutThisPageUrl,
-                base::Unretained(ui_delegate_), GURL(info.more_about().url())),
+                [](PageInfoMainView* view, GURL more_info_url,
+                   bool has_description, const ui::Event& event) {
+                  page_info::AboutThisSiteService::OnAboutThisSiteRowClicked(
+                      has_description);
+                  view->ui_delegate_->OpenMoreAboutThisPageUrl(more_info_url,
+                                                               event);
+                  view->GetWidget()->Close();
+                },
+                this, GURL(info.more_about().url()), info.has_description()),
             PageInfoViewFactory::GetAboutThisPageIcon(),
             IDS_PAGE_INFO_ABOUT_THIS_PAGE_TITLE, std::u16string(),
             PageInfoViewFactory::VIEW_ID_PAGE_INFO_ABOUT_THIS_SITE_BUTTON,
             l10n_util::GetStringUTF16(IDS_PAGE_INFO_ABOUT_THIS_PAGE_TOOLTIP),
-            base::UTF8ToUTF16(info.description().description()),
-            PageInfoViewFactory::GetLaunchIcon()));
+            description, PageInfoViewFactory::GetLaunchIcon()));
   } else {
+    // The kPageInfoAboutThisSiteDescriptionPlaceholder feature must only be
+    // enabled together with kPageInfoAboutThisSiteMoreInfo
+    DCHECK(info.has_description());
     about_this_site_button = about_this_site_section->AddChildView(
         std::make_unique<PageInfoHoverButton>(
             base::BindRepeating(
-                &PageInfoNavigationHandler::OpenAboutThisSitePage,
-                base::Unretained(navigation_handler_), info),
+                [](PageInfoMainView* view,
+                   const page_info::proto::SiteInfo& info) {
+                  page_info::AboutThisSiteService::OnAboutThisSiteRowClicked(
+                      info.has_description());
+                  view->navigation_handler_->OpenAboutThisSitePage(info);
+                },
+                this, info),
             PageInfoViewFactory::GetAboutThisSiteIcon(),
             IDS_PAGE_INFO_ABOUT_THIS_SITE_HEADER, std::u16string(),
             PageInfoViewFactory::VIEW_ID_PAGE_INFO_ABOUT_THIS_SITE_BUTTON,

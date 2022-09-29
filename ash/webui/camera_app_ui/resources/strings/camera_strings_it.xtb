@@ -7,6 +7,7 @@
 <translation id="1258009455399840361">Ruota di 90 gradi in senso orario</translation>
 <translation id="1276998909102132017">Immagini della galleria</translation>
 <translation id="1300209025925956156">Scansiona il tuo documento</translation>
+<translation id="1309250603447638106">Download degli aggiornamenti per la funzionalità di scansione dei documenti in corso…</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Tasto per la ricerca + Freccia sinistra per accedere.</translation>
 <translation id="1393338179284529051">Quad HD</translation>
 <translation id="1430915738399379752">Stampa</translation>
@@ -47,6 +48,7 @@
 <translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Anteprima specchio</translation>
 <translation id="2879583609344924966">Videocamera <ph name="CAMERA" /> collegata.</translation>
+<translation id="2904654629665923749">Funzionalità di scansione dei documenti disponibile</translation>
 <translation id="2968794441791257519">Le foto e i video acquisiti con la fotocamera verranno spostati nella cartella Download e potrai accedervi dall'app File.
 
 Le app con autorizzazioni di accesso allo spazio di archiviazione potranno accedere alle foto e ai video.</translation>
@@ -72,7 +74,6 @@ Le app con autorizzazioni di accesso allo spazio di archiviazione potranno acced
 <translation id="3838931309141338733">Scansiona il codice a barre</translation>
 <translation id="3892148308691398805">Copia testo</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> MP</translation>
-<translation id="4096701159033358951">Download funzionalità di scansione documenti in corso…</translation>
 <translation id="4118525110028899586">Metti in pausa la registrazione</translation>
 <translation id="4121305183798804752">Documento rilevato</translation>
 <translation id="414641094616694804">Non è possibile modificare la risoluzione di questa fotocamera</translation>
@@ -94,7 +95,6 @@ Le app con autorizzazioni di accesso allo spazio di archiviazione potranno acced
 <translation id="5057360777601936059">La tua fotocamera non è attualmente disponibile.
         Controlla se la fotocamera è collegata correttamente.</translation>
 <translation id="5163387177077603948">Spostamento a destra</translation>
-<translation id="520537883758714667">Ora è disponibile la scansione di documenti</translation>
 <translation id="5235304959032763950">16 su 9</translation>
 <translation id="5266635337630551423">Angolo superiore sinistro del documento</translation>
 <translation id="5317780077021120954">Salva</translation>

@@ -42,6 +42,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/table_layout.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
@@ -162,8 +163,8 @@ class MonthHeaderView : public views::View {
           gfx::Insets::VH(calendar_utils::kDateVerticalPadding, 0))));
       label->SetElideBehavior(gfx::NO_ELIDE);
       label->SetSubpixelRenderingEnabled(false);
-      label->SetFontList(
-          views::style::GetFont(CONTEXT_CALENDAR_DATE, STYLE_EMPHASIZED));
+      label->SetFontList(views::style::GetFont(CONTEXT_CALENDAR_DATE,
+                                               views::style::STYLE_EMPHASIZED));
 
       AddChildView(std::move(label));
     }
@@ -370,6 +371,10 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
               },
               base::Unretained(this))) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
+
+  // Focusable nodes must have an accessible name and valid role.
+  // TODO(crbug.com/1348930): Review the accessible name and role.
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kPane);
   GetViewAccessibility().OverrideName(GetClassName());
 
   // Since there's no separator in the `CalendarView`, first sets
@@ -458,7 +463,10 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
   content_view_->SetBorder(views::CreateEmptyBorder(
       gfx::Insets::TLBR(kContentVerticalPadding, kWeekRowHorizontalPadding,
                         kContentVerticalPadding, kWeekRowHorizontalPadding)));
-  // Focusable nodes must have an accessible name.
+
+  // Focusable nodes must have an accessible name and valid role.
+  // TODO(crbug.com/1348930): Review the accessible name and role.
+  content_view_->GetViewAccessibility().OverrideRole(ax::mojom::Role::kPane);
   content_view_->GetViewAccessibility().OverrideName(GetClassName());
   content_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
 
@@ -1110,6 +1118,13 @@ void CalendarView::CloseEventList() {
                     gfx::Tween::FAST_OUT_SLOW_IN);
 }
 
+void CalendarView::OnSelectedDateUpdated() {
+  // If the event list is already open and the date cell is focused, moves the
+  // focusing ring to the close button.
+  if (event_list_view_ && IsDateCellViewFocused())
+    RequestFocusForEventListCloseButton();
+}
+
 void CalendarView::ScrollUpOneMonth() {
   calendar_view_controller_->UpdateMonth(
       calendar_view_controller_->GetPreviousMonthFirstDayUTC(1));
@@ -1633,16 +1648,8 @@ void CalendarView::OnOpenEventListAnimationComplete() {
 
   // Moves focusing ring to the close button of the event list if it's opened
   // from the date cell view focus.
-  if (IsDateCellViewFocused()) {
-    auto* focus_manager = GetFocusManager();
-    event_list_view_->RequestFocus();
-    focus_manager->AdvanceFocus(/*reverse=*/false);
-    current_month_->DisableFocus();
-    previous_month_->DisableFocus();
-    next_month_->DisableFocus();
-    next_next_month_->DisableFocus();
-    content_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
-  }
+  if (IsDateCellViewFocused())
+    RequestFocusForEventListCloseButton();
 
   up_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_CALENDAR_UP_BUTTON_EVENT_LIST_ACCESSIBLE_DESCRIPTION));
@@ -1675,6 +1682,18 @@ void CalendarView::OnCloseEventListAnimationComplete() {
       IDS_ASH_CALENDAR_UP_BUTTON_ACCESSIBLE_DESCRIPTION));
   down_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_CALENDAR_DOWN_BUTTON_ACCESSIBLE_DESCRIPTION));
+}
+
+void CalendarView::RequestFocusForEventListCloseButton() {
+  DCHECK(event_list_view_);
+  auto* focus_manager = GetFocusManager();
+  event_list_view_->RequestFocus();
+  focus_manager->AdvanceFocus(/*reverse=*/false);
+  current_month_->DisableFocus();
+  previous_month_->DisableFocus();
+  next_month_->DisableFocus();
+  next_next_month_->DisableFocus();
+  content_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
 void CalendarView::OnResetToTodayAnimationComplete() {

@@ -8,7 +8,6 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/public/ash_interfaces.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/logging.h"
@@ -97,6 +96,9 @@ void OobeTestAPIHandler::GetAdditionalParameters(base::Value::Dict* dict) {
   dict->Set("testapi_isOobeInTabletMode",
             ash::TabletMode::Get()->InTabletMode() ||
                 ash::switches::ShouldOobeUseTabletModeFirstRun());
+  dict->Set("testapi_shouldSkipConsolidatedConsent",
+            !features::IsOobeConsolidatedConsentEnabled() ||
+                !BUILDFLAG(GOOGLE_CHROME_BRANDING));
 }
 
 void OobeTestAPIHandler::LoginWithPin(const std::string& username,
@@ -144,7 +146,7 @@ void OobeTestAPIHandler::ShowGaiaDialog() {
 
 void OobeTestAPIHandler::HandleGetPrimaryDisplayName(
     const std::string& callback_id) {
-  mojo::Remote<ash::mojom::CrosDisplayConfigController> cros_display_config;
+  mojo::Remote<crosapi::mojom::CrosDisplayConfigController> cros_display_config;
   ash::BindCrosDisplayConfigController(
       cros_display_config.BindNewPipeAndPassReceiver());
 
@@ -156,9 +158,9 @@ void OobeTestAPIHandler::HandleGetPrimaryDisplayName(
 
 void OobeTestAPIHandler::OnGetDisplayUnitInfoList(
     const std::string& callback_id,
-    std::vector<ash::mojom::DisplayUnitInfoPtr> info_list) {
+    std::vector<crosapi::mojom::DisplayUnitInfoPtr> info_list) {
   std::string display_name;
-  for (const ash::mojom::DisplayUnitInfoPtr& info : info_list) {
+  for (const crosapi::mojom::DisplayUnitInfoPtr& info : info_list) {
     if (info->is_primary) {
       display_name = info->name;
       break;

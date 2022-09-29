@@ -32,6 +32,8 @@ class ASH_PUBLIC_EXPORT AppListColorProvider {
   virtual SkColor GetSearchBoxTextColor(SkColor default_color) const = 0;
   virtual SkColor GetSearchBoxSecondaryTextColor(
       SkColor default_color) const = 0;
+  virtual SkColor GetSearchBoxSuggestionTextColor(
+      SkColor default_color) const = 0;
   virtual SkColor GetSuggestionChipBackgroundColor() const = 0;
   virtual SkColor GetSuggestionChipTextColor() const = 0;
   virtual SkColor GetAppListItemTextColor(bool is_in_folder) const = 0;
@@ -54,10 +56,6 @@ class ASH_PUBLIC_EXPORT AppListColorProvider {
   virtual SkColor GetInkDropBaseColor(
       SkColor bg_color = gfx::kPlaceholderColor) const = 0;
   virtual float GetInkDropOpacity(
-      SkColor bg_color = gfx::kPlaceholderColor) const = 0;
-  virtual SkColor GetInvertedInkDropBaseColor(
-      SkColor bg_color = gfx::kPlaceholderColor) const = 0;
-  virtual float GetInvertedInkDropOpacity(
       SkColor bg_color = gfx::kPlaceholderColor) const = 0;
   virtual SkColor GetSearchResultViewHighlightColor() const = 0;
   virtual SkColor GetTextColorURL() const = 0;

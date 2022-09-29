@@ -625,7 +625,8 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTestWithSyncTrustedVaultEnabled,
   signin::WaitForRefreshTokensLoaded(identity_manager);
 
   syncer::SyncServiceImpl* sync_service =
-      SyncServiceFactory::GetAsSyncServiceImplForProfile(browser->profile());
+      SyncServiceFactory::GetAsSyncServiceImplForProfileForTesting(
+          browser->profile());
   syncer::TrustedVaultClient* trusted_vault_client =
       sync_service->GetSyncClientForTest()->GetTrustedVaultClient();
 
@@ -953,34 +954,6 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, StoragePartitionHandling) {
           found_signin_frame_partition_1 = true;
       }));
   EXPECT_FALSE(found_signin_frame_partition_1);
-}
-
-// Tests that requesting webcam access from the login screen works correctly.
-// This is needed for taking profile pictures.
-IN_PROC_BROWSER_TEST_F(WebviewLoginTest, RequestCamera) {
-  WaitForGaiaPageLoad();
-
-  // Video devices should be allowed from the login screen.
-  content::WebContents* web_contents = GetLoginUI()->GetWebContents();
-  bool getUserMediaSuccess = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      web_contents->GetPrimaryMainFrame(),
-      "navigator.getUserMedia("
-      "    {video: true},"
-      "    function() { window.domAutomationController.send(true); },"
-      "    function() { window.domAutomationController.send(false); });",
-      &getUserMediaSuccess));
-  EXPECT_TRUE(getUserMediaSuccess);
-
-  // Audio devices should be denied from the login screen.
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      web_contents->GetPrimaryMainFrame(),
-      "navigator.getUserMedia("
-      "    {audio: true},"
-      "    function() { window.domAutomationController.send(true); },"
-      "    function() { window.domAutomationController.send(false); });",
-      &getUserMediaSuccess));
-  EXPECT_FALSE(getUserMediaSuccess);
 }
 
 enum class FrameUrlOrigin { kSameOrigin, kDifferentOrigin };

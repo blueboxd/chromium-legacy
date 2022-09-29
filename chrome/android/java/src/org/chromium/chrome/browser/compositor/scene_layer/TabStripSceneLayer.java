@@ -114,8 +114,7 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
         final float width = layoutHelper.getWidth() * mDpToPx;
         final float height = layoutHelper.getHeight() * mDpToPx;
         TabStripSceneLayerJni.get().updateTabStripLayer(mNativePtr, TabStripSceneLayer.this, width,
-                height, yOffset * mDpToPx, layoutHelper.getBackgroundTabBrightness(),
-                layoutHelper.getBrightness(), shouldReaddBackground(layoutHelper.getOrientation()));
+                height, yOffset * mDpToPx, shouldReaddBackground(layoutHelper.getOrientation()));
 
         updateStripScrim(layoutHelper.getStripScrim());
 
@@ -182,7 +181,8 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                     st.getDrawX() * mDpToPx, st.getDrawY() * mDpToPx, st.getWidth() * mDpToPx,
                     st.getHeight() * mDpToPx, st.getContentOffsetX() * mDpToPx,
                     st.getCloseButton().getOpacity(), st.isLoading(),
-                    st.getLoadingSpinnerRotation(), layerTitleCache, resourceManager);
+                    st.getLoadingSpinnerRotation(), st.getBrightness(), layerTitleCache,
+                    resourceManager);
         }
     }
 
@@ -199,8 +199,7 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                 long nativeTabStripSceneLayer, TabStripSceneLayer caller, boolean visible);
         void finishBuildingFrame(long nativeTabStripSceneLayer, TabStripSceneLayer caller);
         void updateTabStripLayer(long nativeTabStripSceneLayer, TabStripSceneLayer caller,
-                float width, float height, float yOffset, float backgroundTabBrightness,
-                float brightness, boolean shouldReadBackground);
+                float width, float height, float yOffset, boolean shouldReadBackground);
         void updateStripScrim(long nativeTabStripSceneLayer, TabStripSceneLayer caller, float x,
                 float y, float width, float height, int color, float alpha);
         void updateNewTabButton(long nativeTabStripSceneLayer, TabStripSceneLayer caller,
@@ -219,7 +218,7 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                 int closeTint, int handleTint, int handleOutlineTint, boolean foreground,
                 boolean closePressed, float toolbarWidth, float x, float y, float width,
                 float height, float contentOffsetX, float closeButtonAlpha, boolean isLoading,
-                float spinnerRotation, LayerTitleCache layerTitleCache,
+                float spinnerRotation, float brightness, LayerTitleCache layerTitleCache,
                 ResourceManager resourceManager);
         void setContentTree(
                 long nativeTabStripSceneLayer, TabStripSceneLayer caller, SceneLayer contentTree);

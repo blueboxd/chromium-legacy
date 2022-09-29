@@ -241,6 +241,10 @@ namespace autotestPrivate {
     DOMString? text;
     // HTML response returned from server.
     DOMString? htmlResponse;
+    // Open URL response returned from server.
+    DOMString? openUrl;
+    // Open Android app response returned from server.
+    DOMString? openAppResponse;
   };
   dictionary AssistantQueryStatus {
     // Indicates whether this might be a voice interaction.
@@ -261,14 +265,37 @@ namespace autotestPrivate {
 
   callback IsLacrosPrimaryBrowserCallback = void (boolean primary);
 
+  // A mapping of crosapi::BrowserManager::State
+  enum LacrosState {
+    NotInitialized,
+    Mounting,
+    Unavailable,
+    Stopped,
+    CreatingLogFile,
+    Starting,
+    Running,
+    Terminating
+  };
+
+  // A mapping of crosapi::browser_util::LacrosMode
+  enum LacrosMode {
+    Disabled,
+    SideBySide,
+    Primary,
+    Only
+  };
+
   dictionary LacrosInfo {
-    // True iff lacros is running currently.
-    boolean isRunning;
+    // The state of lacros.
+    LacrosState state;
     // True iff keepalive is enabled for lacros.
     boolean isKeepAlive;
     // Path to lacros-chrome directory. Note that this may change over time if
     // omaha is used. This also may be empty if lacros is not running.
     DOMString lacrosPath;
+    // Specifies the mode Lacros is currently running.
+    // For a full list of supported mode, see LacrosMode enum definition.
+    LacrosMode mode;
   };
 
   callback GetLacrosInfoCallback = void (LacrosInfo info);
@@ -595,6 +622,8 @@ namespace autotestPrivate {
   callback AcceleratorCallback = void (boolean success);
 
   callback DesksCallback = void (boolean success);
+
+  callback GetDeskCountCallback = void (long count);
 
   callback GetScrollableShelfInfoForStateCallback = void (
       ScrollableShelfInfo info);
@@ -1047,6 +1076,12 @@ namespace autotestPrivate {
         IsArcPackageListInitialRefreshedCallback callback);
 
     // Set value for the specified user pref in the pref tree.
+    [supportsPromises] static void setAllowedPref(DOMString pref_name,
+                                                  any value,
+                                                  VoidCallback callback);
+
+    // DEPRECATED: use SetAllowedPref instead, see crbug/1262034
+    // Set value for the specified user pref in the pref tree.
     [supportsPromises] static void setWhitelistedPref(DOMString pref_name,
                                                       any value,
                                                       VoidCallback callback);
@@ -1267,6 +1302,13 @@ namespace autotestPrivate {
     [supportsPromises] static void activateAdjacentDesksToTargetIndex(
         long index,
         DesksCallback callback);
+
+    // Fetches the number of open desks in the `DesksController` at the time of
+    // call.
+    // `callback`: callback that is passed the number of open desks.
+    [supportsPromises] static void getDeskCount(
+        GetDeskCountCallback callback
+    );
 
     // Create mouse events to cause a mouse click.
     // |button|: the mouse button for the click event.

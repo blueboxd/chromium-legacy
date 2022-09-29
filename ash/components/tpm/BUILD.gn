@@ -20,23 +20,18 @@ component("tpm") {
     ":buildflags",
     "//ash/components/cryptohome",
     "//base",
+    "//chromeos/ash/components/dbus/cryptohome",
+    "//chromeos/ash/components/dbus/cryptohome:cryptohome_proto",
     "//chromeos/ash/components/dbus/userdataauth",
     "//chromeos/ash/components/dbus/userdataauth:userdataauth_proto",
     "//chromeos/dbus/constants",
-    "//chromeos/dbus/cryptohome",
-    "//chromeos/dbus/cryptohome:cryptohome_proto",
     "//chromeos/dbus/tpm_manager",
     "//chromeos/dbus/tpm_manager:tpm_manager_proto",
     "//chromeos/login/login_state",
     "//components/account_id",
-    "//components/policy/core/common:common_constants",
-    "//components/policy/proto",
     "//crypto",
-    "//google_apis",
   ]
   sources = [
-    "install_attributes.cc",
-    "install_attributes.h",
     "prepare_tpm.cc",
     "prepare_tpm.h",
     "tpm_token_info_getter.cc",
@@ -46,40 +41,23 @@ component("tpm") {
   ]
 }
 
-source_set("test_support") {
-  testonly = true
-  deps = [
-    ":tpm",
-    "//base",
-    "//chromeos/dbus/tpm_manager:tpm_manager_proto",
-    "//components/policy/core/common:common_constants",
-  ]
-  sources = [
-    "stub_install_attributes.cc",
-    "stub_install_attributes.h",
-  ]
-}
-
 source_set("unit_tests") {
   testonly = true
   deps = [
     ":tpm",
     "//ash/components/cryptohome",
     "//base/test:test_support",
+    "//chromeos/ash/components/dbus:test_support",
+    "//chromeos/ash/components/dbus/cryptohome",
+    "//chromeos/ash/components/dbus/cryptohome:cryptohome_proto",
     "//chromeos/ash/components/dbus/userdataauth:userdataauth",
     "//chromeos/ash/components/dbus/userdataauth:userdataauth_proto",
-    "//chromeos/dbus:test_support",
     "//chromeos/dbus/constants",
-    "//chromeos/dbus/cryptohome",
-    "//chromeos/dbus/cryptohome:cryptohome_proto",
     "//chromeos/dbus/tpm_manager",
     "//chromeos/dbus/tpm_manager:tpm_manager_proto",
-    "//components/policy/proto",
-    "//google_apis",
     "//testing/gtest",
   ]
   sources = [
-    "install_attributes_unittest.cc",
     "prepare_tpm_unittest.cc",
     "tpm_token_info_getter_unittest.cc",
   ]

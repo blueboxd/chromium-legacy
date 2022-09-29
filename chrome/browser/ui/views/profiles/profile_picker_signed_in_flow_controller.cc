@@ -69,9 +69,6 @@ void ProfilePickerSignedInFlowController::Cancel() {}
 
 void ProfilePickerSignedInFlowController::SwitchToSyncConfirmation() {
   DCHECK(IsInitialized());
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  PreShowScreenForDebug();
-#endif
   host_->ShowScreen(contents(), GetSyncConfirmationURL(/*loading=*/false),
                     /*navigation_finished_closure=*/
                     base::BindOnce(&ProfilePickerSignedInFlowController::
@@ -85,9 +82,6 @@ void ProfilePickerSignedInFlowController::SwitchToEnterpriseProfileWelcome(
     EnterpriseProfileWelcomeUI::ScreenType type,
     signin::SigninChoiceCallback proceed_callback) {
   DCHECK(IsInitialized());
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  PreShowScreenForDebug();
-#endif
   host_->ShowScreen(contents(),
                     GURL(chrome::kChromeUIEnterpriseProfileWelcomeURL),
                     /*navigation_finished_closure=*/
@@ -105,9 +99,6 @@ void ProfilePickerSignedInFlowController::SwitchToProfileSwitch(
   // The sign-in flow is finished, no profile window should be shown in the end.
   Cancel();
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  PreShowScreenForDebug();
-#endif
   switch_profile_path_ = profile_path;
   host_->ShowScreenInPickerContents(
       GURL(chrome::kChromeUIProfilePickerUrl).Resolve("profile-switch"));
@@ -127,7 +118,7 @@ GURL ProfilePickerSignedInFlowController::GetSyncConfirmationURL(bool loading) {
   GURL url = GURL(chrome::kChromeUISyncConfirmationURL);
   return AppendSyncConfirmationQueryParams(
       loading ? url.Resolve(chrome::kChromeUISyncConfirmationLoadingPath) : url,
-      /*is_modal=*/false);
+      SyncConfirmationStyle::kWindow);
 }
 
 std::unique_ptr<content::WebContents>

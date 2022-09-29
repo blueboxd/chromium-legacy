@@ -9,7 +9,7 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
-import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
@@ -32,17 +32,20 @@ import '../settings_vars.css.js';
 // <if expr="not is_macosx">
 import './edit_dictionary_page.js';
 // </if>
+
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
+import {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
 import {FocusConfig} from '../focus_config.js';
 import {PrefsMixin} from '../prefs/prefs_mixin.js';
 import {routes} from '../route.js';
 import {Router} from '../router.js';
 
+import {LanguageSettingsActionType, LanguageSettingsMetricsProxy, LanguageSettingsMetricsProxyImpl} from './languages_settings_metrics_proxy.js';
 import {LanguageHelper, LanguagesModel, LanguageState, SpellCheckLanguageState} from './languages_types.js';
 import {getTemplate} from './spell_check_page.html.js';
 
@@ -124,6 +127,22 @@ export class SettingsSpellCheckPageElement extends
   private spellCheckLanguages_: Array<LanguageState|SpellCheckLanguageState>;
   private hideSpellCheckLanguages_: boolean;
   private focusConfig_: FocusConfig;
+  private languageSettingsMetricsProxy_: LanguageSettingsMetricsProxy =
+      LanguageSettingsMetricsProxyImpl.getInstance();
+
+  private onSpellCheckToggleChange_(e: Event) {
+    this.languageSettingsMetricsProxy_.recordSettingsMetric(
+      (e.target as SettingsToggleButtonElement).checked ?
+          LanguageSettingsActionType.ENABLE_SPELL_CHECK_GLOBALLY :
+          LanguageSettingsActionType.DISABLE_SPELL_CHECK_GLOBALLY);
+  }
+
+  private onSelectedSpellingServiceChange_() {
+    this.languageSettingsMetricsProxy_.recordSettingsMetric(
+      this.prefs.spellcheck.use_spelling_service.value ?
+          LanguageSettingsActionType.SELECT_ENHANCED_SPELL_CHECK :
+          LanguageSettingsActionType.SELECT_BASIC_SPELL_CHECK);
+  }
 
   // <if expr="not is_macosx">
   /**
@@ -248,6 +267,11 @@ export class SettingsSpellCheckPageElement extends
 
     this.languageHelper.toggleSpellCheck(
         item.language.code, !item.spellCheckEnabled);
+
+    this.languageSettingsMetricsProxy_.recordSettingsMetric(
+      item.spellCheckEnabled ?
+          LanguageSettingsActionType.ENABLE_SPELL_CHECK_FOR_LANGUAGE :
+          LanguageSettingsActionType.DISABLE_SPELL_CHECK_FOR_LANGUAGE);
   }
 
   /**

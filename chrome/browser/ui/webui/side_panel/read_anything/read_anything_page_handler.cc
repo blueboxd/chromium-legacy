@@ -13,6 +13,10 @@
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_controller.h"
 #include "ui/accessibility/ax_tree_update.h"
 
+using read_anything::mojom::Page;
+using read_anything::mojom::PageHandler;
+using read_anything::mojom::ReadAnythingThemePtr;
+
 ReadAnythingPageHandler::ReadAnythingPageHandler(
     mojo::PendingRemote<Page> page,
     mojo::PendingReceiver<PageHandler> receiver)
@@ -25,11 +29,11 @@ ReadAnythingPageHandler::ReadAnythingPageHandler(
     return;
 
   coordinator_ = ReadAnythingCoordinator::FromBrowser(browser_);
-  if (coordinator_)
+  if (coordinator_) {
     coordinator_->AddObserver(this);
-  model_ = coordinator_->GetModel();
-  if (model_)
-    model_->AddObserver(this);
+    coordinator_->AddModelObserver(this);
+  }
+
   delegate_ = static_cast<ReadAnythingPageHandler::Delegate*>(
       coordinator_->GetController());
   if (delegate_)
@@ -45,16 +49,14 @@ ReadAnythingPageHandler::~ReadAnythingPageHandler() {
   // If |this| is destroyed before the |ReadAnythingCoordinator|, then remove
   // |this| from the observer lists. In the cases where the coordinator is
   // destroyed first, these will have been destroyed before this call.
-  if (model_)
-    model_->RemoveObserver(this);
-
-  if (coordinator_)
+  if (coordinator_) {
     coordinator_->RemoveObserver(this);
+    coordinator_->RemoveModelObserver(this);
+  }
 }
 
 void ReadAnythingPageHandler::OnCoordinatorDestroyed() {
   coordinator_ = nullptr;
-  model_ = nullptr;
   delegate_ = nullptr;
 }
 
@@ -64,11 +66,7 @@ void ReadAnythingPageHandler::OnAXTreeDistilled(
   page_->OnAXTreeDistilled(snapshot, content_node_ids);
 }
 
-void ReadAnythingPageHandler::OnFontNameUpdated(
-    const std::string& new_font_name) {
-  page_->OnFontNameChange(std::move(new_font_name));
-}
-
-void ReadAnythingPageHandler::OnFontSizeChanged(const float new_font_size) {
-  page_->OnFontSizeChanged(new_font_size);
+void ReadAnythingPageHandler::OnReadAnythingThemeChanged(
+    ReadAnythingThemePtr new_theme_ptr) {
+  page_->OnThemeChanged(std::move(new_theme_ptr));
 }

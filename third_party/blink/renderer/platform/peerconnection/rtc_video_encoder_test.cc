@@ -189,7 +189,10 @@ class RTCVideoEncoderTest
     DVLOG(3) << __func__;
     config_ = config;
     client_ = client;
-    client_->RequireBitstreamBuffers(0, config.input_visible_size,
+
+    constexpr size_t kNumInputBuffers = 3;
+    client_->RequireBitstreamBuffers(kNumInputBuffers,
+                                     config.input_visible_size,
                                      config.input_visible_size.GetArea());
     return true;
   }
@@ -225,12 +228,7 @@ class RTCVideoEncoderTest
     codec.qpMax = 30;
     codec.numberOfSimulcastStreams = 1;
     codec.mode = webrtc::VideoCodecMode::kRealtimeVideo;
-
     switch (codec_type) {
-      case webrtc::kVideoCodecH264: {
-        webrtc::VideoCodecH264& h264 = *codec.H264();
-        h264.numberOfTemporalLayers = 2;
-      } break;
       case webrtc::kVideoCodecVP9: {
         webrtc::VideoCodecVP9& vp9 = *codec.VP9();
         vp9.numberOfTemporalLayers = 3;
@@ -426,6 +424,8 @@ TEST_P(RTCVideoEncoderTest, CreateAndInitSucceedsForTemporalLayer) {
   const webrtc::VideoCodecType codec_type = GetParam();
   if (codec_type == webrtc::kVideoCodecVP8)
     GTEST_SKIP() << "VP8 temporal layer encoding is not supported";
+  if (codec_type == webrtc::kVideoCodecH264)
+    GTEST_SKIP() << "H264 temporal layer encoding is not supported";
 
   webrtc::VideoCodec tl_codec = GetSVCLayerCodec(codec_type,
                                                  /*num_spatial_layers=*/1);

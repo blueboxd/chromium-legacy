@@ -36,6 +36,7 @@
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/color/color_provider_manager.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
@@ -83,8 +84,7 @@ void FindDescendentByClassName(views::View* parent, T** result) {
 // Mocks -----------------------------------------------------------------------
 
 class MockAssistantInteractionSubscriber
-    : public testing::NiceMock<
-          chromeos::assistant::AssistantInteractionSubscriber> {
+    : public testing::NiceMock<assistant::AssistantInteractionSubscriber> {
  public:
   explicit MockAssistantInteractionSubscriber(Assistant* service) {
     scoped_subscriber_.Observe(service);
@@ -98,8 +98,7 @@ class MockAssistantInteractionSubscriber
               (override));
 
  private:
-  chromeos::assistant::ScopedAssistantInteractionSubscriber scoped_subscriber_{
-      this};
+  assistant::ScopedAssistantInteractionSubscriber scoped_subscriber_{this};
 };
 
 // ScopedShowUi ----------------------------------------------------------------
@@ -110,7 +109,7 @@ class ScopedShowUi {
       : original_visibility_(
             AssistantUiController::Get()->GetModel()->visibility()) {
     AssistantUiController::Get()->ShowUi(
-        chromeos::assistant::AssistantEntryPoint::kUnspecified);
+        assistant::AssistantEntryPoint::kUnspecified);
   }
 
   ScopedShowUi(const ScopedShowUi&) = delete;
@@ -120,7 +119,7 @@ class ScopedShowUi {
     switch (original_visibility_) {
       case AssistantVisibility::kClosed:
         AssistantUiController::Get()->CloseUi(
-            chromeos::assistant::AssistantExitPoint::kUnspecified);
+            assistant::AssistantExitPoint::kUnspecified);
         return;
       case AssistantVisibility::kVisible:
         // No action necessary.
@@ -530,6 +529,9 @@ TEST_F(AssistantOnboardingViewTest, DarkAndLightModeFlagOff) {
       /*enabled_features=*/{}, /*disabled_features=*/{
           chromeos::features::kDarkLightMode, features::kNotificationsRefresh,
           features::kProductivityLauncher});
+
+  // Reset ColorProvider's cache to reflect the flag value changes above.
+  ui::ColorProviderManager::Get().ResetColorProviderCache();
 
   ShowAssistantUi();
 

@@ -54,6 +54,7 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
@@ -173,6 +174,7 @@ using ::guest_view::GuestViewManager;
 using ::guest_view::TestGuestViewManager;
 using ::guest_view::TestGuestViewManagerFactory;
 using ::pdf_extension_test_util::ConvertPageCoordToScreenCoord;
+using ::pdf_extension_test_util::GetPdfPluginFrames;
 using ::pdf_extension_test_util::SetInputFocusOnPlugin;
 using ::testing::Contains;
 using ::testing::IsEmpty;
@@ -353,31 +355,8 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
         guest_contents->GetPrimaryMainFrame());
   }
 
-  // Finds the `RenderFrameHost`s of PDF plugin frames within a given
-  // `WebContents`.
-  std::vector<content::RenderFrameHost*> GetPluginFrames(
-      WebContents* contents) {
-    std::vector<content::RenderFrameHost*> plugin_frames;
-    contents->ForEachRenderFrameHost(base::BindLambdaForTesting(
-        [&plugin_frames](content::RenderFrameHost* frame) {
-          if (IsPluginFrame(*frame))
-            plugin_frames.push_back(frame);
-        }));
-    return plugin_frames;
-  }
-
   int CountPDFProcesses() {
-    base::flat_set<content::RenderProcessHost*> pdf_processes;
-
-    const TabStripModel* tab_strip = browser()->tab_strip_model();
-    for (int tab = 0; tab < tab_strip->count(); ++tab) {
-      for (content::RenderFrameHost* plugin_frame :
-           GetPluginFrames(tab_strip->GetWebContentsAt(tab))) {
-        pdf_processes.insert(plugin_frame->GetProcess());
-      }
-    }
-
-    return pdf_processes.size();
+    return pdf_extension_test_util::CountPdfPluginProcesses(browser());
   }
 
   ui::AXTreeUpdate GetAccessibilityTreeSnapshotForPdf(
@@ -403,14 +382,6 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
   virtual std::vector<base::Feature> GetDisabledFeatures() const { return {}; }
 
  private:
-  static bool IsPluginFrame(content::RenderFrameHost& frame) {
-    if (!frame.GetProcess()->IsPdf())
-      return false;
-
-    EXPECT_TRUE(frame.IsCrossProcessSubframe());
-    return true;
-  }
-
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -436,11 +407,8 @@ class PDFExtensionTestWithTestGuestViewManager : public PDFExtensionTest {
     // TestGuestViewManager class to avoid all callers needing this cast.
     auto* manager = static_cast<TestGuestViewManager*>(
         TestGuestViewManager::FromBrowserContext(browser()->profile()));
-    // TestGuestViewManager::WaitForSingleGuestCreated can and will get called
-    // before a guest is created. Since GuestViewManager is usually not created
-    // until the first guest is created, this means that |manager| will be
-    // nullptr if trying to use the manager to wait for the first guest. Because
-    // of this, the manager must be created here if it does not already exist.
+    // Test code may access the TestGuestViewManager before it would be created
+    // during creation of the first guest.
     if (!manager) {
       manager = static_cast<TestGuestViewManager*>(
           GuestViewManager::CreateWithDelegate(
@@ -468,7 +436,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
   auto* embedder_web_contents = GetActiveWebContents();
 
   // Verify the pdf has loaded.
-  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  auto* guest_web_contents =
+      GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated();
   ASSERT_TRUE(guest_web_contents);
   EXPECT_NE(embedder_web_contents, guest_web_contents);
   WaitForLoadStart(guest_web_contents);
@@ -493,7 +462,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
   auto* embedder_web_contents = GetActiveWebContents();
 
   // Verify the pdf has loaded.
-  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  auto* guest_web_contents =
+      GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated();
   ASSERT_TRUE(guest_web_contents);
   EXPECT_NE(embedder_web_contents, guest_web_contents);
   WaitForLoadStart(guest_web_contents);
@@ -571,7 +541,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
   auto* embedder_web_contents = GetActiveWebContents();
 
   // Verify the PDF has loaded.
-  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  auto* guest_web_contents =
+      GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated();
   ASSERT_TRUE(guest_web_contents);
   EXPECT_NE(embedder_web_contents, guest_web_contents);
   WaitForLoadStart(guest_web_contents);
@@ -609,7 +580,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
   EXPECT_EQ(2U, GetGuestViewManager()->GetNumGuestsActive());
   content::WebContentsDestroyedWatcher destroyed_watcher(guest_web_contents);
   ASSERT_TRUE(browser()->tab_strip_model()->CloseWebContentsAt(
-      0, TabStripModel::CLOSE_USER_GESTURE));
+      0, TabCloseTypes::CLOSE_USER_GESTURE));
   destroyed_watcher.Wait();
   EXPECT_EQ(1U, GetGuestViewManager()->GetNumGuestsActive());
 
@@ -618,7 +589,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
   delayer.ResumeAttach();
   navigation_observer.Wait();
   auto* guest_web_contents2 =
-      GetGuestViewManager()->WaitForSingleGuestCreated();
+      GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated();
   ASSERT_TRUE(guest_web_contents2);
   EXPECT_NE(embedder_web_contents, guest_web_contents2);
   WaitForLoadStart(guest_web_contents2);
@@ -640,7 +611,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
   ASSERT_TRUE(embedder_web_contents);
 
   // Verify the pdf has loaded.
-  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  auto* guest_web_contents =
+      GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated();
   ASSERT_TRUE(guest_web_contents);
   EXPECT_NE(embedder_web_contents, guest_web_contents);
   WaitForLoadStart(guest_web_contents);
@@ -670,7 +642,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
   ASSERT_TRUE(embedder_web_contents);
 
   // Verify the pdf has loaded.
-  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  auto* guest_web_contents =
+      GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated();
   ASSERT_TRUE(guest_web_contents);
   EXPECT_NE(embedder_web_contents, guest_web_contents);
   WaitForLoadStart(guest_web_contents);
@@ -715,7 +688,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
   ASSERT_TRUE(embedder_web_contents);
 
   // Verify the pdf has loaded.
-  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  auto* guest_web_contents =
+      GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated();
   ASSERT_TRUE(guest_web_contents);
   EXPECT_NE(embedder_web_contents, guest_web_contents);
   WaitForLoadStart(guest_web_contents);
@@ -2584,7 +2558,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionIsolatedContentTest, PdfAndHtml) {
   // The PDF plugin frame and the iframe should not share renderer processes
   // even though they share origins.
   std::vector<content::RenderFrameHost*> plugin_frames =
-      GetPluginFrames(guest_contents);
+      GetPdfPluginFrames(guest_contents);
   ASSERT_EQ(plugin_frames.size(), 1u);
 
   content::RenderFrameHost* iframe = ChildFrameAt(GetActiveWebContents(), 0);
@@ -2606,7 +2580,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionIsolatedContentTest, DataNavigation) {
   // processes even though the extension triggers a data: navigation when
   // loading its plugin.
   std::vector<content::RenderFrameHost*> plugin_frames =
-      GetPluginFrames(guest_contents);
+      GetPdfPluginFrames(guest_contents);
   ASSERT_EQ(plugin_frames.size(), 1u);
   EXPECT_NE(plugin_frames[0]->GetProcess(),
             guest_contents->GetPrimaryMainFrame()->GetProcess());
@@ -2637,7 +2611,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionIsolatedContentTest, Jitless) {
 
   // PDF content should always be in JIT-less processes.
   std::vector<content::RenderFrameHost*> plugin_frames =
-      GetPluginFrames(guest_contents);
+      GetPdfPluginFrames(guest_contents);
   ASSERT_EQ(plugin_frames.size(), 1u);
   EXPECT_TRUE(plugin_frames[0]->GetProcess()->IsJitDisabled());
 }
@@ -3391,8 +3365,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
   SendCopyCommandAndCheckCopyPasteClipboard("HEL");
 }
 
-// Flaky, http://crbug.com/1121446
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+// Flaky, http://crbug.com/1121446, http://crbug.com/1350332
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
 #define MAYBE_CombinedShiftRightArrowPresses \
   DISABLED_CombinedShiftRightArrowPresses
 #else
@@ -4587,8 +4561,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderAndFencedFrameTest,
   GURL url = embedded_test_server()->GetURL("/empty.html");
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), url));
 
-  GetGuestViewManager()->RegisterTestGuestViewType<MimeHandlerViewGuest>(
-      base::BindRepeating(&TestMimeHandlerViewGuest::Create));
+  TestMimeHandlerViewGuest::RegisterTestGuestViewType(GetGuestViewManager());
   // Set a 1s delay to delay MimeHandlerViewGuest's creation to ensure that the
   // fenced frame is loaded while the PDF stream is not yet consumed.
   const int creation_delay = TestTimeouts::tiny_timeout().InMilliseconds();
@@ -4610,7 +4583,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderAndFencedFrameTest,
           GetActiveWebContents()->GetPrimaryMainFrame(), fenced_frame_url);
   ASSERT_TRUE(fenced_frame_host);
 
-  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  auto* guest_web_contents =
+      GetGuestViewManager()->DeprecatedWaitForSingleGuestCreated();
   ASSERT_TRUE(guest_web_contents);
   WaitForLoadStart(guest_web_contents);
   EXPECT_TRUE(content::WaitForLoadStop(guest_web_contents));

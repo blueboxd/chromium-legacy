@@ -3485,19 +3485,6 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleTextTextFieldGetCaretOffsetNoCaret) {
   EXPECT_EQ(0, offset);
 }
 
-TEST_F(AXPlatformNodeWinTest, IAccessibleTextTextFieldGetCaretOffsetHasCaret) {
-  Init(BuildTextFieldWithSelectionRange(1, 2));
-
-  ComPtr<IAccessible2> ia2_text_field = ToIAccessible2(GetRootIAccessible());
-  ComPtr<IAccessibleText> text_field;
-  ia2_text_field.As(&text_field);
-  ASSERT_NE(nullptr, text_field.Get());
-
-  LONG offset;
-  EXPECT_HRESULT_SUCCEEDED(text_field->get_caretOffset(&offset));
-  EXPECT_EQ(2, offset);
-}
-
 TEST_F(AXPlatformNodeWinTest,
        IAccessibleTextContextEditableGetCaretOffsetNoCaret) {
   Init(BuildContentEditable());
@@ -5806,7 +5793,12 @@ TEST_F(AXPlatformNodeWinTest, ComputeUIAControlType) {
   child6.role = ax::mojom::Role::kDialog;
   root.child_ids.push_back(child6.id);
 
-  Init(root, child1, child2, child3, child4, child5, child6);
+  AXNodeData child7;
+  child7.id = 8;
+  child7.role = ax::mojom::Role::kGraphicsObject;
+  root.child_ids.push_back(child7.id);
+
+  Init(root, child1, child2, child3, child4, child5, child6, child7);
 
   EXPECT_UIA_INT_EQ(
       QueryInterfaceFromNodeId<IRawElementProviderSimple>(child1.id),
@@ -5826,6 +5818,9 @@ TEST_F(AXPlatformNodeWinTest, ComputeUIAControlType) {
   EXPECT_UIA_INT_EQ(
       QueryInterfaceFromNodeId<IRawElementProviderSimple>(child6.id),
       UIA_ControlTypePropertyId, int{UIA_WindowControlTypeId});
+  EXPECT_UIA_INT_EQ(
+      QueryInterfaceFromNodeId<IRawElementProviderSimple>(child7.id),
+      UIA_ControlTypePropertyId, int{UIA_GroupControlTypeId});
 }
 
 TEST_F(AXPlatformNodeWinTest, UIALandmarkType) {

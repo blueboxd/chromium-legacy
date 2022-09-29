@@ -42,7 +42,62 @@ AppPtr AppPublisher::MakeApp(AppType app_type,
 void AppPublisher::RegisterPublisher(AppType app_type) {
   proxy_->RegisterPublisher(app_type, this);
 }
+#endif
 
+void AppPublisher::LaunchAppWithFiles(const std::string& app_id,
+                                      int32_t event_flags,
+                                      LaunchSource launch_source,
+                                      std::vector<base::FilePath> file_paths) {
+  NOTIMPLEMENTED();
+}
+
+void AppPublisher::LaunchAppWithIntent(
+    const std::string& app_id,
+    int32_t event_flags,
+    IntentPtr intent,
+    LaunchSource launch_source,
+    WindowInfoPtr window_info,
+    base::OnceCallback<void(bool)> callback) {
+  NOTIMPLEMENTED();
+  std::move(callback).Run(/*success=*/false);
+}
+
+void AppPublisher::SetPermission(const std::string& app_id,
+                                 PermissionPtr permission) {
+  NOTIMPLEMENTED();
+}
+
+void AppPublisher::Uninstall(const std::string& app_id,
+                             UninstallSource uninstall_source,
+                             bool clear_site_data,
+                             bool report_abuse) {
+  LOG(ERROR) << "Uninstall failed, could not remove the app with id " << app_id;
+}
+
+void AppPublisher::PauseApp(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
+void AppPublisher::UnpauseApp(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
+void AppPublisher::StopApp(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
+void AppPublisher::ExecuteContextMenuCommand(const std::string& app_id,
+                                             int command_id,
+                                             const std::string& shortcut_id,
+                                             int64_t display_id) {
+  NOTIMPLEMENTED();
+}
+
+void AppPublisher::OpenNativeSettings(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 void AppPublisher::Publish(AppPtr app) {
   if (!proxy_) {
     NOTREACHED();

@@ -22,6 +22,7 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/view_class_properties.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -35,7 +36,7 @@ IntentChipButton::IntentChipButton(Browser* browser,
       browser_(browser),
       delegate_(delegate) {
   SetText(l10n_util::GetStringUTF16(IDS_INTENT_CHIP_OPEN_IN_APP));
-  SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
+  SetFocusBehavior(views::PlatformStyle::kDefaultFocusBehavior);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_INTENT_CHIP_OPEN_IN_APP));
   SetProperty(views::kElementIdentifierKey, kIntentChipElementId);
 }
@@ -56,16 +57,11 @@ void IntentChipButton::Update() {
   }
   if (browser_->window()) {
     if (is_visible && !was_visible) {
-#if BUILDFLAG(IS_CHROMEOS)
-      user_education::FeaturePromoSpecification::StringReplacements
-          replacements = {ui::GetChromeOSDeviceName()};
-#else
-      user_education::FeaturePromoSpecification::StringReplacements
-          replacements = {};
-#endif
-      browser_->window()->MaybeShowFeaturePromo(
-          feature_engagement::kIPHIntentChipFeature, replacements);
+      // Might want to show the intent chip promo, but can't until the view is
+      // properly laid out.
+      pending_promo_ = true;
     } else if (was_visible && !is_visible) {
+      pending_promo_ = false;
       IntentPickerBubbleView::CloseCurrentBubble();
       browser_->window()->CloseFeaturePromo(
           feature_engagement::kIPHIntentChipFeature);
@@ -122,6 +118,30 @@ IntentPickerTabHelper* IntentChipButton::GetTabHelper() const {
     return nullptr;
 
   return IntentPickerTabHelper::FromWebContents(web_contents);
+}
+
+void IntentChipButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  OmniboxChipButton::OnBoundsChanged(previous_bounds);
+
+  if (!GetVisible() || size().IsEmpty())
+    return;
+
+  if (pending_promo_) {
+    user_education::FeaturePromoSpecification::StringReplacements replacements;
+#if BUILDFLAG(IS_CHROMEOS)
+    replacements.push_back(ui::GetChromeOSDeviceName());
+#endif
+    browser_->window()->MaybeShowFeaturePromo(
+        feature_engagement::kIPHIntentChipFeature, replacements);
+    // If the FE backend chooses not to show the promo, waiting until the next
+    // resize won't change anything.
+    pending_promo_ = false;
+  }
+
+  // TODO(dfried): If the help bubble has trouble tracking the chip as it
+  // animates, a call to HelpBubbleFactoryRegistry::NotifyAnchorBoundsChanged()
+  // here while the promo is active should fix the problem, but I'm not going to
+  // put that code in unless we determine there's a problem.
 }
 
 BEGIN_METADATA(IntentChipButton, OmniboxChipButton)

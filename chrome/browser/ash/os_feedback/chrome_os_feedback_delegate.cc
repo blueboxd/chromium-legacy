@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/shell.h"
+#include "ash/webui/os_feedback_ui/backend/histogram_util.h"
 #include "ash/webui/os_feedback_ui/mojom/os_feedback_ui.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -166,6 +167,7 @@ void ChromeOsFeedbackDelegate::SendReport(
   feedback_params.form_submit_time = base::TimeTicks::Now();
   feedback_params.load_system_info = report->include_system_logs_and_histograms;
   feedback_params.send_histograms = report->include_system_logs_and_histograms;
+  feedback_params.send_bluetooth_logs = report->send_bluetooth_logs;
 
   base::WeakPtr<feedback::FeedbackUploader> uploader =
       base::AsWeakPtr(GetFeedbackUploaderForContext(profile_));
@@ -187,6 +189,9 @@ void ChromeOsFeedbackDelegate::SendReport(
     feedback_data->AddLog(kExtraDiagnosticsKey,
                           feedback_context->extra_diagnostics.value());
   }
+  if (feedback_context->category_tag.has_value()) {
+    feedback_data->set_category_tag(feedback_context->category_tag.value());
+  }
 
   scoped_refptr<base::RefCountedMemory> png_data = GetScreenshotData();
   if (report->include_screenshot && png_data && png_data.get()) {
@@ -199,9 +204,17 @@ void ChromeOsFeedbackDelegate::SendReport(
   if (report->contact_user_consent_granted) {
     feedback_data->AddLog(kFeedbackUserConsentKey,
                           kFeedbackUserConsentGrantedValue);
+    ash::os_feedback_ui::metrics::EmitFeedbackAppCanContactUser(
+        os_feedback_ui::metrics::FeedbackAppContactUserConsentType::kYes);
   } else {
     feedback_data->AddLog(kFeedbackUserConsentKey,
                           kFeedbackUserConsentDeniedValue);
+    feedback_context->email.has_value()
+        ? ash::os_feedback_ui::metrics::EmitFeedbackAppCanContactUser(
+              os_feedback_ui::metrics::FeedbackAppContactUserConsentType::kNo)
+        : ash::os_feedback_ui::metrics::EmitFeedbackAppCanContactUser(
+              os_feedback_ui::metrics::FeedbackAppContactUserConsentType::
+                  kNoEmail);
   }
 
   const AttachedFilePtr& attached_file = report->attached_file;
@@ -215,7 +228,34 @@ void ChromeOsFeedbackDelegate::SendReport(
     // by posting a task to thread pool. The |feedback_data| will manage waiting
     // for all tasks to complete.
     feedback_data->AttachAndCompressFileData(std::move(file_data));
+    // Records whether the file is included when the feedback report is
+    // submitted.
+    ash::os_feedback_ui::metrics::EmitFeedbackAppIncludedFile(true);
+  } else {
+    ash::os_feedback_ui::metrics::EmitFeedbackAppIncludedFile(false);
   }
+
+  // Handle Feedback Metrics
+  // Records whether the screenshot is included when the feedback report is
+  // submitted.
+  ash::os_feedback_ui::metrics::EmitFeedbackAppIncludedScreenshot(
+      report->include_screenshot);
+  // Records whether the email is included when the feedback report is
+  // submitted.
+  ash::os_feedback_ui::metrics::EmitFeedbackAppIncludedEmail(
+      feedback_context->email.has_value());
+  // Records whether the page url is included when the feedback report is
+  // submitted.
+  ash::os_feedback_ui::metrics::EmitFeedbackAppIncludedUrl(
+      feedback_context->page_url.has_value());
+  // Records whether the system and information is included when the feedback
+  // report is submitted.
+  ash::os_feedback_ui::metrics::EmitFeedbackAppIncludedSystemInfo(
+      report->include_system_logs_and_histograms);
+  // Records the length of description in the textbox when the feedback
+  // report is submitted.
+  ash::os_feedback_ui::metrics::EmitFeedbackAppDescriptionLength(
+      report->description.length());
 
   feedback_service_->SendFeedback(
       feedback_params, feedback_data,
@@ -249,6 +289,14 @@ void ChromeOsFeedbackDelegate::OpenSystemInfoDialog() {
   GURL systemInfoUrl =
       GURL(base::StrCat({chrome::kChromeUIFeedbackURL, "html/sys_info.html"}));
   OpenWebDialog(systemInfoUrl);
+}
+
+void ChromeOsFeedbackDelegate::OpenBluetoothLogsInfoDialog() {
+  // TODO(http://b/233079042): Make the bluetooth_logs_info.html page a separate
+  // WebUI. For now, use the old Feedback tool's bluetooth_logs_info.html.
+  GURL system_info_url = GURL(base::StrCat(
+      {chrome::kChromeUIFeedbackURL, "html/bluetooth_logs_info.html"}));
+  OpenWebDialog(system_info_url);
 }
 
 void ChromeOsFeedbackDelegate::OpenWebDialog(GURL url) {

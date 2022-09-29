@@ -66,22 +66,22 @@ void TemplateURLServiceClientImpl::AddKeywordGeneratedVisit(const GURL& url) {
         url, base::Time::Now(), /*context_id=*/nullptr, /*nav_entry_id=*/0,
         /*referrer=*/GURL(), history::RedirectList(),
         ui::PAGE_TRANSITION_KEYWORD_GENERATED, history::SOURCE_BROWSED,
-        /*did_replace_entry=*/false, /*floc_allowed=*/false);
+        /*did_replace_entry=*/false);
   }
 }
 
 void TemplateURLServiceClientImpl::OnURLVisited(
     history::HistoryService* history_service,
-    ui::PageTransition transition,
-    const history::URLRow& row,
-    base::Time visit_time) {
+    const history::URLRow& url_row,
+    const history::VisitRow& new_visit) {
   DCHECK_EQ(history_service, history_service_);
   if (!owner_)
     return;
 
   TemplateURLService::URLVisitedDetails details = {
-      row.url(),
-      ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_KEYWORD),
+      url_row.url(),
+      ui::PageTransitionCoreTypeIs(new_visit.transition,
+                                   ui::PAGE_TRANSITION_KEYWORD),
   };
   owner_->OnHistoryURLVisited(details);
 }

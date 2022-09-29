@@ -105,7 +105,6 @@
 <translation id="1474893630593443211">Поголема контрола над рекламите што ги гледате</translation>
 <translation id="1477626028522505441">Преземањето на <ph name="FILE_NAME" /> не успеа поради проблеми со серверот.</translation>
 <translation id="148482509007564431">Тек за зачувување обележувач</translation>
-<translation id="1488775391433859242">Може да го користите телефонов за да се најавите на компјутерот што го прикажува QR-кодов.</translation>
 <translation id="1492417797159476138">Веќе го зачувавте ова корисничко име за сајтов</translation>
 <translation id="1493287004536771723">Го следите <ph name="SITE_NAME" /></translation>
 <translation id="1502010315804028179">За да управувате со вашите лозинки, ажурирајте ги услугите на Google Play</translation>
@@ -235,6 +234,7 @@
 <translation id="2239812875700136898">Контролирајте ги сториите од копчето „Опции за Discover“</translation>
 <translation id="2248941474044011069">Лозинките се шифрираат на уредот пред да се зачуваат во „Управникот со лозинки на Google“</translation>
 <translation id="2259659629660284697">Извезување лозинки…</translation>
+<translation id="2276231040576210443">Секогаш може да изберете што да синхронизирате во <ph name="BEGIN_LINK1" />Поставки<ph name="END_LINK1" />. Google може да ги персонализира „Пребарување“ и другите услуги според вашата историја.</translation>
 <translation id="2276696007612801991">Најавете се на сметката на Google за да ги проверите лозинките</translation>
 <translation id="2278052315791335171">Со бришењето на лозинкава нема да се избрише вашата сметка на <ph name="SITE" /></translation>
 <translation id="2279146068164892489">Да се отвори апликација за <ph name="APPNAME" />?</translation>
@@ -282,7 +282,6 @@
 <translation id="2534155362429831547">Избришани се <ph name="NUMBER_OF_ITEMS" /> ставки</translation>
 <translation id="2536728043171574184">Се прикажува офлајн копија на страницата</translation>
 <translation id="2546283357679194313">Колачиња и податоци од сајтот</translation>
-<translation id="2549516196460093976">Може да го користите таблетов за да се најавите на компјутерот што го прикажува QR-кодов.</translation>
 <translation id="2558569818338050235">Вашата историја на прелистувањето влијае на рекламите што ги гледате</translation>
 <translation id="2561519700418191927">Прегледи на видео</translation>
 <translation id="2567385386134582609">СЛИКА</translation>
@@ -308,6 +307,7 @@
 <translation id="2702516483241149200">Ново: споделете линк што ќе ве одведе до текстов со лизгање</translation>
 <translation id="2704606927547763573">Копирано</translation>
 <translation id="2707726405694321444">Освежи ја страницата</translation>
+<translation id="2709516037105925701">Автоматско пополнување</translation>
 <translation id="271033894570825754">Ново</translation>
 <translation id="2711073837061989559">Пробни периоди</translation>
 <translation id="2718352093833049315">Само преку Wi-Fi</translation>
@@ -396,6 +396,7 @@
 <translation id="3114507951000454849">Прочитајте ги денешните вести <ph name="NEWS_ICON" /></translation>
 <translation id="311958134571892113">поврзана со</translation>
 <translation id="3123734510202723619">Соопштенија</translation>
+<translation id="3130863904455712965">Историја и друго</translation>
 <translation id="3134784203083076891">“</translation>
 <translation id="314939179385989105">Почетна страница на Chrome</translation>
 <translation id="3166827708714933426">Кратенки за картичката и прозорецот</translation>
@@ -472,6 +473,7 @@
 <translation id="3557336313807607643">Додај во контакти</translation>
 <translation id="3560491354538957576">Сајтот може да ги дефинира интересите</translation>
 <translation id="3563767357928833671">Прикажани се содржини од привремената меморија</translation>
+<translation id="3566639033325271639">Ажурирајте ги поставките</translation>
 <translation id="3566923219790363270">Chrome сѐ уште се подготвува за VR. Рестартирајте го Chrome подоцна.</translation>
 <translation id="3568688522516854065">За да ги добиете вашите картички од другите уреди, најавете се и вклучете ја синхронизацијата</translation>
 <translation id="357465026686164600">Телефон како безбедносен клуч</translation>
@@ -566,6 +568,7 @@
 <translation id="4116038641877404294">Преземете ги страниците за да ги користите офлајн</translation>
 <translation id="4135200667068010335">Списокот со уреди за споделување картичка е затворен.</translation>
 <translation id="4137746084635924146">Тековен јазик на уред</translation>
+<translation id="414128724510021958">Сајтовите за компјутер се бараат стандардно</translation>
 <translation id="4141536112466364990">Дознајте повеќе за Chrome</translation>
 <translation id="4162867837470729563">Список со опции за споделување отворен на целосен екран.</translation>
 <translation id="4165986682804962316">Поставки на локација</translation>
@@ -587,7 +590,6 @@
 <translation id="4256782883801055595">Лиценци за отворен код</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Кои податоци се користат:<ph name="END_BOLD" /> вашата историја на прелистувањето, евиденцијата на сајтовите што сте ги посетиле со Chrome на овој уред.</translation>
 <translation id="4263656433980196874">Корисничкиот интерфејс за согласност за гласовно пребарување со „Помошникот“ е отворен на цел екран</translation>
-<translation id="4266054596873078491">Најавете се на сајтов и на Chrome со сметката на Google.</translation>
 <translation id="4269820728363426813">Копирај ја адресата на линкот</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Вклучете го заклучувањето на екранот во поставките за Android<ph name="END_LINK" /></translation>
 <translation id="4293476595220860475">Ако користите Chrome, се согласувате со <ph name="BEGIN_TOS_LINK" />Условите за користење на Google<ph name="END_TOS_LINK" /> и <ph name="BEGIN_ATOS_LINK" />Дополнителните услови за користење на Google Chrome и Chrome OS<ph name="END_ATOS_LINK" />. Важи и <ph name="BEGIN_PRIVACY_LINK" />Политиката за приватност<ph name="END_PRIVACY_LINK" />.</translation>
@@ -1051,6 +1053,7 @@
 <translation id="6671495933530132209">Копирај слика</translation>
 <translation id="6674571176963658787">За да започне синхронизацијата, внесете ја лозинката</translation>
 <translation id="6676840375528380067">Да се избришат податоците на Chrome од уредов?</translation>
+<translation id="6676927815633975364">Најавете се на сајтов и на Chrome</translation>
 <translation id="6684809838922667136">Подобрете го Chrome</translation>
 <translation id="670498945988402717">Проверено вчера</translation>
 <translation id="6710213216561001401">Претходно</translation>
@@ -1140,6 +1143,7 @@
 <translation id="7196215469483532480">Објаснувањето за водичот за приватност е отворено на цел екран</translation>
 <translation id="7207760545532569765">Врати <ph name="TAB_COUNT" /> картички како нова заднинска група картички.</translation>
 <translation id="7208109991155904980">Реакцијата се премести</translation>
+<translation id="7217781228893594884">Картичките „Инкогнито“ ќе се заклучат кога ќе излезете од Chrome</translation>
 <translation id="7222235798733126207">Ограничено споделување меѓу сајтовите</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 преземање чека на ред}one{# преземање чека на ред}other{# преземања чекаат на ред}}</translation>
 <translation id="7242755609445462077">Стилизирано нагласување <ph name="CURRENT_DATE" /></translation>
@@ -1300,6 +1304,7 @@
 <translation id="8037801708772278989">Тукушто проверено</translation>
 <translation id="804335162455518893">SD-картичката не е најдена</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> картичка „Инкогнито“}one{<ph name="TAB_COUNT_NORMAL" /> картичка „Инкогнито“}other{<ph name="TAB_COUNT_NORMAL" /> картички „Инкогнито“}}</translation>
+<translation id="8048728378294435881">Направете бекап од вашите работи и користете ги на сите уреди</translation>
 <translation id="8051695050440594747">Достапни се <ph name="MEGABYTES" /> MB</translation>
 <translation id="8058655154417507695">Година на истекување</translation>
 <translation id="8058746566562539958">Отвори во нова Chrome картичка</translation>

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/ambient/metrics/ambient_multi_screen_metrics_recorder.h"
 #include "ash/ambient/resources/ambient_animation_static_resources.h"
 #include "ash/ambient/ui/ambient_animation_view.h"
 #include "ash/ambient/ui/ambient_view_delegate.h"
@@ -28,9 +29,11 @@ namespace ash {
 
 AmbientContainerView::AmbientContainerView(
     AmbientViewDelegateImpl* delegate,
-    std::unique_ptr<AmbientAnimationStaticResources>
-        animation_static_resources) {
+    AmbientAnimationProgressTracker* progress_tracker,
+    std::unique_ptr<AmbientAnimationStaticResources> animation_static_resources,
+    AmbientMultiScreenMetricsRecorder* multi_screen_metrics_recorder) {
   DCHECK(delegate);
+  DCHECK(multi_screen_metrics_recorder);
   // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
   // able to submit accessibility checks, but this focusable View needs to
   // add a name so that the screen reader knows what to announce.
@@ -48,9 +51,11 @@ AmbientContainerView::AmbientContainerView(
           : AmbientAnimationTheme::kSlideshow;
   if (animation_static_resources) {
     main_rendering_view = AddChildView(std::make_unique<AmbientAnimationView>(
-        delegate, std::move(animation_static_resources)));
+        delegate, progress_tracker, std::move(animation_static_resources),
+        multi_screen_metrics_recorder));
   } else {
     main_rendering_view = AddChildView(std::make_unique<PhotoView>(delegate));
+    multi_screen_metrics_recorder->RegisterScreen(/*animation=*/nullptr);
   }
   orientation_metrics_recorder_ =
       std::make_unique<ambient::AmbientOrientationMetricsRecorder>(

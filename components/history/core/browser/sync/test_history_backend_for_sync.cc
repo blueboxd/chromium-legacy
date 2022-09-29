@@ -98,27 +98,6 @@ bool TestHistoryBackendForSync::GetLastVisitByTime(base::Time visit_time,
   return visit_row->visit_id != 0;
 }
 
-bool TestHistoryBackendForSync::GetMostRecentVisitsForURL(URLID id,
-                                                          int max_visits,
-                                                          VisitVector* visits) {
-  // HistorySyncBridge only ever asks for the single most-recent visit.
-  DCHECK_EQ(max_visits, 1);
-
-  visits->clear();
-  for (const VisitRow& candidate : visits_) {
-    if (candidate.url_id == id) {
-      if (visits->empty()) {
-        visits->push_back(candidate);
-      } else if (candidate.visit_time > (*visits)[0].visit_time ||
-                 (candidate.visit_time == (*visits)[0].visit_time &&
-                  candidate.visit_id > (*visits)[0].visit_id)) {
-        (*visits)[0] = candidate;
-      }
-    }
-  }
-  return !visits->empty();
-}
-
 VisitVector TestHistoryBackendForSync::GetRedirectChain(VisitRow visit) {
   VisitVector result;
   result.push_back(visit);
@@ -167,11 +146,16 @@ VisitID TestHistoryBackendForSync::UpdateSyncedVisit(const VisitRow& visit) {
   for (VisitRow& existing_visit : visits_) {
     if (existing_visit.originator_cache_guid == visit.originator_cache_guid &&
         existing_visit.originator_visit_id == visit.originator_visit_id) {
+      VisitRow new_visit = visit;
       // `visit_id` and `url_id` aren't set in visits coming from Sync, so
       // keep those from the existing row.
-      VisitRow new_visit = visit;
       new_visit.visit_id = existing_visit.visit_id;
       new_visit.url_id = existing_visit.url_id;
+      // Similarly, any `referring_visit` and `opener_visit` should be retained.
+      // Note that these are the *local* versions of these IDs, not the
+      // originator ones.
+      new_visit.referring_visit = existing_visit.referring_visit;
+      new_visit.opener_visit = existing_visit.opener_visit;
       existing_visit = new_visit;
       return existing_visit.visit_id;
     }

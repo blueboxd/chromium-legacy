@@ -17,7 +17,6 @@
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
-#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/components/geolocation/simple_geolocation_provider.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/cros_settings_provider.h"
@@ -187,6 +186,7 @@
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/ash/components/network/network_handler.h"
@@ -618,7 +618,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnEnableDebuggingScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<KioskEnableScreen>(
-      oobe_ui->GetView<KioskEnableScreenHandler>(),
+      oobe_ui->GetView<KioskEnableScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnKioskEnableScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<KioskAutolaunchScreen>(
@@ -626,7 +626,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnKioskAutolaunchScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<LocaleSwitchScreen>(
-      oobe_ui->GetView<LocaleSwitchScreenHandler>(),
+      oobe_ui->GetView<LocaleSwitchScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnLocaleSwitchScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<TermsOfServiceScreen>(
@@ -671,7 +671,7 @@ WizardController::CreateScreens() {
   append(std::make_unique<DeviceDisabledScreen>(
       oobe_ui->GetView<DeviceDisabledScreenHandler>()->AsWeakPtr()));
   append(std::make_unique<EncryptionMigrationScreen>(
-      oobe_ui->GetView<EncryptionMigrationScreenHandler>()));
+      oobe_ui->GetView<EncryptionMigrationScreenHandler>()->AsWeakPtr()));
   append(std::make_unique<ManagementTransitionScreen>(
       oobe_ui->GetView<ManagementTransitionScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnManagementTransitionScreenExit,
@@ -690,15 +690,15 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnMultiDeviceSetupScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<PinSetupScreen>(
-      oobe_ui->GetView<PinSetupScreenHandler>(),
+      oobe_ui->GetView<PinSetupScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnPinSetupScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<FingerprintSetupScreen>(
-      oobe_ui->GetView<FingerprintSetupScreenHandler>(),
+      oobe_ui->GetView<FingerprintSetupScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnFingerprintSetupScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<GestureNavigationScreen>(
-      oobe_ui->GetView<GestureNavigationScreenHandler>(),
+      oobe_ui->GetView<GestureNavigationScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnGestureNavigationScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<MarketingOptInScreen>(
@@ -730,7 +730,7 @@ WizardController::CreateScreens() {
       std::make_unique<GaiaPasswordChangedScreen>(
           base::BindRepeating(&WizardController::OnPasswordChangeScreenExit,
                               weak_factory_.GetWeakPtr()),
-          oobe_ui->GetView<GaiaPasswordChangedScreenHandler>());
+          oobe_ui->GetView<GaiaPasswordChangedScreenHandler>()->AsWeakPtr());
   append(std::move(gaia_password_change_screen));
 
   append(std::make_unique<ActiveDirectoryPasswordChangeScreen>(
@@ -741,12 +741,13 @@ WizardController::CreateScreens() {
           weak_factory_.GetWeakPtr())));
 
   append(std::make_unique<FamilyLinkNoticeScreen>(
-      oobe_ui->GetView<FamilyLinkNoticeScreenHandler>(),
+      oobe_ui->GetView<FamilyLinkNoticeScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnFamilyLinkNoticeScreenExit,
                           weak_factory_.GetWeakPtr())));
 
   append(std::make_unique<UserCreationScreen>(
-      oobe_ui->GetView<UserCreationScreenHandler>(), oobe_ui->GetErrorScreen(),
+      oobe_ui->GetView<UserCreationScreenHandler>()->AsWeakPtr(),
+      oobe_ui->GetErrorScreen(),
       base::BindRepeating(&WizardController::OnUserCreationScreenExit,
                           weak_factory_.GetWeakPtr())));
 
@@ -761,12 +762,12 @@ WizardController::CreateScreens() {
                           weak_factory_.GetWeakPtr())));
 
   append(std::make_unique<SignInFatalErrorScreen>(
-      oobe_ui->GetView<SignInFatalErrorScreenHandler>(),
+      oobe_ui->GetView<SignInFatalErrorScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnSignInFatalErrorScreenExit,
                           weak_factory_.GetWeakPtr())));
 
   append(std::make_unique<ParentalHandoffScreen>(
-      oobe_ui->GetView<ParentalHandoffScreenHandler>(),
+      oobe_ui->GetView<ParentalHandoffScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnParentalHandoffScreenExit,
                           weak_factory_.GetWeakPtr())));
 
@@ -777,7 +778,7 @@ WizardController::CreateScreens() {
                             weak_factory_.GetWeakPtr())));
 
     append(std::make_unique<GuestTosScreen>(
-        oobe_ui->GetView<GuestTosScreenHandler>(),
+        oobe_ui->GetView<GuestTosScreenHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnGuestTosScreenExit,
                             weak_factory_.GetWeakPtr())));
   }
@@ -1542,7 +1543,12 @@ void WizardController::OnEnrollmentScreenExit(EnrollmentScreen::Result result) {
     case EnrollmentScreen::Result::BACK:
     case EnrollmentScreen::Result::SKIPPED_FOR_TESTS:
       PerformOOBECompletedActions();
-      ShowPackagedLicenseScreen();
+      if (prescribed_enrollment_config_.is_forced()) {
+        LOG(WARNING) << "User trying to skip enrollment screen";
+        ShowPackagedLicenseScreen();
+      } else {
+        ShowLoginScreen();
+      }
       break;
     case EnrollmentScreen::Result::TPM_ERROR:
       DCHECK(switches::IsTpmDynamic());
@@ -1564,19 +1570,11 @@ void WizardController::OnEnrollmentScreenExit(EnrollmentScreen::Result result) {
 void WizardController::OnEnrollmentDone() {
   PerformOOBECompletedActions();
 
-  // Fetch the rollback flag from `oobe_configuration_`.
-  bool enrollment_mode_rollback = false;
-  auto* restore_after_rollback_value =
-      wizard_context_->configuration.FindKeyOfType(
-          configuration::kRestoreAfterRollback, base::Value::Type::BOOLEAN);
-  if (restore_after_rollback_value)
-    enrollment_mode_rollback = restore_after_rollback_value->GetBool();
-
   // Restart to make the login page pick up the policy changes resulting from
   // enrollment recovery.  (Not pretty, but this codepath is rarely exercised.)
   if (prescribed_enrollment_config_.mode ==
           policy::EnrollmentConfig::MODE_RECOVERY ||
-      enrollment_mode_rollback) {
+      IsRollbackFlow(*wizard_context_)) {
     LOG(WARNING) << "Restart Chrome to pick up the policy changes";
     EnrollmentScreen* screen = EnrollmentScreen::Get(screen_manager());
     screen->OnBrowserRestart();
@@ -1768,7 +1766,7 @@ void WizardController::OnArcTermsOfServiceScreenExit(
     case ArcTermsOfServiceScreen::Result::BACK:
       DCHECK(demo_setup_controller_);
       DCHECK(StartupUtils::IsEulaAccepted());
-      ShowNetworkScreen();
+      ShowDemoModePreferencesScreen();
       break;
   }
 }
@@ -1909,37 +1907,19 @@ void WizardController::OnDeviceDisabledChecked(bool device_disabled) {
   prescribed_enrollment_config_ =
       policy::EnrollmentConfig::GetPrescribedEnrollmentConfig();
 
-  bool configuration_forced_enrollment = false;
-  auto* start_enrollment_value = wizard_context_->configuration.FindKeyOfType(
-      configuration::kWizardAutoEnroll, base::Value::Type::BOOLEAN);
-  if (start_enrollment_value)
-    configuration_forced_enrollment = start_enrollment_value->GetBool();
-
-  // Fetch the rollback flag from `configuration`. It is not stored in the
-  // `prescribed_enrollment_config_`. To restore after rollback the enrollment
-  // screen needs to be started. (crbug.com/1093928)
-  auto* restore_after_rollback_value =
-      wizard_context_->configuration.FindKeyOfType(
-          configuration::kRestoreAfterRollback, base::Value::Type::BOOLEAN);
-  if (restore_after_rollback_value)
-    configuration_forced_enrollment |= restore_after_rollback_value->GetBool();
-
   if (device_disabled) {
     demo_setup_controller_.reset();
     ShowDeviceDisabledScreen();
   } else if (demo_setup_controller_) {
     ShowDemoModeSetupScreen();
   } else if (wizard_context_->enrollment_triggered_early ||
-             prescribed_enrollment_config_.should_enroll() ||
-             configuration_forced_enrollment) {
+             prescribed_enrollment_config_.should_enroll()) {
     VLOG(1) << "StartEnrollment from OnDeviceDisabledChecked("
             << "device_disabled=" << device_disabled << ") "
             << "skip_update_enroll_after_eula_="
             << wizard_context_->enrollment_triggered_early
             << ", prescribed_enrollment_config_.should_enroll()="
-            << prescribed_enrollment_config_.should_enroll()
-            << ", configuration_forced_enrollment="
-            << configuration_forced_enrollment;
+            << prescribed_enrollment_config_.should_enroll();
     StartEnrollmentScreen(wizard_context_->enrollment_triggered_early);
   } else {
     PerformOOBECompletedActions();
@@ -2034,7 +2014,7 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
   VLOG(1) << "SetCurrentScreen: "
           << (new_current ? new_current->screen_id().name : "null");
 
-  if (new_current && new_current->MaybeSkip(wizard_context_)) {
+  if (new_current && new_current->MaybeSkip(*wizard_context_)) {
     RecordUMAHistogramForOOBEStepShownStatus(new_current->screen_id(),
                                              ScreenShownStatus::kSkipped);
     return;
@@ -2043,20 +2023,15 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
   if (current_screen_ == new_current || GetOobeUI() == nullptr)
     return;
 
-  if (new_current) {
-    // Check if we didn't come here via the previous screen logic.
-    if (current_screen_ &&
-        (!base::Contains(previous_screens_, current_screen_) ||
-         previous_screens_[current_screen_] != new_current)) {
-      previous_screens_[new_current] = current_screen_;
-    } else {
-      previous_screens_.erase(new_current);
-    }
+  // Check if we didn't come here via the previous screen logic.
+  if (current_screen_ && new_current &&
+      (!base::Contains(previous_screens_, current_screen_) ||
+       previous_screens_[current_screen_] != new_current)) {
+    previous_screens_[new_current] = current_screen_;
   }
 
   if (current_screen_) {
     current_screen_->Hide();
-    previous_screens_.erase(current_screen_);
   }
 
   current_screen_ = new_current;
@@ -2138,6 +2113,12 @@ void WizardController::UpdateOobeConfiguration() {
             << requisition_value->GetString();
     policy::EnrollmentRequisitionManager::SetDeviceRequisition(
         requisition_value->GetString());
+  } else if (policy::EnrollmentRequisitionManager::IsMeetDevice()) {
+    VLOG(1)
+        << "Using default Device Requisition value for CFM build configuration"
+        << policy::EnrollmentRequisitionManager::kRemoraRequisition;
+    policy::EnrollmentRequisitionManager::SetDeviceRequisition(
+        policy::EnrollmentRequisitionManager::kRemoraRequisition);
   }
 
   auto* network_config_value = wizard_context_->configuration.FindKeyOfType(
@@ -2374,7 +2355,7 @@ bool WizardController::IsZeroDelayEnabled() {
 void WizardController::SkipPostLoginScreensForTesting() {
   wizard_context_->skip_post_login_screens_for_tests = true;
   auto* current_screen = default_controller()->current_screen();
-  if (current_screen && !current_screen->MaybeSkip(wizard_context_)) {
+  if (current_screen && !current_screen->MaybeSkip(*wizard_context_)) {
     LOG(WARNING) << __func__ << ": Ignore screen "
                  << current_screen->screen_id().name;
   }

@@ -102,7 +102,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="Commerce.Carts.FormSubmitIsTransaction"
-    enum="BooleanIsTransaction" expires_after="2022-11-06">
+    enum="BooleanIsTransaction" expires_after="2023-02-12">
   <owner>wychen@chromium.org</owner>
   <owner>yuezhanggg@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -113,7 +113,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="Commerce.Carts.XHRIsAddToCart" enum="BooleanIsAddToCart"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>wychen@chromium.org</owner>
   <owner>yuezhanggg@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -151,7 +151,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="Commerce.Heuristics.MerchantNameSource"
-    enum="CommerceHeuristicsDataSource" expires_after="2022-12-04">
+    enum="CommerceHeuristicsDataSource" expires_after="2023-02-12">
   <owner>yuezhanggg@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -407,6 +407,21 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
     Records whether fallback data (javascript on-page heuristics) was used to
     supplement the data provided by Optimization Guide. This does not track
     whether the page was actually bookmarked.
+  </summary>
+</histogram>
+
+<histogram name="Commerce.ShoppingService.ProductInfo.ImageAvailability"
+    enum="ProductImageAvailability" expires_after="2023-06-01">
+  <owner>ayman@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
+  <summary>
+    Records the availability of a product image for an offer. The image can be
+    provided by the server, provided locally, have both options available, or
+    neither. The goal is to see the overlap between server knowledge and what
+    can be provided locally. This histogram is available on any platform where
+    the shopping service's product info API is enabled and is recorded only
+    after the local, on-page fallback is run (since we need both server-provided
+    and local to record the right value).
   </summary>
 </histogram>
 

@@ -6,8 +6,15 @@
  * @fileoverview Handles logic for the ChromeVox panel that requires state from
  * the background context.
  */
+import {constants} from '../../../common/constants.js';
 import {CursorRange} from '../../../common/cursors/range.js';
+import {Earcon} from '../../common/abstract_earcons.js';
+import {BridgeConstants} from '../../common/bridge_constants.js';
+import {BridgeHelper} from '../../common/bridge_helper.js';
 import {PanelBridge} from '../../common/panel_bridge.js';
+import {ALL_PANEL_MENU_NODE_DATA} from '../../common/panel_menu_data.js';
+import {QueueMode} from '../../common/tts_interface.js';
+import {ChromeVox} from '../chromevox.js';
 import {ChromeVoxState, ChromeVoxStateObserver} from '../chromevox_state.js';
 import {Output} from '../output/output.js';
 import {OutputEventType} from '../output/output_types.js';
@@ -35,11 +42,6 @@ export class PanelBackground {
       throw 'Trying to create two copies of singleton PanelBackground';
     }
     PanelBackground.instance = new PanelBackground();
-    // Temporarily expose the panel background instance on the window object so
-    // it can be accessed from other renderers as we transition the logic to the
-    // background context.
-    window.panelBackground = PanelBackground.instance;
-
     PanelBackground.stateObserver_ = new PanelStateObserver();
     ChromeVoxState.addObserver(PanelBackground.stateObserver_);
 
@@ -59,8 +61,7 @@ export class PanelBackground {
         () => PanelBackground.instance.destroyISearch_());
     BridgeHelper.registerHandler(
         Constants.TARGET, Constants.Action.FOCUS_TAB,
-        ({windowId, tabId}) =>
-            PanelTabMenuBackground.focusTab(windowId, tabId));
+        (windowId, tabId) => PanelTabMenuBackground.focusTab(windowId, tabId));
     BridgeHelper.registerHandler(
         Constants.TARGET, Constants.Action.GET_ACTIONS_FOR_CURRENT_NODE,
         () => PanelBackground.instance.getActionsForCurrentNode_());
@@ -69,13 +70,9 @@ export class PanelBackground {
         () => PanelTabMenuBackground.getTabMenuData());
     BridgeHelper.registerHandler(
         Constants.TARGET, Constants.Action.INCREMENTAL_SEARCH,
-        ({searchStr, dir, opt_nextObject}) =>
+        (searchStr, dir, opt_nextObject) =>
             PanelBackground.instance.incrementalSearch_(
                 searchStr, dir, opt_nextObject));
-    BridgeHelper.registerHandler(
-        Constants.TARGET, Constants.Action.NODE_MENU_CALLBACK,
-        callbackNodeIndex =>
-            PanelNodeMenuBackground.focusNodeCallback(callbackNodeIndex));
     BridgeHelper.registerHandler(
         Constants.TARGET,
         Constants.Action.PERFORM_CUSTOM_ACTION_ON_CURRENT_NODE,
@@ -108,7 +105,10 @@ export class PanelBackground {
    * @private
    */
   createAllNodeMenuBackgrounds_(opt_activateMenuTitleId) {
-    for (const data of ALL_NODE_MENU_DATA) {
+    if (!this.savedNode_) {
+      return;
+    }
+    for (const data of ALL_PANEL_MENU_NODE_DATA) {
       const isActivatedMenu = opt_activateMenuTitleId === data.titleId;
       const menuBackground =
           new PanelNodeMenuBackground(data, this.savedNode_, isActivatedMenu);
@@ -260,7 +260,9 @@ export class PanelBackground {
 
   /** @private */
   saveCurrentNode_() {
-    this.savedNode_ = ChromeVoxState.instance.currentRange.start.node;
+    if (ChromeVoxState.instance.currentRange) {
+      this.savedNode_ = ChromeVoxState.instance.currentRange.start.node;
+    }
   }
 
   /**

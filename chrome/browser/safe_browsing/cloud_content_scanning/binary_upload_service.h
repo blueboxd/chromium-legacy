@@ -60,6 +60,8 @@ class BinaryUploadService : public KeyedService {
     kMaxValue = TOO_MANY_REQUESTS,
   };
 
+  static std::string ResultToString(Result result);
+
   // Callbacks used to pass along the results of scanning. The response protos
   // will only be populated if the result is SUCCESS.
   using ContentAnalysisCallback =
@@ -125,6 +127,11 @@ class BinaryUploadService : public KeyedService {
       return content_analysis_request_;
     }
 
+    const enterprise_connectors::CloudOrLocalAnalysisSettings&
+    cloud_or_local_settings() const {
+      return cloud_or_local_settings_;
+    }
+
     void set_tab_url(const GURL& tab_url);
     const GURL& tab_url() const;
 
@@ -138,7 +145,6 @@ class BinaryUploadService : public KeyedService {
     void set_csd(ClientDownloadRequest csd);
     void add_tag(const std::string& tag);
     void set_email(const std::string& email);
-    void set_request_token(const std::string& token);
     void set_fcm_token(const std::string& token);
     void set_device_token(const std::string& token);
     void set_filename(const std::string& filename);
@@ -146,6 +152,8 @@ class BinaryUploadService : public KeyedService {
     void clear_dlp_scan_request();
     void set_client_metadata(enterprise_connectors::ClientMetadata metadata);
     void set_content_type(const std::string& type);
+
+    std::string SetRandomRequestToken();
 
     // Methods for accessing the ContentAnalysisRequest.
     enterprise_connectors::AnalysisConnector analysis_connector();
@@ -190,6 +198,43 @@ class BinaryUploadService : public KeyedService {
     std::string access_token_;
   };
 
+  // A class to encapsulate the a request acknowledgement. This class will
+  // provide all the functionality needed to generate a
+  // ContentAnalysisAcknowledgement.
+  class Ack {
+   public:
+    explicit Ack(enterprise_connectors::CloudOrLocalAnalysisSettings settings);
+    virtual ~Ack();
+    Ack(const Ack&) = delete;
+    Ack& operator=(const Ack&) = delete;
+    Ack(Ack&&) = delete;
+    Ack& operator=(Ack&&) = delete;
+
+    void set_request_token(const std::string& token);
+    void set_status(
+        enterprise_connectors::ContentAnalysisAcknowledgement::Status status);
+    void set_final_action(
+        enterprise_connectors::ContentAnalysisAcknowledgement::FinalAction
+            final_action);
+
+    const enterprise_connectors::CloudOrLocalAnalysisSettings&
+    cloud_or_local_settings() const {
+      return cloud_or_local_settings_;
+    }
+
+    const enterprise_connectors::ContentAnalysisAcknowledgement& ack() const {
+      return ack_;
+    }
+
+   private:
+    enterprise_connectors::ContentAnalysisAcknowledgement ack_;
+
+    // Settings used to determine how the request is used in the cloud or
+    // locally.
+    enterprise_connectors::CloudOrLocalAnalysisSettings
+        cloud_or_local_settings_;
+  };
+
   static BinaryUploadService* GetForProfile(
       Profile* profile,
       const enterprise_connectors::AnalysisSettings& settings);
@@ -197,6 +242,9 @@ class BinaryUploadService : public KeyedService {
   // Upload the given file contents for deep scanning if the browser is
   // authorized to upload data, otherwise queue the request.
   virtual void MaybeUploadForDeepScanning(std::unique_ptr<Request> request) = 0;
+
+  // Send an acknowledgement for the request with the given token.
+  virtual void MaybeAcknowledge(std::unique_ptr<Ack> ack) = 0;
 };
 
 }  // namespace safe_browsing

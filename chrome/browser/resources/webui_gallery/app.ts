@@ -70,6 +70,16 @@ export class WebuiGalleryAppElement extends PolymerElement {
               src: 'cr_radio_demo.html',
             },
             {
+              name: 'Sliders',
+              path: 'sliders',
+              src: 'cr_slider/cr_slider_demo.html',
+            },
+            {
+              name: 'Tabs, non Polymer',
+              path: 'tabs1',
+              src: 'cr_tab_box/cr_tab_box_demo.html',
+            },
+            {
               name: 'Toggles',
               path: 'toggles',
               src: 'cr_toggle_demo.html',

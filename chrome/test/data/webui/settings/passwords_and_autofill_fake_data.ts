@@ -5,23 +5,22 @@
 // clang-format off
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {AutofillManagerProxy, PasswordEditDialogElement, PasswordListItemElement, PasswordMoveMultiplePasswordsToAccountDialogElement, PasswordsExportDialogElement, PasswordsImportDialogElement, PasswordsSectionElement, PaymentsManagerProxy, PersonalDataChangedListener} from 'chrome://settings/lazy_load.js';
-import {MultiStorePasswordUiEntry} from 'chrome://settings/settings.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
 
 import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
 
 // clang-format on
 
-export type PasswordEntryParams = {
-  url?: string,
-  username?: string,
-  federationText?: string,
-  id?: number,
-  inAccountStore?: boolean,
-  inProfileStore?: boolean,
-  isAndroidCredential?: boolean,
-  note?: string,
-};
+export interface PasswordEntryParams {
+  url?: string;
+  username?: string;
+  federationText?: string;
+  id?: number;
+  inAccountStore?: boolean;
+  inProfileStore?: boolean;
+  isAndroidCredential?: boolean;
+  note?: string;
+}
 
 /**
  * Creates a single item for the list of passwords, in the format sent by the
@@ -52,7 +51,7 @@ export function createPasswordEntry(params?: PasswordEntryParams):
 
   return {
     urls: {
-      origin: 'http://' + url + '/login',
+      signonRealm: 'http://' + url + '/login',
       shown: url,
       link: 'http://' + url + '/login',
     },
@@ -61,51 +60,16 @@ export function createPasswordEntry(params?: PasswordEntryParams):
     id: id,
     storedIn: storeType,
     isAndroidCredential: params.isAndroidCredential || false,
-    passwordNote: note,
+    note: note,
+    password: '',
+    hasStartableScript: false,
   };
 }
 
-export type MultyStorePasswordEntryParams = {
-  url?: string,
-  username?: string,
-  federationText?: string,
-  accountId?: number,
-  deviceId?: number,
-  note?: string,
-};
-
-/**
- * Creates a multi-store password item with the same mock data as
- * createPasswordEntry(), so can be used for verifying deduplication result.
- * At least one of |params.accountId| and |params.deviceId| must be set.
- * TODO(vsemeniuk): Clear this method when MultiStorePasswordUiEntry is removed.
- */
-export function createMultiStorePasswordEntry(
-    params: MultyStorePasswordEntryParams): MultiStorePasswordUiEntry {
-  const entryParams: PasswordEntryParams = {
-    url: params.url,
-    username: params.username,
-    federationText: params.federationText,
-    note: params.note,
-  };
-
-  if (params.deviceId !== undefined) {
-    entryParams.id = params.deviceId;
-    entryParams.inProfileStore = true;
-  }
-
-  if (params.accountId !== undefined) {
-    entryParams.id = params.accountId;
-    entryParams.inAccountStore = true;
-  }
-
-  return new MultiStorePasswordUiEntry(createPasswordEntry(entryParams));
+export interface ExceptionEntryParams {
+  url?: string;
+  id?: number;
 }
-
-export type ExceptionEntryParams = {
-  url?: string,
-  id?: number,
-};
 
 /**
  * Creates a single item for the list of password exceptions. If no |id| is
@@ -120,7 +84,7 @@ export function createExceptionEntry(params?: ExceptionEntryParams):
   const id = params.id !== undefined ? params.id : 42;
   return {
     urls: {
-      origin: 'http://' + url + '/login',
+      signonRealm: 'http://' + url + '/login',
       shown: url,
       link: 'http://' + url + '/login',
     },
@@ -128,11 +92,11 @@ export function createExceptionEntry(params?: ExceptionEntryParams):
   };
 }
 
-export type MultiStoreExceptionEntryParams = {
-  url?: string,
-  accountId?: number,
-  deviceId?: number,
-};
+export interface MultiStoreExceptionEntryParams {
+  url?: string;
+  accountId?: number;
+  deviceId?: number;
+}
 
 /**
  * Creates a new fake address entry for testing.
@@ -199,6 +163,7 @@ export function createCreditCardEntry():
       isLocal: true,
       summaryLabel: card + ' ' +
           '****' + cardNumber.substr(-4),
+      summarySublabel: 'Jane Doe',
     },
   };
 }
@@ -208,16 +173,20 @@ export function createCreditCardEntry():
  */
 export function makeInsecureCredential(
     url: string, username: string,
-    id?: number): chrome.passwordsPrivate.InsecureCredential {
+    id?: number): chrome.passwordsPrivate.PasswordUiEntry {
   return {
     id: id || 0,
-    formattedOrigin: url,
+    storedIn: chrome.passwordsPrivate.PasswordStoreSet.DEVICE,
     changePasswordUrl: `http://${url}/`,
     hasStartableScript: false,
+    urls: {
+      signonRealm: `http://${url}/`,
+      shown: url,
+      link: `http://${url}/`,
+    },
     username: username,
-    detailedOrigin: '',
+    note: '',
     isAndroidCredential: false,
-    signonRealm: '',
   };
 }
 
@@ -227,7 +196,7 @@ export function makeInsecureCredential(
 export function makeCompromisedCredential(
     url: string, username: string, type: chrome.passwordsPrivate.CompromiseType,
     id?: number, elapsedMinSinceCompromise?: number,
-    isMuted?: boolean): chrome.passwordsPrivate.InsecureCredential {
+    isMuted?: boolean): chrome.passwordsPrivate.PasswordUiEntry {
   const credential = makeInsecureCredential(url, username, id);
   elapsedMinSinceCompromise = elapsedMinSinceCompromise || 0;
   credential.compromisedInfo = {
@@ -320,7 +289,7 @@ export class PasswordSectionElementFactory {
                              chrome.passwordsPrivate.PasswordUiEntry):
       PasswordListItemElement {
     const passwordListItem = this.document.createElement('password-list-item');
-    passwordListItem.entry = new MultiStorePasswordUiEntry(passwordEntry);
+    passwordListItem.entry = passwordEntry;
     this.document.body.appendChild(passwordListItem);
     flush();
     return passwordListItem;
@@ -330,8 +299,8 @@ export class PasswordSectionElementFactory {
    * Helper method used to create a password editing dialog.
    */
   createPasswordEditDialog(
-      passwordEntry: MultiStorePasswordUiEntry|null = null,
-      passwords?: MultiStorePasswordUiEntry[],
+      passwordEntry: chrome.passwordsPrivate.PasswordUiEntry|null = null,
+      passwords?: chrome.passwordsPrivate.PasswordUiEntry[],
       isAccountStoreUser: boolean = false): PasswordEditDialogElement {
     const passwordDialog = this.document.createElement('password-edit-dialog');
     passwordDialog.existingEntry = passwordEntry;
@@ -362,8 +331,14 @@ export class PasswordSectionElementFactory {
   /**
    * Helper method used to create a passwords import dialog.
    */
-  createPasswordsImportDialog(): PasswordsImportDialogElement {
+  createPasswordsImportDialog(
+      isUserSyncingPasswords: boolean = false,
+      isAccountStoreUser: boolean = false,
+      accountEmail: string = ''): PasswordsImportDialogElement {
     const dialog = this.document.createElement('passwords-import-dialog');
+    dialog.isUserSyncingPasswords = isUserSyncingPasswords;
+    dialog.isAccountStoreUser = isAccountStoreUser;
+    dialog.accountEmail = accountEmail;
     this.document.body.appendChild(dialog);
     flush();
     return dialog;
@@ -388,8 +363,8 @@ export class PasswordDeviceSectionElementFactory {
    * Helper method used to create a move multiple password to the Google Account
    * dialog.
    */
-  createMoveMultiplePasswordsDialog(passwordsToMove:
-                                        MultiStorePasswordUiEntry[]):
+  createMoveMultiplePasswordsDialog(
+      passwordsToMove: chrome.passwordsPrivate.PasswordUiEntry[]):
       PasswordMoveMultiplePasswordsToAccountDialogElement {
     const moveDialog = this.document.createElement(
         'password-move-multiple-passwords-to-account-dialog');

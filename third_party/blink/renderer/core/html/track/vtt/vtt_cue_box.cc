@@ -31,6 +31,7 @@
 
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/html/track/text_track_container.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_cue.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_cue_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
@@ -147,9 +148,12 @@ LayoutObject* VTTCueBox::CreateLayoutObject(const ComputedStyle& style,
   // longer necessary, since cues having the region parameter set do not have
   // any positioning parameters. Also, in this case, the regions themselves
   // have positioning information.
-  if (style.GetPosition() == EPosition::kRelative)
+  if (IsInRegion())
     return HTMLDivElement::CreateLayoutObject(style, legacy);
 
+  // We create a standard block-flow container.
+  // See the comment in vtt_cue_layout_algorithm.h about how we adjust
+  // VTTCueBox positions.
   if (RuntimeEnabledFeatures::LayoutNGVTTCueEnabled())
     return LayoutObjectFactory::CreateBlockFlow(*this, style, legacy);
 
@@ -160,7 +164,7 @@ LayoutObject* VTTCueBox::CreateLayoutObject(const ComputedStyle& style,
 Node::InsertionNotificationRequest VTTCueBox::InsertedInto(
     ContainerNode& insertion_point) {
   if (RuntimeEnabledFeatures::LayoutNGVTTCueEnabled() &&
-      insertion_point.isConnected()) {
+      insertion_point.isConnected() && !IsInRegion()) {
     DCHECK(!box_size_observer_);
     box_size_observer_ =
         ResizeObserver::Create(GetDocument().domWindow(),
@@ -179,7 +183,12 @@ void VTTCueBox::RemovedFrom(ContainerNode& insertion_point) {
   box_size_observer_.Clear();
 }
 
-LayoutUnit& VTTCueBox::StartAdjustment(LayoutUnit new_value) {
+bool VTTCueBox::IsInRegion() const {
+  return parentNode() && !IsA<TextTrackContainer>(parentNode());
+}
+
+LayoutUnit& VTTCueBox::StartAdjustment(LayoutUnit new_value,
+                                       base::PassKey<VttCueLayoutAlgorithm>) {
   adjusted_position_ = new_value;
   DCHECK(IsAdjusted()) << new_value;
   return adjusted_position_;

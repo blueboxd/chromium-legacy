@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cstring>
 #include <string>
 
 #include "ipcz/ipcz.h"
@@ -15,25 +16,6 @@ namespace {
 const IpczDriver& kDefaultDriver = reference_drivers::kSyncReferenceDriver;
 
 using APITest = test::Test;
-
-TEST_F(APITest, Unimplemented) {
-  EXPECT_EQ(IPCZ_RESULT_UNIMPLEMENTED,
-            ipcz().MergePortals(IPCZ_INVALID_HANDLE, IPCZ_INVALID_HANDLE,
-                                IPCZ_NO_FLAGS, nullptr));
-
-  EXPECT_EQ(IPCZ_RESULT_UNIMPLEMENTED,
-            ipcz().BeginPut(IPCZ_INVALID_HANDLE, IPCZ_NO_FLAGS, nullptr,
-                            nullptr, nullptr));
-  EXPECT_EQ(IPCZ_RESULT_UNIMPLEMENTED,
-            ipcz().EndPut(IPCZ_INVALID_HANDLE, 0, nullptr, 0, IPCZ_NO_FLAGS,
-                          nullptr));
-  EXPECT_EQ(IPCZ_RESULT_UNIMPLEMENTED,
-            ipcz().BeginGet(IPCZ_INVALID_HANDLE, IPCZ_NO_FLAGS, nullptr,
-                            nullptr, nullptr, nullptr));
-  EXPECT_EQ(IPCZ_RESULT_UNIMPLEMENTED,
-            ipcz().EndGet(IPCZ_INVALID_HANDLE, 0, 0, IPCZ_NO_FLAGS, nullptr,
-                          nullptr));
-}
 
 TEST_F(APITest, CloseInvalid) {
   EXPECT_EQ(IPCZ_RESULT_INVALID_ARGUMENT,
@@ -188,6 +170,62 @@ TEST_F(APITest, QueryPortalStatus) {
   CloseAll({a, node});
 }
 
+TEST_F(APITest, MergePortalsFailure) {
+  const IpczHandle node = CreateNode(kDefaultDriver);
+  auto [a, b] = OpenPortals(node);
+
+  // Invalid portal handles.
+  EXPECT_EQ(
+      IPCZ_RESULT_INVALID_ARGUMENT,
+      ipcz().MergePortals(a, IPCZ_INVALID_HANDLE, IPCZ_NO_FLAGS, nullptr));
+  EXPECT_EQ(
+      IPCZ_RESULT_INVALID_ARGUMENT,
+      ipcz().MergePortals(IPCZ_INVALID_HANDLE, a, IPCZ_NO_FLAGS, nullptr));
+  EXPECT_EQ(IPCZ_RESULT_INVALID_ARGUMENT,
+            ipcz().MergePortals(IPCZ_INVALID_HANDLE, IPCZ_INVALID_HANDLE,
+                                IPCZ_NO_FLAGS, nullptr));
+
+  // Can't merge into own peer.
+  EXPECT_EQ(IPCZ_RESULT_INVALID_ARGUMENT,
+            ipcz().MergePortals(a, b, IPCZ_NO_FLAGS, nullptr));
+
+  // Can't merge into self.
+  EXPECT_EQ(IPCZ_RESULT_INVALID_ARGUMENT,
+            ipcz().MergePortals(a, a, IPCZ_NO_FLAGS, nullptr));
+
+  auto [c, d] = OpenPortals(node);
+
+  // Can't merge a portal that's had parcels put into it.
+  EXPECT_EQ(IPCZ_RESULT_OK, Put(c, "!"));
+  EXPECT_EQ(IPCZ_RESULT_FAILED_PRECONDITION,
+            ipcz().MergePortals(a, c, IPCZ_NO_FLAGS, nullptr));
+
+  // Can't merge a portal that's had parcels retrieved from it.
+  std::string message;
+  EXPECT_EQ(IPCZ_RESULT_OK, Get(d, &message));
+  EXPECT_EQ(IPCZ_RESULT_FAILED_PRECONDITION,
+            ipcz().MergePortals(a, d, IPCZ_NO_FLAGS, nullptr));
+
+  CloseAll({a, b, c, d, node});
+}
+
+TEST_F(APITest, MergePortals) {
+  const IpczHandle node = CreateNode(kDefaultDriver);
+  auto [a, b] = OpenPortals(node);
+  auto [c, d] = OpenPortals(node);
+
+  EXPECT_EQ(IPCZ_RESULT_OK, Put(a, "!"));
+  EXPECT_EQ(IPCZ_RESULT_OK, ipcz().MergePortals(b, c, IPCZ_NO_FLAGS, nullptr));
+
+  // The message from `a` should be routed to `d`, since `b` and `c` have been
+  // merged.
+  std::string message;
+  EXPECT_EQ(IPCZ_RESULT_OK, Get(d, &message));
+  EXPECT_EQ("!", message);
+
+  CloseAll({a, d, node});
+}
+
 TEST_F(APITest, PutGet) {
   const IpczHandle node = CreateNode(kDefaultDriver);
   auto [a, b] = OpenPortals(node);
@@ -272,6 +310,154 @@ TEST_F(APITest, PutGet) {
   EXPECT_EQ(IPCZ_PORTAL_STATUS_DEAD, status.flags & IPCZ_PORTAL_STATUS_DEAD);
 
   CloseAll({a, b, c, node});
+}
+
+TEST_F(APITest, BeginEndPutFailure) {
+  const IpczHandle node = CreateNode(kDefaultDriver);
+  auto [a, b] = OpenPortals(node);
+
+  // Invalid portal.
+  constexpr size_t kPutSize = 64;
+  size_t num_bytes = kPutSize;
+  void* data;
+  EXPECT_EQ(IPCZ_RESULT_INVALID_ARGUMENT,
+            ipcz().BeginPut(IPCZ_INVALID_HANDLE, IPCZ_NO_FLAGS, nullptr,
+                            &num_bytes, &data));
+
+  // Non-zero size but null data.
+  EXPECT_EQ(IPCZ_RESULT_INVALID_ARGUMENT,
+            ipcz().BeginPut(a, IPCZ_NO_FLAGS, nullptr, &num_bytes, nullptr));
+
+  // Invalid options.
+  IpczBeginPutOptions options = {.size = 0};
+  EXPECT_EQ(IPCZ_RESULT_INVALID_ARGUMENT,
+            ipcz().BeginPut(a, IPCZ_NO_FLAGS, &options, &num_bytes, &data));
+
+  // Duplicate two-phase Put.
+  EXPECT_EQ(IPCZ_RESULT_OK,
+            ipcz().BeginPut(a, IPCZ_NO_FLAGS, nullptr, nullptr, nullptr));
+  EXPECT_EQ(IPCZ_RESULT_ALREADY_EXISTS,
+            ipcz().BeginPut(a, IPCZ_NO_FLAGS, nullptr, nullptr, nullptr));
+
+  // Invalid portal.
+  EXPECT_EQ(IPCZ_RESULT_INVALID_ARGUMENT,
+            ipcz().EndPut(IPCZ_INVALID_HANDLE, 0, nullptr, 0, IPCZ_NO_FLAGS,
+                          nullptr));
+
+  // Non-zero number of handles, but null handle buffer.
+  EXPECT_EQ(IPCZ_RESULT_INVALID_ARGUMENT,
+            ipcz().EndPut(a, 0, nullptr, 1, IPCZ_NO_FLAGS, nullptr));
+
+  // Oversized data.
+  EXPECT_EQ(IPCZ_RESULT_INVALID_ARGUMENT,
+            ipcz().EndPut(a, kPutSize * 2, nullptr, 0, IPCZ_NO_FLAGS, nullptr));
+
+  // Invalid handle attachment.
+  IpczHandle invalid_handle = IPCZ_INVALID_HANDLE;
+  EXPECT_EQ(IPCZ_RESULT_INVALID_ARGUMENT,
+            ipcz().EndPut(a, 0, &invalid_handle, 1, IPCZ_NO_FLAGS, nullptr));
+
+  // Two-phase Put not in progress.
+  EXPECT_EQ(IPCZ_RESULT_OK,
+            ipcz().EndPut(a, 0, nullptr, 0, IPCZ_NO_FLAGS, nullptr));
+  EXPECT_EQ(IPCZ_RESULT_FAILED_PRECONDITION,
+            ipcz().EndPut(a, 0, nullptr, 0, IPCZ_NO_FLAGS, nullptr));
+
+  CloseAll({a, b, node});
+}
+
+TEST_F(APITest, BeginEndGetFailure) {
+  const IpczHandle node = CreateNode(kDefaultDriver);
+  auto [a, b] = OpenPortals(node);
+
+  // No parcel yet.
+  EXPECT_EQ(
+      IPCZ_RESULT_UNAVAILABLE,
+      ipcz().BeginGet(a, IPCZ_NO_FLAGS, nullptr, nullptr, nullptr, nullptr));
+
+  constexpr std::string_view kMessage = "ipcz";
+  EXPECT_EQ(IPCZ_RESULT_OK, Put(b, kMessage));
+
+  // Invalid portal.
+  const void* data;
+  size_t num_bytes;
+  size_t num_handles;
+  EXPECT_EQ(IPCZ_RESULT_INVALID_ARGUMENT,
+            ipcz().BeginGet(IPCZ_INVALID_HANDLE, IPCZ_NO_FLAGS, nullptr, &data,
+                            &num_bytes, &num_handles));
+
+  // No storage for data.
+  EXPECT_EQ(
+      IPCZ_RESULT_RESOURCE_EXHAUSTED,
+      ipcz().BeginGet(a, IPCZ_NO_FLAGS, nullptr, nullptr, nullptr, nullptr));
+  EXPECT_EQ(
+      IPCZ_RESULT_RESOURCE_EXHAUSTED,
+      ipcz().BeginGet(a, IPCZ_NO_FLAGS, nullptr, &data, nullptr, nullptr));
+  EXPECT_EQ(
+      IPCZ_RESULT_RESOURCE_EXHAUSTED,
+      ipcz().BeginGet(a, IPCZ_NO_FLAGS, nullptr, nullptr, &num_bytes, nullptr));
+
+  EXPECT_EQ(IPCZ_RESULT_OK, ipcz().BeginGet(a, IPCZ_NO_FLAGS, nullptr, &data,
+                                            &num_bytes, nullptr));
+
+  // Invalid handle.
+  EXPECT_EQ(IPCZ_RESULT_INVALID_ARGUMENT,
+            ipcz().EndGet(IPCZ_INVALID_HANDLE, 0, 0, IPCZ_NO_FLAGS, nullptr,
+                          nullptr));
+
+  // Non-zero handle count with null handle buffer.
+  EXPECT_EQ(IPCZ_RESULT_INVALID_ARGUMENT,
+            ipcz().EndGet(a, 0, 1, IPCZ_NO_FLAGS, nullptr, nullptr));
+
+  // Data size out of range.
+  EXPECT_EQ(
+      IPCZ_RESULT_OUT_OF_RANGE,
+      ipcz().EndGet(a, num_bytes + 1, 0, IPCZ_NO_FLAGS, nullptr, nullptr));
+
+  // Two-phase Get not in progress.
+  EXPECT_EQ(IPCZ_RESULT_OK,
+            ipcz().EndGet(a, num_bytes, 0, IPCZ_NO_FLAGS, nullptr, nullptr));
+  EXPECT_EQ(IPCZ_RESULT_FAILED_PRECONDITION,
+            ipcz().EndGet(a, num_bytes, 0, IPCZ_NO_FLAGS, nullptr, nullptr));
+
+  CloseAll({a, b, node});
+}
+
+TEST_F(APITest, TwoPhasePutGet) {
+  const IpczHandle node = CreateNode(kDefaultDriver);
+  auto [a, b] = OpenPortals(node);
+
+  constexpr std::string_view kMessage = "ipcz!";
+  size_t num_bytes = kMessage.size();
+  void* out_data;
+  EXPECT_EQ(IPCZ_RESULT_OK,
+            ipcz().BeginPut(a, IPCZ_NO_FLAGS, nullptr, &num_bytes, &out_data));
+  EXPECT_EQ(kMessage.size(), num_bytes);
+  memcpy(out_data, kMessage.data(), kMessage.size());
+  EXPECT_EQ(IPCZ_RESULT_OK,
+            ipcz().EndPut(a, num_bytes, nullptr, 0, IPCZ_NO_FLAGS, nullptr));
+
+  const void* in_data;
+  EXPECT_EQ(IPCZ_RESULT_OK, ipcz().BeginGet(b, IPCZ_NO_FLAGS, nullptr, &in_data,
+                                            &num_bytes, nullptr));
+  EXPECT_EQ(kMessage[0], *reinterpret_cast<const char*>(in_data));
+
+  EXPECT_EQ(IPCZ_RESULT_OK,
+            ipcz().EndGet(b, 1, 0, IPCZ_NO_FLAGS, nullptr, nullptr));
+
+  EXPECT_EQ(IPCZ_RESULT_OK, ipcz().BeginGet(b, IPCZ_NO_FLAGS, nullptr, &in_data,
+                                            &num_bytes, nullptr));
+  EXPECT_EQ(
+      kMessage.substr(1),
+      std::string_view(reinterpret_cast<const char*>(in_data), num_bytes));
+  EXPECT_EQ(IPCZ_RESULT_OK,
+            ipcz().EndGet(b, num_bytes, 0, IPCZ_NO_FLAGS, nullptr, nullptr));
+
+  EXPECT_EQ(
+      IPCZ_RESULT_UNAVAILABLE,
+      ipcz().BeginGet(b, IPCZ_NO_FLAGS, nullptr, nullptr, nullptr, nullptr));
+
+  CloseAll({a, b, node});
 }
 
 TEST_F(APITest, TrapInvalid) {

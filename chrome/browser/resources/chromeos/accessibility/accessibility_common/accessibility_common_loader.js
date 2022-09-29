@@ -114,6 +114,7 @@ export class AccessibilityCommon {
     if (details.value && !this.dictation_) {
       this.dictation_ = new Dictation();
     } else if (!details.value && this.dictation_) {
+      this.dictation_.onDictationDisabled();
       this.dictation_ = null;
     }
   }
@@ -121,4 +122,4 @@ export class AccessibilityCommon {
 
 InstanceChecker.closeExtraInstances();
 // Initialize the AccessibilityCommon extension.
-window.accessibilityCommon = new AccessibilityCommon();
+globalThis.accessibilityCommon = new AccessibilityCommon();

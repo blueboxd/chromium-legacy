@@ -6,6 +6,7 @@
 #include "ash/public/cpp/bluetooth_config_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/device_event_log/device_event_log.h"
+#include "hid_detection_utils.h"
 
 namespace ash::hid_detection {
 namespace {
@@ -116,6 +117,7 @@ void BluetoothHidDetectorImpl::PerformStartBluetoothHidDetection(
                  << input_devices_status.keyboard_is_missing;
   input_devices_status_ = input_devices_status;
   state_ = kStarting;
+  num_pairing_attempts_ = 0;
   GetBluetoothConfigService(
       cros_bluetooth_config_remote_.BindNewPipeAndPassReceiver());
   cros_bluetooth_config_remote_->ObserveSystemProperties(
@@ -129,6 +131,7 @@ void BluetoothHidDetectorImpl::PerformStopBluetoothHidDetection(
       << "HID detection is inactive.";
   HID_LOG(EVENT) << "Stopping Bluetooth HID detection, |is_using_bluetooth|: "
                  << is_using_bluetooth;
+  hid_detection::RecordBluetoothPairingAttempts(num_pairing_attempts_);
   state_ = kNotStarted;
   cros_bluetooth_config_remote_->SetBluetoothHidDetectionInactive(
       is_using_bluetooth);
@@ -350,15 +353,18 @@ void BluetoothHidDetectorImpl::ProcessQueue() {
 
   HID_LOG(EVENT) << "Pairing with device with id: "
                  << current_pairing_device_.value()->id;
+  ++num_pairing_attempts_;
   device_pairing_handler_remote_->PairDevice(
       current_pairing_device_.value()->id,
       device_pairing_delegate_receiver_.BindNewPipeAndPassRemote(),
       base::BindOnce(&BluetoothHidDetectorImpl::OnPairDevice,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::make_unique<base::ElapsedTimer>()));
   NotifyBluetoothHidDetectionStatusChanged();
 }
 
 void BluetoothHidDetectorImpl::OnPairDevice(
+    std::unique_ptr<base::ElapsedTimer> pairing_timer,
     chromeos::bluetooth_config::mojom::PairingResult pairing_result) {
   DCHECK(current_pairing_device_)
       << "OnPairDevice() called with no |current_pairing_device_|";
@@ -368,10 +374,15 @@ void BluetoothHidDetectorImpl::OnPairDevice(
                  << ", result: " << pairing_result << ", [" << queue_->size()
                  << "] devices still in queue.";
 
+  const bool success =
+      pairing_result ==
+      chromeos::bluetooth_config::mojom::PairingResult::kSuccess;
+  hid_detection::RecordBluetoothPairingResult(success,
+                                              pairing_timer->Elapsed());
+
   // If pairing has succeeded, wait for SetInputDevicesStatus() to be called
   // with the corresponding HID type no longer missing.
-  if (pairing_result ==
-      chromeos::bluetooth_config::mojom::PairingResult::kSuccess) {
+  if (success) {
     HID_LOG(EVENT)
         << "Pairing succeeded, waiting for input devices status to update.";
     return;

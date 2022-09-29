@@ -22,14 +22,13 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     return new BrowserAccessibilityManagerAndroid(initial_tree, nullptr,
                                                   nullptr);
 
-  WebContentsAccessibilityAndroid* wcax =
-      static_cast<WebContentsAccessibilityAndroid*>(
-          delegate->AccessibilityGetWebContentsAccessibility());
+  WebContentsAccessibilityAndroid* wcax = nullptr;
+  if (delegate->AccessibilityIsMainFrame()) {
+    wcax = static_cast<WebContentsAccessibilityAndroid*>(
+        delegate->AccessibilityGetWebContentsAccessibility());
+  }
   return new BrowserAccessibilityManagerAndroid(
-      initial_tree,
-      wcax && delegate->AccessibilityIsMainFrame() ? wcax->GetWeakPtr()
-                                                   : nullptr,
-      delegate);
+      initial_tree, wcax ? wcax->GetWeakPtr() : nullptr, delegate);
 }
 
 // static
@@ -96,6 +95,12 @@ BrowserAccessibility* BrowserAccessibilityManagerAndroid::GetFocus() const {
 BrowserAccessibility* BrowserAccessibilityManagerAndroid::RetargetForEvents(
     BrowserAccessibility* node,
     RetargetEventType type) const {
+  // TODO(crbug.com/1350627): Node should not be null. But this seems to be
+  // happening in the wild for reasons not yet determined. Make this a
+  // DCHECK.
+  if (!node)
+    return nullptr;
+
   // Sometimes we get events on nodes in our internal accessibility tree
   // that aren't exposed on Android. Get |updated| to point to the lowest
   // ancestor that is exposed.
@@ -367,11 +372,11 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::SELECTED_CHANGED:
     case ui::AXEventGenerator::Event::SELECTED_CHILDREN_CHANGED:
     case ui::AXEventGenerator::Event::SELECTED_VALUE_CHANGED:
-    case ui::AXEventGenerator::Event::SELECTION_IN_TEXT_FIELD_CHANGED:
     case ui::AXEventGenerator::Event::SET_SIZE_CHANGED:
     case ui::AXEventGenerator::Event::SORT_CHANGED:
     case ui::AXEventGenerator::Event::STATE_CHANGED:
     case ui::AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED:
+    case ui::AXEventGenerator::Event::TEXT_SELECTION_CHANGED:
     case ui::AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED:
       break;
   }

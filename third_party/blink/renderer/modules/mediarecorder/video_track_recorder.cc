@@ -26,8 +26,8 @@
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_util.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
+#include "third_party/blink/renderer/platform/scheduler/public/non_main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -320,7 +320,7 @@ VideoTrackRecorderImpl::Encoder::Encoder(
   if (encoding_task_runner_)
     return;
 
-  encoding_thread_ = Thread::CreateThread(
+  encoding_thread_ = NonMainThread::CreateThread(
       ThreadCreationParams(ThreadType::kVideoEncoderThread));
 
   encoding_task_runner_ = encoding_thread_->GetTaskRunner();
@@ -622,7 +622,7 @@ VideoTrackRecorderImpl::VideoTrackRecorderImpl(
       main_task_runner_(std::move(main_task_runner)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   DCHECK(track_);
-  DCHECK(track_->Source()->GetType() == MediaStreamSource::kTypeVideo);
+  DCHECK(track_->GetSourceType() == MediaStreamSource::kTypeVideo);
 
   initialize_encoder_cb_ = WTF::BindRepeating(
       &VideoTrackRecorderImpl::InitializeEncoder, weak_factory_.GetWeakPtr(),

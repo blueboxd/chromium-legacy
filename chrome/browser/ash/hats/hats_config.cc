@@ -147,4 +147,34 @@ const HatsConfig kHatsPersonalizationWallpaperSurvey = {
         kHatsPersonalizationWallpaperSurveyCycleEndTs,  // cycle_end_timestamp_pref_name
 };
 
+// MediaApp PDF Editing experience survey -- shown after a user clicks `Save`
+// after editing a PDF in the MediaApp (Gallery), and the save is complete.
+const HatsConfig kHatsMediaAppPdfSurvey = {
+    ::features::kHappinessTrackingMediaAppPdf,        // feature
+    "Browser.ChromeOS.HatsSatisfaction.MediaAppPdf",  // histogram_name
+    base::Days(7),                                    // new_device_threshold
+    prefs::kHatsMediaAppPdfIsSelected,                // hatsIsSelectedPrefName
+    prefs::kHatsMediaAppPdfCycleEndTs,  // hatsCycleEndTimestampPrefName
+};
+
+// Camera App Survey -- shown after an user captured a photo/video or left the
+// app with session > 15 seconds.
+const HatsConfig kHatsCameraAppSurvey = {
+    ::features::kHappinessTrackingSystemCameraApp,  // feature
+    "Browser.ChromeOS.HatsSatisfaction.CameraApp",  // histogram_name
+    base::Days(90),                                 // new_device_threshold
+    prefs::kHatsCameraAppDeviceIsSelected,          // is_selected_pref_name
+    prefs::kHatsCameraAppSurveyCycleEndTs,  // cycle_end_timestamp_pref_name
+};
+
+// Chromebook Video/Image Editing/Viewing experience survey -- shown after a
+// user opens and then subsequently closes the Google Photos Android App.
+const HatsConfig kHatsPhotosExperienceSurvey = {
+    ::features::kHappinessTrackingPhotosExperience,        // feature
+    "Browser.ChromeOS.HatsSatisfaction.PhotosExperience",  // histogram_name
+    base::Days(7),                           // new_device_threshold
+    prefs::kHatsPhotosExperienceIsSelected,  // hatsIsSelectedPrefName
+    prefs::kHatsPhotosExperienceCycleEndTs,  // hatsCycleEndTimestampPrefName
+};
+
 }  // namespace ash

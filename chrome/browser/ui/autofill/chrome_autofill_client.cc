@@ -53,6 +53,8 @@
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
+#include "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
+#include "components/autofill/core/browser/payments/credit_card_otp_authenticator.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
@@ -90,6 +92,7 @@
 #include "chrome/browser/android/preferences/autofill/autofill_profile_bridge.h"
 #include "chrome/browser/android/signin/signin_bridge.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
+#include "chrome/browser/touch_to_fill/payments/android/touch_to_fill_credit_card_view_impl.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
 #include "chrome/browser/ui/android/autofill/card_expiration_date_fix_flow_view_android.h"
 #include "chrome/browser/ui/android/autofill/card_name_fix_flow_view_android.h"
@@ -165,6 +168,18 @@ MerchantPromoCodeManager* ChromeAutofillClient::GetMerchantPromoCodeManager() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   return MerchantPromoCodeManagerFactory::GetForProfile(profile);
+}
+
+CreditCardCVCAuthenticator* ChromeAutofillClient::GetCVCAuthenticator() {
+  if (!cvc_authenticator_)
+    cvc_authenticator_ = std::make_unique<CreditCardCVCAuthenticator>(this);
+  return cvc_authenticator_.get();
+}
+
+CreditCardOtpAuthenticator* ChromeAutofillClient::GetOtpAuthenticator() {
+  if (!otp_authenticator_)
+    otp_authenticator_ = std::make_unique<CreditCardOtpAuthenticator>(this);
+  return otp_authenticator_.get();
 }
 
 PrefService* ChromeAutofillClient::GetPrefs() {
@@ -282,7 +297,11 @@ profile_metrics::BrowserProfileType ChromeAutofillClient::GetProfileType()
 
 std::unique_ptr<webauthn::InternalAuthenticator>
 ChromeAutofillClient::CreateCreditCardInternalAuthenticator(
-    content::RenderFrameHost* rfh) {
+    AutofillDriver* driver) {
+  auto* cad = static_cast<ContentAutofillDriver*>(driver);
+  content::RenderFrameHost* rfh = cad->render_frame_host();
+  if (!rfh)
+    return nullptr;
 #if BUILDFLAG(IS_ANDROID)
   return std::make_unique<InternalAuthenticatorAndroid>(rfh);
 #else
@@ -611,23 +630,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
 #endif
 }
 
-void ChromeAutofillClient::CreditCardUploadCompleted(bool card_saved) {
-#if BUILDFLAG(IS_ANDROID)
-  // TODO(siyua@): Placeholder for Clank Notification.
-#else
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillCreditCardUploadFeedback)) {
-    return;
-  }
-
-  // Do lazy initialization of SaveCardBubbleControllerImpl.
-  SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
-  SaveCardBubbleControllerImpl* controller =
-      SaveCardBubbleControllerImpl::FromWebContents(web_contents());
-  card_saved ? controller->UpdateIconForSaveCardSuccess()
-             : controller->UpdateIconForSaveCardFailure();
-#endif
-}
+void ChromeAutofillClient::CreditCardUploadCompleted(bool card_saved) {}
 
 void ChromeAutofillClient::ConfirmCreditCardFillAssist(
     const CreditCard& card,
@@ -690,8 +693,9 @@ bool ChromeAutofillClient::ShowTouchToFillCreditCard(
   // Don't show TTF surface while Autofill Assistant's UI is shown.
   if (IsAutofillAssistantShowing())
     return false;
-  // TODO(crbug.com/1247698): Show Touch To Fill surface.
-  return true;
+
+  return touch_to_fill_credit_card_controller_.Show(
+      std::make_unique<TouchToFillCreditCardViewImpl>(), delegate);
 #else
   // Touch To Fill is not supported on Desktop.
   NOTREACHED();
@@ -701,7 +705,7 @@ bool ChromeAutofillClient::ShowTouchToFillCreditCard(
 
 void ChromeAutofillClient::HideTouchToFillCreditCard() {
 #if BUILDFLAG(IS_ANDROID)
-  // TODO(crbug.com/1247698): Hide Touch To Fill surface.
+  touch_to_fill_credit_card_controller_.Hide();
 #else
   // Touch To Fill is not supported on Desktop.
   NOTREACHED();
@@ -1017,16 +1021,22 @@ void ChromeAutofillClient::PrimaryMainFrameWasResized(bool width_changed) {
 #endif
 
   HideAutofillPopup(PopupHidingReason::kWidgetChanged);
+  // Do not need to hide the Touch To Fill surface, since it is an overlay UI
+  // which doesn't depend on frame size.
 }
 
 void ChromeAutofillClient::WebContentsDestroyed() {
   HideAutofillPopup(PopupHidingReason::kTabGone);
+  if (IsTouchToFillCreditCardSupported())
+    HideTouchToFillCreditCard();
 }
 
 void ChromeAutofillClient::OnWebContentsLostFocus(
     content::RenderWidgetHost* render_widget_host) {
   has_focus_ = false;
   HideAutofillPopup(PopupHidingReason::kFocusChanged);
+  // Should not hide the Touch To Fill surface, since it is an overlay UI
+  // which takes the focus.
 }
 
 void ChromeAutofillClient::OnWebContentsFocused(
@@ -1041,6 +1051,7 @@ void ChromeAutofillClient::OnWebContentsFocused(
 void ChromeAutofillClient::OnZoomChanged(
     const zoom::ZoomController::ZoomChangedEventData& data) {
   HideAutofillPopup(PopupHidingReason::kContentAreaMoved);
+  // Touch To Fill is not supported on Desktop.
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 

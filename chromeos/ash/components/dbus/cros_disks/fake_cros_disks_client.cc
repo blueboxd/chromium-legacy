@@ -15,7 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "url/gurl.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -24,18 +24,18 @@ MountError PerformFakeMount(const std::string& source_path,
                             const base::FilePath& mounted_path,
                             MountType type) {
   if (mounted_path.empty())
-    return MOUNT_ERROR_INVALID_ARGUMENT;
+    return MountError::kInvalidArgument;
 
   // Just create an empty directory and shows it as the mounted directory.
   if (!base::CreateDirectory(mounted_path)) {
     DLOG(ERROR) << "Failed to create directory at " << mounted_path.value();
-    return MOUNT_ERROR_DIRECTORY_CREATION_FAILED;
+    return MountError::kDirectoryCreationFailed;
   }
 
   // Fake network mounts are responsible for populating their mount paths so
   // don't need a dummy file.
-  if (type == MOUNT_TYPE_NETWORK_STORAGE)
-    return MOUNT_ERROR_NONE;
+  if (type == MountType::kNetworkStorage)
+    return MountError::kNone;
 
   // Put a dummy file.
   const base::FilePath dummy_file_path =
@@ -45,10 +45,10 @@ MountError PerformFakeMount(const std::string& source_path,
       dummy_file_path, dummy_file_content.data(), dummy_file_content.size());
   if (write_result != static_cast<int>(dummy_file_content.size())) {
     DLOG(ERROR) << "Failed to put a dummy file at " << dummy_file_path.value();
-    return MOUNT_ERROR_MOUNT_PROGRAM_FAILED;
+    return MountError::kMountProgramFailed;
   }
 
-  return MOUNT_ERROR_NONE;
+  return MountError::kNone;
 }
 
 }  // namespace
@@ -81,23 +81,23 @@ void FakeCrosDisksClient::Mount(const std::string& source_path,
   // This fake implementation assumes mounted path is device when source_format
   // is empty, or an archive otherwise.
   MountType type =
-      source_format.empty() ? MOUNT_TYPE_DEVICE : MOUNT_TYPE_ARCHIVE;
+      source_format.empty() ? MountType::kDevice : MountType::kArchive;
 
   // Network storage source paths are URIs.
   if (GURL(source_path).is_valid())
-    type = MOUNT_TYPE_NETWORK_STORAGE;
+    type = MountType::kNetworkStorage;
 
   base::FilePath mounted_path;
   switch (type) {
-    case MOUNT_TYPE_ARCHIVE:
+    case MountType::kArchive:
       mounted_path = GetArchiveMountPoint().Append(
           base::FilePath::FromUTF8Unsafe(mount_label));
       break;
-    case MOUNT_TYPE_DEVICE:
+    case MountType::kDevice:
       mounted_path = GetRemovableDiskMountPoint().Append(
           base::FilePath::FromUTF8Unsafe(mount_label));
       break;
-    case MOUNT_TYPE_NETWORK_STORAGE:
+    case MountType::kNetworkStorage:
       // Call all registered callbacks until mounted_path is non-empty.
       for (auto const& mount_point_callback : custom_mount_point_callbacks_) {
         mounted_path = mount_point_callback.Run(source_path, mount_options);
@@ -106,7 +106,7 @@ void FakeCrosDisksClient::Mount(const std::string& source_path,
         }
       }
       break;
-    case MOUNT_TYPE_INVALID:
+    case MountType::kInvalid:
       NOTREACHED();
       return;
   }
@@ -230,7 +230,7 @@ void FakeCrosDisksClient::NotifyMountCompleted(MountError error_code,
                                                const std::string& mount_path) {
   for (auto& observer : observer_list_) {
     observer.OnMountCompleted(
-        MountEntry(error_code, source_path, mount_type, mount_path));
+        {error_code, source_path, mount_type, mount_path});
   }
 }
 
@@ -260,4 +260,4 @@ void FakeCrosDisksClient::AddCustomMountPointCallback(
   custom_mount_point_callbacks_.emplace_back(custom_mount_point_callback);
 }
 
-}  // namespace chromeos
+}  // namespace ash

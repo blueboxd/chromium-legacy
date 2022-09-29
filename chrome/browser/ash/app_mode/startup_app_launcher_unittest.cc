@@ -353,14 +353,15 @@ void InitAppWindow(extensions::AppWindow* app_window, const gfx::Rect& bounds) {
 
   extensions::AppWindow::CreateParams params;
   params.content_spec.bounds = bounds;
-  app_window->Init(GURL(), app_window_contents.release(), main_frame, params);
+  app_window->Init(GURL(), std::move(app_window_contents), main_frame, params);
 }
 
 extensions::AppWindow* CreateAppWindow(Profile* profile,
                                        const TestKioskExtensionBuilder& builder,
                                        gfx::Rect bounds = {}) {
   extensions::AppWindow* app_window = new extensions::AppWindow(
-      profile, new ChromeAppDelegate(profile, true), builder.Build().get());
+      profile, std::make_unique<ChromeAppDelegate>(profile, true),
+      builder.Build().get());
   InitAppWindow(app_window, bounds);
   return app_window;
 }

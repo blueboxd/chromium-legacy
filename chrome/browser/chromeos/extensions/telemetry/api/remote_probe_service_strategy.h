@@ -25,7 +25,7 @@ class RemoteProbeServiceStrategy {
       delete;
   virtual ~RemoteProbeServiceStrategy();
 
-  virtual mojo::Remote<ash::health::mojom::ProbeService>&
+  virtual mojo::Remote<crosapi::mojom::TelemetryProbeService>&
   GetRemoteService() = 0;
 };
 

@@ -122,7 +122,6 @@ source_set("test_headers") {
 source_set("blink_headers") {
   sources = [
     "platform/audio/web_audio_device_source_type.h",
-    "platform/blame_context.h",
     "platform/child_url_loader_factory_bundle.h",
     "platform/cross_variant_mojo_util.h",
     "platform/file_path_conversion.h",
@@ -374,7 +373,6 @@ source_set("blink_headers") {
     "web/web_print_preset_options.h",
     "web/web_range.h",
     "web/web_remote_frame.h",
-    "web/web_remote_frame_client.h",
     "web/web_render_theme.h",
     "web/web_savable_resources_test_support.h",
     "web/web_scoped_window_focus_allowed_indicator.h",

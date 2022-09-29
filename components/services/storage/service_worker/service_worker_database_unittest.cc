@@ -18,9 +18,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
 #include "components/services/storage/service_worker/service_worker_database.pb.h"
+#include "net/base/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
@@ -79,7 +79,7 @@ void VerifyRegistrationData(const RegistrationData& expected,
   EXPECT_EQ(expected.update_via_cache, actual.update_via_cache);
   EXPECT_EQ(expected.version_id, actual.version_id);
   EXPECT_EQ(expected.is_active, actual.is_active);
-  EXPECT_EQ(expected.has_fetch_handler, actual.has_fetch_handler);
+  EXPECT_EQ(expected.fetch_handler_type, actual.fetch_handler_type);
   EXPECT_EQ(expected.last_update_check, actual.last_update_check);
   EXPECT_EQ(expected.used_features, actual.used_features);
   EXPECT_EQ(expected.resources_total_size_bytes,
@@ -438,7 +438,7 @@ TEST(ServiceWorkerDatabaseTest, GetStorageKeysWithRegistrations) {
   // inserted as partitioned.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
-      blink::features::kThirdPartyStoragePartitioning);
+      net::features::kThirdPartyStoragePartitioning);
 
   GURL origin5 = GURL("https://example.org");
   net::SchemefulSite top_level_site1(GURL("https://toplevel.com"));
@@ -533,7 +533,7 @@ TEST(ServiceWorkerDatabaseTest, GetStorageKeysWithRegistrations) {
   // Now re-enable kThirdPartyStoragePartitioning and check for the partitioned
   // keys.
   scoped_feature_list.InitAndEnableFeature(
-      blink::features::kThirdPartyStoragePartitioning);
+      net::features::kThirdPartyStoragePartitioning);
 
   keys.clear();
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
@@ -743,7 +743,7 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
   // inserted as partitioned.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
-      blink::features::kThirdPartyStoragePartitioning);
+      net::features::kThirdPartyStoragePartitioning);
 
   GURL origin5("https://www5.example.com");
   net::SchemefulSite top_level_site1(GURL("https://toplevel.com"));
@@ -813,7 +813,7 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
 
   // Re-enable partitioning and check for the partitioned keys.
   scoped_feature_list.InitAndEnableFeature(
-      blink::features::kThirdPartyStoragePartitioning);
+      net::features::kThirdPartyStoragePartitioning);
 
   registrations.clear();
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
@@ -2464,6 +2464,8 @@ TEST(ServiceWorkerDatabaseTest, InvalidWebFeature) {
   data.set_version_id(1);
   data.set_is_active(true);
   data.set_has_fetch_handler(true);
+  data.set_fetch_handler_skippable_type(
+      ServiceWorkerRegistrationData::NOT_SKIPPABLE);
   data.set_last_update_check_time(
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
 
@@ -2584,6 +2586,8 @@ TEST(ServiceWorkerDatabaseTest, NoCrossOriginEmbedderPolicyValue) {
   data.set_version_id(1);
   data.set_is_active(true);
   data.set_has_fetch_handler(true);
+  data.set_fetch_handler_skippable_type(
+      ServiceWorkerRegistrationData::NOT_SKIPPABLE);
   data.set_last_update_check_time(
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
 
@@ -2652,6 +2656,149 @@ TEST(ServiceWorkerDatabaseTest, StorageKeyImplCanReadPreviousOriginImplDB) {
 
   EXPECT_FALSE(registrations.empty());
   EXPECT_FALSE(resources_list.empty());
+}
+
+TEST(ServiceWorkerDatabaseTest, NoFetchHandlerType) {
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+
+  ServiceWorkerRegistrationData data;
+  data.set_registration_id(1);
+  data.set_scope_url("https://example.com");
+  data.set_script_url("https://example.com/sw");
+  data.set_version_id(1);
+  data.set_is_active(true);
+  data.set_last_update_check_time(
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  database->next_avail_registration_id_ = 2;
+  database->next_avail_version_id_ = 2;
+
+  blink::StorageKey key =
+      blink::StorageKey::CreateFromStringForTesting(data.scope_url());
+
+  {
+    // has_fetch_handler = true.
+    data.set_has_fetch_handler(true);
+
+    // Write the serialization.
+    std::string value;
+    ASSERT_TRUE(data.SerializeToString(&value));
+
+    // Parse the serialized data. The kNotSkippable if has_fetch_handler is true
+    // and no fetch_handler_type.
+    RegistrationDataPtr registration;
+    ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
+              database->ParseRegistrationData(value, key, &registration));
+    EXPECT_EQ(blink::mojom::ServiceWorkerFetchHandlerType::kNotSkippable,
+              registration->fetch_handler_type);
+  }
+
+  {
+    // has_fetch_handler = false.
+    data.set_has_fetch_handler(false);
+
+    // Write the serialization.
+    std::string value;
+    ASSERT_TRUE(data.SerializeToString(&value));
+
+    // Parse the serialized data. The kNoHandler if has_fetch_handler is
+    // false and no fetch_handler_type.
+    RegistrationDataPtr registration;
+    ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
+              database->ParseRegistrationData(value, key, &registration));
+    EXPECT_EQ(blink::mojom::ServiceWorkerFetchHandlerType::kNoHandler,
+              registration->fetch_handler_type);
+  }
+}
+
+TEST(ServiceWorkerDatabaseTest, FetchHandlerType) {
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+
+  ServiceWorkerRegistrationData data;
+  data.set_registration_id(1);
+  data.set_scope_url("https://example.com");
+  data.set_script_url("https://example.com/sw");
+  data.set_version_id(1);
+  data.set_is_active(true);
+  data.set_has_fetch_handler(true);
+  data.set_last_update_check_time(
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  database->next_avail_registration_id_ = 2;
+  database->next_avail_version_id_ = 2;
+
+  blink::StorageKey key =
+      blink::StorageKey::CreateFromStringForTesting(data.scope_url());
+
+  {
+    data.set_fetch_handler_skippable_type(
+        ServiceWorkerRegistrationData::NOT_SKIPPABLE);
+    // Write the serialization.
+    std::string value;
+    ASSERT_TRUE(data.SerializeToString(&value));
+
+    RegistrationDataPtr registration;
+    ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
+              database->ParseRegistrationData(value, key, &registration));
+    EXPECT_EQ(blink::mojom::ServiceWorkerFetchHandlerType::kNotSkippable,
+              registration->fetch_handler_type);
+  }
+
+  {
+    data.set_fetch_handler_skippable_type(
+        ServiceWorkerRegistrationData::SKIPPABLE_EMPTY_FETCH_HANDLER);
+    // Write the serialization.
+    std::string value;
+    ASSERT_TRUE(data.SerializeToString(&value));
+
+    // Parse the serialized data. The policy is kNone if it's not set.
+    RegistrationDataPtr registration;
+    ASSERT_EQ(ServiceWorkerDatabase::Status::kOk,
+              database->ParseRegistrationData(value, key, &registration));
+    EXPECT_EQ(blink::mojom::ServiceWorkerFetchHandlerType::kEmptyFetchHandler,
+              registration->fetch_handler_type);
+  }
+}
+
+TEST(ServiceWorkerDatabaseTest, FetchHandlerTypeStoreRestore) {
+  auto store_and_restore =
+      [](blink::mojom::ServiceWorkerFetchHandlerType type) {
+        GURL origin("https://example.com");
+        RegistrationData data;
+        data.registration_id = 123;
+        data.scope = URL(origin, "/foo");
+        data.key = blink::StorageKey(url::Origin::Create(data.scope));
+        data.script = URL(origin, "/script.js");
+        data.version_id = 456;
+        data.fetch_handler_type = type;
+        data.resources_total_size_bytes = 100;
+        data.cross_origin_embedder_policy = CrossOriginEmbedderPolicyNone();
+        std::vector<ResourceRecordPtr> resources;
+        resources.push_back(CreateResource(1, data.script, 100));
+
+        // Store.
+        std::unique_ptr<ServiceWorkerDatabase> database(
+            CreateDatabaseInMemory());
+        ServiceWorkerDatabase::DeletedVersion deleted_version;
+        ASSERT_EQ(
+            ServiceWorkerDatabase::Status::kOk,
+            database->WriteRegistration(data, resources, &deleted_version));
+
+        // Restore.
+        std::vector<mojom::ServiceWorkerRegistrationDataPtr> registrations;
+        std::vector<std::vector<ResourceRecordPtr>> resources_list;
+        EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
+                  database->GetRegistrationsForStorageKey(
+                      blink::StorageKey(url::Origin::Create(origin)),
+                      &registrations, &resources_list));
+
+        // The data must not have been altered.
+        VerifyRegistrationData(data, *registrations[0]);
+      };
+  store_and_restore(blink::mojom::ServiceWorkerFetchHandlerType::kNoHandler);
+  store_and_restore(blink::mojom::ServiceWorkerFetchHandlerType::kNotSkippable);
+  store_and_restore(
+      blink::mojom::ServiceWorkerFetchHandlerType::kEmptyFetchHandler);
 }
 
 }  // namespace storage

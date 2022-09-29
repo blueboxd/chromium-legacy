@@ -39,7 +39,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/driver/sync_token_status.h"
-#include "components/sync/test/fake_server/fake_server_network_resources.h"
+#include "components/sync/test/fake_server_network_resources.h"
 #include "components/ukm/ukm_recorder_observer.h"
 #include "components/ukm/ukm_service.h"
 #include "components/ukm/ukm_test_helper.h"
@@ -64,6 +64,7 @@
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -1357,7 +1358,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, EvictObsoleteSources) {
   // obsolete. Next report will still contain source 1 because we might have
   // associated entries before it was closed.
   sync_browser->tab_strip_model()->CloseWebContentsAt(
-      1, TabStripModel::CloseTypes::CLOSE_NONE);
+      1, TabCloseTypes::CLOSE_NONE);
 
   ukm_test_helper.BuildAndStoreLog();
   report = ukm_test_helper.GetUkmReport();

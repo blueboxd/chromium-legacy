@@ -8,7 +8,6 @@
 #include "ash/components/arc/session/arc_session_runner.h"
 #include "ash/components/arc/test/arc_util_test_support.h"
 #include "ash/components/arc/test/fake_arc_session.h"
-#include "ash/components/attestation/attestation_flow_utils.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
@@ -62,6 +61,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/ash/components/assistant/buildflags.h"
+#include "chromeos/ash/components/attestation/attestation_flow_utils.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -152,7 +152,7 @@ void RunEulaScreenChecks() {
       .CreateVisibilityWaiter(true, {"oobe-eula-md", "eulaDialog"})
       ->Wait();
   test::OobeJS().ExpectEnabledPath({"oobe-eula-md", "acceptButton"});
-  test::OobeJS().CreateFocusWaiter({"oobe-eula-md", "crosEulaFrame"})->Wait();
+  test::OobeJS().CreateFocusWaiter({"oobe-eula-md", "acceptButton"})->Wait();
 
   if (features::IsOobeRemoveShutdownButtonEnabled()) {
     EXPECT_FALSE(LoginScreenTestApi::IsShutdownButtonShown());

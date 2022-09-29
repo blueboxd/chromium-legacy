@@ -18,6 +18,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
@@ -244,6 +245,12 @@ View::~View() {
     for (auto* child : children_) {
       child->parent_ = nullptr;
 
+      // Remove any references to |child| to avoid holding a dangling ptr.
+      if (child->previous_focusable_view_)
+        child->previous_focusable_view_->next_focusable_view_ = nullptr;
+      if (child->next_focusable_view_)
+        child->next_focusable_view_->previous_focusable_view_ = nullptr;
+
       // Since all children are removed here, it is safe to set
       // |child|'s focus list pointers to null and expect any references
       // to |child| will be removed subsequently.
@@ -286,16 +293,15 @@ Widget* View::GetWidget() {
   return const_cast<Widget*>(const_cast<const View*>(this)->GetWidget());
 }
 
-void View::ReorderChildView(View* view, int index) {
+void View::ReorderChildView(View* view, size_t index) {
   DCHECK_EQ(view->parent_, this);
   const auto i = std::find(children_.begin(), children_.end(), view);
   DCHECK(i != children_.end());
 
   // If |view| is already at the desired position, there's nothing to do.
-  const bool move_to_end =
-      (index < 0) || (static_cast<size_t>(index) >= children_.size());
-  const auto pos = move_to_end ? std::prev(children_.end())
-                               : std::next(children_.begin(), index);
+  const auto pos =
+      std::next(children_.begin(),
+                static_cast<ptrdiff_t>(std::min(index, children_.size() - 1)));
   if (i == pos)
     return;
 
@@ -348,11 +354,11 @@ View::Views::const_iterator View::FindChild(const View* view) const {
   return std::find(children_.cbegin(), children_.cend(), view);
 }
 
-int View::GetIndexOf(const View* view) const {
+absl::optional<size_t> View::GetIndexOf(const View* view) const {
   const auto i = FindChild(view);
-  return i == children_.cend()
-             ? -1
-             : static_cast<int>(std::distance(children_.cbegin(), i));
+  return i == children_.cend() ? absl::nullopt
+                               : absl::make_optional(static_cast<size_t>(
+                                     std::distance(children_.cbegin(), i)));
 }
 
 // Size and disposition --------------------------------------------------------
@@ -526,6 +532,12 @@ gfx::Size View::GetPreferredSize() const {
   return CalculatePreferredSize();
 }
 
+gfx::Size View::GetPreferredSize(const SizeBounds& available_size) const {
+  if (preferred_size_)
+    return *preferred_size_;
+  return CalculatePreferredSize(available_size);
+}
+
 int View::GetBaseline() const {
   return -1;
 }
@@ -595,6 +607,9 @@ void View::SetVisible(bool visible) {
 
     // Notify all other subscriptions of the change.
     OnPropertyChanged(&visible_, kPropertyEffectsPaint);
+
+    if (was_visible)
+      UpdateTooltip();
   }
 
   if (parent_) {
@@ -983,7 +998,21 @@ void View::ConvertPointToTarget(const View* source,
     return;
 
   const View* root = GetHierarchyRoot(target);
+#if BUILDFLAG(IS_MAC)
+  // If the root views don't match make sure we are in the same widget tree.
+  // Full screen in macOS creates a child widget that hosts top chrome.
+  // TODO(bur): Remove this check when top chrome can be composited into its own
+  // NSView without the need for a new widget.
+  if (GetHierarchyRoot(source) != root) {
+    const Widget* source_top_level_widget =
+        source->GetWidget()->GetTopLevelWidget();
+    const Widget* target_top_level_widget =
+        target->GetWidget()->GetTopLevelWidget();
+    CHECK_EQ(source_top_level_widget, target_top_level_widget);
+  }
+#else  // IS_MAC
   CHECK_EQ(GetHierarchyRoot(source), root);
+#endif
 
   if (source != root)
     source->ConvertPointForAncestor(root, point);
@@ -1947,6 +1976,10 @@ gfx::Size View::CalculatePreferredSize() const {
   return gfx::Size();
 }
 
+gfx::Size View::CalculatePreferredSize(const SizeBounds& available_size) const {
+  return CalculatePreferredSize();
+}
+
 void View::PreferredSizeChanged() {
   if (parent_)
     parent_->ChildPreferredSizeChanged(this);
@@ -2366,7 +2399,8 @@ void View::HandlePropertyChangeEffects(PropertyEffects effects) {
 void View::AfterPropertyChange(const void* key, int64_t old_value) {
   if (key == kElementIdentifierKey) {
     const ui::ElementIdentifier old_element_id =
-        ui::ElementIdentifier::FromRawValue(old_value);
+        ui::ElementIdentifier::FromRawValue(
+            base::checked_cast<intptr_t>(old_value));
     if (old_element_id) {
       views::ElementTrackerViews::GetInstance()->UnregisterView(old_element_id,
                                                                 this);

@@ -95,24 +95,12 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Signin.AccountConsistencyPromoAction"
-    enum="AccountConsistencyPromoAction" expires_after="2022-12-11">
+    enum="AccountConsistencyPromoAction" expires_after="2023-02-12">
   <owner>bsazonov@chromium.org</owner>
   <owner>aliceywang@chromium.org</owner>
   <summary>
     This histogram records the action taken by user after receiving the header
     from Gaia in the web sign-in flow. Currently only recorded on Android.
-  </summary>
-</histogram>
-
-<histogram name="Signin.AccountEquality" enum="SigninAccountEquality"
-    expires_after="2022-09-06">
-  <owner>droger@chromium.org</owner>
-  <owner>skym@chromium.org</owner>
-  <summary>
-    There are two separate ways to test for account equality, using the account
-    id or the email. Historically the email was always used, but going forward
-    email will be modifiable. Now when we check account equality we use both
-    approaches and emit this metric to capture if they agreed or not.
   </summary>
 </histogram>
 
@@ -147,7 +135,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Signin.AccountReconcilorState.OnGaiaResponse"
-    enum="SigninAccountReconcilorState" expires_after="2022-12-11">
+    enum="SigninAccountReconcilorState" expires_after="2023-02-12">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -172,7 +160,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AccountTracker.GaiaIdMigrationState"
-    enum="OAuth2LoginAccountRevokedMigrationState" expires_after="2022-12-11">
+    enum="OAuth2LoginAccountRevokedMigrationState" expires_after="2023-02-12">
   <owner>msarda@chromium.org</owner>
   <owner>sdefresne@chromium.org</owner>
   <summary>
@@ -410,7 +398,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Extensions.GetAuthTokenResult"
-    enum="GetAuthTokenResult" expires_after="2022-11-20">
+    enum="GetAuthTokenResult" expires_after="2023-01-22">
 <!-- Name completed by histogram_suffixes name="GetAuthTokenType" -->
 
   <owner>alexilin@chromium.org</owner>
@@ -442,7 +430,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.GetAccessTokenFinished" enum="GoogleServiceAuthError"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>droger@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <summary>
@@ -472,7 +460,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Intercept.HeuristicOutcome"
-    enum="SigninInterceptHeuristicOutcome" expires_after="2022-11-20">
+    enum="SigninInterceptHeuristicOutcome" expires_after="2023-01-22">
   <owner>droger@chromium.org</owner>
   <owner>alexilin@chromium.org</owner>
   <summary>
@@ -502,7 +490,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram base="true" name="Signin.InterceptResult"
-    enum="SigninInterceptResult" expires_after="2022-11-20">
+    enum="SigninInterceptResult" expires_after="2023-01-22">
 <!-- Name completed by histogram_suffixes name="SigninInterceptType" -->
 
   <owner>alexilin@chromium.org</owner>
@@ -522,17 +510,6 @@ prefs when the profile is loaded.  -->
   <summary>
     Reason for invalid Gaia credentials. Recorded when Signin.AuthError records
     invalid credentials.
-  </summary>
-</histogram>
-
-<histogram name="Signin.InvestigatedScenario" enum="SigninInvestigatedScenario"
-    expires_after="2022-12-12">
-  <owner>treib@chromium.org</owner>
-  <owner>mmoskvitin@google.com</owner>
-  <summary>
-    Recorded when Sync is turned on in a profile. Records whether this is the
-    first time Sync is turned on in this profile or, if not, whether Sync was
-    previously turned on for the same or for a different account.
   </summary>
 </histogram>
 
@@ -634,7 +611,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram base="true" name="Signin.IsShared" enum="BooleanIsShared"
-    expires_after="2022-09-06">
+    expires_after="2023-09-06">
 <!-- Name completed by histogram_suffixes name="AccountInvestigationReportingType" -->
 
   <owner>droger@chromium.org</owner>
@@ -1149,7 +1126,7 @@ kept as long as profile signout is possible -->
 </histogram>
 
 <histogram name="Signin.SyncFirstSetupCompleteSource"
-    enum="SyncFirstSetupCompleteSource" expires_after="2022-12-11">
+    enum="SyncFirstSetupCompleteSource" expires_after="2023-02-12">
   <owner>triploblastic@chromium.org</owner>
   <owner>bsazonov@chromium.org</owner>
   <summary>Tracks where FirstSetupComplete bit is set from.</summary>
@@ -1204,7 +1181,7 @@ should be kept for as long as we store refresh tokens in an SQLite DB. -->
 </histogram>
 
 <histogram name="Signin.TransactionalReauthResult" enum="SigninReauthResult"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
 <!-- Name completed by histogram_suffixes
 name="TransactionalReauthEntryPoint" -->
 

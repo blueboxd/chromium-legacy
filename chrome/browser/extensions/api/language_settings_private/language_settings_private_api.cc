@@ -81,7 +81,7 @@ base::flat_set<std::string> GetIMEsFromPref(PrefService* prefs,
 // Returns the set of allowed UI locales.
 base::flat_set<std::string> GetAllowedLanguages(PrefService* prefs) {
   const auto& allowed_languages_values =
-      prefs->GetList(prefs::kAllowedLanguages)->GetListDeprecated();
+      prefs->GetValueList(prefs::kAllowedLanguages);
   return base::MakeFlatSet<std::string>(
       allowed_languages_values, {},
       [](const auto& locale_value) { return locale_value.GetString(); });
@@ -681,7 +681,6 @@ LanguageSettingsPrivateSetTranslateTargetLanguageFunction::Run() {
       CreateTranslatePrefsForBrowserContext(browser_context());
 
   std::string chrome_language = language_code;
-  translate_prefs->AddToLanguageList(language_code, false);
 
   if (language_code == translate_prefs->GetRecentTargetLanguage()) {
     return RespondNow(NoArguments());

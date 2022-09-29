@@ -77,7 +77,7 @@ extern const char kRlzPingDelaySeconds[];
 #endif  // BUILDFLAG(ENABLE_RLZ)
 
 // For OS_CHROMEOS we maintain the kApplicationLocale property in both local
-// state and the user's profile.  The global property determines the locale of
+// state and the user's profile. The global property determines the locale of
 // the login screen, while the user's profile determines their personal locale
 // preference.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -195,6 +195,7 @@ extern const char kAccessibilityFocusHighlightEnabled[];
 extern const char kLiveCaptionEnabled[];
 extern const char kLiveCaptionLanguageCode[];
 #endif
+extern const char kPageColors[];
 #if BUILDFLAG(IS_MAC)
 extern const char kConfirmToQuitEnabled[];
 extern const char kShowFullscreenToolbar[];
@@ -301,6 +302,12 @@ extern const char kHatsPersonalizationScreensaverSurveyCycleEndTs[];
 extern const char kHatsPersonalizationScreensaverSurveyIsSelected[];
 extern const char kHatsPersonalizationWallpaperSurveyCycleEndTs[];
 extern const char kHatsPersonalizationWallpaperSurveyIsSelected[];
+extern const char kHatsMediaAppPdfCycleEndTs[];
+extern const char kHatsMediaAppPdfIsSelected[];
+extern const char kHatsCameraAppDeviceIsSelected[];
+extern const char kHatsCameraAppSurveyCycleEndTs[];
+extern const char kHatsPhotosExperienceCycleEndTs[];
+extern const char kHatsPhotosExperienceIsSelected[];
 extern const char kEolStatus[];
 extern const char kEndOfLifeDate[];
 extern const char kEolNotificationDismissed[];
@@ -321,7 +328,6 @@ extern const char kTimeLimitLocalOverride[];
 extern const char kUsageTimeLimit[];
 extern const char kScreenTimeLastState[];
 extern const char kNetworkFileSharesAllowed[];
-extern const char kManagedSessionEnabled[];
 extern const char kManagedSessionUseFullLoginWarning[];
 extern const char kTPMFirmwareUpdateCleanupDismissed[];
 extern const char kTPMUpdatePlannedNotificationShownTime[];
@@ -352,6 +358,8 @@ extern const char kKerberosRememberPasswordEnabled[];
 extern const char kKerberosAddAccountsAllowed[];
 extern const char kKerberosAccounts[];
 extern const char kKerberosActivePrincipalName[];
+extern const char kKerberosDomainAutocomplete[];
+extern const char kKerberosDefaultConfiguration[];
 extern const char kAppReinstallRecommendationEnabled[];
 extern const char kStartupBrowserWindowLaunchSuppressed[];
 extern const char kLoginExtensionApiDataForNextLoginAttempt[];
@@ -368,7 +376,6 @@ extern const char kInsightsExtensionEnabled[];
 extern const char kOOMKillsDailyCount[];
 extern const char kOOMKillsDailySample[];
 extern const char kRestrictedManagedGuestSessionExtensionCleanupExemptList[];
-extern const char kSettingsShowOSBanner[];
 extern const char kUsedPolicyCertificates[];
 #endif  // BUILDFLAG(IS_CHROMEOS)
 extern const char kShowHomeButton[];
@@ -445,8 +452,6 @@ extern const char kProfileName[];
 extern const char kProfileUsingDefaultAvatar[];
 extern const char kProfileUsingGAIAAvatar[];
 extern const char kSupervisedUserId[];
-
-extern const char kProfileAvatarTutorialShown[];
 
 extern const char kInvertNotificationShown[];
 
@@ -542,7 +547,10 @@ extern const char kWebRTCAllowLegacyTLSProtocols[];
 extern const char kHasSeenWelcomePage[];
 extern const char kManagedAccountsSigninRestriction[];
 extern const char kManagedAccountsSigninRestrictionScopeMachine[];
-#endif
+#if !BUILDFLAG(IS_CHROMEOS)
+extern const char kEnterpriseProfileCreationKeepBrowsingData[];
+#endif  // !BUILDFLAG(IS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_WIN)
 // Only used in branded builds.
@@ -797,7 +805,6 @@ extern const char kPowerMetricsIdleSuspendCount[];
 extern const char kPowerMetricsLidClosedSuspendCount[];
 extern const char kReportingUsers[];
 extern const char kArcAppInstallEventLoggingEnabled[];
-extern const char kExtensionInstallEventLoggingEnabled[];
 extern const char kRemoveUsersRemoteCommand[];
 extern const char kAutoScreenBrightnessMetricsDailySample[];
 extern const char kAutoScreenBrightnessMetricsAtlasUserAdjustmentCount[];
@@ -811,7 +818,6 @@ extern const char
 extern const char kKnownUserParentAccessCodeConfig[];
 extern const char kLastRsuDeviceIdUploaded[];
 extern const char kDeviceName[];
-
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 extern const char kClearPluginLSODataEnabled[];
@@ -848,9 +854,9 @@ extern const char kAuthNegotiateDelegateByKdcPolicy[];
 extern const char kNtlmV2Enabled[];
 #endif  // BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 extern const char kKerberosEnabled[];
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kCertRevocationCheckingRequiredLocalAnchors[];
@@ -1187,7 +1193,6 @@ extern const char kLacrosLaunchSwitch[];
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kSecurityTokenSessionBehavior[];
 extern const char kSecurityTokenSessionNotificationSeconds[];
-extern const char kSecurityTokenSessionNotificationDisplayed[];
 extern const char kSecurityTokenSessionNotificationScheduledDomain[];
 #endif
 

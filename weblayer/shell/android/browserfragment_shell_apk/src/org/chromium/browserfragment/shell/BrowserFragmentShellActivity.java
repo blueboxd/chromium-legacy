@@ -6,21 +6,40 @@ package org.chromium.browserfragment.shell;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.view.SurfaceView;
+import android.view.View;
+import android.widget.Button;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
+import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
+import org.chromium.base.Log;
 import org.chromium.browserfragment.Browser;
+import org.chromium.browserfragment.BrowserFragment;
+import org.chromium.browserfragment.Tab;
+import org.chromium.browserfragment.TabManager;
+import org.chromium.browserfragment.TabObserver;
+
+import java.util.List;
 
 /**
  * Activity for managing the Demo Shell.
  */
 public class BrowserFragmentShellActivity extends AppCompatActivity {
+    private static final String TAG = "BrowserFragmentShell";
+
+    private static final String BROWSER_FRAGMENT_TAG = "BROWSER_FRAGMENT_TAG";
+
     private Context mContext;
+
+    private TabManager mTabManager;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -34,16 +53,126 @@ public class BrowserFragmentShellActivity extends AppCompatActivity {
         Futures.addCallback(browserFuture, new FutureCallback<Browser>() {
             @Override
             public void onSuccess(Browser browser) {
-                onBrowserReady(browser);
+                onBrowserReady(browser, savedInstanceState);
             }
 
             @Override
             public void onFailure(Throwable thrown) {}
         }, mContext.getMainExecutor());
+
+        final Button createTabButton = findViewById(R.id.create_tab);
+        final Button navigateButton = findViewById(R.id.navigate_tab);
+
+        createTabButton.setOnClickListener((View v) -> {
+            if (mTabManager != null) {
+                ListenableFuture<Tab> newTabFuture = mTabManager.createTab();
+                Futures.addCallback(newTabFuture, new FutureCallback<Tab>() {
+                    @Override
+                    public void onSuccess(Tab newTab) {
+                        navigateButton.setEnabled(true);
+                        newTab.getNavigationController().navigate("https://google.com");
+                        // TODO(swestphal): Call this in a Tab-loaded-callback instead.
+                        navigateButton.setOnClickListener((View v) -> {
+                            navigateButton.setEnabled(false);
+                            newTab.setActive();
+                        });
+                    }
+                    @Override
+                    public void onFailure(Throwable thrown) {}
+                }, mContext.getMainExecutor());
+            }
+        });
     }
 
-    private void onBrowserReady(Browser browser) {
-        // TODO(rayankans): Abstract this away within a Fragment in the browserfragment library.
-        browser.attachViewHierarchy((SurfaceView) findViewById(R.id.surfaceView));
+    private void onBrowserReady(Browser browser, Bundle savedInstanceState) {
+        browser.setRemoteDebuggingEnabled(true);
+
+        BrowserFragment fragment = getOrCreateBrowserFragment(browser, savedInstanceState);
+
+        fragment.registerTabObserver(new TabObserver() {
+            @Override
+            public void onActiveTabChanged(@Nullable Tab activeTab) {
+                Log.i(TAG, "received 'onActiveTabChanged'-event");
+            }
+
+            @Override
+            public void onTabAdded(@NonNull Tab tab) {
+                Log.i(TAG, "received 'onTabAdded'-event");
+            }
+
+            @Override
+            public void onTabRemoved(@NonNull Tab tab) {
+                Log.i(TAG, "received 'onTabRemoved'-event");
+            }
+
+            @Override
+            public void onWillDestroyBrowserAndAllTabs() {
+                Log.i(TAG, "received 'onWillDestroyBrowserAndAllTabs'-event");
+            }
+        });
+        ListenableFuture<TabManager> tabManagerFuture = fragment.getTabManager();
+        AsyncFunction<TabManager, Tab> getActiveTabTask = tabManager -> {
+            mTabManager = tabManager;
+            return tabManager.getActiveTab();
+        };
+        ListenableFuture<Tab> activeTabFuture = Futures.transformAsync(
+                tabManagerFuture, getActiveTabTask, mContext.getMainExecutor());
+
+        Futures.addCallback(activeTabFuture, new FutureCallback<Tab>() {
+            @Override
+            public void onSuccess(Tab activeTab) {
+                if (savedInstanceState == null) {
+                    // TODO(rayankans): Expose Tab URL to avoid relying on |savedInstanceState|.
+                    activeTab.getNavigationController().navigate("https://google.com");
+                }
+            }
+            @Override
+            public void onFailure(Throwable thrown) {}
+        }, mContext.getMainExecutor());
+    }
+
+    private BrowserFragment getOrCreateBrowserFragment(Browser browser, Bundle savedInstanceState) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        if (savedInstanceState != null) {
+            List<Fragment> fragments = fragmentManager.getFragments();
+            if (fragments.size() > 1) {
+                throw new IllegalStateException("More than one fragment added, shouldn't happen");
+            }
+            if (fragments.size() == 1) {
+                return (BrowserFragment) fragments.get(0);
+            }
+        }
+
+        BrowserFragment fragment = browser.createFragment();
+
+        fragmentManager.beginTransaction()
+                .setReorderingAllowed(true)
+                .add(R.id.fragment_container_view, fragment, BROWSER_FRAGMENT_TAG)
+                .commit();
+
+        return fragment;
+    }
+
+    @Override
+    public void onBackPressed() {
+        BrowserFragment fragment = (BrowserFragment) getSupportFragmentManager().findFragmentByTag(
+                BROWSER_FRAGMENT_TAG);
+        if (fragment == null) {
+            super.onBackPressed();
+            return;
+        }
+        ListenableFuture<Boolean> tryNavigateBackFuture = mTabManager.tryNavigateBack();
+        Futures.addCallback(tryNavigateBackFuture, new FutureCallback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean didNavigate) {
+                if (!didNavigate) {
+                    BrowserFragmentShellActivity.super.onBackPressed();
+                }
+            }
+            @Override
+            public void onFailure(Throwable thrown) {
+                BrowserFragmentShellActivity.super.onBackPressed();
+            }
+        }, mContext.getMainExecutor());
     }
 }

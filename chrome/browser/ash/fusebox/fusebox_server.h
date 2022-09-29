@@ -16,10 +16,19 @@ namespace fusebox {
 
 class Server {
  public:
+  struct Delegate {
+    // These methods cause D-Bus signals to be sent that a storage unit (as
+    // named by the "subdir" in "/media/fuse/fusebox/subdir") has been attached
+    // or detached.
+    virtual void OnRegisterFSURLPrefix(const std::string& subdir) = 0;
+    virtual void OnUnregisterFSURLPrefix(const std::string& subdir) = 0;
+  };
+
   // Returns a pointer to the global Server instance.
   static Server* GetInstance();
 
-  Server();
+  // The delegate should live longer than the server.
+  explicit Server(Delegate* delegate);
   Server(const Server&) = delete;
   Server& operator=(const Server&) = delete;
   ~Server();
@@ -27,6 +36,11 @@ class Server {
   // Manages monikers in the context of the Server's MonikerMap.
   fusebox::Moniker CreateMoniker(storage::FileSystemURL target);
   void DestroyMoniker(fusebox::Moniker moniker);
+
+  void RegisterFSURLPrefix(const std::string& subdir,
+                           const std::string& fs_url_prefix,
+                           bool read_only);
+  void UnregisterFSURLPrefix(const std::string& subdir);
 
   // These methods map 1:1 to the D-Bus methods implemented by
   // fusebox_service_provider.cc.
@@ -42,19 +56,18 @@ class Server {
   // Close is a placeholder and is not implemented yet.
   //
   // TODO(crbug.com/1249754) implement MTP device writing.
-  using CloseCallback = base::OnceCallback<void(base::File::Error error_code)>;
+  using CloseCallback = base::OnceCallback<void(int32_t posix_error_code)>;
   void Close(std::string fs_url_as_string, CloseCallback callback);
 
   // Open is a placeholder and is not implemented yet.
   //
   // TODO(crbug.com/1249754) implement MTP device writing.
-  using OpenCallback = base::OnceCallback<void(base::File::Error error_code)>;
+  using OpenCallback = base::OnceCallback<void(int32_t posix_error_code)>;
   void Open(std::string fs_url_as_string, OpenCallback callback);
 
   // Read returns the file's byte contents at the given offset and length.
-  using ReadCallback = base::OnceCallback<void(base::File::Error error_code,
-                                               const uint8_t* data_ptr,
-                                               size_t data_len)>;
+  using ReadCallback = base::OnceCallback<
+      void(int32_t posix_error_code, const uint8_t* data_ptr, size_t data_len)>;
   void Read(std::string fs_url_as_string,
             int64_t offset,
             int32_t length,
@@ -64,7 +77,7 @@ class Server {
   // multiple RPC messages, each with the same client-chosen cookie value.
   using ReadDirCallback =
       base::RepeatingCallback<void(uint64_t cookie,
-                                   base::File::Error error_code,
+                                   int32_t posix_error_code,
                                    fusebox::DirEntryListProto dir_entry_list,
                                    bool has_more)>;
   void ReadDir(std::string fs_url_as_string,
@@ -72,12 +85,31 @@ class Server {
                ReadDirCallback callback);
 
   // Stat returns the file or directory's metadata.
-  using StatCallback = base::OnceCallback<void(base::File::Error error_code,
-                                               const base::File::Info& info)>;
+  using StatCallback = base::OnceCallback<void(int32_t posix_error_code,
+                                               const base::File::Info& info,
+                                               bool read_only)>;
   void Stat(std::string fs_url_as_string, StatCallback callback);
 
+  struct PrefixMapEntry {
+    PrefixMapEntry(std::string fs_url_prefix_arg, bool read_only_arg);
+
+    std::string fs_url_prefix;
+    bool read_only;
+  };
+
+  // Maps from a subdir to a storage::FileSystemURL prefix in string form (and
+  // other metadata). For example, the subdir could be the "foo" in the
+  // "/media/fuse/fusebox/foo/bar/baz.txt" filename, which gets mapped to
+  // "fs_url_prefix/bar/baz.txt" before that whole string is parsed as a
+  // storage::FileSystemURL.
+  //
+  // Neither subdir nor fs_url_prefix should have a trailing slash.
+  using PrefixMap = std::map<std::string, PrefixMapEntry>;
+
  private:
+  Delegate* delegate_;
   fusebox::MonikerMap moniker_map_;
+  PrefixMap prefix_map_;
 };
 
 }  // namespace fusebox

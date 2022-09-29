@@ -58,6 +58,7 @@ class GPUCanvasContext : public CanvasRenderingContext,
   // CanvasRenderingContext implementation
   V8RenderingContext* AsV8RenderingContext() final;
   V8OffscreenRenderingContext* AsV8OffscreenRenderingContext() final;
+  SkColorInfo CanvasRenderingContextSkColorInfo() const override;
   // Produces a snapshot of the current contents of the swap chain if possible.
   // If that texture has already been sent to the compositor, will produce a
   // snapshot of the just released texture associated to this gpu context.
@@ -113,10 +114,12 @@ class GPUCanvasContext : public CanvasRenderingContext,
   void OnTextureTransferred() override;
 
  private:
-  void UnconfigureInternal();
+  void DetachSwapBuffers();
   GPUTexture* ReplaceCurrentTexture();
   void ResizeSwapbuffers(gfx::Size size);
   void InitializeAlphaModePipeline(WGPUTextureFormat format);
+
+  void FinalizeFrame(bool) override;
 
   scoped_refptr<StaticBitmapImage> SnapshotInternal(
       const WGPUTexture& texture,
@@ -140,12 +143,17 @@ class GPUCanvasContext : public CanvasRenderingContext,
   std::unique_ptr<TextureAlphaClearer> alpha_clearer_;
   scoped_refptr<WebGPUSwapBufferProvider> swap_buffers_;
 
-  gfx::Size size_;
-
+  bool new_texture_required_ = true;
   bool stopped_ = false;
 
   // TODO(crbug.com/1326473): Remove after deprecation period.
   gfx::Size configured_size_;
+
+  // Matches [[configuration]] != null in the WebGPU specification.
+  bool configured_ = false;
+  // Matches [[texture_descriptor]] in the WebGPU specification except that it
+  // never becomes null.
+  WGPUTextureDescriptor texture_descriptor_;
 };
 
 }  // namespace blink

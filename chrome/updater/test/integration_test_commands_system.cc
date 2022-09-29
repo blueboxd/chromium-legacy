@@ -16,6 +16,7 @@
 #include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/test_switches.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -223,6 +224,10 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
                base::NumberToString(expected_exit_code))});
   }
 
+  void ExpectLegacyPolicyStatusSucceeds() const override {
+    RunCommand("expect_legacy_policy_status_succeeds");
+  }
+
   void RunUninstallCmdLine() const override {
     RunCommand("run_uninstall_cmd_line");
   }
@@ -332,6 +337,14 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     helper_command.AppendSwitchASCII("gtest_filter",
                                      "TestHelperCommandRunner.Run");
     helper_command.AppendSwitchASCII("gtest_brief", "1");
+    for (const std::string& s :
+         {switches::kUiTestActionTimeout, switches::kUiTestActionMaxTimeout,
+          switches::kTestTinyTimeout, switches::kTestLauncherTimeout}) {
+      if (command_line.HasSwitch(s)) {
+        helper_command.AppendSwitchNative(s,
+                                          command_line.GetSwitchValueNative(s));
+      }
+    }
 
     int exit_code = -1;
     ASSERT_TRUE(Run(updater_scope_, helper_command, &exit_code));

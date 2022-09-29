@@ -237,7 +237,7 @@ void HIDDetectionScreen::CheckIsScreenRequired(
                      weak_ptr_factory_.GetWeakPtr(), std::move(on_check_done)));
 }
 
-bool HIDDetectionScreen::MaybeSkip(WizardContext* context) {
+bool HIDDetectionScreen::MaybeSkip(WizardContext& context) {
   if (!CanShowScreen()) {
     // TODO(https://crbug.com/1275960): Introduce Result::SKIPPED.
     Exit(Result::SKIPPED_FOR_TESTS);
@@ -417,15 +417,26 @@ void HIDDetectionScreen::ConnectBTDevice(device::BluetoothDevice* device) {
     keyboard_is_pairing_ = true;
   }
   ++num_pairing_attempts_;
-  device->Connect(this, base::BindOnce(&HIDDetectionScreen::OnConnect,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       device->GetAddress(), device_type));
+  pairing_device_id_to_timer_map_[device->GetDeviceID()] =
+      std::make_unique<base::ElapsedTimer>();
+
+  device->Connect(
+      this, base::BindOnce(&HIDDetectionScreen::OnConnect,
+                           weak_ptr_factory_.GetWeakPtr(), device->GetAddress(),
+                           device_type, device->GetDeviceID()));
 }
 
 void HIDDetectionScreen::OnConnect(
     const std::string& address,
     device::BluetoothDeviceType device_type,
+    uint16_t device_id,
     absl::optional<device::BluetoothDevice::ConnectErrorCode> error_code) {
+  DCHECK(base::Contains(pairing_device_id_to_timer_map_, device_id));
+  hid_detection::RecordBluetoothPairingResult(
+      !error_code.has_value(),
+      pairing_device_id_to_timer_map_[device_id]->Elapsed());
+  pairing_device_id_to_timer_map_.erase(device_id);
+
   if (DeviceIsPointing(device_type))
     mouse_is_pairing_ = false;
   if (DeviceIsKeyboard(device_type)) {
@@ -603,8 +614,6 @@ void HIDDetectionScreen::OnHidDetectionStatusChanged(
   view_->SetMouseState(GetDeviceUiState(status.pointer_metadata.state));
   view_->SetPointingDeviceName(status.pointer_metadata.detected_hid_name);
 
-  // TODO(b/232851163): Handle showing pairing dialog.
-
   std::string keyboard_state = GetDeviceUiState(status.keyboard_metadata.state);
 
   // Unlike pointing devices, which can be connected through serial IO or some
@@ -616,6 +625,14 @@ void HIDDetectionScreen::OnHidDetectionStatusChanged(
   view_->SetContinueButtonEnabled(status.touchscreen_detected ||
                                   IsInputConnected(status.pointer_metadata) ||
                                   IsInputConnected(status.keyboard_metadata));
+
+  view_->SetPinDialogVisible(status.pairing_state.has_value());
+  if (status.pairing_state.has_value()) {
+    view_->SetKeyboardPinCode(status.pairing_state.value().code);
+    view_->SetNumKeysEnteredPinCode(
+        status.pairing_state.value().num_keys_entered);
+    return;
+  }
 }
 
 void HIDDetectionScreen::InitializeAdapter(
@@ -706,6 +723,18 @@ void HIDDetectionScreen::OnGetInputDevicesListForCheck(
   // Screen is not required if both devices are present.
   const bool all_devices_autodetected =
       !pointing_device_id.empty() && !keyboard_device_id.empty();
+
+  hid_detection::HidsMissing hids_missing = hid_detection::HidsMissing::kNone;
+  if (pointing_device_id.empty()) {
+    if (keyboard_device_id.empty()) {
+      hids_missing = hid_detection::HidsMissing::kPointerAndKeyboard;
+    } else {
+      hids_missing = hid_detection::HidsMissing::kPointer;
+    }
+  } else if (keyboard_device_id.empty()) {
+    hids_missing = hid_detection::HidsMissing::kKeyboard;
+  }
+  hid_detection::RecordInitialHidsMissing(hids_missing);
 
   std::move(on_check_done).Run(!all_devices_autodetected);
 }

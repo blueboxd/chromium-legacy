@@ -4,6 +4,7 @@
 
 #include "base/check_op.h"
 #include "base/strings/utf_string_conversions.h"
+#include "pdf/document_layout.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_test_base.h"
 #include "pdf/test/test_client.h"
@@ -27,7 +28,7 @@ class FindTextTestClient : public TestClient {
 
   // PDFEngine::Client:
   MOCK_METHOD(void, NotifyNumberOfFindResultsChanged, (int, bool), (override));
-  MOCK_METHOD(void, NotifySelectedFindResultChanged, (int, bool), (override));
+  MOCK_METHOD(void, NotifySelectedFindResultChanged, (int), (override));
 
   std::vector<SearchStringResult> SearchString(const char16_t* string,
                                                const char16_t* term,
@@ -72,8 +73,7 @@ void ExpectInitialSearchResults(FindTextTestClient& client, int count) {
 
   EXPECT_CALL(client,
               NotifyNumberOfFindResultsChanged(1, /*final_result=*/false));
-  EXPECT_CALL(client,
-              NotifySelectedFindResultChanged(0, /*final_result=*/false));
+  EXPECT_CALL(client, NotifySelectedFindResultChanged(0));
   for (int i = 2; i < count + 1; ++i) {
     EXPECT_CALL(client,
                 NotifyNumberOfFindResultsChanged(i, /*final_result=*/false));
@@ -185,17 +185,14 @@ TEST_F(FindTextTest, SelectFindResult) {
   engine->StartFind("world", /*case_sensitive=*/true);
 
   EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(_, _)).Times(0);
-  EXPECT_CALL(client,
-              NotifySelectedFindResultChanged(1, /*final_result=*/true));
+  EXPECT_CALL(client, NotifySelectedFindResultChanged(1));
 
   ASSERT_TRUE(engine->SelectFindResult(/*forward=*/true));
 
-  EXPECT_CALL(client,
-              NotifySelectedFindResultChanged(2, /*final_result=*/true));
+  EXPECT_CALL(client, NotifySelectedFindResultChanged(2));
   ASSERT_TRUE(engine->SelectFindResult(/*forward=*/true));
 
-  EXPECT_CALL(client,
-              NotifySelectedFindResultChanged(1, /*final_result=*/true));
+  EXPECT_CALL(client, NotifySelectedFindResultChanged(1));
   ASSERT_TRUE(engine->SelectFindResult(/*forward=*/false));
 }
 
@@ -211,10 +208,8 @@ TEST_F(FindTextTest, SelectFindResultAndSwitchToTwoUpView) {
   {
     InSequence sequence;
 
-    EXPECT_CALL(client,
-                NotifySelectedFindResultChanged(1, /*final_result=*/true));
-    EXPECT_CALL(client,
-                NotifySelectedFindResultChanged(2, /*final_result=*/true));
+    EXPECT_CALL(client, NotifySelectedFindResultChanged(1));
+    EXPECT_CALL(client, NotifySelectedFindResultChanged(2));
   }
   ASSERT_TRUE(engine->SelectFindResult(/*forward=*/true));
   ASSERT_TRUE(engine->SelectFindResult(/*forward=*/true));
@@ -229,13 +224,12 @@ TEST_F(FindTextTest, SelectFindResultAndSwitchToTwoUpView) {
     EXPECT_CALL(client,
                 NotifyNumberOfFindResultsChanged(4, /*final_result=*/true));
   }
-  engine->SetTwoUpView(true);
+  engine->SetDocumentLayout(DocumentLayout::PageSpread::kTwoUpOdd);
 
   {
     InSequence sequence;
 
-    EXPECT_CALL(client,
-                NotifySelectedFindResultChanged(2, /*final_result=*/true));
+    EXPECT_CALL(client, NotifySelectedFindResultChanged(2));
   }
   ASSERT_TRUE(engine->SelectFindResult(/*forward=*/true));
 }

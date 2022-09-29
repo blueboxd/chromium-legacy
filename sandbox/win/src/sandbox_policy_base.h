@@ -14,9 +14,11 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/dcheck_is_on.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/process/launch.h"
+#include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_types.h"
@@ -30,21 +32,82 @@
 
 namespace sandbox {
 
+class BrokerServicesBase;
 class Dispatcher;
 class LowLevelPolicy;
 class PolicyDiagnostic;
 class TargetProcess;
 struct PolicyGlobal;
 
+// The members of this class are shared between multiple sandbox::PolicyBase
+// objects and must be safe for access from multiple threads once created.
+// When shared members will not be destroyed until BrokerServicesBase is
+// destroyed at process shutdown.
+class ConfigBase final : public TargetConfig {
+ public:
+  ConfigBase() noexcept;
+  ~ConfigBase() override;
+
+  ConfigBase(const ConfigBase&) = delete;
+  ConfigBase& operator=(const ConfigBase&) = delete;
+
+  bool IsConfigured() const override;
+
+  ResultCode AddRule(SubSystem subsystem,
+                     Semantics semantics,
+                     const wchar_t* pattern) override;
+  ResultCode AddDllToUnload(const wchar_t* dll_name) override;
+
+ private:
+  // Can call Freeze()
+  friend class BrokerServicesBase;
+  // Can examine private fields.
+  friend class PolicyDiagnostic;
+  // Can call private accessors.
+  friend class PolicyBase;
+
+  // Promise that no further changes will be made to the configuration, and
+  // this object can be reused by multiple policies.
+  bool Freeze();
+
+  // Use in DCHECK only - returns `true` in non-DCHECK builds.
+  bool IsOnCreatingThread() const;
+
+#if DCHECK_IS_ON()
+  // Used to sequence-check in DCHECK builds.
+  uint32_t creating_thread_id_;
+#endif  // DCHECK_IS_ON()
+
+  // Once true the configuration is frozen and can be applied to later policies.
+  bool configured_ = false;
+
+  ResultCode AddRuleInternal(SubSystem subsystem,
+                             Semantics semantics,
+                             const wchar_t* pattern);
+
+  // Should only be called once the object is configured.
+  PolicyGlobal* policy();
+  std::vector<std::wstring>& blocklisted_dlls();
+
+  // Object in charge of generating the low level policy. Will be reset() when
+  // Freeze() is called.
+  std::unique_ptr<LowLevelPolicy> policy_maker_;
+  // Memory structure that stores the low level policy rules for proxied calls.
+  raw_ptr<PolicyGlobal> policy_;
+  // The list of dlls to unload in the target process.
+  std::vector<std::wstring> blocklisted_dlls_;
+};
+
 class PolicyBase final : public TargetPolicy {
  public:
-  PolicyBase();
+  PolicyBase(base::StringPiece key);
   ~PolicyBase() override;
 
   PolicyBase(const PolicyBase&) = delete;
   PolicyBase& operator=(const PolicyBase&) = delete;
 
   // TargetPolicy:
+  TargetConfig* GetConfig() override;
   ResultCode SetTokenLevel(TokenLevel initial, TokenLevel lockdown) override;
   TokenLevel GetInitialTokenLevel() const override;
   TokenLevel GetLockdownTokenLevel() const override;
@@ -67,10 +130,6 @@ class PolicyBase final : public TargetPolicy {
   void SetStrictInterceptions() override;
   ResultCode SetStdoutHandle(HANDLE handle) override;
   ResultCode SetStderrHandle(HANDLE handle) override;
-  ResultCode AddRule(SubSystem subsystem,
-                     Semantics semantics,
-                     const wchar_t* pattern) override;
-  ResultCode AddDllToUnload(const wchar_t* dll_name) override;
   ResultCode AddKernelObjectToClose(const wchar_t* handle_type,
                                     const wchar_t* handle_name) override;
   void AddHandleToShare(HANDLE handle) override;
@@ -126,6 +185,8 @@ class PolicyBase final : public TargetPolicy {
   const base::HandlesToInheritVector& GetHandlesBeingShared();
 
  private:
+  // BrokerServicesBase is allowed to set shared backing fields for FixedPolicy.
+  friend class sandbox::BrokerServicesBase;
   // Allow PolicyDiagnostic to snapshot PolicyBase for diagnostics.
   friend class PolicyDiagnostic;
 
@@ -135,9 +196,20 @@ class PolicyBase final : public TargetPolicy {
   // Sets up the handle closer for a new target. This policy must own |target|.
   bool SetupHandleCloser(TargetProcess& target);
 
-  ResultCode AddRuleInternal(SubSystem subsystem,
-                             Semantics semantics,
-                             const wchar_t* pattern);
+  // TargetConfig will really be a ConfigBase.
+  bool SetConfig(TargetConfig* config);
+
+  // Gets possibly shared data or allocates if it did not already exist.
+  ConfigBase* config();
+  // Tag provided when this policy was created - mainly for debugging.
+  std::string tag_;
+  // Backing data if this object was created with an empty tag_.
+  std::unique_ptr<ConfigBase> config_;
+  // Shared backing data if this object will share fields with other policies.
+  raw_ptr<ConfigBase> config_ptr_;
+
+  // Remaining members are unique to this instance and will be configured every
+  // time.
 
   // The policy takes ownership of a target as it is applied to it.
   std::unique_ptr<TargetProcess> target_;
@@ -157,12 +229,6 @@ class PolicyBase final : public TargetPolicy {
   MitigationFlags mitigations_;
   MitigationFlags delayed_mitigations_;
   bool is_csrss_connected_;
-  // Object in charge of generating the low level policy.
-  raw_ptr<LowLevelPolicy> policy_maker_;
-  // Memory structure that stores the low level policy.
-  raw_ptr<PolicyGlobal> policy_;
-  // The list of dlls to unload in the target process.
-  std::vector<std::wstring> blocklisted_dlls_;
   // This is a map of handle-types to names that we need to close in the
   // target process. A null set means we need to close all handles of the
   // given type.

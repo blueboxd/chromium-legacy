@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,7 +102,7 @@ fn test() {
             name: "chromium".to_string(),
             version: Version::new(0, 1, 0),
             authors: Vec::new(),
-            edition: Default::default(),
+            edition: Edition("2021".to_string()),
             description: None,
         },
         workspace: None,

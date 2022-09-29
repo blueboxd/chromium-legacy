@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -48,7 +49,10 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "components/user_manager/user_names.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -111,6 +115,12 @@ content::WebContents* GetActiveWebContents() {
 
 // Waits for and expects that the correct url is opened.
 void WaitForAppToOpen(const GURL& expected_url) {
+  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
+    EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+    EXPECT_EQ(expected_url, GetActiveWebContents()->GetVisibleURL());
+    return;
+  }
+
   // Start with a number of browsers (may include an incognito browser).
   size_t num_browsers = chrome::GetTotalBrowserCount();
   content::TestNavigationObserver navigation_observer(expected_url);
@@ -394,12 +404,7 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest,
                                  kShowHelpAppDiscoverTabNotificationId,
                                  absl::nullopt, absl::nullopt);
 
-#if BUILDFLAG(ENABLE_CROS_HELP_APP)
   EXPECT_NO_FATAL_FAILURE(WaitForAppToOpen(GURL("chrome://help-app/discover")));
-#else
-  // We just have the original browser. No new app opens.
-  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
-#endif
 }
 
 // Test that the background page can trigger the release notes notification.
@@ -764,6 +769,7 @@ IN_PROC_BROWSER_TEST_P(HelpAppAllProfilesIntegrationTest, HelpAppOpenGestures) {
 
   EXPECT_NO_FATAL_FAILURE(
       WaitForAppToOpen(GURL("chrome://help-app/help/sub/3399710/id/9739838")));
+
   // The HELP app is 18, see DefaultAppName in
   // src/chrome/browser/apps/app_service/app_service_metrics.cc
   histogram_tester.ExpectUniqueSample("Apps.DefaultAppLaunch.FromOtherApp", 18,

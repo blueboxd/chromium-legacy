@@ -528,14 +528,14 @@ uint16_t GetPort(const HostResolver::Host& host) {
   return absl::get<HostPortPair>(host).port();
 }
 
-// Only use scheme/port in JobKey if `features::kUseDnsHttpsSvcb` is enabled
+// Only use scheme/port in JobKey if `https_svcb_options_enabled` is true
 // (or the query is explicitly for HTTPS). Otherwise DNS will not give different
 // results for the same hostname.
 absl::variant<url::SchemeHostPort, std::string> CreateHostForJobKey(
     const HostResolver::Host& input,
-    DnsQueryType query_type) {
-  if ((base::FeatureList::IsEnabled(features::kUseDnsHttpsSvcb) ||
-       query_type == DnsQueryType::HTTPS) &&
+    DnsQueryType query_type,
+    bool https_svcb_options_enabled) {
+  if ((https_svcb_options_enabled || query_type == DnsQueryType::HTTPS) &&
       absl::holds_alternative<url::SchemeHostPort>(input)) {
     return absl::get<url::SchemeHostPort>(input);
   }
@@ -552,8 +552,8 @@ DnsResponse CreateFakeEmptyResponse(base::StringPiece hostname,
       DnsQueryTypeToQtype(query_type));
 }
 
-AddressList FilterAddresses(AddressList addresses,
-                            DnsQueryTypeSet query_types) {
+std::vector<IPEndPoint> FilterAddresses(std::vector<IPEndPoint> addresses,
+                                        DnsQueryTypeSet query_types) {
   DCHECK(!query_types.Has(DnsQueryType::UNSPECIFIED));
   DCHECK(!query_types.Empty());
 
@@ -564,7 +564,7 @@ AddressList FilterAddresses(AddressList addresses,
     return addresses;
 
   // Keep only the endpoints that match `want_family`.
-  addresses.endpoints().erase(
+  addresses.erase(
       base::ranges::remove_if(
           addresses,
           [want_family](AddressFamily family) { return family != want_family; },
@@ -577,14 +577,14 @@ AddressList FilterAddresses(AddressList addresses,
 
 //-----------------------------------------------------------------------------
 
-bool ResolveLocalHostname(base::StringPiece host, AddressList* address_list) {
+bool ResolveLocalHostname(base::StringPiece host,
+                          std::vector<IPEndPoint>* address_list) {
   address_list->clear();
-
   if (!IsLocalHostname(host))
     return false;
 
-  address_list->push_back(IPEndPoint(IPAddress::IPv6Localhost(), 0));
-  address_list->push_back(IPEndPoint(IPAddress::IPv4Localhost(), 0));
+  address_list->emplace_back(IPAddress::IPv6Localhost(), 0);
+  address_list->emplace_back(IPAddress::IPv4Localhost(), 0);
 
   return true;
 }
@@ -615,7 +615,7 @@ class HostResolverManager::RequestImpl
         request_host_(std::move(request_host)),
         network_isolation_key_(
             base::FeatureList::IsEnabled(
-                net::features::kSplitHostCacheByNetworkIsolationKey)
+                features::kSplitHostCacheByNetworkIsolationKey)
                 ? std::move(network_isolation_key)
                 : NetworkIsolationKey()),
         parameters_(optional_parameters ? std::move(optional_parameters).value()
@@ -805,38 +805,21 @@ class HostResolverManager::RequestImpl
     DCHECK(!endpoint_results_.has_value());
     DCHECK(!fixed_up_dns_alias_results_.has_value());
 
-    if (results_.value().legacy_addresses().has_value()) {
-      DCHECK(!results_.value().ip_endpoints());
-      legacy_address_results_ = results_.value().legacy_addresses();
-      endpoint_results_ = HostResolver::AddressListToEndpointResults(
-          legacy_address_results_.value());
-
-      fixed_up_dns_alias_results_ = std::set<std::string>(
-          legacy_address_results_.value().dns_aliases().begin(),
-          legacy_address_results_.value().dns_aliases().end());
-
-      // Skip fixups for `include_canonical_name` requests. Just use the
-      // canonical name exactly as it was received from the system resolver.
+    endpoint_results_ = results_.value().GetEndpoints();
+    if (endpoint_results_.has_value()) {
+      DCHECK(results_.value().aliases());
+      fixed_up_dns_alias_results_ = *results_.value().aliases();
       if (parameters().include_canonical_name) {
-        DCHECK_LE(legacy_address_results_.value().dns_aliases().size(), 1u);
+        DCHECK_LE(fixed_up_dns_alias_results_.value().size(), 1u);
       } else {
-        fixed_up_dns_alias_results_ = dns_alias_utility::FixUpDnsAliases(
-            fixed_up_dns_alias_results_.value());
-      }
-    } else {
-      endpoint_results_ = results_.value().GetEndpoints();
-      if (endpoint_results_.has_value()) {
-        DCHECK(results_.value().aliases());
-        fixed_up_dns_alias_results_ = *results_.value().aliases();
-
         // Expect `aliases()` results to already be fixed up.
         DCHECK(dns_alias_utility::FixUpDnsAliases(
                    fixed_up_dns_alias_results_.value()) ==
                fixed_up_dns_alias_results_.value());
-
-        legacy_address_results_ = HostResolver::EndpointResultToAddressList(
-            endpoint_results_.value(), fixed_up_dns_alias_results_.value());
       }
+
+      legacy_address_results_ = HostResolver::EndpointResultToAddressList(
+          endpoint_results_.value(), fixed_up_dns_alias_results_.value());
     }
   }
 
@@ -1016,7 +999,7 @@ class HostResolverManager::ProcTask {
            scoped_refptr<base::TaskRunner> proc_task_runner,
            const NetLogWithSource& job_net_log,
            const base::TickClock* tick_clock,
-           NetworkChangeNotifier::NetworkHandle network)
+           handles::NetworkHandle network)
       : hostname_(std::move(hostname)),
         address_family_(address_family),
         flags_(flags),
@@ -1111,7 +1094,7 @@ class HostResolverManager::ProcTask {
       scoped_refptr<HostResolverProc> resolver_proc,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       AttemptCompletionCallback completion_callback,
-      NetworkChangeNotifier::NetworkHandle network) {
+      handles::NetworkHandle network) {
     AddressList results;
     int os_error = 0;
     int error = resolver_proc->Resolve(hostname, address_family, flags,
@@ -1210,7 +1193,7 @@ class HostResolverManager::ProcTask {
 
   raw_ptr<const base::TickClock> tick_clock_;
   // Network to perform DNS lookups for.
-  NetworkChangeNotifier::NetworkHandle network_;
+  handles::NetworkHandle network_;
 
   // Used to loop back from the blocking lookup attempt tasks as well as from
   // delayed retry tasks. Invalidate WeakPtrs on completion and cancellation to
@@ -1258,7 +1241,8 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
           Delegate* delegate,
           const NetLogWithSource& job_net_log,
           const base::TickClock* tick_clock,
-          bool fallback_available)
+          bool fallback_available,
+          const HostResolver::HttpsSvcbOptions& https_svcb_options)
       : client_(client),
         host_(std::move(host)),
         resolve_context_(resolve_context->AsSafeRef()),
@@ -1268,7 +1252,8 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         net_log_(job_net_log),
         tick_clock_(tick_clock),
         task_start_time_(tick_clock_->NowTicks()),
-        fallback_available_(fallback_available) {
+        fallback_available_(fallback_available),
+        https_svcb_options_(https_svcb_options) {
     DCHECK(client_);
     DCHECK(delegate_);
 
@@ -1404,7 +1389,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       return types;
 
     if (types.Has(DnsQueryType::HTTPS)) {
-      if (!secure_ && (!features::kUseDnsHttpsSvcbEnableInsecure.Get() ||
+      if (!secure_ && (!https_svcb_options_.enable_insecure ||
                        !client_->CanQueryAdditionalTypesViaInsecureDns())) {
         types.Remove(DnsQueryType::HTTPS);
       } else {
@@ -1783,11 +1768,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     timeout_timer_.Stop();
 
     absl::optional<std::vector<IPEndPoint>> ip_endpoints;
-    if (results.legacy_addresses().has_value()) {
-      ip_endpoints = results.legacy_addresses().value().endpoints();
-    } else {
-      ip_endpoints = base::OptionalFromPtr(results.ip_endpoints());
-    }
+    ip_endpoints = base::OptionalFromPtr(results.ip_endpoints());
 
     if (ip_endpoints.has_value()) {
       // If there are multiple addresses, and at least one is IPv6, need to
@@ -1814,16 +1795,8 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
                       bool secure,
                       bool success,
                       std::vector<IPEndPoint> sorted) {
-    if (results.legacy_addresses().has_value()) {
-      AddressList sorted_list;
-      sorted_list.endpoints() = std::move(sorted);
-      sorted_list.SetDnsAliases(results.legacy_addresses()->dns_aliases());
-
-      results.set_legacy_addresses(std::move(sorted_list));
-    } else {
-      DCHECK(results.ip_endpoints());
-      results.set_ip_endpoints(std::move(sorted));
-    }
+    DCHECK(results.ip_endpoints());
+    results.set_ip_endpoints(std::move(sorted));
 
     if (!success) {
       OnFailure(ERR_DNS_SORT_ERROR, /*allow_fallback=*/true,
@@ -1832,8 +1805,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     }
 
     // AddressSorter prunes unusable destinations.
-    if (results.legacy_addresses().value_or(AddressList()).empty() &&
-        (!results.ip_endpoints() || results.ip_endpoints()->empty()) &&
+    if ((!results.ip_endpoints() || results.ip_endpoints()->empty()) &&
         results.text_records().value_or(std::vector<std::string>()).empty() &&
         results.hostnames().value_or(std::vector<HostPortPair>()).empty()) {
       LOG(WARNING) << "Address list empty after RFC3484 sort";
@@ -1951,24 +1923,22 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     base::TimeDelta timeout_min;
 
     if (AnyOfTypeTransactionsRemain({DnsQueryType::HTTPS})) {
-      DCHECK(base::FeatureList::IsEnabled(features::kUseDnsHttpsSvcb));
+      DCHECK(https_svcb_options_.enable);
 
       if (secure_) {
-        timeout_max = features::kUseDnsHttpsSvcbSecureExtraTimeMax.Get();
-        extra_time_percent =
-            features::kUseDnsHttpsSvcbSecureExtraTimePercent.Get();
-        timeout_min = features::kUseDnsHttpsSvcbSecureExtraTimeMin.Get();
+        timeout_max = https_svcb_options_.secure_extra_time_max;
+        extra_time_percent = https_svcb_options_.secure_extra_time_percent;
+        timeout_min = https_svcb_options_.secure_extra_time_min;
       } else {
-        timeout_max = features::kUseDnsHttpsSvcbInsecureExtraTimeMax.Get();
-        extra_time_percent =
-            features::kUseDnsHttpsSvcbInsecureExtraTimePercent.Get();
-        timeout_min = features::kUseDnsHttpsSvcbInsecureExtraTimeMin.Get();
+        timeout_max = https_svcb_options_.insecure_extra_time_max;
+        extra_time_percent = https_svcb_options_.insecure_extra_time_percent;
+        timeout_min = https_svcb_options_.insecure_extra_time_min;
       }
 
       if (timeout_max.is_zero() && extra_time_percent == 0 &&
           timeout_min.is_zero()) {
-        timeout_max = features::kUseDnsHttpsSvcbExtraTimeAbsolute.Get();
-        extra_time_percent = features::kUseDnsHttpsSvcbExtraTimePercent.Get();
+        timeout_max = https_svcb_options_.extra_time_absolute;
+        extra_time_percent = https_svcb_options_.extra_time_percent;
       }
 
       // Skip timeout for secure requests if the timeout would be a fatal
@@ -2103,6 +2073,8 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   // task completes unsuccessfully. Used as a signal that underlying
   // transactions should timeout more quickly.
   bool fallback_available_;
+
+  const HostResolver::HttpsSvcbOptions https_svcb_options_;
 };
 
 //-----------------------------------------------------------------------------
@@ -2155,7 +2127,7 @@ struct HostResolverManager::JobKey {
     return key;
   }
 
-  NetworkChangeNotifier::NetworkHandle GetTargetNetwork() const {
+  handles::NetworkHandle GetTargetNetwork() const {
     return resolve_context->GetTargetNetwork();
   }
 };
@@ -2175,7 +2147,8 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       RequestPriority priority,
       scoped_refptr<base::TaskRunner> proc_task_runner,
       const NetLogWithSource& source_net_log,
-      const base::TickClock* tick_clock)
+      const base::TickClock* tick_clock,
+      const HostResolver::HttpsSvcbOptions& https_svcb_options)
       : resolver_(resolver),
         key_(std::move(key)),
         cache_usage_(cache_usage),
@@ -2184,6 +2157,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
         priority_tracker_(priority),
         proc_task_runner_(std::move(proc_task_runner)),
         tick_clock_(tick_clock),
+        https_svcb_options_(https_svcb_options),
         net_log_(
             NetLogWithSource::Make(source_net_log.net_log(),
                                    NetLogSourceType::HOST_RESOLVER_IMPL_JOB)) {
@@ -2485,8 +2459,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   bool is_running() const { return job_running_; }
 
   bool HasTargetNetwork() const {
-    return key_.GetTargetNetwork() !=
-           NetworkChangeNotifier::kInvalidNetworkHandle;
+    return key_.GetTargetNetwork() != handles::kInvalidNetworkHandle;
   }
 
  private:
@@ -2632,16 +2605,22 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     if (net_error == OK)
       ttl = base::Seconds(kCacheEntryTTLSeconds);
 
+    auto aliases = std::set<std::string>(addr_list.dns_aliases().begin(),
+                                         addr_list.dns_aliases().end());
+
+    if (!(key_.flags & HOST_RESOLVER_CANONNAME)) {
+      aliases = dns_alias_utility::FixUpDnsAliases(aliases);
+    }
+
     // Source unknown because the system resolver could have gotten it from a
     // hosts file, its own cache, a DNS lookup or somewhere else.
     // Don't store the |ttl| in cache since it's not obtained from the server.
     CompleteRequests(
-        HostCache::Entry(net_error,
-                         net_error == OK
-                             ? AddressList::CopyWithPort(addr_list, 0)
-                             : AddressList(),
-                         HostCache::Entry::SOURCE_UNKNOWN),
-        ttl, true /* allow_cache */, false /* secure */);
+        HostCache::Entry(
+            net_error,
+            net_error == OK ? addr_list.endpoints() : std::vector<IPEndPoint>(),
+            std::move(aliases), HostCache::Entry::SOURCE_UNKNOWN),
+        ttl, /*allow_cache=*/true, /*secure=*/false);
   }
 
   void InsecureCacheLookup() {
@@ -2671,7 +2650,8 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     dns_task_ = std::make_unique<DnsTask>(
         resolver_->dns_client_.get(), key_.host, key_.query_types,
         &*key_.resolve_context, secure, key_.secure_dns_mode, this, net_log_,
-        tick_clock_, !tasks_.empty() /* fallback_available */);
+        tick_clock_, !tasks_.empty() /* fallback_available */,
+        https_svcb_options_);
     dns_task_->StartNextTransaction();
     // Schedule a second transaction, if needed. DoH queries can bypass the
     // dispatcher and start all of their transactions immediately.
@@ -2749,8 +2729,6 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     // transaction, e.g. a supplemental HTTPS transaction, finds results.
     DCHECK(!key_.query_types.Has(DnsQueryType::UNSPECIFIED));
     if (HasAddressType(key_.query_types) && results.error() == OK &&
-        (!results.legacy_addresses() ||
-         results.legacy_addresses().value().empty()) &&
         (!results.ip_endpoints() || results.ip_endpoints()->empty())) {
       results.set_error(ERR_NAME_NOT_RESOLVED);
     }
@@ -2775,10 +2753,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     base::TimeDelta bounded_ttl =
         std::max(results.ttl(), base::Seconds(kMinimumTTLSeconds));
 
-    if ((results.legacy_addresses() &&
-         ContainsIcannNameCollisionIp(
-             results.legacy_addresses().value().endpoints())) ||
-        (results.ip_endpoints() &&
+    if ((results.ip_endpoints() &&
          ContainsIcannNameCollisionIp(*results.ip_endpoints()))) {
       CompleteRequestsWithError(ERR_ICANN_NAME_COLLISION);
       return;
@@ -2850,15 +2825,15 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     // TODO(crbug.com/846423): Consider adding MDNS-specific logging.
 
     HostCache::Entry results = mdns_task_->GetResults();
-    if (results.legacy_addresses() &&
-        ContainsIcannNameCollisionIp(
-            results.legacy_addresses().value().endpoints())) {
+
+    if ((results.ip_endpoints() &&
+         ContainsIcannNameCollisionIp(*results.ip_endpoints()))) {
       CompleteRequestsWithError(ERR_ICANN_NAME_COLLISION);
-    } else {
-      // MDNS uses a separate cache, so skip saving result to cache.
-      // TODO(crbug.com/926300): Consider merging caches.
-      CompleteRequestsWithoutCache(results, absl::nullopt /* stale_info */);
+      return;
     }
+    // MDNS uses a separate cache, so skip saving result to cache.
+    // TODO(crbug.com/926300): Consider merging caches.
+    CompleteRequestsWithoutCache(results, absl::nullopt /* stale_info */);
   }
 
   void OnMdnsImmediateFailure(int rv) {
@@ -3072,6 +3047,8 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   raw_ptr<const base::TickClock> tick_clock_;
   base::TimeTicks start_time_;
 
+  HostResolver::HttpsSvcbOptions https_svcb_options_;
+
   NetLogWithSource net_log_;
 
   // Resolves the host using a HostResolverProc.
@@ -3106,21 +3083,25 @@ HostResolverManager::HostResolverManager(
     : HostResolverManager(PassKey(),
                           options,
                           system_dns_config_notifier,
-                          NetworkChangeNotifier::kInvalidNetworkHandle,
+                          handles::kInvalidNetworkHandle,
                           net_log) {}
 
 HostResolverManager::HostResolverManager(
     base::PassKey<HostResolverManager>,
     const HostResolver::ManagerOptions& options,
     SystemDnsConfigChangeNotifier* system_dns_config_notifier,
-    NetworkChangeNotifier::NetworkHandle target_network,
+    handles::NetworkHandle target_network,
     NetLog* net_log)
     : proc_params_(nullptr, options.max_system_retry_attempts),
       net_log_(net_log),
       system_dns_config_notifier_(system_dns_config_notifier),
       target_network_(target_network),
       check_ipv6_on_wifi_(options.check_ipv6_on_wifi),
-      tick_clock_(base::DefaultTickClock::GetInstance()) {
+      tick_clock_(base::DefaultTickClock::GetInstance()),
+      https_svcb_options_(
+          options.https_svcb_options
+              ? *options.https_svcb_options
+              : HostResolver::HttpsSvcbOptions::FromFeatures()) {
   PrioritizedDispatcher::Limits job_limits = GetDispatcherLimits(options);
   dispatcher_ = std::make_unique<PrioritizedDispatcher>(job_limits);
   max_queued_jobs_ = job_limits.total_jobs * 100u;
@@ -3177,7 +3158,7 @@ HostResolverManager::~HostResolverManager() {
   // OnJobComplete will not start any new jobs.
   jobs_.clear();
 
-  if (target_network_ == NetworkChangeNotifier::kInvalidNetworkHandle) {
+  if (target_network_ == handles::kInvalidNetworkHandle) {
     NetworkChangeNotifier::RemoveIPAddressObserver(this);
     NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   }
@@ -3189,7 +3170,7 @@ HostResolverManager::~HostResolverManager() {
 std::unique_ptr<HostResolverManager>
 HostResolverManager::CreateNetworkBoundHostResolverManager(
     const HostResolver::ManagerOptions& options,
-    NetworkChangeNotifier::NetworkHandle target_network,
+    handles::NetworkHandle target_network,
     NetLog* net_log) {
 #if BUILDFLAG(IS_ANDROID)
   DCHECK(NetworkChangeNotifier::AreNetworkHandlesSupported());
@@ -3412,7 +3393,8 @@ int HostResolverManager::Resolve(RequestImpl* request) {
   const auto& parameters = request->parameters();
   JobKey job_key(request->resolve_context());
   job_key.host =
-      CreateHostForJobKey(request->request_host(), parameters.dns_query_type);
+      CreateHostForJobKey(request->request_host(), parameters.dns_query_type,
+                          https_svcb_options_.enable);
   job_key.network_isolation_key = request->network_isolation_key();
   job_key.source = parameters.source;
 
@@ -3580,10 +3562,10 @@ HostResolverManager::Job* HostResolverManager::AddJobWithoutRequest(
     std::deque<TaskType> tasks,
     RequestPriority priority,
     const NetLogWithSource& source_net_log) {
-  auto new_job =
-      std::make_unique<Job>(weak_ptr_factory_.GetWeakPtr(), key, cache_usage,
-                            host_cache, std::move(tasks), priority,
-                            proc_task_runner_, source_net_log, tick_clock_);
+  auto new_job = std::make_unique<Job>(
+      weak_ptr_factory_.GetWeakPtr(), key, cache_usage, host_cache,
+      std::move(tasks), priority, proc_task_runner_, source_net_log,
+      tick_clock_, https_svcb_options_);
   auto insert_result = jobs_.emplace(std::move(key), std::move(new_job));
   auto& iterator = insert_result.first;
   bool is_new = insert_result.second;
@@ -3608,10 +3590,11 @@ HostCache::Entry HostResolverManager::ResolveAsIP(DnsQueryTypeSet query_types,
                             HostCache::Entry::SOURCE_UNKNOWN);
   }
 
-  AddressList addresses = AddressList::CreateFromIPAddress(ip_address, 0);
-  if (resolve_canonname)
-    addresses.SetDefaultCanonicalName();
-  return HostCache::Entry(OK, std::move(addresses),
+  std::set<std::string> aliases;
+  if (resolve_canonname) {
+    aliases = {ip_address.ToString()};
+  }
+  return HostCache::Entry(OK, {IPEndPoint(ip_address, 0)}, std::move(aliases),
                           HostCache::Entry::SOURCE_UNKNOWN);
 }
 
@@ -3662,17 +3645,17 @@ absl::optional<HostCache::Entry> HostResolverManager::MaybeReadFromConfig(
   DCHECK(HasAddressType(key.query_types));
   if (!absl::holds_alternative<url::SchemeHostPort>(key.host))
     return absl::nullopt;
-  absl::optional<AddressList> preset_addrs =
+  absl::optional<std::vector<IPEndPoint>> preset_addrs =
       dns_client_->GetPresetAddrs(absl::get<url::SchemeHostPort>(key.host));
   if (!preset_addrs)
     return absl::nullopt;
 
-  AddressList filtered_addresses =
+  std::vector<IPEndPoint> filtered_addresses =
       FilterAddresses(std::move(*preset_addrs), key.query_types);
   if (filtered_addresses.empty())
     return absl::nullopt;
 
-  return HostCache::Entry(OK, std::move(filtered_addresses),
+  return HostCache::Entry(OK, std::move(filtered_addresses), /*aliases=*/{},
                           HostCache::Entry::SOURCE_CONFIG);
 }
 
@@ -3717,7 +3700,7 @@ absl::optional<HostCache::Entry> HostResolverManager::ServeFromHosts(
   // flexibility, but lose implicit ordering.
   // We prefer IPv6 because "happy eyeballs" will fall back to IPv4 if
   // necessary.
-  AddressList addresses;
+  std::vector<IPEndPoint> addresses;
   if (query_types.Has(DnsQueryType::AAAA)) {
     auto it = hosts->find(DnsHostsKey(effective_hostname, ADDRESS_FAMILY_IPV6));
     if (it != hosts->end())
@@ -3741,12 +3724,11 @@ absl::optional<HostCache::Entry> HostResolverManager::ServeFromHosts(
     return ServeFromHosts(hostname, query_types, false, tasks);
   }
 
-  if (!addresses.empty()) {
-    return HostCache::Entry(OK, std::move(addresses),
-                            HostCache::Entry::SOURCE_HOSTS);
-  }
+  if (addresses.empty())
+    return absl::nullopt;
 
-  return absl::nullopt;
+  return HostCache::Entry(OK, std::move(addresses),
+                          /*aliases=*/{}, HostCache::Entry::SOURCE_HOSTS);
 }
 
 absl::optional<HostCache::Entry> HostResolverManager::ServeLocalhost(
@@ -3755,7 +3737,7 @@ absl::optional<HostCache::Entry> HostResolverManager::ServeLocalhost(
     bool default_family_due_to_no_ipv6) {
   DCHECK(!query_types.Has(DnsQueryType::UNSPECIFIED));
 
-  AddressList resolved_addresses;
+  std::vector<IPEndPoint> resolved_addresses;
   if (!HasAddressType(query_types) ||
       !ResolveLocalHostname(hostname, &resolved_addresses)) {
     return absl::nullopt;
@@ -3767,9 +3749,9 @@ absl::optional<HostCache::Entry> HostResolverManager::ServeLocalhost(
     // (See SystemHostResolverCall for rationale).
     query_types.Put(DnsQueryType::AAAA);
   }
-  AddressList filtered_addresses =
+  std::vector<IPEndPoint> filtered_addresses =
       FilterAddresses(std::move(resolved_addresses), query_types);
-  return HostCache::Entry(OK, std::move(filtered_addresses),
+  return HostCache::Entry(OK, std::move(filtered_addresses), /*aliases=*/{},
                           HostCache::Entry::SOURCE_UNKNOWN);
 }
 
@@ -4047,9 +4029,9 @@ void HostResolverManager::GetEffectiveParametersForRequest(
   // Optimistically enable feature-controlled queries. These queries may be
   // skipped at a later point.
 
-  // `features::kUseDnsHttpsSvcb` has precedence, so if enabled, ignore any
+  // `https_svcb_options_.enable` has precedence, so if enabled, ignore any
   // other related features.
-  if (base::FeatureList::IsEnabled(features::kUseDnsHttpsSvcb)) {
+  if (https_svcb_options_.enable) {
     static const char* const kSchemesForHttpsQuery[] = {
         url::kHttpScheme, url::kHttpsScheme, url::kWsScheme, url::kWssScheme};
     if (base::Contains(kSchemesForHttpsQuery, GetScheme(host)))
@@ -4068,9 +4050,9 @@ void HostResolverManager::GetEffectiveParametersForRequest(
 
 namespace {
 
-bool RequestWillUseWiFi(NetworkChangeNotifier::NetworkHandle network) {
+bool RequestWillUseWiFi(handles::NetworkHandle network) {
   NetworkChangeNotifier::ConnectionType connection_type;
-  if (network == NetworkChangeNotifier::kInvalidNetworkHandle)
+  if (network == handles::kInvalidNetworkHandle)
     connection_type = NetworkChangeNotifier::GetConnectionType();
   else
     connection_type = NetworkChangeNotifier::GetNetworkConnectionType(network);

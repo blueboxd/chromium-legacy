@@ -68,10 +68,11 @@ target(_libcxx_target_type, "libc++") {
     libs = [ "atomic" ]
   }
 
+  inputs = [ "__config_site" ]
+
   sources = [
     "trunk/src/algorithm.cpp",
     "trunk/src/any.cpp",
-    "trunk/src/assert.cpp",
     "trunk/src/atomic.cpp",
     "trunk/src/barrier.cpp",
     "trunk/src/bind.cpp",
@@ -113,6 +114,7 @@ target(_libcxx_target_type, "libc++") {
     "trunk/src/valarray.cpp",
     "trunk/src/variant.cpp",
     "trunk/src/vector.cpp",
+    "trunk/src/verbose_abort.cpp",
   ]
   include_dirs = [ "trunk/src" ]
   if (is_win) {
@@ -124,7 +126,7 @@ target(_libcxx_target_type, "libc++") {
     configs -= [ "//build/config/win:winver" ]
     configs += [ ":winver" ]
     if (libcxx_natvis_include) {
-      inputs = [
+      inputs += [
         # libc++.natvis listed as an input here instead of in
         # //build/config/c++:runtime_library to prevent unnecessary size
         # increase in generated build files.

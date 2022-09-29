@@ -99,6 +99,7 @@
 #include "services/network/public/mojom/mdns_responder.mojom.h"
 #include "services/network/public/mojom/url_loader_network_service_observer.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/fullscreen_request_token.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
@@ -153,7 +154,7 @@
 #include "media/mojo/mojom/remoting.mojom-forward.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
 #include "content/common/pepper_plugin.mojom.h"
 #endif
 
@@ -240,7 +241,6 @@ class RenderFrameProxyHost;
 class RenderProcessHost;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
-class RenderWidgetHostViewBase;
 class ServiceWorkerContainerHost;
 class SiteInfo;
 class SpeechSynthesisImpl;
@@ -268,14 +268,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public mojom::DomAutomationControllerHost,
       public BrowserAccessibilityDelegate,
       public SiteInstanceGroup::Observer,
+      public blink::mojom::AssociatedInterfaceProvider,
       public blink::mojom::BackForwardCacheControllerHost,
       public blink::mojom::LocalFrameHost,
       public blink::mojom::LocalMainFrameHost,
       public ui::AXActionHandlerBase,
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
       public mojom::PepperHost,
       public mojom::PepperHungDetectorHost,
-#endif  //  BUILDFLAG(ENABLE_PLUGINS)
+#endif  //  BUILDFLAG(ENABLE_PPAPI)
       public network::mojom::CookieAccessObserver {
  public:
   using JavaScriptDialogCallback =
@@ -447,7 +448,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::UserActivationNotificationType notification_type) override;
   bool Reload() override;
   bool IsDOMContentLoaded() override;
-  void UpdateIsAdSubframe(bool is_ad_subframe) override;
+  void UpdateIsAdFrame(bool is_ad_frame) override;
   void SetIsXrOverlaySetup() override;
   ukm::SourceId GetPageUkmSourceId() override;
   StoragePartitionImpl* GetStoragePartition() override;
@@ -611,6 +612,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker_receiver,
       blink::mojom::PolicyContainerBindParamsPtr policy_container_bind_params,
+      mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterfaceProvider>
+          associated_interface_provider_receiver,
       blink::mojom::TreeScopeType scope,
       const std::string& frame_name,
       const std::string& frame_unique_name,
@@ -889,11 +892,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Tells the renderer that this RenderFrame is being replaced with one in a
   // different renderer process.  It should run its unload handler and move to
   // a blank document.  If |proxy| is not null, it should also create a
-  // RenderFrameProxy to replace the RenderFrame and set it to |is_loading|
-  // state. The renderer process keeps the RenderFrameProxy object around as a
-  // placeholder while the frame is rendered in a different process.
+  // `blink::RemoteFrame` to replace the RenderFrame and set it to `is_loading`
+  // state. The renderer process keeps the `blink::RemoteFrame` object around as
+  // a placeholder while the frame is rendered in a different process.
   //
-  // There should always be a |proxy| to replace the old RenderFrameHost. If
+  // There should always be a `proxy` to replace the old RenderFrameHost. If
   // there are no remaining active views in the process, the proxy will be
   // short-lived and will be deleted when the unload ACK is received.
   //
@@ -906,10 +909,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Sent to a renderer when the browser needs to cancel a navigation associated
   // with a speculative RenderFrameHost that has already been asked to commit
   // via `CommitNavigation()`. The renderer will swap out the already-committed
-  // RenderFrame, replacing it with a RenderFrameProxy for `proxy`.
+  // RenderFrame, replacing it with a `blink::RemoteFrame` for `proxy`.
   //
   // TODO(https://crbug.com/1220337): This method is fundamentally incompatible
-  // with RenderDocument, as there is no RenderFrameProxy to restore for a
+  // with RenderDocument, as there is no `blink::RemoteFrame` to restore for a
   // local<->local swap.
   void UndoCommitNavigation(RenderFrameProxyHost& proxy, bool is_loading);
 
@@ -1382,6 +1385,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindBrowserInterfaceBrokerReceiver(
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>);
 
+  // Binds the receiver end of the `AssociatedInterfaceProvider` interface. This
+  // is called whenever we generate a remote/receiver pair for this interface
+  // and the remote end gets passed to the renderer.
+  void BindAssociatedInterfaceProviderReceiver(
+      mojo::PendingAssociatedReceiver<
+          blink::mojom::AssociatedInterfaceProvider>);
+
   // Binds the receiver end of the DomOperationControllerHost interface through
   // which services provided by this RenderFrameHost are exposed to the
   // corresponding RenderFrame. The caller is responsible for plumbing the
@@ -1601,7 +1611,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::TransferableMessage message);
 
   // Requests to swap the current frame into the frame tree, replacing the
-  // RenderFrameProxy it is associated with.
+  // `blink::RemoteFrame` it is associated with.
   void SwapIn();
 
   // Manual RTTI to ensure safe downcasts in tests.
@@ -1966,10 +1976,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // NavigationEntry this RenderFrameHostImpl committed.
   BackForwardCacheMetrics* GetBackForwardCacheMetrics();
 
-  blink::mojom::PreferredColorScheme GetPreferredColorScheme() const {
-    return preferred_color_scheme_;
-  }
-
   // Returns a base salt used to generate frame-specific IDs for media-device
   // enumerations.
   const std::string& GetMediaDeviceIDSaltBase() const {
@@ -2155,8 +2161,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const absl::optional<blink::LocalFrameToken>& opener_frame) override;
   void DidChangeIframeAttributes(
       const blink::FrameToken& child_frame_token,
-      network::mojom::ContentSecurityPolicyPtr parsed_csp_attribute,
-      bool anonymous) override;
+      blink::mojom::IframeAttributesPtr attributes) override;
   void DidChangeFramePolicy(const blink::FrameToken& child_frame_token,
                             const blink::FramePolicy& frame_policy) override;
   void CapturePaintPreviewOfSubframe(
@@ -2176,6 +2181,24 @@ class CONTENT_EXPORT RenderFrameHostImpl
                        const std::string& srcdoc_value) override;
   void ReceivedDelegatedCapability(
       blink::mojom::DelegatedCapability delegated_capability) override;
+  void CreatePortal(
+      mojo::PendingAssociatedReceiver<blink::mojom::Portal> pending_receiver,
+      mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client,
+      blink::mojom::RemoteFrameInterfacesFromRendererPtr
+          remote_frame_interfaces,
+      CreatePortalCallback callback) override;
+  void AdoptPortal(const blink::PortalToken& portal_token,
+                   blink::mojom::RemoteFrameInterfacesFromRendererPtr
+                       remote_frame_interfaces,
+                   AdoptPortalCallback callback) override;
+  void CreateFencedFrame(
+      mojo::PendingAssociatedReceiver<blink::mojom::FencedFrameOwnerHost>
+          pending_receiver,
+      blink::mojom::FencedFrameMode mode,
+      blink::mojom::RemoteFrameInterfacesFromRendererPtr
+          remote_frame_interfaces,
+      const blink::RemoteFrameToken& frame_token,
+      const base::UnguessableToken& devtools_frame_token) override;
 
   // blink::mojom::BackForwardCacheControllerHost:
   void EvictFromBackForwardCache(blink::mojom::RendererEvictionReason) override;
@@ -2376,7 +2399,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<network::mojom::MdnsResponder> receiver);
 #endif  // BUILDFLAG(ENABLE_MDNS)
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
   void PepperInstanceClosed(int32_t instance_id);
   void PepperSetVolume(int32_t instance_id, double volume);
 #endif
@@ -2745,21 +2768,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // mojom::FrameHost:
   void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
                        CreateNewWindowCallback callback) override;
-  void CreatePortal(
-      mojo::PendingAssociatedReceiver<blink::mojom::Portal> pending_receiver,
-      mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client,
-      mojom::RemoteFrameInterfacesFromRendererPtr remote_frame_interfaces,
-      CreatePortalCallback callback) override;
-  void AdoptPortal(
-      const blink::PortalToken& portal_token,
-      mojom::RemoteFrameInterfacesFromRendererPtr remote_frame_interfaces,
-      AdoptPortalCallback callback) override;
-  void CreateFencedFrame(
-      mojo::PendingAssociatedReceiver<blink::mojom::FencedFrameOwnerHost>
-          pending_receiver,
-      blink::mojom::FencedFrameMode mode,
-      mojom::RemoteFrameInterfacesFromRendererPtr remote_frame_interfaces,
-      CreateFencedFrameCallback callback) override;
   void GetKeepAliveHandleFactory(
       mojo::PendingReceiver<blink::mojom::KeepAliveHandleFactory> receiver)
       override;
@@ -2773,6 +2781,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker_receiver,
       blink::mojom::PolicyContainerBindParamsPtr policy_container_bind_params,
+      mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterfaceProvider>
+          associated_interface_provider_receiver,
       blink::mojom::TreeScopeType scope,
       const std::string& frame_name,
       const std::string& frame_unique_name,
@@ -2805,14 +2815,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidChangeName(const std::string& name,
                      const std::string& unique_name) override;
   void CancelInitialHistoryLoad() override;
-  void DidUpdatePreferredColorScheme(
-      blink::mojom::PreferredColorScheme preferred_color_scheme) override;
   void DidInferColorScheme(
       blink::mojom::PreferredColorScheme color_scheme) override;
   void UpdateEncoding(const std::string& encoding) override;
   void UpdateState(const blink::PageState& state) override;
   void OpenURL(blink::mojom::OpenURLParamsPtr params) override;
   void DidStopLoading() override;
+
+  // blink::mojom::AssociatedInterfaceProvider:
+  void GetAssociatedInterface(
+      const std::string& name,
+      mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterface>
+          receiver) override;
 
 #if BUILDFLAG(IS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;
@@ -2833,7 +2847,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void Clone(mojo::PendingReceiver<network::mojom::CookieAccessObserver>
                  observer) override;
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
   // mojom::PepperHost overrides:
   void InstanceCreated(
       int32_t instance_id,
@@ -2872,7 +2886,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // mojom::PepperHungDetectorHost overrides:
   void PluginHung(bool is_hung) override;
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
+#endif  // BUILDFLAG(ENABLE_PPAPI)
 
   // Resets any waiting state of this RenderFrameHost that is no longer
   // relevant.
@@ -3025,11 +3039,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // will be a nullptr when the url is not the savable URLs or valid.
   void GetSavableResourceLinksCallback(
       blink::mojom::GetSavableResourceLinksReplyPtr reply);
-
-  // Returns the RenderWidgetHostView used for accessibility. For subframes,
-  // this function will return the platform view on the main frame; for main
-  // frames, it will return the current frame's view.
-  RenderWidgetHostViewBase* GetViewForAccessibility();
 
   // Returns a raw pointer to the last Web Bluetooth Service associated with the
   // frame, or nullptr otherwise. Used for testing purposes only (see
@@ -3800,6 +3809,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Receivers must be reset in TearDownMojoConnection().
   mojo::AssociatedReceiver<mojom::FrameHost> frame_host_associated_receiver_{
       this};
+  mojo::AssociatedReceiver<blink::mojom::AssociatedInterfaceProvider>
+      associated_interface_provider_receiver_{this};
   mojo::AssociatedReceiver<blink::mojom::BackForwardCacheControllerHost>
       back_forward_cache_controller_host_associated_receiver_{this};
   mojo::AssociatedRemote<mojom::Frame> frame_;
@@ -3894,7 +3905,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   mojo::AssociatedReceiver<mojom::DomAutomationControllerHost>
       dom_automation_controller_receiver_{this};
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
   mojo::AssociatedReceiver<mojom::PepperHost> pepper_host_receiver_{this};
   std::map<int32_t, std::unique_ptr<PepperPluginInstanceHost>>
       pepper_instance_map_;
@@ -4072,17 +4083,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // or not it can be frozen.
   std::unique_ptr<FeatureObserver> feature_observer_;
 
-  // Optional PeakGpuMemoryTracker, when this frame is the main frame. Created
-  // by NavigationRequest, ownership is maintained until the frame has stopped
-  // loading. Or newer navigations occur.
+  // Optional PeakGpuMemoryTracker, when this frame is the primary main frame.
+  // Created by NavigationRequest, ownership is maintained until the frame has
+  // stopped loading. Or newer navigations occur.
   std::unique_ptr<PeakGpuMemoryTracker> loading_mem_tracker_;
 
   scoped_refptr<WebAuthRequestSecurityChecker>
       webauth_request_security_checker_;
-
-  // The preferred color scheme for this frame.
-  blink::mojom::PreferredColorScheme preferred_color_scheme_ =
-      blink::mojom::PreferredColorScheme::kLight;
 
   // Container for arbitrary document-associated feature-specific data. Should
   // be reset when committing a cross-document navigation in this

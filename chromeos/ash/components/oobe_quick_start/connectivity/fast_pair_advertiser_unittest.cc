@@ -14,6 +14,7 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
+#include "chromeos/ash/components/oobe_quick_start/connectivity/random_session_id.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_advertisement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -118,6 +119,8 @@ class FakeBluetoothAdvertisement : public device::BluetoothAdvertisement {
   bool called_unregister_error_callback_ = false;
 };
 
+namespace ash::quick_start {
+
 class FastPairAdvertiserTest : public testing::Test {
  public:
   FastPairAdvertiserTest(const FastPairAdvertiserTest&) = delete;
@@ -129,14 +132,21 @@ class FastPairAdvertiserTest : public testing::Test {
   void TestExpectedMetrics(bool should_succeed) {
     if (should_succeed) {
       expected_success_count_++;
-      histograms_.ExpectBucketCount("OOBE.QuickStart.FastPairAdvertising", true,
-                                    expected_success_count_);
+      histograms_.ExpectBucketCount(
+          "OOBE.QuickStart.FastPair.AdvertisingStart.Result", true,
+          expected_success_count_);
       return;
     }
 
     expected_failure_count_++;
-    histograms_.ExpectBucketCount("OOBE.QuickStart.FastPairAdvertising", false,
-                                  expected_failure_count_);
+    histograms_.ExpectBucketCount(
+        "OOBE.QuickStart.FastPair.AdvertisingStart.Result", false,
+        expected_failure_count_);
+    histograms_.ExpectBucketCount(
+        "OOBE.QuickStart.FastPair.AdvertisingStart.ErrorCode",
+        device::BluetoothAdvertisement::ErrorCode::
+            INVALID_ADVERTISEMENT_ERROR_CODE,
+        expected_failure_count_);
   }
 
   void SetUp() override {
@@ -160,7 +170,8 @@ class FastPairAdvertiserTest : public testing::Test {
         base::BindOnce(&FastPairAdvertiserTest::OnStartAdvertising,
                        base::Unretained(this)),
         base::BindOnce(&FastPairAdvertiserTest::OnStartAdvertisingError,
-                       base::Unretained(this)));
+                       base::Unretained(this)),
+        RandomSessionId());
     auto service_uuid_list =
         std::make_unique<device::BluetoothAdvertisement::UUIDList>();
     service_uuid_list->push_back(kFastPairServiceUuid);
@@ -188,6 +199,11 @@ class FastPairAdvertiserTest : public testing::Test {
     return called_on_start_advertising_error_;
   }
   bool called_on_stop_advertising() { return called_on_stop_advertising_; }
+
+  std::vector<uint8_t> GetManufacturerMetadata(
+      const RandomSessionId& random_id) {
+    return fast_pair_advertiser_->GenerateManufacturerMetadata(random_id);
+  }
 
   scoped_refptr<NiceMock<MockBluetoothAdapterWithAdvertisements>> mock_adapter_;
   std::unique_ptr<FastPairAdvertiser> fast_pair_advertiser_;
@@ -228,7 +244,8 @@ TEST_F(FastPairAdvertiserTest, TestStartAdvertising_Error) {
 TEST_F(FastPairAdvertiserTest, TestStartAdvertising_DeleteInErrorCallback) {
   fast_pair_advertiser_->StartAdvertising(
       base::DoNothing(),
-      base::BindLambdaForTesting([&]() { fast_pair_advertiser_.reset(); }));
+      base::BindLambdaForTesting([&]() { fast_pair_advertiser_.reset(); }),
+      RandomSessionId());
 
   std::move(register_args_->error_callback)
       .Run(device::BluetoothAdvertisement::ErrorCode::
@@ -282,3 +299,18 @@ TEST_F(FastPairAdvertiserTest, TestAdvertisementReleased) {
   EXPECT_FALSE(called_on_stop_advertising());
   EXPECT_FALSE(fake_advertisement->HasObserver(fast_pair_advertiser_.get()));
 }
+
+TEST_F(FastPairAdvertiserTest, TestGenerateManufacturerMetadata) {
+  RandomSessionId random_id;
+  base::span<const uint8_t, RandomSessionId::kLength> random_id_bytes =
+      random_id.AsBytes();
+  std::vector<uint8_t> manufacturer_metadata =
+      GetManufacturerMetadata(random_id);
+
+  EXPECT_EQ(random_id_bytes.size(), manufacturer_metadata.size());
+  for (size_t i = 0; i < random_id_bytes.size(); i++) {
+    EXPECT_EQ(random_id_bytes[i], manufacturer_metadata[i]);
+  }
+}
+
+}  // namespace ash::quick_start

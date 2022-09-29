@@ -39,6 +39,17 @@ enum ChromeDistanceMetric {
   // Width of the horizontal padding in a dropdown button between the down arrow
   // and the button's border.
   DISTANCE_DROPDOWN_BUTTON_RIGHT_MARGIN,
+  // Width and height of a button's icon in the extensions menu.
+  DISTANCE_EXTENSIONS_MENU_BUTTON_ICON_SIZE,
+  // Width and height of an extension's icon in the extensions menu. This are
+  // larger than menu button's icons because it contains internal padding to
+  // provide space for badging.
+  DISTANCE_EXTENSIONS_MENU_EXTENSION_ICON_SIZE,
+  // Size difference between the two types of icons in the menu. This is used as
+  // horizontal and vertical margins to align extensions menu rows.
+  DISTANCE_EXTENSIONS_MENU_ICON_SPACING,
+  // Vertical and horizontal margin for menu buttons.
+  DISTANCE_EXTENSIONS_MENU_BUTTON_MARGIN,
   // Smaller horizontal spacing between other controls that are logically
   // related.
   DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL,
@@ -77,9 +88,8 @@ enum ChromeDistanceMetric {
   DISTANCE_OMNIBOX_TWO_LINE_CELL_VERTICAL_PADDING,
   // Width and Height of a vector icon in the side panel header.
   DISTANCE_SIDE_PANEL_HEADER_VECTOR_ICON_SIZE,
-  // Horizontal right margin for separating side panel header border from close
-  // button.
-  DISTANCE_SIDE_PANEL_HEADER_RIGHT_MARGIN
+  // Horizontal spacing for separating side panel header border from controls.
+  DISTANCE_SIDE_PANEL_HEADER_INTERIOR_MARGIN_HORIZONTAL
 };
 
 class ChromeLayoutProvider : public views::LayoutProvider {

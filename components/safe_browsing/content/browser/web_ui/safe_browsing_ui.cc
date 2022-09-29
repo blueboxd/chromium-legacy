@@ -837,6 +837,10 @@ std::string SerializeClientDownloadRequest(const ClientDownloadRequest& cdr) {
   base::Value::Dict dict;
   if (cdr.has_url())
     dict.Set("url", cdr.url());
+  if (cdr.digests().has_sha256()) {
+    const std::string& sha256 = cdr.digests().sha256();
+    dict.Set("digests.sha256", base::HexEncode(sha256.c_str(), sha256.size()));
+  }
   if (cdr.has_download_type())
     dict.Set("download_type", cdr.download_type());
   if (cdr.has_length())
@@ -1445,7 +1449,7 @@ base::Value SerializeVerdict(const PasswordReuseLookup password_reuse_lookup) {
   return base::Value(verdict);
 }
 
-base::Value SerializePGEvent(const sync_pb::UserEventSpecifics& event) {
+base::Value::Dict SerializePGEvent(const sync_pb::UserEventSpecifics& event) {
   base::Value::Dict result;
 
   base::Time timestamp = base::Time::FromDeltaSinceWindowsEpoch(
@@ -1540,10 +1544,11 @@ base::Value SerializePGEvent(const sync_pb::UserEventSpecifics& event) {
   serializer.set_pretty_print(true);
   serializer.Serialize(event_dict);
   result.Set("message", event_serialized);
-  return base::Value(std::move(result));
+  return result;
 }
 
-base::Value SerializeSecurityEvent(const sync_pb::GaiaPasswordReuse& event) {
+base::Value::Dict SerializeSecurityEvent(
+    const sync_pb::GaiaPasswordReuse& event) {
   base::Value::Dict result;
 
   base::Value::Dict event_dict;
@@ -1561,7 +1566,7 @@ base::Value SerializeSecurityEvent(const sync_pb::GaiaPasswordReuse& event) {
   serializer.set_pretty_print(true);
   serializer.Serialize(event_dict);
   result.Set("message", event_serialized);
-  return base::Value(std::move(result));
+  return result;
 }
 
 base::Value::Dict SerializeFrame(
@@ -1766,7 +1771,7 @@ base::Value::Dict SerializeUrlDisplayExperiment(
   return d;
 }
 
-base::Value SerializeReferringAppInfo(
+base::Value::Dict SerializeReferringAppInfo(
     const LoginReputationClientRequest::ReferringAppInfo& info) {
   base::Value::Dict dict;
 
@@ -1789,7 +1794,7 @@ base::Value SerializeReferringAppInfo(
   dict.Set("referring_app_source", source);
   dict.Set("referring_app_info", info.referring_app_name());
 
-  return base::Value(std::move(dict));
+  return dict;
 }
 
 std::string SerializePGPing(
@@ -1983,15 +1988,15 @@ std::string SerializeRTLookupResponse(const RTLookupResponse& response) {
   return response_serialized;
 }
 
-base::Value SerializeLogMessage(const base::Time& timestamp,
-                                const std::string& message) {
+base::Value::Dict SerializeLogMessage(const base::Time& timestamp,
+                                      const std::string& message) {
   base::Value::Dict result;
   result.Set("time", timestamp.ToJsTime());
   result.Set("message", message);
-  return base::Value(std::move(result));
+  return result;
 }
 
-base::Value SerializeReportingEvent(const base::Value::Dict& event) {
+base::Value::Dict SerializeReportingEvent(const base::Value::Dict& event) {
   base::Value::Dict result;
 
   std::string event_serialized;
@@ -2001,7 +2006,7 @@ base::Value SerializeReportingEvent(const base::Value::Dict& event) {
 
   result.Set("message", event_serialized);
 
-  return base::Value(std::move(result));
+  return result;
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
@@ -2162,8 +2167,8 @@ std::string SerializeContentAnalysisResponse(
   return response_serialized;
 }
 
-base::Value SerializeDeepScanDebugData(const std::string& token,
-                                       const DeepScanDebugData& data) {
+base::Value::Dict SerializeDeepScanDebugData(const std::string& token,
+                                             const DeepScanDebugData& data) {
   base::Value::Dict value;
   value.Set("token", token);
 
@@ -2190,7 +2195,7 @@ base::Value SerializeDeepScanDebugData(const std::string& token,
               SerializeContentAnalysisResponse(data.response.value()));
   }
 
-  return base::Value(std::move(value));
+  return value;
 }
 
 #endif
@@ -2300,8 +2305,7 @@ void SafeBrowsingUIHandler::OnGetCookie(
   response.Append(time);
 
   AllowJavascript();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(response)));
+  ResolveJavascriptCallback(base::Value(callback_id), response);
 }
 
 void SafeBrowsingUIHandler::GetSavedPasswords(const base::Value::List& args) {
@@ -2318,8 +2322,7 @@ void SafeBrowsingUIHandler::GetSavedPasswords(const base::Value::List& args) {
   AllowJavascript();
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(saved_passwords)));
+  ResolveJavascriptCallback(base::Value(callback_id), saved_passwords);
 }
 
 void SafeBrowsingUIHandler::GetDatabaseManagerInfo(
@@ -2354,8 +2357,7 @@ void SafeBrowsingUIHandler::GetDatabaseManagerInfo(
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
 
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(database_manager_info)));
+  ResolveJavascriptCallback(base::Value(callback_id), database_manager_info);
 }
 
 std::string SerializeDownloadUrlChecked(const std::vector<GURL>& urls,
@@ -2440,8 +2442,7 @@ void SafeBrowsingUIHandler::GetDownloadUrlsChecked(
   AllowJavascript();
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(urls_checked_value)));
+  ResolveJavascriptCallback(base::Value(callback_id), urls_checked_value);
 }
 
 void SafeBrowsingUIHandler::GetSentClientDownloadRequests(
@@ -2458,8 +2459,7 @@ void SafeBrowsingUIHandler::GetSentClientDownloadRequests(
   AllowJavascript();
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(cdrs_sent)));
+  ResolveJavascriptCallback(base::Value(callback_id), cdrs_sent);
 }
 
 void SafeBrowsingUIHandler::GetReceivedClientDownloadResponses(
@@ -2476,8 +2476,7 @@ void SafeBrowsingUIHandler::GetReceivedClientDownloadResponses(
   AllowJavascript();
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(cdrs_received)));
+  ResolveJavascriptCallback(base::Value(callback_id), cdrs_received);
 }
 
 void SafeBrowsingUIHandler::GetSentClientPhishingRequests(
@@ -2494,8 +2493,7 @@ void SafeBrowsingUIHandler::GetSentClientPhishingRequests(
   AllowJavascript();
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(cprs_sent)));
+  ResolveJavascriptCallback(base::Value(callback_id), cprs_sent);
 }
 
 void SafeBrowsingUIHandler::GetReceivedClientPhishingResponses(
@@ -2512,8 +2510,7 @@ void SafeBrowsingUIHandler::GetReceivedClientPhishingResponses(
   AllowJavascript();
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(cprs_received)));
+  ResolveJavascriptCallback(base::Value(callback_id), cprs_received);
 }
 
 void SafeBrowsingUIHandler::GetSentCSBRRs(const base::Value::List& args) {
@@ -2529,8 +2526,7 @@ void SafeBrowsingUIHandler::GetSentCSBRRs(const base::Value::List& args) {
   AllowJavascript();
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(sent_reports)));
+  ResolveJavascriptCallback(base::Value(callback_id), sent_reports);
 }
 
 void SafeBrowsingUIHandler::GetSentHitReports(const base::Value::List& args) {
@@ -2546,8 +2542,7 @@ void SafeBrowsingUIHandler::GetSentHitReports(const base::Value::List& args) {
   AllowJavascript();
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(sent_reports)));
+  ResolveJavascriptCallback(base::Value(callback_id), sent_reports);
 }
 
 void SafeBrowsingUIHandler::GetPGEvents(const base::Value::List& args) {
@@ -2562,8 +2557,7 @@ void SafeBrowsingUIHandler::GetPGEvents(const base::Value::List& args) {
   AllowJavascript();
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(events_sent)));
+  ResolveJavascriptCallback(base::Value(callback_id), events_sent);
 }
 
 void SafeBrowsingUIHandler::GetSecurityEvents(const base::Value::List& args) {
@@ -2578,8 +2572,7 @@ void SafeBrowsingUIHandler::GetSecurityEvents(const base::Value::List& args) {
   AllowJavascript();
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(events_sent)));
+  ResolveJavascriptCallback(base::Value(callback_id), events_sent);
 }
 
 void SafeBrowsingUIHandler::GetPGPings(const base::Value::List& args) {
@@ -2598,8 +2591,7 @@ void SafeBrowsingUIHandler::GetPGPings(const base::Value::List& args) {
   AllowJavascript();
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(pings_sent)));
+  ResolveJavascriptCallback(base::Value(callback_id), pings_sent);
 }
 
 void SafeBrowsingUIHandler::GetPGResponses(const base::Value::List& args) {
@@ -2617,8 +2609,7 @@ void SafeBrowsingUIHandler::GetPGResponses(const base::Value::List& args) {
   AllowJavascript();
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(responses_sent)));
+  ResolveJavascriptCallback(base::Value(callback_id), responses_sent);
 }
 
 void SafeBrowsingUIHandler::GetRTLookupPings(const base::Value::List& args) {
@@ -2637,8 +2628,7 @@ void SafeBrowsingUIHandler::GetRTLookupPings(const base::Value::List& args) {
   AllowJavascript();
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(pings_sent)));
+  ResolveJavascriptCallback(base::Value(callback_id), pings_sent);
 }
 
 void SafeBrowsingUIHandler::GetRTLookupResponses(
@@ -2657,8 +2647,7 @@ void SafeBrowsingUIHandler::GetRTLookupResponses(
   AllowJavascript();
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(responses_sent)));
+  ResolveJavascriptCallback(base::Value(callback_id), responses_sent);
 }
 
 void SafeBrowsingUIHandler::GetReferrerChain(const base::Value::List& args) {
@@ -2698,12 +2687,15 @@ void SafeBrowsingUIHandler::GetReferrerChain(const base::Value::List& args) {
 }
 
 void SafeBrowsingUIHandler::GetReferringAppInfo(const base::Value::List& args) {
-  base::Value referring_app_value;
 #if BUILDFLAG(IS_ANDROID)
+  base::Value::Dict referring_app_value;
   LoginReputationClientRequest::ReferringAppInfo info =
       WebUIInfoSingleton::GetInstance()->GetReferringAppInfo(
           web_ui()->GetWebContents());
   referring_app_value = SerializeReferringAppInfo(info);
+#else
+  base::Value referring_app_value;
+  referring_app_value = base::Value("Not supported on current platform.");
 #endif
   std::string referring_app_serialized;
   JSONStringValueSerializer serializer(&referring_app_serialized);
@@ -2727,8 +2719,7 @@ void SafeBrowsingUIHandler::GetReportingEvents(const base::Value::List& args) {
   AllowJavascript();
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(reporting_events)));
+  ResolveJavascriptCallback(base::Value(callback_id), reporting_events);
 }
 
 void SafeBrowsingUIHandler::GetLogMessages(const base::Value::List& args) {
@@ -2744,8 +2735,7 @@ void SafeBrowsingUIHandler::GetLogMessages(const base::Value::List& args) {
   AllowJavascript();
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(messages_received)));
+  ResolveJavascriptCallback(base::Value(callback_id), messages_received);
 }
 
 void SafeBrowsingUIHandler::GetDeepScans(const base::Value::List& args) {
@@ -2761,8 +2751,7 @@ void SafeBrowsingUIHandler::GetDeepScans(const base::Value::List& args) {
   AllowJavascript();
   DCHECK(!args.empty());
   std::string callback_id = args[0].GetString();
-  ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(std::move(pings_sent)));
+  ResolveJavascriptCallback(base::Value(callback_id), pings_sent);
 }
 
 void SafeBrowsingUIHandler::NotifyDownloadUrlCheckedJsListener(
@@ -2837,7 +2826,7 @@ void SafeBrowsingUIHandler::NotifyPGPingJsListener(
   request_list.Append(SerializePGPing(request));
 
   AllowJavascript();
-  FireWebUIListener("pg-pings-update", base::Value(std::move(request_list)));
+  FireWebUIListener("pg-pings-update", request_list);
 }
 
 void SafeBrowsingUIHandler::NotifyPGResponseJsListener(
@@ -2848,8 +2837,7 @@ void SafeBrowsingUIHandler::NotifyPGResponseJsListener(
   response_list.Append(SerializePGResponse(response));
 
   AllowJavascript();
-  FireWebUIListener("pg-responses-update",
-                    base::Value(std::move(response_list)));
+  FireWebUIListener("pg-responses-update", response_list);
 }
 
 void SafeBrowsingUIHandler::NotifyRTLookupPingJsListener(
@@ -2860,8 +2848,7 @@ void SafeBrowsingUIHandler::NotifyRTLookupPingJsListener(
   request_list.Append(SerializeRTLookupPing(request));
 
   AllowJavascript();
-  FireWebUIListener("rt-lookup-pings-update",
-                    base::Value(std::move(request_list)));
+  FireWebUIListener("rt-lookup-pings-update", request_list);
 }
 
 void SafeBrowsingUIHandler::NotifyRTLookupResponseJsListener(
@@ -2872,8 +2859,7 @@ void SafeBrowsingUIHandler::NotifyRTLookupResponseJsListener(
   response_list.Append(SerializeRTLookupResponse(response));
 
   AllowJavascript();
-  FireWebUIListener("rt-lookup-responses-update",
-                    base::Value(std::move(response_list)));
+  FireWebUIListener("rt-lookup-responses-update", response_list);
 }
 
 void SafeBrowsingUIHandler::NotifyLogMessageJsListener(

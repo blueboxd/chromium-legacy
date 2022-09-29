@@ -18,11 +18,14 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "content/common/private_aggregation_features.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
 #include "content/services/auction_worklet/worklet_devtools_debug_test_util.h"
 #include "content/services/auction_worklet/worklet_test_util.h"
 #include "content/services/auction_worklet/worklet_v8_debug_test_util.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "net/http/http_status_code.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -39,6 +42,9 @@ using testing::StartsWith;
 
 namespace auction_worklet {
 namespace {
+
+using PrivateAggregationRequests =
+    std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>;
 
 // Very short time used by some tests that want to wait until just before a
 // timer triggers.
@@ -93,6 +99,57 @@ std::string CreateReportToScript(const std::string& raw_return_value,
          base::StringPrintf(kBasicSellerScript, extra_code.c_str(),
                             raw_return_value.c_str());
 }
+
+// A ScoreAdClient that takes a callback to call in OnScoreAdComplete().
+class TestScoreAdClient : public mojom::ScoreAdClient {
+ public:
+  using ScoreAdCompleteCallback = base::OnceCallback<void(
+      double score,
+      auction_worklet::mojom::ComponentAuctionModifiedBidParamsPtr
+          component_auction_modified_bid_params,
+      uint32_t scoring_signals_data_version,
+      bool has_scoring_signals_data_version,
+      const absl::optional<GURL>& debug_loss_report_url,
+      const absl::optional<GURL>& debug_win_report_url,
+      PrivateAggregationRequests pa_requests,
+      const std::vector<std::string>& errors)>;
+
+  explicit TestScoreAdClient(ScoreAdCompleteCallback score_ad_complete_callback)
+      : score_ad_complete_callback_(std::move(score_ad_complete_callback)) {}
+
+  ~TestScoreAdClient() override = default;
+
+  // Helper that creates a TestScoreAdClient owned by a SelfOwnedReceiver.
+  static mojo::PendingRemote<mojom::ScoreAdClient> Create(
+      ScoreAdCompleteCallback score_ad_complete_callback) {
+    mojo::PendingRemote<mojom::ScoreAdClient> client_remote;
+    mojo::MakeSelfOwnedReceiver(std::make_unique<TestScoreAdClient>(
+                                    std::move(score_ad_complete_callback)),
+                                client_remote.InitWithNewPipeAndPassReceiver());
+    return client_remote;
+  }
+
+  // mojom::ScoreAdClient implementation:
+  void OnScoreAdComplete(
+      double score,
+      auction_worklet::mojom::ComponentAuctionModifiedBidParamsPtr
+          component_auction_modified_bid_params,
+      uint32_t scoring_signals_data_version,
+      bool has_scoring_signals_data_version,
+      const absl::optional<GURL>& debug_loss_report_url,
+      const absl::optional<GURL>& debug_win_report_url,
+      PrivateAggregationRequests pa_requests,
+      const std::vector<std::string>& errors) override {
+    std::move(score_ad_complete_callback_)
+        .Run(score, std::move(component_auction_modified_bid_params),
+             scoring_signals_data_version, has_scoring_signals_data_version,
+             debug_loss_report_url, debug_win_report_url,
+             std::move(pa_requests), errors);
+  }
+
+ private:
+  ScoreAdCompleteCallback score_ad_complete_callback_;
+};
 
 class SellerWorkletTest : public testing::Test {
  public:
@@ -166,13 +223,13 @@ class SellerWorkletTest : public testing::Test {
       absl::optional<uint32_t> expected_data_version = {},
       const absl::optional<GURL>& expected_debug_loss_report_url =
           absl::nullopt,
-      const absl::optional<GURL>& expected_debug_win_report_url =
-          absl::nullopt) {
+      const absl::optional<GURL>& expected_debug_win_report_url = absl::nullopt,
+      PrivateAggregationRequests expected_pa_requests = {}) {
     RunScoreAdWithJavascriptExpectingResult(
         CreateScoreAdScript(raw_return_value), expected_score, expected_errors,
         std::move(expected_component_auction_modified_bid_params),
         expected_data_version, expected_debug_loss_report_url,
-        expected_debug_win_report_url);
+        expected_debug_win_report_url, std::move(expected_pa_requests));
   }
 
   // Behaves just like RunScoreAdWithReturnValueExpectingResult(), but
@@ -192,8 +249,8 @@ class SellerWorkletTest : public testing::Test {
       absl::optional<uint32_t> expected_data_version = {},
       const absl::optional<GURL>& expected_debug_loss_report_url =
           absl::nullopt,
-      const absl::optional<GURL>& expected_debug_win_report_url =
-          absl::nullopt) {
+      const absl::optional<GURL>& expected_debug_win_report_url = absl::nullopt,
+      PrivateAggregationRequests expected_pa_requests = {}) {
     AddJavascriptResponse(&url_loader_factory_, decision_logic_url_,
                           CreateScoreAdScript(raw_return_value));
     auto seller_worklet = CreateWorklet();
@@ -203,7 +260,8 @@ class SellerWorkletTest : public testing::Test {
         seller_worklet.get(), expected_score, expected_errors,
         std::move(expected_component_auction_modified_bid_params),
         expected_data_version, expected_debug_loss_report_url,
-        expected_debug_win_report_url, run_loop.QuitClosure());
+        expected_debug_win_report_url, std::move(expected_pa_requests),
+        run_loop.QuitClosure());
     task_environment_.FastForwardBy(expected_duration - kTinyTime);
     EXPECT_FALSE(run_loop.AnyQuitCalled());
     task_environment_.FastForwardBy(kTinyTime);
@@ -223,8 +281,8 @@ class SellerWorkletTest : public testing::Test {
       absl::optional<uint32_t> expected_data_version = {},
       const absl::optional<GURL>& expected_debug_loss_report_url =
           absl::nullopt,
-      const absl::optional<GURL>& expected_debug_win_report_url =
-          absl::nullopt) {
+      const absl::optional<GURL>& expected_debug_win_report_url = absl::nullopt,
+      PrivateAggregationRequests expected_pa_requests = {}) {
     SCOPED_TRACE(javascript);
     AddJavascriptResponse(&url_loader_factory_, decision_logic_url_,
                           javascript);
@@ -232,7 +290,7 @@ class SellerWorkletTest : public testing::Test {
         expected_score, expected_errors,
         std::move(expected_component_auction_modified_bid_params),
         expected_data_version, expected_debug_loss_report_url,
-        expected_debug_win_report_url);
+        expected_debug_win_report_url, std::move(expected_pa_requests));
   }
 
   // Runs score_ad() script, checking result and invoking provided closure
@@ -246,6 +304,7 @@ class SellerWorkletTest : public testing::Test {
       absl::optional<uint32_t> expected_data_version,
       const absl::optional<GURL>& expected_debug_loss_report_url,
       const absl::optional<GURL>& expected_debug_win_report_url,
+      PrivateAggregationRequests expected_pa_requests,
       base::OnceClosure done_closure) {
     seller_worklet->ScoreAd(
         ad_metadata_, bid_, auction_ad_config_non_shared_params_,
@@ -254,13 +313,14 @@ class SellerWorkletTest : public testing::Test {
         browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
         seller_timeout_,
         /*trace_id=*/1,
-        base::BindOnce(
+        TestScoreAdClient::Create(base::BindOnce(
             [](double expected_score,
                mojom::ComponentAuctionModifiedBidParamsPtr
                    expected_component_auction_modified_bid_params,
                absl::optional<uint32_t> expected_data_version,
                const absl::optional<GURL>& expected_debug_loss_report_url,
                const absl::optional<GURL>& expected_debug_win_report_url,
+               PrivateAggregationRequests expected_pa_requests,
                std::vector<std::string> expected_errors,
                base::OnceClosure done_closure, double score,
                mojom::ComponentAuctionModifiedBidParamsPtr
@@ -268,6 +328,7 @@ class SellerWorkletTest : public testing::Test {
                uint32_t data_version, bool has_data_version,
                const absl::optional<GURL>& debug_loss_report_url,
                const absl::optional<GURL>& debug_win_report_url,
+               PrivateAggregationRequests pa_requests,
                const std::vector<std::string>& errors) {
               absl::optional<uint32_t> maybe_data_version;
               if (has_data_version)
@@ -291,14 +352,15 @@ class SellerWorkletTest : public testing::Test {
               EXPECT_EQ(expected_debug_loss_report_url, debug_loss_report_url);
               EXPECT_EQ(expected_debug_win_report_url, debug_win_report_url);
               EXPECT_EQ(expected_data_version, maybe_data_version);
+              EXPECT_EQ(expected_pa_requests, pa_requests);
               EXPECT_EQ(expected_errors, errors);
               std::move(done_closure).Run();
             },
             expected_score,
             std::move(expected_component_auction_modified_bid_params),
             expected_data_version, expected_debug_loss_report_url,
-            expected_debug_win_report_url, expected_errors,
-            std::move(done_closure)));
+            expected_debug_win_report_url, std::move(expected_pa_requests),
+            expected_errors, std::move(done_closure))));
   }
 
   void RunScoreAdOnWorkletExpectingCallbackNeverInvoked(
@@ -310,16 +372,18 @@ class SellerWorkletTest : public testing::Test {
         browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
         seller_timeout_,
         /*trace_id=*/1,
-        base::BindOnce([](double score,
-                          mojom::ComponentAuctionModifiedBidParamsPtr
-                              component_auction_modified_bid_params,
-                          uint32_t scoring_signals_data_version,
-                          bool has_scoring_signals_data_version,
-                          const absl::optional<GURL>& debug_loss_report_url,
-                          const absl::optional<GURL>& debug_win_report_url,
-                          const std::vector<std::string>& errors) {
-          ADD_FAILURE() << "This should not be invoked";
-        }));
+        TestScoreAdClient::Create(
+            base::BindOnce([](double score,
+                              mojom::ComponentAuctionModifiedBidParamsPtr
+                                  component_auction_modified_bid_params,
+                              uint32_t scoring_signals_data_version,
+                              bool has_scoring_signals_data_version,
+                              const absl::optional<GURL>& debug_loss_report_url,
+                              const absl::optional<GURL>& debug_win_report_url,
+                              PrivateAggregationRequests pa_requests,
+                              const std::vector<std::string>& errors) {
+              ADD_FAILURE() << "This should not be invoked";
+            })));
   }
 
   // Loads and runs a scode_ad() script, expecting the supplied result.
@@ -334,14 +398,15 @@ class SellerWorkletTest : public testing::Test {
       absl::optional<uint32_t> expected_data_version = absl::nullopt,
       const absl::optional<GURL>& expected_debug_loss_report_url =
           absl::nullopt,
-      const absl::optional<GURL>& expected_debug_win_report_url =
-          absl::nullopt) {
+      const absl::optional<GURL>& expected_debug_win_report_url = absl::nullopt,
+      PrivateAggregationRequests expected_pa_requests = {}) {
     base::RunLoop run_loop;
     RunScoreAdOnWorkletAsync(
         seller_worklet, expected_score, expected_errors,
         std::move(expected_component_auction_modified_bid_params),
         expected_data_version, expected_debug_loss_report_url,
-        expected_debug_win_report_url, run_loop.QuitClosure());
+        expected_debug_win_report_url, std::move(expected_pa_requests),
+        run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -356,15 +421,15 @@ class SellerWorkletTest : public testing::Test {
       absl::optional<uint32_t> expected_data_version = absl::nullopt,
       const absl::optional<GURL>& expected_debug_loss_report_url =
           absl::nullopt,
-      const absl::optional<GURL>& expected_debug_win_report_url =
-          absl::nullopt) {
+      const absl::optional<GURL>& expected_debug_win_report_url = absl::nullopt,
+      PrivateAggregationRequests expected_pa_requests = {}) {
     auto seller_worklet = CreateWorklet();
     ASSERT_TRUE(seller_worklet);
     RunScoreAdExpectingResultOnWorklet(
         seller_worklet.get(), expected_score, expected_errors,
         std::move(expected_component_auction_modified_bid_params),
         expected_data_version, expected_debug_loss_report_url,
-        expected_debug_win_report_url);
+        expected_debug_win_report_url, std::move(expected_pa_requests));
   }
 
   // Configures `url_loader_factory_` to return a report_result() script created
@@ -377,12 +442,14 @@ class SellerWorkletTest : public testing::Test {
       const absl::optional<GURL>& expected_report_url,
       const base::flat_map<std::string, GURL>& expected_ad_beacon_map =
           base::flat_map<std::string, GURL>(),
+      PrivateAggregationRequests expected_pa_requests = {},
       const std::vector<std::string>& expected_errors =
           std::vector<std::string>()) {
     RunReportResultWithJavascriptExpectingResult(
         CreateReportToScript(raw_return_value, extra_code),
         expected_signals_for_winner, expected_report_url,
-        expected_ad_beacon_map, expected_errors);
+        expected_ad_beacon_map, std::move(expected_pa_requests),
+        expected_errors);
   }
 
   // Configures `url_loader_factory_` to return the provided script, and then
@@ -394,6 +461,7 @@ class SellerWorkletTest : public testing::Test {
       const absl::optional<GURL>& expected_report_url,
       const base::flat_map<std::string, GURL>& expected_ad_beacon_map =
           base::flat_map<std::string, GURL>(),
+      PrivateAggregationRequests expected_pa_requests = {},
       const std::vector<std::string>& expected_errors =
           std::vector<std::string>()) {
     SCOPED_TRACE(javascript);
@@ -401,6 +469,7 @@ class SellerWorkletTest : public testing::Test {
                           javascript);
     RunReportResultExpectingResult(expected_signals_for_winner,
                                    expected_report_url, expected_ad_beacon_map,
+                                   std::move(expected_pa_requests),
                                    expected_errors);
   }
 
@@ -412,6 +481,7 @@ class SellerWorkletTest : public testing::Test {
       const absl::optional<std::string>& expected_signals_for_winner,
       const absl::optional<GURL>& expected_report_url,
       const base::flat_map<std::string, GURL>& expected_ad_beacon_map,
+      PrivateAggregationRequests expected_pa_requests,
       const std::vector<std::string>& expected_errors,
       base::OnceClosure done_closure) {
     seller_worklet->ReportResult(
@@ -428,20 +498,24 @@ class SellerWorkletTest : public testing::Test {
             [](const absl::optional<std::string>& expected_signals_for_winner,
                const absl::optional<GURL>& expected_report_url,
                const base::flat_map<std::string, GURL>& expected_ad_beacon_map,
+               PrivateAggregationRequests expected_pa_requests,
                const std::vector<std::string>& expected_errors,
                base::OnceClosure done_closure,
                const absl::optional<std::string>& signals_for_winner,
                const absl::optional<GURL>& report_url,
                const base::flat_map<std::string, GURL>& ad_beacon_map,
+               PrivateAggregationRequests pa_requests,
                const std::vector<std::string>& errors) {
               EXPECT_EQ(expected_signals_for_winner, signals_for_winner);
               EXPECT_EQ(expected_report_url, report_url);
               EXPECT_EQ(expected_ad_beacon_map, ad_beacon_map);
+              EXPECT_EQ(expected_pa_requests, pa_requests);
               EXPECT_EQ(expected_errors, errors);
               std::move(done_closure).Run();
             },
             expected_signals_for_winner, expected_report_url,
-            expected_ad_beacon_map, expected_errors, std::move(done_closure)));
+            expected_ad_beacon_map, std::move(expected_pa_requests),
+            expected_errors, std::move(done_closure)));
   }
 
   void RunReportResultExpectingCallbackNeverInvoked(
@@ -460,6 +534,7 @@ class SellerWorkletTest : public testing::Test {
             [](const absl::optional<std::string>& signals_for_winner,
                const absl::optional<GURL>& report_url,
                const base::flat_map<std::string, GURL>& ad_beacon_map,
+               PrivateAggregationRequests pa_requests,
                const std::vector<std::string>& errors) {
               ADD_FAILURE() << "This should not be invoked";
             }));
@@ -471,6 +546,7 @@ class SellerWorkletTest : public testing::Test {
       const absl::optional<GURL>& expected_report_url,
       const base::flat_map<std::string, GURL>& expected_ad_beacon_map =
           base::flat_map<std::string, GURL>(),
+      PrivateAggregationRequests expected_pa_requests = {},
       const std::vector<std::string>& expected_errors =
           std::vector<std::string>()) {
     auto seller_worklet = CreateWorklet();
@@ -479,7 +555,8 @@ class SellerWorkletTest : public testing::Test {
     base::RunLoop run_loop;
     RunReportResultExpectingResultAsync(
         seller_worklet.get(), expected_signals_for_winner, expected_report_url,
-        expected_ad_beacon_map, expected_errors, run_loop.QuitClosure());
+        expected_ad_beacon_map, std::move(expected_pa_requests),
+        expected_errors, run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -1203,6 +1280,7 @@ TEST_F(SellerWorkletTest, ScoreAdParallelBeforeLoadComplete) {
                              /*expected_data_version=*/absl::nullopt,
                              /*expected_debug_loss_report_url=*/absl::nullopt,
                              /*expected_debug_win_report_url=*/absl::nullopt,
+                             /*expected_pa_requests=*/{},
                              base::BindLambdaForTesting([&]() {
                                ++num_completed_worklets;
                                if (num_completed_worklets == kNumWorklets)
@@ -1244,6 +1322,7 @@ TEST_F(SellerWorkletTest, ScoreAdParallelAfterLoadComplete) {
                              /*expected_data_version=*/absl::nullopt,
                              /*expected_debug_loss_report_url=*/absl::nullopt,
                              /*expected_debug_win_report_url=*/absl::nullopt,
+                             /*expected_pa_requests=*/{},
                              base::BindLambdaForTesting([&]() {
                                ++num_completed_worklets;
                                if (num_completed_worklets == kNumWorklets)
@@ -1307,6 +1386,7 @@ TEST_F(SellerWorkletTest, ScoreAdParallelTrustedScoringSignalsNotBatched) {
                              /*expected_data_version=*/i,
                              /*expected_debug_loss_report_url=*/absl::nullopt,
                              /*expected_debug_win_report_url=*/absl::nullopt,
+                             /*expected_pa_requests=*/{},
                              base::BindLambdaForTesting([&]() {
                                ++num_completed_worklets;
                                if (num_completed_worklets == kNumWorklets)
@@ -1373,6 +1453,7 @@ TEST_F(SellerWorkletTest, ScoreAdParallelTrustedScoringSignalsBatched1) {
                              /*expected_data_version=*/absl::nullopt,
                              /*expected_debug_loss_report_url=*/absl::nullopt,
                              /*expected_debug_win_report_url=*/absl::nullopt,
+                             /*expected_pa_requests=*/{},
                              base::BindLambdaForTesting([&]() {
                                ++num_completed_worklets;
                                if (num_completed_worklets == kNumWorklets)
@@ -1430,6 +1511,7 @@ TEST_F(SellerWorkletTest, ScoreAdParallelTrustedScoringSignalsBatched2) {
                              /*expected_data_version=*/10,
                              /*expected_debug_loss_report_url=*/absl::nullopt,
                              /*expected_debug_win_report_url=*/absl::nullopt,
+                             /*expected_pa_requests=*/{},
                              base::BindLambdaForTesting([&]() {
                                ++num_completed_worklets;
                                if (num_completed_worklets == kNumWorklets)
@@ -1496,6 +1578,7 @@ TEST_F(SellerWorkletTest, ScoreAdParallelTrustedScoringSignalsBatched3) {
                              /*expected_data_version=*/10,
                              /*expected_debug_loss_report_url=*/absl::nullopt,
                              /*expected_debug_win_report_url=*/absl::nullopt,
+                             /*expected_pa_requests=*/{},
                              base::BindLambdaForTesting([&]() {
                                ++num_completed_worklets;
                                if (num_completed_worklets == kNumWorklets)
@@ -1568,6 +1651,7 @@ TEST_F(SellerWorkletTest, ReportResultParallel) {
           /*expected_report_url=*/
           GURL("https://" + base::NumberToString(bid_)),
           /*expected_ad_beacon_map=*/{},
+          /*expected_pa_requests=*/{},
           /*expected_errors=*/{},
           base::BindLambdaForTesting([&run_loop, &num_report_result_calls]() {
             ++num_report_result_calls;
@@ -1635,6 +1719,7 @@ TEST_F(SellerWorkletTest, ReportResult) {
       /*expected_signals_for_winner=*/absl::nullopt,
       /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
       {"https://url.test/:10 Uncaught ReferenceError: "
        "shrimp is not defined."});
 }
@@ -1654,6 +1739,7 @@ TEST_F(SellerWorkletTest, ReportResultSendReportTo) {
       /*expected_signals_for_winner=*/absl::nullopt,
       /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
       {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo must be passed a valid HTTPS url."});
   RunReportResultCreatedScriptExpectingResult(
@@ -1661,6 +1747,7 @@ TEST_F(SellerWorkletTest, ReportResultSendReportTo) {
       /*expected_signals_for_winner=*/absl::nullopt,
       /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
       {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo must be passed a valid HTTPS url."});
 
@@ -1671,6 +1758,7 @@ TEST_F(SellerWorkletTest, ReportResultSendReportTo) {
       /*expected_signals_for_winner=*/absl::nullopt,
       /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
       {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo may be called at most once."});
 
@@ -1689,6 +1777,7 @@ TEST_F(SellerWorkletTest, ReportResultSendReportTo) {
       /*expected_signals_for_winner=*/absl::nullopt,
       /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
       {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo must be passed a valid HTTPS url."});
   RunReportResultCreatedScriptExpectingResult(
@@ -1696,6 +1785,7 @@ TEST_F(SellerWorkletTest, ReportResultSendReportTo) {
       /*expected_signals_for_winner=*/absl::nullopt,
       /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
       {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo requires 1 string parameter."});
   RunReportResultCreatedScriptExpectingResult(
@@ -1703,6 +1793,7 @@ TEST_F(SellerWorkletTest, ReportResultSendReportTo) {
       /*expected_signals_for_winner=*/absl::nullopt,
       /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
       {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo requires 1 string parameter."});
 }
@@ -1713,6 +1804,7 @@ TEST_F(SellerWorkletTest, ReportResultDateNotAvailable) {
       /*expected_signals_for_winner=*/absl::nullopt,
       /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
       {"https://url.test/:9 Uncaught ReferenceError: Date is not defined."});
 }
 
@@ -1945,6 +2037,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
       /*expected_signals_for_winner=*/{},
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
       {"https://url.test/:13 Uncaught TypeError: registerAdBeacon may be "
        "called at most once."});
 
@@ -1978,6 +2071,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
       /*expected_signals_for_winner=*/{},
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
       {"https://url.test/:9 Uncaught TypeError: registerAdBeacon requires 1 "
        "object parameter."});
 
@@ -1987,6 +2081,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
       /*expected_signals_for_winner=*/{},
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
       {"https://url.test/:9 Uncaught TypeError: registerAdBeacon requires 1 "
        "object parameter."});
 
@@ -1996,6 +2091,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
       /*expected_signals_for_winner=*/{},
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
       {"https://url.test/:9 Uncaught TypeError: registerAdBeacon requires 1 "
        "object parameter."});
 
@@ -2009,6 +2105,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
       /*expected_signals_for_winner=*/{},
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
       {"https://url.test/:9 Uncaught TypeError: registerAdBeacon object "
        "attributes must be strings."});
 
@@ -2022,6 +2119,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
       /*expected_signals_for_winner=*/{},
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
       {"https://url.test/:9 Uncaught TypeError: registerAdBeacon invalid "
        "reporting url for key 'view': 'gopher://view.example.com/'."});
 
@@ -2035,6 +2133,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
       /*expected_signals_for_winner=*/{},
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
       {"https://url.test/:9 Uncaught TypeError: registerAdBeacon invalid "
        "reporting url for key 'view': 'http://view.example.com/'."});
 }
@@ -2239,7 +2338,7 @@ TEST_F(SellerWorkletTest, ScriptIsolation) {
           browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
           seller_timeout_,
           /*trace_id=*/1,
-          base::BindLambdaForTesting(
+          TestScoreAdClient::Create(base::BindLambdaForTesting(
               [&run_loop](double score,
                           mojom::ComponentAuctionModifiedBidParamsPtr
                               component_auction_modified_bid_params,
@@ -2247,12 +2346,13 @@ TEST_F(SellerWorkletTest, ScriptIsolation) {
                           bool has_scoring_signals_data_version,
                           const absl::optional<GURL>& debug_loss_report_url,
                           const absl::optional<GURL>& debug_win_report_url,
+                          PrivateAggregationRequests pa_requests,
                           const std::vector<std::string>& errors) {
                 EXPECT_EQ(2, score);
                 EXPECT_FALSE(has_scoring_signals_data_version);
                 EXPECT_TRUE(errors.empty());
                 run_loop.Quit();
-              }));
+              })));
       run_loop.Run();
     }
 
@@ -2273,6 +2373,7 @@ TEST_F(SellerWorkletTest, ScriptIsolation) {
                   const absl::optional<std::string>& signals_for_winner,
                   const absl::optional<GURL>& report_url,
                   const base::flat_map<std::string, GURL>& ad_beacon_map,
+                  PrivateAggregationRequests pa_requests,
                   const std::vector<std::string>& errors) {
                 EXPECT_EQ("2", signals_for_winner);
                 EXPECT_TRUE(errors.empty());
@@ -2297,16 +2398,20 @@ TEST_F(SellerWorkletTest, DeleteBeforeScoreAdCallback) {
       browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
       seller_timeout_,
       /*trace_id=*/1,
-      base::BindOnce([](double score,
-                        mojom::ComponentAuctionModifiedBidParamsPtr
-                            component_auction_modified_bid_params,
-                        uint32_t scoring_signals_data_version,
-                        bool has_scoring_signals_data_version,
-                        const absl::optional<GURL>& debug_loss_report_url,
-                        const absl::optional<GURL>& debug_win_report_url,
-                        const std::vector<std::string>& errors) {
-        ADD_FAILURE() << "Callback should not be invoked since worklet deleted";
-      }));
+      TestScoreAdClient::Create(
+          base::BindOnce(
+              [](double score,
+                 mojom::ComponentAuctionModifiedBidParamsPtr
+                     component_auction_modified_bid_params,
+                 uint32_t scoring_signals_data_version,
+                 bool has_scoring_signals_data_version,
+                 const absl::optional<GURL>& debug_loss_report_url,
+                 const absl::optional<GURL>& debug_win_report_url,
+                 PrivateAggregationRequests pa_requests,
+                 const std::vector<std::string>& errors) {
+                ADD_FAILURE()
+                    << "Callback should not be invoked since worklet deleted";
+              })));
   base::RunLoop().RunUntilIdle();
   seller_worklet.reset();
   event_handle->Signal();
@@ -2334,6 +2439,7 @@ TEST_F(SellerWorkletTest, DeleteBeforeReportResultCallback) {
       base::BindOnce([](const absl::optional<std::string>& signals_for_winner,
                         const absl::optional<GURL>& report_url,
                         const base::flat_map<std::string, GURL>& ad_beacon_map,
+                        PrivateAggregationRequests pa_requests,
                         const std::vector<std::string>& errors) {
         ADD_FAILURE() << "Callback should not be invoked since worklet deleted";
       }));
@@ -2356,12 +2462,13 @@ TEST_F(SellerWorkletTest, PauseOnStart) {
   // Queue a ScoreAd() call, which should not happen immediately since loading
   // is paused.
   base::RunLoop run_loop;
-  RunScoreAdOnWorkletAsync(
-      worklet.get(), /*expected_score=*/10, /*expected_errors=*/{},
-      mojom::ComponentAuctionModifiedBidParamsPtr(),
-      /*expected_data_version=*/absl::nullopt,
-      /*expected_debug_loss_report_url=*/absl::nullopt,
-      /*expected_debug_win_report_url=*/absl::nullopt, run_loop.QuitClosure());
+  RunScoreAdOnWorkletAsync(worklet.get(), /*expected_score=*/10,
+                           /*expected_errors=*/{},
+                           mojom::ComponentAuctionModifiedBidParamsPtr(),
+                           /*expected_data_version=*/absl::nullopt,
+                           /*expected_debug_loss_report_url=*/absl::nullopt,
+                           /*expected_debug_win_report_url=*/absl::nullopt,
+                           /*expected_pa_requests=*/{}, run_loop.QuitClosure());
 
   // Give it a chance to fetch.
   task_environment_.RunUntilIdle();
@@ -2442,7 +2549,8 @@ TEST_F(SellerWorkletTest, BasicV8Debug) {
       /*expected_errors=*/{}, mojom::ComponentAuctionModifiedBidParamsPtr(),
       /*expected_data_version=*/absl::nullopt,
       /*expected_debug_loss_report_url=*/absl::nullopt,
-      /*expected_debug_win_report_url=*/absl::nullopt, run_loop1.QuitClosure());
+      /*expected_debug_win_report_url=*/absl::nullopt,
+      /*expected_pa_requests=*/{}, run_loop1.QuitClosure());
 
   decision_logic_url_ = kUrl2;
   SellerWorklet* worklet_impl2 = nullptr;
@@ -2454,7 +2562,8 @@ TEST_F(SellerWorkletTest, BasicV8Debug) {
       /*expected_errors=*/{}, mojom::ComponentAuctionModifiedBidParamsPtr(),
       /*expected_data_version=*/absl::nullopt,
       /*expected_debug_loss_report_url=*/absl::nullopt,
-      /*expected_debug_win_report_url=*/absl::nullopt, run_loop2.QuitClosure());
+      /*expected_debug_win_report_url=*/absl::nullopt,
+      /*expected_pa_requests=*/{}, run_loop2.QuitClosure());
 
   int id1 = worklet_impl1->context_group_id_for_testing();
   int id2 = worklet_impl2->context_group_id_for_testing();
@@ -2572,7 +2681,8 @@ TEST_F(SellerWorkletTest, BasicDevToolsDebug) {
       worklet1.get(), 100.5, {}, mojom::ComponentAuctionModifiedBidParamsPtr(),
       /*expected_data_version=*/absl::nullopt,
       /*expected_debug_loss_report_url=*/absl::nullopt,
-      /*expected_debug_win_report_url=*/absl::nullopt, run_loop1.QuitClosure());
+      /*expected_debug_win_report_url=*/absl::nullopt,
+      /*expected_pa_requests=*/{}, run_loop1.QuitClosure());
 
   decision_logic_url_ = GURL(kUrl2);
   auto worklet2 = CreateWorklet(/*pause_for_debugger_on_start=*/true);
@@ -2584,6 +2694,7 @@ TEST_F(SellerWorkletTest, BasicDevToolsDebug) {
                            /*expected_data_version=*/absl::nullopt,
                            /*expected_debug_loss_report_url=*/absl::nullopt,
                            /*expected_debug_win_report_url=*/absl::nullopt,
+                           /*expected_pa_requests=*/{},
                            run_loop2.QuitClosure());
 
   mojo::AssociatedRemote<blink::mojom::DevToolsAgent> agent1, agent2;
@@ -2722,11 +2833,12 @@ TEST_F(SellerWorkletTest, InstrumentationBreakpoints) {
   decision_logic_url_ = GURL(kUrl);
   auto worklet = CreateWorklet(/*pause_for_debugger_on_start=*/true);
   base::RunLoop run_loop;
-  RunScoreAdOnWorkletAsync(
-      worklet.get(), 1.0, {}, mojom::ComponentAuctionModifiedBidParamsPtr(),
-      /*expected_data_version=*/absl::nullopt,
-      /*expected_debug_loss_report_url=*/absl::nullopt,
-      /*expected_debug_win_report_url=*/absl::nullopt, run_loop.QuitClosure());
+  RunScoreAdOnWorkletAsync(worklet.get(), 1.0, {},
+                           mojom::ComponentAuctionModifiedBidParamsPtr(),
+                           /*expected_data_version=*/absl::nullopt,
+                           /*expected_debug_loss_report_url=*/absl::nullopt,
+                           /*expected_debug_win_report_url=*/absl::nullopt,
+                           /*expected_pa_requests=*/{}, run_loop.QuitClosure());
 
   mojo::AssociatedRemote<blink::mojom::DevToolsAgent> agent;
   worklet->ConnectDevToolsAgent(agent.BindNewEndpointAndPassReceiver());
@@ -2779,8 +2891,8 @@ TEST_F(SellerWorkletTest, InstrumentationBreakpoints) {
   base::RunLoop run_loop2;
   RunReportResultExpectingResultAsync(
       worklet.get(), "1", GURL("https://foo.test/"),
-      /*expected_ad_beacon_map=*/{}, /*expected_errors=*/{},
-      run_loop2.QuitClosure());
+      /*expected_ad_beacon_map=*/{}, /*expected_pa_requests=*/{},
+      /*expected_errors=*/{}, run_loop2.QuitClosure());
   TestDevToolsAgentClient::Event breakpoint_hit2 =
       debug.WaitForMethodNotification("Debugger.paused");
   const std::string* breakpoint2 =
@@ -2802,7 +2914,8 @@ TEST_F(SellerWorkletTest, InstrumentationBreakpoints) {
       worklet.get(), 1.0, {}, mojom::ComponentAuctionModifiedBidParamsPtr(),
       /*expected_data_version=*/absl::nullopt,
       /*expected_debug_loss_report_url=*/absl::nullopt,
-      /*expected_debug_win_report_url=*/absl::nullopt, run_loop3.QuitClosure());
+      /*expected_debug_win_report_url=*/absl::nullopt,
+      /*expected_pa_requests=*/{}, run_loop3.QuitClosure());
 
   TestDevToolsAgentClient::Event breakpoint_hit3 =
       debug.WaitForMethodNotification("Debugger.paused");
@@ -2863,7 +2976,8 @@ TEST_F(SellerWorkletTest, UnloadWhilePaused) {
       worklet.get(), 1.0, {}, mojom::ComponentAuctionModifiedBidParamsPtr(),
       /*expected_data_version=*/absl::nullopt,
       /*expected_debug_loss_report_url=*/absl::nullopt,
-      /*expected_debug_win_report_url=*/absl::nullopt, base::BindOnce([]() {
+      /*expected_debug_win_report_url=*/absl::nullopt,
+      /*expected_pa_requests=*/{}, base::BindOnce([]() {
         ADD_FAILURE() << "scoreAd shouldn't actually get to finish.";
       }));
 
@@ -3176,7 +3290,7 @@ TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
         browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
         seller_timeout_,
         /*trace_id=*/1,
-        base::BindLambdaForTesting(
+        TestScoreAdClient::Create(base::BindLambdaForTesting(
             [&run_loop](double score,
                         mojom::ComponentAuctionModifiedBidParamsPtr
                             component_auction_modified_bid_params,
@@ -3184,6 +3298,7 @@ TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
                         bool has_scoring_signals_data_version,
                         const absl::optional<GURL>& debug_loss_report_url,
                         const absl::optional<GURL>& debug_win_report_url,
+                        PrivateAggregationRequests pa_requests,
                         const std::vector<std::string>& errors) {
               if (score == 1) {
                 EXPECT_TRUE(debug_loss_report_url.has_value());
@@ -3197,9 +3312,255 @@ TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
                 EXPECT_EQ(absl::nullopt, debug_win_report_url);
               }
               run_loop.Quit();
-            }));
+            })));
     run_loop.Run();
   }
+}
+
+class SellerWorkletPrivateAggregationEnabledTest : public SellerWorkletTest {
+ public:
+  SellerWorkletPrivateAggregationEnabledTest() {
+    scoped_feature_list_.InitAndEnableFeature(content::kPrivateAggregationApi);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(SellerWorkletPrivateAggregationEnabledTest, ScoreAd) {
+  auction_worklet::mojom::PrivateAggregationRequestPtr kExpectedRequest1 =
+      auction_worklet::mojom::PrivateAggregationRequest::New(
+          content::mojom::AggregatableReportHistogramContribution::New(
+              /*bucket=*/123,
+              /*value=*/45),
+          content::mojom::AggregationServiceMode::kDefault);
+  auction_worklet::mojom::PrivateAggregationRequestPtr kExpectedRequest2 =
+      auction_worklet::mojom::PrivateAggregationRequest::New(
+          content::mojom::AggregatableReportHistogramContribution::New(
+              /*bucket=*/absl::MakeInt128(/*high=*/1, /*low=*/0),
+              /*value=*/1),
+          content::mojom::AggregationServiceMode::kDefault);
+
+  {
+    PrivateAggregationRequests expected_pa_requests;
+    expected_pa_requests.push_back(kExpectedRequest1.Clone());
+
+    RunScoreAdWithJavascriptExpectingResult(
+        CreateScoreAdScript(
+            "5",
+            "privateAggregation.sendHistogramReport({bucket: 123, value: 45})"),
+        5, /*expected_errors=*/{},
+        mojom::ComponentAuctionModifiedBidParamsPtr(),
+        /*expected_data_version=*/absl::nullopt,
+        /*expected_debug_loss_report_url=*/absl::nullopt,
+        /*expected_debug_win_report_url=*/absl::nullopt,
+        std::move(expected_pa_requests));
+  }
+
+  // BigInt bucket
+  {
+    PrivateAggregationRequests expected_pa_requests;
+    expected_pa_requests.push_back(kExpectedRequest1.Clone());
+
+    RunScoreAdWithJavascriptExpectingResult(
+        CreateScoreAdScript("5",
+                            "privateAggregation.sendHistogramReport("
+                            "{bucket: 123n, value: 45})"),
+        5, /*expected_errors=*/{},
+        mojom::ComponentAuctionModifiedBidParamsPtr(),
+        /*expected_data_version=*/absl::nullopt,
+        /*expected_debug_loss_report_url=*/absl::nullopt,
+        /*expected_debug_win_report_url=*/absl::nullopt,
+        std::move(expected_pa_requests));
+  }
+
+  // Large bucket
+  {
+    PrivateAggregationRequests expected_pa_requests;
+    expected_pa_requests.push_back(kExpectedRequest2.Clone());
+
+    RunScoreAdWithJavascriptExpectingResult(
+        CreateScoreAdScript("5",
+                            "privateAggregation.sendHistogramReport("
+                            "{bucket: 18446744073709551616n, value: 1})"),
+        5, /*expected_errors=*/{},
+        mojom::ComponentAuctionModifiedBidParamsPtr(),
+        /*expected_data_version=*/absl::nullopt,
+        /*expected_debug_loss_report_url=*/absl::nullopt,
+        /*expected_debug_win_report_url=*/absl::nullopt,
+        std::move(expected_pa_requests));
+  }
+
+  // Multiple requests
+  {
+    PrivateAggregationRequests expected_pa_requests;
+    expected_pa_requests.push_back(kExpectedRequest1.Clone());
+    expected_pa_requests.push_back(kExpectedRequest2.Clone());
+
+    RunScoreAdWithJavascriptExpectingResult(
+        CreateScoreAdScript("5", R"(
+          privateAggregation.sendHistogramReport({bucket: 123, value: 45});
+          privateAggregation.sendHistogramReport({bucket: 18446744073709551616n,
+                                                  value: 1});
+        )"),
+        5, /*expected_errors=*/{},
+        mojom::ComponentAuctionModifiedBidParamsPtr(),
+        /*expected_data_version=*/absl::nullopt,
+        /*expected_debug_loss_report_url=*/absl::nullopt,
+        /*expected_debug_win_report_url=*/absl::nullopt,
+        std::move(expected_pa_requests));
+  }
+
+  // An unrelated exception after sendHistogramReport shouldn't block the report
+  {
+    PrivateAggregationRequests expected_pa_requests;
+    expected_pa_requests.push_back(kExpectedRequest1.Clone());
+
+    RunScoreAdWithJavascriptExpectingResult(
+        CreateScoreAdScript("5", R"(
+          privateAggregation.sendHistogramReport({bucket: 123, value: 45});
+          error;
+        )"),
+        0, /*expected_errors=*/
+        {"https://url.test/:6 Uncaught ReferenceError: error is not defined."},
+        mojom::ComponentAuctionModifiedBidParamsPtr(),
+        /*expected_data_version=*/absl::nullopt,
+        /*expected_debug_loss_report_url=*/absl::nullopt,
+        /*expected_debug_win_report_url=*/absl::nullopt,
+        std::move(expected_pa_requests));
+  }
+}
+
+TEST_F(SellerWorkletPrivateAggregationEnabledTest, ReportResult) {
+  auction_worklet::mojom::PrivateAggregationRequestPtr kExpectedRequest1 =
+      auction_worklet::mojom::PrivateAggregationRequest::New(
+          content::mojom::AggregatableReportHistogramContribution::New(
+              /*bucket=*/123,
+              /*value=*/45),
+          content::mojom::AggregationServiceMode::kDefault);
+  auction_worklet::mojom::PrivateAggregationRequestPtr kExpectedRequest2 =
+      auction_worklet::mojom::PrivateAggregationRequest::New(
+          content::mojom::AggregatableReportHistogramContribution::New(
+              /*bucket=*/absl::MakeInt128(/*high=*/1, /*low=*/0),
+              /*value=*/1),
+          content::mojom::AggregationServiceMode::kDefault);
+
+  {
+    PrivateAggregationRequests expected_pa_requests;
+    expected_pa_requests.push_back(kExpectedRequest1.Clone());
+
+    RunReportResultCreatedScriptExpectingResult(
+        R"(5)",
+        R"(privateAggregation.sendHistogramReport({bucket: 123, value: 45});)",
+        /*expected_signals_for_winner=*/"5",
+        /*expected_report_url=*/absl::nullopt, /*expected_ad_beacon_map=*/{},
+        std::move(expected_pa_requests),
+        /*expected_errors=*/{});
+  }
+
+  // BigInt bucket
+  {
+    PrivateAggregationRequests expected_pa_requests;
+    expected_pa_requests.push_back(kExpectedRequest1.Clone());
+
+    RunReportResultCreatedScriptExpectingResult(
+        R"(5)",
+        R"(privateAggregation.sendHistogramReport({bucket: 123n, value: 45});)",
+        /*expected_signals_for_winner=*/"5",
+        /*expected_report_url=*/absl::nullopt, /*expected_ad_beacon_map=*/{},
+        std::move(expected_pa_requests),
+        /*expected_errors=*/{});
+  }
+
+  // Large bucket
+  {
+    PrivateAggregationRequests expected_pa_requests;
+    expected_pa_requests.push_back(kExpectedRequest2.Clone());
+
+    RunReportResultCreatedScriptExpectingResult(
+        R"(5)",
+        R"(privateAggregation.sendHistogramReport(
+            {bucket: 18446744073709551616n, value: 1});)",
+        /*expected_signals_for_winner=*/"5",
+        /*expected_report_url=*/absl::nullopt, /*expected_ad_beacon_map=*/{},
+        std::move(expected_pa_requests),
+        /*expected_errors=*/{});
+  }
+
+  // Multiple requests
+  {
+    PrivateAggregationRequests expected_pa_requests;
+    expected_pa_requests.push_back(kExpectedRequest1.Clone());
+    expected_pa_requests.push_back(kExpectedRequest2.Clone());
+
+    RunReportResultCreatedScriptExpectingResult(
+        R"(5)",
+        R"(
+          privateAggregation.sendHistogramReport({bucket: 123, value: 45});
+          privateAggregation.sendHistogramReport({bucket: 18446744073709551616n,
+                                                  value: 1});
+        )",
+        /*expected_signals_for_winner=*/"5",
+        /*expected_report_url=*/absl::nullopt, /*expected_ad_beacon_map=*/{},
+        std::move(expected_pa_requests),
+        /*expected_errors=*/{});
+  }
+
+  // An unrelated exception after sendHistogramReport shouldn't block the report
+  {
+    PrivateAggregationRequests expected_pa_requests;
+    expected_pa_requests.push_back(kExpectedRequest1.Clone());
+
+    RunReportResultCreatedScriptExpectingResult(
+        R"(5)",
+        R"(
+          privateAggregation.sendHistogramReport({bucket: 123, value: 45});
+          error;
+        )",
+        /*expected_signals_for_winner=*/absl::nullopt,
+        /*expected_report_url=*/absl::nullopt, /*expected_ad_beacon_map=*/{},
+        std::move(expected_pa_requests),
+        /*expected_errors=*/
+        {"https://url.test/:11 Uncaught ReferenceError: error is not "
+         "defined."});
+  }
+}
+
+class SellerWorkletPrivateAggregationDisabledTest : public SellerWorkletTest {
+ public:
+  SellerWorkletPrivateAggregationDisabledTest() {
+    scoped_feature_list_.InitAndDisableFeature(content::kPrivateAggregationApi);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(SellerWorkletPrivateAggregationDisabledTest, ScoreAd) {
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          "5",
+          "privateAggregation.sendHistogramReport({bucket: 123, value: 45})"),
+      0, /*expected_errors=*/
+      {"https://url.test/:4 Uncaught ReferenceError: privateAggregation is not "
+       "defined."},
+      mojom::ComponentAuctionModifiedBidParamsPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      /*expected_debug_win_report_url=*/absl::nullopt,
+      /*expected_pa_requests=*/{});
+}
+
+TEST_F(SellerWorkletPrivateAggregationDisabledTest, ReportResult) {
+  RunReportResultCreatedScriptExpectingResult(
+      R"(5)",
+      R"(privateAggregation.sendHistogramReport({bucket: 123, value: 45});)",
+      /*expected_signals_for_winner=*/absl::nullopt,
+      /*expected_report_url=*/absl::nullopt, /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
+      /*expected_errors=*/
+      {"https://url.test/:9 Uncaught ReferenceError: privateAggregation is "
+       "not defined."});
 }
 
 }  // namespace

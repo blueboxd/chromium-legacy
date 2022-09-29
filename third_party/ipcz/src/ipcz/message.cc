@@ -160,6 +160,10 @@ uint32_t Message::AllocateGenericArray(size_t element_size,
 }
 
 uint32_t Message::AppendDriverObject(DriverObject object) {
+  if (!object.is_valid()) {
+    return internal::kInvalidDriverObjectIndex;
+  }
+
   const uint32_t index = checked_cast<uint32_t>(driver_objects_.size());
   driver_objects_.push_back(std::move(object));
   return index;
@@ -173,12 +177,17 @@ internal::DriverObjectArrayData Message::AppendDriverObjects(
   };
   driver_objects_.reserve(driver_objects_.size() + objects.size());
   for (auto& object : objects) {
+    ABSL_ASSERT(object.is_valid());
     driver_objects_.push_back(std::move(object));
   }
   return data;
 }
 
 DriverObject Message::TakeDriverObject(uint32_t index) {
+  if (index == internal::kInvalidDriverObjectIndex) {
+    return {};
+  }
+
   // Note that `index` has already been validated by now.
   ABSL_HARDENING_ASSERT(index < driver_objects_.size());
   return std::move(driver_objects_[index]);
@@ -227,37 +236,12 @@ void Message::Serialize(const DriverTransport& transport) {
 
 bool Message::DeserializeUnknownType(const DriverTransport::RawMessage& message,
                                      const DriverTransport& transport) {
-  // Copy the data into a local message object to avoid any TOCTOU issues in
-  // case `data` is in unsafe shared memory.
-  data_.resize(message.data.size());
-  memcpy(data_.data(), message.data.data(), message.data.size());
-
-  // Validate the header. The message must at least be large enough to encode a
-  // v0 MessageHeader, and the encoded header size and version must make sense
-  // (e.g. version 0 size must be sizeof(MessageHeader))
-  if (data_.size() < sizeof(internal::MessageHeaderV0)) {
-    return false;
-  }
-
-  const auto& message_header =
-      *reinterpret_cast<const internal::MessageHeaderV0*>(data_.data());
-  if (message_header.version == 0) {
-    if (message_header.size != sizeof(internal::MessageHeaderV0)) {
-      return false;
-    }
-  } else {
-    if (message_header.size < sizeof(internal::MessageHeaderV0)) {
-      return false;
-    }
-  }
-
-  if (message_header.size > data_.size()) {
+  if (!CopyDataAndValidateHeader(message.data)) {
     return false;
   }
 
   // Validate and deserialize the DriverObject array.
-  const uint32_t driver_object_array_offset =
-      message_header.driver_object_data_array;
+  const uint32_t driver_object_array_offset = header().driver_object_data_array;
   bool all_driver_objects_ok = true;
   if (driver_object_array_offset > 0) {
     if (!IsArrayValid(*this, driver_object_array_offset,
@@ -286,16 +270,44 @@ bool Message::DeserializeUnknownType(const DriverTransport::RawMessage& message,
   return all_driver_objects_ok;
 }
 
-bool Message::DeserializeFromTransport(
-    size_t params_size,
-    uint32_t params_current_version,
-    absl::Span<const internal::ParamMetadata> params_metadata,
-    const DriverTransport::RawMessage& message,
-    const DriverTransport& transport) {
-  if (!DeserializeUnknownType(message, transport)) {
+bool Message::CopyDataAndValidateHeader(absl::Span<const uint8_t> data) {
+  // Copy the data into a local message object to avoid any TOCTOU issues in
+  // case `data` is in unsafe shared memory.
+  data_.resize(data.size());
+  memcpy(data_.data(), data.data(), data.size());
+
+  // The message must at least be large enough to encode a v0 MessageHeader.
+  if (data_.size() < sizeof(internal::MessageHeaderV0)) {
     return false;
   }
 
+  // Version 0 header must match MsesageHeaderV0 size exactly. Newer unknown
+  // versions must not be smaller than that.
+  const auto& header =
+      *reinterpret_cast<const internal::MessageHeaderV0*>(data_.data());
+  if (header.version == 0) {
+    if (header.size != sizeof(internal::MessageHeaderV0)) {
+      return false;
+    }
+  } else {
+    if (header.size < sizeof(internal::MessageHeaderV0)) {
+      return false;
+    }
+  }
+
+  // The header's stated size (and thus the start of the parameter payload)
+  // must not run over the edge of the message.
+  if (header.size > data_.size()) {
+    return false;
+  }
+
+  return true;
+}
+
+bool Message::ValidateParameters(
+    size_t params_size,
+    uint32_t params_current_version,
+    absl::Span<const internal::ParamMetadata> params_metadata) {
   // Validate parameter data. There must be at least enough bytes following the
   // header to encode a StructHeader and to account for all parameter data.
   absl::Span<uint8_t> params_data = params_data_view();
@@ -344,10 +356,12 @@ bool Message::DeserializeFromTransport(
     switch (param.type) {
       case internal::ParamType::kDriverObject: {
         const uint32_t index = GetParamValueAt<uint32_t>(param.offset);
-        if (is_object_claimed[index]) {
-          return false;
+        if (index != internal::kInvalidDriverObjectIndex) {
+          if (is_object_claimed[index]) {
+            return false;
+          }
+          is_object_claimed[index] = true;
         }
-        is_object_claimed[index] = true;
         break;
       }
 
@@ -370,6 +384,37 @@ bool Message::DeserializeFromTransport(
   }
 
   return true;
+}
+
+bool Message::DeserializeFromTransport(
+    size_t params_size,
+    uint32_t params_current_version,
+    absl::Span<const internal::ParamMetadata> params_metadata,
+    const DriverTransport::RawMessage& message,
+    const DriverTransport& transport) {
+  if (!DeserializeUnknownType(message, transport)) {
+    return false;
+  }
+
+  return ValidateParameters(params_size, params_current_version,
+                            params_metadata);
+}
+
+bool Message::DeserializeFromRelay(
+    size_t params_size,
+    uint32_t params_current_version,
+    absl::Span<const internal::ParamMetadata> params_metadata,
+    absl::Span<const uint8_t> data,
+    absl::Span<DriverObject> objects) {
+  if (!CopyDataAndValidateHeader(data)) {
+    return false;
+  }
+
+  driver_objects_.resize(objects.size());
+  std::move(objects.begin(), objects.end(), driver_objects_.begin());
+
+  return ValidateParameters(params_size, params_current_version,
+                            params_metadata);
 }
 
 }  // namespace ipcz

@@ -23,6 +23,8 @@ const char kManagerInterface[] = "org.chromium.bluetooth.Manager";
 const char kManagerObject[] = "/org/chromium/bluetooth/Manager";
 const char kAdapterObjectFormat[] = "/org/chromium/bluetooth/hci%d/adapter";
 
+const char kSocketManagerInterface[] = "org.chromium.bluetooth.SocketManager";
+
 namespace adapter {
 const char kGetAddress[] = "GetAddress";
 const char kGetName[] = "GetName";
@@ -80,6 +82,32 @@ const char kOnHciDeviceChanged[] = "OnHciDeviceChanged";
 const char kOnHciEnabledChanged[] = "OnHciEnabledChanged";
 }  // namespace manager
 
+namespace socket_manager {
+const char kRegisterCallback[] = "RegisterCallback";
+const char kListenUsingInsecureL2capChannel[] =
+    "ListenUsingInsecureL2capChannel";
+const char kListenUsingInsecureRfcommWithServiceRecord[] =
+    "ListenUsingInsecureRfcommWithServiceRecord";
+const char kListenUsingL2capChannel[] = "ListenUsingL2capChannel";
+const char kListenUsingRfcommWithServiceRecord[] =
+    "ListenUsingRfcommWithServiceRecord";
+const char kCreateInsecureL2capChannel[] = "CreateInsecureL2capChannel";
+const char kCreateInsecureRfcommSocketToServiceRecord[] =
+    "CreateInsecureRfcommSocketToServiceRecord";
+const char kCreateL2capChannel[] = "CreateL2capChannel";
+const char kCreateRfcommSocketToServiceRecord[] =
+    "CreateRfcommSocketToServiceRecord";
+const char kAccept[] = "Accept";
+const char kClose[] = "Close";
+const char kCallbackInterface[] =
+    "org.chromium.bluetooth.SocketManagerCallback";
+
+const char kOnIncomingSocketReady[] = "OnIncomingSocketReady";
+const char kOnIncomingSocketClosed[] = "OnIncomingSocketClosed";
+const char kOnHandleIncomingConnection[] = "OnHandleIncomingConnection";
+const char kOnOutgoingConnectionResult[] = "OnOutgoingConnectionResult";
+}  // namespace socket_manager
+
 namespace {
 constexpr char kDeviceIdNameKey[] = "name";
 constexpr char kDeviceIdAddressKey[] = "address";
@@ -87,6 +115,116 @@ constexpr char kDeviceIdAddressKey[] = "address";
 
 Error::Error(const std::string& name, const std::string& message)
     : name(name), message(message) {}
+
+std::ostream& operator<<(std::ostream& os, const Error& error) {
+  os << error.name;
+
+  if (error.name.size() == 0) {
+    os << "<no error name>";
+  }
+
+  if (error.message.size()) {
+    os << ": " << error.message;
+  }
+
+  return os;
+}
+
+std::string Error::ToString() {
+  std::stringstream ss;
+  ss << *this;
+  return ss.str();
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo<bool>() {
+  static DBusTypeInfo info{"b", "bool"};
+  return info;
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo<uint8_t>() {
+  static DBusTypeInfo info{"y", "uint8_t"};
+  return info;
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo<int8_t>() {
+  static DBusTypeInfo info{"y", "int8"};
+  return info;
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo<uint16_t>() {
+  static DBusTypeInfo info{"q", "uint16"};
+  return info;
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo<int16_t>() {
+  static DBusTypeInfo info{"n", "int16"};
+  return info;
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo<uint32_t>() {
+  static DBusTypeInfo info{"u", "uint32"};
+  return info;
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo<int32_t>() {
+  static DBusTypeInfo info{"i", "int32"};
+  return info;
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo<uint64_t>() {
+  static DBusTypeInfo info{"t", "uint64"};
+  return info;
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo<int64_t>() {
+  static DBusTypeInfo info{"x", "int64"};
+  return info;
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo<double>() {
+  static DBusTypeInfo info{"d", "double"};
+  return info;
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo<std::string>() {
+  static DBusTypeInfo info{"s", "string"};
+  return info;
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo<dbus::ObjectPath>() {
+  static DBusTypeInfo info{"o", "object_path"};
+  return info;
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo<base::ScopedFD>() {
+  static DBusTypeInfo info{"h", "FD"};
+  return info;
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo<FlossDeviceId>() {
+  static DBusTypeInfo info{"a{sv}", "FlossDeviceId"};
+  return info;
+}
+
+template <>
+const DBusTypeInfo& GetDBusTypeInfo<device::BluetoothUUID>() {
+  static DBusTypeInfo info{"ay", "BluetoothUUID"};
+  return info;
+}
 
 FlossDBusClient::FlossDBusClient() = default;
 FlossDBusClient::~FlossDBusClient() = default;
@@ -98,6 +236,9 @@ const char FlossDBusClient::kErrorInvalidParameters[] =
     "org.chromium.Error.InvalidParameters";
 const char FlossDBusClient::kErrorInvalidReturn[] =
     "org.chromium.Error.InvalidReturn";
+const char FlossDBusClient::kErrorDoesNotExist[] =
+    "org.chromium.Error.DoesNotExist";
+const char FlossDBusClient::kOptionalValueKey[] = "optional_value";
 
 // Default error handler for dbus clients is to just print the error right now.
 // TODO(abps) - Deprecate this once error handling is implemented in the upper
@@ -131,47 +272,11 @@ Error FlossDBusClient::ErrorResponseToError(const std::string& default_name,
   return result;
 }
 
+// static
+// No-op read for a void value.
 template <>
-void FlossDBusClient::DefaultResponseWithCallback<Void>(
-    ResponseCallback<Void> callback,
-    dbus::Response* response,
-    dbus::ErrorResponse* error_response) {
-  if (response) {
-    std::move(callback).Run(/*ret=*/absl::nullopt, /*err=*/absl::nullopt);
-    return;
-  }
-
-  std::move(callback).Run(
-      /*ret=*/absl::nullopt,
-      ErrorResponseToError(kErrorNoResponse, /*default_message=*/std::string(),
-                           error_response));
-}
-
-template <typename T>
-void FlossDBusClient::DefaultResponseWithCallback(
-    ResponseCallback<T> callback,
-    dbus::Response* response,
-    dbus::ErrorResponse* error_response) {
-  if (response) {
-    T ret;
-    dbus::MessageReader reader(response);
-
-    if (!FlossDBusClient::ReadAllDBusParams<T>(&reader, &ret)) {
-      LOG(ERROR) << "Failed reading return from response";
-      std::move(callback).Run(
-          /*ret=*/absl::nullopt,
-          Error(kErrorInvalidReturn, /*message=*/std::string()));
-      return;
-    }
-
-    std::move(callback).Run(ret, /*err=*/absl::nullopt);
-    return;
-  }
-
-  std::move(callback).Run(
-      /*ret=*/absl::nullopt,
-      ErrorResponseToError(kErrorNoResponse, /*default_message=*/std::string(),
-                           error_response));
+bool FlossDBusClient::ReadDBusParam(dbus::MessageReader* reader, Void* value) {
+  return true;
 }
 
 // static
@@ -197,9 +302,33 @@ bool FlossDBusClient::ReadDBusParam(dbus::MessageReader* reader,
 // static
 template <>
 bool FlossDBusClient::ReadDBusParam(dbus::MessageReader* reader,
+                                    uint64_t* value) {
+  return reader->PopUint64(value);
+}
+
+// static
+template <>
+bool FlossDBusClient::ReadDBusParam(dbus::MessageReader* reader,
+                                    int32_t* value) {
+  return reader->PopInt32(value);
+}
+
+// static
+template bool FlossDBusClient::ReadDBusParam<int32_t>(
+    dbus::MessageReader* reader,
+    absl::optional<int32_t>* value);
+
+// static
+template <>
+bool FlossDBusClient::ReadDBusParam(dbus::MessageReader* reader,
                                     std::string* value) {
   return reader->PopString(value);
 }
+
+// static
+template bool FlossDBusClient::ReadDBusParam<std::string>(
+    dbus::MessageReader* reader,
+    absl::optional<std::string>* value);
 
 // static
 template <>
@@ -238,6 +367,37 @@ bool FlossDBusClient::ReadDBusParam(dbus::MessageReader* reader,
 
   return false;
 }
+
+// static
+template bool FlossDBusClient::ReadDBusParam<device::BluetoothUUID>(
+    dbus::MessageReader* reader,
+    absl::optional<device::BluetoothUUID>* uuid);
+
+// static
+template <>
+bool FlossDBusClient::ReadDBusParam(dbus::MessageReader* reader,
+                                    FlossDBusClient::BtifStatus* status) {
+  uint32_t raw_type = 0;
+  bool read = FlossDBusClient::ReadDBusParam(reader, &raw_type);
+
+  if (read) {
+    *status = static_cast<FlossDBusClient::BtifStatus>(raw_type);
+  }
+
+  return read;
+}
+
+// static
+template <>
+bool FlossDBusClient::ReadDBusParam(dbus::MessageReader* reader,
+                                    base::ScopedFD* fd) {
+  return reader->PopFileDescriptor(fd);
+}
+
+// static
+template bool FlossDBusClient::ReadDBusParam<base::ScopedFD>(
+    dbus::MessageReader* reader,
+    absl::optional<base::ScopedFD>* fd);
 
 // static
 // Specialization for vector of anything.
@@ -306,25 +466,32 @@ void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
 
   writer->OpenArray("{sv}", &array);
 
-  // Serialize name
-  array.OpenDictEntry(&dict);
-  dict.AppendString(kDeviceIdNameKey);
-  dict.AppendVariantOfString(device.name);
-  array.CloseContainer(&dict);
-
-  // Serialize address
-  array.OpenDictEntry(&dict);
-  dict.AppendString(kDeviceIdAddressKey);
-  dict.AppendVariantOfString(device.address);
-  array.CloseContainer(&dict);
+  WriteDictEntry(&array, kDeviceIdNameKey, device.name);
+  WriteDictEntry(&array, kDeviceIdAddressKey, device.address);
 
   writer->CloseContainer(&array);
 }
 
 template <>
 void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
+                                     const uint64_t& data) {
+  writer->AppendUint64(data);
+}
+
+template <>
+void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
                                      const uint32_t& data) {
   writer->AppendUint32(data);
+}
+
+template void FlossDBusClient::WriteDBusParam<uint32_t>(
+    dbus::MessageWriter* writer,
+    const absl::optional<uint32_t>& data);
+
+template <>
+void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
+                                     const int32_t& data) {
+  writer->AppendInt32(data);
 }
 
 template <>
@@ -343,6 +510,26 @@ template <>
 void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
                                      const std::vector<uint8_t>& data) {
   writer->AppendArrayOfBytes(data.data(), data.size());
+}
+
+template <>
+void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
+                                     const device::BluetoothUUID& uuid) {
+  WriteDBusParam(writer, uuid.GetBytes());
+}
+
+template <>
+void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
+                                     const base::ScopedFD& fd) {
+  writer->AppendFileDescriptor(fd.get());
+}
+
+template <>
+void FlossDBusClient::WriteDBusParam(
+    dbus::MessageWriter* writer,
+    const FlossDBusClient::BtifStatus& status) {
+  uint32_t raw_type = static_cast<uint32_t>(status);
+  WriteDBusParam(writer, raw_type);
 }
 
 template void FlossDBusClient::DefaultResponseWithCallback(
@@ -377,6 +564,11 @@ template void FlossDBusClient::DefaultResponseWithCallback(
 
 template void FlossDBusClient::DefaultResponseWithCallback(
     ResponseCallback<device::BluetoothDevice::UUIDList> callback,
+    dbus::Response* response,
+    dbus::ErrorResponse* error_response);
+
+template void FlossDBusClient::DefaultResponseWithCallback(
+    ResponseCallback<FlossDBusClient::BtifStatus> callback,
     dbus::Response* response,
     dbus::ErrorResponse* error_response);
 

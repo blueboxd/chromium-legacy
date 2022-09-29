@@ -154,6 +154,7 @@ android_library("java") {
 generate_jni("jni_headers") {
   visibility = [
     ":backend",
+    ":test_support",
     "//chrome/browser",
   ]
   sources = [
@@ -172,9 +173,9 @@ robolectric_binary("password_manager_junit_tests") {
   testonly = true
 
   sources = [
-    "java/src/org/chromium/chrome/browser/password_manager/tests/FakePasswordStoreAndroidBackendTest.java",
     "junit/src/org/chromium/chrome/browser/password_manager/FakeCredentialManagerLauncherTest.java",
     "junit/src/org/chromium/chrome/browser/password_manager/FakePasswordSettingsAccessorFactoryImplTest.java",
+    "junit/src/org/chromium/chrome/browser/password_manager/FakePasswordStoreAndroidBackendTest.java",
     "junit/src/org/chromium/chrome/browser/password_manager/OutdatedGmsCoreDialogTest.java",
     "junit/src/org/chromium/chrome/browser/password_manager/PasswordCheckupClientMetricsRecorderTest.java",
     "junit/src/org/chromium/chrome/browser/password_manager/PasswordManagerAndroidBackendUtilTest.java",
@@ -298,25 +299,44 @@ android_library("backend_interface_java") {
   ]
 }
 
+generate_jni("test_support_jni_headers") {
+  testonly = true
+  sources = [ "test_support/java/src/org/chromium/chrome/browser/password_manager/PasswordManagerTestUtilsBridge.java" ]
+}
+
+static_library("test_support") {
+  testonly = true
+  sources = [ "password_manager_test_utils_bridge.cc" ]
+
+  deps = [
+    ":test_support_jni_headers",
+    "//base",
+    "//components/password_manager/core/browser:browser",
+  ]
+}
+
 android_library("test_support_java") {
   testonly = true
   sources = [
-    "java/src/org/chromium/chrome/browser/password_manager/tests/utils/FakePasswordCheckupClientHelper.java",
-    "java/src/org/chromium/chrome/browser/password_manager/tests/utils/FakePasswordCheckupClientHelperFactoryImpl.java",
-    "java/src/org/chromium/chrome/browser/password_manager/tests/utils/FakePasswordSettingsAccessor.java",
-    "java/src/org/chromium/chrome/browser/password_manager/tests/utils/FakePasswordSettingsAccessorFactoryImpl.java",
-    "java/src/org/chromium/chrome/browser/password_manager/tests/utils/FakePasswordStoreAndroidBackend.java",
-    "java/src/org/chromium/chrome/browser/password_manager/tests/utils/FakePasswordStoreAndroidBackendFactoryImpl.java",
-    "java/src/org/chromium/chrome/browser/password_manager/tests/utils/FakePasswordSyncControllerDelegate.java",
-    "java/src/org/chromium/chrome/browser/password_manager/tests/utils/FakePasswordSyncControllerDelegateFactoryImpl.java",
-    "test_support/src/org/chromium/chrome/browser/password_manager/FakeCredentialManagerLauncher.java",
-    "test_support/src/org/chromium/chrome/browser/password_manager/FakeCredentialManagerLauncherFactoryImpl.java",
+    "test_support/java/src/org/chromium/chrome/browser/password_manager/FakeCredentialManagerLauncher.java",
+    "test_support/java/src/org/chromium/chrome/browser/password_manager/FakeCredentialManagerLauncherFactoryImpl.java",
+    "test_support/java/src/org/chromium/chrome/browser/password_manager/FakePasswordCheckupClientHelper.java",
+    "test_support/java/src/org/chromium/chrome/browser/password_manager/FakePasswordCheckupClientHelperFactoryImpl.java",
+    "test_support/java/src/org/chromium/chrome/browser/password_manager/FakePasswordSettingsAccessor.java",
+    "test_support/java/src/org/chromium/chrome/browser/password_manager/FakePasswordSettingsAccessorFactoryImpl.java",
+    "test_support/java/src/org/chromium/chrome/browser/password_manager/FakePasswordStoreAndroidBackend.java",
+    "test_support/java/src/org/chromium/chrome/browser/password_manager/FakePasswordStoreAndroidBackendFactoryImpl.java",
+    "test_support/java/src/org/chromium/chrome/browser/password_manager/FakePasswordSyncControllerDelegate.java",
+    "test_support/java/src/org/chromium/chrome/browser/password_manager/FakePasswordSyncControllerDelegateFactoryImpl.java",
+    "test_support/java/src/org/chromium/chrome/browser/password_manager/PasswordManagerTestUtilsBridge.java",
   ]
 
   deps = [
     ":backend_interface_java",
     ":settings_interface_java",
     "//base:base_java",
+    "//base:jni_java",
+    "//build/android:build_java",
     "//chrome/browser/password_manager/android:settings_interface_java",
     "//components/password_manager/core/browser:password_manager_java_enums",
     "//components/password_manager/core/browser:unified_password_manager_proto_java",
@@ -325,6 +345,8 @@ android_library("test_support_java") {
     "//third_party/android_deps:guava_android_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
   ]
+
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 android_library("password_manager_resource_provider_java") {

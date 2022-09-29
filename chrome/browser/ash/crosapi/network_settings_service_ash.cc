@@ -51,9 +51,9 @@ NetworkSettingsServiceAsh::NetworkSettingsServiceAsh(PrefService* local_state)
     profile_manager_->AddObserver(this);
   }
   // Uninitialized in unit_tests.
-  if (chromeos::NetworkHandler::IsInitialized()) {
+  if (ash::NetworkHandler::IsInitialized()) {
     network_state_handler_observer_.Observe(
-        chromeos::NetworkHandler::Get()->network_state_handler());
+        ash::NetworkHandler::Get()->network_state_handler());
   }
   observers_.set_disconnect_handler(base::BindRepeating(
       &NetworkSettingsServiceAsh::OnDisconnect, base::Unretained(this)));
@@ -71,7 +71,7 @@ void NetworkSettingsServiceAsh::BindReceiver(
 }
 
 void NetworkSettingsServiceAsh::DefaultNetworkChanged(
-    const chromeos::NetworkState* network) {
+    const ash::NetworkState* network) {
   if (!network) {
     cached_wpad_url_ = GURL();
     return;
@@ -194,8 +194,8 @@ void NetworkSettingsServiceAsh::DetermineEffectiveProxy() {
   if (!pref_service)
     return;
   crosapi::mojom::ProxyConfigPtr new_proxy_config = ProxyConfigToCrosapiProxy(
-      chromeos::ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
-          pref_service, local_state_)
+      ash::ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(pref_service,
+                                                                  local_state_)
           .get(),
       cached_wpad_url_);
 

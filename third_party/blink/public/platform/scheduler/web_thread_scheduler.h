@@ -15,12 +15,6 @@
 #include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
 #include "third_party/blink/public/platform/web_common.h"
 
-namespace base {
-namespace trace_event {
-class BlameContext;
-}  // namespace trace_event
-}  // namespace base
-
 namespace blink {
 class Thread;
 }  // namespace blink
@@ -36,20 +30,16 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   WebThreadScheduler& operator=(const WebThreadScheduler&) = delete;
   virtual ~WebThreadScheduler();
 
-  // ==== Functions for any scheduler =========================================
-  //
-  // Functions below work on a scheduler instance on any thread.
-
-  // Shuts down the scheduler by dropping any remaining pending work in the work
-  // queues. After this call any work posted to the task runners will be
-  // silently dropped.
-  virtual void Shutdown() = 0;
-
   // ==== Functions for the main thread scheduler  ============================
   //
   // Virtual functions below should only be called against the scheduler on
   // the main thread. They have default implementation that only does
   // NOTREACHED(), and are overridden only by the main thread scheduler.
+
+  // Shuts down the scheduler by dropping any remaining pending work in the work
+  // queues. After this call any work posted to the task runners will be
+  // silently dropped.
+  virtual void Shutdown() = 0;
 
   // If |message_pump| is null caller must have registered one using
   // base::MessageLoop.
@@ -110,29 +100,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   virtual void PauseTimersForAndroidWebView();
   virtual void ResumeTimersForAndroidWebView();
 #endif  // BUILDFLAG(IS_ANDROID)
-
-  // RAII handle for pausing the renderer. Renderer is paused while
-  // at least one pause handle exists.
-  class BLINK_PLATFORM_EXPORT RendererPauseHandle {
-   public:
-    RendererPauseHandle() = default;
-    RendererPauseHandle(const RendererPauseHandle&) = delete;
-    RendererPauseHandle& operator=(const RendererPauseHandle&) = delete;
-    virtual ~RendererPauseHandle() = default;
-  };
-
-  // Tells the scheduler that the renderer process should be paused.
-  // Pausing means that all javascript callbacks should not fire.
-  // https://html.spec.whatwg.org/#pause
-  //
-  // Renderer will be resumed when the handle is destroyed.
-  // Handle should be destroyed before the renderer.
-  [[nodiscard]] virtual std::unique_ptr<RendererPauseHandle> PauseRenderer();
-
-  // Sets the default blame context to which top level work should be
-  // attributed in this renderer. |blame_context| must outlive this scheduler.
-  virtual void SetTopLevelBlameContext(
-      base::trace_event::BlameContext* blame_context);
 
   // Sets the kind of renderer process. Should be called on the main thread
   // once.

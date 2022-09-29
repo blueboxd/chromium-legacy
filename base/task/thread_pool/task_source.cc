@@ -110,6 +110,13 @@ RegisteredTaskSource& RegisteredTaskSource::operator=(
   return *this;
 }
 
+void RegisteredTaskSource::OnBecomeReady() {
+#if DCHECK_IS_ON()
+  DCHECK_EQ(run_step_, State::kInitial);
+#endif  // DCHECK_IS_ON()
+  task_source_->OnBecomeReady();
+}
+
 TaskSource::RunStatus RegisteredTaskSource::WillRunTask() {
   TaskSource::RunStatus run_status = task_source_->WillRunTask();
 #if DCHECK_IS_ON()
@@ -143,6 +150,15 @@ bool RegisteredTaskSource::DidProcessTask(
   return task_source_->DidProcessTask(transaction);
 }
 
+bool RegisteredTaskSource::WillReEnqueue(TimeTicks now,
+                                         TaskSource::Transaction* transaction) {
+  DCHECK(!transaction || transaction->task_source() == get());
+#if DCHECK_IS_ON()
+  DCHECK_EQ(State::kInitial, run_step_);
+#endif  // DCHECK_IS_ON()
+  return task_source_->WillReEnqueue(now, transaction);
+}
+
 RegisteredTaskSource::RegisteredTaskSource(
     scoped_refptr<TaskSource> task_source,
     TaskTracker* task_tracker)
@@ -163,6 +179,27 @@ TransactionWithRegisteredTaskSource::FromTaskSource(
   auto transaction = task_source_in->BeginTransaction();
   return TransactionWithRegisteredTaskSource(std::move(task_source_in),
                                              std::move(transaction));
+}
+
+TaskSourceAndTransaction::TaskSourceAndTransaction(
+    TaskSourceAndTransaction&& other) = default;
+
+TaskSourceAndTransaction::~TaskSourceAndTransaction() = default;
+
+TaskSourceAndTransaction::TaskSourceAndTransaction(
+    scoped_refptr<TaskSource> task_source_in,
+    TaskSource::Transaction transaction_in)
+    : task_source(std::move(task_source_in)),
+      transaction(std::move(transaction_in)) {
+  DCHECK_EQ(task_source.get(), transaction.task_source());
+}
+
+// static:
+TaskSourceAndTransaction TaskSourceAndTransaction::FromTaskSource(
+    scoped_refptr<TaskSource> task_source_in) {
+  auto transaction = task_source_in->BeginTransaction();
+  return TaskSourceAndTransaction(std::move(task_source_in),
+                                  std::move(transaction));
 }
 
 }  // namespace internal

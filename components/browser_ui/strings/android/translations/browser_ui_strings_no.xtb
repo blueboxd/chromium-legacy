@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">Nedlastingen er satt på pause</translation>
 <translation id="1409426117486808224">Forenklet visning for åpne faner</translation>
 <translation id="1415402041810619267">Nettadressen er avkortet</translation>
+<translation id="1426410128494586442">Ja</translation>
 <translation id="1446450296470737166">Full kontroll over MIDI-enheter</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1644574205037202324">Logg</translation>
@@ -32,6 +33,7 @@
 <translation id="1818308510395330587">For å la <ph name="APP_NAME" /> bruke AR, slå på kameraet i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" /> også.</translation>
 <translation id="1864927262126810325">Fra <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">Posisjonstilgang er slått av for denne enheten. Slå den på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
+<translation id="1915307458270490472">Legg på</translation>
 <translation id="1919345977826869612">Annonser</translation>
 <translation id="1919950603503897840">Velg kontakter</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -78,6 +80,7 @@
 <translation id="2677748264148917807">Gå ut</translation>
 <translation id="2687403674020088961">Blokkér alle informasjonskapsler (anbefales ikke)</translation>
 <translation id="2704606927547763573">Kopiert</translation>
+<translation id="2713106313042589954">Slå av kameraet</translation>
 <translation id="2717722538473713889">E-postadresser</translation>
 <translation id="2750481671343847896">Nettsteder kan vise påloggingsforespørsler fra identitetstjenester.</translation>
 <translation id="2785051990912111074">Dette valget sletter informasjonskapsler for <ph name="WEBSITE" /></translation>
@@ -97,6 +100,7 @@
 <translation id="3114012059975132928">Videospiller</translation>
 <translation id="3115898365077584848">Vis informasjon</translation>
 <translation id="3123473560110926937">Blokkert på enkelte nettsteder</translation>
+<translation id="3143754809889689516">Spill av fra begynnelsen</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> lagrede data</translation>
 <translation id="3203366800380907218">Fra nettet</translation>
 <translation id="321187648315454507">For at <ph name="APP_NAME" /> skal kunne sende deg varsler, må du også slå på varsler i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
@@ -153,10 +157,12 @@
 <translation id="4479647676395637221">Spør før nettsteder får bruke kameraet (anbefales)</translation>
 <translation id="4505788138578415521">Nettadressen er utvidet</translation>
 <translation id="4534723447064627427">For å gi <ph name="APP_NAME" /> tilgang til mikrofonen må du også slå på mikrofonen i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
+<translation id="4566417217121906555">Slå av mikrofonen</translation>
 <translation id="4570913071927164677">Detaljer</translation>
 <translation id="4645575059429386691">Administreres av foreldrene dine</translation>
 <translation id="4670064810192446073">Virtuell virkelighet</translation>
 <translation id="4751476147751820511">Bevegelses- eller lyssensorer</translation>
+<translation id="4811450222531576619">Finn ut mer om kilden og emnet</translation>
 <translation id="4836046166855586901">Spør når nettsteder vil vite når du bruker denne enheten aktivt</translation>
 <translation id="4883854917563148705">Administrerte innstillinger kan ikke tilbakestilles</translation>
 <translation id="4887024562049524730">Spør før nettsteder får bruke virtuell virkelighet-enheten din eller -dataene dine (anbefales)</translation>
@@ -177,6 +183,7 @@
 <translation id="5186036860380548585">Alternativet finner du nesten øverst på skjermen</translation>
 <translation id="5197729504361054390">Kontaktene du velger, deles med <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Sist besøkt i dag</translation>
+<translation id="5225463052809312700">Slå på kameraet</translation>
 <translation id="5264323282659631142">Fjern «<ph name="CHIP_LABEL" />»</translation>
 <translation id="528192093759286357">Dra ned fra toppen og trykk på tilbakeknappen for å avslutte fullskjerm.</translation>
 <translation id="5300589172476337783">Vis</translation>
@@ -235,8 +242,10 @@
 <translation id="6367753977865761591">Blokkér pålogging fra tredjeparter for bestemte nettsteder.</translation>
 <translation id="6388207532828177975">Slett alt og tilbakestill</translation>
 <translation id="6398765197997659313">Avslutt fullskjerm</translation>
+<translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Blokkér nettsteder fra å bruke virtuell virkelighet-enheten din og -dataene dine</translation>
 <translation id="6447842834002726250">Informasjonskapsler</translation>
+<translation id="6467852467360539617">Fjern data og tilbakestill tillatelser</translation>
 <translation id="6527303717912515753">Del</translation>
 <translation id="6545864417968258051">Bluetooth-skanning</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> og <ph name="NUM_MORE" /> til er blokkert}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> og <ph name="NUM_MORE" /> til er blokkert}}</translation>
@@ -276,6 +285,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> er valgt</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> og <ph name="PERMISSION_2" /> er tillatt</translation>
 <translation id="7302486331832100261">Du blokkerer vanligvis varsler. For å tillate dette trykker du på Detaljer.</translation>
+<translation id="7383715096023715447">Innstillinger for <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Spør først</translation>
 <translation id="7423538860840206698">Blokkert fra å lese utklippstavlen</translation>
 <translation id="7425915948813553151">Mørkt tema for nettsteder</translation>
@@ -335,6 +345,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 informasjonskapsel er i bruk}other{# informasjonskapsler er i bruk}}</translation>
 <translation id="8487700953926739672">Tilgjengelig utenfor nettet</translation>
 <translation id="848952951823693243">Be alltid om mobilnettstedet</translation>
+<translation id="8499083585497694743">Slå på mikrofonen</translation>
 <translation id="851751545965956758">Blokkér at nettsteder kobler til enheter</translation>
 <translation id="8525306231823319788">Full skjerm</translation>
 <translation id="857943718398505171">Tillatt (anbefales)</translation>

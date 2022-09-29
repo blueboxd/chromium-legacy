@@ -29,10 +29,9 @@ PendingBeaconHost::PendingBeaconHost(
 void PendingBeaconHost::CreateBeacon(
     mojo::PendingReceiver<blink::mojom::PendingBeacon> receiver,
     const GURL& url,
-    blink::mojom::BeaconMethod method,
-    base::TimeDelta timeout) {
+    blink::mojom::BeaconMethod method) {
   auto beacon =
-      std::make_unique<Beacon>(url, method, timeout, this, std::move(receiver));
+      std::make_unique<Beacon>(url, method, this, std::move(receiver));
   beacons_.emplace_back(std::move(beacon));
 }
 
@@ -76,14 +75,12 @@ void Beacon::Deactivate() {
 
 Beacon::Beacon(const GURL& url,
                blink::mojom::BeaconMethod method,
-               base::TimeDelta timeout,
                PendingBeaconHost* beacon_host,
                mojo::PendingReceiver<blink::mojom::PendingBeacon> receiver)
     : receiver_(this, std::move(receiver)),
       beacon_host_(beacon_host),
       url_(url),
-      method_(method),
-      timeout_(timeout) {
+      method_(method) {
   DCHECK(beacon_host_);
 }
 
@@ -104,11 +101,38 @@ void Beacon::SetRequestData(
 
   content_type_ = content_type;
 
-  // Move all DataElement into `request_elements_`.
   if (!request_body->elements_mutable()) {
     return;
   }
-  request_elements_ = std::move(*request_body->elements_mutable());
+  if (request_body->elements()->empty()) {
+    return;
+  }
+  if (request_body->elements()->size() != 1) {
+    mojo::ReportBadMessage("Complex body is not supported yet");
+    return;
+  }
+  auto& data_element = (*request_body->elements_mutable())[0];
+  switch (data_element.type()) {
+    case network::DataElement::Tag::kBytes:
+    case network::DataElement::Tag::kDataPipe:
+    case network::DataElement::Tag::kFile:
+      // These are copyable and supported types.
+      break;
+    case network::DataElement::Tag::kChunkedDataPipe:
+      // This is an uncopyable and unsupported type.
+      mojo::ReportBadMessage("Streaming body is not supported.");
+      return;
+  }
+  request_element_ = std::move(data_element);
+}
+
+void Beacon::SetRequestURL(const GURL& url) {
+  // Only GET Beacon is allowed to update its URL after construction.
+  if (method_ != blink::mojom::BeaconMethod::kGet) {
+    mojo::ReportBadMessage("Unexpected BeaconMethod from renderer");
+    return;
+  }
+  url_ = url;
 }
 
 void Beacon::SendNow() {
@@ -117,6 +141,8 @@ void Beacon::SendNow() {
 
 const std::unique_ptr<network::ResourceRequest>
 Beacon::GenerateResourceRequest() const {
+  DCHECK(method_ == blink::mojom::BeaconMethod::kGet ||
+         method_ == blink::mojom::BeaconMethod::kPost);
   auto request = std::make_unique<network::ResourceRequest>();
   if (method_ == blink::mojom::BeaconMethod::kGet) {
     request->method = net::HttpRequestHeaders::kGetMethod;
@@ -128,6 +154,14 @@ Beacon::GenerateResourceRequest() const {
     if (!content_type_.empty()) {
       request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
                                  content_type_);
+    }
+    if (request_element_.has_value()) {
+      request->request_body =
+          base::MakeRefCounted<network::ResourceRequestBody>();
+      DCHECK_NE(request_element_->type(),
+                network::DataElement::Tag::kChunkedDataPipe);
+      request->request_body->elements_mutable()->push_back(
+          request_element_->Clone());
     }
   }
   return request;

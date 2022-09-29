@@ -44,6 +44,8 @@ from collections import defaultdict
 import six
 from six.moves import zip_longest
 
+from urllib.parse import urljoin
+
 from blinkpy.common import exit_codes
 from blinkpy.common import find_files
 from blinkpy.common import read_checksum_from_png
@@ -297,29 +299,17 @@ class Port(object):
 
     @memoized
     def flag_specific_config_name(self):
-        """Returns the name of the flag-specific configuration which best matches
-           self._specified_additional_driver_flags(), or the first specified flag
-           with leading '-'s stripped if no match in the configuration is found.
+        """Returns the name of the flag-specific configuration if it's specified in
+           --flag-specific option, or None. The name must be defined in
+           FlagSpecificConfig or an AssertionError will be raised.
         """
-        specified_flags = self._specified_additional_driver_flags()
-        if not specified_flags:
-            return None
-
-        best_match = None
-        configs = self._flag_specific_configs()
-        for name in configs:
-            # To match the specified flags must start with all config args.
-            args = configs[name]
-            if specified_flags[:len(args)] != args:
-                continue
-            # The first config matching the highest number of specified flags wins.
-            if not best_match or len(configs[best_match]) < len(args):
-                best_match = name
-
-        if best_match:
-            return best_match
-        # If no match, fallback to the old mode: using the name of the first specified flag.
-        return specified_flags[0].lstrip('-')
+        config_name = self.get_option('flag_specific')
+        if config_name:
+            configs = self._flag_specific_configs()
+            assert config_name in configs, '{} is not defined in FlagSpecificConfig'.format(
+                config_name)
+            return config_name
+        return None
 
     @memoized
     def _flag_specific_configs(self):
@@ -367,12 +357,9 @@ class Port(object):
         if self._filesystem.exists(flag_file):
             flags = self._filesystem.read_text_file(flag_file).split()
 
-        flag_specific_option = self.get_option('flag_specific')
+        flag_specific_option = self.flag_specific_config_name()
         if flag_specific_option:
-            configs = self._flag_specific_configs()
-            assert flag_specific_option in configs, '{} is not defined in FlagSpecificConfig'.format(
-                flag_specific_option)
-            flags += configs[flag_specific_option]
+            flags += self._flag_specific_configs()[flag_specific_option]
 
         flags += self.get_option('additional_driver_flag', [])
         return flags
@@ -492,10 +479,13 @@ class Port(object):
         return baseline_search_paths[0]
 
     def baseline_flag_specific_dir(self):
-        """If --additional-driver-flag is specified, returns the absolute path to the flag-specific
+        """If --flag-specific is specified, returns the absolute path to the flag-specific
            platform-independent results. Otherwise returns None."""
-        flag_specific_path = self._flag_specific_baseline_search_path()
-        return flag_specific_path[-1] if flag_specific_path else None
+        config_name = self.flag_specific_config_name()
+        if not config_name:
+            return None
+        return self._filesystem.join(self.web_tests_dir(), 'flag-specific',
+                                     config_name)
 
     def baseline_search_path(self):
         return (self.get_option('additional_platform_directory', []) +
@@ -1152,6 +1142,22 @@ class Port(object):
         path_in_wpt = match.group(2)
         return self.wpt_manifest(wpt_path).is_slow_test(path_in_wpt)
 
+    def extract_wpt_pac(self, test_name):
+        match = self.WPT_REGEX.match(test_name)
+        if not match:
+            return None
+        wpt_path = match.group(1)
+        path_in_wpt = match.group(2)
+        pac = self.wpt_manifest(wpt_path).extract_test_pac(path_in_wpt)
+        if pac is None:
+            return None
+
+        hosts_and_ports = self.create_driver(0).WPT_HOST_AND_PORTS
+
+        return urljoin(
+            "http://{}:{}".format(hosts_and_ports[0], hosts_and_ports[1]),
+            urljoin(path_in_wpt, pac))
+
     def get_wpt_fuzzy_metadata(self, test_name):
         """Returns the WPT-style fuzzy metadata for the given test.
 
@@ -1239,15 +1245,6 @@ class Port(object):
                 return val
 
         return [tryint(chunk) for chunk in re.split(r'(\d+)', string_to_split)]
-
-    def test_dirs(self):
-        """Returns the list of top-level test directories."""
-        web_tests_dir = self.web_tests_dir()
-        fs = self._filesystem
-        return [
-            d for d in fs.listdir(web_tests_dir)
-            if fs.isdir(fs.join(web_tests_dir, d))
-        ]
 
     def read_test(self, test_name, encoding="utf8"):
         """Returns the contents of the given test according to the given encoding.
@@ -1497,6 +1494,10 @@ class Port(object):
     @memoized
     def args_for_test(self, test_name):
         args = self._lookup_virtual_test_args(test_name)
+        pac_url = self.extract_wpt_pac(test_name)
+        if pac_url is not None:
+            args.append("--proxy-pac-url=" + pac_url)
+
         tracing_categories = self.get_option('enable_tracing')
         if tracing_categories:
             args.append('--trace-startup=' + tracing_categories)
@@ -1823,18 +1824,8 @@ class Port(object):
             return self.path_to_flag_specific_expectations_file(config_name)
 
     def _flag_specific_baseline_search_path(self):
-        config_name = self.flag_specific_config_name()
-        if not config_name:
-            return []
-        flag_dir = self._filesystem.join(self.web_tests_dir(), 'flag-specific',
-                                         config_name)
-        # FIXME: should we delete the line below? We only run flag specific
-        # tests on linux now
-        baseline_dirs = [
-            self._filesystem.join(flag_dir, 'platform', baseline_dir)
-            for baseline_dir in self.FALLBACK_PATHS[self.version()]
-        ]
-        return baseline_dirs + [flag_dir]
+        dir = self.baseline_flag_specific_dir()
+        return [dir] if dir else []
 
     def expectations_dict(self):
         """Returns an OrderedDict of name -> expectations strings.

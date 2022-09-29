@@ -34,7 +34,9 @@ message ClientContextProto {
     optional string chrome_version = 1;
     repeated FieldTrialProto active_field_trials = 2;
   }
-  oneof client { Chrome chrome = 1; }
+  oneof client {
+    Chrome chrome = 1;
+  }
 
   // locale will be the language tag of the default locale. The tag should
   // be a well-formed IETF BCP 47 language tag with language and country code
@@ -229,6 +231,19 @@ message GetCapabilitiesByHashPrefixRequestProto {
   repeated ScriptParameterProto script_parameters = 4;
 }
 
+// Information that is passed from the bundle to the caller in GetCapabilities
+// RPC requests.
+// Next ID: 2
+message BundleCapabilitiesInformationProto {
+  // Information used by Chrome's FastCheckout vertical.
+  message ChromeFastCheckoutProto {
+    // A list of form signatures on which to trigger the bundle.
+    repeated uint64 trigger_form_signatures = 1 [packed = true];
+  }
+
+  optional ChromeFastCheckoutProto chrome_fast_checkout = 1;
+}
+
 message GetCapabilitiesByHashPrefixResponseProto {
   message MatchInfoProto {
     // Domain url that matches one of the requested hash prefixes.
@@ -240,6 +255,11 @@ message GetCapabilitiesByHashPrefixResponseProto {
     // Clients are required to add those parameters themselves if needed to.
     // They are omitted here to reduce the size of the response.
     repeated ScriptParameterProto script_parameters_override = 2;
+
+    // Additional information that a bundle may wish to pass to the caller of
+    // the GetCapabilities RPC call.
+    optional BundleCapabilitiesInformationProto
+        bundle_capabilities_information = 3;
   }
   // Match information for the requested hash prefixes. No correlation should
   // be assumed between the order of returned info and the order of requested
@@ -756,7 +776,9 @@ message ActionsResponseProto {
   // Note: This is an intermediate solution and the logic associated with this
   // field will eventually be absorbed into the supports script response from
   // the backend.
-  message UpdateScriptListProto { repeated SupportedScriptProto scripts = 1; }
+  message UpdateScriptListProto {
+    repeated SupportedScriptProto scripts = 1;
+  }
   optional UpdateScriptListProto update_script_list = 5;
 
   // Needs to be evaluated before each JS flow action. Contains function
@@ -766,6 +788,10 @@ message ActionsResponseProto {
 
   // Id of the current run.
   optional uint64 run_id = 12;
+
+  // Opaque data for reporting progress. Only included in the initial response
+  // from GetActions.
+  optional string report_token = 14;
 
   reserved 1, 6 to 10;
 }
@@ -1072,6 +1098,8 @@ message ActionProto {
     SetNativeValueProto set_native_value = 96;
     SetNativeCheckedProto set_native_checked = 97;
     PromptQrCodeScanProto prompt_qr_code_scan = 98;
+    ReportProgressProto report_progress = 99;
+    ParseSingleTagXmlProto parse_single_tag_xml = 100;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -1863,11 +1891,67 @@ message PromptQrCodeScanProto {
 
     // Instruction text shown during camera preview.
     optional string camera_preview_instruction_text = 6;
+
+    // Security text shown during camera preview.
+    optional string camera_preview_security_text = 7;
+  }
+
+  // UI strings shown to the user during QR Code Scanning via Image Picker.
+  message ImagePickerUiStrings {
+    // Text to be displayed as title on Toolbar.
+    optional string title_text = 1;
+
+    // Text to ask users to grant permission to access images.
+    optional string permission_text = 2;
+
+    // Text on action button while asking users to grant permission to
+    // access images.
+    optional string permission_button_text = 3;
+
+    // Text to ask users to grant media permissions by going into system
+    // settings.
+    optional string open_settings_text = 4;
+
+    // Text on action button while asking users to grant media permissions
+    //  by going into system settings.
+    optional string open_settings_button_text = 5;
   }
 
   // UI strings shown during camera scan. This is a mandatory field when QR Code
   // Scanning via Camera Preview is to be triggered.
   optional CameraScanUiStrings camera_scan_ui_strings = 3;
+
+  // UI strings shown during image picker. This is a mandatory field when QR
+  // Code Scanning via Image Picker is to be triggered.
+  optional ImagePickerUiStrings image_picker_ui_strings = 4;
+}
+
+// Reads a single tag XML from client memory, extracts select fields based on
+// XML config specified and writes them back in the client memory.
+message ParseSingleTagXmlProto {
+  // Key to read the input single tag XML from client memory, |UserModel|. This
+  // is a mandatory field.
+  optional string input_client_memory_key = 1;
+
+  message Field {
+    // XML key for the field.
+    optional string key = 1;
+
+    // Key to store the extracted value in |UserModel| on the client.
+    optional string output_client_memory_key = 2;
+  }
+
+  // Spec for a field that needs to be extracted from the XML.
+  repeated Field fields = 2;
+
+  // Cases where the XML input does not match the specified XML Spec, we return
+  // a failure to the server in the form of Action Status. If this boolean
+  // is set to true, we further check if the failure was because the XML was
+  // signed(*) and show a different error message accordingly.
+  // *Note: We currently check for a XML being signed by simply checking
+  // if it only contains a plain numerical string. This may lead to
+  // misclassification when the input data is a random numeric string.
+  optional bool custom_failure_for_signed_input_data = 3 [default = true];
 }
 
 // Contain a localized text message from the server.
@@ -2750,7 +2834,8 @@ message CollectUserDataProto {
     // ignored (Chrome Autofill data is not available). If this is false, the
     // action will fail if the user data request fails, even if Chrome Autofill
     // data would have been available.
-    optional bool allow_fallback = 1 [default = true];
+    optional bool allow_fallback_on_failure = 1 [default = true];
+    optional bool allow_fallback_on_missing_data = 2;
   }
 
   optional string prompt = 1;
@@ -3475,7 +3560,9 @@ message GetElementStatusProto {
     reserved 1, 2;
   }
 
-  message ValueMatch { optional TextMatch text_match = 1; }
+  message ValueMatch {
+    optional TextMatch text_match = 1;
+  }
 
   message ComparisonReport {
     optional MatchOptions match_options = 1;
@@ -3543,4 +3630,17 @@ message ExternalActionProto {
   message Result {
     optional external.ResultInfo result_info = 1;
   }
+}
+
+// Fire-and-forget RPC request to report script progress.
+message ReportProgressRequestProto {
+  // Token sent for the current flow by the initial call to GetActions.
+  optional bytes token = 1;
+  // Data to be logged; generated at script compile time.
+  optional bytes payload = 2;
+}
+
+message ReportProgressProto {
+  // Data to be logged; generated at script compile time.
+  optional string payload = 1;
 }

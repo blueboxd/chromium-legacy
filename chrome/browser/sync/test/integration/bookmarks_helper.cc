@@ -49,7 +49,7 @@
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/sync_entity.pb.h"
 #include "components/sync/protocol/unique_position.pb.h"
-#include "components/sync/test/fake_server/entity_builder_factory.h"
+#include "components/sync/test/entity_builder_factory.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -405,8 +405,9 @@ bool NodesMatch(const BookmarkNode* node_a, const BookmarkNode* node_b) {
   }
   if (node_a->parent()->GetIndexOf(node_a) !=
       node_b->parent()->GetIndexOf(node_b)) {
-    LOG(ERROR) << "Index mismatch: " << node_a->parent()->GetIndexOf(node_a)
-               << " vs. " << node_b->parent()->GetIndexOf(node_b);
+    LOG(ERROR) << "Index mismatch: "
+               << node_a->parent()->GetIndexOf(node_a).value() << " vs. "
+               << node_b->parent()->GetIndexOf(node_b).value();
     return false;
   }
   if (node_a->guid() != node_b->guid()) {
@@ -1293,7 +1294,7 @@ bool BookmarkModelMatchesFakeServerChecker::IsExitConditionSatisfied(
     DCHECK(server_position_iter != parent_iter->second.end());
     const size_t server_position =
         server_position_iter - parent_iter->second.begin();
-    const size_t local_position = node->parent()->GetIndexOf(node);
+    const size_t local_position = node->parent()->GetIndexOf(node).value();
     if (server_position != local_position) {
       *os << "Different positions on the server and in the local model for "
              "node: "

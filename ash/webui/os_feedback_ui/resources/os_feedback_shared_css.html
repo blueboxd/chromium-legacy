@@ -11,8 +11,14 @@
       background-color: var(--cros-bg-color);
     }
 
-    a[href] {
+    a {
       color: var(--cros-link-color);
+      text-decoration: none;
+    }
+
+    a:focus,
+    a:hover {
+      text-decoration: underline;
     }
 
     #container {
@@ -38,6 +44,7 @@
       font-family: var(--feedback-google-sans-font-family);
       font-size: 22px;
       font-weight: var(--feedback-medium-font-weight);
+      line-height: 28px;
       margin: auto 0 0 0;
       margin-block-end: 0;
     }
@@ -79,6 +86,12 @@
 
     cr-button {
       line-height: 20px;
+    }
+
+    cr-checkbox {
+      --cr-checkbox-label-padding-start: 0;
+      --cr-checkbox-size: 20px;
+      margin-inline-end: 12px;
     }
   </style>
 </template>

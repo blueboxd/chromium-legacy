@@ -16,14 +16,14 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chromeos/ash/components/dbus/shill/shill_device_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_ipconfig_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/metrics/network_metrics_helper.h"
 #include "chromeos/ash/components/network/network_event_log.h"
 #include "chromeos/ash/components/network/network_state.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
-#include "chromeos/dbus/shill/shill_ipconfig_client.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -43,8 +43,7 @@ bool CheckListValue(const std::string& key, const base::Value& value) {
 
 }  // namespace
 
-namespace chromeos {
-namespace internal {
+namespace ash::internal {
 
 // Class to manage Shill service property changed observers. Observers are
 // added on construction and removed on destruction. Runs the handler when
@@ -164,8 +163,8 @@ void ShillPropertyHandler::SetTechnologyEnabled(
         prohibited_technologies_.end()) {
       NET_LOG(ERROR) << "Attempt to enable prohibited network technology: "
                      << technology;
-      chromeos::network_handler::RunErrorCallback(std::move(error_callback),
-                                                  "prohibited_technologies");
+      network_handler::RunErrorCallback(std::move(error_callback),
+                                        "prohibited_technologies");
       NetworkMetricsHelper::LogEnableTechnologyResult(technology,
                                                       /*success=*/false);
       return;
@@ -677,8 +676,8 @@ void ShillPropertyHandler::GetIPConfigCallback(
     return;
   }
   NET_LOG(EVENT) << "IP Config properties received: " << NetworkPathId(path);
-  listener_->UpdateIPConfigProperties(type, path, ip_config_path, *properties);
+  listener_->UpdateIPConfigProperties(type, path, ip_config_path,
+                                      std::move(*properties));
 }
 
-}  // namespace internal
-}  // namespace chromeos
+}  // namespace ash::internal

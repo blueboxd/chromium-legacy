@@ -439,8 +439,8 @@ class PdfPluginContextMenuBrowserTest : public InProcessBrowserTest {
     WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     // Prepare to load a pdf plugin inside.
-    test_guest_view_manager_->RegisterTestGuestViewType<MimeHandlerViewGuest>(
-        base::BindRepeating(&TestMimeHandlerViewGuest::Create));
+    TestMimeHandlerViewGuest::RegisterTestGuestViewType(
+        test_guest_view_manager_);
     ASSERT_TRUE(
         content::ExecuteScript(web_contents,
                                "var l = document.getElementById('link1');"
@@ -448,7 +448,7 @@ class PdfPluginContextMenuBrowserTest : public InProcessBrowserTest {
 
     // Wait for the guest contents of the PDF plugin is created.
     WebContents* guest_contents =
-        test_guest_view_manager_->WaitForSingleGuestCreated();
+        test_guest_view_manager_->DeprecatedWaitForSingleGuestCreated();
     TestMimeHandlerViewGuest* guest = static_cast<TestMimeHandlerViewGuest*>(
         extensions::MimeHandlerViewGuest::FromWebContents(guest_contents));
     ASSERT_TRUE(guest);
@@ -2024,8 +2024,13 @@ class SearchByRegionWithUnifiedSidePanelBrowserTest
   base::RepeatingClosure quit_closure_;
 };
 
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_LensRegionSearchWithValidRegionUnifiedSidePanel DISABLED_LensRegionSearchWithValidRegionUnifiedSidePanel
+#else
+#define MAYBE_LensRegionSearchWithValidRegionUnifiedSidePanel LensRegionSearchWithValidRegionUnifiedSidePanel
+#endif
 IN_PROC_BROWSER_TEST_F(SearchByRegionWithUnifiedSidePanelBrowserTest,
-                       LensRegionSearchWithValidRegionUnifiedSidePanel) {
+                       MAYBE_LensRegionSearchWithValidRegionUnifiedSidePanel) {
   lens::CreateLensUnifiedSidePanelEntryForTesting(browser());
   SetupAndLoadPage("/empty.html");
   // We need a base::RunLoop to ensure that our test does not finish until the
@@ -2188,15 +2193,8 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
   ASSERT_TRUE(response_received);
 }
 
-// Flaky on Linux and LaCros. http://crbug.com/1234671
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#define MAYBE_LensImageSearchWithValidImage \
-  DISABLED_LensImageSearchWithValidImage
-#else
-#define MAYBE_LensImageSearchWithValidImage LensImageSearchWithValidImage
-#endif
 IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest,
-                       MAYBE_LensImageSearchWithValidImage) {
+                       LensImageSearchWithValidImage) {
   SetupAndLoadValidImagePage();
 
   ui_test_utils::AllBrowserTabAddedWaiter add_tab;

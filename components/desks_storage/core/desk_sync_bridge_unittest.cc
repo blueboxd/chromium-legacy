@@ -33,9 +33,9 @@
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/protocol/entity_data.h"
 #include "components/sync/protocol/model_type_state.pb.h"
-#include "components/sync/test/model/mock_model_type_change_processor.h"
-#include "components/sync/test/model/model_type_store_test_util.h"
-#include "components/sync/test/model/test_matchers.h"
+#include "components/sync/test/mock_model_type_change_processor.h"
+#include "components/sync/test/model_type_store_test_util.h"
+#include "components/sync/test/test_matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1137,25 +1137,17 @@ TEST_F(DeskSyncBridgeTest, GetAllEntriesIncludesPolicyEntries) {
 
   EXPECT_EQ(4ul, bridge()->GetAllEntryUuids().size());
 
-  base::RunLoop loop;
-  bridge()->GetAllEntries(base::BindLambdaForTesting(
-      [&](DeskModel::GetAllEntriesStatus status,
-          const std::vector<const ash::DeskTemplate*>& entries) {
-        EXPECT_EQ(status, DeskModel::GetAllEntriesStatus::kOk);
-        EXPECT_EQ(entries.size(), 4ul);
+  auto result = bridge()->GetAllEntries();
+  EXPECT_EQ(result.status, DeskModel::GetAllEntriesStatus::kOk);
+  EXPECT_EQ(result.entries.size(), 4ul);
 
-        // Two of these templates should be from policy.
-        EXPECT_EQ(
-            base::ranges::count_if(entries,
+  // Two of these templates should be from policy.
+  EXPECT_EQ(base::ranges::count_if(result.entries,
                                    [](const ash::DeskTemplate* entry) {
                                      return entry->source() ==
                                             ash::DeskTemplateSource::kPolicy;
                                    }),
             2l);
-
-        loop.Quit();
-      }));
-  loop.Run();
 
   bridge()->SetPolicyDeskTemplates("");
 }
@@ -1242,9 +1234,9 @@ TEST_F(DeskSyncBridgeTest, AddEntryShouldSucceedWheSyncIsDisabled) {
 
   base::RunLoop loop;
   bridge()->AddOrUpdateEntry(
-      std::make_unique<DeskTemplate>(
-          kTestUuid1.AsLowercaseString(), DeskTemplateSource::kUser,
-          "template 1", AdvanceAndGetTime(), DeskTemplateType::kTemplate),
+      std::make_unique<DeskTemplate>(kTestUuid1, DeskTemplateSource::kUser,
+                                     "template 1", AdvanceAndGetTime(),
+                                     DeskTemplateType::kTemplate),
       base::BindLambdaForTesting([&](DeskModel::AddOrUpdateEntryStatus status) {
         EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kOk);
         loop.Quit();
@@ -1264,9 +1256,9 @@ TEST_F(DeskSyncBridgeTest, AddEntryShouldFailWhenBridgeIsNotReady) {
 
   base::RunLoop loop;
   bridge()->AddOrUpdateEntry(
-      std::make_unique<DeskTemplate>(
-          kTestUuid1.AsLowercaseString(), DeskTemplateSource::kUser,
-          "template 1", AdvanceAndGetTime(), DeskTemplateType::kTemplate),
+      std::make_unique<DeskTemplate>(kTestUuid1, DeskTemplateSource::kUser,
+                                     "template 1", AdvanceAndGetTime(),
+                                     DeskTemplateType::kTemplate),
       base::BindLambdaForTesting([&](DeskModel::AddOrUpdateEntryStatus status) {
         EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kFailure);
         loop.Quit();
@@ -1425,8 +1417,7 @@ TEST_F(DeskSyncBridgeTest, UpdateEntryLocally) {
 
   base::RunLoop loop;
   bridge()->AddOrUpdateEntry(
-      std::make_unique<DeskTemplate>(kTestUuid1.AsLowercaseString(),
-                                     DeskTemplateSource::kUser,
+      std::make_unique<DeskTemplate>(kTestUuid1, DeskTemplateSource::kUser,
                                      "updated template 1", AdvanceAndGetTime(),
                                      DeskTemplateType::kTemplate),
       base::BindLambdaForTesting([&](DeskModel::AddOrUpdateEntryStatus status) {

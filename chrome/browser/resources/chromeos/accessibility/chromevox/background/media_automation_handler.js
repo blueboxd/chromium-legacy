@@ -5,7 +5,10 @@
 /**
  * @fileoverview Handles media automation events.
  */
+import {TtsCapturingEventListener} from '../common/tts_interface.js';
+
 import {BaseAutomationHandler} from './base_automation_handler.js';
+import {ChromeVox} from './chromevox.js';
 
 const AutomationEvent = chrome.automation.AutomationEvent;
 const AutomationNode = chrome.automation.AutomationNode;

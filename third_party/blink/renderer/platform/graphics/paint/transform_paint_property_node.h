@@ -159,6 +159,30 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     bool is_running_animation_on_compositor = false;
   };
 
+  // For the purpose of computing the translation offset caused by CSS
+  // `anchor-scroll`, this structure stores the range of the scroll containers
+  // (both ends inclusive) whose scroll offsets are accumulated.
+  struct AnchorScrollContainersData {
+    scoped_refptr<const TransformPaintPropertyNode> inner_most_scroll_container;
+    scoped_refptr<const TransformPaintPropertyNode> outer_most_scroll_container;
+    gfx::Vector2d accumulated_scroll_origin;
+
+    AnchorScrollContainersData(scoped_refptr<const TransformPaintPropertyNode>
+                                   inner_most_scroll_container,
+                               scoped_refptr<const TransformPaintPropertyNode>
+                                   outer_most_scroll_container,
+                               gfx::Vector2d accumulated_scroll_origin)
+        : inner_most_scroll_container(std::move(inner_most_scroll_container)),
+          outer_most_scroll_container(std::move(outer_most_scroll_container)),
+          accumulated_scroll_origin(accumulated_scroll_origin) {}
+
+    bool operator==(const AnchorScrollContainersData& other) const {
+      return inner_most_scroll_container == other.inner_most_scroll_container &&
+             outer_most_scroll_container == other.outer_most_scroll_container &&
+             accumulated_scroll_origin == other.accumulated_scroll_origin;
+    }
+  };
+
   // To make it less verbose and more readable to construct and update a node,
   // a struct with default values is used to represent the state.
   struct PLATFORM_EXPORT State {
@@ -181,10 +205,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
     std::unique_ptr<CompositorStickyConstraint> sticky_constraint;
-    // Scroll container of the element specified by the 'anchor-scroll'
-    // property, if this element uses anchor positioning and is not in the same
-    // scroll container.
-    scoped_refptr<const TransformPaintPropertyNode> anchor_scroll_container;
+    std::unique_ptr<AnchorScrollContainersData> anchor_scroll_containers_data;
     // If a visible frame is rooted at this node, this represents the element
     // ID of the containing document.
     CompositorElementId visible_frame_element_id;
@@ -192,13 +213,6 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     PaintPropertyChangeType ComputeChange(
         const State& other,
         const AnimationState& animation_state) const;
-
-    bool StickyConstraintEquals(const State& other) const {
-      if (!sticky_constraint && !other.sticky_constraint)
-        return true;
-      return sticky_constraint && other.sticky_constraint &&
-             *sticky_constraint == *other.sticky_constraint;
-    }
   };
 
   // This node is really a sentinel, and does not represent a real transform
@@ -279,14 +293,22 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return state_.sticky_constraint.get();
   }
 
-  const TransformPaintPropertyNode* GetAnchorScrollContainer() const {
-    return state_.anchor_scroll_container.get();
+  const AnchorScrollContainersData* GetAnchorScrollContainersData() const {
+    return state_.anchor_scroll_containers_data.get();
   }
 
   // If this is a scroll offset translation (i.e., has an associated scroll
   // node), returns this. Otherwise, returns the transform node that this node
-  // scrolls with respect to. This can require a full ancestor traversal.
-  const TransformPaintPropertyNode& NearestScrollTranslationNode() const;
+  // scrolls with respect to.
+  const TransformPaintPropertyNode& NearestScrollTranslationNode() const {
+    return GetTransformCache().nearest_scroll_translation();
+  }
+
+  // Returns the nearest ancestor node (including |this|) that has direct
+  // compositing reasons.
+  const TransformPaintPropertyNode* NearestDirectlyCompositedAncestor() const {
+    return GetTransformCache().nearest_directly_composited_ancestor();
+  }
 
   // If true, content with this transform node (or its descendant) appears in
   // the plane of its parent. This is implemented by flattening the total
@@ -300,6 +322,10 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   // |IsBackfaceHidden()| for production code.
   BackfaceVisibility GetBackfaceVisibilityForTesting() const {
     return state_.backface_visibility;
+  }
+
+  bool IsBackfaceHidden() const {
+    return GetTransformCache().is_backface_hidden();
   }
 
   // Returns true if the backface visibility for this node is the same as that
@@ -322,19 +348,6 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       return true;
     return state_.flags.flattens_inherited_transform ==
            Parent()->Unalias().state_.flags.flattens_inherited_transform;
-  }
-
-  // Returns the first non-inherited BackefaceVisibility value along the
-  // transform node ancestor chain, including this node's value if it is
-  // non-inherited. TODO(wangxianzhu): Let PaintPropertyTreeBuilder calculate
-  // the value instead of walking up the tree.
-  bool IsBackfaceHidden() const {
-    const auto* node = this;
-    while (node &&
-           node->state_.backface_visibility == BackfaceVisibility::kInherited)
-      node = node->UnaliasedParent();
-    return node &&
-           node->state_.backface_visibility == BackfaceVisibility::kHidden;
   }
 
   bool HasDirectCompositingReasons() const {
@@ -434,6 +447,12 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return state_.direct_compositing_reasons;
   }
 
+  bool IsBackfaceHiddenInternal(bool parent_backface_hidden) const {
+    if (state_.backface_visibility == BackfaceVisibility::kInherited)
+      return parent_backface_hidden;
+    return state_.backface_visibility == BackfaceVisibility::kHidden;
+  }
+
   void Validate() const {
 #if DCHECK_IS_ON()
     if (state_.scroll) {
@@ -468,7 +487,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 
   const GeometryMapperTransformCache& GetTransformCache() const {
     if (!transform_cache_)
-      transform_cache_.reset(new GeometryMapperTransformCache);
+      transform_cache_ = std::make_unique<GeometryMapperTransformCache>();
     transform_cache_->UpdateIfNeeded(*this);
     return *transform_cache_;
   }

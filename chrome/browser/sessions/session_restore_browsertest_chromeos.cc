@@ -14,6 +14,7 @@
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/ash/system_web_apps/test_support/system_web_app_browsertest_base.h"
+#include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_installation.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
@@ -154,8 +155,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreBrowserWindows) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Assigns three browser windows to three different desks.
+// https://crbug.com/1337306
 IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
-                       PRE_RestoreBrowserWindowsToDesks) {
+                       DISABLED_PRE_RestoreBrowserWindowsToDesks) {
   // Create two more desks so we have three desks in total.
   ash::AutotestDesksApi().CreateNewDesk();
   ash::AutotestDesksApi().CreateNewDesk();
@@ -188,8 +190,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
 
 // Verifies that three windows restored to their right desk after restored. Also
 // verifies that the fourth window is visible on all desks after being restored.
+// https://crbug.com/1337306
 IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
-                       RestoreBrowserWindowsToDesks) {
+                       DISABLED_RestoreBrowserWindowsToDesks) {
   auto* browser_list = BrowserList::GetInstance();
   ASSERT_EQ(3u, browser_list->size());
 

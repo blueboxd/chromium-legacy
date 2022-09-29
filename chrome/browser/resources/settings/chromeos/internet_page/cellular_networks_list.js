@@ -8,7 +8,7 @@
  */
 
 import 'chrome://resources/cr_components/chromeos/cellular_setup/cellular_eid_dialog.m.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_indicator.m.js';
@@ -607,10 +607,10 @@ class CellularNetworksListElement extends CellularNetworksListElementBase {
   /*
    * Returns the add esim button. If the device does not have an EUICC, no eSIM
    * slot, or policies prohibit users from adding a network, null is returned.
-   * @return {?CrIconButtonElement}
+   * @return {?HTMLElement}
    */
   getAddEsimButton() {
-    return /** @type {?CrIconButtonElement} */ (
+    return /** @type {?HTMLElement} */ (
         this.shadowRoot.querySelector('#addESimButton'));
   }
 

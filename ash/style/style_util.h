@@ -6,12 +6,22 @@
 #define ASH_STYLE_STYLE_UTIL_H_
 
 #include "ash/ash_export.h"
+#include "ash/style/ash_color_provider_source.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/color_palette.h"
-#include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/gfx/geometry/insets.h"
+
+namespace aura {
+class Window;
+}  // namespace aura
 
 namespace views {
 class Button;
 class FocusRing;
+class InkDrop;
+class InkDropHighlight;
+class InkDropRipple;
 class View;
 }  // namespace views
 
@@ -28,6 +38,29 @@ class ASH_EXPORT StyleUtil {
     kHighlightOpacity = 1 << 2
   };
 
+  static constexpr float kLightInkDropOpacity = 0.08f;
+  static constexpr float kDarkInkDropOpacity = 0.06f;
+
+  static float GetInkDropOpacity();
+
+  // Creates an InkDrop instance for `host`. All styles are configured to show
+  // the highlight when the ripple is visible.
+  static std::unique_ptr<views::InkDrop> CreateInkDrop(
+      views::Button* host,
+      bool highlight_on_hover = false,
+      bool highlight_on_focus = false);
+
+  // Crates an InkDropRipple instance for `host` with `insets`.
+  static std::unique_ptr<views::InkDropRipple> CreateInkDropRipple(
+      const gfx::Insets& insets,
+      const views::View* host,
+      SkColor background_color = gfx::kPlaceholderColor);
+
+  // Creates an InkDropHighlight instance for `host`.
+  static std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight(
+      const views::View* host,
+      SkColor background_color);
+
   // Sets attributes(e.g, insets) for creating the inkdrop ripple. Note, A
   // FloodFillInkDropRipple will be created for the given `host`.
   static void SetRippleParams(
@@ -35,17 +68,15 @@ class ASH_EXPORT StyleUtil {
       const gfx::Insets& insets,
       SkColor background_color = gfx::kPlaceholderColor);
 
-  // TODO: Remove TrayPopupUtils::ConfigureTrayPopupButton and migrate all its
-  // clients to this function.
   // Sets up the inkdrop for the given `button`. Including setting the callback
   // for InkDrop, Ripple, Highlight. Inside the callback functions, they will
   // setup whether to show the highlight on hover or focus, inkdrop color,
   // opacity etc.
   static void SetUpInkDropForButton(
       views::Button* button,
-      const gfx::Insets& ripple_insets,
-      bool highlight_on_hover,
-      bool highlight_on_focus,
+      const gfx::Insets& ripple_insets = gfx::Insets(),
+      bool highlight_on_hover = false,
+      bool highlight_on_focus = false,
       SkColor background_color = gfx::kPlaceholderColor);
 
   // Configures the InkDropAttributes for the given `view` based on
@@ -61,6 +92,11 @@ class ASH_EXPORT StyleUtil {
   static views::FocusRing* SetUpFocusRingForView(
       views::View* view,
       absl::optional<int> halo_inset = absl::nullopt);
+
+  // Returns the color provider source for the given `window` if it has
+  // has a root window, otherwise returns nullptr.
+  static AshColorProviderSource* GetColorProviderSourceForWindow(
+      const aura::Window* window);
 
  private:
   StyleUtil() = default;

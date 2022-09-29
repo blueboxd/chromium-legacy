@@ -22,7 +22,6 @@
 #include "chromeos/ash/components/network/network_state_test_helper.h"
 #include "chromeos/ash/components/network/onc/network_onc_utils.h"
 #include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "chromeos/services/network_config/public/mojom/network_types.mojom-shared.h"
@@ -41,7 +40,6 @@ namespace {
 class VersionUpdaterTest : public testing::Test {
  public:
   VersionUpdaterTest() {
-    chromeos::DBusThreadManager::Initialize();
     fake_update_engine_client_ = UpdateEngineClient::InitializeFakeForTest();
     cros_network_config_test_helper_ =
         std::make_unique<network_config::CrosNetworkConfigTestHelper>(false);
@@ -63,7 +61,6 @@ class VersionUpdaterTest : public testing::Test {
     network_profile_handler_.reset();
     ui_proxy_config_service_.reset();
     UpdateEngineClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
   }
 
  protected:
@@ -96,7 +93,7 @@ class VersionUpdaterTest : public testing::Test {
     return *cros_network_config_test_helper_;
   }
 
-  chromeos::NetworkStateTestHelper& network_state_helper() {
+  NetworkStateTestHelper& network_state_helper() {
     return cros_network_config_test_helper_->network_state_helper();
   }
 
@@ -112,7 +109,7 @@ class VersionUpdaterTest : public testing::Test {
     ::onc::RegisterProfilePrefs(user_prefs_.registry());
     ::onc::RegisterPrefs(local_state_.registry());
 
-    ui_proxy_config_service_ = std::make_unique<chromeos::UIProxyConfigService>(
+    ui_proxy_config_service_ = std::make_unique<UIProxyConfigService>(
         &user_prefs_, &local_state_,
         network_state_helper().network_state_handler(),
         network_profile_handler_.get());
@@ -185,7 +182,7 @@ TEST_F(VersionUpdaterTest, IsIdleWhenUpdateEngineIdle) {
 
 TEST_F(VersionUpdaterTest, IsNotIdleWhenUpdateEngineNotIdle) {
   update_engine::StatusResult status;
-  status.set_current_operation(update_engine::Operation::CHECKING_FOR_UPDATE);
+  status.set_current_operation(update_engine::Operation::DOWNLOADING);
   fake_update_engine_client().set_default_status(status);
   EXPECT_FALSE(version_updater().IsUpdateEngineIdle());
 }

@@ -44,6 +44,7 @@ declare global {
         FROM_STORE = 'FROM_STORE',
         UNPACKED = 'UNPACKED',
         THIRD_PARTY = 'THIRD_PARTY',
+        INSTALLED_BY_DEFAULT = 'INSTALLED_BY_DEFAULT',
         UNKNOWN = 'UNKNOWN',
       }
 
@@ -391,12 +392,12 @@ declare global {
       };
 
       export type SiteInfo = {
-        siteList: UserSiteSet,
-        site: string,
+        siteList?: UserSiteSet, numExtensions: number, site: string,
       };
 
       export type SiteGroup = {
         etldPlusOne: string,
+        numExtensions: number,
         sites: SiteInfo[],
       };
 

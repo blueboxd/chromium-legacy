@@ -14,6 +14,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.mockito.Mockito.when;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 import static org.chromium.components.browser_ui.widget.highlight.ViewHighlighterTestUtils.checkHighlightOff;
 import static org.chromium.components.browser_ui.widget.highlight.ViewHighlighterTestUtils.checkHighlightPulse;
 
@@ -98,7 +99,7 @@ import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.ui.signin.SigninPromoController.SyncPromoState;
+import org.chromium.chrome.browser.ui.signin.SyncPromoController.SyncPromoState;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ActivityTestUtils;
@@ -1231,6 +1232,7 @@ public class BookmarkTest {
     @Test
     @SmallTest
     @Features.EnableFeatures({ChromeFeatureList.READ_LATER})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testReadingListEmptyView() throws Exception {
         BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.NO_PROMO);
         openBookmarkManager();

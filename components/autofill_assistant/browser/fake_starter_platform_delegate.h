@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "components/autofill_assistant/browser/fake_common_dependencies.h"
+#include "components/autofill_assistant/browser/fake_platform_dependencies.h"
 #include "components/autofill_assistant/browser/starter_platform_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -49,9 +50,9 @@ class FakeStarterPlatformDelegate : public StarterPlatformDelegate {
   void HideOnboarding() override;
   bool GetProactiveHelpSettingEnabled() const override;
   void SetProactiveHelpSettingEnabled(bool enabled) override;
-  bool GetMakeSearchesAndBrowsingBetterEnabled() const override;
   bool GetIsLoggedIn() override;
   bool GetIsSupervisedUser() override;
+  bool GetIsAllowedForMachineLearning() override;
   bool GetIsCustomTab() const override;
   bool GetIsWebLayer() const override;
   bool GetIsTabCreatedByGSA() const override;
@@ -63,6 +64,7 @@ class FakeStarterPlatformDelegate : public StarterPlatformDelegate {
 
   // Intentionally public to give tests direct access.
   FakeCommonDependencies fake_common_dependencies_;
+  FakePlatformDependencies fake_platform_dependencies_;
   std::unique_ptr<TriggerScriptCoordinator::UiDelegate>
       trigger_script_ui_delegate_;
   std::unique_ptr<ServiceRequestSender> trigger_script_request_sender_for_test_;
@@ -79,9 +81,9 @@ class FakeStarterPlatformDelegate : public StarterPlatformDelegate {
       base::OnceCallback<void(bool, OnboardingResult)> result_callback)>
       on_show_onboarding_callback_;
   bool proactive_help_enabled_ = true;
-  bool msbb_enabled_ = true;
   bool is_logged_in_ = true;
   bool is_supervised_user_ = false;
+  bool is_allowed_for_machine_learning_ = true;
   bool is_custom_tab_ = true;
   bool is_web_layer_ = true;
   bool is_tab_created_by_gsa_ = true;

@@ -6,7 +6,6 @@
 
 #include "base/test/task_environment.h"
 #include "net/base/schemeful_site.h"
-#include "net/cookies/cookie_constants.h"
 #include "net/cookies/first_party_set_metadata.h"
 #include "net/cookies/same_party_context.h"
 #include "services/network/first_party_sets/first_party_sets_manager.h"
@@ -27,7 +26,7 @@ class CookieAccessDelegateImplTest : public testing::Test {
  public:
   CookieAccessDelegateImplTest()
       : delegate_(mojom::CookieAccessDelegateType::ALWAYS_LEGACY,
-                  /*first_party_sets_manager=*/nullptr,
+                  /*first_party_sets_access_delegate=*/nullptr,
                   /*cookie_settings=*/nullptr) {}
 
  protected:
@@ -45,29 +44,19 @@ TEST_F(CookieAccessDelegateImplTest, NullFirstPartySetsManager) {
   // non-nullopt.
 
   // Same as the default ctor, but just to be explicit:
-  net::FirstPartySetMetadata expected_metadata(
-      net::SamePartyContext(), /*frame_owner=*/nullptr,
-      /*top_frame_owner=*/nullptr, net::FirstPartySetsContextType::kUnknown);
+  net::FirstPartySetMetadata expected_metadata(net::SamePartyContext(),
+                                               /*frame_entry=*/nullptr,
+                                               /*top_frame_entry=*/nullptr);
   EXPECT_THAT(delegate().ComputeFirstPartySetMetadataMaybeAsync(
                   site, &site, {},
                   base::BindOnce([](net::FirstPartySetMetadata) { FAIL(); })),
               Optional(std::ref(expected_metadata)));
-
-  EXPECT_THAT(delegate().FindFirstPartySetOwner(
-                  site, base::BindOnce([](FirstPartySetsManager::OwnerResult) {
-                    FAIL();
-                  })),
-              Optional(absl::nullopt));
 
   EXPECT_THAT(
       delegate().FindFirstPartySetOwners(
           {site},
           base::BindOnce([](FirstPartySetsManager::OwnersResult) { FAIL(); })),
       Optional(IsEmpty()));
-
-  EXPECT_THAT(delegate().RetrieveFirstPartySets(base::BindOnce(
-                  [](FirstPartySetsManager::SetsByOwner) { FAIL(); })),
-              Optional(IsEmpty()));
 }
 
 }  // namespace

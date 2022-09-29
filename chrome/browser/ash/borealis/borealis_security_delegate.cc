@@ -9,7 +9,11 @@
 #include "base/logging.h"
 #include "chrome/browser/ash/borealis/borealis_features.h"
 #include "chrome/browser/ash/borealis/borealis_service.h"
+#include "chrome/browser/ash/borealis/borealis_util.h"
+#include "chrome/browser/ash/borealis/borealis_window_manager.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "third_party/cros_system_api/constants/vm_tools.h"
+#include "ui/aura/window.h"
 
 namespace borealis {
 
@@ -18,7 +22,8 @@ void BorealisSecurityDelegate::Build(
     base::OnceCallback<void(std::unique_ptr<guest_os::GuestOsSecurityDelegate>)>
         callback) {
   BorealisService::GetForProfile(profile)->Features().IsAllowed(base::BindOnce(
-      [](base::OnceCallback<void(
+      [](Profile* profile,
+         base::OnceCallback<void(
              std::unique_ptr<guest_os::GuestOsSecurityDelegate>)> callback,
          BorealisFeatures::AllowStatus allow_status) {
         if (allow_status != BorealisFeatures::AllowStatus::kAllowed) {
@@ -26,15 +31,29 @@ void BorealisSecurityDelegate::Build(
           std::move(callback).Run(nullptr);
           return;
         }
-        std::move(callback).Run(std::make_unique<BorealisSecurityDelegate>());
+        std::move(callback).Run(
+            std::make_unique<BorealisSecurityDelegate>(profile));
       },
-      std::move(callback)));
+      profile, std::move(callback)));
 }
+
+BorealisSecurityDelegate::BorealisSecurityDelegate(Profile* profile)
+    : profile_(profile) {}
 
 BorealisSecurityDelegate::~BorealisSecurityDelegate() = default;
 
 std::string BorealisSecurityDelegate::GetSecurityContext() const {
   return vm_tools::kConciergeSecurityContext;
+}
+
+bool BorealisSecurityDelegate::CanSelfActivate(aura::Window* window) const {
+  return BorealisService::GetForProfile(profile_)
+             ->WindowManager()
+             .GetShelfAppId(window) == kClientAppId;
+}
+
+bool BorealisSecurityDelegate::CanLockPointer(aura::Window* window) const {
+  return window->GetProperty(chromeos::kUseOverviewToExitPointerLock);
 }
 
 }  // namespace borealis

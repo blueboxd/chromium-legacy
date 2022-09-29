@@ -14,13 +14,14 @@
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/ash/components/network/network_handler_callbacks.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
 
-namespace chromeos {
+namespace ash {
 
-class DeviceState;
 class NetworkStateHandler;
 class NetworkDeviceHandler;
 
@@ -75,6 +76,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularInhibitor
     kResettingEuiccMemory,
     kDisablingProfile,
   };
+  friend std::ostream& operator<<(std::ostream& stream,
+                                  const InhibitReason& state);
 
   // Callback which returns InhibitLock on inhibit success or nullptr on
   // failure.
@@ -179,8 +182,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularInhibitor
       absl::optional<InhibitOperationResult> result);
 
   NetworkStateHandler* network_state_handler_ = nullptr;
-  base::ScopedObservation<chromeos::NetworkStateHandler,
-                          chromeos::NetworkStateHandlerObserver>
+  base::ScopedObservation<NetworkStateHandler, NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
 
   NetworkDeviceHandler* network_device_handler_ = nullptr;
@@ -197,15 +199,19 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularInhibitor
   base::WeakPtrFactory<CellularInhibitor> weak_ptr_factory_{this};
 };
 
-}  // namespace chromeos
-
-std::ostream& operator<<(
+std::ostream& COMPONENT_EXPORT(CHROMEOS_NETWORK) operator<<(
     std::ostream& stream,
-    const chromeos::CellularInhibitor::InhibitReason& inhibit_reason);
+    const ash::CellularInhibitor::State& state);
 
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash {
-using ::chromeos::CellularInhibitor;
+std::ostream& COMPONENT_EXPORT(CHROMEOS_NETWORK) operator<<(
+    std::ostream& stream,
+    const ash::CellularInhibitor::InhibitReason& inhibit_reason);
+
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when the migration is finished.
+namespace chromeos {
+using ::ash::CellularInhibitor;
 }
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_CELLULAR_INHIBITOR_H_

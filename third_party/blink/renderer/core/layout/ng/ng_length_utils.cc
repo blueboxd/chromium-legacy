@@ -596,6 +596,11 @@ MinMaxSizes ComputeMinMaxBlockSizes(
     const NGBoxStrut& border_padding,
     LayoutUnit override_available_size,
     const Length::AnchorEvaluator* anchor_evaluator) {
+  if (const absl::optional<MinMaxSizes> override_sizes =
+          space.OverrideMinMaxBlockSizes()) {
+    DCHECK_GE(override_sizes->max_size, override_sizes->min_size);
+    return *override_sizes;
+  }
   MinMaxSizes sizes = {
       ResolveMinBlockLength(space, style, border_padding,
                             style.LogicalMinHeight(), override_available_size,
@@ -1437,6 +1442,20 @@ NGFragmentGeometry CalculateInitialFragmentGeometry(
     bool is_intrinsic) {
   DCHECK(is_intrinsic || node.CanUseNewLayout());
   const ComputedStyle& style = node.Style();
+
+  if (node.IsFrameSet()) {
+    if (node.IsParentNGFrameSet()) {
+      LogicalSize size = constraint_space.AvailableSize();
+      DCHECK_NE(size.inline_size, kIndefiniteSize);
+      DCHECK_NE(size.block_size, kIndefiniteSize);
+      DCHECK(constraint_space.IsFixedInlineSize());
+      DCHECK(constraint_space.IsFixedBlockSize());
+      return {size, {}, {}, {}};
+    }
+    PhysicalSize size = node.InitialContainingBlockSize();
+    return {size.ConvertToLogical(style.GetWritingMode()), {}, {}, {}};
+  }
+
   NGBoxStrut border = ComputeBorders(constraint_space, node);
   NGBoxStrut padding = ComputePadding(constraint_space, style);
   NGBoxStrut scrollbar = ComputeScrollbars(constraint_space, node);
@@ -1466,7 +1485,9 @@ NGFragmentGeometry CalculateInitialFragmentGeometry(
   LayoutUnit default_block_size = CalculateDefaultBlockSize(
       constraint_space, node, break_token, border_scrollbar_padding);
   absl::optional<LayoutUnit> inline_size;
-  if (!is_intrinsic) {
+  if (!is_intrinsic &&
+      (!InlineLengthUnresolvable(constraint_space, style.LogicalWidth()) ||
+       constraint_space.IsFixedInlineSize())) {
     inline_size =
         ComputeInlineSizeForFragment(constraint_space, node, border_padding);
 

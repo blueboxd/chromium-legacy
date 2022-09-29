@@ -25,6 +25,7 @@ Leitarvélin þín er <ph name="DSE_NAME" />. Skoðaðu leiðbeiningar hennar um
 <translation id="1112015203684611006">Prentun tókst ekki.</translation>
 <translation id="1125564390852150847">Búa til nýjan flipa.</translation>
 <translation id="1126809382673880764">Ver þig ekki gegn hættulegum vefsvæðum, niðurhali eða viðbótum. Þú munt áfram geta notað örugga vefskoðun, þar sem hún er í boði, í annarri þjónustu Google á borð við Gmail og leit.</translation>
+<translation id="1135212215217513471">Sækja Chrome fyrir iOS</translation>
 <translation id="1145536944570833626">Eyða fyrirliggjandi gögnum.</translation>
 <translation id="1147031633655575115">Skráð(ur) inn sem <ph name="USER" /></translation>
 <translation id="1154984953698510061">Birta aðra flipa</translation>
@@ -113,6 +114,7 @@ Leitarvélin þín er <ph name="DSE_NAME" />. Skoðaðu leiðbeiningar hennar um
 <translation id="1832848789136765277">Staðfestu að þetta sért þú til að hafa alltaf aðgang að samstillingargögnunum þínum</translation>
 <translation id="1870148520156231997">Sýna aðgangsorð</translation>
 <translation id="1872096359983322073">Ljós</translation>
+<translation id="1910975740091000991">Chrome fyrir iOS</translation>
 <translation id="1911619930368729126">Hlaða inn á Google Drive</translation>
 <translation id="1923342640370224680">Undanfarin klukkustund</translation>
 <translation id="1930989359703290198">Fyrirtækið þitt leyfir þér eingöngu að skrá þig inn með tilteknum reikningum. Bannaðir reikningar eru faldir. <ph name="BEGIN_LINK" />Nánar<ph name="END_LINK" /></translation>
@@ -140,6 +142,7 @@ Leitarvélin þín er <ph name="DSE_NAME" />. Skoðaðu leiðbeiningar hennar um
 <translation id="2139867232736819575">Leita að texta sem þú afritaðir</translation>
 <translation id="214201757571129614">Skrá inn…</translation>
 <translation id="2149973817440762519">Breyta bókamerki</translation>
+<translation id="2155145621546387786">Deila Chrome</translation>
 <translation id="2175927920773552910">QR-kóði</translation>
 <translation id="2218443599109088993">Minnka aðdrátt</translation>
 <translation id="2230173723195178503">Vefsíða sótt</translation>
@@ -308,6 +311,7 @@ Skoðaðu leiðbeiningar leitarvélarinnar um að eyða leitarferlinum ef það 
 <translation id="3529024052484145543">Ekki öruggt</translation>
 <translation id="3533202363250687977">Loka öllum huliðsflipum</translation>
 <translation id="3533436815740441613">Nýr flipi</translation>
+<translation id="3547799431091898961">Til að skrá þig út af Google reikningnum þínum á öllum vefsvæðum skaltu <ph name="BEGIN_LINK" />skrá þig út af Chrome<ph name="END_LINK" />.</translation>
 <translation id="3551320343578183772">Loka flipa</translation>
 <translation id="3581564640715911333">Bjóðast til að þýða síður á önnur tungumál</translation>
 <translation id="3588820906588687999">Opna mynd í nýjum flipa</translation>
@@ -374,6 +378,7 @@ Skoðaðu leiðbeiningar leitarvélarinnar um að eyða leitarferlinum ef það 
 <translation id="4172051516777682613">Sýna alltaf</translation>
 <translation id="418156467088430727">Skoða skrá án nettengingar í nýjum flipa</translation>
 <translation id="4181841719683918333">Tungumál</translation>
+<translation id="4187450337729239226">Líma og leita</translation>
 <translation id="4223967053752765281">Fyrirtækið þitt slökkti á innskráningu. Þú getur áfram séð bókamerki, feril, aðgangsorð og aðrar stillingar í þessu tæki. Breytingar verða ekki samstilltar við reikninginn þinn.</translation>
 <translation id="4233831822770018312">Breyta heimildum</translation>
 <translation id="4237377247299956313">Ýttu á <ph name="BEGIN_BOLD" />Sjálfgefið vafraforrit<ph name="END_BOLD" /></translation>
@@ -436,6 +441,7 @@ Gögnin þín eru dulkóðuð með aðgangsorði samstillingar. Sláðu það in
 <translation id="473775607612524610">Uppfæra</translation>
 <translation id="4747097190499141774">Dulkóðun aðgangsorðs inniheldur ekki greiðslumáta og heimilisföng af Google Pay. Aðeins þeir sem vita aðgangsorðið þitt geta lesið dulkóðuðu gögnin þín. Aðgangsorðið er hvorki sent til Google né geymt. Ef þú gleymir aðgangsorðinu eða vilt breyta þessari stillingu þarftu að endurstilla samstillingu. <ph name="BEGIN_LINK" />Frekari upplýsingar<ph name="END_LINK" /></translation>
 <translation id="4751645464639803239">Nýr huliðsflipi</translation>
+<translation id="4766112107778026136">Tillögur og fylgir</translation>
 <translation id="4775879719735953715">Sjálfgefinn vafri</translation>
 <translation id="4778644898150334464">Nota annað aðgangsorð</translation>
 <translation id="478808905805139173">Opna í huliðsstillingu?</translation>
@@ -642,6 +648,7 @@ Einnig þarf að vera kveikt á Handoff í hlutanum General í Settings og tæki
 <translation id="6374469231428023295">Reyna aftur</translation>
 <translation id="6377118281273296434">Öryggi vefsvæðis</translation>
 <translation id="6380866119319257197">Ef þú gleymir aðgangsorðinu eða þig langar að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla samstillingu<ph name="END_LINK" /></translation>
+<translation id="6387994324662817823">Aðgangsorð eru aðeins vistuð í aðgangsorðastjórnun Google í þessu tæki.</translation>
 <translation id="6389470377220713856">Nafn á korti</translation>
 <translation id="6406506848690869874">Samstilling</translation>
 <translation id="6410390304316730527">Örugg vefnotkun verndar þig fyrir tölvuþrjótum sem gætu platað þig til að gera eitthvað hættulegt eins og að setja upp skaðlegan hugbúnað eða gefa upp persónuupplýsingar á borð við aðgangsorð, símanúmer eða kreditkortaupplýsingar. Ef þú slekkur á henni skaltu fara varlega þegar þú skoðar ókunnug eða óáreiðanleg vefsvæði.</translation>

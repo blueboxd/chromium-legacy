@@ -633,6 +633,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/metrics/AwMetricsLogUploader.java",
     "java/src/org/chromium/android_webview/metrics/AwMetricsServiceClient.java",
     "java/src/org/chromium/android_webview/metrics/AwNonembeddedUmaReplayer.java",
+    "java/src/org/chromium/android_webview/metrics/AwOriginVisitLogger.java",
     "java/src/org/chromium/android_webview/permission/AwGeolocationCallback.java",
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
     "java/src/org/chromium/android_webview/policy/AwPolicyProvider.java",
@@ -812,6 +813,7 @@ android_library("common_java") {
     "//services/network/public:features_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/blink/public/common:common_java",
+    "//third_party/blink/renderer/platform/scheduler:blink_scheduler_java",
   ]
   srcjar_deps = [
     ":common_java_features_srcjar",
@@ -1137,6 +1139,7 @@ grit("generate_components_resources") {
     "//components/flags_ui/resources:build_ts",
     "//components/resources:about_credits",
     "//components/resources/ssl/ssl_error_assistant:make_ssl_error_assistant_protobuf",
+    "//components/security_interstitials/content/resources:build_ts",
   ]
 
   if (safe_browsing_mode != 0) {

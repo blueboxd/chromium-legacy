@@ -7,11 +7,14 @@
  * extension API.
  */
 
+import {constants} from '../../common/constants.js';
 import {AbstractTts} from '../common/abstract_tts.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
 import {ChromeTtsBase} from '../common/tts_base.js';
+import {QueueMode, TtsCapturingEventListener, TtsInterface, TtsSpeechProperties} from '../common/tts_interface.js';
 
+import {ChromeVox} from './chromevox.js';
 import {PhoneticData} from './phonetic_data.js';
 
 const Utterance = class {
@@ -144,7 +147,8 @@ export class TtsBackground extends ChromeTtsBase {
   /**
    * @param {string} textString The string of text to be spoken.
    * @param {QueueMode} queueMode The queue mode to use for speaking.
-   * @param {Object=} properties Speech properties to use for this utterance.
+   * @param {TtsSpeechProperties=} properties Speech properties to use for this
+   *     utterance.
    * @return {TtsInterface} A tts object useful for chaining speak calls.
    * @override
    */
@@ -160,7 +164,7 @@ export class TtsBackground extends ChromeTtsBase {
     }
 
     if (!properties) {
-      properties = {};
+      properties = new TtsSpeechProperties();
     }
 
     if (textString.length > constants.OBJECT_MAX_CHARCOUNT) {
@@ -182,15 +186,15 @@ export class TtsBackground extends ChromeTtsBase {
     // non-breaking space) here to mitigate the issue somewhat.
     if (TtsBackground.SKIP_WHITESPACE_.test(textString)) {
       // Explicitly call start and end callbacks before skipping this text.
-      if (properties['startCallback']) {
+      if (properties.startCallback) {
         try {
-          properties['startCallback']();
+          properties.startCallback();
         } catch (e) {
         }
       }
-      if (properties['endCallback']) {
+      if (properties.endCallback) {
         try {
-          properties['endCallback']();
+          properties.endCallback();
         } catch (e) {
         }
       }
@@ -224,7 +228,8 @@ export class TtsBackground extends ChromeTtsBase {
    * each chunks.
    * @param {string} textString The string of text to be spoken.
    * @param {QueueMode} queueMode The queue mode to use for speaking.
-   * @param {Object=} properties Speech properties to use for this utterance.
+   * @param {TtsSpeechProperties=} properties Speech properties to use for this
+   *     utterance.
    * @private
    */
   speakSplittingText_(textString, queueMode, properties) {
@@ -432,9 +437,8 @@ export class TtsBackground extends ChromeTtsBase {
 
     switch (event.type) {
       case 'start':
-        this.capturingTtsEventListeners_.forEach(function(listener) {
-          listener.onTtsStart();
-        });
+        this.capturingTtsEventListeners_.forEach(
+            listener => listener.onTtsStart());
         if (utterance.properties['startCallback']) {
           try {
             utterance.properties['startCallback']();
@@ -445,9 +449,8 @@ export class TtsBackground extends ChromeTtsBase {
       case 'end':
         // End callbacks could cause additional speech to queue up.
         this.currentUtterance_ = null;
-        this.capturingTtsEventListeners_.forEach(function(listener) {
-          listener.onTtsEnd();
-        });
+        this.capturingTtsEventListeners_.forEach(
+            listener => listener.onTtsEnd());
         if (utterance.properties['endCallback']) {
           try {
             utterance.properties['endCallback']();
@@ -463,9 +466,8 @@ export class TtsBackground extends ChromeTtsBase {
           this.cancelUtterance_(this.utteranceQueue_[i]);
         }
         this.utteranceQueue_.length = 0;
-        this.capturingTtsEventListeners_.forEach(function(listener) {
-          listener.onTtsInterrupted();
-        });
+        this.capturingTtsEventListeners_.forEach(
+            listener => listener.onTtsInterrupted());
         break;
       case 'error':
         this.onError_(event['errorMessage']);
@@ -574,9 +576,8 @@ export class TtsBackground extends ChromeTtsBase {
     (new PanelCommand(PanelCommandType.CLEAR_SPEECH)).send();
     chrome.tts.stop();
 
-    this.capturingTtsEventListeners_.forEach(function(listener) {
-      listener.onTtsInterrupted();
-    });
+    this.capturingTtsEventListeners_.forEach(
+        listener => listener.onTtsInterrupted());
   }
 
   /** @override */
@@ -728,7 +729,8 @@ export class TtsBackground extends ChromeTtsBase {
   /**
    * Queues phonetic disambiguation for characters if disambiguation is found.
    * @param {string} text The text for which we want to get phonetic data.
-   * @param {Object} properties Speech properties to use for this utterance.
+   * @param {!TtsSpeechProperties} properties Speech properties to use for this
+   *     utterance.
    * @private
    */
   pronouncePhonetically_(text, properties) {
@@ -738,22 +740,22 @@ export class TtsBackground extends ChromeTtsBase {
     }
 
     // Only pronounce phonetic hints when explicitly requested.
-    if (!properties[AbstractTts.PHONETIC_CHARACTERS]) {
+    if (!properties.phoneticCharacters) {
       return;
     }
 
     // Remove this property so we don't trap ourselves in a loop.
-    delete properties[AbstractTts.PHONETIC_CHARACTERS];
+    delete properties.phoneticCharacters;
 
     // If undefined language, use the UI language of the browser as a best
     // guess.
-    if (!properties['lang']) {
-      properties['lang'] = chrome.i18n.getUILanguage();
+    if (!properties.lang) {
+      properties.lang = chrome.i18n.getUILanguage();
     }
 
-    const phoneticText = PhoneticData.forCharacter(text, properties['lang']);
+    const phoneticText = PhoneticData.forCharacter(text, properties.lang);
     if (phoneticText) {
-      properties['delay'] = true;
+      properties.delay = true;
       this.speak(phoneticText, QueueMode.QUEUE, properties);
     }
   }
@@ -861,7 +863,7 @@ export class TtsBackground extends ChromeTtsBase {
 
       ChromeVox.tts.speak(
           Msgs.getMsg('announce_tts_default_settings'), QueueMode.FLUSH,
-          speechProperties);
+          new TtsSpeechProperties(speechProperties));
     });
   }
 

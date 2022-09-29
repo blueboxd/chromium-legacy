@@ -59,8 +59,8 @@ class KioskExternalUpdater : public disks::DiskMountManager::Observer,
   // ash::disks::DiskMountManager::Observer overrides.
   void OnMountEvent(
       disks::DiskMountManager::MountEvent event,
-      chromeos::MountError error_code,
-      const disks::DiskMountManager::MountPointInfo& mount_info) override;
+      MountError error_code,
+      const disks::DiskMountManager::MountPoint& mount_info) override;
 
   // KioskExternalUpdateValidatorDelegate overrides:
   void OnExternalUpdateUnpackSuccess(const std::string& app_id,

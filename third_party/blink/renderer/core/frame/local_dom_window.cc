@@ -40,6 +40,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/event_page_show_persisted.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -479,7 +480,7 @@ scoped_refptr<base::SingleThreadTaskRunner> LocalDOMWindow::GetTaskRunner(
   // some cases, though, there isn't a good candidate (most commonly when either
   // the passed-in document or the ExecutionContext used to be attached to a
   // Frame but has since been detached).
-  return Thread::Current()->GetTaskRunner();
+  return Thread::Current()->GetDeprecatedTaskRunner();
 }
 
 void LocalDOMWindow::ReportPermissionsPolicyViolation(
@@ -640,6 +641,12 @@ void LocalDOMWindow::AddConsoleMessageImpl(ConsoleMessage* console_message,
   }
 
   GetFrame()->Console().AddMessage(console_message, discard_duplicates);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+LocalDOMWindow::GetAgentGroupSchedulerCompositorTaskRunner() {
+  auto* frame_scheduler = GetFrame()->GetFrameScheduler();
+  return frame_scheduler->GetAgentGroupScheduler()->CompositorTaskRunner();
 }
 
 void LocalDOMWindow::AddInspectorIssue(
@@ -1814,7 +1821,7 @@ void LocalDOMWindow::queueMicrotask(V8VoidFunction* callback) {
   ScriptState* script_state = callback->CallbackRelevantScriptState();
   auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
   if (tracker && script_state->World().IsMainWorld()) {
-    callback->SetParentTaskId(tracker->RunningTaskId(script_state));
+    callback->SetParentTaskId(tracker->RunningTaskAttributionId(script_state));
   }
   Microtask::EnqueueMicrotask(
       WTF::Bind(&V8VoidFunction::InvokeAndReportException,
@@ -2082,7 +2089,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   }
 
   WebWindowFeatures window_features =
-      GetWindowFeaturesFromString(features, entered_window);
+      GetWindowFeaturesFromString(features, entered_window, completed_url);
 
   // In fenced frames, we should always use `noopener`.
   if (GetFrame()->IsInFencedFrameTree()) {
@@ -2292,7 +2299,7 @@ void LocalDOMWindow::DidBufferLoadWhileInBackForwardCache(size_t num_bytes) {
   BackForwardCacheBufferLimitTracker::Get().DidBufferBytes(num_bytes);
 }
 
-bool LocalDOMWindow::isAnonymouslyFramed() const {
+bool LocalDOMWindow::anonymouslyFramed() const {
   return GetExecutionContext()
       ->GetPolicyContainer()
       ->GetPolicies()

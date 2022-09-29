@@ -870,6 +870,34 @@ const char kHatsPersonalizationWallpaperSurveyCycleEndTs[] =
 const char kHatsPersonalizationWallpaperSurveyIsSelected[] =
     "hats_personalization_wallpaper_is_selected";
 
+// An int64 pref. This is the timestamp, microseconds after epoch, that
+// indicates the end of the most recent Media App PDF survey cycle.
+const char kHatsMediaAppPdfCycleEndTs[] =
+    "hats_media_app_pdf_cycle_end_timestamp";
+
+// A boolean pref. Indicates if the device is selected for the Media App PDF
+// survey.
+const char kHatsMediaAppPdfIsSelected[] = "hats_media_app_pdf_is_selected";
+
+// An int64 pref. This is the timestamp, microseconds after epoch, that
+// indicates the end of the most recent Camera App survey cycle.
+const char kHatsCameraAppSurveyCycleEndTs[] =
+    "hats_camera_app_cycle_end_timestamp";
+
+// A boolean pref. Indicates if the device is selected for the Camera App
+// survey.
+const char kHatsCameraAppDeviceIsSelected[] =
+    "hats_camera_app_device_is_selected";
+
+// indicates the end of the most recent Photos Experience survey cycle.
+const char kHatsPhotosExperienceCycleEndTs[] =
+    "hats_photos_experience_cycle_end_timestamp";
+
+// A boolean pref. Indicates if the device is selected for the Photos Experience
+// survey.
+const char kHatsPhotosExperienceIsSelected[] =
+    "hats_photos_experience_is_selected";
+
 // A boolean pref. Indicates if we've already shown a notification to inform the
 // current user about the quick unlock feature.
 const char kPinUnlockFeatureNotificationShown[] =
@@ -959,11 +987,6 @@ const char kScreenTimeLastState[] = "screen_time.last_state";
 // Boolean pref indicating whether a user is allowed to use the Network File
 // Shares for Chrome OS feature.
 const char kNetworkFileSharesAllowed[] = "network_file_shares.allowed";
-
-// Boolean pref indicating whether the currently running public session runs in
-// the old standard "public session" mode (false), or in the new "managed
-// session" mode which has lifted restrictions (true).
-const char kManagedSessionEnabled[] = "managed_session.enabled";
 
 // Boolean pref indicating whether the message displayed on the login screen for
 // the managed guest session should be the full warning or not.
@@ -1101,6 +1124,14 @@ const char kKerberosAccounts[] = "kerberos.accounts";
 // active (empty if none) and to determine whether to wake up the Kerberos
 // daemon on session startup.
 const char kKerberosActivePrincipalName[] = "kerberos.active_principal_name";
+// Used by KerberosAccountsHandler to prefill kerberos domain in
+// username field of "Add a ticket" UI window.
+// Tied to KerberosDomainAutocomplete policy.
+const char kKerberosDomainAutocomplete[] = "kerberos.domain_autocomplete";
+// Used by KerberosAccountsHandler to prefill kerberos krb5 config for
+// manually creating new tickets.
+// Tied to KerberosDefaultConfiguration policy.
+const char kKerberosDefaultConfiguration[] = "kerberos.default_configuration";
 
 // A boolean pref for enabling/disabling App reinstall recommendations in Zero
 // State Launcher by policy.
@@ -1171,10 +1202,6 @@ const char kOOMKillsDailySample[] = "oomkills.daily_sample";
 // managed guest session clean-up procedure.
 const char kRestrictedManagedGuestSessionExtensionCleanupExemptList[] =
     "restricted_managed_guest_session_extension_cleanup_exempt_list";
-
-// Boolean user profile pref that determines whether to show a banner in browser
-// settings that links to OS settings.
-const char kSettingsShowOSBanner[] = "settings.cros.show_os_banner";
 
 // This pref is used in two contexts:
 // In Profile prefs, it is a bool pref which encodes whether the Profile has
@@ -1307,6 +1334,10 @@ const char kAccessibilityFocusHighlightEnabled[] =
     "settings.a11y.focus_highlight";
 #endif
 
+// Pref indicating the page colors option the user wants. Page colors is an
+// accessibility feature that simulates forced colors mode at the browser level.
+const char kPageColors[] = "settings.a11y.page_colors";
+
 #if BUILDFLAG(IS_MAC)
 // Boolean that indicates whether the application should show the info bar
 // asking the user to set up automatic updates when Keystone promotion is
@@ -1405,11 +1436,6 @@ const char kProfileUsingGAIAAvatar[] = "profile.using_gaia_avatar";
 
 // The supervised user ID.
 const char kSupervisedUserId[] = "profile.managed_user_id";
-
-// Integer that specifies the number of times that we have shown the upgrade
-// tutorial card in the avatar menu bubble.
-const char kProfileAvatarTutorialShown[] =
-    "profile.avatar_bubble_tutorial_shown";
 
 // Indicates if we've already shown a notification that high contrast
 // mode is on, recommending high-contrast extensions and themes.
@@ -1655,6 +1681,12 @@ const char kManagedAccountsSigninRestriction[] =
 // will have the restriction applied.
 const char kManagedAccountsSigninRestrictionScopeMachine[] =
     "profile.managed_accounts.restriction.all_managed_accounts";
+#if !BUILDFLAG(IS_CHROMEOS)
+// Whether or not the option to keep existing browsing data is checked by
+// default.
+extern const char kEnterpriseProfileCreationKeepBrowsingData[] =
+    "profile.enterprise_profile_creation.keep_existing_data_by_default";
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -2231,10 +2263,10 @@ const char kAuthNegotiateDelegateByKdcPolicy[] =
 const char kNtlmV2Enabled[] = "auth.ntlm_v2_enabled";
 #endif  // BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 // Boolean whether Kerberos functionality is enabled.
 const char kKerberosEnabled[] = "kerberos.enabled";
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // Boolean that specifies whether to enable revocation checking (best effort)
 // by default.
@@ -2529,11 +2561,6 @@ const char kReportingUsers[] = "reporting_users";
 // Whether to log events for Android app installs.
 const char kArcAppInstallEventLoggingEnabled[] =
     "arc.app_install_event_logging_enabled";
-
-// Boolean pref indicating if event logging is enabled for policy based
-// extension.
-const char kExtensionInstallEventLoggingEnabled[] =
-    "extensions.install.event_logging_enabled";
 
 // Whether we received the remove users remote command, and hence should proceed
 // with removing the users while at the login screen.
@@ -3419,12 +3446,6 @@ const char kSecurityTokenSessionBehavior[] = "security_token_session_behavior";
 // this pref is set to 0, the action happens immediately.
 const char kSecurityTokenSessionNotificationSeconds[] =
     "security_token_session_notification_seconds";
-// In addition to the notification described directly above, another
-// notification will be displayed after the action happened. This only happens
-// once for a user. This boolean pref saves whether this notification was
-// already displayed for a user.
-const char kSecurityTokenSessionNotificationDisplayed[] =
-    "security_token_session_notification_displayed";
 // This string pref is set when the notification after the action mentioned
 // above is about to be displayed. It contains the domain that manages the user
 // who was logged out, to be used as part of the notification message.

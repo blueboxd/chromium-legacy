@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {AutomationPredicate} from '../common/automation_predicate.js';
+import {AutomationUtil} from '../common/automation_util.js';
+import {constants} from '../common/constants.js';
 import {RectUtil} from '../common/rect_util.js';
 
 import {ParagraphUtils} from './paragraph_utils.js';
@@ -34,7 +37,7 @@ export class NodeUtils {
       return NodeUtils.NodeState.NODE_STATE_INVISIBLE;
     }
     // Walk up the tree to make sure the window it is in is not invisible.
-    var window = NodeUtils.getNearestContainingWindow(node);
+    const window = NodeUtils.getNearestContainingWindow(node);
     if (window != null && window.state[chrome.automation.StateType.INVISIBLE]) {
       return NodeUtils.NodeState.NODE_STATE_INVISIBLE;
     }

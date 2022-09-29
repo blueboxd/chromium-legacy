@@ -4,6 +4,7 @@
 
 #include "components/autofill_assistant/browser/starter_heuristic_configs/finch_starter_heuristic_config.h"
 #include "base/json/json_reader.h"
+#include "base/no_destructor.h"
 
 namespace autofill_assistant {
 
@@ -20,37 +21,42 @@ const std::string& FinchStarterHeuristicConfig::GetIntent() const {
 
 const base::Value::List&
 FinchStarterHeuristicConfig::GetConditionSetsForClientState(
-    StarterPlatformDelegate* platform_delegate) const {
-  if (platform_delegate->GetIsSupervisedUser()) {
-    return empty_condition_sets_.GetList();
+    StarterPlatformDelegate* platform_delegate,
+    content::BrowserContext* browser_context) const {
+  static const base::NoDestructor<base::Value> empty_list(
+      base::Value::Type::LIST);
+  if (platform_delegate->GetIsSupervisedUser() ||
+      !platform_delegate->GetIsAllowedForMachineLearning()) {
+    return empty_list->GetList();
   }
 
   if (!platform_delegate->GetProactiveHelpSettingEnabled()) {
-    return empty_condition_sets_.GetList();
+    return empty_list->GetList();
   }
 
   if (platform_delegate->GetIsCustomTab() &&
       (!platform_delegate->GetIsTabCreatedByGSA() ||
        !enabled_in_custom_tabs_)) {
-    return empty_condition_sets_.GetList();
+    return empty_list->GetList();
   }
 
   if (!platform_delegate->GetIsCustomTab() &&
       !platform_delegate->GetIsWebLayer() && !enabled_in_regular_tabs_) {
-    return empty_condition_sets_.GetList();
+    return empty_list->GetList();
   }
 
   if (platform_delegate->GetIsWebLayer() && !enabled_in_weblayer_) {
-    return empty_condition_sets_.GetList();
+    return empty_list->GetList();
   }
 
   if (!platform_delegate->GetIsLoggedIn() && !enabled_for_signed_out_users_) {
-    return empty_condition_sets_.GetList();
+    return empty_list->GetList();
   }
 
-  if (!platform_delegate->GetMakeSearchesAndBrowsingBetterEnabled() &&
+  if (!platform_delegate->GetCommonDependencies()
+           ->GetMakeSearchesAndBrowsingBetterEnabled(browser_context) &&
       !enabled_without_msbb_) {
-    return empty_condition_sets_.GetList();
+    return empty_list->GetList();
   }
 
   return condition_sets_.GetList();

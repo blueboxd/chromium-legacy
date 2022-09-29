@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
@@ -17,6 +18,7 @@
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/http_user_agent_settings.h"
 #include "net/base/net_errors.h"
@@ -308,6 +310,37 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   EXPECT_TRUE(config->network_thread_priority);
   EXPECT_EQ(42.0, config->network_thread_priority.value());
   EXPECT_FALSE(config->bidi_stream_detect_broken_connection);
+
+  // When UseDnsHttpsSvcb option is not set, the value of net::features are
+  // used.
+  const net::HostResolver::HttpsSvcbOptions& https_svcb_options =
+      context->host_resolver()
+          ->GetManagerForTesting()
+          ->https_svcb_options_for_testing();
+  EXPECT_EQ(base::FeatureList::IsEnabled(net::features::kUseDnsHttpsSvcb),
+            https_svcb_options.enable);
+  EXPECT_EQ(net::features::kUseDnsHttpsSvcbEnableInsecure.Get(),
+            https_svcb_options.enable_insecure);
+  EXPECT_EQ(net::features::kUseDnsHttpsSvcbInsecureExtraTimeMax.Get(),
+            https_svcb_options.insecure_extra_time_max);
+  EXPECT_EQ(net::features::kUseDnsHttpsSvcbInsecureExtraTimePercent.Get(),
+            https_svcb_options.insecure_extra_time_percent);
+  EXPECT_EQ(net::features::kUseDnsHttpsSvcbInsecureExtraTimeMin.Get(),
+            https_svcb_options.insecure_extra_time_min);
+  EXPECT_EQ(net::features::kUseDnsHttpsSvcbSecureExtraTimeMax.Get(),
+            https_svcb_options.secure_extra_time_max);
+  EXPECT_EQ(net::features::kUseDnsHttpsSvcbSecureExtraTimePercent.Get(),
+            https_svcb_options.secure_extra_time_percent);
+  EXPECT_EQ(net::features::kUseDnsHttpsSvcbSecureExtraTimeMin.Get(),
+            https_svcb_options.secure_extra_time_min);
+  EXPECT_EQ(net::features::kUseDnsHttpsSvcbExtraTimeAbsolute.Get(),
+            https_svcb_options.extra_time_absolute);
+  EXPECT_EQ(net::features::kUseDnsHttpsSvcbExtraTimePercent.Get(),
+            https_svcb_options.extra_time_percent);
+  EXPECT_EQ(base::FeatureList::IsEnabled(net::features::kUseDnsHttpsSvcbAlpn),
+            params->use_dns_https_svcb_alpn);
+
+  EXPECT_FALSE(config->skip_logging);
 }
 
 TEST(URLRequestContextConfigTest, SetSupportedQuicVersion) {
@@ -321,7 +354,7 @@ TEST(URLRequestContextConfigTest, SetSupportedQuicVersion) {
   std::string experimental_options =
       "{\"QUIC\":{\"quic_version\":\"" +
       quic::QuicVersionToString(version.transport_version) +
-      "\",\"obsolete_versions_allowed\":true}}";
+      "\",\"obsolete_versions_allowed2\":true}}";
 
   std::unique_ptr<URLRequestContextConfig> config =
       URLRequestContextConfig::CreateURLRequestContextConfig(
@@ -562,7 +595,7 @@ TEST(URLRequestContextConfigTest, SetObsoleteQuicVersionWhenAllowed) {
           std::string("{\"QUIC\":{\"quic_version\":\"") +
               quic::ParsedQuicVersionToString(
                   net::ObsoleteQuicVersions().back()) +
-              "\",\"obsolete_versions_allowed\":true}}",
+              "\",\"obsolete_versions_allowed2\":true}}",
           // MockCertVerifier to use for testing purposes.
           std::unique_ptr<net::CertVerifier>(),
           // Enable network quality estimator.
@@ -1715,6 +1748,168 @@ TEST(URLRequestContextConfigTest, WrongBidiStreamDetectBrokenConnectionValue) {
   config->ConfigureURLRequestContextBuilder(&builder);
   EXPECT_FALSE(config->effective_experimental_options.contains(
       "bidi_stream_detect_broken_connection"));
+}
+
+TEST(URLRequestContextConfigTest, HttpsSvcbOptions) {
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::IO);
+
+  std::unique_ptr<URLRequestContextConfig> config =
+      URLRequestContextConfig::CreateURLRequestContextConfig(
+          // Enable QUIC.
+          true,
+          // QUIC User Agent ID.
+          "Default QUIC User Agent ID",
+          // Enable SPDY.
+          true,
+          // Enable Brotli.
+          false,
+          // Type of http cache.
+          URLRequestContextConfig::HttpCacheType::DISK,
+          // Max size of http cache in bytes.
+          1024000,
+          // Disable caching for HTTP responses. Other information may be stored
+          // in the cache.
+          false,
+          // Storage path for http cache and cookie storage.
+          "/data/data/org.chromium.net/app_cronet_test/test_storage",
+          // Accept-Language request header field.
+          "foreign-language",
+          // User-Agent request header field.
+          "fake agent",
+          // JSON encoded experimental options.
+          "{\"UseDnsHttpsSvcb\":{\"enable\":true,"
+          "\"enable_insecure\":true,"
+          "\"insecure_extra_time_max\":\"1ms\","
+          "\"insecure_extra_time_percent\":2,"
+          "\"insecure_extra_time_min\":\"3ms\","
+          "\"secure_extra_time_max\":\"4ms\","
+          "\"secure_extra_time_percent\":5,"
+          "\"secure_extra_time_min\":\"6ms\","
+          "\"extra_time_absolute\":\"7ms\","
+          "\"extra_time_percent\":8,"
+          "\"use_alpn\":true"
+          "}}",
+          // MockCertVerifier to use for testing purposes.
+          std::unique_ptr<net::CertVerifier>(),
+          // Enable network quality estimator.
+          false,
+          // Enable Public Key Pinning bypass for local trust anchors.
+          true,
+          // Optional network thread priority.
+          absl::optional<double>());
+  net::URLRequestContextBuilder builder;
+  config->ConfigureURLRequestContextBuilder(&builder);
+  // Set a ProxyConfigService to avoid DCHECK failure when building.
+  builder.set_proxy_config_service(
+      std::make_unique<net::ProxyConfigServiceFixed>(
+          net::ProxyConfigWithAnnotation::CreateDirect()));
+  std::unique_ptr<net::URLRequestContext> context(builder.Build());
+
+  const net::HostResolver::HttpsSvcbOptions& https_svcb_options =
+      context->host_resolver()
+          ->GetManagerForTesting()
+          ->https_svcb_options_for_testing();
+  EXPECT_TRUE(https_svcb_options.enable);
+  EXPECT_TRUE(https_svcb_options.enable_insecure);
+  EXPECT_EQ(base::Milliseconds(1), https_svcb_options.insecure_extra_time_max);
+  EXPECT_EQ(2, https_svcb_options.insecure_extra_time_percent);
+  EXPECT_EQ(base::Milliseconds(3), https_svcb_options.insecure_extra_time_min);
+  EXPECT_EQ(base::Milliseconds(4), https_svcb_options.secure_extra_time_max);
+  EXPECT_EQ(5, https_svcb_options.secure_extra_time_percent);
+  EXPECT_EQ(base::Milliseconds(6), https_svcb_options.secure_extra_time_min);
+  EXPECT_EQ(base::Milliseconds(7), https_svcb_options.extra_time_absolute);
+  EXPECT_EQ(8, https_svcb_options.extra_time_percent);
+
+  const net::HttpNetworkSessionParams* params =
+      context->GetNetworkSessionParams();
+  EXPECT_TRUE(params->use_dns_https_svcb_alpn);
+}
+
+TEST(URLRequestContextConfigTest, SkipLogging) {
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::IO);
+
+  std::unique_ptr<URLRequestContextConfig> config =
+      URLRequestContextConfig::CreateURLRequestContextConfig(
+          // Enable QUIC.
+          true,
+          // QUIC User Agent ID.
+          "Default QUIC User Agent ID",
+          // Enable SPDY.
+          true,
+          // Enable Brotli.
+          false,
+          // Type of http cache.
+          URLRequestContextConfig::HttpCacheType::DISK,
+          // Max size of http cache in bytes.
+          1024000,
+          // Disable caching for HTTP responses. Other information may be stored
+          // in the cache.
+          false,
+          // Storage path for http cache and cookie storage.
+          "/data/data/org.chromium.net/app_cronet_test/test_storage",
+          // Accept-Language request header field.
+          "foreign-language",
+          // User-Agent request header field.
+          "fake agent",
+          // JSON encoded experimental options.
+          "{\"skip_logging\":true}",
+          // MockCertVerifier to use for testing purposes.
+          std::unique_ptr<net::CertVerifier>(),
+          // Enable network quality estimator.
+          false,
+          // Enable Public Key Pinning bypass for local trust anchors.
+          true,
+          // Optional network thread priority.
+          absl::optional<double>());
+  net::URLRequestContextBuilder builder;
+  config->ConfigureURLRequestContextBuilder(&builder);
+  EXPECT_TRUE(config->effective_experimental_options.contains("skip_logging"));
+  EXPECT_TRUE(config->skip_logging);
+}
+
+TEST(URLRequestContextConfigTest, WrongSkipLoggingValue) {
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::IO);
+
+  std::unique_ptr<URLRequestContextConfig> config =
+      URLRequestContextConfig::CreateURLRequestContextConfig(
+          // Enable QUIC.
+          true,
+          // QUIC User Agent ID.
+          "Default QUIC User Agent ID",
+          // Enable SPDY.
+          true,
+          // Enable Brotli.
+          false,
+          // Type of http cache.
+          URLRequestContextConfig::HttpCacheType::DISK,
+          // Max size of http cache in bytes.
+          1024000,
+          // Disable caching for HTTP responses. Other information may be stored
+          // in the cache.
+          false,
+          // Storage path for http cache and cookie storage.
+          "/data/data/org.chromium.net/app_cronet_test/test_storage",
+          // Accept-Language request header field.
+          "foreign-language",
+          // User-Agent request header field.
+          "fake agent",
+          // JSON encoded experimental options.
+          "{\"skip_logging\":10}",
+          // MockCertVerifier to use for testing purposes.
+          std::unique_ptr<net::CertVerifier>(),
+          // Enable network quality estimator.
+          false,
+          // Enable Public Key Pinning bypass for local trust anchors.
+          true,
+          // Optional network thread priority.
+          absl::optional<double>());
+
+  net::URLRequestContextBuilder builder;
+  config->ConfigureURLRequestContextBuilder(&builder);
+  EXPECT_FALSE(config->effective_experimental_options.contains("skip_logging"));
 }
 
 // See stale_host_resolver_unittest.cc for test of StaleDNS options.

@@ -73,7 +73,9 @@
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/linear_gradient.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/transform_util.h"
@@ -1180,61 +1182,42 @@ void SkiaRenderer::PrepareGradient(
   const gfx::RectF rect = mask_filter_info->bounds();
   const absl::optional<gfx::LinearGradient>& gradient_mask =
       mask_filter_info->gradient_mask();
-  const int16_t angle = gradient_mask->angle() % 360;
 
-  // For positive angles, the start point is the bottom left rect point. For
-  // negative angles, the start point is the upper left rect point.
-  bool negative = angle < 0;
+  int16_t angle = gradient_mask->angle() % 360;
+  if (angle < 0) angle += 360;
+
   SkPoint start_end[2];
-  start_end[0] = {0, negative ? 0 : rect.height()};
 
-  // We explicitly specify the end point when cos(angle) = 0 and for axis
-  // aligned angles, where complex computation is not required to determine the
-  // end point.
-  switch (std::abs(angle)) {
-    case 0:
-      ABSL_FALLTHROUGH_INTENDED;
-    case 180:
-      ABSL_FALLTHROUGH_INTENDED;
-    case 360:
-      start_end[1] = {rect.width(), negative ? 0 : rect.height()};
-      break;
-    case 90:
-      ABSL_FALLTHROUGH_INTENDED;
-    case 270:
-      start_end[1] = {0, negative ? rect.height() : 0};
-      break;
-    // For non-axis aligned angles, the end point is the intersection of
-    // the gradient line and the normal line. The normal line is orthogonal to
-    // the gradient line and intersects the corner diagonal from the start
-    // point.
-    // Positive angle gradient line example:
-    //     +
-    //  +-/-------+
-    //  |/ )      |
-    //  +---------+
-    //
-    // Negative angle gradient line example:
-    //  +---------+
-    //  |\ )      |
-    //  +-\-------+
-    //     +
-    default: {
-      // TODO(crbug.com/1039003): add computation for angles >90 deg.
-      float rad_angle = gfx::DegToRad(static_cast<float>(angle));
-      float s = std::sin(rad_angle);
-      float c = std::cos(rad_angle);
-      float t = std::tan(rad_angle);
+  float rad_angle = gfx::DegToRad(static_cast<float>(angle));
+  float s = std::sin(rad_angle);
+  float c = std::cos(rad_angle);
 
-      float a = rect.width() * t;
-      float b = rect.height() - a;
-      float cc = b * s;
-      float d = cc * c;
-      float e = cc * s;
-      float end_x = (rect.width() + d);
-      float end_y = negative ? (a + e) : (rect.height() - a - e);
+  if (angle % 180 > 90) {
+    float start_x = rect.width() * c * c;
+    float start_y = rect.height() - (rect.width() * s * c);
+    float end_x = rect.height() * s * c;
+    float end_y = rect.height() * c * c;
 
+    if (angle < 180) {
+      start_end[0] = {start_x, start_y};
       start_end[1] = {end_x, end_y};
+    } else {
+      start_end[0] = {end_x, end_y};
+      start_end[1] = {start_x, start_y};
+    }
+
+  } else {
+    float start_x = -rect.height() * s * c;
+    float start_y = rect.height() * s * s;
+    float end_x = rect.width() * c * c;
+    float end_y = -rect.width() * s * c;
+
+    if (angle < 180) {
+      start_end[0] = {start_x, start_y};
+      start_end[1] = {end_x, end_y};
+    } else {
+      start_end[0] = {end_x, end_y};
+      start_end[1] = {start_x, start_y};
     }
   }
 
@@ -1243,7 +1226,7 @@ void SkiaRenderer::PrepareGradient(
 
   size_t i = 0;
   for (; i < gradient_mask->step_count(); ++i) {
-    positions[i] = gradient_mask->steps()[i].percent / 100.f;
+    positions[i] = gradient_mask->steps()[i].fraction;
     gradient_colors[i] = MaskColor(gradient_mask->steps()[i].alpha);
   }
 
@@ -3159,12 +3142,6 @@ void SkiaRenderer::PrepareRenderPassOverlay(
     DCHECK(result) << "shared_quad_state->mask_filter_info.Transform() failed.";
   }
 
-  // Reset |quad_to_target_transform|, so the quad will be rendered at the
-  // origin (0,0) without all transforms (translation, scaling, rotation, etc)
-  // and then we will use OS compositor to do those transforms.
-  base::AutoReset<gfx::Transform> auto_reset_transform(
-      &shared_quad_state->quad_to_target_transform, gfx::Transform());
-
   const auto& viewport_size = current_frame()->device_viewport_size;
   auto projection_matrix = gfx::OrthoProjectionMatrix(
       /*left=*/0, /*right=*/viewport_size.width(), /*bottom=*/0,
@@ -3175,14 +3152,23 @@ void SkiaRenderer::PrepareRenderPassOverlay(
 
   gfx::Transform target_to_device = window_matrix * projection_matrix;
 
-  // Use nullptr scissor, so we can always render the whole render pass in an
-  // overlay backing.
-  // TODO(penghuang): reusing overlay backing from previous frame to avoid
-  // reproducing the overlay backing if the render pass content quad properties
-  // and content are not changed.
-  DrawQuadParams params = CalculateDrawQuadParams(
-      target_to_device, /*scissor=*/nullptr, quad, /*draw_region=*/nullptr);
-  DrawRPDQParams rpdq_params = CalculateRPDQParams(quad, &params);
+  DrawQuadParams params;
+  DrawRPDQParams rpdq_params{gfx::RectF()};
+  {
+    // Reset |quad_to_target_transform|, so the quad will be rendered at the
+    // origin (0,0) without all transforms (translation, scaling, rotation, etc)
+    // and then we will use OS compositor to do those transforms.
+    base::AutoReset<gfx::Transform> auto_reset_transform(
+        &shared_quad_state->quad_to_target_transform, gfx::Transform());
+    // Use nullptr scissor, so we can always render the whole render pass in an
+    // overlay backing.
+    // TODO(penghuang): reusing overlay backing from previous frame to avoid
+    // reproducing the overlay backing if the render pass content quad
+    // properties and content are not changed.
+    params = CalculateDrawQuadParams(target_to_device, /*scissor_rect=*/nullptr,
+                                     quad, /*draw_region=*/nullptr);
+    rpdq_params = CalculateRPDQParams(quad, &params);
+  }
 
   const auto& filter_bounds = rpdq_params.filter_bounds;
 
@@ -3220,13 +3206,7 @@ void SkiaRenderer::PrepareRenderPassOverlay(
 
   // Adjust the overlay |buffer_size| to reduce memory fragmentation. It also
   // increases buffer reusing possibilities.
-#if BUILDFLAG(IS_APPLE)
   constexpr int kBufferMultiple = 64;
-#else  // defined(USE_OZONE)
-  // TODO(petermcneeley) : Support buffer rounding by dynamically changing
-  // texture uvs.
-  constexpr int kBufferMultiple = 1;
-#endif  // BUILDFLAG(IS_APPLE)
   gfx::Size buffer_size(
       cc::MathUtil::CheckedRoundUp(filter_bounds.width(), kBufferMultiple),
       cc::MathUtil::CheckedRoundUp(filter_bounds.height(), kBufferMultiple));
@@ -3327,9 +3307,28 @@ void SkiaRenderer::PrepareRenderPassOverlay(
 
   EndPaint(/*failed=*/false);
 
+#if BUILDFLAG(IS_APPLE)
   // Adjust |bounds_rect| to contain the whole buffer and at the right location.
   overlay->bounds_rect.set_origin(gfx::PointF(filter_bounds.origin()));
   overlay->bounds_rect.set_size(gfx::SizeF(buffer_size));
+#else   // defined(USE_OZONE)
+  // Adjust |display_rect| to be include the expanded |filter_bounds|, and
+  // transformed.
+  // TODO(fangzhoug): Merge Ozone and Apple code paths of delegated compositing.
+  overlay->display_rect = gfx::RectF(filter_bounds);
+  quad->shared_quad_state->quad_to_target_transform.TransformRect(
+      &overlay->display_rect);
+  overlay->display_rect.Intersect(
+      gfx::RectF(gfx::SizeF(current_frame()->device_viewport_size)));
+  auto buffer_rect =
+      gfx::RectF(overlay->display_rect.origin(), gfx::SizeF(buffer_size));
+  // Set |uv_rect| to reflect clipping from |buffer_size| to |filter_bounds|.
+  overlay->uv_rect = gfx::RectF{1.f, 1.f};
+  if (buffer_rect != overlay->display_rect) {
+    overlay->uv_rect = cc::MathUtil::ScaleRectProportional(
+        overlay->uv_rect, buffer_rect, overlay->display_rect);
+  }
+#endif  // BUILDFLAG(IS_APPLE)
 }
 #endif  // BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
 

@@ -11,7 +11,6 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/task/sequenced_task_runner.h"
-#include "components/metrics/structured/event.h"
 #include "components/metrics/structured/event_base.h"
 #include "components/metrics/structured/structured_metrics_client.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -39,7 +38,7 @@ namespace structured {
 //
 // Recorder is embedded within StructuredMetricsClient for Ash Chrome and should
 // only be used in Ash Chrome.
-class Recorder : public StructuredMetricsClient::RecordingDelegate {
+class Recorder {
  public:
   class RecorderImpl : public base::CheckedObserver {
    public:
@@ -49,18 +48,21 @@ class Recorder : public StructuredMetricsClient::RecordingDelegate {
     virtual void OnProfileAdded(const base::FilePath& profile_path) = 0;
     // Called on a call to OnReportingStateChanged.
     virtual void OnReportingStateChanged(bool enabled) = 0;
-    // Called when hardware class has been loaded.
-    virtual void OnHardwareClassInitialized(){};
+    // Called when full hardware class has been loaded.
+    virtual void OnHardwareClassInitialized(
+        const std::string& full_hardware_class){};
     // Called on a call to LastKeyRotation.
     virtual absl::optional<int> LastKeyRotation(uint64_t project_name_hash) = 0;
   };
 
+  Recorder(const Recorder&) = delete;
+  Recorder& operator=(const Recorder&) = delete;
+
   static Recorder* GetInstance();
 
-  // RecordingDelegate:
-  void RecordEvent(Event&& event) override;
-  void Record(EventBase&& event) override;
-  bool IsReadyToRecord() const override;
+  // This signals to StructuredMetricsProvider that the event should be
+  // recorded.
+  void Record(EventBase&& event);
 
   // Notifies the StructuredMetricsProvider that a profile has been added with
   // path |profile_path|. The first call to ProfileAdded initializes the
@@ -78,8 +80,8 @@ class Recorder : public StructuredMetricsClient::RecordingDelegate {
   // Notifies observers that metrics reporting has been enabled or disabled.
   void OnReportingStateChanged(bool enabled);
 
-  // Notifies observers that hardware class has been loaded.
-  void OnHardwareClassInitialized();
+  // Notifies observers that full hardware class has been loaded.
+  void OnHardwareClassInitialized(const std::string& full_hardware_class);
 
   void SetUiTaskRunner(
       const scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
@@ -91,9 +93,7 @@ class Recorder : public StructuredMetricsClient::RecordingDelegate {
   friend class base::NoDestructor<Recorder>;
 
   Recorder();
-  ~Recorder() override;
-  Recorder(const Recorder&) = delete;
-  Recorder& operator=(const Recorder&) = delete;
+  ~Recorder();
 
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 

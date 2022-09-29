@@ -352,7 +352,7 @@ BackgroundTracingManagerImpl::GetBackgroundTracingConfig(
   if (!value->is_dict())
     return nullptr;
 
-  return BackgroundTracingConfig::FromDict(std::move(*value));
+  return BackgroundTracingConfig::FromDict(std::move(value->GetDict()));
 }
 
 void BackgroundTracingManagerImpl::OnHistogramTrigger(
@@ -450,7 +450,7 @@ bool BackgroundTracingManagerImpl::IsAllowedFinalization(
               is_crash_scenario));
 }
 
-absl::optional<base::Value>
+absl::optional<base::Value::Dict>
 BackgroundTracingManagerImpl::GenerateMetadataDict() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!active_scenario_)

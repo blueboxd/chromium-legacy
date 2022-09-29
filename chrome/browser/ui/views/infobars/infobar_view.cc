@@ -164,8 +164,8 @@ void InfoBarView::Layout() {
 }
 
 void InfoBarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_INFOBAR));
   node_data->role = ax::mojom::Role::kAlertDialog;
+  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_INFOBAR));
   node_data->AddStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts,
                                 "Alt+Shift+A");
 }
@@ -194,7 +194,7 @@ void InfoBarView::ViewHierarchyChanged(
   // Anything that needs to happen once after all subclasses add their children.
   if (details.is_add && (details.child == this)) {
     if (close_button_)
-      ReorderChildView(close_button_, -1);
+      ReorderChildView(close_button_, children().size());
     RecalculateHeight();
   }
 }

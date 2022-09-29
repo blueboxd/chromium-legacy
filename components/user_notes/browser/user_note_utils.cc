@@ -11,13 +11,14 @@
 #include "components/user_notes/interfaces/user_note_metadata_snapshot.h"
 #include "components/user_notes/model/user_note_metadata.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/weak_document_ptr.h"
 #include "url/gurl.h"
 
 namespace user_notes {
 
 std::vector<std::unique_ptr<FrameUserNoteChanges>> CalculateNoteChanges(
     const UserNoteService& note_service,
-    const std::vector<content::RenderFrameHost*>& rfhs,
+    const std::vector<content::WeakDocumentPtr>& documents,
     const UserNoteMetadataSnapshot& metadata_snapshot) {
   std::vector<std::unique_ptr<FrameUserNoteChanges>> result;
 
@@ -25,7 +26,14 @@ std::vector<std::unique_ptr<FrameUserNoteChanges>> CalculateNoteChanges(
   // where there's no entry in the metadata snapshot for a frame's URL.
   UserNoteMetadataSnapshot::IdToMetadataMap empty_map;
 
-  for (content::RenderFrameHost* rfh : rfhs) {
+  for (const content::WeakDocumentPtr& document : documents) {
+    content::RenderFrameHost* rfh = document.AsRenderFrameHostIfValid();
+
+    if (!rfh) {
+      // The frame is no longer valid.
+      continue;
+    }
+
     // Notes should only be processed for the primary page.
     DCHECK(rfh->GetMainFrame()->IsInPrimaryMainFrame());
 
@@ -66,12 +74,14 @@ std::vector<std::unique_ptr<FrameUserNoteChanges>> CalculateNoteChanges(
 
         if (url == model.target().target_page()) {
           // Note has been removed.
-          removed.emplace_back(base::UnguessableToken(model.id()));
+          removed.emplace_back(model.id());
         }
       } else if (metadata_it->second->modification_date() >
-                 model.metadata().modification_date()) {
-        // Note has been modified.
-        modified.emplace_back(base::UnguessableToken(model.id()));
+                     model.metadata().modification_date() ||
+                 note_service.IsNoteInProgress(model.id())) {
+        // This note has been modified or created locally (which is treated as a
+        // modification since both the instance and the partial model exist).
+        modified.emplace_back(model.id());
       }
     }
 
@@ -81,7 +91,7 @@ std::vector<std::unique_ptr<FrameUserNoteChanges>> CalculateNoteChanges(
       const base::UnguessableToken& id = metadata_it.first;
       if (!notes_manager->GetNoteInstance(id)) {
         // This is a new note.
-        added.emplace_back(base::UnguessableToken(id));
+        added.emplace_back(id);
       }
     }
 

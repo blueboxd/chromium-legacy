@@ -81,41 +81,6 @@ TEST_F(ThreadProfilerPlatformConfigurationTest, IsSupported) {
 }
 
 MAYBE_PLATFORM_CONFIG_TEST_F(ThreadProfilerPlatformConfigurationTest,
-                             GetRuntimeModuleState) {
-  using RuntimeModuleState =
-      ThreadProfilerPlatformConfiguration::RuntimeModuleState;
-#if BUILDFLAG(IS_ANDROID)
-  EXPECT_EQ(RuntimeModuleState::kModuleNotAvailable,
-            config()->GetRuntimeModuleState(version_info::Channel::UNKNOWN));
-  EXPECT_EQ(RuntimeModuleState::kModuleAbsentButAvailable,
-            config()->GetRuntimeModuleState(version_info::Channel::CANARY));
-  EXPECT_EQ(RuntimeModuleState::kModuleAbsentButAvailable,
-            config()->GetRuntimeModuleState(version_info::Channel::DEV));
-  EXPECT_EQ(RuntimeModuleState::kModuleNotAvailable,
-            config()->GetRuntimeModuleState(version_info::Channel::BETA));
-  EXPECT_EQ(RuntimeModuleState::kModuleNotAvailable,
-            config()->GetRuntimeModuleState(version_info::Channel::STABLE));
-
-  EXPECT_EQ(RuntimeModuleState::kModuleNotAvailable,
-            config()->GetRuntimeModuleState(version_info::Channel::UNKNOWN));
-#else
-  EXPECT_EQ(RuntimeModuleState::kModuleNotRequired,
-            config()->GetRuntimeModuleState(version_info::Channel::UNKNOWN));
-  EXPECT_EQ(RuntimeModuleState::kModuleNotRequired,
-            config()->GetRuntimeModuleState(version_info::Channel::CANARY));
-  EXPECT_EQ(RuntimeModuleState::kModuleNotRequired,
-            config()->GetRuntimeModuleState(version_info::Channel::DEV));
-  EXPECT_EQ(RuntimeModuleState::kModuleNotRequired,
-            config()->GetRuntimeModuleState(version_info::Channel::BETA));
-  EXPECT_EQ(RuntimeModuleState::kModuleNotRequired,
-            config()->GetRuntimeModuleState(version_info::Channel::STABLE));
-
-  EXPECT_EQ(RuntimeModuleState::kModuleNotRequired,
-            config()->GetRuntimeModuleState(version_info::Channel::UNKNOWN));
-#endif
-}
-
-MAYBE_PLATFORM_CONFIG_TEST_F(ThreadProfilerPlatformConfigurationTest,
                              GetEnableRates) {
   using RelativePopulations =
       ThreadProfilerPlatformConfiguration::RelativePopulations;
@@ -144,22 +109,17 @@ MAYBE_PLATFORM_CONFIG_TEST_F(ThreadProfilerPlatformConfigurationTest,
                              GetChildProcessEnableFraction) {
   EXPECT_EQ(1.0, config()->GetChildProcessEnableFraction(
                      metrics::CallStackProfileParams::Process::kGpu));
-  EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(
-                     metrics::CallStackProfileParams::Process::kUtility));
+  EXPECT_EQ(1.0,
+            config()->GetChildProcessEnableFraction(
+                metrics::CallStackProfileParams::Process::kNetworkService));
   EXPECT_EQ(0.0, config()->GetChildProcessEnableFraction(
                      metrics::CallStackProfileParams::Process::kUnknown));
 #if BUILDFLAG(IS_ANDROID)
   EXPECT_EQ(0.75, config()->GetChildProcessEnableFraction(
                       metrics::CallStackProfileParams::Process::kRenderer));
-  EXPECT_EQ(0.0,
-            config()->GetChildProcessEnableFraction(
-                metrics::CallStackProfileParams::Process::kNetworkService));
 #else
   EXPECT_EQ(0.2, config()->GetChildProcessEnableFraction(
                      metrics::CallStackProfileParams::Process::kRenderer));
-  EXPECT_EQ(1.0,
-            config()->GetChildProcessEnableFraction(
-                metrics::CallStackProfileParams::Process::kNetworkService));
 #endif
 }
 

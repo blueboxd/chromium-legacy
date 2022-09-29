@@ -54,16 +54,23 @@ function addMapping(map, sourceFileName, originalLine, generatedLine, verbose) {
 
 /**
  * Processes one processed TypeScript or JavaScript file and produces one
- * source map file.
+ * source map file / appends a source map.
  *
+ * @param {string} originalFileName Original path of `inputFileName`.
  * @param {string} inputFileName The TypeScript or JavaScript file to read from.
+ * @param {string} outputFileName If `inlineSourcemaps`, the output TypeScript
+ *                                or JavaScript file with the append source map.
+ *                                Otherwise, the standalone map file.
  * @param {boolean} verbose If true, print detailed information about the
  *                          mappings as they are added.
+ * @param {boolean} inlineSourcemaps If true, append source map instead of
+ *                                   creating standalone map file.
  */
-function processOneFile(inputFileName, verbose) {
+function processOneFile(
+    originalFileName, inputFileName, outputFileName, verbose,
+    inlineSourcemaps) {
   const inputFile = fs.readFileSync(inputFileName, 'utf8');
   const inputLines = inputFile.split('\n');
-  const inputFileBaseName = path.basename(inputFileName);
   const map = new SourceMapGenerator();
 
   let originalLine = 0;
@@ -75,7 +82,7 @@ function processOneFile(inputFileName, verbose) {
 
     // Add to sourcemap before looking for removal comments. The beginning of
     // the generated line came from the parts before the removal comment.
-    addMapping(map, inputFileBaseName, originalLine, generatedLine, verbose);
+    addMapping(map, originalFileName, originalLine, generatedLine, verbose);
 
     for (const removal of line.matchAll(GRIT_REMOVED_LINES_REGEX)) {
       const removedLines = Number.parseInt(removal[1], 10);
@@ -87,7 +94,15 @@ function processOneFile(inputFileName, verbose) {
     }
   }
 
-  fs.writeFileSync(inputFileName + '.map', map.toString());
+  if (!inlineSourcemaps) {
+    fs.writeFileSync(outputFileName, map.toString());
+  } else {
+    const mapBase64 = Buffer.from(map.toString()).toString('base64');
+    const output =
+        `${inputFile}\n//# sourceMappingURL=data:application/json;base64,${
+            mapBase64}`;
+    fs.writeFileSync(outputFileName, output);
+  }
 }
 
 function main() {
@@ -99,11 +114,19 @@ function main() {
   parser.addArgument(
       ['-v', '--verbose'],
       {help: 'Print each mapping & removed-line comment', action: 'storeTrue'});
+  parser.addArgument(['--inline-sourcemaps'], {
+    help: 'Copies contents of input to output and appends inline source maps',
+    action: 'storeTrue',
+  });
+  parser.addArgument('original', {help: 'Original file name', action: 'store'});
   parser.addArgument('input', {help: 'Input file name', action: 'store'});
+  parser.addArgument('output', {help: 'Output file name', action: 'store'});
 
   const argv = parser.parseArgs();
 
-  processOneFile(argv.input, argv.verbose);
+  processOneFile(
+      argv.original, argv.input, argv.output, argv.verbose,
+      argv.inline_sourcemaps);
 }
 
 main();

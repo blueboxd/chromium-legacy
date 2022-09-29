@@ -28,21 +28,6 @@
   </head>
 
   <body aria-label="$i18n{FILEMANAGER_APP_NAME}" tabindex="-1" class="files-ng">
-    <custom-style>
-      <style>
-        .dialog-footer cr-input {
-          --cr-input-background-color: var(--cros-textfield-background-color);
-          --cr-input-border-radius: 0;
-          --cr-input-color: var(--cros-textfield-input-color);
-          --cr-input-error-color: var(--cros-textfield-label-color-error);
-          --cr-input-error-display: none;
-          --cr-input-focus-color: var(--cros-textfield-label-color-focus);
-          --cr-input-min-height: 32px;
-          width: 100%;
-        }
-      </style>
-    </custom-style>
-
     <commands>
       <command id="cut" label="$i18n{CUT_BUTTON_LABEL}"
                shortcut="x|Ctrl">
@@ -56,6 +41,7 @@
                label="$i18n{PASTE_INTO_FOLDER_BUTTON_LABEL}">
       <command id="get-info" label="$i18n{GET_INFO_BUTTON_LABEL}"
                shortcut="Space">
+      <command id="dlp-restriction-details" label="$i18n{DLP_RESTRICTION_DETAILS}">
       <command id="rename" label="$i18n{RENAME_BUTTON_LABEL}"
                shortcut="Enter|Ctrl">
       <command id="move-to-trash" shortcut="Backspace|Alt Delete" label="$i18n{MOVE_TO_TRASH_BUTTON_LABEL}">
@@ -189,6 +175,7 @@
         <cr-menu-item command="#paste-into-folder" visibleif="full-page"></cr-menu-item>
         <hr visibleif="full-page">
         <cr-menu-item command="#get-info"></cr-menu-item>
+        <cr-menu-item command="#dlp-restriction-details"></cr-menu-item>
         <cr-menu-item command="#rename"></cr-menu-item>
         <cr-menu-item command="#pin-folder"></cr-menu-item>
         <cr-menu-item command="#move-to-trash"></cr-menu-item>
@@ -300,6 +287,7 @@
             <div class="progress-bar" aria-hidden="true">
               <div class="progress-track" id="volume-space-info-bar"></div>
             </div>
+            <div id="volume-space-info-warning" class="menu-warning"></div>
           </div>
         </cr-menu-item>
       </cr-menu>

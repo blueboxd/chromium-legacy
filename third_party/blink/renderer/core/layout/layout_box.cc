@@ -1275,7 +1275,7 @@ void LayoutBox::UpdateAfterLayout() {
 
 bool LayoutBox::ShouldUseAutoIntrinsicSize() const {
   DisplayLockContext* context = GetDisplayLockContext();
-  return context && context->IsAuto() && context->IsLocked();
+  return context && context->IsLocked();
 }
 
 bool LayoutBox::HasOverrideIntrinsicContentWidth() const {
@@ -3182,6 +3182,9 @@ PhysicalOffset LayoutBox::OffsetFromContainerInternal(
     offset += To<LayoutInline>(o)->OffsetForInFlowPositionedInline(*this);
   }
 
+  if (AnchorScrollObject())
+    offset += ComputeAnchorScrollOffset();
+
   return offset;
 }
 
@@ -3794,6 +3797,8 @@ bool LayoutBox::MapToVisualRectInAncestorSpaceInternal(
     // LayoutObject::setStyle, the relative position flag on the LayoutObject
     // has been cleared, so use the one on the style().
     container_offset += OffsetForInFlowPosition();
+  } else if (UNLIKELY(AnchorScrollObject())) {
+    container_offset += ComputeAnchorScrollOffset();
   }
 
   if (skip_info.FilterSkipped()) {
@@ -7269,7 +7274,7 @@ LayoutBox::PaginationBreakability LayoutBox::GetPaginationBreakability(
       (Parent() && IsWritingModeRoot()) ||
       (IsFixedPositioned() && GetDocument().Printing() &&
        IsA<LayoutView>(Container())) ||
-      ShouldApplySizeContainment() || IsFrameSet())
+      ShouldApplySizeContainment() || IsFrameSetIncludingNG())
     return kForbidBreaks;
 
   if (engine != kUnknownFragmentationEngine) {
@@ -8109,21 +8114,49 @@ const LayoutObject* LayoutBox::AnchorScrollObject() const {
   if (!anchor_query)
     return nullptr;
 
-  if (const auto& reference =
-          anchor_query->anchor_references.find(StyleRef().AnchorScroll());
-      reference != anchor_query->anchor_references.end()) {
-    return reference->value->fragment->GetLayoutObject();
+  if (const NGPhysicalFragment* fragment =
+          anchor_query->Fragment(StyleRef().AnchorScroll())) {
+    return fragment->GetLayoutObject();
   }
   return nullptr;
 }
 
-const LayoutBlock* LayoutBox::AnchorScrollContainer() const {
+const LayoutBox* LayoutBox::AnchorScrollContainer() const {
   if (const LayoutObject* object = AnchorScrollObject()) {
-    const LayoutBlock* scroller = object->EnclosingScrollportBox();
-    if (scroller != EnclosingScrollportBox())
+    const LayoutBox* scroller = object->ContainingScrollContainer();
+    if (scroller != ContainingScrollContainer())
       return scroller;
   }
   return nullptr;
+}
+
+LayoutBox::AnchorScrollData LayoutBox::ComputeAnchorScrollData() const {
+  if (!AnchorScrollContainer())
+    return AnchorScrollData();
+
+  const PaintLayer* inner_most_scroll_container_layer =
+      AnchorScrollContainer()->Layer();
+  const PaintLayer* outer_most_scroll_container_layer =
+      inner_most_scroll_container_layer;
+  gfx::Vector2dF accumulated_scroll_offset(0, 0);
+  gfx::Vector2d accumulated_scroll_origin(0, 0);
+  for (const PaintLayer* layer = inner_most_scroll_container_layer; layer;
+       layer = layer->ContainingScrollContainerLayer()) {
+    if (layer == Layer()->ContainingScrollContainerLayer())
+      break;
+    accumulated_scroll_offset += layer->GetScrollableArea()->GetScrollOffset();
+    accumulated_scroll_origin +=
+        layer->GetScrollableArea()->ScrollOrigin().OffsetFromOrigin();
+    outer_most_scroll_container_layer = layer;
+  }
+
+  return {inner_most_scroll_container_layer, outer_most_scroll_container_layer,
+          accumulated_scroll_offset, accumulated_scroll_origin};
+}
+
+PhysicalOffset LayoutBox::ComputeAnchorScrollOffset() const {
+  return -PhysicalOffset::FromVector2dFFloor(
+      ComputeAnchorScrollData().accumulated_scroll_offset);
 }
 
 }  // namespace blink

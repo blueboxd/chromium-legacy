@@ -45,7 +45,7 @@ class CpuProbeLinux : public CpuProbe {
   //
   // For most systems, the cores listed in /proc/stat are static. However, it is
   // theoretically possible for cores to go online and offline.
-  void InitializeCore(int core_index, const CoreTimes& initial_core_times);
+  void InitializeCore(size_t core_index, const CoreTimes& initial_core_times);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -53,9 +53,11 @@ class CpuProbeLinux : public CpuProbe {
   ProcfsStatCpuParser stat_parser_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Most recent per-core times from /proc/stat.
-  std::vector<CoreTimes> last_core_times_ GUARDED_BY_CONTEXT(sequence_checker_);
+  std::vector<CoreTimes> last_per_core_times_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
-  PressureSample last_sample_ GUARDED_BY_CONTEXT(sequence_checker_);
+  PressureSample last_sample_ GUARDED_BY_CONTEXT(sequence_checker_) =
+      kUnsupportedValue;
 };
 
 }  // namespace device

@@ -9,7 +9,7 @@
  */
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
@@ -31,6 +31,7 @@ import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js
 import {flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {HatsBrowserProxyImpl, TrustSafetyInteraction} from '../hats_browser_proxy.js';
+import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, SafetyCheckInteractions} from '../metrics_browser_proxy.js';
 import {routes} from '../route.js';
 import {Router} from '../router.js';
@@ -38,10 +39,10 @@ import {Router} from '../router.js';
 import {SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckParentStatus} from './safety_check_browser_proxy.js';
 import {getTemplate} from './safety_check_page.html.js';
 
-type ParentChangedEvent = {
-  newState: SafetyCheckParentStatus,
-  displayString: string,
-};
+interface ParentChangedEvent {
+  newState: SafetyCheckParentStatus;
+  displayString: string;
+}
 
 const SettingsSafetyCheckPageElementBase =
     WebUIListenerMixin(I18nMixin(PolymerElement));
@@ -66,11 +67,23 @@ export class SettingsSafetyCheckPageElement extends
 
       /** UI string to display for the parent status. */
       parentDisplayString_: String,
+
+      /**
+       * Boolean that decides if the entry point for unused site permissions
+       * should be shown.
+       */
+      safetyCheckPermissionsEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('safetyCheckPermissionsEnabled');
+        },
+      },
     };
   }
 
   private parentStatus_: SafetyCheckParentStatus;
   private parentDisplayString_: string;
+  private safetyCheckPermissionsEnabled_: boolean;
   private safetyCheckBrowserProxy_: SafetyCheckBrowserProxy =
       SafetyCheckBrowserProxyImpl.getInstance();
   private metricsBrowserProxy_: MetricsBrowserProxy =

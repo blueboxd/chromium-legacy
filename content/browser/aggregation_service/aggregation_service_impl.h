@@ -10,12 +10,17 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/threading/sequence_bound.h"
 #include "content/browser/aggregation_service/aggregatable_report_assembler.h"
 #include "content/browser/aggregation_service/aggregatable_report_scheduler.h"
 #include "content/browser/aggregation_service/aggregatable_report_sender.h"
 #include "content/browser/aggregation_service/aggregation_service.h"
+#include "content/browser/aggregation_service/aggregation_service_observer.h"
+#include "content/browser/aggregation_service/aggregation_service_storage.h"
 #include "content/browser/aggregation_service/aggregation_service_storage_context.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/storage_partition.h"
@@ -32,6 +37,7 @@ namespace content {
 
 struct PublicKeyset;
 class AggregatableReport;
+class AggregatableReportRequest;
 class AggregationServiceStorage;
 class AggregatableReportScheduler;
 class StoragePartitionImpl;
@@ -75,6 +81,15 @@ class CONTENT_EXPORT AggregationServiceImpl
                  StoragePartition::StorageKeyMatcherFunction filter,
                  base::OnceClosure done) override;
   void ScheduleReport(AggregatableReportRequest report_request) override;
+  void GetPendingReportRequestsForWebUI(
+      base::OnceCallback<
+          void(std::vector<AggregationServiceStorage::RequestAndId>)> callback)
+      override;
+  void SendReportsForWebUI(
+      const std::vector<AggregationServiceStorage::RequestId>& ids,
+      base::OnceClosure reports_sent_callback) override;
+  void AddObserver(AggregationServiceObserver* observer) override;
+  void RemoveObserver(AggregationServiceObserver* observer) override;
 
   // AggregationServiceStorageContext:
   const base::SequenceBound<AggregationServiceStorage>& GetStorage() override;
@@ -97,18 +112,42 @@ class CONTENT_EXPORT AggregationServiceImpl
       std::vector<AggregationServiceStorage::RequestAndId> requests_and_ids);
 
   void OnReportAssemblyComplete(
+      base::OnceClosure done,
       AggregationServiceStorage::RequestId request_id,
       GURL reporting_url,
+      AggregatableReportRequest report_request,
       absl::optional<AggregatableReport> report,
       AggregatableReportAssembler::AssemblyStatus status);
 
-  void OnReportSendingComplete(AggregationServiceStorage::RequestId request_id,
-                               AggregatableReportSender::RequestStatus status);
+  void OnReportSendingComplete(
+      base::OnceClosure done,
+      AggregationServiceStorage::RequestAndId request_and_id,
+      AggregatableReport report,
+      AggregatableReportSender::RequestStatus status);
 
-  std::unique_ptr<AggregatableReportScheduler> scheduler_;
+  void AssembleAndSendReports(
+      std::vector<AggregationServiceStorage::RequestAndId> requests_and_ids,
+      base::RepeatingClosure done);
+
+  void OnGetRequestsToSendFromWebUI(
+      base::OnceClosure reports_sent_callback,
+      std::vector<AggregationServiceStorage::RequestAndId> requests_and_ids);
+
+  void NotifyReportHandled(
+      AggregationServiceStorage::RequestAndId request_and_id,
+      absl::optional<AggregatableReport> report,
+      AggregationServiceObserver::ReportStatus status);
+
+  void NotifyRequestStorageModified();
+
   base::SequenceBound<AggregationServiceStorage> storage_;
+  std::unique_ptr<AggregatableReportScheduler> scheduler_;
   std::unique_ptr<AggregatableReportAssembler> assembler_;
   std::unique_ptr<AggregatableReportSender> sender_;
+
+  base::ObserverList<AggregationServiceObserver> observers_;
+
+  base::WeakPtrFactory<AggregationServiceImpl> weak_factory_{this};
 };
 
 }  // namespace content

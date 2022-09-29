@@ -117,19 +117,19 @@
     Older
   </message>
   <message name="IDS_FILE_BROWSER_RECENT_EMPTY_FOLDER" desc="Empty state message for all filter in Recent view.">
-    Your recent files will appear here
+    No recent files
   </message>
   <message name="IDS_FILE_BROWSER_RECENT_EMPTY_IMAGES_FOLDER" desc="Empty state message for image filter in Recent view.">
-    Your recent images will appear here
+    No recent images
   </message>
   <message name="IDS_FILE_BROWSER_RECENT_EMPTY_AUDIO_FOLDER" desc="Empty state message for audio filter in Recent view.">
-    Your recent audio files will appear here
+    No recent audio files
   </message>
   <message name="IDS_FILE_BROWSER_RECENT_EMPTY_VIDEOS_FOLDER" desc="Empty state message for video filter in Recent view.">
-    Your recent videos will appear here
+    No recent videos
   </message>
   <message name="IDS_FILE_BROWSER_RECENT_EMPTY_DOCUMENTS_FOLDER" desc="Empty state message for document filter in Recent view.">
-    Your recent documents will appear here
+    No recent documents
   </message>
   <message name="IDS_FILE_BROWSER_PLUGIN_VM_DIRECTORY_LABEL" desc="Parallels local directory label.">
     Windows files
@@ -423,13 +423,6 @@
   </message>
   <message name="IDS_FILE_BROWSER_INSTALL_LINUX_PACKAGE_ERROR_DESCRIPTION" desc="In the File Manager, the dialog message when a Linux application installation fails.">
     An error occured during installation of your Linux application.
-  </message>
-
-  <message name="IDS_FILE_BROWSER_AUDIO_ERROR" desc="In the Audio Player, message informing that the file could not be played.">
-    This file could not be played.
-  </message>
-  <message name="IDS_FILE_BROWSER_AUDIO_OFFLINE" desc="In the Audio Player, message informing that the audio file could not be played in the offline mode.">
-    This file is not available offline.
   </message>
 
   <message name="IDS_FILE_BROWSER_RECOVERED_FILES_FROM_GOOGLE_DRIVE_DIRECTORY_NAME" desc="The name of the direcotry which stores files recovered from Google Drive directory when the locally stored Google Drive data is found to be broken.">
@@ -794,7 +787,7 @@
     Your organization requires more storage to complete the upload.
   </message>
   <message name="IDS_FILE_BROWSER_DRIVE_ORGANIZATION_STORAGE_FULL" desc="File Manager menu storage meter message indicating the user's organization has run out of quota.">
-    *Org storage full
+    Org storage full
   </message>
   <message name="IDS_FILE_BROWSER_SHARE_ERROR" desc="File Manager error message when sharing a file or a directory on Drive fails because of internet connection problems.">
     Sharing failed. Check your connection and try again later.
@@ -1063,6 +1056,9 @@
   <message name="IDS_FILE_BROWSER_METADATA_BOX_FILE_LOCATION" desc="Label for file location.">
     File location
   </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_ORIGINAL_LOCATION" desc="Label for items original location.">
+    Original location
+  </message>
   <message name="IDS_FILE_BROWSER_METADATA_BOX_FILE_PATH" desc="Label for file path.">
     Path
   </message>
@@ -1194,6 +1190,9 @@
   </message>
   <message name="IDS_FILE_BROWSER_DRIVE_INDIVIDUAL_QUOTA_LOW" desc="Text showing individual space left on Google Drive">
     Storage low <ph name="REMAINING_PERCENTAGE">$1<ex>12</ex></ph>% left of your <ph name="TOTAL_SPACE">$2<ex>10 TB</ex></ph> individual storage.
+  </message>
+  <message name="IDS_FILE_BROWSER_DRIVE_WARNING_QUOTA_OVER" desc="Word prepended to 'drive quota over' warning messages exclusively for screen readers to make up for warning icons that are not picked up by them">
+    Warning
   </message>
   <message name="IDS_FILE_BROWSER_DRIVE_INDIVIDUAL_QUOTA_OVER" desc="Text informing users that their Google Drive individual quota has been exceeded">
     You’ve used all your individual Google Workspace storage.
@@ -1404,12 +1403,6 @@
   <message name="IDS_FILE_BROWSER_ERROR_UNRESOLVABLE_FILE" desc="Error message when the file attempted to open from Downloads panel was not found under paths managed by file manager.">
     This file has wandered off somewhere. Please check your download location setting and try again.
   </message>
-  <message name="IDS_FILE_BROWSER_AUDIO_PLAYER_TITLE" desc="Title of the Audio Player window.">
-    Audio Player
-  </message>
-  <message name="IDS_FILE_BROWSER_AUDIO_PLAYER_DEFAULT_ARTIST" desc="In the Audio Player window, default artist name used when artist name is unknown.">
-    Unknown Artist
-  </message>
 
   <message name="IDS_FILE_BROWSER_FILE_ERROR_GENERIC" desc="In the File Manager, the error message when the file operation failed.">
     An error occurred.
@@ -1554,26 +1547,18 @@
     Volume slider
   </message>
 
-<!-- Audio Player -->
-  <message name="IDS_AUDIO_PLAYER_SHUFFLE_BUTTON_LABEL" desc="Label for the Shuffle button of audio player.">
-    Shuffle
-  </message>
-  <message name="IDS_AUDIO_PLAYER_REPEAT_BUTTON_LABEL" desc="Label for the Repeat button of audio player">
-    Repeat
-  </message>
-  <message name="IDS_AUDIO_PLAYER_OPEN_PLAY_LIST_BUTTON_LABEL" desc="Label for a button which is used to open play list in audio player.">
-    Open play list
-  </message>
-  <message name="IDS_AUDIO_PLAYER_ARTWORK_EXPAND_BUTTON_LABEL" desc="Label for an expand button which is used to show/hide artwork.">
-    Artwork
-  </message>
-
 <!-- Data Leak Prevention -->
   <message name="IDS_FILE_BROWSER_DLP_BLOCK_COPY_TOAST" desc="A toast informing the user that copying files is blocked by the administrator.">
     Pasting this file is blocked by your administrator
   </message>
   <message name="IDS_FILE_BROWSER_DLP_TOAST_BUTTON_LABEL" desc="Toast button label, learn more about data leak prevention policies.">
     Learn more
+  </message>
+  <message name="IDS_FILE_BROWSER_DLP_RESTRICTION_DETAILS" desc="Context menu item that shows the DLP restriction details for the selected file.">
+    Restriction details
+  </message>
+  <message name="IDS_FILE_BROWSER_DLP_MANAGED_ICON_TOOLTIP" desc="Tooltip of the data leak prevention managed icon.">
+    This file is confidential and subject to restrictions by administrator policy. <ph name="BEGIN_LINK_HELP">&lt;a target='_blank' href='$1'&gt;</ph>Learn more<ph name="END_LINK_HELP">&lt;/a&gt;</ph>
   </message>
 
 </grit-part>

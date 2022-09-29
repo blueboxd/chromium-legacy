@@ -7,13 +7,11 @@
 // should only be used by legacy UIs that have not yet been updated to new
 // patterns. Use Web Components in any new code.
 
-// #import {assert, assertInstanceof} from '../../assert.m.js';
-// #import {define as crUiDefine, decorate} from '../ui.m.js';
-// #import {getPropertyDescriptor, PropertyKind} from '../../cr.m.js';
-// #import {MenuItem} from './menu_item.m.js';
+import {assert, assertInstanceof} from '../../assert.m.js';
+import {define as crUiDefine, decorate} from '../ui.m.js';
+import {getPropertyDescriptor, PropertyKind} from '../../cr.m.js';
+import {MenuItem} from './menu_item.js';
 
-cr.define('cr.ui', function() {
-  /* #ignore */ /** @const */ const MenuItem = cr.ui.MenuItem;
 
   /**
    * Creates a new menu element. Menu dispatches all commands on the element it
@@ -23,7 +21,7 @@ cr.define('cr.ui', function() {
    * @constructor
    * @extends {HTMLElement}
    */
-  /* #export */ const Menu = cr.ui.define('cr-menu');
+  export const Menu = crUiDefine('cr-menu');
 
   Menu.prototype = {
     __proto__: HTMLElement.prototype,
@@ -50,20 +48,21 @@ cr.define('cr.ui', function() {
       // Decorate the children as menu items.
       const menuItems = this.menuItems;
       for (let i = 0, menuItem; menuItem = menuItems[i]; i++) {
-        cr.ui.decorate(menuItem, MenuItem);
+        decorate(menuItem, MenuItem);
       }
     },
 
     /**
      * Adds menu item at the end of the list.
      * @param {Object} item Menu item properties.
-     * @return {!cr.ui.MenuItem} The created menu item.
+     * @return {!MenuItem} The created menu item.
      */
     addMenuItem(item) {
-      const menuItem = this.ownerDocument.createElement('cr-menu-item');
+      const menuItem = /** @type {!MenuItem} */ (
+          this.ownerDocument.createElement('cr-menu-item'));
       this.appendChild(menuItem);
 
-      cr.ui.decorate(menuItem, MenuItem);
+      decorate(menuItem, MenuItem);
 
       if (item.label) {
         menuItem.label = item.label;
@@ -81,7 +80,7 @@ cr.define('cr.ui', function() {
      */
     addSeparator() {
       const separator = this.ownerDocument.createElement('hr');
-      cr.ui.decorate(separator, MenuItem);
+      decorate(separator, MenuItem);
       this.appendChild(separator);
     },
 
@@ -97,7 +96,7 @@ cr.define('cr.ui', function() {
      * Walks up the ancestors of |node| until a menu item belonging to this menu
      * is found.
      * @param {Node} node The node to start searching from.
-     * @return {cr.ui.MenuItem} The found menu item or null.
+     * @return {MenuItem} The found menu item or null.
      * @private
      */
     findMenuItem_(node) {
@@ -166,7 +165,7 @@ cr.define('cr.ui', function() {
 
     /**
      * The selected menu item or null if none.
-     * @type {cr.ui.MenuItem}
+     * @type {MenuItem}
      */
     get selectedItem() {
       return this.menuItems[this.selectedIndex];
@@ -215,7 +214,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Returns whether the given menu item is visible.
-     * @param {!cr.ui.MenuItem} menuItem
+     * @param {!MenuItem} menuItem
      * @return {boolean}
      * @private
      */
@@ -391,8 +390,8 @@ cr.define('cr.ui', function() {
   Menu.prototype.selectedIndex;
   Object.defineProperty(
       Menu.prototype, 'selectedIndex',
-      cr.getPropertyDescriptor(
-          'selectedIndex', cr.PropertyKind.JS, selectedIndexChanged));
+      getPropertyDescriptor(
+          'selectedIndex', PropertyKind.JS, selectedIndexChanged));
 
   /**
    * Selector for children which are menu items.
@@ -401,10 +400,4 @@ cr.define('cr.ui', function() {
   Menu.prototype.menuItemSelector;
   Object.defineProperty(
       Menu.prototype, 'menuItemSelector',
-      cr.getPropertyDescriptor('menuItemSelector', cr.PropertyKind.ATTR));
-
-  // Export
-  // #cr_define_end
-  console.warn('crbug/1173575, non-JS module files deprecated.');
-  return {Menu: Menu};
-});
+      getPropertyDescriptor('menuItemSelector', PropertyKind.ATTR));

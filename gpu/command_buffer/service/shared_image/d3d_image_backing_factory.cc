@@ -13,7 +13,7 @@
 #include "gpu/command_buffer/service/dxgi_shared_handle_manager.h"
 #include "gpu/command_buffer/service/shared_image/d3d_image_backing.h"
 #include "ui/gfx/buffer_format_util.h"
-#include "ui/gl/direct_composition_surface_win.h"
+#include "ui/gl/direct_composition_support.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_utils.h"
@@ -190,8 +190,8 @@ bool D3DImageBackingFactory::IsD3DSharedImageSupported(
 
 // static
 bool D3DImageBackingFactory::IsSwapChainSupported() {
-  return gl::DirectCompositionSurfaceWin::IsDirectCompositionSupported() &&
-         gl::DirectCompositionSurfaceWin::IsSwapChainTearingSupported();
+  return gl::DirectCompositionSupported() &&
+         gl::DXGISwapChainTearingSupported();
 }
 
 D3DImageBackingFactory::SwapChainBackings
@@ -554,11 +554,17 @@ bool D3DImageBackingFactory::UseMapOnDefaultTextures() {
 bool D3DImageBackingFactory::CanImportGpuMemoryBuffer(
     gfx::GpuMemoryBufferType gmb_type,
     viz::ResourceFormat format) {
-  return gmb_type == gfx::DXGI_SHARED_HANDLE ||
-         // Only allow single NV12 shared memory GMBs for now. This excludes
-         // dual shared memory GMBs used by software video decoder.
-         (gmb_type == gfx::SHARED_MEMORY_BUFFER &&
-          format == viz::YUV_420_BIPLANAR);
+  if (gmb_type == gfx::DXGI_SHARED_HANDLE) {
+    // If we had gfx::BufferFormat in IsSupported() we could verify it will work
+    // with GetDXGIFormat().
+    return true;
+  } else if (gmb_type == gfx::SHARED_MEMORY_BUFFER) {
+    // YUV_420_BIPLANAR will end up as RED_8 for Y and RG_88 for UV planes.
+    return format == viz::YUV_420_BIPLANAR ||
+           GetSupportedRGBAFormat(format).has_value();
+  }
+
+  return false;
 }
 
 bool D3DImageBackingFactory::IsSupported(uint32_t usage,

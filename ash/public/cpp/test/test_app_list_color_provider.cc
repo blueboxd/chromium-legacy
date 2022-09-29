@@ -42,6 +42,11 @@ SkColor TestAppListColorProvider::GetSearchBoxSecondaryTextColor(
   return gfx::kGoogleGrey500;
 }
 
+SkColor TestAppListColorProvider::GetSearchBoxSuggestionTextColor(
+    SkColor default_color) const {
+  return gfx::kGoogleGrey600;
+}
+
 SkColor TestAppListColorProvider::GetSuggestionChipBackgroundColor() const {
   return SkColorSetA(SK_ColorWHITE, 0x1A);
 }
@@ -122,16 +127,6 @@ SkColor TestAppListColorProvider::GetInkDropBaseColor(SkColor bg_color) const {
 
 float TestAppListColorProvider::GetInkDropOpacity(SkColor bg_color) const {
   return 0.08f;
-}
-
-SkColor TestAppListColorProvider::GetInvertedInkDropBaseColor(
-    SkColor bg_color) const {
-  return SK_ColorBLACK;
-}
-
-float TestAppListColorProvider::GetInvertedInkDropOpacity(
-    SkColor bg_color) const {
-  return 0.06f;
 }
 
 SkColor TestAppListColorProvider::GetSearchResultViewHighlightColor() const {

@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "ash/components/disks/disk.h"
-#include "base/strings/string_util.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -83,13 +82,13 @@ MockDiskMountManager::~MockDiskMountManager() = default;
 
 void MockDiskMountManager::NotifyDeviceInsertEvents() {
   std::unique_ptr<Disk> disk1_ptr = MakeDiskBuilder()
-                                        ->SetDeviceType(DEVICE_TYPE_USB)
+                                        ->SetDeviceType(DeviceType::kUSB)
                                         .SetSizeInBytes(4294967295U)
                                         .Build();
   Disk* disk1 = disk1_ptr.get();
 
   disks_.clear();
-  disks_[std::string(kTestDevicePath)] = std::move(disk1_ptr);
+  disks_.insert(std::move(disk1_ptr));
 
   // Device Added
   NotifyDeviceChanged(DEVICE_ADDED, kTestSystemPath);
@@ -100,12 +99,12 @@ void MockDiskMountManager::NotifyDeviceInsertEvents() {
   // Disk Changed
   std::unique_ptr<Disk> disk2_ptr = MakeDiskBuilder()
                                         ->SetMountPath(kTestMountPath)
-                                        .SetDeviceType(DEVICE_TYPE_MOBILE)
+                                        .SetDeviceType(DeviceType::kMobile)
                                         .SetSizeInBytes(1073741824)
                                         .Build();
   Disk* disk2 = disk2_ptr.get();
   disks_.clear();
-  disks_[std::string(kTestDevicePath)] = std::move(disk2_ptr);
+  disks_.insert(std::move(disk2_ptr));
   NotifyDiskChanged(DISK_CHANGED, disk2);
 }
 
@@ -113,18 +112,18 @@ void MockDiskMountManager::NotifyDeviceRemoveEvents() {
   std::unique_ptr<Disk> disk_ptr = MakeDiskBuilder()
                                        ->SetMountPath(kTestMountPath)
                                        .SetDeviceLabel(kTestDeviceLabel)
-                                       .SetDeviceType(DEVICE_TYPE_SD)
+                                       .SetDeviceType(DeviceType::kSD)
                                        .SetSizeInBytes(1073741824)
                                        .Build();
   Disk* disk = disk_ptr.get();
   disks_.clear();
-  disks_[std::string(kTestDevicePath)] = std::move(disk_ptr);
+  disks_.insert(std::move(disk_ptr));
   NotifyDiskChanged(DISK_REMOVED, disk);
 }
 
 void MockDiskMountManager::NotifyMountEvent(MountEvent event,
                                             MountError error_code,
-                                            const MountPointInfo& mount_info) {
+                                            const MountPoint& mount_info) {
   for (auto& observer : observers_)
     observer.OnMountEvent(event, error_code, mount_info);
 }
@@ -148,11 +147,11 @@ void MockDiskMountManager::SetupDefaultReplies() {
 
 void MockDiskMountManager::CreateDiskEntryForMountDevice(
     std::unique_ptr<Disk> disk) {
-  disks_[disk->device_path()] = std::move(disk);
+  disks_.insert(std::move(disk));
 }
 
 void MockDiskMountManager::CreateDiskEntryForMountDevice(
-    const DiskMountManager::MountPointInfo& mount_info,
+    const DiskMountManager::MountPoint& mount_info,
     const std::string& device_id,
     const std::string& device_label,
     const std::string& vendor_name,
@@ -185,19 +184,21 @@ void MockDiskMountManager::CreateDiskEntryForMountDevice(
 }
 
 void MockDiskMountManager::RemoveDiskEntryForMountDevice(
-    const DiskMountManager::MountPointInfo& mount_info) {
-  disks_.erase(mount_info.source_path);
+    const DiskMountManager::MountPoint& mount_info) {
+  const auto it = disks_.find(mount_info.source_path);
+  CHECK(it != disks_.end()) << "Cannot find " << mount_info.source_path;
+  disks_.erase(it);
 }
 
-const DiskMountManager::MountPointMap&
-MockDiskMountManager::mountPointsInternal() const {
+const DiskMountManager::MountPoints& MockDiskMountManager::mountPointsInternal()
+    const {
   return mount_points_;
 }
 
 const Disk* MockDiskMountManager::FindDiskBySourcePathInternal(
     const std::string& source_path) const {
-  DiskMap::const_iterator disk_it = disks_.find(source_path);
-  return disk_it == disks_.end() ? nullptr : disk_it->second.get();
+  Disks::const_iterator disk_it = disks_.find(source_path);
+  return disk_it == disks_.end() ? nullptr : disk_it->get();
 }
 
 void MockDiskMountManager::NotifyDiskChanged(DiskEvent event,

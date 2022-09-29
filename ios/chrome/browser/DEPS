@@ -28,6 +28,7 @@ include_rules = [
   "+components/favicon/ios",
   "+components/favicon_base",
   "+components/feature_engagement",
+  "+components/feed/core/shared_prefs",
   "+components/feed/core/v2/public",
   "+components/feed/feed_feature_list.h",
   "+components/flags_ui",
@@ -163,6 +164,10 @@ include_rules = [
   "-ios/chrome/browser/ui",
   "-ios/common/ui",
   "+ios/chrome/browser/ui/commands",
+
+  # ios/chrome/browser/promos_manager needs the following
+  "+ios/chrome/browser/ui/main/observing_scene_state_agent.h",
+  "+ios/chrome/browser/ui/main/scene_state.h",
 
   # For tests.
   "+ios/chrome/test",

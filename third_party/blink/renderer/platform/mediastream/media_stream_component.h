@@ -38,13 +38,13 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/prefinalizer.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_track_platform.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 class MediaStreamSource;
-class WebAudioSourceProvider;
 class WebLocalFrame;
 
 // A MediaStreamComponent is a MediaStreamTrack.
@@ -52,6 +52,8 @@ class WebLocalFrame;
 
 class PLATFORM_EXPORT MediaStreamComponent : public GarbageCollectedMixin {
  public:
+  // TODO(crbug.com/1302689): Clone the platform track internally rather than
+  // taking it as a parameter.
   virtual MediaStreamComponent* Clone(
       std::unique_ptr<MediaStreamTrackPlatform> cloned_platform_track =
           nullptr) const = 0;
@@ -65,16 +67,14 @@ class PLATFORM_EXPORT MediaStreamComponent : public GarbageCollectedMixin {
   virtual String Id() const = 0;
   // Uniquely identifies this component.
   virtual int UniqueId() const = 0;
+  virtual MediaStreamSource::StreamType GetSourceType() const = 0;
+  virtual const String& GetSourceName() const = 0;
+  virtual MediaStreamSource::ReadyState GetReadyState() const = 0;
+  virtual bool Remote() const = 0;
   virtual bool Enabled() const = 0;
   virtual void SetEnabled(bool enabled) = 0;
-  virtual bool Muted() const = 0;
-  virtual void SetMuted(bool muted) = 0;
   virtual WebMediaStreamTrack::ContentHintType ContentHint() = 0;
   virtual void SetContentHint(WebMediaStreamTrack::ContentHintType) = 0;
-  virtual const MediaConstraints& Constraints() const = 0;
-  virtual void SetConstraints(const MediaConstraints& constraints) = 0;
-  virtual AudioSourceProvider* GetAudioSourceProvider() = 0;
-  virtual void SetSourceProvider(WebAudioSourceProvider* provider) = 0;
 
   virtual MediaStreamTrackPlatform* GetPlatformTrack() const = 0;
 

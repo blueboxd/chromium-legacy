@@ -147,6 +147,10 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
   if (physical_fragment.IsGridNG()) {
     container_builder_.TransferGridLayoutData(
         std::make_unique<NGGridLayoutData>(*result.GridLayoutData()));
+  } else if (physical_fragment.IsFrameSet()) {
+    container_builder_.TransferFrameSetLayoutData(
+        std::make_unique<FrameSetLayoutData>(
+            *physical_fragment.GetFrameSetLayoutData()));
   }
 
   if (physical_fragment.IsHiddenForPaint())
@@ -271,7 +275,7 @@ const NGLayoutResult* NGSimplifiedLayoutAlgorithm::Layout() {
     NGLogicalStaticPosition position = layer->GetStaticPosition();
     container_builder_.AddOutOfFlowChildCandidate(
         To<NGBlockNode>(child), position.offset, position.inline_edge,
-        position.block_edge, /* needs_block_offset_adjustment */ false);
+        position.block_edge);
   }
 
   // We add both items and line-box fragments for existing mechanisms to work.

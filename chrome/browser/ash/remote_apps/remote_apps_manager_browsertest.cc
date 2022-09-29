@@ -7,6 +7,7 @@
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/views/app_list_item_view.h"
 #include "ash/components/login/auth/public/user_context.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/accelerators.h"
@@ -47,15 +48,16 @@
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/sync/protocol/app_list_specifics.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
-#include "components/sync/test/model/fake_sync_change_processor.h"
-#include "components/sync/test/model/sync_change_processor_wrapper_for_test.h"
-#include "components/sync/test/model/sync_error_factory_mock.h"
+#include "components/sync/test/fake_sync_change_processor.h"
+#include "components/sync/test/sync_change_processor_wrapper_for_test.h"
+#include "components/sync/test/sync_error_factory_mock.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
@@ -282,15 +284,13 @@ class RemoteAppsManagerBrowsertest
     ASSERT_EQ(error, future.Get<1>());
   }
 
-  void ShowLauncherAppsGrid() {
+  void ShowLauncherAppsGrid(bool wait_for_opening_animation) {
     AppListClientImpl* client = AppListClientImpl::GetInstance();
     EXPECT_FALSE(client->GetAppListWindow());
     ash::AcceleratorController::Get()->PerformActionIfEnabled(
         ash::TOGGLE_APP_LIST_FULLSCREEN, {});
-    if (ash::features::IsProductivityLauncherEnabled()) {
-      ash::AppListTestApi().WaitForBubbleWindow(
-          /*wait_for_opening_animation=*/false);
-    }
+    if (ash::features::IsProductivityLauncherEnabled())
+      ash::AppListTestApi().WaitForBubbleWindow(wait_for_opening_animation);
     EXPECT_TRUE(client->GetAppListWindow());
   }
 
@@ -303,7 +303,7 @@ class RemoteAppsManagerBrowsertest
 
 IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddApp) {
   // Show launcher UI so that app icons are loaded.
-  ShowLauncherAppsGrid();
+  ShowLauncherAppsGrid(/*wait_for_opening_animation=*/false);
 
   std::string name = "name";
   GURL icon_url("icon_url");
@@ -333,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddApp) {
 // default placeholder icon.
 IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddAppPlaceholderIcon) {
   // Show launcher UI so that app icons are loaded.
-  ShowLauncherAppsGrid();
+  ShowLauncherAppsGrid(/*wait_for_opening_animation=*/true);
 
   const std::string name = "name";
 
@@ -356,7 +356,25 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddAppPlaceholderIcon) {
                          future.GetCallback());
 
   // App's icon is placeholder.
+  // TODO(https://crbug.com/1345682): add a pixel diff test for this scenario.
+  ash::AppListTestApi app_list_test_api;
+  CheckIconsEqual(
+      future.Get()->uncompressed,
+      app_list_test_api.GetTopLevelItemViewFromId(kId1)->icon_image_for_test());
   CheckIconsEqual(future.Get()->uncompressed, item->GetDefaultIcon());
+
+  // App list color sorting should still work for placeholder icons.
+  ui::test::EventGenerator event_generator(ash::Shell::GetPrimaryRootWindow());
+  ash::AppListTestApi::ReorderAnimationEndState actual_state;
+
+  app_list_test_api.ReorderByMouseClickAtToplevelAppsGridMenu(
+      ash::AppListSortOrder::kColor,
+      ash::AppListTestApi::MenuType::kAppListNonFolderItemMenu,
+      &event_generator,
+      /*target_state=*/
+      ash::AppListTestApi::ReorderAnimationEndState::kCompleted, &actual_state);
+  EXPECT_EQ(ash::AppListTestApi::ReorderAnimationEndState::kCompleted,
+            actual_state);
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddAppError) {
@@ -661,10 +679,9 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, RemoteAppsNotSynced) {
   EXPECT_TRUE(item->GetMetadata()->is_ephemeral);
 
   // Remote app sync item not added to local storage.
-  const base::Value* local_items =
-      profile_->GetPrefs()->GetDictionary(prefs::kAppListLocalState);
-  const base::Value* dict_item =
-      local_items->FindKeyOfType(kId1, base::Value::Type::DICTIONARY);
+  const base::Value::Dict& local_items =
+      profile_->GetPrefs()->GetValueDict(prefs::kAppListLocalState);
+  const base::Value::Dict* dict_item = local_items.FindDict(kId1);
   EXPECT_FALSE(dict_item);
 
   // Remote app sync item not uploaded to sync data.
@@ -706,10 +723,9 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, RemoteFoldersNotSynced) {
   EXPECT_TRUE(item->GetMetadata()->is_ephemeral);
 
   // Remote folder sync item not added to local storage.
-  const base::Value* local_items =
-      profile_->GetPrefs()->GetDictionary(prefs::kAppListLocalState);
-  const base::Value* dict_item =
-      local_items->FindKeyOfType(kId1, base::Value::Type::DICTIONARY);
+  const base::Value::Dict& local_items =
+      profile_->GetPrefs()->GetValueDict(prefs::kAppListLocalState);
+  const base::Value::Dict* dict_item = local_items.FindDict(kId1);
   EXPECT_FALSE(dict_item);
 
   // Remote folder sync item not uploaded to sync data.

@@ -4,9 +4,11 @@
 
 package org.chromium.content.browser;
 
+import android.graphics.Point;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
@@ -241,7 +243,7 @@ public class GestureListenerManagerImpl
     }
 
     @CalledByNative
-    private void onEventAck(int event, boolean consumed) {
+    private void onEventAck(int event, boolean consumed, float scrollOffsetX, float scrollOffsetY) {
         switch (event) {
             case EventType.GESTURE_FLING_START:
                 // If we're here, then |consumed| is false as otherwise #onFlingStart() would have
@@ -257,7 +259,10 @@ public class GestureListenerManagerImpl
                 if (!consumed) break;
                 destroyPastePopup();
                 for (mIterator.rewind(); mIterator.hasNext();) {
-                    mIterator.next().onScrollUpdateGestureConsumed();
+                    // TODO(sinansahin): Can we update the RenderCoordinates using these values
+                    // and make them available through other scroll events?
+                    Point scrollOffset = getRootScrollOffsetStruct(scrollOffsetX, scrollOffsetY);
+                    mIterator.next().onScrollUpdateGestureConsumed(scrollOffset);
                 }
                 break;
             case EventType.GESTURE_SCROLL_END:
@@ -284,6 +289,20 @@ public class GestureListenerManagerImpl
             default:
                 break;
         }
+    }
+
+    /**
+     * Returns a {@link Point} with the given x and y scroll offset values. Returns null if the
+     * values are invalid, i.e. negative.
+     *
+     * @param scrollOffsetX Horizontal scroll offset in pixels.
+     * @param scrollOffsetY Vertical scroll offset in pixels.
+     */
+    private static @Nullable Point getRootScrollOffsetStruct(
+            float scrollOffsetX, float scrollOffsetY) {
+        if (scrollOffsetX < 0 || scrollOffsetY < 0) return null;
+
+        return new Point((int) scrollOffsetX, (int) scrollOffsetY);
     }
 
     /**
@@ -445,7 +464,9 @@ public class GestureListenerManagerImpl
 
         final boolean gestureScrollInProgress = mIsGestureScrollInProgress;
         setGestureScrollInProgress(false);
-        if (gestureScrollInProgress) updateOnScrollEnd();
+        if (gestureScrollInProgress) {
+            updateOnScrollEnd();
+        }
         resetFlingGesture();
     }
 

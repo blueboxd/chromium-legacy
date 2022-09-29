@@ -163,11 +163,6 @@ class WebClient {
   // Instructs the embedder to return a container that is attached to a window.
   virtual UIView* GetWindowedContainer();
 
-  // Enables the logic to handle long press and force
-  // touch through action sheet. Should return false to use the context menu
-  // API. Defaults to return true.
-  virtual bool EnableLongPressAndForceTouchHandling() const;
-
   // Enables the logic to handle long press context menu with UIContextMenu.
   virtual bool EnableLongPressUIContextMenu() const;
 
@@ -191,6 +186,10 @@ class WebClient {
   // Notify the embedder that |web_state| will display a prompt for the user.
   virtual void WillDisplayMediaCapturePermissionPrompt(
       web::WebState* web_state) const;
+
+  // Returns whether `url1` and `url2` are actually pointing to the same page.
+  virtual bool IsPointingToSameDocument(const GURL& url1,
+                                        const GURL& url2) const;
 };
 
 }  // namespace web

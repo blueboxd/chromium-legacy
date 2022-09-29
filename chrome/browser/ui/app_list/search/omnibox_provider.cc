@@ -10,11 +10,13 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
-#include "base/containers/flat_set.h"
+#include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chromeos/launcher_search/search_util.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -24,6 +26,7 @@
 #include "chrome/browser/ui/app_list/search/common/types_util.h"
 #include "chrome/browser/ui/app_list/search/omnibox_answer_result.h"
 #include "chrome/browser/ui/app_list/search/omnibox_result.h"
+#include "chrome/browser/ui/app_list/search/omnibox_util.h"
 #include "chrome/browser/ui/app_list/search/open_tab_result.h"
 #include "chrome/browser/ui/app_list/search/ranking/util.h"
 #include "components/favicon/core/favicon_service.h"
@@ -34,19 +37,10 @@
 #include "url/gurl.h"
 
 namespace app_list {
+
 namespace {
 
-using chromeos::string_matching::TokenizedString;
-
-// Some omnibox answers overtrigger on short queries. This controls the minimum
-// query length before they are displayed.
-constexpr size_t kMinQueryLengthForCommonAnswers = 4u;
-
-bool IsDriveUrl(const GURL& url) {
-  // Returns true if the |url| points to a Drive Web host.
-  const std::string& host = url.host();
-  return host == "drive.google.com" || host == "docs.google.com";
-}
+using ::ash::string_matching::TokenizedString;
 
 // Returns true if the match is an answer, including calculator answers.
 bool IsAnswer(const AutocompleteMatch& match) {
@@ -87,43 +81,25 @@ int ProviderTypes() {
   return providers;
 }
 
-void RemoveDuplicates(std::vector<std::unique_ptr<OmniboxResult>>& results) {
-  // Sort the results by deduplication priority and then filter from left to
-  // right. This ensures that higher priority results are retained.
-  sort(results.begin(), results.end(),
-       [](const std::unique_ptr<OmniboxResult>& a,
-          const std::unique_ptr<OmniboxResult>& b) {
-         return a->dedup_priority() > b->dedup_priority();
-       });
-
-  base::flat_set<std::string> seen_ids;
-  for (auto iter = results.begin(); iter != results.end();) {
-    bool inserted = seen_ids.insert((*iter)->id()).second;
-    if (!inserted) {
-      // C++11:: The return value of erase(iter) is an iterator pointing to the
-      // next element in the container.
-      iter = results.erase(iter);
-    } else {
-      ++iter;
-    }
-  }
-}
-
 }  //  namespace
 
 OmniboxProvider::OmniboxProvider(Profile* profile,
                                  AppListControllerDelegate* list_controller)
     : profile_(profile),
       list_controller_(list_controller),
-      controller_(std::make_unique<AutocompleteController>(
-          std::make_unique<ChromeAutocompleteProviderClient>(profile),
-          ProviderTypes())),
       favicon_cache_(FaviconServiceFactory::GetForProfile(
                          profile,
                          ServiceAccessType::EXPLICIT_ACCESS),
                      HistoryServiceFactory::GetForProfile(
                          profile,
                          ServiceAccessType::EXPLICIT_ACCESS)) {
+  bool is_launcher_with_tab_search_enabled =
+      (ash::features::IsProductivityLauncherEnabled() &&
+       base::GetFieldTrialParamByFeatureAsBool(
+           ash::features::kProductivityLauncher, "enable_open_tab", true));
+  controller_ = std::make_unique<AutocompleteController>(
+      std::make_unique<ChromeAutocompleteProviderClient>(profile),
+      ProviderTypes(), is_launcher_with_tab_search_enabled),
   controller_->AddObserver(this);
 }
 
@@ -190,30 +166,41 @@ void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
       continue;
     }
 
-    if (!is_zero_state_input_ && IsAnswer(match) &&
-        !ShouldFilterAnswer(match, last_query_)) {
-      // TODO(1228587): update the rest of the result types to accept a crosapi
-      //                SearchResultPtr so that they can also be used from
-      //                Lacros.
+    if (match.type == AutocompleteMatchType::OPEN_TAB) {
+      DCHECK(last_tokenized_query_.has_value());
+      new_results.emplace_back(std::make_unique<OpenTabResult>(
+          profile_, list_controller_,
+          crosapi::CreateResult(
+              match, controller_.get(), &favicon_cache_,
+              BookmarkModelFactory::GetForBrowserContext(profile_), input_),
+          last_tokenized_query_.value()));
+    } else if (!IsAnswer(match)) {
+      // We can use an unretained pointer here since we own both the
+      // autocomplete controller (which lives for the entirety of our lifetime)
+      // and the results vector. Results are only externally-visible via the
+      // `results()` method, which doesn't transfer ownership.
+      auto remove_closure =
+          base::BindRepeating(&AutocompleteController::DeleteMatch,
+                              base::Unretained(controller_.get()), match);
+
+      list_results.emplace_back(std::make_unique<OmniboxResult>(
+          profile_, list_controller_, std::move(remove_closure),
+          crosapi::CreateResult(
+              match, controller_.get(), &favicon_cache_,
+              BookmarkModelFactory::GetForBrowserContext(profile_), input_),
+          last_query_, is_zero_state_input_));
+    } else if (!is_zero_state_input_ &&
+               !ShouldFilterAnswer(match, last_query_)) {
       new_results.emplace_back(std::make_unique<OmniboxAnswerResult>(
           profile_, list_controller_,
           crosapi::CreateAnswerResult(match, controller_.get(), last_query_,
                                       input_),
           last_query_));
-    } else if (match.type == AutocompleteMatchType::OPEN_TAB) {
-      DCHECK(last_tokenized_query_.has_value());
-      new_results.emplace_back(std::make_unique<OpenTabResult>(
-          profile_, list_controller_, &favicon_cache_,
-          last_tokenized_query_.value(), match));
-    } else {
-      list_results.emplace_back(std::make_unique<OmniboxResult>(
-          profile_, list_controller_, controller_.get(), &favicon_cache_,
-          input_, match, is_zero_state_input_));
     }
   }
 
   // Deduplicate the list results and then move-concatenate it into new_results.
-  RemoveDuplicates(list_results);
+  RemoveDuplicateResults(list_results);
   std::move(list_results.begin(), list_results.end(),
             std::back_inserter(new_results));
 

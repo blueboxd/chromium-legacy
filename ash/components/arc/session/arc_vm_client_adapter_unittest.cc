@@ -50,11 +50,10 @@
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
+#include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
+#include "chromeos/ash/components/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/upstart/fake_upstart_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
-#include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -146,7 +145,7 @@ bool HasDiskImage(const vm_tools::concierge::StartArcVmRequest& request,
 
 // A debugd client that can fail to start Concierge.
 // TODO(yusukes): Merge the feature to FakeDebugDaemonClient.
-class TestDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
+class TestDebugDaemonClient : public ash::FakeDebugDaemonClient {
  public:
   TestDebugDaemonClient() = default;
 
@@ -351,10 +350,8 @@ class ArcVmClientAdapterTest : public testing::Test,
     logging::SetMinLogLevel(-1);
 
     // Create and set new fake clients every time to reset clients' status.
-    chromeos::DBusThreadManager::Initialize();
     test_debug_daemon_client_ = std::make_unique<TestDebugDaemonClient>();
-    chromeos::DebugDaemonClient::SetInstanceForTest(
-        test_debug_daemon_client_.get());
+    ash::DebugDaemonClient::SetInstanceForTest(test_debug_daemon_client_.get());
     TestConciergeClient::Initialize();
     ash::UpstartClient::InitializeFake();
   }
@@ -364,9 +361,8 @@ class ArcVmClientAdapterTest : public testing::Test,
 
   ~ArcVmClientAdapterTest() override {
     ash::ConciergeClient::Shutdown();
-    chromeos::DebugDaemonClient::SetInstanceForTest(nullptr);
+    ash::DebugDaemonClient::SetInstanceForTest(nullptr);
     test_debug_daemon_client_.reset();
-    chromeos::DBusThreadManager::Shutdown();
   }
 
   void SetUp() override {
@@ -2360,7 +2356,7 @@ TEST_F(ArcVmClientAdapterTest,
   EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
   EXPECT_FALSE(is_system_shutdown().has_value());
   const auto& request = GetTestConciergeClient()->start_arc_vm_request();
-  EXPECT_FALSE(request.enable_consumer_auto_update_toggle());
+  EXPECT_TRUE(request.enable_consumer_auto_update_toggle());
 }
 
 TEST_F(ArcVmClientAdapterTest,
@@ -2459,6 +2455,33 @@ TEST_F(ArcVmClientAdapterTest, ArcVmLogdSizeEnabledValid3) {
   const auto& request = GetTestConciergeClient()->start_arc_vm_request();
   EXPECT_TRUE(
       base::Contains(request.params(), "androidboot.arcvm.logd.size=1M"));
+}
+
+// Test that the value of swappiness is default value when kGuestZram is
+// disabled.
+TEST_F(ArcVmClientAdapterTest, ArcGuestZramDisabledSwappiness) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(kGuestZram);
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+  EXPECT_FALSE(is_system_shutdown().has_value());
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(0, request.guest_swappiness());
+}
+
+// Test that StartArcVmRequest has correct swappiness value.
+TEST_F(ArcVmClientAdapterTest, ArcGuestZramSwappinessValid) {
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["swappiness"] = "90";
+  feature_list.InitAndEnableFeatureWithParameters(kGuestZram, params);
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+  EXPECT_FALSE(is_system_shutdown().has_value());
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(90, request.guest_swappiness());
 }
 
 // Test that StartArcVmRequest has no matching command line flag

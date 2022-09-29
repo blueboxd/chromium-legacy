@@ -93,8 +93,8 @@ bool CodecImage::CopyTexImage(unsigned target) {
   DCHECK_CALLED_ON_VALID_THREAD(gpu_main_thread_checker_);
 
   // This method is only called for SurfaceTexture implementation which can't be
-  // thread-safe.
-  DCHECK(!features::NeedThreadSafeAndroidMedia());
+  // thread-safe. Hence the lock which ensures thread safety should be null.
+  DCHECK(!GetDrDcLockPtr());
 
   TRACE_EVENT0("media", "CodecImage::CopyTexImage");
   DCHECK_EQ(COPY, ShouldBindOrCopy());
@@ -265,11 +265,23 @@ bool CodecImage::HasMutableState() const {
 
 CodecImageHolder::CodecImageHolder(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    scoped_refptr<CodecImage> codec_image)
+    scoped_refptr<CodecImage> codec_image,
+    scoped_refptr<gpu::RefCountedLock> drdc_lock)
     : base::RefCountedDeleteOnSequence<CodecImageHolder>(
           std::move(task_runner)),
+      gpu::RefCountedLockHelperDrDc(std::move(drdc_lock)),
       codec_image_(std::move(codec_image)) {}
 
-CodecImageHolder::~CodecImageHolder() = default;
+CodecImageHolder::~CodecImageHolder() {
+  // Note that CodecImageHolder is always destroyed on the thread it was created
+  // on which is gpu main thread. CodecImage destructor also has checks to
+  // ensure that it is destroyed on gpu main thread.
+  // Acquiring DrDc lock here to ensure that the lock is held from all the paths
+  // from where |codec_image_| can be destroyed.
+  {
+    auto scoped_lock = GetScopedDrDcLock();
+    codec_image_.reset();
+  }
+}
 
 }  // namespace media

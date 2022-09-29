@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -419,10 +420,10 @@ IN_PROC_BROWSER_TEST_F(BrowserAppInstanceTrackerTest, InsertAndCloseTabs) {
     // Close in reverse order.
     int i = browser->tab_strip_model()->GetIndexOfWebContents(tab_app4);
     browser->tab_strip_model()->CloseWebContentsAt(
-        i, TabStripModel::CLOSE_USER_GESTURE);
+        i, TabCloseTypes::CLOSE_USER_GESTURE);
     i = browser->tab_strip_model()->GetIndexOfWebContents(tab_app3);
     browser->tab_strip_model()->CloseWebContentsAt(
-        i, TabStripModel::CLOSE_USER_GESTURE);
+        i, TabCloseTypes::CLOSE_USER_GESTURE);
 
     recorder.Verify({
         // tab 4 opened: no events for tab 3 as it has no app
@@ -940,7 +941,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppInstanceTrackerTest, TabDrag) {
   // Attach.
   int dst_index = browser1->tab_strip_model()->count();
   browser1->tab_strip_model()->InsertWebContentsAt(
-      dst_index, std::move(detached), TabStripModel::ADD_ACTIVE);
+      dst_index, std::move(detached), AddTabTypes::ADD_ACTIVE);
   recorder.Verify({
       // background tab in the dragged-from browser gets activated when the
       // active tab is detached
@@ -994,7 +995,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppInstanceTrackerTest, MoveTabToAppWindow) {
   // Attach.
   int dst_index = browser2->tab_strip_model()->count();
   browser2->tab_strip_model()->InsertWebContentsAt(
-      dst_index, std::move(detached), TabStripModel::ADD_ACTIVE);
+      dst_index, std::move(detached), AddTabTypes::ADD_ACTIVE);
   recorder.Verify({
       // source browser goes into background when app browser is created
       {"updated", 1, kChromeWindow, "", window1, "", kInactive, false},

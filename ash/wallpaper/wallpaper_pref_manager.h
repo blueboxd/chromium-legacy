@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/timer/wall_clock_timer.h"
 #include "components/account_id/account_id.h"
@@ -48,6 +49,9 @@ class WallpaperProfileHelper {
 
   // Returns true if at least one user is logged in.
   virtual bool IsActiveUserSessionStarted() const = 0;
+
+  // Returns true if the user should store data in memory only.
+  virtual bool IsEphemeral(const AccountId& id) const = 0;
 };
 
 // Manages wallpaper preferences and tracks the currently configured wallpaper.
@@ -90,21 +94,27 @@ class ASH_EXPORT WallpaperPrefManager
   virtual void SetClient(WallpaperControllerClient* client) = 0;
 
   // Retrieve the wallpaper preference value for |account_id| and use it to
-  // populate |info|. If |ephemeral| is true, data is stored in an in memory
-  // map. If |ephemeral| is false, |info| is persisted to user prefs. Returns
-  // true if |info| was populated successfully.
+  // populate |info|. Returns true if |info| was populated successfully.
   //
   // NOTE: WallpaperPrefManager does not enforce any checks for policy
   // enforcement. Callers must check that the user is allowed to commit the pref
   // change.
-  //
-  // TODO(crbug.com/1329567): Remove the |ephemeral| parameter when we've safely
-  // moved to SessionController for user type.
   virtual bool GetUserWallpaperInfo(const AccountId& account_id,
-                                    bool ephemeral,
                                     WallpaperInfo* info) const = 0;
   virtual bool SetUserWallpaperInfo(const AccountId& account_id,
-                                    bool ephemeral,
+                                    const WallpaperInfo& info) = 0;
+
+  // Overload for |GetUserWallpaperInfo| that allow callers to specify
+  // whether |account_id| is ephemeral. Used for callers before signin has
+  // occurred and |is_ephemeral| cannot be determined by session controller.
+  virtual bool GetUserWallpaperInfo(const AccountId& account_id,
+                                    bool is_ephemeral,
+                                    WallpaperInfo* info) const = 0;
+  // Overload for |SetUserWallpaperInfo| that allow callers to specify
+  // whether |account_id| is ephemeral. Used for callers before signin has
+  // occurred and |is_ephemeral| cannot be determined by session controller.
+  virtual bool SetUserWallpaperInfo(const AccountId& account_id,
+                                    bool is_ephemeral,
                                     const WallpaperInfo& info) = 0;
 
   // Remove the wallpaper entry for |account_id|.
@@ -115,14 +125,17 @@ class ASH_EXPORT WallpaperPrefManager
 
   virtual void RemoveProminentColors(const AccountId& account_id) = 0;
 
+  // Returns the cached prominent colors for a wallpaper with `location` if
+  // present.
   virtual absl::optional<std::vector<SkColor>> GetCachedProminentColors(
-      const AccountId& account_id) const = 0;
+      const base::StringPiece location) const = 0;
 
   virtual void CacheKMeanColor(const AccountId& account_id,
                                SkColor k_mean_color) = 0;
 
+  // Returns the cached KMeans color value for the wallpaper at `location`.
   virtual absl::optional<SkColor> GetCachedKMeanColor(
-      const AccountId& account_id) const = 0;
+      const base::StringPiece location) const = 0;
 
   virtual void RemoveKMeanColor(const AccountId& account_id) = 0;
 
@@ -148,6 +161,10 @@ class ASH_EXPORT WallpaperPrefManager
                                       WallpaperInfo* info) const = 0;
   virtual bool SetSyncedWallpaperInfo(const AccountId& account_id,
                                       const WallpaperInfo& info) = 0;
+
+  // Returns the delta for the next daily refresh update for `account_id`.
+  virtual base::TimeDelta GetTimeToNextDailyRefreshUpdate(
+      const AccountId& account_id) const = 0;
 
  protected:
   WallpaperPrefManager() = default;

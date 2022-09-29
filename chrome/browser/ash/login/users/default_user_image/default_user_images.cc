@@ -18,7 +18,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/values.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
@@ -223,6 +222,10 @@ constexpr bool ValidateCurrentImageIndexes() {
   for (const int index : kCurrentImageIndexes) {
     if (kDefaultImageInfo[index].eligibility != Eligibility::kEligible)
       return false;
+    if (kDefaultImageInfo[index].description_message_id == 0) {
+      // All current and new images must have a description.
+      return false;
+    }
   }
   return true;
 }
@@ -231,8 +234,17 @@ static_assert(ValidateCurrentImageIndexes(),
               "kCurrentImageIndexes should contain all the indexes of "
               "egligible default images listed in kDefaultImageInfo.");
 
+// Source info ids of default user images.
+struct DefaultImageSourceInfoIds {
+  // Message IDs of author info.
+  const int author_id;
+
+  // Message IDs of website info.
+  const int website_id;
+};
+
 // Source info of (deprecated) default user images.
-const DefaultImageSourceInfo kDefaultImageSourceInfo[] = {
+const DefaultImageSourceInfoIds kDefaultImageSourceInfoIds[] = {
     {IDS_LOGIN_DEFAULT_USER_AUTHOR, IDS_LOGIN_DEFAULT_USER_WEBSITE},
     {IDS_LOGIN_DEFAULT_USER_AUTHOR_1, IDS_LOGIN_DEFAULT_USER_WEBSITE_1},
     {IDS_LOGIN_DEFAULT_USER_AUTHOR_2, IDS_LOGIN_DEFAULT_USER_WEBSITE_2},
@@ -360,12 +372,14 @@ bool IsInCurrentImageSet(int index) {
 
 DefaultUserImage GetDefaultUserImage(int index) {
   DCHECK(IsValidIndex(index));
-  int string_id = kDefaultImageInfo[index].description_message_id;
-  std::u16string title =
-      string_id ? l10n_util::GetStringUTF16(string_id) : std::u16string();
+  int description_message_id = kDefaultImageInfo[index].description_message_id;
+  std::u16string title = description_message_id
+                             ? l10n_util::GetStringUTF16(description_message_id)
+                             : std::u16string();
 
   return {index, std::move(title),
-          default_user_image::GetDefaultImageUrl(index)};
+          default_user_image::GetDefaultImageUrl(index),
+          GetDeprecatedDefaultImageSourceInfo(index)};
 }
 
 std::vector<DefaultUserImage> GetCurrentImageSet() {
@@ -375,23 +389,27 @@ std::vector<DefaultUserImage> GetCurrentImageSet() {
   return result;
 }
 
-std::unique_ptr<base::ListValue> GetCurrentImageSetAsListValue() {
-  auto image_urls = std::make_unique<base::ListValue>();
+base::Value::List GetCurrentImageSetAsListValue() {
+  base::Value::List image_urls;
   for (auto& user_image : GetCurrentImageSet()) {
     base::Value::Dict image_data;
     image_data.Set("index", user_image.index);
     image_data.Set("title", std::move(user_image.title));
     image_data.Set("url", user_image.url.spec());
-    image_urls->GetList().Append(std::move(image_data));
+    image_urls.Append(std::move(image_data));
   }
   return image_urls;
 }
 
-absl::optional<DefaultImageSourceInfo> GetDefaultImageSourceInfo(size_t index) {
-  if (index >= std::size(kDefaultImageSourceInfo))
+absl::optional<DeprecatedSourceInfo> GetDeprecatedDefaultImageSourceInfo(
+    size_t index) {
+  if (index >= std::size(kDefaultImageSourceInfoIds))
     return absl::nullopt;
 
-  return kDefaultImageSourceInfo[index];
+  const auto& source_info_ids = kDefaultImageSourceInfoIds[index];
+  return DeprecatedSourceInfo(
+      l10n_util::GetStringUTF16(source_info_ids.author_id),
+      GURL(l10n_util::GetStringUTF16(source_info_ids.website_id)));
 }
 
 }  // namespace default_user_image

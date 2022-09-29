@@ -5,9 +5,12 @@
 /**
  * @fileoverview ChromeVox keyboard handler.
  */
+import {KeyCode} from '../../common/key_code.js';
 import {EventSourceType} from '../common/event_source_type.js';
 import {ChromeVoxKbHandler} from '../common/keyboard_handler.js';
+import {QueueMode} from '../common/tts_interface.js';
 
+import {ChromeVox} from './chromevox.js';
 import {ChromeVoxState} from './chromevox_state.js';
 import {EventSourceState} from './event_source.js';
 import {MathHandler} from './math_handler.js';

@@ -177,7 +177,7 @@ Browser* CreateBrowserWithNewTabPage(Profile* profile) {
   NavigateParams params(browser, GURL(chrome::kChromeUINewTabURL),
                         ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  params.tabstrip_add_types = TabStripModel::ADD_ACTIVE;
+  params.tabstrip_add_types = AddTabTypes::ADD_ACTIVE;
   Navigate(&params);
 
   browser->window()->Show();
@@ -415,11 +415,9 @@ crosapi::mojom::LaunchParamsPtr ConvertLaunchParamsToCrosapi(
     crosapi_params->intent = apps_util::ConvertAppServiceToCrosapiIntent(
         apps_util::CreateIntentFromUrl(params.override_url), profile);
   } else if (!params.launch_files.empty()) {
-    auto files = apps::mojom::FilePaths::New();
-    for (const auto& file : params.launch_files) {
-      files->file_paths.push_back(file);
-    }
-    crosapi_params->intent = apps_util::CreateCrosapiIntentForViewFiles(files);
+    std::vector<base::FilePath> files = params.launch_files;
+    crosapi_params->intent =
+        apps_util::CreateCrosapiIntentForViewFiles(std::move(files));
   }
   crosapi_params->container =
       ConvertAppServiceToCrosapiLaunchContainer(params.container);

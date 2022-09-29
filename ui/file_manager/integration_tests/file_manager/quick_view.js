@@ -82,6 +82,7 @@ async function i18nQuickViewLabelText(text) {
     'General info': 'METADATA_BOX_GENERAL_INFO',
     'Genre': 'METADATA_BOX_GENRE',
     'Geography': 'METADATA_BOX_EXIF_GEOGRAPHY',
+    'Original location': 'METADATA_BOX_ORIGINAL_LOCATION',
     'Image info': 'METADATA_BOX_IMAGE_INFO',
     'Modified by': 'METADATA_BOX_MODIFIED_BY',
     'Page count': 'METADATA_BOX_PAGE_COUNT',
@@ -160,9 +161,7 @@ async function waitQuickViewClose(appId) {
  */
 async function openQuickView(appId, name) {
   // Select file |name| in the file list.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil('selectFile', appId, [name]),
-      'selectFile failed');
+  await remoteCall.waitUntilSelected(appId, name);
 
   // Press the space key.
   const space = ['#file-list', ' ', false, false, false];
@@ -298,6 +297,9 @@ async function getQuickViewMetadataBoxField(appId, name, hidden = '') {
     case 'File location':
       filesMetadataBox += '[metadata~="location"]';
       break;
+    case 'Original location':
+      filesMetadataBox += '[metadata~="originalLocation"]';
+      break;
     default:
       filesMetadataBox += '[metadata~="meta"]';
       break;
@@ -395,10 +397,7 @@ testcase.openQuickViewViaContextMenuSingleSelection = async () => {
       RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
 
   // Select the file in the file list.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil(
-          'selectFile', appId, [ENTRIES.hello.nameText]),
-      'selectFile failed');
+  await remoteCall.waitUntilSelected(appId, ENTRIES.hello.nameText);
 
   // Check: clicking the context menu "Get Info" should open Quick View.
   await openQuickViewViaContextMenu(appId, ENTRIES.hello.nameText);
@@ -546,6 +545,38 @@ testcase.openQuickViewRemovablePartitions = async () => {
 
   // Open the file in Quick View.
   await openQuickView(appId, ENTRIES.hello.nameText);
+};
+
+/**
+ * Tests opening Quick View on an item that was Trashed shows original location
+ * instead of the current file location.
+ */
+testcase.openQuickViewTrash = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+  // Select hello.txt.
+  await remoteCall.waitAndClickElement(
+      appId, '#file-list [file-name="hello.txt"]');
+
+  // Delete item and wait for it to be removed (no dialog).
+  await remoteCall.waitAndClickElement(appId, '#move-to-trash-button');
+  await remoteCall.waitForElementLost(
+      appId, '#file-list [file-name="hello.txt"]');
+
+  // Navigate to /Trash and ensure the file is shown.
+  await navigateWithDirectoryTree(appId, '/Trash');
+  await remoteCall.waitAndClickElement(
+      appId, '#file-list [file-name="hello.txt"]');
+
+  // Open the file in Quick View.
+  await openQuickView(appId, 'hello.txt');
+
+  // Check: the original location should be shown instead of the actual file
+  // location.
+  const location =
+      await getQuickViewMetadataBoxField(appId, 'Original location');
+  chrome.test.assertEq('My files/Downloads/hello.txt', location);
 };
 
 /**

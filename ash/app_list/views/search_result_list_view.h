@@ -106,6 +106,8 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
   SearchResultView* GetResultViewAt(size_t index) override;
   absl::optional<ResultsAnimationInfo> ScheduleResultAnimations(
       const ResultsAnimationInfo& aggregate_animation_info) override;
+  void AppendShownResultMetadata(
+      std::vector<SearchResultAimationMetadata>* result_metadata_) override;
   bool HasAnimatingChildView() override;
 
   // Fades the view in and animates a vertical transform based on the view's
@@ -209,11 +211,6 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
 
   // The number of results shown by the list view.
   size_t num_results_ = 0;
-
-  // The most recent container's index within the search UI - the index
-  // indicates the number of result and title views that appear before this
-  // container.
-  int last_container_start_index_ = -1;
 };
 
 }  // namespace ash

@@ -5,6 +5,7 @@
 <translation id="1047956942837015229"><ph name="COUNT" /> нерсе жок кылынууда…</translation>
 <translation id="1049926623896334335">Word документи</translation>
 <translation id="1056775291175587022">Тармактар жок</translation>
+<translation id="1056898198331236512">Эскертүү</translation>
 <translation id="1060368002126861100">Файлдарды <ph name="APP_NAME" /> колдонмосунда ачуу үчүн алгач аларды Windows папкасына жылдырыңыз.</translation>
 <translation id="1062407476771304334">Алмаштыруу</translation>
 <translation id="1119447706177454957">Ички ката</translation>
@@ -104,7 +105,6 @@
 <translation id="1832073788765803750">Жарым жазылыктагы катакана</translation>
 <translation id="1834290891154666894">Cубъекттин кошумча аталышына окшош жараксыз жазуу</translation>
 <translation id="1838709767668011582">Google сайты</translation>
-<translation id="1844692022597038441">Бул файл офлайнда жеткиликтүү эмес.</translation>
 <translation id="1853795129690976061">Бул файл Linux менен бөлүшүлүп жатат</translation>
 <translation id="1864756863218646478">Бир да файл табылган жок.</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_COUNT" /> ичинен <ph name="NETWORK_INDEX" />-тармак, <ph name="NETWORK_NAME" />, Туташуу</translation>
@@ -149,7 +149,6 @@
 <translation id="2282155092769082568">Автоконфигурация URL'и:</translation>
 <translation id="2288278176040912387">Жазууну ойноткуч</translation>
 <translation id="2291538123825441971"><ph name="NUMBER_OF_FILES" /> файл ачылууда.</translation>
-<translation id="2303282178633578561">SIM картаны кулпулоо</translation>
 <translation id="2303301624314357662"><ph name="FILE_NAME" /> файлы ачылууда.</translation>
 <translation id="2304820083631266885">Планета</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> чыгарылды.</translation>
@@ -185,13 +184,10 @@
 <translation id="2544853746127077729">Аныктыкты текшерүү тастыктамасын тармак четке какты</translation>
 <translation id="255937426064304553">АКШ эл аралык</translation>
 <translation id="2563185590376525700">Бака</translation>
-<translation id="2570012981255377263">Акыркы файлдарыңыз ушул жерде көрүнөт</translation>
 <translation id="2578394532502990878">Тамилче (фонетикалык)</translation>
 <translation id="2579959351793446050">Одияча</translation>
-<translation id="2593644851255584939">Администраторуңуз SIM картаны кулпулоону талап кылууда.</translation>
 <translation id="2602810353103180630"><ph name="NETWORK_COUNT" /> ичинен <ph name="NETWORK_INDEX" />-тармак, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Сигналдын күчү <ph name="SIGNAL_STRENGTH" />%, Администраторуңуз бөгөттөп койгон, Чоо-жайы</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> форматындагы видео</translation>
-<translation id="2617342710774726426">SIM-карта кулпуланган</translation>
 <translation id="2620090360073999360">Учурда Google Drive'га жетүү мүмкүн эмес.</translation>
 <translation id="2621713457727696555">Корголгон</translation>
 <translation id="2638942478653899953">Google Drive жеткиликтүү эмес. <ph name="BEGIN_LINK" />Тутумдан чыгып<ph name="END_LINK" />, кайра кириңиз.</translation>
@@ -249,13 +245,13 @@
 <translation id="3138624403379688522">PIN код жараксыз. Сизде <ph name="RETRIES" /> аракет калды.</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (аппараттык камсыздоонун камдык көчүрмөсү сакталды)</translation>
 <translation id="3188257591659621405">Менин файлдарым</translation>
+<translation id="3194553149358267393">Жаңы аудио файлдар жок</translation>
 <translation id="3197563288998582412">UK Dvorak</translation>
 <translation id="3202131003361292969">Жол</translation>
 <translation id="3205852408225871810">Португалча (Бразилия)</translation>
 <translation id="3224239078034945833">Канадалыкча көп тилдүү</translation>
 <translation id="3236289833370040187">Менчик укугу <ph name="DESTINATION_DOMAIN" /> доменине өткөрүлүп берилет.</translation>
 <translation id="3241720467332021590">Ирландча</translation>
-<translation id="3245321423178950146">Белгисиз аткаруучу</translation>
 <translation id="3248185426436836442">Күтүлүүдө</translation>
 <translation id="3252266817569339921">Французча</translation>
 <translation id="3253225298092156258">Жеткиликсиз</translation>
@@ -290,10 +286,12 @@
 <translation id="3479552764303398839">Азыр эмес</translation>
 <translation id="3486821258960016770">Монголчо</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> ката.</translation>
+<translation id="3495810061346586977">Бул файл купуя жана ага администратордун чектөөлөрү коюлган. <ph name="BEGIN_LINK_HELP" />Кеңири маалымат<ph name="END_LINK_HELP" /></translation>
 <translation id="3509680540198371098"><ph name="NETWORK_COUNT" /> ичинен <ph name="NETWORK_INDEX" />-тармак, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Сигналдын күчү <ph name="SIGNAL_STRENGTH" />%, Чоо-жайы</translation>
 <translation id="3522708245912499433">Португалча</translation>
 <translation id="3524311639100184459">Эскертүү: Бул файлдар убактылуу жана дискте орун бошотуу үчүн автоматтык түрдө жок кылынышы мүмкүн.  <ph name="BEGIN_LINK" />Кеңири маалымат<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Куржун</translation>
+<translation id="3548125359243647069">Туура эмес PIN код өтө көп жолу киргизилди.</translation>
 <translation id="3549797760399244642">drive.google.com дегенге өтүңүз…</translation>
 <translation id="3553048479571901246">Файлдарды <ph name="APP_NAME" /> колдонмосунда ачуу үчүн алгач аларды Windows папкасына көчүрүңүз.</translation>
 <translation id="3556731189587832921">Англисче (АКШ) жана жеке компьютерлер үчүн эл аралык баскычтоп</translation>
@@ -306,6 +304,7 @@
 <translation id="3606220979431771195">Түркчө-F</translation>
 <translation id="3616113530831147358">Аудио</translation>
 <translation id="3619115746895587757">Капучино</translation>
+<translation id="3619593063686672873">Жаңы видеолор жок</translation>
 <translation id="3620292326130836921">Баарынын камдык көчүрмөсү сакталды!</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_COUNT" /> ичинен <ph name="NETWORK_INDEX" />-тармак,<ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Администраторуңуз башкарат, Чоо-жайы</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> нерсе жылдырылды.</translation>
@@ -343,7 +342,6 @@
 <translation id="3943857333388298514">Чаптоо</translation>
 <translation id="3952872973865944257">Телугуча (фонетикалык)</translation>
 <translation id="3958548648197196644">Киви</translation>
-<translation id="3966388904776714213">Аудио ойноткуч</translation>
 <translation id="3971140002794351170">Мобилдик профилди жүктөп алуу, <ph name="NETWORK_COUNT" /> ичинен <ph name="NETWORK_INDEX" />-тармак, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Англисче (Улуу Британия)</translation>
 <translation id="3975895378829046965">Бенгаличе (фонетикалык)</translation>
@@ -353,7 +351,6 @@
 <translation id="4057991113334098539">Жандырылууда...</translation>
 <translation id="4092890906744441904">Ирландча</translation>
 <translation id="4124935795427217608">Жалгыз мүйүздүү ат</translation>
-<translation id="4158739975813877944">Ойнотмо тизмени ачуу</translation>
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> жылдырылды.</translation>
 <translation id="4186579485882418952">Оффлайн режимин иштетүү</translation>
 <translation id="4193154014135846272">Google документи</translation>
@@ -406,6 +403,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> файл</translation>
 <translation id="457386861538956877">Дагы…</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> тандоого кошулду.</translation>
+<translation id="4583436353463424810">Жаңы документтер жок</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> боюнча жыйынтыктар көрсөтүлүүдө.</translation>
 <translation id="4599600860674643278">Чыпка өзгөртүлдү.</translation>
 <translation id="4603392156942865207"><ph name="FILE_NAME" /> <ph name="FOLDER_NAME" /> папкасына көчүрүлүүдө</translation>
@@ -492,7 +490,9 @@
 <translation id="5159560892333415631">Таштандыны бошотуу</translation>
 <translation id="5163869187418756376">Бөлүшүлбөй калды. Туташууңузду текшерип туруп, бир аздан кийин кайталап көрүңүз.</translation>
 <translation id="516592729076796170">АКШ Программачы Dvorak</translation>
+<translation id="5172749059808361023">Чектөө жөнүндө маалымат</translation>
 <translation id="5177526793333269655">Бармакбасым көрүнүшү</translation>
+<translation id="5181896909298187506">Жаңы файлдар жок</translation>
 <translation id="5194713942430106590">Тилкени чоңойгон ыраатта иреттөө үчүн чыкылдатыңыз.</translation>
 <translation id="5211614973734216083">Фарерче</translation>
 <translation id="5218183485292899140">Французча (Швейцария)</translation>
@@ -532,7 +532,6 @@
 <translation id="5489067830765222292">Латвияча</translation>
 <translation id="5489965683297092283"><ph name="FILTER_NAME" /> чыпкасы өчүк.</translation>
 <translation id="5494920125229734069">Баарын тандоо</translation>
-<translation id="5500104704744051184">PUK кодун киргизмейинче бул тармакты колдоно албайсыз</translation>
 <translation id="5500122897333236901">Исландча</translation>
 <translation id="5508696409934741614">Чекиттер</translation>
 <translation id="5522908512596376669">Файлдардын тизмеси тизме көрүнүшүнө которулду.</translation>
@@ -548,7 +547,6 @@
 <translation id="5625294776298156701">Тамилче (Tamil99 баскычтобу)</translation>
 <translation id="5633226425545095130">Эгер бул нерсени жылдырсаңыз, ал "<ph name="DESTINATION_NAME" />" бөлүшүлгөн папкасын көрө алган адамдардын баары менен бөлүшүлөт.</translation>
 <translation id="5649768706273821470">Угуу</translation>
-<translation id="5665074015635552640">Акыркы видеолоруңуз ушул жерде көрүнөт</translation>
 <translation id="5669691691057771421">Жаңы PIN киргизиңиз</translation>
 <translation id="5678784840044122290">Linux колдонмосу Терминалыңызда жеткиликтүү болуп, Жүргүзгүчтө анын сүрөтчөсү көрүнүшү мүмкүн.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Архивден же виртуалдуу дисктен ажыратуу мүмкүн эмес<ph name="END_BOLD" />
@@ -617,11 +615,11 @@
 <translation id="6220423280121890987">Пунжабиче</translation>
 <translation id="6224240818060029162">Датча</translation>
 <translation id="6224253798271602650"><ph name="DRIVE_NAME" /> форматталсын</translation>
-<translation id="6227235786875481728">Бул файл ойнотулган жок.</translation>
 <translation id="6241349547798190358">Голландча (Бельгия)</translation>
 <translation id="6267547857941397424"><ph name="NETWORK_COUNT" /> ичинен <ph name="NETWORK_INDEX" />-тармак, <ph name="PHONE_NAME" />, Сигналдын күчү <ph name="SIGNAL_STRENGTH" />%, Телефондун батареясы <ph name="BATTERY_STATUS" />%, Туташуу</translation>
 <translation id="6269630227984243955">Малайча</translation>
 <translation id="6287852322318138013">Бул файлды ачуу үчүн колдонмо тандаңыз</translation>
+<translation id="6295542640242147836">SIM картаны кулпулоо</translation>
 <translation id="6296410173147755564">PUK туура эмес</translation>
 <translation id="6312403991423642364">Белгисиз тармак катасы</translation>
 <translation id="6317608858038767920">Сервердин ыңгайлаштырылган аталышы: <ph name="INPUT_INDEX" /></translation>
@@ -633,6 +631,7 @@
 <translation id="6356685157277930264">Files колдонмосу тууралуу пикирлер көрсөтүлгөн терезе</translation>
 <translation id="6358884629796491903">Ажыдаар</translation>
 <translation id="636254897931573416">Домен суффиксине окшош жараксыз маани</translation>
+<translation id="6364301859968397756">Уюмдун сактагычы толуп калды</translation>
 <translation id="6367976544441405720">Фургон</translation>
 <translation id="637062427944097960">Бул файл башка иштактада ачылган. Аны көрүү үчүн <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) карай жылыңыз.</translation>
 <translation id="6394388407447716302">Окуу үчүн гана</translation>
@@ -693,7 +692,6 @@
     <ph name="FILE_COUNT" /> табылды</translation>
 <translation id="6935521024859866267">Астын-үстү</translation>
 <translation id="6943836128787782965">HTTP кыйрап калды</translation>
-<translation id="6945604978460872381">Акыркы документтериңиз ушул жерде көрүнөт</translation>
 <translation id="6949408524333579394">Сербче (транслитерация)</translation>
 <translation id="6954309393500027528">Бул файлды чаптоо аракети администраторуңуз тарабынан бөгөттөлгөн</translation>
 <translation id="6960565108681981554">Жандырылган эмес. Байланыш операторуңузга кайрылыңыз.</translation>
@@ -730,6 +728,7 @@
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> Гб</translation>
 <translation id="7191454237977785534">Файлды төмөнкүдөй сактоо</translation>
 <translation id="7229570126336867161">EVDO керек</translation>
+<translation id="7230898482850090046">Администраторуңуз сизден "SIM картаны кулпулоо" параметрин күйгүзүүнү суранды</translation>
 <translation id="7238097264433196391">Дисктин аталышы</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, Чоо-жайы</translation>
 <translation id="7246947237293279874">FTP проксиси</translation>
@@ -741,7 +740,6 @@
 <translation id="7295662345261934369">Башкалар менен бөлүшүү</translation>
 <translation id="7297443947353982503">Колдонуучунун ысымы/сырсөзү туура эмес же EAP тастыкталбай калды.</translation>
 <translation id="7309413087278791451">Немисче (Бельгия)</translation>
-<translation id="7313374447885864533">Акыркы аудио файлдарыңыз ушул жерде көрүнөт</translation>
 <translation id="7339898014177206373">Жаңы терезе</translation>
 <translation id="7343393116438664539">Вьетнамча (Telex)</translation>
 <translation id="7357762654218998920">Бул файл түрү колдоого алынбайт. Файлдарды ChromeOS'то ачуу жөнүндө <ph name="BEGIN_LINK_HELP" />кеңири маалымат<ph name="END_LINK_HELP" /> алыңыз.</translation>
@@ -751,6 +749,7 @@
 <translation id="7408870451288633753">Чехче</translation>
 <translation id="7417453074306512035">Эфиопчо баскычтоп</translation>
 <translation id="7417705661718309329">Google карта</translation>
+<translation id="7458955835361612701">Жаңы сүрөттөр жок</translation>
 <translation id="7460898608667578234">Украинче</translation>
 <translation id="7469894403370665791">Бул тармакка автоматтык түрдө туташуу</translation>
 <translation id="7486315294984620427">Parallels Desktop'ко файлды көчүрүү үчүн файл Windows файлдарына көчүрүлүшү керек.</translation>
@@ -762,9 +761,9 @@
 <translation id="7505167922889582512">Жашыруун файлдарды көрсөтүү</translation>
 <translation id="7514365320538308">Жүктөп алуу</translation>
 <translation id="751507702149411736">Беларусча</translation>
+<translation id="7521790570754130607">Мобилдик трафикти колдонуу үчүн PIN код керектелет</translation>
 <translation id="7532029025027028521">Фарсиче (транслитерация)</translation>
 <translation id="7544830582642184299">Linux колдонмолоруна Google Drive'дагы файлдарга кирүүгө уруксат бериңиз. Киргизилген өзгөртүүлөр башка түзмөктөрүңүздө шайкештирилет.</translation>
-<translation id="7544853251252956727">Аралаш</translation>
 <translation id="7547009467130558110">Спорт бут кийими</translation>
 <translation id="7547780573915868306">Литвача</translation>
 <translation id="7547811415869834682">Голландча</translation>
@@ -787,6 +786,7 @@
 <translation id="76959938259365003">Таштанды бошотулган жок.</translation>
 <translation id="770015031906360009">Грекче</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> көчүрүлдү.</translation>
+<translation id="7708271999969613024">Бул тармакты колдонуу үчүн байланыш операторуңуз берген 8 орундуу Жеке бөгөттөн чыгаруу ачкычын (PUK) киргизиңиз.</translation>
 <translation id="7711920809702896782">Сүрөт тууралуу маалымат</translation>
 <translation id="7724603315864178912">Кесүү</translation>
 <translation id="7730494089396812859">Булуттагы камдык көчүрмө чоо-жайын көрсөтүү</translation>
@@ -814,7 +814,6 @@
 <translation id="7831491651892296503">Тармакты конфигурациялоо учурунда ката кетти</translation>
 <translation id="7839804798877833423">Бул файлдар алынганда болжол менен мобилдик дайындардын <ph name="FILE_SIZE" /> колдонулат.</translation>
 <translation id="7846076177841592234">Тандоону жокко чыгаруу</translation>
-<translation id="7847617962681804761">Мобилдик трафикти колдонуу үчүн PIN код керектелет</translation>
 <translation id="7853966320808728790">Французча BÉPO</translation>
 <translation id="7857117644404132472">Өзгөчө учурду кошуу</translation>
 <translation id="7868774406711971383">Полякча</translation>
@@ -840,7 +839,6 @@
 <translation id="8045462269890919536">Румынча</translation>
 <translation id="8049184478152619004">Жеке бөгөттөн чыгаруу ачкычын (PUK) киргизиңиз</translation>
 <translation id="807187749540895545"><ph name="FILE_NAME" /> чыгарылууда...</translation>
-<translation id="8079530767338315840">Кайталоо</translation>
 <translation id="8087576439476816834">Жүктөп алуу, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Мени менен бөлүшүлгөн</translation>
 <translation id="8116072619078571545">Муз кошулган суу</translation>
@@ -854,7 +852,6 @@
 <translation id="8175731104491895765">Французча (Бельгия)</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">Түзмөктүн үлгүсү</translation>
-<translation id="8208580316430297579">Санат иши</translation>
 <translation id="8223479393428528563">Бул файлдарды оффлайнда колдонуу үчүн онлайн режимине кайтып, файлдарды оң баскыч менен чыкылдатып, андан соң <ph name="OFFLINE_CHECKBOX_NAME" /> параметрин тандаңыз.</translation>
 <translation id="8249296373107784235">Токтотуу</translation>
 <translation id="8250690786522693009">Латын</translation>
@@ -875,7 +872,6 @@
 <translation id="8342318071240498787">Мындай аталыштагы файл же каталог мурунтан эле бар.</translation>
 <translation id="8372369524088641025">WEP ачкычы начар</translation>
 <translation id="8372852072747894550">Грекче</translation>
-<translation id="8384716930968677505">Акыркы сүрөттөрүңүз ушул жерде көрүнөт</translation>
 <translation id="8386903983509584791">Текшерүү аяктады</translation>
 <translation id="8387733224523483503"><ph name="FILE_NAME" /> алынды.</translation>
 <translation id="8395901698320285466">Чен-өлчөмү</translation>
@@ -885,6 +881,7 @@
 <translation id="8437209419043462667">АКШ</translation>
 <translation id="8452135315243592079">SIM-картасы жок</translation>
 <translation id="8456681095658380701">Жараксыз ат</translation>
+<translation id="8457767749626250697">SIM картаңыз кулпуланды</translation>
 <translation id="8459404855768962328">Эгер бул нерсени көчүрсөңүз, ал "<ph name="DESTINATION_NAME" />" бөлүшүлгөн папкасын көрө алган адамдардын баары менен бөлүшүлөт.</translation>
 <translation id="8461467696380332069">Текчедеги файлдарды ыкчам ачуу мүмкүнчүлүгү үчүн курсорду файлдын үстүнө алып келип, чычкандын оң баскычын басып, "Текчеге кадоо" дегенди тандаңыз.</translation>
 <translation id="8461914792118322307">Прокси</translation>
@@ -911,7 +908,6 @@
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> нерсе шайкештирилүүдө…</translation>
 <translation id="8600173386174225982">Файлдардын тизмеси эскиз көрүнүшүнө которулду.</translation>
 <translation id="8601932370724196034">Crostini сүрөт файлы</translation>
-<translation id="8608515571837163082">Туура эмес PIN код өтө көп жолу киргизилди. Байланыш операторуңуз берген 8 орундуу Жеке бөгөттөн чыгаруу ачкычын (PUK) киргизиңиз.</translation>
 <translation id="8609695766746872526">Исландча</translation>
 <translation id="863903787380594467">PIN код туура эмес. Сизде <ph name="RETRIES" /> аракет калды.</translation>
 <translation id="8639391553632924850"><ph name="INPUT_LABEL" /> – Оюкча</translation>
@@ -949,7 +945,6 @@
 <translation id="9034924485347205037">Linux файлдары</translation>
 <translation id="9035012421917565900">Бул файлдарды кайра "<ph name="DESTINATION_NAME" />" дискине жылдырууга мүмкүн болбой калат, андыктан бул аракетти кайтара албай каласыз.</translation>
 <translation id="9035689366572880647">Учурдагы PIN кодду киргизиңиз</translation>
-<translation id="9037777873893411148">*Уюмдун сактагычы толуп калды</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" деген файл мурунтан эле бар. Файлды башкача атаңыз.</translation>
 <translation id="9046895021617826162">Туташпай калды</translation>
 <translation id="9065512565307033593">Эгер текшерүүдөн өтпөсөңүз, тармакка кирүү мүмкүнчүлүгү өчүрүлөт.</translation>

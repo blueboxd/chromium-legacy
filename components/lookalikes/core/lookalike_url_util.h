@@ -43,6 +43,15 @@ enum class TargetEmbeddingType {
   kSafetyTip = 2,
 };
 
+// Used for |GetComboSquattingType| return value.
+// It shows if the brand name in the flagged domain
+// comes from the hard-coded brand names or from site engagements.
+enum class ComboSquattingType {
+  kNone = 0,
+  kHardCoded = 1,
+  kSiteEngagement = 2,
+};
+
 // Used for UKM. There is only a single LookalikeUrlMatchType per navigation.
 enum class LookalikeUrlMatchType {
   kNone = 0,
@@ -64,15 +73,17 @@ enum class LookalikeUrlMatchType {
   kCharacterSwapSiteEngagement = 10,
   kCharacterSwapTop500 = 11,
 
-  // In contrast to other heuristics that use
-  // Top500 and SiteEngagement domains, Combo Squatting uses manually
-  // curated lists of brand names and keywords that are hardcoded as
-  // kBrandNamesforCSQ and kPopularKeywordsforCSQ in lookalike_url_util.cc.
+  // Combo Squatting uses manually
+  // curated lists of hard-coded keywords (kPopularKeywordsforCSQ in
+  // lookalike_url_util.cc) and both manually curated hard-coded brand names
+  // (kBrandNamesforCSQ in lookalike_url_util.cc) and brand names from
+  // SiteEngagement to flag domains.
   kComboSquatting = 12,
+  kComboSquattingSiteEngagement = 13,
 
   // Append new items to the end of the list above; do not modify or replace
   // existing values. Comment out obsolete items.
-  kMaxValue = kComboSquatting,
+  kMaxValue = kComboSquattingSiteEngagement,
 };
 
 // Used for UKM. There is only a single LookalikeUrlBlockingPageUserAction per
@@ -107,10 +118,11 @@ enum class NavigationSuggestionEvent {
   kMatchCharacterSwapSiteEngagement = 12,
   kMatchCharacterSwapTop500 = 13,
   kComboSquatting = 14,
+  kComboSquattingSiteEngagement = 15,
 
   // Append new items to the end of the list above; do not modify or
   // replace existing values. Comment out obsolete items.
-  kMaxValue = kComboSquatting,
+  kMaxValue = kComboSquattingSiteEngagement,
 };
 
 struct Top500DomainsParams {
@@ -122,10 +134,11 @@ struct Top500DomainsParams {
 };
 
 struct ComboSquattingParams {
-  // List of brand names such as "google", "youtube".
-  // Should be usable in domain names (i.e. lower case, no punctuation except
-  // for - etc.)
-  const char* const* brand_names;
+  // An array of brand names (such as "google", "youtube") and their skeletons
+  // (in pairs). The first item in each pair is the brand name and the second
+  // item is its skeleton. Brand names should be usable in domain names (i.e.
+  // lower case, no punctuation except for - etc.)
+  const std::pair<const char*, const char*>* brand_names;
   // Number of brand names in combo_squatting_brand_names.
   size_t num_brand_names;
 
@@ -152,12 +165,16 @@ struct DomainInfo {
   const url_formatter::IDNConversionResult idn_result;
   // Skeletons of domain_and_registry field.
   const url_formatter::Skeletons skeletons;
+  // Skeletons of domain_without_registry field.
+  const url_formatter::Skeletons domain_without_registry_skeletons;
 
-  DomainInfo(const std::string& arg_hostname,
-             const std::string& arg_domain_and_registry,
-             const std::string& arg_domain_without_registry,
-             const url_formatter::IDNConversionResult& arg_idn_result,
-             const url_formatter::Skeletons& arg_skeletons);
+  DomainInfo(
+      const std::string& arg_hostname,
+      const std::string& arg_domain_and_registry,
+      const std::string& arg_domain_without_registry,
+      const url_formatter::IDNConversionResult& arg_idn_result,
+      const url_formatter::Skeletons& arg_skeletons,
+      const url_formatter::Skeletons& arg_domain_without_registry_skeletons);
   ~DomainInfo();
   DomainInfo(const DomainInfo& other);
 };
@@ -277,10 +294,13 @@ void SetComboSquattingParamsForTesting(const ComboSquattingParams& params);
 // Reset brand names and keywords after testing Combo Squatting heuristic.
 void ResetComboSquattingParamsForTesting();
 
-// Returns true if the navigated_domain is flagged as Combo Squatting.
-// matched_domain is the suggested domain that will be shown to the user
-// instead of the navigated_domain in the warning UI.
-bool IsComboSquatting(const DomainInfo& navigated_domain,
-                      std::string* matched_domain);
+// Check if |navigated_domain| is Combo Squatting lookalike.
+// It gets |engaged_sites| to use its brand names in addition to hard coded
+// brand names. The function sets |matched_domain| to suggest to the user
+// instead of the Combo Squatting domain.
+ComboSquattingType GetComboSquattingType(
+    const DomainInfo& navigated_domain,
+    const std::vector<DomainInfo>& engaged_sites,
+    std::string* matched_domain);
 
 #endif  // COMPONENTS_LOOKALIKES_CORE_LOOKALIKE_URL_UTIL_H_

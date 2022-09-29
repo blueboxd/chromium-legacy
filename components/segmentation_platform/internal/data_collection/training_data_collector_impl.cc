@@ -12,12 +12,12 @@
 #include "components/segmentation_platform/internal/database/signal_storage_config.h"
 #include "components/segmentation_platform/internal/execution/processing/feature_list_query_processor.h"
 #include "components/segmentation_platform/internal/metadata/metadata_utils.h"
-#include "components/segmentation_platform/internal/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/internal/segmentation_ukm_helper.h"
 #include "components/segmentation_platform/internal/selection/segmentation_result_prefs.h"
 #include "components/segmentation_platform/internal/stats.h"
 #include "components/segmentation_platform/public/config.h"
 #include "components/segmentation_platform/public/local_state_helper.h"
+#include "components/segmentation_platform/public/proto/model_metadata.pb.h"
 
 namespace segmentation_platform {
 namespace {
@@ -60,10 +60,9 @@ std::string GetSegmentationKey(std::vector<std::unique_ptr<Config>>* configs,
     return std::string();
 
   for (const auto& config : *configs) {
-    if (std::find(config->segment_ids.begin(), config->segment_ids.end(),
-                  segment_id) != config->segment_ids.end()) {
+    auto it = config->segments.find(segment_id);
+    if (it != config->segments.end())
       return config->segmentation_key;
-    }
   }
   return std::string();
 }
@@ -156,12 +155,11 @@ void TrainingDataCollectorImpl::OnHistogramSignalUpdated(
   // Report training data for all models that are interested in
   // |histogram_name| as output.
   if (it != immediate_collection_histograms_.end()) {
-    std::vector<SegmentId> segment_ids(it->second.begin(), it->second.end());
     auto param = absl::make_optional<ImmediaCollectionParam>();
     param->output_metric_hash = hash;
     param->output_value = static_cast<float>(sample);
     segment_info_database_->GetSegmentInfoForSegments(
-        segment_ids,
+        it->second,
         base::BindOnce(&TrainingDataCollectorImpl::ReportForSegmentsInfoList,
                        weak_ptr_factory_.GetWeakPtr(), std::move(param)));
   }
@@ -335,8 +333,7 @@ void TrainingDataCollectorImpl::ReportCollectedContinuousTrainingData() {
   base::Time next_collection_time = GetNextReportTime(last_collection_time);
   if (clock_->Now() >= next_collection_time) {
     segment_info_database_->GetSegmentInfoForSegments(
-        std::vector<SegmentId>(continuous_collection_segments_.begin(),
-                               continuous_collection_segments_.end()),
+        continuous_collection_segments_,
         base::BindOnce(&TrainingDataCollectorImpl::ReportForSegmentsInfoList,
                        weak_ptr_factory_.GetWeakPtr(), absl::nullopt));
   }

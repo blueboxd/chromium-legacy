@@ -133,7 +133,7 @@ void PendingScript::MarkParserBlockingLoadStartTime() {
 }
 
 // <specdef href="https://html.spec.whatwg.org/C/#execute-the-script-block">
-void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
+void PendingScript::ExecuteScriptBlock() {
   TRACE_EVENT0("blink", "PendingScript::ExecuteScriptBlock");
   ExecutionContext* context = element_->GetExecutionContext();
   if (!context) {
@@ -171,7 +171,7 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
     }
   }
 
-  Script* script = GetSource(document_url);
+  Script* script = GetSource();
 
   const bool was_canceled = WasCanceled();
   const bool is_external = IsExternal();
@@ -335,6 +335,7 @@ bool PendingScript::IsControlledByScriptRunner() const {
 
     case ScriptSchedulingType::kInOrder:
     case ScriptSchedulingType::kAsync:
+    case ScriptSchedulingType::kForceInOrder:
       return true;
   }
   NOTREACHED();

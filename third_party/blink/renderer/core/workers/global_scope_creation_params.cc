@@ -44,8 +44,10 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     ukm::SourceId ukm_source_id,
     const absl::optional<ExecutionContextToken>& parent_context_token,
     bool parent_cross_origin_isolated_capability,
-    bool parent_direct_socket_capability,
-    InterfaceRegistry* interface_registry)
+    bool parent_isolated_application_capability,
+    InterfaceRegistry* interface_registry,
+    scoped_refptr<base::SingleThreadTaskRunner>
+        agent_group_scheduler_compositor_task_runner)
     : script_url(script_url),
       script_type(script_type),
       global_scope_name(global_scope_name),
@@ -80,8 +82,11 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
       parent_context_token(parent_context_token),
       parent_cross_origin_isolated_capability(
           parent_cross_origin_isolated_capability),
-      parent_direct_socket_capability(parent_direct_socket_capability),
-      interface_registry(interface_registry) {
+      parent_isolated_application_capability(
+          parent_isolated_application_capability),
+      interface_registry(interface_registry),
+      agent_group_scheduler_compositor_task_runner(
+          std::move(agent_group_scheduler_compositor_task_runner)) {
   this->inherited_trial_features =
       std::make_unique<Vector<OriginTrialFeature>>();
   if (inherited_trial_features) {

@@ -6,8 +6,12 @@
  * The base interface for actions.
  * The application should extend this to enforce its own Actions.
  */
-export interface BaseAction {
+export interface BaseAction<TPayload = any> {
+  // Unique type for the Action.
   type: string;
+
+  // Any additional data used by the Action.
+  payload?: TPayload;
 }
 
 /**
@@ -89,8 +93,7 @@ export class BaseStore<StateType, ActionType extends BaseAction> {
    * @param observer Callback called whenever the Store is updated.
    * @returns callback to unsusbscribe the observer.
    */
-  subscribe(observer: StoreObserver<StateType>):
-      (observer: StoreObserver<StateType>) => void {
+  subscribe(observer: StoreObserver<StateType>): () => void {
     this.observers_.push(observer);
     return this.unsubscribe.bind(this, observer);
   }
@@ -120,6 +123,11 @@ export class BaseStore<StateType, ActionType extends BaseAction> {
   endBatchUpdate() {
     this.batchMode_ = false;
     this.notifyObservers_(this.data_);
+  }
+
+  /** @returns the current state of the store.  */
+  getState(): StateType {
+    return this.data_;
   }
 
   /**
@@ -172,8 +180,14 @@ export class BaseStore<StateType, ActionType extends BaseAction> {
 
   /** Notify observers with the current state. */
   private notifyObservers_(state: StateType) {
-    // TODO(lucmult): Should we try/catch each observer, so an error in observer
-    // doesn't stop other parts from rendering.
-    this.observers_.forEach(o => o.onStateChanged(state));
+    this.observers_.forEach(o => {
+      try {
+        o.onStateChanged(state);
+      } catch (error) {
+        // Subscribers shouldn't fail, here we only log and continue to all
+        // other subscribers.
+        console.error(error);
+      }
+    });
   }
 }

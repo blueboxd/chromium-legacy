@@ -36,13 +36,20 @@ namespace {
 
 // Returns true if the specified video format can be decoded on hardware.
 bool IsSupportedHardwareVideoCodec(const media::VideoType& type) {
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   // TODO(crbug.com/1013412): Replace these hardcoded checks with a query to the
   // fuchsia.mediacodec FIDL service.
   if (type.codec == media::VideoCodec::kH264 && type.level <= 41)
     return true;
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
-  if (type.codec == media::VideoCodec::kVP9 && type.level <= 40)
+  // Only SD profiles are supported for VP9. HDR profiles (2 and 3) are not
+  // supported.
+  if (type.codec == media::VideoCodec::kVP9 &&
+      (type.profile == media::VP9PROFILE_PROFILE0 ||
+       type.profile == media::VP9PROFILE_PROFILE1)) {
     return true;
+  }
 
   return false;
 }
@@ -69,23 +76,22 @@ class PlayreadyKeySystemProperties : public ::media::KeySystemProperties {
     return supported_codecs_;
   }
 
-  absl::optional<media::EmeConfigRule> GetRobustnessConfigRule(
+  media::EmeConfig::Rule GetRobustnessConfigRule(
       const std::string& /*key_system*/,
       media::EmeMediaType /*media_type*/,
       const std::string& requested_robustness,
       const bool* /*hw_secure_requirement*/) const override {
     // Only empty robustness string is currently supported.
     if (requested_robustness.empty()) {
-      return media::EmeConfigRule{.hw_secure_codecs =
-                                      media::EmeConfigRuleState::kRequired};
+      return media::EmeConfig{.hw_secure_codecs =
+                                  media::EmeConfigRuleState::kRequired};
     }
 
-    return absl::nullopt;
+    return media::EmeConfig::UnsupportedRule();
   }
 
-  absl::optional<media::EmeConfigRule> GetPersistentLicenseSessionSupport()
-      const override {
-    return absl::nullopt;
+  media::EmeConfig::Rule GetPersistentLicenseSessionSupport() const override {
+    return media::EmeConfig::UnsupportedRule();
   }
 
   media::EmeFeatureSupport GetPersistentStateSupport() const override {
@@ -96,13 +102,13 @@ class PlayreadyKeySystemProperties : public ::media::KeySystemProperties {
     return media::EmeFeatureSupport::ALWAYS_ENABLED;
   }
 
-  absl::optional<media::EmeConfigRule> GetEncryptionSchemeConfigRule(
+  media::EmeConfig::Rule GetEncryptionSchemeConfigRule(
       media::EncryptionScheme encryption_mode) const override {
     if (encryption_mode == ::media::EncryptionScheme::kCenc) {
-      return media::EmeConfigRule();
+      return media::EmeConfig::SupportedRule();
     }
 
-    return absl::nullopt;
+    return media::EmeConfig::UnsupportedRule();
   }
 
  private:
@@ -188,11 +194,13 @@ void WebEngineContentRendererClient::GetSupportedKeySystems(
     supported_video_codecs |= media::EME_CODEC_VP9_PROFILE2;
   }
 
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   if (IsSupportedHardwareVideoCodec(media::VideoType{
           media::VideoCodec::kH264, media::H264PROFILE_MAIN, kUnknownCodecLevel,
           media::VideoColorSpace::REC709()})) {
     supported_video_codecs |= media::EME_CODEC_AVC1;
   }
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
   media::SupportedCodecs supported_audio_codecs = media::EME_CODEC_AUDIO_ALL;
 

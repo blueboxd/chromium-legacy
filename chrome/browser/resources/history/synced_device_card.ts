@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
@@ -22,9 +22,9 @@ import {SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram} from './constants.js';
 import {ForeignSessionTab} from './externs.js';
 import {getTemplate} from './synced_device_card.html.js';
 
-type OpenTabEvent = {
-  model: {tab: ForeignSessionTab},
-};
+interface OpenTabEvent {
+  model: {tab: ForeignSessionTab};
+}
 
 declare global {
   interface HTMLElementTagNameMap {

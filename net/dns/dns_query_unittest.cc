@@ -11,6 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "net/base/io_buffer.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/opt_record_rdata.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/dns/record_rdata.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -122,7 +123,8 @@ TEST(DnsQueryTest, EDNS0) {
 
   base::StringPiece qname(kQNameData, sizeof(kQNameData));
   OptRecordRdata opt_rdata;
-  opt_rdata.AddOpt(OptRecordRdata::Opt(255, "\xde\xad\xbe\xef"));
+  opt_rdata.AddOpt(
+      OptRecordRdata::UnknownOpt::CreateForTesting(255, "\xde\xad\xbe\xef"));
   DnsQuery q1(0xbeef, qname, dns_protocol::kTypeA, &opt_rdata);
   EXPECT_EQ(dns_protocol::kTypeA, q1.qtype());
 

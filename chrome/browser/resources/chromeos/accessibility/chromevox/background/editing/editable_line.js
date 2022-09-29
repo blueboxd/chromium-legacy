@@ -8,8 +8,13 @@
  * (e.g. start/end offsets) get saved. Line: nodes/offsets at the beginning/end
  * of a line get saved.
  */
+import {AutomationPredicate} from '../../../common/automation_predicate.js';
+import {AutomationUtil} from '../../../common/automation_util.js';
+import {constants} from '../../../common/constants.js';
 import {Cursor, CURSOR_NODE_INDEX, CursorMovement, CursorUnit} from '../../../common/cursors/cursor.js';
 import {CursorRange} from '../../../common/cursors/range.js';
+import {RecoveryStrategy, TreePathRecoveryStrategy} from '../../../common/cursors/recovery_strategy.js';
+import {Spannable} from '../../common/spannable.js';
 import {LibLouis} from '../braille/liblouis.js';
 import {Output} from '../output/output.js';
 import {OutputEventType, OutputNodeSpan} from '../output/output_types.js';
@@ -219,7 +224,9 @@ export class EditableLine {
     // as follows.
     let textCountBeforeLineStart = 0;
     let finder = lineStart;
-    while (finder.previousSibling) {
+    while (finder.previousSibling &&
+           (EditableLine.includeOffscreen ||
+            !finder.previousSibling.state[StateType.OFFSCREEN])) {
       finder = finder.previousSibling;
       textCountBeforeLineStart += finder.name ? finder.name.length : 0;
     }
@@ -268,7 +275,9 @@ export class EditableLine {
     // as follows.
     let textCountAfterLineEnd = 0;
     let finder = lineEnd;
-    while (finder.nextSibling) {
+    while (finder.nextSibling &&
+           (EditableLine.includeOffscreen ||
+            !finder.nextSibling.state[StateType.OFFSCREEN])) {
       finder = finder.nextSibling;
       textCountAfterLineEnd += finder.name ? finder.name.length : 0;
     }
@@ -714,3 +723,10 @@ export class EditableLine {
     return new CursorRange(start, end);
   }
 }
+
+/**
+ * Controls whether line computations include offscreen inline text boxes. Note
+ * that a caller should have this set prior to creating a line.
+ * @public {boolean}
+ */
+EditableLine.includeOffscreen = true;

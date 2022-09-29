@@ -367,7 +367,9 @@ base::Value::Dict AppLauncherHandler::CreateExtensionInfo(
            !extension->is_platform_app() && is_locally_installed);
 
   // Any locally installed app can have shortcuts created.
-  dict.Set("mayCreateShortcuts", is_locally_installed);
+  dict.Set(
+      "mayCreateShortcuts",
+      is_locally_installed && extension->id() != extensions::kWebStoreAppId);
   dict.Set("isLocallyInstalled", is_locally_installed);
 
   auto icon_size = extension_misc::EXTENSION_ICON_LARGE;
@@ -523,8 +525,7 @@ void AppLauncherHandler::OnAppsReordered(
 
       app_info = CreateExtensionInfo(extension);
     }
-    web_ui()->CallJavascriptFunctionUnsafe("ntp.appMoved",
-                                           base::Value(std::move(app_info)));
+    web_ui()->CallJavascriptFunctionUnsafe("ntp.appMoved", std::move(app_info));
   } else {
     HandleGetApps(base::Value::List());
   }
@@ -537,9 +538,9 @@ void AppLauncherHandler::OnExtensionLoaded(
     return;
 
   visible_apps_.insert(extension->id());
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "ntp.appAdded", base::Value(GetExtensionInfo(extension)),
-      /*highlight=*/base::Value(false));
+  web_ui()->CallJavascriptFunctionUnsafe("ntp.appAdded",
+                                         GetExtensionInfo(extension),
+                                         /*highlight=*/base::Value(false));
 }
 
 void AppLauncherHandler::OnExtensionUnloaded(
@@ -567,8 +568,8 @@ void AppLauncherHandler::OnWebAppInstalled(const web_app::AppId& app_id) {
   visible_apps_.insert(app_id);
   base::Value highlight(attempting_web_app_install_page_ordinal_.has_value());
   attempting_web_app_install_page_ordinal_ = absl::nullopt;
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "ntp.appAdded", base::Value(CreateWebAppInfo(app_id)), highlight);
+  web_ui()->CallJavascriptFunctionUnsafe("ntp.appAdded",
+                                         CreateWebAppInfo(app_id), highlight);
 }
 
 void AppLauncherHandler::OnWebAppInstallTimeChanged(
@@ -577,7 +578,7 @@ void AppLauncherHandler::OnWebAppInstallTimeChanged(
   // Use the appAdded to update the app icon's color to no longer be
   // greyscale.
   web_ui()->CallJavascriptFunctionUnsafe("ntp.appAdded",
-                                         base::Value(CreateWebAppInfo(app_id)));
+                                         CreateWebAppInfo(app_id));
 }
 
 void AppLauncherHandler::OnWebAppWillBeUninstalled(
@@ -587,7 +588,7 @@ void AppLauncherHandler::OnWebAppWillBeUninstalled(
   // dictionary is the id.
   app_info.Set(kInfoIdKey, app_id);
   web_ui()->CallJavascriptFunctionUnsafe(
-      "ntp.appRemoved", base::Value(std::move(app_info)),
+      "ntp.appRemoved", std::move(app_info),
       /*isUninstall=*/base::Value(true),
       base::Value(!extension_id_prompting_.empty()));
 }
@@ -603,7 +604,7 @@ void AppLauncherHandler::OnWebAppUninstalled(const web_app::AppId& app_id) {
   // dictionary is the id.
   app_info.Set(kInfoIdKey, app_id);
   web_ui()->CallJavascriptFunctionUnsafe(
-      "ntp.appRemoved", base::Value(std::move(app_info)),
+      "ntp.appRemoved", std::move(app_info),
       /*isUninstall=*/base::Value(true),
       base::Value(!extension_id_prompting_.empty()));
 }
@@ -725,7 +726,7 @@ void AppLauncherHandler::HandleGetApps(const base::Value::List& args) {
 
   FillAppDictionary(&dictionary);
   web_ui()->CallJavascriptFunctionUnsafe("ntp.getAppsCallback",
-                                         base::Value(std::move(dictionary)));
+                                         std::move(dictionary));
 
   // First time we get here we set up the observer so that we can tell update
   // the apps as they change.
@@ -1305,7 +1306,7 @@ void AppLauncherHandler::OnExtensionPreferenceChanged() {
   base::Value::Dict dictionary;
   FillAppDictionary(&dictionary);
   web_ui()->CallJavascriptFunctionUnsafe("ntp.appsPrefChangeCallback",
-                                         base::Value(std::move(dictionary)));
+                                         std::move(dictionary));
 }
 
 void AppLauncherHandler::CleanupAfterUninstall() {
@@ -1394,8 +1395,8 @@ void AppLauncherHandler::ExtensionRemoved(const Extension* extension,
   base::Value::Dict app_info(GetExtensionInfo(extension));
 
   web_ui()->CallJavascriptFunctionUnsafe(
-      "ntp.appRemoved", base::Value(std::move(app_info)),
-      base::Value(is_uninstall), base::Value(!extension_id_prompting_.empty()));
+      "ntp.appRemoved", std::move(app_info), base::Value(is_uninstall),
+      base::Value(!extension_id_prompting_.empty()));
 }
 
 bool AppLauncherHandler::ShouldShow(const Extension* extension) {

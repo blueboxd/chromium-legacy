@@ -194,7 +194,7 @@ public class TabPersistentStore {
 
         mTabModelObserver = new TabModelObserver() {
             @Override
-            public void didCloseTab(Tab tab) {
+            public void onFinishingTabClosure(Tab tab) {
                 PersistedTabData.onTabClose(tab);
                 removeTabFromQueues(tab);
             }

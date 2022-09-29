@@ -12,6 +12,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_com_initializer.h"
@@ -35,7 +36,7 @@ class MockTextInputClient : public TextInputClient {
  public:
   ~MockTextInputClient() {}
   MOCK_METHOD1(SetCompositionText, void(const ui::CompositionText&));
-  MOCK_METHOD1(ConfirmCompositionText, uint32_t(bool));
+  MOCK_METHOD1(ConfirmCompositionText, size_t(bool));
   MOCK_METHOD0(ClearCompositionText, void());
   MOCK_METHOD2(
       InsertText,
@@ -49,7 +50,7 @@ class MockTextInputClient : public TextInputClient {
   MOCK_CONST_METHOD0(CanComposeInline, bool());
   MOCK_CONST_METHOD0(GetCaretBounds, gfx::Rect());
   MOCK_CONST_METHOD0(GetSelectionBoundingBox, gfx::Rect());
-  MOCK_CONST_METHOD2(GetCompositionCharacterBounds, bool(uint32_t, gfx::Rect*));
+  MOCK_CONST_METHOD2(GetCompositionCharacterBounds, bool(size_t, gfx::Rect*));
   MOCK_CONST_METHOD0(HasCompositionText, bool());
   MOCK_CONST_METHOD0(GetFocusReason, ui::TextInputClient::FocusReason());
   MOCK_METHOD0(ShouldDoLearning, bool());
@@ -78,9 +79,9 @@ class MockTextInputClient : public TextInputClient {
   MOCK_METHOD0(GetTextEditingContext, ui::TextInputClient::EditingContext());
 };
 
-class MockInputMethodDelegate : public internal::InputMethodDelegate {
+class MockImeKeyEventDispatcher : public ImeKeyEventDispatcher {
  public:
-  ~MockInputMethodDelegate() {}
+  ~MockImeKeyEventDispatcher() {}
   MOCK_METHOD1(DispatchKeyEventPostIME, EventDispatchDetails(KeyEvent*));
 };
 
@@ -150,7 +151,7 @@ class TSFTextStoreTest : public testing::Test {
     EXPECT_EQ(S_OK, text_store_->AdviseSink(IID_ITextStoreACPSink, sink_.get(),
                                             TS_AS_ALL_SINKS));
     text_store_->SetFocusedTextInputClient(kWindowHandle, &text_input_client_);
-    text_store_->SetInputMethodDelegate(&input_method_delegate_);
+    text_store_->SetImeKeyEventDispatcher(&ime_key_event_dispatcher_);
   }
 
   void TearDown() override {
@@ -167,7 +168,7 @@ class TSFTextStoreTest : public testing::Test {
 
   base::win::ScopedCOMInitializer com_initializer_;
   MockTextInputClient text_input_client_;
-  MockInputMethodDelegate input_method_delegate_;
+  MockImeKeyEventDispatcher ime_key_event_dispatcher_;
   scoped_refptr<TSFTextStore> text_store_;
   scoped_refptr<MockStoreACPSink> sink_;
 };
@@ -1757,7 +1758,7 @@ TEST_F(TSFTextStoreTest, KeyEventTest) {
       .WillOnce(Invoke(&callback, &KeyEventTestCallback::InsertText2))
       .WillOnce(Invoke(&callback, &KeyEventTestCallback::InsertText3));
 
-  EXPECT_CALL(input_method_delegate_, DispatchKeyEventPostIME(_))
+  EXPECT_CALL(ime_key_event_dispatcher_, DispatchKeyEventPostIME(_))
       .WillOnce(
           Invoke(&callback, &KeyEventTestCallback::DispatchKeyEventPostIME1))
       .WillOnce(
@@ -2813,7 +2814,7 @@ TEST_F(TSFTextStoreTest, RegressionTest) {
       .WillOnce(
           Invoke(&callback, &RegressionTestCallback::SetCompositionText5));
 
-  EXPECT_CALL(input_method_delegate_, DispatchKeyEventPostIME(_))
+  EXPECT_CALL(ime_key_event_dispatcher_, DispatchKeyEventPostIME(_))
       .WillOnce(
           Invoke(&callback, &RegressionTestCallback::DispatchKeyEventPostIME1))
       .WillOnce(
@@ -4328,6 +4329,258 @@ TEST_F(TSFTextStoreTest, RegressionTest14) {
   result = kInvalidResult;
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
   EXPECT_EQ(S_OK, result);
+}
+
+// regression tests for crbug.com/1344096.
+// For Chrome-initiated confirm or cancel composition, we shouldn't
+// reset the composition state before notifying ITextStoreACPSink about
+// the composition termination.
+class FakeITfContextOwnerCompositionServices
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          ITfContextOwnerCompositionServices> {
+ public:
+  FakeITfContextOwnerCompositionServices(
+      base::RepeatingClosure terminate_composition_callback)
+      : terminate_composition_callback_(terminate_composition_callback){};
+  ~FakeITfContextOwnerCompositionServices() override = default;
+
+  // ITfContextOwnerCompositionServices:
+  STDMETHODIMP TerminateComposition(ITfCompositionView* pComposition) override {
+    terminate_composition_callback_.Run();
+    return S_OK;
+  }
+
+  // ITfContextComposition:
+  STDMETHODIMP StartComposition(TfEditCookie ecWrite,
+                                ITfRange* pCompositionRange,
+                                ITfCompositionSink* pSink,
+                                ITfComposition** ppComposition) override {
+    return S_OK;
+  };
+
+  STDMETHODIMP EnumCompositions(IEnumITfCompositionView** ppEnum) override {
+    return S_OK;
+  };
+
+  STDMETHODIMP FindComposition(TfEditCookie ecRead,
+                               ITfRange* pTestRange,
+                               IEnumITfCompositionView** ppEnum) override {
+    return S_OK;
+  };
+
+  STDMETHODIMP TakeOwnership(TfEditCookie ecWrite,
+                             ITfCompositionView* pComposition,
+                             ITfCompositionSink* pSink,
+                             ITfComposition** ppComposition) override {
+    return S_OK;
+  };
+
+ private:
+  base::RepeatingClosure terminate_composition_callback_;
+};
+
+class FakeITfContext
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          IUnknown> {
+ public:
+  FakeITfContext(base::RepeatingClosure terminate_composition_callback)
+      : compostion_service_(
+            Microsoft::WRL::Make<FakeITfContextOwnerCompositionServices>(
+                terminate_composition_callback)) {}
+  ~FakeITfContext() override = default;
+
+  STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override {
+    compostion_service_.CopyTo(riid, ppv);
+    return S_OK;
+  }
+
+ private:
+  Microsoft::WRL::ComPtr<FakeITfContextOwnerCompositionServices>
+      compostion_service_;
+};
+
+class RegressionTest15Callback : public TSFTextStoreTestCallback {
+ public:
+  explicit RegressionTest15Callback(TSFTextStore* text_store)
+      : TSFTextStoreTestCallback(text_store) {}
+
+  RegressionTest15Callback(const RegressionTest15Callback&) = delete;
+  RegressionTest15Callback& operator=(const RegressionTest15Callback&) = delete;
+
+  HRESULT LockGranted1(DWORD flags) {
+    SetTextTest(0, 0, L"a", S_OK);
+    SetSelectionTest(0, 1, S_OK);
+
+    text_spans()->clear();
+    ImeTextSpan text_span_1;
+    text_span_1.start_offset = 0;
+    text_span_1.end_offset = 1;
+    text_span_1.underline_color = SK_ColorBLACK;
+    text_span_1.thickness = ImeTextSpan::Thickness::kThick;
+    text_span_1.background_color = SK_ColorTRANSPARENT;
+    text_spans()->push_back(text_span_1);
+    *edit_flag() = true;
+    *composition_start() = 0;
+    composition_range()->set_start(0);
+    composition_range()->set_end(1);
+    *has_composition_range() = true;
+
+    return S_OK;
+  }
+
+  void SetCompositionText(const ui::CompositionText& composition) {
+    EXPECT_EQ(u"a", composition.text);
+    EXPECT_EQ(0u, composition.selection.start());
+    EXPECT_EQ(1u, composition.selection.end());
+    EXPECT_EQ(1u, composition.ime_text_spans.size());
+    EXPECT_EQ(0u, composition.ime_text_spans[0].start_offset);
+    EXPECT_EQ(1u, composition.ime_text_spans[0].end_offset);
+    SetHasCompositionText(true);
+    SetTextRange(0, 1);
+    SetSelectionRange(0, 1);
+  }
+
+  // An empty LockGranted2(). This is necessary because it has a
+  // side-effect that it sets `edit_flag` to false.
+  HRESULT LockGranted2(DWORD flags) { return S_OK; }
+
+  HRESULT LockGranted3(DWORD flags) {
+    SetTextTest(0, 1, L"a", S_OK);
+    SetSelectionTest(1, 1, S_OK);
+
+    text_spans()->clear();
+    *edit_flag() = true;
+    *composition_start() = 1;
+    composition_range()->set_start(0);
+    composition_range()->set_end(0);
+
+    *has_composition_range() = false;
+    return S_OK;
+  }
+};
+
+// Test that ConfirmComposition() won't make a call to
+// ExtendSelectionAndDelete() that exceeds the selection bound.
+TEST_F(TSFTextStoreTest, RegressionTest15) {
+  RegressionTest15Callback callback(text_store_.get());
+  auto fake_context = Microsoft::WRL::Make<FakeITfContext>(base::BindRepeating(
+      [](TSFTextStore* text_store) {
+        HRESULT result = kInvalidResult;
+        EXPECT_EQ(S_OK, text_store->RequestLock(TS_LF_READWRITE, &result));
+        EXPECT_EQ(S_OK, result);
+      },
+      base::Unretained(text_store_.get())));
+  text_store_->OnContextInitialized(
+      reinterpret_cast<ITfContext*>(fake_context.Get()));
+
+  ON_CALL(text_input_client_, HasCompositionText())
+      .WillByDefault(
+          Invoke(&callback, &TSFTextStoreTestCallback::HasCompositionText));
+
+  ON_CALL(text_input_client_, SetCompositionText(_))
+      .WillByDefault(
+          Invoke(&callback, &RegressionTest15Callback::SetCompositionText));
+
+  ON_CALL(text_input_client_, GetTextRange(_))
+      .WillByDefault(
+          Invoke(&callback, &TSFTextStoreTestCallback::GetTextRange));
+
+  ON_CALL(text_input_client_, GetTextFromRange(_, _))
+      .WillByDefault(
+          Invoke(&callback, &TSFTextStoreTestCallback::GetTextFromRange));
+
+  ON_CALL(text_input_client_, GetEditableSelectionRange(_))
+      .WillByDefault(Invoke(
+          &callback, &TSFTextStoreTestCallback::GetEditableSelectionRange));
+
+  ON_CALL(text_input_client_, ExtendSelectionAndDelete(_, _))
+      .WillByDefault([&callback](int before, int after) {
+        gfx::Range selection_range;
+        callback.GetEditableSelectionRange(&selection_range);
+        DCHECK(before >= 0);
+        EXPECT_GE(selection_range.start(), (size_t)before);
+      });
+
+  EXPECT_CALL(*sink_, OnLockGranted(_))
+      .WillOnce(Invoke(&callback, &RegressionTest15Callback::LockGranted1))
+      .WillOnce(Invoke(&callback, &RegressionTest15Callback::LockGranted2))
+      .WillOnce(Invoke(&callback, &RegressionTest15Callback::LockGranted3));
+
+  HRESULT result = kInvalidResult;
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
+
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
+
+  // The system will request lock on calling this.
+  text_store_->ConfirmComposition();
+}
+
+// Test that CancelComposition() won't make a call to
+// ExtendSelectionAndDelete() that exceeds the selection bound.
+// Reuse RegressionTest15Callback since the only different between this
+// test and RegressionTest15 is that this test calls CancelComposition().
+TEST_F(TSFTextStoreTest, RegressionTest16) {
+  RegressionTest15Callback callback(text_store_.get());
+  auto fake_context = Microsoft::WRL::Make<FakeITfContext>(base::BindRepeating(
+      [](TSFTextStore* text_store) {
+        HRESULT result = kInvalidResult;
+        EXPECT_EQ(S_OK, text_store->RequestLock(TS_LF_READWRITE, &result));
+        EXPECT_EQ(S_OK, result);
+      },
+      base::Unretained(text_store_.get())));
+  text_store_->OnContextInitialized(
+      reinterpret_cast<ITfContext*>(fake_context.Get()));
+
+  ON_CALL(text_input_client_, HasCompositionText())
+      .WillByDefault(
+          Invoke(&callback, &TSFTextStoreTestCallback::HasCompositionText));
+
+  ON_CALL(text_input_client_, SetCompositionText(_))
+      .WillByDefault(
+          Invoke(&callback, &RegressionTest15Callback::SetCompositionText));
+
+  ON_CALL(text_input_client_, GetTextRange(_))
+      .WillByDefault(
+          Invoke(&callback, &TSFTextStoreTestCallback::GetTextRange));
+
+  ON_CALL(text_input_client_, GetTextFromRange(_, _))
+      .WillByDefault(
+          Invoke(&callback, &TSFTextStoreTestCallback::GetTextFromRange));
+
+  ON_CALL(text_input_client_, GetEditableSelectionRange(_))
+      .WillByDefault(Invoke(
+          &callback, &TSFTextStoreTestCallback::GetEditableSelectionRange));
+
+  ON_CALL(text_input_client_, ExtendSelectionAndDelete(_, _))
+      .WillByDefault([&callback](int before, int after) {
+        gfx::Range selection_range;
+        callback.GetEditableSelectionRange(&selection_range);
+        DCHECK(before >= 0);
+        EXPECT_GE(selection_range.start(), (size_t)before);
+      });
+
+  EXPECT_CALL(*sink_, OnLockGranted(_))
+      .WillOnce(Invoke(&callback, &RegressionTest15Callback::LockGranted1))
+      .WillOnce(Invoke(&callback, &RegressionTest15Callback::LockGranted2))
+      .WillOnce(Invoke(&callback, &RegressionTest15Callback::LockGranted3));
+
+  HRESULT result = kInvalidResult;
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
+
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
+
+  // The system will request lock on calling this.
+  text_store_->CancelComposition();
 }
 
 // Test multiple |SetText| call in one edit session.

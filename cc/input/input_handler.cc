@@ -314,10 +314,9 @@ InputHandler::ScrollStatus InputHandler::ScrollBegin(ScrollState* scroll_state,
   DCHECK(scrolling_node);
 
   ActiveTree().SetCurrentlyScrollingNode(scrolling_node);
-  if (unification_enabled &&
-      !scroll_tree.CanRealizeScrollsOnCompositor(*scrolling_node)) {
-    scroll_status.needs_main_thread_repaint = true;
-  }
+  if (unification_enabled)
+    scroll_status.main_thread_repaint_reasons =
+        scroll_tree.GetMainThreadRepaintReasons(*scrolling_node);
 
   DidLatchToScroller(*scroll_state, type);
 
@@ -1085,8 +1084,7 @@ void InputHandler::TickAnimations(base::TimeTicks monotonic_time) {
 
 void InputHandler::WillShutdown() {
   if (input_handler_client_) {
-    input_handler_client_->WillShutdown();
-    input_handler_client_ = nullptr;
+    input_handler_client_.ExtractAsDangling()->WillShutdown();
   }
 
   if (scroll_elasticity_helper_)

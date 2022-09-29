@@ -22,11 +22,10 @@
 #include "base/win/scoped_handle.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_once_callback.h"
-#include "net/base/datagram_buffer.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
-#include "net/base/network_change_notifier.h"
+#include "net/base/network_handle.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/datagram_socket.h"
 #include "net/socket/diff_serv_code_point.h"
@@ -176,7 +175,7 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   int Open(AddressFamily address_family);
 
   // Not implemented. Returns ERR_NOT_IMPLEMENTED.
-  int BindToNetwork(NetworkChangeNotifier::NetworkHandle network);
+  int BindToNetwork(handles::NetworkHandle network);
 
   // Connects the socket to connect with a certain |address|.
   // Should be called after Open().
@@ -347,23 +346,6 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   // This class by default uses overlapped IO. Call this method before Open()
   // to switch to non-blocking IO.
   void UseNonBlockingIO();
-
-  void SetWriteAsyncEnabled(bool enabled);
-  bool WriteAsyncEnabled();
-  void SetMaxPacketSize(size_t max_packet_size);
-  void SetWriteMultiCoreEnabled(bool enabled);
-  void SetSendmmsgEnabled(bool enabled);
-  void SetWriteBatchingActive(bool active);
-
-  int WriteAsync(DatagramBuffers buffers,
-                 CompletionOnceCallback callback,
-                 const NetworkTrafficAnnotationTag& traffic_annotation);
-  int WriteAsync(const char* buffer,
-                 size_t buf_len,
-                 CompletionOnceCallback callback,
-                 const NetworkTrafficAnnotationTag& traffic_annotation);
-
-  DatagramBuffers GetUnwrittenBuffers();
 
   // Apply |tag| to this socket.
   void ApplySocketTag(const SocketTag& tag);

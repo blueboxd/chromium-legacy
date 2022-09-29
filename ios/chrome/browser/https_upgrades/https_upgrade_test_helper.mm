@@ -145,15 +145,6 @@ std::unique_ptr<net::test_server::HttpResponse> FakeHungHTTPSResponse(
   GREYAssertNil([MetricsAppInterface releaseHistogramTester],
                 @"Cannot reset histogram tester.");
 
-  GREYAssertTrue(self.testServer->ShutdownAndWaitUntilComplete(),
-                 @"Test HTTP server failed to shutdown");
-  GREYAssertTrue(self.goodHTTPSServer->ShutdownAndWaitUntilComplete(),
-                 @"Test good faux-HTTPS server failed to shutdown");
-  GREYAssertTrue(self.badHTTPSServer->ShutdownAndWaitUntilComplete(),
-                 @"Test bad HTTPS server failed to shutdown");
-  GREYAssertTrue(self.slowHTTPSServer->ShutdownAndWaitUntilComplete(),
-                 @"Test slow faux-HTTP server failed to shutdown");
-
   [super tearDown];
 }
 

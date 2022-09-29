@@ -9,10 +9,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
+#include "chromeos/ash/components/dbus/shill/shill_clients.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "chromeos/ash/components/network/geolocation_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
-#include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -56,9 +56,9 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
   }
 
   base::test::SingleThreadTaskEnvironment task_environment_;
-  chromeos::NetworkHandlerTestHelper network_handler_test_helper_;
+  ash::NetworkHandlerTestHelper network_handler_test_helper_;
   scoped_refptr<WifiDataProviderChromeOs> provider_;
-  chromeos::ShillManagerClient::TestInterface* manager_test_;
+  ash::ShillManagerClient::TestInterface* manager_test_;
   WifiData::AccessPointDataSet ap_data_;
 };
 

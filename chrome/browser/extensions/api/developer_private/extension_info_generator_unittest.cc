@@ -270,7 +270,9 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
                                        .Build())
           .Set("permissions", ListBuilder().Append("tabs").Build())
           .Build();
-  std::unique_ptr<base::DictionaryValue> manifest_copy(manifest->DeepCopy());
+  std::unique_ptr<base::DictionaryValue> manifest_copy =
+      base::DictionaryValue::From(
+          base::Value::ToUniquePtrValue(manifest->Clone()));
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(std::move(manifest))
@@ -375,6 +377,63 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   info = GenerateExtensionInfo(extension->id());
   EXPECT_EQ(developer::LOCATION_THIRD_PARTY, info->location);
   EXPECT_FALSE(info->path);
+}
+
+// Tests that the correct location field is returned for an extension that's
+// installed by default.
+TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoInstalledByDefault) {
+  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
+
+  std::unique_ptr<base::DictionaryValue> manifest =
+      DictionaryBuilder()
+          .Set("name", "installed by default")
+          .Set("version", "1.2")
+          .Set("manifest_version", 3)
+          .Set("update_url", "https://clients2.google.com/service/update2/crx")
+          .Build();
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(std::move(manifest))
+          .SetLocation(ManifestLocation::kExternalPref)
+          .SetPath(data_dir())
+          .SetID(crx_file::id_util::GenerateId("alpha"))
+          .AddFlags(Extension::WAS_INSTALLED_BY_DEFAULT)
+          .Build();
+  service()->AddExtension(extension.get());
+
+  std::unique_ptr<api::developer_private::ExtensionInfo> info =
+      GenerateExtensionInfo(extension->id());
+  EXPECT_EQ(info->location, developer::LOCATION_INSTALLED_BY_DEFAULT);
+}
+
+// Tests that the correct location field is returned for an extension that's
+// installed by the OEM.
+TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoInstalledByOem) {
+  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
+
+  std::unique_ptr<base::DictionaryValue> manifest =
+      DictionaryBuilder()
+          .Set("name", "installed by OEM")
+          .Set("version", "1.2")
+          .Set("manifest_version", 3)
+          .Set("update_url", "https://clients2.google.com/service/update2/crx")
+          .Build();
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(std::move(manifest))
+          .SetLocation(ManifestLocation::kExternalPref)
+          .SetPath(data_dir())
+          .SetID(crx_file::id_util::GenerateId("alpha"))
+          .AddFlags(Extension::WAS_INSTALLED_BY_DEFAULT |
+                    Extension::WAS_INSTALLED_BY_OEM)
+          .Build();
+  service()->AddExtension(extension.get());
+
+  std::unique_ptr<api::developer_private::ExtensionInfo> info =
+      GenerateExtensionInfo(extension->id());
+  EXPECT_EQ(info->location, developer::LOCATION_THIRD_PARTY);
 }
 
 // Test three generated json outputs.

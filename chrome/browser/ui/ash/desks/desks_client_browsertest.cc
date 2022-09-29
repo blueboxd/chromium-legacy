@@ -22,8 +22,10 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/templates/saved_desk_metrics_util.h"
+#include "ash/wm/desks/templates/saved_desk_presenter.h"
 #include "ash/wm/desks/templates/saved_desk_test_util.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_test_util.h"
@@ -67,6 +69,7 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/test/base/chromeos/ash_browser_test_starter.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/ui/base/window_state_type.h"
@@ -285,12 +288,17 @@ void ClickSaveDeskAsTemplateButton() {
   ClickSaveDeskAsTemplateButton(/*wait_for_ui=*/true);
 }
 
+void ClickSaveDeskForLaterButton() {
+  views::Button* save_desk_for_later_button = ash::GetSaveDeskForLaterButton();
+  DCHECK(save_desk_for_later_button);
+  ClickButton(save_desk_for_later_button);
+}
+
 void ClickZeroStateTemplatesButton() {
   views::Button* zero_state_templates_button =
       ash::GetZeroStateDesksTemplatesButton();
   ASSERT_TRUE(zero_state_templates_button);
   ClickButton(zero_state_templates_button);
-  ash::WaitForDesksTemplatesUI();
 }
 
 void ClickExpandedStateTemplatesButton() {
@@ -304,23 +312,13 @@ void ClickFirstTemplateItem() {
   views::Button* template_item = ash::GetTemplateItemButton(/*index=*/0);
   DCHECK(template_item);
   ClickButton(template_item);
-
-  // We need to wait for the template to be fetched from the model.
-  ash::WaitForDesksTemplatesUI();
 }
 
 const std::vector<const ash::DeskTemplate*> GetAllEntries() {
   std::vector<const ash::DeskTemplate*> templates;
-  base::RunLoop loop;
-  DesksClient::Get()->GetDeskModel()->GetAllEntries(base::BindLambdaForTesting(
-      [&](desks_storage::DeskModel::GetAllEntriesStatus status,
-          const std::vector<const ash::DeskTemplate*>& entries) {
-        DCHECK_EQ(desks_storage::DeskModel::GetAllEntriesStatus::kOk, status);
-        templates = entries;
-        loop.Quit();
-      }));
-  loop.Run();
-  return templates;
+  auto result = DesksClient::Get()->GetDeskModel()->GetAllEntries();
+  DCHECK_EQ(desks_storage::DeskModel::GetAllEntriesStatus::kOk, result.status);
+  return result.entries;
 }
 
 // Creates a vector of tab groups based on the vector of GURLs passed into it.
@@ -474,6 +472,28 @@ class DesksTemplatesClientTest : public extensions::PlatformAppBrowserTest {
     return launch_in_browser
                ? web_app::LaunchBrowserForWebAppInTab(profile(), app_id)
                : web_app::LaunchWebAppBrowserAndWait(profile(), app_id);
+  }
+
+  // This navigates the browser to a page that will show a close confirmation
+  // dialog when closed.
+  void SetupBrowserToConfirmClose(Browser* browser) {
+    std::string page_that_requires_close_confirmation =
+        "<html><head>"
+        "<script>window.onbeforeunload = function() { return \"x\"; };</script>"
+        "</head><body></body></html>";
+
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser,
+        GURL("data:text/html, " + page_that_requires_close_confirmation)));
+
+    // Note that the `onbeforeunload` handler will not run for a page that
+    // hasn't been interacted with. To meet that requirement, we'll click on the
+    // page.
+    aura::Window* window = browser->window()->GetNativeWindow();
+    ui::test::EventGenerator event_generator(window->GetRootWindow());
+    event_generator.MoveMouseToInHost(
+        window->GetBoundsInScreen().CenterPoint());
+    event_generator.ClickLeftButton();
   }
 
   // extensions::PlatformAppBrowserTest:
@@ -748,9 +768,8 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, LaunchMultipleDeskTemplates) {
   // non empty desks are launched when this test is updated to use the real
   // workflow.
   auto desk_template = std::make_unique<ash::DeskTemplate>(
-      kDeskUuid.AsLowercaseString(), ash::DeskTemplateSource::kUser,
-      base::UTF16ToUTF8(kDeskName), base::Time::Now(),
-      ash::DeskTemplateType::kTemplate);
+      kDeskUuid, ash::DeskTemplateSource::kUser, base::UTF16ToUTF8(kDeskName),
+      base::Time::Now(), ash::DeskTemplateType::kTemplate);
   SetTemplate(std::move(desk_template));
 
   auto check_launch_template_desk_name =
@@ -2149,7 +2168,6 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   // Reenter overview and launch the template we saved.
   ash::ToggleOverview();
   ash::WaitForOverviewEnterAnimation();
-  ash::WaitForDesksTemplatesUI();
   ClickZeroStateTemplatesButton();
   ClickFirstTemplateItem();
   content::RunAllTasksUntilIdle();
@@ -2343,6 +2361,9 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   ClickButton(save_desk_button);
   ash::WaitForDesksTemplatesUI();
 
+  // Wait for the browser to close.
+  ui_test_utils::WaitForBrowserToClose();
+
   // Verify that we're back to one desk.
   EXPECT_EQ(1ul, desks.size());
 }
@@ -2460,7 +2481,176 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, SetWindowProperties) {
   loop2.Run();
 }
 
-// TODO(crbug.com/1333965): Add some tests to launch LaCros browser.
+class DesksTemplatesClientLacrosTest : public InProcessBrowserTest {
+ public:
+  DesksTemplatesClientLacrosTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{ash::features::kDesksTemplates},
+        /*disabled_features=*/{ash::features::kDeskTemplateSync});
+  }
+  DesksTemplatesClientLacrosTest(const DesksTemplatesClientLacrosTest&) =
+      delete;
+  DesksTemplatesClientLacrosTest& operator=(
+      const DesksTemplatesClientLacrosTest&) = delete;
+  ~DesksTemplatesClientLacrosTest() override = default;
+
+  // InProcessBrowserTest:
+  void SetUpInProcessBrowserTestFixture() override {
+    if (!ash_starter_.HasLacrosArgument())
+      return;
+
+    ASSERT_TRUE(ash_starter_.PrepareEnvironmentForLacros());
+  }
+
+  void SetUpOnMainThread() override {
+    if (!ash_starter_.HasLacrosArgument())
+      return;
+
+    // `StartLacros()` will bring up one lacros browser. There will also be one
+    // classic browser from `InProcessBrowserTest` that can be accessed with
+    // `browser()`.
+    LacrosWindowWaiter waiter;
+    ash_starter_.StartLacros(this);
+    std::ignore = waiter.Wait(/*expected_count=*/1u);
+  }
+
+ protected:
+  // Helper class which waits for lacros windows to become visible.
+  class LacrosWindowWaiter : public aura::WindowObserver {
+   public:
+    LacrosWindowWaiter() {
+      window_observation_.Observe(ash::Shell::GetPrimaryRootWindow());
+    }
+    LacrosWindowWaiter(const LacrosWindowWaiter&) = delete;
+    LacrosWindowWaiter& operator=(const LacrosWindowWaiter&) = delete;
+    ~LacrosWindowWaiter() override = default;
+
+    // Spins the loop and waits for `expected_count` number of lacros windows to
+    // become visible.
+    aura::Window::Windows Wait(size_t expected_count) {
+      DCHECK(windows_.empty());
+      DCHECK_GT(expected_count, 0u);
+
+      expected_count_ = expected_count;
+      run_loop_.Run();
+      return windows_;
+    }
+
+    // aura::WindowObserver::
+    void OnWindowVisibilityChanged(aura::Window* window,
+                                   bool visible) override {
+      if (!visible || !crosapi::browser_util::IsLacrosWindow(window))
+        return;
+
+      windows_.push_back(window);
+      if (windows_.size() < expected_count_)
+        return;
+
+      run_loop_.Quit();
+    }
+
+   private:
+    size_t expected_count_ = 0u;
+
+    // The vector of lacros windows that where shown while waiting.
+    aura::Window::Windows windows_;
+
+    base::RunLoop run_loop_;
+
+    base::ScopedObservation<aura::Window, aura::WindowObserver>
+        window_observation_{this};
+  };
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+  test::AshBrowserTestStarter ash_starter_;
+};
+
+// Tests launching a template with a browser window.
+IN_PROC_BROWSER_TEST_F(DesksTemplatesClientLacrosTest, SystemUILaunchBrowser) {
+  if (!ash_starter_.HasLacrosArgument())
+    return;
+
+  ASSERT_TRUE(crosapi::BrowserManager::Get()->IsRunning());
+
+  // Enter overview and save the current desk as a template. The current desk
+  // has one lacros browser, and one regular browser.
+  ash::ToggleOverview();
+  ash::WaitForOverviewEnterAnimation();
+  ClickSaveDeskAsTemplateButton();
+
+  // Launch the saved desk template. We expect two launched lacros windows,
+  // since the regular browser window was saved and will be launched as a lacros
+  // window. Check the launched windows will have data in
+  // `app_restore::kWindowInfoKey`, otherwise ash does not know that they are
+  // launched from desk templates. See https://crbug.com/1333965 for more
+  // details.
+  LacrosWindowWaiter waiter;
+  ClickFirstTemplateItem();
+  aura::Window::Windows launched_windows = waiter.Wait(/*expected_count=*/2u);
+  ASSERT_EQ(2u, launched_windows.size());
+  for (auto* window : launched_windows)
+    EXPECT_TRUE(window->GetProperty(app_restore::kWindowInfoKey));
+
+  ash::ToggleOverview();
+  ash::WaitForOverviewExitAnimation();
+}
+
+using SaveAndRecallBrowserTest = DesksTemplatesClientTest;
+
+IN_PROC_BROWSER_TEST_F(SaveAndRecallBrowserTest,
+                       SystemUIBlockingDialogAccepted) {
+  SetupBrowserToConfirmClose(browser());
+
+  // We'll now save the desk as Save & Recall. After saving desks, this
+  // operation will try to automatically close windows.
+
+  ash::ToggleOverview();
+  ash::WaitForOverviewEnterAnimation();
+  ClickSaveDeskForLaterButton();
+  ash::WaitForDesksTemplatesUI();
+
+  ash::SavedDeskPresenterTestApi::WaitForSaveAndRecallBlockingDialog();
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+
+  // Send a key to OK the close dialog.
+  ash::SendKey(ui::VKEY_RETURN);
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
+
+  // Verify that we are in the library and that there's one saved desk.
+  auto* overview_grid = ash::GetOverviewSession()->GetGridWithRootWindow(
+      ash::Shell::GetPrimaryRootWindow());
+  ASSERT_TRUE(overview_grid);
+  EXPECT_TRUE(overview_grid->IsShowingDesksTemplatesGrid());
+
+  std::vector<const ash::DeskTemplate*> templates = GetAllEntries();
+  EXPECT_EQ(1u, templates.size());
+}
+
+IN_PROC_BROWSER_TEST_F(SaveAndRecallBrowserTest,
+                       SystemUIBlockingDialogRejected) {
+  SetupBrowserToConfirmClose(browser());
+
+  ash::ToggleOverview();
+  ash::WaitForOverviewEnterAnimation();
+  ClickSaveDeskForLaterButton();
+  ash::WaitForDesksTemplatesUI();
+
+  ash::SavedDeskPresenterTestApi::WaitForSaveAndRecallBlockingDialog();
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+
+  // Send escape to cancel the dialog (keep the browser running).
+  ash::SendKey(ui::VKEY_ESCAPE);
+  content::RunAllTasksUntilIdle();
+
+  ash::SavedDeskPresenterTestApi::FireWindowWatcherTimer();
+
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+
+  // We should be in overview mode.
+  ASSERT_TRUE(ash::Shell::Get()->overview_controller()->overview_session());
+}
 
 class DesksTemplatesClientArcTest : public InProcessBrowserTest {
  public:

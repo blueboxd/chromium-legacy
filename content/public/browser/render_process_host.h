@@ -88,6 +88,7 @@ class IsolationContext;
 class ProcessLock;
 class RenderFrameHost;
 class RenderProcessHostObserver;
+class SiteInfo;
 class StoragePartition;
 struct GlobalRenderFrameHostId;
 #if BUILDFLAG(IS_ANDROID)
@@ -561,6 +562,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // The following several methods are for internal use only, and are only
   // exposed here to support MockRenderProcessHost usage in tests.
+  virtual void DelayProcessShutdown(
+      const base::TimeDelta& subframe_shutdown_timeout,
+      const base::TimeDelta& unload_handler_timeout,
+      const SiteInfo& site_info) = 0;
   virtual void StopTrackingProcessForShutdownDelay() = 0;
   virtual void BindCacheStorage(
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
@@ -583,7 +588,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
       const GlobalRenderFrameHostId& render_frame_host_id,
       mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver) = 0;
   virtual void BindBucketManagerHostForWorker(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver) = 0;
   virtual void BindRestrictedCookieManagerForServiceWorker(
       const blink::StorageKey& storage_key,

@@ -66,8 +66,6 @@ target(link_target_type, "renderer") {
     "dom_automation_controller.h",
     "effective_connection_type_helper.cc",
     "effective_connection_type_helper.h",
-    "frame_blame_context.cc",
-    "frame_blame_context.h",
     "frame_owner_properties_converter.cc",
     "frame_owner_properties_converter.h",
     "gpu_benchmarking_extension.cc",
@@ -110,16 +108,12 @@ target(link_target_type, "renderer") {
     "policy_container_util.h",
     "render_frame_impl.cc",
     "render_frame_impl.h",
-    "render_frame_proxy.cc",
-    "render_frame_proxy.h",
     "render_process.cc",
     "render_process.h",
     "render_process_impl.cc",
     "render_process_impl.h",
     "render_thread_impl.cc",
     "render_thread_impl.h",
-    "render_view_impl.cc",
-    "render_view_impl.h",
     "renderer_blink_platform_impl.cc",
     "renderer_blink_platform_impl.h",
     "renderer_main.cc",
@@ -146,8 +140,6 @@ target(link_target_type, "renderer") {
     "skia_benchmarking_extension.h",
     "stats_collection_controller.cc",
     "stats_collection_controller.h",
-    "top_level_blame_context.cc",
-    "top_level_blame_context.h",
     "v8_value_converter_impl.cc",
     "v8_value_converter_impl.h",
     "variations_render_thread_observer.cc",
@@ -260,6 +252,7 @@ target(link_target_type, "renderer") {
     "//content/child",
     "//content/common",
     "//content/common:buildflags",
+    "//content/common:main_frame_counter",
     "//content/gpu:gpu_sources",
     "//content/public/child:child_sources",
     "//content/services/auction_worklet:auction_worklet",
@@ -386,18 +379,7 @@ target(link_target_type, "renderer") {
     }
   }
 
-  if (enable_plugins) {
-    sources += [
-      "pepper/pepper_media_stream_audio_track_host.cc",
-      "pepper/pepper_media_stream_audio_track_host.h",
-      "pepper/pepper_media_stream_track_host_base.cc",
-      "pepper/pepper_media_stream_track_host_base.h",
-      "pepper/pepper_media_stream_video_track_host.cc",
-      "pepper/pepper_media_stream_video_track_host.h",
-    ]
-  }
-
-  if (enable_plugins) {
+  if (enable_ppapi) {
     sources += [
       "pepper/audio_helper.cc",
       "pepper/audio_helper.h",
@@ -445,6 +427,12 @@ target(link_target_type, "renderer") {
       "pepper/pepper_in_process_router.h",
       "pepper/pepper_media_device_manager.cc",
       "pepper/pepper_media_device_manager.h",
+      "pepper/pepper_media_stream_audio_track_host.cc",
+      "pepper/pepper_media_stream_audio_track_host.h",
+      "pepper/pepper_media_stream_track_host_base.cc",
+      "pepper/pepper_media_stream_track_host_base.h",
+      "pepper/pepper_media_stream_video_track_host.cc",
+      "pepper/pepper_media_stream_video_track_host.h",
       "pepper/pepper_platform_audio_input.cc",
       "pepper/pepper_platform_audio_input.h",
       "pepper/pepper_platform_audio_output.cc",

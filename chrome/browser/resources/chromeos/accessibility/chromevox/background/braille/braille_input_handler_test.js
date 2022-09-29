@@ -177,11 +177,8 @@ FakeEditor = class {
     const grabExtraCells = () => {
       const span = content.getSpanInstanceOf(ExtraCellsSpan);
       assertNotEquals(null, span);
-      // Convert the ArrayBuffer to a normal array for easier comparision.
-      this.extraCells_ =
-          Array.prototype.map.call(new Uint8Array(span.cells), function(a) {
-            return a;
-          });
+      // Convert the ArrayBuffer to a normal array for easier comparison.
+      this.extraCells_ = Array.from(new Uint8Array(span.cells));
     };
     this.inputHandler_.onDisplayContentChanged(content, grabExtraCells);
     grabExtraCells();
@@ -304,7 +301,7 @@ FakeTranslator = class {
    */
   constructor(table, opt_capitalize) {
     /** @private */
-    this.table_ = table.map(function(entry) {
+    this.table_ = table.map(entry => {
       let cells = entry[0];
       const result = [];
       if (cells[0] === '^') {
@@ -411,7 +408,7 @@ function cellsToArray(cells) {
   if (!cells) {
     return [];
   }
-  return cells.split(/\s+/).map(function(cellString) {
+  return cells.split(/\s+/).map(cellString => {
     let cell = 0;
     assertTrue(cellString.length > 0);
     if (cellString !== '0') {
@@ -445,6 +442,10 @@ ChromeVoxBrailleInputHandlerTest = class extends ChromeVoxNextE2ETest {
     await importModule(
         ['ExtraCellsSpan', 'ValueSelectionSpan', 'ValueSpan'],
         '/chromevox/background/braille/spans.js');
+    await importModule('Spannable', '/chromevox/common/spannable.js');
+    await importModule(
+        'BrailleKeyCommand', '/chromevox/common/braille/braille_key_types.js');
+    await importModule('KeyCode', '/common/key_code.js');
 
     chrome.runtime.onConnectExternal = new FakeChromeEvent();
     this.port = new FakePort();

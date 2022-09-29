@@ -1910,9 +1910,9 @@ void SaveLayerAlphaOp::Raster(const SaveLayerAlphaOp* op,
   // See PaintOp::kUnsetRect
   bool unset = op->bounds.left() == SK_ScalarInfinity;
   absl::optional<SkPaint> paint;
-  if (op->alpha != 0xFF) {
+  if (op->alpha != 1.0f) {
     paint.emplace();
-    paint->setAlpha(op->alpha);
+    paint->setAlpha(op->alpha * 255.0f);
   }
   SkCanvas::SaveLayerRec rec(unset ? nullptr : &op->bounds,
                              base::OptionalOrNullptr(paint));
@@ -3019,7 +3019,7 @@ PaintOpBuffer::PlaybackFoldingIterator::PlaybackFoldingIterator(
 PaintOpBuffer::PlaybackFoldingIterator::~PlaybackFoldingIterator() = default;
 
 void PaintOpBuffer::PlaybackFoldingIterator::FindNextOp() {
-  current_alpha_ = 255u;
+  current_alpha_ = 1.0f;
   for (current_op_ = NextUnfoldedOp(); current_op_;
        current_op_ = NextUnfoldedOp()) {
     if (current_op_->GetType() != PaintOpType::SaveLayerAlpha)
@@ -3060,7 +3060,7 @@ void PaintOpBuffer::PlaybackFoldingIterator::FindNextOp() {
           auto* draw_color_op = static_cast<const DrawColorOp*>(draw_op);
           SkColor4f color = draw_color_op->color;
           folded_draw_color_.color = {color.fR, color.fG, color.fB,
-                                      save_op->alpha / 255 * color.fA};
+                                      save_op->alpha * color.fA};
           current_op_ = &folded_draw_color_;
           break;
         }
@@ -3143,7 +3143,7 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
       auto* context = canvas->recordingContext();
       const ScopedRasterFlags scoped_flags(
           &flags_op->flags, new_params.image_provider, canvas->getTotalMatrix(),
-          context ? context->maxTextureSize() : 0, iter.alpha());
+          context ? context->maxTextureSize() : 0, iter.alpha() / 255.0f);
       if (const auto* raster_flags = scoped_flags.flags())
         flags_op->RasterWithFlags(canvas, raster_flags, new_params);
     } else {

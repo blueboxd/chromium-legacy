@@ -105,6 +105,10 @@ void SystemTrayModel::ResetUpdateState() {
   update_model()->ResetUpdateAvailable();
 }
 
+void SystemTrayModel::SetUpdateDeferred(DeferredUpdateState state) {
+  update_model()->SetUpdateDeferred(state);
+}
+
 void SystemTrayModel::SetUpdateOverCellularAvailableIconVisible(bool visible) {
   update_model()->SetUpdateOverCellularAvailable(visible);
 }

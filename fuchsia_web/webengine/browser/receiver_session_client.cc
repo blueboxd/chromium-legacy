@@ -9,6 +9,7 @@
 #include "components/cast/message_port/message_port.h"
 #include "components/cast_streaming/browser/public/receiver_session.h"
 #include "components/cast_streaming/public/config_conversions.h"
+#include "components/cast_streaming/public/mojom/demuxer_connector.mojom.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/video_decoder_config.h"
 
@@ -33,12 +34,17 @@ void ReceiverSessionClient::SetDemuxerConnector(
   // out by build flags.
   auto stream_config =
       std::make_unique<cast_streaming::ReceiverSession::AVConstraints>(
-          cast_streaming::ToVideoCaptureConfigCodecs(media::VideoCodec::kH264,
-                                                     media::VideoCodec::kVP8),
-          video_only_receiver_
-              ? std::vector<openscreen::cast::AudioCodec>()
-              : cast_streaming::ToAudioCaptureConfigCodecs(
-                    media::AudioCodec::kAAC, media::AudioCodec::kOpus));
+          cast_streaming::ToVideoCaptureConfigCodecs(
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+              media::VideoCodec::kH264,
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+              media::VideoCodec::kVP8),
+          video_only_receiver_ ? cast_streaming::ToAudioCaptureConfigCodecs()
+                               : cast_streaming::ToAudioCaptureConfigCodecs(
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+                                     media::AudioCodec::kAAC,
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+                                     media::AudioCodec::kOpus));
 
   receiver_session_ = cast_streaming::ReceiverSession::Create(
       std::move(stream_config),

@@ -51,8 +51,6 @@ static_library("metrics") {
     "file_metrics_provider.h",
     "form_factor_metrics_provider.cc",
     "form_factor_metrics_provider.h",
-    "histogram_encoder.cc",
-    "histogram_encoder.h",
     "log_decoder.cc",
     "log_decoder.h",
     "log_store.h",
@@ -122,6 +120,7 @@ static_library("metrics") {
   ]
 
   deps = [
+    ":library_support",
     "//base",
     "//base:base_static",
     "//build:branding_buildflags",
@@ -191,6 +190,15 @@ static_library("metrics") {
 
   if (is_fuchsia) {
     sources += [ "drive_metrics_provider_fuchsia.cc" ]
+  }
+
+  if (is_win || is_linux) {
+    sources += [
+      "motherboard.cc",
+      "motherboard.h",
+      "motherboard_metrics_provider.cc",
+      "motherboard_metrics_provider.h",
+    ]
   }
 }
 
@@ -267,14 +275,19 @@ if (!is_ios) {
   }
 }
 
+# Dependency for histogram manager users: cronet and ios/webview
 source_set("library_support") {
-  sources = [
-    "library_support/histogram_manager.cc",
+  public = [
+    "histogram_encoder.h",
     "library_support/histogram_manager.h",
   ]
+  sources = [
+    "histogram_encoder.cc",
+    "library_support/histogram_manager.cc",
+  ]
+
   deps = [
     "//base",
-    "//components/metrics:metrics",
     "//third_party/metrics_proto",
   ]
 }
@@ -489,14 +502,10 @@ source_set("unit_tests") {
     "//components/metrics/public/mojom:call_stack_mojo_bindings",
     "//components/network_time:network_time_test_support",
     "//components/prefs:test_support",
+    "//components/sync:test_support",
     "//components/sync/base",
-    "//components/sync/driver:test_support",
     "//components/variations",
     "//components/variations:test_support",
-
-    # TODO(crbug.com/1241702): Clean up version_info when the Variations Safe
-    # Mode experiment is over.
-    "//components/version_info",
     "//extensions/buildflags",
     "//mojo/public/cpp/bindings",
     "//net:test_support",
@@ -529,8 +538,8 @@ source_set("unit_tests") {
 
   if (is_chromeos_ash) {
     deps += [
+      "//chromeos/ash/components/dbus:test_support",
       "//chromeos/ash/components/network:test_support",
-      "//chromeos/dbus:test_support",
     ]
   }
 
@@ -549,6 +558,10 @@ source_set("unit_tests") {
       "//content/test:test_support",
       "//extensions/buildflags",
     ]
+  }
+
+  if (is_win || is_linux) {
+    sources += [ "motherboard_metrics_provider_unittest.cc" ]
   }
 }
 

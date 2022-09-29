@@ -37,12 +37,11 @@
 #include "base/synchronization/lock.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/prefinalizer.h"
-#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_track_platform.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -50,8 +49,6 @@
 
 namespace blink {
 
-class MediaStreamSource;
-class WebAudioSourceProvider;
 class WebLocalFrame;
 
 class PLATFORM_EXPORT MediaStreamComponentImpl final
@@ -84,24 +81,20 @@ class PLATFORM_EXPORT MediaStreamComponentImpl final
 
   String Id() const override { return id_; }
   int UniqueId() const override { return unique_id_; }
+  MediaStreamSource::StreamType GetSourceType() const override {
+    return Source()->GetType();
+  }
+  const String& GetSourceName() const override { return Source()->GetName(); }
+  MediaStreamSource::ReadyState GetReadyState() const override {
+    return Source()->GetReadyState();
+  }
+  bool Remote() const override { return Source()->Remote(); }
   bool Enabled() const override { return enabled_; }
-  void SetEnabled(bool enabled) override { enabled_ = enabled; }
-  bool Muted() const override { return muted_; }
-  void SetMuted(bool muted) override { muted_ = muted; }
+  void SetEnabled(bool enabled) override;
   WebMediaStreamTrack::ContentHintType ContentHint() override {
     return content_hint_;
   }
   void SetContentHint(WebMediaStreamTrack::ContentHintType) override;
-  const MediaConstraints& Constraints() const override { return constraints_; }
-  void SetConstraints(const MediaConstraints& constraints) override {
-    constraints_ = constraints;
-  }
-  AudioSourceProvider* GetAudioSourceProvider() override {
-    return &source_provider_;
-  }
-  void SetSourceProvider(WebAudioSourceProvider* provider) override {
-    source_provider_.Wrap(provider);
-  }
 
   MediaStreamTrackPlatform* GetPlatformTrack() const override {
     return platform_track_.get();
@@ -124,41 +117,13 @@ class PLATFORM_EXPORT MediaStreamComponentImpl final
   void Trace(Visitor*) const override;
 
  private:
-  // AudioSourceProviderImpl wraps a WebAudioSourceProvider::provideInput()
-  // calls into chromium to get a rendered audio stream.
-
-  class PLATFORM_EXPORT AudioSourceProviderImpl final
-      : public AudioSourceProvider {
-   public:
-    AudioSourceProviderImpl() : web_audio_source_provider_(nullptr) {}
-
-    ~AudioSourceProviderImpl() override = default;
-
-    // Wraps the given blink::WebAudioSourceProvider to
-    // blink::AudioSourceProvider.
-    void Wrap(WebAudioSourceProvider*);
-
-    // blink::AudioSourceProvider
-    void ProvideInput(AudioBus*, int frames_to_process) override;
-
-   private:
-    WebAudioSourceProvider* web_audio_source_provider_;
-    base::Lock provide_input_lock_;
-
-    // Used to wrap AudioBus to be passed into |web_audio_source_provider_|.
-    WebVector<float*> web_audio_data_;
-  };
-
-  AudioSourceProviderImpl source_provider_;
   Member<MediaStreamSource> source_;
 
   const String id_;
   const int unique_id_;
   bool enabled_ = true;
-  bool muted_ = false;
   WebMediaStreamTrack::ContentHintType content_hint_ =
       WebMediaStreamTrack::ContentHintType::kNone;
-  MediaConstraints constraints_;
   std::unique_ptr<MediaStreamTrackPlatform> platform_track_;
   // Frame where the referenced platform track was created, if applicable.
   WebLocalFrame* creation_frame_ = nullptr;

@@ -140,6 +140,28 @@ class ScopedSignaledValue {
   SignaledValue sv;
 };
 
+class EncodedDataWrapper : public webrtc::EncodedImageBufferInterface {
+ public:
+  EncodedDataWrapper(uint8_t* data,
+                     size_t size,
+                     base::OnceClosure reuse_buffer_callback)
+      : data_(data),
+        size_(size),
+        reuse_buffer_callback_(std::move(reuse_buffer_callback)) {}
+  ~EncodedDataWrapper() override {
+    DCHECK(reuse_buffer_callback_);
+    std::move(reuse_buffer_callback_).Run();
+  }
+  const uint8_t* data() const override { return data_; }
+  uint8_t* data() override { return data_; }
+  size_t size() const override { return size_; }
+
+ private:
+  uint8_t* const data_;
+  const size_t size_;
+  base::OnceClosure reuse_buffer_callback_;
+};
+
 bool ConvertKbpsToBps(uint32_t bitrate_kbps, uint32_t* bitrate_bps) {
   if (!base::IsValueInRangeForNumericType<uint32_t>(bitrate_kbps *
                                                     UINT64_C(1000))) {
@@ -245,30 +267,8 @@ bool CreateSpatialLayersConfig(
         spatial_layers,
     media::VideoEncodeAccelerator::Config::InterLayerPredMode*
         inter_layer_pred) {
-  if (codec_settings.codecType == webrtc::kVideoCodecH264 &&
-      codec_settings.H264().numberOfTemporalLayers > 1 &&
-      !RTCVideoEncoder::H264HwSupportForTemporalLayers()) {
-    DVLOG(1) << "H264 temporal layers not yet supported by HW codecs, but use"
-             << " HW codecs and leave the fallback decision to a webrtc client"
-             << " by seeing metadata in webrtc::CodecSpecificInfo";
-
-    return true;
-  }
-
-  if (codec_settings.codecType == webrtc::kVideoCodecVP8 &&
-      codec_settings.mode == webrtc::VideoCodecMode::kScreensharing &&
-      codec_settings.VP8().numberOfTemporalLayers > 1) {
-    // This is a VP8 stream with screensharing using temporal layers for
-    // temporal scalability. Since this implementation does not yet implement
-    // temporal layers, fall back to software codec, if cfm and board is known
-    // to have a CPU that can handle it.
-    if (base::FeatureList::IsEnabled(features::kWebRtcScreenshareSwEncoding)) {
-      // TODO(sprang): Add support for temporal layers so we don't need
-      // fallback. See eg http://crbug.com/702017
-      DVLOG(1) << "Falling back to software encoder.";
-      return false;
-    }
-  }
+  absl::optional<webrtc::ScalabilityMode> scalability_mode =
+      codec_settings.GetScalabilityMode();
 
   if (codec_settings.codecType == webrtc::kVideoCodecVP9 &&
       codec_settings.VP9().numberOfSpatialLayers > 1 &&
@@ -281,23 +281,48 @@ bool CreateSpatialLayersConfig(
   // We fill SpatialLayer only in temporal layer or spatial layer encoding.
   switch (codec_settings.codecType) {
     case webrtc::kVideoCodecH264:
-      if (codec_settings.H264().numberOfTemporalLayers > 1) {
-        // Though we don't support H264 SVC. We allocate 1 element in
-        // spatial_layers for temporal layer encoding.
-        spatial_layers->resize(1u);
-        auto& sl = (*spatial_layers)[0];
-        sl.width = codec_settings.width;
-        sl.height = codec_settings.height;
-        if (!ConvertKbpsToBps(codec_settings.startBitrate, &sl.bitrate_bps))
-          return false;
-        sl.framerate = codec_settings.maxFramerate;
-        sl.max_qp = base::saturated_cast<uint8_t>(codec_settings.qpMax);
-        sl.num_of_temporal_layers = base::saturated_cast<uint8_t>(
-            codec_settings.H264().numberOfTemporalLayers);
+      if (scalability_mode.has_value() &&
+          *scalability_mode != webrtc::ScalabilityMode::kL1T1) {
+        DVLOG(1)
+            << "H264 temporal layers not yet supported by HW codecs, but use"
+            << " HW codecs and leave the fallback decision to a webrtc client"
+            << " by seeing metadata in webrtc::CodecSpecificInfo";
+
+        return true;
       }
       break;
-    case webrtc::kVideoCodecVP8:
-      if (codec_settings.VP8().numberOfTemporalLayers > 1) {
+    case webrtc::kVideoCodecVP8: {
+      int number_of_temporal_layers = 1;
+      if (scalability_mode.has_value()) {
+        switch (*scalability_mode) {
+          case webrtc::ScalabilityMode::kL1T1:
+            number_of_temporal_layers = 1;
+            break;
+          case webrtc::ScalabilityMode::kL1T2:
+            number_of_temporal_layers = 2;
+            break;
+          case webrtc::ScalabilityMode::kL1T3:
+            number_of_temporal_layers = 3;
+            break;
+          default:
+            // Other modes not supported.
+            return false;
+        }
+      }
+      if (number_of_temporal_layers > 1) {
+        if (codec_settings.mode == webrtc::VideoCodecMode::kScreensharing) {
+          // This is a VP8 stream with screensharing using temporal layers for
+          // temporal scalability. Since this implementation does not yet
+          // implement temporal layers, fall back to software codec, if cfm and
+          // board is known to have a CPU that can handle it.
+          if (base::FeatureList::IsEnabled(
+                  features::kWebRtcScreenshareSwEncoding)) {
+            // TODO(sprang): Add support for temporal layers so we don't need
+            // fallback. See eg http://crbug.com/702017
+            DVLOG(1) << "Falling back to software encoder.";
+            return false;
+          }
+        }
         // Though there is no SVC in VP8 spec. We allocate 1 element in
         // spatial_layers for temporal layer encoding.
         spatial_layers->resize(1u);
@@ -308,10 +333,11 @@ bool CreateSpatialLayersConfig(
           return false;
         sl.framerate = codec_settings.maxFramerate;
         sl.max_qp = base::saturated_cast<uint8_t>(codec_settings.qpMax);
-        sl.num_of_temporal_layers = base::saturated_cast<uint8_t>(
-            codec_settings.VP8().numberOfTemporalLayers);
+        sl.num_of_temporal_layers =
+            base::saturated_cast<uint8_t>(number_of_temporal_layers);
       }
       break;
+    }
     case webrtc::kVideoCodecVP9:
       // Since one TL and one SL can be regarded as one simple stream,
       // SpatialLayer is not filled.
@@ -829,7 +855,7 @@ void RTCVideoEncoder::Impl::Enqueue(const webrtc::VideoFrame* input_frame,
   // (1) Encode() is waiting for the frame to be encoded in EncodeOneFrame().
   // (2) There are no free input buffers and they cannot be freed because
   //     the encoder has no output buffers.
-  // (3) Output buffers cannot be freed because ReturnEncodedImage is queued
+  // (3) Output buffers cannot be freed because OnEncodedImage() is queued
   //     on libjingle worker thread to be run. But the worker thread is waiting
   //     for the same webrtc lock held by the caller of Encode().
   //
@@ -1111,9 +1137,11 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
   }
 
   webrtc::EncodedImage image;
-  image.SetEncodedData(webrtc::EncodedImageBuffer::Create(
-      static_cast<const uint8_t*>(output_mapping_memory),
-      metadata.payload_size_bytes));
+  image.SetEncodedData(rtc::make_ref_counted<EncodedDataWrapper>(
+      static_cast<uint8_t*>(output_mapping_memory), metadata.payload_size_bytes,
+      media::BindToCurrentLoop(
+          base::BindOnce(&RTCVideoEncoder::Impl::UseOutputBitstreamBufferId,
+                         WrapRefCounted(this), bitstream_buffer_id))));
   image._encodedWidth = input_visible_size_.width();
   image._encodedHeight = input_visible_size_.height();
   image.SetTimestamp(rtp_timestamp.value());
@@ -1224,7 +1252,15 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
       break;
   }
 
-  ReturnEncodedImage(image, info, bitstream_buffer_id);
+  if (!encoded_image_callback_)
+    return;
+
+  const auto result = encoded_image_callback_->OnEncodedImage(image, &info);
+  if (result.error != webrtc::EncodedImageCallback::Result::OK) {
+    DVLOG(2)
+        << "ReturnEncodedImage(): webrtc::EncodedImageCallback::Result.error = "
+        << result.error;
+  }
 }
 
 void RTCVideoEncoder::Impl::NotifyError(
@@ -1559,26 +1595,6 @@ void RTCVideoEncoder::Impl::RegisterEncodeCompleteCallback(
   event.Signal();
 }
 
-void RTCVideoEncoder::Impl::ReturnEncodedImage(
-    const webrtc::EncodedImage& image,
-    const webrtc::CodecSpecificInfo& info,
-    int32_t bitstream_buffer_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DVLOG(3) << __func__ << " bitstream_buffer_id=" << bitstream_buffer_id;
-
-  if (!encoded_image_callback_)
-    return;
-
-  const auto result = encoded_image_callback_->OnEncodedImage(image, &info);
-  if (result.error != webrtc::EncodedImageCallback::Result::OK) {
-    DVLOG(2)
-        << "ReturnEncodedImage(): webrtc::EncodedImageCallback::Result.error = "
-        << result.error;
-  }
-
-  UseOutputBitstreamBufferId(bitstream_buffer_id);
-}
-
 RTCVideoEncoder::RTCVideoEncoder(
     media::VideoCodecProfile profile,
     bool is_constrained_h264,
@@ -1764,12 +1780,6 @@ webrtc::VideoEncoder::EncoderInfo RTCVideoEncoder::GetEncoderInfo() const {
   if (impl_)
     info = impl_->GetEncoderInfo();
   return info;
-}
-
-// static
-bool RTCVideoEncoder::H264HwSupportForTemporalLayers() {
-  // Temporal layers are not supported by hardware encoders.
-  return false;
 }
 
 // static

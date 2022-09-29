@@ -7,6 +7,7 @@
 <translation id="1258009455399840361">Rrotulloje 90 gradë në drejtim të akrepave të orës</translation>
 <translation id="1276998909102132017">Imazhet e galerisë</translation>
 <translation id="1300209025925956156">Skano dokumentin tënd</translation>
+<translation id="1309250603447638106">Po shkarkohen përditësimet për skanimin e dokumenteve</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Kërko + Shigjeta majtas për t'u qasur.</translation>
 <translation id="1393338179284529051">Quad HD</translation>
 <translation id="1430915738399379752">Printo</translation>
@@ -47,6 +48,7 @@
 <translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Pamja paraprake e pasqyrës</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> është lidhur.</translation>
+<translation id="2904654629665923749">Skanimi i dokumenteve është i disponueshëm</translation>
 <translation id="2968794441791257519">Fotografitë dhe videot e nxjerra me kamerën do të zhvendosen te dosja "Shkarkimet". Mund të qasesh tek ato te "Skedarët".
 
 Aplikacionet që kanë leje për hapësirën ruajtëse do të kenë qasje te fotografitë dhe videot e tua.</translation>
@@ -72,7 +74,6 @@ Aplikacionet që kanë leje për hapësirën ruajtëse do të kenë qasje te fot
 <translation id="3838931309141338733">Skano bardkodin</translation>
 <translation id="3892148308691398805">Kopjo tekstin</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> MP</translation>
-<translation id="4096701159033358951">Veçoria e skanimit të dokumenteve po shkarkohet</translation>
 <translation id="4118525110028899586">Vendose në pauzë regjistrimin</translation>
 <translation id="4121305183798804752">U zbulua një dokument</translation>
 <translation id="414641094616694804">Kjo kamerë nuk mund ta ndryshojë rezolucionin</translation>
@@ -94,7 +95,6 @@ Aplikacionet që kanë leje për hapësirën ruajtëse do të kenë qasje te fot
 <translation id="5057360777601936059">Kamera jote nuk ofrohet aktualisht.
         Kontrollo nëse kamera është lidhur si duhet.</translation>
 <translation id="5163387177077603948">Po zhvendoset djathtas</translation>
-<translation id="520537883758714667">Skanimi i dokumenteve ofrohet tani</translation>
 <translation id="5235304959032763950">16 me 9</translation>
 <translation id="5266635337630551423">Këndi lart majtas i dokumentit</translation>
 <translation id="5317780077021120954">Ruaj</translation>

@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/net/crurl.h"
 #include "ios/chrome/browser/passwords/password_check_observer_bridge.h"
 #import "ios/chrome/browser/passwords/password_manager_util_ios.h"
-#import "ios/chrome/browser/ui/settings/password/password_issue_with_form.h"
 #import "ios/chrome/browser/ui/settings/password/password_issues_consumer.h"
 #import "ios/chrome/common/ui/favicon/favicon_constants.h"
 
@@ -23,7 +22,7 @@
 
   std::unique_ptr<PasswordCheckObserverBridge> _passwordCheckObserver;
 
-  std::vector<password_manager::CredentialWithPassword>
+  std::vector<password_manager::CredentialUIEntry>
       _unmutedCompromisedCredentials;
 }
 
@@ -66,17 +65,9 @@
   [self fetchPasswordIssues];
 }
 
-- (void)deletePassword:(const password_manager::PasswordForm&)password {
-  for (const auto& credential : _unmutedCompromisedCredentials) {
-    if (std::tie(credential.signon_realm, credential.username,
-                 credential.password) == std::tie(password.signon_realm,
-                                                  password.username_value,
-                                                  password.password_value)) {
-      _manager->DeleteCompromisedPasswordForm(password);
-      return;
-    }
-  }
-  _manager->DeletePasswordForm(password);
+- (void)deleteCredential:
+    (const password_manager::CredentialUIEntry&)credential {
+  _manager->GetSavedPasswordsPresenter()->RemoveCredential(credential);
   // TODO:(crbug.com/1075494) - Update list of compromised passwords without
   // awaiting compromisedCredentialsDidChange.
 }
@@ -87,8 +78,7 @@
   // No-op.
 }
 
-- (void)compromisedCredentialsDidChange:
-    (password_manager::InsecureCredentialsManager::CredentialsView)credentials {
+- (void)compromisedCredentialsDidChange {
   [self fetchPasswordIssues];
 }
 
@@ -99,10 +89,7 @@
   _unmutedCompromisedCredentials = _manager->GetUnmutedCompromisedCredentials();
   NSMutableArray* passwords = [[NSMutableArray alloc] init];
   for (auto credential : _unmutedCompromisedCredentials) {
-    const password_manager::PasswordForm form =
-        _manager->GetSavedPasswordsFor(credential)[0];
-    [passwords
-        addObject:[[PasswordIssueWithForm alloc] initWithPasswordForm:form]];
+    [passwords addObject:[[PasswordIssue alloc] initWithCredential:credential]];
   }
 
   NSSortDescriptor* origin = [[NSSortDescriptor alloc] initWithKey:@"website"

@@ -16,7 +16,7 @@
 namespace extensions {
 
 // Handles network-related tasks for app_shell on Chrome OS.
-class ShellNetworkController : public chromeos::NetworkStateHandlerObserver {
+class ShellNetworkController : public ash::NetworkStateHandlerObserver {
  public:
   // This class must be instantiated after chromeos::DBusThreadManager and
   // destroyed before it.
@@ -27,10 +27,9 @@ class ShellNetworkController : public chromeos::NetworkStateHandlerObserver {
 
   ~ShellNetworkController() override;
 
-  // chromeos::NetworkStateHandlerObserver overrides:
+  // ash::NetworkStateHandlerObserver overrides:
   void NetworkListChanged() override;
-  void NetworkConnectionStateChanged(
-      const chromeos::NetworkState* state) override;
+  void NetworkConnectionStateChanged(const ash::NetworkState* state) override;
 
   // Control whether roaming is enabled for cellular network connections.
   void SetCellularAllowRoaming(bool allow_roaming);
@@ -49,7 +48,7 @@ class ShellNetworkController : public chromeos::NetworkStateHandlerObserver {
 
   // Returns the connected or connecting WiFi network or NULL if no network
   // matches that description.
-  const chromeos::NetworkState* GetActiveWiFiNetwork();
+  const ash::NetworkState* GetActiveWiFiNetwork();
 
   // Controls whether scanning is performed periodically.
   void SetScanningEnabled(bool enabled);
@@ -66,7 +65,7 @@ class ShellNetworkController : public chromeos::NetworkStateHandlerObserver {
   void HandleConnectionSuccess();
   void HandleConnectionError(const std::string& error_name);
 
-  // Current status of communication with the chromeos::NetworkStateHandler.
+  // Current status of communication with the ash::NetworkStateHandler.
   // This is tracked to avoid sending duplicate requests before the handler has
   // acknowledged the initial connection attempt.
   State state_;

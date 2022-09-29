@@ -7,6 +7,7 @@
 <translation id="1258009455399840361">Otočit o 90 stupňů ve směru hodinových ručiček</translation>
 <translation id="1276998909102132017">Obrázky v galerii</translation>
 <translation id="1300209025925956156">Naskenujte dokument</translation>
+<translation id="1309250603447638106">Stahování aktualizací pro skenování dokumentů</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. Přejdete na ně stisknutím tlačítka Hledat a šipky vlevo.</translation>
 <translation id="1393338179284529051">Quad HD</translation>
 <translation id="1430915738399379752">Tisk</translation>
@@ -47,6 +48,7 @@
 <translation id="2816865716882637212">HD</translation>
 <translation id="28682968802727151">Náhled zrcadlení</translation>
 <translation id="2879583609344924966">Kamera <ph name="CAMERA" /> je připojena.</translation>
+<translation id="2904654629665923749">Je k dispozici skenování dokumentů</translation>
 <translation id="2968794441791257519">Fotky a videa pořízená fotoaparátem se přesunou do složky stažených souborů. Najdete je v aplikaci Soubory.
 
         K vašim fotkám a videím budou mít přístup aplikace s oprávněním k úložišti.</translation>
@@ -72,7 +74,6 @@
 <translation id="3838931309141338733">Skenovat čárový kód</translation>
 <translation id="3892148308691398805">Kopírovat text</translation>
 <translation id="4061162772429051350"><ph name="MAGAPIXELS_AMOUNT" /> Mpx</translation>
-<translation id="4096701159033358951">Stahování funkce skenování dokumentů</translation>
 <translation id="4118525110028899586">Pozastavit nahrávání</translation>
 <translation id="4121305183798804752">Byl zjištěn dokument</translation>
 <translation id="414641094616694804">Rozlišení této kamery nelze změnit</translation>
@@ -94,7 +95,6 @@
 <translation id="5057360777601936059">Fotoaparát momentálně není dostupný.
         Zkontrolujte, zda je fotoaparát správně připojen.</translation>
 <translation id="5163387177077603948">Pohyb doprava</translation>
-<translation id="520537883758714667">Nově je k dispozici skenování dokumentů</translation>
 <translation id="5235304959032763950">16 : 9</translation>
 <translation id="5266635337630551423">Levý horní roh dokumentu</translation>
 <translation id="5317780077021120954">Uložit</translation>

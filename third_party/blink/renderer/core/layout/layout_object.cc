@@ -1103,10 +1103,19 @@ LayoutBlock* LayoutObject::ContainingFragmentationContextRoot() const {
   NOT_DESTROYED();
   if (!MightBeInsideFragmentationContext())
     return nullptr;
+  bool found_column_spanner = IsColumnSpanAll();
   for (LayoutBlock* ancestor = ContainingBlock(); ancestor;
        ancestor = ancestor->ContainingBlock()) {
-    if (ancestor->IsFragmentationContextRoot())
+    if (ancestor->IsFragmentationContextRoot()) {
+      // Column spanners do not participate in the fragmentation context
+      // of their nearest fragmentation context, but rather the next above,
+      // if there is one.
+      if (found_column_spanner)
+        return ancestor->ContainingFragmentationContextRoot();
       return ancestor;
+    }
+    if (ancestor->IsColumnSpanAll())
+      found_column_spanner = true;
   }
   return nullptr;
 }
@@ -1564,14 +1573,17 @@ const LayoutBlock* LayoutObject::InclusiveContainingBlock() const {
   return layout_block ? layout_block : ContainingBlock();
 }
 
-const LayoutBlock* LayoutObject::EnclosingScrollportBox() const {
+const LayoutBox* LayoutObject::ContainingScrollContainer() const {
   NOT_DESTROYED();
-  const LayoutBlock* ancestor = ContainingBlock();
-  for (; ancestor; ancestor = ancestor->ContainingBlock()) {
-    if (ancestor->IsScrollContainer())
-      return ancestor;
+  if (auto* layer = EnclosingLayer()) {
+    if (auto* box = layer->GetLayoutBox()) {
+      if (box != this && box->IsScrollContainer())
+        return box;
+    }
+    if (auto* scroll_container_layer = layer->ContainingScrollContainerLayer())
+      return scroll_container_layer->GetLayoutBox();
   }
-  return ancestor;
+  return nullptr;
 }
 
 LayoutObject* LayoutObject::NonAnonymousAncestor() const {
@@ -2679,16 +2691,19 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
         cache->LocationChanged(this);
     }
 
+    if (visibility_changed || style_->IsInert() != new_style.IsInert()) {
+      if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
+        cache->ChildrenChanged(Parent());
+        cache->ChildrenChanged(this);
+      }
+    }
+
     // Keep layer hierarchy visibility bits up to date if visibility changes.
     if (visibility_changed) {
       // We might not have an enclosing layer yet because we might not be in the
       // tree.
       if (PaintLayer* layer = EnclosingLayer())
         layer->DirtyVisibleContentStatus();
-      if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
-        cache->ChildrenChanged(Parent());
-        cache->ChildrenChanged(this);
-      }
       GetDocument().GetFrame()->GetInputMethodController().DidChangeVisibility(
           *this);
     }
@@ -2950,6 +2965,20 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
 
   if (old_style && old_style->OverflowAnchor() != StyleRef().OverflowAnchor()) {
     ClearAncestorScrollAnchors(this);
+  }
+
+  // Note: It's possible this will be moved to a particular later point within
+  // the "update the rendering" steps, and thus not belong here.
+  const auto* toggle_root = StyleRef().ToggleRoot();
+  if (toggle_root && (!old_style || !old_style->ToggleRoot() ||
+                      *toggle_root != *(old_style->ToggleRoot()))) {
+    // This element has toggle specifiers; these specifiers require that we
+    // create toggles.
+    Element* element = DynamicTo<Element>(GetNode());
+    DCHECK(element);
+    if (element) {
+      element->CreateToggles(toggle_root);
+    }
   }
 }
 

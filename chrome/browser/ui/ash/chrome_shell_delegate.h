@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_CHROME_SHELL_DELEGATE_H_
 
 #include <memory>
+#include <string>
 
 #include "ash/shell_delegate.h"
 #include "base/callback_forward.h"
@@ -65,6 +66,9 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   version_info::Channel GetChannel() override;
   void ForceSkipWarningUserOnClose(
       const std::vector<aura::Window*>& windows) override;
+  std::string GetVersionString() override;
+  void ShouldExitFullscreenBeforeLock(
+      ShouldExitFullscreenCallback callback) override;
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_CHROME_SHELL_DELEGATE_H_

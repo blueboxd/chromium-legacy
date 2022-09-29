@@ -16,7 +16,7 @@ namespace file_manager {
 
 using FuseBoxDiskMountManager = ::ash::disks::DiskMountManager;
 
-using FuseBoxMountInfo = ::ash::disks::DiskMountManager::MountPointInfo;
+using FuseBoxMountInfo = ::ash::disks::DiskMountManager::MountPoint;
 
 class FuseBoxMounter {
  public:
@@ -57,10 +57,10 @@ class FuseBoxMounter {
   base::WeakPtr<FuseBoxMounter> GetWeakPtr();
 
   // Mount response.
-  void MountResponse(chromeos::MountError error, const FuseBoxMountInfo& info);
+  void MountResponse(ash::MountError error, const FuseBoxMountInfo& info);
 
   // Unmount response.
-  void UnmountResponse(chromeos::MountError error);
+  void UnmountResponse(ash::MountError error);
 
  private:
   // Cros-disks fusebox mountpoint URI.

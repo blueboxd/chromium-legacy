@@ -14,6 +14,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#import "base/notreached.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/metrics/metrics_service.h"
@@ -40,7 +41,6 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -92,16 +92,16 @@ const NSTimeInterval kMemoryFootprintRecordingTimeInterval = 5;
 @interface AppState () <AppStateObserver> {
   // Browser launcher to launch browser in different states.
   __weak id<BrowserLauncher> _browserLauncher;
+
   // UIApplicationDelegate for the application.
   __weak MainApplicationDelegate* _mainApplicationDelegate;
 
-  // YES if the app is currently in the process of terminating.
-  BOOL _appIsTerminating;
   // Whether the application is currently in the background.
   // This is a workaround for rdar://22392526 where
   // -applicationDidEnterBackground: can be called twice.
   // TODO(crbug.com/546196): Remove this once rdar://22392526 is fixed.
   BOOL _applicationInBackground;
+
   // YES if cookies are currently being flushed to disk.
   BOOL _savingCookies;
 }
@@ -325,6 +325,11 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     // foregrounding the app. `initStage` will be greater than InitStageStart if
     // the initialization was already started.
     if (self.initStage == InitStageStart) {
+      // TODO(crbug.com/1346512): Remove this code path after some time in
+      // canary. This is meant to be easy to revert. Initialization is always
+      // started at application:didFinishLaunchingWithOptions: and transitions
+      // past InitStageStart before returning to the runloop.
+      NOTREACHED();
       [self queueTransitionToFirstInitStage];
     }
     // TODO(crbug.com/1197330): This function should only be called once
@@ -476,8 +481,12 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
   [self queueTransitionToFirstInitStage];
 
-  // Won't yet initialize the UI at this point when scene startup is supported
-  // in which case `stateBackground` is true.
+  // `stateBackground` is wrongly always YES, even in regular foreground
+  // launches. This variable is a legacy before we started supporting
+  // multi-scene.
+  // TODO(crbug.com/1346512): Remove this code path after some time in
+  // canary. This is meant to be easy to revert.
+  DCHECK(stateBackground);
   if (!stateBackground) {
     [self initializeUIPreSafeMode];
   }

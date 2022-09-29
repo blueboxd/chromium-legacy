@@ -81,8 +81,6 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "content/public/browser/android/child_process_importance.h"
-#else
-#include "third_party/blink/public/mojom/hid/hid.mojom-forward.h"
 #endif
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -158,14 +156,14 @@ typedef base::Thread* (*RendererMainThreadFactoryFunction)(
 //
 // This object communicates back and forth with the RenderProcess object
 // running in the renderer process. Each RenderProcessHost and RenderProcess
-// keeps a list of RenderView (renderer) and WebContentsImpl (browser) which
-// are correlated with IDs. This way, the Views and the corresponding ViewHosts
-// communicate through the two process objects.
+// keeps a list of `blink::WebView` (renderer) and WebContentsImpl (browser)
+// which are correlated with IDs. This way, the Views and the corresponding
+// ViewHosts communicate through the two process objects.
 //
 // A RenderProcessHost is also associated with one and only one
 // StoragePartition.  This allows us to implement strong storage isolation
-// because all the IPCs from the RenderViews (renderer) will only ever be able
-// to access the partition they are assigned to.
+// because all the IPCs from the `blink::WebView`s (renderer) will only ever be
+// able to access the partition they are assigned to.
 class CONTENT_EXPORT RenderProcessHostImpl
     : public RenderProcessHost,
       public ChildProcessLauncher::Client,
@@ -298,7 +296,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const GlobalRenderFrameHostId& render_frame_host_id,
       mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver) override;
   void BindBucketManagerHostForWorker(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver) override;
   void ForceCrash() override;
   std::string GetInfoForBrowserContextDestructionCrashReporting() override;
@@ -549,7 +547,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // correspond to the frame that triggered this shutdown delay.
   void DelayProcessShutdown(const base::TimeDelta& subframe_shutdown_timeout,
                             const base::TimeDelta& unload_handler_timeout,
-                            const SiteInfo& site_info);
+                            const SiteInfo& site_info) override;
   bool IsProcessShutdownDelayedForTesting();
   // Remove the host from the delayed-shutdown tracker, if present. This does
   // not decrement |shutdown_delay_ref_count_|; if it was incremented by a
@@ -689,12 +687,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
     ipc_send_watcher_for_testing_ = std::move(watcher);
   }
 
-#if !BUILDFLAG(IS_ANDROID)
-  void BindHidService(const url::Origin& origin,
-                      mojo::PendingReceiver<blink::mojom::HidService> receiver);
-#endif  // !BUILDFLAG(IS_ANDROID)
-
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
   PepperRendererConnection* pepper_renderer_connection() {
     return pepper_renderer_connection_.get();
   }
@@ -732,7 +725,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool is_self_deleted_;
 #endif
 
-  // The count of currently swapped out but pending RenderViews.  We have
+  // The count of currently swapped out but pending `blink::WebView`s.  We have
   // started to swap these in, so the renderer process should not exit if
   // this count is non-zero.
   int32_t pending_views_;
@@ -1081,11 +1074,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   base::ObserverList<RenderProcessHostInternalObserver> internal_observers_;
 
   // True if the process can be shut down suddenly.  If this is true, then we're
-  // sure that all the RenderViews in the process can be shutdown suddenly.  If
-  // it's false, then specific RenderViews might still be allowed to be shutdown
-  // suddenly by checking their SuddenTerminationAllowed() flag.  This can occur
-  // if one WebContents has an unload event listener but another WebContents in
-  // the same process doesn't.
+  // sure that all the `blink::WebView`s in the process can be shutdown
+  // suddenly.  If it's false, then specific `blink::WebView`s might still be
+  // allowed to be shutdown suddenly by checking their
+  // SuddenTerminationAllowed() flag.  This can occur if one WebContents has an
+  // unload event listener but another WebContents in the same process doesn't.
   bool sudden_termination_allowed_;
 
   // Set to true if this process is blocked and shouldn't be sent input events.
@@ -1147,7 +1140,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::unique_ptr<PushMessagingManager> push_messaging_manager_;
 
   std::unique_ptr<EmbeddedFrameSinkProviderImpl> embedded_frame_sink_provider_;
+#if BUILDFLAG(ENABLE_PLUGINS)
   std::unique_ptr<PluginRegistryImpl> plugin_registry_;
+#endif
 
   mojo::Remote<mojom::ChildProcess> child_process_;
   // This will be bound to |io_thread_host_impl_|.
@@ -1192,7 +1187,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::unique_ptr<tracing::SystemTracingService> system_tracing_service_;
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PPAPI)
   scoped_refptr<PepperRendererConnection> pepper_renderer_connection_;
 #endif
 

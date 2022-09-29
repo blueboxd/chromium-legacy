@@ -11,11 +11,15 @@
 namespace apps {
 
 COMPONENT_EXPORT(APP_TYPES)
-extern const base::Feature kAppServiceOnAppUpdateWithoutMojom;
-COMPONENT_EXPORT(APP_TYPES)
 extern const base::Feature kAppServicePreferredAppsWithoutMojom;
 COMPONENT_EXPORT(APP_TYPES)
 extern const base::Feature kAppServiceLaunchWithoutMojom;
+COMPONENT_EXPORT(APP_TYPES)
+extern const base::Feature kAppServiceSetPermissionWithoutMojom;
+COMPONENT_EXPORT(APP_TYPES)
+extern const base::Feature kAppServiceUninstallWithoutMojom;
+COMPONENT_EXPORT(APP_TYPES)
+extern const base::Feature kAppServiceWithoutMojom;
 
 }  // namespace apps
 

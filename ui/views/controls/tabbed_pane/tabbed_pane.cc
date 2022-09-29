@@ -355,10 +355,11 @@ Tab* TabStrip::GetTabAtDeltaFromSelected(int delta) const {
   const size_t selected_tab_index = GetSelectedTabIndex();
   DCHECK_NE(kNoSelectedTab, selected_tab_index);
   const size_t num_children = children().size();
-  // Clamping |delta| here ensures that even a large negative |delta| will not
-  // cause the addition in the next statement to wrap below 0.
-  delta %= static_cast<int>(num_children);
-  return GetTabAtIndex((selected_tab_index + num_children + delta) %
+  // Clamping |delta| here ensures that even a large negative |delta| will be
+  // positive after the addition in the next statement.
+  delta %= base::checked_cast<int>(num_children);
+  delta += static_cast<int>(num_children);
+  return GetTabAtIndex((selected_tab_index + static_cast<size_t>(delta)) %
                        num_children);
 }
 
@@ -525,13 +526,13 @@ void TabbedPane::AddTabInternal(size_t index,
                                 std::unique_ptr<View> contents) {
   DCHECK_LE(index, GetTabCount());
   contents->SetVisible(false);
+  contents->GetViewAccessibility().OverrideRole(ax::mojom::Role::kTabPanel);
   if (!title.empty())
     contents->GetViewAccessibility().OverrideName(title);
-  contents->GetViewAccessibility().OverrideRole(ax::mojom::Role::kTabPanel);
 
   tab_strip_->AddChildViewAt(std::make_unique<Tab>(this, title, contents.get()),
-                             static_cast<int>(index));
-  contents_->AddChildViewAt(std::move(contents), static_cast<int>(index));
+                             index);
+  contents_->AddChildViewAt(std::move(contents), index);
   if (!GetSelectedTab())
     SelectTabAt(index);
 
@@ -565,8 +566,10 @@ void TabbedPane::SelectTab(Tab* new_selected_tab, bool animate) {
       focus_manager->SetFocusedView(new_selected_tab->contents());
   }
 
-  if (listener())
-    listener()->TabSelectedAt(tab_strip_->GetIndexOf(new_selected_tab));
+  if (listener()) {
+    listener()->TabSelectedAt(base::checked_cast<int>(
+        tab_strip_->GetIndexOf(new_selected_tab).value()));
+  }
 }
 
 void TabbedPane::SelectTabAt(size_t index, bool animate) {

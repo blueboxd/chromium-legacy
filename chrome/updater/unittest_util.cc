@@ -4,25 +4,27 @@
 
 #include "chrome/updater/unittest_util.h"
 
-#include "base/version.h"
+#include "base/files/file_path.h"
+#include "base/process/kill.h"
+#include "base/process/process_iterator.h"
+#include "base/time/time.h"
 
-namespace updater {
+namespace updater::test {
 
 const char kChromeAppId[] = "{8A69D345-D564-463C-AFF1-A69D9E530F96}";
 
-bool operator==(const UpdateService::UpdateState& lhs,
-                const UpdateService::UpdateState& rhs) {
-  const bool versions_equal =
-      (lhs.next_version.IsValid() && rhs.next_version.IsValid() &&
-       lhs.next_version == rhs.next_version) ||
-      (!lhs.next_version.IsValid() && !rhs.next_version.IsValid());
-  return versions_equal && lhs.app_id == rhs.app_id && lhs.state == rhs.state &&
-         lhs.downloaded_bytes == rhs.downloaded_bytes &&
-         lhs.total_bytes == rhs.total_bytes &&
-         lhs.install_progress == rhs.install_progress &&
-         lhs.error_category == rhs.error_category &&
-         lhs.error_code == rhs.error_code && lhs.extra_code1 == rhs.extra_code1;
+bool IsProcessRunning(const base::FilePath::StringType& executable_name) {
+  return base::GetProcessCount(executable_name, nullptr) != 0;
 }
 
+bool WaitForProcessesToExit(const base::FilePath::StringType& executable_name,
+                            base::TimeDelta wait) {
+  return base::WaitForProcessesToExit(executable_name, wait, nullptr);
+}
 
-}  // namespace updater
+bool KillProcesses(const base::FilePath::StringType& executable_name,
+                   int exit_code) {
+  return base::KillProcesses(executable_name, exit_code, nullptr);
+}
+
+}  // namespace updater::test

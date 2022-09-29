@@ -16,7 +16,7 @@ namespace net {
 class NSSCertDatabase;
 }
 
-namespace chromeos {
+namespace ash {
 
 // A helper that wraps the callback passed to
 // SystemTokenCertDbStorage::GetDatabase and can answer queries
@@ -69,11 +69,6 @@ class FakeSystemTokenCertDbStorageObserver
   bool has_been_notified_ = false;
 };
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash {
-using ::chromeos::GetSystemTokenCertDbCallbackWrapper;
-}
+}  // namespace ash
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_SYSTEM_TOKEN_CERT_DB_STORAGE_TEST_UTIL_H_

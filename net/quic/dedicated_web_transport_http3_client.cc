@@ -10,8 +10,10 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/abseil_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "net/base/address_list.h"
 #include "net/base/port_util.h"
 #include "net/base/url_util.h"
+#include "net/http/http_network_session.h"
 #include "net/log/net_log_values.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_resolution_request.h"
@@ -220,7 +222,7 @@ class WebTransportVisitorProxy : public quic::WebTransportVisitor {
   explicit WebTransportVisitorProxy(quic::WebTransportVisitor* visitor)
       : visitor_(visitor) {}
 
-  void OnSessionReady(const spdy::SpdyHeaderBlock& block) override {
+  void OnSessionReady(const spdy::Http2HeaderBlock& block) override {
     visitor_->OnSessionReady(block);
   }
   void OnSessionClosed(quic::WebTransportSessionError error_code,
@@ -266,8 +268,6 @@ DedicatedWebTransportHttp3Client::DedicatedWebTransportHttp3Client(
       isolation_key_(isolation_key),
       context_(context),
       visitor_(visitor),
-      // TODO(vasilvv): pass ClientSocketFactory through QuicContext.
-      client_socket_factory_(ClientSocketFactory::GetDefaultFactory()),
       quic_context_(context->quic_context()),
       net_log_(NetLogWithSource::Make(context->net_log(),
                                       NetLogSourceType::WEB_TRANSPORT_CLIENT)),
@@ -462,8 +462,10 @@ int DedicatedWebTransportHttp3Client::DoConnect() {
 
   // TODO(vasilvv): consider unifying parts of this code with QuicSocketFactory
   // (which currently has a lot of code specific to QuicChromiumClientSession).
-  socket_ = client_socket_factory_->CreateDatagramClientSocket(
-      DatagramSocket::DEFAULT_BIND, net_log_.net_log(), net_log_.source());
+  socket_ = context_->GetNetworkSessionContext()
+                ->client_socket_factory->CreateDatagramClientSocket(
+                    DatagramSocket::DEFAULT_BIND, net_log_.net_log(),
+                    net_log_.source());
   if (quic_context_->params()->enable_socket_recv_optimization)
     socket_->EnableRecvOptimization();
   socket_->UseNonBlockingIO();
@@ -596,7 +598,7 @@ int DedicatedWebTransportHttp3Client::DoSendRequest() {
   }
   connect_stream_ = stream;
 
-  spdy::SpdyHeaderBlock headers;
+  spdy::Http2HeaderBlock headers;
   DCHECK_EQ(url_.scheme(), url::kHttpsScheme);
   headers[":scheme"] = url_.scheme();
   headers[":method"] = "CONNECT";
@@ -696,7 +698,7 @@ void DedicatedWebTransportHttp3Client::SetErrorIfNecessary(
 }
 
 void DedicatedWebTransportHttp3Client::OnSessionReady(
-    const spdy::SpdyHeaderBlock& spdy_headers) {
+    const spdy::Http2HeaderBlock& spdy_headers) {
   session_ready_ = true;
   http_response_info_ = std::make_unique<HttpResponseInfo>();
   const int rv =

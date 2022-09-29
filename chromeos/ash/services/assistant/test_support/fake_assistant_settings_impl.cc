@@ -10,8 +10,7 @@
 #include "chromeos/ash/services/assistant/public/proto/get_settings_ui.pb.h"
 #include "chromeos/ash/services/assistant/public/proto/settings_ui.pb.h"
 
-namespace chromeos {
-namespace assistant {
+namespace ash::assistant {
 
 FakeAssistantSettingsImpl::FakeAssistantSettingsImpl() = default;
 
@@ -20,7 +19,7 @@ FakeAssistantSettingsImpl::~FakeAssistantSettingsImpl() = default;
 void FakeAssistantSettingsImpl::GetSettings(const std::string& selector,
                                             GetSettingsCallback callback) {
   // Create a fake response
-  assistant::SettingsUi settings_ui;
+  SettingsUi settings_ui;
   settings_ui.mutable_consent_flow_ui()->set_consent_status(
       ConsentFlowUi_ConsentStatus_ALREADY_CONSENTED);
   std::move(callback).Run(settings_ui.SerializeAsString());
@@ -50,5 +49,4 @@ void FakeAssistantSettingsImpl::StartSpeakerIdEnrollment(
 
 void FakeAssistantSettingsImpl::StopSpeakerIdEnrollment() {}
 
-}  // namespace assistant
-}  // namespace chromeos
+}  // namespace ash::assistant

@@ -3332,6 +3332,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.MultiWindowMode.Enter">
+  <obsolete>
+    Deprecated as the data is not valid any more from M100 onward.
+  </obsolete>
   <owner>jinsukkim@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>The activity entered Android N multi-window mode.</description>
@@ -3346,7 +3349,20 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.MultiWindowMode.Enter2">
+  <owner>jinsukkim@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    The activity entered Android N multi-window mode. This is identical to
+    Android.MultiWindowMode.Enter, but introduced after a bug that affected the
+    logging was fixed.
+  </description>
+</action>
+
 <action name="Android.MultiWindowMode.Exit">
+  <obsolete>
+    Deprecated as the data is not valid any more from M100 onward.
+  </obsolete>
   <owner>twellington@chromium.org</owner>
   <description>The activity exited Android N multi-window mode.</description>
 </action>
@@ -3357,6 +3373,16 @@ should be able to be added at any place in this file.
     The second activity instance (ChromeTabbedActivity2) exited Android N
     multi-window mode. Recorded separately from Android.MultiWindowMode.Exit to
     avoid double counting when two instances are running.
+  </description>
+</action>
+
+<action name="Android.MultiWindowMode.Exit2">
+  <owner>jinsukkim@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    The activity exited Android N multi-window mode. This is identical to
+    Android.MultiWindowMode.Exit, but introduced after a bug that affected the
+    logging was fixed.
   </description>
 </action>
 
@@ -5112,6 +5138,18 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Bookmarks.Added">
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
+  <description>Recorded when the user adds a bookmark.</description>
+</action>
+
+<action name="Bookmarks.Opened">
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
+  <description>Recorded when the user opens a bookmark.</description>
+</action>
+
 <action name="Bookmarks_Search">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -6211,6 +6249,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ContentSuggestions.Feed.CardAction.OpenInNewTabInGroup">
+  <owner>jianli@chromium.org</owner>
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user selected the 'open in new tab in group' option for a Feed card.
+  </description>
+</action>
+
 <action name="ContentSuggestions.Feed.CardAction.ReadLater">
   <owner>adamta@google.org</owner>
   <owner>sczs@chromium.org</owner>
@@ -6345,6 +6392,24 @@ should be able to be added at any place in this file.
   <owner>feed@chromium.org</owner>
   <description>
     The user has selected the Following feed in the NTP.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Feed.WebFeed.SortType.GroupByPublisher">
+  <owner>adamta@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user has selected to group by publisher from the feed sort menu.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Feed.WebFeed.SortType.SortByLatest">
+  <owner>adamta@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user has selected to sort by latest from the feed sort menu.
   </description>
 </action>
 
@@ -6772,6 +6837,22 @@ should be able to be added at any place in this file.
   <owner>huanzhong@chromium.org</owner>
   <description>
     Third-party cookie blocking was enabled on the incognito NTP.
+  </description>
+</action>
+
+<action name="CookiesInUseDialog.Opened">
+  <owner>alimariam@google.com</owner>
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>The user opens the Cookies in use dialog.</description>
+</action>
+
+<action name="CookiesInUseDialog.RemoveButtonClicked">
+  <owner>alimariam@google.com</owner>
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    The user clicks remove on an entry in the allowed tree view.
   </description>
 </action>
 
@@ -7972,6 +8053,16 @@ should be able to be added at any place in this file.
     permissions section of an extension's context menu, where &quot;{site}&quot;
     is the domain of the current page. This is recorded for both keyboard and
     mouse activations.
+  </description>
+</action>
+
+<action name="Extensions.ContextMenu.Hosts.PermissionsPageClicked">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user clicked the &quot;Permissions page&quot; option in the runtime host
+    permissions section of an extension's context menu. This is recorded for
+    both keyboard and mouse activations.
   </description>
 </action>
 
@@ -10814,6 +10905,24 @@ should be able to be added at any place in this file.
   <description>
     The number of times the user triggered the &quot;add-to-calendar&quot;
     context after a long press on a date.
+  </description>
+</action>
+
+<action name="IOS.ExperienceKit.Maps.Directions">
+  <owner>erahmaoui@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    The number of times the user triggered the &quot;get-directions&quot;
+    context after a long press on an address.
+  </description>
+</action>
+
+<action name="IOS.ExperienceKit.Maps.View">
+  <owner>erahmaoui@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    The number of times the user triggered the &quot;view-location&quot; context
+    after a long press on an address.
   </description>
 </action>
 
@@ -16736,6 +16845,33 @@ should be able to be added at any place in this file.
   <owner>stkhapugin@google.com</owner>
   <description>
     User pressed 'Visit Copied Link' in the omnibox context menu (iOS only).
+  </description>
+</action>
+
+<action name="Mobile.OmniboxPasteButton.SearchCopiedImage">
+  <owner>christianxu@chromium.org</owner>
+  <owner>stkhapugin@chromium.org</owner>
+  <description>
+    User tapped the paste button in Omnibox's keyboard accessory to search for
+    an image.
+  </description>
+</action>
+
+<action name="Mobile.OmniboxPasteButton.SearchCopiedLink">
+  <owner>christianxu@chromium.org</owner>
+  <owner>stkhapugin@chromium.org</owner>
+  <description>
+    User tapped the paste button in Omnibox's keyboard accessory to search for a
+    link.
+  </description>
+</action>
+
+<action name="Mobile.OmniboxPasteButton.SearchCopiedText">
+  <owner>christianxu@chromium.org</owner>
+  <owner>stkhapugin@chromium.org</owner>
+  <description>
+    User tapped the paste button in Omnibox's keyboard accessory to search for
+    text.
   </description>
 </action>
 
@@ -32761,6 +32897,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Tray_ShowChannelInfo">
+  <owner>rtinkoff@chromium.org</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <description>
+    Records when the channel indicator icon is displayed in the system tray.
+    This is ChromeOS-specific.
+  </description>
+</action>
+
+<action name="Tray_ShowChannelInfoAdditionalDetails">
+  <owner>rtinkoff@chromium.org</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <description>
+    Records when the user presses the OS version button from the quick settings
+    channel indicator UI. This is ChromeOS-specific.
+  </description>
+</action>
+
 <action name="Tray_ShowPowerOptions">
   <owner>michaelpg@chromium.org</owner>
   <description>
@@ -33932,6 +34086,8 @@ should be able to be added at any place in this file.
   <suffix name="NewTabPageHomeButton"
       label="For NewTabPageHomeButton feature."/>
   <suffix name="NewTabTip" label="For NewTabTip feature."/>
+  <suffix name="OverflowMenuTip"
+      label="For the overflow menu help tip on iOS."/>
   <suffix name="PageInfo" label="In product help for opening PageInfo."/>
   <suffix name="PageInfoStoreInfo" label="For PageInfoStoreInfo feature."/>
   <suffix name="PasswordsAccountStorage"

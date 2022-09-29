@@ -25,6 +25,7 @@ Din standardsøgemaskine er <ph name="DSE_NAME" />. Se din søgemaskines vejledn
 <translation id="1112015203684611006">Udskrift mislykkedes.</translation>
 <translation id="1125564390852150847">Opret ny fane.</translation>
 <translation id="1126809382673880764">Beskytter dig ikke mod skadelige websites, downloads og udvidelser. Du er stadig beskyttet med Beskyttet browsing i andre Google-tjenester som f.eks. Gmail og Søgning, hvor dette er tilgængeligt.</translation>
+<translation id="1135212215217513471">Hent Chrome til iOS</translation>
 <translation id="1145536944570833626">Slet eksisterende data.</translation>
 <translation id="1147031633655575115">Logget ind som <ph name="USER" /></translation>
 <translation id="1154984953698510061">Se andre faner</translation>
@@ -113,6 +114,7 @@ Din standardsøgemaskine er <ph name="DSE_NAME" />. Se din søgemaskines vejledn
 <translation id="1832848789136765277">Bekræft din identitet for at sikre, at du altid har adgang til dine synkroniserede data</translation>
 <translation id="1870148520156231997">Vis adgangskode</translation>
 <translation id="1872096359983322073">Lommelygte</translation>
+<translation id="1910975740091000991">Chrome til iOS</translation>
 <translation id="1911619930368729126">Upload til Google Drev</translation>
 <translation id="1923342640370224680">Den seneste time</translation>
 <translation id="1930989359703290198">Din organisation tillader kun login med bestemte konti. Konti, der ikke tillades, skjules. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
@@ -140,6 +142,7 @@ Din standardsøgemaskine er <ph name="DSE_NAME" />. Se din søgemaskines vejledn
 <translation id="2139867232736819575">Søg efter tekst, du har kopieret</translation>
 <translation id="214201757571129614">Log ind…</translation>
 <translation id="2149973817440762519">Rediger bogmærke</translation>
+<translation id="2155145621546387786">Del Chrome</translation>
 <translation id="2175927920773552910">QR-kode</translation>
 <translation id="2218443599109088993">Zoom ud</translation>
 <translation id="2230173723195178503">Websiden er indlæst</translation>
@@ -308,6 +311,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="3529024052484145543">Ikke sikker</translation>
 <translation id="3533202363250687977">Luk alle inkognitofaner</translation>
 <translation id="3533436815740441613">Ny fane</translation>
+<translation id="3547799431091898961">Hvis du vil logge ud af din Google-konto på alle websites, skal du <ph name="BEGIN_LINK" />logge ud af Chrome<ph name="END_LINK" />.</translation>
 <translation id="3551320343578183772">Luk fanen</translation>
 <translation id="3581564640715911333">Tilbyd at oversætte sider på andre sprog</translation>
 <translation id="3588820906588687999">Åbn billede på ny fane</translation>
@@ -374,6 +378,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="4172051516777682613">Vis altid</translation>
 <translation id="418156467088430727">Se offlineversion på en ny fane</translation>
 <translation id="4181841719683918333">Sprog</translation>
+<translation id="4187450337729239226">Indsæt og søg</translation>
 <translation id="4223967053752765281">Din organisation har deaktiveret login. Du kan stadig se din historik samt dine bogmærker, adgangskoder og andre indstillinger på din enhed. Hvis du foretager nogen ændringer, bliver de dog ikke synkroniseret med din konto.</translation>
 <translation id="4233831822770018312">Rediger tilladelser</translation>
 <translation id="4237377247299956313">Tryk på <ph name="BEGIN_BOLD" />Standardbrowserapp<ph name="END_BOLD" /></translation>
@@ -436,6 +441,7 @@ Dine data er krypteret med din adgangssætning til synkronisering. Angiv den for
 <translation id="473775607612524610">Opdater</translation>
 <translation id="4747097190499141774">Kryptering med adgangssætning omfatter ikke betalingsmetoder og adresser fra Google Pay. Det er kun personer med din adgangssætning, der kan læse dine krypterede data. Adgangssætningen sendes ikke til eller gemmes af Google. Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du nulstille synkronisering. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="4751645464639803239">Ny inkognitofane</translation>
+<translation id="4766112107778026136">Discover og Følger</translation>
 <translation id="4775879719735953715">Standardbrowser</translation>
 <translation id="4778644898150334464">Brug en anden adgangskode</translation>
 <translation id="478808905805139173">Vil du åbne i inkognitotilstand?</translation>
@@ -490,6 +496,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5118764316110575523">Fra</translation>
 <translation id="5132942445612118989">Synkroniser dine adgangskoder, din historik og meget mere på alle enheder</translation>
 <translation id="5140288047769711648">Chrome husker adgangskoden for dig. Du behøver ikke at huske den.</translation>
+<translation id="5149188072385105201">Tilføj adgangskode…</translation>
 <translation id="5150492518600715772">Send til din enhed</translation>
 <translation id="5168414296986405587">Udviklet til iPadOS</translation>
 <translation id="5173088371991956744">Synkronisering skal bekræfte din identitet</translation>
@@ -642,6 +649,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="6374469231428023295">Prøv igen</translation>
 <translation id="6377118281273296434">Sikkerhed på websitet</translation>
 <translation id="6380866119319257197">Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkroniseringen<ph name="END_LINK" /></translation>
+<translation id="6387994324662817823">Adgangskoder gemmes kun i Adgangskodeadministrator på denne enhed.</translation>
 <translation id="6389470377220713856">Navn på kort</translation>
 <translation id="6406506848690869874">Synkronisering</translation>
 <translation id="6410390304316730527">Beskyttet browsing beskytter dig mod hackere, som kan narre dig til at gøre uhensigtsmæssige ting, f.eks. at installere skadelig software eller afsløre personlige oplysninger som adgangskoder, telefonnumre eller betalingskortnumre. Hvis du deaktivere funktionen, skal du være ekstra forsigtig, når du besøger websites, du ikke kender eller har tillid til.</translation>

@@ -147,7 +147,6 @@
 <translation id="4415566066719264597">Chromium をバックグラウンドで実行する</translation>
 <translation id="4423735387467980091">Chromium の設定</translation>
 <translation id="4427306783828095590">保護強化機能により、フィッシングを防ぎ、不正なソフトウェアをより強力にブロックします</translation>
-<translation id="4440114195512068100">デバイスが最新の状態かどうかを確認するには、<ph name="LINK_BEGIN" />Chromium OS の設定<ph name="LINK_END" />をご覧ください。</translation>
 <translation id="452711251841752011">Chromium へようこそ。新しいブラウザ ウィンドウが開いています</translation>
 <translation id="4544142686420020088">エラーが発生したため、Chromium が更新されませんでした。<ph name="BEGIN_LINK" />Chromium の更新に関する問題を解決してください。<ph name="END_LINK" /></translation>
 <translation id="454579500955453258">新しい Chromium プロフィールで続行しますか？</translation>
@@ -231,7 +230,7 @@
 <translation id="6333502561965082103">Chromium で別の処理が行われています。しばらくしてからもう一度お試しください。</translation>
 <translation id="6334986366598267305">共有パソコンの Chromium で Google アカウントが簡単に使用できるようになりました。</translation>
 <translation id="6373523479360886564">Chromium をアンインストールしてもよろしいですか？</translation>
-<translation id="6384011394608460044"><ph name="BEGIN_BOLD" />このデータの利用方法:<ph name="END_BOLD" /> Chromium はユーザーの興味 / 関心を推定する場合があります。その後、アクセスしたサイトは、表示する広告をパーソナライズするために、Chromium にユーザーの興味 / 関心を提示するよう依頼できます。</translation>
+<translation id="6384011394608460044"><ph name="BEGIN_BOLD" />このデータの利用方法:<ph name="END_BOLD" /> Chromium はユーザーの興味 / 関心を推定する場合があります。その後、アクセスしたサイトは、表示する広告をカスタマイズするために、Chromium にユーザーの興味 / 関心を提示するよう依頼できます。</translation>
 <translation id="6403826409255603130">Chromium は、ウェブページやアプリケーションを高速に実行できるスピードと、高い安定性を兼ね備えた非常に使いやすいウェブブラウザです。不正なソフトウェアやフィッシングに対する保護機能が組み込まれており、ウェブを安全にブラウジングできます。</translation>
 <translation id="6442900851116057561">Chromium OS を再起動してください</translation>
 <translation id="6455857529632101747">Chromium プロフィールへようこそ</translation>
@@ -261,7 +260,7 @@
 <translation id="6893813176749746474">Chromium が更新されましたが、30 日以上使用されていません。</translation>
 <translation id="691026815377248078">Chromium でペアリングを続行するには、Bluetooth へのアクセスが必要です。<ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="6929417474050522668">試用期間中の広告の測定により、アクセスしたサイトは、サイトが広告のパフォーマンスを測定する際に役立つ Chromium の情報をリクエストできます。広告の測定は、サイト間で転送する情報をできるだけ少なくすることで、クロスサイト トラッキングを制限します。</translation>
-<translation id="6940431691900807093">その後、アクセスしたサイトは、表示する広告をパーソナライズするために、Chromium にユーザーの興味 / 関心を提示するよう依頼できます。Chromium では、興味 / 関心を 3 つまで共有できます。</translation>
+<translation id="6940431691900807093">その後、アクセスしたサイトは、表示する広告をカスタマイズするために、Chromium にユーザーの興味 / 関心を提示するよう依頼できます。Chromium では、興味 / 関心を 3 つまで共有できます。</translation>
 <translation id="6964305034639999644">Chromium のシークレット ウインドウでリンクを開く(&amp;G)</translation>
 <translation id="6978145336957848883">脆弱なパスワードは簡単に推測されてしまいます。Chromium で<ph name="BEGIN_LINK" />安全性の高いパスワードを自動生成して保存する<ph name="END_LINK" />ことができます。</translation>
 <translation id="6985329841647292029">Chromium OS 利用規約</translation>
@@ -291,7 +290,7 @@
 <translation id="7483335560992089831">実行中の Chromium と同じバージョンをインストールすることはできません。Chromium を閉じてからもう一度お試しください。</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium は 1 分後に再起動されます}other{Chromium は # 分後に再起動されます}}</translation>
 <translation id="7561906087460245826">Chromium のデータ（<ph name="URL" />）も消去する</translation>
-<translation id="7582945390259497898">Chromium はユーザーの興味 / 関心を推定する場合があります。その後、アクセスしたサイトは、表示する広告をパーソナライズするために、Chromium にユーザーの興味 / 関心を提示するよう依頼できます。</translation>
+<translation id="7582945390259497898">Chromium はユーザーの興味 / 関心を推定する場合があります。その後、アクセスしたサイトは、表示する広告をカスタマイズするために、Chromium にユーザーの興味 / 関心を提示するよう依頼できます。</translation>
 <translation id="7583399374488819119"><ph name="COMPANY_NAME" /> インストーラ</translation>
 <translation id="7597596667193879455">アカウントでセーフ ブラウジング保護強化機能がオンになっています。Chromium にも適用します。</translation>
 <translation id="761356813943268536">Chromium がカメラとマイクを使用しています。</translation>
@@ -311,7 +310,6 @@
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />データを管理する方法:<ph name="END_BOLD" /> ユーザーのプライバシーを保護するために、4 週間以上経過したユーザーの興味 / 関心は自動削除されます。ブラウジングを続けていると、興味 / 関心がリストに再度表示される場合もあります。Chromium に認識してほしくない興味 / 関心は削除できます。</translation>
 <translation id="7937630085815544518">Chromium に <ph name="USER_EMAIL_ADDRESS" /> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
 <translation id="7975919845073681630">この Chromium はセカンダリ インストールのため、既定のブラウザには設定できません。</translation>
-<translation id="7982481011030453202">このページに設定が表示されない場合は、<ph name="LINK_BEGIN" />Chromium OS の設定<ph name="LINK_END" />を確認してください</translation>
 <translation id="7997934263947464652">提供元不明の拡張機能、アプリ、テーマはデバイスに危害を及ぼす可能性があります。<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> で公開されているアイテムのみをインストールすることをおすすめします</translation>
 <translation id="8013436988911883588">Chromium にアクセスを許可すると、ウェブサイトからアクセスをリクエストできるようになります。</translation>
 <translation id="80471789339884597">インストールいただきありがとうございます。<ph name="BUNDLE_NAME" /> を使用するにはすべてのブラウザを再起動してください。</translation>

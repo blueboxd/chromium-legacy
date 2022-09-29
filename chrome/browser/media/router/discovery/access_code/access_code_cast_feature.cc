@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_constants.h"
-#include "chrome/browser/media/router/media_router_feature.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
@@ -38,30 +37,19 @@ void RegisterAccessCodeProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kAccessCodeCastDeviceAdditionTime);
 }
 
-bool GetAccessCodeCastEnabledPref(Profile* profile) {
-  return profile->GetPrefs()->GetBoolean(prefs::kAccessCodeCastEnabled) &&
-         MediaRouterEnabled(profile);
+bool GetAccessCodeCastEnabledPref(PrefService* pref_service) {
+  return pref_service->GetBoolean(prefs::kAccessCodeCastEnabled);
 }
 
-base::TimeDelta GetAccessCodeDeviceDurationPref(Profile* profile) {
-  if (!GetAccessCodeCastEnabledPref(profile) ||
+base::TimeDelta GetAccessCodeDeviceDurationPref(PrefService* pref_service) {
+  if (!GetAccessCodeCastEnabledPref(pref_service) ||
       !base::FeatureList::IsEnabled(features::kAccessCodeCastRememberDevices)) {
     return base::Seconds(0);
   }
 
-  // Check to see if the command line was used to set the value.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (IsCommandLineSwitchSupported() &&
-      command_line->HasSwitch(switches::kAccessCodeCastDeviceDurationSwitch)) {
-    int value;
-    base::StringToInt(command_line->GetSwitchValueASCII(
-                          switches::kAccessCodeCastDeviceDurationSwitch),
-                      &value);
-    return base::Seconds(value);
-  }
   // Return the value set by the policy pref.
   return base::Seconds(
-      profile->GetPrefs()->GetInteger(prefs::kAccessCodeCastDeviceDuration));
+      pref_service->GetInteger(prefs::kAccessCodeCastDeviceDuration));
 }
 
 #endif  // !BUILDFLAG(IS_ANDROID)

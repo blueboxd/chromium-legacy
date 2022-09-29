@@ -9,7 +9,7 @@ import("//build/config/android/rules.gni")
 import("//build/config/zip.gni")
 import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
-import("//build/util/version.gni")
+import("//chrome/version.gni")
 import("//components/cronet/native/include/headers.gni")
 import("//components/grpc_support/include/headers.gni")
 import("//testing/test.gni")
@@ -47,6 +47,9 @@ generate_jni("cronet_jni_headers") {
 generate_jni_registration("cronet_jni_registration") {
   targets = [ ":cronet_impl_native_base_java" ]
   header_output = _jni_registration_header
+
+  # JNI generated is used for test and non-test apks.
+  include_testonly = true
   sources_exclusions = [
     "//base/android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
     "//base/android/java/src/org/chromium/base/library_loader/LibraryPrefetcher.java",
@@ -144,7 +147,6 @@ source_set("cronet_static") {
     "//components/cronet:cronet_version_header",
     "//components/cronet:metrics_util",
     "//components/cronet/native:cronet_native_impl",
-    "//components/metrics",
     "//components/prefs",
     "//net",
     "//third_party/zlib:zlib",
@@ -355,22 +357,6 @@ android_library("cronet_impl_fake_base_java") {
   ]
 }
 
-cronet_impl_native_java_srcjar_deps = [
-  ":net_idempotency_java",
-  ":net_request_priority_java",
-  ":network_quality_observation_source_java",
-  ":url_request_error_java",
-]
-
-cronet_impl_native_java_deps_to_package = [
-  ":cronet_urlconnection_impl_java",
-  "//base:base_java",
-  "//base:jni_java",
-  "//build/android:build_java",
-  "//net/android:net_java",
-  "//url:url_java",
-]
-
 android_library("cronet_urlconnection_impl_java") {
   sources = [
     "java/src/org/chromium/net/urlconnection/CronetBufferedOutputStream.java",
@@ -388,6 +374,22 @@ android_library("cronet_urlconnection_impl_java") {
     "//third_party/androidx:androidx_annotation_annotation_java",
   ]
 }
+
+cronet_impl_native_java_srcjar_deps = [
+  ":net_idempotency_java",
+  ":net_request_priority_java",
+  ":network_quality_observation_source_java",
+  ":url_request_error_java",
+]
+
+cronet_impl_native_java_deps_to_package = [
+  ":cronet_urlconnection_impl_java",
+  "//base:base_java",
+  "//base:jni_java",
+  "//build/android:build_java",
+  "//net/android:net_java",
+  "//url:url_java",
+]
 
 # cronet_impl_native_base_java.jar - native implementation of the Cronet engine.
 android_library("cronet_impl_native_base_java") {
@@ -1241,7 +1243,6 @@ if (!is_component_build) {
       "//base/test:test_support",
       "//components/cronet:cronet_common_unittests",
       "//components/cronet/native:cronet_native_unittests",
-      "//components/metrics",
       "//components/prefs:test_support",
       "//net",
       "//net:test_support",
@@ -1265,7 +1266,6 @@ if (!is_component_build) {
       "//base",
       "//base/test:test_support",
       "//components/cronet/native/test:cronet_native_tests",
-      "//components/metrics",
       "//components/prefs:test_support",
       "//net",
       "//net:test_support",
@@ -1361,14 +1361,27 @@ if (!is_component_build) {
     depfile = "$target_gen_dir/$target_name.d"
     _zip_file = "$target_gen_dir/$target_name.zip"
     outputs = [ _zip_file ]
-    _annotations_jar = "$root_out_dir/lib.java/third_party/androidx/androidx_annotation_annotation.jar"
     _src_jar = "$_package_dir/cronet_api-src.jar"
+
+    _annotations_dep =
+        "//third_party/androidx:androidx_annotation_annotation_java"
+    _build_config_dep = "$_annotations_dep$build_config_target_suffix"
+    _build_config =
+        get_label_info(_annotations_dep, "target_gen_dir") + "/" +
+        get_label_info(_annotations_dep, "name") + ".build_config.json"
+
+    deps = [
+      ":jar_cronet_api_source",
+      _annotations_dep,
+      _build_config_dep,
+    ]
     inputs = [
-      _annotations_jar,
       _src_jar,
       android_sdk_jar,
+      _build_config,
     ]
 
+    _rebased_build_config = rebase_path(_build_config, root_build_dir)
     args = [
       "--output-dir",
       rebase_path(_package_dir, root_build_dir),
@@ -1384,16 +1397,12 @@ if (!is_component_build) {
       rebase_path(_zip_file, root_build_dir),
       "--android-sdk-jar",
       rebase_path(android_sdk_jar, root_build_dir),
-      "--support-annotations-jar",
-      rebase_path(_annotations_jar, root_build_dir),
+      "--support-annotations-jar=@FileArg($_rebased_build_config:deps_info:unprocessed_jar_path)",
+      "--classpath-jars=@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
 
       # JavaDoc is generated from Cronet's API source jar.
       "--input-src-jar",
       rebase_path(_src_jar, root_build_dir),
-    ]
-    deps = [
-      ":jar_cronet_api_source",
-      "//third_party/androidx:androidx_annotation_annotation_java",
     ]
   }
 

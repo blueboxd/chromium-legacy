@@ -50,12 +50,10 @@ bool WaylandPopup::CreateShellPopup() {
   params.bounds = bounds_dip;
   params.menu_type =
       delegate()->GetMenuType().value_or(MenuType::kRootContextMenu);
-  params.anchor = delegate()->GetOwnedWindowAnchorAndRectInPx();
+  params.anchor = delegate()->GetOwnedWindowAnchorAndRectInDIP();
   if (params.anchor.has_value()) {
-    // TODO(crbug.com/1306688): Change anchor_rect to DIP.
-    params.anchor->anchor_rect =
-        delegate()->ConvertRectToDIP(wl::TranslateBoundsToParentCoordinates(
-            params.anchor->anchor_rect, parent_window()->GetBoundsInPixels()));
+    params.anchor->anchor_rect = wl::TranslateBoundsToParentCoordinates(
+        params.anchor->anchor_rect, parent_window()->GetBoundsInDIP());
     // If size is empty, set 1x1.
     if (params.anchor->anchor_rect.size().IsEmpty())
       params.anchor->anchor_rect.set_size({1, 1});
@@ -94,10 +92,8 @@ void WaylandPopup::UpdateDecoration() {
   DCHECK(shell_popup_);
 
   // If the surface is already decorated early return.
-  if (!connection()->zaura_shell() || aura_surface_ ||
-      decorated_via_aura_popup_) {
+  if (!connection()->zaura_shell() || decorated_via_aura_popup_)
     return;
-  }
 
   // Decorate the surface using the newer protocol. Relies on Ash >= M105.
   if (shell_popup_->SupportsDecoration()) {
@@ -107,9 +103,13 @@ void WaylandPopup::UpdateDecoration() {
   }
 
   // Decorate the frame using the older protocol. Can be removed once Lacros >=
-  // M107.
-  aura_surface_.reset(zaura_shell_get_aura_surface(
-      connection()->zaura_shell()->wl_object(), root_surface()->surface()));
+  // M107. Reshown popups will not be decorated if |aura_surface_| isn't reset
+  // when server implements the older protocol.
+  if (!aura_surface_) {
+    aura_surface_.reset(zaura_shell_get_aura_surface(
+        connection()->zaura_shell()->wl_object(), root_surface()->surface()));
+  }
+
   if (shadow_type_ == PlatformWindowShadowType::kDrop) {
     zaura_surface_set_frame(aura_surface_.get(),
                             ZAURA_SURFACE_FRAME_TYPE_SHADOW);
@@ -143,11 +143,17 @@ void WaylandPopup::Hide() {
     child_window()->Hide();
   WaylandWindow::Hide();
 
+  if (aura_surface_ && wl::get_version_of_object(aura_surface_.get()) >=
+                           ZAURA_SURFACE_RELEASE_SINCE_VERSION) {
+    aura_surface_.reset();
+  }
+
   if (shell_popup_) {
     parent_window()->set_child_window(nullptr);
     shell_popup_.reset();
     decorated_via_aura_popup_ = false;
   }
+
   connection()->ScheduleFlush();
 }
 
@@ -155,9 +161,9 @@ bool WaylandPopup::IsVisible() const {
   return !!shell_popup_;
 }
 
-void WaylandPopup::SetBoundsInPixels(const gfx::Rect& bounds_dip) {
+void WaylandPopup::SetBoundsInDIP(const gfx::Rect& bounds_dip) {
   auto old_bounds_dip = GetBoundsInDIP();
-  WaylandWindow::SetBoundsInPixels(bounds_dip);
+  WaylandWindow::SetBoundsInDIP(bounds_dip);
 
   // The shell popup can be null if bounds are being fixed during
   // the initialization. See WaylandPopup::CreateShellPopup.
@@ -193,24 +199,25 @@ void WaylandPopup::HandlePopupConfigure(const gfx::Rect& bounds_dip) {
     pending_bounds_dip.set_size(GetBoundsInDIP().size());
   set_pending_bounds_dip(wl::TranslateBoundsToTopLevelCoordinates(
       pending_bounds_dip, parent_window()->GetBoundsInDIP()));
+  set_pending_size_px(
+      delegate()->ConvertRectToPixels(pending_bounds_dip).size());
 }
 
 void WaylandPopup::HandleSurfaceConfigure(uint32_t serial) {
   if (schedule_redraw_) {
-    delegate()->OnDamageRect(gfx::Rect{{0, 0}, GetBoundsInPixels().size()});
+    delegate()->OnDamageRect(gfx::Rect{{0, 0}, size_px()});
     schedule_redraw_ = false;
   }
   ProcessPendingBoundsDip(serial);
 }
 
-void WaylandPopup::UpdateVisualSize(const gfx::Size& size_px,
-                                    float scale_factor) {
-  WaylandWindow::UpdateVisualSize(size_px, scale_factor);
+void WaylandPopup::UpdateVisualSize(const gfx::Size& size_px) {
+  WaylandWindow::UpdateVisualSize(size_px);
 
   if (!shell_popup())
     return;
 
-  ProcessVisualSizeUpdate(size_px, scale_factor);
+  ProcessVisualSizeUpdate(size_px);
   ApplyPendingBounds();
 }
 
@@ -253,6 +260,7 @@ bool WaylandPopup::IsSurfaceConfigured() {
 void WaylandPopup::SetWindowGeometry(gfx::Rect bounds_dip) {
   DCHECK(shell_popup_);
   gfx::Point p;
+  // TODO(crbug.com/1306688): Use DIP for frame_sets.
   if (frame_insets_px() && !frame_insets_px()->IsEmpty()) {
     p = gfx::ScaleToRoundedPoint(
         {frame_insets_px()->left(), frame_insets_px()->top()},

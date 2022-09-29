@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/components/drivefs/mojom/drivefs.mojom.h"
+#include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
@@ -33,10 +34,11 @@ class ZeroStateDriveProvider : public SearchProvider,
                                public session_manager::SessionManagerObserver,
                                public chromeos::PowerManagerClient::Observer {
  public:
-  ZeroStateDriveProvider(
-      Profile* profile,
-      SearchController* search_controller,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  ZeroStateDriveProvider(Profile* profile,
+                         SearchController* search_controller,
+                         drive::DriveIntegrationService* drive_service,
+                         session_manager::SessionManager* session_manager,
+                         std::unique_ptr<ItemSuggestCache> item_suggest_cache);
   ~ZeroStateDriveProvider() override;
 
   ZeroStateDriveProvider(const ZeroStateDriveProvider&) = delete;
@@ -58,11 +60,6 @@ class ZeroStateDriveProvider : public SearchProvider,
   void ViewClosing() override;
   ash::AppListSearchResultType ResultType() const override;
   bool ShouldBlockZeroState() const override;
-
-  void set_session_manager_for_testing(
-      session_manager::SessionManager* session_manager) {
-    session_manager_ = session_manager;
-  }
 
   // The minimum time between hypothetical queries.
   // These values persist to logs. Entries should not be renumbered and numeric
@@ -110,17 +107,17 @@ class ZeroStateDriveProvider : public SearchProvider,
 
   Profile* const profile_;
   drive::DriveIntegrationService* const drive_service_;
-  session_manager::SessionManager* session_manager_;
+  session_manager::SessionManager* const session_manager_;
 
-  const base::Time construction_time_;
-
-  ItemSuggestCache item_suggest_cache_;
+  std::unique_ptr<ItemSuggestCache> item_suggest_cache_;
+  base::CallbackListSubscription item_suggest_subscription_;
 
   // The most recent results retrieved from |item_suggested_cache_|. This is
   // updated on a call to Start and is used only to store the results until
   // OnFilePathsLocated has finished.
   absl::optional<ItemSuggestCache::Results> cache_results_;
 
+  const base::Time construction_time_;
   base::TimeTicks query_start_time_;
 
   // The time we last logged a hypothetical query, keyed by the minimum time
@@ -135,10 +132,6 @@ class ZeroStateDriveProvider : public SearchProvider,
   // A file needs to have been modified more recently than this to be considered
   // valid.
   const base::TimeDelta max_last_modified_time_;
-
-  // Whether or not zero-state drive files are enabled. True iff the
-  // productivity launcher is enabled.
-  const bool enabled_;
 
   base::ScopedObservation<drive::DriveIntegrationService,
                           drive::DriveIntegrationServiceObserver>

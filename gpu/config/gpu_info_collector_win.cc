@@ -35,9 +35,11 @@
 #include "base/win/windows_version.h"
 #include "build/branding_buildflags.h"
 #include "gpu/config/gpu_util.h"
-#include "ui/gl/direct_composition_surface_win.h"
+#include "ui/gl/direct_composition_support.h"
 #include "ui/gl/gl_angle_util_win.h"
+#include "ui/gl/gl_display.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_utils.h"
 
 namespace gpu {
 
@@ -182,26 +184,22 @@ bool GetAMDSwitchableInfo(bool* is_switchable,
 // finalized because this function depends on GL is ANGLE's GLES or not.
 void CollectHardwareOverlayInfo(OverlayInfo* overlay_info) {
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE) {
-    overlay_info->direct_composition =
-        gl::DirectCompositionSurfaceWin::IsDirectCompositionSupported();
-    overlay_info->supports_overlays =
-        gl::DirectCompositionSurfaceWin::AreOverlaysSupported();
+    overlay_info->direct_composition = gl::DirectCompositionSupported();
+    overlay_info->supports_overlays = gl::DirectCompositionOverlaysSupported();
     overlay_info->nv12_overlay_support = FlagsToOverlaySupport(
         overlay_info->supports_overlays,
-        gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
-            DXGI_FORMAT_NV12));
+        gl::GetDirectCompositionOverlaySupportFlags(DXGI_FORMAT_NV12));
     overlay_info->yuy2_overlay_support = FlagsToOverlaySupport(
         overlay_info->supports_overlays,
-        gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
-            DXGI_FORMAT_YUY2));
-    overlay_info->bgra8_overlay_support = FlagsToOverlaySupport(
-        overlay_info->supports_overlays,
-        gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
-            DXGI_FORMAT_B8G8R8A8_UNORM));
-    overlay_info->rgb10a2_overlay_support = FlagsToOverlaySupport(
-        overlay_info->supports_overlays,
-        gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
-            DXGI_FORMAT_R10G10B10A2_UNORM));
+        gl::GetDirectCompositionOverlaySupportFlags(DXGI_FORMAT_YUY2));
+    overlay_info->bgra8_overlay_support =
+        FlagsToOverlaySupport(overlay_info->supports_overlays,
+                              gl::GetDirectCompositionOverlaySupportFlags(
+                                  DXGI_FORMAT_B8G8R8A8_UNORM));
+    overlay_info->rgb10a2_overlay_support =
+        FlagsToOverlaySupport(overlay_info->supports_overlays,
+                              gl::GetDirectCompositionOverlaySupportFlags(
+                                  DXGI_FORMAT_R10G10B10A2_UNORM));
   }
 }
 
@@ -725,7 +723,7 @@ bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
 
   DCHECK(gpu_info);
 
-  if (!CollectGraphicsInfoGL(gpu_info))
+  if (!CollectGraphicsInfoGL(gpu_info, gl::GetDefaultDisplayEGL()))
     return false;
 
   // ANGLE's renderer strings are of the form:

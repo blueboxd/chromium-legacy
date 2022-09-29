@@ -6,18 +6,14 @@ import("//chrome/browser/resources/tools/optimize_webui.gni")
 import("//chrome/common/features.gni")
 import("//tools/code_coverage/create_js_source_maps/create_js_source_maps.gni")
 import("//tools/grit/grit_rule.gni")
-import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/polymer/html_to_wrapper.gni")
 import("//tools/typescript/ts_library.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 import("//ui/webui/webui_features.gni")
 import("./new_tab_page.gni")
+import("./preprocess_if_expr_sourcemaps.gni")
 
 assert(!is_android)
-
-html_to_wrapper("html_wrapper_files") {
-  in_files = html_files
-}
 
 grd_prefix = "new_tab_page"
 preprocess_folder = "preprocessed"
@@ -26,20 +22,24 @@ if (optimize_webui) {
   build_manifest = "build_manifest.json"
 }
 
-preprocess_if_expr("preprocess") {
+preprocess_if_expr_sourcemaps("preprocess") {
   defines = [ "is_official_build=$is_official_build" ]
   out_folder = "$target_gen_dir/$preprocess_folder"
   in_files = ts_files
-  enable_removal_comments = enable_webui_inline_sourcemaps
 }
 
-preprocess_if_expr("preprocess_gen") {
-  deps = [ ":html_wrapper_files" ]
+preprocess_if_expr("preprocess_html") {
   defines = [ "is_official_build=$is_official_build" ]
-  in_folder = target_gen_dir
   out_folder = "$target_gen_dir/$preprocess_folder"
-  in_files = html_wrapper_files
-  enable_removal_comments = enable_webui_inline_sourcemaps
+  in_files = html_files
+}
+
+html_to_wrapper("html_wrapper_files") {
+  deps = [ ":preprocess_html" ]
+  in_folder = "$target_gen_dir/$preprocess_folder"
+  out_folder = "$target_gen_dir/$preprocess_folder"
+  in_files = html_files
+  minify = optimize_webui
 }
 
 # Copy all Mojom generated JS files used by the NTP to a common location so that
@@ -171,22 +171,9 @@ ts_library("build_ts") {
 
   extra_deps = [
     ":copy_mojom",
+    ":html_wrapper_files",
     ":preprocess",
-    ":preprocess_gen",
   ]
-
-  if (enable_webui_inline_sourcemaps) {
-    extra_deps += [ ":sourcemaps" ]
-  }
-}
-
-if (enable_webui_inline_sourcemaps) {
-  create_js_source_maps("sourcemaps") {
-    deps = [
-      ":preprocess",
-      ":preprocess_gen",
-    ]
-  }
 }
 
 generate_grd("build_grd") {

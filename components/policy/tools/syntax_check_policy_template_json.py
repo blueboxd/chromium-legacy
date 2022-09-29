@@ -145,7 +145,7 @@ KEYS_DEFINING_SCHEMAS_PER_TYPE = {
 
 # The list of platforms policy could support.
 ALL_SUPPORTED_PLATFORMS = [
-    'chrome_frame', 'chrome_os', 'android', 'webview_android', 'ios',
+    'chrome_frame', 'chrome_os', 'android', 'webview_android', 'ios', 'fuchsia',
     'chrome.win', 'chrome.win7', 'chrome.linux', 'chrome.mac', 'chrome.*'
 ]
 
@@ -1238,6 +1238,12 @@ class PolicyTemplateChecker(object):
         # Each policy referencing external data must specify a maximum data
         # size.
         self._CheckContains(policy, 'max_size', int)
+      else:
+        max_size = self._CheckContains(policy, 'max_size', int, True)
+        if max_size:
+          self._Error(
+              "%s: \'max_size\' is only allowed for external policies." %
+              policy.get('name'))
 
   def _CheckPlatform(self, platforms, field_name, policy_name):
     ''' Verifies the |platforms| list. Records any error with |field_name| and
@@ -1886,15 +1892,15 @@ class PolicyTemplateChecker(object):
         DuplicateKeyVisitor().visit(ast.parse(raw_data))
     except ValueError as e:
       self._Error(str(e))
-      return 1
+      return
     except:
       import traceback
       traceback.print_exc(file=sys.stdout)
       self._Error('Invalid Python/JSON syntax.')
-      return 1
+      return
     if data == None:
       self._Error('Invalid Python/JSON syntax.')
-      return 1
+      return
     self.options = options
 
     # First part: check JSON structure.
@@ -2062,7 +2068,7 @@ class PolicyTemplateChecker(object):
                (1.0 * self.num_policies_in_groups / self.num_groups)))
       else:
         print(self.num_policies, 'policies, 0 policy groups.')
-    return (self.errors, self.warnings)
+    return
 
   def Run(self,
           argv,
@@ -2086,10 +2092,11 @@ class PolicyTemplateChecker(object):
         '--stats', action='store_true', help='Generate statistics.')
     args = parser.parse_args(argv)
     if filename is None:
-      print('Error: Filename not specified.')
-      return 1
+      self._Error('Filename not specified.')
+      return self.errors, self.warnings
     if args.device_policy_proto_path is None:
-      print('Error: Missing --device_policy_proto_path argument.')
-      return 1
-    return self.Main(filename, args, original_file_contents, current_version,
-                     skip_compability_check)
+      self._Error('Missing --device_policy_proto_path argument.')
+      return self.errors, self.warnings
+    self.Main(filename, args, original_file_contents, current_version,
+              skip_compability_check)
+    return self.errors, self.warnings

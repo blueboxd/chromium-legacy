@@ -19,7 +19,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
@@ -103,19 +102,6 @@ constexpr char const* kAllowlistExtensionIds[] = {
 
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-const char* const kCustodianInfoPrefs[] = {
-    prefs::kSupervisedUserCustodianName,
-    prefs::kSupervisedUserCustodianEmail,
-    prefs::kSupervisedUserCustodianObfuscatedGaiaId,
-    prefs::kSupervisedUserCustodianProfileImageURL,
-    prefs::kSupervisedUserCustodianProfileURL,
-    prefs::kSupervisedUserSecondCustodianName,
-    prefs::kSupervisedUserSecondCustodianEmail,
-    prefs::kSupervisedUserSecondCustodianObfuscatedGaiaId,
-    prefs::kSupervisedUserSecondCustodianProfileImageURL,
-    prefs::kSupervisedUserSecondCustodianProfileURL,
-};
-
 base::FilePath GetDenylistPath() {
   base::FilePath denylist_dir;
   base::PathService::Get(chrome::DIR_USER_DATA, &denylist_dir);
@@ -152,7 +138,7 @@ void SupervisedUserService::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kDefaultSupervisedUserFilteringBehavior,
                                 SupervisedUserURLFilter::ALLOW);
   registry->RegisterBooleanPref(prefs::kSupervisedUserSafeSites, true);
-  for (const char* pref : kCustodianInfoPrefs) {
+  for (const char* pref : supervised_users::kCustodianInfoPrefs) {
     registry->RegisterStringPref(pref, std::string());
   }
 }
@@ -425,7 +411,7 @@ void SupervisedUserService::SetActive(bool active) {
         prefs::kSupervisedUserManualURLs,
         base::BindRepeating(&SupervisedUserService::UpdateManualURLs,
                             base::Unretained(this)));
-    for (const char* pref : kCustodianInfoPrefs) {
+    for (const char* pref : supervised_users::kCustodianInfoPrefs) {
       pref_change_registrar_.Add(
           pref,
           base::BindRepeating(&SupervisedUserService::OnCustodianInfoChanged,
@@ -460,7 +446,7 @@ void SupervisedUserService::SetActive(bool active) {
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
     pref_change_registrar_.Remove(prefs::kSupervisedUserManualHosts);
     pref_change_registrar_.Remove(prefs::kSupervisedUserManualURLs);
-    for (const char* pref : kCustodianInfoPrefs) {
+    for (const char* pref : supervised_users::kCustodianInfoPrefs) {
       pref_change_registrar_.Remove(pref);
     }
 
@@ -922,9 +908,9 @@ void SupervisedUserService::RefreshApprovedExtensionsFromPrefs() {
   // version information stored in the values is unnecessary. It is only there
   // for backwards compatibility. Remove the version information once sufficient
   // users have migrated away from M83.
-  const base::Value* dict = profile_->GetPrefs()->GetDictionary(
+  const base::Value::Dict& dict = profile_->GetPrefs()->GetValueDict(
       prefs::kSupervisedUserApprovedExtensions);
-  for (auto it : dict->DictItems()) {
+  for (auto it : dict) {
     approved_extensions_set_.insert(it.first);
     extensions_to_be_checked.insert(it.first);
   }

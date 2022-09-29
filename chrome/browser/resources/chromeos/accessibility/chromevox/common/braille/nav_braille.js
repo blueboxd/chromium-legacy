@@ -8,15 +8,14 @@
  *
  */
 
-goog.provide('NavBraille');
-
-goog.require('Spannable');
-
 /**
  * A class capturing the braille for navigation from one object to
  * another.
  */
-NavBraille = class {
+
+import {Spannable} from '../spannable.js';
+
+export class NavBraille {
   /**
    * @param {{text: (undefined|string|!Spannable),
    *          startIndex: (undefined|number),
@@ -107,4 +106,4 @@ NavBraille = class {
       endIndex: this.endIndex,
     };
   }
-};
+}

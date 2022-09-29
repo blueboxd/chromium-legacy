@@ -8,7 +8,6 @@
 
 #include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/arc_prefs.h"
-#include "ash/components/tpm/stub_install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "base/command_line.h"
 #include "base/system/sys_info.h"
@@ -33,6 +32,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
@@ -285,7 +285,8 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_ActiveDirectoryEnabled) {
       {"", "--arc-availability=officially-supported"});
   ScopedLogIn login(
       GetFakeUserManager(),
-      AccountId::AdFromObjGuid("f04557de-5da2-40ce-ae9d-b8874d8da96e"),
+      AccountId::AdFromUserEmailObjGuid("testing_profile@test",
+                                        "f04557de-5da2-40ce-ae9d-b8874d8da96e"),
       user_manager::USER_TYPE_ACTIVE_DIRECTORY);
   EXPECT_FALSE(
       ash::ProfileHelper::Get()->GetUserByProfile(profile())->HasGaiaAccount());
@@ -296,7 +297,8 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_ActiveDirectoryDisabled) {
   base::CommandLine::ForCurrentProcess()->InitFromArgv({""});
   ScopedLogIn login(
       GetFakeUserManager(),
-      AccountId::AdFromObjGuid("f04557de-5da2-40ce-ae9d-b8874d8da96e"),
+      AccountId::AdFromUserEmailObjGuid("testing_profile@test",
+                                        "f04557de-5da2-40ce-ae9d-b8874d8da96e"),
       user_manager::USER_TYPE_ACTIVE_DIRECTORY);
   EXPECT_FALSE(
       ash::ProfileHelper::Get()->GetUserByProfile(profile())->HasGaiaAccount());

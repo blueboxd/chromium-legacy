@@ -4,13 +4,13 @@
 
 import '//resources/js/util.m.js';
 import '//resources/cr_elements/cr_button/cr_button.m.js';
-import '//resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import '//resources/cr_elements/cr_input/cr_input.m.js';
+import '//resources/cr_elements/cr_dialog/cr_dialog.js';
+import '//resources/cr_elements/cr_input/cr_input.js';
 import '//resources/cr_elements/cr_link_row/cr_link_row.js';
 import '//resources/cr_elements/icons.m.js';
 import '//resources/cr_elements/shared_style_css.m.js';
 import '//resources/cr_elements/shared_vars_css.m.js';
-import '//resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import '//resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import '//resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
@@ -24,8 +24,8 @@ import '//resources/cr_elements/cr_toast/cr_toast.js';
 
 // </if>
 
-import {CrDialogElement} from '//resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import {CrInputElement} from '//resources/cr_elements/cr_input/cr_input.m.js';
+import {CrDialogElement} from '//resources/cr_elements/cr_dialog/cr_dialog.js';
+import {CrInputElement} from '//resources/cr_elements/cr_input/cr_input.js';
 import {assert, assertNotReached} from '//resources/js/assert_ts.js';
 import {focusWithoutInk} from '//resources/js/cr/ui/focus_without_ink.m.js';
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from '//resources/js/web_ui_listener_mixin.js';
@@ -50,14 +50,14 @@ import {getTemplate} from './sync_page.html.js';
 
 // TODO(rbpotter): Remove this typedef when this file is no longer needed by OS
 // Settings.
-type SyncRoutes = {
-  BASIC: Route,
-  PEOPLE: Route,
-  SYNC: Route,
-  SYNC_ADVANCED: Route,
-  OS_SYNC: Route,
-  OS_PEOPLE: Route,
-};
+interface SyncRoutes {
+  BASIC: Route;
+  PEOPLE: Route;
+  SYNC: Route;
+  SYNC_ADVANCED: Route;
+  OS_SYNC: Route;
+  OS_PEOPLE: Route;
+}
 
 function getSyncRoutes(): SyncRoutes {
   const router = Router.getInstance();
@@ -191,10 +191,12 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
             'syncPrefs.trustedVaultKeysRequired)',
       },
 
+      // <if expr="not chromeos_ash">
       showSetupCancelDialog_: {
         type: Boolean,
         value: false,
       },
+      // </if>
 
       enterPassphraseLabel_: {
         type: String,
@@ -228,7 +230,11 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
   private signedIn_: boolean;
   private syncDisabledByAdmin_: boolean;
   private syncSectionDisabled_: boolean;
+
+  // <if expr="not chromeos_ash">
   private showSetupCancelDialog_: boolean;
+  // </if>
+
   private enterPassphraseLabel_: string;
   private existingPassphraseLabel_: string;
 
@@ -326,7 +332,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
   }
   // </if>
 
-  // <if expr="chromeos_ash or chromeos_lacros">
+  // <if expr="is_chromeos">
   private shouldShowLacrosSideBySideWarning_(): boolean {
     return loadTimeData.getBoolean('shouldShowLacrosSideBySideWarning');
   }
@@ -391,6 +397,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
     });
   }
 
+  // <if expr="not chromeos_ash">
   private onSetupCancelDialogBack_() {
     this.shadowRoot!.querySelector<CrDialogElement>(
                         '#setupCancelDialog')!.cancel();
@@ -411,6 +418,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
   private onSetupCancelDialogClose_() {
     this.showSetupCancelDialog_ = false;
   }
+  // </if>
 
   override currentRouteChanged() {
     const router = Router.getInstance();
@@ -432,6 +440,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
       return;
     }
 
+    // <if expr="not chromeos_ash">
     const userActionCancelsSetup = this.syncStatus &&
         this.syncStatus.firstSetupInProgress && this.didAbort_;
     if (userActionCancelsSetup && !this.setupCancelConfirmed_) {
@@ -455,6 +464,8 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
 
     // Reset variable.
     this.setupCancelConfirmed_ = false;
+
+    // </if>
 
     this.onNavigateAwayFromPage_();
   }

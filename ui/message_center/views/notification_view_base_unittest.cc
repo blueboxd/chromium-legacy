@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/raw_ptr.h"
 #include "ui/message_center/views/notification_view.h"
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -20,6 +20,7 @@
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/events/test/test_event.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/message_center/message_center.h"
@@ -154,12 +155,6 @@ class NotificationTestDelegate : public NotificationDelegate {
   bool expecting_reply_submission_ = false;
 };
 
-class DummyEvent : public ui::Event {
- public:
-  DummyEvent() : Event(ui::ET_UNKNOWN, base::TimeTicks(), 0) {}
-  ~DummyEvent() override = default;
-};
-
 }  // namespace
 
 class NotificationViewBaseTest : public views::ViewsTestBase,
@@ -225,8 +220,8 @@ std::unique_ptr<Notification>
 NotificationViewBaseTest::CreateSimpleNotificationWithRichData(
     const RichNotificationData& data) const {
   std::unique_ptr<Notification> notification = std::make_unique<Notification>(
-      NOTIFICATION_TYPE_BASE_FORMAT, std::string(kDefaultNotificationId),
-      u"title", u"message", ui::ImageModel::FromImage(CreateTestImage(80, 80)),
+      NOTIFICATION_TYPE_SIMPLE, std::string(kDefaultNotificationId), u"title",
+      u"message", ui::ImageModel::FromImage(CreateTestImage(80, 80)),
       u"display source", GURL(),
       NotifierId(NotifierType::APPLICATION, "extension_id"), data, delegate_);
   notification->set_small_image(CreateTestImage(16, 16));
@@ -1041,7 +1036,7 @@ TEST_F(NotificationViewBaseTest, TestDeleteOnToggleExpanded) {
   // The view can be deleted by PreferredSizeChanged(). https://crbug.com/918933
   set_delete_on_preferred_size_changed(true);
   views::test::ButtonTestApi(notification_view()->header_row_)
-      .NotifyClick(DummyEvent());
+      .NotifyClick(ui::test::TestEvent());
 }
 
 TEST_F(NotificationViewBaseTest, TestLongTitleAndMessage) {
@@ -1084,8 +1079,8 @@ TEST_F(NotificationViewBaseTest, AppNameSystemNotification) {
   RichNotificationData data;
   data.settings_button_handler = SettingsButtonHandler::INLINE;
   auto notification = std::make_unique<Notification>(
-      NOTIFICATION_TYPE_BASE_FORMAT, std::string(kDefaultNotificationId),
-      u"title", u"message", ui::ImageModel(), std::u16string(), GURL(),
+      NOTIFICATION_TYPE_SIMPLE, std::string(kDefaultNotificationId), u"title",
+      u"message", ui::ImageModel(), std::u16string(), GURL(),
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       NotifierId(NotifierType::SYSTEM_COMPONENT, "system",
                  ash::NotificationCatalogName::kTestCatalogName),
@@ -1122,8 +1117,8 @@ TEST_F(NotificationViewBaseTest, AppNameWebAppNotification) {
   data.settings_button_handler = SettingsButtonHandler::INLINE;
 
   std::unique_ptr<Notification> notification = std::make_unique<Notification>(
-      NOTIFICATION_TYPE_BASE_FORMAT, std::string(kDefaultNotificationId),
-      u"title", u"message", ui::ImageModel::FromImage(CreateTestImage(80, 80)),
+      NOTIFICATION_TYPE_SIMPLE, std::string(kDefaultNotificationId), u"title",
+      u"message", ui::ImageModel::FromImage(CreateTestImage(80, 80)),
       u"display source", GURL(), notifier_id, data, delegate_);
   notification->set_small_image(gfx::Image::CreateFrom1xBitmap(small_bitmap));
   notification->set_image(CreateTestImage(320, 240));

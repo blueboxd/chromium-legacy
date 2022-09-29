@@ -6,9 +6,9 @@
 
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 
 namespace autofill {
 
@@ -84,9 +84,7 @@ size_t FindLongestCommonPrefixLengthInStringsWithMinimalLength(
 // Returns true if |parseable_name| is a valid parseable_name. Current criterion
 // is the |kParseableNameValidationRe| regex.
 bool IsValidParseableName(const base::StringPiece16 parseable_name) {
-  static const std::u16string kParseableNameValidationPattern =
-      kParseableNameValidationRe;
-  return MatchesPattern(parseable_name, kParseableNameValidationPattern);
+  return MatchesRegex<kParseableNameValidationRe>(parseable_name);
 }
 
 // Tries to strip |offset_left| and |offset_right| from entriees in

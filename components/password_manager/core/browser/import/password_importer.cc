@@ -9,10 +9,12 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/thread_pool.h"
 #include "base/types/expected.h"
 #include "components/password_manager/core/browser/import/csv_password.h"
 #include "components/password_manager/core/browser/import/csv_password_sequence.h"
+#include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #include "components/password_manager/services/csv_password/csv_password_parser_service.h"
 #include "components/sync/base/bind_to_task_runner.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -44,9 +46,24 @@ base::expected<std::string, PasswordImporter::Status> ReadFileToString(
   return std::move(contents);
 }
 
+void AddCredentialsCallback(
+    const base::Time& start_time,
+    const std::vector<SavedPasswordsPresenter::AddResult>& results) {
+  size_t success_count = base::ranges::count_if(
+      results, [](SavedPasswordsPresenter::AddResult result) {
+        return result == SavedPasswordsPresenter::AddResult::kSuccess;
+      });
+  UMA_HISTOGRAM_COUNTS_1M("PasswordManager.ImportedPasswordsPerUserInCSV",
+                          success_count);
+
+  base::UmaHistogramLongTimes("PasswordManager.ImportDuration",
+                              base::Time::Now() - start_time);
+}
+
 }  // namespace
 
-PasswordImporter::PasswordImporter() = default;
+PasswordImporter::PasswordImporter(SavedPasswordsPresenter* presenter)
+    : presenter_(presenter) {}
 
 PasswordImporter::~PasswordImporter() = default;
 
@@ -76,14 +93,57 @@ void PasswordImporter::ParseCSVPasswordsInSandbox(
 }
 
 void PasswordImporter::Import(const base::FilePath& path,
-                              CompletionCallback completion) {
+                              password_manager::PasswordForm::Store to_store,
+                              ImportResultsCallback results_callback) {
+  results_callback_ = std::move(results_callback);
+  to_store_ = to_store;
+  selected_file_name_ = path.BaseName().AsUTF8Unsafe();
+
   // Posting with USER_VISIBLE priority, because the result of the import is
   // visible to the user in the password settings page.
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&ReadFileToString, path),
       base::BindOnce(&PasswordImporter::ParseCSVPasswordsInSandbox,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(completion)));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::BindOnce(&PasswordImporter::ConsumePasswords,
+                                    weak_ptr_factory_.GetWeakPtr())));
+}
+
+void PasswordImporter::ConsumePasswords(
+    password_manager::mojom::CSVPasswordSequencePtr seq) {
+  password_manager::ImportResults results;
+  results.file_name = std::move(selected_file_name_);
+
+  if (!seq) {
+    // TODO(crbug/1325290): Compute correct status.
+    results.status = password_manager::ImportResults::Status::IO_ERROR;
+    std::move(results_callback_).Run(results);
+    return;
+  }
+
+  base::Time start_time = base::Time::Now();
+
+  std::vector<password_manager::CredentialUIEntry> credentials;
+  credentials.reserve(seq->csv_passwords.size());
+
+  base::ranges::transform(
+      seq->csv_passwords, std::back_inserter(credentials),
+      [this](const password_manager::CSVPassword& csv_password) {
+        return password_manager::CredentialUIEntry(csv_password, to_store_);
+      });
+
+  presenter_->AddCredentials(
+      credentials, password_manager::PasswordForm::Type::kImported,
+      base::BindOnce(&AddCredentialsCallback, start_time));
+
+  // TODO(crbug/1325290):
+  // - Check for conflicts.
+  // - Compute and fill statuses for failed imports.
+  // - Count actual number of successful imports.
+  results.number_imported = seq->csv_passwords.size();
+  results.status = password_manager::ImportResults::Status::SUCCESS;
+  std::move(results_callback_).Run(results);
 }
 
 void PasswordImporter::SetServiceForTesting(

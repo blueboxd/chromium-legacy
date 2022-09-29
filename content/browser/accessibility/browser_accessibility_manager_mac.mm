@@ -230,7 +230,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
         // Unfortunately this produces an annoying boing sound with each live
         // announcement, but the alternative is almost no live region support.
         PostAnnouncementNotification(
-            base::SysUTF8ToNSString(node->GetLiveRegionText()));
+            base::SysUTF16ToNSString(node->GetTextContentUTF16()));
         return;
       }
 
@@ -397,12 +397,12 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::SCROLL_HORIZONTAL_POSITION_CHANGED:
     case ui::AXEventGenerator::Event::SCROLL_VERTICAL_POSITION_CHANGED:
     case ui::AXEventGenerator::Event::SELECTED_CHANGED:
-    case ui::AXEventGenerator::Event::SELECTION_IN_TEXT_FIELD_CHANGED:
     case ui::AXEventGenerator::Event::SET_SIZE_CHANGED:
     case ui::AXEventGenerator::Event::SORT_CHANGED:
     case ui::AXEventGenerator::Event::STATE_CHANGED:
     case ui::AXEventGenerator::Event::SUBTREE_CREATED:
     case ui::AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED:
+    case ui::AXEventGenerator::Event::TEXT_SELECTION_CHANGED:
     case ui::AXEventGenerator::Event::WIN_IACCESSIBLE_STATE_CHANGED:
       return;
   }
@@ -416,6 +416,12 @@ void BrowserAccessibilityManagerMac::FireNativeMacNotification(
   DCHECK(mac_notification);
   BrowserAccessibilityCocoa* native_node = node->GetNativeViewAccessible();
   DCHECK(native_node);
+  // TODO(accessibility) We should look into why background tabs return null for
+  // GetWindow. Is it safe to fire notifications when there is no window? We've
+  // had trouble in the past with "Chrome is not responding" lockups in AppKit
+  // with VoiceOver, when firing events in detached documents.
+  // DCHECK(GetWindow());
+  NSAccessibilityPostNotification(native_node, mac_notification);
 }
 
 bool BrowserAccessibilityManagerMac::OnAccessibilityEvents(

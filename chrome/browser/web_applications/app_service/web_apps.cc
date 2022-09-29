@@ -34,7 +34,7 @@
 #include "chrome/browser/apps/app_service/menu_item_constants.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
-#include "chrome/browser/ash/crostini/crostini_terminal.h"
+#include "chrome/browser/ash/guest_os/guest_os_terminal.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/grit/generated_resources.h"
@@ -144,6 +144,14 @@ void WebApps::Launch(const std::string& app_id,
                             std::move(window_info));
 }
 
+void WebApps::LaunchAppWithFiles(const std::string& app_id,
+                                 int32_t event_flags,
+                                 apps::LaunchSource launch_source,
+                                 std::vector<base::FilePath> file_paths) {
+  publisher_helper().LaunchAppWithFiles(app_id, event_flags, launch_source,
+                                        std::move(file_paths));
+}
+
 void WebApps::LaunchAppWithIntent(const std::string& app_id,
                                   int32_t event_flags,
                                   apps::IntentPtr intent,
@@ -167,6 +175,26 @@ void WebApps::LaunchShortcut(const std::string& app_id,
                              int64_t display_id) {
   publisher_helper().ExecuteContextMenuCommand(app_id, shortcut_id, display_id);
 }
+
+void WebApps::SetPermission(const std::string& app_id,
+                            apps::PermissionPtr permission) {
+  publisher_helper().SetPermission(app_id, std::move(permission));
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void WebApps::Uninstall(const std::string& app_id,
+                        apps::UninstallSource uninstall_source,
+                        bool clear_site_data,
+                        bool report_abuse) {
+  const WebApp* web_app = GetWebApp(app_id);
+  if (!web_app) {
+    return;
+  }
+
+  publisher_helper().UninstallWebApp(web_app, uninstall_source, clear_site_data,
+                                     report_abuse);
+}
+#endif
 
 void WebApps::Connect(
     mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
@@ -192,8 +220,10 @@ void WebApps::LaunchAppWithFiles(const std::string& app_id,
                                  int32_t event_flags,
                                  apps::mojom::LaunchSource launch_source,
                                  apps::mojom::FilePathsPtr file_paths) {
-  publisher_helper().LaunchAppWithFiles(app_id, event_flags, launch_source,
-                                        std::move(file_paths));
+  publisher_helper().LaunchAppWithFiles(
+      app_id, event_flags,
+      apps::ConvertMojomLaunchSourceToLaunchSource(launch_source),
+      apps::ConvertMojomFilePathsToFilePaths(std::move(file_paths)));
 }
 
 void WebApps::LaunchAppWithIntent(const std::string& app_id,
@@ -211,7 +241,8 @@ void WebApps::LaunchAppWithIntent(const std::string& app_id,
 
 void WebApps::SetPermission(const std::string& app_id,
                             apps::mojom::PermissionPtr permission) {
-  publisher_helper().SetPermission(app_id, std::move(permission));
+  publisher_helper().SetPermission(
+      app_id, apps::ConvertMojomPermissionToPermission(permission));
 }
 
 void WebApps::OpenNativeSettings(const std::string& app_id) {
@@ -359,13 +390,10 @@ void WebApps::Uninstall(const std::string& app_id,
                         apps::mojom::UninstallSource uninstall_source,
                         bool clear_site_data,
                         bool report_abuse) {
-  const WebApp* web_app = GetWebApp(app_id);
-  if (!web_app) {
-    return;
-  }
-
-  publisher_helper().UninstallWebApp(web_app, uninstall_source, clear_site_data,
-                                     report_abuse);
+  Uninstall(
+      app_id,
+      apps::ConvertMojomUninstallSourceToUninstallSource(uninstall_source),
+      clear_site_data, report_abuse);
 }
 
 void WebApps::PauseApp(const std::string& app_id) {
@@ -410,8 +438,8 @@ void WebApps::GetMenuModel(const std::string& app_id,
         &menu_items);
   }
 
-  if (app_id == crostini::kTerminalSystemAppId) {
-    crostini::AddTerminalMenuItems(profile_, &menu_items);
+  if (app_id == guest_os::kTerminalSystemAppId) {
+    guest_os::AddTerminalMenuItems(profile_, &menu_items);
   }
 
   if (menu_type == apps::mojom::MenuType::kShelf &&
@@ -430,8 +458,8 @@ void WebApps::GetMenuModel(const std::string& app_id,
                          &menu_items);
   }
 
-  if (app_id == crostini::kTerminalSystemAppId) {
-    crostini::AddTerminalMenuShortcuts(profile_, ash::LAUNCH_APP_SHORTCUT_FIRST,
+  if (app_id == guest_os::kTerminalSystemAppId) {
+    guest_os::AddTerminalMenuShortcuts(profile_, ash::LAUNCH_APP_SHORTCUT_FIRST,
                                        std::move(menu_items),
                                        std::move(callback));
   } else {
@@ -524,8 +552,8 @@ void WebApps::ExecuteContextMenuCommand(const std::string& app_id,
                                         int command_id,
                                         const std::string& shortcut_id,
                                         int64_t display_id) {
-  if (app_id == crostini::kTerminalSystemAppId) {
-    if (crostini::ExecuteTerminalMenuShortcutCommand(profile_, shortcut_id,
+  if (app_id == guest_os::kTerminalSystemAppId) {
+    if (guest_os::ExecuteTerminalMenuShortcutCommand(profile_, shortcut_id,
                                                      display_id)) {
       return;
     }

@@ -46,9 +46,7 @@
 #endif  //  BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/media/chromeos_login_media_access_handler.h"
-#include "chrome/browser/media/public_session_media_access_handler.h"
-#include "chrome/browser/media/public_session_tab_capture_access_handler.h"
+#include "chrome/browser/media/chromeos_login_and_lock_media_access_handler.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -93,23 +91,13 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   media_access_handlers_.push_back(
-      std::make_unique<ChromeOSLoginMediaAccessHandler>());
-  // Wrapper around ExtensionMediaAccessHandler used in Public Sessions.
-  media_access_handlers_.push_back(
-      std::make_unique<PublicSessionMediaAccessHandler>());
-#else
+      std::make_unique<ChromeOSLoginAndLockMediaAccessHandler>());
+#endif
   media_access_handlers_.push_back(
       std::make_unique<ExtensionMediaAccessHandler>());
-#endif
   media_access_handlers_.push_back(
       std::make_unique<DesktopCaptureAccessHandler>());
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Wrapper around TabCaptureAccessHandler used in Public Sessions.
-  media_access_handlers_.push_back(
-      std::make_unique<PublicSessionTabCaptureAccessHandler>());
-#else
   media_access_handlers_.push_back(std::make_unique<TabCaptureAccessHandler>());
-#endif
 #endif
   media_access_handlers_.push_back(
       std::make_unique<PermissionBubbleMediaAccessHandler>());

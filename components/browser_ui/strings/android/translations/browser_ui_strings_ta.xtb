@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">பதிவிறக்கம் இடைநிறுத்தப்பட்டது</translation>
 <translation id="1409426117486808224">திறக்கப்பட்டுள்ள தாவல்களுக்கான எளிதாக்கப்பட்ட காட்சி</translation>
 <translation id="1415402041810619267">URL துண்டிக்கப்பட்டது</translation>
+<translation id="1426410128494586442">ஆம்</translation>
 <translation id="1446450296470737166">MIDI சாதனங்களுக்கு முழுக் கட்டுப்பாட்டை அனுமதி</translation>
 <translation id="1620510694547887537">கேமரா</translation>
 <translation id="1644574205037202324">வரலாறு</translation>
@@ -32,6 +33,7 @@
 <translation id="1818308510395330587">ARரைப் பயன்படுத்த <ph name="APP_NAME" /> ஆப்ஸை அனுமதிப்பதற்கு <ph name="BEGIN_LINK" />Android அமைப்புகளிலும்<ph name="END_LINK" /> கேமராவிற்கான அனுமதியை இயக்கவும்.</translation>
 <translation id="1864927262126810325">மூலம்: <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">இந்தச் சாதனத்திற்கான இருப்பிட அணுகல் முடக்கப்பட்டுள்ளது. அதை <ph name="BEGIN_LINK" />Android அமைப்புகளில்<ph name="END_LINK" /> இயக்கவும்.</translation>
+<translation id="1915307458270490472">மூடுக</translation>
 <translation id="1919345977826869612">விளம்பரங்கள்</translation>
 <translation id="1919950603503897840">தொடர்புகளைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -78,6 +80,7 @@
 <translation id="2677748264148917807">வெளியேறு</translation>
 <translation id="2687403674020088961">அனைத்துக் குக்கீகளையும் தடுக்கும் (பரிந்துரைக்கப்படவில்லை)</translation>
 <translation id="2704606927547763573">நகலெடுக்கப்பட்டது</translation>
+<translation id="2713106313042589954">கேமராவை முடக்கு</translation>
 <translation id="2717722538473713889">மின்னஞ்சல் முகவரிகள்</translation>
 <translation id="2750481671343847896">அடையாளச் சேவைகளில் இருந்து வரும் உள்நுழைவு அறிவிப்புகளைத் தளங்கள் காட்டும்.</translation>
 <translation id="2785051990912111074">இதைச் செய்தால் <ph name="WEBSITE" /> தளத்திற்கான குக்கீகள் அழிக்கப்படும்</translation>
@@ -97,6 +100,7 @@
 <translation id="3114012059975132928">வீடியோ பிளேயர்</translation>
 <translation id="3115898365077584848">தகவலைக் காட்டு</translation>
 <translation id="3123473560110926937">சில தளங்களில் தடுக்கப்பட்டுள்ளன</translation>
+<translation id="3143754809889689516">முதலிலிருந்து இயக்கு</translation>
 <translation id="3198916472715691905">சேமிக்கப்பட்ட தரவு: <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3203366800380907218">இணையத்தில் இருந்து</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> ஆப்ஸ் உங்களுக்கு அறிவிப்புகளை அனுப்ப அனுமதிப்பதற்கு <ph name="BEGIN_LINK" />Android அமைப்புகளிலும்<ph name="END_LINK" /> அறிவிப்புகளுக்கான அனுமதியை இயக்கவும்.</translation>
@@ -153,10 +157,12 @@
 <translation id="4479647676395637221">எனது கேமராவைப் பயன்படுத்தத் தளங்களை அனுமதிக்கும் முன் கேள் (பரிந்துரைக்கப்படுகிறது)</translation>
 <translation id="4505788138578415521">URL விரிவாக்கப்பட்டது</translation>
 <translation id="4534723447064627427"><ph name="APP_NAME" /> ஆப்ஸ் உங்கள் மைக்ரோஃபோனை அணுக அனுமதிப்பதற்கு <ph name="BEGIN_LINK" />Android அமைப்புகளிலும்<ph name="END_LINK" /> மைக்ரோஃபோனுக்கான அனுமதியை இயக்கவும்.</translation>
+<translation id="4566417217121906555">மைக்ரோஃபோனை ஒலியடக்கு</translation>
 <translation id="4570913071927164677">விவரங்கள்</translation>
 <translation id="4645575059429386691">உங்கள் பெற்றோரால் நிர்வகிக்கப்படுகிறது</translation>
 <translation id="4670064810192446073">விர்ச்சுவல் ரியாலிட்டி</translation>
 <translation id="4751476147751820511">நகர்வு அல்லது ஒளி உணர்விகள்</translation>
+<translation id="4811450222531576619">இதன் மூலம் &amp; தலைப்பு குறித்த அறியலாம்</translation>
 <translation id="4836046166855586901">இந்தச் சாதனத்தில் நீங்கள் செயலில் இருப்பது குறித்து ஒரு தளம் அறிந்துகொள்ள விரும்பும்போது அனுமதி கேட்கும்</translation>
 <translation id="4883854917563148705">நிர்வகிக்கப்பட்ட அமைப்புகளை மீட்டமைக்க முடியாது</translation>
 <translation id="4887024562049524730">விர்ச்சுவல் ரியாலிட்டி சாதனத்தையும் தரவையும் தளங்கள் பயன்படுத்த அனுமதிப்பதற்கு முன்பாக அனுமதி கேள் (பரிந்துரைக்கப்படுகிறது)</translation>
@@ -177,6 +183,7 @@
 <translation id="5186036860380548585">அதற்கான விருப்பம் திரையின் மேற்பகுதியில் உள்ளது</translation>
 <translation id="5197729504361054390">நீங்கள் தேர்ந்தெடுக்கும் தொடர்புகள் <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> உடன் பகிரப்படும்.</translation>
 <translation id="5216942107514965959">கடைசியாகப் பார்த்தது: இன்று</translation>
+<translation id="5225463052809312700">கேமராவை இயக்கு</translation>
 <translation id="5264323282659631142">'<ph name="CHIP_LABEL" />' ஐ அகற்றும்</translation>
 <translation id="528192093759286357">முழுத்திரையிலிருந்து வெளியேற, மேலிருந்து இழுத்து "முந்தையது" பட்டனைத் தொடவும்.</translation>
 <translation id="5300589172476337783">காண்பி</translation>
@@ -235,8 +242,10 @@
 <translation id="6367753977865761591">குறிப்பிட்ட தளத்திற்கு மூன்றாம் தரப்பு உள்நுழைவைத் தடுக்கும்.</translation>
 <translation id="6388207532828177975">அழித்து, மீட்டமைக்கவும்</translation>
 <translation id="6398765197997659313">முழுத்திரையிலிருந்து வெளியேறு</translation>
+<translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">விர்ச்சுவல் ரியாலிட்டி சாதனத்தையும் தரவையும் தளங்கள் பயன்படுத்துவதைத் தடு</translation>
 <translation id="6447842834002726250">குக்கீகள்</translation>
+<translation id="6467852467360539617">தரவை அழித்து அனுமதிகளை மீட்டமை</translation>
 <translation id="6527303717912515753">பகிர்</translation>
 <translation id="6545864417968258051">புளூடூத் ஸ்கேனிங்</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> &amp; மேலும் <ph name="NUM_MORE" /> அனுமதிகள் தடுக்கப்பட்டுள்ளன}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> &amp; மேலும் <ph name="NUM_MORE" /> அனுமதிகள் தடுக்கப்பட்டுள்ளன}}</translation>
@@ -276,6 +285,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> தேர்ந்தெடுக்கப்பட்டன</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ஆகியவற்றுக்கான அனுமதிகள் வழங்கப்பட்டன</translation>
 <translation id="7302486331832100261">பொதுவாக அறிவிப்புகளைத் தடுத்துள்ளீர்கள். அவற்றை அனுமதிக்க 'விவரங்கள்' என்பதைத் தட்டவும்.</translation>
+<translation id="7383715096023715447"><ph name="DOMAIN" /> தளத்திற்கான அமைப்புகள்</translation>
 <translation id="7423098979219808738">முதலில் கேள்</translation>
 <translation id="7423538860840206698">கிளிப்போர்டைப் படிப்பது தடுக்கப்பட்டுள்ளது</translation>
 <translation id="7425915948813553151">தளங்களுக்கான டார்க் தீம்</translation>
@@ -335,6 +345,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 குக்கீ உபயோகத்தில் உள்ளது}other{# குக்கீகள் உபயோகத்தில் உள்ளன}}</translation>
 <translation id="8487700953926739672">ஆஃப்லைனில் இருக்கிறது</translation>
 <translation id="848952951823693243">எப்போதும் மொபைல் காட்சியில் காட்டப்படுபவை</translation>
+<translation id="8499083585497694743">மைக்ரோஃபோனின் ஒலியை இயக்கு</translation>
 <translation id="851751545965956758">சாதனங்களை இணைப்பதிலிருந்து தளங்களைத் தடுக்கும்</translation>
 <translation id="8525306231823319788">முழுத்திரை</translation>
 <translation id="857943718398505171">அனுமதிக்கப்பட்டது (பரிந்துரைத்தது)</translation>

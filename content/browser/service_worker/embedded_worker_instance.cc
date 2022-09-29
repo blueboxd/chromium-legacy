@@ -59,6 +59,10 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "url/gurl.h"
 
+#if !BUILDFLAG(IS_ANDROID)
+#include "content/browser/hid/hid_service.h"
+#endif
+
 // TODO(crbug.com/824858): Much of this file, which dealt with thread hops
 // between UI and IO, can likely be simplified when the service worker core
 // thread moves to the UI thread.
@@ -660,7 +664,7 @@ void EmbeddedWorkerInstance::OnScriptEvaluationStart() {
 
 void EmbeddedWorkerInstance::OnStarted(
     blink::mojom::ServiceWorkerStartStatus start_status,
-    bool has_fetch_handler,
+    blink::mojom::ServiceWorkerFetchHandlerType fetch_handler_type,
     int thread_id,
     blink::mojom::EmbeddedWorkerStartTimingPtr start_timing) {
   TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerInstance::OnStarted");
@@ -700,7 +704,7 @@ void EmbeddedWorkerInstance::OnStarted(
   thread_id_ = thread_id;
   inflight_start_info_.reset();
   for (auto& observer : listener_list_) {
-    observer.OnStarted(start_status, has_fetch_handler);
+    observer.OnStarted(start_status, fetch_handler_type);
     // |this| may be destroyed here. Fortunately we know there is only one
     // observer in production code.
   }
@@ -780,7 +784,7 @@ void EmbeddedWorkerInstance::BindHidService(
     return;
   }
   if (hid_delegate->IsServiceWorkerAllowedForOrigin(origin)) {
-    rph->BindHidService(origin, std::move(receiver));
+    HidService::Create(context_, origin, std::move(receiver));
   }
 }
 #endif  // !BUILDFLAG(IS_ANDROID)

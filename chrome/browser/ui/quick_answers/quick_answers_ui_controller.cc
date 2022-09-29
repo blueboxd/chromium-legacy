@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/quick_answers/quick_answers_controller_impl.h"
+#include "chromeos/components/quick_answers/public/cpp/quick_answers_state.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -38,8 +39,11 @@ using quick_answers::QuickAnswer;
 using quick_answers::QuickAnswersExitPoint;
 
 constexpr char kGoogleSearchUrlPrefix[] = "https://www.google.com/search?q=";
+constexpr char kGoogleTranslateUrlTemplate[] =
+    "https://translate.google.com/?sl=auto&tl=%s&text=%s&op=translate";
 
 constexpr char kFeedbackDescriptionTemplate[] = "#QuickAnswers\nQuery:%s\n";
+constexpr char kTranslationQueryPrefix[] = "Translate:";
 
 constexpr char kQuickAnswersSettingsUrl[] =
     "chrome://os-settings/osSearch/search";
@@ -48,16 +52,15 @@ constexpr char kQuickAnswersSettingsUrl[] =
 void OpenUrl(const GURL& url) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::NewWindowDelegate::GetPrimary()->OpenUrl(
-      url, ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction);
+      url, ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+      ash::NewWindowDelegate::Disposition::kNewForegroundTab);
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
-
   NavigateParams navigate_params(
       profile, url,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                 ui::PAGE_TRANSITION_FROM_API));
   navigate_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-
   navigate_params.window_action = NavigateParams::SHOW_WINDOW;
   Navigate(&navigate_params);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -97,8 +100,21 @@ void QuickAnswersUiController::OnQuickAnswersViewPressed() {
   // Route dismissal through |controller_| for logging impressions.
   controller_->DismissQuickAnswers(QuickAnswersExitPoint::kQuickAnswersClick);
 
-  OpenUrl(GURL(kGoogleSearchUrlPrefix +
-               base::EscapeUrlEncodedData(query_, /*use_plus=*/true)));
+  // TODO(b/240619915): Refactor so that we can access the request metadata
+  // instead of just the query itself.
+  if (base::StartsWith(query_, kTranslationQueryPrefix)) {
+    auto query_text = base::EscapeUrlEncodedData(
+        query_.substr(strlen(kTranslationQueryPrefix)), /*use_plus=*/true);
+    auto device_language =
+        l10n_util::GetLanguage(QuickAnswersState::Get()->application_locale());
+    auto translate_url =
+        base::StringPrintf(kGoogleTranslateUrlTemplate, device_language.c_str(),
+                           query_text.c_str());
+    OpenUrl(GURL(translate_url));
+  } else {
+    OpenUrl(GURL(kGoogleSearchUrlPrefix +
+                 base::EscapeUrlEncodedData(query_, /*use_plus=*/true)));
+  }
   controller_->OnQuickAnswerClick();
 }
 

@@ -179,20 +179,7 @@ class DesksClient : public ash::SessionObserver {
       std::u16string customized_desk_name,
       base::Time time_launch_started,
       desks_storage::DeskModel::GetEntryByUuidStatus status,
-      std::unique_ptr<ash::DeskTemplate> entry);
-
-  // Callback function that is run after a desk is created for a template, or
-  // has failed to be created.
-  void OnCreateAndActivateNewDeskForTemplate(
-      std::unique_ptr<ash::DeskTemplate> desk_template,
-      LaunchDeskCallback callback,
-      base::Time time_launch_started,
-      const ash::Desk* new_desk);
-
-  // Callback function that is run after a desk is created, or has failed to
-  // be created.
-  void OnLaunchEmptyDesk(LaunchDeskCallback callback,
-                         const ash::Desk* new_desk);
+      std::unique_ptr<ash::DeskTemplate> saved_desk);
 
   // Callback function that allows the |CaptureActiveDeskAndSaveTemplate|
   // |callback| to be called as a |desks_storage::AddOrUpdateEntryCallback|.
@@ -219,12 +206,6 @@ class DesksClient : public ash::SessionObserver {
       UpdateDeskTemplateCallback callback,
       desks_storage::DeskModel::GetEntryByUuidStatus status,
       std::unique_ptr<ash::DeskTemplate> entry);
-
-  // Callback function that handles getting all DeskTemplates from
-  // storage.
-  void OnGetAllTemplates(GetDeskTemplatesCallback callback,
-                         desks_storage::DeskModel::GetAllEntriesStatus status,
-                         const std::vector<const ash::DeskTemplate*>& entries);
 
   // Callback function that is called once the DesksController has captured the
   // active desk as a template. Invokes |callback| with |desk_template| as an

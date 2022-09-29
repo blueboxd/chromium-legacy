@@ -16,7 +16,7 @@ This outputs Java String constants which represent the name of the
    2020" to be whatever the year is at the time of writing (as you would for any
    other file).
    ```java
-    // Copyright 2020 The Chromium Authors. All rights reserved.
+    // Copyright 2020 The Chromium Authors.
     // Use of this source code is governed by a BSD-style license that can be
     // found in the LICENSE file.
 
@@ -63,11 +63,26 @@ This outputs Java String constants which represent the name of the
     }
     ```
 
-3. The generated file `out/Default/gen/.../org/chromium/foo/FooFeatures.java`
+3. Add a `deps` entry to `"common_java"` in `"//android_webview/BUILD.gn"` if
+   creating a new `android_library` in the previous step:
+
+   ```gn
+   android_library("common_java") {
+     ...
+
+     deps = [
+       ...
+       "//path/to:foo_java",
+       ...
+     ]
+   }
+   ```
+
+4. The generated file `out/Default/gen/.../org/chromium/foo/FooFeatures.java`
    would contain:
 
     ```java
-    // Copyright $YEAR The Chromium Authors. All rights reserved.
+    // Copyright $YEAR The Chromium Authors.
     // Use of this source code is governed by a BSD-style license that can be
     // found in the LICENSE file.
 

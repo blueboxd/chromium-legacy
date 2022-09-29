@@ -358,6 +358,15 @@ bool JobTaskSource::DidProcessTask(TaskSource::Transaction* /*transaction*/) {
          GetMaxConcurrency(state_before_sub.worker_count() - 1);
 }
 
+// This is a no-op and should always return true.
+bool JobTaskSource::WillReEnqueue(TimeTicks now,
+                                  TaskSource::Transaction* /*transaction*/) {
+  return true;
+}
+
+// This is a no-op.
+void JobTaskSource::OnBecomeReady() {}
+
 TaskSourceSortKey JobTaskSource::GetSortKey(
     bool disable_fair_scheduling) const {
   if (disable_fair_scheduling) {
@@ -365,6 +374,12 @@ TaskSourceSortKey JobTaskSource::GetSortKey(
   }
   return TaskSourceSortKey(priority_racy(), ready_time_,
                            TS_UNCHECKED_READ(state_).Load().worker_count());
+}
+
+// This function isn't expected to be called since a job is never delayed.
+// However, the class still needs to provide an override.
+TimeTicks JobTaskSource::GetDelayedSortKey() const {
+  return TimeTicks();
 }
 
 Task JobTaskSource::Clear(TaskSource::Transaction* transaction) {

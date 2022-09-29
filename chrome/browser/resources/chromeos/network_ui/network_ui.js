@@ -7,8 +7,9 @@ import 'chrome://resources/cr_components/chromeos/network_health/network_diagnos
 import 'chrome://resources/cr_components/chromeos/network_health/network_health_summary.js';
 import 'chrome://resources/cr_components/chromeos/traffic_counters/traffic_counters.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import 'chrome://resources/cr_elements/cr_tabs/cr_tabs.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-lite.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
@@ -16,6 +17,7 @@ import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import './strings.m.js';
 import './network_state_ui.js';
 import './network_logs_ui.js';
+import './network_metrics_ui.js';
 
 import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
@@ -53,6 +55,8 @@ Polymer({
           this.i18n('networkStateTab'),
           this.i18n('networkSelectTab'),
           this.i18n('TrafficCountersTrafficCounters'),
+          this.i18n('networkHotspotTab'),
+          this.i18n('networkMetricsTab'),
         ];
       },
     },
@@ -73,6 +77,12 @@ Polymer({
     },
 
     /** @private */
+    tetheringConfigToSet_: {
+      type: String,
+      value: '',
+    },
+
+    /** @private */
     isGuestModeActive_: {
       type: Boolean,
       value() {
@@ -80,6 +90,38 @@ Polymer({
             loadTimeData.getBoolean('isGuestModeActive');
       },
     },
+
+    /**@private */
+    isTetheringEnabled_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Set to true while an tethering state change is requested and the
+     * callback hasn't been fired yet.
+     * @private
+     */
+    tetheringChangeInProgress_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    isHotspotEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.valueExists('isHotspotEnabled') &&
+            loadTimeData.getBoolean('isHotspotEnabled');
+      },
+    },
+
+    /** @private */
+    invalidJSON_: {
+      type: Boolean,
+      value: false,
+    },
+
   },
 
   /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
@@ -105,11 +147,23 @@ Polymer({
     this.$$('#import-onc').value = '';
 
     this.requestGlobalPolicy_();
+    this.getTetheringCapabilities_();
+    this.getTetheringConfig_();
+    this.getTetheringStatus_();
     this.getHostname_();
     this.selectTabFromHash_();
     window.addEventListener('hashchange', () => {
       this.selectTabFromHash_();
     });
+  },
+
+  /**
+   * @param {*} result that need to stringify to JSON
+   * @return {string}
+   * @private
+   */
+  stringifyJSON_(result) {
+    return JSON.stringify(result, null, '\t');
   },
 
   /** @private */
@@ -200,8 +254,99 @@ Polymer({
   requestGlobalPolicy_() {
     this.networkConfig_.getGlobalPolicy().then(result => {
       this.$$('#global-policy').textContent =
-          JSON.stringify(result.result, null, '\t');
+          this.stringifyJSON_(result.result);
     });
+  },
+
+  /** @private */
+  getTetheringCapabilities_() {
+    this.browserProxy_.getTetheringCapabilities().then(result => {
+      this.$$('#tethering-capabilities-div').textContent =
+          this.stringifyJSON_(result);
+    });
+  },
+
+  /** @private */
+  getTetheringStatus_() {
+    this.browserProxy_.getTetheringStatus().then(result => {
+      this.$$('#tethering-status-div').textContent =
+          this.stringifyJSON_(result);
+      const state = result['state'];
+      const startingState = loadTimeData.getString('tetheringStateStarting');
+      const activeState = loadTimeData.getString('tetheringStateActive');
+      if (!!state && (state === startingState || state === activeState)) {
+        this.isTetheringEnabled_ = true;
+        return;
+      }
+      this.isTetheringEnabled_ = false;
+    });
+  },
+
+  /** @private */
+  getTetheringConfig_() {
+    this.browserProxy_.getTetheringConfig().then(result => {
+      this.$$('#tethering-config-div').textContent =
+          this.stringifyJSON_(result);
+    });
+  },
+
+  /** @private */
+  setTetheringConfig_() {
+    this.browserProxy_.setTetheringConfig(this.tetheringConfigToSet_)
+        .then((result) => {
+          const success = result === 'success';
+          const resultDiv = this.$$('#set-tethering-config-result');
+          resultDiv.innerText = result;
+          resultDiv.classList.toggle('error', !success);
+          if (success) {
+            this.getTetheringConfig_();
+          }
+        });
+  },
+
+  /** @private */
+  checkTetheringReadiness_() {
+    this.browserProxy_.checkTetheringReadiness().then(result => {
+      const resultDiv = this.$$('#check-tethering-readiness-result');
+      resultDiv.innerText = result;
+      resultDiv.classList.toggle('error', result !== 'ready');
+    });
+  },
+
+  /**
+   * Check if the input tethering config string is a valid JSON object.
+   * @private
+   */
+  validateJSON_() {
+    if (this.tetheringConfigToSet_ === '') {
+      this.invalidJSON_ = false;
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(this.tetheringConfigToSet_);
+      // Check if the parsed JSON is object type by its constructor
+      if (parsed.constructor === ({}).constructor) {
+        this.invalidJSON_ = false;
+        return;
+      }
+      this.invalidJSON_ = true;
+    } catch (e) {
+      this.invalidJSON_ = true;
+    }
+  },
+
+  /** @private */
+  onTetheringToggleChanged_() {
+    this.tetheringChangeInProgress_ = true;
+    this.browserProxy_.setTetheringEnabled(this.isTetheringEnabled_)
+        .then(result => {
+          const resultDiv = this.$$('#set-tethering-enabled-result');
+          resultDiv.innerText = result;
+          resultDiv.classList.toggle('error', result !== 'success');
+          this.getTetheringStatus_();
+          this.tetheringChangeInProgress_ = false;
+        });
   },
 
   /**

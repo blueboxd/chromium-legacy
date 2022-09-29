@@ -54,6 +54,7 @@ source_set("resource_provider_impl") {
     ":decoder_buffer_reader",
     "//base",
     "//components/cast_streaming/public",
+    "//components/cast_streaming/public:demuxer_stream_traits",
     "//components/cast_streaming/public/mojom",
     "//media",
     "//media/mojo/common",
@@ -105,6 +106,21 @@ source_set("playback_command_forwarding_renderer") {
   visibility = [ ":*" ]
 }
 
+source_set("web_codecs") {
+  sources = [
+    "public/web_codecs/decoder_buffer_provider.h",
+    "web_codecs/decoder_buffer_provider_impl.h",
+    "web_codecs/delegating_decoder_buffer_provider.h",
+  ]
+  public_deps = [
+    ":decoder_buffer_reader",
+    "//base",
+    "//media",
+    "//media/mojo/common",
+    "//media/mojo/mojom",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 
@@ -112,6 +128,8 @@ source_set("unit_tests") {
     "decoder_buffer_reader_unittest.cc",
     "playback_command_forwarding_renderer_factory_unittest.cc",
     "playback_command_forwarding_renderer_unittest.cc",
+    "web_codecs/decoder_buffer_provider_impl_unittest.cc",
+    "web_codecs/delegating_decoder_buffer_provider_unittest.cc",
   ]
 
   deps = [
@@ -119,7 +137,9 @@ source_set("unit_tests") {
     ":playback_command_forwarding_renderer",
     ":renderer",
     ":resource_provider_impl",
+    ":web_codecs",
     ":wrapping_renderer_factory_selector",
+    "//base",
     "//base/test:test_support",
     "//components/cast_streaming/public/mojom",
     "//media:test_support",

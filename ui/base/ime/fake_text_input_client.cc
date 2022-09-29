@@ -40,8 +40,8 @@ void FakeTextInputClient::SetCompositionText(
   selection_ = gfx::Range(new_cursor, new_cursor);
 }
 
-uint32_t FakeTextInputClient::ConfirmCompositionText(bool keep_selection) {
-  return UINT32_MAX;
+size_t FakeTextInputClient::ConfirmCompositionText(bool keep_selection) {
+  return std::numeric_limits<size_t>::max();
 }
 
 void FakeTextInputClient::ClearCompositionText() {}
@@ -93,7 +93,7 @@ gfx::Rect FakeTextInputClient::GetSelectionBoundingBox() const {
   return {};
 }
 
-bool FakeTextInputClient::GetCompositionCharacterBounds(uint32_t index,
+bool FakeTextInputClient::GetCompositionCharacterBounds(size_t index,
                                                         gfx::Rect* rect) const {
   return false;
 }

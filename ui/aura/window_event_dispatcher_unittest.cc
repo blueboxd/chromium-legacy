@@ -111,13 +111,13 @@ class ConsumeKeyHandler : public ui::test::TestEventHandler {
   }
 };
 
-// InputMethodDelegate that tracks the events passed to PostIME phase.
-class TestInputMethodDelegate : public ui::internal::InputMethodDelegate {
+// ImeKeyEventDispatcher that tracks the events passed to PostIME phase.
+class TestImeKeyEventDispatcher : public ui::ImeKeyEventDispatcher {
  public:
-  TestInputMethodDelegate() = default;
-  ~TestInputMethodDelegate() override = default;
+  TestImeKeyEventDispatcher() = default;
+  ~TestImeKeyEventDispatcher() override = default;
 
-  // ui::internal::InputMethodDelegate:
+  // ui::ImeKeyEventDispatcher:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* event) override {
     ++dispatched_event_count_;
@@ -401,16 +401,22 @@ TEST_F(WindowEventDispatcherTest, GetCanProcessEventsWithinSubtree) {
 }
 
 TEST_F(WindowEventDispatcherTest, DontIgnoreUnknownKeys) {
+  ui::Event::Properties properties;
+  properties.emplace(ui::kPropertyKeyboardImeFlag,
+                     std::vector<uint8_t>{ui::kPropertyKeyboardImeIgnoredFlag});
+
   ConsumeKeyHandler handler;
   root_window()->AddPreTargetHandler(&handler);
 
   ui::KeyEvent unknown_event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, ui::EF_NONE);
+  unknown_event.SetProperties(properties);
   DispatchEventUsingWindowDispatcher(&unknown_event);
   EXPECT_TRUE(unknown_event.handled());
   EXPECT_EQ(1, handler.num_key_events());
 
   handler.Reset();
   ui::KeyEvent known_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  known_event.SetProperties(properties);
   DispatchEventUsingWindowDispatcher(&known_event);
   EXPECT_TRUE(known_event.handled());
   EXPECT_EQ(1, handler.num_key_events());
@@ -418,6 +424,7 @@ TEST_F(WindowEventDispatcherTest, DontIgnoreUnknownKeys) {
   handler.Reset();
   ui::KeyEvent ime_event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN,
                          ui::EF_IME_FABRICATED_KEY);
+  ime_event.SetProperties(properties);
   DispatchEventUsingWindowDispatcher(&ime_event);
   EXPECT_TRUE(ime_event.handled());
   EXPECT_EQ(1, handler.num_key_events());
@@ -426,6 +433,7 @@ TEST_F(WindowEventDispatcherTest, DontIgnoreUnknownKeys) {
   ui::KeyEvent unknown_key_with_char_event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN,
                                            ui::EF_NONE);
   unknown_key_with_char_event.set_character(0x00e4 /* "ä" */);
+  unknown_key_with_char_event.SetProperties(properties);
   DispatchEventUsingWindowDispatcher(&unknown_key_with_char_event);
   EXPECT_TRUE(unknown_key_with_char_event.handled());
   EXPECT_EQ(1, handler.num_key_events());
@@ -440,6 +448,11 @@ TEST_F(WindowEventDispatcherTest, NoDelegateWindowReceivesKeyEvents) {
   ui::test::TestEventHandler handler;
   w1->AddPreTargetHandler(&handler);
   ui::KeyEvent key_press(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  ui::Event::Properties properties;
+  properties.emplace(ui::kPropertyKeyboardImeFlag,
+                     std::vector<uint8_t>{ui::kPropertyKeyboardImeIgnoredFlag});
+  key_press.SetProperties(properties);
+
   DispatchEventUsingWindowDispatcher(&key_press);
   EXPECT_TRUE(key_press.handled());
   EXPECT_EQ(1, handler.num_key_events());
@@ -496,8 +509,8 @@ TEST_F(WindowEventDispatcherTest, ScrollEventDispatch) {
 
 TEST_F(WindowEventDispatcherTest, PreDispatchKeyEventToIme) {
   ui::MockInputMethod mock_ime(nullptr);
-  TestInputMethodDelegate delegate;
-  mock_ime.SetDelegate(&delegate);
+  TestImeKeyEventDispatcher dispatcher;
+  mock_ime.SetImeKeyEventDispatcher(&dispatcher);
   host()->SetSharedInputMethod(&mock_ime);
 
   ConsumeKeyHandler handler;
@@ -510,7 +523,7 @@ TEST_F(WindowEventDispatcherTest, PreDispatchKeyEventToIme) {
   ui::KeyEvent key_press(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   DispatchEventUsingWindowDispatcher(&key_press);
   EXPECT_EQ(0, handler.num_key_events());
-  EXPECT_EQ(1, delegate.dispatched_event_count());
+  EXPECT_EQ(1, dispatcher.dispatched_event_count());
 
   // However, for the window with kSkipImeProcessing
   // The event went to the event target at first.
@@ -518,7 +531,7 @@ TEST_F(WindowEventDispatcherTest, PreDispatchKeyEventToIme) {
   ui::KeyEvent key_release(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::EF_NONE);
   DispatchEventUsingWindowDispatcher(&key_release);
   EXPECT_EQ(1, handler.num_key_events());
-  EXPECT_EQ(1, delegate.dispatched_event_count());
+  EXPECT_EQ(1, dispatcher.dispatched_event_count());
 }
 
 namespace {

@@ -222,6 +222,7 @@ PageLoadTracker::PageLoadTracker(
   if (navigation_handle->IsInPrerenderedMainFrame()) {
     DCHECK(!started_in_foreground_);
     DCHECK_EQ(ukm::kInvalidSourceId, source_id_);
+    prerendering_state_ = PrerenderingState::kInPrerendering;
     InvokeAndPruneObservers("PageLoadMetricsObserver::OnPrerenderStart",
                             base::BindRepeating(
                                 [](content::NavigationHandle* navigation_handle,
@@ -319,8 +320,10 @@ void PageLoadTracker::PageHidden() {
     // foregrounded.
     base::TimeTicks background_time;
 
-    if (!first_background_time_.has_value())
+    if (!first_background_time_.has_value() &&
+        (prerendering_state_ == PrerenderingState::kNoPrerendering)) {
       DCHECK_EQ(started_in_foreground_, !first_foreground_time_.has_value());
+    }
 
     background_time = base::TimeTicks::Now();
     ClampBrowserTimestampIfInterProcessTimeTickSkew(&background_time);
@@ -405,11 +408,18 @@ void PageLoadTracker::WillProcessNavigationResponse(
 }
 
 void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
+  // We don't deliver OnCommit() for activation. Prerendered pages will see
+  // DidActivatePrerenderedPage() instead.
+  // Event records below are also not needed as we did them for the initial
+  // navigation on starting prerendering.
+  DCHECK(!navigation_handle->IsPrerenderedPageActivation());
+
   if (parent_tracker_) {
     // Notify the parent of the inner main frame navigation as a sub-frame
     // navigation.
     parent_tracker_->DidFinishSubFrameNavigation(navigation_handle);
   } else if (navigation_handle->IsPrerenderedPageActivation()) {
+    NOTREACHED();
     // We don't deliver OnCommit() for activation. Prerendered pages will see
     // DidActivatePrerenderedPage() instead.
     // Event records below are also not needed as we did them for the initial
@@ -449,12 +459,16 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
 
 void PageLoadTracker::DidActivatePrerenderedPage(
     content::NavigationHandle* navigation_handle) {
+  DCHECK_EQ(prerendering_state_, PrerenderingState::kInPrerendering);
+
+  prerendering_state_ = PrerenderingState::kActivatedNoActivationStart;
   source_id_ = ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
                                       ukm::SourceIdType::NAVIGATION_ID);
 
   if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE) {
-    was_prerendered_then_activated_in_foreground_ = true;
-    PageShown();
+    visibility_at_activation_ = PageVisibility::kForeground;
+  } else {
+    visibility_at_activation_ = PageVisibility::kBackground;
   }
 
   for (const auto& observer : observers_)
@@ -789,21 +803,27 @@ void PageLoadTracker::OnTimingChanged() {
   DCHECK(!last_dispatched_merged_page_timing_->Equals(
       metrics_update_dispatcher_.timing()));
 
+  const mojom::PageLoadTiming& new_timing = metrics_update_dispatcher_.timing();
+
+  if (new_timing.activation_start &&
+      !last_dispatched_merged_page_timing_->activation_start) {
+    DCHECK(prerendering_state_ ==
+           PrerenderingState::kActivatedNoActivationStart);
+    prerendering_state_ = PrerenderingState::kActivated;
+  }
+
   const mojom::PaintTimingPtr& paint_timing =
       metrics_update_dispatcher_.timing().paint_timing;
-  largest_contentful_paint_handler_.RecordTiming(
+  largest_contentful_paint_handler_.RecordMainFrameTiming(
       *paint_timing->largest_contentful_paint,
-      paint_timing->first_input_or_scroll_notified_timestamp,
-      nullptr /* subframe_rfh */);
-  experimental_largest_contentful_paint_handler_.RecordTiming(
+      paint_timing->first_input_or_scroll_notified_timestamp);
+  experimental_largest_contentful_paint_handler_.RecordMainFrameTiming(
       *paint_timing->experimental_largest_contentful_paint,
-      paint_timing->first_input_or_scroll_notified_timestamp,
-      nullptr /* subframe_rfh */);
+      paint_timing->first_input_or_scroll_notified_timestamp);
 
   for (const auto& observer : observers_) {
-    DispatchObserverTimingCallbacks(observer.get(),
-                                    *last_dispatched_merged_page_timing_,
-                                    metrics_update_dispatcher_.timing());
+    DispatchObserverTimingCallbacks(
+        observer.get(), *last_dispatched_merged_page_timing_, new_timing);
   }
   last_dispatched_merged_page_timing_ =
       metrics_update_dispatcher_.timing().Clone();
@@ -820,12 +840,12 @@ void PageLoadTracker::OnSubFrameTimingChanged(
     const mojom::PageLoadTiming& timing) {
   DCHECK(rfh->GetParentOrOuterDocument());
   const mojom::PaintTimingPtr& paint_timing = timing.paint_timing;
-  largest_contentful_paint_handler_.RecordTiming(
+  largest_contentful_paint_handler_.RecordSubFrameTiming(
       *paint_timing->largest_contentful_paint,
-      paint_timing->first_input_or_scroll_notified_timestamp, rfh);
-  experimental_largest_contentful_paint_handler_.RecordTiming(
+      paint_timing->first_input_or_scroll_notified_timestamp, rfh, url_);
+  experimental_largest_contentful_paint_handler_.RecordSubFrameTiming(
       *paint_timing->experimental_largest_contentful_paint,
-      paint_timing->first_input_or_scroll_notified_timestamp, rfh);
+      paint_timing->first_input_or_scroll_notified_timestamp, rfh, url_);
   for (const auto& observer : observers_) {
     observer->OnTimingUpdate(rfh, timing);
   }
@@ -983,8 +1003,16 @@ bool PageLoadTracker::StartedInForeground() const {
   return started_in_foreground_;
 }
 
+PageVisibility PageLoadTracker::GetVisibilityAtActivation() const {
+  return visibility_at_activation_;
+}
+
 bool PageLoadTracker::WasPrerenderedThenActivatedInForeground() const {
-  return was_prerendered_then_activated_in_foreground_;
+  return GetVisibilityAtActivation() == PageVisibility::kForeground;
+}
+
+PrerenderingState PageLoadTracker::GetPrerenderingState() const {
+  return prerendering_state_;
 }
 
 const UserInitiatedInfo& PageLoadTracker::GetUserInitiatedInfo() const {

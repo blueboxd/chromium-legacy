@@ -34,6 +34,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true" name="Geolocation.Header.LocationAge" units="seconds"
     expires_after="M85">
+  <obsolete>
+    Code for recording this histogram was removed in July 2022. Recording this
+    long-expired histogram was slowing down navigations.
+  </obsolete>
   <owner>kcarattini@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <summary>
@@ -45,6 +49,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Geolocation.Header.PermissionState"
     enum="GeolocationHeaderPermissionState" expires_after="M85">
+  <obsolete>
+    Code for recording this histogram was removed in July 2022. Recording this
+    long-expired histogram was slowing down navigations.
+  </obsolete>
   <owner>kcarattini@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <summary>
@@ -56,6 +64,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true" name="Geolocation.Header.TimeListening" units="ms"
     expires_after="M85">
+  <obsolete>
+    Code for recording this histogram was removed in July 2022. Recording this
+    long-expired histogram was slowing down navigations.
+  </obsolete>
   <owner>kcarattini@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <summary>
@@ -93,7 +105,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Geolocation.NetworkLocationRequest.Event"
-    enum="NetworkLocationRequestEvent" expires_after="2022-12-04">
+    enum="NetworkLocationRequestEvent" expires_after="2023-02-12">
   <owner>mattreynolds@chromium.org</owner>
   <owner>device-dev@chromium.org</owner>
   <summary>
@@ -105,14 +117,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Geolocation.NetworkLocationRequest.NetError"
-    enum="NetErrorCodes" expires_after="2022-11-27">
+    enum="NetErrorCodes" expires_after="2023-02-12">
   <owner>JamesHollyer@chromium.org</owner>
   <owner>device-dev@chromium.org</owner>
   <summary>Network errors in NetworkLocationRequest.</summary>
 </histogram>
 
 <histogram name="Geolocation.NetworkLocationRequest.ResponseCode"
-    enum="HttpResponseCode" expires_after="2022-11-27">
+    enum="HttpResponseCode" expires_after="2023-02-12">
   <owner>mattreynolds@chromium.org</owner>
   <owner>device-dev@chromium.org</owner>
   <summary>

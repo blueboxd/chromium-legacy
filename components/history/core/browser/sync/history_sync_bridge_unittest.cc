@@ -20,7 +20,7 @@
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/history_specifics.pb.h"
-#include "components/sync/test/model/forwarding_model_type_change_processor.h"
+#include "components/sync/test/forwarding_model_type_change_processor.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,14 +36,32 @@ using testing::Return;
 sync_pb::HistorySpecifics CreateSpecifics(
     base::Time visit_time,
     const std::string& originator_cache_guid,
-    const GURL& url) {
+    const std::vector<GURL>& urls,
+    const std::vector<VisitID>& originator_visit_ids = {}) {
+  DCHECK_EQ(originator_visit_ids.size(), urls.size());
   sync_pb::HistorySpecifics specifics;
   specifics.set_visit_time_windows_epoch_micros(
       visit_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
   specifics.set_originator_cache_guid(originator_cache_guid);
-  auto* url_entry = specifics.add_redirect_entries();
-  url_entry->set_url(url.spec());
+  specifics.mutable_page_transition()->set_core_transition(
+      sync_pb::SyncEnums_PageTransition_LINK);
+  for (size_t i = 0; i < urls.size(); ++i) {
+    auto* redirect_entry = specifics.add_redirect_entries();
+    redirect_entry->set_originator_visit_id(originator_visit_ids[i]);
+    redirect_entry->set_url(urls[i].spec());
+    redirect_entry->set_redirect_type(
+        sync_pb::SyncEnums_PageTransitionRedirectType_SERVER_REDIRECT);
+  }
   return specifics;
+}
+
+sync_pb::HistorySpecifics CreateSpecifics(
+    base::Time visit_time,
+    const std::string& originator_cache_guid,
+    const GURL& url,
+    VisitID originator_visit_id = 0) {
+  return CreateSpecifics(visit_time, originator_cache_guid, std::vector{url},
+                         std::vector{originator_visit_id});
 }
 
 syncer::EntityData SpecificsToEntityData(
@@ -485,8 +503,7 @@ TEST_F(HistorySyncBridgeTest, UploadsNewLocalVisit) {
 
   // Notify the bridge about the visit - it should be sent to the processor.
   bridge()->OnURLVisited(
-      /*history_backend=*/nullptr, visit_row.transition, url_row,
-      visit_row.visit_time);
+      /*history_backend=*/nullptr, url_row, visit_row);
 
   const std::string storage_key =
       HistorySyncMetadataDatabase::StorageKeyFromVisitTime(
@@ -522,8 +539,7 @@ TEST_F(HistorySyncBridgeTest, UploadsUpdatedLocalVisit) {
 
   // Notify the bridge about the visit - it should be sent to the processor.
   bridge()->OnURLVisited(
-      /*history_backend=*/nullptr, visit_row.transition, url_row,
-      visit_row.visit_time);
+      /*history_backend=*/nullptr, url_row, visit_row);
 
   const std::string storage_key =
       HistorySyncMetadataDatabase::StorageKeyFromVisitTime(
@@ -587,11 +603,11 @@ TEST_F(HistorySyncBridgeTest, UploadsLocalVisitWithRedirects) {
 
   // Notify the bridge about all of the visits.
   bridge()->OnURLVisited(
-      /*history_backend=*/nullptr, visit_row1.transition, url_row1, visit_time);
+      /*history_backend=*/nullptr, url_row1, visit_row1);
   bridge()->OnURLVisited(
-      /*history_backend=*/nullptr, visit_row2.transition, url_row2, visit_time);
+      /*history_backend=*/nullptr, url_row2, visit_row2);
   bridge()->OnURLVisited(
-      /*history_backend=*/nullptr, visit_row3.transition, url_row3, visit_time);
+      /*history_backend=*/nullptr, url_row3, visit_row3);
 
   // The whole chain should have resulting in a single entity being Put().
   const std::string storage_key =
@@ -629,11 +645,9 @@ TEST_F(HistorySyncBridgeTest, UntracksEntitiesAfterCommit) {
 
   // Notify the bridge about the visits - they should be sent to the processor.
   bridge()->OnURLVisited(
-      /*history_backend=*/nullptr, visit_row1.transition, url_row1,
-      visit_row1.visit_time);
+      /*history_backend=*/nullptr, url_row1, visit_row1);
   bridge()->OnURLVisited(
-      /*history_backend=*/nullptr, visit_row2.transition, url_row2,
-      visit_row2.visit_time);
+      /*history_backend=*/nullptr, url_row2, visit_row2);
 
   EXPECT_EQ(processor()->GetEntities().size(), 2u);
   // The metadata for these entities should now be tracked.
@@ -688,8 +702,7 @@ TEST_F(HistorySyncBridgeTest, DoesNotUntrackEntityPendingCommit) {
 
   // Notify the bridge about the visit.
   bridge()->OnURLVisited(
-      /*history_backend=*/nullptr, visit_row1.transition, url_row1,
-      visit_row1.visit_time);
+      /*history_backend=*/nullptr, url_row1, visit_row1);
 
   EXPECT_EQ(processor()->GetEntities().size(), 1u);
 
@@ -720,11 +733,9 @@ TEST_F(HistorySyncBridgeTest, UntracksEntityOnIndividualDeletion) {
 
   // Notify the bridge about the visits - they should be sent to the processor.
   bridge()->OnURLVisited(
-      /*history_backend=*/nullptr, visit_row1.transition, url_row1,
-      visit_row1.visit_time);
+      /*history_backend=*/nullptr, url_row1, visit_row1);
   bridge()->OnURLVisited(
-      /*history_backend=*/nullptr, visit_row2.transition, url_row2,
-      visit_row2.visit_time);
+      /*history_backend=*/nullptr, url_row2, visit_row2);
   ASSERT_EQ(GetAllMetadata().size(), 2u);
 
   EXPECT_EQ(processor()->GetEntities().size(), 2u);
@@ -756,11 +767,9 @@ TEST_F(HistorySyncBridgeTest, UntracksAllEntitiesOnAllHistoryDeletion) {
 
   // Notify the bridge about the visits - they should be sent to the processor.
   bridge()->OnURLVisited(
-      /*history_backend=*/nullptr, visit_row1.transition, url_row1,
-      visit_row1.visit_time);
+      /*history_backend=*/nullptr, url_row1, visit_row1);
   bridge()->OnURLVisited(
-      /*history_backend=*/nullptr, visit_row2.transition, url_row2,
-      visit_row2.visit_time);
+      /*history_backend=*/nullptr, url_row2, visit_row2);
   ASSERT_EQ(GetAllMetadata().size(), 2u);
 
   EXPECT_EQ(processor()->GetEntities().size(), 2u);
@@ -778,6 +787,91 @@ TEST_F(HistorySyncBridgeTest, UntracksAllEntitiesOnAllHistoryDeletion) {
                           /*favicon_urls=*/{});
 
   EXPECT_TRUE(GetAllMetadata().empty());
+}
+
+// Note: The remapping logic is covered in the separate test suite
+// VisitIDRemapperTest. This test serves as an "integration test" for the
+// plumbing from HistorySyncBridge to VisitIDRemapper.
+TEST_F(HistorySyncBridgeTest, RemapsOriginatorVisitIDs) {
+  const std::string remote_cache_guid("remote_cache_guid");
+
+  // Situation: There's a first visit, which refers to a chain of 3 visits,
+  // which in turn opens a last visit.
+
+  const base::Time first_visit_time = base::Time::Now() - base::Minutes(10);
+  const VisitID first_visit_originator_id = 100;
+  sync_pb::HistorySpecifics entity_first =
+      CreateSpecifics(first_visit_time, remote_cache_guid,
+                      GURL("https://some.url"), first_visit_originator_id);
+
+  const base::Time chain_visit_time = base::Time::Now() - base::Minutes(9);
+  const std::vector<GURL> chain_urls{GURL("https://start.chain.url"),
+                                     GURL("https://middle.chain.url"),
+                                     GURL("https://end.chain.url")};
+  const std::vector<VisitID> chain_originator_visit_ids{101, 102, 103};
+  sync_pb::HistorySpecifics entity_chain =
+      CreateSpecifics(chain_visit_time, remote_cache_guid, chain_urls,
+                      chain_originator_visit_ids);
+  entity_chain.set_originator_referring_visit_id(
+      entity_first.redirect_entries(0).originator_visit_id());
+
+  const base::Time last_visit_time = base::Time::Now() - base::Minutes(8);
+  const VisitID last_visit_originator_id = 104;
+  sync_pb::HistorySpecifics entity_last =
+      CreateSpecifics(last_visit_time, remote_cache_guid,
+                      GURL("https://other.url"), last_visit_originator_id);
+  entity_last.set_originator_opener_visit_id(
+      entity_chain.redirect_entries(2).originator_visit_id());
+
+  // Start syncing with these three entities - this should trigger the remapping
+  // of originator IDs into local IDs.
+  MergeSyncData({entity_first, entity_chain, entity_last});
+
+  VisitRow first_row;
+  ASSERT_TRUE(backend()->GetLastVisitByTime(first_visit_time, &first_row));
+  ASSERT_EQ(first_row.originator_visit_id, first_visit_originator_id);
+
+  VisitRow chain_end_row;
+  ASSERT_TRUE(backend()->GetLastVisitByTime(chain_visit_time, &chain_end_row));
+  ASSERT_EQ(chain_end_row.originator_visit_id,
+            chain_originator_visit_ids.back());
+  // Make sure the chain got preserved (note that GetRedirectChain is based on
+  // *local* visit IDs, not originator IDs).
+  VisitVector chain_rows = backend()->GetRedirectChain(chain_end_row);
+  EXPECT_EQ(chain_rows.size(), 3u);
+  // Make sure the referrer (first visit) got remapped.
+  EXPECT_EQ(chain_rows.front().referring_visit, first_row.visit_id);
+
+  VisitRow last_row;
+  ASSERT_TRUE(backend()->GetLastVisitByTime(last_visit_time, &last_row));
+  ASSERT_EQ(last_row.originator_visit_id, last_visit_originator_id);
+  // Make sure the opener (last visit of the chain) got remapped.
+  EXPECT_EQ(last_row.opener_visit, chain_rows.back().visit_id);
+}
+
+TEST_F(HistorySyncBridgeTest, RemapsLegacyRedirectChain) {
+  const std::string remote_cache_guid("remote_cache_guid");
+
+  // Situation: There's a redirect chain of 3 visits, coming from a legacy
+  // client, meaning that their originator visit IDs are unset (zero).
+
+  const base::Time visit_time = base::Time::Now() - base::Minutes(9);
+  const std::vector<GURL> urls{GURL("https://start.chain.url"),
+                               GURL("https://middle.chain.url"),
+                               GURL("https://end.chain.url")};
+  const std::vector<VisitID> originator_visit_ids{0, 0, 0};
+  sync_pb::HistorySpecifics entity = CreateSpecifics(
+      visit_time, remote_cache_guid, urls, originator_visit_ids);
+
+  // Start syncing - this should trigger the creation of local referrer IDs.
+  MergeSyncData({entity});
+
+  VisitRow chain_end_row;
+  ASSERT_TRUE(backend()->GetLastVisitByTime(visit_time, &chain_end_row));
+  // Make sure the chain got preserved (even though there were no originator
+  // visit IDs, and thus no explicit links between the individual visits).
+  VisitVector chain_rows = backend()->GetRedirectChain(chain_end_row);
+  EXPECT_EQ(chain_rows.size(), 3u);
 }
 
 }  // namespace

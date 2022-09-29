@@ -25,7 +25,7 @@ namespace base {
 class Value;
 }  // namespace base
 
-namespace chromeos {
+namespace ash {
 
 class CellularPolicyHandler;
 class ManagedCellularPrefHandler;
@@ -339,6 +339,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
       weak_ptr_factory_{this};
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_MANAGED_NETWORK_CONFIGURATION_HANDLER_IMPL_H_

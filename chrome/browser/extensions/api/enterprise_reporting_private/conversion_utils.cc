@@ -4,11 +4,14 @@
 
 #include "chrome/browser/extensions/api/enterprise_reporting_private/conversion_utils.h"
 
+#include "build/build_config.h"
+
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
 #include <memory>
 #include <utility>
 
+#include "base/base64url.h"
 #include "base/files/file_path.h"
 #include "components/device_signals/core/browser/signals_types.h"
 #include "components/device_signals/core/common/common_types.h"
@@ -62,6 +65,13 @@ api::enterprise_reporting_private::PresenceValue ConvertPresenceValue(
   }
 }
 
+std::string EncodeHash(const std::string& byte_string) {
+  std::string encoded_string;
+  base::Base64UrlEncode(byte_string, base::Base64UrlEncodePolicy::OMIT_PADDING,
+                        &encoded_string);
+  return encoded_string;
+}
+
 }  // namespace
 
 std::vector<device_signals::GetFileSystemInfoOptions>
@@ -75,8 +85,8 @@ ConvertFileSystemInfoOptions(
     converted_param.file_path =
         base::FilePath::FromUTF8Unsafe(api_options_param.path);
     converted_param.compute_sha256 = api_options_param.compute_sha256;
-    converted_param.compute_is_executable =
-        api_options_param.compute_is_executable;
+    converted_param.compute_executable_metadata =
+        api_options_param.compute_executable_metadata;
     converted_options.push_back(std::move(converted_param));
   }
   return converted_options;
@@ -102,37 +112,30 @@ absl::optional<ParsedSignalsError> ConvertFileSystemInfoResponse(
     response.presence = ConvertPresenceValue(file_system_item.presence);
 
     if (file_system_item.sha256_hash) {
-      response.sha256_hash =
-          std::make_unique<std::string>(file_system_item.sha256_hash.value());
+      response.sha256_hash = std::make_unique<std::string>(
+          EncodeHash(file_system_item.sha256_hash.value()));
     }
 
     if (file_system_item.executable_metadata) {
-      response.is_executable = std::make_unique<bool>(
-          file_system_item.executable_metadata->is_executable);
+      const auto& executable_metadata =
+          file_system_item.executable_metadata.value();
 
-      if (response.is_executable) {
-        const auto& executable_metadata =
-            file_system_item.executable_metadata.value();
+      response.is_running =
+          std::make_unique<bool>(executable_metadata.is_running);
 
-        if (executable_metadata.is_running) {
-          response.is_running =
-              std::make_unique<bool>(executable_metadata.is_running.value());
-        }
+      if (executable_metadata.public_key_sha256) {
+        response.public_key_sha256 = std::make_unique<std::string>(
+            EncodeHash(executable_metadata.public_key_sha256.value()));
+      }
 
-        if (executable_metadata.public_key_sha256) {
-          response.public_key_sha256 = std::make_unique<std::string>(
-              executable_metadata.public_key_sha256.value());
-        }
+      if (executable_metadata.product_name) {
+        response.product_name = std::make_unique<std::string>(
+            executable_metadata.product_name.value());
+      }
 
-        if (executable_metadata.product_name) {
-          response.product_name = std::make_unique<std::string>(
-              executable_metadata.product_name.value());
-        }
-
-        if (executable_metadata.version) {
-          response.version = std::make_unique<std::string>(
-              executable_metadata.version.value());
-        }
+      if (executable_metadata.version) {
+        response.version =
+            std::make_unique<std::string>(executable_metadata.version.value());
       }
     }
 

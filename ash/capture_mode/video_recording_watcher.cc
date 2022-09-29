@@ -16,6 +16,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/projector/projector_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -120,8 +121,9 @@ gfx::RectF GetCursorOverlayBounds(
 }
 
 CameraPreviewView* GetCameraPreviewView() {
-  auto* camera_controller = CaptureModeController::Get()->camera_controller();
-  return camera_controller ? camera_controller->camera_preview_view() : nullptr;
+  return CaptureModeController::Get()
+      ->camera_controller()
+      ->camera_preview_view();
 }
 
 }  // namespace
@@ -231,9 +233,7 @@ VideoRecordingWatcher::VideoRecordingWatcher(
   window_being_recorded_->AddPreTargetHandler(
       this, ui::EventTarget::Priority::kAccessibility);
 
-  auto* camera_controller = controller_->camera_controller();
-  if (camera_controller)
-    camera_controller->OnRecordingStarted(is_in_projector_mode_);
+  controller_->camera_controller()->OnRecordingStarted(is_in_projector_mode_);
 
   if (is_in_projector_mode_) {
     recording_overlay_controller_ =
@@ -287,9 +287,7 @@ void VideoRecordingWatcher::ShutDown() {
   auto to_be_removed_request = std::move(non_root_window_capture_request_);
   window_being_recorded_->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
-  if (controller_->camera_controller()) {
-    controller_->camera_controller()->OnRecordingEnded();
-  }
+  controller_->camera_controller()->OnRecordingEnded();
 }
 
 aura::Window* VideoRecordingWatcher::GetCameraPreviewParentWindow() const {
@@ -354,9 +352,7 @@ void VideoRecordingWatcher::OnWindowBoundsChanged(
 
   // The bounds of the camera preview should be updated if the bounds of the
   // window being recorded is changed.
-  auto* camera_controller = controller_->camera_controller();
-  if (camera_controller)
-    camera_controller->MaybeUpdatePreviewWidget();
+  controller_->camera_controller()->MaybeUpdatePreviewWidget();
 }
 
 void VideoRecordingWatcher::OnWindowOpacitySet(
@@ -476,9 +472,8 @@ void VideoRecordingWatcher::OnDisplayMetricsChanged(
   // The bounds of camera preview should be updated accordingly if the display
   // metrics is changed. When the capture source is `kWindow`, it will be
   // handled in `OnWindowBoundsChanged`;
-  auto* camera_controller = controller_->camera_controller();
-  if (camera_controller && recording_source_ != CaptureModeSource::kWindow)
-    camera_controller->MaybeUpdatePreviewWidget();
+  if (recording_source_ != CaptureModeSource::kWindow)
+    controller_->camera_controller()->MaybeUpdatePreviewWidget();
 
   // We don't show a dimming overlay when recording a fullscreen.
   if (recording_source_ == CaptureModeSource::kFullscreen)
@@ -686,10 +681,6 @@ void VideoRecordingWatcher::UpdateLayerStackingAndDimmers() {
     return;
   }
 
-  // For windows that are above the recorded window in the z-order and on the
-  // same display, they're dimmed separately.
-  const SkColor dimming_color = AshColorProvider::Get()->GetShieldLayerColor(
-      AshColorProvider::ShieldLayerType::kShield40);
   // We use |kAllDesks| here for the following reasons:
   // 1- A dimmed window can move out from the desk where the window being
   //    recorded is (either by keyboard shortcut or drag and drop in overview).
@@ -718,10 +709,12 @@ void VideoRecordingWatcher::UpdateLayerStackingAndDimmers() {
       continue;
     }
 
+    // Dim windows that are above the recorded window in the z-order and on the
+    // same display.
     auto& dimmer = dimmers_[window];
     if (!dimmer) {
       dimmer = std::make_unique<WindowDimmer>(window, /*animate=*/false, this);
-      dimmer->SetDimColor(dimming_color);
+      dimmer->SetDimColor(kColorAshShieldAndBase40);
       dimmer->window()->Show();
     }
   }

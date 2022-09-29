@@ -20,11 +20,13 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/timer/timer.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history_clusters/core/clustering_backend.h"
 #include "components/history_clusters/core/history_clusters_service_task_get_most_recent_clusters.h"
+#include "components/history_clusters/core/history_clusters_service_task_update_clusters.h"
 #include "components/history_clusters/core/history_clusters_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -142,6 +144,8 @@ class HistoryClustersService : public base::SupportsUserData,
   // de-duplication across multiple batches. Any UI should almost certainly use
   // `QueryClustersState` instead.
   //
+  // Entrypoint to `HistoryClustersServiceTaskGetMostRecentClusters`.
+  //
   // Returns the freshest clusters created from the user visit history based on
   // `query`, `begin_time`, and `continuation_params`.
   // - `begin_time` is an inclusive lower bound. In the general case where the
@@ -151,17 +155,29 @@ class HistoryClustersService : public base::SupportsUserData,
   //   should be set to the default initialized
   //   `QueryClustersContinuationParams`
   //   if the caller wants the newest visits.
+  // - `recluster`, if true, forces reclustering as if
+  //   `persist_clusters_in_history_db` were false.
   // The returned clusters are sorted in reverse-chronological order based on
   // their highest scoring visit. The visits within each cluster are sorted by
   // score, from highest to lowest.
   //
   // TODO(tommycli): Investigate entirely hiding access to this low-level method
-  // behind QueryClustersState.
+  //  behind QueryClustersState.
   std::unique_ptr<HistoryClustersServiceTaskGetMostRecentClusters>
   QueryClusters(ClusteringRequestSource clustering_request_source,
                 base::Time begin_time,
                 QueryClustersContinuationParams continuation_params,
+                bool recluster,
                 QueryClustersCallback callback);
+
+  // Invokes `UpdateClusters()` after a short delay, then again periodically.
+  // E.g., might invoke `UpdateClusters()` initially 5 minutes after startup,
+  // then every 1 hour afterwards.
+  void RepeatedlyUpdateClusters();
+
+  // Entrypoint to the `HistoryClustersServiceTaskUpdateClusters`. Updates the
+  // persisted clusters in the history DB and invokes `callback` when done.
+  void UpdateClusters();
 
   // Returns matched keyword data from cache synchronously if `query` matches a
   // cluster keyword. This ignores clusters with only one visit to avoid
@@ -242,6 +258,19 @@ class HistoryClustersService : public base::SupportsUserData,
   // task.
   std::unique_ptr<HistoryClustersServiceTaskGetMostRecentClusters>
       cache_keyword_query_task_;
+
+  // Tracks the current update task. Will be `nullptr` or
+  // `update_clusters_task_.Done()` will be true if there is no ongoing task.
+  std::unique_ptr<HistoryClustersServiceTaskUpdateClusters>
+      update_clusters_task_;
+
+  // Used to invoke `UpdateClusters()` on startup after a short delay. See
+  // `RepeatedlyUpdateClusters()`'s comment.
+  base::OneShotTimer update_clusters_after_startup_delay_timer_;
+
+  // Used to invoke `UpdateClusters()` periodically. See
+  // `RepeatedlyUpdateClusters()`'s comment.
+  base::RepeatingTimer update_clusters_period_timer_;
 
   // A list of observers for this service.
   base::ObserverList<Observer> observers_;

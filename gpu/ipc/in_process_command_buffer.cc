@@ -33,6 +33,7 @@
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/command_buffer_task_executor.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -49,21 +50,22 @@
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/command_buffer/service/shared_image_interface_in_process.h"
+#include "gpu/command_buffer/service/single_task_sequence.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/webgpu_decoder.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
-#include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
-#include "gpu/ipc/shared_image_interface_in_process.h"
-#include "gpu/ipc/single_task_sequence.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
+#include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/create_gr_gl_interface.h"
 #include "ui/gl/init/gl_factory.h"
@@ -95,18 +97,13 @@ class ScopedEvent {
 
 }  // namespace
 
-InProcessCommandBuffer::SharedImageInterfaceHelper::SharedImageInterfaceHelper(
-    InProcessCommandBuffer* command_buffer)
-    : command_buffer_(command_buffer) {}
-
-void InProcessCommandBuffer::SharedImageInterfaceHelper::SetError() {
+void InProcessCommandBuffer::SetError() {
   // Signal errors by losing the command buffer.
-  command_buffer_->command_buffer_->SetParseError(error::kLostContext);
+  command_buffer_->SetParseError(error::kLostContext);
 }
 
-void InProcessCommandBuffer::SharedImageInterfaceHelper::WrapTaskWithGpuCheck(
-    base::OnceClosure task) {
-  command_buffer_->RunTaskOnGpuThread(std::move(task));
+void InProcessCommandBuffer::WrapTaskWithGpuCheck(base::OnceClosure task) {
+  RunTaskOnGpuThread(std::move(task));
 }
 
 InProcessCommandBuffer::InProcessCommandBuffer(
@@ -219,8 +216,7 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
   if (result == gpu::ContextResult::kSuccess) {
     capabilities_ = capabilities;
     shared_image_interface_ = std::make_unique<SharedImageInterfaceInProcess>(
-        task_sequence_, gpu_dependency_.get(),
-        std::make_unique<SharedImageInterfaceHelper>(this));
+        task_sequence_, gpu_dependency_.get(), this);
   }
 
   return result;
@@ -292,7 +288,8 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   } else {
     // TODO(crbug.com/1247756): Is creating an offscreen GL surface needed
     // still?
-    surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
+    surface_ = gl::init::CreateOffscreenGLSurface(gl::GetDefaultDisplay(),
+                                                  gfx::Size());
     if (!surface_.get()) {
       DestroyOnGpuThread();
       LOG(ERROR) << "ContextResult::kFatalFailure: Failed to create surface.";

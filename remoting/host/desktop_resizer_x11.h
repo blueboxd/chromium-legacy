@@ -27,12 +27,6 @@ class ScreenResources {
 
   x11::RandR::Mode GetIdForMode(const std::string& name);
 
-  // For now, assume we're only ever interested in the first output.
-  x11::RandR::Output GetOutput();
-
-  // For now, assume we're only ever interested in the first crtc.
-  x11::RandR::Crtc GetCrtc();
-
   x11::RandR::GetScreenResourcesCurrentReply* get();
 
  private:
@@ -58,24 +52,23 @@ class DesktopResizerX11 : public DesktopResizer {
 
  private:
   // Add a mode matching the specified resolution and switch to it.
-  void SetResolutionNewMode(const ScreenResolution& resolution);
+  void SetResolutionNewMode(x11::RandR::Output output,
+                            const ScreenResolution& resolution);
 
   // Attempt to switch to an existing mode matching the specified resolution
   // using RandR, if such a resolution exists. Otherwise, do nothing.
   void SetResolutionExistingMode(const ScreenResolution& resolution);
 
-  // Create a mode, and attach it to the primary output. If the mode already
-  // exists, it is left unchanged.
-  void CreateMode(const char* name, int width, int height);
+  // Create a mode, and attach it to the output. If the mode already exists, it
+  // is left unchanged. Returns the new mode ID, or None (0) on failure.
+  x11::RandR::Mode CreateMode(x11::RandR::Output output,
+                              const std::string& name,
+                              int width,
+                              int height);
 
-  // Remove the specified mode from the primary output, and delete it. If the
-  // mode is in use, it is not deleted.
-  void DeleteMode(const char* name);
-
-  // Switch the primary output to the specified mode. If name is nullptr, the
-  // primary output is disabled instead, which is required before changing
-  // its resolution.
-  void SwitchToMode(const char* name);
+  // Remove the specified mode from the output, and delete it. If the mode is in
+  // use, it is not deleted.
+  void DeleteMode(x11::RandR::Output output, const std::string& name);
 
   raw_ptr<x11::Connection> connection_;
   const raw_ptr<x11::RandR> randr_ = nullptr;

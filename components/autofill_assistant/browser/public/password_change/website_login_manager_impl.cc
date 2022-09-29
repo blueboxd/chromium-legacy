@@ -455,27 +455,30 @@ void WebsiteLoginManagerImpl::EditPasswordForLogin(
                      weak_ptr_factory_.GetWeakPtr())));
   pending_requests_.back()->Start();
 }
+
 absl::optional<std::string> WebsiteLoginManagerImpl::GeneratePassword(
+    content::RenderFrameHost* rfh,
     autofill::FormSignature form_signature,
     autofill::FieldSignature field_signature,
     uint64_t max_length) {
+  if (!rfh)
+    return absl::nullopt;
   auto* factory =
       password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
           web_contents_);
   DCHECK(factory);
-  // TODO(crbug.com/1043132): Add support for non-main frames. If another
-  // frame has a different origin than the main frame, passwords-related
-  // features may not work.
-  auto* driver =
-      factory->GetDriverForFrame(web_contents_->GetPrimaryMainFrame());
-  if (!driver) {
+  auto* driver = factory->GetDriverForFrame(rfh);
+  if (!driver)
     return absl::nullopt;
-  }
-
-  return base::UTF16ToUTF8(
-      driver->GetPasswordGenerationHelper()->GeneratePassword(
+  generated_password_ =
+      base::UTF16ToUTF8(driver->GetPasswordGenerationHelper()->GeneratePassword(
           driver->GetLastCommittedURL(), form_signature, field_signature,
           max_length));
+  return generated_password_;
+}
+
+const std::string& WebsiteLoginManagerImpl::GetGeneratedPassword() {
+  return generated_password_;
 }
 
 void WebsiteLoginManagerImpl::PresaveGeneratedPassword(

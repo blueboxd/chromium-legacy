@@ -7,16 +7,16 @@
 
 #include "ash/ash_export.h"
 #include "base/memory/raw_ptr.h"
-#include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "ui/lottie/animation.h"
-#include "ui/lottie/animation_observer.h"
 
 namespace views {
 class AnimatedImageView;
 }  // namespace views
 
 namespace ash {
+
+class AmbientAnimationProgressTracker;
 
 // Plays an AnimatedImageView in a loop until destruction. The "looping" logic
 // meets ambient mode's custom requirements: The lottie animation may optionally
@@ -40,22 +40,19 @@ namespace ash {
 // [0, D]
 // [0, D]
 // ...
-class ASH_EXPORT AmbientAnimationPlayer : public lottie::AnimationObserver {
+class ASH_EXPORT AmbientAnimationPlayer {
  public:
   // Starts playing the |animated_image_view| immediately upon construction.
   explicit AmbientAnimationPlayer(
-      views::AnimatedImageView* animated_image_view);
+      views::AnimatedImageView* animated_image_view,
+      AmbientAnimationProgressTracker* progress_tracker);
   AmbientAnimationPlayer(const AmbientAnimationPlayer&) = delete;
   AmbientAnimationPlayer& operator=(const AmbientAnimationPlayer&) = delete;
-  ~AmbientAnimationPlayer() override;
-
-  // lottie::AnimationObserver implementation:
-  void AnimationCycleEnded(const lottie::Animation* animation) override;
+  ~AmbientAnimationPlayer();
 
  private:
   const base::raw_ptr<views::AnimatedImageView> animated_image_view_;
-  base::ScopedObservation<lottie::Animation, lottie::AnimationObserver>
-      animation_observation_{this};
+  const base::raw_ptr<AmbientAnimationProgressTracker> progress_tracker_;
   base::TimeDelta cycle_restart_timestamp_;
 };
 

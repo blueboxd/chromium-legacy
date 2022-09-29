@@ -4,6 +4,8 @@
 
 #include "components/commerce/core/shopping_service_test_base.h"
 
+#include "base/containers/flat_map.h"
+#include "base/memory/ref_counted.h"
 #include "base/notreached.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
@@ -13,12 +15,18 @@
 #include "components/optimization_guide/proto/common_types.pb.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 
+using optimization_guide::OnDemandOptimizationGuideDecisionRepeatingCallback;
 using optimization_guide::OptimizationGuideDecision;
 using optimization_guide::OptimizationGuideDecisionCallback;
+using optimization_guide::OptimizationGuideDecisionWithMetadata;
 using optimization_guide::OptimizationMetadata;
 using optimization_guide::proto::Any;
 using optimization_guide::proto::OptimizationType;
+using optimization_guide::proto::RequestContext;
 
 namespace commerce {
 
@@ -56,6 +64,39 @@ OptimizationGuideDecision MockOptGuideDecider::CanApplyOptimization(
   return OptimizationGuideDecision::kUnknown;
 }
 
+void MockOptGuideDecider::CanApplyOptimizationOnDemand(
+    const std::vector<GURL>& urls,
+    const base::flat_set<OptimizationType>& optimization_types,
+    RequestContext request_context,
+    OnDemandOptimizationGuideDecisionRepeatingCallback callback) {
+  if (optimization_types.contains(OptimizationType::PRICE_TRACKING)) {
+    for (const GURL& url : urls) {
+      if (on_demand_shopping_responses_.find(url.spec()) ==
+          on_demand_shopping_responses_.end()) {
+        continue;
+      }
+
+      base::flat_map<OptimizationType, OptimizationGuideDecisionWithMetadata>
+          decision_map;
+      decision_map[OptimizationType::PRICE_TRACKING] =
+          on_demand_shopping_responses_[url.spec()];
+
+      callback.Run(url, std::move(decision_map));
+    }
+  }
+}
+
+void MockOptGuideDecider::AddOnDemandShoppingResponse(
+    const GURL& url,
+    const OptimizationGuideDecision decision,
+    const OptimizationMetadata& data) {
+  optimization_guide::OptimizationGuideDecisionWithMetadata response;
+  response.decision = decision;
+  response.metadata = data;
+
+  on_demand_shopping_responses_[url.spec()] = response;
+}
+
 void MockOptGuideDecider::SetResponse(const GURL& url,
                                       const OptimizationType type,
                                       const OptimizationGuideDecision decision,
@@ -77,11 +118,18 @@ OptimizationMetadata MockOptGuideDecider::BuildPriceTrackingResponse(
   PriceTrackingData price_tracking_data;
   BuyableProduct* buyable_product =
       price_tracking_data.mutable_buyable_product();
-  buyable_product->set_title(title);
-  buyable_product->set_image_url(image_url);
+
+  if (!title.empty())
+    buyable_product->set_title(title);
+
+  if (!image_url.empty())
+    buyable_product->set_image_url(image_url);
+
   buyable_product->set_offer_id(offer_id);
   buyable_product->set_product_cluster_id(product_cluster_id);
-  buyable_product->set_country_code(country_code);
+
+  if (!country_code.empty())
+    buyable_product->set_country_code(country_code);
 
   Any any;
   any.set_type_url(price_tracking_data.GetTypeName());
@@ -148,14 +196,26 @@ void MockWebWrapper::SetMockJavaScriptResult(base::Value* result) {
 ShoppingServiceTestBase::ShoppingServiceTestBase()
     : bookmark_model_(bookmarks::TestBookmarkClient::CreateModel()),
       opt_guide_(std::make_unique<MockOptGuideDecider>()),
-      pref_service_(std::make_unique<TestingPrefServiceSimple>()) {
+      pref_service_(std::make_unique<TestingPrefServiceSimple>()),
+      identity_test_env_(std::make_unique<signin::IdentityTestEnvironment>()),
+      test_url_loader_factory_(
+          std::make_unique<network::TestURLLoaderFactory>()) {
   shopping_service_ = std::make_unique<ShoppingService>(
-      bookmark_model_.get(), opt_guide_.get(), pref_service_.get());
+      bookmark_model_.get(), opt_guide_.get(), pref_service_.get(),
+      identity_test_env_->identity_manager(),
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          test_url_loader_factory_.get()),
+      nullptr);
 }
 
 ShoppingServiceTestBase::~ShoppingServiceTestBase() = default;
 
 void ShoppingServiceTestBase::TestBody() {}
+
+void ShoppingServiceTestBase::TearDown() {
+  // Reset the enabled/disabled features after each test.
+  test_features_.Reset();
+}
 
 void ShoppingServiceTestBase::DidNavigatePrimaryMainFrame(WebWrapper* web) {
   shopping_service_->DidNavigatePrimaryMainFrame(web);
@@ -172,6 +232,12 @@ void ShoppingServiceTestBase::DidNavigateAway(WebWrapper* web,
 
 void ShoppingServiceTestBase::WebWrapperDestroyed(WebWrapper* web) {
   shopping_service_->WebWrapperDestroyed(web);
+}
+
+void ShoppingServiceTestBase::MergeProductInfoData(
+    ProductInfo* info,
+    const base::Value::Dict& on_page_data_map) {
+  ShoppingService::MergeProductInfoData(info, on_page_data_map);
 }
 
 int ShoppingServiceTestBase::GetProductInfoCacheOpenURLCount(const GURL& url) {

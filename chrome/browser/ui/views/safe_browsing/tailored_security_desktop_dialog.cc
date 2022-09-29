@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/metrics/histogram_functions.h"
-#include "chrome/browser/safe_browsing/tailored_security/tailored_security_outcome.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -17,6 +16,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/safe_browsing/core/browser/tailored_security_service/tailored_security_outcome.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/l10n/l10n_util.h"

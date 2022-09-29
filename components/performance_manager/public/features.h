@@ -19,39 +19,12 @@ namespace performance_manager::features {
 extern const base::Feature kRunOnMainThread;
 
 #if !BUILDFLAG(IS_ANDROID)
-// Enables urgent discarding of pages directly from PerformanceManager rather
-// than via TabManager.
-extern const base::Feature kUrgentDiscardingFromPerformanceManager;
 
-// The discard strategy to use.
-// Integer values are specified to allow conversion from the integer value in
-// the DiscardStrategy feature param.
-enum class DiscardStrategy : int {
-  // Discards the least recently used tab among the eligible ones. This is the
-  // default strategy.
-  LRU = 0,
-  // Discard the tab with the biggest resident set among the eligible ones.
-  BIGGEST_RSS = 1,
-};
-
-class UrgentDiscardingParams {
- public:
-  ~UrgentDiscardingParams();
-
-  static UrgentDiscardingParams GetParams();
-
-  DiscardStrategy discard_strategy() const { return discard_strategy_; }
-
-  static constexpr base::FeatureParam<int> kDiscardStrategy{
-      &features::kUrgentDiscardingFromPerformanceManager, "DiscardStrategy",
-      static_cast<int>(DiscardStrategy::LRU)};
-
- private:
-  UrgentDiscardingParams();
-  UrgentDiscardingParams(const UrgentDiscardingParams& rhs);
-
-  DiscardStrategy discard_strategy_;
-};
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_LINUX)
+#define URGENT_DISCARDING_FROM_PERFORMANCE_MANAGER() false
+#else
+#define URGENT_DISCARDING_FROM_PERFORMANCE_MANAGER() true
+#endif
 
 // Enable background tab loading of pages (restored via session restore)
 // directly from Performance Manager rather than via TabLoader.
@@ -67,6 +40,9 @@ extern const base::Feature kBatterySaverModeAvailable;
 // High-Efficiency Mode.
 extern const base::FeatureParam<base::TimeDelta>
     kHighEfficiencyModeTimeBeforeDiscard;
+
+// The default state of the high-efficiency mode pref
+extern const base::FeatureParam<bool> kHighEfficiencyModeDefaultState;
 #endif
 
 // Policy that evicts the BFCache of pages that become non visible or the

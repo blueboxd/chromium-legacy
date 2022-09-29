@@ -12,7 +12,9 @@
 
 namespace ash {
 
+class AmbientAnimationProgressTracker;
 class AmbientAnimationStaticResources;
+class AmbientMultiScreenMetricsRecorder;
 class AmbientViewDelegateImpl;
 
 namespace ambient {
@@ -28,9 +30,12 @@ class ASH_EXPORT AmbientContainerView : public views::View {
   // |animation_static_resources| contains the Lottie animation file to render
   // along with its accompanying static image assets. If null, that means the
   // slideshow UI should be rendered instead.
-  AmbientContainerView(AmbientViewDelegateImpl* delegate,
-                       std::unique_ptr<AmbientAnimationStaticResources>
-                           animation_static_resources);
+  AmbientContainerView(
+      AmbientViewDelegateImpl* delegate,
+      AmbientAnimationProgressTracker* progress_tracker,
+      std::unique_ptr<AmbientAnimationStaticResources>
+          animation_static_resources,
+      AmbientMultiScreenMetricsRecorder* multi_screen_metrics_recorder);
   ~AmbientContainerView() override;
 
  private:

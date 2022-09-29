@@ -28,7 +28,7 @@
 #include "chrome/browser/download/background_download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
-#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
+#include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/dlcservice/dlcservice.pb.h"
 #include "components/download/public/background_service/background_download_service.h"
 #include "components/download/public/background_service/download_metadata.h"
@@ -304,8 +304,8 @@ bool PluginVmInstaller::VerifyDownload(
   }
   const base::Value* plugin_vm_image_hash_ptr =
       profile_->GetPrefs()
-          ->GetDictionary(prefs::kPluginVmImage)
-          ->FindKey(prefs::kPluginVmImageHashKeyName);
+          ->GetValueDict(prefs::kPluginVmImage)
+          .Find(prefs::kPluginVmImageHashKeyName);
   if (!plugin_vm_image_hash_ptr) {
     LOG(ERROR) << "Hash of PluginVm image is not specified";
     return false;
@@ -959,8 +959,8 @@ std::string PluginVmInstaller::GetInstallingStateName(InstallingState state) {
 
 GURL PluginVmInstaller::GetPluginVmImageDownloadUrl() {
   const base::Value* url_ptr = profile_->GetPrefs()
-                                   ->GetDictionary(prefs::kPluginVmImage)
-                                   ->FindKey(prefs::kPluginVmImageUrlKeyName);
+                                   ->GetValueDict(prefs::kPluginVmImage)
+                                   .Find(prefs::kPluginVmImageUrlKeyName);
   if (!url_ptr) {
     LOG(ERROR) << "Url to PluginVm image is not specified";
     return GURL();

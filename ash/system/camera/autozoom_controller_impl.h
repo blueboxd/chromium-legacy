@@ -8,9 +8,13 @@
 #include "ash/ash_export.h"
 
 #include "ash/public/cpp/session/session_observer.h"
+#include "ash/system/camera/autozoom_nudge_controller.h"
+#include "ash/system/camera/autozoom_observer.h"
+#include "base/observer_list.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/mojom/cros_camera_service.mojom.h"
 
 namespace ash {
@@ -18,7 +22,9 @@ namespace ash {
 // Controls the Autozoom feature that, when enabled, intelligently
 // pans/tilts/zooms the camera to frame a set of regions of interest captured
 // by the camera.
-class ASH_EXPORT AutozoomControllerImpl : public SessionObserver {
+class ASH_EXPORT AutozoomControllerImpl
+    : public SessionObserver,
+      public media::CameraActiveClientObserver {
  public:
   AutozoomControllerImpl();
 
@@ -35,6 +41,11 @@ class ASH_EXPORT AutozoomControllerImpl : public SessionObserver {
 
   void Toggle();
 
+  void AddObserver(AutozoomObserver* observer);
+  void RemoveObserver(AutozoomObserver* observer);
+
+  bool IsAutozoomControlEnabled();
+
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
 
@@ -48,6 +59,12 @@ class ASH_EXPORT AutozoomControllerImpl : public SessionObserver {
   // Called when the user pref for the enabled status of Autozoom is changed.
   void OnStatePrefChanged();
 
+  void SetAutozoomSupported(bool autozoom_supported);
+
+  // CameraActiveClientObserver
+  void OnActiveClientChange(cros::mojom::CameraClientType type,
+                            bool is_active) override;
+
   // The pref service of the currently active user. Can be null in
   // ash_unittests.
   PrefService* active_user_pref_service_ = nullptr;
@@ -59,6 +76,21 @@ class ASH_EXPORT AutozoomControllerImpl : public SessionObserver {
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   cros::mojom::CameraAutoFramingState state_;
+
+  base::ObserverList<AutozoomObserver> observers_;
+
+  std::unique_ptr<AutozoomNudgeController> nudge_controller_;
+
+  bool autozoom_supported_ = false;
+
+  // The number of current active camera clients. Autozoom control should only
+  // be shown when there's at least one active camera client.
+  int active_camera_client_count_ = 0;
+
+  // All methods of this class should be run on the same sequence.
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<AutozoomControllerImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

@@ -162,6 +162,9 @@ void LayoutNGSVGText::Paint(const PaintInfo& paint_info) const {
 
   PaintInfo block_info(paint_info);
   if (const auto* properties = FirstFragment().PaintProperties()) {
+    // TODO(https://crbug.com/1278452): Also consider Translate, Rotate,
+    // Scale, and Offset, probably via a single transform operation to
+    // FirstFragment().PreTransform().
     if (const auto* transform = properties->Transform())
       block_info.TransformCullRect(*transform);
   }
@@ -298,9 +301,15 @@ bool LayoutNGSVGText::NodeAtPoint(HitTestResult& result,
                                   HitTestPhase phase) {
   TransformedHitTestLocation local_location(hit_test_location,
                                             LocalToSVGParentTransform());
-  return local_location &&
-         LayoutNGBlockFlowMixin<LayoutSVGBlock>::NodeAtPoint(
-             result, *local_location, accumulated_offset, phase);
+  if (!local_location)
+    return false;
+
+  if (!SVGLayoutSupport::IntersectsClipPath(*this, ObjectBoundingBox(),
+                                            *local_location))
+    return false;
+
+  return LayoutNGBlockFlowMixin<LayoutSVGBlock>::NodeAtPoint(
+      result, *local_location, accumulated_offset, phase);
 }
 
 PositionWithAffinity LayoutNGSVGText::PositionForPoint(

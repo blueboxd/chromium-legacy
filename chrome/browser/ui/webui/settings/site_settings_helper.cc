@@ -23,7 +23,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
-#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
@@ -40,7 +39,6 @@
 #include "components/permissions/contexts/bluetooth_chooser_context.h"
 #include "components/permissions/object_permission_context_base.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
-#include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
 #include "components/permissions/permission_util.h"
 #include "components/permissions/permissions_client.h"
@@ -49,11 +47,14 @@
 #include "components/subresource_filter/content/browser/subresource_filter_profile_context.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/url_formatter/url_formatter.h"
+#include "content/public/browser/permission_controller.h"
+#include "content/public/browser/permission_result.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "url/origin.h"
 
 namespace site_settings {
@@ -160,6 +161,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::REQUEST_DESKTOP_SITE, nullptr},
     {ContentSettingsType::GET_DISPLAY_MEDIA_SET_SELECT_ALL_SCREENS, nullptr},
     {ContentSettingsType::NOTIFICATION_INTERACTIONS, nullptr},
+    {ContentSettingsType::REDUCED_ACCEPT_LANGUAGE, nullptr},
 };
 
 static_assert(std::size(kContentSettingsTypeGroupNames) ==
@@ -189,28 +191,6 @@ static_assert(std::size(kSiteSettingSourceStringMapping) ==
                   static_cast<int>(SiteSettingSource::kNumSources),
               "kSiteSettingSourceStringMapping should have "
               "SiteSettingSource::kNumSources elements");
-
-struct PolicyIndicatorTypeStringMapping {
-  PolicyIndicatorType source;
-  const char* indicator_str;
-};
-
-// Converts a policy indicator type to its JS usable string representation.
-const PolicyIndicatorTypeStringMapping kPolicyIndicatorTypeStringMapping[] = {
-    {PolicyIndicatorType::kDevicePolicy, "devicePolicy"},
-    {PolicyIndicatorType::kExtension, "extension"},
-    {PolicyIndicatorType::kNone, "none"},
-    {PolicyIndicatorType::kOwner, "owner"},
-    {PolicyIndicatorType::kPrimaryUser, "primary_user"},
-    {PolicyIndicatorType::kRecommended, "recommended"},
-    {PolicyIndicatorType::kUserPolicy, "userPolicy"},
-    {PolicyIndicatorType::kParent, "parent"},
-    {PolicyIndicatorType::kChildRestriction, "childRestriction"},
-};
-static_assert(std::size(kPolicyIndicatorTypeStringMapping) ==
-                  static_cast<int>(PolicyIndicatorType::kNumIndicators),
-              "kPolicyIndicatorStringMapping should have "
-              "PolicyIndicatorType::kNumIndicators elements");
 
 // Retrieves the corresponding string, according to the following precedence
 // order from highest to lowest priority:
@@ -755,9 +735,14 @@ ContentSetting GetContentSettingForOrigin(
   if (permissions::PermissionDecisionAutoBlocker::IsEnabledForContentSetting(
           content_type)) {
     if (permissions::PermissionUtil::IsPermission(content_type)) {
+      content::PermissionResult permission_result =
+          profile->GetPermissionController()
+              ->GetPermissionResultForOriginWithoutContext(
+                  permissions::PermissionUtil::
+                      ContentSettingTypeToPermissionType(content_type),
+                  url::Origin::Create(origin));
       result =
-          PermissionManagerFactory::GetForProfile(profile)
-              ->GetPermissionStatusForDisplayOnSettingsUI(content_type, origin);
+          permissions::PermissionUtil::ToPermissionResult(permission_result);
     } else {
       permissions::PermissionDecisionAutoBlocker* auto_blocker =
           permissions::PermissionsClient::Get()
@@ -807,14 +792,14 @@ void GetPolicyAllowedUrls(
 
   Profile* profile = Profile::FromWebUI(web_ui);
   PrefService* prefs = profile->GetPrefs();
-  const base::Value* policy_urls =
-      prefs->GetList(type == ContentSettingsType::MEDIASTREAM_MIC
-                         ? prefs::kAudioCaptureAllowedUrls
-                         : prefs::kVideoCaptureAllowedUrls);
+  const base::Value::List& policy_urls =
+      prefs->GetValueList(type == ContentSettingsType::MEDIASTREAM_MIC
+                              ? prefs::kAudioCaptureAllowedUrls
+                              : prefs::kVideoCaptureAllowedUrls);
 
   // Convert the URLs to |ContentSettingsPattern|s. Ignore any invalid ones.
   std::vector<ContentSettingsPattern> patterns;
-  for (const auto& entry : policy_urls->GetListDeprecated()) {
+  for (const auto& entry : policy_urls) {
     const std::string* url = entry.GetIfString();
     if (!url)
       continue;
@@ -974,31 +959,6 @@ base::Value::List GetChooserExceptionListFromProfile(
   }
 
   return exceptions;
-}
-
-std::string PolicyIndicatorTypeToString(const PolicyIndicatorType type) {
-  return kPolicyIndicatorTypeStringMapping[static_cast<int>(type)]
-      .indicator_str;
-}
-
-PolicyIndicatorType GetPolicyIndicatorFromPref(
-    const PrefService::Preference* pref) {
-  if (!pref) {
-    return PolicyIndicatorType::kNone;
-  }
-  if (pref->IsExtensionControlled()) {
-    return PolicyIndicatorType::kExtension;
-  }
-  if (pref->IsManagedByCustodian()) {
-    return PolicyIndicatorType::kParent;
-  }
-  if (pref->IsManaged()) {
-    return PolicyIndicatorType::kDevicePolicy;
-  }
-  if (pref->GetRecommendedValue()) {
-    return PolicyIndicatorType::kRecommended;
-  }
-  return PolicyIndicatorType::kNone;
 }
 
 }  // namespace site_settings

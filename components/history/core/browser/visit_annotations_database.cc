@@ -9,8 +9,6 @@
 
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/strcat.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/history/core/browser/url_row.h"
@@ -24,10 +22,16 @@ namespace {
 #define HISTORY_CONTENT_ANNOTATIONS_ROW_FIELDS                        \
   " visit_id,visibility_score,categories,page_topics_model_version,"  \
   "annotation_flags,entities,related_searches,search_normalized_url," \
-  "search_terms,alternative_title "
-#define HISTORY_CONTEXT_ANNOTATIONS_ROW_FIELDS                    \
-  " visit_id,context_annotation_flags,duration_since_last_visit," \
-  "page_end_reason,total_foreground_duration "
+  "search_terms,alternative_title,page_language,password_state "
+#define HISTORY_CONTEXT_ANNOTATIONS_ROW_FIELDS                        \
+  " visit_id,context_annotation_flags,duration_since_last_visit,"     \
+  "page_end_reason,total_foreground_duration,browser_type,window_id," \
+  "tab_id,task_id,root_task_id,parent_task_id,response_code "
+#define HISTORY_CLUSTER_ROW_FIELDS \
+  " cluster_id,should_show_on_prominent_ui_surfaces,label,raw_label "
+#define HISTORY_CLUSTER_VISIT_ROW_FIELDS                              \
+  " visit_id,score,engagement_score,url_for_deduping,normalized_url," \
+  "url_for_display "
 
 // Converts the serialized categories into a vector of (`id`, `weight`)
 // pairs.
@@ -59,16 +63,16 @@ std::string ConvertCategoriesToStringColumn(
   return base::JoinString(serialized_categories, ",");
 }
 
-// Converts the serialized related searches string into a vector of strings.
-std::vector<std::string> GetRelatedSearchesFromStringColumn(
+// Converts a serialized db string into a vector of strings.
+std::vector<std::string> DeserializeFromStringColumn(
     const std::string& column_value) {
   using std::string_literals::operator""s;
   return base::SplitString(column_value, "\0"s, base::TRIM_WHITESPACE,
                            base::SPLIT_WANT_NONEMPTY);
 }
 
-// Serializes related searches into a string that can be stored in the database.
-std::string ConvertRelatedSearchesToStringColumn(
+// Serializes a vector of strings into a string that can be stored in the db.
+std::string SerializeToStringColumn(
     const std::vector<std::string>& related_searches) {
   // Use the Null character as the separator to serialize the related searches.
   using std::string_literals::operator""s;
@@ -130,7 +134,14 @@ VisitContextAnnotations ConstructContextAnnotationsWithFlags(
     int64_t flags,
     base::TimeDelta duration_since_last_visit,
     int page_end_reason,
-    base::TimeDelta total_foreground_duration) {
+    base::TimeDelta total_foreground_duration,
+    int browser_type,
+    SessionID window_id,
+    SessionID tab_id,
+    int64_t task_id,
+    int64_t root_task_id,
+    int64_t parent_task_id,
+    int response_code) {
   VisitContextAnnotations context_annotations;
   context_annotations.omnibox_url_copied =
       flags & static_cast<uint64_t>(ContextAnnotationFlags::kOmniboxUrlCopied);
@@ -150,6 +161,13 @@ VisitContextAnnotations ConstructContextAnnotationsWithFlags(
   context_annotations.duration_since_last_visit = duration_since_last_visit;
   context_annotations.page_end_reason = page_end_reason;
   context_annotations.total_foreground_duration = total_foreground_duration;
+  context_annotations.immediate_fields.browser_type = browser_type;
+  context_annotations.immediate_fields.window_id = window_id;
+  context_annotations.immediate_fields.tab_id = tab_id;
+  context_annotations.immediate_fields.task_id = task_id;
+  context_annotations.immediate_fields.root_task_id = root_task_id;
+  context_annotations.immediate_fields.parent_task_id = parent_task_id;
+  context_annotations.immediate_fields.response_code = response_code;
   return context_annotations;
 }
 }  // namespace
@@ -170,42 +188,47 @@ bool VisitAnnotationsDatabase::InitVisitAnnotationsTables() {
                        "related_searches VARCHAR,"
                        "search_normalized_url VARCHAR,"
                        "search_terms LONGVARCHAR,"
-                       "alternative_title VARCHAR)")) {
+                       "alternative_title VARCHAR,"
+                       "page_language VARCHAR,"
+                       "password_state INTEGER DEFAULT 0 NOT NULL)")) {
     return false;
   }
 
-  // See `AnnotatedVisitRow` and `VisitContextAnnotations` for details about
-  // these fields.
+  // See `VisitContextAnnotations` for details about these fields.
   if (!GetDB().Execute("CREATE TABLE IF NOT EXISTS context_annotations("
                        "visit_id INTEGER PRIMARY KEY,"
                        "context_annotation_flags INTEGER NOT NULL,"
                        "duration_since_last_visit INTEGER,"
                        "page_end_reason INTEGER,"
-                       "total_foreground_duration INTEGER)")) {
+                       "total_foreground_duration INTEGER,"
+                       "browser_type INTEGER DEFAULT 0 NOT NULL,"
+                       "window_id INTEGER DEFAULT -1 NOT NULL,"
+                       "tab_id INTEGER DEFAULT -1 NOT NULL,"
+                       "task_id INTEGER DEFAULT -1 NOT NULL,"
+                       "root_task_id INTEGER DEFAULT -1 NOT NULL,"
+                       "parent_task_id INTEGER DEFAULT -1 NOT NULL,"
+                       "response_code INTEGER DEFAULT 0 NOT NULL)")) {
     return false;
   }
 
-  if (!GetDB().Execute("CREATE TABLE IF NOT EXISTS clusters("
-                       "cluster_id INTEGER PRIMARY KEY,"
-                       "score NUMERIC NOT NULL)")) {
+  if (!CreateClustersTable())
     return false;
-  }
 
   // Represents the many-to-many relationship of `Cluster`s and `Visit`s.
   // `score` here is unique to the visit/cluster combination; i.e. the same
   // visit in another cluster or another visit in the same cluster may have
   // different scores.
-  if (!GetDB().Execute("CREATE TABLE IF NOT EXISTS clusters_and_visits("
-                       "cluster_id INTEGER NOT NULL,"
-                       "visit_id INTEGER NOT NULL,"
-                       "score NUMERIC NOT NULL,"
-                       "PRIMARY KEY(cluster_id,visit_id))"
-                       "WITHOUT ROWID")) {
+  if (!CreateClustersAndVisitsTableAndIndex())
     return false;
-  }
 
-  if (!GetDB().Execute("CREATE INDEX IF NOT EXISTS clusters_for_visit ON "
-                       "clusters_and_visits(visit_id)")) {
+  // Represents the one-to-many relationship of `Cluster`s and
+  // `ClusterKeywordData`s.
+  if (!GetDB().Execute("CREATE TABLE IF NOT EXISTS cluster_keywords("
+                       "cluster_id INTEGER NOT NULL,"
+                       "keyword VARCHAR NOT NULL,"
+                       "type INTEGER NOT NULL,"
+                       "score NUMERIC NOT NULL,"
+                       "collections VARCHAR NOT NULL)")) {
     return false;
   }
 
@@ -217,7 +240,8 @@ bool VisitAnnotationsDatabase::DropVisitAnnotationsTables() {
   return GetDB().Execute("DROP TABLE content_annotations") &&
          GetDB().Execute("DROP TABLE context_annotations") &&
          GetDB().Execute("DROP TABLE clusters") &&
-         GetDB().Execute("DROP TABLE clusters_and_visits");
+         GetDB().Execute("DROP TABLE clusters_and_visits") &&
+         GetDB().Execute("DROP TABLE cluster_keywords");
 }
 
 void VisitAnnotationsDatabase::AddContentAnnotationsForVisit(
@@ -227,7 +251,7 @@ void VisitAnnotationsDatabase::AddContentAnnotationsForVisit(
   sql::Statement statement(GetDB().GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT INTO content_annotations(" HISTORY_CONTENT_ANNOTATIONS_ROW_FIELDS
-      ")VALUES(?,?,?,?,?,?,?,?,?,?)"));
+      ")VALUES(?,?,?,?,?,?,?,?,?,?,?,?)"));
   statement.BindInt64(0, visit_id);
   statement.BindDouble(
       1, static_cast<double>(
@@ -241,12 +265,14 @@ void VisitAnnotationsDatabase::AddContentAnnotationsForVisit(
   statement.BindString(
       5, ConvertCategoriesToStringColumn(
              visit_content_annotations.model_annotations.entities));
-  statement.BindString(6, ConvertRelatedSearchesToStringColumn(
-                              visit_content_annotations.related_searches));
+  statement.BindString(
+      6, SerializeToStringColumn(visit_content_annotations.related_searches));
   statement.BindString(7,
                        visit_content_annotations.search_normalized_url.spec());
   statement.BindString16(8, visit_content_annotations.search_terms);
   statement.BindString(9, visit_content_annotations.alternative_title);
+  statement.BindString(10, visit_content_annotations.page_language);
+  statement.BindInt(11, visit_content_annotations.password_state);
 
   if (!statement.Run()) {
     DVLOG(0) << "Failed to execute 'content_annotations' insert statement:  "
@@ -261,7 +287,7 @@ void VisitAnnotationsDatabase::AddContextAnnotationsForVisit(
   sql::Statement statement(GetDB().GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT INTO context_annotations(" HISTORY_CONTEXT_ANNOTATIONS_ROW_FIELDS
-      ")VALUES(?,?,?,?,?)"));
+      ")VALUES(?,?,?,?,?,?,?,?,?,?,?,?)"));
   statement.BindInt64(0, visit_id);
   statement.BindInt64(1, ContextAnnotationsToFlags(visit_context_annotations));
   statement.BindInt64(
@@ -269,6 +295,17 @@ void VisitAnnotationsDatabase::AddContextAnnotationsForVisit(
   statement.BindInt(3, visit_context_annotations.page_end_reason);
   statement.BindInt64(
       4, visit_context_annotations.total_foreground_duration.InMicroseconds());
+  statement.BindInt(5, visit_context_annotations.immediate_fields.browser_type);
+  statement.BindInt(6,
+                    visit_context_annotations.immediate_fields.window_id.id());
+  statement.BindInt(7, visit_context_annotations.immediate_fields.tab_id.id());
+  statement.BindInt64(8, visit_context_annotations.immediate_fields.task_id);
+  statement.BindInt64(9,
+                      visit_context_annotations.immediate_fields.root_task_id);
+  statement.BindInt64(
+      10, visit_context_annotations.immediate_fields.parent_task_id);
+  statement.BindInt(11,
+                    visit_context_annotations.immediate_fields.response_code);
 
   if (!statement.Run()) {
     DVLOG(0)
@@ -302,8 +339,8 @@ void VisitAnnotationsDatabase::UpdateContentAnnotationsForVisit(
   statement.BindString(
       4, ConvertCategoriesToStringColumn(
              visit_content_annotations.model_annotations.entities));
-  statement.BindString(5, ConvertRelatedSearchesToStringColumn(
-                              visit_content_annotations.related_searches));
+  statement.BindString(
+      5, SerializeToStringColumn(visit_content_annotations.related_searches));
   statement.BindString(6,
                        visit_content_annotations.search_normalized_url.spec());
   statement.BindString16(7, visit_content_annotations.search_terms);
@@ -313,6 +350,51 @@ void VisitAnnotationsDatabase::UpdateContentAnnotationsForVisit(
   if (!statement.Run()) {
     DVLOG(0)
         << "Failed to execute visit 'content_annotations' update statement:  "
+        << "visit_id = " << visit_id;
+  }
+}
+
+void VisitAnnotationsDatabase::UpdateContextAnnotationsForVisit(
+    VisitID visit_id,
+    const VisitContextAnnotations& visit_context_annotations) {
+  DCHECK_GT(visit_id, 0);
+  sql::Statement statement(
+      GetDB().GetCachedStatement(SQL_FROM_HERE,
+                                 "UPDATE context_annotations SET "
+                                 "context_annotation_flags=?, "
+                                 "duration_since_last_visit=?, "
+                                 "page_end_reason=?, "
+                                 "total_foreground_duration=?, "
+                                 "browser_type=?, "
+                                 "window_id=?, "
+                                 "tab_id=?, "
+                                 "task_id=?, "
+                                 "root_task_id=?, "
+                                 "parent_task_id=? "
+                                 "response_code=? "
+                                 "WHERE visit_id=?"));
+  statement.BindInt64(0, ContextAnnotationsToFlags(visit_context_annotations));
+  statement.BindInt64(
+      1, visit_context_annotations.duration_since_last_visit.InMicroseconds());
+  statement.BindInt(2, visit_context_annotations.page_end_reason);
+  statement.BindInt64(
+      3, visit_context_annotations.total_foreground_duration.InMicroseconds());
+  statement.BindInt(4, visit_context_annotations.immediate_fields.browser_type);
+  statement.BindInt(5,
+                    visit_context_annotations.immediate_fields.window_id.id());
+  statement.BindInt(6, visit_context_annotations.immediate_fields.tab_id.id());
+  statement.BindInt64(7, visit_context_annotations.immediate_fields.task_id);
+  statement.BindInt64(8,
+                      visit_context_annotations.immediate_fields.root_task_id);
+  statement.BindInt64(
+      9, visit_context_annotations.immediate_fields.parent_task_id);
+  statement.BindInt64(10,
+                      visit_context_annotations.immediate_fields.response_code);
+  statement.BindInt64(11, visit_id);
+
+  if (!statement.Run()) {
+    DVLOG(0)
+        << "Failed to execute visit 'context_annotations' update statement:  "
         << "visit_id = " << visit_id;
   }
 }
@@ -339,7 +421,12 @@ bool VisitAnnotationsDatabase::GetContextAnnotationsForVisit(
   // `VisitContextAnnotations`.
   *out_context_annotations = ConstructContextAnnotationsWithFlags(
       statement.ColumnInt64(1), base::Microseconds(statement.ColumnInt64(2)),
-      statement.ColumnInt(3), base::Microseconds(statement.ColumnInt64(4)));
+      statement.ColumnInt(3), base::Microseconds(statement.ColumnInt64(4)),
+      statement.ColumnInt(5),
+      SessionID::FromSerializedValue(statement.ColumnInt(6)),
+      SessionID::FromSerializedValue(statement.ColumnInt(7)),
+      statement.ColumnInt64(8), statement.ColumnInt64(9),
+      statement.ColumnInt64(10), statement.ColumnInt(11));
   return true;
 }
 
@@ -370,11 +457,13 @@ bool VisitAnnotationsDatabase::GetContentAnnotationsForVisit(
   out_content_annotations->model_annotations.entities =
       GetCategoriesFromStringColumn(statement.ColumnString(5));
   out_content_annotations->related_searches =
-      GetRelatedSearchesFromStringColumn(statement.ColumnString(6));
+      DeserializeFromStringColumn(statement.ColumnString(6));
   out_content_annotations->search_normalized_url =
       GURL(statement.ColumnString(7));
   out_content_annotations->search_terms = statement.ColumnString16(8);
   out_content_annotations->alternative_title = statement.ColumnString(9);
+  out_content_annotations->page_language = statement.ColumnString(10);
+  out_content_annotations->password_state = statement.ColumnInt(11);
   return true;
 }
 
@@ -397,6 +486,10 @@ void VisitAnnotationsDatabase::DeleteAnnotationsForVisit(VisitID visit_id) {
              << "visit_id = " << visit_id;
   }
 
+  auto cluster_id = GetClusterIdContainingVisit(visit_id);
+  if (cluster_id > 0 && GetVisitIdsInCluster(cluster_id).size() == 1)
+    DeleteClusters({cluster_id});
+
   statement.Assign(GetDB().GetCachedStatement(
       SQL_FROM_HERE, "DELETE FROM clusters_and_visits WHERE visit_id=?"));
   statement.BindInt64(0, visit_id);
@@ -404,66 +497,119 @@ void VisitAnnotationsDatabase::DeleteAnnotationsForVisit(VisitID visit_id) {
     DVLOG(0) << "Failed to execute clusters_and_visits delete statement:  "
              << "visit_id = " << visit_id;
   }
-
-  // TODO(manukh): Delete `Cluster`s that are now empty.
 }
 
 void VisitAnnotationsDatabase::AddClusters(
     const std::vector<Cluster>& clusters) {
-  DCHECK(!clusters.empty());
-  // TODO(manukh) Persist scores once we have them.
+  if (clusters.empty())
+    return;
+
   sql::Statement clusters_statement(GetDB().GetCachedStatement(
-      SQL_FROM_HERE, "INSERT INTO clusters(score)VALUES(0)"));
+      SQL_FROM_HERE,
+      "INSERT INTO clusters"
+      "(should_show_on_prominent_ui_surfaces,label,raw_label)"
+      "VALUES(?,?,?)"));
   sql::Statement clusters_and_visits_statement(GetDB().GetCachedStatement(
       SQL_FROM_HERE,
-      "INSERT INTO clusters_and_visits(cluster_id,visit_id,score)"
-      "VALUES(?,?,0)"));
+      "INSERT INTO clusters_and_visits"
+      "(cluster_id,visit_id,score,engagement_score,url_for_deduping,"
+      "normalized_url,url_for_display)"
+      "VALUES(?,?,?,?,?,?,?)"));
+  sql::Statement cluster_keywords_statement(
+      GetDB().GetCachedStatement(SQL_FROM_HERE,
+                                 "INSERT INTO cluster_keywords"
+                                 "(cluster_id,keyword,type,score,collections)"
+                                 "VALUES(?,?,?,?,?)"));
 
   for (const auto& cluster : clusters) {
     if (cluster.visits.empty())
       continue;
-    clusters_statement.Reset(false);
+
+    // Insert the cluster into 'clusters'.
+    clusters_statement.Reset(true);
+    clusters_statement.BindBool(0,
+                                cluster.should_show_on_prominent_ui_surfaces);
+    clusters_statement.BindString16(1, cluster.label.value_or(u""));
+    clusters_statement.BindString16(2, cluster.raw_label.value_or(u""));
     if (!clusters_statement.Run()) {
       DVLOG(0) << "Failed to execute 'clusters' insert statement";
       continue;
     }
     const int64_t cluster_id = GetDB().GetLastInsertRowId();
     DCHECK(cluster_id);
-    base::ranges::for_each(
-        cluster.visits,
-        [&](const auto& annotated_visit) {
-          clusters_and_visits_statement.Reset(true);
-          clusters_and_visits_statement.BindInt64(0, cluster_id);
-          clusters_and_visits_statement.BindInt64(
-              1, annotated_visit.visit_row.visit_id);
-          if (!clusters_and_visits_statement.Run()) {
-            DVLOG(0)
-                << "Failed to execute 'clusters_and_visits' insert statement:  "
-                << "cluster_id = " << cluster_id
-                << ", visit_id = " << annotated_visit.visit_row.visit_id;
-          }
-        },
-        &ClusterVisit::annotated_visit);
+
+    // Insert each visit into 'clusters_and_visits'.
+    base::ranges::for_each(cluster.visits, [&](const auto& cluster_visit) {
+      const auto visit_id = cluster_visit.annotated_visit.visit_row.visit_id;
+      clusters_and_visits_statement.Reset(true);
+      clusters_and_visits_statement.BindInt64(0, cluster_id);
+      clusters_and_visits_statement.BindInt64(1, visit_id);
+      clusters_and_visits_statement.BindDouble(2, cluster_visit.score);
+      clusters_and_visits_statement.BindDouble(3,
+                                               cluster_visit.engagement_score);
+      clusters_and_visits_statement.BindString(
+          4, cluster_visit.url_for_deduping.spec());
+      clusters_and_visits_statement.BindString(
+          5, cluster_visit.normalized_url.spec());
+      clusters_and_visits_statement.BindString16(6,
+                                                 cluster_visit.url_for_display);
+      if (!clusters_and_visits_statement.Run()) {
+        DVLOG(0)
+            << "Failed to execute 'clusters_and_visits' insert statement:  "
+            << "cluster_id = " << cluster_id << ", visit_id = " << visit_id;
+      }
+    });
+
+    // Insert each keyword into 'cluster_keywords'.
+    for (const auto& [keyword, keyword_data] : cluster.keyword_to_data_map) {
+      cluster_keywords_statement.Reset(true);
+      cluster_keywords_statement.BindInt64(0, cluster_id);
+      cluster_keywords_statement.BindString16(1, keyword);
+      cluster_keywords_statement.BindInt(2, keyword_data.type);
+      cluster_keywords_statement.BindDouble(3, keyword_data.score);
+      cluster_keywords_statement.BindString(
+          4, keyword_data.entity_collections.empty()
+                 ? ""
+                 : keyword_data.entity_collections[0]);
+      if (!cluster_keywords_statement.Run()) {
+        DVLOG(0) << "Failed to execute 'cluster_keywords' insert statement:  "
+                 << "cluster_id = " << cluster_id << ", keyword = " << keyword;
+      }
+    }
   }
 }
 
-std::vector<int64_t> VisitAnnotationsDatabase::GetRecentClusterIds(
-    base::Time minimum_time) {
-  // Using `EXISTS` instead of `IN` would result in a full scan of
-  // `clusters_and_visits`. Using `JOIN` would produce an equivalent query plan.
-  sql::Statement statement(
-      GetDB().GetCachedStatement(SQL_FROM_HERE,
-                                 "SELECT DISTINCT cluster_id "
-                                 "FROM clusters_and_visits "
-                                 "WHERE visit_id IN("
-                                 "SELECT id FROM visits WHERE visit_time>=?)"
-                                 "ORDER BY cluster_id DESC"));
-  statement.BindTime(0, minimum_time);
+Cluster VisitAnnotationsDatabase::GetCluster(int64_t cluster_id) {
+  sql::Statement statement(GetDB().GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT" HISTORY_CLUSTER_ROW_FIELDS "FROM clusters WHERE cluster_id=?"));
+  statement.BindInt64(0, cluster_id);
 
-  std::vector<int64_t> cluster_ids;
-  while (statement.Step())
-    cluster_ids.push_back(statement.ColumnInt64(0));
-  return cluster_ids;
+  if (!statement.Step())
+    return {};
+
+  VisitID received_cluster_id = statement.ColumnInt64(0);
+  DCHECK_EQ(cluster_id, received_cluster_id);
+
+  // The `VisitID` in column 0 is intentionally ignored, as it's not part of
+  // `VisitContextAnnotations`.
+  Cluster cluster;
+  cluster.cluster_id = received_cluster_id;
+  cluster.from_persistence = true;
+  cluster.should_show_on_prominent_ui_surfaces = statement.ColumnBool(1);
+  // The DB can't represent `nullopt` labels, so they're persisted as u"" but
+  // retrieved as `nullopt` for consistency with their original values and the
+  // consumer expectations.
+  // TODO(manukh): Look into returning u"" instead of `nullopt` in the
+  //  clustering code, and likewise expect u"" instead of `nullopt` in the
+  //  clustering UI code.
+  cluster.label = statement.ColumnString16(2);
+  if (cluster.label->empty())
+    cluster.label = absl::nullopt;
+  cluster.raw_label = statement.ColumnString16(3);
+  if (cluster.raw_label->empty())
+    cluster.raw_label = absl::nullopt;
+  return cluster;
 }
 
 std::vector<int64_t> VisitAnnotationsDatabase::GetMostRecentClusterIds(
@@ -507,16 +653,65 @@ std::vector<VisitID> VisitAnnotationsDatabase::GetVisitIdsInCluster(
   return visit_ids;
 }
 
-bool VisitAnnotationsDatabase::IsVisitClustered(VisitID visit_id) {
+ClusterVisit VisitAnnotationsDatabase::GetClusterVisit(VisitID visit_id) {
+  sql::Statement statement(GetDB().GetCachedStatement(
+      SQL_FROM_HERE, "SELECT" HISTORY_CLUSTER_VISIT_ROW_FIELDS
+                     "FROM clusters_and_visits WHERE visit_id=?"));
+  statement.BindInt64(0, visit_id);
+
+  if (!statement.Step())
+    return {};
+
+  VisitID received_visit_id = statement.ColumnInt64(0);
+  DCHECK_EQ(visit_id, received_visit_id);
+
+  // The `VisitID` in column 0 is intentionally ignored, as it's not part of
+  // `VisitContextAnnotations`.
+  ClusterVisit cluster_visit;
+  cluster_visit.annotated_visit.visit_row.visit_id = received_visit_id;
+  cluster_visit.score = static_cast<float>(statement.ColumnDouble(1));
+  cluster_visit.engagement_score =
+      static_cast<float>(statement.ColumnDouble(2));
+  cluster_visit.url_for_deduping = GURL(statement.ColumnString(3));
+  cluster_visit.normalized_url = GURL(statement.ColumnString(4));
+  cluster_visit.url_for_display = statement.ColumnString16(5);
+  return cluster_visit;
+}
+
+int64_t VisitAnnotationsDatabase::GetClusterIdContainingVisit(
+    VisitID visit_id) {
   DCHECK_GT(visit_id, 0);
   sql::Statement statement(
       GetDB().GetCachedStatement(SQL_FROM_HERE,
-                                 "SELECT 1 "
+                                 "SELECT cluster_id "
                                  "FROM clusters_and_visits "
                                  "WHERE visit_id=? "
                                  "LIMIT 1"));
   statement.BindInt64(0, visit_id);
-  return statement.Step();
+  if (statement.Step())
+    return statement.ColumnInt64(0);
+  return 0;
+}
+
+base::flat_map<std::u16string, ClusterKeywordData>
+VisitAnnotationsDatabase::GetClusterKeywords(int64_t cluster_id) {
+  DCHECK_GT(cluster_id, 0);
+  sql::Statement statement(
+      GetDB().GetCachedStatement(SQL_FROM_HERE,
+                                 "SELECT keyword,type,score,collections "
+                                 "FROM cluster_keywords "
+                                 "WHERE cluster_id=?"));
+  statement.BindInt64(0, cluster_id);
+
+  base::flat_map<std::u16string, ClusterKeywordData> keyword_data;
+  while (statement.Step()) {
+    keyword_data[statement.ColumnString16(0)] = {
+        static_cast<ClusterKeywordData::ClusterKeywordType>(
+            statement.ColumnInt(1)),
+        static_cast<float>(statement.ColumnDouble(2)),
+        DeserializeFromStringColumn(statement.ColumnString(3))};
+  }
+  return keyword_data;
 }
 
 void VisitAnnotationsDatabase::DeleteClusters(
@@ -529,6 +724,9 @@ void VisitAnnotationsDatabase::DeleteClusters(
 
   sql::Statement clusters_and_visits_statement(GetDB().GetCachedStatement(
       SQL_FROM_HERE, "DELETE FROM clusters_and_visits WHERE cluster_id=?"));
+
+  sql::Statement cluster_keywords_statement(GetDB().GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM cluster_keywords WHERE cluster_id=?"));
 
   for (auto cluster_id : cluster_ids) {
     clusters_statement.Reset(true);
@@ -544,6 +742,13 @@ void VisitAnnotationsDatabase::DeleteClusters(
       DVLOG(0) << "Failed to execute clusters_and_visits delete statement:  "
                << "cluster_id = " << cluster_id;
     }
+
+    cluster_keywords_statement.Reset(true);
+    cluster_keywords_statement.BindInt64(0, cluster_id);
+    if (!cluster_keywords_statement.Run()) {
+      DVLOG(0) << "Failed to execute cluster_keywords delete statement:  "
+               << "cluster_id = " << cluster_id;
+    }
   }
 }
 
@@ -555,9 +760,9 @@ bool VisitAnnotationsDatabase::MigrateFlocAllowedToAnnotationsTable() {
 
   // Not all version 43 history has the content_annotations table. So at this
   // point the content_annotations table may already have been initialized with
-  // the latest version with a annotation_flags column.
+  // the latest version with an annotation_flags column.
   if (!GetDB().DoesColumnExist("content_annotations", "annotation_flags")) {
-    // Add a annotation_flags column to the content_annotations table.
+    // Add an annotation_flags column to the content_annotations table.
     if (!GetDB().Execute("ALTER TABLE content_annotations ADD COLUMN "
                          "annotation_flags INTEGER DEFAULT 0 NOT NULL")) {
       return false;
@@ -690,6 +895,123 @@ bool VisitAnnotationsDatabase::MigrateContentAnnotationsAddAlternativeTitle() {
   return GetDB().Execute(
       "ALTER TABLE content_annotations "
       "ADD COLUMN alternative_title");
+}
+
+bool VisitAnnotationsDatabase::MigrateClustersAddColumns() {
+  // Don't need to actually copy values from the previous table; it was never
+  // populated
+  return (!GetDB().DoesTableExist("clusters") ||
+          GetDB().Execute("DROP TABLE clusters")) &&
+         (!GetDB().DoesTableExist("clusters_and_visits") ||
+          GetDB().Execute("DROP TABLE clusters_and_visits")) &&
+         CreateClustersTable() && CreateClustersAndVisitsTableAndIndex();
+}
+
+bool VisitAnnotationsDatabase::CreateClustersTable() {
+  return GetDB().Execute(
+      "CREATE TABLE IF NOT EXISTS clusters("
+      "cluster_id INTEGER PRIMARY KEY,"
+      "should_show_on_prominent_ui_surfaces BOOLEAN NOT NULL,"
+      "label VARCHAR NOT NULL,"
+      "raw_label VARCHAR NOT NULL)");
+}
+
+bool VisitAnnotationsDatabase::CreateClustersAndVisitsTableAndIndex() {
+  return GetDB().Execute(
+             "CREATE TABLE IF NOT EXISTS clusters_and_visits("
+             "cluster_id INTEGER NOT NULL,"
+             "visit_id INTEGER NOT NULL,"
+             "score NUMERIC NOT NULL,"
+             "engagement_score NUMERIC NOT NULL,"
+             "url_for_deduping LONGVARCHAR NOT NULL,"
+             "normalized_url LONGVARCHAR NOT NULL,"
+             "url_for_display LONGVARCHAR NOT NULL,"
+             "PRIMARY KEY(cluster_id,visit_id))"
+             "WITHOUT ROWID") &&
+         GetDB().Execute(
+             "CREATE INDEX IF NOT EXISTS clusters_for_visit ON "
+             "clusters_and_visits(visit_id)");
+}
+
+bool VisitAnnotationsDatabase::MigrateAnnotationsAddColumnsForSync() {
+  if (!GetDB().DoesTableExist("context_annotations")) {
+    NOTREACHED() << " Context annotations table should exist before migration";
+    return false;
+  }
+
+  // ConteXt annotation columns:
+
+  if (!GetDB().DoesColumnExist("context_annotations", "browser_type")) {
+    if (!GetDB().Execute(
+            "ALTER TABLE context_annotations "
+            "ADD COLUMN browser_type INTEGER DEFAULT 0 NOT NULL")) {
+      return false;
+    }
+  }
+
+  if (!GetDB().DoesColumnExist("context_annotations", "window_id")) {
+    if (!GetDB().Execute("ALTER TABLE context_annotations "
+                         "ADD COLUMN window_id INTEGER DEFAULT -1 NOT NULL")) {
+      return false;
+    }
+  }
+
+  if (!GetDB().DoesColumnExist("context_annotations", "tab_id")) {
+    if (!GetDB().Execute("ALTER TABLE context_annotations "
+                         "ADD COLUMN tab_id INTEGER DEFAULT -1 NOT NULL")) {
+      return false;
+    }
+  }
+
+  if (!GetDB().DoesColumnExist("context_annotations", "task_id")) {
+    if (!GetDB().Execute("ALTER TABLE context_annotations "
+                         "ADD COLUMN task_id INTEGER DEFAULT -1 NOT NULL")) {
+      return false;
+    }
+  }
+
+  if (!GetDB().DoesColumnExist("context_annotations", "root_task_id")) {
+    if (!GetDB().Execute(
+            "ALTER TABLE context_annotations "
+            "ADD COLUMN root_task_id INTEGER DEFAULT -1 NOT NULL")) {
+      return false;
+    }
+  }
+
+  if (!GetDB().DoesColumnExist("context_annotations", "parent_task_id")) {
+    if (!GetDB().Execute(
+            "ALTER TABLE context_annotations "
+            "ADD COLUMN parent_task_id INTEGER DEFAULT -1 NOT NULL")) {
+      return false;
+    }
+  }
+
+  if (!GetDB().DoesColumnExist("context_annotations", "response_code")) {
+    if (!GetDB().Execute(
+            "ALTER TABLE context_annotations "
+            "ADD COLUMN response_code INTEGER DEFAULT 0 NOT NULL")) {
+      return false;
+    }
+  }
+
+  // ConteNt annotation columns:
+
+  if (!GetDB().DoesColumnExist("content_annotations", "page_language")) {
+    if (!GetDB().Execute("ALTER TABLE content_annotations "
+                         "ADD COLUMN page_language VARCHAR")) {
+      return false;
+    }
+  }
+
+  if (!GetDB().DoesColumnExist("content_annotations", "password_state")) {
+    if (!GetDB().Execute(
+            "ALTER TABLE content_annotations "
+            "ADD COLUMN password_state INTEGER DEFAULT 0 NOT NULL")) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 }  // namespace history

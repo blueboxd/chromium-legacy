@@ -8,9 +8,9 @@ export {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu
 export {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 export {CrDrawerElement} from 'chrome://resources/cr_elements/cr_drawer/cr_drawer.js';
 export {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
-export {CrRadioButtonElement} from 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
-export {CrRadioGroupElement} from 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
-export {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+export {CrRadioButtonElement} from 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.js';
+export {CrRadioGroupElement} from 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.js';
+export {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 export {CrToolbarElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.js';
 export {CrToolbarSearchFieldElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
 export {PluralStringProxyImpl as SettingsPluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
@@ -23,7 +23,6 @@ export {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from './appearance_p
 export {SettingsAppearancePageElement} from './appearance_page/appearance_page.js';
 export {HomeUrlInputElement} from './appearance_page/home_url_input.js';
 export {SettingsAutofillPageElement} from './autofill_page/autofill_page.js';
-export {MultiStorePasswordUiEntry} from './autofill_page/multi_store_password_ui_entry.js';
 export {AccountStorageOptInStateChangedListener, CredentialsChangedListener, PasswordCheckInteraction, PasswordCheckReferrer, PasswordCheckStatusChangedListener, PasswordExceptionListChangedListener, PasswordManagerImpl, PasswordManagerProxy, PasswordsFileExportProgressListener, SavedPasswordListChangedListener} from './autofill_page/password_manager_proxy.js';
 export {BaseMixin} from './base_mixin.js';
 export {SettingsBasicPageElement} from './basic_page/basic_page.js';
@@ -32,7 +31,7 @@ export {ExtensionControlledIndicatorElement} from './controls/extension_controll
 export {SettingsDropdownMenuElement} from './controls/settings_dropdown_menu.js';
 export {SettingsIdleLoadElement} from './controls/settings_idle_load.js';
 export {SettingsToggleButtonElement} from './controls/settings_toggle_button.js';
-// <if expr="not chromeos_ash and not chromeos_lacros">
+// <if expr="not is_chromeos">
 export {DefaultBrowserBrowserProxy, DefaultBrowserBrowserProxyImpl, DefaultBrowserInfo} from './default_browser_page/default_browser_browser_proxy.js';
 export {SettingsDefaultBrowserPageElement} from './default_browser_page/default_browser_page.js';
 // </if>
@@ -74,9 +73,11 @@ export {SafetyCheckIconStatus, SettingsSafetyCheckChildElement} from './safety_c
 export {SettingsSafetyCheckChromeCleanerChildElement} from './safety_check_page/safety_check_chrome_cleaner_child.js';
 // </if>
 export {SettingsSafetyCheckExtensionsChildElement} from './safety_check_page/safety_check_extensions_child.js';
+export {SettingsSafetyCheckNotificationPermissionsElement} from './safety_check_page/safety_check_notification_permissions.js';
 export {SettingsSafetyCheckPageElement} from './safety_check_page/safety_check_page.js';
 export {SettingsSafetyCheckPasswordsChildElement} from './safety_check_page/safety_check_passwords_child.js';
 export {SettingsSafetyCheckSafeBrowsingChildElement} from './safety_check_page/safety_check_safe_browsing_child.js';
+export {SettingsSafetyCheckUnusedSitePermissionsElement} from './safety_check_page/safety_check_unused_site_permissions.js';
 export {SettingsSafetyCheckUpdatesChildElement} from './safety_check_page/safety_check_updates_child.js';
 export {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, SearchEnginesInfo, SearchEnginesInteractions} from './search_engines_page/search_engines_browser_proxy.js';
 export {SettingsSearchPageElement} from './search_page/search_page.js';

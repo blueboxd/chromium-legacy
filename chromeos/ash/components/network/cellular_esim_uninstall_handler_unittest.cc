@@ -13,6 +13,10 @@
 #include "chromeos/ash/components/dbus/hermes/hermes_clients.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_euicc_client.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_clients.h"
+#include "chromeos/ash/components/dbus/shill/shill_device_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/network/cellular_inhibitor.h"
 #include "chromeos/ash/components/network/fake_network_connection_handler.h"
 #include "chromeos/ash/components/network/fake_stub_cellular_networks_provider.h"
@@ -22,16 +26,12 @@
 #include "chromeos/ash/components/network/network_device_handler.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/test_cellular_esim_profile_handler.h"
-#include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "dbus/object_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -44,6 +44,7 @@ const char kTestNetworkServicePath[] = "/service/cellular123";
 const char kTestCellularIccid[] = "100000000000000001";
 const char kTestCellularSmdpAddress[] = "smdp_address1";
 const char kTestProfileName[] = "TestCellularNetwork";
+const char kTestProfileNickname[] = "TestCellularNetworkNick";
 const char kTestServiceProvider[] = "Test Wireless";
 
 const char kTestCarrierProfilePath2[] = "/org/chromium/Hermes/Profile/124";
@@ -125,8 +126,9 @@ class CellularESimUninstallHandlerTest : public testing::Test {
     HermesEuiccClient::Get()->GetTestInterface()->AddCarrierProfile(
         dbus::ObjectPath(kTestCarrierProfilePath),
         dbus::ObjectPath(kDefaultEuiccPath), kTestCellularIccid,
-        kTestProfileName, kTestServiceProvider, "", kTestNetworkServicePath,
-        first_profile_state, hermes::profile::ProfileClass::kOperational,
+        kTestProfileName, kTestProfileNickname, kTestServiceProvider,
+        "activation_code", kTestNetworkServicePath, first_profile_state,
+        hermes::profile::ProfileClass::kOperational,
         HermesEuiccClient::TestInterface::AddCarrierProfileBehavior::
             kAddProfileWithService);
     // Setup as a managed profile and has iccid and smdp address pair in pref.
@@ -136,7 +138,8 @@ class CellularESimUninstallHandlerTest : public testing::Test {
     HermesEuiccClient::Get()->GetTestInterface()->AddCarrierProfile(
         dbus::ObjectPath(kTestCarrierProfilePath2),
         dbus::ObjectPath(kDefaultEuiccPath), kTestCellularIccid2,
-        kTestProfileName, kTestServiceProvider, "", kTestNetworkServicePath2,
+        kTestProfileName, kTestProfileNickname, kTestServiceProvider,
+        "activation_code", kTestNetworkServicePath2,
         hermes::profile::State::kInactive,
         hermes::profile::ProfileClass::kOperational,
         HermesEuiccClient::TestInterface::AddCarrierProfileBehavior::
@@ -412,4 +415,4 @@ TEST_F(CellularESimUninstallHandlerTest, StubCellularNetwork) {
   ExpectResult(CellularESimUninstallHandler::UninstallESimResult::kSuccess);
 }
 
-}  // namespace chromeos
+}  // namespace ash

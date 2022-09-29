@@ -59,6 +59,7 @@
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/network/network_handler.h"
@@ -67,6 +68,7 @@
 #include "chromeos/ash/components/network/network_util.h"
 #include "chromeos/ash/components/network/onc/network_onc_utils.h"
 #include "chromeos/ash/components/network/tether_constants.h"
+#include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/features.h"
 #include "components/session_manager/core/session_manager.h"
@@ -75,7 +77,6 @@
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
-
 using session_manager::SessionManager;
 using session_manager::SessionState;
 
@@ -119,10 +120,10 @@ ash::UpdateSeverity GetUpdateSeverity(ash::UpdateType update_type,
   }
 }
 
-const chromeos::NetworkState* GetNetworkState(const std::string& network_id) {
+const ash::NetworkState* GetNetworkState(const std::string& network_id) {
   if (network_id.empty())
     return nullptr;
-  return chromeos::NetworkHandler::Get()
+  return ash::NetworkHandler::Get()
       ->network_state_handler()
       ->GetNetworkStateFromGuid(network_id);
 }
@@ -132,7 +133,7 @@ bool ShouldOpenCellularSetupPsimFlowOnClick(const std::string& network_id) {
   // checking a networks activation state is |kActivationStateNotActivated|
   // ensures the current network is a phyical SIM network.
 
-  const chromeos::NetworkState* network_state = GetNetworkState(network_id);
+  const ash::NetworkState* network_state = GetNetworkState(network_id);
   return network_state && network_state->type() == shill::kTypeCellular &&
          network_state->activation_state() ==
              shill::kActivationStateNotActivated &&
@@ -491,6 +492,11 @@ void SystemTrayClientImpl::ShowAboutChromeOS() {
       "?checkForUpdate=true");
 }
 
+void SystemTrayClientImpl::ShowAboutChromeOSDetails() {
+  ShowSettingsSubPageForActiveUser(
+      chromeos::settings::mojom::kDetailedBuildInfoSubpagePath);
+}
+
 void SystemTrayClientImpl::ShowAccessibilityHelp() {
   ash::AccessibilityManager::ShowAccessibilityHelp();
 }
@@ -558,13 +564,13 @@ void SystemTrayClientImpl::ShowNetworkConfigure(const std::string& network_id) {
   if (SessionManager::Get()->IsScreenLocked())
     return;
 
-  DCHECK(chromeos::NetworkHandler::IsInitialized());
-  const chromeos::NetworkState* network_state = GetNetworkState(network_id);
+  DCHECK(ash::NetworkHandler::IsInitialized());
+  const ash::NetworkState* network_state = GetNetworkState(network_id);
   if (!network_state) {
     LOG(ERROR) << "Network not found: " << network_id;
     return;
   }
-  if (network_state->type() == chromeos::kTypeTether &&
+  if (network_state->type() == ash::kTypeTether &&
       !network_state->tether_has_connected_to_host()) {
     ShowNetworkSettingsHelper(network_id, true /* show_configure */);
     return;
@@ -653,7 +659,7 @@ void SystemTrayClientImpl::ShowNetworkSettingsHelper(
   }
 
   std::string page = chromeos::settings::mojom::kNetworkSectionPath;
-  const chromeos::NetworkState* network_state = GetNetworkState(network_id);
+  const ash::NetworkState* network_state = GetNetworkState(network_id);
   if (!network_id.empty() && network_state) {
     // TODO(khorimoto): Use a more general path name here. This path is named
     // kWifi*, but it's actually a generic page.
@@ -750,11 +756,39 @@ void SystemTrayClientImpl::ShowCalendarEvent(
   }
 
   // Launch web app.
-  proxy->LaunchAppWithUrl(web_app::kGoogleCalendarAppId,
-                          apps::GetEventFlags(WindowOpenDisposition::NEW_WINDOW,
-                                              /*prefer_container=*/true),
-                          official_url, apps::mojom::LaunchSource::kFromShelf);
+  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
+    proxy->LaunchAppWithUrl(
+        web_app::kGoogleCalendarAppId,
+        apps::GetEventFlags(WindowOpenDisposition::NEW_WINDOW,
+                            /*prefer_container=*/true),
+        official_url, apps::LaunchSource::kFromShelf);
+  } else {
+    proxy->LaunchAppWithUrl(
+        web_app::kGoogleCalendarAppId,
+        apps::GetEventFlags(WindowOpenDisposition::NEW_WINDOW,
+                            /*prefer_container=*/true),
+        official_url, apps::mojom::LaunchSource::kFromShelf);
+  }
   opened_pwa = true;
+}
+
+void SystemTrayClientImpl::ShowChannelInfoAdditionalDetails() {
+  base::RecordAction(
+      base::UserMetricsAction("Tray_ShowChannelInfoAdditionalDetails"));
+  ShowSettingsSubPageForActiveUser(
+      std::string(chromeos::settings::mojom::kDetailedBuildInfoSubpagePath));
+}
+
+void SystemTrayClientImpl::ShowChannelInfoGiveFeedback() {
+  ash::NewWindowDelegate::GetInstance()->OpenFeedbackPage(
+      ash::NewWindowDelegate::kFeedbackSourceChannelIndicator);
+}
+
+bool SystemTrayClientImpl::IsUserFeedbackEnabled() {
+  PrefService* signin_prefs =
+      ProfileManager::GetActiveUserProfile()->GetPrefs();
+  DCHECK(signin_prefs);
+  return signin_prefs->GetBoolean(prefs::kUserFeedbackAllowed);
 }
 
 SystemTrayClientImpl::SystemTrayClientImpl(SystemTrayClientImpl* mock_instance)
@@ -797,6 +831,12 @@ void SystemTrayClientImpl::OnSystemClockChanged(
 
 ////////////////////////////////////////////////////////////////////////////////
 // UpgradeDetector::UpgradeObserver:
+void SystemTrayClientImpl::OnUpdateDeferred(bool use_notification) {
+  system_tray_->SetUpdateDeferred(
+      use_notification ? ash::DeferredUpdateState::kShowNotification
+                       : ash::DeferredUpdateState::kShowDialog);
+}
+
 void SystemTrayClientImpl::OnUpdateOverCellularAvailable() {
   // Requests that ash show the update over cellular available icon.
   system_tray_->SetUpdateOverCellularAvailableIconVisible(true);

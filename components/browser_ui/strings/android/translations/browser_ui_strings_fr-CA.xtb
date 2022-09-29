@@ -18,6 +18,7 @@
 <translation id="1384959399684842514">Téléchargement interrompu</translation>
 <translation id="1409426117486808224">Affichage simplifié pour les onglets ouverts</translation>
 <translation id="1415402041810619267">URL tronquée</translation>
+<translation id="1426410128494586442">Oui</translation>
 <translation id="1446450296470737166">Autoriser le contrôle des appareils MIDI</translation>
 <translation id="1620510694547887537">Caméra</translation>
 <translation id="1644574205037202324">Historique</translation>
@@ -32,6 +33,7 @@
 <translation id="1818308510395330587">Pour autoriser <ph name="APP_NAME" /> à utiliser la RA, activez aussi l'accès à l'appareil photo dans les <ph name="BEGIN_LINK" />paramètres d'Android<ph name="END_LINK" />.</translation>
 <translation id="1864927262126810325">De <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">L'accès à la localisation est désactivé pour cet appareil. Activez-le dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
+<translation id="1915307458270490472">Raccrocher</translation>
 <translation id="1919345977826869612">Annonces</translation>
 <translation id="1919950603503897840">Sélectionner des contacts</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -78,6 +80,7 @@
 <translation id="2677748264148917807">Quitter</translation>
 <translation id="2687403674020088961">Bloquer tous les témoins (non recommandé)</translation>
 <translation id="2704606927547763573">Copié</translation>
+<translation id="2713106313042589954">Désactiver la caméra</translation>
 <translation id="2717722538473713889">Adresses de courriel</translation>
 <translation id="2750481671343847896">Les sites peuvent afficher des invites de connexion provenant de services de vérification d'identité.</translation>
 <translation id="2785051990912111074">Ce choix effacera les témoins du site <ph name="WEBSITE" /></translation>
@@ -97,6 +100,7 @@
 <translation id="3114012059975132928">Lecteur vidéo</translation>
 <translation id="3115898365077584848">Afficher les renseignements</translation>
 <translation id="3123473560110926937">Annonces bloquées sur certains sites</translation>
+<translation id="3143754809889689516">Faire jouer depuis le début</translation>
 <translation id="3198916472715691905">Stockage de données : <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3203366800380907218">Du Web</translation>
 <translation id="321187648315454507">Pour autoriser <ph name="APP_NAME" /> à vous envoyer des notifications, vous devez aussi activer celles-ci dans les <ph name="BEGIN_LINK" />paramètres d'Android<ph name="END_LINK" />.</translation>
@@ -153,10 +157,12 @@
 <translation id="4479647676395637221">Demander avant d'autoriser des sites à utiliser votre caméra (recommandé)</translation>
 <translation id="4505788138578415521">URL développée</translation>
 <translation id="4534723447064627427">Pour autoriser <ph name="APP_NAME" /> à accéder à votre microphone, vous devez aussi activer le microphone dans les <ph name="BEGIN_LINK" />paramètres d'Android<ph name="END_LINK" />.</translation>
+<translation id="4566417217121906555">Désactiver le microphone</translation>
 <translation id="4570913071927164677">Détails</translation>
 <translation id="4645575059429386691">Géré par l’un de tes parents</translation>
 <translation id="4670064810192446073">Réalité virtuelle</translation>
 <translation id="4751476147751820511">Capteurs de mouvement ou de luminosité</translation>
+<translation id="4811450222531576619">En savoir plus sur sa source et son sujet</translation>
 <translation id="4836046166855586901">Demander une autorisation lorsqu'un site veut savoir si vous êtes en train d'utiliser cet appareil</translation>
 <translation id="4883854917563148705">Les paramètres gérés ne peuvent pas être réinitialisés</translation>
 <translation id="4887024562049524730">Demander avant d'autoriser les sites à utiliser votre appareil et vos données de réalité virtuelle (recommandé)</translation>
@@ -177,6 +183,7 @@
 <translation id="5186036860380548585">Option accessible près du haut de l'écran</translation>
 <translation id="5197729504361054390">Les contacts que vous sélectionnez seront partagés avec <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Dernière visite : aujourd'hui</translation>
+<translation id="5225463052809312700">Activer l'appareil photo</translation>
 <translation id="5264323282659631142">Retirer « <ph name="CHIP_LABEL" /> »</translation>
 <translation id="528192093759286357">Faites glisser du haut vers le bas et appuyez sur le bouton de retour pour quitter le mode plein écran.</translation>
 <translation id="5300589172476337783">Afficher</translation>
@@ -235,8 +242,10 @@
 <translation id="6367753977865761591">Bloquez la connexion de tiers pour un site particulier.</translation>
 <translation id="6388207532828177975">Effacer et réinitialiser</translation>
 <translation id="6398765197997659313">Quitter le mode plein écran</translation>
+<translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Empêcher les sites d'utiliser vos appareils et vos données de réalité virtuelle</translation>
 <translation id="6447842834002726250">Témoins</translation>
+<translation id="6467852467360539617">Effacer les données et réinitialiser les autorisations</translation>
 <translation id="6527303717912515753">Partager</translation>
 <translation id="6545864417968258051">Recherche d'appareils Bluetooth</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> et <ph name="NUM_MORE" /> autre autorisation bloquée}one{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> et <ph name="NUM_MORE" /> autre autorisation bloquée}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> et <ph name="NUM_MORE" /> autres autorisations bloquées}}</translation>
@@ -276,6 +285,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> élément(s) sélectionné(s)</translation>
 <translation id="7260727271532453612">Autorisations <ph name="PERMISSION_1" /> et <ph name="PERMISSION_2" /> accordées</translation>
 <translation id="7302486331832100261">Vous bloquez habituellement les notifications. Pour les autoriser, touchez Détails.</translation>
+<translation id="7383715096023715447">Paramètres de <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Demander d'abord</translation>
 <translation id="7423538860840206698">La lecture du presse-papiers a été bloquée</translation>
 <translation id="7425915948813553151">Thème sombre pour les sites</translation>
@@ -335,6 +345,7 @@
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 témoin en cours d'utilisation}one{# témoin en cours d'utilisation}other{# témoins en cours d'utilisation}}</translation>
 <translation id="8487700953926739672">Offert en ligne</translation>
 <translation id="848952951823693243">Toujours demander le site pour appareils mobiles</translation>
+<translation id="8499083585497694743">Réactiver le microphone</translation>
 <translation id="851751545965956758">Empêcher les sites de se connecter à des appareils</translation>
 <translation id="8525306231823319788">Plein écran</translation>
 <translation id="857943718398505171">Autorisée (recommandé)</translation>

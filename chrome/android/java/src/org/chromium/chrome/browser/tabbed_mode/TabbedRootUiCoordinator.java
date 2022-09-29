@@ -87,6 +87,7 @@ import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsService;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsServiceFactory;
+import org.chromium.chrome.browser.tab.RequestDesktopUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -657,6 +658,17 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
         }
 
         if (!didTriggerPromo) {
+            didTriggerPromo = RequestDesktopUtils.maybeShowGlobalSettingOptInMessage(
+                    getPrimaryDisplaySizeInInches(), Profile.getLastUsedRegularProfile(),
+                    mMessageDispatcher, mActivity, mActivityTabProvider.get());
+        }
+
+        if (!didTriggerPromo) {
+            didTriggerPromo = RequestDesktopUtils.maybeShowDefaultEnableGlobalSettingMessage(
+                    Profile.getLastUsedRegularProfile(), mMessageDispatcher, mActivity);
+        }
+
+        if (!didTriggerPromo) {
             mToolbarButtonInProductHelpController.showColdStartIPH();
             mReadLaterIPHController.showColdStartIPH();
             if (MultiWindowUtils.instanceSwitcherEnabled()
@@ -666,9 +678,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                         mAppMenuCoordinator.getAppMenuHandler(), R.id.manage_all_windows_menu_id);
             }
         }
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TOOLBAR_IPH_ANDROID)) {
-            mPromoShownOneshotSupplier.set(didTriggerPromo);
-        }
+        mPromoShownOneshotSupplier.set(didTriggerPromo);
 
         if (mOfflineIndicatorController != null) {
             // Initialize the OfflineIndicatorInProductHelpController if the

@@ -210,8 +210,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Security.PageInfo.AboutThisSiteInteraction"
+    enum="AboutThisSiteInteraction" expires_after="2022-12-18">
+  <owner>dullweber@chromium.org</owner>
+  <owner>olesiamarukhno@chromium.org</owner>
+  <summary>
+    Tracks interactions with the AboutThisSite feature. Recorded when PageInfo
+    is opened and when the user interacts with the AboutThisSite row.
+  </summary>
+</histogram>
+
 <histogram name="Security.PageInfo.AboutThisSiteLanguageSupported"
-    enum="Boolean" expires_after="M109">
+    enum="Boolean" expires_after="2023-02-12">
   <owner>dullweber@chromium.org</owner>
   <owner>olesiamarukhno@chromium.org</owner>
   <summary>
@@ -282,7 +292,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.PrivateNetworkAccess.CheckResult"
-    enum="PrivateNetworkAccessCheckResult" expires_after="2022-11-27">
+    enum="PrivateNetworkAccessCheckResult" expires_after="2023-02-12">
   <owner>titouan@chromium.org</owner>
   <owner>clamy@chromium.org</owner>
   <owner>mkwst@chromium.org</owner>
@@ -331,7 +341,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SafetyTips.Interaction" enum="SafetyTipInteraction"
-    expires_after="2022-10-09">
+    expires_after="2023-02-12">
   <owner>jdeblasio@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
@@ -499,7 +509,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SCTAuditing.OptOut.DroppedDueToLogNotFound"
-    enum="Boolean" expires_after="2022-11-27">
+    enum="Boolean" expires_after="2023-02-12">
   <owner>cthomp@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -510,7 +520,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SCTAuditing.OptOut.LookupQueryResult"
-    enum="SCTLookupQueryResult" expires_after="2022-12-04">
+    enum="SCTLookupQueryResult" expires_after="2023-02-12">
   <owner>cthomp@chromium.org</owner>
   <owner>nsatragno@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
@@ -521,7 +531,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SCTAuditing.OptOut.PopularSCTSkipped" enum="Boolean"
-    expires_after="2022-11-27">
+    expires_after="2023-02-12">
   <owner>cthomp@chromium.org</owner>
   <owner>nsatragno@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
@@ -529,6 +539,21 @@ chromium-metrics-reviews@google.com.
     Records whether an SCT selected for a hashdance lookup query was skipped
     because it was found on the Popular SCTs list. Recorded once when creating a
     new auditing report, but before the report is sampled or deduplicated.
+  </summary>
+</histogram>
+
+<histogram name="Security.SCTAuditing.OptOut.ReportCount" units="reports"
+    expires_after="2023-02-01">
+  <owner>cthomp@chromium.org</owner>
+  <owner>jdeblasio@chromium.org</owner>
+  <summary>
+    Records how many full SCT auditing reports the client has sent (i.e., after
+    a successful hashdance lookup query resulting in kSCTSuffixNotFound). This
+    count is tracked per-client in a pref to limit how many full reports a
+    client can send. This metric is emitted every time this count is checked by
+    the SCT auditing code, after sampling is performed, and only once per report
+    (including across browser restarts). This metric is only emitted for SCT
+    auditing hashdance users.
   </summary>
 </histogram>
 
@@ -559,9 +584,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SecurityLevel.InsecureMainFrameFormSubmission"
-    enum="SecurityLevel" expires_after="2022-08-14">
+    enum="SecurityLevel" expires_after="2023-08-14">
   <owner>estark@chromium.org</owner>
-  <owner>trusty-transport@chromium.org</owner>
+  <owner>carlosil@chromium.org</owner>
   <summary>
     Records the security level of a page when submitting a form on a top-frame
     navigation with a non-cryptographic scheme. This histogram is recorded
@@ -572,7 +597,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SecurityLevel.OnCommit" enum="SecurityLevel"
-    expires_after="2022-11-27">
+    expires_after="2023-02-12">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -635,7 +660,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SiteIsolation.BrowsingInstance.MaxCountPerProcess"
-    units="units" expires_after="2022-12-09">
+    units="units" expires_after="2023-02-12">
   <owner>wjmaclean@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <summary>
@@ -791,7 +816,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SiteIsolation.IsPasswordFormSubmittedInDedicatedProcess"
-    enum="SiteIsolationIsDedicatedProcess" expires_after="2022-08-07">
+    enum="SiteIsolationIsDedicatedProcess" expires_after="2023-08-07">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -802,7 +827,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SiteIsolation.ORB.BlockingReason"
-    enum="OrbBlockingDecisionReason" expires_after="2022-11-20">
+    enum="OrbBlockingDecisionReason" expires_after="2023-01-22">
   <owner>creis@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -813,7 +838,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SiteIsolation.ORB.CorbVsOrb" enum="CorbVsOrb"
-    expires_after="2022-11-20">
+    expires_after="2023-01-22">
   <owner>creis@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -827,7 +852,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SiteIsolation.ORB.CorbVsOrb.OrbBlockedAndCorbDidnt.Reason"
-    enum="OrbBlockingDecisionReason" expires_after="2022-11-20">
+    enum="OrbBlockingDecisionReason" expires_after="2023-01-22">
   <owner>creis@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -936,14 +961,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SiteIsolation.ReusePendingOrCommittedSite.CouldReuse"
-    enum="ReusePendingOrCommittedSiteEnum" expires_after="M77">
+<histogram name="SiteIsolation.ReusePendingOrCommittedSite.CouldReuse2"
+    enum="ReusePendingOrCommittedSiteEnum" expires_after="2023-01-20">
   <owner>clamy@chromium.org</owner>
   <summary>
     Whether SiteInstances with a ProcessReusePolicy of
     REUSE_PENDING_OR_COMMITTED_SITE could reuse an existing RenderProcessHost or
     they had to create a new one. True when they reused an existing process,
     false when they created a new one.
+
+    (Was expired between M77 and M105 before moving on to V2.)
   </summary>
 </histogram>
 
@@ -962,7 +989,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SiteIsolation.SavedOAuthSites.Size" units="origins"
-    expires_after="2022-12-11">
+    expires_after="2023-02-12">
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
@@ -974,7 +1001,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SiteIsolation.SavedUserTriggeredIsolatedOrigins.Size"
-    units="origins" expires_after="2022-12-11">
+    units="origins" expires_after="2023-02-12">
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
@@ -987,7 +1014,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SiteIsolation.SavedWebTriggeredIsolatedOrigins.Size"
-    units="origins" expires_after="2022-12-11">
+    units="origins" expires_after="2023-02-12">
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>

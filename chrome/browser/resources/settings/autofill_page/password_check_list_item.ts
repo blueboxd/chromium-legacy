@@ -7,14 +7,17 @@
  * list of insecure passwords.
  */
 
-import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/js/action_link.js';
 import '../settings_shared.css.js';
 import '../site_favicon.js';
+// <if expr="is_chromeos">
+import '../controls/password_prompt_dialog.js';
+// </if>
 import './passwords_shared.css.js';
 
-import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -88,7 +91,7 @@ export class PasswordCheckListItemElement extends
     };
   }
 
-  item: chrome.passwordsPrivate.InsecureCredential;
+  item: chrome.passwordsPrivate.PasswordUiEntry;
   isPasswordVisible: boolean;
   private password_: string;
   clickedChangePassword: boolean;
@@ -188,9 +191,9 @@ export class PasswordCheckListItemElement extends
   showPassword() {
     this.passwordManager_.recordPasswordCheckInteraction(
         PasswordCheckInteraction.SHOW_PASSWORD);
-    this.getPlaintextInsecurePassword(
-            this.item, chrome.passwordsPrivate.PlaintextReason.VIEW)
-        .then(insecureCredential => this.item = insecureCredential);
+    this.requestPlaintextPassword(
+            this.item.id, chrome.passwordsPrivate.PlaintextReason.VIEW)
+        .then(password => this.set('item.password', password), _error => {});
   }
 
   private onReadonlyInputTap_() {

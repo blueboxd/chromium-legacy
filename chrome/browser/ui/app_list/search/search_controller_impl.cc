@@ -31,7 +31,7 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
-#include "components/metrics/structured/structured_mojo_events.h"
+#include "components/metrics/structured/structured_events.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -211,10 +211,6 @@ ChromeSearchResult* SearchControllerImpl::GetResultByTitleForTest(
     }
   }
   return nullptr;
-}
-
-int SearchControllerImpl::GetLastQueryLength() const {
-  return last_query_.size();
 }
 
 void SearchControllerImpl::Train(LaunchData&& launch_data) {

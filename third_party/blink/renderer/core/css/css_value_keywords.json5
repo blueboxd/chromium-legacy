@@ -1,7 +1,8 @@
 {
   // The mode argument is used to limit the keyword to be used only for certain
   // CSSParserModes. Values that have the prefix -internal- are only allowed by
-  // CSSParserModes listed in allowInternalPropertyAndValue()
+  // CSSParserModes listed in CSSValueKeywordsWriter, which feeds the generated
+  // code for isValueAllowedInMode.
 
   parameters: {
     mode: {},
@@ -243,6 +244,11 @@
     // Value used to implement the behavior in:
     // https://quirks.spec.whatwg.org/#the-tables-inherit-color-from-body-quirk
     "-internal-quirk-inherit",
+    //
+    // css-text-decor
+    // <https://github.com/w3c/csswg-drafts/issues/7522>
+    "-internal-spelling-error-color",
+    "-internal-grammar-error-color",
 
     //
     // "Extended" named colors
@@ -1036,6 +1042,7 @@
     "alphabetic",
 
     // (display-mode:) media feature
+    "borderless",
     "fullscreen",
     "standalone",
     "minimal-ui",
@@ -1309,7 +1316,7 @@
 
     // Trigonometic functions
     "sin",
-    // "cos",
+    "cos",
     // "tan" - already declared for color value
     // "atan",
     // "atan2",
@@ -1424,9 +1431,6 @@
     // (navigation-controls) media feature
     // none
     "back-button",
-
-    // content-visibility
-    "hidden-matchable",
 
     // -internal-empty-line-height
     // none

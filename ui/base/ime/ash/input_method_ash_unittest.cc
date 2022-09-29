@@ -25,7 +25,7 @@
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/fake_text_input_client.h"
-#include "ui/base/ime/input_method_delegate.h"
+#include "ui/base/ime/ime_key_event_dispatcher.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -56,8 +56,10 @@ uint32_t GetOffsetInUTF16(const std::u16string& utf16_string,
 
 class TestableInputMethodAsh : public InputMethodAsh {
  public:
-  explicit TestableInputMethodAsh(internal::InputMethodDelegate* delegate)
-      : InputMethodAsh(delegate), process_key_event_post_ime_call_count_(0) {}
+  explicit TestableInputMethodAsh(
+      ImeKeyEventDispatcher* ime_key_event_dispatcher)
+      : InputMethodAsh(ime_key_event_dispatcher),
+        process_key_event_post_ime_call_count_(0) {}
 
   struct ProcessKeyEventPostIMEArgs {
     ProcessKeyEventPostIMEArgs()
@@ -207,7 +209,7 @@ class NiceMockIMEEngine : public ash::MockIMEEngineHandler {
                void(const std::u16string&, uint32_t, uint32_t, uint32_t));
 };
 
-class InputMethodAshTest : public internal::InputMethodDelegate,
+class InputMethodAshTest : public ImeKeyEventDispatcher,
                            public testing::Test,
                            public DummyTextInputClient {
  public:
@@ -252,7 +254,7 @@ class InputMethodAshTest : public internal::InputMethodDelegate,
     ResetFlags();
   }
 
-  // Overridden from ui::internal::InputMethodDelegate:
+  // Overridden from ui::ImeKeyEventDispatcher:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* event) override {
     dispatched_key_event_ = *event;
@@ -265,7 +267,7 @@ class InputMethodAshTest : public internal::InputMethodDelegate,
   void SetCompositionText(const CompositionText& composition) override {
     composition_text_ = composition;
   }
-  uint32_t ConfirmCompositionText(bool keep_selection) override {
+  size_t ConfirmCompositionText(bool keep_selection) override {
     // TODO(b/134473433) Modify this function so that when keep_selection is
     // true, the selection is not changed when text committed
     if (keep_selection) {
@@ -589,6 +591,18 @@ TEST_F(InputMethodAshTest, ExtractCompositionTextTest_NoAttribute) {
             composition_text.ime_text_spans[0].end_offset);
   EXPECT_EQ(ui::ImeTextSpan::Thickness::kThin,
             composition_text.ime_text_spans[0].thickness);
+}
+
+TEST_F(InputMethodAshTest, SetCompositionTextFails) {
+  InputMethodAsh ime(this);
+  FakeTextInputClient fake_text_input_client(TEXT_INPUT_TYPE_TEXT);
+  ime.SetFocusedTextInputClient(&fake_text_input_client);
+
+  EXPECT_EQ(ime.GetTextInputType(), TEXT_INPUT_TYPE_TEXT);
+  // Intentionally have a range start that does not exist.
+  EXPECT_FALSE(ime.SetCompositionRange(10000, 5, {}));
+
+  ime.SetFocusedTextInputClient(nullptr);
 }
 
 TEST_F(InputMethodAshTest, ExtractCompositionTextTest_SingleUnderline) {

@@ -24,19 +24,29 @@ namespace {
 
 // This must match the value in web_instance_host.cc
 constexpr char kCrashProductName[] = "FuchsiaWebEngine";
+
 // TODO(https://fxbug.dev/51490): Use a programmatic mechanism to obtain this.
 constexpr char kComponentUrl[] =
+    "fuchsia-pkg://fuchsia.com/web_engine#meta/context_provider.cm";
+constexpr char kComponentUrlCfv1[] =
     "fuchsia-pkg://fuchsia.com/web_engine#meta/context_provider.cmx";
+
+// Use to select which component URL to register with the Crash service.
+const char kEnableCfv2[] = "enable-cfv2";
 
 }  // namespace
 
 int ContextProviderMain() {
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
 
+  // Register with crash reporting, under the appropriate component URL.
+  const base::CommandLine* const command_line =
+      base::CommandLine::ForCurrentProcess();
+  const bool enable_cfv2 = command_line->HasSwitch(kEnableCfv2);
   fuchsia_component_support::RegisterProductDataForCrashReporting(
-      kComponentUrl, kCrashProductName);
+      enable_cfv2 ? kComponentUrl : kComponentUrlCfv1, kCrashProductName);
 
-  if (!InitLoggingFromCommandLine(*base::CommandLine::ForCurrentProcess())) {
+  if (!InitLoggingFromCommandLine(*command_line)) {
     return 1;
   }
 
@@ -50,7 +60,7 @@ int ContextProviderMain() {
   base::ScopedServiceBinding<fuchsia::web::ContextProvider> binding(
       directory, &context_provider);
   base::ScopedServiceBinding<fuchsia::web::Debug> debug_binding(
-      directory->debug_dir(), &context_provider);
+      directory->debug_dir(), context_provider.debug_api());
 
   // Publish version information for this component to Inspect.
   sys::ComponentInspector inspect(base::ComponentContextForProcess());

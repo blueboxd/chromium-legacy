@@ -11,10 +11,10 @@
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
-class NetworkState;
 class NetworkConnectionHandler;
+class NetworkState;
 class NetworkStateHandler;
 
 // Class for tracking general connection information about networks.
@@ -95,6 +95,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ConnectionInfoMetricsLogger
   base::flat_map<std::string, ConnectionInfo> guid_to_connection_info_;
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROMEOS_ASH_COMPONENTS_NETWORK_METRICS_CONNECTION_INFO_METRICS_LOGGER_H_

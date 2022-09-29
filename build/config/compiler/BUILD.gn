@@ -424,9 +424,9 @@ config("compiler") {
     # faster.
     # On arm64, this is already the default behavior.
     if (current_cpu == "x64") {
-#      asmflags += [ "-femit-dwarf-unwind=no-compact-unwind" ]
-#      cflags += [ "-femit-dwarf-unwind=no-compact-unwind" ]
-       cflags += [ "-faligned-allocation" ]
+      asmflags += [ "-femit-dwarf-unwind=no-compact-unwind" ]
+      cflags += [ "-femit-dwarf-unwind=no-compact-unwind" ]
+      cflags += [ "-faligned-allocation" ]
     }
   }
 
@@ -2046,7 +2046,7 @@ config("optimize") {
     # - Investigate -Oz here, maybe just for ARM?
     cflags = [ "-Os" ] + common_optimize_on_cflags
   } else {
-    cflags = [ "-O3" ] + common_optimize_on_cflags
+    cflags = [ "-O2" ] + common_optimize_on_cflags
   }
   if (optimize_for_size) {
     rustflags = [ "-Copt-level=s" ]

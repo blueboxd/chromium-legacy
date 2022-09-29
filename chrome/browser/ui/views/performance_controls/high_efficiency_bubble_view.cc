@@ -40,7 +40,7 @@ views::BubbleDialogModelHost* HighEfficiencyBubbleView::ShowBubble(
           .AddParagraph(ui::DialogModelLabel(IDS_HIGH_EFFICIENCY_DIALOG_BODY)
                             .set_is_secondary())
           .AddOkButton(base::OnceClosure(), l10n_util::GetStringUTF16(IDS_DONE))
-          .AddExtraLink(ui::DialogModelLabel::Link(
+          .AddExtraLink(ui::DialogModelLabel::CreateLink(
               IDS_SETTINGS_TITLE,
               base::BindRepeating(
                   &HighEfficiencyBubbleDelegate::OnSettingsClicked,

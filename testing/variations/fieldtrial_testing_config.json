@@ -3823,21 +3823,6 @@
             ]
         }
     ],
-    "DisableFlushWorkaroundForMacCrash": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DisableFlushWorkaroundForMacCrash"
-                    ]
-                }
-            ]
-        }
-    ],
     "DisableFontManagerEarlyInitDesktop": [
         {
             "platforms": [
@@ -5780,46 +5765,6 @@
             ]
         }
     ],
-    "IncludeBackgroundSVGInLCP": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "IncludeBackgroundSVGInLCP"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IncludeInitiallyInvisibleImagesInLCP": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "IncludeInitiallyInvisibleImagesInLCP"
-                    ]
-                }
-            ]
-        }
-    ],
     "IncognitoDownloadsWarning": [
         {
             "platforms": [
@@ -7089,7 +7034,6 @@
                 {
                     "name": "IOSExperiments",
                     "params": {
-                        "MaxZeroSuggestMatches": "20",
                         "OmniboxLocalZeroSuggestAgeThreshold": "90",
                         "PrefixSuggestIgnoreDuplicateVisits": "true",
                         "ZeroSuggestIgnoreDuplicateVisits": "false"
@@ -7097,7 +7041,6 @@
                     "enable_features": [
                         "LocalHistorySuggestRevamp",
                         "OmniboxLocalZeroSuggestAgeThreshold",
-                        "OmniboxMaxZeroSuggestMatches",
                         "ZeroSuggestPrefetching"
                     ]
                 }
@@ -7380,6 +7323,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DisplayOpenLinkAsProfile"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OptimisticBlockfileWrite": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OptimisticBlockfileWrite"
                     ]
                 }
             ]
@@ -8801,13 +8759,18 @@
                 "chromeos_lacros",
                 "linux",
                 "mac",
-                "windows"
+                "windows",
+                "android_webview",
+                "android_weblayer"
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "ReportFCPOnCommitAndDontSkip",
                     "enable_features": [
                         "ReportFCPOnlyOnSuccessfulCommit"
+                    ],
+                    "disable_features": [
+                        "SkipCommitsIfNotSynchronizingCompositorState"
                     ]
                 }
             ]
@@ -11520,25 +11483,6 @@
             "experiments": [
                 {
                     "name": "arm:SyncDecoding,_Beta"
-                }
-            ]
-        }
-    ],
-    "WebRTC-PreStreamDecoders": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "android",
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "max:0,_pt2_V2"
                 }
             ]
         }

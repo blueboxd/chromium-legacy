@@ -50,6 +50,7 @@
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
+#include "third_party/blink/public/common/permissions_policy/origin_with_possible_wildcards.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "ui/display/display.h"
@@ -459,7 +460,22 @@ void AddPrefersColorSchemeHeader(net::HttpRequestHeaders* headers,
   bool is_dark_mode =
       preferred_color_scheme == blink::mojom::PreferredColorScheme::kDark;
   SetHeaderToString(headers, WebClientHintsType::kPrefersColorScheme,
-                    is_dark_mode ? "dark" : "light");
+                    is_dark_mode ? network::kPrefersColorSchemeDark
+                                 : network::kPrefersColorSchemeLight);
+}
+
+void AddPrefersReducedMotionHeader(net::HttpRequestHeaders* headers,
+                                   FrameTreeNode* frame_tree_node) {
+  if (!frame_tree_node)
+    return;
+  bool prefers_reduced_motion =
+      WebContents::FromRenderFrameHost(frame_tree_node->current_frame_host())
+          ->GetOrCreateWebPreferences()
+          .prefers_reduced_motion;
+  SetHeaderToString(headers, WebClientHintsType::kPrefersReducedMotion,
+                    prefers_reduced_motion
+                        ? network::kPrefersReducedMotionReduce
+                        : network::kPrefersReducedMotionNoPreference);
 }
 
 bool IsValidURLForClientHints(const url::Origin& origin) {
@@ -718,13 +734,14 @@ void UpdateIFramePermissionsPolicyWithDelegationSupportForClientHints(
 
       // We need to ensure `blink::EnabledClientHints` is updated where the
       // main frame now has permission for the given client hints.
-      std::set<url::Origin> origin_set(
-          container_policy_item.allowed_origins.begin(),
-          container_policy_item.allowed_origins.end());
-      if (origin_set.find(data.outermost_main_frame_origin) !=
-          origin_set.end()) {
-        for (const auto& hint : it->second) {
-          data.hints.SetIsEnabled(hint, /*should_send*/ true);
+      for (const auto& origin_with_possible_wildcards :
+           container_policy_item.allowed_origins) {
+        if (origin_with_possible_wildcards.DoesMatchOrigin(
+                data.outermost_main_frame_origin)) {
+          for (const auto& hint : it->second) {
+            data.hints.SetIsEnabled(hint, /*should_send*/ true);
+          }
+          break;
         }
       }
     }
@@ -975,6 +992,10 @@ void AddRequestClientHintsHeaders(
     AddPrefersColorSchemeHeader(headers, frame_tree_node);
   }
 
+  if (ShouldAddClientHint(data, WebClientHintsType::kPrefersReducedMotion)) {
+    AddPrefersReducedMotionHeader(headers, frame_tree_node);
+  }
+
   if (ShouldAddClientHint(data, WebClientHintsType::kSaveData))
     AddSaveDataHeader(headers, context);
 
@@ -983,7 +1004,7 @@ void AddRequestClientHintsHeaders(
   // If possible, logic should be added above so that the request headers for
   // the newly added client hint can be added to the request.
   static_assert(
-      network::mojom::WebClientHintsType::kSaveData ==
+      network::mojom::WebClientHintsType::kPrefersReducedMotion ==
           network::mojom::WebClientHintsType::kMaxValue,
       "Consider adding client hint request headers from the browser process");
 

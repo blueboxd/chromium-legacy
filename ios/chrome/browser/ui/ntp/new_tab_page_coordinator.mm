@@ -55,6 +55,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/ui/context_menu/link_preview/link_preview_coordinator.h"
+#import "ios/chrome/browser/ui/main/layout_guide_util.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/main/scene_state_observer.h"
@@ -324,6 +325,8 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
           self.browser->GetCommandDispatcher());
   self.headerController.commandHandler = self;
   self.headerController.delegate = self.ntpMediator;
+  self.headerController.layoutGuideCenter =
+      LayoutGuideCenterForBrowser(self.browser);
 
   self.headerController.readingListModel =
       ReadingListModelFactory::GetForBrowserState(
@@ -1205,11 +1208,12 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
 
 // Whether the feed top section, which contains all content between the feed
 // header and the feed, is currently visible.
-// TODO(crbug.com/1331010): The feed top section should still work with the
-// sticky header, but for now we only show the content without it.
+// TODO(crbug.com/1331010): The feed top section may include content that is not
+// the signin promo, which may need to be visible when the user is signed in.
 - (BOOL)isFeedTopSectionVisible {
   return IsDiscoverFeedTopSyncPromoEnabled() && [self shouldFeedBeVisible] &&
-         ![self isContentHeaderSticky];
+         self.authService &&
+         !self.authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin);
 }
 
 // Creates, configures and returns a Discover feed view controller.

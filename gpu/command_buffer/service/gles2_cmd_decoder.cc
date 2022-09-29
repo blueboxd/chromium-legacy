@@ -99,7 +99,6 @@
 #include "ui/gfx/overlay_priority_hint.h"
 #include "ui/gfx/video_types.h"
 #include "ui/gl/ca_renderer_layer_params.h"
-#include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_enums.h"
@@ -4334,10 +4333,6 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
 
   caps.angle_rgbx_internal_format =
       feature_info_->feature_flags().angle_rgbx_internal_format;
-
-#if BUILDFLAG(IS_CHROMEOS)
-  PopulateDRMCapabilities(&caps);
-#endif
 
   return caps;
 }

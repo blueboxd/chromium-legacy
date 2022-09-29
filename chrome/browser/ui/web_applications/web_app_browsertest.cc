@@ -5,6 +5,7 @@
 #include <codecvt>
 #include <string>
 
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/strings/strcat.h"
@@ -18,6 +19,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -58,6 +60,7 @@
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
@@ -74,6 +77,7 @@
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "components/webapps/browser/features.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/common/content_features.h"
@@ -266,6 +270,17 @@ class WebAppBrowserTest_Tabbed : public WebAppBrowserTest {
  private:
   base::test::ScopedFeatureList scoped_feature_list_{
       features::kDesktopPWAsTabStrip};
+};
+
+// A dedicated test fixture for detailed install dialog, which requires a
+// command line switch to enable manifest parsing.
+class WebAppBrowserTest_DetailedInstallDialog : public WebAppBrowserTest {
+ public:
+  WebAppBrowserTest_DetailedInstallDialog() = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_{
+      webapps::features::kDesktopPWAsDetailedInstallDialog};
 };
 
 // TODO(crbug.com/1257751): Stabilize the test.
@@ -1174,6 +1189,24 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, CanInstallWithPolicyPwa) {
             kEnabled);
 }
 
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_DetailedInstallDialog,
+                       OpenDetailedInstallDialogOnlyOnce) {
+  base::UserActionTester user_action_tester;
+  NavigateToURLAndWait(
+      browser(),
+      https_server()->GetURL(
+          "/banners/"
+          "manifest_test_page.html?manifest=manifest_with_screenshots.json"));
+
+  WebAppTestInstallObserver observer(profile());
+  // The IDC_INSTALL_PWA is executed twice, but the dialog
+  // must be shown only once.
+  ASSERT_TRUE(chrome::ExecuteCommand(browser(), IDC_INSTALL_PWA));
+  ASSERT_TRUE(chrome::ExecuteCommand(browser(), IDC_INSTALL_PWA));
+
+  EXPECT_EQ(1u, provider().command_manager().GetCommandCountForTesting());
+}
+
 class WebAppBrowserTest_ExternalPrefMigration
     : public WebAppBrowserTest,
       public testing::WithParamInterface<bool> {
@@ -1271,9 +1304,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
   expected_pixel_colors.push_back(SkColorSetRGB(90, 90, 90));
 #endif
   SkColor icon_pixel_color = GetIconTopLeftColor(shortcut_path);
-  EXPECT_TRUE(std::find(expected_pixel_colors.begin(),
-                        expected_pixel_colors.end(),
-                        icon_pixel_color) != expected_pixel_colors.end())
+  EXPECT_TRUE(base::Contains(expected_pixel_colors, icon_pixel_color))
       << "Actual color (RGB) is: "
       << color_utils::SkColorToRgbString(icon_pixel_color);
 
@@ -2083,9 +2114,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
       std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
       const std::string extension =
           converter.to_bytes(file_extension.substr(1));
-      EXPECT_TRUE(std::find(expected_extensions.begin(),
-                            expected_extensions.end(),
-                            extension) != expected_extensions.end())
+      EXPECT_TRUE(base::Contains(expected_extensions, extension))
           << "Missing file extension: " << extension;
       const std::wstring reg_key =
           L"Software\\Classes\\" + file_extension + L"\\OpenWithProgids";

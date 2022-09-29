@@ -216,6 +216,9 @@
 }
 
 - (void)logScrollButtonVisible:(BOOL)scrollButtonVisible {
+  if (!self.firstRun) {
+    return;
+  }
   RecordFirstRunScrollButtonVisibilityMetrics(
       first_run::FirstRunScreenType::kSyncScreenWithoutIdentityPicker,
       scrollButtonVisible);
@@ -291,9 +294,6 @@
 // Starts syncing or opens `advancedSettings`.
 - (void)startSyncOrAdvancedSettings:(BOOL)advancedSettings {
   self.advancedSettingsRequested = advancedSettings;
-  int confirmationID = advancedSettings
-                           ? self.viewController.openSettingsStringID
-                           : self.viewController.activateSyncButtonID;
 
   ChromeIdentity* identity =
       AuthenticationServiceFactory::GetForBrowserState(
@@ -312,10 +312,11 @@
       self.browser->GetCommandDispatcher(), BrowsingDataCommands);
   authenticationFlow.delegate = self.viewController;
 
-  [self.mediator startSyncWithConfirmationID:confirmationID
-                                  consentIDs:self.consentStringIDs
-                          authenticationFlow:authenticationFlow
-           advancedSyncSettingsLinkWasTapped:advancedSettings];
+  [self.mediator
+            startSyncWithConfirmationID:self.viewController.activateSyncButtonID
+                             consentIDs:self.consentStringIDs
+                     authenticationFlow:authenticationFlow
+      advancedSyncSettingsLinkWasTapped:advancedSettings];
 }
 
 // Shows the advanced sync settings.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import '//resources/js/util.m.js';
+import '//resources/js/util.js';
 import '//resources/cr_elements/cr_button/cr_button.js';
 import '//resources/cr_elements/cr_dialog/cr_dialog.js';
 import '//resources/cr_elements/cr_input/cr_input.js';
@@ -340,9 +340,9 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
 
   private showActivityControls_(): boolean {
     // <if expr="chromeos_ash">
-    if (loadTimeData.getBoolean('syncSettingsCategorizationEnabled')) {
-      // Should be hidden in OS settings.
-      return !loadTimeData.getBoolean('isOSSettings');
+    // Should be hidden in OS settings.
+    if (loadTimeData.getBoolean('isOSSettings')) {
+      return false;
     }
     // </if>
     return true;
@@ -367,8 +367,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
 
   private getSyncAdvancedPageRoute_(): Route {
     // <if expr="chromeos_ash">
-    if (loadTimeData.getBoolean('syncSettingsCategorizationEnabled') &&
-        loadTimeData.getBoolean('isOSSettings')) {
+    if (loadTimeData.getBoolean('isOSSettings')) {
       // In OS settings on ChromeOS a different page is used to show the list of
       // sync data types.
       return getSyncRoutes().OS_SYNC;

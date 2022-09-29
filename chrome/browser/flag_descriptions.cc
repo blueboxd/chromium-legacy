@@ -1397,15 +1397,6 @@ const char kEnableRestrictedWebApisDescription[] =
     "Enable the restricted web APIs for dev trial. This will be replaced with "
     "permission policies to control the capabilities afterwards.";
 
-const char kEnableUseZoomForDsfName[] =
-    "Use Blink's zoom for device scale factor.";
-const char kEnableUseZoomForDsfDescription[] =
-    "If enabled, Blink uses its zooming mechanism to scale content for device "
-    "scale factor.";
-const char kEnableUseZoomForDsfChoiceDefault[] = "Default";
-const char kEnableUseZoomForDsfChoiceEnabled[] = "Enabled";
-const char kEnableUseZoomForDsfChoiceDisabled[] = "Disabled";
-
 const char kEnableWebAuthenticationChromeOSAuthenticatorName[] =
     "ChromeOS platform Web Authentication support";
 const char kEnableWebAuthenticationChromeOSAuthenticatorDescription[] =
@@ -2745,6 +2736,11 @@ const char kSupportTool[] = "Support Tool";
 const char kSupportToolDescription[] =
     "Support Tool collects and exports logs to help debugging the issues. It's"
     " available in chrome://support-tool.";
+
+const char kSupportToolScreenshot[] = "Support Tool Screenshot";
+const char kSupportToolScreenshotDescription[] =
+    "Enables the Support Tool to capture and include a screenshot in the "
+    "exported packet.";
 
 const char kSuppressToolbarCapturesName[] = "Suppress Toolbar Captures";
 const char kSuppressToolbarCapturesDescription[] =
@@ -5404,6 +5400,17 @@ const char kEcheSWAMeasureLatencyDescription[] =
     "Measure Eche E2E Latency and print all E2E latency logs of Eche in "
     "Console";
 
+const char kEcheSWASendStartSignalingName[] =
+    "Enable Eche Send Start Signaling";
+const char kEcheSWASendStartSignalingDescription[] =
+    "Allows sending start signaling action to establish Eche's WebRTC "
+    "connection";
+
+const char kEcheSWADisableStunServerName[] = "Disable Eche STUN server";
+const char kEcheSWADisableStunServerDescription[] =
+    "Allows disabling the stun servers when establishing a WebRTC connection "
+    "to Eche";
+
 const char kEnableIkev2VpnName[] = "Enable IKEv2 VPN";
 const char kEnableIkev2VpnDescription[] =
     "Enable selecting IKEv2 as the VPN provider type when creating a VPN "
@@ -5855,6 +5862,10 @@ const char kPhoneHubFeatureSetupErrorHandlingDescription[] =
     "Enable the error handling during Phone Hub feature setup. It allows"
     "users to see result on Chromebook when the setup failed on connected"
     "remote phone device.";
+
+const char kPreferDcheckName[] = "Prefer DCHECK-enabled build";
+const char kPreferDcheckDescription[] =
+    "Use a DCHECK-enabled build when available.";
 
 const char kProductivityLauncherName[] =
     "Productivity experiment: App Launcher";
@@ -6349,6 +6360,13 @@ const char kLinkCapturingUiUpdateDescription[] =
 const char kMessagesPreinstallName[] = "Preinstall  Messages PWA";
 const char kMessagesPreinstallDescription[] =
     "Enables preinstallation of the Messages for Web PWA for unmanaged users.";
+
+const char kMicrosoftOfficeWebAppExperimentName[] =
+    "Microsoft Office web app experiment";
+const char kMicrosoftOfficeWebAppExperimentDescription[] =
+    "A ChromeOS experiment on the Microsoft Office web app that overrides the "
+    "scope and theme color. Not intended for public release; this is testing "
+    "capabilites that will be available to websites at a later date.";
 
 const char kOneGroupPerRendererName[] =
     "Use one cgroup for each foreground renderer";

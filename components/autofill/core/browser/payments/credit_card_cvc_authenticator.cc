@@ -54,6 +54,9 @@ void CreditCardCVCAuthenticator::OnFullCardRequestSucceeded(
     const payments::FullCardRequest& full_card_request,
     const CreditCard& card,
     const std::u16string& cvc) {
+  if (!requester_)
+    return;
+
   payments::PaymentsClient::UnmaskResponseDetails response =
       full_card_request.unmask_response_details();
   requester_->OnCVCAuthenticationComplete(
@@ -61,13 +64,15 @@ void CreditCardCVCAuthenticator::OnFullCardRequestSucceeded(
           .with_did_succeed(true)
           .with_card(&card)
           .with_cvc(cvc)
-          .with_creation_options(std::move(response.fido_creation_options))
           .with_request_options(std::move(response.fido_request_options))
           .with_card_authorization_token(response.card_authorization_token));
 }
 
 void CreditCardCVCAuthenticator::OnFullCardRequestFailed(
     payments::FullCardRequest::FailureType failure_type) {
+  if (!requester_)
+    return;
+
   requester_->OnCVCAuthenticationComplete(
       CVCAuthenticationResponse().with_did_succeed(false));
 }

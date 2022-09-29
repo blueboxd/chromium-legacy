@@ -680,9 +680,6 @@ BASE_FEATURE(kLowLatencyCanvas2dImageChromium,
 #endif  // BUILDFLAG(IS_CHROMEOS)
 );
 
-// Enables Dawn-accelerated 2D canvas.
-BASE_FEATURE(kDawn2dCanvas, "Dawn2dCanvas", base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables small accelerated canvases for webview (crbug.com/1004304)
 BASE_FEATURE(kWebviewAccelerateSmallCanvases,
              "WebviewAccelerateSmallCanvases",
@@ -1079,11 +1076,11 @@ BASE_FEATURE(kDelayLowPriorityRequestsAccordingToNetworkState,
 
 BASE_FEATURE(kIncludeInitiallyInvisibleImagesInLCP,
              "IncludeInitiallyInvisibleImagesInLCP",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kIncludeBackgroundSVGInLCP,
              "IncludeBackgroundSVGInLCP",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const base::FeatureParam<int> kMaxNumOfThrottleableRequestsInTightMode{
     &kDelayLowPriorityRequestsAccordingToNetworkState,
@@ -1304,10 +1301,6 @@ BASE_FEATURE(kBackForwardCacheAppBanner,
              "BackForwardCacheAppBanner",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kBackForwardCacheEnabledForNonPluginEmbed,
-             "BackForwardCacheEnabledForNonPluginEmbed",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Initialize CSSDefaultStyleSheets early in renderer startup.
 BASE_FEATURE(kDefaultStyleSheetsEarlyInit,
              "DefaultStyleSheetsEarlyInit",
@@ -1465,6 +1458,19 @@ const base::FeatureParam<bool>
 const base::FeatureParam<bool>
     kLowPriorityAsyncScriptExecutionMainFrameOnlyParam{
         &kLowPriorityAsyncScriptExecution, "main_frame_only", false};
+
+BASE_FEATURE(kLowPriorityScriptLoading,
+             "LowPriorityScriptLoading",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<bool> kLowPriorityScriptLoadingCrossSiteOnlyParam{
+    &kLowPriorityScriptLoading, "cross_site_only", false};
+const base::FeatureParam<base::TimeDelta>
+    kLowPriorityScriptLoadingFeatureLimitParam{
+        &kLowPriorityScriptLoading, "feature_limit", base::Seconds(0)};
+const base::FeatureParam<std::string> kLowPriorityScriptLoadingDenyListParam{
+    &kLowPriorityScriptLoading, "deny_list", ""};
+const base::FeatureParam<bool> kLowPriorityScriptLoadingMainFrameOnlyParam{
+    &kLowPriorityScriptLoading, "main_frame_only", false};
 
 BASE_FEATURE(kDOMContentLoadedWaitForAsyncScript,
              "DOMContentLoadedWaitForAsyncScript",

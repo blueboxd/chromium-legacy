@@ -1081,6 +1081,7 @@
       'android-pie-arm64-rel': {
         'mixins': [
           'has_native_resultdb_integration',
+          'isolate_profile_data',
           'pie_fleet',
           'walleye',
         ],
@@ -1661,15 +1662,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
-        },
-      },
-      'linux-chromeos-js-code-coverage': {
-        'mixins': [
-          'isolate_profile_data',
-          'linux-xenial',
-        ],
-        'test_suites': {
-          'gtest_tests': 'js_code_coverage_browser_tests_reduced'
         },
       },
       'linux-chromeos-rel': {

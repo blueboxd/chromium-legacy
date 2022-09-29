@@ -3681,6 +3681,8 @@ enum WebFeature {
   kDestructiveDocumentWriteAfterModuleScript = 4360,
   kCSSAtSupportsDropInvalidWhileForgivingParsing = 4361,
   kPermissionsPolicyUnload = 4362,
+  kServiceWorkerSkippedForSubresourceLoad = 4363,
+  kClientHintsPrefersReducedMotion = 4364,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

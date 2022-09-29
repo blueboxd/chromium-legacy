@@ -163,6 +163,47 @@ class AX_EXPORT AutomationV8Bindings {
       AutomationAXTreeWrapper* tree_wrapper,
       AXNode* node,
       const std::tuple<ax::mojom::Event, AXEventGenerator::Event>& event_type);
+  void GetMarkers(v8::Isolate* isolate,
+                  v8::ReturnValue<v8::Value> result,
+                  ui::AutomationAXTreeWrapper* tree_wrapper,
+                  ui::AXNode* node);
+  void GetFocus(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  //
+  // Access the cached accessibility trees and properties of their nodes.
+  //
+
+  // Args: string ax_tree_id, int node_id, Returns: int child_id.
+  void GetChildIDAtIndex(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // Returns: string tree_id and int node_id of a node which has global
+  // accessibility focus.
+  void GetAccessibilityFocus(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // Args: string ax_tree_id.
+  void SetDesktopID(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // Args: string ax_tree_id, int node_id
+  // Returns: JS object with a map from html attribute key to value.
+  void GetHtmlAttributes(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // Called when an accessibility tree is destroyed and needs to be
+  // removed from our cache.
+  // Args: string ax_tree_id
+  void DestroyAccessibilityTree(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  void AddTreeChangeObserver(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  void RemoveTreeChangeObserver(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // Creates the backing AutomationPosition native object given a request from
+  // javascript.
+  // Args: string ax_tree_id, int node_id, int offset, bool is_downstream
+  // Returns: JS object with bindings back to the native AutomationPosition.
+  void CreateAutomationPosition(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
 
   AutomationTreeManagerOwner* automation_tree_manager_owner_;
   AutomationV8Router* automation_v8_router_;

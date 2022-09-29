@@ -70,9 +70,8 @@ preprocess_if_expr("preprocess_src") {
 
     # Used by security interstitials and ios inspect UI
     "util_deprecated.js",
-    "util.m.js",
+    "util.js",
     "webui_resource_test.js",
-    "webview_manager.js",
   ]
 
   if (is_chromeos) {
@@ -128,9 +127,6 @@ if (is_chromeos_ash) {
   }
 }
 
-js_library("webview_manager") {
-}
-
 js_library("webui_resource_test") {
   externs_list = [ "dom_automation_controller.js" ]
 }
@@ -160,7 +156,7 @@ js_type_check("js_resources_modules") {
     ":plural_string_proxy",
     ":promise_resolver",
     ":static_types",
-    ":util.m",
+    ":util",
   ]
 }
 
@@ -206,7 +202,7 @@ js_library("static_types") {
   deps = [ ":assert" ]
 }
 
-js_library("util.m") {
+js_library("util") {
   deps = [
     ":assert",
     ":cr.m",

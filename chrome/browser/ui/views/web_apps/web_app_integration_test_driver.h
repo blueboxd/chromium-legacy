@@ -45,6 +45,7 @@ enum class Site {
   kStandalone,
   kStandaloneNestedA,
   kStandaloneNestedB,
+  kStandaloneNotStartUrl,
   kMinimalUi,
   kNotPromotable,
   kWco,
@@ -58,6 +59,7 @@ enum class InstallableSite {
   kStandalone,
   kStandaloneNestedA,
   kStandaloneNestedB,
+  kStandaloneNotStartUrl,
   kMinimalUi,
   kWco,
   kIsolated,
@@ -271,6 +273,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void CheckAppInListNotLocallyInstalled(Site site);
   void CheckAppInListWindowed(Site site);
   void CheckAppInListTabbed(Site site);
+  void CheckAppNavigation(Site site);
   void CheckAppNavigationIsStartUrl();
   void CheckBrowserNavigationIsAppSettings(Site site);
   void CheckAppNotInList(Site site);
@@ -321,7 +324,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void AfterStateCheckAction();
 
   AppId GetAppIdBySiteMode(Site site);
-  GURL GetAppStartURL(Site site);
+  GURL GetUrlForSite(Site site);
   absl::optional<AppState> GetAppBySiteMode(StateSnapshot* state_snapshot,
                                             Profile* profile,
                                             Site site);

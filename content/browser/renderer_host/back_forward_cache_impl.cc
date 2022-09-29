@@ -21,6 +21,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
@@ -62,7 +63,8 @@ static constexpr size_t kDefaultBackForwardCacheSize = 1;
 static constexpr size_t kDefaultForegroundBackForwardCacheSize = 0;
 
 // The default time to live in seconds for documents in BackForwardCache.
-static constexpr int kDefaultTimeToLiveInBackForwardCacheInSeconds = 180;
+// See also crbug.com/1305878.
+static constexpr int kDefaultTimeToLiveInBackForwardCacheInSeconds = 600;
 
 #if BUILDFLAG(IS_ANDROID)
 bool IsProcessBindingEnabled() {
@@ -314,7 +316,7 @@ void RequestRecordTimeToVisible(RenderFrameHostImpl* rfh,
 // Returns true if any of the processes associated with the RenderViewHosts in
 // this Entry are foregrounded.
 bool HasForegroundedProcess(BackForwardCacheImpl::Entry& entry) {
-  for (auto* rvh : entry.render_view_hosts()) {
+  for (const auto& rvh : entry.render_view_hosts()) {
     if (!rvh->GetProcess()->IsProcessBackgrounded()) {
       return true;
     }
@@ -326,7 +328,7 @@ bool HasForegroundedProcess(BackForwardCacheImpl::Entry& entry) {
 // acknowledgement from renderer.
 bool AllRenderViewHostsReceivedAckFromRenderer(
     BackForwardCacheImpl::Entry& entry) {
-  for (auto* rvh : entry.render_view_hosts()) {
+  for (const auto& rvh : entry.render_view_hosts()) {
     if (!rvh->DidReceiveBackForwardCacheAck()) {
       return false;
     }
@@ -465,7 +467,7 @@ void BackForwardCacheImpl::Entry::WriteIntoTrace(
 }
 
 void BackForwardCacheImpl::Entry::StartMonitoringCookieChange() {
-  RenderFrameHostImpl* rfh = stored_page_->render_frame_host.get();
+  RenderFrameHostImpl* rfh = stored_page_->render_frame_host();
   StoragePartition* storage_partition = rfh->GetStoragePartition();
   auto* cookie_manager = storage_partition->GetCookieManagerForBrowserProcess();
   if (!cookie_listener_receiver_.is_bound()) {
@@ -1015,8 +1017,8 @@ BackForwardCacheImpl::NotRestoredReasonBuilder::PopulateReasonsAndReturnSubtree(
 
   std::unique_ptr<BackForwardCacheCanStoreTreeResult> tree(
       new BackForwardCacheCanStoreTreeResult(
-          rfh, root_rfh_->GetLastCommittedOrigin(), result_for_rfh,
-          std::move(children_result)));
+          rfh, root_rfh_->GetLastCommittedOrigin(), rfh->GetLastCommittedURL(),
+          result_for_rfh, std::move(children_result)));
   return tree;
 }
 
@@ -1051,6 +1053,7 @@ void BackForwardCacheImpl::StoreEntry(
       entry->StartMonitoringCookieChange();
     }
   }
+  entry->SetStoredPageDelegate(this);
   entries_.push_front(std::move(entry));
   AddProcessesForEntry(*entries_.front());
   EnforceCacheSizeLimit();
@@ -1133,6 +1136,7 @@ std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
                       "BackForwardCache::RestoreEntry_matched_entry", "entry",
                       entry);
 
+  entry->SetStoredPageDelegate(nullptr);
   entries_.erase(matching_entry);
   RemoveProcessesForEntry(*entry);
   base::TimeTicks start_time = page_restore_params->navigation_start;
@@ -1255,10 +1259,30 @@ BackForwardCacheImpl::Entry* BackForwardCacheImpl::GetEntry(
   return (*matching_entry).get();
 }
 
+void BackForwardCacheImpl::RenderViewHostNoLongerStored(
+    RenderViewHostImpl* rvh) {
+  // `AddProcessesForEntry` are gated on
+  // `UsingForegroundBackgroundCacheSizeLimit` in adding entries to the
+  // `observed_processes_` list so we have the same conditional here.
+  if (!UsingForegroundBackgroundCacheSizeLimit())
+    return;
+  RenderViewHostNoLongerStoredInternal(rvh);
+}
+
+void BackForwardCacheImpl::RenderViewHostNoLongerStoredInternal(
+    RenderViewHostImpl* rvh) {
+  RenderProcessHostImpl* process =
+      static_cast<RenderProcessHostImpl*>(rvh->GetProcess());
+  // Remove 1 instance of this process from the multiset.
+  observed_processes_.erase(observed_processes_.find(process));
+  if (observed_processes_.find(process) == observed_processes_.end())
+    process->RemoveInternalObserver(this);
+}
+
 void BackForwardCacheImpl::AddProcessesForEntry(Entry& entry) {
   if (!UsingForegroundBackgroundCacheSizeLimit())
     return;
-  for (auto* rvh : entry.render_view_hosts()) {
+  for (const auto& rvh : entry.render_view_hosts()) {
     RenderProcessHostImpl* process =
         static_cast<RenderProcessHostImpl*>(rvh->GetProcess());
     if (observed_processes_.find(process) == observed_processes_.end())
@@ -1270,13 +1294,8 @@ void BackForwardCacheImpl::AddProcessesForEntry(Entry& entry) {
 void BackForwardCacheImpl::RemoveProcessesForEntry(Entry& entry) {
   if (!UsingForegroundBackgroundCacheSizeLimit())
     return;
-  for (auto* rvh : entry.render_view_hosts()) {
-    RenderProcessHostImpl* process =
-        static_cast<RenderProcessHostImpl*>(rvh->GetProcess());
-    // Remove 1 instance of this process from the multiset.
-    observed_processes_.erase(observed_processes_.find(process));
-    if (observed_processes_.find(process) == observed_processes_.end())
-      process->RemoveInternalObserver(this);
+  for (const auto& rvh : entry.render_view_hosts()) {
+    RenderViewHostNoLongerStoredInternal(&*rvh);
   }
 }
 
@@ -1355,7 +1374,7 @@ void BackForwardCacheImpl::WillCommitNavigationToCachedEntry(
           },
           base::TimeTicks::Now(), std::move(done_callback)));
 
-  for (auto* rvh : bfcache_entry.render_view_hosts()) {
+  for (const auto& rvh : bfcache_entry.render_view_hosts()) {
     rvh->PrepareToLeaveBackForwardCache(cb);
   }
 }
@@ -1415,16 +1434,17 @@ bool BackForwardCache::DisabledReason::operator!=(
 BackForwardCacheCanStoreTreeResult::BackForwardCacheCanStoreTreeResult(
     RenderFrameHostImpl* rfh,
     const url::Origin& main_document_origin,
+    const GURL& url,
     BackForwardCacheCanStoreDocumentResult& result_for_this_document,
     BackForwardCacheCanStoreTreeResult::ChildrenVector children)
     : document_result_(std::move(result_for_this_document)),
       children_(std::move(children)),
       is_same_origin_(
-          rfh->GetLastCommittedOrigin().IsSameOriginWith(main_document_origin)),
+          url::Origin::Create(url).IsSameOriginWith(main_document_origin)),
       id_(rfh->frame_tree_node()->html_id()),
       name_(rfh->frame_tree_node()->html_name()),
       src_(rfh->frame_tree_node()->html_src()),
-      url_(rfh->GetLastCommittedURL()) {}
+      url_(url) {}
 
 BackForwardCacheCanStoreTreeResult::~BackForwardCacheCanStoreTreeResult() =
     default;
@@ -1454,9 +1474,21 @@ BackForwardCacheCanStoreTreeResult::CreateEmptyTree(RenderFrameHostImpl* rfh) {
   BackForwardCacheCanStoreDocumentResult empty_result;
   BackForwardCacheCanStoreTreeResult::ChildrenVector empty_vector;
   std::unique_ptr<BackForwardCacheCanStoreTreeResult> empty_tree(
-      new BackForwardCacheCanStoreTreeResult(rfh, rfh->GetLastCommittedOrigin(),
-                                             empty_result,
-                                             std::move(empty_vector)));
+      new BackForwardCacheCanStoreTreeResult(
+          rfh, rfh->GetLastCommittedOrigin(), rfh->GetLastCommittedURL(),
+          empty_result, std::move(empty_vector)));
+  return empty_tree;
+}
+
+std::unique_ptr<BackForwardCacheCanStoreTreeResult>
+BackForwardCacheCanStoreTreeResult::CreateEmptyTreeBeforeCommit(
+    NavigationRequest* navigation) {
+  BackForwardCacheCanStoreDocumentResult empty_result;
+  BackForwardCacheCanStoreTreeResult::ChildrenVector empty_vector;
+  std::unique_ptr<BackForwardCacheCanStoreTreeResult> empty_tree(
+      new BackForwardCacheCanStoreTreeResult(
+          navigation->GetRenderFrameHost(), navigation->GetOriginToCommit(),
+          navigation->GetURL(), empty_result, std::move(empty_vector)));
   return empty_tree;
 }
 

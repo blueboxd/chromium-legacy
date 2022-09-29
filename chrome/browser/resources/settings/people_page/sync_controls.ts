@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import '//resources/js/util.m.js';
+import '//resources/js/util.js';
 import '//resources/cr_components/localized_link/localized_link.js';
 import '//resources/cr_elements/cr_radio_button/cr_radio_button.js';
 import '//resources/cr_elements/cr_radio_group/cr_radio_group.js';
@@ -109,15 +109,6 @@ export class SettingsSyncControlsElement extends
   // <if expr="is_chromeos">
   private shouldShowLacrosSideBySideWarning_(): boolean {
     return loadTimeData.getBoolean('shouldShowLacrosSideBySideWarning');
-  }
-
-  private shouldShowOSSyncSettingsLink_(): boolean {
-    // <if expr="chromeos_ash">
-    return loadTimeData.getBoolean('syncSettingsCategorizationEnabled');
-    // </if>
-    // <if expr="chromeos_lacros">
-    return true;  // Should always be shown on Lacros.
-    // </if>
   }
   // </if>
 

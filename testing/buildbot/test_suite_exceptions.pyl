@@ -1565,6 +1565,12 @@
     },
   },
   'chromedriver_py_tests': {
+    'modifications': {
+      'Win10 Tests x64': {
+        # TODO(crbug.com/1369158): Fix & re-enable.
+        'isolate_profile_data': False,
+      },
+    },
     'remove_from': [
       # Timeout happens sometimes (crbug.com/951799).
       'Win10 Tests x64 (dbg)',
@@ -2237,6 +2243,11 @@
       'Android FYI Release (Nexus 5X)',
     ],
     'modifications': {
+      'Android FYI Release (Samsung A23)': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.samsung_a23.gl_tests.filter',
+        ],
+      },
       'android-11-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.gl_tests.filter',
@@ -2858,25 +2869,9 @@
           'shards': 4,
         }
       },
-      'android-11-x86-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.net_unittests.filter',
-        ],
-      },
-      'android-12-x64-rel': {
-        'args': [
-          # TODO(crbug.com/1191793): Fix the test failure
-          '--gtest_filter=-MimeUtilTest.ExtensionTest',
-        ],
-      },
       'android-cronet-x86-dbg-10-tests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_10.net_unittests.filter',
-        ],
-      },
-      'android-cronet-x86-dbg-11-tests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.net_unittests.filter',
         ],
       },
       'android-cronet-x86-dbg-lollipop-tests': {
@@ -3407,11 +3402,21 @@
     ],
   },
   'telemetry_chromium_minidump_unittests': {
+    'modifications': {
+      'android-nougat-x86-rel': {
+        'ci_only': True,
+      },
+    },
     'remove_from': [
       'android-marshmallow-x86-rel-non-cq', # crbug.com/1084352
     ],
   },
   'telemetry_monochrome_minidump_unittests': {
+    'modifications': {
+      'android-nougat-x86-rel': {
+        'ci_only': True,
+      },
+    },
     'remove_from': [
       # Monochrome isn't supported on M.
       'android-marshmallow-arm64-rel',
@@ -3450,6 +3455,7 @@
           # webview instead of the full browser, so explicitly specify it here.
           '--browser=android-chromium',
         ],
+        'ci_only': True,
       },
       'chromeos-amd64-generic-rel': {
         'swarming': {

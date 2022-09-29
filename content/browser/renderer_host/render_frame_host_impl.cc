@@ -1950,8 +1950,8 @@ const blink::LocalFrameToken& RenderFrameHostImpl::GetFrameToken() {
 }
 
 const base::UnguessableToken& RenderFrameHostImpl::GetReportingSource() {
-  DCHECK(!document_associated_data_->reporting_source.is_empty());
-  return document_associated_data_->reporting_source;
+  DCHECK(!document_associated_data_->reporting_source().is_empty());
+  return document_associated_data_->reporting_source();
 }
 
 ui::AXTreeID RenderFrameHostImpl::GetAXTreeID() {
@@ -2160,7 +2160,7 @@ RenderFrameHostImpl* RenderFrameHostImpl::GetParent() const {
 }
 
 PageImpl& RenderFrameHostImpl::GetPage() {
-  return *GetMainFrame()->document_associated_data_->owned_page.get();
+  return *GetMainFrame()->document_associated_data_->owned_page();
 }
 
 bool RenderFrameHostImpl::IsDescendantOfWithinFrameTree(
@@ -2446,12 +2446,12 @@ bool RenderFrameHostImpl::IsErrorDocument() {
 }
 
 DocumentRef RenderFrameHostImpl::GetDocumentRef() {
-  return DocumentRef(document_associated_data_->weak_ptr_factory.GetSafeRef());
+  return DocumentRef(document_associated_data_->weak_factory().GetSafeRef());
 }
 
 WeakDocumentPtr RenderFrameHostImpl::GetWeakDocumentPtr() {
   return WeakDocumentPtr(
-      document_associated_data_->weak_ptr_factory.GetWeakPtr());
+      document_associated_data_->weak_factory().GetWeakPtr());
 }
 
 void RenderFrameHostImpl::GetSerializedHtmlWithLocalLinks(
@@ -3279,7 +3279,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(
   BindAssociatedInterfaceProviderReceiver(
       params->associated_interface_provider_remote
           .InitWithNewEndpointAndPassReceiver());
-  params->document_token = document_associated_data_->token;
+  params->document_token = document_associated_data_->token();
 
   // If this is a new RenderFrameHost for a frame that has already committed a
   // document, we don't have a policy container yet. Indeed, in that case, this
@@ -3868,9 +3868,10 @@ void RenderFrameHostImpl::DidNavigate(
           ? url::Origin::Create(navigation_request->GetWebBundleURL())
           : GetLastCommittedOrigin();
 
-  isolation_info_ =
-      ComputeIsolationInfoInternal(origin, isolation_info_.request_type(),
-                                   navigation_request->is_anonymous());
+  isolation_info_ = ComputeIsolationInfoInternal(
+      origin, isolation_info_.request_type(),
+      navigation_request->is_anonymous(),
+      navigation_request->ComputeFencedFrameNonce());
 
   // Separately, update the frame's last successful URL except for net error
   // pages, since those do not end up in the correct process after transfers
@@ -3967,25 +3968,31 @@ void RenderFrameHostImpl::SetStorageKey(const blink::StorageKey& storage_key) {
 
 net::IsolationInfo RenderFrameHostImpl::ComputeIsolationInfoForNavigation(
     const GURL& destination) {
-  return ComputeIsolationInfoForNavigation(destination, IsAnonymous());
+  return ComputeIsolationInfoForNavigation(
+      destination, IsAnonymous(),
+      /*fenced_frame_nonce_for_navigation=*/absl::nullopt);
 }
 
 net::IsolationInfo RenderFrameHostImpl::ComputeIsolationInfoForNavigation(
     const GURL& destination,
-    bool is_anonymous) {
+    bool is_anonymous,
+    absl::optional<base::UnguessableToken> fenced_frame_nonce_for_navigation) {
   net::IsolationInfo::RequestType request_type =
       is_main_frame() ? net::IsolationInfo::RequestType::kMainFrame
                       : net::IsolationInfo::RequestType::kSubFrame;
   return ComputeIsolationInfoInternal(url::Origin::Create(destination),
-                                      request_type, is_anonymous);
+                                      request_type, is_anonymous,
+                                      fenced_frame_nonce_for_navigation);
 }
 
 net::IsolationInfo
 RenderFrameHostImpl::ComputeIsolationInfoForSubresourcesForPendingCommit(
     const url::Origin& main_world_origin,
-    bool is_anonymous) {
+    bool is_anonymous,
+    absl::optional<base::UnguessableToken> fenced_frame_nonce_for_navigation) {
   return ComputeIsolationInfoInternal(
-      main_world_origin, net::IsolationInfo::RequestType::kOther, is_anonymous);
+      main_world_origin, net::IsolationInfo::RequestType::kOther, is_anonymous,
+      fenced_frame_nonce_for_navigation);
 }
 
 net::SiteForCookies RenderFrameHostImpl::ComputeSiteForCookies() {
@@ -3995,7 +4002,8 @@ net::SiteForCookies RenderFrameHostImpl::ComputeSiteForCookies() {
 net::IsolationInfo RenderFrameHostImpl::ComputeIsolationInfoInternal(
     const url::Origin& frame_origin,
     net::IsolationInfo::RequestType request_type,
-    bool is_anonymous) {
+    bool is_anonymous,
+    absl::optional<base::UnguessableToken> fenced_frame_nonce_for_navigation) {
   url::Origin top_frame_origin = ComputeTopFrameOrigin(frame_origin);
   net::SchemefulSite top_frame_site = net::SchemefulSite(top_frame_origin);
 
@@ -4038,17 +4046,34 @@ net::IsolationInfo RenderFrameHostImpl::ComputeIsolationInfoInternal(
     candidate_site_for_cookies = net::SiteForCookies(top_frame_site);
   }
 
-  absl::optional<base::UnguessableToken> nonce = ComputeNonce(is_anonymous);
+  absl::optional<base::UnguessableToken> nonce =
+      ComputeNonce(is_anonymous, fenced_frame_nonce_for_navigation);
   return net::IsolationInfo::Create(
       request_type, top_frame_origin, frame_origin, candidate_site_for_cookies,
       std::move(party_context), nonce ? &nonce.value() : nullptr);
 }
 
 absl::optional<base::UnguessableToken> RenderFrameHostImpl::ComputeNonce(
-    bool is_anonymous) {
+    bool is_anonymous,
+    absl::optional<base::UnguessableToken> fenced_frame_nonce_for_navigation) {
   // If it's an anonymous frame tree, use its nonce even if it's within a fenced
   // frame tree to maintain the guarantee that an anonymous frame tree has
-  // a unique nonce. Otherwise, use the fenced frame nonce for fenced frames.
+  // a unique nonce.
+  if (is_anonymous) {
+    RenderFrameHostImpl* main_rfh = this;
+    while (main_rfh->parent_ && !main_rfh->IsFencedFrameRoot()) {
+      main_rfh = main_rfh->parent_;
+    }
+    return main_rfh->anonymous_iframes_nonce();
+  }
+
+  // Otherwise, use the fenced frame nonce for this navigation.
+  // If this call is for a pending navigation, the fenced frame nonce should
+  // have been computed with `NavigationRequest::ComputeFencedFrameNonce()`
+  // and passed in `fenced_frame_nonce_for_navigation`.
+  // If there is no navigation associated with this call, then we get the nonce
+  // from this RFHI's FrameTreeNode with FrameTreeNode::GetFencedFrameNonce().
+  //
   // Note that MPArch will ensure that fenced frame tree within an anonymous
   // iframe does not have `is_anonymous` set to true. The ShadowDOM architecture
   // cannot make the same guarantee that MPArch will, and therefore the shadow
@@ -4059,14 +4084,10 @@ absl::optional<base::UnguessableToken> RenderFrameHostImpl::ComputeNonce(
   // frame, we get the anonymous_iframes_nonce of the fenced frame root to
   // prevent anonymous iframes embedded inside a fenced frame from sharing nonce
   // with anonymous iframes outside the fenced frame.
-  if (is_anonymous) {
-    RenderFrameHostImpl* main_rfh = this;
-    while (main_rfh->parent_ && !main_rfh->IsFencedFrameRoot()) {
-      main_rfh = main_rfh->parent_;
-    }
-    return main_rfh->anonymous_iframes_nonce();
+  if (fenced_frame_nonce_for_navigation.has_value()) {
+    return fenced_frame_nonce_for_navigation;
   }
-  return frame_tree_node_->fenced_frame_nonce();
+  return frame_tree_node_->GetFencedFrameNonce();
 }
 
 blink::StorageKey RenderFrameHostImpl::CalculateStorageKey(
@@ -4140,7 +4161,8 @@ void RenderFrameHostImpl::SetOriginDependentStateOfNewFrame(
                                      ? new_frame_creator.DeriveNewOpaqueOrigin()
                                      : new_frame_creator;
   isolation_info_ = ComputeIsolationInfoInternal(
-      new_frame_origin, net::IsolationInfo::RequestType::kOther, IsAnonymous());
+      new_frame_origin, net::IsolationInfo::RequestType::kOther, IsAnonymous(),
+      /*fenced_frame_nonce_for_navigation=*/absl::nullopt);
   SetLastCommittedOrigin(new_frame_origin);
 
   SetStorageKey(CalculateStorageKey(
@@ -4731,11 +4753,11 @@ void RenderFrameHostImpl::SetNavigationRequest(
 
 const scoped_refptr<NavigationOrDocumentHandle>&
 RenderFrameHostImpl::GetNavigationOrDocumentHandle() {
-  if (!document_associated_data_->navigation_or_document_handle) {
-    document_associated_data_->navigation_or_document_handle =
-        NavigationOrDocumentHandle::CreateForDocument(GetGlobalId());
+  if (!document_associated_data_->navigation_or_document_handle()) {
+    document_associated_data_->set_navigation_or_document_handle(
+        NavigationOrDocumentHandle::CreateForDocument(GetGlobalId()));
   }
-  return document_associated_data_->navigation_or_document_handle;
+  return document_associated_data_->navigation_or_document_handle();
 }
 
 void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
@@ -4822,21 +4844,22 @@ void RenderFrameHostImpl::UndoCommitNavigation(RenderFrameProxyHost& proxy,
 void RenderFrameHostImpl::MaybeDispatchDidFinishLoadOnPrerenderActivation() {
   // Don't dispatch notification if DidFinishLoad has not yet been invoked for
   // `rfh` i.e., when the url is nullopt.
-  if (!document_associated_data_->pending_did_finish_load_url_for_prerendering)
+  if (!document_associated_data_
+           ->pending_did_finish_load_url_for_prerendering())
     return;
 
   delegate_->OnDidFinishLoad(
-      this,
-      *document_associated_data_->pending_did_finish_load_url_for_prerendering);
+      this, *document_associated_data_
+                 ->pending_did_finish_load_url_for_prerendering());
 
   // Set to nullopt to avoid calling DidFinishLoad twice.
-  document_associated_data_->pending_did_finish_load_url_for_prerendering
-      .reset();
+  document_associated_data_
+      ->reset_pending_did_finish_load_url_for_prerendering();
 }
 
 void RenderFrameHostImpl::MaybeDispatchDOMContentLoadedOnPrerenderActivation() {
   // Don't send a notification if DOM content is not yet loaded.
-  if (!document_associated_data_->dom_content_loaded)
+  if (!document_associated_data_->dom_content_loaded())
     return;
 
   delegate_->DOMContentLoaded(this);
@@ -5848,7 +5871,7 @@ void RenderFrameHostImpl::EnforceInsecureNavigationsSet(
 void RenderFrameHostImpl::AddDocumentService(
     internal::DocumentServiceBase* document_service,
     base::PassKey<internal::DocumentServiceBase>) {
-  document_associated_data_->services.push_back(document_service);
+  document_associated_data_->services().push_back(document_service);
 }
 
 void RenderFrameHostImpl::RemoveDocumentService(
@@ -5857,7 +5880,7 @@ void RenderFrameHostImpl::RemoveDocumentService(
   if (document_service == last_web_bluetooth_service_for_testing_) {
     last_web_bluetooth_service_for_testing_ = nullptr;
   }
-  base::Erase(document_associated_data_->services, document_service);
+  base::Erase(document_associated_data_->services(), document_service);
 }
 
 FrameTreeNode* RenderFrameHostImpl::FindAndVerifyChild(
@@ -6119,8 +6142,8 @@ void RenderFrameHostImpl::DidFinishLoad(const GURL& validated_url) {
   // done to avoid notifying observers about a load event triggered from a
   // inactive RenderFrameHost.
   if (lifecycle_state() == LifecycleStateImpl::kPrerendering) {
-    document_associated_data_->pending_did_finish_load_url_for_prerendering =
-        validated_url;
+    document_associated_data_->set_pending_did_finish_load_url_for_prerendering(
+        validated_url);
     return;
   }
 
@@ -6661,7 +6684,7 @@ bool RenderFrameHostImpl::GetSuddenTerminationDisablerState(
 }
 
 void RenderFrameHostImpl::DidDispatchDOMContentLoadedEvent() {
-  document_associated_data_->dom_content_loaded = true;
+  document_associated_data_->MarkDomContentLoaded();
 
   // In case of prerendering, we dispatch DOMContentLoaded on activation. This
   // is done to avoid notifying observers about a load event triggered from a
@@ -8315,7 +8338,8 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
         frame_tree_node_->navigation_request()->IsNavigationStarted()) {
       frame_tree_node_->navigation_request()->set_net_error(net::ERR_ABORTED);
     }
-    frame_tree_node_->ResetNavigationRequest(false);
+    frame_tree_node_->ResetNavigationRequest(
+        NavigationDiscardReason::kCancelled);
   }
 
   // In renderer-initiated navigations, don't check for beforeunload in the
@@ -8634,8 +8658,17 @@ void RenderFrameHostImpl::ResetNavigationsForPendingDeletion() {
   for (auto& child : children_)
     child->current_frame_host()->ResetNavigationsForPendingDeletion();
   ResetNavigationRequests();
-  frame_tree_node_->ResetNavigationRequest(false);
-  frame_tree_node_->render_manager()->CleanUpNavigation();
+  // TODO(https://crbug.com/1220337): This has an interesting interaction with
+  // the experimental implementations of navigation queueing: if the speculative
+  // RenderFrameHost is in pending commit when a new navigation tries to start,
+  // the new navigation attempt is queued. However, once the navigation in the
+  // speculative RenderFrameHost commits, it swaps out the old frame which
+  // causes `StartPendingDeletionOnrSubtree()` which calls this method which
+  // clobbers the navigation request that was specifically queueing...
+  frame_tree_node_->ResetNavigationRequest(
+      NavigationDiscardReason::kWillRemoveFrame);
+  frame_tree_node_->render_manager()->CleanUpNavigation(
+      NavigationDiscardReason::kWillRemoveFrame);
 }
 
 void RenderFrameHostImpl::OnUnloadTimeout() {
@@ -8738,7 +8771,7 @@ void RenderFrameHostImpl::CommitNavigation(
     absl::optional<std::vector<blink::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
-    const blink::DocumentToken& document_token,
+    const absl::optional<blink::DocumentToken>& document_token,
     const base::UnguessableToken& devtools_navigation_token,
     std::unique_ptr<WebBundleHandle> web_bundle_handle) {
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::CommitNavigation",
@@ -9169,7 +9202,7 @@ void RenderFrameHostImpl::CommitNavigation(
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
         std::move(container_info), std::move(prefetch_loader_factory),
-        manifest_policy, std::move(policy_container), document_token,
+        manifest_policy, std::move(policy_container), *document_token,
         devtools_navigation_token);
     navigation_request->frame_tree_node()
         ->navigator()
@@ -10386,8 +10419,7 @@ void RenderFrameHostImpl::CreateWebUsbService(
   BackForwardCache::DisableForRenderFrameHost(
       this, BackForwardCacheDisable::DisabledReason(
                 BackForwardCacheDisable::DisabledReasonId::kWebUSB));
-  WebUsbServiceImpl::GetOrCreateForCurrentDocument(this)->BindReceiver(
-      std::move(receiver));
+  WebUsbServiceImpl::Create(*this, std::move(receiver));
 }
 
 void RenderFrameHostImpl::ResetPermissionsPolicy() {
@@ -11033,7 +11065,8 @@ RenderFrameHostImpl::CreateNavigationRequestForSynchronousRendererCommit(
   DCHECK(!is_same_document_history_api_navigation || is_same_document);
 
   net::IsolationInfo isolation_info = ComputeIsolationInfoInternal(
-      origin, net::IsolationInfo::RequestType::kOther, IsAnonymous());
+      origin, net::IsolationInfo::RequestType::kOther, IsAnonymous(),
+      /*fenced_frame_nonce_for_navigation=*/absl::nullopt);
 
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter;
   // We don't switch the COEP reporter on same-document navigations, so create
@@ -11797,8 +11830,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     last_committed_cross_document_navigation_id_ =
         navigation_request->GetNavigationId();
 
-    if (lifecycle_state() != LifecycleStateImpl::kPendingCommit &&
-        !committed_speculative_rfh_before_navigation_commit_) {
+    if (ShouldResetDocumentAssociatedDataAtCommit()) {
       DCHECK_NE(lifecycle_state(), LifecycleStateImpl::kSpeculative);
       // The old Reporting API configuration is no longer valid, as a new
       // document is being loaded into the frame. Inform the network service
@@ -11817,24 +11849,11 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
                                         navigation_request->GetDocumentToken());
     } else {
       // Cross-RenderFrameHost navigations that commit into a speculative
-      // RenderFrameHost do not create a new DocumentAssociatedData.
-      // Unfortunately, this means that DocumentAssociatedData::token cannot be
-      // immutable: skipping this update means the tokens would be mismatched
-      // between the browser and the renderer. This is unfortunate, but still
-      // better than the alternative:
-      //
-      // - change NavigationRequest to figure out if the above branch will be
-      //   taken; if not, reuse the DocumentToken. This means the logic between
-      //   RenderFrameHostImpl and NavigationRequest must remain in sync.
-      //
-      // - in addition, the resulting commit will reuse the DocumentToken
-      //   between the ostensibly non-observable initial document in a
-      //   speculative RenderFrameHost and the actual document committed by the
-      //   navigation. As much as possible, it would be better to minimize
-      //   DocumentToken reuse across cross-document navigations. Note that this
-      //   reuse *does* happen internally to the renderer in one case that is
-      //   almost never visible. See https://crbug.com/778318 for the details.
-      document_associated_data_->token = navigation_request->GetDocumentToken();
+      // RenderFrameHost do not create a new DocumentAssociatedData. Ensure that
+      // the NavigationRequest was populated with the correct DocumentToken to
+      // avoid a mismatched token between the browser and the renderer.
+      CHECK_EQ(document_associated_data_->token(),
+               navigation_request->GetDocumentToken());
     }
 
     const absl::optional<FencedFrameURLMapping::FencedFrameProperties>&
@@ -11898,7 +11917,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   }
 
   if (is_main_frame()) {
-    document_associated_data_->owned_page->set_last_main_document_source_id(
+    document_associated_data_->owned_page()->set_last_main_document_source_id(
         ukm::ConvertToSourceId(navigation_request->GetNavigationId(),
                                ukm::SourceIdType::NAVIGATION_ID));
   }
@@ -11923,6 +11942,11 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   }
 
   return true;
+}
+
+bool RenderFrameHostImpl::ShouldResetDocumentAssociatedDataAtCommit() const {
+  return lifecycle_state() != LifecycleStateImpl::kPendingCommit &&
+         !committed_speculative_rfh_before_navigation_commit_;
 }
 
 // TODO(arthursonzogni): Investigate what must be done when
@@ -12301,14 +12325,23 @@ void RenderFrameHostImpl::SendCommitNavigation(
   // NotRestoredReasons API, i.e. for cross-document main frame history
   // navigations that are not served by back/forward cache.
   if (IsBackForwardCacheEnabled() &&
-      base::FeatureList::IsEnabled(
-          blink::features::kBackForwardCacheSendNotRestoredReasons) &&
-      navigation_request->IsInMainFrame() &&
-      !navigation_request->IsServedFromBackForwardCache()) {
+      !navigation_request->IsServedFromBackForwardCache() &&
+      BackForwardCacheMetrics::IsCrossDocumentMainFrameHistoryNavigation(
+          navigation_request)) {
     if (NavigationEntryImpl* entry = static_cast<NavigationEntryImpl*>(
             navigation_request->GetNavigationEntry())) {
       if (auto* metrics = entry->back_forward_cache_metrics()) {
-        not_restored_reasons = metrics->GetWebExposedNotRestoredReasons();
+        // Update NotRestoredReasons to include additional reasons only known at
+        // commit time, before reporting to the renderer.
+        metrics->UpdateNotRestoredReasonsForNavigation(navigation_request,
+                                                       /*before_commit=*/true);
+        if (base::FeatureList::IsEnabled(
+                blink::features::kBackForwardCacheSendNotRestoredReasons)) {
+          // Only populate the web-exposed NotRestoredReasons when needed by the
+          // NotRestoredReasons API, i.e. for cross-document main frame history
+          // navigations that are not served by back/forward cache.
+          not_restored_reasons = metrics->GetWebExposedNotRestoredReasons();
+        }
       }
     }
   }
@@ -13712,7 +13745,7 @@ bool RenderFrameHostImpl::IsBackForwardCacheDisabled() const {
 }
 
 bool RenderFrameHostImpl::IsDOMContentLoaded() {
-  return document_associated_data_->dom_content_loaded;
+  return document_associated_data_->dom_content_loaded();
 }
 
 void RenderFrameHostImpl::UpdateIsAdFrame(bool is_ad_frame) {
@@ -13785,8 +13818,18 @@ const blink::DocumentToken& RenderFrameHostImpl::GetDocumentToken() const {
   return GetDocumentTokenIgnoringSafetyRestrictions();
 }
 
-void RenderFrameHostImpl::
-    ReinitializeDocumentAssociatedDataForReuseAfterCrash() {
+const blink::DocumentToken*
+RenderFrameHostImpl::GetDocumentTokenForCrossDocumentNavigationReuse(
+    base::PassKey<NavigationRequest>) {
+  if (ShouldResetDocumentAssociatedDataAtCommit()) {
+    return nullptr;
+  }
+
+  return &document_associated_data_->token();
+}
+
+void RenderFrameHostImpl::ReinitializeDocumentAssociatedDataForReuseAfterCrash(
+    base::PassKey<RenderFrameHostManager>) {
   DCHECK(is_main_frame());
   DCHECK_EQ(RenderFrameState::kDeleted, render_frame_state_);
 
@@ -14369,28 +14412,33 @@ void RenderFrameHostImpl::BindCacheStorageForBucket(
 RenderFrameHostImpl::DocumentAssociatedData::DocumentAssociatedData(
     RenderFrameHostImpl& document,
     const blink::DocumentToken& token)
-    : token(token), weak_ptr_factory(&document) {
+    : token_(token), weak_factory_(&document) {
   // Only create page object for the main document as the PageImpl is 1:1 with
   // main document.
   if (!document.GetParent()) {
     PageDelegate* page_delegate = document.frame_tree()->page_delegate();
     DCHECK(page_delegate);
-    owned_page = std::make_unique<PageImpl>(document, *page_delegate);
+    owned_page_ = std::make_unique<PageImpl>(document, *page_delegate);
   }
-  reporting_source = base::UnguessableToken::Create();
 }
 
 RenderFrameHostImpl::DocumentAssociatedData::~DocumentAssociatedData() {
-  while (!services.empty()) {
+  while (!services_.empty()) {
     // DocumentServiceBase unregisters itself at destruction time.
-    services.back()->WillBeDestroyed(
+    services_.back()->WillBeDestroyed(
         DocumentServiceDestructionReason::kEndOfDocumentLifetime);
-    services.back()->ResetAndDeleteThis();
+    services_.back()->ResetAndDeleteThis();
   }
 
   // Explicitly clear all user data here, so that the other fields of
   // DocumentAssociatedData are still valid while user data is being destroyed.
   ClearAllUserData();
+}
+
+void RenderFrameHostImpl::DocumentAssociatedData::
+    set_navigation_or_document_handle(
+        scoped_refptr<NavigationOrDocumentHandle> handle) {
+  navigation_or_document_handle_ = std::move(handle);
 }
 
 std::ostream& operator<<(std::ostream& o,

@@ -22,6 +22,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/net/cert_verifier_configuration.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
+#include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -745,13 +746,18 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_SETTING},
       {"batterySaverModeEnabledOnBatteryLabel",
        IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_ON_BATTERY_LABEL},
-      {"batterySaverModeEnabledBelowThresholdLabel",
-       IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_BELOW_THRESHOLD_LABEL},
       {"tabDiscardingExceptionsHeader",
        IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_HEADER},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
+  html_source->AddString(
+      "batterySaverModeEnabledBelowThresholdLabel",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_BELOW_THRESHOLD_LABEL,
+          base::NumberToString16(
+              performance_manager::user_tuning::UserPerformanceTuningManager::
+                  kLowBatteryThresholdPercent)));
   html_source->AddString(
       "highEfficiencyModeDescription",
       l10n_util::GetStringFUTF16(
@@ -1065,6 +1071,12 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_PASSWORDS_NOTE_CHARACTER_COUNT_WARNING},
     {"passwordsTimedOut", IDS_SETTINGS_PASSWORDS_TIMED_OUT},
     {"passwordsGotIt", IDS_SETTINGS_GOT_IT},
+#if BUILDFLAG(IS_MAC)
+    {"passkeyLengthError", IDS_SETTINGS_PASSKEYS_LENGTH_ERROR},
+    {"editPasskeySiteLabel", IDS_SETTINGS_PASSKEYS_SITE_LABEL},
+    {"editPasskeyDialogTitle", IDS_SETTINGS_PASSKEYS_DIALOG_TITLE},
+    {"passkeyEditDialogFootnote", IDS_SETTINGS_PASSKEYS_EDIT_DIALOG_FOOTNOTE},
+#endif
     {"noAddressesFound", IDS_SETTINGS_ADDRESS_NONE},
     {"noPasswordsFound", IDS_SETTINGS_PASSWORDS_NONE},
     {"noPasswordsFoundImport", IDS_SETTINGS_PASSWORDS_NONE_WITH_IMPORT},
@@ -1211,6 +1223,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
      IDS_AUTOFILL_MANAGE_PASSKEYS_DELETE_CONFIRMATION_TITLE},
     {"managePasskeysDeleteConfirmationDescription",
      IDS_AUTOFILL_MANAGE_PASSKEYS_DELETE_CONFIRMATION_DESCRIPTION},
+    {"managePasskeysMoreActionsLabel",
+     IDS_AUTOFILL_MANAGE_PASSKEYS_MORE_ACTIONS_LABEL},
 #endif
 #if BUILDFLAG(IS_MAC)
     {"biometricAuthenticaionForFillingLabel",
@@ -2030,12 +2044,20 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_PRIMARY_LABEL},
     {"safetyCheckNotificationPermissionReviewSecondaryLabel",
      IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_SECONDARY_LABEL},
+    {"safetyCheckNotificationPermissionReviewIgnoredToastLabel",
+     IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_IGNORED_TOAST_LABEL},
+    {"safetyCheckNotificationPermissionReviewBlockedToastLabel",
+     IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_BLOCKED_TOAST_LABEL},
+    {"safetyCheckNotificationPermissionReviewResetToastLabel",
+     IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_RESET_TOAST_LABEL},
     {"safetyCheckNotificationPermissionReviewDontAllowLabel",
      IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_DONT_ALLOW_LABEL},
     {"safetyCheckNotificationPermissionReviewIgnoreLabel",
      IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_IGNORE_LABEL},
     {"safetyCheckNotificationPermissionReviewResetLabel",
      IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_RESET_LABEL},
+    {"safetyCheckNotificationPermissionReviewUndo",
+     IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_UNDO},
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"safetyCheckChromeCleanerPrimaryLabel",
      IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_PRIMARY_LABEL},

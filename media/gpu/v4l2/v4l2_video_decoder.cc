@@ -42,18 +42,16 @@ constexpr int k1080pArea = 1920 * 1088;
 constexpr size_t kInputBufferMaxSizeFor1080p = 1024 * 1024;
 // Input bitstream buffer size for up to 4k streams.
 constexpr size_t kInputBufferMaxSizeFor4k = 4 * kInputBufferMaxSizeFor1080p;
-constexpr size_t kNumInputBuffers = 8;
+// Some H.264 test vectors (CAPCM*1_Sand_E.h264) need 16 reference frames.
+// TODO(b/249325255): reduce this number to e.g. 8 or even less when it does not
+// artificially limit the size of the CAPTURE (decoded video frames) queue.
+constexpr size_t kNumInputBuffers = 17;
 
 // Input format V4L2 fourccs this class supports.
 constexpr uint32_t kSupportedInputFourccs[] = {
     V4L2_PIX_FMT_H264_SLICE, V4L2_PIX_FMT_VP8_FRAME, V4L2_PIX_FMT_VP9_FRAME,
     V4L2_PIX_FMT_H264,       V4L2_PIX_FMT_VP8,       V4L2_PIX_FMT_VP9,
 };
-
-// Number of output buffers to use for each VD stage above what's required by
-// the decoder (e.g. DPB size, in H264).  We need limits::kMaxVideoFrames to
-// fill up the GpuVideoDecode pipeline, and +1 for a frame in transit.
-constexpr size_t kDpbOutputBufferExtraCount = limits::kMaxVideoFrames + 1;
 
 }  // namespace
 
@@ -702,8 +700,9 @@ CroStatus V4L2VideoDecoder::ContinueChangeResolution(
   if (state_ != State::kFlushing)
     return CroStatus::Codes::kResetRequired;
 
-  DCHECK_GT(num_output_frames, 0u);
-  num_output_frames_ = num_output_frames + kDpbOutputBufferExtraCount;
+  DCHECK_GT(num_output_frames,
+            static_cast<size_t>(limits::kMaxVideoFrames + 1));
+  num_output_frames_ = num_output_frames;
 
   // Stateful decoders require the input queue to keep running during resolution
   // changes, but stateless ones require it to be stopped.

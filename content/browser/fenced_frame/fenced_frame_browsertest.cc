@@ -2347,6 +2347,7 @@ IN_PROC_BROWSER_TEST_P(
 
   FencedFrameURLMapping& url_mapping =
       root->current_frame_host()->GetPage().fenced_frame_urls_map();
+  FencedFrameURLMappingTestPeer url_mapping_test_peer(&url_mapping);
 
   auto urn_uuid = GenerateAndVerifyPendingMappedURN(&url_mapping);
   const GURL mapped_url =
@@ -2371,7 +2372,7 @@ IN_PROC_BROWSER_TEST_P(
     EXPECT_TRUE(request->is_deferred_on_fenced_frame_url_mapping_for_testing());
   }
 
-  EXPECT_TRUE(url_mapping.HasObserverForTesting(urn_uuid, request));
+  EXPECT_TRUE(url_mapping_test_peer.HasObserver(urn_uuid, request));
 
   auto budget_metadata =
       fenced_frame_root_node->FindSharedStorageBudgetMetadata();
@@ -2383,7 +2384,7 @@ IN_PROC_BROWSER_TEST_P(
       /*shared_storage_origin=*/url::Origin::Create(GURL("https://bar.com")),
       /*budget_to_charge=*/2.0);
 
-  EXPECT_FALSE(url_mapping.HasObserverForTesting(urn_uuid, request));
+  EXPECT_FALSE(url_mapping_test_peer.HasObserver(urn_uuid, request));
 
   observer.Wait();
 
@@ -2425,6 +2426,7 @@ IN_PROC_BROWSER_TEST_P(
 
   FencedFrameURLMapping& url_mapping =
       root->current_frame_host()->GetPage().fenced_frame_urls_map();
+  FencedFrameURLMappingTestPeer url_mapping_test_peer(&url_mapping);
 
   auto urn_uuid = GenerateAndVerifyPendingMappedURN(&url_mapping);
   const GURL mapped_url =
@@ -2449,7 +2451,7 @@ IN_PROC_BROWSER_TEST_P(
     EXPECT_TRUE(request->is_deferred_on_fenced_frame_url_mapping_for_testing());
   }
 
-  EXPECT_TRUE(url_mapping.HasObserverForTesting(urn_uuid, request));
+  EXPECT_TRUE(url_mapping_test_peer.HasObserver(urn_uuid, request));
 
   // Trigger the mapping to resume the deferred navigation.
   SimulateSharedStorageURNMappingComplete(
@@ -2457,7 +2459,7 @@ IN_PROC_BROWSER_TEST_P(
       /*shared_storage_origin=*/url::Origin::Create(GURL("https://bar.com")),
       /*budget_to_charge=*/2.0);
 
-  EXPECT_FALSE(url_mapping.HasObserverForTesting(urn_uuid, request));
+  EXPECT_FALSE(url_mapping_test_peer.HasObserver(urn_uuid, request));
 
   // In NavigationRequest::OnResponseStarted(), for fenced frame, it manually
   // fails the navigation with net::ERR_BLOCKED_BY_RESPONSE.
@@ -2494,6 +2496,7 @@ IN_PROC_BROWSER_TEST_P(
 
   FencedFrameURLMapping& url_mapping =
       root->current_frame_host()->GetPage().fenced_frame_urls_map();
+  FencedFrameURLMappingTestPeer url_mapping_test_peer(&url_mapping);
 
   auto urn_uuid = GenerateAndVerifyPendingMappedURN(&url_mapping);
   const GURL mapped_url =
@@ -2518,7 +2521,7 @@ IN_PROC_BROWSER_TEST_P(
     EXPECT_TRUE(request->is_deferred_on_fenced_frame_url_mapping_for_testing());
   }
 
-  EXPECT_TRUE(url_mapping.HasObserverForTesting(urn_uuid, request));
+  EXPECT_TRUE(url_mapping_test_peer.HasObserver(urn_uuid, request));
 
   // Navigate to a new URL. The previous navigation should have been canceled.
   // And `request` should have been removed from `url_mapping`.
@@ -2527,7 +2530,7 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(new_url.spec(),
             EvalJs(root, JsReplace("f.src = $1;", new_url.spec())));
 
-  EXPECT_FALSE(url_mapping.HasObserverForTesting(urn_uuid, request));
+  EXPECT_FALSE(url_mapping_test_peer.HasObserver(urn_uuid, request));
 
   observer.Wait();
 
@@ -2803,7 +2806,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
       fenced_frame->current_frame_host()->GetIsolationInfoForSubresources();
   EXPECT_TRUE(isolation_info.nonce().has_value());
   absl::optional<base::UnguessableToken> fenced_frame_nonce =
-      fenced_frame->fenced_frame_nonce();
+      fenced_frame->GetFencedFrameNonce();
   EXPECT_TRUE(fenced_frame_nonce.has_value());
   EXPECT_EQ(fenced_frame_nonce.value(), isolation_info.nonce().value());
 
@@ -2849,7 +2852,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
   EXPECT_EQ(fenced_frame_nonce.value(),
             nested_iframe_isolation_info.nonce().value());
   absl::optional<base::UnguessableToken> nested_iframe_nonce =
-      fenced_frame->child_at(0)->fenced_frame_nonce();
+      fenced_frame->child_at(0)->GetFencedFrameNonce();
   EXPECT_EQ(nested_iframe_isolation_info.nonce().value(),
             nested_iframe_nonce.value());
   EXPECT_EQ(fenced_frame_nonce.value(), fenced_frame->child_at(0)
@@ -2878,7 +2881,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
   auto* nested_fenced_frame = AddNestedFencedFrame(fenced_frame, 1);
   GetFencedFrameRootNode(fenced_frame->child_at(1));
   absl::optional<base::UnguessableToken> nested_fframe_nonce =
-      nested_fenced_frame->fenced_frame_nonce();
+      nested_fenced_frame->GetFencedFrameNonce();
   EXPECT_TRUE(nested_fframe_nonce.has_value());
 
   // Check that a nested fenced frame has a different value than its parent
@@ -2891,7 +2894,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
       nested_fenced_frame,
       https_server()->GetURL("b.test", "/fenced_frames/title1.html"));
   absl::optional<base::UnguessableToken> new_fenced_frame_nonce =
-      fenced_frame->fenced_frame_nonce();
+      fenced_frame->GetFencedFrameNonce();
   EXPECT_NE(absl::nullopt, new_fenced_frame_nonce);
   EXPECT_EQ(new_fenced_frame_nonce.value(), fenced_frame_nonce.value());
 }
@@ -2935,7 +2938,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameParameterizedBrowserTest,
       fenced_frame->current_frame_host()->storage_key().nonce().has_value());
 
   absl::optional<base::UnguessableToken> fenced_frame_nonce =
-      fenced_frame->fenced_frame_nonce();
+      fenced_frame->GetFencedFrameNonce();
   EXPECT_TRUE(fenced_frame_nonce.has_value());
   EXPECT_EQ(fenced_frame_nonce.value(),
             fenced_frame->current_frame_host()->storage_key().nonce().value());

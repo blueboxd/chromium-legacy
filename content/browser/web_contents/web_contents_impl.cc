@@ -827,6 +827,7 @@ void WebContentsImpl::WebContentsTreeNode::OnFrameTreeNodeDestroyed(
       << "WebContentsTreeNode should only receive notifications for the "
          "FrameTreeNode in its outer WebContents that hosts it.";
 
+  node->RemoveObserver(this);
   // Deletes |this| too.
   outer_web_contents_->node_.DetachInnerWebContents(current_web_contents_);
 }
@@ -1786,8 +1787,6 @@ WebUI* WebContentsImpl::GetWebUI() {
   return primary_frame_tree_.root()->current_frame_host()->web_ui();
 }
 
-// TODO(https://crbug.com/1199697): (MPArch) We should probably iterate all
-// FrameTree instances here.
 void WebContentsImpl::SetUserAgentOverride(
     const blink::UserAgentOverride& ua_override,
     bool override_in_new_tabs) {
@@ -9332,8 +9331,9 @@ void WebContentsImpl::ForEachRenderViewHost(
     // Add RenderViewHostImpls in BackForwardCache.
     const auto& entries = GetController().GetBackForwardCache().GetEntries();
     for (const auto& entry : entries) {
-      std::set<RenderViewHostImpl*> bfcached_hosts = entry->render_view_hosts();
-      render_view_hosts.insert(bfcached_hosts.begin(), bfcached_hosts.end());
+      for (const auto& render_view : entry->render_view_hosts()) {
+        render_view_hosts.insert(&*render_view);
+      }
     }
   }
 

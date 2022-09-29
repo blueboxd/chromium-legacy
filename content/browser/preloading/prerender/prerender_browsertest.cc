@@ -3892,8 +3892,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
                        SkipCancelledPrerenderAndStartNextPrerender) {
   net::test_server::ControllableHttpResponse response1(
       embedded_test_server(), "/empty.html?prerender1");
-  net::test_server::ControllableHttpResponse response3(
-      embedded_test_server(), "/empty.html?prerender3");
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL kInitialUrl = embedded_test_server()->GetURL("/empty.html");
   const GURL kPrerender1 =
@@ -3935,13 +3933,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
   web_contents_impl()->GetPrerenderHostRegistry()->CancelHost(
       GetHostForUrl(kPrerender2), PrerenderHost::FinalStatus::kDestroyed);
 
-  // Resume the first prerender and third one. The second one doesn't send
+  // Resume the first prerender. The second one doesn't send
   // request as the host has been already destroyed.
   response1.Send(net::HTTP_OK, "");
   response1.Done();
-  response3.WaitForRequest();
-  response3.Send(net::HTTP_OK, "");
-  response3.Done();
+
+  // Wait for the third prerender completes its initial navigation.
+  WaitForPrerenderLoadCompletion(kPrerender3);
 
   // Activate the third prerender and it should succeed.
   NavigatePrimaryPage(kPrerender3);
@@ -6921,8 +6919,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   // Navigate to an initial page.
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
   RenderFrameHostImpl* primary_frame_host = current_frame_host();
-  blink::mojom::TextAutosizerPageInfo primary_page_info =
-      primary_frame_host->GetPage().text_autosizer_page_info();
 
   int host_id = AddPrerender(kPrerenderingUrl);
   RenderFrameHostImpl* prerender_frame_host =

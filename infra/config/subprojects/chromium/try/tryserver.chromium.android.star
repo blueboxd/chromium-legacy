@@ -64,7 +64,7 @@ try_.orchestrator_builder(
     # branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(
-        experiment_percentage = 100,
+        experiment_percentage = 60,
     ),
     experiments = {
         "enable_weetbix_queries": 100,
@@ -86,9 +86,6 @@ try_.builder(
         "ci/Android x64 Builder (dbg)",
         "ci/android-12l-x64-dbg-tests",
     ],
-    tryjob = try_.job(
-        experiment_percentage = 2,
-    ),
 )
 
 try_.builder(
@@ -363,12 +360,39 @@ try_.builder(
     ],
 )
 
-try_.builder(
+try_.orchestrator_builder(
     name = "android-nougat-x86-rel",
-    mirrors = ["ci/android-nougat-x86-rel"],
-    tryjob = try_.job(
-        experiment_percentage = 20,
+    mirrors = [
+        "ci/android-nougat-x86-rel",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
     ),
+    check_for_flakiness = True,
+    compilator = "android-nougat-x86-rel-compilator",
+    # TODO(crbug.com/1367389): Enable it on branch after running on CQ
+    # branch_selector = branches.STANDARD_MILESTONE,
+    main_list_view = "try",
+    tryjob = try_.job(
+        experiment_percentage = 100,
+    ),
+    experiments = {
+        "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
+        "remove_src_checkout_experiment": 100,
+        "weetbix.enable_weetbix_exonerations": 100,
+    },
+    use_orchestrator_pool = True,
+)
+
+try_.compilator_builder(
+    name = "android-nougat-x86-rel-compilator",
+    # TODO(crbug.com/1367389): Enable it on branch after running on CQ
+    # branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
+    main_list_view = "try",
 )
 
 try_.builder(
@@ -390,6 +414,9 @@ try_.builder(
 
 try_.builder(
     name = "android-perfetto-rel",
+    mirrors = [
+        "ci/android-perfetto-rel",
+    ],
 )
 
 try_.builder(
@@ -449,6 +476,8 @@ try_.orchestrator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(),
+    use_java_coverage = True,
+    coverage_test_types = ["unit", "overall"],
     experiments = {
         "enable_weetbix_queries": 100,
         "weetbix.retry_weak_exonerations": 100,

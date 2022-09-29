@@ -7,11 +7,13 @@
 
 #include <vector>
 
-#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/types/pass_key.h"
+#include "chrome/browser/ui/app_list/search/files/file_suggest_util.h"
+#include "chrome/browser/ui/app_list/search/ranking/removed_results.pb.h"
+#include "chrome/browser/ui/app_list/search/util/persistent_proto.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -20,8 +22,7 @@ class Profile;
 namespace app_list {
 class DriveFileSuggestionProvider;
 class LocalFileSuggestionProvider;
-struct FileSuggestData;
-enum class FileSuggestionType;
+class RankerDelegate;
 class ZeroStateDriveProvider;
 
 // The keyed service that queries for the file suggestions (for both the drive
@@ -36,7 +37,8 @@ class FileSuggestKeyedService : public KeyedService {
     virtual void OnFileSuggestionUpdated(FileSuggestionType type) {}
   };
 
-  explicit FileSuggestKeyedService(Profile* profile);
+  FileSuggestKeyedService(Profile* profile,
+                          PersistentProto<RemovedResultsProto> proto);
   FileSuggestKeyedService(const FileSuggestKeyedService&) = delete;
   FileSuggestKeyedService& operator=(const FileSuggestKeyedService&) = delete;
   ~FileSuggestKeyedService() override;
@@ -55,11 +57,21 @@ class FileSuggestKeyedService : public KeyedService {
   // suggested file data, including file paths and suggestion reasons, through
   // the callback. The returned suggestions have been filtered by the file
   // last modification time. Only the files that have been modified more
-  // recently than a threshold are returned.
-  void GetSuggestFileData(
-      FileSuggestionType type,
-      base::OnceCallback<
-          void(const absl::optional<std::vector<FileSuggestData>>&)> callback);
+  // recently than a threshold are returned. Overridden for tests.
+  virtual void GetSuggestFileData(FileSuggestionType type,
+                                  GetSuggestFileDataCallback callback);
+
+  // Used to expose `proto_` to app list so that the app list can query/remove
+  // non-file result ids from `proto_`.
+  // TODO(https://crbug.com/1368833): remove this function when the removed file
+  // results are managed by this service's own proto without reusing the app
+  // list's.
+  PersistentProto<RemovedResultsProto>* GetProto(base::PassKey<RankerDelegate>);
+
+  // Persists `suggestion_id` so that the corresponding suggestion is not sent
+  // to service clients anymore.
+  void RemoveFileSuggestion(FileSuggestionType type,
+                            const std::string& suggestion_id);
 
   // Adds/Removes an observer.
   void AddObserver(Observer* observer);
@@ -68,13 +80,26 @@ class FileSuggestKeyedService : public KeyedService {
   // Returns true if there is pending fetch on file suggestions.
   bool HasPendingSuggestionFetchForTest() const;
 
+  // Returns true if the service is ready to provide all types of suggestions.
+  bool IsReadyForTest() const;
+
   DriveFileSuggestionProvider* drive_file_suggestion_provider_for_test() {
     return drive_file_suggestion_provider_.get();
   }
 
- private:
+ protected:
   // Called whenever a suggestion provider updates.
   void OnSuggestionProviderUpdated(FileSuggestionType type);
+
+  // Filters `suggestions` so that the suggestions that were removed before do
+  // not appear. Then returns the filtered result through `callback`.
+  void FilterRemovedSuggestions(
+      GetSuggestFileDataCallback callback,
+      const absl::optional<std::vector<FileSuggestData>>& suggestions);
+
+ private:
+  // Called when `proto_` is ready to read.
+  void OnRemovedSuggestionProtoReady(ReadStatus read_status);
 
   // The provider of drive file suggestions.
   std::unique_ptr<DriveFileSuggestionProvider> drive_file_suggestion_provider_;
@@ -83,6 +108,12 @@ class FileSuggestKeyedService : public KeyedService {
   std::unique_ptr<LocalFileSuggestionProvider> local_file_suggestion_provider_;
 
   base::ObserverList<Observer> observers_;
+
+  // Used to query/persis the removed result ids. NOTE: `proto_` contains
+  // non-file ids.
+  // TODO(https://crbug.com/1368833): `proto_` should only contain file ids
+  // after this issue gets fixed.
+  PersistentProto<RemovedResultsProto> proto_;
 
   base::WeakPtrFactory<FileSuggestKeyedService> weak_factory_{this};
 };

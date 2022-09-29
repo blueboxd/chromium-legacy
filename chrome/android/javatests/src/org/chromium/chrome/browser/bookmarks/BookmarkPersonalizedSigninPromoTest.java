@@ -110,7 +110,7 @@ public class BookmarkPersonalizedSigninPromoTest {
                 .launchActivityForPromoDefaultFlow(any(Context.class), anyInt(), anyString());
         showBookmarkManagerAndCheckSigninPromoIsDisplayed();
 
-        onView(allOf(withId(R.id.signin_promo_signin_button), withEffectiveVisibility(VISIBLE)))
+        onView(allOf(withId(R.id.sync_promo_signin_button), withEffectiveVisibility(VISIBLE)))
                 .perform(click());
 
         verify(mMockSyncConsentActivityLauncher)
@@ -131,7 +131,7 @@ public class BookmarkPersonalizedSigninPromoTest {
         CoreAccountInfo accountInfo =
                 mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
         showBookmarkManagerAndCheckSigninPromoIsDisplayed();
-        onView(withId(R.id.signin_promo_choose_account_button)).perform(click());
+        onView(withId(R.id.sync_promo_choose_account_button)).perform(click());
         verify(mMockSyncConsentActivityLauncher)
                 .launchActivityForPromoChooseAccountFlow(any(Activity.class),
                         eq(SigninAccessPoint.BOOKMARK_MANAGER), eq(accountInfo.getEmail()));
@@ -147,7 +147,7 @@ public class BookmarkPersonalizedSigninPromoTest {
                 .when(SyncConsentActivityLauncherImpl.get())
                 .launchActivityForPromoAddAccountFlow(any(Context.class), anyInt());
         showBookmarkManagerAndCheckSigninPromoIsDisplayed();
-        onView(withId(R.id.signin_promo_signin_button)).perform(click());
+        onView(withId(R.id.sync_promo_signin_button)).perform(click());
         verify(mMockSyncConsentActivityLauncher)
                 .launchActivityForPromoAddAccountFlow(
                         any(Activity.class), eq(SigninAccessPoint.BOOKMARK_MANAGER));

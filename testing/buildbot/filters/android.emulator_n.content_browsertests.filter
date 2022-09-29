@@ -11,11 +11,10 @@
 -SecurityExploitBrowserTest.PostMessageSourceOrigin
 
 # TODO(crbug.com/1349961)
--PrefetchBrowserTest/PrefetchBrowserTest.CrossOriginWithPreloadCredentialled/5
--PrefetchBrowserTest/PrefetchBrowserTest.CrossOriginWithPreloadCredentialled/7
+-PrefetchBrowserTest/PrefetchBrowserTest.CrossOriginWithPreloadCredentialled/*
 
 # TODO(crbug.com/1349978)
--PrefetchBrowserTest/PrefetchBrowserTest.CrossOriginWithPreloadHasNoSameSiteCookies/7
+-PrefetchBrowserTest/PrefetchBrowserTest.CrossOriginWithPreloadHasNoSameSiteCookies/*
 
 # TODO(crbug.com/1116774)
 -All/SitePerProcessBrowserTest.PageScaleFactorPropagatesToOOPIFs/0
@@ -35,3 +34,6 @@
 
 # TODO(crbug.com/1368694)
 -SubresourcePartitionedCookiesOriginTrialBrowserTest.NoToken
+
+# TODO(crbug.com/1368929)
+-PrefetchBrowserTest/PrefetchBrowserTest.CrossOriginDocumentHasNoSameSiteCookies/*

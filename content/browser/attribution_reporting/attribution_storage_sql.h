@@ -105,9 +105,9 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   std::vector<AttributionReport> GetAttributionReports(
       base::Time max_report_time,
       int limit = -1,
-      AttributionReport::ReportTypes report_types = {
-          AttributionReport::ReportType::kEventLevel,
-          AttributionReport::ReportType::kAggregatableAttribution}) override;
+      AttributionReport::Types report_types = {
+          AttributionReport::Type::kEventLevel,
+          AttributionReport::Type::kAggregatableAttribution}) override;
   absl::optional<base::Time> GetNextReportTime(base::Time time) override;
   std::vector<AttributionReport> GetReports(
       const std::vector<AttributionReport::Id>& ids) override;
@@ -157,7 +157,8 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
 
   ReportAlreadyStoredStatus ReportAlreadyStored(
       StoredSource::Id source_id,
-      absl::optional<uint64_t> dedup_key)
+      absl::optional<uint64_t> dedup_key,
+      AttributionReport::Type report_type)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   enum class ConversionCapacityStatus {
@@ -166,9 +167,9 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
     kError,
   };
 
-  ConversionCapacityStatus CapacityForStoringReport(
-      const AttributionTrigger&,
-      AttributionReport::ReportType) VALID_CONTEXT_REQUIRED(sequence_checker_);
+  ConversionCapacityStatus CapacityForStoringReport(const AttributionTrigger&,
+                                                    AttributionReport::Type)
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   enum class MaybeReplaceLowerPriorityEventLevelReportResult {
     kError,
@@ -190,7 +191,14 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   absl::optional<std::vector<uint64_t>> ReadDedupKeys(
-      StoredSource::Id source_id) VALID_CONTEXT_REQUIRED(sequence_checker_);
+      StoredSource::Id source_id,
+      AttributionReport::Type report_type)
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
+
+  bool StoreDedupKey(StoredSource::Id source_id,
+                     uint64_t dedup_key,
+                     AttributionReport::Type report_type)
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   [[nodiscard]] RateLimitResult
   HasCapacityForUniqueDestinationLimitForPendingSource(
@@ -348,7 +356,8 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
 
   AttributionTrigger::AggregatableResult
   MaybeStoreAggregatableAttributionReport(AttributionReport& report,
-                                          int64_t aggregatable_budget_consumed)
+                                          int64_t aggregatable_budget_consumed,
+                                          absl::optional<uint64_t> dedup_key)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   [[nodiscard]] bool StoreAggregatableAttributionReport(

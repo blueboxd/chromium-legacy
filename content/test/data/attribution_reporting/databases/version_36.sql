@@ -48,4 +48,6 @@ CREATE INDEX aggregate_report_time_idx ON aggregatable_report_metadata(report_ti
 
 CREATE INDEX contribution_aggregation_id_idx ON aggregatable_contributions(aggregation_id);
 
+INSERT INTO dedup_keys VALUES(1,2);
+
 COMMIT;

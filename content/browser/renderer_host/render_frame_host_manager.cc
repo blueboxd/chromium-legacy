@@ -536,7 +536,7 @@ void RenderFrameHostManager::BeforeUnloadCompleted(
     // Otherwise, if the navigation in the speculative RFH completes before the
     // close in the current RFH, we'll lose the tab close.
     if (speculative_render_frame_host_)
-      CleanUpNavigation();
+      CleanUpNavigation(NavigationDiscardReason::kWillRemoveFrame);
 
     render_frame_host_->render_view_host()->ClosePage();
   }
@@ -604,7 +604,8 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     // below.
     CommitPending(std::move(speculative_render_frame_host_),
                   std::move(stored_page_to_restore_), clear_proxies_on_commit);
-    frame_tree_node_->ResetNavigationRequest(false);
+    frame_tree_node_->ResetNavigationRequest(
+        NavigationDiscardReason::kCommittedNavigation);
     return;
   }
 
@@ -621,8 +622,9 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
   // See https://crbug.com/825677 and https://crbug.com/75195 for examples.
   if (speculative_render_frame_host_ && !is_same_document_navigation &&
       was_caused_by_user_gesture) {
-    frame_tree_node_->ResetNavigationRequest(false);
-    CleanUpNavigation();
+    frame_tree_node_->ResetNavigationRequest(
+        NavigationDiscardReason::kCommittedNavigation);
+    CleanUpNavigation(NavigationDiscardReason::kCommittedNavigation);
   }
 
   if (render_frame_host_->is_local_root() && render_frame_host_->GetView()) {
@@ -678,12 +680,13 @@ std::unique_ptr<StoredPage> RenderFrameHostManager::TakePrerenderedPage() {
 
 void RenderFrameHostManager::PrepareForCollectingPage(
     RenderFrameHostImpl* main_render_frame_host,
-    std::set<RenderViewHostImpl*>* render_view_hosts,
+    StoredPage::RenderViewHostImplSafeRefSet* render_view_hosts,
     BrowsingContextState::RenderFrameProxyHostMap* proxy_hosts) {
   TRACE_EVENT("navigation", "RenderFrameHostManager::PrepareForCollectingPage");
 
   // Prepare the main frame.
-  (*render_view_hosts).insert(main_render_frame_host->render_view_host());
+  render_view_hosts->insert(
+      main_render_frame_host->render_view_host()->GetSafeRef());
   // Prepare the proxies.
   SiteInstance* instance = main_render_frame_host->GetSiteInstance();
 
@@ -693,7 +696,7 @@ void RenderFrameHostManager::PrepareForCollectingPage(
     // new cross-process, cross-BrowsingInstance navigation, as well as any
     // restored proxies which are also in a different BrowsingInstance.
     if (instance->IsRelatedSiteInstance(it.second->GetSiteInstance())) {
-      (*render_view_hosts).insert(it.second->GetRenderViewHost());
+      render_view_hosts->insert(it.second->GetRenderViewHost()->GetSafeRef());
       // When BrowsingContextState is decoupled from the FrameTreeNode and
       // RenderFrameHostManager (legacy mode is disabled), proxies and
       // replication state will be stored in a separate BrowsingContextState,
@@ -728,7 +731,7 @@ std::unique_ptr<StoredPage> RenderFrameHostManager::CollectPage(
     std::unique_ptr<RenderFrameHostImpl> main_render_frame_host) {
   DCHECK(main_render_frame_host->is_main_frame());
 
-  std::set<RenderViewHostImpl*> render_view_hosts;
+  StoredPage::RenderViewHostImplSafeRefSet render_view_hosts;
   BrowsingContextState::RenderFrameProxyHostMap proxy_hosts;
 
   PrepareForCollectingPage(main_render_frame_host.get(), &render_view_hosts,
@@ -820,7 +823,7 @@ void RenderFrameHostManager::UnloadOldFrame(
       auto entry =
           std::make_unique<BackForwardCacheImpl::Entry>(std::move(stored_page));
       // Ensures RenderViewHosts are not reused while they are in the cache.
-      for (RenderViewHostImpl* rvh : entry->render_view_hosts()) {
+      for (const auto& rvh : entry->render_view_hosts()) {
         rvh->EnterBackForwardCache();
       }
       back_forward_cache.StoreEntry(std::move(entry));
@@ -914,8 +917,10 @@ bool RenderFrameHostManager::DeleteFromPendingList(
 void RenderFrameHostManager::ActivatePrerender(
     std::unique_ptr<StoredPage> stored_page) {
   DCHECK(blink::features::IsPrerender2Enabled());
-  if (speculative_render_frame_host_)
-    DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
+  if (speculative_render_frame_host_) {
+    DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost(
+        NavigationDiscardReason::kNewNavigation));
+  }
 
   // Reset the swap result of BrowsingInstance as prerender activation always
   // swaps BrowsingInstance.
@@ -932,7 +937,7 @@ void RenderFrameHostManager::RestorePage(
   TRACE_EVENT("navigation", "RenderFrameHostManager::RestorePage",
               ChromeTrackEvent::kFrameTreeNodeInfo, *frame_tree_node_);
   // Matched in CommitPending().
-  stored_page->render_frame_host->GetProcess()->AddPendingView();
+  stored_page->render_frame_host()->GetProcess()->AddPendingView();
 
   // speculative_render_frame_host_ and stored_page_to_restore_ will be
   // consumed during CommitPendingIfNecessary.
@@ -945,7 +950,7 @@ void RenderFrameHostManager::RestorePage(
   // should have never been created, and with prerender activation, it should
   // have been cleared out earlier.
   DCHECK(!speculative_render_frame_host_);
-  speculative_render_frame_host_ = std::move(stored_page->render_frame_host);
+  speculative_render_frame_host_ = stored_page->TakeRenderFrameHost();
   // Now |stored_page| is destroyed and thus does not monitor cookie changes any
   // more. This is okay as eviction would not happen from this point.
   stored_page_to_restore_ = std::move(stored_page);
@@ -1008,7 +1013,7 @@ void RenderFrameHostManager::DidCreateNavigationRequest(
     // Cleanup existing pending RenderFrameHost. This corresponds to what is
     // done inside GetFrameHostForNavigation(request), but we avoid calling that
     // method for navigations which will be forced into the current document.
-    CleanUpNavigation();
+    CleanUpNavigation(NavigationDiscardReason::kNewNavigation);
     request->set_associated_rfh_type(
         NavigationRequest::AssociatedRenderFrameHostType::CURRENT);
   } else {
@@ -1120,8 +1125,10 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     // not be recreated if the URL didn't change. So instead of calling
     // CleanUpNavigation just discard the speculative RenderFrameHost if one
     // exists.
-    if (speculative_render_frame_host_)
-      DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
+    if (speculative_render_frame_host_) {
+      DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost(
+          NavigationDiscardReason::kNewNavigation));
+    }
 
     // If the navigation is to a WebUI and the current RenderFrameHost is going
     // to be used, there are only two possible ways to get here:
@@ -1181,7 +1188,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       // If a previous speculative RenderFrameHost didn't exist or if its
       // SiteInstance differs from the one for the current URL, a new one needs
       // to be created.
-      CleanUpNavigation();
+      CleanUpNavigation(NavigationDiscardReason::kNewNavigation);
       bool success = CreateSpeculativeRenderFrameHost(
           current_site_instance, dest_site_instance.get(),
           recovering_without_early_commit);
@@ -1332,7 +1339,8 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   return navigation_rfh;
 }
 
-void RenderFrameHostManager::MaybeCleanUpNavigation() {
+void RenderFrameHostManager::MaybeCleanUpNavigation(
+    NavigationDiscardReason reason) {
   // This is called when a renderer aborts a NavigationRequest
   // that was in the READY_TO_COMMIT state. The caller has already
   // disassociated the NavigationRequest from the RenderFrameHost,
@@ -1351,15 +1359,15 @@ void RenderFrameHostManager::MaybeCleanUpNavigation() {
           NavigationRequest::AssociatedRenderFrameHostType::SPECULATIVE) {
     return;
   }
-  CleanUpNavigation();
+  CleanUpNavigation(reason);
 }
 
-void RenderFrameHostManager::CleanUpNavigation() {
+void RenderFrameHostManager::CleanUpNavigation(NavigationDiscardReason reason) {
   TRACE_EVENT("navigation", "RenderFrameHostManager::CleanUpNavigation",
               ChromeTrackEvent::kFrameTreeNodeInfo, *frame_tree_node_);
   if (speculative_render_frame_host_) {
     bool was_loading = speculative_render_frame_host_->is_loading();
-    DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
+    DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost(reason));
     // If we were navigating away from a crashed main frame then we will have
     // set the RVH's main frame routing ID to MSG_ROUTING_NONE. We need to set
     // it back to the crashed frame to avoid having a situation where it's
@@ -1376,10 +1384,16 @@ void RenderFrameHostManager::CleanUpNavigation() {
 }
 
 std::unique_ptr<RenderFrameHostImpl>
-RenderFrameHostManager::UnsetSpeculativeRenderFrameHost() {
+RenderFrameHostManager::UnsetSpeculativeRenderFrameHost(
+    NavigationDiscardReason reason) {
   TRACE_EVENT("navigation",
               "RenderFrameHostManager::UnsetSpeculativeRenderFrameHost",
               ChromeTrackEvent::kFrameTreeNodeInfo, *frame_tree_node_);
+
+  if (base::FeatureList::IsEnabled(kQueueNavigationsWhileWaitingForCommit)) {
+    CHECK(reason != NavigationDiscardReason::kNewNavigation);
+  }
+
   speculative_render_frame_host_->GetProcess()->RemovePendingView();
   if (speculative_render_frame_host_->lifecycle_state() ==
       LifecycleStateImpl::kSpeculative) {
@@ -1518,13 +1532,14 @@ void RenderFrameHostManager::CancelPendingIfNecessary(
     // without canceling the request.  See https://crbug.com/636119.
     if (frame_tree_node_->navigation_request()) {
       frame_tree_node_->navigation_request()->set_net_error(net::ERR_ABORTED);
-      frame_tree_node_->ResetNavigationRequest(false);
+      frame_tree_node_->ResetNavigationRequest(
+          NavigationDiscardReason::kRenderProcessGone);
     } else {
       // If we are far enough into the navigation that
       // TransferNavigationRequestOwnership has already been called then the
       // FrameTreeNode no longer owns the NavigationRequest and we need to clean
       // up the speculative RenderFrameHost.
-      CleanUpNavigation();
+      CleanUpNavigation(NavigationDiscardReason::kRenderProcessGone);
     }
   }
 }
@@ -2120,7 +2135,8 @@ bool RenderFrameHostManager::InitializeMainRenderFrameForImmediateUse() {
     // needs to remain in sync with `RenderFrameHostImpl::RenderFrameCreated()`,
     // which dispatches the actual notification about a new Page object for this
     // case.
-    render_frame_host_->ReinitializeDocumentAssociatedDataForReuseAfterCrash();
+    render_frame_host_->ReinitializeDocumentAssociatedDataForReuseAfterCrash(
+        /* passkey */ {});
   }
 
   if (!ReinitializeMainRenderFrame(render_frame_host_.get())) {
@@ -3527,6 +3543,8 @@ void RenderFrameHostManager::CommitPending(
   // If a document is being restored from the BackForwardCache or is being
   // activated from Prerendering, restore all cached state now.
   if (pending_stored_page) {
+    pending_stored_page->PrepareToRestore();
+
     // This is only implemented for the legacy mode of BrowsingContextState
     // because in the new implementation, proxies will be swapped/restored
     // whenever the RenderFrameHost (and internal BrowsingContextState) is
@@ -3535,7 +3553,7 @@ void RenderFrameHostManager::CommitPending(
         features::BrowsingContextStateImplementationType::
             kLegacyOneToOneWithFrameTreeNode) {
       BrowsingContextState::RenderFrameProxyHostMap proxy_hosts_to_restore =
-          std::move(pending_stored_page->proxy_hosts);
+          pending_stored_page->TakeProxyHosts();
       for (auto& proxy : proxy_hosts_to_restore) {
         // We only cache pages when swapping BrowsingInstance, so we should
         // never be reusing SiteInstanceGroups.
@@ -3552,13 +3570,14 @@ void RenderFrameHostManager::CommitPending(
       }
     }
 
-    std::set<RenderViewHostImpl*> render_view_hosts_to_restore =
-        std::move(pending_stored_page->render_view_hosts);
+    StoredPage::StoredPage::RenderViewHostImplSafeRefSet
+        render_view_hosts_to_restore =
+            pending_stored_page->TakeRenderViewHosts();
     if (prev_state ==
         RenderFrameHostImpl::LifecycleStateImpl::kInBackForwardCache) {
-      for (RenderViewHostImpl* rvh : render_view_hosts_to_restore) {
+      for (const auto& rvh : render_view_hosts_to_restore) {
         rvh->LeaveBackForwardCache(
-            pending_stored_page->page_restore_params.Clone());
+            pending_stored_page->page_restore_params().Clone());
       }
     } else {
       DCHECK_EQ(prev_state,
@@ -4090,12 +4109,14 @@ void RenderFrameHostManager::CreateNewFrameForInnerDelegateAttachIfNecessary() {
   current_frame_host()->ResetLoadingState();
   // Remove any speculative frames first and ongoing navigation state. This
   // should reset the loading state for good.
-  frame_tree_node_->ResetNavigationRequest(false /* keep_state */);
+  frame_tree_node_->ResetNavigationRequest(
+      NavigationDiscardReason::kNewNavigation);
   if (speculative_render_frame_host_) {
     // The FrameTreeNode::ResetNavigationRequest call above may not have cleaned
     // up the speculative RenderFrameHost if the NavigationRequest had already
     // been transferred to RenderFrameHost.  Ensure it is cleaned up now.
-    DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
+    DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost(
+        NavigationDiscardReason::kNewNavigation));
   }
 
   DCHECK(!current_frame_host()->is_main_frame());

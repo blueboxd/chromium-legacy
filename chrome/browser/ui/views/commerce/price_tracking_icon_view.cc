@@ -7,7 +7,9 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/commerce/price_tracking/shopping_list_ui_tab_helper.h"
 #include "chrome/browser/ui/views/commerce/price_tracking_bubble_dialog_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/common/pref_names.h"
@@ -20,6 +22,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/view_class_properties.h"
 
@@ -51,17 +54,27 @@ std::u16string PriceTrackingIconView::GetTextForTooltipAndAccessibleName()
 
 void PriceTrackingIconView::OnExecuting(
     PageActionIconView::ExecuteSource execute_source) {
-  if (profile_->GetPrefs()->GetBoolean(prefs::kShouldShowPriceTrackFUEBubble)) {
+  auto* web_contents = GetWebContents();
+  DCHECK(web_contents);
+  auto* tab_helper =
+      commerce::ShoppingListUiTabHelper::FromWebContents(web_contents);
+  CHECK(tab_helper);
+
+  const gfx::Image& product_image = tab_helper->GetProductImage();
+  DCHECK(!product_image.IsEmpty());
+
+  if (ShouldShowFirstUseExperienceBubble()) {
     bubble_coordinator_.Show(
         GetWebContents(), profile_, GetWebContents()->GetLastCommittedURL(),
-
+        ui::ImageModel::FromImage(product_image),
         base::BindOnce(&PriceTrackingIconView::EnablePriceTracking,
                        base::Unretained(this)),
-        PriceTrackingBubbleDialogView::Type::TYPE_FUE);
+        PriceTrackingBubbleDialogView::Type::TYPE_FIRST_USE_EXPERIENCE);
   } else {
     EnablePriceTracking(/*enable=*/true);
     bubble_coordinator_.Show(
         GetWebContents(), profile_, GetWebContents()->GetLastCommittedURL(),
+        ui::ImageModel::FromImage(product_image),
         base::BindOnce(&PriceTrackingIconView::EnablePriceTracking,
                        base::Unretained(this)),
         PriceTrackingBubbleDialogView::Type::TYPE_NORMAL);
@@ -72,14 +85,33 @@ const gfx::VectorIcon& PriceTrackingIconView::GetVectorIcon() const {
   return *icon_;
 }
 
+bool PriceTrackingIconView::ShouldShowLabel() const {
+  return false;
+}
+
+bool PriceTrackingIconView::ShouldShow() {
+  if (delegate()->ShouldHidePageActionIcons()) {
+    return false;
+  }
+  auto* web_contents = GetWebContents();
+  if (!web_contents)
+    return false;
+  auto* tab_helper =
+      commerce::ShoppingListUiTabHelper::FromWebContents(web_contents);
+
+  return tab_helper && tab_helper->ShouldShowPriceTrackingIconView();
+}
+
 void PriceTrackingIconView::UpdateImpl() {
-  SetVisualState(IsPriceTracking());
-  SetVisible(is_visible_);
+  bool should_show = ShouldShow();
+  if (should_show) {
+    SetVisualState(IsPriceTracking());
+  }
+  SetVisible(should_show);
 }
 
 void PriceTrackingIconView::ForceVisibleForTesting(bool is_tracking_price) {
   SetVisible(true);
-  is_visible_ = true;
   SetVisualState(is_tracking_price);
 }
 
@@ -91,14 +123,22 @@ void PriceTrackingIconView::EnablePriceTracking(bool enable) {
   if (IsPriceTracking() == enable)
     return;
 
-  if (enable &&
-      profile_->GetPrefs()->GetBoolean(prefs::kShouldShowPriceTrackFUEBubble)) {
+  if (enable && ShouldShowFirstUseExperienceBubble()) {
     profile_->GetPrefs()->SetBoolean(prefs::kShouldShowPriceTrackFUEBubble,
                                      false);
   }
 
   bookmarks::BookmarkModel* const model =
       BookmarkModelFactory::GetForBrowserContext(profile_);
+
+  if (enable) {
+    GURL url;
+    std::u16string title;
+    if (chrome::GetURLAndTitleToBookmark(GetWebContents(), &url, &title)) {
+      bookmarks::AddIfNotBookmarked(model, url, title);
+    }
+  }
+
   const bookmarks::BookmarkNode* node =
       model->GetMostRecentlyAddedUserNodeForURL(
           GetWebContents()->GetLastCommittedURL());
@@ -139,4 +179,10 @@ bool PriceTrackingIconView::IsPriceTracking() const {
       bookmark_model->GetMostRecentlyAddedUserNodeForURL(
           GetWebContents()->GetLastCommittedURL());
   return commerce::IsBookmarkPriceTracked(bookmark_model, bookmark_node);
+}
+
+bool PriceTrackingIconView::ShouldShowFirstUseExperienceBubble() const {
+  return profile_->GetPrefs()->GetBoolean(
+             prefs::kShouldShowPriceTrackFUEBubble) &&
+         !IsPriceTracking();
 }

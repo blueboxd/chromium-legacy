@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {isRTL} from 'chrome://resources/js/util.m.js';
+import {isRTL} from 'chrome://resources/js/util.js';
 
   /**
    * @constructor
@@ -294,7 +294,11 @@ import {isRTL} from 'chrome://resources/js/util.m.js';
     } else {
       this.title.textContent = '';
       this.title.hidden = true;
-      this.frame.removeAttribute('aria-label');
+      if (this.text.innerText) {
+        this.frame.setAttribute('aria-label', this.text.innerText);
+      } else {
+        this.frame.removeAttribute('aria-label');
+      }
     }
 
     const self = this;

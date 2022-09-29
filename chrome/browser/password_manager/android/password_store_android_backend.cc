@@ -29,6 +29,7 @@
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_android.h"
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_bridge_impl.h"
 #include "components/autofill/core/common/autofill_regexes.h"
+#include "components/password_manager/core/browser/android_backend_error.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
@@ -279,6 +280,12 @@ bool IsAuthenticationError(AndroidBackendAPIErrorCode api_error_code) {
     case AndroidBackendAPIErrorCode::kLeakCheckServiceResourceExhausted:
       return false;
   }
+  // The api_error_code is determined by static casting an int. It is thus
+  // possible for the value to not be among the explicit enum values, however
+  // that case should still be handled. Not adding a default statement to the
+  // switch, so that the compiler still warns when a new enum value is added and
+  // not explicitly handled here.
+  return false;
 }
 
 bool IsUnrecoverableBackendError(AndroidBackendAPIErrorCode api_error_code) {
@@ -305,6 +312,42 @@ bool IsUnrecoverableBackendError(AndroidBackendAPIErrorCode api_error_code) {
   }
 
   return false;
+}
+
+PasswordStoreBackendErrorType APIErrorCodeToErrorType(
+    AndroidBackendAPIErrorCode api_error_code) {
+  switch (api_error_code) {
+    case AndroidBackendAPIErrorCode::kAuthErrorResolvable:
+      return PasswordStoreBackendErrorType::kAuthErrorResolvable;
+    case AndroidBackendAPIErrorCode::kAuthErrorUnresolvable:
+      return PasswordStoreBackendErrorType::kAuthErrorUnresolvable;
+    case AndroidBackendAPIErrorCode::kNetworkError:
+    case AndroidBackendAPIErrorCode::kInternalError:
+    case AndroidBackendAPIErrorCode::kDeveloperError:
+    case AndroidBackendAPIErrorCode::kApiNotConnected:
+    case AndroidBackendAPIErrorCode::kConnectionSuspendedDuringCall:
+    case AndroidBackendAPIErrorCode::kReconnectionTimedOut:
+    case AndroidBackendAPIErrorCode::kPassphraseRequired:
+    case AndroidBackendAPIErrorCode::kAccessDenied:
+    case AndroidBackendAPIErrorCode::kBadRequest:
+    case AndroidBackendAPIErrorCode::kBackendGeneric:
+    case AndroidBackendAPIErrorCode::kBackendResourceExhausted:
+    case AndroidBackendAPIErrorCode::kInvalidData:
+    case AndroidBackendAPIErrorCode::kUnmappedErrorCode:
+    case AndroidBackendAPIErrorCode::kUnexpectedError:
+    case AndroidBackendAPIErrorCode::kChromeSyncAPICallError:
+    case AndroidBackendAPIErrorCode::kErrorWhileDoingLeakServiceGRPC:
+    case AndroidBackendAPIErrorCode::kRequiredSyncingAccountMissing:
+    case AndroidBackendAPIErrorCode::kLeakCheckServiceAuthError:
+    case AndroidBackendAPIErrorCode::kLeakCheckServiceResourceExhausted:
+      return PasswordStoreBackendErrorType::kUncategorized;
+  }
+  // The api_error_code is determined by static casting an int. It is thus
+  // possible for the value to not be among the explicit enum values, however
+  // that case should still be handled. Not adding a default statement to the
+  // switch, so that the compiler still warns when a new enum value is added and
+  // not explicitly handled here.
+  return PasswordStoreBackendErrorType::kUncategorized;
 }
 
 PasswordStoreBackendError BackendErrorFromAndroidBackendError(
@@ -335,16 +378,11 @@ PasswordStoreBackendError BackendErrorFromAndroidBackendError(
           static_cast<AndroidBackendAPIErrorCode>(error.api_error_code.value()))
           ? PasswordStoreBackendErrorRecoveryType::kUnrecoverable
           : PasswordStoreBackendErrorRecoveryType::kRecoverable;
+  AndroidBackendAPIErrorCode api_error_code =
+      static_cast<AndroidBackendAPIErrorCode>(error.api_error_code.value());
   PasswordStoreBackendErrorType error_type =
-      (static_cast<AndroidBackendAPIErrorCode>(error.api_error_code.value()) ==
-       AndroidBackendAPIErrorCode::kAuthErrorResolvable)
-          ? PasswordStoreBackendErrorType::kAuthErrorResolvable
-          : PasswordStoreBackendErrorType::kUncategorized;
+      APIErrorCodeToErrorType(api_error_code);
   return PasswordStoreBackendError(error_type, recovery_type);
-}
-
-bool IsUnenrolledFromUPM(const PrefService* prefs) {
-  return password_manager_upm_eviction::IsCurrentUserEvicted(prefs);
 }
 
 bool ShouldRecordUptimeOnApiError(AndroidBackendAPIErrorCode api_error_code) {
@@ -355,9 +393,32 @@ bool ShouldRecordUptimeOnApiError(AndroidBackendAPIErrorCode api_error_code) {
     case AndroidBackendAPIErrorCode::kConnectionSuspendedDuringCall:
     case AndroidBackendAPIErrorCode::kReconnectionTimedOut:
       return true;
-    default:
+    case AndroidBackendAPIErrorCode::kAuthErrorResolvable:
+    case AndroidBackendAPIErrorCode::kAuthErrorUnresolvable:
+    case AndroidBackendAPIErrorCode::kNetworkError:
+    case AndroidBackendAPIErrorCode::kInternalError:
+    case AndroidBackendAPIErrorCode::kDeveloperError:
+    case AndroidBackendAPIErrorCode::kPassphraseRequired:
+    case AndroidBackendAPIErrorCode::kAccessDenied:
+    case AndroidBackendAPIErrorCode::kBadRequest:
+    case AndroidBackendAPIErrorCode::kBackendGeneric:
+    case AndroidBackendAPIErrorCode::kBackendResourceExhausted:
+    case AndroidBackendAPIErrorCode::kInvalidData:
+    case AndroidBackendAPIErrorCode::kUnmappedErrorCode:
+    case AndroidBackendAPIErrorCode::kUnexpectedError:
+    case AndroidBackendAPIErrorCode::kChromeSyncAPICallError:
+    case AndroidBackendAPIErrorCode::kErrorWhileDoingLeakServiceGRPC:
+    case AndroidBackendAPIErrorCode::kRequiredSyncingAccountMissing:
+    case AndroidBackendAPIErrorCode::kLeakCheckServiceAuthError:
+    case AndroidBackendAPIErrorCode::kLeakCheckServiceResourceExhausted:
       return false;
   }
+  // The api_error_code is determined by static casting an int. It is thus
+  // possible for the value to not be among the explicit enum values, however
+  // that case should still be handled. Not adding a default statement to the
+  // switch, so that the compiler still warns when a new enum value is added and
+  // not explicitly handled here.
+  return false;
 }
 
 std::string GetUptimeHistogramNameForApiError(
@@ -426,19 +487,15 @@ class PasswordStoreAndroidBackend::ClearAllLocalPasswordsMetricRecorder {
 
 PasswordStoreAndroidBackend::JobReturnHandler::JobReturnHandler(
     LoginsOrErrorReply callback,
-    PasswordStoreBackendMetricsRecorder metrics_recorder,
-    bool is_unenrolled_from_upm)
+    PasswordStoreBackendMetricsRecorder metrics_recorder)
     : success_callback_(std::move(callback)),
-      metrics_recorder_(std::move(metrics_recorder)),
-      is_unenrolled_from_upm_(is_unenrolled_from_upm) {}
+      metrics_recorder_(std::move(metrics_recorder)) {}
 
 PasswordStoreAndroidBackend::JobReturnHandler::JobReturnHandler(
     PasswordChangesOrErrorReply callback,
-    PasswordStoreBackendMetricsRecorder metrics_recorder,
-    bool is_unenrolled_from_upm)
+    PasswordStoreBackendMetricsRecorder metrics_recorder)
     : success_callback_(std::move(callback)),
-      metrics_recorder_(std::move(metrics_recorder)),
-      is_unenrolled_from_upm_(is_unenrolled_from_upm) {}
+      metrics_recorder_(std::move(metrics_recorder)) {}
 
 PasswordStoreAndroidBackend::JobReturnHandler::JobReturnHandler(
     JobReturnHandler&&) = default;
@@ -447,9 +504,6 @@ PasswordStoreAndroidBackend::JobReturnHandler::~JobReturnHandler() = default;
 
 void PasswordStoreAndroidBackend::JobReturnHandler::RecordMetrics(
     absl::optional<AndroidBackendError> error) const {
-  if (is_unenrolled_from_upm_)
-    metrics_recorder_.RecordMetricsForUnenrolledClients(error);
-
   SuccessStatus sucess_status = GetSuccessStatusFromError(error);
   metrics_recorder_.RecordMetrics(sucess_status, std::move(error));
 }
@@ -848,6 +902,8 @@ void PasswordStoreAndroidBackend::OnError(JobId job_id,
   PasswordStoreBackendError reported_error =
       BackendErrorFromAndroidBackendError(error);
   reply->RecordMetrics(std::move(error));
+  // The decision whether to show an error UI depends on the re-enrollment pref
+  // and as such the consumers should be called last.
   if (reply->Holds<LoginsOrErrorReply>()) {
     main_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(*reply).Get<LoginsOrErrorReply>(),
@@ -869,11 +925,10 @@ void PasswordStoreAndroidBackend::QueueNewJob(JobId job_id,
                                               MetricInfix metric_infix) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   request_for_job_.emplace(
-      job_id, JobReturnHandler(
-                  std::move(callback),
-                  PasswordStoreBackendMetricsRecorder(
-                      BackendInfix("AndroidBackend"), std::move(metric_infix)),
-                  IsUnenrolledFromUPM(prefs_)));
+      job_id,
+      JobReturnHandler(std::move(callback), PasswordStoreBackendMetricsRecorder(
+                                                BackendInfix("AndroidBackend"),
+                                                std::move(metric_infix))));
 }
 
 absl::optional<PasswordStoreAndroidBackend::JobReturnHandler>

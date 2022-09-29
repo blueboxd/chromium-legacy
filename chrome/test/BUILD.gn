@@ -1979,6 +1979,7 @@ if (!is_android) {
       "../browser/policy/test/force_google_safe_search_policy_browsertest.cc",
       "../browser/policy/test/hsts_policy_browsertest.cc",
       "../browser/policy/test/jit_policy_browsertest.cc",
+      "../browser/policy/test/platform_management_service_browsertest.cc",
       "../browser/policy/test/policy_browsertest.cc",
       "../browser/policy/test/policy_statistics_collector_browsertest.cc",
       "../browser/policy/test/policy_test_google_browsertest.cc",
@@ -3289,6 +3290,8 @@ if (!is_android) {
     }
     if (toolkit_views) {
       sources += [
+        "../browser/ui/commerce/price_tracking/mock_shopping_list_ui_tab_helper.cc",
+        "../browser/ui/commerce/price_tracking/mock_shopping_list_ui_tab_helper.h",
         "../browser/ui/global_error/global_error_browsertest.cc",
         "../browser/ui/global_error/global_error_service_browsertest.cc",
         "../browser/ui/media_router/presentation_receiver_window_controller_browsertest.cc",
@@ -6726,6 +6729,7 @@ test("unit_tests") {
       "../browser/ui/autofill/payments/offer_notification_bubble_controller_impl_unittest.cc",
       "../browser/ui/autofill/payments/save_card_bubble_controller_impl_unittest.cc",
       "../browser/ui/autofill/save_update_address_profile_bubble_controller_impl_unittest.cc",
+      "../browser/ui/autofill_assistant/password_change/apc_utils_unittest.cc",
       "../browser/ui/autofill_assistant/password_change/assistant_onboarding_controller_impl_unittest.cc",
       "../browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc",
       "../browser/ui/bookmarks/bookmark_editor_unittest.cc",
@@ -8126,6 +8130,7 @@ test("unit_tests") {
     if (is_chromeos) {
       sources += [
         "../browser/chromeos/extensions/contact_center_insights/contact_center_insights_extension_manager_unittest.cc",
+        "../browser/chromeos/extensions/desk_api/desk_api_extension_manager_unittest.cc",
         "../browser/chromeos/extensions/login_screen/login/external_logout_request/external_logout_request_event_handler_unittest.cc",
         "../browser/chromeos/extensions/login_screen/login_state/login_state_api_unittest.cc",
 
@@ -8336,6 +8341,8 @@ test("unit_tests") {
       "../browser/safe_browsing/download_protection/two_phase_uploader_unittest.cc",
       "../browser/safe_browsing/extension_telemetry/cookies_get_all_signal_processor_unittest.cc",
       "../browser/safe_browsing/extension_telemetry/cookies_get_all_signal_unittest.cc",
+      "../browser/safe_browsing/extension_telemetry/cookies_get_signal_processor_unittest.cc",
+      "../browser/safe_browsing/extension_telemetry/cookies_get_signal_unittest.cc",
       "../browser/safe_browsing/extension_telemetry/extension_telemetry_persister_unittest.cc",
       "../browser/safe_browsing/extension_telemetry/extension_telemetry_service_unittest.cc",
       "../browser/safe_browsing/extension_telemetry/extension_telemetry_uploader_unittest.cc",
@@ -8659,6 +8666,7 @@ test("unit_tests") {
       "../browser/signin/signin_ui_util_unittest.cc",
       "../browser/signin/signin_util_unittest.cc",
       "../browser/ui/signin/profile_customization_synced_theme_waiter_unittest.cc",
+      "../browser/ui/views/download/bubble/download_bubble_security_view_unittest.cc",
       "../browser/ui/views/sharing/sharing_dialog_view_unittest.cc",
       "../browser/ui/webui/signin/signin_error_handler_unittest.cc",
       "../browser/upgrade_detector/installed_version_poller_unittest.cc",
@@ -8707,6 +8715,8 @@ test("unit_tests") {
     sources += [
       "../../ui/views/controls/webview/web_dialog_view_unittest.cc",
       "../../ui/views/controls/webview/webview_unittest.cc",
+      "../browser/ui/commerce/price_tracking/mock_shopping_list_ui_tab_helper.cc",
+      "../browser/ui/commerce/price_tracking/mock_shopping_list_ui_tab_helper.h",
       "../browser/ui/media_router/media_route_starter_unittest.cc",
       "../browser/ui/media_router/media_router_ui_unittest.cc",
       "../browser/ui/views/accelerator_table_unittest.cc",
@@ -8896,6 +8906,7 @@ test("unit_tests") {
       "../browser/supervised_user/kids_chrome_management/kids_management_service_unittest.cc",
       "../browser/supervised_user/kids_management_url_checker_client_unittest.cc",
       "../browser/supervised_user/parental_control_metrics_unittest.cc",
+      "../browser/supervised_user/supervised_user_favicon_request_handler_unittest.cc",
       "../browser/supervised_user/supervised_user_metrics_service_unittest.cc",
       "../browser/supervised_user/supervised_user_model_type_controller_unittest.cc",
       "../browser/supervised_user/supervised_user_pref_store_unittest.cc",
@@ -9616,6 +9627,8 @@ if (!is_android) {
 
     if (toolkit_views) {
       sources += [
+        "../browser/ui/commerce/price_tracking/mock_shopping_list_ui_tab_helper.cc",
+        "../browser/ui/commerce/price_tracking/mock_shopping_list_ui_tab_helper.h",
         "../browser/ui/read_later/read_later_test_utils.cc",
         "../browser/ui/read_later/read_later_test_utils.h",
         "../browser/ui/toolbar/app_menu_model_interactive_uitest.cc",

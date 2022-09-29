@@ -7,10 +7,10 @@ found in the LICENSE file.
 
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
        xmlns:tools="http://schemas.android.com/tools"
-       tools:showIn="@layout/personalized_signin_promo_view_settings">
+       tools:showIn="@layout/sync_promo_view_settings">
 
     <TextView
-        android:id="@+id/signin_promo_status_message"
+        android:id="@+id/sync_promo_status_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="40dp"
@@ -22,7 +22,7 @@ found in the LICENSE file.
         android:visibility="gone"/>
 
     <TextView
-        android:id="@+id/signin_promo_title"
+        android:id="@+id/sync_promo_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -36,7 +36,7 @@ found in the LICENSE file.
         tools:text="@string/sync_promo_title_settings"/>
 
     <TextView
-        android:id="@+id/new_signin_promo_description"
+        android:id="@+id/new_sync_promo_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -61,18 +61,18 @@ found in the LICENSE file.
         tools:text="@string/signin_promo_description_settings"/>
 
     <org.chromium.ui.widget.ButtonCompat
-        android:id="@+id/signin_promo_signin_button"
+        android:id="@+id/sync_promo_signin_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:ellipsize="end"
         android:singleLine="true"
-        android:text="@string/signin_promo_continue_as"
+        android:text="@string/sync_promo_continue_as"
         style="@style/FilledButton.Flat" />
 
     <org.chromium.ui.widget.ButtonCompat
-        android:id="@+id/signin_promo_choose_account_button"
+        android:id="@+id/sync_promo_choose_account_button"
         style="@style/SigninButtonBorderlessRegular"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

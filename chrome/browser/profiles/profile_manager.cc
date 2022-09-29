@@ -171,6 +171,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/contact_center_insights/contact_center_insights_extension_manager.h"
+#include "chrome/browser/chromeos/extensions/desk_api/desk_api_extension_manager.h"
 #endif
 
 using base::UserMetricsAction;
@@ -1501,8 +1502,8 @@ void ProfileManager::AddKeepAlive(const Profile* profile,
                                   ProfileKeepAliveOrigin origin) {
   DCHECK_NE(ProfileKeepAliveOrigin::kWaitingForFirstBrowserWindow, origin);
 
-  DCHECK(profile);
-  DCHECK(!profile->IsOffTheRecord());
+  CHECK(profile);
+  CHECK(!profile->IsOffTheRecord());
 
   ProfileInfo* info = GetProfileInfoByPath(profile->GetPath());
   if (!info) {
@@ -1537,8 +1538,8 @@ void ProfileManager::RemoveKeepAlive(const Profile* profile,
                                      ProfileKeepAliveOrigin origin) {
   DCHECK_NE(ProfileKeepAliveOrigin::kWaitingForFirstBrowserWindow, origin);
 
-  DCHECK(profile);
-  DCHECK(!profile->IsOffTheRecord());
+  CHECK(profile);
+  CHECK(!profile->IsOffTheRecord());
 
   ProfileInfo* info = GetProfileInfoByPath(profile->GetPath());
   if (!info) {
@@ -1563,8 +1564,8 @@ void ProfileManager::RemoveKeepAlive(const Profile* profile,
 }
 
 void ProfileManager::ClearFirstBrowserWindowKeepAlive(const Profile* profile) {
-  DCHECK(profile);
-  DCHECK(!profile->IsOffTheRecord());
+  CHECK(profile);
+  CHECK(!profile->IsOffTheRecord());
 
   ProfileInfo* info = GetProfileInfoByPath(profile->GetPath());
   DCHECK(info);
@@ -1696,6 +1697,8 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   // components and we can maintain said order.
   if (extensions_enabled) {
     ::chromeos::ContactCenterInsightsExtensionManager::GetForProfile(profile);
+
+    ::chromeos::DeskApiExtensionManager::GetForProfile(profile);
   }
 #endif
 

@@ -149,6 +149,19 @@ bool NeedsAppIdentityUpdateDialog(bool title_changing,
                                   bool icons_changing,
                                   const AppId& app_id,
                                   const WebAppRegistrar& registrar) {
+  // Shortcut apps can trigger the update check (https://crbug.com/1366600) on
+  // subsequent runs of the app, if the user changed the title of the app when
+  // creating the shortcut. But we should never run the App Identity dialog for
+  // shortcut apps. Also, ideally we should just use IsShortcutApp here instead
+  // of checking the install source, but as per https://crbug.com/1368592 there
+  // is a bug with that where it returns the wrong thing for Shortcut apps that
+  // specify `scope`.
+  if (registrar.IsShortcutApp(app_id) ||
+      registrar.GetAppInstallSourceForMetrics(app_id) ==
+          webapps::WebappInstallSource::MENU_CREATE_SHORTCUT) {
+    return false;
+  }
+
   if (title_changing && !AllowUnpromptedNameUpdate(app_id, registrar))
     return true;
   if (icons_changing && !AllowUnpromptedIconUpdate(app_id, registrar))
@@ -444,8 +457,12 @@ void ManifestUpdateTask::UpdateAfterWindowsClose() {
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   keep_alive_ = std::make_unique<ScopedKeepAlive>(
       KeepAliveOrigin::APP_MANIFEST_UPDATE, KeepAliveRestartOption::DISABLED);
-  profile_keep_alive_ = std::make_unique<ScopedProfileKeepAlive>(
-      profile, ProfileKeepAliveOrigin::kWebAppUpdate);
+  if (!profile->IsOffTheRecord()) {
+    // TODO(crbug.com/1369117): The DevTools Protocol's OTR profile can be
+    // destroyed at any time, which causes crashes...
+    profile_keep_alive_ = std::make_unique<ScopedProfileKeepAlive>(
+        profile, ProfileKeepAliveOrigin::kWebAppUpdate);
+  }
 
   Observe(nullptr);
 

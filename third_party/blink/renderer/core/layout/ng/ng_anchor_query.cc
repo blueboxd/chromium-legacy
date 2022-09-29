@@ -160,7 +160,12 @@ struct NGStitchedAnchorQueries {
                 .block_size;
         continue;
       }
-      // TODO(kojii): column-spanner not supported yet.
+
+      // The containing block of the spanner is the multicol container itself.
+      // https://drafts.csswg.org/css-multicol/#column-span
+      // So anchor queries in column spanners should not be added to any
+      // containing blocks in the multicol.
+      DCHECK(child->IsColumnSpanAll());
     }
   }
 
@@ -476,9 +481,7 @@ void NGLogicalAnchorQueryForFragmentation::Update(
 
   has_anchors_on_oofs_ = false;
   for (const NGLogicalOOFNodeForFragmentation& oof_node : oof_nodes) {
-    // TODO(crbug.com/1309178): Anchors on in-flow boxes inside of OOFs is not
-    // supported yet.
-    if (!oof_node.box->Style()->AnchorName().IsNull()) {
+    if (oof_node.box->MayHaveAnchorQuery()) {
       has_anchors_on_oofs_ = true;
       break;
     }

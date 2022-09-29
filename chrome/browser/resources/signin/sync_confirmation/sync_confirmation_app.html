@@ -252,6 +252,10 @@
     margin: auto;
   }
 
+  .signin-intercept-design .action-container {
+    --action-container-padding: 24px;
+    column-gap: 12px;
+  }
 
   @media (prefers-color-scheme: dark) {
     /* Modal dialog design */
@@ -313,9 +317,11 @@
     </h1>
     <div class="message-container">
       <div consent-description>$i18n{syncConfirmationSyncInfoTitle}</div>
-      <div class="secondary" consent-description>
-        $i18n{syncConfirmationSyncInfoDesc}
-      </div>
+      <template is="dom-if" if="[[!isSigninInterceptFre_]]">
+        <div class="secondary" consent-description>
+          $i18n{syncConfirmationSyncInfoDesc}
+        </div>
+      </template>
     </div>
     <template is="dom-if" if="[[!isSigninInterceptFre_]]">
       <div id="modal-footer" class="message-container secondary">

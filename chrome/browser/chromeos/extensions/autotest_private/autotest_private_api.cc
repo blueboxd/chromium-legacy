@@ -770,8 +770,6 @@ ash::AppListViewState ToAppListViewState(
       return ash::AppListViewState::kClosed;
     case api::autotest_private::LauncherStateType::LAUNCHER_STATE_TYPE_PEEKING:
       return ash::AppListViewState::kPeeking;
-    case api::autotest_private::LauncherStateType::LAUNCHER_STATE_TYPE_HALF:
-      return ash::AppListViewState::kHalf;
     case api::autotest_private::LauncherStateType::
         LAUNCHER_STATE_TYPE_FULLSCREENALLAPPS:
       return ash::AppListViewState::kFullscreenAllApps;
@@ -842,10 +840,7 @@ bool IsFrameVisible(views::Widget* widget) {
 }
 
 void ConvertPointToHost(aura::Window* root_window, gfx::PointF* location) {
-  gfx::Point3F transformed_location_in_root(*location);
-  root_window->GetHost()->GetRootTransform().TransformPoint(
-      &transformed_location_in_root);
-  *location = transformed_location_in_root.AsPointF();
+  root_window->GetHost()->GetRootTransform().TransformPoint(location);
 }
 
 int GetMouseEventFlags(api::autotest_private::MouseButton button) {
@@ -3327,8 +3322,7 @@ class AssistantInteractionHelper
   void SendTextQuery(const std::string& query, bool allow_tts) {
     // Start text interaction with Assistant server.
     GetAssistant()->StartTextInteraction(
-        query, chromeos::assistant::AssistantQuerySource::kUnspecified,
-        allow_tts);
+        query, ash::assistant::AssistantQuerySource::kUnspecified, allow_tts);
 
     query_status_.Set("queryText", query);
   }
@@ -3342,16 +3336,16 @@ class AssistantInteractionHelper
 
  private:
   // chromeos::assistant::AssistantInteractionSubscriber:
-  using AssistantSuggestion = chromeos::assistant::AssistantSuggestion;
+  using AssistantSuggestion = ash::assistant::AssistantSuggestion;
   using AssistantInteractionMetadata =
-      chromeos::assistant::AssistantInteractionMetadata;
+      ash::assistant::AssistantInteractionMetadata;
   using AssistantInteractionResolution =
       chromeos::assistant::AssistantInteractionResolution;
 
   void OnInteractionStarted(
       const AssistantInteractionMetadata& metadata) override {
     const bool is_voice_interaction =
-        chromeos::assistant::AssistantInteractionType::kVoice == metadata.type;
+        ash::assistant::AssistantInteractionType::kVoice == metadata.type;
     query_status_.Set("isMicOpen", is_voice_interaction);
     interaction_in_progress_ = true;
   }
@@ -3397,7 +3391,7 @@ class AssistantInteractionHelper
   }
 
   void OnOpenAppResponse(
-      const chromeos::assistant::AndroidAppInfo& app_info) override {
+      const ash::assistant::AndroidAppInfo& app_info) override {
     result_.Set("openAppResponse", app_info.package_name);
     CheckResponseIsValid(__FUNCTION__);
   }

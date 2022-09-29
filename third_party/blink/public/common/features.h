@@ -270,8 +270,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDispatchBeforeUnloadOnFreeze);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLowLatencyCanvas2dImageChromium);
 
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDawn2dCanvas);
-
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebviewAccelerateSmallCanvases);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCanvas2dStaysGPUOnReadback);
@@ -574,11 +572,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrefetchAndroidFonts);
 // back/forward cache.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kBackForwardCacheAppBanner);
 
-// Enables back/forward cache for non-plugin embeds.
-// TODO(crbug.com/1325192): Remove once the bug is resolved.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
-    kBackForwardCacheEnabledForNonPluginEmbed);
-
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDefaultStyleSheetsEarlyInit);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSystemColorChooser);
@@ -691,6 +684,17 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
 // scripts.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kLowPriorityAsyncScriptExecutionMainFrameOnlyParam;
+
+// If enabled, async scripts will be loaded with a lower fetch priority.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLowPriorityScriptLoading);
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kLowPriorityScriptLoadingCrossSiteOnlyParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kLowPriorityScriptLoadingFeatureLimitParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
+    kLowPriorityScriptLoadingDenyListParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kLowPriorityScriptLoadingMainFrameOnlyParam;
 
 // If enabled, DOMContentLoaded will be fired after all async scripts are
 // executed.

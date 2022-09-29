@@ -73,7 +73,7 @@ std::string GetCommandLineFeatureFlagChoice(
     return "";
   }
 
-  for (const auto& flag : flags_list.value().GetListDeprecated()) {
+  for (const auto& flag : flags_list.value().GetList()) {
     if (!flag.is_string())
       continue;
     std::string flag_string = flag.GetString();
@@ -149,7 +149,7 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
   // We do this before seccomp-bpf is initialized.
   PCHECK(signal(SIGPIPE, SIG_IGN) != SIG_ERR);
 
-  base::FieldTrialList field_trial_list(nullptr);
+  base::FieldTrialList field_trial_list;
   base::FieldTrialList::CreateTrialsFromCommandLine(command_line,
                                                     kFieldTrialDescriptor);
   auto feature_list = std::make_unique<base::FeatureList>();

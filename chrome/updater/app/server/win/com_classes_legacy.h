@@ -12,14 +12,19 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/path_service.h"
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
+#include "base/win/win_util.h"
 #include "chrome/updater/app/server/win/updater_legacy_idl.h"
 #include "chrome/updater/policy/service.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
+#include "chrome/updater/util.h"
 #include "chrome/updater/win/app_command_runner.h"
+#include "chrome/updater/win/setup/setup_util.h"
 #include "chrome/updater/win/win_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -31,6 +36,107 @@ class SequencedTaskRunner;
 // with Google Update.
 
 namespace updater {
+
+// Implements `IDispatch` for interface `T`, where `T` is a dual interface. The
+// IDispatch implementation relies on the typelib/typeinfo for interface `T`.
+//
+// Usage: derive your COM class that implements interface `T` from
+// `IDispatchImpl<T>`.
+template <typename T>
+class IDispatchImpl
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          T,
+          IDispatch> {
+ public:
+  IDispatchImpl() : hr_load_typelib_(InitializeTypeInfo()) {}
+  IDispatchImpl(const IDispatchImpl&) = delete;
+  IDispatchImpl& operator=(const IDispatchImpl&) = delete;
+  ~IDispatchImpl() override = default;
+
+  // Overrides for IDispatch.
+  IFACEMETHODIMP GetTypeInfoCount(UINT* type_info_count) override {
+    if (FAILED(hr_load_typelib_))
+      return hr_load_typelib_;
+
+    *type_info_count = 1;
+    return S_OK;
+  }
+
+  IFACEMETHODIMP GetTypeInfo(UINT type_info_index,
+                             LCID locale_id,
+                             ITypeInfo** type_info) override {
+    if (FAILED(hr_load_typelib_))
+      return hr_load_typelib_;
+
+    return type_info_index == 0 ? type_info_.CopyTo(type_info) : E_INVALIDARG;
+  }
+
+  IFACEMETHODIMP GetIDsOfNames(REFIID iid,
+                               LPOLESTR* names_to_be_mapped,
+                               UINT count_of_names_to_be_mapped,
+                               LCID locale_id,
+                               DISPID* dispatch_ids) override {
+    if (FAILED(hr_load_typelib_))
+      return hr_load_typelib_;
+
+    return type_info_->GetIDsOfNames(names_to_be_mapped,
+                                     count_of_names_to_be_mapped, dispatch_ids);
+  }
+
+  IFACEMETHODIMP Invoke(DISPID dispatch_id,
+                        REFIID iid,
+                        LCID locale_id,
+                        WORD flags,
+                        DISPPARAMS* dispatch_parameters,
+                        VARIANT* result,
+                        EXCEPINFO* exception_info,
+                        UINT* arg_error_index) override {
+    if (FAILED(hr_load_typelib_))
+      return hr_load_typelib_;
+
+    HRESULT hr = type_info_->Invoke(Microsoft::WRL::ComPtr<T>(this).Get(),
+                                    dispatch_id, flags, dispatch_parameters,
+                                    result, exception_info, arg_error_index);
+
+    LOG_IF(ERROR, FAILED(hr)) << __func__ << " type_info_->Invoke failed, "
+                              << dispatch_id << ", " << std::hex << hr;
+    return hr;
+  }
+
+  // Loads the typelib and typeinfo for interface `T`.
+  HRESULT InitializeTypeInfo() {
+    base::FilePath typelib_path;
+    if (!base::PathService::Get(base::DIR_EXE, &typelib_path))
+      return E_UNEXPECTED;
+
+    typelib_path = typelib_path.Append(GetExecutableRelativePath())
+                       .Append(GetComTypeLibResourceIndex(__uuidof(T)));
+
+    Microsoft::WRL::ComPtr<ITypeLib> type_lib;
+    if (HRESULT hr = ::LoadTypeLib(typelib_path.value().c_str(), &type_lib);
+        FAILED(hr)) {
+      LOG(ERROR) << __func__ << " ::LoadTypeLib failed, " << typelib_path
+                 << ", " << std::hex << hr
+                 << ", IID: " << base::win::WStringFromGUID(__uuidof(T));
+      return hr;
+    }
+
+    if (HRESULT hr = type_lib->GetTypeInfoOfGuid(__uuidof(T), &type_info_);
+        FAILED(hr)) {
+      LOG(ERROR) << __func__ << " ::GetTypeInfoOfGuid failed"
+                 << ", " << std::hex << hr
+                 << ", IID: " << base::win::WStringFromGUID(__uuidof(T));
+      return hr;
+    }
+
+    return S_OK;
+  }
+
+ private:
+  Microsoft::WRL::ComPtr<ITypeInfo> type_info_;
+  const HRESULT hr_load_typelib_;
+};
 
 // TODO(crbug.com/1065712): these classes do not have to be visible in the
 // updater namespace. Additionally, there is some code duplication for the
@@ -45,7 +151,6 @@ class LegacyOnDemandImpl
           IGoogleUpdate3Web,
           IAppBundleWeb,
           IAppWeb,
-          ICurrentState,
           IDispatch> {
  public:
   LegacyOnDemandImpl();
@@ -87,31 +192,6 @@ class LegacyOnDemandImpl
   IFACEMETHODIMP uninstall() override;
   IFACEMETHODIMP get_serverInstallDataIndex(BSTR* language) override;
   IFACEMETHODIMP put_serverInstallDataIndex(BSTR language) override;
-
-  // Overrides for ICurrentState.
-  IFACEMETHODIMP get_stateValue(LONG* state_value) override;
-  IFACEMETHODIMP get_availableVersion(BSTR* available_version) override;
-  IFACEMETHODIMP get_bytesDownloaded(ULONG* bytes_downloaded) override;
-  IFACEMETHODIMP get_totalBytesToDownload(
-      ULONG* total_bytes_to_download) override;
-  IFACEMETHODIMP get_downloadTimeRemainingMs(
-      LONG* download_time_remaining_ms) override;
-  IFACEMETHODIMP get_nextRetryTime(ULONGLONG* next_retry_time) override;
-  IFACEMETHODIMP get_installProgress(
-      LONG* install_progress_percentage) override;
-  IFACEMETHODIMP get_installTimeRemainingMs(
-      LONG* install_time_remaining_ms) override;
-  IFACEMETHODIMP get_isCanceled(VARIANT_BOOL* is_canceled) override;
-  IFACEMETHODIMP get_errorCode(LONG* error_code) override;
-  IFACEMETHODIMP get_extraCode1(LONG* extra_code1) override;
-  IFACEMETHODIMP get_completionMessage(BSTR* completion_message) override;
-  IFACEMETHODIMP get_installerResultCode(LONG* installer_result_code) override;
-  IFACEMETHODIMP get_installerResultExtraCode1(
-      LONG* installer_result_extra_code1) override;
-  IFACEMETHODIMP get_postInstallLaunchCommandLine(
-      BSTR* post_install_launch_command_line) override;
-  IFACEMETHODIMP get_postInstallUrl(BSTR* post_install_url) override;
-  IFACEMETHODIMP get_postInstallAction(LONG* post_install_action) override;
 
   // Overrides for IDispatch.
   IFACEMETHODIMP GetTypeInfoCount(UINT*) override;
@@ -217,11 +297,7 @@ class LegacyProcessLauncherImpl
 //
 // Placeholders may be embedded within words, and appropriate quoting of
 // back-slash, double-quotes, space, and tab is applied if necessary.
-class LegacyAppCommandWebImpl
-    : public Microsoft::WRL::RuntimeClass<
-          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-          IAppCommandWeb,
-          IDispatch> {
+class LegacyAppCommandWebImpl : public IDispatchImpl<IAppCommandWeb> {
  public:
   LegacyAppCommandWebImpl();
   LegacyAppCommandWebImpl(const LegacyAppCommandWebImpl&) = delete;
@@ -258,33 +334,11 @@ class LegacyAppCommandWebImpl
                          VARIANT substitution8,
                          VARIANT substitution9) override;
 
-  // Overrides for IDispatch.
-  IFACEMETHODIMP GetTypeInfoCount(UINT* type_info_count) override;
-  IFACEMETHODIMP GetTypeInfo(UINT type_info_index,
-                             LCID locale_id,
-                             ITypeInfo** type_info) override;
-  IFACEMETHODIMP GetIDsOfNames(REFIID iid,
-                               LPOLESTR* names_to_be_mapped,
-                               UINT count_of_names_to_be_mapped,
-                               LCID locale_id,
-                               DISPID* dispatch_ids) override;
-  IFACEMETHODIMP Invoke(DISPID dispatch_id,
-                        REFIID iid,
-                        LCID locale_id,
-                        WORD flags,
-                        DISPPARAMS* dispatch_parameters,
-                        VARIANT* result,
-                        EXCEPINFO* exception_info,
-                        UINT* arg_error_index) override;
-
  private:
   ~LegacyAppCommandWebImpl() override;
 
-  HRESULT InitializeTypeInfo();
-
   base::Process process_;
   AppCommandRunner app_command_runner_;
-  Microsoft::WRL::ComPtr<ITypeInfo> type_info_;
 
   friend class LegacyAppCommandWebImplTest;
 };

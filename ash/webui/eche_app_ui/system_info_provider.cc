@@ -26,6 +26,8 @@ const char kJsonDebugModeKey[] = "debug_mode";
 const char kJsonGaiaIdKey[] = "gaia_id";
 const char kJsonDeviceTypeKey[] = "device_type";
 const char kJsonMeasureLatencyKey[] = "measure_latency";
+const char kJsonSendStartSignalingKey[] = "send_start_signaling";
+const char kJsonDisableStunServerKey[] = "disable_stun_server";
 
 using chromeos::network_config::mojom::ConnectionStateType;
 // TODO(https://crbug.com/1164001): remove when it moved to ash.
@@ -87,6 +89,14 @@ void SystemInfoProvider::GetSystemInfo(
   json_dictionary.SetBoolKey(
       kJsonMeasureLatencyKey,
       base::FeatureList::IsEnabled(features::kEcheSWAMeasureLatency));
+
+  json_dictionary.SetBoolKey(
+      kJsonSendStartSignalingKey,
+      base::FeatureList::IsEnabled(features::kEcheSWASendStartSignaling));
+
+  json_dictionary.SetBoolKey(
+      kJsonDisableStunServerKey,
+      base::FeatureList::IsEnabled(features::kEcheSWADisableStunServer));
 
   std::string json_message;
   base::JSONWriter::Write(json_dictionary, &json_message);

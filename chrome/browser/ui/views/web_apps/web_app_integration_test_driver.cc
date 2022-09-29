@@ -167,6 +167,8 @@ Site InstallableSiteToSite(InstallableSite site) {
       return Site::kStandaloneNestedA;
     case InstallableSite::kStandaloneNestedB:
       return Site::kStandaloneNestedB;
+    case InstallableSite::kStandaloneNotStartUrl:
+      return Site::kStandaloneNotStartUrl;
     case InstallableSite::kWco:
       return Site::kWco;
     case InstallableSite::kIsolated:
@@ -207,7 +209,7 @@ void FlushShortcutTasks() {
 }
 
 struct SiteConfig {
-  std::string relative_start_url;
+  std::string relative_url;
   std::string relative_manifest_id;
   std::string app_name;
   std::u16string wco_not_enabled_title;
@@ -217,7 +219,7 @@ struct SiteConfig {
 
 base::flat_map<Site, SiteConfig> g_site_configs = {
     {Site::kStandalone,
-     {.relative_start_url = "/webapps_integration/standalone/basic.html",
+     {.relative_url = "/webapps_integration/standalone/basic.html",
       .relative_manifest_id = "webapps_integration/standalone/basic.html",
       .app_name = "Site A",
       // WCO disabled is the defaulting state so the title when disabled should
@@ -226,31 +228,31 @@ base::flat_map<Site, SiteConfig> g_site_configs = {
       .icon_color = SK_ColorGREEN,
       .alternate_titles = {"Site A - Updated name"}}},
     {Site::kMinimalUi,
-     {.relative_start_url = "/webapps_integration/minimal_ui/basic.html",
+     {.relative_url = "/webapps_integration/minimal_ui/basic.html",
       .relative_manifest_id = "webapps_integration/minimal_ui/basic.html",
       .app_name = "Site B",
       .wco_not_enabled_title = u"Site B",
       .icon_color = SK_ColorBLACK}},
     {Site::kNotPromotable,
-     {.relative_start_url = "/webapps_integration/not_promotable/basic.html",
+     {.relative_url = "/webapps_integration/not_promotable/basic.html",
       .relative_manifest_id = "webapps_integration/not_promotable/basic.html",
       .app_name = "Site C",
       .wco_not_enabled_title = u"Site C",
       .icon_color = SK_ColorTRANSPARENT}},
     {Site::kWco,
-     {.relative_start_url = "/webapps_integration/wco/basic.html",
+     {.relative_url = "/webapps_integration/wco/basic.html",
       .relative_manifest_id = "webapps_integration/wco/basic.html",
       .app_name = "Site WCO",
       .wco_not_enabled_title = u"Site WCO",
       .icon_color = SK_ColorGREEN}},
     {Site::kStandaloneNestedA,
-     {.relative_start_url = "/webapps_integration/standalone/foo/basic.html",
+     {.relative_url = "/webapps_integration/standalone/foo/basic.html",
       .relative_manifest_id = "webapps_integration/standalone/foo/basic.html",
       .app_name = "Site A Foo",
       .wco_not_enabled_title = u"Site A Foo",
       .icon_color = SK_ColorGREEN}},
     {Site::kStandaloneNestedB,
-     {.relative_start_url = "/webapps_integration/standalone/bar/basic.html",
+     {.relative_url = "/webapps_integration/standalone/bar/basic.html",
       .relative_manifest_id = "webapps_integration/standalone/bar/basic.html",
       .app_name = "Site A Bar",
       .wco_not_enabled_title = u"Site A Bar",
@@ -259,32 +261,39 @@ base::flat_map<Site, SiteConfig> g_site_configs = {
      {// This file actually lives in /webapps_integration/isolated_app/. We
       // serve this directory as root in a special test server to allow the
       // isolated app to live at the root scope.
-      .relative_start_url = "/basic.html",
+      .relative_url = "/basic.html",
       // same note for this file
       .relative_manifest_id = "basic.html",
       .app_name = "Isolated App",
       .wco_not_enabled_title = u"Isolated App",
       .icon_color = SK_ColorGREEN}},
     {Site::kFileHandler,
-     {.relative_start_url = "/webapps_integration/file_handler/basic.html",
+     {.relative_url = "/webapps_integration/file_handler/basic.html",
       .relative_manifest_id = "webapps_integration/file_handler/basic.html",
       .app_name = "File Handler",
       .wco_not_enabled_title = u"File Handler",
       .icon_color = SK_ColorBLACK}},
     {Site::kNoServiceWorker,
-     {.relative_start_url =
-          "/webapps_integration/site_no_service_worker/basic.html",
+     {.relative_url = "/webapps_integration/site_no_service_worker/basic.html",
       .relative_manifest_id =
           "webapps_integration/site_no_service_worker/basic.html",
       .app_name = "Site NoServiceWorker",
       .wco_not_enabled_title = u"Site NoServiceWorker",
       .icon_color = SK_ColorGREEN}},
     {Site::kNotInstalled,
-     {.relative_start_url = "/webapps_integration/not_installed/basic.html",
+     {.relative_url = "/webapps_integration/not_installed/basic.html",
       .relative_manifest_id = "webapps_integration/not_installed/basic.html",
       .app_name = "Not Installed",
       .wco_not_enabled_title = u"Not Installed",
       .icon_color = SK_ColorBLUE}},
+    {Site::kStandaloneNotStartUrl,
+     {.relative_url =
+          "/webapps_integration/standalone/not_start_url/basic.html",
+      .relative_manifest_id =
+          "webapps_integration/standalone/not_start_url/basic.html",
+      .app_name = "Not Start URL",
+      .wco_not_enabled_title = u"Not Start URL",
+      .icon_color = SK_ColorGREEN}},
 };
 
 struct DisplayConfig {
@@ -1077,7 +1086,7 @@ void WebAppIntegrationTestDriver::ApplyRunOnOsLoginPolicyRunWindowed(
 void WebAppIntegrationTestDriver::RemoveRunOnOsLoginPolicy(Site site) {
   if (!BeforeStateChangeAction(__FUNCTION__))
     return;
-  GURL url = GetAppStartURL(site);
+  GURL url = GetUrlForSite(site);
   {
     ScopedListPrefUpdate update_list(profile()->GetPrefs(),
                                      prefs::kWebAppSettings);
@@ -1490,7 +1499,7 @@ void WebAppIntegrationTestDriver::NavigatePwa(Site pwa, Site to) {
   if (!BeforeStateChangeAction(__FUNCTION__))
     return;
   app_browser_ = GetAppBrowserForSite(pwa);
-  NavigateToURLAndWait(app_browser(), GetAppStartURL(to), false);
+  NavigateToURLAndWait(app_browser(), GetUrlForSite(to), false);
   AfterStateChangeAction();
 }
 
@@ -1519,10 +1528,11 @@ void WebAppIntegrationTestDriver::ManifestUpdateIcon(Site site) {
   // which, on ChromeOS, is not written to the shortcut because it is not within
   // the intersection between `kDesiredIconSizesForShortcut` (which is platform-
   // dependent) and `SizesToGenerate()` (which is fixed on all platforms).
-  auto start_url_path = GetSiteConfiguration(site).relative_start_url;
-  GURL url = GetTestServerForSiteMode(site).GetURL(base::StrCat(
-      {start_url_path, base::StringPrintf("?manifest=manifest_icon_red_%u.json",
-                                          kLauncherIconSize)}));
+  auto relative_url_path = GetSiteConfiguration(site).relative_url;
+  GURL url = GetTestServerForSiteMode(site).GetURL(
+      base::StrCat({relative_url_path,
+                    base::StringPrintf("?manifest=manifest_icon_red_%u.json",
+                                       kLauncherIconSize)}));
 
   ForceUpdateManifestContents(site, url);
   AfterStateChangeAction();
@@ -1541,9 +1551,9 @@ void WebAppIntegrationTestDriver::ManifestUpdateTitle(Site site, Title title) {
           views::test::AnyWidgetTestPasskey{},
           "WebAppIdentityUpdateConfirmationView");
 
-  auto start_url_path = GetSiteConfiguration(site).relative_start_url;
+  auto relative_url_path = GetSiteConfiguration(site).relative_url;
   GURL url = GetTestServerForSiteMode(site).GetURL(
-      base::StrCat({start_url_path, "?manifest=manifest_title.json"}));
+      base::StrCat({relative_url_path, "?manifest=manifest_title.json"}));
   ForceUpdateManifestContents(site, url);
   AfterStateChangeAction();
 }
@@ -1553,11 +1563,11 @@ void WebAppIntegrationTestDriver::ManifestUpdateDisplay(Site site,
   if (!BeforeStateChangeAction(__FUNCTION__))
     return;
 
-  std::string start_url_path = GetSiteConfiguration(site).relative_start_url;
+  std::string relative_url_path = GetSiteConfiguration(site).relative_url;
   std::string manifest_url_param =
       GetDisplayUpdateConfiguration(display).manifest_url_param;
   GURL url = GetTestServerForSiteMode(site).GetURL(
-      base::StrCat({start_url_path, manifest_url_param}));
+      base::StrCat({relative_url_path, manifest_url_param}));
 
   ForceUpdateManifestContents(site, url);
   AfterStateChangeAction();
@@ -1569,9 +1579,10 @@ void WebAppIntegrationTestDriver::ManifestUpdateScopeTo(Site app, Site scope) {
   // The `scope_mode` would be changing the scope set in the manifest file. For
   // simplicity, right now only Standalone is supported, so that is just
   // hardcoded in manifest_scope_Standalone.json, which is specified in the URL.
-  auto start_url_path = GetSiteConfiguration(app).relative_start_url;
-  GURL url = GetTestServerForSiteMode(app).GetURL(base::StrCat(
-      {start_url_path, GetScopeUpdateConfiguration(scope).manifest_url_param}));
+  auto relative_url_path = GetSiteConfiguration(app).relative_url;
+  GURL url = GetTestServerForSiteMode(app).GetURL(
+      base::StrCat({relative_url_path,
+                    GetScopeUpdateConfiguration(scope).manifest_url_param}));
   ForceUpdateManifestContents(app, url);
   AfterStateChangeAction();
 }
@@ -1796,7 +1807,7 @@ void WebAppIntegrationTestDriver::UninstallFromMenu(Site site) {
 void WebAppIntegrationTestDriver::UninstallPolicyApp(Site site) {
   if (!BeforeStateChangeAction(__FUNCTION__))
     return;
-  GURL url = GetAppStartURL(site);
+  GURL url = GetUrlForSite(site);
   auto policy_app = GetAppBySiteMode(before_state_change_action_state_.get(),
                                      profile(), site);
   DCHECK(policy_app);
@@ -1900,8 +1911,8 @@ void WebAppIntegrationTestDriver::CheckAppInListIconCorrect(Site site) {
   SkColor expected_color = GetSiteConfiguration(site).icon_color;
   // Compare the center pixel color instead of top left corner
   // The app list icon has a filter that changes the color at the corner.
-  EXPECT_TRUE(expected_color ==
-              icon_bitmap.getColor(icon_size::k128 / 2, icon_size::k128 / 2));
+  EXPECT_EQ(expected_color,
+            icon_bitmap.getColor(icon_size::k128 / 2, icon_size::k128 / 2));
   chrome::CloseTab(browser());
   AfterStateCheckAction();
 }
@@ -1936,6 +1947,16 @@ void WebAppIntegrationTestDriver::CheckAppInListWindowed(Site site) {
       GetAppBySiteMode(after_state_change_action_state_.get(), profile(), site);
   ASSERT_TRUE(app_state.has_value());
   EXPECT_EQ(app_state->user_display_mode, UserDisplayMode::kStandalone);
+  AfterStateCheckAction();
+}
+
+void WebAppIntegrationTestDriver::CheckAppNavigation(Site site) {
+  if (!BeforeStateCheckAction(__FUNCTION__))
+    return;
+  ASSERT_TRUE(app_browser());
+  GURL url =
+      app_browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL();
+  EXPECT_EQ(GetUrlForSite(site), url);
   AfterStateCheckAction();
 }
 
@@ -2562,16 +2583,16 @@ void WebAppIntegrationTestDriver::AfterStateCheckAction() {
 AppId WebAppIntegrationTestDriver::GetAppIdBySiteMode(Site site) {
   auto site_config = GetSiteConfiguration(site);
   std::string manifest_id = site_config.relative_manifest_id;
-  auto relative_start_url = site_config.relative_start_url;
-  GURL start_url = GetTestServerForSiteMode(site).GetURL(relative_start_url);
+  auto relative_url = site_config.relative_url;
+  GURL start_url = GetTestServerForSiteMode(site).GetURL(relative_url);
   DCHECK(start_url.is_valid());
 
   return GenerateAppId(manifest_id, start_url);
 }
 
-GURL WebAppIntegrationTestDriver::GetAppStartURL(Site site) {
-  auto start_url_path = GetSiteConfiguration(site).relative_start_url;
-  return GetTestServerForSiteMode(site).GetURL(start_url_path);
+GURL WebAppIntegrationTestDriver::GetUrlForSite(Site site) {
+  auto relative_url_path = GetSiteConfiguration(site).relative_url;
+  return GetTestServerForSiteMode(site).GetURL(relative_url_path);
 }
 
 absl::optional<AppState> WebAppIntegrationTestDriver::GetAppBySiteMode(
@@ -2680,7 +2701,7 @@ content::WebContents* WebAppIntegrationTestDriver::GetCurrentTab(
 }
 
 GURL WebAppIntegrationTestDriver::GetInScopeURL(Site site) {
-  return GetAppStartURL(site);
+  return GetUrlForSite(site);
 }
 
 base::FilePath WebAppIntegrationTestDriver::GetShortcutPath(
@@ -2731,7 +2752,7 @@ void WebAppIntegrationTestDriver::InstallPolicyAppInternal(
     base::Value default_launch_container,
     const bool create_shortcut,
     const bool install_as_shortcut) {
-  GURL url = GetAppStartURL(site);
+  GURL url = GetUrlForSite(site);
   WebAppTestInstallWithOsHooksObserver observer(profile());
   observer.BeginListening();
   {
@@ -2750,7 +2771,7 @@ void WebAppIntegrationTestDriver::InstallPolicyAppInternal(
 
 void WebAppIntegrationTestDriver::ApplyRunOnOsLoginPolicy(Site site,
                                                           const char* policy) {
-  GURL url = GetAppStartURL(site);
+  GURL url = GetUrlForSite(site);
   {
     ScopedListPrefUpdate update(profile()->GetPrefs(), prefs::kWebAppSettings);
     base::Value::List& update_list = update.Get();
@@ -2784,13 +2805,25 @@ void WebAppIntegrationTestDriver::UninstallPolicyAppById(const AppId& id) {
         if (id == app_id)
           run_loop.Quit();
       }));
-  std::string url_spec = provider()->registrar().GetAppStartUrl(id).spec();
+
+  const WebApp* web_app = provider()->registrar().GetAppById(id);
+
+  base::flat_set<GURL> install_urls;
+  {
+    auto policy_config_it = web_app->management_to_external_config_map().find(
+        WebAppManagement::kPolicy);
+    ASSERT_NE(policy_config_it,
+              web_app->management_to_external_config_map().end());
+    ASSERT_FALSE(policy_config_it->second.install_urls.empty());
+    install_urls = policy_config_it->second.install_urls;
+  }
+
   {
     ScopedListPrefUpdate update(profile()->GetPrefs(),
                                 prefs::kWebAppInstallForceList);
     size_t removed_count = update->EraseIf([&](const base::Value& item) {
       const base::Value* url_value = item.GetDict().Find(kUrlKey);
-      return url_value && url_value->GetString() == url_spec;
+      return url_value && install_urls.contains(GURL(url_value->GetString()));
     });
     ASSERT_GT(removed_count, 0U);
   }
@@ -2933,9 +2966,7 @@ bool WebAppIntegrationTestDriver::IsFileHandledBySite(
     const std::vector<std::wstring> supported_file_extensions =
         GetFileExtensionsForProgId(file_handler_prog_id);
     std::wstring extension = converter.from_bytes("." + file_extension);
-    if (std::find(supported_file_extensions.begin(),
-                  supported_file_extensions.end(),
-                  extension) != supported_file_extensions.end()) {
+    if (base::Contains(supported_file_extensions, extension)) {
       const std::wstring reg_key = std::wstring(ShellUtil::kRegClasses) +
                                    base::FilePath::kSeparators[0] + extension +
                                    base::FilePath::kSeparators[0] +

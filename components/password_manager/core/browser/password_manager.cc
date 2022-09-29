@@ -294,6 +294,8 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kUPMErrorUIShownTimestamp, "0");
   registry->RegisterIntegerPref(prefs::kTimesReenrolledToGoogleMobileServices,
                                 0);
+  registry->RegisterIntegerPref(
+      prefs::kTimesAttemptedToReenrollToGoogleMobileServices, 0);
 #endif
   // Preferences for |PasswordChangeSuccessTracker|.
   registry->RegisterIntegerPref(prefs::kPasswordChangeSuccessTrackerVersion, 0);
@@ -610,6 +612,22 @@ void PasswordManager::OnInformAboutUserInput(PasswordManagerDriver* driver,
 
 void PasswordManager::HideManualFallbackForSaving() {
   client_->HideManualFallbackForSaving();
+}
+
+bool PasswordManager::HaveFormManagersReceivedData(
+    const PasswordManagerDriver* driver) {
+  // If no form managers exist to have requested logins, no data was received
+  // either.
+  if (form_managers_.empty())
+    return false;
+  for (const auto& form_manager : form_managers_) {
+    if (form_manager->GetDriver().get() == driver &&
+        form_manager->GetFormFetcher()->GetState() ==
+            FormFetcher::State::WAITING) {
+      return false;
+    }
+  }
+  return true;
 }
 
 void PasswordManager::OnPasswordFormsParsed(

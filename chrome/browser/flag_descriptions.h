@@ -773,12 +773,6 @@ extern const char
 extern const char kEnableRestrictedWebApisName[];
 extern const char kEnableRestrictedWebApisDescription[];
 
-extern const char kEnableUseZoomForDsfName[];
-extern const char kEnableUseZoomForDsfDescription[];
-extern const char kEnableUseZoomForDsfChoiceDefault[];
-extern const char kEnableUseZoomForDsfChoiceEnabled[];
-extern const char kEnableUseZoomForDsfChoiceDisabled[];
-
 extern const char kEnableWebAuthenticationChromeOSAuthenticatorName[];
 extern const char kEnableWebAuthenticationChromeOSAuthenticatorDescription[];
 
@@ -1535,6 +1529,9 @@ extern const char kSubframeShutdownDelayDescription[];
 
 extern const char kSupportTool[];
 extern const char kSupportToolDescription[];
+
+extern const char kSupportToolScreenshot[];
+extern const char kSupportToolScreenshotDescription[];
 
 extern const char kSuppressToolbarCapturesName[];
 extern const char kSuppressToolbarCapturesDescription[];
@@ -3076,6 +3073,12 @@ extern const char kEcheSWADebugModeDescription[];
 extern const char kEcheSWAMeasureLatencyName[];
 extern const char kEcheSWAMeasureLatencyDescription[];
 
+extern const char kEcheSWASendStartSignalingName[];
+extern const char kEcheSWASendStartSignalingDescription[];
+
+extern const char kEcheSWADisableStunServerName[];
+extern const char kEcheSWADisableStunServerDescription[];
+
 extern const char kEnableIkev2VpnName[];
 extern const char kEnableIkev2VpnDescription[];
 
@@ -3345,6 +3348,9 @@ extern const char kPhoneHubCameraRollDescription[];
 
 extern const char kPhoneHubFeatureSetupErrorHandlingName[];
 extern const char kPhoneHubFeatureSetupErrorHandlingDescription[];
+
+extern const char kPreferDcheckName[];
+extern const char kPreferDcheckDescription[];
 
 extern const char kProductivityLauncherName[];
 extern const char kProductivityLauncherDescription[];
@@ -3634,6 +3640,9 @@ extern const char kLinkCapturingUiUpdateDescription[];
 
 extern const char kMessagesPreinstallName[];
 extern const char kMessagesPreinstallDescription[];
+
+extern const char kMicrosoftOfficeWebAppExperimentName[];
+extern const char kMicrosoftOfficeWebAppExperimentDescription[];
 
 extern const char kOneGroupPerRendererName[];
 extern const char kOneGroupPerRendererDescription[];

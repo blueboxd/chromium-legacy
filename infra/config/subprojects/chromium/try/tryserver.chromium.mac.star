@@ -85,6 +85,9 @@ try_.builder(
 
 try_.builder(
     name = "mac-perfetto-rel",
+    mirrors = [
+        "ci/mac-perfetto-rel",
+    ],
 )
 
 try_.orchestrator_builder(
@@ -431,7 +434,6 @@ ios_builder(
     tryjob = try_.job(
         location_regexp = [
             ".+/[+]/ios/.+",
-            ".+/[+]/testing/variations/fieldtrial_testing_config.json",
         ],
     ),
     experiments = {

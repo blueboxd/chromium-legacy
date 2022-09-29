@@ -125,10 +125,10 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
-#include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/ip_address_space_util.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -1427,7 +1427,9 @@ NavigationRequest::CreateForSynchronousRendererCommit(
       false /* was_opener_suppressed */, false /* is_pdf */));
 
   absl::optional<base::UnguessableToken> nonce =
-      render_frame_host->ComputeNonce(navigation_request->is_anonymous());
+      render_frame_host->ComputeNonce(
+          navigation_request->is_anonymous(),
+          navigation_request->ComputeFencedFrameNonce());
   url::Origin top_level_origin =
       render_frame_host->ComputeTopFrameOrigin(origin);
   navigation_request->commit_params_->storage_key =
@@ -1534,7 +1536,12 @@ NavigationRequest::NavigationRequest(
           is_embedder_initiated_fenced_frame_navigation
               ? is_embedder_initiated_fenced_frame_opaque_url_navigation_
               : frame_tree_node->current_frame_host()
-                    ->is_fenced_frame_root_originating_from_opaque_url()) {
+                    ->is_fenced_frame_root_originating_from_opaque_url()),
+      fenced_frame_properties_(
+          is_embedder_initiated_fenced_frame_navigation
+              ? absl::make_optional(
+                    FencedFrameURLMapping::FencedFrameProperties())
+              : absl::nullopt) {
   DCHECK(!blink::IsRendererDebugURL(common_params_->url));
   DCHECK(common_params_->method == "POST" || !common_params_->post_data);
   DCHECK_EQ(common_params_->url, commit_params_->original_url);
@@ -2159,6 +2166,12 @@ void NavigationRequest::OnFencedFrameURLMappingComplete(
           properties->reporting_metadata.Clone();
     }
     fenced_frame_properties_ = properties;
+    // For urns loaded into iframes for FLEDGE OT, we don't want to use a
+    // fenced frame nonce for compatibility.
+    if (!frame_tree_node_->IsFencedFrameRoot()) {
+      CHECK(blink::features::IsAllowURNsInIframeEnabled());
+      fenced_frame_properties_->partition_nonce = absl::nullopt;
+    }
   } else {
     if (frame_tree_node_->IsFencedFrameRoot() &&
         frame_tree_node_->frame_tree()->IsFencedFramesMPArchBased()) {
@@ -2760,7 +2773,8 @@ void NavigationRequest::OnRequestRedirected(
     // AwWebContents sees the new URL and thus passes that URL to onPageFinished
     // (rather than passing the old URL).
     UpdateStateFollowingRedirect(GURL(redirect_info.new_referrer));
-    frame_tree_node_->ResetNavigationRequest(false);
+    frame_tree_node_->ResetNavigationRequest(
+        NavigationDiscardReason::kCancelled);
     return;
   }
 #endif
@@ -3236,6 +3250,16 @@ void NavigationRequest::ProcessOriginAgentClusterEndResult() {
             "uniformly request origin-keying for all pages on the origin.",
             origin.Serialize().c_str()));
   }
+}
+
+void NavigationRequest::PopulateDocumentTokenForCrossDocumentNavigation() {
+  DCHECK(!IsSameDocument());
+  DCHECK_GE(state_, READY_TO_COMMIT);
+  const auto* token_to_reuse =
+      render_frame_host_->GetDocumentTokenForCrossDocumentNavigationReuse(
+          /* passkey */ {});
+  document_token_.emplace(token_to_reuse ? *token_to_reuse
+                                         : blink::DocumentToken());
 }
 
 bool NavigationRequest::HasCommittingOrigin(const url::Origin& origin) {
@@ -3802,7 +3826,8 @@ void NavigationRequest::OnResponseStarted(
              ->ShouldAllowRendererInitiatedCrossProcessNavigation(
                  frame_tree_node_->IsOutermostMainFrame())) {
       net_error_ = net::ERR_ABORTED;
-      frame_tree_node_->ResetNavigationRequest(false);
+      frame_tree_node_->ResetNavigationRequest(
+          NavigationDiscardReason::kCancelled);
       return;
     }
   }
@@ -4845,12 +4870,12 @@ void NavigationRequest::CommitErrorPage(
 
   ReadyToCommitNavigation(true /* is_error */);
 
+  PopulateDocumentTokenForCrossDocumentNavigation();
   // Use a separate cache shard, and no cookies, for error pages.
   isolation_info_for_subresources_ = net::IsolationInfo::CreateTransient();
-  render_frame_host_->FailedNavigation(this, *common_params_, *commit_params_,
-                                       has_stale_copy_in_cache_, net_error_,
-                                       extended_error_code_, error_page_content,
-                                       document_token_.emplace());
+  render_frame_host_->FailedNavigation(
+      this, *common_params_, *commit_params_, has_stale_copy_in_cache_,
+      net_error_, extended_error_code_, error_page_content, *document_token_);
 
   SendDeferredConsoleMessages();
 }
@@ -4916,14 +4941,15 @@ void NavigationRequest::CommitNavigation() {
   // instead of creating one from a URL which lacks opacity information.
   isolation_info_for_subresources_ =
       render_frame_host_->ComputeIsolationInfoForSubresourcesForPendingCommit(
-          origin, is_anonymous());
+          origin, is_anonymous(), ComputeFencedFrameNonce());
   DCHECK(!isolation_info_for_subresources_.IsEmpty());
 
   // TODO(https://crbug.com/888079): The storage key's origin is ignored at the
   // moment. We will be able to use it once the browser can compute the origin
   // to commit.
   absl::optional<base::UnguessableToken> nonce =
-      render_frame_host_->ComputeNonce(is_anonymous());
+      render_frame_host_->ComputeNonce(is_anonymous(),
+                                       ComputeFencedFrameNonce());
   commit_params_->storage_key = render_frame_host_->CalculateStorageKey(
       GetOriginToCommit(), base::OptionalToPtr(nonce));
 
@@ -5041,6 +5067,7 @@ void NavigationRequest::CommitNavigation() {
     commit_params_->navigation_api_history_entry_arrays =
         GetNavigationController()->GetNavigationApiHistoryEntryVectors(
             frame_tree_node_, this);
+    PopulateDocumentTokenForCrossDocumentNavigation();
   }
 
   if (early_hints_manager_) {
@@ -5062,7 +5089,7 @@ void NavigationRequest::CommitNavigation() {
       std::move(response_head), std::move(response_body_),
       std::move(url_loader_client_endpoints_),
       std::move(subresource_loader_params_), std::move(subresource_overrides_),
-      std::move(service_worker_container_info), document_token_.emplace(),
+      std::move(service_worker_container_info), document_token_,
       devtools_navigation_token_, std::move(web_bundle_handle_));
   UpdateNavigationHandleTimingsOnCommitSent();
 
@@ -5170,7 +5197,7 @@ void NavigationRequest::CommitPageActivation() {
       return;
     }
 
-    RenderFrameHostImpl* rfh = stored_page->render_frame_host.get();
+    RenderFrameHostImpl* rfh = stored_page->render_frame_host();
 
     // Set the prerender trigger type and embedder histogram suffix for metrics.
     set_prerender_trigger_type(trigger_type);
@@ -5745,7 +5772,8 @@ void NavigationRequest::OnRendererRequestedNavigationCancellation() {
   // live anymore, because the navigation can't commit in a crashed renderer.
   if (!IsWaitingToCommit()) {
     // The cancellation happens before READY_TO_COMMIT.
-    frame_tree_node_->navigator().CancelNavigation(frame_tree_node_);
+    frame_tree_node_->navigator().CancelNavigation(
+        frame_tree_node_, NavigationDiscardReason::kCancelled);
   } else if (render_frame_host_ ==
                  frame_tree_node_->render_manager()->current_frame_host() ||
              !render_frame_host_->IsRenderFrameLive()) {
@@ -5760,7 +5788,8 @@ void NavigationRequest::OnRendererRequestedNavigationCancellation() {
     // Changing it to no longer early return breaks a bunch of other code that
     // runs in `CommitPendingIfNecessary()` that expects `DidStopLoading()`
     // won't be called if `FrameTreeNode::navigation_request()` is null...
-    frame_tree_node->render_manager()->MaybeCleanUpNavigation();
+    frame_tree_node->render_manager()->MaybeCleanUpNavigation(
+        NavigationDiscardReason::kCancelled);
   }
 
   // Do not add code after this, NavigationRequest might have been destroyed.
@@ -7070,7 +7099,8 @@ net::IsolationInfo NavigationRequest::GetIsolationInfo() {
   // TODO(crbug.com/979296): Consider changing this code to copy an origin
   // instead of creating one from a URL which lacks opacity information.
   return frame_tree_node_->current_frame_host()
-      ->ComputeIsolationInfoForNavigation(common_params_->url, is_anonymous());
+      ->ComputeIsolationInfoForNavigation(common_params_->url, is_anonymous(),
+                                          ComputeFencedFrameNonce());
 }
 
 bool NavigationRequest::HasSubframeNavigationEntryCommitted() {
@@ -7813,7 +7843,8 @@ bool NavigationRequest::MaybeCancelFailedNavigation() {
       // <webview> guests suppress net::ERR_BLOCKED_BY_CLIENT.
       (net::ERR_BLOCKED_BY_CLIENT == net_error_ &&
        silently_ignore_blocked_by_client_)) {
-    frame_tree_node_->ResetNavigationRequest(false);
+    frame_tree_node_->ResetNavigationRequest(
+        NavigationDiscardReason::kCancelled);
     return true;
   }
 
@@ -7828,7 +7859,8 @@ bool NavigationRequest::MaybeCancelFailedNavigation() {
   if (frame_tree_node()->frame_owner_element_type() ==
       blink::FrameOwnerElementType::kObject) {
     RenderFallbackContentForObjectTag();
-    frame_tree_node_->ResetNavigationRequest(false);
+    frame_tree_node_->ResetNavigationRequest(
+        NavigationDiscardReason::kCancelled);
     return true;
   }
 
@@ -7839,7 +7871,7 @@ bool NavigationRequest::ShouldRenderFallbackContentForResponse(
     const net::HttpResponseHeaders& http_headers) const {
   return frame_tree_node()->frame_owner_element_type() ==
              blink::FrameOwnerElementType::kObject &&
-         !network::cors::IsOkStatus(http_headers.response_code());
+         !network::IsSuccessfulStatus(http_headers.response_code());
 }
 
 // https://html.spec.whatwg.org/multipage/browsing-the-web.html#navigating-across-documents:hh-replace
@@ -7998,6 +8030,17 @@ bool NavigationRequest::ShouldReplaceCurrentEntryForFailedNavigation() const {
          (common_params_->url ==
           GetLastLoadingURLInRendererForNavigationReplacement(
               frame_tree_node_->current_frame_host()));
+}
+
+const absl::optional<base::UnguessableToken>
+NavigationRequest::ComputeFencedFrameNonce() const {
+  // TODO(crbug.com/1347953): Once
+  // NavigationRequest::ComputeFencedFrameProperties() is added, use that rather
+  // than branch here.
+  if (fenced_frame_properties_) {
+    return fenced_frame_properties_->partition_nonce;
+  }
+  return frame_tree_node_->GetFencedFrameNonce();
 }
 
 void NavigationRequest::RenderFallbackContentForObjectTag() {

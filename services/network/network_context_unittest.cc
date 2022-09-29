@@ -1068,12 +1068,12 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
   EXPECT_FALSE(
       network_context->url_request_context()
           ->http_server_properties()
-          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
+          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkAnonymizationKey()));
 
   // Set a property.
   network_context->url_request_context()
       ->http_server_properties()
-      ->SetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey(), true);
+      ->SetSupportsSpdy(kSchemeHostPort, net::NetworkAnonymizationKey(), true);
   // Deleting the context will cause it to flush state. Wait for the pref
   // service to flush to disk.
   network_context.reset();
@@ -1093,7 +1093,7 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
   EXPECT_TRUE(
       network_context->url_request_context()
           ->http_server_properties()
-          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
+          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkAnonymizationKey()));
 
   // Now check that ClearNetworkingHistoryBetween clears the data.
   base::RunLoop run_loop2;
@@ -1104,7 +1104,7 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
   EXPECT_FALSE(
       network_context->url_request_context()
           ->http_server_properties()
-          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
+          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkAnonymizationKey()));
 
   // Destroy the network context and let any pending writes complete before
   // destroying |temp_dir|, to avoid leaking any files.
@@ -1146,12 +1146,12 @@ TEST_F(NetworkContextTest, DataDirectoryAsHandle) {
   EXPECT_FALSE(
       network_context->url_request_context()
           ->http_server_properties()
-          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
+          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkAnonymizationKey()));
 
   // Set a property.
   network_context->url_request_context()
       ->http_server_properties()
-      ->SetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey(), true);
+      ->SetSupportsSpdy(kSchemeHostPort, net::NetworkAnonymizationKey(), true);
   // Deleting the context will cause it to flush state. Wait for the pref
   // service to flush to disk.
   network_context.reset();
@@ -1171,7 +1171,7 @@ TEST_F(NetworkContextTest, DataDirectoryAsHandle) {
   EXPECT_TRUE(
       network_context->url_request_context()
           ->http_server_properties()
-          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
+          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkAnonymizationKey()));
 
   // Now check that ClearNetworkingHistoryBetween clears the data.
   base::RunLoop run_loop2;
@@ -1182,7 +1182,7 @@ TEST_F(NetworkContextTest, DataDirectoryAsHandle) {
   EXPECT_FALSE(
       network_context->url_request_context()
           ->http_server_properties()
-          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
+          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkAnonymizationKey()));
 
   // Destroy the network context and let any pending writes complete before
   // destroying |temp_dir|, to avoid leaking any files.
@@ -1204,14 +1204,14 @@ TEST_F(NetworkContextTest, ClearHttpServerPropertiesInMemory) {
   EXPECT_FALSE(
       network_context->url_request_context()
           ->http_server_properties()
-          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
+          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkAnonymizationKey()));
   network_context->url_request_context()
       ->http_server_properties()
-      ->SetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey(), true);
+      ->SetSupportsSpdy(kSchemeHostPort, net::NetworkAnonymizationKey(), true);
   EXPECT_TRUE(
       network_context->url_request_context()
           ->http_server_properties()
-          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
+          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkAnonymizationKey()));
 
   base::RunLoop run_loop;
   network_context->ClearNetworkingHistoryBetween(
@@ -1221,7 +1221,7 @@ TEST_F(NetworkContextTest, ClearHttpServerPropertiesInMemory) {
   EXPECT_FALSE(
       network_context->url_request_context()
           ->http_server_properties()
-          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkIsolationKey()));
+          ->GetSupportsSpdy(kSchemeHostPort, net::NetworkAnonymizationKey()));
 }
 
 // Checks that ClearNetworkingHistoryBetween() clears network quality prefs.
@@ -4485,6 +4485,10 @@ TEST_F(NetworkContextTest, PreconnectOne) {
 TEST_F(NetworkContextTest, PreconnectHSTS) {
   net::NetworkIsolationKey network_isolation_key =
       net::NetworkIsolationKey::CreateTransient();
+  net::NetworkAnonymizationKey network_anonymization_key =
+      net::NetworkAnonymizationKey::
+          CreateFromNetworkIsolationKeyTemporaryMigrationHelper(
+              network_isolation_key);
 
   for (bool partition_connections : {false, true}) {
     base::test::ScopedFeatureList feature_list;
@@ -4507,8 +4511,8 @@ TEST_F(NetworkContextTest, PreconnectHSTS) {
     net::ClientSocketPool::GroupId ssl_group(
         url::SchemeHostPort(test_server.base_url()),
         net::PrivacyMode::PRIVACY_MODE_ENABLED,
-        partition_connections ? network_isolation_key
-                              : net::NetworkIsolationKey(),
+        partition_connections ? network_anonymization_key
+                              : net::NetworkAnonymizationKey(),
         net::SecureDnsPolicy::kAllow);
 
     const GURL server_http_url = GetHttpUrlFromHttps(test_server.base_url());
@@ -4516,8 +4520,8 @@ TEST_F(NetworkContextTest, PreconnectHSTS) {
     net::ClientSocketPool::GroupId group(url::SchemeHostPort(server_http_url),
                                          net::PrivacyMode::PRIVACY_MODE_ENABLED,
                                          partition_connections
-                                             ? network_isolation_key
-                                             : net::NetworkIsolationKey(),
+                                             ? network_anonymization_key
+                                             : net::NetworkAnonymizationKey(),
                                          net::SecureDnsPolicy::kAllow);
 
     network_context->PreconnectSockets(1, server_http_url,
@@ -4652,6 +4656,12 @@ TEST_F(NetworkContextTest, PreconnectNetworkIsolationKey) {
   const auto kOriginBar = url::Origin::Create(GURL("http://bar.test"));
   const net::NetworkIsolationKey kKey1(kOriginFoo, kOriginFoo);
   const net::NetworkIsolationKey kKey2(kOriginBar, kOriginBar);
+  const net::NetworkAnonymizationKey kNak1(net::SchemefulSite(kOriginFoo),
+                                           net::SchemefulSite(kOriginFoo),
+                                           /*is_cross_site=*/false);
+  const net::NetworkAnonymizationKey kNak2(net::SchemefulSite(kOriginBar),
+                                           net::SchemefulSite(kOriginBar),
+                                           /*is_cross_site=*/false);
   network_context->PreconnectSockets(1, test_server.base_url(),
                                      /*allow_credentials=*/false, kKey1);
   network_context->PreconnectSockets(2, test_server.base_url(),
@@ -4660,11 +4670,11 @@ TEST_F(NetworkContextTest, PreconnectNetworkIsolationKey) {
 
   url::SchemeHostPort destination(test_server.base_url());
   net::ClientSocketPool::GroupId group_id1(
-      destination, net::PrivacyMode::PRIVACY_MODE_ENABLED, kKey1,
+      destination, net::PrivacyMode::PRIVACY_MODE_ENABLED, kNak1,
       net::SecureDnsPolicy::kAllow);
   EXPECT_EQ(1, GetSocketCountForGroup(network_context.get(), group_id1));
   net::ClientSocketPool::GroupId group_id2(
-      destination, net::PrivacyMode::PRIVACY_MODE_ENABLED, kKey2,
+      destination, net::PrivacyMode::PRIVACY_MODE_ENABLED, kNak2,
       net::SecureDnsPolicy::kAllow);
   EXPECT_EQ(2, GetSocketCountForGroup(network_context.get(), group_id2));
 }

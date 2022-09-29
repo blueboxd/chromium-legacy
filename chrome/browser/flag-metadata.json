@@ -1610,8 +1610,18 @@
     "expiry_milestone": 108
   },
   {
+    "name": "eche-swa-disable-stun-server",
+    "owners": [ "dhnishi", "mavishsu@google.com", "ftsui@google.com" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "eche-swa-measure-latency",
     "owners": [ "paulzchen@google.com", "guanrulee@google.com" ],
+    "expiry_milestone": 108
+  },
+  {
+    "name": "eche-swa-send-start-signaling",
+    "owners": [ "dhnishi", "mavishsu@google.com" ],
     "expiry_milestone": 108
   },
   {
@@ -4552,6 +4562,11 @@
     "expiry_milestone": 94
   },
   {
+    "name": "microsoft-office-web-app-experiment",
+    "owners": [ "alancutter", "mgiuca", "desktop-pwas-team@google.com" ],
+    "expiry_milestone": 120
+  },
+  {
     "name": "minutes-delay-to-restore-gaia-cookies-if-deleted",
     "owners": ["fernandex", "chrome-signin-team"],
     "expiry_milestone": 99
@@ -5428,6 +5443,13 @@
     "expiry_milestone": 110
   },
   {
+    "name": "prefer-dcheck",
+    "owners": [ "pbos", "waffles" ],
+    // This is a long-lived flag to allow users to opt in to receive a
+    // DCHECK-enabled build from the updater.
+    "expiry_milestone": -1
+  },
+  {
     "name": "print-with-postscript-type42-fonts",
     "owners": [ "thestig" ],
     "expiry_milestone": 112
@@ -6243,6 +6265,11 @@
   },
   {
     "name": "support-tool",
+    "owners": [ "//chrome/browser/support_tool/OWNERS" ],
+    "expiry_milestone": 120
+  },
+  {
+    "name": "support-tool-screenshot",
     "owners": [ "//chrome/browser/support_tool/OWNERS" ],
     "expiry_milestone": 120
   },

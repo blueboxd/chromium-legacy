@@ -9068,7 +9068,8 @@ TEST_P(AuthenticatorCableV2Test, QRBasedWithNoPairing) {
               /*observer=*/nullptr),
           network_context_.get(), root_secret_, "Test Authenticator",
           zero_qr_secret_, peer_identity_x962_,
-          /*contact_id=*/absl::nullopt);
+          /*contact_id=*/absl::nullopt,
+          /*use_new_crypter_construction=*/false);
 
   EXPECT_EQ(AuthenticatorMakeCredential().status, AuthenticatorStatus::SUCCESS);
   EXPECT_EQ(pairings_.size(), 0u);
@@ -9097,7 +9098,8 @@ TEST_P(AuthenticatorCableV2Test, QRBasedNewCrypterConstruction) {
               /*observer=*/nullptr),
           network_context_.get(), root_secret_, "Test Authenticator",
           zero_qr_secret_, peer_identity_x962_,
-          /*contact_id=*/absl::nullopt);
+          /*contact_id=*/absl::nullopt,
+          /*use_new_crypter_construction=*/true);
 
   EXPECT_EQ(AuthenticatorMakeCredential().status, AuthenticatorStatus::SUCCESS);
   EXPECT_EQ(pairings_.size(), 0u);
@@ -9125,7 +9127,8 @@ TEST_P(AuthenticatorCableV2Test, PairingBased) {
               std::move(ble_advert_callback_), &virtual_device_,
               /*observer=*/nullptr),
           network_context_.get(), root_secret_, "Test Authenticator",
-          zero_qr_secret_, peer_identity_x962_, contact_id);
+          zero_qr_secret_, peer_identity_x962_, contact_id,
+          /*use_new_crypter_construction=*/false);
 
   EXPECT_EQ(AuthenticatorMakeCredential().status, AuthenticatorStatus::SUCCESS);
   EXPECT_EQ(pairings_.size(), 1u);
@@ -9311,7 +9314,8 @@ TEST_P(AuthenticatorCableV2Test, ServerLink) {
               /*observer=*/nullptr),
           network_context_.get(), root_secret_, "Test Authenticator",
           server_link.secret, server_link.peer_identity,
-          /*contact_id=*/absl::nullopt);
+          /*contact_id=*/absl::nullopt,
+          /*use_new_crypter_construction=*/false);
 
   EXPECT_EQ(AuthenticatorMakeCredential().status, AuthenticatorStatus::SUCCESS);
   EXPECT_EQ(pairings_.size(), 0u);
@@ -9388,7 +9392,8 @@ class AuthenticatorCableV2AuthenticatorTest
             std::move(ble_advert_callback_), &virtual_device_, this),
         network_context_.get(), root_secret_, "Test Authenticator",
         zero_qr_secret_, peer_identity_x962_,
-        /*contact_id=*/absl::nullopt);
+        /*contact_id=*/absl::nullopt,
+        /*use_new_crypter_construction=*/false);
   }
 
  protected:

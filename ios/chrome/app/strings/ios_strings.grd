@@ -1629,6 +1629,30 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_OPTIONS_PRIVACY_GOOGLE_SERVICES_FOOTER" desc="Footer to invite the user to open the Sync and Google Services settings.">
         For more settings that relate to privacy, security, and data collection, see <ph name="BEGIN_LINK">BEGIN_LINK</ph>Sync and Google Services<ph name="END_LINK">END_LINK</ph>.
       </message>
+      <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TITLE" desc="Title for Price Notifications table view.">
+        Track Price
+      </message>
+      <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TRACKABLE_SECTION_HEADER" desc="Section header for a Price Notifications table view section that lists items available on the current page to have their prices tracked.">
+        Current Site
+      </message>
+      <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TRACKED_SECTION_HEADER" desc="Section header for a Price Notifications table view section that lists items the user is currently price tracking.">
+        Tracking Prices
+      </message>
+      <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TRACKABLE_EMPTY_LIST" desc="Table element description explaining that the current website does not contain any items that can have their prices tracked.">
+        Price tracking isn't available for this site.
+      </message>
+      <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TRACKING_EMPTY_LIST" desc="Table element description explaining that this section is the location where the user's price-tracked items will be displayed.">
+        The products you track will show up here.
+      </message>
+      <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_DESCRIPTION" desc="A table header element that describes the effect of a user choosing to price-track an item.">
+        Get an alert if the price drops on any site.
+      </message>
+      <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TRACK_BUTTON" desc="The title for a button that adds the price-trackable item to the user's stored price tracking list.">
+        Track
+      </message>
+      <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_MENU_ITEM_STOP_TRACKING" desc="Title for action menu item that stops the price-tracking process for the given item.">
+        Stop price tracking
+      </message>
       <message name="IDS_IOS_PRICE_NOTIFICATIONS_TITLE" desc="Title for Price Notifications settings menu.">
         Notifications
       </message>
@@ -2786,6 +2810,114 @@ Try to use a unique password for every site.
       <message name="IDS_IOS_WEBSIGN_ERROR_TIMEOUT_ERROR" desc="Title displayed when sign in fails due to an authentication issue. [iOS only]">
         Check your connection and try signing in again.
       </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_SEARCH_TABS_TITLE" desc="Search Tabs title displayed in What's New. [iOS only]">
+        Search Tabs Across Synced Devices
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_SEARCH_TABS_SUBTITLE" desc="Search Tabs subtitle displayed in What's New. [iOS only]">
+        Quickly find open and recently closed tabs across your synced devices.
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_SEARCH_TABS_STEP_1" desc="Text of the row indicating the first step of Search Tabs in What's New. [iOS only]">
+        Open the Tab Grid
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_SEARCH_TABS_STEP_2" desc="Text of the row indicating the second step of Search Tabs in What's New. [iOS only]">
+        At the Top Left, Tap the Search Icon
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_SEARCH_TABS_STEP_3" desc="Text of the row indicating the third step of Search Tabs in What's New. [iOS only]">
+        Enter a Word or Phrase
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_NEW_MENU_TITLE" desc="New Menu title displayed in What's New. [iOS only]">
+        Explore the New Menu
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_NEW_MENU_SUBTITLE" desc="New Menu subtitle displayed in What's New. [iOS only]">
+        Now your saved bookmarks, passwords and more are at the top.
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_NEW_MENU_STEP_1" desc="Text of the row indicating the first step of New Menu in What's New. [iOS only]">
+        Open the Chrome Menu
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_NEW_MENU_STEP_2" desc="Text of the row indicating the second step of New Menu in What's New. [iOS only]">
+        Explore the options in the menu bar
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_SHARE_HIGHLIGHT_TITLE" desc="Share Highlight title displayed in What's New. [iOS only]">
+        Share Highlight
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_SHARE_HIGHLIGHT_SUBTITLE" desc="Share Highlight subtitle displayed in What's New. [iOS only]">
+        Create and share a direct link to part of a page you've highlighted.
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_SHARE_HIGHLIGHT_STEP_1" desc="Text of the row indicating the first step of Share Highlight in What's New. [iOS only]">
+        Highlight Text on a Site
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_SHARE_HIGHLIGHT_STEP_2" desc="Text of the row indicating the second step of Share Highlight in What's New. [iOS only]">
+        Tap Create Link in the Context Menu
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_SHARE_HIGHLIGHT_STEP_3" desc="Text of the row indicating the third step of Share Highlight in What's New. [iOS only]">
+        Share the Link
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_ADD_PASSWORDS_MANUALLY_TITLE" desc="Add Passwords Manually title displayed in What's New. [iOS only]">
+        Add Passwords Manually
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_ADD_PASSWORDS_MANUALLY_SUBTITLE" desc="Add Passwords Manually subtitle displayed in What's New. [iOS only]">
+        Easily add site passwords to Google Password Manager anytime.
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_ADD_PASSWORDS_MANUALLY_STEP_1" desc="Text of the row indicating the first step of Share Highlight in What's New. [iOS only]">
+        Open Chrome Settings
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_ADD_PASSWORDS_MANUALLY_STEP_2" desc="Text of the row indicating the second step of Share Highlight in What's New. [iOS only]">
+        Tap Passwords Then Tap Add
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_ADD_PASSWORDS_MANUALLY_STEP_3" desc="Text of the row indicating the third step of Share Highlight in What's New. [iOS only]">
+        Enter Site and Password, Then Save
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_FEATURE_ADD_PASSWORDS_MANUALLY_BUTTON_TITLE" desc="Text of the primary button of Share Highlight in What's New. [iOS only]">
+        Open Settings
+      </message>
+      <message name="IDS_IOS_WHATS_CHROME_TIP_CHROME_DEFAULT_TITLE" desc="Use Chrome By Default title displayed in What's New. [iOS only]">
+        Use Chrome By Default
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_CHROME_TIP_CHROME_DEFAULT_SUBTITLE" desc="Use Chrome By Default subtitle displayed in What's New. [iOS only]">
+        You can now use Chrome anytime you browse or tap links in messages, documents, and other apps.
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_CHROME_TIP_CHROME_DEFAULT_STEP_1" desc="Text of the row indicating the first step of Use Chrome By Default in What's New. [iOS only]">
+        Open Chrome Settings
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_CHROME_TIP_CHROME_DEFAULT_STEP_2" desc="Text of the row indicating the second step of Use Chrome By Default in What's New. [iOS only]">
+        Tap Default Browser App
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_CHROME_TIP_CHROME_DEFAULT_STEP_3" desc="Text of the row indicating the third step of Use Chrome By Default in What's New. [iOS only]">
+        Select Chrome
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_CHROME_TIP_CHROME_DEFAULT_BUTTON_TITLE" desc="Text of the primary button of Use Chrome By Default in What's New. [iOS only]">
+        Make Default in Settings...
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_CHROME_TIP_PASSWORDS_IN_OTHER_APPS_TITLE" desc="Passwords In Other Apps title displayed in What's New. [iOS only]">
+        Passwords In Other Apps
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_CHROME_TIP_PASSWORDS_IN_OTHER_APPS_SUBTITLE" desc="Passwords In Other Apps subtitle displayed in What's New. [iOS only]">
+        You can use the passwords you saved to Google Password Manager in other apps on your iPhone.
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_CHROME_TIP_PASSWORDS_IN_OTHER_APPS_STEP_1" desc="Text of the row indicating the first step of Passwords In Other Apps in What's New. [iOS only]">
+        Open AutoFill Password Settings
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_CHROME_TIP_PASSWORDS_IN_OTHER_APPS_STEP_2" desc="Text of the row indicating the second step of Passwords In Other Apps in What's New. [iOS only]">
+        Select Chrome
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_CHROME_TIP_PASSWORDS_IN_OTHER_APPS_BUTTON_TITLE" desc="Text of the primary button of Passwords In Other Apps in What's New. [iOS only]">
+        Open Settings
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_CHROME_TIP_AUTOFILL_TITLE" desc="Autofill title displayed in What's New. [iOS only]">
+        Autofill
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_CHROME_TIP_AUTOFILL_SUBTITLE" desc="Autofill subtitle displayed in What's New. [iOS only]">
+        Save passwords, payment methods, and addresses for Chrome to autofill later.
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_CHROME_TIP_AUTOFILL_STEP_1" desc="Text of the row indicating the first step of Autofill in What's New. [iOS only]">
+        Open Chrome Settings
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_CHROME_TIP_AUTOFILL_STEP_2" desc="Text of the row indicating the second step of Autofill in What's New. [iOS only]">
+        Open Passwords, Payment Methods, or Address and More
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_CHROME_TIP_AUTOFILL_STEP_3" desc="Text of the row indicating the third step of Autofill in What's New. [iOS only]">
+        Tap Add then Enter Your Info
+      </message>
       <message name="IDS_IOS_SIGN_IN_INVALID_ACCOUNT_MESSAGE" desc="Message of the alert displayed when the user sign in with a restricted account.">
         Your organization allows you to sign in only with certain accounts.
       </message>
@@ -3139,6 +3271,24 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
       <message name="IDS_IOS_TABS_SEARCH_SUGGESTED_ACTION_SEARCH_WEB" desc="Title for a suggested action presented at the end of search results to search the web for the same search term.">
         Search on Web
+      </message>
+      <message name="IDS_IOS_TANGIBLE_SYNC_DISCLAIMER" desc="This string appears in the footer on a full-page screen that asks users if they want to turn on sync. 'Sync' is short for 'synchronization'. The first sentence informs the user where they can go to change their mind or to customize what Chrome/Chromium data types they choose to sync (a user's Chrome/Chromium data includes their bookmarks, passwords, history, settings, and more). The second sentence informs the user that if they choose to sync, then their history may be used to personalize Search and other services. Translate 'history' according to https://localization.google.com/glossary/termset?gid=27517723&amp;tsid=59c3162. [iOS only][CHAR_LIMIT=200].">
+        You can always choose what to sync in <ph name="BEGIN_LINK">BEGIN_LINK</ph>settings<ph name="END_LINK">END_LINK</ph>. Google may personalize Search and other services based on your history.
+      </message>
+      <message name="IDS_IOS_TANGIBLE_SYNC_DATA_TYPE_BOOKMARKS" desc="This string appears as an item in a list of sync data types on a full-page screen that asks users if they want to turn on sync. Translate 'bookmarks' according to https://localization.google.com/glossary/termset?gid=27517723&amp;tsid=59c31bb. [iOS only][CHAR_LIMIT=25]">
+        Bookmarks
+      </message>
+      <message name="IDS_IOS_TANGIBLE_SYNC_DATA_TYPE_HISTORY" desc="This string appears as an item in a list of sync data types on a full-page screen that asks users if they want to turn on sync. Translate 'history' according to https://localization.google.com/glossary/termset?gid=27517723&amp;tsid=59c3162. Translate 'and more' so that it conveys that there are additional similar items that are not listed. [iOS only][CHAR_LIMIT=30]">
+        History and more
+      </message>
+      <message name="IDS_IOS_TANGIBLE_SYNC_DATA_TYPE_AUTOFILL" desc="This string appears as an item in a list of sync data types on a full-page screen that asks users if they want to turn on sync. Translate 'autofill' according to https://localization.google.com/glossary/termset?gid=27517723&amp;tsid=77d3626. [iOS only][CHAR_LIMIT=25]">
+        Autofill
+        </message>
+      <message name="IDS_IOS_TANGIBLE_SYNC_TITLE" desc="This string appears as a heading on a full-page screen that asks users if they want to turn on sync. 'Sync' is short for 'synchronization'. The tone should be informative and inviting. [iOS only][CHAR_LIMIT=35]">
+        Turn On Sync
+      </message>
+      <message name="IDS_IOS_TANGIBLE_SYNC_SUBTITLE" desc="This string appears as a subheading a full-page screen that asks users if they want to turn on sync. This string explains to users that they can back up their Chrome/Chromium data and use it on all their computers, phones, and other devices; a user's Chrome/Chromium data includes their bookmarks, passwords, history, settings, and more. The word 'stuff' can be translated as 'data' or similar if there is no natural translation of 'stuff'. Maintain the level of formality that your language generally uses in the Chrome/Chromium app. The tone should be informative and inviting. [iOS only][CHAR_LIMIT=100]">
+        Back up your stuff and use it on any device
       </message>
       <message name="IDS_IOS_TERMS_OF_SERVICE" desc="The label to access the terms of service, displayed in the application settings, with no product name. [Length: 30em] [iOS only]">
         Terms of Service

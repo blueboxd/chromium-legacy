@@ -280,8 +280,9 @@ crbug.com/1343590 virtual/prefetch/external/wpt/speculation-rules/prefetch/redir
 crbug.com/1343590 http/tests/inspector-protocol/prefetch/* [ Skip ]
 crbug.com/1343590 virtual/prefetch/http/tests/inspector-protocol/prefetch/* [ Pass ]
 
-# This is not yet implemented. We cannot use -expected.txt since the output contains UUID URLs that change each run.
-crbug.com/1355146 virtual/prefetch/external/wpt/speculation-rules/prefetch/referrer-policy.https.html [ Skip ]
+# This is slow due to the use of timeouts in speculation rules prefetch tests.
+# TODO(mcnee): Split the test up using variants.
+crbug.com/1369195 virtual/prefetch/external/wpt/speculation-rules/prefetch/referrer-policy.https.html [ Pass Timeout ]
 
 # These tests are flaky with BFCache, which is enabled by default.
 crbug.com/1311546 http/tests/test-runner/back-forward.html [ Failure Pass ]
@@ -1665,7 +1666,6 @@ crbug.com/1356256 fast/table/percent-widths-float.html [ Failure Pass ]
 
 crbug.com/1367912 external/wpt/css/css-break/flexbox/flex-container-fragmentation-008.html [ Failure ]
 crbug.com/1367912 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-029.html [ Failure ]
-crbug.com/1367933 scrollbars/scrollbars-on-positioned-content.html [ Failure ]
 
 # ====== LayoutNG-only failures until here ======
 
@@ -1834,61 +1834,18 @@ crbug.com/1205953 external/wpt/css/css-will-change/will-change-fixpos-cb-positio
 crbug.com/1207788 external/wpt/css/css-will-change/will-change-stacking-context-mask-1.html [ Failure ]
 
 # lab color space not yet implemented
-crbug.com/1358565 external/wpt/css/css-images/gradient/gradient-eval-003.html [ Failure ]
 # color() function not implemented
-crbug.com/1068610 external/wpt/css/css-color/predefined-008.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/predefined-005.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/predefined-001.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/predefined-011.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/predefined-007.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/predefined-002.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/predefined-012.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/predefined-016.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/predefined-006.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/predefined-009.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/predefined-010.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/a98rgb-001.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/a98rgb-002.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/a98rgb-003.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/a98rgb-004.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/lch-008.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/lch-005.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/lch-009.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/lch-010.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/lch-005.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/prophoto-rgb-001.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/prophoto-rgb-002.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/prophoto-rgb-003.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/prophoto-rgb-004.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/prophoto-rgb-005.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/rec2020-001.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/rec2020-002.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/rec2020-003.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/rec2020-004.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/rec2020-005.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/oklch-009.html [ Failure ]
+crbug.com/1068610 external/wpt/css/css-color/oklch-010.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/color-mix-basic-001.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/color-mix-non-srgb-001.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/tagged-images-003.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/tagged-images-004.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/color-mix-percents-01.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/color-mix-percents-02.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklab-001.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklab-002.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklab-003.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklab-004.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklab-005.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklab-006.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklab-007.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklab-008.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklch-001.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklch-002.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklch-003.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklch-004.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklch-005.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklch-006.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklch-007.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklch-008.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklch-009.html [ Failure ]
-crbug.com/1068610 external/wpt/css/css-color/oklch-010.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/xyz-003.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/xyz-d65-003.html [ Failure ]
 crbug.com/1068610 [ Linux ] external/wpt/css/css-color/t422-rgba-a0.6-a.xht [ Failure ]
@@ -2569,6 +2526,7 @@ crbug.com/630597 external/wpt/css/css-images/image-set/image-set-content-renderi
 crbug.com/604875 external/wpt/css/css-images/tiled-gradients.html [ Failure ]
 
 crbug.com/1362022 external/wpt/css/css-images/gradient/gradient-eval-002.html [ Failure ]
+crbug.com/1358565 external/wpt/css/css-images/gradient/gradient-eval-003.html [ Failure ]
 crbug.com/1362022 external/wpt/css/css-images/gradient/gradient-eval-004.html [ Failure ]
 crbug.com/1362022 external/wpt/css/css-images/gradient/gradient-eval-005.html [ Failure ]
 crbug.com/1362022 external/wpt/css/css-images/gradient/gradient-eval-006.html [ Failure ]
@@ -2721,6 +2679,7 @@ crbug.com/893480 external/wpt/shadow-dom/focus-navigation/focus-navigation-slot-
 crbug.com/893480 external/wpt/shadow-dom/focus-navigation/focus-navigation-slot-with-tabindex.html [ Failure ]
 crbug.com/893480 external/wpt/shadow-dom/focus-navigation/focus-navigation-slots.html [ Failure ]
 crbug.com/893480 external/wpt/shadow-dom/focus-navigation/focus-navigation-slots-in-slot.html [ Failure ]
+crbug.com/893480 external/wpt/shadow-dom/focus-navigation/focus-navigation-web-component-input-type-radio.html [ Failure ]
 crbug.com/893480 external/wpt/shadow-dom/focus-navigation/focus-navigation-with-delegatesFocus.html [ Failure ]
 crbug.com/893480 external/wpt/shadow-dom/focus-navigation/focus-nested-slots.html [ Failure ]
 crbug.com/893480 external/wpt/shadow-dom/focus-navigation/focus-reverse-unassignable-slot.html [ Failure ]
@@ -3250,12 +3209,12 @@ crbug.com/1365604 [ Win ] external/wpt/custom-elements/form-associated/ElementIn
 
 # unblock roll wpt
 crbug.com/626703 external/wpt/service-workers/service-worker/worker-interception.https.html [ Failure ]
-crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/worker-interception.https.html [ Pass ]
 
 # ====== Test expectations added to unblock wpt-importer ======
 crbug.com/626703 external/wpt/fetch/metadata/generated/worker-dedicated-constructor.sub.html [ Failure ]
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/metadata/generated/worker-dedicated-constructor.sub.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/web-bundle/subresource-loading/reuse-web-bundle-resource.https.tentative.html [ Failure ]
+crbug.com/626703 [ Linux ] virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/worker-interception.https.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/web-bundle/subresource-loading/reuse-web-bundle-resource.https.tentative.html [ Failure ]
 crbug.com/626703 virtual/threaded/external/wpt/requestidlecallback/deadline-max-timeout-dynamic.html [ Failure ]
 crbug.com/626703 external/wpt/service-workers/service-worker/navigation-timing-extended.https.html [ Failure ]
@@ -3267,6 +3226,10 @@ crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/preren
 crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/encoding/unsupported-labels.window.html [ Failure Timeout ]
+crbug.com/626703 [ Mac11 ] external/wpt/encoding/unsupported-labels.window.html [ Failure Timeout ]
+crbug.com/626703 [ Mac12 ] external/wpt/encoding/unsupported-labels.window.html [ Failure Timeout ]
+crbug.com/626703 [ Win ] external/wpt/encoding/unsupported-labels.window.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/resize-observer/notify.html [ Timeout ]
 crbug.com/626703 external/wpt/resize-observer/svg.html [ Timeout ]
 crbug.com/626703 [ Win11 ] wpt_internal/geolocation-api/watchPosition-page-visibility.https.html [ Timeout ]
@@ -3921,12 +3884,7 @@ crbug.com/1335889 external/wpt/css/css-grid/grid-model/grid-areas-overflowing-gr
 crbug.com/1272533 external/wpt/css/css-grid/layout-algorithm/grid-intrinsic-size-dynamic-block-size.html [ Failure ]
 
 # The 'last baseline' keyword is not implemented yet
-crbug.com/885175 external/wpt/css/css-grid/alignment/grid-baseline-004.html [ Failure ]
-crbug.com/885175 external/wpt/css/css-grid/alignment/grid-item-self-baseline-001.html [ Skip ]
-crbug.com/885175 external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-001.html [ Skip ]
-crbug.com/885175 external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-002.html [ Skip ]
-crbug.com/885175 external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-004.html [ Skip ]
-crbug.com/885175 external/wpt/css/css-grid/alignment/grid-self-alignment-baseline-with-grid-003.html [ Skip ]
+crbug.com/885175 external/wpt/css/css-grid/alignment/grid-container-baseline-001.html [ Failure ]
 
 # Baseline Content-Alignment is not implemented yet for CSS Grid Layout
 crbug.com/764235 external/wpt/css/css-grid/alignment/grid-item-content-baseline-001.html [ Skip ]
@@ -6885,7 +6843,7 @@ crbug.com/1180274 virtual/first-party-sets/http/tests/inspector-protocol/network
 crbug.com/1180274 virtual/partitioned-cookies/http/tests/inspector-protocol/network/navigate-iframe-out2in.js [ Skip ]
 
 # Sheriff 2022-07-12
-crbug.com/1343674 [ Linux ] editing/deleting/460938.html [ Failure Pass ]
+crbug.com/1343674 editing/deleting/460938.html [ Failure Pass ]
 crbug.com/1343664 external/wpt/dom/events/non-cancelable-when-passive/non-passive-mousewheel-event-listener-on-document.html [ Failure Pass ]
 
 # Disable test to land a MSE change. Spec change (MSE PR#306) is still pending,
@@ -7123,12 +7081,10 @@ crbug.com/1166098 [ Linux ] virtual/threaded/external/wpt/css/css-scroll-snap/sn
 crbug.com/1367514 http/tests/images/document-policy-oversized-images-resize.php [ Failure Pass ]
 crbug.com/1367067 [ Linux ] external/wpt/preload/preload-dynamic-csp.html [ Skip ]
 crbug.com/1341929 [ Win ] wpt_internal/attribution-reporting/debug-key.sub.https.html [ Failure Pass ]
-# Sheriff 2022-09-27
-crbug.com/1368574 external/wpt/html/cross-origin-opener-policy/reporting/document-reporting/reporting-redirect-with-same-origin-allow-popups.https.html [ Failure Pass ]
 
 # Temporarily disable tests for ORB (virtual suite, behind a flag) until 1359788 is fixed.
 crbug.com/1359788 virtual/orb-v01/external/wpt/fetch/corb/img-svg-doctype-html-mimetype-svg.sub.html [ Failure ]
 crbug.com/1359788 virtual/orb-v02/external/wpt/fetch/corb/img-svg-doctype-html-mimetype-svg.sub.html [ Failure ]
 
-# Sheriff 2022-09-27
-crbug.com/1367599 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-redirect-with-same-origin-allow-popups.https.html [ Failure Pass ]
+# Sheriff 2022-09-29
+crbug.com/1368855 external/wpt/longtask-timing/containerNames.html [ Failure Pass ]

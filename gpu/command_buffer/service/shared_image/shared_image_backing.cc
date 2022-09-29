@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
 
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
@@ -49,6 +50,8 @@ const char* BackingTypeToString(SharedImageBackingType type) {
       return "WrappedSkImage";
     case SharedImageBackingType::kCompound:
       return "CompoundImageBacking";
+    case SharedImageBackingType::kDCOMPSurfaceProxy:
+      return "DCOMPSurfaceProxy";
   }
   NOTREACHED();
 }
@@ -96,6 +99,8 @@ SkImageInfo SharedImageBacking::AsSkImageInfo() const {
 bool SharedImageBacking::CopyToGpuMemoryBuffer() {
   return false;
 }
+
+void SharedImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {}
 
 bool SharedImageBacking::UploadFromMemory(const SkPixmap& pixmap) {
   NOTREACHED();
@@ -214,7 +219,7 @@ void SharedImageBacking::ReleaseRef(SharedImageRepresentation* representation) {
   AutoLock auto_lock(this);
   DCHECK(is_ref_counted_);
 
-  auto found = std::find(refs_.begin(), refs_.end(), representation);
+  auto found = base::ranges::find(refs_, representation);
   DCHECK(found != refs_.end());
 
   // If the found representation is the first (owning) ref, free the attributed

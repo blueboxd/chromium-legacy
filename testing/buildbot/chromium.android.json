@@ -11695,8 +11695,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android30.textpb",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.net_unittests.filter"
+          "--avd-config=../../tools/android/avd/proto/generic_android30.textpb"
         ],
         "merge": {
           "args": [
@@ -15839,8 +15838,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb",
-          "--gtest_filter=-MimeUtilTest.ExtensionTest"
+          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
         ],
         "merge": {
           "args": [
@@ -26607,8 +26605,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android30.textpb",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.net_unittests.filter"
+          "--avd-config=../../tools/android/avd/proto/generic_android30.textpb"
         ],
         "merge": {
           "args": [
@@ -40620,6 +40617,7 @@
           "--avd-config=../../tools/android/avd/proto/generic_android24.textpb"
         ],
         "check_flakiness_for_new_tests": false,
+        "ci_only": true,
         "isolate_name": "telemetry_perf_unittests_android_chrome",
         "isolate_profile_data": true,
         "merge": {
@@ -40669,6 +40667,7 @@
           "--retry-limit=2",
           "--avd-config=../../tools/android/avd/proto/generic_android24.textpb"
         ],
+        "ci_only": true,
         "isolate_name": "telemetry_perf_unittests_android_monochrome",
         "isolate_profile_data": true,
         "merge": {
@@ -40715,6 +40714,7 @@
           "--avd-config=../../tools/android/avd/proto/generic_android24.textpb",
           "--browser=android-chromium"
         ],
+        "ci_only": true,
         "isolate_name": "telemetry_perf_unittests_android_chrome",
         "isolate_profile_data": true,
         "merge": {
@@ -44180,6 +44180,7 @@
           "--recover-devices",
           "--gtest_filter=-ImportantSitesUtilBrowserTest.DSENotConsideredImportantInRegularMode"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -44226,6 +44227,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -44270,6 +44272,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -44314,6 +44317,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -44358,6 +44362,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -44405,6 +44410,7 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64_rel.chrome_public_test_apk.filter"
         ],
         "ci_only": true,
+        "isolate_profile_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -44456,6 +44462,7 @@
           "--recover-devices",
           "--git-revision=${got_revision}"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -44506,6 +44513,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -44550,6 +44558,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -44596,6 +44605,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -44640,6 +44650,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -44684,6 +44695,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -44728,6 +44740,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -44772,6 +44785,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -44816,6 +44830,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -44869,6 +44884,7 @@
           "--recover-devices"
         ],
         "ci_only": true,
+        "isolate_profile_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -44914,6 +44930,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -44956,6 +44973,7 @@
     ],
     "scripts": [
       {
+        "isolate_profile_data": true,
         "name": "check_network_annotations",
         "resultdb": {
           "enable": true,

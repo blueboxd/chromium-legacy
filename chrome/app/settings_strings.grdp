@@ -964,6 +964,9 @@
     <message name="IDS_AUTOFILL_MANAGE_PASSKEYS_CANNOT_DELETE_BODY" desc="The body of a dialog that explains that we cannot delete certain passkeys on Windows which are involved when the user signs into the Windows computer itself. For consistency, the word 'passkey' is in the glossary with translations already suggested.">
       You need this passkey to sign in to your computer
     </message>
+    <message name="IDS_AUTOFILL_MANAGE_PASSKEYS_MORE_ACTIONS_LABEL" desc="The accessibility message for a button that opens up a menu with actions a user can take with respect to a passkey (such as editing or deleting it). The button sits in every row of the passkey list. For consistency, the word 'passkey' is in the glossary with translations already suggested.">
+      More actions, passkey options for <ph name="USERNAME">$1<ex>example@gmail.com</ex></ph> on <ph name="DOMAIN">$2<ex>www.google.com</ex></ph>
+    </message>
   </if>
 
   <message name="IDS_SETTINGS_PASSWORD_SHOW_PASSWORD_A11Y" desc="The ARIA (accessibility) message for the 'Show Password' button, which sits in every row of the password list. For this row does not include a password, only information of the account. Reveals password when clicked.">
@@ -1408,26 +1411,26 @@
   </message>
 
   <!-- Performance Page -->
-  <message name="IDS_SETTINGS_PERFORMANCE_PAGE_TITLE" desc="Title of the performance page">
+  <message name="IDS_SETTINGS_PERFORMANCE_PAGE_TITLE" desc="Title of the performance settings page">
     Performance
   </message>
-  <message name="IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_SETTING" desc="High efficiency mode setting label">
+  <message name="IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_SETTING" desc="Memory saver mode setting label. This mode allows the browser to save memory from background tabs">
     Memory Saver
   </message>
-  <message name="IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_HEADER" desc="Heading for the exceptions list for tab discarding in the performance settings. Tabs will not be discarded by high efficiency mode if on a site matching a rule in this list.">
+  <message name="IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_HEADER" desc="Heading for the exceptions list for tab discarding in the performance settings. Tabs will not be discarded by memory saver mode if on a site matching a rule in this list.">
     Always keep these sites active
   </message>
-  <message name="IDS_SETTINGS_BATTERY_PAGE_TITLE" desc="Title of the battery page">
-    Battery
+  <message name="IDS_SETTINGS_BATTERY_PAGE_TITLE" desc="Title of the power section of the performance settings page">
+    Power
   </message>
-  <message name="IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_SETTING" desc="Battery saver mode setting label">
-    Battery Saver
+  <message name="IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_SETTING" desc="Energy saver mode setting label. This mode allows the browser to conserve battery by reducing energy usage">
+    Energy Saver
   </message>
-  <message name="IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_ON_BATTERY_LABEL" desc="Label for the battery saver mode enabled when unplugged option">
+  <message name="IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_ON_BATTERY_LABEL" desc="Label for the energy saver mode option which is enabled when unplugged option">
     Turn on when my computer is unplugged
   </message>
-  <message name="IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_BELOW_THRESHOLD_LABEL" desc="Label for the battery saver mode enabled only when battery is low option">
-    Turn on only when my battery is low
+  <message name="IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_BELOW_THRESHOLD_LABEL" desc="Label for the energy saver mode enabled only when battery is low option">
+    Turn on only when my battery is at <ph name="PERCENT">$1<ex>20</ex></ph>% or lower
   </message>
 
   <!-- Languages Page -->
@@ -2038,6 +2041,15 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_SECONDARY_LABEL" translateable="false" desc="'Review Notification Permissions' shows the websites that send a lot of notifications. This label is the description of the module in site settings notification page.">
     These sites sent a lot of notifications in the last 2 months. You can stop them from sending future notifications.
   </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_IGNORED_TOAST_LABEL" desc="'Review Notification Permissions' shows the websites that send a lot of notifications. This label is to indicate for which site the user has explicitly allowed permissions.">
+    Notifications allowed for <ph name="SITE">$1<ex>www.example.com</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_BLOCKED_TOAST_LABEL" desc="'Review Notification Permissions' shows the websites that send a lot of notifications. This label is to indicate for which site the user has blocked permissions.">
+    Notifications not allowed for <ph name="SITE">$1<ex>www.example.com</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_RESET_TOAST_LABEL" desc="'Review Notification Permissions' shows the websites that send a lot of notifications. This label is to indicate for which site the user has reset the notification permissions.">
+    Notifications not allowed for <ph name="SITE">$1<ex>www.example.com</ex></ph>. You’ll be asked again on your next visit.
+  </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_COUNT_LABEL" translateable="false" desc="'Review Notification Permissions' shows the websites that send a lot of notifications. This label holds the details of the item and shows how many notifications are sent.">
     {NUM_NOTIFICATION, plural,
      =1 {About 1 notification a day}
@@ -2051,6 +2063,9 @@
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_RESET_LABEL" translateable="false" desc="'Review Notification Permissions' shows the websites that send a lot of notifications. This label is for resetings the permission to the 'ask' state.">
     Don’t allow but ask later
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_UNDO" desc="'Review Notification Permissions' shows the websites that send a lot of notifications. This label is for undoing the current action after blocking permission for a site.">
+    Undo
   </message>
   <if expr="is_win and _google_chrome">
     <message name="IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_PRIMARY_LABEL" desc="'Unwanted software protection' is an element in safety check that finds harmful software installed on the computer and allows users to remove it.">

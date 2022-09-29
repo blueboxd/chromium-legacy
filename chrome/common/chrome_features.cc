@@ -421,6 +421,10 @@ BASE_FEATURE(kEnableWebHidOnExtensionServiceWorker,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
+// Enable WebUSB on extension service workers.
+const base::Feature kEnableWebUsbOnExtensionServiceWorker{
+    "EnableWebUsbOnExtensionServiceWorker", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if !BUILDFLAG(IS_ANDROID)
 // Lazy initialize IndividualSettings for extensions from enterprise policy
 // that are not installed.
@@ -689,7 +693,7 @@ BASE_FEATURE(kIncognitoNtpRevamp,
 #if BUILDFLAG(IS_CHROMEOS)
 BASE_FEATURE(kKioskEnableAppService,
              "KioskEnableAppService",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 // When enabled, allows other features to use the k-Anonymity Service.
@@ -752,6 +756,12 @@ BASE_FEATURE(kShowHiddenNetworkToggle,
 // Enables the new design of metrics settings.
 BASE_FEATURE(kMetricsSettingsAndroid,
              "MetricsSettingsAndroid",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+BASE_FEATURE(kMicrosoftOfficeWebAppExperiment,
+             "MicrosoftOfficeWebAppExperiment",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -1034,6 +1044,12 @@ BASE_FEATURE(kTabMetricsLogging,
 // Enables the demo version of the Support Tool. The tool will be available in
 // chrome://support-tool. See go/support-tool-v1-design for more details.
 BASE_FEATURE(kSupportTool, "SupportTool", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the Support Tool to include a screenshot in the exported support tool
+// packet.
+BASE_FEATURE(kSupportToolScreenshot,
+             "SupportToolScreenshot",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 #if BUILDFLAG(IS_WIN)

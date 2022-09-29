@@ -24,6 +24,7 @@
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -51,6 +52,10 @@ bool DeviceTrustConnectorServiceFactory::ServiceIsCreatedWithBrowserContext()
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 }
 
+bool DeviceTrustConnectorServiceFactory::ServiceIsNULLWhileTesting() const {
+  return true;
+}
+
 DeviceTrustConnectorServiceFactory::DeviceTrustConnectorServiceFactory()
     : ProfileKeyedServiceFactory(
           "DeviceTrustConnectorService",
@@ -66,7 +71,8 @@ KeyedService* DeviceTrustConnectorServiceFactory::BuildServiceInstanceFor(
   // (on the login screen).
   if (context->IsOffTheRecord()) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    if (!ash::ProfileHelper::IsSigninProfile(profile))
+    if (!ash::features::IsLoginScreenDeviceTrustConnectorFeatureEnabled() ||
+        !ash::ProfileHelper::IsSigninProfile(profile))
       return nullptr;
 #else
     return nullptr;

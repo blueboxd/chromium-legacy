@@ -225,6 +225,12 @@ BASE_FEATURE(kAudioPeripheralVolumeGranularity,
              "AudioPeripheralVolumeGranularity",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether the AudioSourceFetcher resamples the audio for speech
+// recongnition.
+BASE_FEATURE(kAudioSourceFetcherResampling,
+             "AudioSourceFetcherResampling",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables the Audio Settings Page in System Settings, which allows
 // audio configuration. crbug.com/1092970.
 BASE_FEATURE(kAudioSettingsPage,
@@ -671,6 +677,17 @@ BASE_FEATURE(kEcheSWAMeasureLatency,
              "EcheSWAMeasureLatency",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables sending start signaling to establish Eche's WebRTC connection.
+BASE_FEATURE(kEcheSWASendStartSignaling,
+             "EcheSWASendStartSignaling",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Allows disabling the stun servers when establishing a WebRTC connection to
+// Eche.
+BASE_FEATURE(kEcheSWADisableStunServer,
+             "EcheSWADisableStunServer",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables background blur for the app list, shelf, unified system tray,
 // autoclick menu, etc. Also enables the AppsGridView mask layer, slower devices
 // may have choppier app list animations while in this mode. crbug.com/765292.
@@ -900,7 +917,7 @@ BASE_FEATURE(kFilesSinglePartitionFormat,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable files app trash.
-BASE_FEATURE(kFilesTrash, "FilesTrash", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kFilesTrash, "FilesTrash", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables filters in Files app Recents view V2.
 BASE_FEATURE(kFiltersInRecentsV2,
@@ -1132,6 +1149,11 @@ BASE_FEATURE(kInstantTethering,
              "InstantTethering",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables or disables the internal server side speech recognition on ChromeOS.
+BASE_FEATURE(kInternalServerSideSpeechRecognition,
+             "InternalServerSideSpeechRecognition",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables Jelly features.
 BASE_FEATURE(kJelly, "Jelly", base::FEATURE_DISABLED_BY_DEFAULT);
 
@@ -1253,6 +1275,12 @@ BASE_FEATURE(kLockScreenNotifications,
 // screen.
 BASE_FEATURE(kLockScreenMediaControls,
              "LockScreenMediaControls",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables the Device Trust connector client code is enabled on the login
+// screen.
+BASE_FEATURE(kLoginScreenDeviceTrustConnectorEnabled,
+             "LoginScreenDeviceTrustConnectorEnabled",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature to allow MAC address randomization to be enabled for WiFi networks.
@@ -1452,6 +1480,11 @@ BASE_FEATURE(kPhoneHubCameraRoll,
 // setup response from remote phone device.
 BASE_FEATURE(kPhoneHubFeatureSetupErrorHandling,
              "PhoneHubFeatureSetupErrorHandling",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Determine should we display Beta badge for Eche.
+BASE_FEATURE(kPhoneHubAppStreamingBetaBadge,
+             "kPhoneHubAppStreamingBetaBadge",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the incoming/ongoing call notification feature in Phone Hub.
@@ -2055,7 +2088,7 @@ BASE_FEATURE(kPerUserMetrics,
 // Guest OS apps.
 BASE_FEATURE(kArcAndGuestOsFileTasksUseAppService,
              "ArcAndGuestOsFileTasksUseAppService",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2305,6 +2338,12 @@ bool IsAudioPeripheralVolumeGranularityEnabled() {
   return base::FeatureList::IsEnabled(kAudioPeripheralVolumeGranularity);
 }
 
+bool IsAudioSourceFetcherResamplingEnabled() {
+  // TODO(b/245617354): Once ready, enable this feature under
+  // kProjectorBleedingEdgeExperience flag as well.
+  return base::FeatureList::IsEnabled(kAudioSourceFetcherResampling);
+}
+
 bool IsEcheSWAEnabled() {
   return base::FeatureList::IsEnabled(kEcheSWA);
 }
@@ -2456,6 +2495,12 @@ bool IsInstantTetheringBackgroundAdvertisingSupported() {
       kInstantTetheringBackgroundAdvertisementSupport);
 }
 
+bool IsInternalServerSideSpeechRecognitionEnabled() {
+  // TODO(b/245614967): Once ready, enable this feature under
+  // kProjectorBleedingEdgeExperience flag as well.
+  return base::FeatureList::IsEnabled(kInternalServerSideSpeechRecognition);
+}
+
 bool IsJellyEnabled() {
   return base::FeatureList::IsEnabled(kJelly);
 }
@@ -2522,6 +2567,10 @@ bool IsLockScreenInlineReplyEnabled() {
 
 bool IsLockScreenNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kLockScreenNotifications);
+}
+
+bool IsLoginScreenDeviceTrustConnectorFeatureEnabled() {
+  return base::FeatureList::IsEnabled(kLoginScreenDeviceTrustConnectorEnabled);
 }
 
 bool IsProductivityLauncherImageSearchEnabled() {

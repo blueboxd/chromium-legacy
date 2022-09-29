@@ -14,25 +14,27 @@
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/views/controls/image_view.h"
 
+namespace gfx {
+class AnimationContainer;
+}  // namespace gfx
+
 namespace {
 
 constexpr int kIconSize = 16;
 
 const gfx::VectorIcon& ProgressStepToIcon(
     autofill_assistant::password_change::ProgressStep progress_step) {
+  using autofill_assistant::password_change::ProgressStep;
   switch (progress_step) {
-    case autofill_assistant::password_change::ProgressStep::
-        PROGRESS_STEP_UNSPECIFIED:
-    case autofill_assistant::password_change::ProgressStep::PROGRESS_STEP_START:
+    case ProgressStep::PROGRESS_STEP_UNSPECIFIED:
+    case ProgressStep::PROGRESS_STEP_START:
       return autofill_assistant::password_change::
           kPasswordChangeProgressStartIcon;
-    case autofill_assistant::password_change::ProgressStep::
-        PROGRESS_STEP_CHANGE_PASSWORD:
+    case ProgressStep::PROGRESS_STEP_CHANGE_PASSWORD:
       return vector_icons::kSettingsIcon;
-    case autofill_assistant::password_change::ProgressStep::
-        PROGRESS_STEP_SAVE_PASSWORD:
+    case ProgressStep::PROGRESS_STEP_SAVE_PASSWORD:
       return kKeyIcon;
-    case autofill_assistant::password_change::ProgressStep::PROGRESS_STEP_END:
+    case ProgressStep::PROGRESS_STEP_END:
       return vector_icons::kCheckCircleIcon;
   }
 }
@@ -41,8 +43,11 @@ const gfx::VectorIcon& ProgressStepToIcon(
 
 PasswordChangeAnimatedIcon::PasswordChangeAnimatedIcon(
     int id,
-    autofill_assistant::password_change::ProgressStep progress_step)
-    : gfx::LinearAnimation(this), progress_step_(progress_step) {
+    autofill_assistant::password_change::ProgressStep progress_step,
+    Delegate* delegate)
+    : gfx::LinearAnimation(this),
+      progress_step_(progress_step),
+      delegate_(delegate) {
   SetID(id);
   SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
   SetImage(ui::ImageModel::FromVectorIcon(ProgressStepToIcon(progress_step_),
@@ -51,15 +56,9 @@ PasswordChangeAnimatedIcon::PasswordChangeAnimatedIcon(
 
 PasswordChangeAnimatedIcon::~PasswordChangeAnimatedIcon() = default;
 
-void PasswordChangeAnimatedIcon::SetAnimationEndedCallback(
-    base::OnceClosure callback) {
-  animation_ended_callback_ = std::move(callback);
-}
-
 void PasswordChangeAnimatedIcon::StartPulsingAnimation(bool pulse_once) {
   bool is_already_pulsing = IsPulsing();
   pulsing_animation_ = !pulse_once;
-  last_animation_cycle_ = !pulse_once;
   animation_ended_ = false;
 
   // Only start a new cycle if the icon is not already pulsing.
@@ -85,17 +84,17 @@ void PasswordChangeAnimatedIcon::AnimationProgressed(
 
 void PasswordChangeAnimatedIcon::AnimationEnded(
     const gfx::Animation* animation) {
-  // Add one more cycle after stop animation request to avoid abrupt changes.
-  if (pulsing_animation_ || last_animation_cycle_) {
-    if (!pulsing_animation_)
-      last_animation_cycle_ = false;
+  if (pulsing_animation_) {
     Start();
   } else {
     animation_ended_ = true;
-    if (animation_ended_callback_) {
-      std::move(animation_ended_callback_).Run();
-    }
+    delegate_->OnAnimationEnded(this);
   }
+}
+
+void PasswordChangeAnimatedIcon::AnimationContainerWasSet(
+    gfx::AnimationContainer* container) {
+  delegate_->OnAnimationContainerWasSet(this, container);
 }
 
 bool PasswordChangeAnimatedIcon::IsPulsing() const {

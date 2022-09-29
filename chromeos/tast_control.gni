@@ -206,9 +206,6 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1350191
   "arc.Print",
 
-  # https://crbug.com/1352475
-  "a11y.LiveCaption",
-
   # https://crbug.com/1352525
   "apps.ContentPreview",
 
@@ -261,6 +258,25 @@ tast_disabled_tests_from_chrome_all = [
   "u2fd.WebauthnUsingPassword.tpm1_lacros",
   "u2fd.WebauthnUsingPassword.gsc",
   "u2fd.WebauthnUsingPassword.gsc_lacros",
+
+  # https://crbug.com/1368859
+  "a11y.Smoke",
+  "apps.SystemWebAppsInstallGuest",
+  "arc.Drivefs",
+  "arc.Drivefs.vm",
+  "camera.CCAUILauncher",
+  "example.ChromeExtension",
+  "hwsec.Login",
+  "hwsec.LoginGuest",
+  "inputs.PhysicalKeyboardPinyinTyping.simplified",
+  "lockscreen.KeyboardShortcut",
+  "security.UserFilesGuest",
+  "session.LogoutCleanup",
+  "session.OwnershipTaken",
+  "shelf.AutoHideSmoke.clamshell_mode_rtl",
+  "inputs.VirtualKeyboardMultipasteSuggestion",
+  "peripherals.LaunchAppFromSettings.diagnostics",
+  "peripherals.LaunchAppFromSettings.print_management",
 ]
 
 # To create filters to be used on specific builders add them like this:

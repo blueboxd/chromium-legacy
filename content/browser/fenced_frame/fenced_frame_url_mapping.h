@@ -177,6 +177,14 @@ class CONTENT_EXPORT FencedFrameURLMapping {
   // `FrameTreeNode`, and live between embedder-initiated fenced frame
   // navigations.
   struct FencedFrameProperties {
+    // The empty constructor is used for:
+    // * pre-navigation fenced frames
+    // * embedder-initiated non-opaque url navigations
+    // All fields are empty, except a randomly generated partition nonce.
+    FencedFrameProperties();
+
+    // For opaque url navigations, the properties should be constructed from
+    // a `MapInfo` that was previously created.
     explicit FencedFrameProperties(const MapInfo& map_info);
     FencedFrameProperties(const FencedFrameProperties&);
     FencedFrameProperties(FencedFrameProperties&&);
@@ -207,6 +215,8 @@ class CONTENT_EXPORT FencedFrameURLMapping {
         shared_storage_budget_metadata;
 
     ReportingMetadata reporting_metadata;
+
+    absl::optional<base::UnguessableToken> partition_nonce;
   };
 
   class MappingResultObserver {
@@ -312,19 +322,6 @@ class CONTENT_EXPORT FencedFrameURLMapping {
   void SubstituteMappedURL(
       const GURL& urn_uuid,
       const std::vector<std::pair<std::string, std::string>>& substitutions);
-
-  bool HasObserverForTesting(const GURL& urn_uuid,
-                             MappingResultObserver* observer);
-
-  // Returns as an out parameter the `ReportingMetadata`'s map for value
-  // `"shared-storage-select-url"` associated with `urn_uuid`, or leaves the out
-  // parameter unchanged if there's no shared storage reporting metadata
-  // associated (i.e. `urn_uuid` did not originate from shared storage or else
-  // there was no metadata passed from JavaScript). Precondition: `urn_uuid`
-  // exists in `urn_uuid_to_url_map_`.
-  void GetSharedStorageReportingMapForTesting(
-      const GURL& urn_uuid,
-      SharedStorageReportingMap* out_reporting_map);
 
  private:
   friend class FencedFrameURLMappingTestPeer;

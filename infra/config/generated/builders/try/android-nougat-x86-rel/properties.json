@@ -1,4 +1,8 @@
 {
+  "$build/chromium_orchestrator": {
+    "compilator": "android-nougat-x86-rel-compilator",
+    "compilator_watcher_git_revision": "7809a690bbd935bcb3b4d922e24cabe168aaabc8"
+  },
   "$build/chromium_tests_builder_config": {
     "builder_config": {
       "builder_db": {
@@ -40,14 +44,14 @@
           "builder": "android-nougat-x86-rel",
           "project": "chromium"
         }
-      ]
+      ],
+      "rts_config": {
+        "condition": "QUICK_RUN_ONLY"
+      }
     }
   },
-  "$build/goma": {
-    "enable_ats": true,
-    "rpc_extra_params": "?prod",
-    "server_host": "goma.chromium.org",
-    "use_luci_auth": true
+  "$build/flakiness": {
+    "check_for_flakiness": true
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],
@@ -57,5 +61,5 @@
     ]
   },
   "builder_group": "tryserver.chromium.android",
-  "recipe": "chromium_trybot"
+  "recipe": "chromium/orchestrator"
 }

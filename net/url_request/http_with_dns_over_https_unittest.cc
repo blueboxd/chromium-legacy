@@ -161,7 +161,8 @@ class DnsOverHttpsIntegrationTest : public TestWithTaskEnvironment {
     // HostResolverManager::HaveTestProcOverride disables the built-in DNS
     // client.
     auto* resolver_raw = resolver.get();
-    resolver->SetProcParamsForTesting(ProcTaskParams(host_resolver_proc_, 1));
+    resolver->SetHostResolverSystemParamsForTest(
+        HostResolverSystemTask::Params(host_resolver_proc_, 1));
 
     auto context_builder = CreateTestURLRequestContextBuilder();
     context_builder->set_host_resolver(std::move(resolver));
@@ -300,7 +301,7 @@ TEST_F(HttpsWithDnsOverHttpsTest, EndToEnd) {
 
   ClientSocketPool::GroupId group_id(
       url::SchemeHostPort(request_info.url), PrivacyMode::PRIVACY_MODE_DISABLED,
-      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
+      NetworkAnonymizationKey(), SecureDnsPolicy::kAllow);
   EXPECT_EQ(network_session
                 ->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
                                 ProxyServer::Direct())

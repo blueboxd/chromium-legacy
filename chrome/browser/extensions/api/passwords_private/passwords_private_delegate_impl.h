@@ -95,9 +95,7 @@ class PasswordsPrivateDelegateImpl
   // TODO(crbug.com/1102294): Mimic the signature in PasswordFeatureManager.
   void SetAccountStorageOptIn(bool opt_in,
                               content::WebContents* web_contents) override;
-  std::vector<api::passwords_private::PasswordUiEntry>
-  GetCompromisedCredentials() override;
-  std::vector<api::passwords_private::PasswordUiEntry> GetWeakCredentials()
+  std::vector<api::passwords_private::PasswordUiEntry> GetInsecureCredentials()
       override;
   bool MuteInsecureCredential(
       const api::passwords_private::PasswordUiEntry& credential) override;
@@ -117,6 +115,8 @@ class PasswordsPrivateDelegateImpl
   password_manager::InsecureCredentialsManager* GetInsecureCredentialsManager()
       override;
   void ExtendAuthValidity() override;
+  void SwitchBiometricAuthBeforeFillingState(
+      content::WebContents* web_contents) override;
 
   // KeyedService overrides:
   void Shutdown() override;
@@ -208,6 +208,11 @@ class PasswordsPrivateDelegateImpl
 
   // Invokes PasswordsPrivateEventRouter::OnPasswordManagerAuthTimeout().
   void OsReauthTimeoutCall();
+
+  void AuthenticateWithBiometrics(
+      const std::u16string& message,
+      password_manager::PasswordAccessAuthenticator::AuthResultCallback
+          callback);
 
   // Not owned by this class.
   raw_ptr<Profile> profile_;

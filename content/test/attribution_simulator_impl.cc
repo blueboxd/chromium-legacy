@@ -235,11 +235,11 @@ class SentReportAccumulator : public AttributionReportSender {
                   ReportSentCallback sent_callback) override {
     base::Value::List* reports;
     switch (report.GetReportType()) {
-      case AttributionReport::ReportType::kEventLevel:
+      case AttributionReport::Type::kEventLevel:
         reports = is_debug_report ? &debug_event_level_reports_
                                   : &event_level_reports_;
         break;
-      case AttributionReport::ReportType::kAggregatableAttribution:
+      case AttributionReport::Type::kAggregatableAttribution:
         reports = is_debug_report ? &debug_aggregatable_reports_
                                   : &aggregatable_reports_;
         break;
@@ -430,6 +430,7 @@ class AttributionEventHandler : public AttributionObserver {
       case AttributionTrigger::AggregatableResult::kNoMatchingSourceFilterData:
       case AttributionTrigger::AggregatableResult::kNoHistograms:
       case AttributionTrigger::AggregatableResult::kProhibitedByBrowserPolicy:
+      case AttributionTrigger::AggregatableResult::kDeduplicated:
         aggregatable_reason << result.aggregatable_status();
         break;
     }
@@ -496,12 +497,12 @@ class SimulatorStorageDelegate : public AttributionStorageDelegateImpl {
   }
 
   int GetMaxReportsPerDestination(
-      AttributionReport::ReportType report_type) const override {
+      AttributionReport::Type report_type) const override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     switch (report_type) {
-      case AttributionReport::ReportType::kEventLevel:
+      case AttributionReport::Type::kEventLevel:
         return config_.event_level_limit.max_reports_per_destination;
-      case AttributionReport::ReportType::kAggregatableAttribution:
+      case AttributionReport::Type::kAggregatableAttribution:
         return config_.aggregate_limit.max_reports_per_destination;
     }
   }

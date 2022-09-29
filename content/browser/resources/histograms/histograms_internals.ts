@@ -4,7 +4,7 @@
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
-import {$} from 'chrome://resources/js/util.m.js';
+import {$} from 'chrome://resources/js/util.js';
 
 // Timer for automatic update in monitoring mode.
 let fetchDiffScheduler: number|null = null;
@@ -76,6 +76,8 @@ function enableMonitoring() {
   $('histograms').innerHTML =
       window.trustedTypes!.emptyHTML as unknown as string;
   expandedEntries.clear();
+  ($('stop') as HTMLButtonElement).disabled = false;
+  $('stop').textContent = 'Stop';
   startMonitoring();
 }
 
@@ -94,6 +96,25 @@ function disableMonitoring() {
       window.trustedTypes!.emptyHTML as unknown as string;
   expandedEntries.clear();
   requestHistograms();
+}
+
+/**
+ * Callback function when users click the stop button in monitoring mode.
+ */
+function stopMonitoring() {
+  if (fetchDiffScheduler) {
+    clearTimeout(fetchDiffScheduler);
+    fetchDiffScheduler = null;
+  }
+  ($('stop') as HTMLButtonElement).disabled = true;
+  $('stop').textContent = 'Stopped';
+}
+
+/**
+ * Returns if monitoring mode is stopped.
+ */
+function monitoringStopped() {
+  return inMonitoringMode && !fetchDiffScheduler;
 }
 
 function onHistogramHeaderClick(event: Event) {
@@ -200,9 +221,13 @@ document.addEventListener('DOMContentLoaded', function() {
   $('download').onclick = downloadHistograms;
   $('enable_monitoring').onclick = enableMonitoring;
   $('disable_monitoring').onclick = disableMonitoring;
+  $('stop').onclick = stopMonitoring;
   // Enable calling generateHistogramsAsText() from
   // histograms_internals_ui_browsertest.js for testing purposes.
   (document as any).generateHistogramsForTest = generateHistogramsAsText;
+  // Enable accessing monitoring mode status from
+  // histograms_internals_ui_browsertest.js for testing purposes.
+  (document as any).monitoringStopped = monitoringStopped;
   requestHistograms();
 });
 

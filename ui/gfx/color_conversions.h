@@ -19,9 +19,29 @@ GFX_EXPORT std::tuple<float, float, float> LabToXYZD50(float l,
                                                        float b);
 
 // Method exposed for testing purposes.
+GFX_EXPORT std::tuple<float, float, float> OKLabToXYZD65(float l,
+                                                         float a,
+                                                         float b);
+
+// Method exposed for testing purposes.
 GFX_EXPORT std::tuple<float, float, float> DisplayP3ToXYZD50(float r,
                                                              float g,
                                                              float b);
+
+// Method exposed for testing purposes.
+GFX_EXPORT std::tuple<float, float, float> ProPhotoToXYZD50(float r,
+                                                            float g,
+                                                            float b);
+
+// Method exposed for testing purposes.
+GFX_EXPORT std::tuple<float, float, float> AdobeRGBToXYZD50(float r,
+                                                            float g,
+                                                            float b);
+
+// Method exposed for testing purposes.
+GFX_EXPORT std::tuple<float, float, float> Rec2020ToXYZD50(float r,
+                                                           float g,
+                                                           float b);
 
 // Method exposed for testing purposes.
 GFX_EXPORT std::tuple<float, float, float> XYZD50toD65(float x,
@@ -43,6 +63,11 @@ GFX_EXPORT std::tuple<float, float, float> LchToLab(float l,
                                                     float c,
                                                     absl::optional<float> h);
 
+// Method exposed for testing purposes.
+GFX_EXPORT std::tuple<float, float, float> OKLchToLab(float l,
+                                                      float c,
+                                                      absl::optional<float> h);
+
 // Method exposed for blink::color conversions.
 GFX_EXPORT SkColor4f XYZD50ToSkColor4f(float x, float y, float z, float alpha);
 
@@ -53,10 +78,19 @@ GFX_EXPORT SkColor4f XYZD65ToSkColor4f(float x, float y, float z, float alpha);
 GFX_EXPORT SkColor4f LabToSkColor4f(float l, float a, float b, float alpha);
 
 // Method exposed for blink::color conversions.
+GFX_EXPORT SkColor4f OKLabToSkColor4f(float l, float a, float b, float alpha);
+
+// Method exposed for blink::color conversions.
 GFX_EXPORT SkColor4f SRGBLinearToSkColor4f(float r,
                                            float g,
                                            float b,
                                            float alpha);
+
+// Method exposed for blink::color conversions.
+GFX_EXPORT SkColor4f ProPhotoToSkColor4f(float r,
+                                         float g,
+                                         float b,
+                                         float alpha);
 
 // Method exposed for blink::color conversions.
 GFX_EXPORT SkColor4f DisplayP3ToSkColor4f(float r,
@@ -65,10 +99,25 @@ GFX_EXPORT SkColor4f DisplayP3ToSkColor4f(float r,
                                           float alpha);
 
 // Method exposed for blink::color conversions.
+GFX_EXPORT SkColor4f AdobeRGBToSkColor4f(float r,
+                                         float g,
+                                         float b,
+                                         float alpha);
+
+// Method exposed for blink::color conversions.
+GFX_EXPORT SkColor4f Rec2020ToSkColor4f(float r, float g, float b, float alpha);
+
+// Method exposed for blink::color conversions.
 GFX_EXPORT SkColor4f LchToSkColor4f(float l,
                                     float a,
                                     absl::optional<float> b,
                                     float alpha);
+
+// Method exposed for blink::color conversions.
+GFX_EXPORT SkColor4f OKLchToSkColor4f(float l,
+                                      float a,
+                                      absl::optional<float> b,
+                                      float alpha);
 
 }  // namespace gfx
 

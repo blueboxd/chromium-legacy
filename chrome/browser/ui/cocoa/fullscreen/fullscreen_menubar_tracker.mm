@@ -84,9 +84,11 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
     eventSpecs[2].eventClass = kEventClassMenu;
     eventSpecs[2].eventKind = kEventMenuBarHidden;
 
-    InstallApplicationEventHandler(NewEventHandlerUPP(&MenuBarRevealHandler),
-                                   std::size(eventSpecs), eventSpecs, self,
-                                   &_menubarTrackingHandler);
+    if(@available(macOS 10.10, *)) {
+      InstallApplicationEventHandler(NewEventHandlerUPP(&MenuBarRevealHandler),
+                                     std::size(eventSpecs), eventSpecs, self,
+                                     &_menubarTrackingHandler);
+    }
 
     // Register for Active Space change notifications.
     [[[NSWorkspace sharedWorkspace] notificationCenter]

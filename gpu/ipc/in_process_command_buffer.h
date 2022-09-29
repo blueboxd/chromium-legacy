@@ -44,7 +44,6 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/gl_in_process_context_export.h"
 #include "gpu/ipc/service/context_url.h"
-#include "gpu/ipc/service/display_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -152,7 +151,9 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   // DecoderClient implementation (called on gpu thread):
   void OnConsoleMessage(int32_t id, const std::string& message) override;
-  void CacheShader(const std::string& key, const std::string& shader) override;
+  void CacheBlob(gpu::GpuDiskCacheType type,
+                 const std::string& key,
+                 const std::string& shader) override;
   void OnFenceSyncRelease(uint64_t release) override;
   void OnDescheduleUntilFinished() override;
   void OnRescheduleAfterFinished() override;

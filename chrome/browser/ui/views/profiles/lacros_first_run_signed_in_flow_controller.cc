@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/scoped_observation.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -29,8 +30,13 @@ class OnRefreshTokensLoadedObserver : public signin::IdentityManager::Observer {
 
   // signin::IdentityManager::Observer
   void OnRefreshTokensLoaded() override {
-    if (callback_)
-      std::move(callback_).Run();
+    // The callback must be dispatched since proper functionality requires all
+    // other signin::IdentityManager::Observers to finish executing. See
+    // https://crbug.com/1340791.
+    if (callback_) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                       std::move(callback_));
+    }
   }
 
  private:
@@ -104,6 +110,11 @@ void LacrosFirstRunSignedInFlowController::Init() {
   if (can_retry_init_observer_)
     can_retry_init_observer_.reset();
 
+  LOG(WARNING) << "Init running "
+               << (identity_manager->AreRefreshTokensLoaded() ? "with"
+                                                              : "without")
+               << " refresh tokens.";
+
   if (!identity_manager->AreRefreshTokensLoaded()) {
     // We can't proceed with the init yet, as the tokens will be needed to
     // obtain extended account info and turn on sync. Register this method to be
@@ -116,6 +127,9 @@ void LacrosFirstRunSignedInFlowController::Init() {
   }
 
   ProfilePickerSignedInFlowController::Init();
+
+  LOG(WARNING)
+      << "Init completed and initiative handed off to TurnSyncOnHelper.";
 }
 
 void LacrosFirstRunSignedInFlowController::FinishAndOpenBrowser(
@@ -133,4 +147,8 @@ void LacrosFirstRunSignedInFlowController::SwitchToSyncConfirmation() {
   sync_confirmation_seen_ = true;
 
   ProfilePickerSignedInFlowController::SwitchToSyncConfirmation();
+}
+
+void LacrosFirstRunSignedInFlowController::PreShowScreenForDebug() {
+  LOG(WARNING) << "Calling ShowScreen()";
 }

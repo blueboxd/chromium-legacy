@@ -242,7 +242,7 @@
 <translation id="2964349545761222050">Үчүнчү тараптын cookie файлдарын бөгөттөө</translation>
 <translation id="2969979262385602596">Кире албай калдңз. Бир аздн кийн аракт кылп көрңз.</translation>
 <translation id="2975121486251958312">Жашыруун режим гана жеткиликтүү</translation>
-<translation id="2982481275546140226">Дайын-даректерди өчүрүү</translation>
+<translation id="2982481275546140226">Маалыматты өчүрүү</translation>
 <translation id="298306318844797842">Төлөм ыкмасын кошуу…</translation>
 <translation id="2989805286512600854">Жаңы өтмөктө ачуу</translation>
 <translation id="3020183492814296499">Кыска жолдор</translation>
@@ -280,6 +280,7 @@
 <translation id="3277021493514034324">Сайттын дареги көчүрүлдү</translation>
 <translation id="3285962946108803577">Баракты бөлүшүү...</translation>
 <translation id="3290875554372353449">Аккаунт тандаңыз</translation>
+<translation id="3305294846493618482">дагы</translation>
 <translation id="3311748811247479259">Өчүк</translation>
 <translation id="3324193307694657476">2-дарек</translation>
 <translation id="3328801116991980348">Сайт жөнүндө маалымат</translation>
@@ -311,7 +312,6 @@
 <translation id="3529024052484145543">Кооптуу</translation>
 <translation id="3533202363250687977">Бардык жашыруун өтмөктөрдү жабуу</translation>
 <translation id="3533436815740441613">Жаңы өтмөк</translation>
-<translation id="3547799431091898961">Бардык вебсайттарда Google аккаунтуңуздан чыгуу үчүн <ph name="BEGIN_LINK" />Chrome'дон чыгыңыз<ph name="END_LINK" />.</translation>
 <translation id="3551320343578183772">Өтмөктү жабуу</translation>
 <translation id="3581564640715911333">Башка тилдердеги барактарды которуу сунушталсын</translation>
 <translation id="3588820906588687999">Сүрөттү жаңы өтмөктө ачуу</translation>

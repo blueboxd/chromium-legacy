@@ -512,6 +512,13 @@ bool ContentBrowserClient::IsSharedStorageAllowed(
   return true;
 }
 
+bool ContentBrowserClient::IsPrivateAggregationAllowed(
+    content::BrowserContext* browser_context,
+    const url::Origin& top_frame_origin,
+    const url::Origin& reporting_origin) {
+  return true;
+}
+
 bool ContentBrowserClient::CanSendSCTAuditingReport(
     BrowserContext* browser_context) {
   return false;
@@ -994,10 +1001,6 @@ bool ContentBrowserClient::ShouldForceDownloadResource(
   return false;
 }
 
-void ContentBrowserClient::CreateWebUsbService(
-    RenderFrameHost* render_frame_host,
-    mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {}
-
 void ContentBrowserClient::CreateDeviceInfoService(
     RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::DeviceAPIService> receiver) {}
@@ -1018,6 +1021,10 @@ HidDelegate* ContentBrowserClient::GetHidDelegate() {
 }
 
 BluetoothDelegate* ContentBrowserClient::GetBluetoothDelegate() {
+  return nullptr;
+}
+
+UsbDelegate* ContentBrowserClient::GetUsbDelegate() {
   return nullptr;
 }
 

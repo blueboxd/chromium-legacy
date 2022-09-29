@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/task/single_thread_task_runner.h"
@@ -18,6 +19,11 @@
 #include "device/bluetooth/floss/bluetooth_device_floss.h"
 #include "device/bluetooth/floss/floss_dbus_manager.h"
 #include "device/bluetooth/public/cpp/bluetooth_address.h"
+
+#if BUILDFLAG(IS_CHROMEOS)
+#include "device/bluetooth/chromeos/bluetooth_connection_logger.h"
+#include "device/bluetooth/chromeos/bluetooth_utils.h"
+#endif
 
 namespace floss {
 
@@ -453,6 +459,34 @@ void BluetoothAdapterFloss::NotifyAdapterPoweredChanged(bool powered) {
   for (auto& observer : observers_) {
     observer.AdapterPoweredChanged(this, powered);
   }
+}
+
+void BluetoothAdapterFloss::NotifyDeviceConnectedStateChanged(
+    BluetoothDeviceFloss* device,
+    bool is_now_connected) {
+  DCHECK_EQ(device->IsConnected(), is_now_connected);
+
+#if BUILDFLAG(IS_CHROMEOS)
+  if (is_now_connected) {
+    device::BluetoothConnectionLogger::RecordDeviceConnected(
+        device->GetIdentifier(), device->GetDeviceType());
+  } else {
+    device::RecordDeviceDisconnect(device->GetDeviceType());
+  }
+
+  // Also log the total number of connected devices. This uses a sampled
+  // histogram rather than a enumeration.
+  int count = 0;
+  for (auto& [address, device] : devices_) {
+    if (device->IsPaired() && device->IsConnected()) {
+      count++;
+    }
+  }
+
+  UMA_HISTOGRAM_COUNTS_100("Bluetooth.ConnectedDeviceCount", count);
+#endif
+
+  BluetoothAdapter::NotifyDeviceConnectedStateChanged(device, is_now_connected);
 }
 
 // Observers

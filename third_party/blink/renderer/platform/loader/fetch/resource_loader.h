@@ -54,6 +54,10 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
+namespace base {
+class UnguessableToken;
+}
+
 namespace blink {
 
 class FetchContext;
@@ -167,6 +171,9 @@ class PLATFORM_EXPORT ResourceLoader final
 
   scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner();
 
+  void CancelIfWebBundleTokenMatches(
+      const base::UnguessableToken& web_bundle_token);
+
  private:
   friend class SubresourceIntegrityTest;
   friend class ResourceLoaderIsolatedCodeCacheTest;
@@ -181,7 +188,7 @@ class PLATFORM_EXPORT ResourceLoader final
   void DidReceiveData(base::span<const char> data) override;
   void DidReceiveDecodedData(
       const String& data,
-      std::unique_ptr<ParkableStringImpl::SecureDigest> digest) override;
+      std::unique_ptr<Resource::DecodedDataInfo> info) override;
   void DidFinishLoadingBody() override;
   void DidFailLoadingBody() override;
   void DidCancelLoadingBody() override;

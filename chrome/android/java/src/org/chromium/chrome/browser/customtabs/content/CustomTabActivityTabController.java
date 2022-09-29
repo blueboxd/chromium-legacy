@@ -41,16 +41,19 @@ import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.FirstMeaningfulPaintObserver;
 import org.chromium.chrome.browser.customtabs.PageLoadMetricsObserver;
 import org.chromium.chrome.browser.customtabs.ReparentingTaskProvider;
+import org.chromium.chrome.browser.customtabs.features.TabInteractionRecorder;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabCreationState;
+import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParams;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
@@ -276,6 +279,11 @@ public class CustomTabActivityTabController implements InflationObserver {
                     mIntent.getIntExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA, 0),
                     tab.getWebContents());
         }
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS)) {
+            mConnection.setGreatestScrollPercentageSupplier(
+                    () -> mScrollState != null ? mScrollState.mMaxReportedScrollPercentage : null);
+        }
     }
 
     // Creates the tab on native init, if it hasn't been created yet, and does all the additional
@@ -440,9 +448,19 @@ public class CustomTabActivityTabController implements InflationObserver {
                 }
 
                 @Override
+                public void onHidden(Tab tab, int reason) {
+                    if (reason == TabHidingType.ACTIVITY_HIDDEN
+                            && ChromeFeatureList.isEnabled(
+                                    ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS)) {
+                        collectUserInteraction(tab);
+                    }
+                }
+
+                @Override
                 public void onDestroyed(Tab tab) {
                     if (ChromeFeatureList.isEnabled(
                                 ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS)) {
+                        collectUserInteraction(tab);
                         removeObserversFromWebContents(tab.getWebContents());
                     }
                 }
@@ -520,7 +538,10 @@ public class CustomTabActivityTabController implements InflationObserver {
      */
     private void maybeStartSendingRealTimeEngagementSignals(Tab tab) {
         assert tab.getWebContents() != null;
-
+        // Do not report engagement signals if user does not consent to report usage.
+        if (!PrivacyPreferencesManagerImpl.getInstance().isUsageAndCrashReportingPermitted()) {
+            return;
+        }
         if (mScrollState == null) mScrollState = new ScrollState();
         if (mGestureStateListener == null) {
             mGestureStateListener = new GestureStateListener() {
@@ -571,6 +592,18 @@ public class CustomTabActivityTabController implements InflationObserver {
             gestureListenerManager.addListener(mGestureStateListener);
         }
         tab.getWebContents().addObserver(mWebContentsObserver);
+    }
+
+    private void collectUserInteraction(Tab tab) {
+        assert tab.getWebContents() != null;
+        // Do not report engagement signals if user does not consent to report usage.
+        if (!PrivacyPreferencesManagerImpl.getInstance().isUsageAndCrashReportingPermitted()) {
+            return;
+        }
+        TabInteractionRecorder recorder = TabInteractionRecorder.getFromTab(tab);
+        if (recorder == null) return;
+
+        mConnection.notifyDidGetUserInteraction(mSession, recorder.didGetUserInteraction());
     }
 
     private class ScrollState {

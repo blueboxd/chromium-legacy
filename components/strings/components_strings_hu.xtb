@@ -421,6 +421,7 @@ Ezt egyéb esetben letiltják az Ön adatvédelmi beállításai. Az engedélyez
 <translation id="2040894699575719559">Helyadatok letiltva</translation>
 <translation id="2042213636306070719">7. tálca</translation>
 <translation id="204357726431741734">Jelentkezzen be a Google-fiókjába mentett jelszavak használatához</translation>
+<translation id="2048261947532620704">Oldal fordítása</translation>
 <translation id="205212645995975601">Barbecue és grillezés</translation>
 <translation id="2053111141626950936">A(z) <ph name="LANGUAGE" /> nyelvű oldalak nem lesznek lefordítva.</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{Ha ez a vezérlő be van kapcsolva, és az állapot aktív, a Chrome meghatározza, hogy az Ön legutóbbi böngészési tevékenysége melyik nagy társadalmi csoporthoz, azaz „kohorszhoz” hasonlít leginkább. A hirdetők kiválaszthatják a hirdetéseket a csoporthoz, ám a böngészési előzményeit privát módon tárolja a rendszer az eszközén. Csoportja minden nap frissül.}=1{Ha ez a vezérlő be van kapcsolva, és az állapot aktív, a Chrome meghatározza, hogy az Ön legutóbbi böngészési tevékenysége melyik nagy társadalmi csoporthoz, azaz „kohorszhoz” hasonlít leginkább. A hirdetők kiválaszthatják a hirdetéseket a csoporthoz, ám a böngészési előzményeit privát módon tárolja a rendszer az eszközén. Csoportja minden nap frissül.}other{Ha ez a vezérlő be van kapcsolva, és az állapot aktív, a Chrome meghatározza, hogy az Ön legutóbbi böngészési tevékenysége melyik nagy társadalmi csoporthoz, azaz „kohorszhoz” hasonlít leginkább. A hirdetők kiválaszthatják a hirdetéseket a csoporthoz, ám a böngészési előzményeit privát módon tárolja a rendszer az eszközén. Csoportja {NUM_DAYS} naponta frissül.}}</translation>
@@ -909,6 +910,7 @@ Ezt egyéb esetben letiltják az Ön adatvédelmi beállításai. Az engedélyez
 <translation id="3427342743765426898">&amp;Szerkesztés újra</translation>
 <translation id="342781501876943858">A Chromium azt javasolja, hogy adjon meg új jelszót a régi helyett, ha azt más webhelyeken is használta.</translation>
 <translation id="3428151540071562330">A DnsOverHttpsTemplates szerversablon-URI-k közül legalább egy érvénytelen, és nem használható.</translation>
+<translation id="3431216045099978607">Nyomja meg a(z) |<ph name="ACCELERATOR" />| gombot a teljes képernyős nézetből való kilépéshez és a letöltés megjelenítéséhez.</translation>
 <translation id="3431636764301398940">Kártya mentése az eszközre</translation>
 <translation id="3432601291244612633">Oldal bezárása</translation>
 <translation id="3435738964857648380">Biztonság</translation>
@@ -1102,7 +1104,6 @@ Ezt egyéb esetben letiltják az Ön adatvédelmi beállításai. Az engedélyez
 <translation id="3969052498612555048">Nem találja a kódját? <ph name="BEGIN_LINK" />Új kód igénylése<ph name="END_LINK" />.</translation>
 <translation id="397105322502079400">Számítás…</translation>
 <translation id="3973234410852337861">A(z) <ph name="HOST_NAME" /> le van tiltva</translation>
-<translation id="3978338123949022456">Keresési mód. Írja be a lekérdezést, majd nyomja le az Entert a következővel való kereséshez: <ph name="KEYWORD_SUFFIX" /></translation>
 <translation id="398470910934384994">Madarak</translation>
 <translation id="3985750352229496475">Címek kezelése…</translation>
 <translation id="3986705137476756801">Élő feliratozás átmeneti kikapcsolása</translation>
@@ -1650,6 +1651,7 @@ Ezt egyéb esetben letiltják az Ön adatvédelmi beállításai. Az engedélyez
 <translation id="540969355065856584">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa jelenleg nem érvényes. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolatát.</translation>
 <translation id="5412040515238827314">Érvénytelen formátum: A rendszer mintalistát várt.</translation>
 <translation id="5412236728747081950">Ez a webhely lekéri az érdeklődési köreit a Chrome-tól, hogy relevánsabb hirdetéseket jelenítsen meg Önnek</translation>
+<translation id="5412245327974352290"><ph name="TRADITIONAL_TEXT" /> – <ph name="ADDITIONAL_TEXT" /></translation>
 <translation id="541416427766103491">4. kötegelő</translation>
 <translation id="5421136146218899937">Böngészési adatok törlése...</translation>
 <translation id="5426179911063097041">A(z) <ph name="SITE" /> értesítéseket szeretne küldeni Önnek</translation>
@@ -1711,6 +1713,7 @@ Ezt egyéb esetben letiltják az Ön adatvédelmi beállításai. Az engedélyez
 <translation id="5580958916614886209">Ellenőrizze a lejárati hónapot, majd próbálja újra</translation>
 <translation id="558420943003240152">Jelszavak és azonosítókulcsok kezelése…</translation>
 <translation id="5586446728396275693">Nincsenek mentett címek</translation>
+<translation id="5586831831248371458"><ph name="KEYWORD_SUFFIX" /> keresése</translation>
 <translation id="5587987780934666589">Platform – felhasználó</translation>
 <translation id="5593349413089863479">A kapcsolat nem teljesen biztonságos</translation>
 <translation id="5595485650161345191">Cím szerkesztése</translation>
@@ -2054,6 +2057,7 @@ Ezt egyéb esetben letiltják az Ön adatvédelmi beállításai. Az engedélyez
 <translation id="6591833882275308647"><ph name="DEVICE_TYPE" /> eszköze nem áll felügyelet alatt</translation>
 <translation id="6592952801936330159">Webhelybeállítások kezelése gomb. Nyomja le az Enter billentyűt a webhelyek engedélyeinek és tárolt adatainak a Chrome-beállítások közötti kezeléséhez.</translation>
 <translation id="6596325263575161958">Titkosítási lehetőségek</translation>
+<translation id="6599642189720630047">Nyomon követett termékek</translation>
 <translation id="6609880536175561541">Prc7 (boríték)</translation>
 <translation id="6611723696964473273">Gazdasági hírek</translation>
 <translation id="6612010098632894193">Online videó</translation>
@@ -2581,6 +2585,7 @@ További részletek:
 <translation id="8004582292198964060">Böngésző</translation>
 <translation id="8009225694047762179">Jelszó kezelése</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{A kártyát és a számlázási címet elmentjük. Az adatok kéznél lesznek, amíg <ph name="USER_EMAIL" /> e-mail-című fiókját használja.}other{A kártyákat és a számlázási címeket elmentjük. Az adatok kéznél lesznek, amíg <ph name="USER_EMAIL" /> e-mail-című fiókját használja.}}</translation>
+<translation id="8019861005170389898"><ph name="TRADITIONAL_TEXT" /> (<ph name="ADDITIONAL_TEXT" />)</translation>
 <translation id="8025119109950072390">A támadók ezen a webhelyen megpróbálhatják csellel rávenni Önt, hogy például telepítsen egy veszélyes szoftvert, vagy felfedje személyes adatait (jelszavát, telefonszámát, hitelkártyaszámát stb.).</translation>
 <translation id="8026334261755873520">Böngészési adatok törlése</translation>
 <translation id="8027077570865220386">15. tálca</translation>
@@ -2850,7 +2855,7 @@ További részletek:
 <translation id="8820817407110198400">Könyvjelzők</translation>
 <translation id="882338992931677877">Manuális nyílás</translation>
 <translation id="8834380158646307944">Inkognitó ablakok bezárása gomb. Nyomja le az Enter billentyűt a jelenleg megnyitott összes inkognitó ablak bezárásához.</translation>
-<translation id="883848425547221593">Egyéb könyvjelzők</translation>
+<translation id="883848425547221593">További könyvjelzők</translation>
 <translation id="884264119367021077">Szállítási cím</translation>
 <translation id="884923133447025588">Nem található visszavonási mechanizmus.</translation>
 <translation id="8849262850971482943">Használja virtuális kártyáját a plusz biztonság érdekében</translation>

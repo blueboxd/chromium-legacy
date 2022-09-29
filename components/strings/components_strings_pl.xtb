@@ -350,7 +350,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="1807246157184219062">Jasny</translation>
 <translation id="1807528111851433570">Arkusz początkowy</translation>
 <translation id="1812527064848182527">orientacja pozioma</translation>
-<translation id="1813414402673211292">Wyczyść historię przeglądania</translation>
+<translation id="1813414402673211292">Wyczyść dane przeglądania</translation>
 <translation id="182139138257690338">pobieranie automatyczne</translation>
 <translation id="1821930232296380041">Nieprawidłowe żądanie lub jego parametry</translation>
 <translation id="1822540298136254167">Odwiedzone strony internetowe i spędzony na nich czas</translation>
@@ -421,6 +421,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="2040894699575719559">Lokalizacja zablokowana</translation>
 <translation id="2042213636306070719">Taca 7</translation>
 <translation id="204357726431741734">Zaloguj się, by używać haseł zapisanych na Twoim koncie Google</translation>
+<translation id="2048261947532620704">Tłumaczę stronę</translation>
 <translation id="205212645995975601">Grillowanie</translation>
 <translation id="2053111141626950936">Strony w tym języku (<ph name="LANGUAGE" />) nie będą tłumaczone.</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{Gdy ta opcja jest włączona i ma stan aktywny, Chrome znajduje dużą grupę osób (kohortę), której aktywność związana z przeglądaniem jest najbardziej podobna do Twojej. Reklamodawcy mogą wybierać reklamy dla grupy, a Twoja aktywność związana z przeglądaniem pozostaje prywatna i jest przechowywana tylko na Twoim urządzeniu. Grupa, do której należysz, jest codziennie aktualizowana.}=1{Gdy ta opcja jest włączona i ma stan aktywny, Chrome znajduje dużą grupę osób (kohortę), której aktywność związana z przeglądaniem jest najbardziej podobna do Twojej. Reklamodawcy mogą wybierać reklamy dla grupy, a Twoja aktywność związana z przeglądaniem pozostaje prywatna i jest przechowywana tylko na Twoim urządzeniu. Grupa, do której należysz, jest codziennie aktualizowana.}few{Gdy ta opcja jest włączona i ma stan aktywny, Chrome znajduje dużą grupę osób (kohortę), której aktywność związana z przeglądaniem jest najbardziej podobna do Twojej. Reklamodawcy mogą wybierać reklamy dla grupy, a Twoja aktywność związana z przeglądaniem pozostaje prywatna i jest przechowywana tylko na Twoim urządzeniu. Grupa, do której należysz, jest aktualizowana co {NUM_DAYS} dni.}many{Gdy ta opcja jest włączona i ma stan aktywny, Chrome znajduje dużą grupę osób (kohortę), której aktywność związana z przeglądaniem jest najbardziej podobna do Twojej. Reklamodawcy mogą wybierać reklamy dla grupy, a Twoja aktywność związana z przeglądaniem pozostaje prywatna i jest przechowywana tylko na Twoim urządzeniu. Grupa, do której należysz, jest aktualizowana co {NUM_DAYS} dni.}other{Gdy ta opcja jest włączona i ma stan aktywny, Chrome znajduje dużą grupę osób (kohortę), której aktywność związana z przeglądaniem jest najbardziej podobna do Twojej. Reklamodawcy mogą wybierać reklamy dla grupy, a Twoja aktywność związana z przeglądaniem pozostaje prywatna i jest przechowywana tylko na Twoim urządzeniu. Grupa, do której należysz, jest aktualizowana co {NUM_DAYS} dnia.}}</translation>
@@ -911,6 +912,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="3427342743765426898">&amp;Ponów edycję</translation>
 <translation id="342781501876943858">Chromium zaleca zresetowanie hasła, jeśli zostało użyte na innej stronie.</translation>
 <translation id="3428151540071562330">Co najmniej jeden identyfikator URI szablonu serwera DnsOverHttpsTemplates jest nieprawidłowy i nie zostanie użyty.</translation>
+<translation id="3431216045099978607">Aby zamknąć tryb pełnoekranowy i zobaczyć pobrane pliki, naciśnij |<ph name="ACCELERATOR" />|.</translation>
 <translation id="3431636764301398940">Zapisz tę kartę na tym urządzeniu</translation>
 <translation id="3432601291244612633">Zamknij stronę</translation>
 <translation id="3435738964857648380">Bezpieczeństwo</translation>
@@ -1104,7 +1106,6 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="3969052498612555048">Nie możesz znaleźć kodu? <ph name="BEGIN_LINK" />Uzyskaj nowy kod<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">Obliczanie...</translation>
 <translation id="3973234410852337861">Strona <ph name="HOST_NAME" /> jest zablokowana</translation>
-<translation id="3978338123949022456">Tryb wyszukiwania. Wpisz zapytanie i naciśnij Enter, aby wyszukać w <ph name="KEYWORD_SUFFIX" /></translation>
 <translation id="398470910934384994">Ptaki</translation>
 <translation id="3985750352229496475">Zarządzaj adresami...</translation>
 <translation id="3986705137476756801">Na razie wyłącz napisy na żywo</translation>
@@ -1652,6 +1653,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="540969355065856584">Ten serwer nie może udowodnić, że należy do domeny <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest obecnie ważny. Może to być spowodowane nieprawidłową konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="5412040515238827314">Nieprawidłowy format: oczekiwana jest lista wzorców.</translation>
 <translation id="5412236728747081950">Witryna korzysta z gromadzonych przez Chrome informacji o Twoich zainteresowaniach, aby wyświetlać trafniejsze reklamy</translation>
+<translation id="5412245327974352290"><ph name="TRADITIONAL_TEXT" /> – <ph name="ADDITIONAL_TEXT" /></translation>
 <translation id="541416427766103491">Układarka 4</translation>
 <translation id="5421136146218899937">Wyczyść dane przeglądania...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> chce wysyłać Ci powiadomienia</translation>
@@ -1713,6 +1715,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="5580958916614886209">Sprawdź miesiąc ważności i spróbuj ponownie</translation>
 <translation id="558420943003240152">Zarządzaj hasłami i kluczami…</translation>
 <translation id="5586446728396275693">Brak zapisanych adresów</translation>
+<translation id="5586831831248371458">Szukaj: <ph name="KEYWORD_SUFFIX" /></translation>
 <translation id="5587987780934666589">Platforma – użytkownik</translation>
 <translation id="5593349413089863479">Połączenie nie jest całkiem bezpieczne</translation>
 <translation id="5595485650161345191">Edytuj adres</translation>
@@ -2056,6 +2059,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="6591833882275308647">Twoje urządzenie <ph name="DEVICE_TYPE" /> nie jest zarządzane</translation>
 <translation id="6592952801936330159">Przycisk zarządzania ustawieniami witryn; aby zarządzać uprawnieniami i danymi zapisanymi dla różnych witryn w ustawieniach Chrome, naciśnij Enter</translation>
 <translation id="6596325263575161958">Opcje szyfrowania</translation>
+<translation id="6599642189720630047">Obserwowane produkty</translation>
 <translation id="6609880536175561541">Prc7 (koperta)</translation>
 <translation id="6611723696964473273">Wiadomości gospodarcze</translation>
 <translation id="6612010098632894193">Filmy online</translation>
@@ -2295,7 +2299,7 @@ Dodatkowe informacje:
 <translation id="7277998515889183784">Makijaż i kosmetyki</translation>
 <translation id="7285654172857511148"><ph name="CHANGE_GOOGLE_PASSWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />; naciśnij Tab, a potem Enter, aby zmienić swoje hasło do konta Google</translation>
 <translation id="7292031607255951991">Nazwa odbiorcy</translation>
-<translation id="7298195798382681320">Zalecane</translation>
+<translation id="7298195798382681320">Zalecana</translation>
 <translation id="7300012071106347854">Niebieski kobalt</translation>
 <translation id="7304030187361489308">Wysoki</translation>
 <translation id="7304562222803846232">Zarządzaj ustawieniami prywatności konta Google</translation>
@@ -2403,7 +2407,7 @@ Dodatkowe informacje:
 <translation id="7526934274050461096">Twoje połączenie z tą stroną nie jest prywatne</translation>
 <translation id="7529884293139707752">Edukacja domowa</translation>
 <translation id="7535087603100972091">Wartość</translation>
-<translation id="7537536606612762813">Obowiązkowe</translation>
+<translation id="7537536606612762813">Obowiązkowa</translation>
 <translation id="7538364083937897561">A2 (koperta)</translation>
 <translation id="7542403920425041731">Po potwierdzeniu szczegółowe dane karty zostaną udostępnione tej stronie.</translation>
 <translation id="7542995811387359312">Automatyczne wypełnianie danych karty kredytowej jest wyłączone, ponieważ ten formularz nie korzysta z bezpiecznego połączenia.</translation>
@@ -2583,6 +2587,7 @@ Dodatkowe informacje:
 <translation id="8004582292198964060">Przeglądarka</translation>
 <translation id="8009225694047762179">Zarządzaj hasłami</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Ta karta i jej adres rozliczeniowy zostaną zapisane. Możesz ich używać po zalogowaniu się na konto <ph name="USER_EMAIL" />.}few{Te karty i ich adresy rozliczeniowe zostaną zapisane. Możesz ich używać po zalogowaniu się na konto <ph name="USER_EMAIL" />.}many{Te karty i ich adresy rozliczeniowe zostaną zapisane. Możesz ich używać po zalogowaniu się na konto <ph name="USER_EMAIL" />.}other{Te karty i ich adresy rozliczeniowe zostaną zapisane. Możesz ich używać po zalogowaniu się na konto <ph name="USER_EMAIL" />.}}</translation>
+<translation id="8019861005170389898"><ph name="TRADITIONAL_TEXT" /> (<ph name="ADDITIONAL_TEXT" />)</translation>
 <translation id="8025119109950072390">Osoby atakujące tę stronę mogą podstępem nakłonić Cię do zrobienia czegoś niebezpiecznego, np. zainstalowania oprogramowania lub ujawnienia danych osobowych (takich jak hasła, numery telefonów czy dane kart kredytowych).</translation>
 <translation id="8026334261755873520">Wyczyść dane przeglądania</translation>
 <translation id="8027077570865220386">Taca 15</translation>

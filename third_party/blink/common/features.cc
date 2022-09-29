@@ -15,6 +15,14 @@
 namespace blink {
 namespace features {
 
+// Gate access to the AnonymousIframe origin trial. This is useful on its own,
+// because the OT infrastructure doesn't check Chrome's version. It means token
+// generated for the OT applies immediately to every Chrome versions. The
+// feature flag allows Chrome developers to restrict the access to the first
+// fully supported version.
+const base::Feature kAnonymousIframeOriginTrial{
+    "AnonymousIframeOriginTrial", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Apply lazy-loading to ad frames which have embeds likely impacting Core Web
 // Vitals.
 const base::Feature kAutomaticLazyFrameLoadingToAds{
@@ -1564,6 +1572,8 @@ const base::Feature kPretokenizeCSS{"PretokenizeCSS",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 const base::FeatureParam<bool> kPretokenizeInlineSheets = {
     &kPretokenizeCSS, "pretokenize_inline_sheets", true};
+const base::FeatureParam<bool> kPretokenizeExternalSheets = {
+    &kPretokenizeCSS, "pretokenize_external_sheets", true};
 
 const base::Feature kSimulateClickOnAXFocus {
   "SimulateClickOnAXFocus",
@@ -1599,7 +1609,7 @@ const base::Feature kTimedHTMLParserBudget{"TimedHTMLParserBudget",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCSSOverflowForReplacedElements{
-    "CSSOverflowForReplacedElements", base::FEATURE_ENABLED_BY_DEFAULT};
+    "CSSOverflowForReplacedElements", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kScrollUpdateOptimizations{
     "ScrollUpdateOptimizations", base::FEATURE_DISABLED_BY_DEFAULT};

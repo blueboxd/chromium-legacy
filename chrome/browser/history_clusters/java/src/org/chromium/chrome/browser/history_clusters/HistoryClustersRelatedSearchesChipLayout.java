@@ -20,6 +20,7 @@ import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import java.util.List;
 
 class HistoryClustersRelatedSearchesChipLayout extends FrameLayout {
+    private DividerView mDividerView;
     private ChipsCoordinator mChipsCoordinator;
 
     private final ModelList mChipList = new ModelList();
@@ -34,6 +35,8 @@ class HistoryClustersRelatedSearchesChipLayout extends FrameLayout {
     public void onFinishInflate() {
         super.onFinishInflate();
 
+        mDividerView = new DividerView(getContext(), null, 0, R.style.HorizontalDivider);
+        mDividerView.addToParent(this, generateDefaultLayoutParams());
         mChipsCoordinator = new ChipsCoordinator(getContext(), mChipList);
         mChipsCoordinator.setSpaceItemDecoration(
                 getResources().getDimensionPixelSize(R.dimen.related_search_chip_list_chip_spacing),
@@ -54,5 +57,13 @@ class HistoryClustersRelatedSearchesChipLayout extends FrameLayout {
             listItem.model.set(ChipProperties.ENABLED, true);
             mChipList.add(listItem);
         }
+    }
+
+    void setDividerVisibility(boolean visible) {
+        mDividerView.setVisibility(visible ? VISIBLE : GONE);
+    }
+
+    void setHasThickDivider(boolean hasThickDivider) {
+        mDividerView.setIsThickDivider(hasThickDivider);
     }
 }

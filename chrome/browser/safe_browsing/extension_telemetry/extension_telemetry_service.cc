@@ -287,7 +287,10 @@ void ExtensionTelemetryService::AddSignal(
                              GetExtensionInfoForReport(*extension));
   }
 
-  processor.ProcessSignal(std::move(signal));
+  // Pass the signal as reference instead of relinquishing ownership to the
+  // signal processor. This change paves the way for passing the signal
+  // information to multiple signal processors in a future CL.
+  processor.ProcessSignal(*signal);
 }
 
 void ExtensionTelemetryService::CreateAndUploadReport() {
@@ -357,9 +360,14 @@ void ExtensionTelemetryService::UploadReport(
 }
 
 void ExtensionTelemetryService::StartUploadCheck() {
-  if (GetLastUploadTimeForExtensionTelemetry(*pref_service_) +
-          current_reporting_interval_ <=
-      base::Time::Now()) {
+  // This check is performed as a delayed task after enabling the service. The
+  // service may become disabled between the time this task is scheduled and it
+  // actually runs. So make sure service is enabled before performing the check.
+  if (!enabled_)
+    return;
+
+  if ((GetLastUploadTimeForExtensionTelemetry(*pref_service_) +
+       current_reporting_interval_) <= base::Time::Now()) {
     CreateAndUploadReport();
   }
 }

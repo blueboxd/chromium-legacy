@@ -147,6 +147,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl
   void SetChannelDiskCacheHandle(
       int32_t client_id,
       const gpu::GpuDiskCacheHandle& handle) override;
+  void OnDiskCacheHandleDestoyed(
+      const gpu::GpuDiskCacheHandle& handle) override;
   void CloseChannel(int32_t client_id) override;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
@@ -234,8 +236,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl
   void ThrowJavaException() override;
 
   // gpu::GpuChannelManagerDelegate:
-  void RegisterDisplayContext(gpu::DisplayContext* display_context) override;
-  void UnregisterDisplayContext(gpu::DisplayContext* display_context) override;
   void LoseAllContexts() override;
   void DidCreateContextSuccessfully() override;
   void DidCreateOffscreenContext(const GURL& active_url) override;
@@ -503,9 +503,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl
   scoped_refptr<arc::ProtectedBufferManager> protected_buffer_manager_;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) &&
         // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-
-  // Display compositor contexts that don't have a corresponding GPU channel.
-  base::ObserverList<gpu::DisplayContext>::Unchecked display_contexts_;
 
   VisibilityChangedCallback visibility_changed_callback_;
 

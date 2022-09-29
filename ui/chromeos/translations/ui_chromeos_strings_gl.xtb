@@ -374,6 +374,7 @@
 <translation id="4336032328163998280">Produciuse un erro na operación de copia. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4340491671558548972">Engadir á barra lateral</translation>
 <translation id="4348495354623233847">Kurdo sorani con teclado baseado no alfabeto árabe</translation>
+<translation id="434941167647142660">Localización orixinal</translation>
 <translation id="4363958938297989186">Ruso con teclado fonético</translation>
 <translation id="4364327530094270451">Melón</translation>
 <translation id="4378551569595875038">Conectando...</translation>
@@ -896,7 +897,7 @@
 <translation id="853494022971700746">Francés (Francia)</translation>
 <translation id="8540608333167683902">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, detalles</translation>
 <translation id="8545476925160229291">Inglés (EUA)</translation>
-<translation id="854655314928502177">URL de detección automática de proxy web</translation>
+<translation id="854655314928502177">URL de Discovery automático de proxy web</translation>
 <translation id="8549186985808798022">Italiano</translation>
 <translation id="8551494947769799688">Letón</translation>
 <translation id="8560515948038859357">Cantonés</translation>

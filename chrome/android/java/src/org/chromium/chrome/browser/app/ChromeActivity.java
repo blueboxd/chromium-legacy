@@ -797,6 +797,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         mInsetObserverViewSupplier.set(InsetObserverView.create(this));
         rootView.addView(mInsetObserverViewSupplier.get(), 0);
 
+        if (ChromeFeatureList.sOSKResizesVisualViewport.isEnabled()) {
+            getWindowAndroid().getApplicationBottomInsetProvider().addStackingSupplier(
+                    mInsetObserverViewSupplier.get().getSupplierForBottomInset());
+        }
+
         super.onInitialLayoutInflationComplete();
     }
 
@@ -2040,6 +2045,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         compositorViewHolder.setInsetObserverView(mInsetObserverViewSupplier.get());
         compositorViewHolder.setAutofillUiBottomInsetSupplier(
                 mManualFillingComponentSupplier.get().getBottomInsetSupplier());
+
+        if (ChromeFeatureList.sOSKResizesVisualViewport.isEnabled()) {
+            getWindowAndroid().getApplicationBottomInsetProvider().addStackingSupplier(
+                    mManualFillingComponentSupplier.get().getBottomInsetSupplier());
+        }
+
         compositorViewHolder.setTopUiThemeColorProvider(
                 mRootUiCoordinator.getTopUiThemeColorProvider());
         compositorViewHolder.onFinishNativeInitialization(getTabModelSelector(), this);
@@ -2565,9 +2576,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 RequestDesktopUtils.setRequestDesktopSiteContentSettingsForUrl(
                         profile, currentTab.getUrl(), usingDesktopUserAgent);
                 currentTab.reload();
+                RequestDesktopUtils.maybeShowUserEducationPromptForAppMenuSelection(
+                        Profile.getLastUsedRegularProfile());
             } else {
                 TabUtils.switchUserAgent(currentTab, usingDesktopUserAgent, /* forcedByUser */ true,
                         UseDesktopUserAgentCaller.ON_MENU_OR_KEYBOARD_ACTION);
+                TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile())
+                        .notifyEvent(EventConstants.APP_MENU_DESKTOP_SITE_FOR_TAB_CLICKED);
             }
             RequestDesktopUtils.recordUserChangeUserAgent(usingDesktopUserAgent, getActivityTab());
             return true;
@@ -2717,6 +2732,15 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // 20dp granularity.
         RecordHistogram.recordLinearCountHistogram(
                 "Android.DeviceSize.LargestDisplaySize2", largestDisplaySize, 200, 2000, 92);
+
+        double screenSizeInches = mRootUiCoordinator.getPrimaryDisplaySizeInInches();
+        // A sample value 10 times the screen size in inches will be used to support a granularity
+        // of 0.2" (or 2 units of the recorded value) for devices ranging from 4" to 15" (inclusive)
+        // in screen size. Two additional buckets will account for underflow and overflow screen
+        // sizes.
+        int sample = (int) (screenSizeInches * 10.0);
+        RecordHistogram.recordLinearCountHistogram(
+                "Android.DeviceSize.ScreenSizeInTensOfInches", sample, 40, 152, 58);
     }
 
     @Override

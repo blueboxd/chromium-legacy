@@ -61,11 +61,15 @@ const int kURLLabelDefaultNumberOfLines = 3;
       kIncognitoInterstitialAccessibilityIdentifier;
 
   self.bannerName = @"incognito_interstitial_screen_banner";
-  self.isTallBanner = YES;
+  self.isTallBanner = NO;
   self.shouldBannerFillTopSpace = YES;
   self.shouldHideBanner = IsCompactHeight(self.traitCollection);
 
-  self.titleText = l10n_util::GetNSString(IDS_IOS_INCOGNITO_INTERSTITIAL_TITLE);
+  NSString* title =
+      l10n_util::GetNSString(IDS_IOS_INCOGNITO_INTERSTITIAL_TITLE);
+  self.title = title;
+  self.titleText = title;
+  self.titleHorizontalMargin = 0;
   self.primaryActionString = l10n_util::GetNSString(
       IDS_IOS_INCOGNITO_INTERSTITIAL_OPEN_IN_CHROME_INCOGNITO);
   self.secondaryActionString =
@@ -85,17 +89,20 @@ const int kURLLabelDefaultNumberOfLines = 3;
   if (base::FeatureList::IsEnabled(kIncognitoNtpRevamp)) {
     RevampedIncognitoView* revampedIncognitoView =
         [[RevampedIncognitoView alloc] initWithFrame:CGRectZero
-                       showTopIncognitoImageAndTitle:NO];
+                       showTopIncognitoImageAndTitle:NO
+                           stackViewHorizontalMargin:0];
     revampedIncognitoView.URLLoaderDelegate = self.URLLoaderDelegate;
     incognitoView = revampedIncognitoView;
   } else {
     IncognitoView* revampedIncognitoView =
         [[IncognitoView alloc] initWithFrame:CGRectZero
-               showTopIncognitoImageAndTitle:NO];
+               showTopIncognitoImageAndTitle:NO
+                   stackViewHorizontalMargin:0];
     revampedIncognitoView.URLLoaderDelegate = self.URLLoaderDelegate;
     incognitoView = revampedIncognitoView;
   }
   incognitoView.translatesAutoresizingMaskIntoConstraints = NO;
+  incognitoView.bounces = NO;
 
   // The Incognito view is put inside a container because it might try
   // to put constraints on its superview.
@@ -210,6 +217,13 @@ const int kURLLabelDefaultNumberOfLines = 3;
     self.expandURLButton.hidden =
         (expandedNumberOfLines <= kURLLabelDefaultNumberOfLines);
   }
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+  // Ensure the title label is focused when the Incognito interstial appears.
+  UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
+                                  self.titleLabel);
 }
 
 #pragma mark - Accessors

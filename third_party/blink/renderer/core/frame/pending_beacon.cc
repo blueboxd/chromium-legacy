@@ -4,10 +4,10 @@
 
 #include "third_party/blink/renderer/core/frame/pending_beacon.h"
 
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/frame/pending_beacon.mojom-blink.h"
-#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_request_util.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/pending_beacon_dispatcher.h"
@@ -19,6 +19,28 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
+namespace {
+
+// Internally enforces a time limit to send out pending beacons when using
+// background timeout.
+//
+// When the page is in hidden state, beacons will be sent out no later than
+// min(Time evicted from back/forward cache,
+//     `kDefaultPendingBeaconMaxBackgroundTimeout`).
+// Note that this is currently longer than back/forward cache entry's TTL.
+// See https://github.com/WICG/unload-beacon/issues/3
+constexpr base::TimeDelta kDefaultPendingBeaconMaxBackgroundTimeout =
+    base::Minutes(30);  // 30 minutes
+
+// Returns a max possible background timeout for every pending beacon.
+base::TimeDelta GetMaxBackgroundTimeout() {
+  return base::Milliseconds(GetFieldTrialParamByFeatureAsInt(
+      features::kPendingBeaconAPI, "PendingBeaconMaxBackgroundTimeoutInMs",
+      base::checked_cast<int32_t>(
+          kDefaultPendingBeaconMaxBackgroundTimeout.InMilliseconds())));
+}
+
+}  // namespace
 
 PendingBeacon::PendingBeacon(ExecutionContext* ec,
                              const String& url,
@@ -30,7 +52,7 @@ PendingBeacon::PendingBeacon(ExecutionContext* ec,
       url_(url),
       method_(method),
       background_timeout_(base::Milliseconds(background_timeout)),
-      timeout_(base::Milliseconds(timeout)) {
+      timeout_timer_(GetTaskRunner(), this, &PendingBeacon::TimeoutTimerFired) {
   // Creates a corresponding instance of PendingBeacon in the browser process
   // and binds `remote_` to it.
   mojom::blink::BeaconMethod host_method;
@@ -40,27 +62,33 @@ PendingBeacon::PendingBeacon(ExecutionContext* ec,
     host_method = mojom::blink::BeaconMethod::kPost;
   }
 
-  auto task_runner = ec_->GetTaskRunner(PendingBeaconDispatcher::kTaskType);
   mojo::PendingReceiver<mojom::blink::PendingBeacon> beacon_receiver =
-      remote_.BindNewPipeAndPassReceiver(task_runner);
+      remote_.BindNewPipeAndPassReceiver(GetTaskRunner());
   KURL host_url = ec_->CompleteURL(url);
 
   PendingBeaconDispatcher& dispatcher =
       PendingBeaconDispatcher::FromOrAttachTo(*ec_);
-  dispatcher.CreateHostBeacon(std::move(beacon_receiver), host_url,
+  dispatcher.CreateHostBeacon(this, std::move(beacon_receiver), host_url,
                               host_method);
+  // May trigger beacon sending immediately.
+  setTimeout(timeout);
 }
 
 void PendingBeacon::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   visitor->Trace(ec_);
   visitor->Trace(remote_);
+  visitor->Trace(timeout_timer_);
 }
 
 void PendingBeacon::deactivate() {
   if (pending_) {
     remote_->Deactivate();
     pending_ = false;
+
+    auto* dispatcher = PendingBeaconDispatcher::From(*ec_);
+    DCHECK(dispatcher);
+    dispatcher->Unregister(this);
   }
 }
 
@@ -68,6 +96,10 @@ void PendingBeacon::sendNow() {
   if (pending_) {
     remote_->SendNow();
     pending_ = false;
+
+    auto* dispatcher = PendingBeaconDispatcher::From(*ec_);
+    DCHECK(dispatcher);
+    dispatcher->Unregister(this);
   }
 }
 
@@ -77,6 +109,18 @@ void PendingBeacon::setBackgroundTimeout(int32_t background_timeout) {
 
 void PendingBeacon::setTimeout(int32_t timeout) {
   timeout_ = base::Milliseconds(timeout);
+  if (timeout_.is_negative() || !pending_) {
+    return;
+  }
+
+  // TODO(crbug.com/3774273): Use the nullity of data & url to decide whether
+  // beacon should be sent.
+  // https://github.com/WICG/unload-beacon/issues/17#issuecomment-1198871880
+
+  // If timeout >= 0, the timer starts immediately after its value is set or
+  // updated.
+  // https://github.com/WICG/unload-beacon/blob/main/README.md#properties
+  timeout_timer_.StartOneShot(timeout_, FROM_HERE);
 }
 
 void PendingBeacon::SetURLInternal(const String& url) {
@@ -106,6 +150,26 @@ void PendingBeacon::SetDataInternal(const BeaconData& data,
   AtomicString content_type = request.HttpContentType();
   remote_->SetRequestData(std::move(request_body),
                           content_type.IsNull() ? "" : content_type);
+}
+
+base::TimeDelta PendingBeacon::GetBackgroundTimeout() const {
+  const auto max_background_timeout = GetMaxBackgroundTimeout();
+  return (background_timeout_.is_negative() ||
+          background_timeout_ > max_background_timeout)
+             ? max_background_timeout
+             : background_timeout_;
+}
+
+void PendingBeacon::Send() {
+  sendNow();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> PendingBeacon::GetTaskRunner() {
+  return ec_->GetTaskRunner(PendingBeaconDispatcher::kTaskType);
+}
+
+void PendingBeacon::TimeoutTimerFired(TimerBase*) {
+  sendNow();
 }
 
 }  // namespace blink

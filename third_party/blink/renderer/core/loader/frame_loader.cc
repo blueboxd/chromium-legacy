@@ -49,6 +49,7 @@
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
@@ -176,15 +177,6 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
   return request;
 }
 
-FrameLoader::ScopedOldDocumentInfoForCommitCapturer*
-    FrameLoader::ScopedOldDocumentInfoForCommitCapturer::current_capturer_ =
-        nullptr;
-
-FrameLoader::ScopedOldDocumentInfoForCommitCapturer::
-    ~ScopedOldDocumentInfoForCommitCapturer() {
-  current_capturer_ = previous_capturer_;
-}
-
 FrameLoader::FrameLoader(LocalFrame* frame)
     : frame_(frame),
       progress_tracker_(MakeGarbageCollected<ProgressTracker>(frame)),
@@ -249,7 +241,8 @@ void FrameLoader::Trace(Visitor* visitor) const {
   visitor->Trace(document_loader_);
 }
 
-void FrameLoader::Init(std::unique_ptr<PolicyContainer> policy_container) {
+void FrameLoader::Init(std::unique_ptr<PolicyContainer> policy_container,
+                       const blink::StorageKey& storage_key) {
   DCHECK(policy_container);
   ScriptForbiddenScope forbid_scripts;
 
@@ -258,6 +251,7 @@ void FrameLoader::Init(std::unique_ptr<PolicyContainer> policy_container) {
   navigation_params->url = KURL(g_empty_string);
   navigation_params->frame_policy =
       frame_->Owner() ? frame_->Owner()->GetFramePolicy() : FramePolicy();
+  navigation_params->storage_key = storage_key;
 
   DocumentLoader* new_document_loader = MakeGarbageCollected<DocumentLoader>(
       frame_, kWebNavigationTypeOther, std::move(navigation_params),
@@ -396,6 +390,8 @@ void FrameLoader::DispatchUnloadEventAndFillOldDocumentInfoIfNeeded(
     return;
   }
   old_document_info->history_item = GetDocumentLoader()->GetHistoryItem();
+  old_document_info->had_sticky_activation_before_navigation =
+      frame_->HadStickyUserActivationBeforeNavigation();
 
   frame_->GetDocument()->DispatchUnloadEvents(
       &old_document_info->unload_timing_info);
@@ -1345,19 +1341,18 @@ void FrameLoader::CommitDocumentLoader(DocumentLoader* document_loader,
 
   // Update the DocumentLoadTiming with the timings from the previous document
   // unload event.
-  if (OldDocumentInfoForCommit* old_document_info =
-          ScopedOldDocumentInfoForCommitCapturer::CurrentInfo()) {
-    if (old_document_info->unload_timing_info.unload_timing.has_value()) {
-      document_loader_->GetTiming().SetCanRequestFromPreviousDocument(
-          old_document_info->unload_timing_info.unload_timing->can_request);
-      document_loader_->GetTiming().SetUnloadEventStart(
-          old_document_info->unload_timing_info.unload_timing
-              ->unload_event_start);
-      document_loader_->GetTiming().SetUnloadEventEnd(
-          old_document_info->unload_timing_info.unload_timing
-              ->unload_event_end);
-      document_loader_->GetTiming().MarkCommitNavigationEnd();
-    }
+  OldDocumentInfoForCommit* old_document_info =
+      ScopedOldDocumentInfoForCommitCapturer::CurrentInfo();
+  if (old_document_info &&
+      old_document_info->unload_timing_info.unload_timing.has_value()) {
+    document_loader_->GetTiming().SetCanRequestFromPreviousDocument(
+        old_document_info->unload_timing_info.unload_timing->can_request);
+    document_loader_->GetTiming().SetUnloadEventStart(
+        old_document_info->unload_timing_info.unload_timing
+            ->unload_event_start);
+    document_loader_->GetTiming().SetUnloadEventEnd(
+        old_document_info->unload_timing_info.unload_timing->unload_event_end);
+    document_loader_->GetTiming().MarkCommitNavigationEnd();
   }
 
   TakeObjectSnapshot();
@@ -1859,15 +1854,6 @@ FrameLoader::CreateWorkerCodeCacheHost() {
   if (!document_loader_)
     return mojo::NullRemote();
   return document_loader_->CreateWorkerCodeCacheHost();
-}
-
-FrameLoader::OldDocumentInfoForCommit::OldDocumentInfoForCommit(
-    scoped_refptr<SecurityOrigin> new_document_origin)
-    : unload_timing_info(
-          UnloadEventTimingInfo(std::move(new_document_origin))) {}
-
-void FrameLoader::OldDocumentInfoForCommit::Trace(Visitor* visitor) const {
-  visitor->Trace(history_item);
 }
 
 }  // namespace blink

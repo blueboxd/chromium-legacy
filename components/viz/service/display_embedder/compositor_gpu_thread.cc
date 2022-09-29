@@ -40,8 +40,12 @@ std::unique_ptr<CompositorGpuThread> CompositorGpuThread::Create(
     gpu::VulkanImplementation* vulkan_implementation,
     gpu::VulkanDeviceQueue* device_queue,
     bool enable_watchdog) {
-  if (!features::IsDrDcEnabled())
+  DCHECK(gpu_channel_manager);
+
+  if (!features::IsDrDcEnabled() ||
+      gpu_channel_manager->gpu_driver_bug_workarounds().disable_drdc) {
     return nullptr;
+  }
 
 #if BUILDFLAG(IS_ANDROID)
   // When using angle via enabling passthrough command decoder on android, angle
@@ -64,7 +68,8 @@ std::unique_ptr<CompositorGpuThread> CompositorGpuThread::Create(
         device_queue->GetVulkanPhysicalDevice(),
         device_queue->GetVulkanDevice(), device_queue->GetVulkanQueue(),
         device_queue->GetVulkanQueueIndex(), device_queue->enabled_extensions(),
-        device_queue->enabled_device_features_2());
+        device_queue->enabled_device_features_2(),
+        device_queue->vma_allocator());
     vulkan_context_provider =
         VulkanInProcessContextProvider::CreateForCompositorGpuThread(
             vulkan_implementation, std::move(compositor_thread_device_queue),
@@ -293,10 +298,19 @@ void CompositorGpuThread::OnBackgroundedOnCompositorGpuThread() {
 }
 
 void CompositorGpuThread::OnBackgroundCleanup() {
+  LoseContext();
+}
+
+void CompositorGpuThread::OnForegrounded() {
+  if (watchdog_thread_)
+    watchdog_thread_->OnForegrounded();
+}
+
+void CompositorGpuThread::LoseContext() {
   if (!task_runner()->BelongsToCurrentThread()) {
-    task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&CompositorGpuThread::OnBackgroundCleanup,
-                                  weak_ptr_factory_.GetWeakPtr()));
+    task_runner()->PostTask(FROM_HERE,
+                            base::BindOnce(&CompositorGpuThread::LoseContext,
+                                           weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -304,11 +318,6 @@ void CompositorGpuThread::OnBackgroundCleanup() {
     shared_context_state_->MarkContextLost();
     shared_context_state_.reset();
   }
-}
-
-void CompositorGpuThread::OnForegrounded() {
-  if (watchdog_thread_)
-    watchdog_thread_->OnForegrounded();
 }
 
 }  // namespace viz

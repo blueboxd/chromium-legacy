@@ -8,8 +8,10 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/raw_ref.h"
 #include "content/browser/private_aggregation/private_aggregation_budget_key.h"
 #include "content/common/content_export.h"
+#include "content/common/private_aggregation_host.mojom-forward.h"
 #include "content/common/private_aggregation_host.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -21,6 +23,7 @@ class Origin;
 namespace content {
 
 class AggregatableReportRequest;
+class BrowserContext;
 
 // UI thread class responsible for implementing the mojo interface used by
 // worklets and renderers to request reports be sent and maintaining the
@@ -39,10 +42,12 @@ class CONTENT_EXPORT PrivateAggregationHost
   // Aligns with `blink::kMaxAttributionAggregationKeysPerSourceOrTrigger`.
   static constexpr int kMaxNumberOfContributions = 50;
 
-  explicit PrivateAggregationHost(
+  // `on_report_request_received` and `browser_context` must be non-null.
+  PrivateAggregationHost(
       base::RepeatingCallback<void(AggregatableReportRequest,
                                    PrivateAggregationBudgetKey)>
-          on_report_request_received);
+          on_report_request_received,
+      BrowserContext* browser_context);
   PrivateAggregationHost(const PrivateAggregationHost&) = delete;
   PrivateAggregationHost& operator=(const PrivateAggregationHost&) = delete;
   ~PrivateAggregationHost() override;
@@ -53,6 +58,7 @@ class CONTENT_EXPORT PrivateAggregationHost
   // receiver was accepted. Virtual for testing.
   [[nodiscard]] virtual bool BindNewReceiver(
       url::Origin worklet_origin,
+      url::Origin top_frame_origin,
       PrivateAggregationBudgetKey::Api api_for_budgeting,
       mojo::PendingReceiver<mojom::PrivateAggregationHost> pending_receiver);
 
@@ -60,7 +66,8 @@ class CONTENT_EXPORT PrivateAggregationHost
   void SendHistogramReport(
       std::vector<mojom::AggregatableReportHistogramContributionPtr>
           contributions,
-      mojom::AggregationServiceMode aggregation_mode) override;
+      mojom::AggregationServiceMode aggregation_mode,
+      mojom::DebugModeDetailsPtr debug_mode_details) override;
 
  private:
   struct ReceiverContext;
@@ -71,6 +78,10 @@ class CONTENT_EXPORT PrivateAggregationHost
 
   mojo::ReceiverSet<mojom::PrivateAggregationHost, ReceiverContext>
       receiver_set_;
+
+  // `this` is indirectly owned by the StoragePartitionImpl, which itself is
+  // owned by `browser_context_`.
+  raw_ref<BrowserContext> browser_context_;
 };
 
 }  // namespace content

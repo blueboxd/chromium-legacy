@@ -191,6 +191,7 @@ Du wirst sonst gemäß deinen Datenschutzeinstellungen blockiert. Wenn Cookies u
 <translation id="1430915738399379752">Drucken</translation>
 <translation id="1432187715652018471">Seite möchte einen Service-Handler installieren.</translation>
 <translation id="1432581352905426595">Suchmaschinen verwalten</translation>
+<translation id="1435940442311036198">Passkey auf einem anderen Gerät verwenden</translation>
 <translation id="1436185428532214179">Darf nachfragen, wenn sie Dateien oder Ordner auf meinem Gerät bearbeiten möchte</translation>
 <translation id="1442386063175183758">Rechtsseitige Fensterfaltung</translation>
 <translation id="1442987760062738829">Lochen</translation>
@@ -420,6 +421,7 @@ Du wirst sonst gemäß deinen Datenschutzeinstellungen blockiert. Wenn Cookies u
 <translation id="2040894699575719559">Standort blockiert</translation>
 <translation id="2042213636306070719">Fach 7</translation>
 <translation id="204357726431741734">Anmelden, um die in deinem Google-Konto gespeicherten Passwörter zu verwenden</translation>
+<translation id="2048261947532620704">Seite wird übersetzt</translation>
 <translation id="205212645995975601">Barbecue und Grillen</translation>
 <translation id="2053111141626950936">Seiten auf <ph name="LANGUAGE" /> werden nicht übersetzt.</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{Wenn dieses Steuerelement aktiviert und aktiv ist, bestimmt Chrome, welcher großen Personengruppe oder „Kohorte“ deine aktuellen Browseraktivitäten am ähnlichsten sind. Werbetreibende können Werbung für die einzelnen Gruppen auswählen und deine Browseraktivitäten werden sicher auf deinem Gerät gespeichert. Deine Gruppe wird täglich aktualisiert.}=1{Wenn dieses Steuerelement aktiviert und aktiv ist, bestimmt Chrome, welcher großen Personengruppe oder „Kohorte“ deine aktuellen Browseraktivitäten am ähnlichsten sind. Werbetreibende können Werbung für die einzelnen Gruppen auswählen und deine Browseraktivitäten werden sicher auf deinem Gerät gespeichert. Deine Gruppe wird täglich aktualisiert.}other{Wenn dieses Steuerelement aktiviert und aktiv ist, bestimmt Chrome, welcher großen Personengruppe oder „Kohorte“ deine aktuellen Browseraktivitäten am ähnlichsten sind. Werbetreibende können Werbung für die einzelnen Gruppen auswählen und deine Browseraktivitäten werden sicher auf deinem Gerät gespeichert. Deine Gruppe wird alle {NUM_DAYS} Tage aktualisiert.}}</translation>
@@ -910,6 +912,7 @@ Du wirst sonst gemäß deinen Datenschutzeinstellungen blockiert. Wenn Cookies u
 <translation id="3427342743765426898">&amp;Bearbeiten wiederholen</translation>
 <translation id="342781501876943858">Chromium empfiehlt, dein Passwort zurückzusetzen, wenn du es auf anderen Websites verwendet hast.</translation>
 <translation id="3428151540071562330">Einer oder mehrere der "DnsOverHttpsTemplates"-Servervorlagen-URIs sind ungültig und werden nicht verwendet.</translation>
+<translation id="3431216045099978607">Drücke auf die |<ph name="ACCELERATOR" />|-Taste, um den Vollbildmodus zu beenden und den Download zu sehen.</translation>
 <translation id="3431636764301398940">Diese Karte für dieses Gerät speichern</translation>
 <translation id="3432601291244612633">Seite schließen</translation>
 <translation id="3435738964857648380">Sicherheit</translation>
@@ -1101,7 +1104,6 @@ Du wirst sonst gemäß deinen Datenschutzeinstellungen blockiert. Wenn Cookies u
 <translation id="3969052498612555048">Du kannst deinen Code nicht finden? <ph name="BEGIN_LINK" />Neuen Code anfordern<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ist gesperrt</translation>
-<translation id="3978338123949022456">Suchmodus – Tippe eine Anfrage ein und drück die Eingabetaste, um mit <ph name="KEYWORD_SUFFIX" /> zu suchen</translation>
 <translation id="398470910934384994">Vögel</translation>
 <translation id="3985750352229496475">Adressen verwalten…</translation>
 <translation id="3986705137476756801">Automatische Untertitel vorerst deaktivieren</translation>
@@ -1405,7 +1407,9 @@ Du wirst sonst gemäß deinen Datenschutzeinstellungen blockiert. Wenn Cookies u
 <translation id="4798078619018708837">Gib das Ablaufdatum und die Kartenprüfnummer (CVC) für <ph name="CREDIT_CARD" /> ein, um deine Kartendetails zu aktualisieren. Nach erfolgter Bestätigung werden die Kartendetails deines Google-Kontos an diese Website weitergegeben.</translation>
 <translation id="4800132727771399293">Prüfe das Ablaufdatum und deinen CVC und versuche es dann noch einmal.</translation>
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
+<translation id="4806051791961048632">Touch ID verwenden</translation>
 <translation id="4809079943450490359">Anweisungen des Geräteadministrators:</translation>
+<translation id="4811450222531576619">Informationen zur Quelle und zum Thema</translation>
 <translation id="4812751092864334025">Am Körper tragbare Technologie</translation>
 <translation id="4813512666221746211">Netzwerkfehler</translation>
 <translation id="4816492930507672669">An Seite anpassen</translation>
@@ -1647,6 +1651,7 @@ Du wirst sonst gemäß deinen Datenschutzeinstellungen blockiert. Wenn Cookies u
 <translation id="540969355065856584">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat ist zurzeit ungültig. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der deine Verbindung abfängt.</translation>
 <translation id="5412040515238827314">Ungültiges Format: Es wurde eine Liste mit Mustern erwartet.</translation>
 <translation id="5412236728747081950">Diese Website ruft deine Interessen von Chrome ab, damit sie dir relevantere Werbung anzeigen kann</translation>
+<translation id="5412245327974352290"><ph name="TRADITIONAL_TEXT" /> – <ph name="ADDITIONAL_TEXT" /></translation>
 <translation id="541416427766103491">Stapelfach 4</translation>
 <translation id="5421136146218899937">Browserdaten löschen...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> möchte dir Benachrichtigungen senden</translation>
@@ -1678,6 +1683,7 @@ Du wirst sonst gemäß deinen Datenschutzeinstellungen blockiert. Wenn Cookies u
 <translation id="5509780412636533143">Verwaltete Lesezeichen</translation>
 <translation id="5510481203689988000">Dies kann in den Cookie-Einstellungen festgelegt werden.</translation>
 <translation id="5510766032865166053">Eventuell wurde sie verschoben oder gelöscht.</translation>
+<translation id="5513528801833998679">Geräteanmeldung verwenden</translation>
 <translation id="5518670652865028077">Kunst und Unterhaltung</translation>
 <translation id="5519516356611866228">Mit meinen Änderungen</translation>
 <translation id="5523118979700054094">Richtlinienname</translation>
@@ -1705,7 +1711,9 @@ Du wirst sonst gemäß deinen Datenschutzeinstellungen blockiert. Wenn Cookies u
 <translation id="5571083550517324815">Diese Abholadresse wird nicht unterstützt. Bitte wähle eine andere Adresse aus.</translation>
 <translation id="557886905979275351">Rasiermesser und -apparate</translation>
 <translation id="5580958916614886209">Prüfe den Ablaufmonat und versuche es dann erneut</translation>
+<translation id="558420943003240152">Passwörter und Passkeys verwalten</translation>
 <translation id="5586446728396275693">Keine gespeicherten Adressen</translation>
+<translation id="5586831831248371458">Auf <ph name="KEYWORD_SUFFIX" /> suchen</translation>
 <translation id="5587987780934666589">Plattformnutzer</translation>
 <translation id="5593349413089863479">Verbindung ist nicht uneingeschränkt sicher</translation>
 <translation id="5595485650161345191">Adresse bearbeiten</translation>
@@ -1769,6 +1777,7 @@ Du wirst sonst gemäß deinen Datenschutzeinstellungen blockiert. Wenn Cookies u
 <translation id="5765072501007116331">Wähle eine Adresse aus, um Lieferoptionen und -anforderungen zu sehen</translation>
 <translation id="57689295674415555">Wurde die virtuelle Kartennummer nicht eingefügt?</translation>
 <translation id="5776313857861697733">Priorität</translation>
+<translation id="5778389256418062749">Passkey auf einem anderen Gerät verwenden</translation>
 <translation id="5781136890105823427">Test aktiviert</translation>
 <translation id="578305955206182703">Bernsteingelb</translation>
 <translation id="57838592816432529">Stummschalten</translation>
@@ -2048,6 +2057,7 @@ Du wirst sonst gemäß deinen Datenschutzeinstellungen blockiert. Wenn Cookies u
 <translation id="6591833882275308647">Dein <ph name="DEVICE_TYPE" /> wird nicht verwaltet</translation>
 <translation id="6592952801936330159">Schaltfläche zum Verwalten der Website-Einstellungen – drücke die Eingabetaste, um Berechtigungen und gespeicherte Daten von Websites in den Chrome-Einstellungen zu verwalten</translation>
 <translation id="6596325263575161958">Verschlüsselungsoptionen</translation>
+<translation id="6599642189720630047">Beobachtete Produkte</translation>
 <translation id="6609880536175561541">Prc7 (Umschlag)</translation>
 <translation id="6611723696964473273">Wirtschaftsnachrichten</translation>
 <translation id="6612010098632894193">Onlinevideos</translation>
@@ -2528,6 +2538,7 @@ Weitere Details:
 <translation id="7880146494886811634">Adresse speichern</translation>
 <translation id="7882421473871500483">Braun</translation>
 <translation id="7882995332186050355">Lastkraftwagen und Anhänger</translation>
+<translation id="788679692472636252">Passwörter und Passkeys verwalten</translation>
 <translation id="7887683347370398519">Prüfe deinen CVC und versuche es dann noch einmal.</translation>
 <translation id="7887885240995164102">Bild im Bild aktivieren</translation>
 <translation id="7888575728750733395">Rendering Intent für Druck</translation>
@@ -2574,6 +2585,7 @@ Weitere Details:
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8009225694047762179">Passwort verwalten</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Diese Karte und die entsprechende Rechnungsadresse werden gespeichert. Du kannst sie nutzen, wenn du in <ph name="USER_EMAIL" /> angemeldet bist.}other{Diese Karten und die entsprechenden Rechnungsadressen werden gespeichert. Du kannst sie nutzen, wenn du in <ph name="USER_EMAIL" /> angemeldet bist.}}</translation>
+<translation id="8019861005170389898"><ph name="TRADITIONAL_TEXT" /> (<ph name="ADDITIONAL_TEXT" />)</translation>
 <translation id="8025119109950072390">Unbefugte Dritte auf dieser Website versuchen unter Umständen auf betrügerische Weise, dich zur Installation von Software zu bewegen oder dir personenbezogene Daten zu entlocken, zum Beispiel Passwörter, Telefonnummern oder Kreditkartendaten.</translation>
 <translation id="8026334261755873520">Browserdaten löschen</translation>
 <translation id="8027077570865220386">Fach 15</translation>

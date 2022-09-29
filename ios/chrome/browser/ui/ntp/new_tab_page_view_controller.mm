@@ -193,6 +193,8 @@
     self.shouldScrollIntoFeed = NO;
   }
 
+  [self updateFeedTopSectionIsVisible];
+
   self.viewDidAppear = YES;
 }
 
@@ -347,26 +349,26 @@
         toParentViewController:parentViewController];
   }
 
-    [self addViewController:self.headerController
-        toParentViewController:parentViewController];
+  [self addViewController:self.headerController
+      toParentViewController:parentViewController];
 
-    DCHECK([self.headerController.view isDescendantOfView:self.containerView]);
-    self.headerController.view.translatesAutoresizingMaskIntoConstraints = NO;
+  DCHECK([self.headerController.view isDescendantOfView:self.containerView]);
+  self.headerController.view.translatesAutoresizingMaskIntoConstraints = NO;
 
-    // TODO(crbug.com/1170995): The contentCollectionView width might be
-    // narrower than the ContentSuggestions view. This causes elements to be
-    // hidden, so we set clipsToBounds to ensure that they remain visible. The
-    // collection view changes, so we must set this property each time it does.
-    self.collectionView.clipsToBounds = NO;
+  // TODO(crbug.com/1170995): The contentCollectionView width might be
+  // narrower than the ContentSuggestions view. This causes elements to be
+  // hidden, so we set clipsToBounds to ensure that they remain visible. The
+  // collection view changes, so we must set this property each time it does.
+  self.collectionView.clipsToBounds = NO;
 
-    [self.overscrollActionsController invalidate];
-    [self configureOverscrollActionsController];
+  [self.overscrollActionsController invalidate];
+  [self configureOverscrollActionsController];
 
-    // If viewDidAppear, then we are just changing the NTP collection view. In
-    // that case, we apply the constraints here.
-    if (self.viewDidAppear) {
-      [self applyCollectionViewConstraints];
-    }
+  // If viewDidAppear, then we are just changing the NTP collection view. In
+  // that case, we apply the constraints here.
+  if (self.viewDidAppear) {
+    [self applyCollectionViewConstraints];
+  }
 
   // If the feed is not visible, we control the delegate ourself (since it is
   // otherwise controlled by the feed service). The view is also layed out
@@ -434,12 +436,7 @@
 }
 
 - (CGFloat)heightAboveFeed {
-  CGFloat height = [self adjustedContentSuggestionsHeight] +
-                   [self feedHeaderHeight] + [self feedTopSectionHeight];
-  // Add the header height since it is no longer a part of the Content
-  // Suggestions.
-  height += [self.headerController headerHeight];
-  return height;
+  return [self heightAboveFeedTopSection] + [self feedTopSectionHeight];
 }
 
 - (void)resetViewHierarchy {
@@ -502,6 +499,10 @@
 
   CGFloat scrollPosition = scrollView.contentOffset.y;
   [self handleStickyElementsForScrollPosition:scrollPosition force:NO];
+
+  if (self.viewDidAppear) {
+    [self updateFeedTopSectionIsVisible];
+  }
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {
@@ -793,6 +794,21 @@
   self.headerSynchronizer.additionalOffset = [self heightAboveFeed];
 }
 
+// Checks whether the feed top section is visible and updates the
+// `ntpContentDelegate`.
+- (void)updateFeedTopSectionIsVisible {
+  if (!self.feedTopSectionViewController) {
+    return;
+  }
+  BOOL isFeedTopSectionVisible =
+      ([self scrollPosition] + self.view.frame.size.height -
+           self.view.safeAreaInsets.top >
+       -[self feedTopSectionHeight]) &&
+      ([self scrollPosition] < -[self stickyContentHeight]);
+  [self.ntpContentDelegate
+      feedTopSectionHasChangedVisibility:isFeedTopSectionVisible];
+}
+
 // TODO(crbug.com/1170995): Remove once the Feed header properly supports
 // ContentSuggestions.
 - (void)handleSingleTapInView:(UITapGestureRecognizer*)recognizer {
@@ -938,6 +954,21 @@
 // Sets the content offset to the top of the feed.
 - (void)scrollIntoFeed {
   [self setContentOffset:[self offsetWhenScrolledIntoFeed]];
+}
+
+// The height of the content above the feed top section.
+- (CGFloat)heightAboveFeedTopSection {
+  return [self.headerController headerHeight] +
+         [self adjustedContentSuggestionsHeight] + [self feedHeaderHeight];
+}
+
+// The total height of all sticky content.
+- (CGFloat)stickyContentHeight {
+  CGFloat stickyContentHeight = [self stickyOmniboxHeight];
+  if ([self.ntpContentDelegate isContentHeaderSticky]) {
+    stickyContentHeight += [self feedHeaderHeight];
+  }
+  return stickyContentHeight;
 }
 
 #pragma mark - Helpers

@@ -145,7 +145,8 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   // be reused.
   static std::unique_ptr<SimpleURLLoader> Create(
       std::unique_ptr<ResourceRequest> resource_request,
-      const net::NetworkTrafficAnnotationTag& annotation_tag);
+      const net::NetworkTrafficAnnotationTag& annotation_tag,
+      base::Location created_from = base::Location::Current());
 
   // The TickClock to use to configure a timer that tracks if |timeout_duration|
   // has been reached or not. This can be removed once https://crbug.com/905412
@@ -295,6 +296,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   virtual void AttachStringForUpload(
       const std::string& upload_data,
       const std::string& upload_content_type) = 0;
+  virtual void AttachStringForUpload(const std::string& upload_data) = 0;
 
   // Helper method to attach a file for upload, so the consumer won't need to
   // open the file itself off-thread. May only be called once, and only if the
@@ -310,6 +312,13 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
       const std::string& upload_content_type,
       uint64_t offset = 0,
       uint64_t length = std::numeric_limits<uint64_t>::max()) = 0;
+  virtual void AttachFileForUpload(const base::FilePath& upload_file_path,
+                                   uint64_t offset,
+                                   uint64_t length) = 0;
+  void AttachFileForUpload(const base::FilePath& upload_file_path) {
+    AttachFileForUpload(upload_file_path, 0,
+                        std::numeric_limits<uint64_t>::max());
+  }
 
   // Sets the when to try and the max number of times to retry a request, if
   // any. |max_retries| is the number of times to retry the request, not

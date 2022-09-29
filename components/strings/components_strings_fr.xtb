@@ -421,6 +421,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="2040894699575719559">Position bloquée</translation>
 <translation id="2042213636306070719">Bac 7</translation>
 <translation id="204357726431741734">Connectez-vous pour utiliser les mots de passe enregistrés dans votre compte Google</translation>
+<translation id="2048261947532620704">Traduction de la page</translation>
 <translation id="205212645995975601">Barbecue et grillades</translation>
 <translation id="2053111141626950936">Les pages en <ph name="LANGUAGE" /> ne seront pas traduites.</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{Lorsque cette option est activée et que son état est actif, Chrome détermine le groupe de personnes, ou "cohorte", le plus semblable à votre activité de navigation récente. Les annonceurs peuvent sélectionner des annonces pour ce groupe. Votre activité de navigation restera privée sur cet appareil. Votre groupe est mis à jour tous les jours.}=1{Lorsque cette option est activée et que son état est actif, Chrome détermine le groupe de personnes, ou "cohorte", le plus semblable à votre activité de navigation récente. Les annonceurs peuvent sélectionner des annonces pour ce groupe. Votre activité de navigation restera privée sur cet appareil. Votre groupe est mis à jour tous les jours.}one{Lorsque cette option est activée et que son état est actif, Chrome détermine le groupe de personnes, ou "cohorte", le plus semblable à votre activité de navigation récente. Les annonceurs peuvent sélectionner des annonces pour ce groupe. Votre activité de navigation restera privée sur cet appareil. Votre groupe est mis à jour {NUM_DAYS} fois par jour.}other{Lorsque cette option est activée et que son état est actif, Chrome détermine le groupe de personnes, ou "cohorte", le plus semblable à votre activité de navigation récente. Les annonceurs peuvent sélectionner des annonces pour ce groupe. Votre activité de navigation restera privée sur cet appareil. Votre groupe est mis à jour tous les {NUM_DAYS} jours.}}</translation>
@@ -911,6 +912,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="3427342743765426898">&amp;Rétablir la modification</translation>
 <translation id="342781501876943858">L'équipe Chromium vous recommande de réinitialiser votre mot de passe si vous l'avez réutilisé sur d'autres sites.</translation>
 <translation id="3428151540071562330">Au moins un URI de modèle de serveur DnsOverHttpsTemplates n'est pas valide et ne sera pas utilisé.</translation>
+<translation id="3431216045099978607">Appuyez sur |<ph name="ACCELERATOR" />| pour quitter le plein écran et voir le téléchargement.</translation>
 <translation id="3431636764301398940">Enregistrer cette carte sur cet appareil</translation>
 <translation id="3432601291244612633">Fermer la page</translation>
 <translation id="3435738964857648380">Sécurité</translation>
@@ -1104,7 +1106,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="3969052498612555048">Vous ne retrouvez pas votre code ? <ph name="BEGIN_LINK" />En obtenir un nouveau<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">Calcul en cours…</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> est bloqué</translation>
-<translation id="3978338123949022456">Mode Recherche ; saisissez une requête et appuyez sur Entrée pour effectuer une recherche avec "<ph name="KEYWORD_SUFFIX" />"</translation>
 <translation id="398470910934384994">Oiseaux</translation>
 <translation id="3985750352229496475">Gérer les adresses…</translation>
 <translation id="3986705137476756801">Désactiver les sous-titres instantanés pour le moment</translation>
@@ -1652,6 +1653,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="540969355065856584">Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car son certificat de sécurité actuel n'est pas valide. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="5412040515238827314">Format non valide : liste de formats attendue.</translation>
 <translation id="5412236728747081950">Ce site obtient vos centres d'intérêt via Chrome pour afficher des annonces plus pertinentes</translation>
+<translation id="5412245327974352290"><ph name="TRADITIONAL_TEXT" /> – <ph name="ADDITIONAL_TEXT" /></translation>
 <translation id="541416427766103491">Empileur 4</translation>
 <translation id="5421136146218899937">Effacer les données de navigation...</translation>
 <translation id="5426179911063097041">"<ph name="SITE" />" souhaite vous envoyer des notifications</translation>
@@ -1713,6 +1715,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="5580958916614886209">Veuillez vérifier le mois d'expiration, puis réessayer</translation>
 <translation id="558420943003240152">Gérer les mots de passe et les clés d'accès</translation>
 <translation id="5586446728396275693">Aucune adresse enregistrée</translation>
+<translation id="5586831831248371458">Rechercher "<ph name="KEYWORD_SUFFIX" />"</translation>
 <translation id="5587987780934666589">Utilisateur de la plate-forme</translation>
 <translation id="5593349413089863479">La connexion n'est pas totalement sécurisée</translation>
 <translation id="5595485650161345191">Modifier l'adresse</translation>
@@ -2056,6 +2059,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="6591833882275308647">Votre <ph name="DEVICE_TYPE" /> n'est pas géré</translation>
 <translation id="6592952801936330159">Bouton "Gérer les paramètres du site" : appuyez sur Entrée pour gérer les autorisations et les données stockées sur les sites dans les paramètres Chrome</translation>
 <translation id="6596325263575161958">Options de chiffrement</translation>
+<translation id="6599642189720630047">Produits suivis</translation>
 <translation id="6609880536175561541">Prc7 (enveloppe)</translation>
 <translation id="6611723696964473273">Actualités économiques</translation>
 <translation id="6612010098632894193">Vidéo en ligne</translation>
@@ -2584,6 +2588,7 @@ Informations supplémentaires :
 <translation id="8004582292198964060">Navigateur</translation>
 <translation id="8009225694047762179">Gérer les mots de passe</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Cette carte et l'adresse de facturation associée seront enregistrées. Vous pourrez vous en servir lorsque vous serez connecté à <ph name="USER_EMAIL" />.}one{Cette carte et l'adresse de facturation associée seront enregistrées. Vous pourrez vous en servir lorsque vous serez connecté à <ph name="USER_EMAIL" />.}other{Ces cartes et les adresses de facturation associées seront enregistrées. Vous pourrez vous en servir lorsque vous serez connecté à <ph name="USER_EMAIL" />.}}</translation>
+<translation id="8019861005170389898"><ph name="TRADITIONAL_TEXT" /> (<ph name="ADDITIONAL_TEXT" />)</translation>
 <translation id="8025119109950072390">Des individus malveillants à l'œuvre sur ce site pourraient vous inciter à effectuer des opérations dangereuses, telles que l'installation d'un logiciel ou la révélation d'informations personnelles (par exemple des mots de passe, des numéros de téléphone ou des numéros de carte de paiement).</translation>
 <translation id="8026334261755873520">Effacer les données de navigation</translation>
 <translation id="8027077570865220386">Bac 15</translation>

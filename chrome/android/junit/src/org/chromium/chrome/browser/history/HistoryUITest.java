@@ -37,6 +37,7 @@ import com.google.android.material.tabs.TabLayout;
 import org.hamcrest.Matcher;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -543,6 +544,7 @@ public class HistoryUITest {
 
     @Test
     @SmallTest
+    @Ignore // See https://crbug.com/1358628
     public void testCopyLink() {
         final ClipboardManager clipboardManager =
                 (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);

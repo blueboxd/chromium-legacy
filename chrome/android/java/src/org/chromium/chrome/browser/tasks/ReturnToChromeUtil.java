@@ -87,8 +87,8 @@ public final class ReturnToChromeUtil {
     @VisibleForTesting
     public static final String TAB_SWITCHER_ON_RETURN_MS_PARAM = "tab_switcher_on_return_time_ms";
     public static final IntCachedFieldTrialParameter TAB_SWITCHER_ON_RETURN_MS =
-            new IntCachedFieldTrialParameter(
-                    ChromeFeatureList.TAB_SWITCHER_ON_RETURN, TAB_SWITCHER_ON_RETURN_MS_PARAM, -1);
+            new IntCachedFieldTrialParameter(ChromeFeatureList.TAB_SWITCHER_ON_RETURN,
+                    TAB_SWITCHER_ON_RETURN_MS_PARAM, 28800000); // 8 hours
 
     @VisibleForTesting
     static final String UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT =
@@ -490,7 +490,8 @@ public final class ReturnToChromeUtil {
         // Checks whether to show the Start surface / grid Tab switcher due to feature flag
         // TAB_SWITCHER_ON_RETURN_MS.
         long lastBackgroundedTimeMillis = inactivityTracker.getLastBackgroundedTimeMs();
-        boolean tabSwitcherOnReturn = IntentUtils.isMainIntentFromLauncher(intent)
+        boolean tabSwitcherOnReturn = !DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
+                && IntentUtils.isMainIntentFromLauncher(intent)
                 && ReturnToChromeUtil.shouldShowTabSwitcher(lastBackgroundedTimeMillis);
 
         // If the overview page won't be shown on startup, stops here.

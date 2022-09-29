@@ -5472,6 +5472,21 @@
             ]
         }
     ],
+    "IOSThirdPartyIntentsInIncognito": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IOS3pIntentsInIncognito"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSThumbstrip": [
         {
             "platforms": [
@@ -6624,6 +6639,21 @@
             ]
         }
     ],
+    "OmniboxImplementationChangeIOS": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "kIOSNewOmniboxImplementation"
+                    ]
+                }
+            ]
+        }
+    ],
     "OmniboxLoggingMigration": [
         {
             "platforms": [
@@ -6884,6 +6914,29 @@
                     "name": "Enabled",
                     "enable_features": [
                         "EnableOverlayPrioritization"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PageContentAnnotationsAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledNoFilters_20220502",
+                    "params": {
+                        "extract_related_searches": "true",
+                        "models_to_execute_v2": "OPTIMIZATION_TARGET_PAGE_ENTITIES:de:en:en-AU:en-CA:en-GB:en-US:es:fr:it:nl:pt:tr",
+                        "supported_locales": "de,en,en-AU,en-CA,en-GB,en-US,es,fr,it,nl,pt,tr",
+                        "write_to_history_service": "true"
+                    },
+                    "enable_features": [
+                        "PageContentAnnotations",
+                        "PageEntitiesModelBypassFilters",
+                        "PageEntitiesPageContentAnnotations"
                     ]
                 }
             ]
@@ -8967,21 +9020,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SmallerFontCache"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SmartLockBluetoothScanningBackoff": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SmartLockBluetoothScanningBackoff"
                     ]
                 }
             ]

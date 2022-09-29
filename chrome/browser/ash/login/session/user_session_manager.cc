@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "ash/components/arc/arc_prefs.h"
-#include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/components/login/auth/auth_session_authenticator.h"
 #include "ash/components/login/auth/challenge_response/known_user_pref_utils.h"
 #include "ash/components/login/auth/stub_authenticator_builder.h"
@@ -128,9 +127,10 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/account_manager/account_manager_factory.h"
 #include "chromeos/ash/components/assistant/buildflags.h"
+#include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
+#include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
@@ -492,6 +492,7 @@ bool MaybeShowNewTermsAfterUpdateToFlex(Profile* profile) {
   bool is_device_managed = connector->IsDeviceEnterpriseManaged();
   if (is_device_managed) {
     StartupUtils::MarkEulaAccepted();
+    network_portal_detector::GetInstance()->Enable();
     return false;
   }
   if (!IsRevenUpdatedToFlex())

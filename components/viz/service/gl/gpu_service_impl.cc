@@ -369,11 +369,14 @@ GpuServiceImpl::GpuServiceImpl(
     // initialized, so the vendor_id is 0.
     bool is_native_gl =
         gpu_info_.gpu.vendor_id != 0xffff && gpu_info_.gpu.vendor_id != 0;
+
+    const bool is_thread_safe =
+        features::IsDrDcEnabled() && !gpu_driver_bug_workarounds_.disable_drdc;
     // If GL is using a real GPU, the gpu_info will be passed in and vulkan will
     // use the same GPU.
     vulkan_context_provider_ = VulkanInProcessContextProvider::Create(
         vulkan_implementation_, gpu_preferences_.vulkan_heap_memory_limit,
-        gpu_preferences_.vulkan_sync_cpu_memory_limit,
+        gpu_preferences_.vulkan_sync_cpu_memory_limit, is_thread_safe,
         (is_native_vulkan && is_native_gl) ? &gpu_info : nullptr);
     if (!vulkan_context_provider_) {
       DLOG(ERROR) << "Failed to create Vulkan context provider.";
@@ -565,7 +568,8 @@ void GpuServiceImpl::InitializeWithHost(
     // When using real buffers for testing overlay configurations, we need
     // access to SharedImageManager on the viz thread to obtain the buffer
     // corresponding to a mailbox.
-    const bool display_context_on_another_thread = features::IsDrDcEnabled();
+    const bool display_context_on_another_thread =
+        features::IsDrDcEnabled() && !gpu_driver_bug_workarounds_.disable_drdc;
     bool thread_safe_manager = display_context_on_another_thread;
     // Raw draw needs to access shared image backing on the compositor thread.
     thread_safe_manager |= features::IsUsingRawDraw();
@@ -906,22 +910,12 @@ void GpuServiceImpl::RequestDXGIInfoOnMainThread(
 }
 #endif
 
-void GpuServiceImpl::RegisterDisplayContext(
-    gpu::DisplayContext* display_context) {
-  display_contexts_.AddObserver(display_context);
-}
-
-void GpuServiceImpl::UnregisterDisplayContext(
-    gpu::DisplayContext* display_context) {
-  display_contexts_.RemoveObserver(display_context);
-}
-
 void GpuServiceImpl::LoseAllContexts() {
   if (IsExiting())
     return;
-  for (auto& display_context : display_contexts_)
-    display_context.MarkContextLost();
   gpu_channel_manager_->LoseAllContexts();
+  if (compositor_gpu_thread_)
+    compositor_gpu_thread_->LoseContext();
 }
 
 void GpuServiceImpl::DidCreateContextSuccessfully() {
@@ -1063,6 +1057,17 @@ void GpuServiceImpl::SetChannelDiskCacheHandle(
     return;
   }
   gpu_channel_manager_->SetChannelDiskCacheHandle(client_id, handle);
+}
+
+void GpuServiceImpl::OnDiskCacheHandleDestoyed(
+    const gpu::GpuDiskCacheHandle& handle) {
+  if (!main_runner_->BelongsToCurrentThread()) {
+    main_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&GpuServiceImpl::OnDiskCacheHandleDestoyed,
+                                  weak_ptr_, handle));
+    return;
+  }
+  gpu_channel_manager_->OnDiskCacheHandleDestoyed(handle);
 }
 
 void GpuServiceImpl::CloseChannel(int32_t client_id) {

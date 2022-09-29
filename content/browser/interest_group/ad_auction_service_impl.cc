@@ -12,6 +12,7 @@
 
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -460,6 +461,21 @@ void AdAuctionServiceImpl::SendPrivateAggregationRequests(
     std::map<url::Origin,
              std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>>
         private_aggregation_requests) const {
+  // Empty vectors should've been filtered out.
+  DCHECK(base::ranges::none_of(private_aggregation_requests,
+                               [](auto& it) { return it.second.empty(); }));
+
+  // TODO(crbug.com/1356654): Improve coverage of these use counters, i.e. for
+  // API usage that does not result in a successful request.
+  if (!private_aggregation_requests.empty()) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        &render_frame_host(),
+        blink::mojom::WebFeature::kPrivateAggregationApiAll);
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        &render_frame_host(),
+        blink::mojom::WebFeature::kPrivateAggregationApiFledge);
+  }
+
   if (!private_aggregation_manager_) {
     return;
   }
@@ -467,7 +483,8 @@ void AdAuctionServiceImpl::SendPrivateAggregationRequests(
   for (auto& [origin, requests] : private_aggregation_requests) {
     mojo::Remote<mojom::PrivateAggregationHost> remote;
     if (!private_aggregation_manager_->BindNewReceiver(
-            origin, PrivateAggregationBudgetKey::Api::kFledge,
+            origin, main_frame_origin_,
+            PrivateAggregationBudgetKey::Api::kFledge,
             remote.BindNewPipeAndPassReceiver())) {
       continue;
     }
@@ -479,7 +496,8 @@ void AdAuctionServiceImpl::SendPrivateAggregationRequests(
           contributions;
       contributions.push_back(std::move(request->contribution));
       remote->SendHistogramReport(std::move(contributions),
-                                  request->aggregation_mode);
+                                  request->aggregation_mode,
+                                  std::move(request->debug_mode_details));
     }
   }
 }

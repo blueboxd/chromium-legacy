@@ -862,7 +862,7 @@
       'dimensions': {
         'cpu': 'arm64',
         'mac_model': 'Macmini9,1',
-        'os': 'Mac-11|Mac-12',
+        'os': 'Mac-12.4|Mac-12.5',
         'pool': 'chromium.tests',
         'display_attached': '1',
       },
@@ -872,7 +872,7 @@
     'swarming': {
       'dimensions': {
         'cpu': 'arm64',
-        'os': 'Mac-12.4',
+        'os': 'Mac-12.4|Mac-12.5',
       },
     },
   },
@@ -880,7 +880,7 @@
     'swarming': {
       'dimensions': {
         'cpu': 'x86-64',
-        'os': 'Mac-12.4',
+        'os': 'Mac-12.4|Mac-12.5',
       },
     },
   },
@@ -899,7 +899,7 @@
       'dimensions': {
         'cpu': 'x86-64',
         'gpu': '8086:3e9b',
-        'os': 'Mac-11.5.2|Mac-12.4',
+        'os': 'Mac-12.4|Mac-12.5',
         'display_attached': '1',
       },
     },
@@ -1386,13 +1386,13 @@
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '14a5294e'
+        '14a5294g'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_14a5294e',
+          'name': 'xcode_ios_14a5294g',
           'path': 'Xcode.app',
         },
       ],
@@ -1403,13 +1403,13 @@
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '14a5294e'
+        '14a5294g'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_14a5294e',
+          'name': 'xcode_ios_14a5294g',
           'path': 'Xcode.app',
         },
       ],

@@ -74,10 +74,12 @@ import WidgetKit
             AccessoryWidgetBackground()
           }
           Image(configuration.imageName)
+            .renderingMode(.template)
+            .foregroundColor(.white)
         }
         .widgetURL(configuration.widgetURL)
-        .accessibility(
-          label: Text(configuration.accessibilityLabel))
+        .accessibilityElement()
+        .accessibilityLabel(configuration.accessibilityLabel)
       }
     }
 

@@ -155,7 +155,7 @@ Motori yt i kërkimit është <ph name="DSE_NAME" />. Shiko udhëzimet e motorit
 <translation id="2271351792809375263">Përdor fjalëkalimin që ke ruajtur në Chrome në aplikacione të tjera në pajisjen tënde</translation>
 <translation id="2273327106802955778">Menyja "Më shumë"</translation>
 <translation id="2286505070150039482">Teksti i theksuar</translation>
-<translation id="2299218006564889602">Fjalëkalimet enkriptohen në pajisjen tënde para se të ruhen në "Menaxherin e fjalëkalimeve" të Google.</translation>
+<translation id="2299218006564889602">Fjalëkalimet enkriptohen në pajisjen tënde para se të ruhen në "Menaxherin e fjalëkalimeve të Google".</translation>
 <translation id="2302742851632557585">Ndryshoje fjalëkalimin në faqen e internetit</translation>
 <translation id="2316709634732130529">Përdor fjalëkalimin e sugjeruar</translation>
 <translation id="2320166752086256636">Fshih tastierën</translation>
@@ -280,6 +280,7 @@ Shiko udhëzimet e motorit të kërkimit për fshirjen e historikut të kërkimi
 <translation id="3277021493514034324">Adresa e sajtit u kopjua</translation>
 <translation id="3285962946108803577">Ndaj faqen...</translation>
 <translation id="3290875554372353449">Zgjidh një llogari</translation>
+<translation id="3305294846493618482">më shumë</translation>
 <translation id="3311748811247479259">Joaktiv</translation>
 <translation id="3324193307694657476">Adresa 2</translation>
 <translation id="3328801116991980348">Informacionet rreth sajtit</translation>
@@ -311,7 +312,6 @@ Shiko udhëzimet e motorit të kërkimit për fshirjen e historikut të kërkimi
 <translation id="3529024052484145543">Jo e sigurt</translation>
 <translation id="3533202363250687977">Mbylli të gjitha skedat "e fshehta"</translation>
 <translation id="3533436815740441613">Skedë e re</translation>
-<translation id="3547799431091898961">Për të dalë nga "Llogaria jote e Google" në të gjitha sajtet e uebit, <ph name="BEGIN_LINK" />dil nga Chrome<ph name="END_LINK" />.</translation>
 <translation id="3551320343578183772">Mbylle skedën</translation>
 <translation id="3581564640715911333">Ofro që t'i përkthesh faqet në gjuhë të tjera</translation>
 <translation id="3588820906588687999">Hape imazhin në skedë të re</translation>
@@ -496,6 +496,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5118764316110575523">Joaktiv</translation>
 <translation id="5132942445612118989">Sinkronizo fjalëkalimet, historikun etj. në të gjitha pajisjet</translation>
 <translation id="5140288047769711648">Chrome do ta kujtojë këtë fjalëkalimin për ty. Nuk është e nevojshme ta mbash mend.</translation>
+<translation id="5149188072385105201">Shto fjalëkalimin...</translation>
 <translation id="5150492518600715772">Dërgo te pajisjet e tua</translation>
 <translation id="5168414296986405587">Krijuar për iPadOS</translation>
 <translation id="5173088371991956744">Sinkronizimi ka nevojë të verifikojë që je ti</translation>
@@ -648,7 +649,7 @@ Handoff duhet gjithashtu të jetë i aktivizuar në seksionin "Të përgjithshme
 <translation id="6374469231428023295">Provo përsëri</translation>
 <translation id="6377118281273296434">Siguria e sajtit</translation>
 <translation id="6380866119319257197">Nëse e harron frazën e kalimit apo dëshiron të ndryshosh këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizimin<ph name="END_LINK" /></translation>
-<translation id="6387994324662817823">Fjalëkalimet ruhen në "Menaxherin e fjalëkalimeve" të Google vetëm në këtë pajisje.</translation>
+<translation id="6387994324662817823">Fjalëkalimet ruhen në "Menaxherin e fjalëkalimeve të Google" vetëm në këtë pajisje.</translation>
 <translation id="6389470377220713856">Emri në kartë</translation>
 <translation id="6406506848690869874">Sinkronizo</translation>
 <translation id="6410390304316730527">"Shfletimi i sigurt" të mbron kundër sulmuesve që mund të të mashtrojnë që të bësh diçka të rrezikshme si instalimi i softuerëve keqdashës ose të zbulosh informacion personal si fjalëkalime, numra telefoni ose karta krediti. Nëse e çaktivizon, ki kujdes kur shfleton sajte të panjohura ose pa reputacion.</translation>
@@ -719,7 +720,7 @@ Në modalitetin "e fshehtë", sajtet nuk mund t'i përdorin kukit për të parë
 <translation id="6801927553864092214">Për të shfletuar në mënyrë private, hap një skedë "të fshehtë"</translation>
 <translation id="6807889908376551050">Shfaqi të gjitha...</translation>
 <translation id="681368974849482173">Elementi u krijua</translation>
-<translation id="683022620450280906">Fjalëkalimet e ruajtura mund t'i përdorësh në çdo pajisje. Ato janë të ruajtura në "Menaxherin e fjalëkalimeve" të Google për <ph name="EMAIL" /></translation>
+<translation id="683022620450280906">Fjalëkalimet e ruajtura mund t'i përdorësh në çdo pajisje. Ato janë të ruajtura në "Menaxherin e fjalëkalimeve të Google" për <ph name="EMAIL" /></translation>
 <translation id="6831043979455480757">Përkthe</translation>
 <translation id="6842136130964845393">Për t'u siguruar që mund të qasesh gjithmonë në fjalëkalimet e tua të ruajtura, verifiko që je ti</translation>
 <translation id="6851516051005285358">Kërko sajtin për desktop</translation>
@@ -850,7 +851,7 @@ Sajtet mund t'i përdorin kukit për të parë aktivitetin tënd të shfletimit 
 <translation id="797413074872316787">Për të sinkronizuar dhe personalizuar mes pajisjeve, aktivizo sinkronizimin.</translation>
 <translation id="7978018860671536736">3. Trokit "Plotëso automatikisht fjalëkalimet"</translation>
 <translation id="7982789257301363584">Rrjeti</translation>
-<translation id="7987685713885608670">Për siguri shtesë, enkripto fjalëkalimet në pajisjen tënde para se të ruhen në "Menaxherin e fjalëkalimeve" të Google.</translation>
+<translation id="7987685713885608670">Për siguri shtesë, enkripto fjalëkalimet në pajisjen tënde para se të ruhen në "Menaxherin e fjalëkalimeve të Google".</translation>
 <translation id="7993619969781047893">Veçoritë në disa sajte mund të ndalojnë së funksionuari</translation>
 <translation id="800361585186029508">Hap URL-të e futura në Google Chrome.</translation>
 <translation id="8016714545083187120">Përdor gjithmonë lidhje të sigurta</translation>

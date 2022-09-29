@@ -49,6 +49,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="1201402288615127009">Nästa</translation>
 <translation id="1210557957257435379">skärminspelning</translation>
 <translation id="121097972571826261">Framåt ord för ord</translation>
+<translation id="1217633719248931900">Öppna app</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />, app från Play Butik</translation>
 <translation id="1225748608451425081">Chromebook har låsts på grund av ett känt problem. Du kan logga in om <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Sluta markera</translation>
@@ -670,6 +671,7 @@ Anslut enheten till en strömkälla.</translation>
 <translation id="479989351350248267">sök</translation>
 <translation id="4804818685124855865">Koppla från</translation>
 <translation id="4814539958450445987">Inloggningsskärm</translation>
+<translation id="481455355267255546">Kommande</translation>
 <translation id="4831034276697007977">Vill du inaktivera automatiska klick?</translation>
 <translation id="4849058404725798627">Markera objekt med tangentbordsfokus</translation>
 <translation id="485592688953820832">Ingen åtgärd (pausa)</translation>
@@ -851,6 +853,7 @@ Anslut enheten till en strömkälla.</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5860491529813859533">Aktivera</translation>
 <translation id="5867217927013474703">Nätverksinformation samlas in</translation>
+<translation id="5867606971598166637">Systemadministratören övervakar dina skärmar</translation>
 <translation id="5876666360658629066">Ange föräldrakod</translation>
 <translation id="5881540930187678962">Konfigurera Phone Hub senare</translation>
 <translation id="5887954372087850114">Fönstret <ph name="WINDOW_TITLE" /> tilldelades <ph name="DESK_TITLE" /> och tilldelningen har tagits bort från alla andra skrivbord</translation>
@@ -959,7 +962,7 @@ Anslut enheten till en strömkälla.</translation>
 <translation id="6501401484702599040">Skärmen castas till <ph name="RECEIVER_NAME" /></translation>
 <translation id="6515727200518652613">Kameran kopplades från. Försöker återansluta.</translation>
 <translation id="6520517963145875092">Välj ett fönster att ta en bild av</translation>
-<translation id="652139407789908527">Det är tomt på skärmen längre än vanligt (i upp till en minut) under den här uppdateringen. Tryck inte på strömbrytaren medan uppdateringen pågår.</translation>
+<translation id="652139407789908527">Det är tomt på skärmen längre än vanligt (i upp till en minut) under den här uppdateringen. Tryck inte på av/på-knappen medan uppdateringen pågår.</translation>
 <translation id="6528179044667508675">Stör ej</translation>
 <translation id="65320610082834431">Emojis</translation>
 <translation id="6537924328260219877">Signalstyrka <ph name="SIGNAL_STRENGTH" />, telefonens batteri<ph name="BATTERY_STATUS" /></translation>
@@ -1012,6 +1015,7 @@ Nyligen installerad</translation>
 <translation id="6757237461819837179">Ingen media spelas upp</translation>
 <translation id="6777216307882431711">Laddar anslutna USB-C-enheter</translation>
 <translation id="6786750046913594791">Stäng mappen</translation>
+<translation id="6787595647772650851">Återställ den senaste sessionen</translation>
 <translation id="6790428901817661496">Spela</translation>
 <translation id="6801878137098616817">Redigerades nyligen</translation>
 <translation id="6803622936009808957">Det gick inte att spegla visningar eftersom inga upplösningar som stöds hittades. Utökat skrivbordsläge används i stället.</translation>
@@ -1260,6 +1264,7 @@ Nyligen installerad</translation>
 <translation id="8214996719228530800">Canary-kanal</translation>
 <translation id="8219451629189078428">Chromebook måste vara på och ansluten till en strömkälla under den tiden. Se till att kabeln på laddaren eller adaptern är ordentligt ansluten till Chromebook och eluttaget. Stäng inte av Chromebook.</translation>
 <translation id="8236042855478648955">Dags för en paus</translation>
+<translation id="8246282815785366524">Välkommen tillbaka, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" />, telefonens batterinivå <ph name="BATTERY_STATUS" /></translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, app</translation>
 <translation id="8255234195843591763">Återställ för att uppdatera</translation>

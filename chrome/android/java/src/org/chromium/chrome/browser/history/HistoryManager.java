@@ -219,6 +219,11 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
                     HistoryManager.this.toggleInfoHeaderVisibility();
                 }
 
+                @Override
+                public boolean hasOtherFormsOfBrowsingHistory() {
+                    return mContentManager.hasPrivacyDisclaimers();
+                }
+
                 @Nullable
                 @Override
                 public ViewGroup getClearBrowsingDataView(ViewGroup parent) {
@@ -408,7 +413,6 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
             return true;
         } else if (item.getItemId() == R.id.selection_mode_open_in_new_tab) {
             openItemsInNewTabs(mSelectionDelegate.getSelectedItemsAsList(), false);
-            mSelectionDelegate.clearSelection();
             return true;
         } else if (item.getItemId() == R.id.selection_mode_copy_link) {
             recordUserActionWithOptionalSearch("CopyLink");
@@ -421,7 +425,6 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
             return true;
         } else if (item.getItemId() == R.id.selection_mode_open_in_incognito) {
             openItemsInNewTabs(mSelectionDelegate.getSelectedItemsAsList(), true);
-            mSelectionDelegate.clearSelection();
             return true;
         } else if (item.getItemId() == R.id.selection_mode_delete_menu_id) {
             recordUserActionWithOptionalSearch("RemoveSelected");
@@ -757,6 +760,8 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
     @Override
     public void onPrivacyDisclaimerHasChanged() {
         mToolbar.updateInfoMenuItem(shouldShowInfoButton(), shouldShowInfoHeaderIfAvailable());
+        mShouldShowPrivacyDisclaimerSupplier.set(
+                mContentManager.getShouldShowPrivacyDisclaimersIfAvailable());
     }
 
     // HistoryContentManager.Observer

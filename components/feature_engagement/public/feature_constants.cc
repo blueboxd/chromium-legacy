@@ -47,6 +47,8 @@ const base::Feature kIPHReadingListInSidePanelFeature{
     "IPH_ReadingListInSidePanel", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHReopenTabFeature{"IPH_ReopenTab",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHSideSearchAutoTriggeringFeature{
+    "IPH_SideSearchAutoTriggering", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHSideSearchFeature{"IPH_SideSearch",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHTabSearchFeature{"IPH_TabSearch",
@@ -128,6 +130,8 @@ const base::Feature kIPHReadLaterAppMenuBookmarksFeature{
     "IPH_ReadLaterAppMenuBookmarks", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHReadLaterBottomSheetFeature{
     "IPH_ReadLaterBottomSheet", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kIPHRequestDesktopSiteAppMenuFeature{
+    "IPH_RequestDesktopSiteAppMenu", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHShoppingListSaveFlowFeature{
     "IPH_ShoppingListSaveFlow", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHEphemeralTabFeature{"IPH_EphemeralTab",

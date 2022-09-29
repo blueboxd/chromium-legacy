@@ -176,7 +176,6 @@ import org.chromium.chrome.browser.tasks.tab_management.CloseAllTabsDialog;
 import org.chromium.chrome.browser.tasks.tab_management.TabGroupUi;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
-import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherBackPressHandler;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.ToolbarIntentMetadata;
@@ -387,7 +386,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     private ReturnToChromeBackPressHandler mReturnToChromeBackPressHandler;
     private ReadingListBackPressHandler mReadingListBackPressHandler;
-    private TabSwitcherBackPressHandler mTabSwitcherBackPressHandler;
     private MinimizeAppAndCloseTabBackPressHandler mMinimizeAppAndCloseTabBackPressHandler;
 
     // ID assigned to each ChromeTabbedActivity instance in Android S+ where multi-instance feature
@@ -1095,7 +1093,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         mLocaleManager.stopObservingPhoneChanges();
 
         NavigationPredictorBridge.onPause();
-        StartSurfaceUserData.getInstance().setUnusedTabRestoredAtStartup(false);
 
         super.onPauseWithNative();
     }
@@ -2270,17 +2267,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             return true;
         }
 
-        // If we are in the tab switcher mode (not in the Start surface homepage) and not a tablet,
-        // then leave tab switcher mode on back.
-        if (isInOverviewMode() && !isTablet()
-                && (mStartSurfaceSupplier.get() == null
-                        || mStartSurfaceSupplier.get().getStartSurfaceState()
-                                == StartSurfaceState.SHOWN_TABSWITCHER)) {
-            mLayoutManager.showLayout(LayoutType.BROWSING, true);
-            BackPressManager.record(BackPressHandler.Type.TAB_SWITCHER_TO_BROWSING);
-            return true;
-        }
-
         final WebContents webContents = currentTab.getWebContents();
         if (webContents != null) {
             RenderFrameHost focusedFrame = webContents.getFocusedFrame();
@@ -2362,15 +2348,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     new ReadingListBackPressHandler(getTabModelSelectorSupplier());
             mBackPressManager.addHandler(
                     mReadingListBackPressHandler, BackPressHandler.Type.SHOW_READING_LIST);
-        }
-        if (mTabSwitcherBackPressHandler == null && !isTablet()) {
-            mTabSwitcherBackPressHandler = new TabSwitcherBackPressHandler(
-                    mLayoutStateProviderSupplier, mStartSurfaceSupplier,
-                    ()
-                            -> mLayoutManager.showLayout(LayoutType.BROWSING, true),
-                    ReturnToChromeUtil.isTabSwitcherOnlyRefactorEnabled(this));
-            mBackPressManager.addHandler(
-                    mTabSwitcherBackPressHandler, BackPressHandler.Type.TAB_SWITCHER_TO_BROWSING);
         }
         if (mMinimizeAppAndCloseTabBackPressHandler == null) {
             mMinimizeAppAndCloseTabBackPressHandler =
@@ -2636,10 +2613,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             mReadingListBackPressHandler.destroy();
             mReadingListBackPressHandler = null;
         }
-        if (mTabSwitcherBackPressHandler != null) {
-            mTabSwitcherBackPressHandler.destroy();
-            mTabSwitcherBackPressHandler = null;
-        }
         if (mMinimizeAppAndCloseTabBackPressHandler != null) {
             mMinimizeAppAndCloseTabBackPressHandler.destroy();
             mMinimizeAppAndCloseTabBackPressHandler = null;
@@ -2837,7 +2810,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     @Override
     public boolean isInOverviewMode() {
-        return mLayoutManager != null && mLayoutManager.isLayoutVisible(LayoutType.TAB_SWITCHER);
+        return mLayoutManager != null
+                && (mLayoutManager.isLayoutVisible(LayoutType.TAB_SWITCHER)
+                        || mLayoutManager.isLayoutVisible(LayoutType.START_SURFACE));
     }
 
     @Override

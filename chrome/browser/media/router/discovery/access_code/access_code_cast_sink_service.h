@@ -74,6 +74,12 @@ class AccessCodeCastSinkService : public KeyedService,
 
   static constexpr base::TimeDelta kExpirationTimerDelay = base::Seconds(20);
 
+  // This value is used in whenever expiration timers are created. It is a
+  // buffer
+  // used to ensure all cast protocol steps are finished before instant
+  // expiration occurs.
+  static constexpr base::TimeDelta kExpirationDelay = base::Milliseconds(450);
+
   // This function manually calculates the duration till expiration and
   // overrides any existing expiration timers if the duration is zero. This
   // function exists largely for edge case scenarios with instant expiration
@@ -107,6 +113,8 @@ class AccessCodeCastSinkService : public KeyedService,
                              TestChangeNetworkWithRouteActive);
     FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
                              TestChangeNetworkWithRouteActiveExpiration);
+    FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
+                             TestCheckMediaSinkForExpirationAfterDelay);
     // media_router::MediaRoutesObserver:
     void OnRoutesUpdated(const std::vector<MediaRoute>& routes) override;
 
@@ -180,6 +188,8 @@ class AccessCodeCastSinkService : public KeyedService,
                            TestCheckMediaSinkForExpirationNoExpiration);
   FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
                            TestCheckMediaSinkForExpirationBeforeDelay);
+  FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
+                           TestCheckMediaSinkForExpirationAfterDelay);
 
   // Use |AccessCodeCastSinkServiceFactory::GetForProfile(..)| to get
   // an instance of this service.
@@ -227,6 +237,11 @@ class AccessCodeCastSinkService : public KeyedService,
   base::TimeDelta CalculateDurationTillExpiration(const MediaSink::Id& sink_id);
 
   void OnExpiration(const MediaSinkInternal& sink);
+
+  // This function first removes itself from all the prefs and then checks to
+  // see if the sink is contained within the media router, and attempts to
+  // remove it if there is a sink in the media router.
+  void ExpireSink(const MediaSink::Id& sink_id);
 
   // This function removes the media sink
   // from the MediaSinkServiceBase AND closes the cast socket of that media

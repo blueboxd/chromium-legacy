@@ -34108,6 +34108,8 @@ should be able to be added at any place in this file.
       label="For ReadingListEntryPoint feature."/>
   <suffix name="ReadingListMessages" label="For ReadingListMessages feature."/>
   <suffix name="ReopenTab" label="For ReopenTab feature."/>
+  <suffix name="RequestDesktopSiteAppMenu"
+      label="For the RequestDesktopSiteAppMenu feature."/>
   <suffix name="SharedHighlightingBuilder"
       label="For SharedHighlightingBuilder feature."/>
   <suffix name="SharedHighlightingReceiver"
@@ -34117,6 +34119,8 @@ should be able to be added at any place in this file.
   <suffix name="ShoppingListMenuItem"
       label="For ShoppingListMenuItem feature."/>
   <suffix name="SideSearch" label="For the side search feature."/>
+  <suffix name="SideSearchAutoTriggering"
+      label="For side search feature automatic triggering."/>
   <suffix name="TabGroupsDragAndDrop" label="For drop-to-merge in tab group."/>
   <suffix name="TabGroupsQuicklyComparePages"
       label="For long press links to create tab groups."/>

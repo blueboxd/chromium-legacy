@@ -600,8 +600,8 @@ class ManagementPowerDateComboView : public views::View {
   explicit ManagementPowerDateComboView(
       UnifiedSystemTrayController* controller) {
     auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kHorizontal,
-        kUnifiedSystemInfoViewPadding, kUnifiedSystemInfoSpacing));
+        views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+        kUnifiedSystemInfoSpacing));
     layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kCenter);
     AddChildView(std::make_unique<DateView>(controller));
@@ -659,19 +659,24 @@ UnifiedSystemInfoView::UnifiedSystemInfoView(
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, kUnifiedSystemInfoViewPadding,
       kUnifiedSystemInfoSpacing));
+  // Allow children to stretch to fill the whole width of the parent. Some
+  // direct children are kStart aligned, others are kCenter aligned.
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kCenter);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
 
   // Construct a ManagementPowerDateComboView and save off a raw pointer, to
   // facilitate introspection needed for unit tests.
   combo_view_ =
       AddChildView(std::make_unique<ManagementPowerDateComboView>(controller));
+  layout->SetFlexForView(combo_view_, 1);
 
   // If the release track is not "stable" then channel indicator UI for quick
   // settings is put up.
   auto channel = Shell::Get()->shell_delegate()->GetChannel();
   if (features::IsReleaseTrackUiEnabled() &&
-      channel_indicator_utils::IsDisplayableChannel(channel)) {
+      channel_indicator_utils::IsDisplayableChannel(channel) &&
+      Shell::Get()->session_controller()->GetSessionState() ==
+          session_manager::SessionState::ACTIVE) {
     channel_view_ =
         AddChildView(std::make_unique<ChannelIndicatorQuickSettingsView>(
             channel, Shell::Get()

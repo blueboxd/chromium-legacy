@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -23,11 +22,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/attestation/attestation_flow.h"
 #include "chromeos/ash/components/attestation/attestation_flow_adaptive.h"
+#include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/attestation/attestation.pb.h"
 #include "chromeos/ash/components/dbus/attestation/attestation_client.h"
 #include "chromeos/ash/components/dbus/attestation/interface.pb.h"
+#include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"

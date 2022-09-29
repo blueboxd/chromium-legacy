@@ -421,6 +421,7 @@
 <translation id="2040894699575719559">位置情報がブロックされています</translation>
 <translation id="2042213636306070719">トレイ 7</translation>
 <translation id="204357726431741734">Google アカウントに保存したパスワードを使用するには、ログインしてください</translation>
+<translation id="2048261947532620704">ページを翻訳しています</translation>
 <translation id="205212645995975601">バーベキュー、グリル</translation>
 <translation id="2053111141626950936"><ph name="LANGUAGE" />のページは翻訳されません。</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{このコントロールをオンにして、ステータスが有効な場合、Chrome は最近の閲覧アクティビティが最も類似している「コホート」という多人数のグループを特定します。広告主はこのグループに対して広告を表示するように設定できる一方、ユーザーの閲覧アクティビティはデバイスに保存されてプライバシーが保たれます。なお、このグループは毎日更新されます。}=1{このコントロールをオンにして、ステータスが有効な場合、Chrome は最近の閲覧アクティビティが最も類似している「コホート」という多人数のグループを特定します。広告主はこのグループに対して広告を表示するように設定できる一方、ユーザーの閲覧アクティビティはデバイスに保存されてプライバシーが保たれます。なお、このグループは毎日更新されます。}other{このコントロールをオンにして、ステータスが有効な場合、Chrome は最近の閲覧アクティビティが最も類似している「コホート」という多人数のグループを特定します。広告主はこのグループに対して広告を表示するように設定できる一方、ユーザーの閲覧アクティビティはデバイスに保存されてプライバシーが保たれます。なお、このグループは {NUM_DAYS} 日ごとに更新されます。}}</translation>
@@ -911,6 +912,7 @@
 <translation id="3427342743765426898">編集のやり直し（&amp;R）</translation>
 <translation id="342781501876943858">パスワードを他のサイトで再使用した場合、Chromium ではパスワードの再設定を促すメッセージが表示されます。</translation>
 <translation id="3428151540071562330">DnsOverHttpsTemplates サーバー テンプレートの一部の URI が無効なため、使用されません。</translation>
+<translation id="3431216045099978607">|<ph name="ACCELERATOR" />| を押すと、全画面表示を終了してダウンロードを表示します。</translation>
 <translation id="3431636764301398940">このカード情報をこのデバイスに保存する</translation>
 <translation id="3432601291244612633">ページを閉じる</translation>
 <translation id="3435738964857648380">セキュリティ</translation>
@@ -1104,7 +1106,6 @@
 <translation id="3969052498612555048">コードが表示されない場合は、<ph name="BEGIN_LINK" />新しいコードを取得<ph name="END_LINK" />してください</translation>
 <translation id="397105322502079400">計算しています...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> はブロックされています</translation>
-<translation id="3978338123949022456">検索モードです。クエリを入力して Enter キーを押すと、<ph name="KEYWORD_SUFFIX" /> で検索できます</translation>
 <translation id="398470910934384994">鳥</translation>
 <translation id="3985750352229496475">住所を管理...</translation>
 <translation id="3986705137476756801">今回のみ自動字幕起こしをオフにする</translation>
@@ -1652,6 +1653,7 @@
 <translation id="540969355065856584">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は現在有効ではありません。設定が不適切か、悪意のあるユーザーによって接続が妨害されている可能性があります。</translation>
 <translation id="5412040515238827314">無効な形式です。パターンのリストを指定する必要があります。</translation>
 <translation id="5412236728747081950">このサイトでは Chrome からお客様の興味や関心に関する情報を取得して、関連性の高い広告を表示しています</translation>
+<translation id="5412245327974352290"><ph name="TRADITIONAL_TEXT" /> - <ph name="ADDITIONAL_TEXT" /></translation>
 <translation id="541416427766103491">スタッカー 4</translation>
 <translation id="5421136146218899937">閲覧履歴データを削除...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> が通知を送信しようとしています。</translation>
@@ -1713,6 +1715,7 @@
 <translation id="5580958916614886209">有効期限の「月」を確認してもう一度お試しください</translation>
 <translation id="558420943003240152">パスワードとパスキーを管理...</translation>
 <translation id="5586446728396275693">保存されている住所がありません</translation>
+<translation id="5586831831248371458"><ph name="KEYWORD_SUFFIX" /> を検索</translation>
 <translation id="5587987780934666589">プラットフォーム ユーザー</translation>
 <translation id="5593349413089863479">接続は完全には保護されていません</translation>
 <translation id="5595485650161345191">住所の編集</translation>
@@ -2056,6 +2059,7 @@
 <translation id="6591833882275308647">ご使用の <ph name="DEVICE_TYPE" /> は管理されていません</translation>
 <translation id="6592952801936330159">サイトの設定を管理するボタンです。Enter キーを押して、Chrome の設定ですべてのサイトに保存されている権限とデータを管理します</translation>
 <translation id="6596325263575161958">暗号化オプション</translation>
+<translation id="6599642189720630047">トラッキングしている商品</translation>
 <translation id="6609880536175561541">Prc7（封筒）</translation>
 <translation id="6611723696964473273">経済ニュース</translation>
 <translation id="6612010098632894193">オンライン動画</translation>
@@ -2583,6 +2587,7 @@
 <translation id="8004582292198964060">ブラウザ</translation>
 <translation id="8009225694047762179">パスワードを管理</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{このカードと請求先住所は保存され、<ph name="USER_EMAIL" /> にログインすると使用できます。}other{これらのカードと請求先住所は保存され、<ph name="USER_EMAIL" /> にログインすると使用できます。}}</translation>
+<translation id="8019861005170389898"><ph name="TRADITIONAL_TEXT" />（<ph name="ADDITIONAL_TEXT" />）</translation>
 <translation id="8025119109950072390">このサイトを利用すると、悪意のあるユーザーによって、ソフトウェアのインストールや個人情報（例: パスワード、電話番号、クレジット カード番号）の入力などの危険な操作を行うよう誘導される可能性があります。</translation>
 <translation id="8026334261755873520">閲覧履歴データの削除</translation>
 <translation id="8027077570865220386">トレイ 15</translation>

@@ -421,6 +421,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="2040894699575719559">Platsen är blockerad</translation>
 <translation id="2042213636306070719">Fack 7</translation>
 <translation id="204357726431741734">Logga in om du vill använda lösenord som har sparats i Google-kontot</translation>
+<translation id="2048261947532620704">Översätter sida</translation>
 <translation id="205212645995975601">BBQ och grillning</translation>
 <translation id="2053111141626950936">Sidor på <ph name="LANGUAGE" /> översätts inte.</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{När den här inställningen är på och statusen är Aktiv fastställer Chrome vilken grupp, eller kohort, som du tillhör utifrån din senaste webbaktivitet. Annonsörer kan välja annonser för denna grupp och din webbhistorik förblir privat på enheten. Grupptillhörigheten uppdateras dagligen.}=1{När den här inställningen är på och statusen är Aktiv fastställer Chrome vilken grupp, eller kohort, som du tillhör utifrån din senaste webbaktivitet. Annonsörer kan välja annonser för denna grupp och din webbhistorik förblir privat på enheten. Grupptillhörigheten uppdateras dagligen.}other{När den här inställningen är på och statusen är Aktiv fastställer Chrome vilken grupp, eller kohort, som du tillhör utifrån din senaste webbaktivitet. Annonsörer kan välja annonser för denna grupp och din webbhistorik förblir privat på enheten. Grupptillhörigheten uppdateras med {NUM_DAYS} dagars mellanrum.}}</translation>
@@ -911,6 +912,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="3427342743765426898">&amp;Gör om Redigera</translation>
 <translation id="342781501876943858">Du rekommenderas att återställa lösenordet om du har återanvänt det på andra webbplatser.</translation>
 <translation id="3428151540071562330">Minst en av URI:erna i servermallen för DnsOverHttpsTemplates är ogiltig och kommer inte att användas.</translation>
+<translation id="3431216045099978607">Tryck på |<ph name="ACCELERATOR" />| för att avsluta helskärmsläget och se nedladdningen.</translation>
 <translation id="3431636764301398940">Spara kortet på enheten</translation>
 <translation id="3432601291244612633">Stäng sidan</translation>
 <translation id="3435738964857648380">Säkerhet</translation>
@@ -1104,7 +1106,6 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="3969052498612555048">Kan du inte hitta koden? <ph name="BEGIN_LINK" />Få en ny kod<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">Beräknar ...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> har blockerats</translation>
-<translation id="3978338123949022456">Sökläge: skriv en sökfråga och tryck på Retur för sökning på <ph name="KEYWORD_SUFFIX" /></translation>
 <translation id="398470910934384994">Fåglar</translation>
 <translation id="3985750352229496475">Hantera adresser …</translation>
 <translation id="3986705137476756801">Inaktivera Live Caption tills vidare</translation>
@@ -1652,6 +1653,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="540969355065856584">Servern kunde inte bevisa att det är <ph name="DOMAIN" />. Dess säkerhetscertifikat är inte giltigt för närvarande. Detta kan bero på en felaktig konfiguration eller att någon kapat din anslutning.</translation>
 <translation id="5412040515238827314">Ogiltigt format: En lista med mönster förväntas.</translation>
 <translation id="5412236728747081950">Den här webbplatsen hämtar dina intressen från Chrome för att visa mer relevanta annonser för dig</translation>
+<translation id="5412245327974352290"><ph name="TRADITIONAL_TEXT" /> – <ph name="ADDITIONAL_TEXT" /></translation>
 <translation id="541416427766103491">Utmatningsfack 4</translation>
 <translation id="5421136146218899937">Ta bort webbinformation...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> vill skicka aviseringar</translation>
@@ -1713,6 +1715,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="5580958916614886209">Kontrollera utgångsmånad och försök igen</translation>
 <translation id="558420943003240152">Hantera lösenord och nycklar …</translation>
 <translation id="5586446728396275693">Inga sparade adresser</translation>
+<translation id="5586831831248371458">Sök på <ph name="KEYWORD_SUFFIX" /></translation>
 <translation id="5587987780934666589">Plattformsanvändare</translation>
 <translation id="5593349413089863479">Anslutningen är inte helt säker</translation>
 <translation id="5595485650161345191">Redigera adress</translation>
@@ -2056,6 +2059,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="6591833882275308647"><ph name="DEVICE_TYPE" /> hanteras inte</translation>
 <translation id="6592952801936330159">Knappen Hantera webbplatsinställningar, tryck på Retur om du vill hantera behörigheter och data som lagras på olika webbplatser i inställningarna för Chrome</translation>
 <translation id="6596325263575161958">Krypteringsalternativ</translation>
+<translation id="6599642189720630047">Bevakade produkter</translation>
 <translation id="6609880536175561541">Prc7 (kuvert)</translation>
 <translation id="6611723696964473273">Ekonominyheter</translation>
 <translation id="6612010098632894193">Onlinevideo</translation>
@@ -2583,6 +2587,7 @@ Mer information.
 <translation id="8004582292198964060">Webbläsare</translation>
 <translation id="8009225694047762179">Hantera Lösenord</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Det här kortet och dess faktureringsadress sparas. Du kan använda det när du är inloggad som <ph name="USER_EMAIL" />.}other{De här korten och deras faktureringsadresser sparas. Du kan använda dem när du är inloggad som <ph name="USER_EMAIL" />.}}</translation>
+<translation id="8019861005170389898"><ph name="TRADITIONAL_TEXT" /> (<ph name="ADDITIONAL_TEXT" />)</translation>
 <translation id="8025119109950072390">Angripare på den här webbplatsen kan lura dig att göra något farligt, till exempel installera programvara eller lämna ut personliga uppgifter (som lösenord, telefonnummer eller kreditkortsuppgifter).</translation>
 <translation id="8026334261755873520">Rensa webbinformation</translation>
 <translation id="8027077570865220386">Fack 15</translation>

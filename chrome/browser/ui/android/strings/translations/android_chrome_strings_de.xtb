@@ -214,7 +214,7 @@ Wenn du deinen Browserverlauf löschst – entweder komplett oder für eine bes
 <translation id="2132122640199389833">Alle verknüpften Geräte entfernen</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> geschlossen</translation>
 <translation id="2134927169889348449">Wenn du Chrome verwendest, stimmst du den <ph name="BEGIN_TOS_LINK" />Nutzungsbedingungen von Google<ph name="END_TOS_LINK" /> und den <ph name="BEGIN_ATOS_LINK" />zusätzlichen Nutzungsbedingungen für Google Chrome und Chrome OS<ph name="END_ATOS_LINK" /> zu.</translation>
-<translation id="2139186145475833000">Zum Startbildschirm zufügen</translation>
+<translation id="2139186145475833000">Zum Startbildschirm hinzufügen</translation>
 <translation id="2141396931810938595">Auf Grundlage deiner Nutzung</translation>
 <translation id="214888715418183969">Wähle aus, welche Messwerte für Chrome freigegeben werden sollen. Die freigegebenen Messwerte werden verwendet, um die Funktionen, die Leistung und die Stabilität von Chrome zu verbessern.</translation>
 <translation id="2149973817440762519">Lesezeichen bearbeiten</translation>
@@ -433,6 +433,7 @@ Wenn du deinen Browserverlauf löschst – entweder komplett oder für eine bes
 <translation id="3290249595466894471">Sendet außerdem eine kleine Auswahl von Seiten, Downloads, Erweiterungsaktivitäten und Systeminformationen, um die Erkennung neuer Bedrohungen zu verbessern</translation>
 <translation id="3297344142967351106">Sprachassistent</translation>
 <translation id="3303414029551471755">Inhalt herunterladen?</translation>
+<translation id="3305795716056605962">Seiten über die Schaltfläche „Weitere Optionen“ übersetzen lassen</translation>
 <translation id="3334729583274622784">Dateiendung ändern?</translation>
 <translation id="3341262203274374114">Nicht mehr folgen nicht möglich. Ein Fehler ist aufgetreten.</translation>
 <translation id="3359667936385849800">Aktuellen Anbieter verwenden</translation>
@@ -473,6 +474,7 @@ Wenn du deinen Browserverlauf löschst – entweder komplett oder für eine bes
 <translation id="3557336313807607643">Zu Kontakten hinzufügen</translation>
 <translation id="3560491354538957576">Website kann Interessen definieren</translation>
 <translation id="3563767357928833671">Inhalte der Zwischenablage werden angezeigt</translation>
+<translation id="3566639033325271639">Einstellungen aktualisieren</translation>
 <translation id="3566923219790363270">VR ist noch nicht bereit. Starte Chrome später neu.</translation>
 <translation id="3568688522516854065">Melde dich an und aktiviere die Synchronisierung, um deine Tabs von deinen anderen Geräten abzurufen</translation>
 <translation id="357465026686164600">Smartphone als Sicherheitsschlüssel</translation>
@@ -556,6 +558,7 @@ Wenn du deinen Browserverlauf löschst – entweder komplett oder für eine bes
 <translation id="4062305924942672200">Rechtliche Hinweise</translation>
 <translation id="4084682180776658562">Lesezeichen</translation>
 <translation id="4084712963632273211">Von <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />bereitgestellt durch Google<ph name="END_DEEMPHASIZED" /></translation>
+<translation id="409109920254068737">Du kannst dich über dieses Tablet auf dem Gerät anmelden, auf dem dieser QR-Code angezeigt wird.</translation>
 <translation id="4095146165863963773">App-Daten löschen?</translation>
 <translation id="4096227151372679484">Ablauf zum Speichern von Lesezeichen ist halb geöffnet</translation>
 <translation id="4099578267706723511">Nutzungsstatistiken und Absturzberichte zur Verbesserung von Chrome an Google senden</translation>
@@ -567,6 +570,7 @@ Wenn du deinen Browserverlauf löschst – entweder komplett oder für eine bes
 <translation id="4116038641877404294">Seiten zur Offline-Ansicht herunterladen</translation>
 <translation id="4135200667068010335">Die Liste von Geräten, mit denen ein Tab geteilt werden kann, ist geschlossen.</translation>
 <translation id="4137746084635924146">Aktuelle Gerätesprache</translation>
+<translation id="414128724510021958">Desktopwebsites werden standardmäßig angefordert</translation>
 <translation id="4141536112466364990">Informationen zu Chrome</translation>
 <translation id="4162867837470729563">Die Liste der Freigabeoptionen ist vollständig geöffnet.</translation>
 <translation id="4165986682804962316">Website-Einstellungen</translation>
@@ -589,6 +593,7 @@ Wenn du deinen Browserverlauf löschst – entweder komplett oder für eine bes
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Welche Daten werden verwendet?<ph name="END_BOLD" /> Dein Browserverlauf, das heißt eine Liste der von dir auf diesem Gerät in Chrome besuchten Websites.</translation>
 <translation id="4263656433980196874">Benutzeroberfläche für die Einwilligung in die Sprachsuche von Assistant ganz geöffnet</translation>
 <translation id="4269820728363426813">URL kopieren</translation>
+<translation id="4283102315569707115">Desktopwebsites standardmäßig anfordern?</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Displaysperre in den Android-Einstellungen aktivieren<ph name="END_LINK" /></translation>
 <translation id="4293476595220860475">Wenn du Chrome verwendest, stimmst du den <ph name="BEGIN_TOS_LINK" />Nutzungsbedingungen von Google<ph name="END_TOS_LINK" /> und den <ph name="BEGIN_ATOS_LINK" />zusätzlichen Nutzungsbedingungen für Google Chrome und Chrome OS<ph name="END_ATOS_LINK" /> zu. Außerdem gilt die <ph name="BEGIN_PRIVACY_LINK" />Datenschutzerklärung<ph name="END_PRIVACY_LINK" />.</translation>
 <translation id="4296252229500326964">Neuer Inkognitotab</translation>
@@ -968,6 +973,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6342069812937806050">Gerade eben</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> weitere}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> weitere}}</translation>
 <translation id="6345878117466430440">Als gelesen markieren</translation>
+<translation id="6357653805084533597">Du kannst dich über dieses Smartphone auf dem Gerät anmelden, auf dem dieser QR-Code angezeigt wird.</translation>
 <translation id="6363990818884053551">Bestätige deine Identität, um die Synchronisierung zu starten</translation>
 <translation id="6364438453358674297">Vorschlag aus Verlauf entfernen?</translation>
 <translation id="6380100320871303656">Chrome lädt Seiten häufiger vorab, die du wahrscheinlich aufrufen wirst. Bei dieser Einstellung werden voraussichtlich mehr Daten genutzt.</translation>
@@ -981,6 +987,7 @@ Trust Tokens verbessern den Datenschutz im Web und können nicht dazu verwendet 
 <translation id="6397616442223433927">Wieder online</translation>
 <translation id="6401458660421980302">Wenn du diesen Tab an ein anderes Gerät senden möchtest, melde dich dort in Chrome an</translation>
 <translation id="6402652558933147609"><ph name="ERROR_CODE" /> auf <ph name="VIOLATED_URL" /></translation>
+<translation id="6403371459378431832">Daten auf allen Geräten synchronisieren</translation>
 <translation id="6404511346730675251">Lesezeichen bearbeiten</translation>
 <translation id="6406506848690869874">Synchronisierung</translation>
 <translation id="6407224748847589805">Verbindung zum Computer nicht möglich. Versuche es mit einer anderen Bestätigungsoption.</translation>
@@ -1262,6 +1269,7 @@ Trust Tokens verbessern den Datenschutz im Web und können nicht dazu verwendet 
 <translation id="7853202427316060426">Aktivität</translation>
 <translation id="7857691613771368249">Nachfragen, wann Dateien gespeichert werden sollen</translation>
 <translation id="7859988229622350291">Nie übersetzen</translation>
+<translation id="7866213166286285359">Seiten hier übersetzen lassen</translation>
 <translation id="78707286264420418"><ph name="PRODUCT_NAME" /> benötigt die Berechtigung zum Zugriff auf Geräte in der Nähe, um eine Verbindung zu deinem Gerät herzustellen</translation>
 <translation id="7875915731392087153">E-Mail erstellen</translation>
 <translation id="7876243839304621966">Alle entfernen</translation>

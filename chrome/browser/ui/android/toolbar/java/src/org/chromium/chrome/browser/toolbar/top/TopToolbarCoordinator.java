@@ -130,6 +130,7 @@ public class TopToolbarCoordinator implements Toolbar {
      *         on Start surface. On NTP, the logo is in the new tab page layout instead of the
      *         toolbar and the logo click events are processed in NewTabPageLayout. So this callback
      *         will only be called on Start surface.
+     * @param constraintsSupplier supplier for browser controls constraints.
      */
     public TopToolbarCoordinator(ToolbarControlContainer controlContainer, ViewStub toolbarStub,
             ViewStub fullscreenToolbarStub, ToolbarLayout toolbarLayout,
@@ -154,7 +155,8 @@ public class TopToolbarCoordinator implements Toolbar {
             OfflineDownloader offlineDownloader, boolean initializeWithIncognitoColors,
             ObservableSupplier<Profile> profileSupplier,
             Callback<LoadUrlParams> startSurfaceLogoClickedCallback,
-            boolean isStartSurfaceRefactorEnabled) {
+            boolean isStartSurfaceRefactorEnabled,
+            ObservableSupplier<Integer> constraintsSupplier) {
         mControlContainer = controlContainer;
         mToolbarLayout = toolbarLayout;
         mMenuButtonCoordinator = browsingModeMenuButtonCoordinator;
@@ -168,16 +170,18 @@ public class TopToolbarCoordinator implements Toolbar {
             mStartSurfaceToolbarCoordinator = new StartSurfaceToolbarCoordinator(toolbarStub,
                     userEducationHelper, identityDiscStateSupplier, overviewThemeColorProvider,
                     overviewModeMenuButtonCoordinator, identityDiscButtonSupplier,
-                    isGridTabSwitcherEnabled, isTabGroupsAndroidContinuationEnabled,
-                    isIncognitoModeEnabledSupplier, profileSupplier,
-                    startSurfaceLogoClickedCallback, mIsStartSurfaceRefactorEnabled);
+                    isGridTabSwitcherEnabled, isTabToGtsAnimationEnabled,
+                    isTabGroupsAndroidContinuationEnabled, isIncognitoModeEnabledSupplier,
+                    profileSupplier, startSurfaceLogoClickedCallback,
+                    mIsStartSurfaceRefactorEnabled);
         } else if (mToolbarLayout instanceof ToolbarPhone || isTabletGridTabSwitcherEnabled()) {
             mTabSwitcherModeCoordinator = new TabSwitcherModeTTCoordinator(toolbarStub,
                     fullscreenToolbarStub, overviewModeMenuButtonCoordinator,
                     isGridTabSwitcherEnabled, isTabletGtsPolishEnabled, isTabToGtsAnimationEnabled,
                     isIncognitoModeEnabledSupplier);
         }
-        controlContainer.setToolbar(this, initializeWithIncognitoColors);
+        controlContainer.setPostInitializationDependencies(this, initializeWithIncognitoColors,
+                constraintsSupplier, () -> toolbarDataProvider.getTab());
         mToolbarLayout.initialize(toolbarDataProvider, tabController, mMenuButtonCoordinator,
                 isProgressBarVisibleSupplier, historyDelegate, partnerHomepageEnabledSupplier,
                 offlineDownloader);

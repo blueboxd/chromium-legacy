@@ -280,6 +280,7 @@
 <translation id="3277021493514034324">Адрес сайта скопирован</translation>
 <translation id="3285962946108803577">Поделиться страницей</translation>
 <translation id="3290875554372353449">Выберите аккаунт</translation>
+<translation id="3305294846493618482">ещё</translation>
 <translation id="3311748811247479259">Отключено</translation>
 <translation id="3324193307694657476">Адрес, строка 2</translation>
 <translation id="3328801116991980348">Информация о сайте</translation>
@@ -311,7 +312,6 @@
 <translation id="3529024052484145543">Автозаполнение не используется</translation>
 <translation id="3533202363250687977">Закрыть все вкладки инкогнито</translation>
 <translation id="3533436815740441613">Новая вкладка</translation>
-<translation id="3547799431091898961">Чтобы выйти из аккаунта Google на всех сайтах, <ph name="BEGIN_LINK" />выйдите из Chrome<ph name="END_LINK" />.</translation>
 <translation id="3551320343578183772">Закрыть вкладку</translation>
 <translation id="3581564640715911333">Предлагать перевести страницы на других языках.</translation>
 <translation id="3588820906588687999">Открыть изображение в новой вкладке</translation>
@@ -389,7 +389,7 @@
 <translation id="4272631900155121838">Чтобы отсканировать QR-код, разрешите доступ к камере в настройках.</translation>
 <translation id="4277990410970811858">Безопасный просмотр</translation>
 <translation id="4281844954008187215">Условия использования</translation>
-<translation id="4304713468139749426">Диспетчер паролей</translation>
+<translation id="4304713468139749426">Менеджер паролей</translation>
 <translation id="430793432425771671">Синхронизировать все</translation>
 <translation id="4309403553630140242">Чтобы узнать больше, нажмите дважды</translation>
 <translation id="430967081421617822">Все время</translation>
@@ -496,6 +496,7 @@
 <translation id="5118764316110575523">ВЫКЛ</translation>
 <translation id="5132942445612118989">Синхронизируйте пароли, историю и другие данные на всех ваших устройствах</translation>
 <translation id="5140288047769711648">Вам не нужно запоминать этот пароль, так как он будет сохранен в Chrome.</translation>
+<translation id="5149188072385105201">Добавить пароль</translation>
 <translation id="5150492518600715772">Отправить на свое устройство</translation>
 <translation id="5168414296986405587">Создано для iPadOS</translation>
 <translation id="5173088371991956744">Подтвердите личность для синхронизации</translation>
@@ -946,7 +947,7 @@
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="8840513115188359703">Вы останетесь в аккаунте Google.</translation>
 <translation id="8843129975935593190">Ваша организация разрешила синхронизировать только некоторые данные.</translation>
-<translation id="8849001918648564819">Никто</translation>
+<translation id="8849001918648564819">Скрытые</translation>
 <translation id="8868471676553493380">{count,plural, =1{{count} вкладка}one{{count} вкладка}few{{count} вкладки}many{{count} вкладок}other{{count} вкладки}}</translation>
 <translation id="8870413625673593573">Недавно закрытые</translation>
 <translation id="8876882697946675716">Синхронизируйте устройства</translation>
@@ -970,7 +971,7 @@
 <translation id="9055772144595778347">Ошибка</translation>
 <translation id="9057972802061533987">Не удалось подписаться. Произошла ошибка.</translation>
 <translation id="9065203028668620118">Изменить</translation>
-<translation id="9068336935206019333">Открыть в режиме инкогнито</translation>
+<translation id="9068336935206019333">Открыть в Chrome инкогнито</translation>
 <translation id="9079935439869366234">Отметить все как непрочитанные</translation>
 <translation id="9081058212938299310">Обновить пароль для аккаунта <ph name="USERNAME" />?</translation>
 <translation id="9083392325882095631">Закладок: 1</translation>

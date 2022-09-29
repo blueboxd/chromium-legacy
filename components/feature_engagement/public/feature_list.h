@@ -148,6 +148,8 @@ DEFINE_VARIATION_PARAM(kIPHReadLaterAppMenuBookmarksFeature,
                        "IPH_ReadLaterAppMenuBookmarks");
 DEFINE_VARIATION_PARAM(kIPHReadLaterBottomSheetFeature,
                        "IPH_ReadLaterBottomSheet");
+DEFINE_VARIATION_PARAM(kIPHRequestDesktopSiteAppMenuFeature,
+                       "IPH_RequestDesktopSiteAppMenu");
 DEFINE_VARIATION_PARAM(kIPHShoppingListMenuItemFeature,
                        "IPH_ShoppingListMenuItem");
 DEFINE_VARIATION_PARAM(kIPHShoppingListSaveFlowFeature,
@@ -230,6 +232,8 @@ DEFINE_VARIATION_PARAM(kIPHReadingListEntryPointFeature,
 DEFINE_VARIATION_PARAM(kIPHReadingListInSidePanelFeature,
                        "IPH_ReadingListInSidePanel");
 DEFINE_VARIATION_PARAM(kIPHReopenTabFeature, "IPH_ReopenTab");
+DEFINE_VARIATION_PARAM(kIPHSideSearchAutoTriggeringFeature,
+                       "IPH_SideSearchAutoTriggering");
 DEFINE_VARIATION_PARAM(kIPHSideSearchFeature, "IPH_SideSearch");
 DEFINE_VARIATION_PARAM(kIPHTabAudioMutingFeature, "IPH_TabAudioMuting");
 DEFINE_VARIATION_PARAM(kIPHTabSearchFeature, "IPH_TabSearch");
@@ -308,6 +312,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHReadLaterAppMenuBookmarkThisPageFeature),
         VARIATION_ENTRY(kIPHReadLaterAppMenuBookmarksFeature),
         VARIATION_ENTRY(kIPHReadLaterBottomSheetFeature),
+        VARIATION_ENTRY(kIPHRequestDesktopSiteAppMenuFeature),
         VARIATION_ENTRY(kIPHShoppingListMenuItemFeature),
         VARIATION_ENTRY(kIPHShoppingListSaveFlowFeature),
         VARIATION_ENTRY(kIPHTabGroupsQuicklyComparePagesFeature),
@@ -357,6 +362,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHReadingListEntryPointFeature),
         VARIATION_ENTRY(kIPHReadingListInSidePanelFeature),
         VARIATION_ENTRY(kIPHReopenTabFeature),
+        VARIATION_ENTRY(kIPHSideSearchAutoTriggeringFeature),
         VARIATION_ENTRY(kIPHSideSearchFeature),
         VARIATION_ENTRY(kIPHTabAudioMutingFeature),
         VARIATION_ENTRY(kIPHTabSearchFeature),

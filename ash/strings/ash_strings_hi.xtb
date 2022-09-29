@@ -49,6 +49,7 @@
 <translation id="1201402288615127009">अगला</translation>
 <translation id="1210557957257435379">स्क्रीन रिकॉर्डिंग</translation>
 <translation id="121097972571826261">एक शब्द आगे जाएं</translation>
+<translation id="1217633719248931900">ऐप्लिकेशन पर जाएं</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />, Play Store ऐप्लिकेशन</translation>
 <translation id="1225748608451425081">आपका Chromebook, एक जानी-पहचानी समस्या की वजह से लॉक है. आप इतने समय बाद साइन इन कर पाएंगे: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">टेक्स्ट चुनना बंद करें</translation>
@@ -101,6 +102,7 @@
 <translation id="1455242230282523554">भाषा सेटिंग दिखाएं</translation>
 <translation id="1460620680449458626">आवाज़ को म्यूट किया गया है.</translation>
 <translation id="1467432559032391204">बाएं</translation>
+<translation id="146902737843070955">आपके एडमिन ने इस बदलाव का अनुरोध किया है</translation>
 <translation id="147310119694673958">फ़ोन में <ph name="BATTERY_PERCENTAGE" />% बैटरी है</translation>
 <translation id="1479909375538722835">फ़्लोट करने वाले सुलभता मेन्यू</translation>
 <translation id="1480845547124508962"><ph name="CURRENT_TIME" />, कैलेंडर व्यू के लिए Enter बटन दबाएं</translation>
@@ -308,7 +310,7 @@
 <translation id="2791421900609674576">जहां पिछली बार छोड़ा था वहीं से इस्तेमाल शुरू करने के लिए, आपको सुझाव दिखेंगे.  दबाकर रखने से, इन सुझावों को बंद किया जा सकता है.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2797741504905337289">शेल्फ़ पार्टी मोड</translation>
-<translation id="2805756323405976993">ऐप्स</translation>
+<translation id="2805756323405976993">ऐप्लिकेशन</translation>
 <translation id="2814448776515246190">पार्शियल कैप्चर</translation>
 <translation id="2819276065543622893">अब आप प्रस्थान कर जाएंगे.</translation>
 <translation id="2822551631199737692">कैमरा इस्तेमाल हो रहा है</translation>
@@ -539,6 +541,7 @@
 <translation id="4123259114412175274">अपना Chromebook अनलॉक करने के लिए, पक्का करें कि आपके फ़ोन का ब्लूटूथ चालू है</translation>
 <translation id="4125970834901680537">टैबलेट मोड में ऐप्लिकेशन का कॉन्टेंट स्ट्रीम नहीं किया जा सकता. लैपटॉप मोड में फिर से कोशिश करें.</translation>
 <translation id="4129129681837227511">अपनी लॉक स्क्रीन पर सूचनाएं देखने की सेटिंग बदलने के लिए स्क्रीन अनलॉक करें</translation>
+<translation id="4130035430755296270">लेआउट के ज़्यादा विकल्प देखने के लिए कर्सर घुमाते रहें</translation>
 <translation id="4136724716305260864">यह सुविधा सूरज उगने तक चालू रहेगी</translation>
 <translation id="4146833061457621061">गाने चलाओ</translation>
 <translation id="4165275524535002941">हो सकता है कि डिसप्ले पर यह केबल काम न करे</translation>
@@ -669,6 +672,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">डिसकनेक्ट करें</translation>
 <translation id="4814539958450445987">लॉगिन स्क्रीन</translation>
+<translation id="481455355267255546">आने वाले दिनों में होने वाले इवेंट</translation>
 <translation id="4831034276697007977">क्या आप वाकई अपने-आप क्लिक होने की सुविधा बंद करना चाहते हैं?</translation>
 <translation id="4849058404725798627">कीबोर्ड फ़ोकस वाला ऑब्जेक्ट हाइलाइट करें</translation>
 <translation id="485592688953820832">कोई कार्रवाई नहीं (रोकें)</translation>
@@ -841,6 +845,7 @@
 <translation id="5779721926447984944">पिन की गई फ़ाइलें</translation>
 <translation id="5788127256798019331">Play की फ़ाइलें</translation>
 <translation id="5790085346892983794">सफलता</translation>
+<translation id="5804651031882187592">"सिम लॉक करें" सेटिंग बंद करें</translation>
 <translation id="5805809050170488595"><ph name="NETWORK_NAME" /> को चालू करने के लिए क्लिक करें</translation>
 <translation id="5825969630400862129">जुड़े हुए डिवाइस की सेटिंग</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> पर <ph name="ROUTE_TITLE" /> बंद करें</translation>
@@ -849,6 +854,7 @@
 <translation id="5860033963881614850">बंद</translation>
 <translation id="5860491529813859533">चालू करें</translation>
 <translation id="5867217927013474703">नेटवर्क की जानकारी इकट्ठा की जा रही है</translation>
+<translation id="5867606971598166637">आपका सिस्टम एडमिन आपकी स्क्रीन पर नज़र रख रहा है</translation>
 <translation id="5876666360658629066">अभिभावक वाला कोड डालें</translation>
 <translation id="5881540930187678962">फ़ोन हब को बाद में सेट अप करें</translation>
 <translation id="5887954372087850114"><ph name="WINDOW_TITLE" /> विंडो, <ph name="DESK_TITLE" /> को असाइन किया गया. साथ ही, इसे अन्य सभी डेस्क से हटाया गया</translation>
@@ -1010,6 +1016,7 @@
 <translation id="6757237461819837179">कोई मीडिया नहीं चल रहा है</translation>
 <translation id="6777216307882431711">कनेक्ट किए गए यूएसबी-सी डिवाइस चार्ज कर रहा है</translation>
 <translation id="6786750046913594791">फ़ोल्डर बंद करें</translation>
+<translation id="6787595647772650851">पिछले सेशन को पहले जैसा करें</translation>
 <translation id="6790428901817661496">चलाएं</translation>
 <translation id="6801878137098616817">इसमें, हाल ही में बदलाव किया गया था</translation>
 <translation id="6803622936009808957">प्रदर्शनों को मिरर नहीं किया जा सका क्योंकि कोई समर्थित रिज़ॉल्यूशन नहीं मिला. इसके बजाय विस्तारित डेस्कटॉप में चला गया है.</translation>
@@ -1258,6 +1265,7 @@
 <translation id="8214996719228530800">कैनरी चैनल</translation>
 <translation id="8219451629189078428">इस दौरान यह ज़रूरी है कि आपका Chromebook चालू रहे और चार्ज हो रहा हो. पक्का करें कि चार्जर या अडैप्टर केबल आपके Chromebook और पावर सॉकेट में अच्छी तरह से प्लग इन हैं. अपने Chromebook को बंद न करें.</translation>
 <translation id="8236042855478648955">ब्रेक लेने का समय हो गया</translation>
+<translation id="8246282815785366524"><ph name="GIVEN_NAME" />, आपका फिर से स्वागत है</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />, फ़ोन की बैटरी <ph name="BATTERY_STATUS" /></translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, ऐप्लिकेशन</translation>
 <translation id="8255234195843591763">अपडेट करने के लिए रीसेट करें</translation>

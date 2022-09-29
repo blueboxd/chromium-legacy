@@ -708,7 +708,7 @@ enum ActionOnStalePluginList {
   IGNORE_IF_STALE_PLUGIN_LIST
 };
 
-void IsHandledBySafePlugin(int render_process_id,
+void IsHandledBySafePlugin(content::BrowserContext* browser_context,
                            const GURL& url,
                            const std::string& mime_type,
                            ActionOnStalePluginList stale_plugin_action,
@@ -724,7 +724,7 @@ void IsHandledBySafePlugin(int render_process_id,
   content::PluginService* plugin_service =
       content::PluginService::GetInstance();
   bool plugin_found =
-      plugin_service->GetPluginInfo(render_process_id, url, mime_type, false,
+      plugin_service->GetPluginInfo(browser_context, url, mime_type, false,
                                     &is_stale, &plugin_info, &actual_mime_type);
   if (is_stale && stale_plugin_action == RETRY_IF_STALE_PLUGIN_LIST) {
     // The GetPlugins call causes the plugin list to be refreshed. Once that's
@@ -732,9 +732,8 @@ void IsHandledBySafePlugin(int render_process_id,
     // after a single retry in order to avoid retrying indefinitely.
     plugin_service->GetPlugins(base::BindOnce(
         &InvokeClosureAfterGetPluginCallback,
-        base::BindOnce(&IsHandledBySafePlugin, render_process_id, url,
-                       mime_type, IGNORE_IF_STALE_PLUGIN_LIST,
-                       std::move(callback))));
+        base::BindOnce(&IsHandledBySafePlugin, browser_context, url, mime_type,
+                       IGNORE_IF_STALE_PLUGIN_LIST, std::move(callback))));
     return;
   }
   // In practice, we assume that retrying once is enough.
@@ -751,6 +750,26 @@ void IsHandledBySafePlugin(int render_process_id,
 }  // namespace
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
+void DownloadTargetDeterminer::DetermineIfHandledSafelyHelper(
+    download::DownloadItem* download,
+    const base::FilePath& local_path,
+    const std::string& mime_type,
+    base::OnceCallback<void(bool)> callback) {
+  if (blink::IsSupportedMimeType(mime_type)) {
+    std::move(callback).Run(true);
+    return;
+  }
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  IsHandledBySafePlugin(content::DownloadItemUtils::GetBrowserContext(download),
+                        net::FilePathToFileURL(local_path), mime_type,
+                        RETRY_IF_STALE_PLUGIN_LIST, std::move(callback));
+
+#else
+  std::move(callback).Run(false);
+#endif
+}
+
 DownloadTargetDeterminer::Result
     DownloadTargetDeterminer::DoDetermineIfHandledSafely() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -763,30 +782,13 @@ DownloadTargetDeterminer::Result
   if (mime_type_.empty())
     return CONTINUE;
 
-  if (blink::IsSupportedMimeType(mime_type_)) {
-    is_filetype_handled_safely_ = true;
-    return CONTINUE;
-  }
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-  int render_process_id = -1;
-  content::WebContents* web_contents =
-      content::DownloadItemUtils::GetWebContents(download_);
-  if (web_contents)
-    render_process_id =
-        web_contents->GetPrimaryMainFrame()->GetProcess()->GetID();
-  IsHandledBySafePlugin(
-      render_process_id, net::FilePathToFileURL(local_path_), mime_type_,
-      RETRY_IF_STALE_PLUGIN_LIST,
+  DetermineIfHandledSafelyHelper(
+      download_, local_path_, mime_type_,
       base::BindOnce(&DownloadTargetDeterminer::DetermineIfHandledSafelyDone,
                      weak_ptr_factory_.GetWeakPtr()));
   return QUIT_DOLOOP;
-#else
-  return CONTINUE;
-#endif
 }
 
-#if BUILDFLAG(ENABLE_PLUGINS)
 void DownloadTargetDeterminer::DetermineIfHandledSafelyDone(
     bool is_handled_safely) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -795,7 +797,6 @@ void DownloadTargetDeterminer::DetermineIfHandledSafelyDone(
   is_filetype_handled_safely_ = is_handled_safely;
   DoLoop();
 }
-#endif
 
 DownloadTargetDeterminer::Result
     DownloadTargetDeterminer::DoDetermineIfAdobeReaderUpToDate() {

@@ -374,6 +374,7 @@
 <translation id="4336032328163998280">Kopiranje nije uspjelo. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4340491671558548972">Dodaj na bočnu traku</translation>
 <translation id="4348495354623233847">centralnokurdski s arapskom tastaturom</translation>
+<translation id="434941167647142660">Izvorna lokacija</translation>
 <translation id="4363958938297989186">ruski s fonetskom tastaturom</translation>
 <translation id="4364327530094270451">Dinja</translation>
 <translation id="4378551569595875038">Povezivanje…</translation>
@@ -600,7 +601,7 @@
 <translation id="6096979789310008754">Pretraži obrisani tekst uz prikaz svih fajlova i foldera.</translation>
 <translation id="610101264611565198">Premještanje fajla <ph name="FILE_NAME" /> u folder <ph name="FOLDER_NAME" /></translation>
 <translation id="61118516107968648">CSV tekst</translation>
-<translation id="6129953537138746214">Razmaknica</translation>
+<translation id="6129953537138746214">Tipka za razmak</translation>
 <translation id="6133173853026656527">Premještanje fajla <ph name="FILE_NAME" />...</translation>
 <translation id="613750717151263950">japanski sa SAD tastaturom</translation>
 <translation id="6138894911715675297"><ph name="NETWORK_TYPE" />, nema mreže</translation>

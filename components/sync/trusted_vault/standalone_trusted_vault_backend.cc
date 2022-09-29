@@ -13,6 +13,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/span.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/logging.h"
@@ -29,6 +30,7 @@
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/time.h"
+#include "components/sync/protocol/local_trusted_vault.pb.h"
 #include "components/sync/trusted_vault/proto_string_bytes_conversion.h"
 #include "components/sync/trusted_vault/securebox.h"
 #include "components/sync/trusted_vault/trusted_vault_server_constants.h"
@@ -38,7 +40,7 @@ namespace syncer {
 
 namespace {
 
-constexpr int kCurrentLocalTrustedVaultVersion = 1;
+constexpr int kCurrentLocalTrustedVaultVersion = 2;
 constexpr int kCurrentDeviceRegistrationVersion = 1;
 constexpr base::TimeDelta kVerifyDeviceRegistrationDelay = base::Seconds(10);
 
@@ -142,6 +144,19 @@ void UpgradeToVersion1(sync_pb::LocalTrustedVault* local_trusted_vault) {
   local_trusted_vault->set_data_version(1);
 }
 
+// Version 1 may contain `keys_are_stale` accidentally set to true, upgrade to
+// version 2 resets it to false.
+void UpgradeToVersion2(sync_pb::LocalTrustedVault* local_trusted_vault) {
+  DCHECK(local_trusted_vault);
+  DCHECK_EQ(local_trusted_vault->data_version(), 1);
+
+  for (sync_pb::LocalTrustedVaultPerUser& per_user_vault :
+       *local_trusted_vault->mutable_user()) {
+    per_user_vault.set_keys_are_stale(false);
+  }
+  local_trusted_vault->set_data_version(2);
+}
+
 void RecordVerifyRegistrationStatus(
     TrustedVaultDownloadKeysStatusForUMA status) {
   base::UmaHistogramEnumeration(
@@ -232,7 +247,16 @@ void StandaloneTrustedVaultBackend::ReadDataFromDisk() {
     WriteToDisk(data_, file_path_);
   }
 
-  DCHECK_EQ(data_.data_version(), kCurrentLocalTrustedVaultVersion);
+  if (base::FeatureList::IsEnabled(kSyncTrustedVaultResetKeysAreStale) &&
+      data_.data_version() == 1) {
+    UpgradeToVersion2(&data_);
+    WriteToDisk(data_, file_path_);
+  }
+
+  // TODO(crbug.com/1362513): DCHECK against kCurrentLocalTrustedVaultVersion
+  // once kSyncTrustedVaultResetKeysAreStale is removed and version 2 is
+  // guaranteed.
+  DCHECK_GE(data_.data_version(), 1);
 }
 
 void StandaloneTrustedVaultBackend::FetchKeys(
@@ -680,13 +704,7 @@ StandaloneTrustedVaultBackend::MaybeRegisterDevice(
   AbandonConnectionRequest();
   // |this| outlives |connection_| and |ongoing_connection_request_|, so it's
   // safe to use base::Unretained() here.
-  if (per_user_vault->vault_key().empty()) {
-    ongoing_connection_request_ = connection_->RegisterDeviceWithoutKeys(
-        *primary_account_, key_pair->public_key(),
-        base::BindOnce(
-            &StandaloneTrustedVaultBackend::OnDeviceRegisteredWithoutKeys,
-            base::Unretained(this)));
-  } else {
+  if (HasNonConstantKey(*per_user_vault)) {
     ongoing_connection_request_ = connection_->RegisterAuthenticationFactor(
         *primary_account_, GetAllVaultKeys(*per_user_vault),
         per_user_vault->last_vault_key_version(), key_pair->public_key(),
@@ -694,6 +712,12 @@ StandaloneTrustedVaultBackend::MaybeRegisterDevice(
         /*authentication_factor_type_hint=*/absl::nullopt,
         base::BindOnce(&StandaloneTrustedVaultBackend::OnDeviceRegistered,
                        base::Unretained(this)));
+  } else {
+    ongoing_connection_request_ = connection_->RegisterDeviceWithoutKeys(
+        *primary_account_, key_pair->public_key(),
+        base::BindOnce(
+            &StandaloneTrustedVaultBackend::OnDeviceRegisteredWithoutKeys,
+            base::Unretained(this)));
   }
 
   DCHECK(ongoing_connection_request_);
@@ -772,12 +796,12 @@ void StandaloneTrustedVaultBackend::OnDeviceRegisteredWithoutKeys(
     case TrustedVaultRegistrationStatus::kSuccess:
     case TrustedVaultRegistrationStatus::kAlreadyRegistered:
       // This method can be called only if device registration was triggered
-      // while no local keys available. Detected server-side key should be
-      // stored upon successful completion (or if device was already registered,
-      // e.g. previous response wasn't handled properly), but |vault_key|
-      // emptiness still needs to be checked before that - there might be
-      // StoreKeys() call during handling the request.
-      if (per_user_vault->vault_key().empty()) {
+      // while no local non-constant keys available. Detected server-side key
+      // should be stored upon successful completion (or if device was already
+      // registered, e.g. previous response wasn't handled properly), but
+      // absence of non-constant keys still needs to be checked before that -
+      // there might be StoreKeys() call during handling the request.
+      if (!HasNonConstantKey(*per_user_vault)) {
         AssignBytesToProtoString(
             vault_key_and_version.key,
             per_user_vault->add_vault_key()->mutable_key_material());

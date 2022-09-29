@@ -421,6 +421,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2040894699575719559">Posisjonen er blokkert</translation>
 <translation id="2042213636306070719">Skuff 7</translation>
 <translation id="204357726431741734">Logg på for å bruke passord som er lagret i Google-kontoen din</translation>
+<translation id="2048261947532620704">Oversetter siden</translation>
 <translation id="205212645995975601">Grilling</translation>
 <translation id="2053111141626950936">Sider på <ph name="LANGUAGE" /> oversettes ikke.</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{Når denne kontrollen er på og statusen er aktiv, bestemmer Chrome hvilken stor gruppe mennesker, eller "kohort", den siste nettleseraktiviteten din ligner mest på. Annonsører kan velge annonser for gruppen, og nettlesingsaktiviteten din holdes privat på enheten din. Gruppen din oppdateres hver dag.}=1{Når denne kontrollen er på og statusen er aktiv, bestemmer Chrome hvilken stor gruppe mennesker, eller "kohort", den siste nettleseraktiviteten din ligner mest på. Annonsører kan velge annonser for gruppen, og nettlesingsaktiviteten din holdes privat på enheten din. Gruppen din oppdateres hver dag.}other{Når denne kontrollen er på og statusen er aktiv, bestemmer Chrome hvilken stor gruppe mennesker, eller "kohort", den siste nettleseraktiviteten din ligner mest på. Annonsører kan velge annonser for gruppen, og nettlesingsaktiviteten din holdes privat på enheten din. Gruppen oppdateres hver {NUM_DAYS}. dag.}}</translation>
@@ -911,6 +912,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="3427342743765426898">&amp;Endre likevel</translation>
 <translation id="342781501876943858">Chromium anbefaler at du tilbakestiller passordet ditt hvis du også har brukt det på andre nettsteder.</translation>
 <translation id="3428151540071562330">Én eller flere av URI-ene for DnsOverHttpsTemplates-tjenermaler er ugyldige og blir ikke brukt.</translation>
+<translation id="3431216045099978607">Trykk på |<ph name="ACCELERATOR" />| for å avslutte fullskjerm og se nedlastingen.</translation>
 <translation id="3431636764301398940">Lagre dette kortet på denne enheten</translation>
 <translation id="3432601291244612633">Lukk siden</translation>
 <translation id="3435738964857648380">Sikkerhet</translation>
@@ -1104,7 +1106,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="3969052498612555048">Finner du ikke koden? <ph name="BEGIN_LINK" />Få en ny kode<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> er blokkert</translation>
-<translation id="3978338123949022456">Søkemodus – skriv inn et søk, og trykk på Enter for å søke på <ph name="KEYWORD_SUFFIX" /></translation>
 <translation id="398470910934384994">Fugler</translation>
 <translation id="3985750352229496475">Administrer adresser…</translation>
 <translation id="3986705137476756801">Slå av Direkteteksting inntil videre</translation>
@@ -1372,7 +1373,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Kjør Windows Nettverksdiagnose<ph name="END_LINK" /></translation>
 <translation id="4722735765955348426">Passord for <ph name="USERNAME" /></translation>
 <translation id="4724144314178270921">Kan be om å få se tekst og bilder på utklippstavlen din</translation>
-<translation id="4726672564094551039">Last inn retningslinjer på nytt</translation>
+<translation id="4726672564094551039">Last inn reglene på nytt</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="4731638775147756694">Dette programmet er blokkert av administratoren din</translation>
 <translation id="4731967714531604179">Prc2 (konvolutt)</translation>
@@ -1652,6 +1653,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="540969355065856584">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke gyldig for øyeblikket. Dette kan være forårsaket av en feilkonfigurasjon eller en angriper som lytter på tilkoblingen din.</translation>
 <translation id="5412040515238827314">Ugyldig format: Forventet en liste over mønstre.</translation>
 <translation id="5412236728747081950">Dette nettstedet mottar interessene dine fra Chrome for å kunne vise deg mer relevante annonser</translation>
+<translation id="5412245327974352290"><ph name="TRADITIONAL_TEXT" /> – <ph name="ADDITIONAL_TEXT" /></translation>
 <translation id="541416427766103491">Hylle 4</translation>
 <translation id="5421136146218899937">Slett nettlesingsdata</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> vil sende deg varsler</translation>
@@ -1713,6 +1715,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="5580958916614886209">Kontrollér utløpsmåneden, og prøv igjen</translation>
 <translation id="558420943003240152">Administrer passord og tilgangsnøkler…</translation>
 <translation id="5586446728396275693">Ingen adresser er lagret</translation>
+<translation id="5586831831248371458">Søk på <ph name="KEYWORD_SUFFIX" /></translation>
 <translation id="5587987780934666589">Plattformbruker</translation>
 <translation id="5593349413089863479">Tilkoblingen er ikke helt sikker</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
@@ -2056,6 +2059,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="6591833882275308647"><ph name="DEVICE_TYPE" /> administreres ikke</translation>
 <translation id="6592952801936330159">Knappen «Administrer nettstedsinnstillinger» – trykk på Enter for å administrere tillatelser og data som er lagret på nettsteder, i Chrome-innstillingene</translation>
 <translation id="6596325263575161958">Krypteringsalternativer</translation>
+<translation id="6599642189720630047">Sporede produkter</translation>
 <translation id="6609880536175561541">Prc7 (konvolutt)</translation>
 <translation id="6611723696964473273">Økonominyheter</translation>
 <translation id="6612010098632894193">Nettvideo</translation>
@@ -2582,6 +2586,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="8004582292198964060">Nettleser</translation>
 <translation id="8009225694047762179">Administrer passord</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Dette kortet og den tilknyttede faktureringsadressen lagres. Du kan bruke det når du er logget på <ph name="USER_EMAIL" />.}other{Disse kortene og de tilknyttede faktureringsadressene lagres. Du kan bruke dem når du er logget på <ph name="USER_EMAIL" />.}}</translation>
+<translation id="8019861005170389898"><ph name="TRADITIONAL_TEXT" /> (<ph name="ADDITIONAL_TEXT" />)</translation>
 <translation id="8025119109950072390">Angripere på dette nettstedet prøver kanskje å lure deg til å gjøre farlige ting som å installere programvare eller avsløre personopplysningene dine (for eksempel passord, telefonnumre eller kredittkortinformasjon).</translation>
 <translation id="8026334261755873520">Slett nettlesingsdata</translation>
 <translation id="8027077570865220386">Skuff 15</translation>

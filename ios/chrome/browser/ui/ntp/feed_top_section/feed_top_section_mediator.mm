@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/ntp/feed_top_section/feed_top_section_consumer.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -72,19 +73,8 @@
     return;
   }
   _shouldShowSigninPromo = shouldShowSigninPromo;
-  if (shouldShowSigninPromo) {
-    [self.signinPromoMediator signinPromoViewIsVisible];
-  } else {
-    // When the sign-in view is closed, the promo state changes, but
-    // -[SigninPromoViewMediator signinPromoViewIsHidden] should not be
-    // called because it's already hidden.
-    if (!self.signinPromoMediator.invalidClosedOrNeverVisible) {
-      [self.signinPromoMediator signinPromoViewIsHidden];
-    }
-  }
-  // TODO(crbug.com/1331010): Update pref if needed.
 
-  // Update the view.
+  // Update the consumer.
   self.consumer.shouldShowSigninPromo = _shouldShowSigninPromo;
 }
 
@@ -131,18 +121,9 @@
   }
 }
 
-- (void)signinDidFinish {
-  [self updateShouldShowSigninPromo];
-  if (self.shouldShowSigninPromo) {
-    [self.consumer
-        updateSigninPromoWithConfigurator:[self signinPromoConfigurator]];
-  }
-}
-
 - (void)signinPromoViewMediatorCloseButtonWasTapped:
     (SigninPromoViewMediator*)mediator {
   self.shouldShowSigninPromo = NO;
-  // TODO(crbug.com/1331010): Update local prefs if needed.
 }
 
 #pragma mark - Private
@@ -150,8 +131,9 @@
 - (void)updateShouldShowSigninPromo {
   DCHECK(self.browserState);
   self.shouldShowSigninPromo = NO;
-  // Return early for off the record mode.
-  if (self.browserState->IsOffTheRecord()) {
+  // Don't show the promo for incognito or start surface.
+  if (self.browserState->IsOffTheRecord() ||
+      [self.ntpDelegate isStartSurface]) {
     return;
   }
   if ([SigninPromoViewMediator

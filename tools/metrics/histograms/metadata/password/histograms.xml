@@ -1638,6 +1638,40 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.ImportEntryStatus"
+    enum="PasswordManagerImportEntryStatus" expires_after="2023-02-01">
+  <owner>eliaskh@chromium.org</owner>
+  <owner>natiahlyi@google.com</owner>
+  <summary>
+    Tracks the individual status of a single password entry from the provided
+    CSV File after it has been processed in the Passwords Import flow in
+    settings UI. Recorded when a single entry has been processed and checked for
+    errors or missing fields. Recording occurs within password settings.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.ImportFileSize" units="bytes"
+    expires_after="2023-02-01">
+  <owner>eliaskh@chromium.org</owner>
+  <owner>natiahlyi@google.com</owner>
+  <summary>
+    The size of the CSV file (to import passwords from) selected by a user in
+    bytes. Recorded when the user tries to import passwords from a CSV file. The
+    user has chosen the file, but the file hasn't been read yet.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.ImportResultsStatus"
+    enum="PasswordManagerImportResultsStatus" expires_after="2023-02-01">
+  <owner>eliaskh@chromium.org</owner>
+  <owner>natiahlyi@google.com</owner>
+  <summary>
+    Tracks the final outcome status of importing a CSV File to Chrome Password
+    Manager in settings UI. Recorded when the import flow finishes within
+    password settings. This can be either successfuly or due to an error.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.iOS.InfoBar.PasswordSave" enum="Boolean"
     expires_after="2022-10-16">
   <owner>djean@chromium.org</owner>
@@ -2383,6 +2417,23 @@ chromium-metrics-reviews@google.com.
     non-empty. Recorded when all the logins have been processed. If total number
     of logins is 0, nothing is recorded.
   </summary>
+</histogram>
+
+<histogram
+    name="PasswordManager.PasswordStoreAndroidBackend.UptimeOnAPIError{ErrorCode}"
+    units="ms" expires_after="M110">
+  <owner>maxan@google.com</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Chrome uptime on recieving {ErrorCode} error from the GMS 1P API. Recorded
+    when the asynchronous job has returned with error.
+  </summary>
+  <token key="ErrorCode">
+    <variant name=".ApiNotConnected" summary="API_NOT_CONNECTED"/>
+    <variant name=".ConnectionSuspendedDuringCall"
+        summary="CONNECTTION_SUSPENDED_DURING_CALL"/>
+    <variant name=".ReconnectionTimedOut" summary="RECONNECTION_TIMED_OUT"/>
+  </token>
 </histogram>
 
 <histogram

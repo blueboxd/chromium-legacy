@@ -49,10 +49,26 @@ DestroyerSet& PendingDestroyers() {
   return *instance;
 }
 
+// Given a `profile`, returns the set of profiles that needs to be deleted
+// first.
+std::vector<Profile*> GetDependentProfiles(Profile* profile) {
+  if (profile->IsOffTheRecord())
+    return {};
+  return profile->GetAllOffTheRecordProfiles();
+}
+
 }  // namespace
 
 // static
 void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
+  DestroyProfileWhenAppropriateWithTimeout(profile,
+                                           base::Seconds(kTimerDelaySeconds));
+}
+
+// static
+void ProfileDestroyer::DestroyProfileWhenAppropriateWithTimeout(
+    Profile* const profile,
+    base::TimeDelta timeout) {
   if (!profile)  // profile might have been reset in ResetPendingDestroyers();
     return;
 
@@ -88,7 +104,7 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
   // ignored during shutdown and by the System Profile do not either.
   HostSet profile_hosts;
   GetHostsForProfile(&profile_hosts, profile);
-  for (Profile* otr_profile : profile->GetAllOffTheRecordProfiles()) {
+  for (Profile* otr_profile : GetDependentProfiles(profile)) {
     GetHostsForProfile(&profile_hosts, otr_profile);
   }
 
@@ -96,7 +112,7 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
     // The instance will destroy itself once all (non-spare) render process
     // hosts referring to it are properly terminated. This happens in the two
     // "final" state: Retry() and Timeout().
-    new ProfileDestroyer(profile, profile_hosts);
+    new ProfileDestroyer(profile, profile_hosts, timeout);
     return;
   }
 
@@ -171,10 +187,10 @@ void ProfileDestroyer::DestroyOriginalProfileNow(Profile* const profile) {
   }
 
 #if DCHECK_IS_ON()
-  // Save the raw pointers of profile and off-the-record profile for DCHECKing
-  // on later.
+  // Save the raw pointers of profile and dependent profile for DCHECKing on
+  // later.
   void* profile_ptr = profile;
-  std::vector<Profile*> otr_profiles = profile->GetAllOffTheRecordProfiles();
+  std::vector<Profile*> dependent_profile = GetDependentProfiles(profile);
 #endif  // DCHECK_IS_ON()
 
   delete profile;
@@ -185,7 +201,7 @@ void ProfileDestroyer::DestroyOriginalProfileNow(Profile* const profile) {
   HostSet dangling_hosts;
   HostSet dangling_hosts_for_otr;
   GetHostsForProfile(&dangling_hosts, profile_ptr);
-  for (Profile* otr : otr_profiles) {
+  for (Profile* otr : dependent_profile) {
     GetHostsForProfile(&dangling_hosts_for_otr, otr);
   }
   const size_t profile_hosts_count = dangling_hosts.size();
@@ -219,8 +235,12 @@ void ProfileDestroyer::ResetPendingDestroyers(Profile* const profile) {
   }
 }
 
-ProfileDestroyer::ProfileDestroyer(Profile* const profile, const HostSet& hosts)
-    : profile_(profile), profile_ptr_(reinterpret_cast<uint64_t>(profile)) {
+ProfileDestroyer::ProfileDestroyer(Profile* const profile,
+                                   const HostSet& hosts,
+                                   base::TimeDelta timeout)
+    : profile_(profile),
+      timeout_(timeout),
+      profile_ptr_(reinterpret_cast<uint64_t>(profile)) {
   TRACE_EVENT("shutdown", "ProfileDestroyer::ProfileDestroyer",
               [&](perfetto::EventContext ctx) {
                 auto* proto =
@@ -236,8 +256,8 @@ ProfileDestroyer::ProfileDestroyer(Profile* const profile, const HostSet& hosts)
   DCHECK(observations_.IsObservingAnySource());
 
   // We don't want to wait for RenderProcessHost to be destroyed longer than
-  // kTimerDelaySeconds.
-  timer_.Start(FROM_HERE, base::Seconds(kTimerDelaySeconds),
+  // timeout.
+  timer_.Start(FROM_HERE, timeout,
                base::BindOnce(&ProfileDestroyer::Timeout,
                               weak_ptr_factory_.GetWeakPtr()));
 }
@@ -305,7 +325,7 @@ void ProfileDestroyer::Timeout() {
 }
 
 void ProfileDestroyer::Retry() {
-  DestroyProfileWhenAppropriate(profile_);
+  DestroyProfileWhenAppropriateWithTimeout(profile_, timeout_);
   delete this;  // Final state.
 }
 

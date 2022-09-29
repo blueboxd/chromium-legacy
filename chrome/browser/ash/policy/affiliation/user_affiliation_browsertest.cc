@@ -5,7 +5,6 @@
 #include <memory>
 #include <ostream>
 
-#include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -20,11 +19,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
+#include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/authpolicy/fake_authpolicy_client.h"
+#include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/user_manager/user.h"

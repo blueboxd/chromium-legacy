@@ -226,6 +226,7 @@
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/notifications/chime/android/features.h"
+#include "chrome/browser/push_messaging/push_messaging_features.h"
 #include "components/browser_ui/photo_picker/android/features.h"
 #include "components/content_creation/notes/core/note_features.h"
 #include "components/content_creation/reactions/core/reactions_features.h"
@@ -591,12 +592,13 @@ const FeatureEntry::FeatureVariation
 };
 
 const FeatureEntry::FeatureParam
-    kOmniboxRemoveSuggestionHeaderChevron_AllowCollapse[] = {
-        {"allow_group_collapsed_state", "true"}};
+    kOmniboxRemoveSuggestionHeaderChevron_DisallowCollapse[] = {
+        {"allow_group_collapsed_state", "false"}};
 const FeatureEntry::FeatureVariation
     kOmniboxRemoveSuggestionHeaderChevronVariations[] = {
-        {"AllowCollapse", kOmniboxRemoveSuggestionHeaderChevron_AllowCollapse,
-         std::size(kOmniboxRemoveSuggestionHeaderChevron_AllowCollapse),
+        {"DisallowCollapse",
+         kOmniboxRemoveSuggestionHeaderChevron_DisallowCollapse,
+         std::size(kOmniboxRemoveSuggestionHeaderChevron_DisallowCollapse),
          nullptr},
 };
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -775,15 +777,22 @@ const FeatureEntry::FeatureVariation kCloseTabSuggestionsStaleVariations[] = {
 };
 
 const FeatureEntry::FeatureParam kCriticalPersistedTabDataSaveAndRestore[] = {
-    {"critical_persisted_tab_data_save_only", "false"}};
+    {"critical_persisted_tab_data_save_only", "false"},
+    {"delay_saves_until_deferred_startup", "false"}};
 const FeatureEntry::FeatureParam kCriticalPersistedTabDataSaveOnly[] = {
-    {"critical_persisted_tab_data_save_only", "true"}};
+    {"critical_persisted_tab_data_save_only", "true"},
+    {"delay_saves_until_deferred_startup", "false"}};
+const FeatureEntry::FeatureParam kDelaySavesUntilDeferredStartup[] = {
+    {"critical_persisted_tab_data_save_only", "false"},
+    {"delay_saves_until_deferred_startup", "true"}};
 
 const FeatureEntry::FeatureVariation kCriticalPersistedTabDataVariations[] = {
     {"Save and Restore", kCriticalPersistedTabDataSaveAndRestore,
      std::size(kCriticalPersistedTabDataSaveAndRestore), nullptr},
     {"Save Only", kCriticalPersistedTabDataSaveOnly,
-     std::size(kCriticalPersistedTabDataSaveOnly), nullptr}};
+     std::size(kCriticalPersistedTabDataSaveOnly), nullptr},
+    {"Delay saves until DeferredStartup", kDelaySavesUntilDeferredStartup,
+     std::size(kDelaySavesUntilDeferredStartup), nullptr}};
 
 const FeatureEntry::FeatureParam kLongScreenshot_AutoscrollDragSlow[] = {
     {"autoscroll", "1"}};
@@ -2062,54 +2071,28 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
 };
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
-    {"start_surface_variation", "single"},
+    {"open_ntp_instead_of_start", "false"},
+    {"show_last_active_tab_only", "false"},
     {"show_tabs_in_mru_order", "true"}};
 
-const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2[] = {
-    {"start_surface_variation", "single"},
-    {"show_last_active_tab_only", "true"},
-    {"open_ntp_instead_of_start", "true"}};
-
-const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurfaceSingleTab[] =
-    {{"start_surface_variation", "single"},
-     {"show_last_active_tab_only", "true"},
-     {"hide_switch_when_no_incognito_tabs", "true"}};
-
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_CandidateA[] = {
-    {"start_surface_variation", "single"},
-    {"show_last_active_tab_only", "true"},
-    {"hide_switch_when_no_incognito_tabs", "true"},
-    {"tab_count_button_on_start_surface", "true"}};
+    {"open_ntp_instead_of_start", "false"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_CandidateA_SyncCheck[] = {
-    {"start_surface_variation", "single"},
-    {"show_last_active_tab_only", "true"},
-    {"hide_switch_when_no_incognito_tabs", "true"},
-    {"tab_count_button_on_start_surface", "true"},
+    {"open_ntp_instead_of_start", "false"},
     {"check_sync_before_show_start_at_startup", "true"}};
 
 const FeatureEntry::FeatureParam
     kStartSurfaceAndroid_CandidateA_SigninPromoTimeLimit[] = {
-        {"start_surface_variation", "single"},
-        {"show_last_active_tab_only", "true"},
-        {"hide_switch_when_no_incognito_tabs", "true"},
-        {"tab_count_button_on_start_surface", "true"},
+        {"open_ntp_instead_of_start", "false"},
         {"sign_in_promo_show_since_last_background_limit_ms", "30000"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_CandidateB[] = {
-    {"start_surface_variation", "single"},
-    {"show_last_active_tab_only", "true"},
-    {"hide_switch_when_no_incognito_tabs", "true"},
-    {"tab_count_button_on_start_surface", "true"},
     {"open_ntp_instead_of_start", "true"}};
 
 const FeatureEntry::FeatureParam
     kStartSurfaceAndroid_CandidateB_AlwaysShowIncognito[] = {
-        {"start_surface_variation", "single"},
-        {"show_last_active_tab_only", "true"},
-        {"hide_switch_when_no_incognito_tabs", "false"},
-        {"tab_count_button_on_start_surface", "true"},
-        {"open_ntp_instead_of_start", "true"}};
+        {"hide_switch_when_no_incognito_tabs", "false"}};
 
 const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
     {"Candidate A", kStartSurfaceAndroid_CandidateA,
@@ -2126,10 +2109,6 @@ const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
      std::size(kStartSurfaceAndroid_CandidateB_AlwaysShowIncognito), nullptr},
     {"Single Surface", kStartSurfaceAndroid_SingleSurface,
      std::size(kStartSurfaceAndroid_SingleSurface), nullptr},
-    {"Single Surface V2", kStartSurfaceAndroid_SingleSurface_V2,
-     std::size(kStartSurfaceAndroid_SingleSurface_V2), nullptr},
-    {"Single Surface + Single Tab", kStartSurfaceAndroid_SingleSurfaceSingleTab,
-     std::size(kStartSurfaceAndroid_SingleSurfaceSingleTab), nullptr},
 };
 
 const FeatureEntry::FeatureParam kFeedPositionAndroid_push_down_feed_small[] = {
@@ -3453,6 +3432,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCSSContainerQueriesDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kCSSContainerQueries)},
 #if BUILDFLAG(IS_ANDROID)
+    {"osk-resizes-visual-viewport",
+     flag_descriptions::kEnableOskResizesVisualViewportName,
+     flag_descriptions::kEnableOskResizesVisualViewportDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kOSKResizesVisualViewport)},
     {"contextual-search-debug", flag_descriptions::kContextualSearchDebugName,
      flag_descriptions::kContextualSearchDebugDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(kContextualSearchDebug)},
@@ -3766,6 +3749,10 @@ const FeatureEntry kFeatureEntries[] = {
         kOsCrOS,
         FEATURE_VALUE_TYPE(ash::features::kEnableBackgroundBlur),
     },
+    {"enable-default-calculator-web-app",
+     flag_descriptions::kDefaultCalculatorWebAppName,
+     flag_descriptions::kDefaultCalculatorWebAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(web_app::kDefaultCalculatorWebApp)},
     {"enable-notifications-revamp", flag_descriptions::kNotificationsRevampName,
      flag_descriptions::kNotificationsRevampDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kNotificationsRefresh)},
@@ -4695,6 +4682,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBackGestureRefactorAndroidName,
      flag_descriptions::kBackGestureRefactorAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kBackGestureRefactorAndroid)},
+    {"infobar-scroll-optimization",
+     flag_descriptions::kInfobarScrollOptimizationName,
+     flag_descriptions::kInfobarScrollOptimizationDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kInfobarScrollOptimization)},
 #endif  // BUILDFLAG(IS_ANDROID)
     {"disallow-doc-written-script-loads",
      flag_descriptions::kDisallowDocWrittenScriptsUiName,
@@ -4788,6 +4779,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"feed-v2-autoplay", flag_descriptions::kInterestFeedV2AutoplayName,
      flag_descriptions::kInterestFeedV2AutoplayDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kInterestFeedV2Autoplay)},
+    {"feed-video-inline-playback",
+     flag_descriptions::kFeedVideoInlinePlaybackName,
+     flag_descriptions::kFeedVideoInlinePlaybackDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(feed::kFeedVideoInlinePlayback)},
     {"web-feed", flag_descriptions::kWebFeedName,
      flag_descriptions::kWebFeedDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(feed::kWebFeed,
@@ -5261,6 +5256,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxMostVisitedTilesDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kMostVisitedTiles)},
 
+    {"omnibox-most-visited-tiles-dynamic-spacing",
+     flag_descriptions::kOmniboxMostVisitedTilesDynamicSpacingName,
+     flag_descriptions::kOmniboxMostVisitedTilesDynamicSpacingDescription,
+     kOsAndroid, FEATURE_VALUE_TYPE(omnibox::kMostVisitedTilesDynamicSpacing)},
+
     {"omnibox-remove-suggestion-header-capitalization",
      flag_descriptions::kOmniboxRemoveSuggestionHeaderCapitalizationName,
      flag_descriptions::kOmniboxRemoveSuggestionHeaderCapitalizationDescription,
@@ -5416,6 +5416,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kRequestDesktopSiteForTablets,
                                     kRequestDesktopSiteForTabletsVariations,
                                     "RequestDesktopSiteForTablets")},
+    {"revoke-notifications-permission-if-disabled-on-app-level",
+     flag_descriptions::kRevokeNotificationsPermissionIfDisabledOnAppLevelName,
+     flag_descriptions::
+         kRevokeNotificationsPermissionIfDisabledOnAppLevelDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         features::kRevokeNotificationsPermissionIfDisabledOnAppLevel)},
     {"app-menu-mobile-site-option",
      flag_descriptions::kAppMenuMobileSiteOptionName,
      flag_descriptions::kAppMenuMobileSiteOptionDescription, kOsAndroid,
@@ -7044,10 +7051,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(screentime::kScreenTime)},
 #endif
 
-    {"enable-de-jelly", flag_descriptions::kEnableDeJellyName,
-     flag_descriptions::kEnableDeJellyDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableDeJelly)},
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-cros-action-recorder",
      flag_descriptions::kEnableCrOSActionRecorderName,
@@ -8463,6 +8466,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"u2f-security-key-api", flag_descriptions::kU2FSecurityKeyAPIName,
      flag_descriptions::kU2FSecurityKeyAPIDescription, kOsAll,
      FEATURE_VALUE_TYPE(extensions_features::kU2FSecurityKeyAPI)},
+    {"load-cryptotoken-extension",
+     flag_descriptions::kLoadCryptoTokenExtensionName,
+     flag_descriptions ::kLoadCryptoTokenExtensionDescription, kOsAll,
+     FEATURE_VALUE_TYPE(extensions_features::kLoadCryptoTokenExtension)},
 #endif  // ENABLE_EXTENSIONS
     {"force-major-version-to-minor",
      flag_descriptions::kForceMajorVersionInMinorPositionInUserAgentName,

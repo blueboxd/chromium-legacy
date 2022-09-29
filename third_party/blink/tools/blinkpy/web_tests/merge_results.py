@@ -301,9 +301,9 @@ class MergeFilesMatchingContents(MergeFiles):
                 nonmatching.append(filename)
 
         if nonmatching:
-            raise MergeFailure(
-                '\n'.join(['File contents don\'t match:'] + nonmatching),
-                out_filename, to_merge)
+            # TODO: revert this once crbug/1353056 is fixed
+            _log.warning('\n'.join(['File contents don\'t match:'] +
+                                   nonmatching))
 
         self.filesystem.write_binary_file(out_filename, data)
 
@@ -733,6 +733,11 @@ def ensure_empty_dir(fs, directory, allow_existing, remove_existing):
             and not fs.remove_contents(layout_test_results)):
         raise IOError(('Unable to remove output directory %s contents!\n'
                        'See log output for errors.') % layout_test_results)
+
+    profraw = fs.join(directory, 'profraw')
+    if (fs.exists(profraw) and not fs.remove_contents(profraw)):
+        raise IOError(('Unable to remove output directory %s contents!\n'
+                       'See log output for errors.') % profraw)
 
     merged_output_jsons = ['output.json', 'run_histories.json']
     for output_json in merged_output_jsons:

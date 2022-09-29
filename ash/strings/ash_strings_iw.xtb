@@ -49,6 +49,7 @@
 <translation id="1201402288615127009">הבא</translation>
 <translation id="1210557957257435379">הקלטת מסך</translation>
 <translation id="121097972571826261">מילה אחת קדימה</translation>
+<translation id="1217633719248931900">פתיחת האפליקציה</translation>
 <translation id="1218444235442067213">‏<ph name="APP_NAME" />, אפליקציה מחנות Play</translation>
 <translation id="1225748608451425081">‏ה-Chromebook שלך נעול עקב בעיה ידועה. ניתן יהיה להיכנס בעוד: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">סיום הבחירה</translation>
@@ -539,6 +540,7 @@
 <translation id="4123259114412175274">‏כדי לבטל את הנעילה של ה-Chromebook, צריך לוודא שה-Bluetooth בטלפון מופעל</translation>
 <translation id="4125970834901680537">לא ניתן לשדר אפליקציות במצב טאבלט. צריך לנסות שוב במצב מחשב נייד.</translation>
 <translation id="4129129681837227511">להצגת הודעות במסך הנעילה, יש לבטל את הנעילה כדי לשנות את ההגדרה</translation>
+<translation id="4130035430755296270">כשמציבים את העכבר מעל אפשרויות הפריסה אפשר לראות עוד אפשרויות</translation>
 <translation id="4136724716305260864">התכונה פעילה עד הזריחה</translation>
 <translation id="4146833061457621061">השמעת מוזיקה</translation>
 <translation id="4165275524535002941">יכול להיות שהכבל לא תומך במסכים</translation>
@@ -669,6 +671,7 @@
 <translation id="479989351350248267">Search</translation>
 <translation id="4804818685124855865">ניתוק</translation>
 <translation id="4814539958450445987">מסך הכניסה</translation>
+<translation id="481455355267255546">האירועים הבאים</translation>
 <translation id="4831034276697007977">הקליקים האוטומטיים יושבתו. האם להמשיך?</translation>
 <translation id="4849058404725798627">הדגשה של האובייקט במיקוד המקלדת</translation>
 <translation id="485592688953820832">ללא פעולה (השהיה)</translation>
@@ -850,6 +853,7 @@
 <translation id="5860033963881614850">כבוי</translation>
 <translation id="5860491529813859533">הפעלה</translation>
 <translation id="5867217927013474703">מתבצע איסוף של פרטי הרשת</translation>
+<translation id="5867606971598166637">האדמין עוקב אחר המסכים שלך</translation>
 <translation id="5876666360658629066">יש להזין קוד גישה להורים</translation>
 <translation id="5881540930187678962">‏להגדרת Phone Hub במועד מאוחר יותר</translation>
 <translation id="5887954372087850114">החלון <ph name="WINDOW_TITLE" /> מוקצה לטובת <ph name="DESK_TITLE" /> וההקצאה שלו לכל שאר שולחנות העבודה הווירטואליים בוטלה.</translation>
@@ -1011,6 +1015,7 @@
 <translation id="6757237461819837179">מדיה לא מופעלת</translation>
 <translation id="6777216307882431711">‏אספקת חשמל למכשירים המחוברים ב-USB-C</translation>
 <translation id="6786750046913594791">סגירת התיקייה</translation>
+<translation id="6787595647772650851">שחזור הסשן האחרון</translation>
 <translation id="6790428901817661496">הפעלה</translation>
 <translation id="6801878137098616817">נערך לאחרונה</translation>
 <translation id="6803622936009808957">לא ניתן היה לשקף מסכים מכיוון שלא נמצאה רזולוציה נתמכת. במקום זאת התצוגה עברה למצב שולחן עבודה מורחב.</translation>
@@ -1261,6 +1266,7 @@
 <translation id="8214996719228530800">‏ערוץ Canary</translation>
 <translation id="8219451629189078428">‏בפרק הזמן הזה, יש להקפיד להשאיר את ה-Chromebook פועל ומחובר לחשמל. יש לוודא שהכבלים של המטען או של המתאם מחוברים כראוי אל ה-Chromebook ואל שקע החשמל. אין לכבות את ה-Chromebook.</translation>
 <translation id="8236042855478648955">הגיע הזמן להפסקה</translation>
+<translation id="8246282815785366524">שמחים שחזרת, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, עוצמת האות: <ph name="SIGNAL_STRENGTH" />, סוללת הטלפון <ph name="BATTERY_STATUS" /></translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, אפליקציה</translation>
 <translation id="8255234195843591763">עליך לאפס כדי לעדכן</translation>

@@ -128,10 +128,19 @@ void ExclusiveAccessBubbleViews::UpdateContent(
     const GURL& url,
     ExclusiveAccessBubbleType bubble_type,
     ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
+    bool notify_download,
     bool force_update) {
-  DCHECK_NE(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, bubble_type);
+  DCHECK(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE != bubble_type || notify_download);
   if (bubble_type_ == bubble_type && url_ == url && !force_update)
     return;
+
+  // Show the notification about overriding only if requesting a download
+  // notification, a notification was visible earlier, and the earlier
+  // notification was either a non-download one, or was one about an override
+  // itself.
+  notify_overridden_ = notify_download && IsVisible() &&
+                       (!notify_download_ || notify_overridden_);
+  notify_download_ = notify_download;
 
   // Bubble maybe be re-used after timeout.
   RunHideCallbackIfNeeded(ExclusiveAccessBubbleHideReason::kInterrupted);
@@ -139,7 +148,11 @@ void ExclusiveAccessBubbleViews::UpdateContent(
   bubble_first_hide_callback_ = std::move(bubble_first_hide_callback);
 
   url_ = url;
-  bubble_type_ = bubble_type;
+  // When a request to notify about a download is made, the bubble type
+  // should be preserved from the old value, and not be updated.
+  if (!notify_download) {
+    bubble_type_ = bubble_type;
+  }
   UpdateViewContent(bubble_type_);
 
   gfx::Size size = GetPopupRect(true).size();
@@ -156,16 +169,7 @@ void ExclusiveAccessBubbleViews::UpdateContent(
 }
 
 void ExclusiveAccessBubbleViews::RepositionIfVisible() {
-#if BUILDFLAG(IS_MAC)
-  // Due to a quirk on the Mac, the popup will not be visible for a short period
-  // of time after it is shown (it's asynchronous) so if we don't check the
-  // value of the animation we'll have a stale version of the bounds when we
-  // show it and it will appear in the wrong place - typically where the window
-  // was located before going to fullscreen.
-  if (popup_->IsVisible() || animation_->GetCurrentValue() > 0.0)
-#else
-  if (popup_->IsVisible())
-#endif
+  if (IsVisible())
     UpdateBounds();
 }
 
@@ -212,10 +216,8 @@ void ExclusiveAccessBubbleViews::UpdateViewContent(
   DCHECK_NE(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, bubble_type);
 
   std::u16string accelerator;
-  if (bubble_type ==
-          EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION ||
-      bubble_type ==
-          EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION) {
+  if (exclusive_access_bubble::IsExclusiveAccessModeBrowserFullscreen(
+          bubble_type)) {
     accelerator = browser_fullscreen_exit_accelerator_;
   } else {
     accelerator = l10n_util::GetStringUTF16(IDS_APP_ESC_KEY);
@@ -227,6 +229,19 @@ void ExclusiveAccessBubbleViews::UpdateViewContent(
   accelerator = base::i18n::ToLower(accelerator);
 #endif
   view_->UpdateContent(GetInstructionText(accelerator));
+}
+
+bool ExclusiveAccessBubbleViews::IsVisible() {
+#if BUILDFLAG(IS_MAC)
+  // Due to a quirk on the Mac, the popup will not be visible for a short period
+  // of time after it is shown (it's asynchronous) so if we don't check the
+  // value of the animation we'll have a stale version of the bounds when we
+  // show it and it will appear in the wrong place - typically where the window
+  // was located before going to fullscreen.
+  return (popup_->IsVisible() || animation_->GetCurrentValue() > 0.0);
+#else
+  return (popup_->IsVisible());
+#endif
 }
 
 views::View* ExclusiveAccessBubbleViews::GetBrowserRootView() const {

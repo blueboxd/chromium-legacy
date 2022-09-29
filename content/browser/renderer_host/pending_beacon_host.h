@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/frame/pending_beacon.mojom.h"
 
 namespace network {
@@ -26,21 +27,24 @@ class PendingBeaconService;
 // beacons in the browser process.
 //
 // PendingBeaconHost is created once per document and bound to a RenderFrameHost
-// by calling `PendingBeaconHost::CreateForCurrentDocument`. See also
-// `DocumentUserData` for the lifetime of this class.
+// by `PendingBeaconHost::CreateForCurrentDocument()` called from
+// `RenderFrameHostImpl::GetPendingBeaconHost()`.
 //
-// PendingBeaconHost creates a new Beacon when `CreateBeacon` is called remotely
-// by a document.
+// PendingBeaconHost's lifetime is roughly the same as a single document (except
+// when crashing). See `DocumentUserData` for more details about lifetime.
 //
-// PendingBeaconHost receives `SendBeacon` requests initiated from renderer and
-// forwards it to PendingBeaconService. The requests can be initiated in one of
-// the following scenarios:
+// PendingBeaconHost creates a new Beacon when `CreateBeacon()` is called
+// remotely from a document in renderer.
+//
+// PendingBeaconHost receives `SendBeacon()` requests initiated from renderer
+// and forwards it to PendingBeaconService. The requests can be initiated in one
+// of the following scenarios:
 // -  When JavaScript executes `PendingBeacon.sendNow()`, which connects to
-//    receiver `Beacon`.
+//    receiver `Beacon::SendNow()`.
 // -  When the associated document enters `hidden` state, and the renderer's
-//    `PendingBeaconDispatcher` schedules the request according to individual
-//    PendingBeacon's backgroundTimeout property.
-// -  When the individual PendingBeacon's timeout property expires.
+//    `PendingBeaconDispatcher` schedules and dispatches the request according
+//    to individual PendingBeacon's backgroundTimeout property.
+// -  When the individual PendingBeacon's timer of timeout property expires.
 //
 // PendingBeaconHost is also responsible for triggering the sending of beacons:
 // -  When the associated document is discarded or deleted, PendingBeaconHost
@@ -77,6 +81,9 @@ class CONTENT_EXPORT PendingBeaconHost
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_factory,
       PendingBeaconService* service);
 
+  // Encapsulates how `beacons` are sent.
+  void Send(const std::vector<std::unique_ptr<Beacon>>& beacons);
+
   // Stores all the browser-side instances of `Beacon`.
   std::vector<std::unique_ptr<Beacon>> beacons_;
 
@@ -94,10 +101,11 @@ class CONTENT_EXPORT PendingBeaconHost
   DOCUMENT_USER_DATA_KEY_DECL();
 };
 
-// Browser-side representation of a pending beacon. These are stored in
-// a PendingBeaconHost. Their lifetime is until they are sent - this happens
-// either when the PendingBeaconHost is destroyed, or the beacon's `SendNow`
-// method is called.
+// `Beacon` is the browser-side representation of a PendingBeacon.
+// It is created and stored in a `PendingBeaconHost`. Hence, their lifetime is
+// until they are sent, which happens in one of the following scenarios:
+//   - When the PendingBeaconHost is destroyed.
+//   - When the beacon's `SendNow()` method is called.
 class Beacon : public blink::mojom::PendingBeacon {
  public:
   // Browser-side pending beacon constructor. Parameters correspond to the
@@ -114,6 +122,12 @@ class Beacon : public blink::mojom::PendingBeacon {
   void Deactivate() override;
 
   // Sets request data for the pending beacon.
+  // It is only allowed when this beacon's `BeaconMethod` is kPost.
+  // `request_body` must
+  //    - Contain only single data element. Complex body is not allowed.
+  //    - Contain NO `kChunkedDataPipe` data element.
+  //    The above restrictions come from how PendingBeaconService handles
+  //    requests.
   void SetRequestData(scoped_refptr<network::ResourceRequestBody> request_body,
                       const std::string& content_type) override;
 
@@ -142,11 +156,14 @@ class Beacon : public blink::mojom::PendingBeacon {
  private:
   mojo::Receiver<blink::mojom::PendingBeacon> receiver_;
 
-  // The beacon host that owns this beacon. raw_ptr is safe here as the host's
-  // lifetime will always be longer than the individual beacon's.
+  // Points to the PendingBeaconHost that owns the instance of this beacon.
+  // raw_ptr is safe here as the `beacon_host_`'s lifetime will always be longer
+  // than the individual beacons it owns.
   raw_ptr<PendingBeaconHost> beacon_host_;
+  // The request URL this beacon will be sent to.
   GURL url_;
-  [[maybe_unused]] const blink::mojom::BeaconMethod method_;
+  // The request method that will be used to send this beacon.
+  const blink::mojom::BeaconMethod method_;
 
   // The request content type for POST beacon. If `method_` is GET, this field
   // should not be used.

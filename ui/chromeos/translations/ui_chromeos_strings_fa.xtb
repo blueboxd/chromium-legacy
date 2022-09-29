@@ -374,6 +374,7 @@
 <translation id="4336032328163998280">فرایند رونوشت‌برداری انجام نشد. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4340491671558548972">افزودن به نوار کناری</translation>
 <translation id="4348495354623233847">کردی سورانی با صفحه‌کلید مبتنی بر عربی</translation>
+<translation id="434941167647142660">مکان اصلی</translation>
 <translation id="4363958938297989186">روسی با صفحه‌کلید آوایی</translation>
 <translation id="4364327530094270451">خربزه</translation>
 <translation id="4378551569595875038">در حال اتصال..</translation>
@@ -527,7 +528,7 @@
 <translation id="5428105026674456456">اسپانیایی</translation>
 <translation id="5438282218546237410">نتیجه‌ای برای <ph name="SEARCH_TERM" /> پیدا نشد.</translation>
 <translation id="5449551289610225147">گذرواژه نامعتبر است</translation>
-<translation id="5463231940765244860">وارد کنید</translation>
+<translation id="5463231940765244860">وارد کردن</translation>
 <translation id="5469868506864199649">ایتالیایی</translation>
 <translation id="5473333559083690127">پین جدید را دوباره وارد کنید</translation>
 <translation id="5489067830765222292">لتونیایی</translation>
@@ -725,7 +726,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165320105431587207">پیکربندی شبکه انجام نشد</translation>
 <translation id="7170041865419449892">خارج از محدوده</translation>
-<translation id="7180611975245234373">بازخوانی</translation>
+<translation id="7180611975245234373">بازآوری</translation>
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> گیگابایت</translation>
 <translation id="7191454237977785534">ذخیره فایل به‌عنوان</translation>
 <translation id="7229570126336867161">‏EVDO مورد نیاز است</translation>
@@ -897,7 +898,7 @@
 <translation id="853494022971700746">فرانسوی (فرانسه)</translation>
 <translation id="8540608333167683902">شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />٪، جزئیات</translation>
 <translation id="8545476925160229291">انگلیسی (آمریکا)</translation>
-<translation id="854655314928502177">نشانی وب کشف خودکار پروکسی وب:</translation>
+<translation id="854655314928502177">نشانی وب «اکتشاف» خودکار پروکسی وب:</translation>
 <translation id="8549186985808798022">ایتالیایی</translation>
 <translation id="8551494947769799688">لتونیایی</translation>
 <translation id="8560515948038859357">کانتونی</translation>

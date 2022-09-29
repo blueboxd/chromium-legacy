@@ -19,6 +19,8 @@
 #include "content/browser/private_aggregation/private_aggregation_budget_key.h"
 #include "content/common/aggregatable_report.mojom.h"
 #include "content/common/private_aggregation_host.mojom.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -42,19 +44,25 @@ base::Time GetScheduledReportTime(base::Time report_issued_time) {
 
 struct PrivateAggregationHost::ReceiverContext {
   url::Origin worklet_origin;
+  url::Origin top_frame_origin;
   PrivateAggregationBudgetKey::Api api_for_budgeting;
 };
 
 PrivateAggregationHost::PrivateAggregationHost(
     base::RepeatingCallback<void(AggregatableReportRequest,
                                  PrivateAggregationBudgetKey)>
-        on_report_request_received)
-    : on_report_request_received_(std::move(on_report_request_received)) {}
+        on_report_request_received,
+    BrowserContext* browser_context)
+    : on_report_request_received_(std::move(on_report_request_received)),
+      browser_context_(*browser_context) {
+  DCHECK(!on_report_request_received_.is_null());
+}
 
 PrivateAggregationHost::~PrivateAggregationHost() = default;
 
 bool PrivateAggregationHost::BindNewReceiver(
     url::Origin worklet_origin,
+    url::Origin top_frame_origin,
     PrivateAggregationBudgetKey::Api api_for_budgeting,
     mojo::PendingReceiver<mojom::PrivateAggregationHost> pending_receiver) {
   if (!network::IsOriginPotentiallyTrustworthy(worklet_origin)) {
@@ -62,16 +70,19 @@ bool PrivateAggregationHost::BindNewReceiver(
     // its requests are processed.
     return false;
   }
-  receiver_set_.Add(this, std::move(pending_receiver),
-                    ReceiverContext{.worklet_origin = std::move(worklet_origin),
-                                    .api_for_budgeting = api_for_budgeting});
+  receiver_set_.Add(
+      this, std::move(pending_receiver),
+      ReceiverContext{.worklet_origin = std::move(worklet_origin),
+                      .top_frame_origin = std::move(top_frame_origin),
+                      .api_for_budgeting = api_for_budgeting});
   return true;
 }
 
 void PrivateAggregationHost::SendHistogramReport(
     std::vector<mojom::AggregatableReportHistogramContributionPtr>
         contribution_ptrs,
-    mojom::AggregationServiceMode aggregation_mode) {
+    mojom::AggregationServiceMode aggregation_mode,
+    mojom::DebugModeDetailsPtr debug_mode_details) {
   // TODO(alexmt): Consider updating or making a FeatureParam.
   static constexpr char kFledgeReportingPath[] =
       "/.well-known/private-aggregation/report-fledge";
@@ -82,11 +93,18 @@ void PrivateAggregationHost::SendHistogramReport(
       receiver_set_.current_context().worklet_origin;
   DCHECK(network::IsOriginPotentiallyTrustworthy(reporting_origin));
 
+  if (!GetContentClient()->browser()->IsPrivateAggregationAllowed(
+          &*browser_context_, receiver_set_.current_context().top_frame_origin,
+          reporting_origin)) {
+    return;
+  }
+
   // Null pointers should fail mojo validation.
   DCHECK(base::ranges::none_of(
       contribution_ptrs,
       [](const mojom::AggregatableReportHistogramContributionPtr&
              contribution_ptr) { return contribution_ptr.is_null(); }));
+  DCHECK(!debug_mode_details.is_null());
 
   if (contribution_ptrs.size() > kMaxNumberOfContributions) {
     // TODO(crbug.com/1323324): Add histograms for monitoring failures here,
@@ -112,7 +130,9 @@ void PrivateAggregationHost::SendHistogramReport(
       /*scheduled_report_time=*/GetScheduledReportTime(
           /*report_issued_time=*/now),
       /*report_id=*/base::GUID::GenerateRandomV4(), reporting_origin,
-      AggregatableReportSharedInfo::DebugMode::kDisabled,
+      debug_mode_details->is_enabled
+          ? AggregatableReportSharedInfo::DebugMode::kEnabled
+          : AggregatableReportSharedInfo::DebugMode::kDisabled,
       /*additional_fields=*/base::Value::Dict(),
       /*api_version=*/kApiReportVersion,
       /*api_identifier=*/kApiIdentifier);
@@ -127,10 +147,19 @@ void PrivateAggregationHost::SendHistogramReport(
       break;
   }
 
+  absl::optional<uint64_t> debug_key;
+  if (!debug_mode_details->debug_key.is_null()) {
+    if (!debug_mode_details->is_enabled) {
+      mojo::ReportBadMessage("Debug key present but debug mode is not enabled");
+      return;
+    }
+    debug_key = debug_mode_details->debug_key->value;
+  }
+
   absl::optional<AggregatableReportRequest> report_request =
       AggregatableReportRequest::Create(std::move(payload_contents),
                                         std::move(shared_info),
-                                        std::move(reporting_path));
+                                        std::move(reporting_path), debug_key);
   if (!report_request.has_value()) {
     // TODO(crbug.com/1323324): Add histograms for monitoring failures here,
     // possibly broken out by failure reason.

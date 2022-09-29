@@ -54,6 +54,10 @@ TEST_F('NewTabPageAppTest', 'CustomizeUrl', function() {
   runMochaSuite('NewTabPageAppTest customize URL');
 });
 
+TEST_F('NewTabPageAppTest', 'CustomizeChromeSidePanel', function() {
+  runMochaSuite('NewTabPageAppTest customize chrome side panel');
+});
+
 var NewTabPageCustomizeDialogTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
@@ -291,14 +295,14 @@ TEST_F('NewTabPageModulesDriveV2ModuleTest', 'All', function() {
   mocha.run();
 });
 
-var NewTabPageModulesTaskModuleTest = class extends NewTabPageBrowserTest {
+var NewTabPageModulesRecipesTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/task_module/module_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/recipes/module_test.js';
   }
 };
 
-TEST_F('NewTabPageModulesTaskModuleTest', 'All', function() {
+TEST_F('NewTabPageModulesRecipesTest', 'All', function() {
   mocha.run();
 });
 

@@ -246,6 +246,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kImmersiveUiMode,
     &kIncognitoReauthenticationForAndroid,
     &kIncognitoScreenshot,
+    &kInfobarScrollOptimization,
     &kInstanceSwitcher,
     &kInstantStart,
     &kIsVoiceSearchEnabledCache,
@@ -265,6 +266,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kOmniboxModernizeVisualUpdate,
     &kOptimizeGeolocationHeaderGeneration,
     &kOptimizeLayoutsForPullRefresh,
+    &kOSKResizesVisualViewport,
     &kPostTaskFocusTab,
     &kProbabilisticCryptidRenderer,
     &kReachedCodeProfiler,
@@ -698,6 +700,9 @@ const base::Feature kIncognitoReauthenticationForAndroid{
 const base::Feature kIncognitoScreenshot{"IncognitoScreenshot",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kInfobarScrollOptimization{
+    "InfobarScrollOptimization", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kInstantStart{"InstantStart",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -757,6 +762,9 @@ const base::Feature kOmniboxModernizeVisualUpdate{
 
 const base::Feature kOptimizeGeolocationHeaderGeneration{
     "OptimizeGeolocationHeaderGeneration", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kOSKResizesVisualViewport{
+    "OSKResizesVisualViewport", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kOptimizeLayoutsForPullRefresh{
     "OptimizeLayoutsForPullRefresh", base::FEATURE_DISABLED_BY_DEFAULT};

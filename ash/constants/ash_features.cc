@@ -1323,6 +1323,12 @@ const base::Feature kProjectorUseOAuthForGetVideoInfo(
 const base::Feature kProjectorLocalPlayback("ProjectorLocalPlayback",
                                             base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether to use API key instead of OAuth token for translation
+// requests.
+const base::Feature kProjectorUseApiKeyForTranslation(
+    "ProjectorUseApiKeyForTranslation",
+    base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enable or disable quick settings revamped view.
 const base::Feature kQsRevamp{"QsRevamp", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1479,10 +1485,6 @@ const base::Feature kSimLockPolicy{"SimLockPolicy",
 // Uses experimental component version for smart dim.
 const base::Feature kSmartDimExperimentalComponent{
     "SmartDimExperimentalComponent", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Backs off connection attempt before retrying after a timeout occurs.
-const base::Feature kSmartLockBluetoothScanningBackoff{
-    "SmartLockBluetoothScanningBackoff", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Disconnects bluetooth connection when screen turns off.
 const base::Feature kSmartLockBluetoothScreenOffFix{
@@ -2373,6 +2375,10 @@ bool IsProjectorUseOAuthForGetVideoInfoEnabled() {
 
 bool IsProjectorLocalPlaybackEnabled() {
   return base::FeatureList::IsEnabled(kProjectorLocalPlayback);
+}
+
+bool IsProjectorUseApiKeyForTranslationEnabled() {
+  return base::FeatureList::IsEnabled(kProjectorUseApiKeyForTranslation);
 }
 
 bool IsQsRevampEnabled() {

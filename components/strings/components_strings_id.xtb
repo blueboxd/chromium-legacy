@@ -421,6 +421,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="2040894699575719559">Lokasi diblokir</translation>
 <translation id="2042213636306070719">Baki 7</translation>
 <translation id="204357726431741734">Login untuk menggunakan sandi yang disimpan di Akun Google Anda</translation>
+<translation id="2048261947532620704">Menerjemahkan halaman</translation>
 <translation id="205212645995975601">BBQ &amp; pemanggangan</translation>
 <translation id="2053111141626950936">Halaman dalam bahasa <ph name="LANGUAGE" /> tidak akan diterjemahkan.</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{Jika kontrol ini aktif dan statusnya masih berlaku, Chrome akan menentukan grup besar, atau "kohor", yang paling mirip dengan aktivitas penjelajahan terbaru Anda. Pengiklan dapat memilih iklan untuk grup tersebut dan aktivitas penjelajahan Anda tetap bersifat pribadi di perangkat Anda. Grup Anda diperbarui setiap hari.}=1{Jika kontrol ini aktif dan statusnya masih berlaku, Chrome akan menentukan grup besar, atau "kohor", yang paling mirip dengan aktivitas penjelajahan terbaru Anda. Pengiklan dapat memilih iklan untuk grup tersebut dan aktivitas penjelajahan Anda tetap bersifat pribadi di perangkat Anda. Grup Anda diperbarui setiap hari.}other{Jika kontrol ini aktif dan statusnya masih berlaku, Chrome akan menentukan grup besar, atau "kohor", yang paling mirip dengan aktivitas penjelajahan terbaru Anda. Pengiklan dapat memilih iklan untuk grup tersebut dan aktivitas penjelajahan Anda tetap bersifat pribadi di perangkat Anda. Grup Anda diperbarui setiap {NUM_DAYS} hari.}}</translation>
@@ -911,6 +912,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="3427342743765426898">&amp;Ulangi Pengeditan</translation>
 <translation id="342781501876943858">Chromium menyarankan untuk menyetel ulang sandi jika Anda juga menggunakannya di situs lain.</translation>
 <translation id="3428151540071562330">Satu atau beberapa URI template server DnsOverHttpsTemplates tidak valid dan tidak akan digunakan.</translation>
+<translation id="3431216045099978607">Tekan |<ph name="ACCELERATOR" />| untuk keluar dari layar penuh dan melihat download.</translation>
 <translation id="3431636764301398940">Simpan kartu ini ke perangkat ini</translation>
 <translation id="3432601291244612633">Tutup halaman</translation>
 <translation id="3435738964857648380">Keamanan</translation>
@@ -1103,7 +1105,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="3969052498612555048">Tidak dapat menemukan kode? <ph name="BEGIN_LINK" />Dapatkan kode baru<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">Menghitung...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> diblokir.</translation>
-<translation id="3978338123949022456">Mode penelusuran, ketik kueri lalu tekan Enter untuk menelusuri <ph name="KEYWORD_SUFFIX" /></translation>
 <translation id="398470910934384994">Burung</translation>
 <translation id="3985750352229496475">Kelola Alamat ...</translation>
 <translation id="3986705137476756801">Nonaktifkan Teks Otomatis untuk saat ini</translation>
@@ -1651,6 +1652,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="540969355065856584">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya saat ini tidak valid. Hal ini mungkin disebabkan oleh kesalahan konfigurasi atau ada penyerang yang mengganggu koneksi internet Anda.</translation>
 <translation id="5412040515238827314">Format tidak valid: Format harus berupa daftar pola.</translation>
 <translation id="5412236728747081950">Situs ini mendapatkan minat Anda dari Chrome untuk menampilkan iklan yang lebih relevan</translation>
+<translation id="5412245327974352290"><ph name="TRADITIONAL_TEXT" /> - <ph name="ADDITIONAL_TEXT" /></translation>
 <translation id="541416427766103491">Tempat kertas 4</translation>
 <translation id="5421136146218899937">Hapus data penjelajahan...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> ingin mengirimkan notifikasi kepada Anda</translation>
@@ -1712,6 +1714,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="5580958916614886209">Periksa bulan kedaluwarsa dan coba lagi</translation>
 <translation id="558420943003240152">Kelola sandi dan kunci sandi …</translation>
 <translation id="5586446728396275693">Tidak ada alamat yang disimpan</translation>
+<translation id="5586831831248371458">Telusuri <ph name="KEYWORD_SUFFIX" /></translation>
 <translation id="5587987780934666589">Pengguna platform</translation>
 <translation id="5593349413089863479">Koneksi tidak sepenuhnya aman</translation>
 <translation id="5595485650161345191">Edit alamat</translation>
@@ -2055,6 +2058,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="6591833882275308647"><ph name="DEVICE_TYPE" /> Anda tidak dikelola</translation>
 <translation id="6592952801936330159">Tombol Kelola setelan situs, tekan Enter untuk mengelola izin dan data yang disimpan di seluruh situs di setelan Chrome</translation>
 <translation id="6596325263575161958">Opsi enkripsi</translation>
+<translation id="6599642189720630047">Produk yang Dipantau</translation>
 <translation id="6609880536175561541">Prc7 (Envelope)</translation>
 <translation id="6611723696964473273">Berita ekonomi</translation>
 <translation id="6612010098632894193">Video online</translation>
@@ -2580,6 +2584,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8009225694047762179">Kelola Kata sandi</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Kartu ini dan alamat penagihannya akan disimpan. Anda dapat menggunakannya saat login ke <ph name="USER_EMAIL" />.}other{Semua kartu ini dan alamat penagihannya akan disimpan. Anda dapat menggunakannya saat login ke <ph name="USER_EMAIL" />.}}</translation>
+<translation id="8019861005170389898"><ph name="TRADITIONAL_TEXT" /> (<ph name="ADDITIONAL_TEXT" />)</translation>
 <translation id="8025119109950072390">Penyerang di situs ini dapat mengelabui Anda agar melakukan hal yang berbahaya seperti memasang software atau mengungkap informasi pribadi Anda (misalnya sandi, nomor telepon, atau kartu kredit).</translation>
 <translation id="8026334261755873520">Hapus data penjelajahan</translation>
 <translation id="8027077570865220386">Baki 15</translation>

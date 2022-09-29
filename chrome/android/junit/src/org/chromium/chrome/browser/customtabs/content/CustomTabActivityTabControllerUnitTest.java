@@ -16,6 +16,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -38,10 +39,14 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.customtabs.features.TabInteractionRecorder;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
@@ -53,6 +58,8 @@ import org.chromium.content_public.browser.LoadCommittedDetails;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.url.JUnitTestGURLs;
+
+import java.util.List;
 
 /**
  * Tests for {@link CustomTabActivityTabController}.
@@ -78,6 +85,10 @@ public class CustomTabActivityTabControllerUnitTest {
     private GestureListenerManagerImpl mGestureListenerManagerImpl;
     @Mock
     private RenderCoordinatesImpl mRenderCoordinatesImpl;
+    @Mock
+    private PrivacyPreferencesManagerImpl mPrivacyPreferencesManagerImpl;
+    @Mock
+    private TabInteractionRecorder mTabInteractionRecorder;
 
     @Before
     public void setUp() {
@@ -87,12 +98,17 @@ public class CustomTabActivityTabControllerUnitTest {
         when(mRenderCoordinatesImpl.getMaxVerticalScrollPixInt()).thenReturn(100);
         GestureListenerManagerImpl.setInstanceForTesting(mGestureListenerManagerImpl);
         RenderCoordinatesImpl.setInstanceForTesting(mRenderCoordinatesImpl);
+        PrivacyPreferencesManagerImpl.setInstanceForTesting(mPrivacyPreferencesManagerImpl);
+        TabInteractionRecorder.setInstanceForTesting(mTabInteractionRecorder);
+        doReturn(true).when(mPrivacyPreferencesManagerImpl).isUsageAndCrashReportingPermitted();
     }
 
     @After
     public void tearDown() {
         RenderCoordinatesImpl.setInstanceForTesting(null);
         GestureListenerManagerImpl.setInstanceForTesting(null);
+        PrivacyPreferencesManagerImpl.setInstanceForTesting(null);
+        TabInteractionRecorder.setInstanceForTesting(null);
     }
 
     @Test
@@ -239,6 +255,15 @@ public class CustomTabActivityTabControllerUnitTest {
 
     @Test
     @Features.EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS})
+    public void doesNotAddListenersForSignalsIfUmaUploadIsDisabled() {
+        doReturn(false).when(mPrivacyPreferencesManagerImpl).isUsageAndCrashReportingPermitted();
+        env.reachNativeInit(mTabController);
+
+        verify(mGestureListenerManagerImpl, never()).addListener(any(GestureStateListener.class));
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS})
     public void addsListenersForSignalsIfFeatureIsEnabled() {
         env.reachNativeInit(mTabController);
 
@@ -250,16 +275,84 @@ public class CustomTabActivityTabControllerUnitTest {
     public void removesGestureStateListenerWhenWebContentsWillSwap() {
         env.reachNativeInit(mTabController);
         GestureStateListener listener = captureGestureStateListener();
-
-        ArgumentCaptor<TabObserver> tabObserverArgumentCaptor =
-                ArgumentCaptor.forClass(TabObserver.class);
-        verify(env.tabProvider.getTab(), atLeastOnce())
-                .addObserver(tabObserverArgumentCaptor.capture());
-
-        for (TabObserver observer : tabObserverArgumentCaptor.getAllValues()) {
+        List<TabObserver> tabObservers = captureTabObservers();
+        for (TabObserver observer : tabObservers) {
             observer.webContentsWillSwap(env.tabProvider.getTab());
         }
         verify(mGestureListenerManagerImpl).removeListener(listener);
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS})
+    public void sendUserInteractionOnTabDestroyed_NoUserInteraction() {
+        env.reachNativeInit(mTabController);
+        doReturn(false).when(mTabInteractionRecorder).didGetUserInteraction();
+        List<TabObserver> tabObservers = captureTabObservers();
+        for (TabObserver observer : tabObservers) {
+            observer.onDestroyed(env.tabProvider.getTab());
+        }
+        verify(env.connection).notifyDidGetUserInteraction(eq(env.session), eq(false));
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS})
+    public void sendUserInteractionOnTabDestroyed_DidGetUserInteraction() {
+        env.reachNativeInit(mTabController);
+        doReturn(true).when(mTabInteractionRecorder).didGetUserInteraction();
+        List<TabObserver> tabObservers = captureTabObservers();
+        for (TabObserver observer : tabObservers) {
+            observer.onDestroyed(env.tabProvider.getTab());
+        }
+        verify(env.connection).notifyDidGetUserInteraction(eq(env.session), eq(true));
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS})
+    public void sendUserInteractionOnTabHidden() {
+        env.reachNativeInit(mTabController);
+        doReturn(false).when(mTabInteractionRecorder).didGetUserInteraction();
+        List<TabObserver> tabObservers = captureTabObservers();
+        for (TabObserver observer : tabObservers) {
+            observer.onHidden(env.tabProvider.getTab(), TabHidingType.ACTIVITY_HIDDEN);
+        }
+        verify(env.connection).notifyDidGetUserInteraction(eq(env.session), eq(false));
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS})
+    public void sendUserInteractionOnTabHidden_OtherReason() {
+        env.reachNativeInit(mTabController);
+        doReturn(false).when(mTabInteractionRecorder).didGetUserInteraction();
+        List<TabObserver> tabObservers = captureTabObservers();
+        for (TabObserver observer : tabObservers) {
+            observer.onHidden(env.tabProvider.getTab(), TabHidingType.CHANGED_TABS);
+            observer.onHidden(env.tabProvider.getTab(), TabHidingType.REPARENTED);
+        }
+        verify(env.connection, never()).notifyDidGetUserInteraction(eq(env.session), eq(false));
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS})
+    public void doesNotSendUserInteractionWhenIncognito() {
+        env.isIncognito = true;
+        env.reachNativeInit(mTabController);
+        List<TabObserver> tabObservers = captureTabObservers();
+        for (TabObserver observer : tabObservers) {
+            observer.onDestroyed(env.tabProvider.getTab());
+        }
+        verify(env.connection, never()).notifyDidGetUserInteraction(eq(env.session), anyBoolean());
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS})
+    public void doesNotSendUserInteractionWhenUmaUploadDisabled() {
+        doReturn(false).when(mPrivacyPreferencesManagerImpl).isUsageAndCrashReportingPermitted();
+        env.reachNativeInit(mTabController);
+        List<TabObserver> tabObservers = captureTabObservers();
+        for (TabObserver observer : tabObservers) {
+            observer.onDestroyed(env.tabProvider.getTab());
+        }
+        verify(env.connection, never()).notifyDidGetUserInteraction(eq(env.session), anyBoolean());
     }
 
     @Test
@@ -484,6 +577,7 @@ public class CustomTabActivityTabControllerUnitTest {
                 .notifyGreatestScrollPercentageIncreased(eq(env.session), anyInt());
     }
 
+    @Test
     @Features.EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS})
     public void doesNotResetMaxOnNavigation_SubFrame_NewDocument() {
         env.reachNativeInit(mTabController);
@@ -513,6 +607,46 @@ public class CustomTabActivityTabControllerUnitTest {
                 .notifyGreatestScrollPercentageIncreased(eq(env.session), anyInt());
     }
 
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS})
+    public void returnsRetroactiveMaxScroll() {
+        env.reachNativeInit(mTabController);
+        GestureStateListener gestureStateListener = captureGestureStateListener();
+        Supplier<Integer> scrollPercentageSupplier = captureGreatestScrollPercentageSupplier();
+
+        // Scroll down to 58%.
+        gestureStateListener.onScrollStarted(0, SCROLL_EXTENT, false);
+        gestureStateListener.onScrollUpdateGestureConsumed(new Point(0, 58));
+        gestureStateListener.onScrollEnded(58, SCROLL_EXTENT);
+
+        assertEquals(Integer.valueOf(55), scrollPercentageSupplier.get());
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS})
+    public void returnsRetroactiveMaxScroll_zeroIfNotScrolled() {
+        env.reachNativeInit(mTabController);
+        Supplier<Integer> scrollPercentageSupplier = captureGreatestScrollPercentageSupplier();
+
+        assertEquals(Integer.valueOf(0), scrollPercentageSupplier.get());
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS})
+    public void returnsRetroactiveMaxScroll_nullIfNotReportingUsage() {
+        doReturn(false).when(mPrivacyPreferencesManagerImpl).isUsageAndCrashReportingPermitted();
+        env.reachNativeInit(mTabController);
+        Supplier<Integer> scrollPercentageSupplier = captureGreatestScrollPercentageSupplier();
+        assertNull(scrollPercentageSupplier.get());
+    }
+
+    @Test
+    public void doesNotSetGreatestScrollPercentageSupplierIfFeatureIsDisabled() {
+        env.reachNativeInit(mTabController);
+
+        verify(env.connection, never()).setGreatestScrollPercentageSupplier(any());
+    }
+
     private GestureStateListener captureGestureStateListener() {
         ArgumentCaptor<GestureStateListener> gestureStateListenerArgumentCaptor =
                 ArgumentCaptor.forClass(GestureStateListener.class);
@@ -527,5 +661,22 @@ public class CustomTabActivityTabControllerUnitTest {
         WebContents webContents = env.tabProvider.getTab().getWebContents();
         verify(webContents).addObserver(webContentsObserverArgumentCaptor.capture());
         return webContentsObserverArgumentCaptor.getValue();
+    }
+
+    private List<TabObserver> captureTabObservers() {
+        ArgumentCaptor<TabObserver> tabObserverArgumentCaptor =
+                ArgumentCaptor.forClass(TabObserver.class);
+        verify(env.tabProvider.getTab(), atLeastOnce())
+                .addObserver(tabObserverArgumentCaptor.capture());
+        return tabObserverArgumentCaptor.getAllValues();
+    }
+
+    private Supplier<Integer> captureGreatestScrollPercentageSupplier() {
+        ArgumentCaptor<Supplier<Integer>> greatestScrollPercentageSupplierArgumentCaptor =
+                ArgumentCaptor.forClass(Supplier.class);
+        verify(env.connection)
+                .setGreatestScrollPercentageSupplier(
+                        greatestScrollPercentageSupplierArgumentCaptor.capture());
+        return greatestScrollPercentageSupplierArgumentCaptor.getValue();
     }
 }

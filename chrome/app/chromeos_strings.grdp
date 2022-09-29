@@ -5119,6 +5119,12 @@
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_GENERAL_DESCRIPTION_CHILD" desc="The label that explains the location of the fingerprint sensor on the device, when a child account is in use.">
     To set up fingerprint, have your child touch the fingerprint sensor. Your child’s fingerprint data is stored securely and never leaves this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_LEFT_OF_POWER_BUTTON_TOP_RIGHT" desc="The label that explains the location of the fingerprint sensor for devices with fingerprint sensor located left to the power button on the top right corner of the keyboard.">
+    Touch the fingerprint sensor at the top right corner of your keyboard, next to the Power button. Your fingerprint data is stored securely and never leaves your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_LEFT_OF_POWER_BUTTON_TOP_RIGHT_CHILD" desc="The label that explains the location of the fingerprint sensor for devices with fingerprint sensor located left to the power button on the top right corner of the keyboard, when a child account is in use.">
+    To set up fingerprint, have your child touch the fingerprint sensor at the top right corner of the keyboard, next to the Power button. Your child’s fingerprint data is stored securely and never leaves this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+  </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_ENROLLMENT_PROGRESS_TITLE" desc="The title of the dialog that shows where the fingerprint sensor is.">
     Lift, then touch again
   </message>
@@ -6047,6 +6053,15 @@ You can manage this account’s settings by installing the Family Link app on yo
   </message>
   <message name="IDS_SUGGESTION_EMOJI_CHOSEN" desc="String announced by screenreader when users selected an emoji in the pop-up.">
     <ph name="EMOJI_NAME">$1<ex>Party popper</ex></ph>. <ph name="EMOJI_INDEX">$2<ex>5</ex></ph> of <ph name="EMOJI_COUNT">$3<ex>5</ex></ph>.
+  </message>
+  <message name="IDS_SUGGESTION_DIACRITICS_OPEN" desc="String announced by screenreader when diacritics suggestion pops up.">
+    Accent marks menu open. Press left or right to navigate and enter to insert.
+  </message>
+  <message name="IDS_SUGGESTION_DIACRITICS_INSERTED" desc="String announced by screenreader when diacritics are inserted.">
+    Accent mark inserted.
+  </message>
+  <message name="IDS_SUGGESTION_DIACRITICS_DISMISSED" desc="String announced by screenreader when diacritics are dismissed.">
+    Accent marks menu dismissed.
   </message>
   <message name="IDS_SUGGESTION_DISMISSED" desc="String announced by screenreader when suggestion pop-up disappears.">
     Suggestion dismissed

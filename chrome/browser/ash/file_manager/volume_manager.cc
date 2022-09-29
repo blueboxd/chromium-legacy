@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+#include <type_traits>
 #include <utility>
 
 #include "ash/components/arc/arc_features.h"
@@ -16,7 +18,6 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -148,7 +149,7 @@ VolumeType MountTypeToVolumeType(ash::MountType type) {
 }
 
 // Returns a string representation of the given volume type.
-std::string VolumeTypeToString(VolumeType type) {
+base::StringPiece VolumeTypeToString(const VolumeType type) {
   switch (type) {
     case VOLUME_TYPE_GOOGLE_DRIVE:
       return "drive";
@@ -181,7 +182,9 @@ std::string VolumeTypeToString(VolumeType type) {
     case NUM_VOLUME_TYPE:
       break;
   }
-  NOTREACHED();
+
+  NOTREACHED() << "Unexpected VolumeType value "
+               << static_cast<std::underlying_type_t<VolumeType>>(type);
   return "";
 }
 
@@ -189,8 +192,8 @@ std::string VolumeTypeToString(VolumeType type) {
 std::string GenerateVolumeId(const Volume& volume) {
   // For the same volume type, base names are unique, as mount points are
   // flat for the same volume type.
-  return (VolumeTypeToString(volume.type()) + ":" +
-          volume.mount_path().BaseName().AsUTF8Unsafe());
+  return base::StrCat({VolumeTypeToString(volume.type()), ":",
+                       volume.mount_path().BaseName().AsUTF8Unsafe()});
 }
 
 std::string FuseBoxMTPSubdir(const std::string& device_id) {
@@ -265,10 +268,14 @@ std::string MediaViewDocumentIdToLabel(std::string root_document_id) {
 
 }  // namespace
 
+std::ostream& operator<<(std::ostream& out, const VolumeType type) {
+  return out << VolumeTypeToString(type);
+}
+
 Volume::Volume()
     : source_(SOURCE_FILE),
       type_(VOLUME_TYPE_GOOGLE_DRIVE),
-      mount_condition_(ash::disks::MOUNT_CONDITION_NONE),
+      mount_condition_(ash::disks::MountCondition::kNone),
       mount_context_(MOUNT_CONTEXT_UNKNOWN),
       is_parent_(false),
       is_read_only_(false),
@@ -289,7 +296,6 @@ std::unique_ptr<Volume> Volume::CreateForDrive(
   volume->source_path_ = drive_path;
   volume->source_ = SOURCE_NETWORK;
   volume->mount_path_ = drive_path;
-  volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
   volume->volume_id_ = GenerateVolumeId(*volume);
   volume->volume_label_ =
       l10n_util::GetStringUTF8(IDS_FILE_BROWSER_DRIVE_DIRECTORY_LABEL);
@@ -306,7 +312,6 @@ std::unique_ptr<Volume> Volume::CreateForDownloads(
   // Keep source_path empty.
   volume->source_ = SOURCE_SYSTEM;
   volume->mount_path_ = downloads_path;
-  volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
   volume->volume_id_ = GenerateVolumeId(*volume);
   volume->volume_label_ =
       l10n_util::GetStringUTF8(IDS_FILE_BROWSER_MY_FILES_ROOT_LABEL);
@@ -372,7 +377,6 @@ std::unique_ptr<Volume> Volume::CreateForProvidedFileSystem(
   volume->volume_label_ = file_system_info.display_name();
   volume->type_ = VOLUME_TYPE_PROVIDED;
   volume->mount_path_ = file_system_info.mount_path();
-  volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
   volume->mount_context_ = mount_context;
 
   volume->is_parent_ = true;
@@ -411,7 +415,6 @@ std::unique_ptr<Volume> Volume::CreateForFuseBoxProvidedFileSystem(
   volume->type_ = VOLUME_TYPE_PROVIDED;
   volume->file_system_type_ = util::kFuseBox;
   volume->mount_path_ = mount_path;
-  volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
   volume->mount_context_ = mount_context;
 
   volume->is_parent_ = true;
@@ -420,8 +423,8 @@ std::unique_ptr<Volume> Volume::CreateForFuseBoxProvidedFileSystem(
   volume->icon_set_ = file_system_info.icon_set();
 
   // "fusebox" prefix the original FSP volume id.
-  volume->volume_id_ = util::kFuseBox;
-  volume->volume_id_.append(GenerateVolumeId(*volume));
+  volume->volume_id_ =
+      base::StrCat({util::kFuseBox, GenerateVolumeId(*volume)});
   return volume;
 }
 
@@ -432,7 +435,6 @@ std::unique_ptr<Volume> Volume::CreateForMTP(const base::FilePath& mount_path,
   std::unique_ptr<Volume> volume(new Volume());
   volume->type_ = VOLUME_TYPE_MTP;
   volume->mount_path_ = mount_path;
-  volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
   volume->is_parent_ = true;
   volume->is_read_only_ = read_only;
   volume->volume_id_ = kMtpVolumeIdPrefix + label;
@@ -455,12 +457,11 @@ std::unique_ptr<Volume> Volume::CreateForFuseBoxMTP(
   volume->source_path_ = mount_path;
   volume->source_ = SOURCE_DEVICE;
   volume->mount_path_ = mount_path;
-  volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
   volume->is_parent_ = true;
   volume->is_read_only_ = read_only;
   // "fusebox" prefix the original MTP volume id.
-  volume->volume_id_ = util::kFuseBox;
-  volume->volume_id_.append(kMtpVolumeIdPrefix + label);
+  volume->volume_id_ =
+      base::StrCat({util::kFuseBox, kMtpVolumeIdPrefix, label});
   volume->volume_label_ = label;
   if (ash::features::IsFileManagerFuseBoxDebugEnabled())
     volume->volume_label_.insert(0, "fusebox ");
@@ -476,7 +477,6 @@ std::unique_ptr<Volume> Volume::CreateForMediaView(
   volume->source_ = SOURCE_SYSTEM;
   volume->mount_path_ = arc::GetDocumentsProviderMountPath(
       arc::kMediaDocumentsProviderAuthority, root_document_id);
-  volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
   volume->volume_label_ = MediaViewDocumentIdToLabel(root_document_id);
   volume->is_read_only_ =
       arc::ArcDocumentsProviderRootMap::IsDocumentProviderRootReadOnly();
@@ -496,7 +496,6 @@ std::unique_ptr<Volume> Volume::CreateForSshfsCrostini(
   volume->source_ = SOURCE_SYSTEM;
   volume->mount_path_ = sshfs_mount_path;
   volume->remote_mount_path_ = remote_mount_path;
-  volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
   volume->volume_id_ = GenerateVolumeId(*volume);
   volume->volume_label_ =
       l10n_util::GetStringUTF8(IDS_FILE_BROWSER_LINUX_FILES_ROOT_LABEL);
@@ -518,7 +517,6 @@ std::unique_ptr<Volume> Volume::CreateForSftpGuestOs(
   volume->source_ = SOURCE_SYSTEM;
   volume->mount_path_ = sftp_mount_path;
   volume->remote_mount_path_ = remote_mount_path;
-  volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
   volume->volume_id_ = GenerateVolumeId(*volume);
   volume->volume_label_ = display_name;
   volume->watchable_ = false;
@@ -535,7 +533,6 @@ std::unique_ptr<Volume> Volume::CreateForAndroidFiles(
   // Keep source_path empty.
   volume->source_ = SOURCE_SYSTEM;
   volume->mount_path_ = mount_path;
-  volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
   volume->volume_id_ = GenerateVolumeId(*volume);
   volume->volume_label_ =
       l10n_util::GetStringUTF8(IDS_FILE_BROWSER_ANDROID_FILES_ROOT_LABEL);
@@ -559,7 +556,6 @@ std::unique_ptr<Volume> Volume::CreateForDocumentsProvider(
   volume->source_ = SOURCE_SYSTEM;
   volume->mount_path_ =
       arc::GetDocumentsProviderMountPath(authority, document_id);
-  volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
   volume->volume_label_ = title;
   volume->is_read_only_ = read_only;
   volume->watchable_ = false;
@@ -582,7 +578,6 @@ std::unique_ptr<Volume> Volume::CreateForSmb(const base::FilePath& mount_point,
   // Keep source_path empty.
   volume->source_ = SOURCE_NETWORK;
   volume->mount_path_ = mount_point;
-  volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
   volume->volume_id_ = GenerateVolumeId(*volume);
   volume->volume_label_ = display_name;
   volume->watchable_ = false;
@@ -603,7 +598,6 @@ std::unique_ptr<Volume> Volume::CreateForShareCache(
   // Keep source_path empty.
   volume->source_ = SOURCE_SYSTEM;
   volume->mount_path_ = mount_path;
-  volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
   volume->volume_id_ = GenerateVolumeId(*volume);
   volume->watchable_ = false;
   volume->is_read_only_ = true;
@@ -628,7 +622,6 @@ std::unique_ptr<Volume> Volume::CreateForTesting(
   volume->source_ = SOURCE_DEVICE;
   volume->mount_path_ = path;
   volume->storage_device_path_ = device_path;
-  volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
   volume->is_read_only_ = read_only;
   volume->volume_id_ = GenerateVolumeId(*volume);
   volume->drive_label_ = drive_label;
@@ -1825,7 +1818,8 @@ void VolumeManager::DoMountEvent(ash::MountError error_code,
   }
 
   Volume* raw_volume = volume.get();
-  if (error_code == ash::MountError::kNone || volume->mount_condition()) {
+  if (error_code == ash::MountError::kNone ||
+      volume->mount_condition() != ash::disks::MountCondition::kNone) {
     mounted_volumes_[volume->volume_id()] = std::move(volume);
     UMA_HISTOGRAM_ENUMERATION("FileBrowser.VolumeType", raw_volume->type(),
                               NUM_VOLUME_TYPE);

@@ -722,6 +722,17 @@ IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, NavigateToForbiddenUrl) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, NavigateToUntrustedWebUIUrl) {
+  ASSERT_TRUE(RunExtensionTest("debugger_navigate_to_untrusted_webui_url"))
+      << message_;
+}
+
+// Tests that Target.createTarget to WebUI origins are blocked.
+IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, CreateTargetToUntrustedWebUI) {
+  ASSERT_TRUE(RunExtensionTest("debugger_create_target_to_untrusted_webui"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, IsDeveloperModeTrueHistogram) {
   profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
   base::HistogramTester histograms;

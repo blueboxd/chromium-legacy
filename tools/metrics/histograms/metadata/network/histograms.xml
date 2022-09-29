@@ -243,6 +243,28 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Network.CaptivePortalResult" enum="CaptivePortalNetworkState"
+    expires_after="2023-09-18">
+  <owner>stevenjb@chromium.org</owner>
+  <owner>cros-network-health@google.com</owner>
+  <summary>
+    Captive portal detection state from Shill received by NetworkState. NOTE:
+    This metric used to be CaptivePortal.NetworkPortalDetectorResult which was
+    expired from 2021-04-01 to 2022-09-18.
+  </summary>
+</histogram>
+
+<histogram name="Network.CaptivePortalStatusCode" enum="HttpResponseCode"
+    expires_after="2023-09-18">
+  <owner>stevenjb@chromium.org</owner>
+  <owner>cros-network-health@google.com</owner>
+  <summary>
+    Captive portal status code reported by Shill and received by NetworkState.
+    NOTE: This metric used to be CaptivePortal.NetworkStateStatusCode which was
+    expired from 2021-04-01 to 2022-09-18.
+  </summary>
+</histogram>
+
 <histogram name="Network.Cellular.Apn.UseAttachApnOnSave" enum="Boolean"
     expires_after="2022-05-18">
   <owner>hsuregan@chromium.org</owner>
@@ -1140,6 +1162,39 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Network.NetworkPortalDetectorResult"
+    enum="NetworkPortalStatus" expires_after="2023-09-18">
+  <owner>stevenjb@chromium.org</owner>
+  <owner>cros-network-health@google.com</owner>
+  <summary>
+    Chrome captive portal detection results on ChromeOS. NOTE: This metric used
+    to be CaptivePortal.NetworkPortalDetectorResult which was expired from
+    2021-09-27 to 2022-09-18.
+  </summary>
+</histogram>
+
+<histogram name="Network.NetworkPortalDetectorRunCount" units="attempts"
+    expires_after="2023-09-18">
+  <owner>stevenjb@chromium.org</owner>
+  <owner>cros-network-health@google.com</owner>
+  <summary>
+    Number of Chrome portal detection attempts per network connection on
+    ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="Network.NetworkPortalDetectorType" enum="NetworkTechnology"
+    expires_after="2023-09-18">
+  <owner>stevenjb@chromium.org</owner>
+  <owner>cros-network-health@google.com</owner>
+  <summary>
+    Captive portal detection network type recorded when Chrome on ChromeOS
+    detects a captive portal. NOTE: This metric used to be
+    CaptivePortal.NetworkPortalDetectorType which was expired from 2021-09-27 to
+    2022-09-18.
+  </summary>
+</histogram>
+
 <histogram name="Network.Patchpanel.ArcService"
     enum="NetworkPatchpanelArcEvent" expires_after="2022-12-31">
   <owner>hugobenichi@google.com</owner>
@@ -1166,6 +1221,16 @@ chromium-metrics-reviews@google.com.
     APIs is called and tracks success and error rates of various network
     platform primitives implemented by patchpanel (port forwarding APIs,
     firewall APIs, virtual network APIs for ARC and crosvm, etc).
+  </summary>
+</histogram>
+
+<histogram name="Network.PortalSuspectedToOnlineTime" units="ms"
+    expires_after="2023-09-18">
+  <owner>stevenjb@chromium.org</owner>
+  <owner>cros-network-health@google.com</owner>
+  <summary>
+    Captive portal time from a portal-suspected state to an online state on
+    ChromeOS.
   </summary>
 </histogram>
 
@@ -1251,6 +1316,16 @@ chromium-metrics-reviews@google.com.
     Records the time between a SimpleURLLoader request is made to the request
     actually starts. Recorded only when the request is throttled due to the
     default network state (e.g. in low power state).
+  </summary>
+</histogram>
+
+<histogram name="Network.RedirectFoundToOnlineTime" units="ms"
+    expires_after="2023-09-18">
+  <owner>stevenjb@chromium.org</owner>
+  <owner>cros-network-health@google.com</owner>
+  <summary>
+    Captive portal time from a redirect-found state to an online state on
+    ChromeOS.
   </summary>
 </histogram>
 

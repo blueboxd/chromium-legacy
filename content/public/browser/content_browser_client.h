@@ -97,7 +97,6 @@ namespace mojom {
 class DeviceAPIService;
 class ManagedConfigurationService;
 class RendererPreferenceWatcher;
-class WebUsbService;
 class WindowFeatures;
 enum class WebFeature : int32_t;
 }  // namespace mojom
@@ -229,6 +228,7 @@ class StoragePartition;
 class TracingDelegate;
 class TtsPlatform;
 class URLLoaderRequestInterceptor;
+class UsbDelegate;
 class VideoOverlayWindow;
 class VideoPictureInPictureWindowController;
 class VpnServiceProxy;
@@ -871,6 +871,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool IsSharedStorageAllowed(content::BrowserContext* browser_context,
                                       const url::Origin& top_frame_origin,
                                       const url::Origin& accessing_origin);
+
+  // Allows the embedder to control if Private Aggregation API operations can
+  // happen in a given context.
+  virtual bool IsPrivateAggregationAllowed(
+      content::BrowserContext* browser_context,
+      const url::Origin& top_frame_origin,
+      const url::Origin& reporting_origin);
 
 #if BUILDFLAG(IS_CHROMEOS)
   // Notification that a trust anchor was used by the given user.
@@ -1801,10 +1808,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool ShouldForceDownloadResource(const GURL& url,
                                            const std::string& mime_type);
 
-  virtual void CreateWebUsbService(
-      RenderFrameHost* render_frame_host,
-      mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
-
   virtual void CreateDeviceInfoService(
       RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<blink::mojom::DeviceAPIService> receiver);
@@ -1824,6 +1827,9 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows the embedder to provide an implementation of the Web Bluetooth API.
   virtual BluetoothDelegate* GetBluetoothDelegate();
+
+  // Allows the embedder to provide an implementation of the WebUSB API.
+  virtual UsbDelegate* GetUsbDelegate();
 
   // Allows the embedder to provide an implementation of the Local Font Access
   // API.

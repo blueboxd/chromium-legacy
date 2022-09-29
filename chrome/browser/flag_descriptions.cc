@@ -235,6 +235,14 @@ const char kU2FSecurityKeyAPIDescription[] =
     "information, refer to the deprecation announcement at "
     "https://groups.google.com/a/chromium.org/g/blink-dev/c/xHC3AtU_65A";
 
+const char kLoadCryptoTokenExtensionName[] =
+    "Load the CryptoToken component extension ";
+const char kLoadCryptoTokenExtensionDescription[] =
+    "Enable this flag to temporarily work around issues with `chrome.runtime` "
+    "being undefined as a side effect of U2F API removal. This workaround "
+    "will go away with Chrome 107. Websites should not depend on "
+    "`chrome.runtime` or `chrome.app` being defined unconditionally.";
+
 const char kUpcomingSharingFeaturesName[] = "Enable upcoming sharing features.";
 const char kUpcomingSharingFeaturesDescription[] =
     "This flag enables all upcoming sharing features, in the experiment "
@@ -1679,6 +1687,10 @@ const char kIncognitoScreenshotDescription[] =
     "Enables Incognito screenshots on Android. It will also make Incognito "
     "thumbnails visible.";
 
+const char kInfobarScrollOptimizationName[] = "Infobar scroll optimiaztion";
+const char kInfobarScrollOptimizationDescription[] =
+    "Optimize Infobar scroll on Android.";
+
 const char kInitialNavigationEntryName[] = "Initial NavigationEntry";
 const char kInitialNavigationEntryDescription[] =
     "Enables creation of initial NavigationEntry on tab creation.";
@@ -1933,6 +1945,12 @@ const char kOmniboxMostVisitedTilesDescription[] =
     "Display a list of frequently visited pages from history as a single row "
     "with a carousel instead of one URL per line.";
 
+const char kOmniboxMostVisitedTilesDynamicSpacingName[] =
+    "Omnibox Most Visited Tiles Dynamic Spacing";
+const char kOmniboxMostVisitedTilesDynamicSpacingDescription[] =
+    "Exposes ~4.5 MV tiles in a carousel on a small form factor "
+    "devices, aligning the visual spacing with the NTP.";
+
 const char kOmniboxMostVisitedTilesTitleWrapAroundName[] =
     "Omnibox Most Visited Tiles Title wrap around";
 const char kOmniboxMostVisitedTilesTitleWrapAroundDescription[] =
@@ -2084,13 +2102,6 @@ const char kOptimizationGuidePushNotificationName[] =
     "Enable optimization guide push notifications";
 const char kOptimizationGuidePushNotificationDescription[] =
     "Enables the optimization guide to receive push notifications.";
-
-const char kEnableDeJellyName[] = "Experimental de-jelly effect";
-const char kEnableDeJellyDescription[] =
-    "Enables an experimental effect which attempts to mitigate "
-    "\"jelly-scrolling\". This is an experimental implementation with known "
-    "bugs, visual artifacts, and performance cost. This implementation may be "
-    "removed at any time.";
 
 const char kOrganicRepeatableQueriesName[] =
     "Organic repeatable queries in Most Visited tiles";
@@ -3450,6 +3461,13 @@ const char kEnableFamilyInfoFeedbackName[] =
 const char kEnableFamilyInfoFeedbackDescription[] =
     "Enable FamilyLink feedback source in Chrome Settings feedback";
 
+const char kEnableOskResizesVisualViewportName[] =
+    "Enable OSK resizes visual viewport";
+const char kEnableOskResizesVisualViewportDescription[] =
+    "With this flag on, the Android On-Screen-Keyboard (OSK) will avoid "
+    "changing the page height,"
+    "resizing only the visual viewport.";
+
 const char kExploreSitesName[] = "Explore websites";
 const char kExploreSitesDescription[] =
     "Enables portal from new tab page to explore websites.";
@@ -3486,6 +3504,10 @@ const char kFeedIsAblatedDescription[] = "Enables feed ablation.";
 const char kFeedCloseRefreshName[] = "Feed-close refresh";
 const char kFeedCloseRefreshDescription[] =
     "Enables scheduling a background refresh of the feed following feed use.";
+
+const char kFeedVideoInlinePlaybackName[] = "Feed video inline playback";
+const char kFeedVideoInlinePlaybackDescription[] =
+    "Enable playing feed video in inline playback mode.";
 
 const char kGridTabSwitcherForTabletsName[] = "Grid tab switcher for tablets";
 const char kGridTabSwitcherForTabletsDescription[] =
@@ -3805,6 +3827,12 @@ const char kRequestDesktopSiteForTabletsDescription[] =
     "Requests a desktop site, if the screen size is large enough on Android."
     " On tablets with small screens a mobile site will be requested by "
     "default.";
+
+const char kRevokeNotificationsPermissionIfDisabledOnAppLevelName[] =
+    "Revoke site-level notification permission on Android";
+const char kRevokeNotificationsPermissionIfDisabledOnAppLevelDescription[] =
+    "Allow revoking site-level notification permission if Chrome has no "
+    "app-level notification permission on Android.";
 
 const char kSafeModeForCachedFlagsName[] = "Safe Mode for Cached Flags";
 const char kSafeModeForCachedFlagsDescription[] =
@@ -6058,6 +6086,11 @@ const char kCrosPrivacyHubFutureName[] =
     "Enable ChromeOS Privacy Hub future features";
 const char kCrosPrivacyHubFutureDescription[] =
     "Enables ChromeOS Privacy Hub future features.";
+
+const char kDefaultCalculatorWebAppName[] = "Default install Calculator PWA";
+const char kDefaultCalculatorWebAppDescription[] =
+    "Enable default installing of the calculator PWA instead of the deprecated "
+    "chrome app.";
 
 const char kDeprecateLowUsageCodecsName[] = "Deprecates low usage media codecs";
 const char kDeprecateLowUsageCodecsDescription[] =

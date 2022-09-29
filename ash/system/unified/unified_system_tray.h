@@ -41,6 +41,7 @@ class NotificationGroupingController;
 class NotificationIconsController;
 class PrivacyIndicatorsTrayItemView;
 class PrivacyScreenToastController;
+class ScreenCaptureTrayItemView;
 class SnoopingProtectionView;
 class TimeTrayItemView;
 class TrayItemView;
@@ -236,6 +237,10 @@ class ASH_EXPORT UnifiedSystemTray
     return message_center_bubble_.get();
   }
 
+  PrivacyIndicatorsTrayItemView* privacy_indicators_view() {
+    return privacy_indicators_view_;
+  }
+
   ChannelIndicatorView* channel_indicator_view() {
     return channel_indicator_view_;
   }
@@ -303,6 +308,7 @@ class ASH_EXPORT UnifiedSystemTray
   CameraMicTrayItemView* const mic_view_;
   TimeTrayItemView* const time_view_;
   PrivacyIndicatorsTrayItemView* const privacy_indicators_view_;
+  ScreenCaptureTrayItemView* const screen_capture_view_;
 
   NetworkTrayView* network_tray_view_ = nullptr;
   ChannelIndicatorView* channel_indicator_view_ = nullptr;

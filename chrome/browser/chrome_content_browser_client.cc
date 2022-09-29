@@ -151,7 +151,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
 #include "chrome/browser/universal_web_contents_observers.h"
-#include "chrome/browser/usb/frame_usb_services.h"
+#include "chrome/browser/usb/chrome_usb_delegate.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/webapps/web_app_offline.h"
 #include "chrome/browser/webauthn/webauthn_pref_names.h"
@@ -722,12 +722,8 @@ bool IsSSLErrorOverrideAllowedForOrigin(const GURL& request_url,
   if (prefs->GetBoolean(prefs::kSSLErrorOverrideAllowed))
     return true;
 
-  if (!prefs->GetList(prefs::kSSLErrorOverrideAllowedForOrigins))
-    return false;
-
-  base::Value::ConstListView allow_list_urls =
-      prefs->GetList(prefs::kSSLErrorOverrideAllowedForOrigins)
-          ->GetListDeprecated();
+  const base::Value::List& allow_list_urls =
+      prefs->GetValueList(prefs::kSSLErrorOverrideAllowedForOrigins);
   if (allow_list_urls.empty())
     return false;
 
@@ -841,7 +837,7 @@ bool HandleNewTabPageLocationOverride(
 #if !BUILDFLAG(IS_ANDROID)
 // Check if the current url is allowlisted based on a list of allowlisted urls.
 bool IsURLAllowlisted(const GURL& current_url,
-                      base::Value::ConstListView allowlisted_urls) {
+                      const base::Value::List& allowlisted_urls) {
   // Only check on HTTP and HTTPS pages.
   if (!current_url.SchemeIsHTTPOrHTTPS())
     return false;
@@ -873,12 +869,10 @@ bool IsAutoplayAllowedByPolicy(content::WebContents* contents,
     return false;
 
   // Check if the current URL matches a URL pattern on the allowlist.
-  const base::Value* autoplay_allowlist =
-      prefs->GetList(prefs::kAutoplayAllowlist);
-  return autoplay_allowlist &&
-         prefs->IsManagedPreference(prefs::kAutoplayAllowlist) &&
-         IsURLAllowlisted(contents->GetURL(),
-                          autoplay_allowlist->GetListDeprecated());
+  const base::Value::List& autoplay_allowlist =
+      prefs->GetValueList(prefs::kAutoplayAllowlist);
+  return prefs->IsManagedPreference(prefs::kAutoplayAllowlist) &&
+         IsURLAllowlisted(contents->GetURL(), autoplay_allowlist);
 }
 #endif
 
@@ -3038,6 +3032,19 @@ bool ChromeContentBrowserClient::IsSharedStorageAllowed(
 
   return privacy_sandbox_settings->IsSharedStorageAllowed(top_frame_origin,
                                                           accessing_origin);
+}
+
+bool ChromeContentBrowserClient::IsPrivateAggregationAllowed(
+    content::BrowserContext* browser_context,
+    const url::Origin& top_frame_origin,
+    const url::Origin& reporting_origin) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  auto* privacy_sandbox_settings =
+      PrivacySandboxSettingsFactory::GetForProfile(profile);
+  DCHECK(privacy_sandbox_settings);
+
+  return privacy_sandbox_settings->IsPrivateAggregationAllowed(
+      top_frame_origin, reporting_origin);
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -5670,17 +5677,6 @@ bool ChromeContentBrowserClient::ShouldForceDownloadResource(
 #endif
 }
 
-void ChromeContentBrowserClient::CreateWebUsbService(
-    content::RenderFrameHost* render_frame_host,
-    mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {
-  if (!base::FeatureList::IsEnabled(features::kWebUsb))
-    return;
-
-  CHECK(render_frame_host);
-  FrameUsbServices::CreateFrameUsbServices(render_frame_host,
-                                           std::move(receiver));
-}
-
 content::BluetoothDelegate* ChromeContentBrowserClient::GetBluetoothDelegate() {
   if (!bluetooth_delegate_) {
     bluetooth_delegate_ = std::make_unique<permissions::BluetoothDelegateImpl>(
@@ -5715,6 +5711,12 @@ content::HidDelegate* ChromeContentBrowserClient::GetHidDelegate() {
   if (!hid_delegate_)
     hid_delegate_ = std::make_unique<ChromeHidDelegate>();
   return hid_delegate_.get();
+}
+
+content::UsbDelegate* ChromeContentBrowserClient::GetUsbDelegate() {
+  if (!usb_delegate_)
+    usb_delegate_ = std::make_unique<ChromeUsbDelegate>();
+  return usb_delegate_.get();
 }
 
 content::WebAuthenticationDelegate*
@@ -6648,7 +6650,7 @@ void ChromeContentBrowserClient::OnKeepaliveTimerFired(
 }
 #endif
 
-bool ChromeContentBrowserClient::ShouldPreconnectNavigation(
+bool ChromeContentBrowserClient::ShouldPreconnect(
     content::BrowserContext* browser_context) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // An extension could be blocking connections for privacy reasons, so skip
@@ -6665,6 +6667,11 @@ bool ChromeContentBrowserClient::ShouldPreconnectNavigation(
   // the Finch setting here.
   return prefetch::IsSomePreloadingEnabledIgnoringFinch(
       *Profile::FromBrowserContext(browser_context)->GetPrefs());
+}
+
+bool ChromeContentBrowserClient::ShouldPreconnectNavigation(
+    content::BrowserContext* browser_context) {
+  return ShouldPreconnect(browser_context);
 }
 
 bool ChromeContentBrowserClient::ShouldDisableOriginAgentClusterDefault(

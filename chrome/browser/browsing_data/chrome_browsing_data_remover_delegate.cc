@@ -168,15 +168,15 @@
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "chrome/browser/ash/net/system_proxy_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/attestation/attestation_client.h"
 #include "chromeos/ash/components/dbus/attestation/interface.pb.h"
-#include "chromeos/dbus/constants/attestation_constants.h"  // nogncheck
-#include "chromeos/dbus/dbus_thread_manager.h"              // nogncheck
+#include "chromeos/ash/components/dbus/dbus_thread_manager.h"  // nogncheck
+#include "chromeos/dbus/constants/attestation_constants.h"     // nogncheck
 #include "components/user_manager/user.h"
 #include "device/fido/cros/credential_store.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

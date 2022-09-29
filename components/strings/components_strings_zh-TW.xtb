@@ -421,6 +421,7 @@
 <translation id="2040894699575719559">禁止取得位置資訊</translation>
 <translation id="2042213636306070719">紙匣 7</translation>
 <translation id="204357726431741734">登入以使用儲存在 Google 帳戶中的密碼</translation>
+<translation id="2048261947532620704">正在翻譯頁面</translation>
 <translation id="205212645995975601">烤肉與燒烤</translation>
 <translation id="2053111141626950936">系統不會翻譯<ph name="LANGUAGE" />網頁。</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{如果這項功能已啟用且處於有效狀態，Chrome 就能判斷你近期的瀏覽活動與哪個大型使用者群組 (或稱「同類群組」) 最為相近。廣告客戶可以選擇要向該群組顯示的廣告，而你的瀏覽記錄會保留在裝置上，僅供本人存取。你所在的群組會每天更新。}=1{如果這項功能已啟用且處於有效狀態，Chrome 就能判斷你近期的瀏覽活動與哪個大型使用者群組 (或稱「同類群組」) 最為相近。廣告客戶可以選擇要向該群組顯示的廣告，而你的瀏覽記錄會保留在裝置上，僅供本人存取。你所在的群組會每天更新。}other{如果這項功能已啟用且處於有效狀態，Chrome 就能判斷你近期的瀏覽活動與哪個大型使用者群組 (或稱「同類群組」) 最為相近。廣告客戶可以選擇要向該群組顯示的廣告，而你的瀏覽記錄會保留在裝置上，僅供本人存取。你所在的群組會每隔 {NUM_DAYS} 天更新。}}</translation>
@@ -911,6 +912,7 @@
 <translation id="3427342743765426898">重做編輯(&amp;R)</translation>
 <translation id="342781501876943858">如果你在其他網站上重複使用過你的密碼，Chromium 會建議你重設密碼。</translation>
 <translation id="3428151540071562330">一或多個 DnsOverHttpsTemplates 伺服器範本 URI 無效，因此系統不會採用這些伺服器範本 URI。</translation>
+<translation id="3431216045099978607">按下 |<ph name="ACCELERATOR" />| 鍵即可結束全螢幕模式以查看下載內容。</translation>
 <translation id="3431636764301398940">將這張信用卡儲存到這個裝置</translation>
 <translation id="3432601291244612633">關閉頁面</translation>
 <translation id="3435738964857648380">安全性</translation>
@@ -1104,7 +1106,6 @@
 <translation id="3969052498612555048">找不到動態密碼嗎？<ph name="BEGIN_LINK" />取得新的動態密碼<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">計算中…</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> 遭到封鎖</translation>
-<translation id="3978338123949022456">搜尋模式，輸入查詢並按下 Enter 鍵即可用 <ph name="KEYWORD_SUFFIX" /> 搜尋</translation>
 <translation id="398470910934384994">鳥</translation>
 <translation id="3985750352229496475">管理地址...</translation>
 <translation id="3986705137476756801">暫時關閉即時字幕</translation>
@@ -1652,6 +1653,7 @@
 <translation id="540969355065856584">這個伺服器無法證明所屬網域為 <ph name="DOMAIN" />；其安全性憑證目前無效。這可能是因為設定錯誤，或是有攻擊者攔截您的連線所致。</translation>
 <translation id="5412040515238827314">格式無效：輸入的值必須是模式清單。</translation>
 <translation id="5412236728747081950">這個網站會取得你在 Chrome 設定的興趣喜好，為你顯示更貼近需求的廣告</translation>
+<translation id="5412245327974352290"><ph name="TRADITIONAL_TEXT" /> - <ph name="ADDITIONAL_TEXT" /></translation>
 <translation id="541416427766103491">堆疊出紙器 4</translation>
 <translation id="5421136146218899937">清除瀏覽資料...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> 要求傳送通知給你</translation>
@@ -1713,6 +1715,7 @@
 <translation id="5580958916614886209">請檢查信用卡到期月份，然後再試一次</translation>
 <translation id="558420943003240152">管理密碼和密碼金鑰…</translation>
 <translation id="5586446728396275693">沒有已儲存的地址</translation>
+<translation id="5586831831248371458">搜尋「<ph name="KEYWORD_SUFFIX" />」</translation>
 <translation id="5587987780934666589">平台使用者</translation>
 <translation id="5593349413089863479">連線可能有安全漏洞</translation>
 <translation id="5595485650161345191">編輯地址</translation>
@@ -1939,7 +1942,7 @@
 <translation id="6254436959401408446">記憶體不足，無法開啟這個網頁</translation>
 <translation id="6259156558325130047">重做重新排序(&amp;R)</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 書籤</translation>
-<translation id="6264485186158353794">返回安全性瀏覽</translation>
+<translation id="6264485186158353794">返回安全網頁</translation>
 <translation id="6265794661083428563">複製 <ph name="POLICY_NAME" /> 政策的值</translation>
 <translation id="6266934640124581640">淺藍綠色</translation>
 <translation id="6272088941196661550">繼續瀏覽歷程即可查看 Chrome 歷史記錄中的相關活動</translation>
@@ -2056,6 +2059,7 @@
 <translation id="6591833882275308647">你的 <ph name="DEVICE_TYPE" /> 未受管理</translation>
 <translation id="6592952801936330159">「管理網站設定」按鈕；按下 Enter 鍵即可在 Chrome 設定中管理各網站的權限及儲存的資料</translation>
 <translation id="6596325263575161958">加密選項</translation>
+<translation id="6599642189720630047">追蹤的產品</translation>
 <translation id="6609880536175561541">Prc7 (信封)</translation>
 <translation id="6611723696964473273">經濟新聞</translation>
 <translation id="6612010098632894193">線上影片</translation>
@@ -2583,6 +2587,7 @@
 <translation id="8004582292198964060">瀏覽器</translation>
 <translation id="8009225694047762179">管理密碼</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{系統會儲存這張卡片和相應的帳單地址。只要登入 <ph name="USER_EMAIL" /> 即可使用。}other{系統會儲存這些卡片和相應的帳單地址。只要登入 <ph name="USER_EMAIL" /> 即可使用。}}</translation>
+<translation id="8019861005170389898"><ph name="TRADITIONAL_TEXT" /> (<ph name="ADDITIONAL_TEXT" />)</translation>
 <translation id="8025119109950072390">攻擊者可能會試圖透過這個網站誘使你做一些危險的行為，例如安裝軟體或提供個人資訊 (包括密碼、電話號碼或信用卡資料)。</translation>
 <translation id="8026334261755873520">清除瀏覽資料</translation>
 <translation id="8027077570865220386">紙匣 15</translation>

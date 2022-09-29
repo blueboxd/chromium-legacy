@@ -234,6 +234,15 @@ void SidePanelCoordinator::RemoveSidePanelViewStateObserver(
   view_state_observers_.RemoveObserver(observer);
 }
 
+void SidePanelCoordinator::SetSidePanelButtonTooltipText(
+    std::u16string tooltip_text) {
+  auto* toolbar = browser_view_->toolbar();
+  // On Progressive web apps, the toolbar can be null when opening the side
+  // panel. This check is added as a added safeguard.
+  if (toolbar && toolbar->side_panel_button())
+    toolbar->side_panel_button()->SetTooltipText(tooltip_text);
+}
+
 void SidePanelCoordinator::Close() {
   if (!GetContentView())
     return;
@@ -261,7 +270,7 @@ void SidePanelCoordinator::Close() {
   ClearCachedEntryViews();
 
   // TODO(pbos): Make this button observe panel-visibility state instead.
-  browser_view_->toolbar()->side_panel_button()->SetTooltipText(
+  SetSidePanelButtonTooltipText(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_SIDE_PANEL_SHOW));
 
   // `OnEntryWillDeregister` (triggered by calling `OnEntryHidden`) may already
@@ -336,7 +345,7 @@ SidePanelEntry* SidePanelCoordinator::GetEntryForId(
 
 void SidePanelCoordinator::InitializeSidePanel() {
   // TODO(pbos): Make this button observe panel-visibility state instead.
-  browser_view_->toolbar()->side_panel_button()->SetTooltipText(
+  SetSidePanelButtonTooltipText(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_SIDE_PANEL_HIDE));
 
   auto container = std::make_unique<views::FlexLayoutView>();
@@ -581,10 +590,6 @@ void SidePanelCoordinator::OnTabStripModelChanged(
 
   // If an active entry is available, show it. If not, close the panel.
   if (GetContentView()) {
-    header_combobox_->SetSelectedIndex(combobox_model_->GetIndexForId(
-        GetLastActiveEntryId().value_or(kDefaultEntry)));
-    header_combobox_->SchedulePaint();
-
     if ((!new_contextual_registry ||
          !new_contextual_registry->active_entry().has_value()) &&
         !global_registry_->active_entry().has_value()) {
@@ -592,6 +597,9 @@ void SidePanelCoordinator::OnTabStripModelChanged(
     } else {
       Show(GetLastActiveEntryId().value_or(kDefaultEntry),
            SidePanelUtil::SidePanelOpenTrigger::kTabChanged);
+      header_combobox_->SetSelectedIndex(combobox_model_->GetIndexForId(
+          GetLastActiveEntryId().value_or(kDefaultEntry)));
+      header_combobox_->SchedulePaint();
     }
   } else if (new_contextual_registry &&
              new_contextual_registry->active_entry().has_value()) {

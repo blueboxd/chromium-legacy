@@ -46,7 +46,6 @@ class CommandLine;
 namespace blink {
 namespace mojom {
 class WindowFeatures;
-class WebUsbService;
 }  // namespace mojom
 namespace web_pref {
 struct WebPreferences;
@@ -100,6 +99,7 @@ enum class Channel;
 
 class ChromeHidDelegate;
 class ChromeSerialDelegate;
+class ChromeUsbDelegate;
 class ChromeWebAuthenticationDelegate;
 
 #if BUILDFLAG(ENABLE_VR)
@@ -128,6 +128,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   // Notification that the application locale has changed. This allows us to
   // update our I/O thread cache of this value.
   static void SetApplicationLocale(const std::string& locale);
+
+  // Whether DNS prefetching and preconnect are allowed.
+  static bool ShouldPreconnect(content::BrowserContext* browser_context);
 
   // content::ContentBrowserClient:
   std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
@@ -313,6 +316,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool IsSharedStorageAllowed(content::BrowserContext* browser_context,
                               const url::Origin& top_frame_origin,
                               const url::Origin& accessing_origin) override;
+  bool IsPrivateAggregationAllowed(
+      content::BrowserContext* browser_context,
+      const url::Origin& top_frame_origin,
+      const url::Origin& reporting_origin) override;
 #if BUILDFLAG(IS_CHROMEOS)
   void OnTrustAnchorUsed(content::BrowserContext* browser_context) override;
 #endif
@@ -595,9 +602,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::NavigationUIData* navigation_ui_data) override;
   bool ShouldForceDownloadResource(const GURL& url,
                                    const std::string& mime_type) override;
-  void CreateWebUsbService(
-      content::RenderFrameHost* render_frame_host,
-      mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) override;
   content::BluetoothDelegate* GetBluetoothDelegate() override;
 #if !BUILDFLAG(IS_ANDROID)
   void CreateDeviceInfoService(
@@ -609,6 +613,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       override;
   content::SerialDelegate* GetSerialDelegate() override;
   content::HidDelegate* GetHidDelegate() override;
+  content::UsbDelegate* GetUsbDelegate() override;
   content::WebAuthenticationDelegate* GetWebAuthenticationDelegate() override;
   std::unique_ptr<content::AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
@@ -914,6 +919,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<ChromeWebAuthenticationDelegate> web_authentication_delegate_;
 #endif
   std::unique_ptr<permissions::BluetoothDelegateImpl> bluetooth_delegate_;
+  std::unique_ptr<ChromeUsbDelegate> usb_delegate_;
 
 #if BUILDFLAG(ENABLE_VR)
   std::unique_ptr<vr::ChromeXrIntegrationClient> xr_integration_client_;

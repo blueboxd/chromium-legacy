@@ -26,6 +26,7 @@
 #include "components/omnibox/browser/actions/omnibox_pedal.h"
 #include "components/omnibox/browser/actions/omnibox_pedal_provider.h"
 #include "components/omnibox/browser/autocomplete_input.h"
+#include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/base_search_provider.h"
@@ -87,6 +88,11 @@ size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
   constexpr size_t kDefaultMaxZeroSuggestMatches = 15;
 #elif BUILDFLAG(IS_IOS)
   constexpr size_t kDefaultMaxAutocompleteMatches = 6;
+  // By default, iPad has the same max as iPhone.
+  // `kDefaultMaxAutocompleteMatches` defines a hard limit on the number of
+  // autocomplete suggestions on iPad, so if an experiment defines
+  // MaxZeroSuggestMatches to 15, it would be 15 on iPhone and 10 on iPad.
+  constexpr size_t kMaxAutocompleteMatchesOnIPad = 10;
   constexpr size_t kDefaultMaxZeroSuggestMatches = 6;
   // By default, iPad has the same max as iPhone. `kMaxZeroSuggestMatchesOnIPad`
   // defines a hard limit on the number of ZPS suggestions on iPad, so if an
@@ -132,6 +138,12 @@ size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
       OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam,
       kDefaultMaxAutocompleteMatches);
   DCHECK(kMaxAutocompletePositionValue > field_trial_value);
+#if BUILDFLAG(IS_IOS)
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+    field_trial_value =
+        std::min(field_trial_value, kMaxAutocompleteMatchesOnIPad);
+  }
+#endif
   return field_trial_value;
 }
 
@@ -1200,7 +1212,13 @@ void AutocompleteResult::GroupSuggestionsBySearchVsURL(iterator begin,
   if (begin == end)
     return;
 
-  std::stable_partition(begin, end, [](const AutocompleteMatch& match) {
-    return AutocompleteMatch::IsSearchType(match.type);
-  });
+  base::ranges::stable_sort(
+      begin, end, [](int a, int b) { return a < b; },
+      [](const auto& m) {
+        if (AutocompleteMatch::IsStarterPackType(m.type))
+          return 0;
+        if (AutocompleteMatch::IsSearchType(m.type))
+          return 1;
+        return 2;
+      });
 }

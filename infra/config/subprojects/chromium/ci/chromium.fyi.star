@@ -960,9 +960,6 @@ ci.builder(
     reclient_jobs = 250,
     os = os.MAC_DEFAULT,
     cores = None,
-    reclient_rewrapper_env = {
-        "RBE_exec_strategy": "racing",
-    },
 )
 
 ci.builder(
@@ -980,9 +977,6 @@ ci.builder(
     reclient_jobs = 250,
     os = os.MAC_DEFAULT,
     cores = None,
-    reclient_rewrapper_env = {
-        "RBE_exec_strategy": "racing",
-    },
 )
 
 ci.builder(
@@ -1052,9 +1046,6 @@ ci.builder(
     os = os.MAC_DEFAULT,
     cores = None,
     xcode = xcode.x14main,
-    reclient_rewrapper_env = {
-        "RBE_exec_strategy": "racing",
-    },
 )
 
 ci.builder(
@@ -1652,6 +1643,7 @@ fyi_coverage_builder(
     use_clang_coverage = True,
     coverage_test_types = ["overall", "unit"],
     goma_backend = None,
+    export_coverage_to_zoss = True,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
@@ -1688,6 +1680,7 @@ fyi_coverage_builder(
     use_clang_coverage = True,
     coverage_exclude_sources = "ios_test_files_and_test_utils",
     coverage_test_types = ["overall", "unit"],
+    export_coverage_to_zoss = True,
     xcode = xcode.x14main,
 )
 
@@ -1759,6 +1752,7 @@ fyi_coverage_builder(
     cores = 24,
     os = os.MAC_ANY,
     coverage_test_types = ["overall", "unit"],
+    export_coverage_to_zoss = True,
     use_clang_coverage = True,
 )
 
@@ -1775,6 +1769,7 @@ fyi_coverage_builder(
     goma_backend = None,
     reclient_jobs = reclient.jobs.DEFAULT,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    export_coverage_to_zoss = True,
 )
 
 fyi_ios_builder(

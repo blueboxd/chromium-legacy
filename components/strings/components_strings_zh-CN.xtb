@@ -421,6 +421,7 @@
 <translation id="2040894699575719559">无权获取位置信息</translation>
 <translation id="2042213636306070719">纸匣 7</translation>
 <translation id="204357726431741734">登录后即可使用您 Google 帐号中保存的密码</translation>
+<translation id="2048261947532620704">正在翻译网页</translation>
 <translation id="205212645995975601">烧烤</translation>
 <translation id="2053111141626950936">系统不会翻译<ph name="LANGUAGE" />网页。</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{如果此控件已开启且处于有效状态，Chrome 会确定您近期的浏览活动与哪个大型用户群组或“同类群组”最接近。广告主可为群组选择广告，您的浏览活动记录会私密地保留在您的设备上。系统会按每天 1 次的频率更新您所属的群组。}=1{如果此控件已开启且处于有效状态，Chrome 会确定您近期的浏览活动与哪个大型用户群组或“同类群组”最接近。广告主可为群组选择广告，您的浏览活动记录会私密地保留在您的设备上。系统会按每天 1 次的频率更新您所属的群组。}other{如果此控件已开启且处于有效状态，Chrome 会确定您近期的浏览活动与哪个大型用户群组或“同类群组”最接近。广告主可为群组选择广告，您的浏览活动记录会私密地保留在您的设备上。系统会按每 {NUM_DAYS} 天 1 次的频率更新您所属的群组。}}</translation>
@@ -909,6 +910,7 @@
 <translation id="3427342743765426898">恢复修改(&amp;R)</translation>
 <translation id="342781501876943858">如果您在其他网站上重复使用了您的密码，Chromium 建议您重置该密码。</translation>
 <translation id="3428151540071562330">一个或多个 DnsOverHttpsTemplates 服务器模板 URI 无效，因此不会被使用。</translation>
+<translation id="3431216045099978607">按 |<ph name="ACCELERATOR" />| 键即可退出全屏模式以查看下载内容。</translation>
 <translation id="3431636764301398940">将此卡的信息保存到该设备</translation>
 <translation id="3432601291244612633">关闭页面</translation>
 <translation id="3435738964857648380">安全</translation>
@@ -1100,7 +1102,6 @@
 <translation id="3969052498612555048">找不到动态密码？<ph name="BEGIN_LINK" />获取新的动态密码<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">正在计算...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> 已被屏蔽</translation>
-<translation id="3978338123949022456">搜索模式，输入查询内容并按 Enter 键即可用 <ph name="KEYWORD_SUFFIX" /> 搜索</translation>
 <translation id="398470910934384994">养鸟/观鸟</translation>
 <translation id="3985750352229496475">管理地址…</translation>
 <translation id="3986705137476756801">暂时关闭“实时字幕”功能</translation>
@@ -1648,6 +1649,7 @@
 <translation id="540969355065856584">此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书目前无效。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="5412040515238827314">格式无效：本应为模式列表。</translation>
 <translation id="5412236728747081950">此网站会从 Chrome 中了解您的兴趣，从而向您展示与您的需求更相符的广告</translation>
+<translation id="5412245327974352290"><ph name="TRADITIONAL_TEXT" /> - <ph name="ADDITIONAL_TEXT" /></translation>
 <translation id="541416427766103491">堆叠出纸器 4</translation>
 <translation id="5421136146218899937">清除浏览数据...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> 想向您发送通知</translation>
@@ -1709,6 +1711,7 @@
 <translation id="5580958916614886209">请检查您的信用卡到期月份，然后重试</translation>
 <translation id="558420943003240152">管理密码和密钥…</translation>
 <translation id="5586446728396275693">没有已保存的地址</translation>
+<translation id="5586831831248371458">搜索<ph name="KEYWORD_SUFFIX" /></translation>
 <translation id="5587987780934666589">平台用户</translation>
 <translation id="5593349413089863479">连接不够安全</translation>
 <translation id="5595485650161345191">修改地址</translation>
@@ -2051,6 +2054,7 @@
 <translation id="6591833882275308647">您的 <ph name="DEVICE_TYPE" /> 不受管理</translation>
 <translation id="6592952801936330159">“管理网站设置”按钮，按 Enter 键即可在 Chrome 设置中管理各网站的权限及存储的数据</translation>
 <translation id="6596325263575161958">加密选项</translation>
+<translation id="6599642189720630047">跟踪的商品</translation>
 <translation id="6609880536175561541">Prc7 (Envelope)</translation>
 <translation id="6611723696964473273">经济新闻</translation>
 <translation id="6612010098632894193">在线视频</translation>
@@ -2578,6 +2582,7 @@
 <translation id="8004582292198964060">浏览器</translation>
 <translation id="8009225694047762179">管理密码</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{这张卡及其帐单邮寄地址将被保存。登录 <ph name="USER_EMAIL" /> 后即可使用这张卡。}other{这些卡及其帐单邮寄地址将被保存。登录 <ph name="USER_EMAIL" /> 后即可使用这些卡。}}</translation>
+<translation id="8019861005170389898"><ph name="TRADITIONAL_TEXT" />（<ph name="ADDITIONAL_TEXT" />）</translation>
 <translation id="8025119109950072390">此网站上的攻击者可能会诱骗您做出一些诸如安装软件或泄露个人信息（例如：密码、电话号码或信用卡信息）之类的危险事情。</translation>
 <translation id="8026334261755873520">清除浏览数据</translation>
 <translation id="8027077570865220386">纸匣 15</translation>

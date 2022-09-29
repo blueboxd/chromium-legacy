@@ -54,9 +54,11 @@ class DownloadToolbarButtonView : public ToolbarButton,
   void ShowDetails() override;
   void HideDetails() override;
   bool IsShowingDetails() override;
+  bool IsFullscreenWithParentViewHidden() override;
 
   // ToolbarButton:
   void UpdateIcon() override;
+  void OnThemeChanged() override;
 
   // DownloadBubbleNavigationHandler:
   void OpenPrimaryDialog() override;

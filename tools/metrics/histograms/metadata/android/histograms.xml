@@ -412,6 +412,56 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Android.AutofillAssistant.GuidedBrowsing.Camera.PermissionEvent"
+    enum="AutofillAssistantGuidedBrowsingCameraPermissionEvent"
+    expires_after="2023-08-30">
+  <owner>solankivinit@google.com</owner>
+  <owner>jainshashank@google.com</owner>
+  <owner>autofill_assistant@google.com</owner>
+  <owner>guided-browsing-eng@google.com</owner>
+  <summary>
+    Reports the various events carried out when checking permission for the
+    camera. These events include the scenarios like the browser can prompt the
+    permission, cannot prompt the permission, already had the permission, etc.
+    This is recorded when the browser asks the users to scan QR code via camera
+    preview.
+  </summary>
+</histogram>
+
+<histogram
+    name="Android.AutofillAssistant.GuidedBrowsing.ParseSingleTagXml.ActionEvent"
+    enum="AutofillAssistantGuidedBrowsingParseSingleTagXmlActionEvent"
+    expires_after="2023-08-30">
+  <owner>solankivinit@google.com</owner>
+  <owner>jainshashank@google.com</owner>
+  <owner>autofill_assistant@google.com</owner>
+  <owner>guided-browsing-eng@google.com</owner>
+  <summary>
+    Reports the various events carried out when ParseSingleTagXml action is
+    executed. This is recorded when the action parses the attributes or keys of
+    a single tag XML. These events include the scenarios like parsing was
+    successful, a certain attribute was not found in the XML, etc.
+  </summary>
+</histogram>
+
+<histogram
+    name="Android.AutofillAssistant.GuidedBrowsing.ReadImages.PermissionEvent"
+    enum="AutofillAssistantGuidedBrowsingReadImagesPermissionEvent"
+    expires_after="2023-08-30">
+  <owner>solankivinit@google.com</owner>
+  <owner>jainshashank@google.com</owner>
+  <owner>autofill_assistant@google.com</owner>
+  <owner>guided-browsing-eng@google.com</owner>
+  <summary>
+    Reports the various events carried out when checking permission to read
+    images. These events include the scenarios like the browser can prompt the
+    permission, cannot prompt the permission, already had the permission, etc.
+    This is recorded when the browser asks the users to pick an image from the
+    gallery for QR Code scanning.
+  </summary>
+</histogram>
+
 <histogram name="Android.AutofillAssistant.JsFlowStartedEvent"
     enum="AutofillAssistantJsFlowStartedEvent" expires_after="2023-06-05">
   <owner>fga@google.com</owner>
@@ -1072,6 +1122,18 @@ chromium-metrics-reviews@google.com.
     Records the largest display dimension in dp during deferred startup. The
     display size is not affected by Android N multi-window mode. Clamped at
     200dp to 2000dp. 20dp granularity.
+  </summary>
+</histogram>
+
+<histogram name="Android.DeviceSize.ScreenSizeInTensOfInches"
+    units="10x inches" expires_after="2023-02-19">
+  <owner>twellington@chromium.org</owner>
+  <owner>aishwaryarj@google.com</owner>
+  <owner>clank-app-team@google.com</owner>
+  <summary>
+    Records the primary display (screen) size in tens of inches with 0.2 inches
+    (2 units) granularity, during deferred startup. The display size is not
+    affected by Android N multi-window mode.
   </summary>
 </histogram>
 
@@ -1788,6 +1850,39 @@ chromium-metrics-reviews@google.com.
     Incognito tabs&quot; notification may not delete any files which were opened
     in the Incognito session. True value denotes file was not deleted and false
     otherwise.
+  </summary>
+</histogram>
+
+<histogram name="Android.IncognitoReauth.PrefToggledFromSettingPage"
+    enum="IncognitoReauthToggleValueType" expires_after="M110">
+  <owner>roagarwal@chromium.org</owner>
+  <owner>chrome-incognito@google.com</owner>
+  <summary>
+    Records the count when the Incognito lock setting was either turned
+    &quot;on&quot; or &quot;off&quot; from the Chrome Settings &gt; Privacy and
+    Security &gt; Lock Incognito tabs when you leave Chrome, option. This
+    setting can be in disabled state if the Android screen lock is not set-up,
+    in which case we don't record this metric. This is recorded only when the
+    toggle is not in disabled state and if the re-authentication checks succeeds
+    which follows after the user changes the toggle. This covers only the
+    interactions done from the above mentioned Incognito lock Setting page. See
+    also the metric &quot;Android.IncognitoReauth.PromoActionType&quot; which
+    records the opt-in made exclusively from promo card.
+  </summary>
+</histogram>
+
+<histogram name="Android.IncognitoReauth.PromoActionType"
+    enum="IncognitoReauthPromoActionType" expires_after="M110">
+  <owner>roagarwal@chromium.org</owner>
+  <owner>chrome-incognito@google.com</owner>
+  <summary>
+    Records the action type the user makes on the Incognito re-auth promo card
+    which is shown inside the Incognito tab grid view. There's only two possible
+    interactions possible which is either to turn on the Incognito lock or
+    dismiss the promo. A &quot;Promo accepted&quot; entry is emitted when user
+    clicks on &quot;Turn on Incognito lock&quot; (gated on successful
+    re-authentication) and a &quot;No thanks&quot; value is emitted when the
+    user clicks on &quot;No thanks&quot;.
   </summary>
 </histogram>
 
@@ -4605,6 +4700,19 @@ chromium-metrics-reviews@google.com.
     Records whether WebView is being run in a single process or multi-process.
     This is recorded each time logs are uploaded. This is used as a dashboard
     filter.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.SitesVisitedWeekly" units="sites"
+    expires_after="2023-02-15">
+  <owner>bewise@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Measures the count of distinct sites visited per week in WebView. This is
+    recorded at the time of a navigation when stored hashed site navigations are
+    older than a week. The purpose of this metric is to slice it by package name
+    to help characterize the usage of that package. This histogram uses eTLD+1
+    as the definition of a site.
   </summary>
 </histogram>
 

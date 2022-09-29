@@ -77,6 +77,15 @@ extern const base::Feature kUpdateHistoryEntryPointsInIncognito;
 // Feature flag to enable using Lens to search for images.
 extern const base::Feature kUseLensToSearchForImage;
 
+// Feature flag to enable the Lens entrypoint in the home screen widget.
+extern const base::Feature kEnableLensInHomeScreenWidget;
+
+// Feature flag to enable the Lens entrypoint in the keyboard.
+extern const base::Feature kEnableLensInKeyboard;
+
+// Feature flag to enable the Lens entrypoint in the new tab page.
+extern const base::Feature kEnableLensInNTP;
+
 // Feature flag to enable duplicate NTP cleanup.
 extern const base::Feature kRemoveExcessNTPs;
 
@@ -105,5 +114,9 @@ extern const base::Feature kMapsExperienceKit;
 
 // Feature flag to enable Mini Map in experience kit.
 extern const base::Feature kEnableMiniMap;
+
+// Feature flag to enable sending variation data with search by image requests.
+// This is a temporary kill-switch flag for M106.
+extern const base::Feature kSendVariationDataWithSearchByImage;
 
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

@@ -11,7 +11,7 @@ import android.provider.Settings;
 /**
  * Helper class for Direct writing feature support and settings.
  */
-class DirectWritingSettingsHelper {
+public class DirectWritingSettingsHelper {
     private DirectWritingSettingsHelper() {}
 
     // System setting for direct writing service. This setting is currently found under
@@ -24,7 +24,7 @@ class DirectWritingSettingsHelper {
     private static final String HONEYBOARD_SERVICE_PKG_NAME =
             DirectWritingConstants.SERVICE_PKG_NAME + "/.service.HoneyBoardService";
 
-    static boolean isEnabled(Context context) {
+    public static boolean isEnabled(Context context) {
         // Samsung keyboard supports handwriting in Chrome and Webview from Android S onwards.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return false;
         return isHoneyboardDefault(context) && isFeatureEnabled(context);
@@ -38,18 +38,28 @@ class DirectWritingSettingsHelper {
      */
     private static boolean isFeatureEnabled(Context context) {
         if (context != null) {
-            return Settings.System.getInt(context.getContentResolver(), URI_DIRECT_WRITING,
-                           /* default */ DIRECT_WRITING_DISABLED)
-                    == DIRECT_WRITING_ENABLED;
+            try {
+                return Settings.System.getInt(context.getContentResolver(), URI_DIRECT_WRITING,
+                               /* default */ DIRECT_WRITING_DISABLED)
+                        == DIRECT_WRITING_ENABLED;
+            } catch (SecurityException e) {
+                // On some devices, URI_DIRECT_WRITING is not readable and trying to do so will
+                // throw a security exception. https://crbug.com/1356155.
+                return false;
+            }
         }
         return false;
     }
 
     private static boolean isHoneyboardDefault(Context context) {
         if (context != null) {
-            String defaultIme = Settings.Secure.getString(
-                    context.getContentResolver(), Settings.Secure.DEFAULT_INPUT_METHOD);
-            return HONEYBOARD_SERVICE_PKG_NAME.equals(defaultIme);
+            try {
+                String defaultIme = Settings.Secure.getString(
+                        context.getContentResolver(), Settings.Secure.DEFAULT_INPUT_METHOD);
+                return HONEYBOARD_SERVICE_PKG_NAME.equals(defaultIme);
+            } catch (SecurityException e) {
+                return false;
+            }
         }
         return false;
     }

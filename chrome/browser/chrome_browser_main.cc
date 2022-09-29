@@ -62,6 +62,7 @@
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
+#include "chrome/browser/chrome_for_testing/buildflags.h"
 #include "chrome/browser/component_updater/first_party_sets_component_installer.h"
 #include "chrome/browser/component_updater/registration.h"
 #include "chrome/browser/defaults.h"
@@ -668,45 +669,41 @@ void ChromeBrowserMainParts::SetupOriginTrialsCommandLine(
   }
   if (!command_line->HasSwitch(
           embedder_support::kOriginTrialDisabledFeatures)) {
-    const base::Value* override_disabled_feature_list = local_state->GetList(
-        embedder_support::prefs::kOriginTrialDisabledFeatures);
-    if (override_disabled_feature_list) {
-      std::vector<base::StringPiece> disabled_features;
-      for (const auto& item :
-           override_disabled_feature_list->GetListDeprecated()) {
-        if (item.is_string())
-          disabled_features.push_back(item.GetString());
-      }
-      if (!disabled_features.empty()) {
-        const std::string override_disabled_features =
-            base::JoinString(disabled_features, "|");
-        command_line->AppendSwitchASCII(
-            embedder_support::kOriginTrialDisabledFeatures,
-            override_disabled_features);
-        appended_length += override_disabled_features.length();
-      }
+    const base::Value::List& override_disabled_feature_list =
+        local_state->GetValueList(
+            embedder_support::prefs::kOriginTrialDisabledFeatures);
+    std::vector<base::StringPiece> disabled_features;
+    for (const auto& item : override_disabled_feature_list) {
+      if (item.is_string())
+        disabled_features.push_back(item.GetString());
+    }
+    if (!disabled_features.empty()) {
+      const std::string override_disabled_features =
+          base::JoinString(disabled_features, "|");
+      command_line->AppendSwitchASCII(
+          embedder_support::kOriginTrialDisabledFeatures,
+          override_disabled_features);
+      appended_length += override_disabled_features.length();
     }
   }
   if (!command_line->HasSwitch(embedder_support::kOriginTrialDisabledTokens)) {
-    const base::Value* disabled_token_list = local_state->GetList(
+    const base::Value::List& disabled_token_list = local_state->GetValueList(
         embedder_support::prefs::kOriginTrialDisabledTokens);
-    if (disabled_token_list) {
-      std::vector<base::StringPiece> disabled_tokens;
-      for (const auto& item : disabled_token_list->GetListDeprecated()) {
-        if (item.is_string())
-          disabled_tokens.push_back(item.GetString());
-      }
-      if (!disabled_tokens.empty()) {
-        const std::string disabled_token_switch =
-            base::JoinString(disabled_tokens, "|");
-        // Do not append the disabled token list if will exceed a reasonable
-        // length. See above.
-        if (appended_length + disabled_token_switch.length() <=
-            kMaxAppendLength) {
-          command_line->AppendSwitchASCII(
-              embedder_support::kOriginTrialDisabledTokens,
-              disabled_token_switch);
-        }
+    std::vector<base::StringPiece> disabled_tokens;
+    for (const auto& item : disabled_token_list) {
+      if (item.is_string())
+        disabled_tokens.push_back(item.GetString());
+    }
+    if (!disabled_tokens.empty()) {
+      const std::string disabled_token_switch =
+          base::JoinString(disabled_tokens, "|");
+      // Do not append the disabled token list if will exceed a reasonable
+      // length. See above.
+      if (appended_length + disabled_token_switch.length() <=
+          kMaxAppendLength) {
+        command_line->AppendSwitchASCII(
+            embedder_support::kOriginTrialDisabledTokens,
+            disabled_token_switch);
       }
     }
   }
@@ -1614,10 +1611,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // Needs to be done before PostProfileInit, since the SODA Installer setup is
   // called inside PostProfileInit and depends on it.
+#if !BUILDFLAG(GOOGLE_CHROME_FOR_TESTING_BRANDING)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableComponentUpdate)) {
     component_updater::RegisterComponentsForUpdate();
   }
+#endif  // !BUILDFLAG(GOOGLE_CHROME_FOR_TESTING_BRANDING)
 
   // TODO(stevenjb): Move WIN and MACOSX specific code to appropriate Parts.
   // (requires supporting early exit).

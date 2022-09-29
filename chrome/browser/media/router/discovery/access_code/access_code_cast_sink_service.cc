@@ -49,11 +49,6 @@ using SinkSource = CastDeviceCountMetrics::SinkSource;
 using ChannelOpenedCallback = base::OnceCallback<void(bool)>;
 constexpr char kLoggerComponent[] = "AccessCodeCastSinkService";
 
-// This value is used in whenever expiration timers are created. It is a buffer
-// used to ensure all cast protocol steps are finished before instant expiration
-// occurs.
-const base::TimeDelta kExpirationDelay = base::Milliseconds(450);
-
 }  // namespace
 
 bool IsAccessCodeCastEnabled() {
@@ -61,7 +56,7 @@ bool IsAccessCodeCastEnabled() {
   if (!profile)
     return false;
 
-  return GetAccessCodeCastEnabledPref(profile->GetPrefs());
+  return GetAccessCodeCastEnabledPref(profile);
 }
 
 // Callback for adding a remembered sink to the cast list. The second parameter
@@ -451,6 +446,7 @@ void AccessCodeCastSinkService::CheckMediaSinkForExpiration(
         "expiration timer has already fired so there is no need to re-trigger "
         "it.",
         sink_id);
+    ExpireSink(sink_id);
     return;
   }
 
@@ -577,14 +573,13 @@ base::TimeDelta AccessCodeCastSinkService::CalculateDurationTillExpiration(
   }
 
   base::Time time_of_expiration = fetched_device_added_time.value() +
-                                  GetAccessCodeDeviceDurationPref(prefs_);
+                                  GetAccessCodeDeviceDurationPref(profile_);
   base::TimeDelta time_till_expiration = time_of_expiration - base::Time::Now();
 
   // If for some reason this value is negative, simply return instant
   // expiration.
   if (time_till_expiration.is_negative())
     return base::Seconds(0);
-
   return time_till_expiration;
 }
 
@@ -665,14 +660,18 @@ void AccessCodeCastSinkService::OnExpiration(const MediaSinkInternal& sink) {
             sink.id());
     return;
   }
-  RemoveSinkIdFromAllEntries(sink.id());
+
+  ExpireSink(sink.id());
+}
+
+void AccessCodeCastSinkService::ExpireSink(const MediaSink::Id& sink_id) {
+  RemoveSinkIdFromAllEntries(sink_id);
   // Must find the sink from media router for removal since it has more total
   // information.
   base::PostTaskAndReplyWithResult(
       cast_media_sink_service_impl_->task_runner().get(), FROM_HERE,
       base::BindOnce(&CastMediaSinkServiceImpl::GetSinkById,
-                     base::Unretained(cast_media_sink_service_impl_),
-                     sink.id()),
+                     base::Unretained(cast_media_sink_service_impl_), sink_id),
       base::BindOnce(
           &AccessCodeCastSinkService::RemoveAndDisconnectMediaSinkFromRouter,
           weak_ptr_factory_.GetWeakPtr()));
@@ -689,7 +688,6 @@ void AccessCodeCastSinkService::RemoveAndDisconnectMediaSinkFromRouter(
   if (GetActiveRoute(sink->id()).has_value() &&
       GetActiveRoute(sink->id()).value().is_local())
     return;
-
   LogInfo(
       "Attempting to disconnect and remove the cast sink from "
       "the media router.",
@@ -807,7 +805,7 @@ void AccessCodeCastSinkService::OnDurationPrefChange() {
 }
 
 void AccessCodeCastSinkService::OnEnabledPrefChange() {
-  if (!GetAccessCodeCastEnabledPref(prefs_)) {
+  if (!GetAccessCodeCastEnabledPref(profile_)) {
     RemoveAndDisconnectExistingSinksOnNetwork();
     ResetExpirationTimers();
     pref_updater_->ClearDevicesDict();

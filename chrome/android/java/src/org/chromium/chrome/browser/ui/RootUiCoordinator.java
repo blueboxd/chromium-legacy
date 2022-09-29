@@ -818,7 +818,7 @@ public class RootUiCoordinator
     /**
      * @return The primary display size of the device, in inches.
      */
-    protected double getPrimaryDisplaySizeInInches() {
+    public double getPrimaryDisplaySizeInInches() {
         DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(mActivity);
         double xInches = display.getDisplayWidth() / display.getXdpi();
         double yInches = display.getDisplayHeight() / display.getYdpi();
@@ -1150,8 +1150,9 @@ public class RootUiCoordinator
                     AdaptiveToolbarButtonVariant.VOICE, voiceToolbarButtonController);
             adaptiveToolbarButtonController.addButtonVariant(
                     AdaptiveToolbarButtonVariant.PRICE_TRACKING, priceTrackingButtonController);
-            mContextualPageActionController = new ContextualPageActionController(
-                    mProfileSupplier, mActivityTabProvider, adaptiveToolbarButtonController);
+            mContextualPageActionController = new ContextualPageActionController(mProfileSupplier,
+                    mActivityTabProvider, mActivityLifecycleDispatcher, mActivity.getResources(),
+                    adaptiveToolbarButtonController);
             mButtonDataProviders =
                     Arrays.asList(mIdentityDiscController, adaptiveToolbarButtonController);
 

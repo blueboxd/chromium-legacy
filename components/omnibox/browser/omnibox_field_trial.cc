@@ -359,11 +359,11 @@ bool OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() {
 }
 
 size_t OmniboxFieldTrial::GetMaxURLMatches() {
-#if !BUILDFLAG(IS_ANDROID)
-  constexpr size_t kDefaultMaxURLMatches = 7;
-#else   // BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   constexpr size_t kDefaultMaxURLMatches = 5;
-#endif  // BUILDFLAG(IS_ANDROID)
+#else
+  constexpr size_t kDefaultMaxURLMatches = 7;
+#endif
   return base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kOmniboxMaxURLMatches,
       OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, kDefaultMaxURLMatches);
@@ -953,7 +953,7 @@ const base::FeatureParam<bool>
 const base::FeatureParam<int> kSiteSearchStarterPackRelevanceScore(
     &omnibox::kSiteSearchStarterPack,
     "SiteSearchStarterPackRelevanceScore",
-    1200);
+    1350);
 
 }  // namespace OmniboxFieldTrial
 

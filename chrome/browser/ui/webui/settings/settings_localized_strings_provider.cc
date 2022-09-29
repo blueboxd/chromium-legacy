@@ -1105,6 +1105,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_PASSWORDS_IMPORT_STORE_PICKER_ACCESSIBLE_NAME},
     {"importPasswordsAlreadyActive",
      IDS_SETTINGS_PASSWORDS_IMPORT_ALREADY_ACTIVE},
+    {"importPasswordsLimitExceeded",
+     IDS_SETTINGS_PASSWORDS_IMPORT_ERROR_LIMIT_EXCEEDED},
     {"exportMenuItem", IDS_SETTINGS_PASSWORDS_EXPORT_MENU_ITEM},
     {"exportPasswordsTitle", IDS_SETTINGS_PASSWORDS_EXPORT_TITLE},
     {"exportPasswordsDescription", IDS_SETTINGS_PASSWORDS_EXPORT_DESCRIPTION},
@@ -1620,9 +1622,10 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       g_browser_process->local_state()->FindPreference(
           prefs::kChromeRootStoreEnabled);
   if (chrome_root_store_enabled_pref &&
-      chrome_root_store_enabled_pref->IsManaged())
-    chrome_root_store_used &=
+      chrome_root_store_enabled_pref->IsManaged()) {
+    chrome_root_store_used =
         chrome_root_store_enabled_pref->GetValue()->GetBool();
+  }
 #endif  // BUILDFLAG(CHROME_ROOT_STORE_POLICY_SUPPORTED)
 
   html_source->AddBoolean("showChromeRootStoreCertificates",

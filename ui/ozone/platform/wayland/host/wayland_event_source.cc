@@ -56,7 +56,11 @@ EventTarget* GetRootTarget(EventTarget* target) {
 }
 
 gfx::Point GetOriginInScreen(WaylandWindow* target) {
-  gfx::Point origin = target->GetBoundsInDIP().origin();
+  // The origin for located events and positions of popup windows is the window
+  // geometry.
+  // See https://crbug.com/1292486
+  gfx::Point origin = target->GetBoundsInDIP().origin() -
+                      target->GetWindowGeometryOffsetInDIP();
   auto* parent = static_cast<WaylandWindow*>(target->GetParentTarget());
   while (parent) {
     origin += parent->GetBoundsInDIP().origin().OffsetFromOrigin();
@@ -598,7 +602,13 @@ void WaylandEventSource::OnPinchEvent(EventType event_type,
   GestureEvent event(location.x(), location.y(), 0 /* flags */, timestamp,
                      details);
   event.set_source_device_id(device_id);
-  DispatchEvent(&event);
+
+  auto* target = window_manager_->GetCurrentPointerFocusedWindow();
+  // A window may be deleted when the event arrived from the server.
+  if (!target)
+    return;
+
+  SetTargetAndDispatchEvent(&event, target);
 }
 
 void WaylandEventSource::SetRelativePointerMotionEnabled(bool enabled) {

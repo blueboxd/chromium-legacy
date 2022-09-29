@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -34,10 +33,6 @@ namespace {
 
 // TODO(tbarzic): Add payment portal method values to shill/dbus-constants.
 constexpr char kPaymentPortalMethodPost[] = "POST";
-
-// TODO(b/169939319): Use shill constant once it lands.
-const char kPortalDetectionFailedStatusCodeProperty[] =
-    "PortalDetectionFailedStatusCode";
 
 // |dict| may be an empty value, in which case return an empty string.
 std::string GetStringFromDictionary(const base::Value& dict, const char* key) {
@@ -647,7 +642,7 @@ bool NetworkState::UpdateName(const base::Value& properties) {
 
 void NetworkState::UpdateCaptivePortalState(const base::Value& properties) {
   int status_code =
-      properties.FindIntKey(kPortalDetectionFailedStatusCodeProperty)
+      properties.FindIntKey(shill::kPortalDetectionFailedStatusCodeProperty)
           .value_or(0);
   if (connection_state_ == shill::kStateNoConnectivity) {
     shill_portal_state_ = PortalState::kNoInternet;
@@ -667,13 +662,13 @@ void NetworkState::UpdateCaptivePortalState(const base::Value& properties) {
     shill_portal_state_ = PortalState::kUnknown;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("CaptivePortal.NetworkStateResult",
-                            shill_portal_state_);
+  base::UmaHistogramEnumeration("Network.CaptivePortalResult",
+                                shill_portal_state_);
   if (shill_portal_state_ != PortalState::kOnline) {
     NET_LOG(EVENT) << "Shill captive portal state for: " << NetworkId(this)
                    << " = " << shill_portal_state_
                    << " ,status_code=" << status_code;
-    base::UmaHistogramSparse("CaptivePortal.NetworkStateStatusCode",
+    base::UmaHistogramSparse("Network.CaptivePortalStatusCode",
                              std::abs(status_code));
   }
 }

@@ -13,6 +13,8 @@
 #include <vector>
 
 #include "base/containers/span.h"
+#include "base/files/file.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -20,6 +22,7 @@
 #include "build/build_config.h"
 #include "mojo/core/ipcz_driver/driver.h"
 #include "mojo/core/ipcz_driver/transmissible_platform_handle.h"
+#include "mojo/core/ipcz_driver/wrapped_platform_handle.h"
 #include "mojo/core/test/mojo_test_base.h"
 #include "mojo/public/c/system/platform_handle.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -79,6 +82,53 @@ class MojoIpczTransportTest : public test::MojoTestBase {
         UnwrapPlatformHandle(ScopedHandle(Handle(transport_for_client)));
     return base::MakeRefCounted<Transport>(
         Transport::kToBroker, PlatformChannelEndpoint(std::move(handle)));
+  }
+
+  static TestMessage SerializeObjectFor(Transport& transmitter,
+                                        scoped_refptr<ObjectBase> object) {
+    size_t num_bytes = 0;
+    size_t num_handles = 0;
+    EXPECT_EQ(IPCZ_RESULT_RESOURCE_EXHAUSTED,
+              transmitter.SerializeObject(*object, nullptr, &num_bytes, nullptr,
+                                          &num_handles));
+
+    TestMessage message;
+    message.bytes.resize(num_bytes);
+    message.handles.resize(num_handles);
+    EXPECT_EQ(IPCZ_RESULT_OK, transmitter.SerializeObject(
+                                  *object, message.bytes.data(), &num_bytes,
+                                  message.handles.data(), &num_handles));
+    return message;
+  }
+
+  template <typename T>
+  static scoped_refptr<T> DeserializeObjectFrom(Transport& receiver,
+                                                const TestMessage& message) {
+    scoped_refptr<ObjectBase> object;
+    const IpczResult result =
+        receiver.DeserializeObject(base::make_span(message.bytes),
+                                   base::make_span(message.handles), object);
+    CHECK_EQ(result, IPCZ_RESULT_OK);
+    CHECK_EQ(object->type(), T::object_type());
+    return base::WrapRefCounted(static_cast<T*>(object.get()));
+  }
+
+  static TestMessage SerializeFileFor(Transport& transmitter, base::File file) {
+    auto wrapper = base::MakeRefCounted<WrappedPlatformHandle>(
+        PlatformHandle(base::ScopedPlatformFile(file.TakePlatformFile())));
+    return SerializeObjectFor(transmitter, std::move(wrapper));
+  }
+
+  static base::File DeserializeFileFrom(Transport& receiver,
+                                        const TestMessage& message) {
+    scoped_refptr<WrappedPlatformHandle> wrapper =
+        DeserializeObjectFrom<WrappedPlatformHandle>(receiver, message);
+    CHECK(wrapper);
+#if BUILDFLAG(IS_WIN)
+    return base::File(wrapper->TakeHandle().TakeHandle());
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
+    return base::File(wrapper->TakeHandle().TakeFD());
+#endif
   }
 };
 
@@ -266,6 +316,79 @@ TEST_F(MojoIpczTransportTest, TransmitHandle) {
   });
 }
 #endif  // !BUILDFLAG(IS_WIN)
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(TransmitSerializedTransportClient,
+                                  MojoIpczTransportTest,
+                                  h) {
+  scoped_refptr<Transport> transport = ReceiveTransport(h);
+  scoped_refptr<Transport> new_transport;
+  {
+    TransportListener listener(*transport);
+    new_transport = DeserializeObjectFrom<Transport>(
+        *transport, listener.WaitForNextMessage());
+  }
+  TransportListener listener(*new_transport);
+  TestMessage(kMessage3).Transmit(*new_transport);
+  TestMessage(kMessage4).Transmit(*new_transport);
+  EXPECT_EQ(kMessage1, listener.WaitForNextMessage().as_string());
+  EXPECT_EQ(kMessage2, listener.WaitForNextMessage().as_string());
+}
+
+TEST_F(MojoIpczTransportTest, TransmitSerializedTransport) {
+  RunTestClientWithController(
+      "TransmitSerializedTransportClient", [&](ClientController& c) {
+        scoped_refptr<Transport> transport =
+            CreateAndSendTransport(c.pipe(), c.process());
+
+        auto [our_new_transport, their_new_transport] = Transport::CreatePair(
+            Transport::kToNonBroker, Transport::kToBroker);
+        {
+          TransportListener listener(*transport);
+          SerializeObjectFor(*transport, std::move(their_new_transport))
+              .Transmit(*transport);
+          listener.WaitForDisconnect();
+        }
+
+        TransportListener listener(*our_new_transport);
+        TestMessage(kMessage1).Transmit(*our_new_transport);
+        TestMessage(kMessage2).Transmit(*our_new_transport);
+        EXPECT_EQ(kMessage3, listener.WaitForNextMessage().as_string());
+        EXPECT_EQ(kMessage4, listener.WaitForNextMessage().as_string());
+        listener.WaitForDisconnect();
+      });
+}
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(TransmitFileClient,
+                                  MojoIpczTransportTest,
+                                  h) {
+  scoped_refptr<Transport> transport = ReceiveTransport(h);
+
+  TransportListener listener(*transport);
+  base::File file =
+      DeserializeFileFrom(*transport, listener.WaitForNextMessage());
+
+  std::vector<char> data(file.GetLength());
+  file.Read(0, data.data(), data.size());
+  EXPECT_EQ(kMessage1, std::string(data.begin(), data.end()));
+}
+
+TEST_F(MojoIpczTransportTest, TransmitFile) {
+  RunTestClientWithController("TransmitFileClient", [&](ClientController& c) {
+    scoped_refptr<Transport> transport =
+        CreateAndSendTransport(c.pipe(), c.process());
+
+    base::ScopedTempDir temp_dir;
+    CHECK(temp_dir.CreateUniqueTempDir());
+    base::File new_file(temp_dir.GetPath().AppendASCII("testfile"),
+                        base::File::FLAG_CREATE | base::File::FLAG_READ |
+                            base::File::FLAG_WRITE);
+    new_file.Write(0, kMessage1.data(), kMessage1.size());
+
+    TransportListener listener(*transport);
+    SerializeFileFor(*transport, std::move(new_file)).Transmit(*transport);
+    listener.WaitForDisconnect();
+  });
+}
 
 }  // namespace
 }  // namespace mojo::core::ipcz_driver

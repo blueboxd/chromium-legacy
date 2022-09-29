@@ -565,6 +565,7 @@ const char kAppearanceSubPage[] = "appearance";
 const char kAutofillSubPage[] = "autofill";
 const char kClearBrowserDataSubPage[] = "clearBrowserData";
 const char kContentSettingsSubPage[] = "content";
+const char kAllSitesSettingsSubpage[] = "content/all";
 const char kCookieSettingsSubPage[] = "cookies";
 const char kDownloadsSubPage[] = "downloads";
 const char kHandlerSettingsSubPage[] = "handlers";
@@ -681,6 +682,7 @@ const char* const kChromeHostURLs[] = {
 #if !BUILDFLAG(IS_ANDROID)
     kChromeUIWebAppInternalsHost,
 #endif
+    content::kChromeUIPrivateAggregationInternalsHost,
     content::kChromeUIAttributionInternalsHost,
     content::kChromeUIBlobInternalsHost,
     content::kChromeUIDinoHost,

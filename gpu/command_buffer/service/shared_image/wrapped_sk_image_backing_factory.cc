@@ -311,7 +311,7 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
         stride = info.minRowBytes();
       SkPixmap pixmap(info, pixels.data(), stride);
       backend_texture_ = context_state_->gr_context()->createBackendTexture(
-          pixmap, GrRenderable::kNo, GrProtected::kNo);
+          pixmap, GrRenderable::kYes, GrProtected::kNo);
     }
 
     if (!backend_texture_.isValid())
@@ -423,7 +423,9 @@ class WrappedSkImage::SkiaImageRepresentationImpl
 WrappedSkImageBackingFactory::WrappedSkImageBackingFactory(
     scoped_refptr<SharedContextState> context_state)
     : context_state_(std::move(context_state)),
-      is_drdc_enabled_(features::IsDrDcEnabled()) {}
+      is_drdc_enabled_(
+          features::IsDrDcEnabled() &&
+          !context_state_->feature_info()->workarounds().disable_drdc) {}
 
 WrappedSkImageBackingFactory::~WrappedSkImageBackingFactory() = default;
 

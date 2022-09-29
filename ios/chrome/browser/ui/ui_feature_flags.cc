@@ -27,7 +27,7 @@ const base::Feature kModernTabStrip{"ModernTabStrip",
 const base::Feature kIncognitoNtpRevamp{"IncognitoNtpRevamp",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kIOS3PIntentsInIncognito{"kIOS3pIntentsInIncognito",
+const base::Feature kIOS3PIntentsInIncognito{"IOS3pIntentsInIncognito",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDefaultBrowserFullscreenPromoExperiment{
@@ -61,6 +61,15 @@ const base::Feature kUpdateHistoryEntryPointsInIncognito{
 const base::Feature kUseLensToSearchForImage{"UseLensToSearchForImage",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnableLensInHomeScreenWidget{
+    "EnableLensInHomeScreenWidget", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableLensInKeyboard{"EnableLensInKeyboard",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableLensInNTP{"EnableLensInNTP",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kRemoveExcessNTPs{"RemoveExcessNTPs",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -88,3 +97,6 @@ const base::Feature kMapsExperienceKit{"MapsExperienceKit",
 
 const base::Feature kEnableMiniMap{"EnableMiniMap",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSendVariationDataWithSearchByImage{
+    "SendVariationDataWithSearchByImage", base::FEATURE_ENABLED_BY_DEFAULT};

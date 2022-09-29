@@ -48,6 +48,7 @@
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_view_controller.h"
@@ -73,6 +74,7 @@
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/layout/layout_types.h"
+#include "ui/views/layout/table_layout.h"
 #include "ui/views/metadata/view_factory_internal.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
@@ -95,6 +97,7 @@ constexpr int kActionsRowHorizontalSpacing = 8;
 constexpr auto kContentRowPadding = gfx::Insets::TLBR(16, 0, 0, 0);
 
 constexpr int kLeftContentVerticalSpacing = 4;
+constexpr int kTitleRowMinimumWidth = 186;
 constexpr int kTitleRowSpacing = 6;
 
 constexpr auto kHeaderRowExpandedPadding = gfx::Insets::TLBR(4, 0, 8, 0);
@@ -248,7 +251,14 @@ BEGIN_METADATA(AshNotificationView, NotificationTitleRow, views::View)
 END_METADATA
 
 void AshNotificationView::AddedToWidget() {
-  widget_observation_.Observe(GetWidget());
+  // crbug/1337661: We need to abort animations in a grouped parent view when
+  // it's widget is being destroyed. By default when a widget is destroyed, all
+  // current animations are forced to finish. The grouped notification removal
+  // animation triggers an additional resize animation when it is finished. This
+  // needs to be aborted explicitly to prevent a crash. We do not need to this
+  // observation for grouped notification views.
+  if (!is_grouped_child_view_)
+    widget_observation_.Observe(GetWidget());
 }
 
 void AshNotificationView::Layout() {
@@ -277,11 +287,24 @@ AshNotificationView::NotificationTitleRow::NotificationTitleRow(
           views::style::CONTEXT_DIALOG_BODY_TEXT))),
       timestamp_in_collapsed_view_(
           AddChildView(std::make_unique<views::Label>())) {
-  SetLayoutManager(std::make_unique<views::FlexLayout>())
-      ->SetDefault(views::kMarginsKey,
-                   gfx::Insets::TLBR(0, 0, 0, kTitleRowSpacing));
+  SetLayoutManager(std::make_unique<views::TableLayout>())
+      ->AddColumn(views::LayoutAlignment::kStart,
+                  views::LayoutAlignment::kCenter, 1.0,
+                  views::TableLayout::ColumnSize::kUsePreferred, 0, 0)
+      .AddPaddingColumn(views::TableLayout::kFixedSize, kTitleRowSpacing)
+      .AddColumn(views::LayoutAlignment::kStart,
+                 views::LayoutAlignment::kCenter,
+                 views::TableLayout::kFixedSize,
+                 views::TableLayout::ColumnSize::kUsePreferred, 0, 0)
+      .AddPaddingColumn(views::TableLayout::kFixedSize, kTitleRowSpacing)
+      .AddColumn(views::LayoutAlignment::kStart,
+                 views::LayoutAlignment::kCenter, 100.0,
+                 views::TableLayout::ColumnSize::kUsePreferred, 0, 0)
+      .AddRows(1, views::TableLayout::kFixedSize);
+
   timestamp_in_collapsed_view_->SetProperty(views::kMarginsKey,
                                             kTimeStampInCollapsedStatePadding);
+  timestamp_in_collapsed_view_->SetElideBehavior(gfx::ElideBehavior::NO_ELIDE);
   title_view_->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
@@ -350,6 +373,17 @@ void AshNotificationView::NotificationTitleRow::
   }
 }
 
+gfx::Size AshNotificationView::NotificationTitleRow::CalculatePreferredSize()
+    const {
+  // TODO(crbug.com/1349528): The size constraint is not passed down from the
+  // views tree in the first round of layout, so setting a fixed width to bound
+  // the view. The layout manager can size the view beyond this width if there
+  // is available space. This works similar to applying a max width on the
+  // internal labels.
+  return gfx::Size(kTitleRowMinimumWidth,
+                   GetHeightForWidth(kTitleRowMinimumWidth));
+}
+
 void AshNotificationView::NotificationTitleRow::OnThemeChanged() {
   views::View::OnThemeChanged();
 
@@ -368,7 +402,10 @@ const char AshNotificationView::kViewClassName[] = "AshNotificationView";
 AshNotificationView::AshNotificationView(
     const message_center::Notification& notification,
     bool shown_in_popup)
-    : NotificationViewBase(notification), shown_in_popup_(shown_in_popup) {
+    : NotificationViewBase(notification),
+      is_grouped_parent_view_(notification.group_parent()),
+      is_grouped_child_view_(notification.group_child()),
+      shown_in_popup_(shown_in_popup) {
   message_center_observer_.Observe(message_center::MessageCenter::Get());
   // TODO(crbug/1232197): fix views and layout to match spec.
   // Instantiate view instances and define layout and view hierarchy.
@@ -694,7 +731,10 @@ void AshNotificationView::AnimateSingleToGroup(
 void AshNotificationView::ToggleExpand() {
   SetManuallyExpandedOrCollapsed(true);
 
-  if (inline_reply()->GetVisible()) {
+  // Here we need to check if `inline_reply()` is still valid since user
+  // can click the expand button when the view is being destructed, which
+  // invalidate `inline_reply()`.
+  if (inline_reply() && inline_reply()->GetVisible()) {
     // If inline reply is visible, fade it out then set expanded.
     message_center_utils::FadeOutView(
         inline_reply(),
@@ -912,7 +952,6 @@ void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
     title_row_->UpdateVisibility(IsExpandable() && !expanded);
     title_row_->title_view()->SetMaxLines(
         expanded ? kTitleLabelExpandedMaxLines : kTitleLabelCollapsedMaxLines);
-    title_row_->title_view()->SetMaximumWidth(GetExpandedTitleLabelWidth());
   }
 
   if (message_label()) {
@@ -1258,8 +1297,10 @@ void AshNotificationView::ActionButtonPressed(size_t index,
   NotificationViewBase::ActionButtonPressed(index, event);
 
   // If inline reply is visible, fade out actions button and then fade in inline
-  // reply.
-  if (inline_reply()->GetVisible()) {
+  // reply. Here we need to check if `inline_reply()` is still valid since user
+  // can click an action button when the view is being destructed, which
+  // invalidate `inline_reply()`.
+  if (inline_reply() && inline_reply()->GetVisible()) {
     message_center_utils::InitLayerForAnimations(action_buttons_row());
     message_center_utils::FadeOutView(
         action_buttons_row(),
@@ -1310,8 +1351,8 @@ void AshNotificationView::OnNotificationRemoved(
 }
 
 void AshNotificationView::OnWidgetClosing(views::Widget* widget) {
-  AbortAllAnimations();
   widget_observation_.Reset();
+  AbortAllAnimations();
 }
 
 void AshNotificationView::OnWidgetDestroying(views::Widget* widget) {
@@ -1424,17 +1465,6 @@ void AshNotificationView::UpdateBackground(int top_radius, int bottom_radius) {
   SetBackground(views::CreateBackgroundFromPainter(
       std::make_unique<message_center::NotificationBackgroundPainter>(
           top_radius_, bottom_radius_, background_color_)));
-}
-
-int AshNotificationView::GetExpandedTitleLabelWidth() {
-  int notification_width = shown_in_popup_ ? message_center::kNotificationWidth
-                                           : kNotificationInMessageCenterWidth;
-
-  return notification_width - kNotificationViewPadding.width() -
-         kAppIconViewSize - kMainRightViewChildPadding.width() -
-         kAppIconViewSize - right_content()->width() -
-         kRightContentExpandedPadding.width() -
-         kMessageLabelInExpandedStatePadding.width();
 }
 
 int AshNotificationView::GetExpandedMessageLabelWidth() {

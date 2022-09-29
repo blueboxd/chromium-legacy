@@ -6,13 +6,13 @@ import 'chrome://resources/cr_components/chromeos/network/network_select.m.js';
 import 'chrome://resources/cr_components/chromeos/network_health/network_diagnostics.js';
 import 'chrome://resources/cr_components/chromeos/network_health/network_health_summary.js';
 import 'chrome://resources/cr_components/chromeos/traffic_counters/traffic_counters.js';
-import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import 'chrome://resources/cr_elements/cr_tabs/cr_tabs.js';
-import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-lite.js';
-import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import './strings.m.js';
 import './network_state_ui.js';
@@ -48,16 +48,20 @@ Polymer({
     tabNames_: {
       type: Array,
       value: function() {
-        return [
+        const values = [
           this.i18n('generalTab'),
           this.i18n('networkHealthTab'),
           this.i18n('networkLogsTab'),
           this.i18n('networkStateTab'),
           this.i18n('networkSelectTab'),
           this.i18n('TrafficCountersTrafficCounters'),
-          this.i18n('networkHotspotTab'),
           this.i18n('networkMetricsTab'),
         ];
+        if (loadTimeData.valueExists('isHotspotEnabled') &&
+            loadTimeData.getBoolean('isHotspotEnabled')) {
+          values.push(this.i18n('networkHotspotTab'));
+        }
+        return values;
       },
     },
 
@@ -105,15 +109,6 @@ Polymer({
     tetheringChangeInProgress_: {
       type: Boolean,
       value: false,
-    },
-
-    /** @private */
-    isHotspotEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.valueExists('isHotspotEnabled') &&
-            loadTimeData.getBoolean('isHotspotEnabled');
-      },
     },
 
     /** @private */

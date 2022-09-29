@@ -23,6 +23,7 @@
 #include "content/common/renderer.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom.h"
 
 namespace content {
 
@@ -510,6 +511,19 @@ void SharedStorageWorkletHost::ConsoleLog(const std::string& message) {
       blink::mojom::ConsoleMessageLevel::kInfo, message);
 }
 
+void SharedStorageWorkletHost::RecordUseCounters(
+    const std::vector<blink::mojom::WebFeature>& features) {
+  // If the worklet host has outlived the page, we unfortunately can't count the
+  // feature.
+  if (!page_)
+    return;
+
+  for (blink::mojom::WebFeature feature : features) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        &page_->GetMainDocument(), feature);
+  }
+}
+
 void SharedStorageWorkletHost::OnAddModuleOnWorkletFinished(
     blink::mojom::SharedStorageDocumentService::AddModuleOnWorkletCallback
         callback,
@@ -687,7 +701,7 @@ SharedStorageWorkletHost::MaybeBindPrivateAggregationHost() {
   mojo::PendingRemote<content::mojom::PrivateAggregationHost>
       pending_pa_host_remote;
   if (!private_aggregation_manager->BindNewReceiver(
-          shared_storage_origin_,
+          shared_storage_origin_, main_frame_origin_,
           PrivateAggregationBudgetKey::Api::kSharedStorage,
           pending_pa_host_remote.InitWithNewPipeAndPassReceiver())) {
     return mojo::PendingRemote<content::mojom::PrivateAggregationHost>();

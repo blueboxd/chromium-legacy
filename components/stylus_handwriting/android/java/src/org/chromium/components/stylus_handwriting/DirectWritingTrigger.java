@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
 import androidx.annotation.RequiresApi;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.base.compat.ApiHelperForN;
@@ -145,6 +146,7 @@ class DirectWritingTrigger
      *
      * @param context current context
      */
+    @VisibleForTesting
     void updateDWSettings(Context context) {
         boolean wasDWEnabled = mDwServiceEnabled;
         updateDWServiceStatus(context);
@@ -208,6 +210,26 @@ class DirectWritingTrigger
                         return mCallback;
                     }
                 });
+    }
+
+    @VisibleForTesting
+    DirectWritingServiceCallback getServiceCallback() {
+        return mCallback;
+    }
+
+    @VisibleForTesting
+    void setServiceCallbackForTest(DirectWritingServiceCallback serviceCallback) {
+        mCallback = serviceCallback;
+    }
+
+    @VisibleForTesting
+    void setServiceBinderForTest(DirectWritingServiceBinder serviceBinder) {
+        mBinder = serviceBinder;
+    }
+
+    @VisibleForTesting
+    boolean stylusWritingDetected() {
+        return mStylusWritingDetected;
     }
 
     /**
@@ -320,6 +342,7 @@ class DirectWritingTrigger
                 } else {
                     // Handle ACTION_UP in editable field, to show DW Toolbar.
                     if (mEditableNodeBounds != null && !mEditableNodeBounds.isEmpty()
+                            && mCurrentStylusDownEvent != null
                             && mEditableNodeBounds.contains((int) mCurrentStylusDownEvent.getX(),
                                     (int) mCurrentStylusDownEvent.getY())) {
                         onStopRecognition(me, mEditableNodeBounds);

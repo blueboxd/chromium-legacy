@@ -5,6 +5,7 @@
 #ifndef BASE_FEATURE_LIST_H_
 #define BASE_FEATURE_LIST_H_
 
+#include <atomic>
 #include <functional>
 #include <map>
 #include <memory>
@@ -13,6 +14,7 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/dcheck_is_on.h"
 #include "base/feature_list_buildflags.h"
@@ -43,7 +45,21 @@ enum FeatureState {
 // file static. It should never be used as a constexpr as it breaks
 // pointer-based identity lookup.
 // Note: New code should use CONSTINIT on the base::Feature declaration.
-struct BASE_EXPORT Feature {
+//
+// Making Feature constants mutable allows them to contain a mutable member to
+// cache their override state, while still remaining declared as const. This
+// cache member allows for significantly faster IsEnabled() checks.
+// The "Mutable Constants" check
+// (https://chromium.googlesource.com/chromium/src/+/main/docs/speed/binary_size/android_binary_size_trybot.md#Mutable-Constants)
+// detects this, because this generally means that a readonly symbol is put in
+// writable memory when readonly memory would be more efficient in terms of
+// space. Declaring as LOGICALLY_CONST adds a recognizable pattern to all
+// Feature constant mangled names, which the "Mutable Constants" can use to
+// ignore the symbols declared as such. The performance gains of the cache are
+// large enough that it is worth the tradeoff to have the symbols in
+// non-readonly memory, therefore requiring a bypass of the "Mutable Constants"
+// check.
+struct BASE_EXPORT LOGICALLY_CONST Feature {
   constexpr Feature(const char* name, FeatureState default_state)
       : name(name), default_state(default_state) {
 #if BUILDFLAG(ENABLE_BANNED_BASE_FEATURE_PREFIX)
@@ -53,6 +69,14 @@ struct BASE_EXPORT Feature {
     }
 #endif  // BUILDFLAG(ENABLE_BANNED_BASE_FEATURE_PREFIX)
   }
+
+  // This object needs to be copyable because of some signatures in
+  // ScopedFeatureList, but generally isn't copied anywhere except unit tests.
+  // The `cached_value` doesn't get copied and copies will trigger a lookup if
+  // their state is queried.
+  Feature(const Feature& other)
+      : name(other.name), default_state(other.default_state), cached_value(0) {}
+
   // The name of the feature. This should be unique to each feature and is used
   // for enabling/disabling features via command line flags and experiments.
   // It is strongly recommended to use CamelCase style for feature names, e.g.
@@ -63,6 +87,27 @@ struct BASE_EXPORT Feature {
   // NOTE: The actual runtime state may be different, due to a field trial or a
   // command line switch.
   const FeatureState default_state;
+
+ private:
+  friend class FeatureList;
+
+  // A packed value where the first 8 bits represent the `OverrideState` of this
+  // feature, and the last 16 bits are a caching context ID used to allow
+  // ScopedFeatureLists to invalidate these cached values in testing. A value of
+  // 0 in the caching context ID field indicates that this value has never been
+  // looked up and cached, a value of 1 indicates this value contains the cached
+  // `OverrideState` that was looked up via `base::FeatureList`, and any other
+  // value indicate that this cached value is only valid for a particular
+  // ScopedFeatureList instance.
+  //
+  // Packing these values into a uint32_t makes it so that atomic operations
+  // performed on this fields can be lock free.
+  //
+  // The override state stored in this field is only used if the current
+  // `FeatureList::caching_context_` field is equal to the lower 16 bits of the
+  // packed cached value. Otherwise, the override state is looked up in the
+  // feature list and the cache is updated.
+  mutable std::atomic<uint32_t> cached_value = 0;
 };
 
 #if BUILDFLAG(DCHECK_IS_CONFIGURABLE)
@@ -368,6 +413,8 @@ class BASE_EXPORT FeatureList {
   // Has no effect if DCHECKs are not enabled.
   static void ForbidUseForCurrentModule();
 
+  void SetCachingContextForTesting(uint16_t caching_context);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(FeatureListTest, CheckFeatureIdentity);
   FRIEND_TEST_ALL_PREFIXES(FeatureListTest,
@@ -493,6 +540,11 @@ class BASE_EXPORT FeatureList {
 
   // Whether this object has been initialized from command line.
   bool initialized_from_command_line_ = false;
+
+  // Used when querying `base::Feature` state to determine if the cached value
+  // in the `Feature` object is populated and valid. See the comment on
+  // `base::Feature::cached_value` for more details.
+  uint16_t caching_context_ = 1;
 };
 
 }  // namespace base

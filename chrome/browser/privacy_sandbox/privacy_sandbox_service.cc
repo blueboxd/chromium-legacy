@@ -300,10 +300,7 @@ void PrivacySandboxService::OnPrivacySandboxV2PrefChanged() {
   if (browsing_data_remover_) {
     browsing_data_remover_->Remove(
         base::Time::Min(), base::Time::Max(),
-        content::BrowsingDataRemover::DATA_TYPE_INTEREST_GROUPS |
-            content::BrowsingDataRemover::DATA_TYPE_AGGREGATION_SERVICE |
-            content::BrowsingDataRemover::DATA_TYPE_ATTRIBUTION_REPORTING |
-            content::BrowsingDataRemover::DATA_TYPE_TRUST_TOKENS,
+        content::BrowsingDataRemover::DATA_TYPE_PRIVACY_SANDBOX,
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
   }
 
@@ -569,12 +566,11 @@ PrivacySandboxService::GetBlockedTopics() const {
   if (privacy_sandbox::kPrivacySandboxSettings3ShowSampleDataForTesting.Get())
     return {fake_blocked_topics_.begin(), fake_blocked_topics_.end()};
 
-  auto* pref_value =
-      pref_service_->GetList(prefs::kPrivacySandboxBlockedTopics);
-  DCHECK(pref_value->is_list());
+  const base::Value::List& pref_value =
+      pref_service_->GetValueList(prefs::kPrivacySandboxBlockedTopics);
 
   std::vector<privacy_sandbox::CanonicalTopic> blocked_topics;
-  for (const auto& entry : pref_value->GetList()) {
+  for (const auto& entry : pref_value) {
     auto blocked_topic = privacy_sandbox::CanonicalTopic::FromValue(
         *entry.GetDict().Find(kBlockedTopicsTopicKey));
     if (blocked_topic)

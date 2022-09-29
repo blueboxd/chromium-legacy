@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <tuple>
 
 #include "base/containers/span.h"
 #include "base/memory/ref_counted.h"
@@ -17,6 +18,8 @@
 #include "third_party/ipcz/include/ipcz/ipcz.h"
 
 namespace mojo::core::ipcz_driver {
+
+class Transport;
 
 // Common base class for objects managed by Mojo's ipcz driver.
 class ObjectBase : public base::RefCountedThreadSafe<ObjectBase> {
@@ -85,6 +88,23 @@ class ObjectBase : public base::RefCountedThreadSafe<ObjectBase> {
   // Closes this object.
   virtual void Close();
 
+  // Indicates whether this object can be serialized at all.
+  virtual bool IsSerializable() const;
+
+  // Computes the number of bytes and platform handles required to serialize
+  // this object for transmission through `transmitter`. Returns false if the
+  // object cannot be serialized or transmitted as such.
+  virtual bool GetSerializedDimensions(Transport& transmitter,
+                                       size_t& num_bytes,
+                                       size_t& num_handles);
+
+  // Attempts to serialize this object into `data` and `handles` which are
+  // already sufficiently sized according to GetSerializedDimensions(). Returns
+  // false if serialization fails.
+  virtual bool Serialize(Transport& transmitter,
+                         base::span<uint8_t> data,
+                         base::span<PlatformHandle> handles);
+
  protected:
   virtual ~ObjectBase();
 
@@ -93,6 +113,9 @@ class ObjectBase : public base::RefCountedThreadSafe<ObjectBase> {
 
   // Peeks at `box` and returns its underlying driver handle.
   static IpczDriverHandle PeekBox(IpczHandle box);
+
+  // Unboxes `box` and returns a reference to the object it contained.
+  static scoped_refptr<ObjectBase> Unbox(IpczHandle box);
 
  private:
   friend class base::RefCountedThreadSafe<ObjectBase>;
@@ -135,6 +158,16 @@ class Object : public ObjectBase {
   // Peeks at `box` and returns a pointer to its underlying T, if the underlying
   // driver object is in fact a T. Does not invalidate `box`.
   static T* FromBox(IpczHandle box) { return FromHandle(PeekBox(box)); }
+
+  // Unboxes `box` and returns a reference to its underlying T. If `box` is not
+  // a box that contains a T, this returns null.
+  static scoped_refptr<T> Unbox(IpczHandle box) {
+    scoped_refptr<T> object = base::WrapRefCounted(T::FromBox(box));
+    if (object) {
+      std::ignore = ObjectBase::Unbox(box);
+    }
+    return object;
+  }
 
  protected:
   ~Object() override = default;

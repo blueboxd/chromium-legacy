@@ -213,6 +213,13 @@ testing::AssertionResult SharedInfoEqual(
 
 AggregatableReportRequest CreateExampleRequest(
     mojom::AggregationServiceMode aggregation_mode) {
+  return CreateExampleRequestWithReportTime(base::Time::Now(),
+                                            aggregation_mode);
+}
+
+AggregatableReportRequest CreateExampleRequestWithReportTime(
+    base::Time report_time,
+    mojom::AggregationServiceMode aggregation_mode) {
   return AggregatableReportRequest::Create(
              AggregationServicePayloadContents(
                  AggregationServicePayloadContents::Operation::kHistogram,
@@ -221,7 +228,7 @@ AggregatableReportRequest CreateExampleRequest(
                      /*value=*/456)},
                  aggregation_mode),
              AggregatableReportSharedInfo(
-                 /*scheduled_report_time=*/base::Time::Now(),
+                 /*scheduled_report_time=*/report_time,
                  /*report_id=*/
                  base::GUID::GenerateRandomV4(),
                  url::Origin::Create(GURL("https://reporting.example")),
@@ -248,7 +255,8 @@ AggregatableReport CloneAggregatableReport(const AggregatableReport& report) {
                           payload.debug_cleartext_payload);
   }
 
-  return AggregatableReport(std::move(payloads), report.shared_info());
+  return AggregatableReport(std::move(payloads), report.shared_info(),
+                            report.debug_key());
 }
 
 TestHpkeKey GenerateKey(std::string key_id) {

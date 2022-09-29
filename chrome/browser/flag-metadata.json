@@ -581,7 +581,7 @@
   {
     "name": "autofill-show-manual-fallbacks-in-context-menu",
     "owners": [ "vidhanj", "koerber"],
-    "expiry_milestone": 106
+    "expiry_milestone": 112
   },
   {
     "name": "autofill-type-specific-popup-width",
@@ -1836,7 +1836,7 @@
   {
     "name": "enable-cros-ime-assist-personal-info",
     "owners": [ "jiwan", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 111
   },
   {
     "name": "enable-cros-ime-mozc-proto",
@@ -1876,7 +1876,7 @@
   {
     "name": "enable-cros-on-device-grammar-check",
     "owners": [ "jiwan", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 111
   },
   {
     "name": "enable-cros-privacy-hub",
@@ -1909,16 +1909,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "enable-cros-virtual-keyboard-multipaste",
-    "owners": [ "jiwan", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 100
-  },
-  {
-    "name": "enable-cros-virtual-keyboard-multipaste-suggestion",
-    "owners": [ "jiwan", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 100
-  },
-  {
     "name": "enable-cros-virtual-keyboard-multitouch",
     "owners": [ "michellegc", "essential-inputs-team@google.com" ],
     "expiry_milestone": 110
@@ -1939,11 +1929,6 @@
     "expiry_milestone": 102
   },
   {
-    "name": "enable-de-jelly",
-    "owners": [ "boliu", "//components/viz/OWNERS" ],
-    "expiry_milestone": 104
-  },
-  {
     "name": "enable-debug-for-secure-payment-confirmation",
     "owners": [ "rouslan", "web-payments-team@google.com" ],
     "expiry_milestone": 112
@@ -1954,6 +1939,11 @@
     // This flag is to allow developers to develop their app-billing capable
     // TWA apps locally, without having to upload the apps to the Play Store.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-default-calculator-web-app",
+    "owners": [ "zafzal@google.com", "calculator-eng@google.com" ],
+    "expiry_milestone": 99
   },
   {
     "name": "enable-delegated-compositing",
@@ -2447,6 +2437,21 @@
     "name": "enable-lens-fullscreen-search",
     "owners": ["stanfield@google.com", "lens-chrome@google.com"],
     "expiry_milestone": 107
+  },
+  {
+    "name": "enable-lens-in-home-screen-widget",
+    "owners": [ "schechter", "hujasonx" ],
+    "expiry_milestone": 120
+  },
+  {
+    "name": "enable-lens-in-keyboard",
+    "owners": [ "schechter", "hujasonx" ],
+    "expiry_milestone": 120
+  },
+  {
+    "name": "enable-lens-in-ntp",
+    "owners": [ "schechter", "hujasonx" ],
+    "expiry_milestone": 120
   },
   {
     "name": "enable-lens-standalone",
@@ -3428,6 +3433,11 @@
     "expiry_milestone": 96
   },
   {
+    "name": "feed-video-inline-playback",
+    "owners": [ "//chrome/android/feed/OWNERS", "jianli@chromium.org" ],
+    "expiry_milestone": 115
+  },
+  {
     "name": "file-handling-api",
     "owners": [ "dmurph", "mgiuca", "cmp" ],
     "expiry_milestone": 110
@@ -3676,7 +3686,7 @@
     "owners": [ "sidereal@google.com", "davidmunro@google.com", "clumptini@google.com" ],
     "expiry_milestone": 115
   },
-  { 
+  {
     "name": "handwriting-gesture-editing",
     "owners": [ "curtismcmullan", "essential-inputs-team@google.com" ],
     "expiry_milestone": 111
@@ -3870,6 +3880,11 @@
     "name": "info-card-acknowledgement-tracking",
     "owners": [ "//chrome/android/feed/OWNERS", "jianli@chromium.org" ],
     "expiry_milestone": 110
+  },
+  {
+    "name": "infobar-scroll-optimization",
+    "owners": [ "lazzzis@google.com", "mdjones", "twellington" ],
+    "expiry_milestone": 121
   },
   {
     "name": "initial-navigation-entry",
@@ -4177,6 +4192,11 @@
     // This flag is used for debugging and development purposes to list all
     // external displays' modes without any exclusions.'
     "expiry_milestone": -1
+  },
+  {
+    "name": "load-cryptotoken-extension",
+    "owners": [ "martinkr", "chrome-webauthn" ],
+    "expiry_milestone": 108
   },
   {
     "name": "location-bar-model-optimizations",
@@ -4780,6 +4800,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "omnibox-most-visited-tiles-dynamic-spacing",
+    "owners": [ "rongtan", "gangwu", "ender", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "omnibox-most-visited-tiles-fading-on-tablet",
     "owners": [ "rongtan", "ender", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 110
@@ -4973,6 +4998,11 @@
     "name": "os-settings-app-notifications-page",
     "owners": ["hsuregan"],
     "expiry_milestone": 99
+  },
+  {
+    "name": "osk-resizes-visual-viewport",
+    "owners": [ "bokan", "rendering-core-dev@chromium.org" ],
+    "expiry_milestone": 116
   },
   {
     "name": "overlay-scrollbars",
@@ -5227,7 +5257,7 @@
   {
     "name": "photo-picker-video-support",
     "owners": [ "finnur" ],
-    "expiry_milestone": 105
+    "expiry_milestone": 110
   },
   {
     "name": "post-quantum-cecpq2",
@@ -5590,6 +5620,11 @@
     "name": "restrict-gamepad-access",
     "owners": [ "//device/gamepad/OWNERS", "jameshollyer@chromium.org" ],
     "expiry_milestone": 96
+  },
+  {
+    "name": "revoke-notifications-permission-if-disabled-on-app-level",
+    "owners": [ "elklm", "//components/permissions/PERMISSIONS_OWNERS" ],
+    "expiry_milestone": 110
   },
   {
     "name": "rounded-display",

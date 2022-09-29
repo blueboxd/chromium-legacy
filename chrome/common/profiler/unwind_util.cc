@@ -16,35 +16,40 @@
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/profiler/unwinder.h"
 #include "build/build_config.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/profiler/process_type.h"
 #include "components/metrics/call_stack_profile_params.h"
+#include "components/version_info/channel.h"
 
-#if BUILDFLAG(IS_ANDROID) && \
-    (defined(ARCH_CPU_ARMEL) || BUILDFLAG(ENABLE_ARM_CFI_TABLE))
-#include "chrome/android/modules/stack_unwinder/public/module.h"
+#if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_ARMEL) && \
+    BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+#define ANDROID_ARM32_UNWINDING_SUPPORTED 1
+#else
+#define ANDROID_ARM32_UNWINDING_SUPPORTED 0
 #endif
 
-#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+#if ANDROID_ARM32_UNWINDING_SUPPORTED
 #include "base/android/apk_assets.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/profiler/arm_cfi_table.h"
-
-extern "C" {
-// The address of |__executable_start| is the base address of the executable or
-// shared library.
-extern char __executable_start;
-}
+#include "chrome/android/modules/stack_unwinder/public/module.h"
 
 #if BUILDFLAG(USE_ANDROID_UNWINDER_V2)
 #include "base/profiler/chrome_unwinder_android_v2.h"
 #else
 #include "base/profiler/chrome_unwinder_android.h"
 #endif
-#endif  // BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+
+extern "C" {
+// The address of |__executable_start| is the base address of the executable or
+// shared library.
+extern char __executable_start;
+}
+#endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
 
 namespace {
 
-#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+#if ANDROID_ARM32_UNWINDING_SUPPORTED
 #if BUILDFLAG(USE_ANDROID_UNWINDER_V2)
 class ChromeUnwinderCreator {
  public:
@@ -140,7 +145,18 @@ std::vector<std::unique_ptr<base::Unwinder>> CreateCoreUnwinders(
   unwinders.push_back(chrome_unwinder_creator->Create());
   return unwinders;
 }
-#endif  // BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+
+// Checks whether unwinder assets -- such as call frame information needed for
+// unwinders to work -- are available in the current context. Unwinder assets
+// are only embedded into certain builds of Chrome.
+bool AreUnwinderAssetsAvailable() {
+  const version_info::Channel channel = chrome::GetChannel();
+  // CFI is currently only embedded into dev and canary builds of Chrome:
+  // https://crsrc.org/c/chrome/android/chrome_public_apk_tmpl.gni;l=30-36;drc=2b4d4975755c2394a9d45a77a8acf7597ff67dfc
+  return channel == version_info::Channel::CANARY ||
+         channel == version_info::Channel::DEV;
+}
+#endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
 
 }  // namespace
 
@@ -148,31 +164,32 @@ std::vector<std::unique_ptr<base::Unwinder>> CreateCoreUnwinders(
 void UnwindPrerequisites::RequestInstallation() {
   CHECK_EQ(metrics::CallStackProfileParams::Process::kBrowser,
            GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess()));
-#if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_ARMEL)
+#if ANDROID_ARM32_UNWINDING_SUPPORTED
   // The install occurs asynchronously, with the module available at the first
   // run of Chrome following install.
   stack_unwinder::Module::RequestInstallation();
-#endif  // BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_ARMEL)
+#endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
 }
 
 // static
 bool UnwindPrerequisites::Available() {
-#if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_ARMEL)
-  return stack_unwinder::Module::IsInstalled();
-#else
+#if ANDROID_ARM32_UNWINDING_SUPPORTED
+  // We need both (1) unwinder assets and (2) unwinder module to be available.
+  return AreUnwinderAssetsAvailable() && stack_unwinder::Module::IsInstalled();
+#else   // ANDROID_ARM32_UNWINDING_SUPPORTED
   return true;
-#endif
+#endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
 }
 
 base::StackSamplingProfiler::UnwindersFactory CreateCoreUnwindersFactory() {
   if (!UnwindPrerequisites::Available()) {
     return base::StackSamplingProfiler::UnwindersFactory();
   }
-#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+#if ANDROID_ARM32_UNWINDING_SUPPORTED
   static base::NoDestructor<std::unique_ptr<stack_unwinder::Module>>
       stack_unwinder_module(stack_unwinder::Module::Load());
   return base::BindOnce(CreateCoreUnwinders, stack_unwinder_module->get());
-#else
+#else   // ANDROID_ARM32_UNWINDING_SUPPORTED
   return base::StackSamplingProfiler::UnwindersFactory();
-#endif
+#endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
 }

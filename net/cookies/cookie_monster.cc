@@ -161,6 +161,13 @@ bool IncludeUnpartitionedCookies(
   return false;
 }
 
+size_t NameValueSizeBytes(const std::string& name, const std::string& value) {
+  base::CheckedNumeric<size_t> name_value_pair_size = name.size();
+  name_value_pair_size += value.size();
+  DCHECK(name_value_pair_size.IsValid());
+  return name_value_pair_size.ValueOrDie();
+}
+
 }  // namespace
 
 namespace net {
@@ -1118,8 +1125,10 @@ void CookieMonster::TrimDuplicateCookiesForKey(
 }
 
 std::vector<CanonicalCookie*>
-CookieMonster::FindCookiesForRegistryControlledHost(const GURL& url,
-                                                    CookieMap* cookie_map) {
+CookieMonster::FindCookiesForRegistryControlledHost(
+    const GURL& url,
+    CookieMap* cookie_map,
+    CookieMonster::PartitionedCookieMap::iterator* partition_it) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!cookie_map)
@@ -1139,7 +1148,14 @@ CookieMonster::FindCookiesForRegistryControlledHost(const GURL& url,
 
     // If the cookie is expired, delete it.
     if (cc->IsExpired(current_time)) {
-      InternalDeleteCookie(curit, true, DELETE_COOKIE_EXPIRED);
+      if (cc->IsPartitioned()) {
+        DCHECK(partition_it);
+        DCHECK_EQ((*partition_it)->second.get(), cookie_map);
+        InternalDeletePartitionedCookie(*partition_it, curit, true,
+                                        DELETE_COOKIE_EXPIRED);
+      } else {
+        InternalDeleteCookie(curit, true, DELETE_COOKIE_EXPIRED);
+      }
       continue;
     }
     cookies.push_back(cc);
@@ -1158,7 +1174,7 @@ CookieMonster::FindPartitionedCookiesForRegistryControlledHost(
   if (it == partitioned_cookies_.end())
     return std::vector<CanonicalCookie*>();
 
-  return FindCookiesForRegistryControlledHost(url, it->second.get());
+  return FindCookiesForRegistryControlledHost(url, it->second.get(), &it);
 }
 
 void CookieMonster::FilterCookiesWithOptions(
@@ -1541,6 +1557,11 @@ void CookieMonster::SetCanonicalCookie(
       UMA_HISTOGRAM_EXACT_LINEAR("Cookie.SamePartySetIncluded.PartyContextSize",
                                  options.full_party_context_size(),
                                  1 + IsolationInfo::kPartyContextMaxSize);
+    }
+
+    if (cc->IsEffectivelySameSiteNone()) {
+      UMA_HISTOGRAM_COUNTS_10000("Cookie.SameSiteNoneSizeBytes",
+                                 NameValueSizeBytes(cc->Name(), cc->Value()));
     }
 
     bool is_partitioned_cookie = cc->IsPartitioned();

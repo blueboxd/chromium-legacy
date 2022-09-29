@@ -4,7 +4,9 @@
     "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
     "bases": ["wpt_internal/origin_trials/anonymous-iframe"],
     "args": [
-      "--disable-blink-features=AnonymousIframe"
+      "--disable-blink-features=AnonymousIframe",
+      "--disable-features=PartitionedCookies,ThirdPartyStoragePartitioning",
+      "--enable-features=AnonymousIframeOriginTrial"
     ]
   },
   {
@@ -626,12 +628,6 @@
     "args": ["--enable-features=JSONModules", "--js-flags=--harmony-import-assertions"]
   },
   {
-    "prefix": "css-modules",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/html/semantics/scripting-1/the-script-element/css-module"],
-    "args": ["--enable-blink-features=CSSModules", "--js-flags=--harmony-import-assertions"]
-  },
-  {
     "prefix": "css-trigonometric-functions-disabled",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
@@ -644,7 +640,9 @@
   {
     "prefix": "import-assertions",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/html/semantics/scripting-1/the-script-element/import-assertions"],
+    "bases": [
+      "external/wpt/html/semantics/scripting-1/the-script-element/import-assertions", 
+      "external/wpt/html/semantics/scripting-1/the-script-element/css-module"],
     "args": ["--js-flags=--harmony-import-assertions"]
   },
   {
@@ -1343,5 +1341,22 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/pending_beacon"],
     "args": ["--enable-features=PendingBeaconAPI"]
+  },
+  {
+    "prefix": "pretokenize-css",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/css/css-syntax/charset",
+      "external/wpt/subresource-integrity",
+      "fast/css/cached-sheet-restore-crash.html",
+      "fast/css/link-alternate-stylesheet-1.html",
+      "fast/css/link-alternate-stylesheet-2.html",
+      "fast/css/link-alternate-stylesheet-3.html",
+      "fast/css/link-alternate-stylesheet-4.html",
+      "fast/css/link-alternate-stylesheet-5.html",
+      "fast/css/sheet-collection-link.html",
+      "fast/encoding/css-charset-default.xhtml"
+    ],
+    "args": ["--enable-features=PretokenizeCSS"]
   }
 ]

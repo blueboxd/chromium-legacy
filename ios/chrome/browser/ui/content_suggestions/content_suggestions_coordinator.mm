@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_coordinator.h"
 
+#import "base/feature_list.h"
 #import "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
@@ -75,6 +76,14 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// Kill-switch for quick fix of crbug.com/1204507
+const base::Feature kNoRecentTabIfNullWebState(
+    "NoRecentTabIfNullWebState",
+    base::FEATURE_ENABLED_BY_DEFAULT);
+
+}  // namespace
 
 @interface ContentSuggestionsCoordinator () <
     ContentSuggestionsHeaderCommands,
@@ -385,28 +394,38 @@
     return;
   }
 
+  if (self.contentSuggestionsMediator.showingStartSurface) {
+    // Start has already been configured. Don't try again or else another Return
+    // To Recent Tab tile will be added.
+    return;
+  }
+
   // Update Mediator property to signal the NTP is currently showing Start.
   self.contentSuggestionsMediator.showingStartSurface = YES;
   if (ShouldShowReturnToMostRecentTabForStartSurface()) {
-    base::RecordAction(
-        base::UserMetricsAction("IOS.StartSurface.ShowReturnToRecentTabTile"));
     web::WebState* most_recent_tab =
         StartSurfaceRecentTabBrowserAgent::FromBrowser(self.browser)
             ->most_recent_tab();
-    DiscoverFeedServiceFactory::GetForBrowserState(
-        self.browser->GetBrowserState())
-        ->SetIsShownOnStartSurface(true);
-    DCHECK(most_recent_tab);
-    NSString* time_label = GetRecentTabTileTimeLabelForSceneState(scene);
-    [self.contentSuggestionsMediator
-        configureMostRecentTabItemWithWebState:most_recent_tab
-                                     timeLabel:time_label];
-    if (!_startSurfaceObserver) {
-      _startSurfaceObserver =
-          std::make_unique<StartSurfaceRecentTabObserverBridge>(
-              self.contentSuggestionsMediator);
-      StartSurfaceRecentTabBrowserAgent::FromBrowser(self.browser)
-          ->AddObserver(_startSurfaceObserver.get());
+    // TODO(crbug.com/1204507): Fix reproduced steps that produce state where
+    // most_recent_tab is null but ShouldShowStartSurface() is YES.
+    if (!base::FeatureList::IsEnabled(kNoRecentTabIfNullWebState) ||
+        most_recent_tab) {
+      base::RecordAction(base::UserMetricsAction(
+          "IOS.StartSurface.ShowReturnToRecentTabTile"));
+      DiscoverFeedServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState())
+          ->SetIsShownOnStartSurface(true);
+      NSString* time_label = GetRecentTabTileTimeLabelForSceneState(scene);
+      [self.contentSuggestionsMediator
+          configureMostRecentTabItemWithWebState:most_recent_tab
+                                       timeLabel:time_label];
+      if (!_startSurfaceObserver) {
+        _startSurfaceObserver =
+            std::make_unique<StartSurfaceRecentTabObserverBridge>(
+                self.contentSuggestionsMediator);
+        StartSurfaceRecentTabBrowserAgent::FromBrowser(self.browser)
+            ->AddObserver(_startSurfaceObserver.get());
+      }
     }
   }
   if (ShouldShrinkLogoForStartSurface()) {
@@ -416,12 +435,7 @@
     base::RecordAction(
         base::UserMetricsAction("IOS.StartSurface.HideShortcuts"));
   }
-  if (IsStartSurfaceSplashStartupEnabled()) {
-    NewTabPageTabHelper::FromWebState(self.webState)
-        ->SetShowStartSurface(false);
-  } else {
-    scene.modifytVisibleNTPForStartSurface = NO;
-  }
+  NewTabPageTabHelper::FromWebState(self.webState)->SetShowStartSurface(false);
 }
 
 // Triggers the URL sharing flow for the given `URL` and `title`, with the

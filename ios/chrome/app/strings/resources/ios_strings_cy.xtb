@@ -262,7 +262,7 @@ Gweler cyfarwyddiadau eich peiriant chwilio er mwyn dileu eich hanes chwilio, os
 <translation id="3153862085237805241">Cadw'r Cerdyn</translation>
 <translation id="3157387275655328056">Ychwanegu at y Rhestr Ddarllen</translation>
 <translation id="3157684681743766797">Marcio'r Cyfan…</translation>
-<translation id="3169472444629675720">Darganfod</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3174662312949010067">Gallwch hefyd ddefnyddio cyfrineiriau sydd wedi'u cadw ar eich dyfeisiau eraill.</translation>
 <translation id="3175081911749765310">Gwasanaethau Gwe</translation>
 <translation id="3178650076442119961">Yma Heddiw</translation>
@@ -280,6 +280,7 @@ Gweler cyfarwyddiadau eich peiriant chwilio er mwyn dileu eich hanes chwilio, os
 <translation id="3277021493514034324">Copïwyd cyfeiriad y wefan</translation>
 <translation id="3285962946108803577">Rhannu'r dudalen...</translation>
 <translation id="3290875554372353449">Dewiswch Gyfrif</translation>
+<translation id="3305294846493618482">rhagor</translation>
 <translation id="3311748811247479259">Diffodd</translation>
 <translation id="3324193307694657476">Cyfeiriad 2</translation>
 <translation id="3328801116991980348">Gwybodaeth am y wefan</translation>
@@ -311,7 +312,6 @@ Gweler cyfarwyddiadau eich peiriant chwilio er mwyn dileu eich hanes chwilio, os
 <translation id="3529024052484145543">Ddim yn ddiogel</translation>
 <translation id="3533202363250687977">Cau Pob Tab Anhysbys</translation>
 <translation id="3533436815740441613">Tab Newydd</translation>
-<translation id="3547799431091898961">I allgofnodi o'ch Cyfrif Google ar bob gwefan, <ph name="BEGIN_LINK" />allgofnodwch o Chrome<ph name="END_LINK" />.</translation>
 <translation id="3551320343578183772">Cau'r Tab</translation>
 <translation id="3581564640715911333">Cynnig cyfieithu tudalennau mewn ieithoedd eraill</translation>
 <translation id="3588820906588687999">Agor y Llun Mewn Tab Newydd</translation>

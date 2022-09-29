@@ -17,6 +17,7 @@
 namespace blink {
 namespace features {
 
+BLINK_COMMON_EXPORT extern const base::Feature kAnonymousIframeOriginTrial;
 BLINK_COMMON_EXPORT extern const base::Feature kAutomaticLazyFrameLoadingToAds;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kTimeoutMillisForLazyAds;
@@ -810,6 +811,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kPrecompileInlineScripts;
 BLINK_COMMON_EXPORT extern const base::Feature kPretokenizeCSS;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kPretokenizeInlineSheets;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kPretokenizeExternalSheets;
 
 // TODO(accessibility): This flag is set to accommodate JAWS on Windows so they
 // can adjust to us not simulating click events on a focus action. It should be

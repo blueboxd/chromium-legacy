@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cells_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_layout_util.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -23,9 +24,11 @@ const float kContentHorizontalInset = 16.0f;
 
 // The vertical spacing between the title and the content of the module.
 const float kContentTitleVerticalSpacing = 12.0f;
+const float kContentTitleShortenedVerticalSpacing = 10.0f;
 
 // The top inset of the title label to this container.
 const float kTitleTopInset = 14.0f;
+const float kTitleShortenedTopInset = 11.0f;
 
 // The minimum width of the title label.
 const float kTitleMinimumWidth = 99.0f;
@@ -39,9 +42,11 @@ const float kPlaceholderTitleCornerRadius = 2.0f;
 // The corner radius of this container.
 const float kCornerRadius = 16;
 
-// The shadow offsets of this container.
-const CGFloat kHorizontalShadowOffset = 40;
-const CGFloat kVerticalShadowOffset = 50;
+// The shadow radius of this container.
+const float kShadowRadius = 5;
+
+// The shadow opacity of this container.
+const float kShadowOpacity = 0.06;
 
 // Vertical space allocated to the Trending Queries module content.
 const float kTrendingQueriesContentHeight = 103;
@@ -72,29 +77,15 @@ const float kTrendingQueriesContentHeight = 103;
     self.backgroundColor =
         [UIColor colorNamed:kGroupedSecondaryBackgroundColor];
 
-    // Create content container with same background as this view so that a
-    // shadow view can be placed under it to create a shadow effect.
-    UIImageView* shadow = [[UIImageView alloc]
-        initWithImage:StretchableImageNamed(@"module_shadow")];
-    shadow.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:shadow];
-    AddSameConstraintsToSidesWithInsets(
-        shadow, self,
-        LayoutSides::kTop | LayoutSides::kLeading | LayoutSides::kBottom |
-            LayoutSides::kTrailing,
-        {-kHorizontalShadowOffset, -kVerticalShadowOffset,
-         -kVerticalShadowOffset, -kHorizontalShadowOffset});
-
-    UIView* contentContainer = [[UIView alloc] init];
-    contentContainer.backgroundColor =
-        [UIColor colorNamed:kGroupedSecondaryBackgroundColor];
-    contentContainer.layer.cornerRadius = kCornerRadius;
-    contentContainer.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:contentContainer];
-    AddSameConstraints(self, contentContainer);
+    self.layer.shadowColor = [UIColor blackColor].CGColor;
+    self.layer.shadowRadius = kShadowRadius;
+    self.layer.shadowOpacity = kShadowOpacity;
+    // Render shadow as bitmap to improve snapshot render layout performance.
+    self.layer.shouldRasterize = YES;
+    self.layer.rasterizationScale = UIScreen.mainScreen.scale;
 
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
-    [contentContainer addSubview:contentView];
+    [self addSubview:contentView];
 
     NSString* titleString = [self titleString];
     if ([titleString length] > 0) {
@@ -105,14 +96,14 @@ const float kTrendingQueriesContentHeight = 103;
       self.title.textColor = [UIColor colorNamed:kTextSecondaryColor];
       self.title.accessibilityTraits |= UIAccessibilityTraitHeader;
       self.title.translatesAutoresizingMaskIntoConstraints = NO;
-      [contentContainer addSubview:self.title];
+      [self addSubview:self.title];
       [NSLayoutConstraint activateConstraints:@[
         // Title constraints.
         [self.title.leadingAnchor
-            constraintEqualToAnchor:contentContainer.leadingAnchor
+            constraintEqualToAnchor:self.leadingAnchor
                            constant:kContentHorizontalInset],
-        [contentContainer.topAnchor constraintEqualToAnchor:self.title.topAnchor
-                                                   constant:-kTitleTopInset],
+        [self.topAnchor constraintEqualToAnchor:self.title.topAnchor
+                                       constant:-[self titleTopInset]],
         // Ensures placeholder for title is visible.
         [self.title.widthAnchor
             constraintGreaterThanOrEqualToConstant:kTitleMinimumWidth],
@@ -120,27 +111,29 @@ const float kTrendingQueriesContentHeight = 103;
             constraintGreaterThanOrEqualToConstant:kTitleMinimumHeight],
         // contentView constraints.
         [contentView.leadingAnchor
-            constraintEqualToAnchor:contentContainer.leadingAnchor
+            constraintEqualToAnchor:self.leadingAnchor
                            constant:kContentHorizontalInset],
         [contentView.trailingAnchor
-            constraintEqualToAnchor:contentContainer.trailingAnchor
+            constraintEqualToAnchor:self.trailingAnchor
                            constant:-kContentHorizontalInset],
-        [contentView.bottomAnchor
-            constraintEqualToAnchor:contentContainer.bottomAnchor],
-        [contentView.topAnchor
-            constraintEqualToAnchor:self.title.bottomAnchor
-                           constant:kContentTitleVerticalSpacing],
+        [contentView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+        [contentView.topAnchor constraintEqualToAnchor:self.title.bottomAnchor
+                                              constant:[self titleSpacing]],
       ]];
     } else {
+      CGFloat horizontalInsets =
+          (ShouldRemoveHeadersForModuleRefresh() &&
+           self.type != ContentSuggestionsModuleTypeReturnToRecentTab)
+              ? kContentHorizontalInset
+              : 0;
       [NSLayoutConstraint activateConstraints:@[
-        [contentView.leadingAnchor
-            constraintEqualToAnchor:contentContainer.leadingAnchor],
-        [contentView.trailingAnchor
-            constraintEqualToAnchor:contentContainer.trailingAnchor],
-        [contentView.bottomAnchor
-            constraintEqualToAnchor:contentContainer.bottomAnchor],
-        [contentView.topAnchor
-            constraintEqualToAnchor:contentContainer.topAnchor],
+        [contentView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor
+                                                  constant:horizontalInsets],
+        [contentView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor
+                                                   constant:-horizontalInsets],
+        [contentView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+        [contentView.topAnchor constraintEqualToAnchor:self.topAnchor
+                                              constant:[self titleTopInset]],
       ]];
     }
     self.heightConstraint = [self.heightAnchor
@@ -155,11 +148,15 @@ const float kTrendingQueriesContentHeight = 103;
 - (NSString*)titleString {
   switch (self.type) {
     case ContentSuggestionsModuleTypeShortcuts:
-      return l10n_util::GetNSString(
-          IDS_IOS_CONTENT_SUGGESTIONS_SHORTCUTS_MODULE_TITLE);
+      return ShouldRemoveHeadersForModuleRefresh()
+                 ? @""
+                 : l10n_util::GetNSString(
+                       IDS_IOS_CONTENT_SUGGESTIONS_SHORTCUTS_MODULE_TITLE);
     case ContentSuggestionsModuleTypeMostVisited:
-      return l10n_util::GetNSString(
-          IDS_IOS_CONTENT_SUGGESTIONS_MOST_VISITED_MODULE_TITLE);
+      return ShouldRemoveHeadersForModuleRefresh()
+                 ? @""
+                 : l10n_util::GetNSString(
+                       IDS_IOS_CONTENT_SUGGESTIONS_MOST_VISITED_MODULE_TITLE);
     case ContentSuggestionsModuleTypeReturnToRecentTab:
       return @"";
     case ContentSuggestionsModuleTypeTrendingQueries:
@@ -200,17 +197,53 @@ const float kTrendingQueriesContentHeight = 103;
   switch (self.type) {
     case ContentSuggestionsModuleTypeShortcuts:
     case ContentSuggestionsModuleTypeMostVisited:
+      // Add 3px of addition spacing so that a 2-line caption has some bottom
+      // spacing.
+      // TODO(crbug.com/1361569): Only add spacing if at least one tile is
+      // multi-line.
       contentHeight +=
           MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory)
-              .height;
+              .height +
+          3;
       break;
     case ContentSuggestionsModuleTypeReturnToRecentTab:
-      return kReturnToRecentTabSize.height;
+      return ReturnToRecentTabHeight();
     case ContentSuggestionsModuleTypeTrendingQueries:
       contentHeight += kTrendingQueriesContentHeight;
   }
-  return kContentTitleVerticalSpacing + ceilf(self.title.font.lineHeight) +
-         kTitleTopInset + contentHeight;
+  if (!ShouldRemoveHeadersForModuleRefresh()) {
+    contentHeight += ceilf(self.title.font.lineHeight);
+  }
+  return [self titleSpacing] + [self titleTopInset] + contentHeight;
+}
+
+// Returns the spacing between the module edge and title. Also used to return
+// the spacing between the contents and the module edge if
+// ShouldRemoveHeadersForModuleRefresh() is YES where there are no headers for
+// modules.
+- (CGFloat)titleTopInset {
+  if (self.type == ContentSuggestionsModuleTypeReturnToRecentTab) {
+    return 0;
+  }
+  if (ShouldRemoveHeadersForModuleRefresh() ||
+      ShouldMinimizeSpacingForModuleRefresh()) {
+    return kTitleShortenedTopInset;
+  }
+  return kTitleTopInset;
+}
+
+// Returns the spacing between the module and title and the content.
+- (CGFloat)titleSpacing {
+  // Order matters here since if there is no title shown, then there cannot be a
+  // need for spacing between the title and module contents.
+  if (ShouldRemoveHeadersForModuleRefresh() &&
+      self.type != ContentSuggestionsModuleTypeTrendingQueries) {
+    return 0;
+  }
+  if (ShouldMinimizeSpacingForModuleRefresh()) {
+    return kContentTitleShortenedVerticalSpacing;
+  }
+  return kContentTitleVerticalSpacing;
 }
 
 @end

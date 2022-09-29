@@ -49,10 +49,12 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="1201402288615127009">Weiter</translation>
 <translation id="1210557957257435379">Bildschirmaufzeichnung</translation>
 <translation id="121097972571826261">Weiter um ein Wort</translation>
+<translation id="1217633719248931900">App aufrufen</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />, Play Store-App</translation>
 <translation id="1225748608451425081">Dein Chromebook wurde aufgrund eines bekannten Problems gesperrt. Eine Anmeldung ist wieder möglich in: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Auswahl beenden</translation>
 <translation id="1239161794459865856">"<ph name="FEATURE_NAME" />" ist verbunden.</translation>
+<translation id="1240638468526743569">Eine App</translation>
 <translation id="1246890715821376239">Nicht unterstützte Apps</translation>
 <translation id="1247372569136754018">Mikrofon (intern)</translation>
 <translation id="1247519845643687288">Zuletzt verwendete Apps</translation>
@@ -538,6 +540,7 @@ Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="4123259114412175274">Prüfe zum Entsperren deines Chromebooks, ob Bluetooth auf dem Smartphone aktiviert ist</translation>
 <translation id="4125970834901680537">Apps können im Tabletmodus nicht gestreamt werden. Bitte versuch es noch einmal im Laptopmodus.</translation>
 <translation id="4129129681837227511">Wenn du Benachrichtigungen auf dem Sperrbildschirm sehen möchtest, entsperre das Gerät, um die Einstellung zu ändern</translation>
+<translation id="4130035430755296270">Für weitere Layoutoptionen Mauszeiger weiter darauf halten</translation>
 <translation id="4136724716305260864">Bis Sonnenaufgang aktiviert</translation>
 <translation id="4146833061457621061">Musik abspielen</translation>
 <translation id="4165275524535002941">Kabel unterstützt keine Bildschirme</translation>
@@ -668,6 +671,7 @@ Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="479989351350248267">Suchtaste</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
 <translation id="4814539958450445987">Anmeldebildschirm</translation>
+<translation id="481455355267255546">Als Nächstes</translation>
 <translation id="4831034276697007977">Möchtest du automatische Klicks wirklich deaktivieren?</translation>
 <translation id="4849058404725798627">Objekt mit Tastaturfokus hervorheben</translation>
 <translation id="485592688953820832">Keine Aktion (Pause)</translation>
@@ -686,6 +690,7 @@ Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="490788395437447240">Akku: <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="4917385247580444890">Stark</translation>
 <translation id="4918086044614829423">Annehmen</translation>
+<translation id="4919841137949306064"><ph name="APP_NAME" /> verwendet gerade deine Kamera</translation>
 <translation id="4925542575807923399">Der Administrator dieses Kontos hat festgelegt, dass dieses Konto in einer Sitzung mit Mehrfachanmeldung das erste angemeldete Konto sein muss.</translation>
 <translation id="4938176435186993759">Alle Vorschläge ausblenden</translation>
 <translation id="4945196315133970626">Benachrichtigungen deaktivieren</translation>
@@ -848,6 +853,7 @@ Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5860491529813859533">Aktivieren</translation>
 <translation id="5867217927013474703">Netzwerkinformationen werden erfasst</translation>
+<translation id="5867606971598166637">Dein Systemadministrator greift auf deine Bildschirme zu</translation>
 <translation id="5876666360658629066">Elterncode eingeben</translation>
 <translation id="5881540930187678962">Phone Hub später einrichten</translation>
 <translation id="5887954372087850114">Das Fenster „<ph name="WINDOW_TITLE" />“ wurde „<ph name="DESK_TITLE" />“ zugewiesen und von allen anderen Desktops entfernt</translation>
@@ -915,6 +921,7 @@ Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="6220928844947387476">Jetzt kannst du dich selbst und deinen Bildschirm gleichzeitig aufnehmen</translation>
 <translation id="622484624075952240">Abwärts</translation>
 <translation id="6231419273573514727">Die Leistung der Peripheriegeräte ist möglicherweise eingeschränkt</translation>
+<translation id="6232891689835436217"><ph name="APP_NAME" /> verwendet gerade deine Kamera und dein Mikrofon</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Horizontale Ausrichtung aktiv</translation>
 <translation id="6259254695169772643">Verwende den Eingabestift, um deine Auswahl zu treffen</translation>
@@ -1008,6 +1015,7 @@ Neuinstallation</translation>
 <translation id="6757237461819837179">Keine Medien werden abgespielt</translation>
 <translation id="6777216307882431711">Stromversorgung für verbundene USB-C-Geräte</translation>
 <translation id="6786750046913594791">Ordner schließen</translation>
+<translation id="6787595647772650851">Letzte Sitzung wiederherstellen</translation>
 <translation id="6790428901817661496">Wiedergabe</translation>
 <translation id="6801878137098616817">Vor Kurzem bearbeitet</translation>
 <translation id="6803622936009808957">Der Bildschirm konnte nicht gespiegelt werden, da die Auflösung nicht unterstützt wird. Stattdessen wurde der Modus für den erweiterten Desktop gestartet.</translation>
@@ -1133,6 +1141,7 @@ Neuinstallation</translation>
 <translation id="7544300628205093162">Hintergrundbeleuchtung der Tastatur ist an</translation>
 <translation id="7548434653388805669">Schlafenszeit</translation>
 <translation id="7551643184018910560">An Ablage anpinnen</translation>
+<translation id="7557816257942363084"><ph name="APP_NAME" /> verwendet gerade dein Mikrofon</translation>
 <translation id="7561982940498449837">Menü schließen</translation>
 <translation id="7564874036684306347">Das Verschieben von Fenstern auf einen anderen Desktop kann zu unerwartetem Verhalten führen. Nachfolgende Benachrichtigungen, Fenster und Dialogfelder werden unter Umständen zwischen den Desktops aufgeteilt.</translation>
 <translation id="7569509451529460200">Braille und ChromeVox sind aktiviert</translation>
@@ -1255,6 +1264,7 @@ Neuinstallation</translation>
 <translation id="8214996719228530800">Canary-Version</translation>
 <translation id="8219451629189078428">Dein Chromebook muss während dieses Zeitraums eingeschaltet und an eine Steckdose angeschlossen sein. Achte darauf, dass die Kabel des Ladegeräts oder Adapters ordnungsgemäß in dein Chromebook und die Steckdose eingesteckt sind. Schalte dein Chromebook nicht aus.</translation>
 <translation id="8236042855478648955">Zeit für eine Pause</translation>
+<translation id="8246282815785366524">Willkommen zurück, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, Signalstärke bei <ph name="SIGNAL_STRENGTH" />, Smartphone-Akku bei <ph name="BATTERY_STATUS" /></translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, App</translation>
 <translation id="8255234195843591763">Zurücksetzen, um Update zu erhalten</translation>

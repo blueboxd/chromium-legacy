@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
@@ -32,7 +31,7 @@ class HistoryClusterView extends SelectableItemView<HistoryCluster> {
         int EXPANDABLE = 2;
     }
 
-    private View mDividerView;
+    private DividerView mDividerView;
     @ClusterViewAccessibilityState
     int mAccessibilityState;
     /**
@@ -45,13 +44,8 @@ class HistoryClusterView extends SelectableItemView<HistoryCluster> {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mDividerView = new View(getContext(), null, 0, R.style.HorizontalDivider);
-        setDividerVisibility(false);
-        LayoutParams dividerLayoutParams = generateDefaultLayoutParams();
-        dividerLayoutParams.gravity = Gravity.BOTTOM;
-        dividerLayoutParams.width = LayoutParams.MATCH_PARENT;
-        dividerLayoutParams.height = getResources().getDimensionPixelSize(R.dimen.divider_height);
-        addView(mDividerView, dividerLayoutParams);
+        mDividerView = new DividerView(getContext(), null, 0, R.style.HorizontalDivider);
+        mDividerView.addToParent(this, generateDefaultLayoutParams());
         mEndButtonView.setVisibility(GONE);
         mEndButtonView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
         setAccessibilityDelegate(new AccessibilityDelegate() {
@@ -106,6 +100,13 @@ class HistoryClusterView extends SelectableItemView<HistoryCluster> {
         mDividerView.setVisibility(visible ? VISIBLE : GONE);
     }
 
+    void setHasThickDivider(boolean hasThickDivider) {
+        mDividerView.setIsThickDivider(hasThickDivider);
+    }
+
+    void setIconDrawableVisibility(int visibility) {
+        mStartIconView.setVisibility(visibility);
+    }
     public void setEndButtonClickListener(OnClickListener clickListener) {
         mEndButtonView.setOnClickListener(clickListener);
     }

@@ -30,6 +30,7 @@
 #include "content/public/test/fenced_frame_test_util.h"
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/fenced_frame_test_utils.h"
@@ -2794,20 +2795,25 @@ class SharedStoragePrivateAggregationEnabledBrowserTest
   void SetUpOnMainThread() override {
     SharedStorageBrowserTest::SetUpOnMainThread();
 
+    SetBrowserClientForTesting(&browser_client_);
+
     a_test_origin_ = https_server()->GetOrigin("a.test");
 
-    private_aggregation_host_ = new PrivateAggregationHost(
-        /*on_report_request_received=*/mock_callback_.Get());
+    auto* storage_partition_impl =
+        static_cast<StoragePartitionImpl*>(shell()
+                                               ->web_contents()
+                                               ->GetBrowserContext()
+                                               ->GetDefaultStoragePartition());
 
-    static_cast<StoragePartitionImpl*>(shell()
-                                           ->web_contents()
-                                           ->GetBrowserContext()
-                                           ->GetDefaultStoragePartition())
-        ->OverridePrivateAggregationManagerForTesting(
-            std::make_unique<TestPrivateAggregationManagerImpl>(
-                std::make_unique<MockPrivateAggregationBudgeter>(),
-                base::WrapUnique<PrivateAggregationHost>(
-                    private_aggregation_host_)));
+    private_aggregation_host_ = new PrivateAggregationHost(
+        /*on_report_request_received=*/mock_callback_.Get(),
+        storage_partition_impl->browser_context());
+
+    storage_partition_impl->OverridePrivateAggregationManagerForTesting(
+        std::make_unique<TestPrivateAggregationManagerImpl>(
+            std::make_unique<MockPrivateAggregationBudgeter>(),
+            base::WrapUnique<PrivateAggregationHost>(
+                private_aggregation_host_)));
 
     EXPECT_TRUE(NavigateToURL(
         shell(), https_server()->GetURL("a.test", kSimplePagePath)));
@@ -2817,6 +2823,10 @@ class SharedStoragePrivateAggregationEnabledBrowserTest
                                          PrivateAggregationBudgetKey)>&
   mock_callback() {
     return mock_callback_;
+  }
+
+  MockPrivateAggregationContentBrowserClient& browser_client() {
+    return browser_client_;
   }
 
  protected:
@@ -2830,6 +2840,8 @@ class SharedStoragePrivateAggregationEnabledBrowserTest
   base::MockRepeatingCallback<void(AggregatableReportRequest,
                                    PrivateAggregationBudgetKey)>
       mock_callback_;
+
+  MockPrivateAggregationContentBrowserClient browser_client_;
 };
 
 IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationEnabledBrowserTest,
@@ -2850,6 +2862,19 @@ IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationEnabledBrowserTest,
                   PrivateAggregationBudgetKey::Api::kSharedStorage);
         run_loop.Quit();
       }));
+
+  EXPECT_CALL(browser_client(),
+              LogWebFeatureForCurrentPage(
+                  shell()->web_contents()->GetPrimaryMainFrame(),
+                  blink::mojom::WebFeature::kPrivateAggregationApiAll));
+  EXPECT_CALL(
+      browser_client(),
+      LogWebFeatureForCurrentPage(
+          shell()->web_contents()->GetPrimaryMainFrame(),
+          blink::mojom::WebFeature::kPrivateAggregationApiSharedStorage));
+  ON_CALL(browser_client(), IsPrivateAggregationAllowed)
+      .WillByDefault(testing::Return(true));
+
   ExecuteScriptInWorklet(shell(), R"(
       privateAggregation.sendHistogramReport({bucket: 1, value: 2});
     )");
@@ -2862,6 +2887,18 @@ IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationEnabledBrowserTest,
 IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationEnabledBrowserTest,
                        RejectedTest) {
   WebContentsConsoleObserver console_observer(shell()->web_contents());
+
+  EXPECT_CALL(browser_client(),
+              LogWebFeatureForCurrentPage(
+                  shell()->web_contents()->GetPrimaryMainFrame(),
+                  blink::mojom::WebFeature::kPrivateAggregationApiAll));
+  EXPECT_CALL(
+      browser_client(),
+      LogWebFeatureForCurrentPage(
+          shell()->web_contents()->GetPrimaryMainFrame(),
+          blink::mojom::WebFeature::kPrivateAggregationApiSharedStorage));
+  ON_CALL(browser_client(), IsPrivateAggregationAllowed)
+      .WillByDefault(testing::Return(true));
 
   ExecuteScriptInWorklet(shell(), R"(
       privateAggregation.sendHistogramReport({bucket: -1, value: 2});
@@ -2902,6 +2939,18 @@ IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationEnabledBrowserTest,
                   PrivateAggregationBudgetKey::Api::kSharedStorage);
         run_loop.Quit();
       }));
+
+  EXPECT_CALL(browser_client(),
+              LogWebFeatureForCurrentPage(
+                  shell()->web_contents()->GetPrimaryMainFrame(),
+                  blink::mojom::WebFeature::kPrivateAggregationApiAll));
+  EXPECT_CALL(
+      browser_client(),
+      LogWebFeatureForCurrentPage(
+          shell()->web_contents()->GetPrimaryMainFrame(),
+          blink::mojom::WebFeature::kPrivateAggregationApiSharedStorage));
+  ON_CALL(browser_client(), IsPrivateAggregationAllowed)
+      .WillByDefault(testing::Return(true));
 
   ExecuteScriptInWorklet(shell(), R"(
       privateAggregation.sendHistogramReport({bucket: 1, value: 2});

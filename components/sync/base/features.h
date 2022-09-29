@@ -24,7 +24,7 @@ inline constexpr base::Feature kCacheBaseEntitySpecificsInMetadata{
     "CacheBaseEntitySpecificsInMetadata", base::FEATURE_DISABLED_BY_DEFAULT};
 
 inline constexpr base::Feature kEnableSyncImmediatelyInFRE{
-    "EnableSyncImmediatelyInFRE", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableSyncImmediatelyInFRE", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Causes Sync to ignore updates encrypted with keys that have been missing for
 // too long from this client; Sync will proceed normally as if those updates
@@ -60,6 +60,10 @@ inline constexpr base::Feature kSyncAndroidPromosWithSingleButton{
 inline constexpr base::Feature kSyncAndroidPromosWithTitle{
     "SyncAndroidPromosWithTitle", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_ANDROID)
+
+// Controls whether to enable syncing of Autofill Wallet Usage Data.
+inline constexpr base::Feature kSyncAutofillWalletUsageData{
+    "SyncAutofillWalletUsageData", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Causes the sync engine to count a quota for commits of data types that can
 // be committed by extension JS API. If the quota is depleted, an extra long
@@ -133,6 +137,11 @@ inline constexpr base::Feature kSyncTrustedVaultVerifyDeviceRegistration{
 inline constexpr base::Feature kSyncTrustedVaultRedoDeviceRegistration{
     "SyncTrustedVaultRedoDeviceRegistration",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Triggers one-off reset of `keys_are_stale`, allowing another device
+// registration attempt if previous was failed.
+inline constexpr base::Feature kSyncTrustedVaultResetKeysAreStale{
+    "SyncTrustedVaultResetKeysAreStale", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, the device will register with FCM and listen to new
 // invalidations. Also, FCM token will be set in DeviceInfo, which signals to

@@ -273,9 +273,16 @@ constexpr CGFloat kNonProfileImageHeightWidth = 56.0;
 }
 
 - (NSString*)accessibilityLabel {
-  return [NSString
-      stringWithFormat:@"%@ %@", self.textLabel.text,
-                       [self.primaryButton titleForState:UIControlStateNormal]];
+  return self.titleLabel.hidden
+             ? [NSString
+                   stringWithFormat:@"%@ %@", self.textLabel.text,
+                                    [self.primaryButton
+                                        titleForState:UIControlStateNormal]]
+             : [NSString
+                   stringWithFormat:@"%@. %@ %@", self.titleLabel.text,
+                                    self.textLabel.text,
+                                    [self.primaryButton
+                                        titleForState:UIControlStateNormal]];
 }
 
 - (BOOL)accessibilityActivate {
@@ -320,6 +327,7 @@ constexpr CGFloat kNonProfileImageHeightWidth = 56.0;
   }
   _promoViewStyle = promoViewStyle;
   [self updateLayoutForStyle];
+  [self layoutIfNeeded];
 }
 
 // Sets mode and updates promo accordingly.
@@ -479,8 +487,9 @@ constexpr CGFloat kNonProfileImageHeightWidth = 56.0;
       self.secondaryButton.hidden = YES;
 
       // Configures fonts for titled layout.
-      self.titleLabel.font =
-          [UIFont preferredFontForTextStyle:UIFontTextStyleTitle2];
+      // TODO(crbug.com/1331010): Make this font size dynamic.
+      self.titleLabel.font = [[UIFont
+          preferredFontForTextStyle:UIFontTextStyleHeadline] fontWithSize:20];
       self.titleLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
       self.textLabel.font =
           [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
@@ -543,7 +552,6 @@ constexpr CGFloat kNonProfileImageHeightWidth = 56.0;
   [NSLayoutConstraint deactivateConstraints:self.currentLayoutConstraints];
   self.currentLayoutConstraints = constraintsToActivate;
   [NSLayoutConstraint activateConstraints:self.currentLayoutConstraints];
-  [self layoutIfNeeded];
 }
 
 // Updates image size constraints based on if it is a profile avatar.

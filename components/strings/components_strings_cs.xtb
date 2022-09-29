@@ -421,6 +421,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="2040894699575719559">Místo bylo zablokováno</translation>
 <translation id="2042213636306070719">Přihrádka 7</translation>
 <translation id="204357726431741734">Chcete-li používat hesla uložená v účtu Google, přihlaste se</translation>
+<translation id="2048261947532620704">Překlad stránky</translation>
 <translation id="205212645995975601">Barbecue a grilování</translation>
 <translation id="2053111141626950936">Stránky v jazyce <ph name="LANGUAGE" /> se nebudou překládat.</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{Když je tento ovládací prvek zapnutý a stav je aktivní, Chrome určuje, které skupině lidí (neboli kohortě) se vaše nedávná aktivita prohlížení nejvíce podobá. Inzerenti mohou vybírat reklamy podle skupin a vaše historie prohlížení zůstává soukromá ve vašem zařízení. Vaše skupina se každý den aktualizuje.}=1{Když je tento ovládací prvek zapnutý a stav je aktivní, Chrome určuje, které skupině lidí (neboli kohortě) se vaše nedávná aktivita prohlížení nejvíce podobá. Inzerenti mohou vybírat reklamy podle skupin a vaše historie prohlížení zůstává soukromá ve vašem zařízení. Vaše skupina se každý den aktualizuje.}few{Když je tento ovládací prvek zapnutý a stav je aktivní, Chrome určuje, které skupině lidí (neboli kohortě) se vaše nedávná aktivita prohlížení nejvíce podobá. Inzerenti mohou vybírat reklamy podle skupin a vaše historie prohlížení zůstává soukromá ve vašem zařízení. Vaše skupina se každé {NUM_DAYS} dny aktualizuje.}many{Když je tento ovládací prvek zapnutý a stav je aktivní, Chrome určuje, které skupině lidí (neboli kohortě) se vaše nedávná aktivita prohlížení nejvíce podobá. Inzerenti mohou vybírat reklamy podle skupin a vaše historie prohlížení zůstává soukromá ve vašem zařízení. Vaše skupina se každých {NUM_DAYS} dne aktualizuje.}other{Když je tento ovládací prvek zapnutý a stav je aktivní, Chrome určuje, které skupině lidí (neboli kohortě) se vaše nedávná aktivita prohlížení nejvíce podobá. Inzerenti mohou vybírat reklamy podle skupin a vaše historie prohlížení zůstává soukromá ve vašem zařízení. Vaše skupina se každých {NUM_DAYS} dní aktualizuje.}}</translation>
@@ -908,6 +909,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="3427342743765426898">&amp;Opakovat úpravy</translation>
 <translation id="342781501876943858">Pokud jste heslo použili na jiném webu, doporučujeme vám ho resetovat.</translation>
 <translation id="3428151540071562330">Některé identifikátory URI šablon serverů DnsOverHttpsTemplates jsou neplatné a nebudou použity.</translation>
+<translation id="3431216045099978607">Stisknutím tlačítka |<ph name="ACCELERATOR" />| ukončíte režim celé obrazovky a zobrazíte stažený obsah.</translation>
 <translation id="3431636764301398940">Uložit tuto kartu do zařízení</translation>
 <translation id="3432601291244612633">Zavřít stránku</translation>
 <translation id="3435738964857648380">Zabezpečení</translation>
@@ -1100,7 +1102,6 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="3969052498612555048">Nemůžete kód najít? <ph name="BEGIN_LINK" />Vygenerovat nový kód<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
 <translation id="3973234410852337861">Web <ph name="HOST_NAME" /> je blokován</translation>
-<translation id="3978338123949022456">Režim vyhledávání: Pokud chcete vyhledávat s příponou <ph name="KEYWORD_SUFFIX" />, zadejte dotaz a stiskněte Enter</translation>
 <translation id="398470910934384994">Ptáci</translation>
 <translation id="3985750352229496475">Spravovat adresy...</translation>
 <translation id="3986705137476756801">Zatím živý přepis vypnout</translation>
@@ -1648,6 +1649,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="540969355065856584">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Jeho bezpečnostní certifikát v tuto chvíli není platný. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="5412040515238827314">Neplatný formát: Očekáván seznam vzorů.</translation>
 <translation id="5412236728747081950">Tento web získává z Chromu vaše zájmy, aby vám mohl zobrazovat relevantnější reklamy</translation>
+<translation id="5412245327974352290"><ph name="TRADITIONAL_TEXT" />–<ph name="ADDITIONAL_TEXT" /></translation>
 <translation id="541416427766103491">Stohovač 4</translation>
 <translation id="5421136146218899937">Vymazat údaje o prohlížení...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> vám chce zasílat oznámení</translation>
@@ -1709,6 +1711,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5580958916614886209">Zkontrolujte měsíc vypršení platnosti a zkuste to znovu.</translation>
 <translation id="558420943003240152">Spravovat hesla a přístupové klíče…</translation>
 <translation id="5586446728396275693">Žádné uložené adresy</translation>
+<translation id="5586831831248371458">Prohledat <ph name="KEYWORD_SUFFIX" /></translation>
 <translation id="5587987780934666589">Uživatel platformy</translation>
 <translation id="5593349413089863479">Připojení není plně zabezpečené</translation>
 <translation id="5595485650161345191">Upravit adresu</translation>
@@ -2051,6 +2054,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6591833882275308647">Vaše zařízení <ph name="DEVICE_TYPE" /> není spravováno</translation>
 <translation id="6592952801936330159">Tlačítko správy nastavení webů, stisknutím klávesy Enter můžete spravovat oprávnění a uložená data webů v nastavení Chromu</translation>
 <translation id="6596325263575161958">Možnosti šifrování</translation>
+<translation id="6599642189720630047">Sledované produkty</translation>
 <translation id="6609880536175561541">Prc7 (obálka)</translation>
 <translation id="6611723696964473273">Ekonomické zprávy</translation>
 <translation id="6612010098632894193">Online video</translation>
@@ -2577,6 +2581,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8004582292198964060">Prohlížeč</translation>
 <translation id="8009225694047762179">Spravovat hesla</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Tato karta a její fakturační adresa se uloží. Budete ji moci používat, když budete přihlášeni k účtu <ph name="USER_EMAIL" />.}few{Tyto karty a jejich fakturační adresy se uloží. Budete je moci používat, když budete přihlášeni k účtu <ph name="USER_EMAIL" />.}many{Tyto karty a jejich fakturační adresy se uloží. Budete je moci používat, když budete přihlášeni k účtu <ph name="USER_EMAIL" />.}other{Tyto karty a jejich fakturační adresy se uloží. Budete je moci používat, když budete přihlášeni k účtu <ph name="USER_EMAIL" />.}}</translation>
+<translation id="8019861005170389898"><ph name="TRADITIONAL_TEXT" /> (<ph name="ADDITIONAL_TEXT" />)</translation>
 <translation id="8025119109950072390">Útočníci na tomto webu vás mohou podvodem přimět k nebezpečnému chování, jako je instalace softwaru nebo vyzrazení osobních údajů (například hesel, telefonních čísel nebo platebních karet).</translation>
 <translation id="8026334261755873520">Vymazat údaje o prohlížení</translation>
 <translation id="8027077570865220386">Přihrádka 15</translation>

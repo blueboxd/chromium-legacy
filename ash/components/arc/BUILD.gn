@@ -112,7 +112,7 @@ static_library("arc") {
     ":arc_base",
     ":arc_metrics_constants",
     ":prefs",
-    "//ash/components/cryptohome",
+    "//chromeos/ash/components/cryptohome",
   ]
 
   deps = [
@@ -123,6 +123,7 @@ static_library("arc") {
     "//ash/public/cpp",
     "//ash/public/cpp/external_arc:external_arc",
     "//chromeos/ash/components/audio",
+    "//chromeos/ash/components/dbus",
     "//chromeos/ash/components/dbus/arc",
     "//chromeos/ash/components/dbus/concierge",
     "//chromeos/ash/components/dbus/concierge:concierge_proto",
@@ -139,7 +140,6 @@ static_library("arc") {
     "//chromeos/ash/components/network",
     "//chromeos/components/disks:prefs",
     "//chromeos/components/sensors:sensors",
-    "//chromeos/dbus",
     "//chromeos/dbus/permission_broker",
     "//chromeos/dbus/power",
     "//chromeos/dbus/power:power_manager_proto",
@@ -208,11 +208,11 @@ static_library("arc_base_utils") {
     "//ash/constants",
     "//ash/public/cpp",
     "//base",
+    "//chromeos/ash/components/dbus",
     "//chromeos/ash/components/dbus/concierge:concierge_proto",
     "//chromeos/ash/components/dbus/debug_daemon",
     "//chromeos/ash/components/dbus/session_manager",
     "//chromeos/ash/components/dbus/upstart:upstart",
-    "//chromeos/dbus:dbus",
     "//components/exo",
     "//ui/aura",
   ]
@@ -437,7 +437,6 @@ source_set("unit_tests") {
     "//ash/components/arc/enterprise",
     "//ash/components/arc/media_session",
     "//ash/components/arc/video_accelerator:common",
-    "//ash/components/cryptohome",
     "//ash/components/disks:test_support",
     "//ash/components/policy",
     "//ash/constants",
@@ -447,6 +446,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//chromeos",
+    "//chromeos/ash/components/cryptohome",
     "//chromeos/ash/components/dbus/arc",
     "//chromeos/ash/components/dbus/concierge",
     "//chromeos/ash/components/dbus/patchpanel",

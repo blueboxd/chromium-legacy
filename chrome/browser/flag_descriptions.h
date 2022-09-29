@@ -156,6 +156,9 @@ extern const char kU2FPermissionPromptDescription[];
 extern const char kU2FSecurityKeyAPIName[];
 extern const char kU2FSecurityKeyAPIDescription[];
 
+extern const char kLoadCryptoTokenExtensionName[];
+extern const char kLoadCryptoTokenExtensionDescription[];
+
 extern const char kUpcomingSharingFeaturesName[];
 extern const char kUpcomingSharingFeaturesDescription[];
 
@@ -940,6 +943,9 @@ extern const char kIncognitoNtpRevampDescription[];
 extern const char kIncognitoScreenshotName[];
 extern const char kIncognitoScreenshotDescription[];
 
+extern const char kInfobarScrollOptimizationName[];
+extern const char kInfobarScrollOptimizationDescription[];
+
 extern const char kInitialNavigationEntryName[];
 extern const char kInitialNavigationEntryDescription[];
 
@@ -1097,6 +1103,9 @@ extern const char kOmniboxModernizeVisualUpdateDescription[];
 extern const char kOmniboxMostVisitedTilesName[];
 extern const char kOmniboxMostVisitedTilesDescription[];
 
+extern const char kOmniboxMostVisitedTilesDynamicSpacingName[];
+extern const char kOmniboxMostVisitedTilesDynamicSpacingDescription[];
+
 extern const char kOmniboxMostVisitedTilesTitleWrapAroundName[];
 extern const char kOmniboxMostVisitedTilesTitleWrapAroundDescription[];
 
@@ -1180,9 +1189,6 @@ extern const char kOsSettingsAppNotificationsPageDescription[];
 
 extern const char kOverviewButtonName[];
 extern const char kOverviewButtonDescription[];
-
-extern const char kEnableDeJellyName[];
-extern const char kEnableDeJellyDescription[];
 
 extern const char kOverlayScrollbarsName[];
 extern const char kOverlayScrollbarsDescription[];
@@ -1942,6 +1948,9 @@ extern const char kEnableCommandLineOnNoRootedDescription[];
 extern const char kEnableFamilyInfoFeedbackName[];
 extern const char kEnableFamilyInfoFeedbackDescription[];
 
+extern const char kEnableOskResizesVisualViewportName[];
+extern const char kEnableOskResizesVisualViewportDescription[];
+
 extern const char kExploreSitesName[];
 extern const char kExploreSitesDescription[];
 
@@ -1969,6 +1978,9 @@ extern const char kFeedIsAblatedDescription[];
 
 extern const char kFeedCloseRefreshName[];
 extern const char kFeedCloseRefreshDescription[];
+
+extern const char kFeedVideoInlinePlaybackName[];
+extern const char kFeedVideoInlinePlaybackDescription[];
 
 extern const char kGridTabSwitcherForTabletsName[];
 extern const char kGridTabSwitcherForTabletsDescription[];
@@ -2163,6 +2175,10 @@ extern const char kRequestDesktopSiteExceptionsDescription[];
 
 extern const char kRequestDesktopSiteForTabletsName[];
 extern const char kRequestDesktopSiteForTabletsDescription[];
+
+extern const char kRevokeNotificationsPermissionIfDisabledOnAppLevelName[];
+extern const char
+    kRevokeNotificationsPermissionIfDisabledOnAppLevelDescription[];
 
 extern const char kSafeModeForCachedFlagsName[];
 extern const char kSafeModeForCachedFlagsDescription[];
@@ -3477,6 +3493,9 @@ extern const char kCrOSEnforceSystemAecNsDescription[];
 
 extern const char kCrOSEnforceSystemAecNsAgcName[];
 extern const char kCrOSEnforceSystemAecNsAgcDescription[];
+
+extern const char kDefaultCalculatorWebAppName[];
+extern const char kDefaultCalculatorWebAppDescription[];
 
 extern const char kDeprecateLowUsageCodecsName[];
 extern const char kDeprecateLowUsageCodecsDescription[];

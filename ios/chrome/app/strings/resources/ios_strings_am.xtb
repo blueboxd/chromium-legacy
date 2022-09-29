@@ -193,7 +193,7 @@
 <translation id="2648803196158606475">የተነበቡትን ሰርዝ</translation>
 <translation id="2653659639078652383">አስገባ</translation>
 <translation id="2690858294534178585">ካሜራ ሥራ ላይ ነው</translation>
-<translation id="2691653761409724435">ከመስመር ውጪ አይገኝም</translation>
+<translation id="2691653761409724435">ከመስመር ውጭ አይገኝም</translation>
 <translation id="2695507686909505111">ገጽ ተተርጉሟል</translation>
 <translation id="2697526135132990015">ዘግተህ ውጣ እና ውሂብን አጥፋ</translation>
 <translation id="2700241355396984822">ፈቃዶችን ለማቀናበር አማራጮች</translation>
@@ -280,6 +280,7 @@
 <translation id="3277021493514034324">የድር ጣቢያ አድራሻ ተቀድቷል</translation>
 <translation id="3285962946108803577">ገጽ አጋራ...</translation>
 <translation id="3290875554372353449">አንድ መለያ ይምረጡ</translation>
+<translation id="3305294846493618482">ተጨማሪ</translation>
 <translation id="3311748811247479259">ጠፍቷል</translation>
 <translation id="3324193307694657476">አድራሻ 2</translation>
 <translation id="3328801116991980348">የጣቢያ መረጃ</translation>
@@ -311,7 +312,6 @@
 <translation id="3529024052484145543">ደህንነቱ አልተጠበቀም</translation>
 <translation id="3533202363250687977">ሁሉንም ማንነት የማያሳውቅ ትሮችን ዝጋ</translation>
 <translation id="3533436815740441613">አዲስ ትር</translation>
-<translation id="3547799431091898961">በሁሉም ድር ጣቢያዎች ላይ የእርስዎን የGoogle መለያ ዘግተው ለመውጣት <ph name="BEGIN_LINK" />ከChrome ዘግተው ይውጡ<ph name="END_LINK" />።</translation>
 <translation id="3551320343578183772">ትር ዝጋ</translation>
 <translation id="3581564640715911333">በሌሎች ቋንቋዎች ለመተርጎም ሐሳብ አቅርብ</translation>
 <translation id="3588820906588687999">ምስሉን በአዲስ ትር ውስጥ ክፈት</translation>
@@ -904,7 +904,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="8458397775385147834">1 ንጥል ተሰርዟል</translation>
 <translation id="8459333855531264009">ደህንነቱ አልተጠበቀም</translation>
 <translation id="8487667956631253959">አብራ</translation>
-<translation id="8487700953926739672">ከመስመር ውጪ ይገኛል</translation>
+<translation id="8487700953926739672">ከመስመር ውጭ ይገኛል</translation>
 <translation id="8490978609246021741">ለውጦችን አስቀምጥ</translation>
 <translation id="8503813439785031346">የተጣቃሚ ስም</translation>
 <translation id="850600235656508448">ማንነት በማያሳውቅ ሁነታ ይክፈቱ</translation>

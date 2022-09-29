@@ -15,6 +15,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 
+import androidx.appcompat.view.ContextThemeWrapper;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,6 +38,7 @@ import org.chromium.base.TimeUtils;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.R;
 
 import java.util.concurrent.TimeUnit;
 
@@ -213,10 +216,27 @@ public class BrandingControllerUnitTest {
                 .assertBrandingDecisionMade(BrandingDecision.TOAST);
     }
 
+    @Test
+    public void testDestroy() {
+        // Inspired by https://crbug.com/1362437. Make sure callback are canceled once the branding
+        // controller is destroyed.
+        new BrandingCheckTester()
+                .newBrandingController()
+                .onToolbarInitialized()
+                .destroyController()
+                .idleMainLooper() // Finish Branding checker.
+                // No toolbar update / branding toast should be shown.
+                .assertShownBrandingLocationBar(false)
+                .assertShownRegularLocationBar(false)
+                .assertShownToastBranding(false);
+    }
+
     class BrandingCheckTester {
         public BrandingCheckTester newBrandingController() {
             Context context = ContextUtils.getApplicationContext();
-            mBrandingController = new BrandingController(context, context.getPackageName());
+            mBrandingController = new BrandingController(
+                    new ContextThemeWrapper(context, R.style.Theme_Chromium_Activity),
+                    context.getPackageName());
 
             // Always initialize a new mock, as some tests were testing multiple branding runs.
             mToolbarBrandingDelegate = mock(ToolbarBrandingDelegate.class);
@@ -264,6 +284,11 @@ public class BrandingControllerUnitTest {
         public BrandingCheckTester advanceMills(long duration) {
             ShadowSystemClock.advanceBy(duration, TimeUnit.MILLISECONDS);
             mFakeTimeTestRule.advanceMillis(duration);
+            return this;
+        }
+
+        public BrandingCheckTester destroyController() {
+            mBrandingController.destroy();
             return this;
         }
     }

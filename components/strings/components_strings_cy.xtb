@@ -421,6 +421,7 @@ Fel arall, bydd eich gosodiadau preifatrwydd yn rhwystro hyn. Bydd hyn yn caniat
 <translation id="2040894699575719559">Rhwystrwyd lleoliad</translation>
 <translation id="2042213636306070719">Hambwrdd 7</translation>
 <translation id="204357726431741734">Mewngofnodwch i ddefnyddio cyfrineiriau a gedwir yn eich Cyfrif Google</translation>
+<translation id="2048261947532620704">Wrthi'n cyfieithu'r dudalen</translation>
 <translation id="205212645995975601">Barbeciw a grilio</translation>
 <translation id="2053111141626950936">Ni fydd tudalennau yn <ph name="LANGUAGE" /> yn cael eu cyfieithu.</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{Pan fydd y rheolaeth hon ymlaen a'r statws yn weithredol, mae Chrome yn penderfynu pa grŵp mawr o bobl, neu "garfan," y mae eich gweithgarwch pori diweddar yn fwyaf tebyg iddynt. Gall hysbysebwyr ddewis hysbysebion ar gyfer y grŵp a chedwir eich gweithgarwch pori yn breifat ar eich dyfais. Mae'ch grŵp yn cael ei ddiweddaru bob dydd.}=1{Pan fydd y rheolaeth hon ymlaen a'r statws yn weithredol, mae Chrome yn penderfynu pa grŵp mawr o bobl, neu "garfan," y mae eich gweithgarwch pori diweddar yn fwyaf tebyg iddynt. Gall hysbysebwyr ddewis hysbysebion ar gyfer y grŵp a chedwir eich gweithgarwch pori yn breifat ar eich dyfais. Mae'ch grŵp yn cael ei ddiweddaru bob dydd.}two{Pan fydd y rheolaeth hon ymlaen a'r statws yn weithredol, mae Chrome yn penderfynu pa grŵp mawr o bobl, neu "garfan," y mae eich gweithgarwch pori diweddar yn fwyaf tebyg iddynt. Gall hysbysebwyr ddewis hysbysebion ar gyfer y grŵp a chedwir eich gweithgarwch pori yn breifat ar eich dyfais. Mae'ch grŵp yn cael ei ddiweddaru bob {NUM_DAYS} ddiwrnod.}few{Pan fydd y rheolaeth hon ymlaen a'r statws yn weithredol, mae Chrome yn penderfynu pa grŵp mawr o bobl, neu "garfan," y mae eich gweithgarwch pori diweddar yn fwyaf tebyg iddynt. Gall hysbysebwyr ddewis hysbysebion ar gyfer y grŵp a chedwir eich gweithgarwch pori yn breifat ar eich dyfais. Mae'ch grŵp yn cael ei ddiweddaru bob {NUM_DAYS} diwrnod.}many{Pan fydd y rheolaeth hon ymlaen a'r statws yn weithredol, mae Chrome yn penderfynu pa grŵp mawr o bobl, neu "garfan," y mae eich gweithgarwch pori diweddar yn fwyaf tebyg iddynt. Gall hysbysebwyr ddewis hysbysebion ar gyfer y grŵp a chedwir eich gweithgarwch pori yn breifat ar eich dyfais. Mae'ch grŵp yn cael ei ddiweddaru bob {NUM_DAYS} diwrnod.}other{Pan fydd y rheolaeth hon ymlaen a'r statws yn weithredol, mae Chrome yn penderfynu pa grŵp mawr o bobl, neu "garfan," y mae eich gweithgarwch pori diweddar yn fwyaf tebyg iddynt. Gall hysbysebwyr ddewis hysbysebion ar gyfer y grŵp a chedwir eich gweithgarwch pori yn breifat ar eich dyfais. Mae'ch grŵp yn cael ei ddiweddaru bob {NUM_DAYS} diwrnod.}}</translation>
@@ -803,7 +804,7 @@ Fel arall, bydd eich gosodiadau preifatrwydd yn rhwystro hyn. Bydd hyn yn caniat
 <translation id="3157931365184549694">Adfer</translation>
 <translation id="3158539265159265653">Disc</translation>
 <translation id="3162559335345991374">Mae'n bosib y bydd y Wi-Fi rydych yn ei ddefnyddio yn gofyn i chi fynd i'w dudalen fewngofnodi.</translation>
-<translation id="3169472444629675720">Darganfod</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3176929007561373547">Gwiriwch eich gosodiadau dirprwyol neu cysylltwch â'ch gweinyddwr rhwydwaith i
       sicrhau bod y dirprwy weinydd yn gweithio. Os nad ydych yn credu y dylech
       fod yn defnyddio dirprwy weinydd:
@@ -911,6 +912,7 @@ Fel arall, bydd eich gosodiadau preifatrwydd yn rhwystro hyn. Bydd hyn yn caniat
 <translation id="3427342743765426898">&amp;Ailwneud Golygu</translation>
 <translation id="342781501876943858">Mae Chromium yn argymell ailosod eich cyfrinair os gwnaethoch ei ailddefnyddio ar wefannau eraill.</translation>
 <translation id="3428151540071562330">Mae un neu fwy o'r URI templed gweinydd DnsOverHttpsTemplates yn annilys ac ni chaiff ei ddefnyddio.</translation>
+<translation id="3431216045099978607">Pwyswch |<ph name="ACCELERATOR" />| i adael y sgrîn lawn a gweld y lawrlwythiad.</translation>
 <translation id="3431636764301398940">Cadw'r cerdyn hwn i'r ddyfais hon</translation>
 <translation id="3432601291244612633">Cau'r dudalen</translation>
 <translation id="3435738964857648380">Diogelwch</translation>
@@ -1104,7 +1106,6 @@ Fel arall, bydd eich gosodiadau preifatrwydd yn rhwystro hyn. Bydd hyn yn caniat
 <translation id="3969052498612555048">Methu â dod o hyd i'ch cod? <ph name="BEGIN_LINK" />Cael cod newydd<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">Wrthi'n cyfrifo…</translation>
 <translation id="3973234410852337861">Mae <ph name="HOST_NAME" /> wedi'i rwystro</translation>
-<translation id="3978338123949022456">Modd chwilio, teipiwch ymholiad a phwyswch Enter i chwilio gyda <ph name="KEYWORD_SUFFIX" /></translation>
 <translation id="398470910934384994">Adar</translation>
 <translation id="3985750352229496475">Rheoli Cyfeiriadau...</translation>
 <translation id="3986705137476756801">Diffodd Capsiynau Byw am y tro</translation>
@@ -1652,6 +1653,7 @@ Fel arall, bydd eich gosodiadau preifatrwydd yn rhwystro hyn. Bydd hyn yn caniat
 <translation id="540969355065856584">Ni allai'r gweinydd hwn brofi ei fod yn <ph name="DOMAIN" />; nid yw ei dystysgrif ddiogelwch yn ddilys ar hyn o bryd. Gall hyn gael ei achosi gan gamffurfweddiad neu ymosodwr yn rhyng-gipio'ch cysylltiad.</translation>
 <translation id="5412040515238827314">Fformat annilys: Disgwyl rhestr o batrymau.</translation>
 <translation id="5412236728747081950">Mae'r wefan hon yn cael eich diddordebau o Chrome i ddangos rhagor o hysbysebion defnyddiol i chi</translation>
+<translation id="5412245327974352290"><ph name="TRADITIONAL_TEXT" /> - <ph name="ADDITIONAL_TEXT" /></translation>
 <translation id="541416427766103491">Pentyrrwr 4</translation>
 <translation id="5421136146218899937">Clirio data pori…</translation>
 <translation id="5426179911063097041">Mae <ph name="SITE" /> eisiau anfon hysbysiadau atoch</translation>
@@ -1713,6 +1715,7 @@ Fel arall, bydd eich gosodiadau preifatrwydd yn rhwystro hyn. Bydd hyn yn caniat
 <translation id="5580958916614886209">Gwiriwch eich mis darfod a rhowch gynnig arall arni</translation>
 <translation id="558420943003240152">Rheoli cyfrineiriau a chodau pas…</translation>
 <translation id="5586446728396275693">Nid oes unrhyw gyfeiriadau sydd wedi'u cadw</translation>
+<translation id="5586831831248371458">Chwilio <ph name="KEYWORD_SUFFIX" /></translation>
 <translation id="5587987780934666589">Defnyddiwr platfform</translation>
 <translation id="5593349413089863479">Nid yw'r cysylltiad yn gwbl ddiogel</translation>
 <translation id="5595485650161345191">Golygu cyfeiriad</translation>
@@ -2056,6 +2059,7 @@ Fel arall, bydd eich gosodiadau preifatrwydd yn rhwystro hyn. Bydd hyn yn caniat
 <translation id="6591833882275308647">Ni rheoli eich <ph name="DEVICE_TYPE" /></translation>
 <translation id="6592952801936330159">Botwm rheoli gosodiadau gwefan, pwyswch Enter i reoli caniatadau a data sydd wedi'u storio ar draws gwefannau yng ngosodiadau Chrome</translation>
 <translation id="6596325263575161958">Dewisiadau amgryptio</translation>
+<translation id="6599642189720630047">Cynhyrchion sy'n cael eu Dilyn</translation>
 <translation id="6609880536175561541">Prc7 (Amlen)</translation>
 <translation id="6611723696964473273">Newyddion yr economi</translation>
 <translation id="6612010098632894193">Fideo ar-lein</translation>
@@ -2583,6 +2587,7 @@ Manylion ychwanegol:
 <translation id="8004582292198964060">Porwr</translation>
 <translation id="8009225694047762179">Rheoli Cyfrineiriau</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Bydd y cerdyn hwn a'i gyfeiriad bilio yn cael eu cadw. Byddwch yn gallu ei ddefnyddio pan fyddwch wedi mewngofnodi i <ph name="USER_EMAIL" />.}zero{Bydd y cardiau hyn a'u cyfeiriadau bilio yn cael eu cadw. Byddwch yn gallu eu defnyddio pan fyddwch wedi mewngofnodi i <ph name="USER_EMAIL" />.}two{Bydd y cardiau hyn a'u cyfeiriadau bilio yn cael eu cadw. Byddwch yn gallu eu defnyddio pan fyddwch wedi mewngofnodi i <ph name="USER_EMAIL" />.}few{Bydd y cardiau hyn a'u cyfeiriadau bilio yn cael eu cadw. Byddwch yn gallu eu defnyddio pan fyddwch wedi mewngofnodi i <ph name="USER_EMAIL" />.}many{Bydd y cardiau hyn a'u cyfeiriadau bilio yn cael eu cadw. Byddwch yn gallu eu defnyddio pan fyddwch wedi mewngofnodi i <ph name="USER_EMAIL" />.}other{Bydd y cardiau hyn a'u cyfeiriadau bilio yn cael eu cadw. Byddwch yn gallu eu defnyddio pan fyddwch wedi mewngofnodi i <ph name="USER_EMAIL" />.}}</translation>
+<translation id="8019861005170389898"><ph name="TRADITIONAL_TEXT" /> (<ph name="ADDITIONAL_TEXT" />)</translation>
 <translation id="8025119109950072390">Mae'n bosib y bydd ymosodwyr ar y wefan hon yn eich twyllo i wneud rhywbeth peryglus megis gosod meddalwedd neu ddatgelu eich gwybodaeth bersonol (er enghraifft, cyfrineiriau, rhifau ffôn, neu gardiau credyd).</translation>
 <translation id="8026334261755873520">Clirio data pori</translation>
 <translation id="8027077570865220386">Hambwrdd 15</translation>

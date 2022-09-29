@@ -102,29 +102,44 @@ class SilentSyncEnablerDelegate : public TurnSyncOnHelper::Delegate {
         ProfileMetrics::ProfileSignedInFlowOutcome::kSkippedByPolicies);
   }
 
+  bool ShouldAbortBeforeShowSyncDisabledConfirmation() override {
+    ProfileMetrics::LogLacrosPrimaryProfileFirstRunOutcome(
+        ProfileMetrics::ProfileSignedInFlowOutcome::kSkippedByPolicies);
+    return true;
+  }
+
   void ShowSyncDisabledConfirmation(
       bool is_managed_account,
       base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
           callback) override {
-    // `SYNC_WITH_DEFAULT_SETTINGS` for the sync disable confirmation means
-    // "stay signed in". See https://crbug.com/1141341.
-    std::move(callback).Run(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
-
-    ProfileMetrics::LogLacrosPrimaryProfileFirstRunOutcome(
-        ProfileMetrics::ProfileSignedInFlowOutcome::kSkippedByPolicies);
+    LOG(WARNING) << "crbug.com/1340791 | Unexpected Sync disabled prompt.";
+    // If Sync is disabled, the `TurnSyncOnHelper` should quit earlier due to
+    // `ShouldAbortBeforeShowSyncDisabledConfirmation()`.
+    NOTREACHED();
   }
 
-  void ShowLoginError(const SigninUIError& error) override { NOTREACHED(); }
+  void ShowLoginError(const SigninUIError& error) override {
+    LOG(WARNING) << "crbug.com/1340791 | Login error: "
+                 << static_cast<int>(error.type());
+    NOTREACHED();
+  }
 
   void ShowMergeSyncDataConfirmation(const std::string&,
                                      const std::string&,
                                      signin::SigninChoiceCallback) override {
+    LOG(WARNING) << "crbug.com/1340791 | Unexpected data merge prompt";
     NOTREACHED();
   }
 
-  void ShowSyncSettings() override { NOTREACHED(); }
+  void ShowSyncSettings() override {
+    LOG(WARNING) << "crbug.com/1340791 | Unexpected Sync settings prompt";
+    NOTREACHED();
+  }
 
-  void SwitchToProfile(Profile*) override { NOTREACHED(); }
+  void SwitchToProfile(Profile*) override {
+    LOG(WARNING) << "crbug.com/1340791 | Unexpected profile switch";
+    NOTREACHED();
+  }
 };
 
 bool IsFirstRunEligibleProfile(Profile* profile) {

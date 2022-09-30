@@ -5,6 +5,7 @@
 #include "chrome/browser/accessibility/accessibility_extension_api_chromeos.h"
 
 #include <stddef.h>
+
 #include <memory>
 #include <set>
 #include <vector>
@@ -15,6 +16,7 @@
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/window_tree_host_lookup.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -178,10 +180,11 @@ AccessibilityPrivateGetLocalizedDomKeyStringForKeyCodeFunction::Run() {
   ui::KeyboardCode key_code_to_compare = ui::VKEY_UNKNOWN;
   const ui::KeyboardLayoutEngine* layout_engine =
       ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine();
-  ui::DomCode dom_code =
+  ui::DomCode dom_code_for_key_code =
       ui::KeycodeConverter::MapUSPositionalShortcutKeyToDomCode(key_code);
-  if (dom_code != ui::DomCode::NONE) {
-    if (layout_engine->Lookup(dom_code, /*flags=*/ui::EF_NONE, &dom_key,
+  if (dom_code_for_key_code != ui::DomCode::NONE) {
+    if (layout_engine->Lookup(dom_code_for_key_code,
+                              /*event_flags=*/ui::EF_NONE, &dom_key,
                               &key_code_to_compare)) {
       if (dom_key.IsDeadKey() || !dom_key.IsValid()) {
         return RespondNow(Error("Invalid key code"));
@@ -192,7 +195,7 @@ AccessibilityPrivateGetLocalizedDomKeyStringForKeyCodeFunction::Run() {
   }
 
   for (const auto& dom_code : ui::kDomCodesArray) {
-    if (!layout_engine->Lookup(dom_code, /*flags=*/ui::EF_NONE, &dom_key,
+    if (!layout_engine->Lookup(dom_code, /*event_flags=*/ui::EF_NONE, &dom_key,
                                &key_code_to_compare)) {
       continue;
     }
@@ -902,8 +905,7 @@ AccessibilityPrivateUpdateSwitchAccessBubbleFunction::Run() {
        *(params->actions)) {
     std::string action = accessibility_private::ToString(extension_action);
     // Check that this action is not already in our actions list.
-    if (std::find(actions_to_show.begin(), actions_to_show.end(), action) !=
-        actions_to_show.end()) {
+    if (base::Contains(actions_to_show, action)) {
       continue;
     }
     actions_to_show.push_back(action);

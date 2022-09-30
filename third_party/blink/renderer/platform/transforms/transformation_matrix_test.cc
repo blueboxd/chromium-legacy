@@ -41,6 +41,31 @@ void SetRotationDecomp(double x,
 
 }  // end namespace
 
+// This test is to make it easier to understand the order of operations.
+TEST(TransformationMatrixTest, PrePostOperations) {
+  auto m1 = TransformationMatrix::Affine(1, 2, 3, 4, 5, 6);
+  auto m2 = m1;
+  m1.Translate(10, 20);
+  m2.PreConcat(TransformationMatrix::MakeTranslation(10, 20));
+  EXPECT_EQ(m1, m2);
+
+  m1.PostTranslate(11, 22);
+  m2 = TransformationMatrix::MakeTranslation(11, 22) * m2;
+  EXPECT_EQ(m1, m2);
+
+  m1.Scale(3, 4);
+  m2.PreConcat(TransformationMatrix::MakeScale(3, 4));
+  EXPECT_EQ(m1, m2);
+
+  // TODO(wangxianzhu): Add PostScale tests when moving this test into
+  // ui/gfx/geometry/transform_unittest.cc.
+#if 0
+  m1.PostScale(5, 6);
+  m2 = TransformationMatrix::MakeScale(3, 4) * m2;
+  EXPECT_EQ(m1, m2);
+#endif
+}
+
 TEST(TransformationMatrixTest, NonInvertableBlendTest) {
   TransformationMatrix from;
   auto to = TransformationMatrix::ColMajor(2.7133590938, 0.0, 0.0, 0.0, 0.0,
@@ -164,7 +189,7 @@ TEST(TransformationMatrixTest, Multiplication) {
 
   EXPECT_EQ(expected_a_times_b, a * b) << (a * b).ToString(true);
 
-  a.Multiply(b);
+  a.PreConcat(b);
   EXPECT_EQ(expected_a_times_b, a) << a.ToString(true);
 }
 
@@ -180,7 +205,7 @@ TEST(TransformationMatrixTest, MultiplicationSelf) {
                                                            426, 484, 542, 600);
   // clang-format on
 
-  a.Multiply(a);
+  a.PreConcat(a);
   EXPECT_EQ(expected_a_times_a, a) << a.ToString(true);
 }
 

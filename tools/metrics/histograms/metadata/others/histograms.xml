@@ -5858,6 +5858,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Feedback.ChromeOSApp.Duration.GetBigFeedbackLogs" units="ms"
+    expires_after="2023-06-30">
+  <owner>xiangdongkong@google.com</owner>
+  <owner>cros-feedback-app@google.com</owner>
+  <summary>
+    Records the elapsed time from the start of fetching Debugd logs via the
+    GetBigFeedbackLogs dbus method to when the data has been retrieved. Fires
+    during the process of sending a feedback report on Chrome OS, or when the
+    user previews the system logs from the feedback app on Chrome OS.
+    GetBigFeedbackLogs is the dbus method used.
+  </summary>
+</histogram>
+
 <histogram name="Feedback.ChromeOSApp.ExitPath" enum="FeedbackAppExitPath"
     expires_after="2023-07-27">
   <owner>longbowei@google.com</owner>
@@ -5872,6 +5885,18 @@ chromium-metrics-reviews@google.com.
     after clicking help content; User closes on share data page without clicking
     help content; User submits feedback after clicking the help content; User
     submits feedback without clicking the help content.
+  </summary>
+</histogram>
+
+<histogram name="Feedback.ChromeOSApp.GetBigFeedbackLogs.Success"
+    units="boolean" expires_after="2023-06-30">
+  <owner>xiangdongkong@google.com</owner>
+  <owner>cros-feedback-app@google.com</owner>
+  <summary>
+    Records the success status of fetching the feedback logs via debus method
+    GetBigFeedbackLogs. Fires during the process of sending a feedback report on
+    Chrome OS, or when the user previews the system logs from the feedback app
+    on Chrome OS.
   </summary>
 </histogram>
 

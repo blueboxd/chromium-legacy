@@ -46,6 +46,7 @@ struct NGInflowChildData {
   NGBoxStrut margins;
   bool margins_fully_resolved;
   bool allow_discard_start_margin;
+  bool is_pushed_by_floats = false;
 };
 
 // A class for general block layout (e.g. a <div> with no special style).
@@ -208,10 +209,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       NGPreviousInflowPosition*,
       NGInlineChildLayoutContext*,
       const NGInlineBreakToken** previous_inline_break_token);
-
-  // Return the amount of block space available in the current fragmentainer
-  // for the node being laid out by this algorithm.
-  LayoutUnit FragmentainerSpaceAvailable() const;
 
   // Consume all remaining fragmentainer space. This happens when we decide to
   // break before a child.

@@ -1190,7 +1190,7 @@ const FeatureEntry::FeatureVariation
          std::size(kSidePanelJourneysOpensFromOmniboxParams), nullptr},
 };
 const FeatureEntry::FeatureParam kJourneysContentClusteringParams[] = {
-    {"collections_blocklist", "/collections/software"},
+    {"collections_blocklist", "/collection/software"},
     {"exclude_entities_that_have_no_collections", "true"},
 };
 const FeatureEntry::FeatureVariation kJourneysContentClusteringVariations[] = {
@@ -3273,6 +3273,14 @@ const FeatureEntry::FeatureVariation
         {"For All Users", kUpmAndroidEnableForAllUsers,
          std::size(kUpmAndroidEnableForAllUsers), nullptr},
 };
+
+constexpr FeatureEntry::FeatureParam kIgnoreUPMAuthErrorMessageTimeouts[] = {
+    {"ignore_auth_error_message_timeouts", "true"}};
+constexpr FeatureEntry::FeatureVariation
+    kUnifiedPasswordManagerErrorMessagesVariations[] = {
+        {"Ignore timeouts", kIgnoreUPMAuthErrorMessageTimeouts,
+         std::size(kIgnoreUPMAuthErrorMessageTimeouts), nullptr}};
+
 #endif  // BUILDFLAG(IS_ANDROID)
 
 const FeatureEntry::FeatureParam kUnthrottledNestedTimeout_NestingLevel = {
@@ -8489,8 +8497,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUnifiedPasswordManagerErrorMessagesName,
      flag_descriptions::kUnifiedPasswordManagerErrorMessagesDescription,
      kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kUnifiedPasswordManagerErrorMessages)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         password_manager::features::kUnifiedPasswordManagerErrorMessages,
+         kUnifiedPasswordManagerErrorMessagesVariations,
+         "UnifiedPasswordManagerErrorMessages")},
 
     {"google-mobile-services-passwords-reenrollment",
      flag_descriptions::kUnifiedPasswordManagerAndroidReenrollmentName,

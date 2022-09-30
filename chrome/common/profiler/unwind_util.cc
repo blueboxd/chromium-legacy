@@ -158,13 +158,17 @@ std::vector<std::unique_ptr<base::Unwinder>> CreateLibunwindstackUnwinders(
 // Checks whether unwinder assets -- such as call frame information needed for
 // unwinders to work -- are available in the current context. Unwinder assets
 // are only embedded into certain builds of Chrome.
-bool AreUnwinderAssetsAvailable() {
-  const version_info::Channel channel = chrome::GetChannel();
+bool AreUnwinderAssetsAvailable(version_info::Channel channel) {
+#if defined(OFFICIAL_BUILD) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // CFI is currently only embedded into dev, canary, and beta builds of Chrome:
   // https://crsrc.org/c/chrome/android/chrome_public_apk_tmpl.gni;l=30-36;drc=32cca7e9d8c49d42e393c75ffb404a0f8899704d
   return channel == version_info::Channel::CANARY ||
          channel == version_info::Channel::DEV ||
          channel == version_info::Channel::BETA;
+#else
+  // Local/CQ builds.
+  return true;
+#endif
 }
 
 // Manages installation of the module prerequisite for unwinding. Android, in
@@ -173,6 +177,10 @@ class ModuleUnwindPrerequisitesDelegate : public UnwindPrerequisitesDelegate {
  public:
   void RequestInstallation(version_info::Channel /* unused */) override {
     stack_unwinder::Module::RequestInstallation();
+  }
+
+  bool AreAvailable(version_info::Channel channel) override {
+    return stack_unwinder::Module::IsInstalled();
   }
 };
 #endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
@@ -184,6 +192,9 @@ void RequestUnwindPrerequisitesInstallation(
     UnwindPrerequisitesDelegate* delegate) {
   CHECK_EQ(metrics::CallStackProfileParams::Process::kBrowser,
            GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess()));
+  if (AreUnwindPrerequisitesAvailable(channel, delegate)) {
+    return;
+  }
 #if ANDROID_ARM32_UNWINDING_SUPPORTED && defined(OFFICIAL_BUILD) && \
     BUILDFLAG(GOOGLE_CHROME_BRANDING)
   ModuleUnwindPrerequisitesDelegate default_delegate;
@@ -205,10 +216,27 @@ void RequestUnwindPrerequisitesInstallation(
 #endif
 }
 
-bool AreUnwindPrerequisitesAvailable() {
+bool AreUnwindPrerequisitesAvailable(
+    version_info::Channel channel,
+    UnwindPrerequisitesDelegate* prerequites_delegate) {
 #if ANDROID_ARM32_UNWINDING_SUPPORTED
+#if defined(OFFICIAL_BUILD) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Sometimes, DFMs can be installed even if not requested by Chrome
+  // explicitly (for instance, in some app stores). Therefore, even if the
+  // unwinder module is installed, we only consider it to be available for
+  // specific channels.
+  if (!(channel == version_info::Channel::CANARY ||
+        channel == version_info::Channel::DEV)) {
+    return false;
+  }
+#endif  // defined(OFFICIAL_BUILD) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  ModuleUnwindPrerequisitesDelegate default_delegate;
+  if (prerequites_delegate == nullptr) {
+    prerequites_delegate = &default_delegate;
+  }
   // We need both (1) unwinder assets and (2) unwinder module to be available.
-  return AreUnwinderAssetsAvailable() && stack_unwinder::Module::IsInstalled();
+  return AreUnwinderAssetsAvailable(channel) &&
+         prerequites_delegate->AreAvailable(channel);
 #else   // ANDROID_ARM32_UNWINDING_SUPPORTED
   return true;
 #endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
@@ -216,7 +244,7 @@ bool AreUnwindPrerequisitesAvailable() {
 
 #if ANDROID_ARM32_UNWINDING_SUPPORTED
 stack_unwinder::Module* GetOrLoadModule() {
-  DCHECK(AreUnwindPrerequisitesAvailable());
+  DCHECK(AreUnwindPrerequisitesAvailable(chrome::GetChannel()));
   static base::NoDestructor<std::unique_ptr<stack_unwinder::Module>>
       stack_unwinder_module(stack_unwinder::Module::Load());
   return stack_unwinder_module.get()->get();
@@ -224,7 +252,7 @@ stack_unwinder::Module* GetOrLoadModule() {
 #endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
 
 base::StackSamplingProfiler::UnwindersFactory CreateCoreUnwindersFactory() {
-  if (!AreUnwindPrerequisitesAvailable()) {
+  if (!AreUnwindPrerequisitesAvailable(chrome::GetChannel())) {
     return base::StackSamplingProfiler::UnwindersFactory();
   }
 #if ANDROID_ARM32_UNWINDING_SUPPORTED
@@ -236,7 +264,7 @@ base::StackSamplingProfiler::UnwindersFactory CreateCoreUnwindersFactory() {
 
 base::StackSamplingProfiler::UnwindersFactory
 CreateLibunwindstackUnwinderFactory() {
-  if (!AreUnwindPrerequisitesAvailable()) {
+  if (!AreUnwindPrerequisitesAvailable(chrome::GetChannel())) {
     return base::StackSamplingProfiler::UnwindersFactory();
   }
 #if ANDROID_ARM32_UNWINDING_SUPPORTED

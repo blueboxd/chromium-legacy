@@ -39,8 +39,7 @@ MainThreadStackSamplingProfiler::MainThreadStackSamplingProfiler() {
   const metrics::CallStackProfileParams::Process process =
       GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess());
 
-  if (process == metrics::CallStackProfileParams::Process::kBrowser &&
-      !AreUnwindPrerequisitesAvailable()) {
+  if (process == metrics::CallStackProfileParams::Process::kBrowser) {
     RequestUnwindPrerequisitesInstallation(chrome::GetChannel());
   }
 

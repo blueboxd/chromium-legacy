@@ -8060,7 +8060,7 @@
       'caption': 'Re-enable the deprecated async interface for <ph name="FILE_SYSTEM_SYNC_ACCESS_HANDLE">FileSystemSyncAccessHandle</ph> in File System Access API',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:107-110', 'chrome_os:107-110', 'android:107-110'],
+      'supported_on': ['chrome.*:108-110', 'chrome_os:108-110', 'android:108-110'],
       'future_on': ['fuchsia'],
       'features': {
         'dynamic_refresh': True,
@@ -8080,7 +8080,7 @@
       'example_value': False,
       'id': 1020,
       'tags': [],
-      'desc': '''Starting in M107, all of <ph name="FILE_SYSTEM_SYNC_ACCESS_HANDLE">FileSystemSyncAccessHandle</ph> methods will be invoked synchronously.
+      'desc': '''Starting in M108, all of <ph name="FILE_SYSTEM_SYNC_ACCESS_HANDLE">FileSystemSyncAccessHandle</ph> methods will be invoked synchronously.
       Until M110, this policy re-enables asynchronous invocation of <ph name="FILE_SYSTEM_SYNC_ACCESS_HANDLE">FileSystemSyncAccessHandle</ph> methods.
       If this policy is set to Enabled, <ph name="FILE_SYSTEM_SYNC_ACCESS_HANDLE">FileSystemSyncAccessHandle</ph> methods are invoked asynchronously.
       If this policy is set to Disabled or not set, all of <ph name="FILE_SYSTEM_SYNC_ACCESS_HANDLE">FileSystemSyncAccessHandle</ph> methods are invoked synchronously.''',
@@ -13795,7 +13795,7 @@
       'owners': ['isandrk@chromium.org', 'file://components/policy/resources/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:70-'],
+      'supported_on': ['chrome_os:70-87'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -13815,7 +13815,7 @@
       'id': 463,
       'caption': '''Allow managed session on device''',
       'tags': [],
-      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> version 88. Public sessions are no longer supported. Please use <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME">DeviceLocalAccounts</ph> to configure managed-guest sessions instead.
+      'desc': '''Note that this policy is deprecated and removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> version 88. Public sessions are no longer supported. Please use <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME">DeviceLocalAccounts</ph> to configure managed-guest sessions instead.
       If this policy is set to false, managed guest session will behave as documented in https://support.google.com/chrome/a/answer/3017014 - the standard "Public Session".
 
       If this policy is set to true or left unset, managed guest session will take on "Managed Session" behaviour which lifts many of the restrictions that are in place for regular "Public Sessions".
@@ -15406,6 +15406,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Do not consider the user as idle while video plays',
+        },
+        {
+          'value': False,
+          'caption': 'Consider the user as idle while video plays',
+        },
+      ],
       'example_value': True,
       'id': 183,
       'caption': '''Specify whether video activity affects power management''',
@@ -15540,6 +15550,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Start power management delays and session length limits after initial user activity',
+        },
+        {
+          'value': False,
+          'caption': 'Start power management delays and session length limits at session start',
+        },
+      ],
       'example_value': True,
       'id': 247,
       'caption': '''Wait for initial user activity''',
@@ -15837,7 +15857,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Show accessibility options in the system tray menu',
+        },
+        {
+          'value': False,
+          'caption': 'Hide accessibility options in the system tray menu',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 188,
       'caption': '''Show accessibility options in system tray menu''',
       'tags': [],
@@ -15857,8 +15892,23 @@
         'can_be_recommended': True,
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Show accessibility options in the login screen system tray menu',
+        },
+        {
+          'value': False,
+          'caption': 'Hide accessibility options in the login screen system tray menu',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'device_only': True,
       'example_value': True,
+      'default': None,
       'id': 646,
       'caption': '''Show accessibility options in system tray menu in the login screen''',
       'tags': [],
@@ -15879,7 +15929,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable large cursor',
+        },
+        {
+          'value': False,
+          'caption': 'Disable large cursor',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 211,
       'caption': '''Enable large cursor''',
       'tags': [],
@@ -15898,7 +15963,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable spoken feedback',
+        },
+        {
+          'value': False,
+          'caption': 'Disable spoken feedback',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 212,
       'caption': '''Enable spoken feedback''',
       'tags': [],
@@ -15917,7 +15997,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable high contrast',
+        },
+        {
+          'value': False,
+          'caption': 'Disable high contrast',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 213,
       'caption': '''Enable high contrast mode''',
       'tags': [],
@@ -15937,7 +16032,22 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable accessibility shortcuts on the sign-in screen',
+        },
+        {
+          'value': False,
+          'caption': 'Disable accessibility shortcuts on the sign-in screen',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 661,
       'caption': '''Enable accessibility features shortcuts on the login screen''',
       'tags': [],
@@ -15962,7 +16072,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable accessibility shortcuts',
+        },
+        {
+          'value': False,
+          'caption': 'Disable accessibility shortcuts',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 659,
       'caption': '''Enable accessibility features shortcuts''',
       'tags': [],
@@ -15987,7 +16112,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable on-screen keyboard',
+        },
+        {
+          'value': False,
+          'caption': 'Disable on-screen keyboard',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 255,
       'caption': '''Enable on-screen keyboard''',
       'tags': [],
@@ -16342,7 +16482,22 @@
         'can_be_recommended': True,
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable large cursor on the login screen',
+        },
+        {
+          'value': False,
+          'caption': 'Disable large cursor on the login screen',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 599,
       'caption': '''Enable the large cursor on the login screen''',
       'tags': [],
@@ -16366,7 +16521,22 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable spoken feedback on the login screen and allow the user to temporarily disable it',
+        },
+        {
+          'value': False,
+          'caption': 'Disable spoken feedback on the login screen and allow the user to temporarily enable it',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 216,
       'caption': '''Set the default state of spoken feedback on the login screen''',
       'tags': [],
@@ -16389,7 +16559,22 @@
         'can_be_recommended': True,
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable spoken feedback on the login screen',
+        },
+        {
+          'value': False,
+          'caption': 'Disable spoken feedback on the login screen',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 605,
       'caption': '''Enable the spoken feedback on the login screen''',
       'tags': [],
@@ -16413,7 +16598,22 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable high contrast on the login screen and allow the user to temporarily disable it',
+        },
+        {
+          'value': False,
+          'caption': 'Disable high contrast on the login screen and allow the user to temporarily enable it',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 217,
       'caption': '''Set the default state of high contrast mode on the login screen''',
       'tags': [],
@@ -16436,7 +16636,22 @@
         'can_be_recommended': True,
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable high contrast on the login screen',
+        },
+        {
+          'value': False,
+          'caption': 'Disable high contrast on the login screen',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 606,
       'caption': '''Enable the high contrast on the login screen''',
       'tags': [],
@@ -16460,7 +16675,22 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable on-screen keyboard on the login screen and allow the user to temporarily disable it',
+        },
+        {
+          'value': False,
+          'caption': 'Disable on-screen keyboard on the login screen and allow the user to temporarily enable it',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'deprecated': True,
+      'default': None,
       'example_value': True,
       'id': 256,
       'caption': '''Set default state of the on-screen keyboard on the login screen''',
@@ -16486,7 +16716,22 @@
         'can_be_recommended': True,
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable on-screen keyboard on the login screen',
+        },
+        {
+          'value': False,
+          'caption': 'Disable on-screen keyboard on the login screen',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 607,
       'caption': '''Enable the virtual keyboard on the login screen''',
       'tags': [],
@@ -16511,7 +16756,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Right button is primary',
+        },
+        {
+          'value': False,
+          'caption': 'Left button is primary',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 655,
       'caption': '''Switch the primary mouse button to the right button''',
       'tags': [],
@@ -16535,7 +16795,22 @@
         'can_be_recommended': True,
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Right button is primary on the login screen',
+        },
+        {
+          'value': False,
+          'caption': 'Left button is primary on the login screen',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'device_only': True,
+      'default': None,
       'example_value': True,
       'id': 657,
       'caption': '''Switch the primary mouse button to the right button on the login screen''',
@@ -16561,6 +16836,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the shared clipboard feature',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the shared clipboard feature',
+        },
+      ],
       'example_value': True,
       'id': 610,
       'caption': '''Enable the Shared Clipboard Feature''',

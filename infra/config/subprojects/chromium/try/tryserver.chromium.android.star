@@ -396,10 +396,6 @@ try_.compilator_builder(
 )
 
 try_.builder(
-    name = "android-opus-arm-rel",
-)
-
-try_.builder(
     name = "android-oreo-arm64-cts-networkservice-dbg",
 )
 
@@ -533,30 +529,6 @@ try_.builder(
 
 try_.builder(
     name = "android-chrome-pie-x86-wpt-fyi-rel",
-)
-
-try_.builder(
-    name = "android-weblayer-10-x86-rel-tests",
-    mirrors = [
-        "ci/android-weblayer-with-aosp-webview-x86-rel",
-        "ci/android-weblayer-10-x86-rel-tests",
-    ],
-)
-
-try_.builder(
-    name = "android-weblayer-marshmallow-x86-rel-tests",
-    mirrors = [
-        "ci/android-weblayer-with-aosp-webview-x86-rel",
-        "ci/android-weblayer-marshmallow-x86-rel-tests",
-    ],
-)
-
-try_.builder(
-    name = "android-weblayer-pie-x86-rel-tests",
-    mirrors = [
-        "ci/android-weblayer-x86-rel",
-        "ci/android-weblayer-pie-x86-rel-tests",
-    ],
 )
 
 try_.builder(

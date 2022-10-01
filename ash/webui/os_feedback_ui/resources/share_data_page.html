@@ -89,7 +89,7 @@
 
   .checkbox-field-container {
     align-items: start;
-    display: inline-flex;
+    display: flex;
     margin-bottom: 8px;
   }
 
@@ -254,7 +254,8 @@
         <label id="bluetoothInfoLabel" inner-h-t-m-l="[[bluetoothLogsCheckboxLabel_]]"></label>
       </div>
       <!-- Performance trace -->
-      <div id="performanceTraceContainer" class="checkbox-field-container">
+      <div id="performanceTraceContainer" class="checkbox-field-container"
+          hidden="[[!shouldShowPerformanceTraceCheckbox_(feedbackContext)]]">
         <cr-checkbox id="performanceTraceCheckbox"
             aria-labelledby="performanceTraceCheckboxLabel" checked>
         </cr-checkbox>
@@ -301,6 +302,17 @@
   <div slot="button-container">
     <cr-button id="bluetoothDialogDoneButton" class="action-button"
         on-click="handleCloseBluetoothDialogClicked_">
+      [[i18n('buttonDone')]]
+    </cr-button>
+  </div>
+</cr-dialog>
+<cr-dialog id="assistantDialog">
+  <div slot="body">
+    [[i18n('assistantLogsMessage')]]
+  </div>
+  <div slot="button-container">
+    <cr-button id="assistantDialogDoneButton" class="action-button"
+        on-click="handleCloseAssistantDialogClicked_">
       [[i18n('buttonDone')]]
     </cr-button>
   </div>

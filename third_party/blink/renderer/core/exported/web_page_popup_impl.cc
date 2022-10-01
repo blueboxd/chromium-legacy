@@ -180,11 +180,14 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     return popup_->WindowRectInScreen();
   }
 
-  gfx::Rect ViewportToScreen(const gfx::Rect& rect,
-                             const LocalFrameView*) const override {
+  gfx::Rect LocalRootToScreenDIPs(const gfx::Rect& rect_in_local_root,
+                                  const LocalFrameView* view) const override {
+    DCHECK(view);
+    DCHECK_EQ(view->GetChromeClient(), this);
+
     gfx::Rect window_rect = popup_->WindowRectInScreen();
     gfx::Rect rect_in_dips =
-        popup_->widget_base_->BlinkSpaceToEnclosedDIPs(rect);
+        popup_->widget_base_->BlinkSpaceToEnclosedDIPs(rect_in_local_root);
     rect_in_dips.Offset(window_rect.x(), window_rect.y());
     return rect_in_dips;
   }
@@ -864,8 +867,9 @@ gfx::Rect WebPagePopupImpl::OwnerWindowRectInScreen() const {
 gfx::Rect WebPagePopupImpl::GetAnchorRectInScreen() const {
   LocalFrameView* view = popup_client_->OwnerElement().GetDocument().View();
   DCHECK(view);
-  return popup_client_->GetChromeClient().ViewportToScreen(
-      popup_client_->OwnerElement().VisibleBoundsInVisualViewport(), view);
+
+  return view->GetFrame().GetChromeClient().LocalRootToScreenDIPs(
+      popup_client_->OwnerElement().VisibleBoundsInLocalRoot(), view);
 }
 
 WebInputEventResult WebPagePopupImpl::DispatchBufferedTouchEvents() {

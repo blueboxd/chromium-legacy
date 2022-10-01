@@ -602,7 +602,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       base::OnceCallback<void(BrowserAccessibilityManager* hit_manager,
                               int hit_node_id)> opt_callback) override;
   // Return true if this is the root -- there are no parent frames of any kind.
-  bool AccessibilityIsMainFrame() override;
+  bool AccessibilityIsRootFrame() override;
   WebContentsAccessibility* AccessibilityGetWebContentsAccessibility() override;
 
   // SiteInstanceGroup::Observer
@@ -2635,6 +2635,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       LifecycleStateImpl lifecycle_state,
       scoped_refptr<BrowsingContextState> browsing_context_state,
       blink::FrameOwnerElementType frame_owner_element_type,
+      RenderFrameHostImpl* parent,
       FencedFrameStatus fenced_frame_status);
 
   // The SendCommit* functions below are wrappers for commit calls
@@ -3587,7 +3588,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // deletion, and GetParent() should never return a different value, even if
   // this RenderFrameHost is on the pending deletion list and the parent
   // FrameTreeNode has changed its current RenderFrameHost.
-  const raw_ptr<RenderFrameHostImpl> parent_;
+  const raw_ptr<RenderFrameHostImpl> parent_ = nullptr;
 
   // Number of times we need to iterate from a RenderFrameHost to its parent
   // until we reach main RenderFrameHost (i.e. one which doesn't have a parent).

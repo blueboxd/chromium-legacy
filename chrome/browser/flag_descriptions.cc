@@ -161,8 +161,8 @@ const char kEditPasswordsInSettingsName[] = "Edit passwords in settings";
 const char kEditPasswordsInSettingsDescription[] =
     "Enables password editing in settings.";
 
-const char kPasswordNotesName[] = "Password notes in settings";
-const char kPasswordNotesDescription[] =
+const char kPasswordNotesWithBackupName[] = "Password notes in settings";
+const char kPasswordNotesWithBackupDescription[] =
     "Enables a note section for each password in the settings page.";
 
 const char kPasswordViewPageInSettingsName[] = "Password view page in settings";
@@ -1191,6 +1191,11 @@ const char kEnableTranslateSubFramesName[] = "Translate sub frames";
 const char kEnableTranslateSubFramesDescription[] =
     "Enable the translation of sub frames (as well as the main frame)";
 
+const char kEnableWebUsbOnExtensionServiceWorkerName[] =
+    "Enable WebUSB on extension service workers";
+const char kEnableWebUsbOnExtensionServiceWorkerDescription[] =
+    "When enabled, WebUSB API is available on extension service workers.";
+
 const char kEnableWindowsGamingInputDataFetcherName[] =
     "Enable Windows.Gaming.Input";
 const char kEnableWindowsGamingInputDataFetcherDescription[] =
@@ -1466,6 +1471,11 @@ const char kExtensionsMenuAccessControlName[] =
 const char kExtensionsMenuAccessControlDescription[] =
     "Enables a redesigned extensions menu that allows the user to control "
     "extensions site access.";
+
+const char kExtensionsFSPInServiceWorkersName[] =
+    "fileSystemProvider API in Service Workers";
+const char kExtensionsFSPInServiceWorkersDescription[] =
+    "Enables fileSystemProvider extension API in service workers.";
 #endif
 
 const char kExtensionsOnChromeUrlsName[] = "Extensions on chrome:// URLs";
@@ -2082,6 +2092,12 @@ const char kOmniboxMostVisitedTilesOnSrpName[] =
 const char kOmniboxMostVisitedTilesOnSrpDescription[] =
     "Offer most visited website tiles when the User is on the Search Results "
     "Page.";
+
+const char kOmniboxOnClobberFocusTypeOnAndroidName[] =
+    "Omnibox On Clobber Focus Type On Android";
+const char kOmniboxOnClobberFocusTypeOnAndroidDescription[] =
+    "Send ON_CLOBBER focus type for zero-prefix requests with an empty input "
+    "on Web/SRP on Android platform.";
 
 const char kOmniboxShortBookmarkSuggestionsName[] =
     "Omnibox short bookmark suggestions";
@@ -6377,11 +6393,6 @@ const char kDisableQuickAnswersV2TranslationName[] =
     "Disable Quick Answers Translation";
 const char kDisableQuickAnswersV2TranslationDescription[] =
     "Disable translation services of the Quick Answers.";
-
-const char kQuickAnswersForMoreLocalesName[] =
-    "Enable Quick Answers for more locales";
-const char kQuickAnswersForMoreLocalesDescription[] =
-    "Enable Quick Answers for more locales.";
 
 const char kSyncChromeOSExplicitPassphraseSharingName[] =
     "Sync passphrase sharing";

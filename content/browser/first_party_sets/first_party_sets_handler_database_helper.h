@@ -22,7 +22,7 @@ class Version;
 
 namespace net {
 class FirstPartySetsContextConfig;
-class PublicSets;
+class GlobalFirstPartySets;
 class SchemefulSite;
 }  // namespace net
 
@@ -59,20 +59,20 @@ class CONTENT_EXPORT FirstPartySetsHandlerDatabaseHelper {
   // This method assumes that the sites were normalized properly when the maps
   // were created. Made public only for testing,
   static base::flat_set<net::SchemefulSite> ComputeSetsDiff(
-      const net::PublicSets& old_sets,
+      const net::GlobalFirstPartySets& old_sets,
       const net::FirstPartySetsContextConfig& old_config,
-      const net::PublicSets& current_sets,
+      const net::GlobalFirstPartySets& current_sets,
       const net::FirstPartySetsContextConfig& current_config);
 
   // Gets the list of sites to clear for the `browser_context_id`. This method
-  // wraps a few DB operations: reads the old public sets and policy
+  // wraps a few DB operations: reads the old global sets and policy
   // customization from DB, call `ComputeSetsDiff` with required inputs to
   // compute the list of sites to clear, stores the sites into DB, then reads
   // the final list of sites to be cleared from DB, which can include sites
   // stored during previous browser runs that did not have state cleared.
   std::vector<net::SchemefulSite> UpdateAndGetSitesToClearForContext(
       const std::string& browser_context_id,
-      const net::PublicSets& current_sets,
+      const net::GlobalFirstPartySets& current_sets,
       const net::FirstPartySetsContextConfig& current_config);
 
   // Wraps FirstPartySetsDatabase::InsertBrowserContextCleared.
@@ -83,11 +83,12 @@ class CONTENT_EXPORT FirstPartySetsHandlerDatabaseHelper {
   // Wraps FirstPartySetsDatabase::PersistSets.
   void PersistSets(const std::string& browser_context_id,
                    const base::Version& version,
-                   const net::PublicSets& sets,
+                   const net::GlobalFirstPartySets& sets,
                    const net::FirstPartySetsContextConfig& config);
 
-  // Wraps FirstPartySetsDatabase::GetPublicSets.
-  net::PublicSets GetPersistedPublicSets(const std::string& browser_context_id);
+  // Wraps FirstPartySetsDatabase::GetGlobalSets.
+  net::GlobalFirstPartySets GetPersistedGlobalSets(
+      const std::string& browser_context_id);
 
  private:
   std::unique_ptr<FirstPartySetsDatabase> db_

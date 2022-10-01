@@ -5562,7 +5562,6 @@ interface MediaSource : EventTarget
     attribute @@toStringTag
     getter activeSourceBuffers
     getter duration
-    getter handle
     getter onsourceclose
     getter onsourceended
     getter onsourceopen
@@ -8658,6 +8657,7 @@ interface ShadowRoot : DocumentFragment
     getter onslotchange
     getter pictureInPictureElement
     getter pointerLockElement
+    getter registry
     getter slotAssignment
     getter styleSheets
     method constructor

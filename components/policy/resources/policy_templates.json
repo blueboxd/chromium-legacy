@@ -13800,16 +13800,6 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'items': [
-        {
-          'value': True,
-          'caption': 'Managed guest sessions behave like managed sessions',
-        },
-        {
-          'value': False,
-          'caption': 'Managed guest sessions behave like standard public sessions',
-        },
-      ],
       'deprecated': True,
       'example_value': True,
       'id': 463,
@@ -13887,6 +13877,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Show privacy notifications until dismissed by the user',
+        },
+        {
+          'value': False,
+          'caption': 'Do not show privacy notifications',
+        },
+      ],
       'example_value': False,
       'id': 723,
       'caption': '''Reduce Managed-guest session auto-launch notifications''',
@@ -13910,7 +13910,22 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable background mode',
+        },
+        {
+          'value': False,
+          'caption': 'Disable background mode',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 138,
       'caption': '''Continue running background apps when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is closed''',
       'tags': ['system-security'],
@@ -13930,6 +13945,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Disable Google Drive syncing',
+        },
+        {
+          'value': False,
+          'caption': 'Enable Google Drive syncing',
+        },
+      ],
       'example_value': True,
       'id': 139,
       'caption': '''Disable Drive in the <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> Files app''',
@@ -13949,6 +13974,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Disable Google Drive syncing over cellular connections',
+        },
+        {
+          'value': False,
+          'caption': 'Enable Google Drive syncing over cellular connections',
+        },
+      ],
       'example_value': True,
       'id': 140,
       'caption': '''Disable Google Drive over cellular connections in the <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> Files app''',
@@ -14049,6 +14084,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Do not allow user to bypass Safe Browsing warning',
+        },
+        {
+          'value': False,
+          'caption': 'Allow user to bypass Safe Browsing warning',
+        },
+      ],
       'example_value': True,
       'id': 150,
       'caption': '''Disable proceeding from the Safe Browsing warning page''',
@@ -14127,6 +14172,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Disallow external storage devices',
+        },
+        {
+          'value': False,
+          'caption': 'Allow external storage devices',
+        },
+      ],
       'example_value': True,
       'id': 152,
       'caption': '''Disable mounting of external storage''',
@@ -14151,6 +14206,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Disallow writing to external storage devices',
+        },
+        {
+          'value': False,
+          'caption': 'Allow writing to external storage devices',
+        },
+      ],
       'example_value': True
     },
     {
@@ -14163,6 +14228,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable audio output',
+        },
+        {
+          'value': False,
+          'caption': 'Disable audio output',
+        },
+      ],
       'example_value': False,
       'id': 159,
       'caption': '''Allow playing audio''',
@@ -16198,7 +16273,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable sticky keys',
+        },
+        {
+          'value': False,
+          'caption': 'Disable sticky keys',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 561,
       'caption': '''Enable sticky keys''',
       'tags': [],
@@ -16217,7 +16307,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable select to speak',
+        },
+        {
+          'value': False,
+          'caption': 'Disable select to speak',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 573,
       'caption': '''Enable select to speak''',
       'tags': [],
@@ -16242,7 +16347,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable dictation',
+        },
+        {
+          'value': False,
+          'caption': 'Disable dictation',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 592,
       'caption': '''Enable the dictation accessibility feature''',
       'tags': [],
@@ -16267,7 +16387,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable keyboard focus highlighting',
+        },
+        {
+          'value': False,
+          'caption': 'Disable keyboard focus highlighting',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 593,
       'caption': '''Enable the keyboard focus highlighting accessibility feature''',
       'tags': [],
@@ -16294,7 +16429,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable cursor highlight',
+        },
+        {
+          'value': False,
+          'caption': 'Disable cursor highlight',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 594,
       'caption': '''Enable the cursor highlight accessibility feature''',
       'tags': [],
@@ -16321,7 +16471,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable caret highlight',
+        },
+        {
+          'value': False,
+          'caption': 'Disable caret highlight',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 595,
       'caption': '''Enable the caret highlight accessibility feature''',
       'tags': [],
@@ -16348,7 +16513,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable mono audio',
+        },
+        {
+          'value': False,
+          'caption': 'Disable mono audio',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 596,
       'caption': '''Enable the mono audio accessibility feature''',
       'tags': [],
@@ -16375,7 +16555,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable auto-click',
+        },
+        {
+          'value': False,
+          'caption': 'Disable auto-click',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 597,
       'caption': '''Enable the autoclick accessibility feature''',
       'tags': [],
@@ -16402,6 +16597,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Treat top-row keys as function keys, but allow user to change',
+        },
+        {
+          'value': False,
+          'caption': 'Treat top-row keys as media keys, but allow user to change',
+        },
+      ],
       'example_value': True,
       'id': 260,
       'caption': '''Media keys default to function keys''',
@@ -16459,7 +16664,22 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable large cursor on the login screen',
+        },
+        {
+          'value': False,
+          'caption': 'Disable large cursor on the login screen',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 215,
       'caption': '''Set default state of the large cursor on the login screen''',
       'tags': [],
@@ -17961,6 +18181,16 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Only allow guest browser logins',
+        },
+        {
+          'value': False,
+          'caption': 'Allow guest browser logins and profile logins',
+        },
+      ],
       'example_value': True,
       'id': 574,
       'caption': '''Enforce browser guest mode''',
@@ -17980,6 +18210,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow adding new profiles',
+        },
+        {
+          'value': False,
+          'caption': 'Disallow adding new profiles',
+        },
+      ],
       'example_value': True,
       'id': 276,
       'caption': '''Enable add person in user manager''',
@@ -18002,6 +18242,16 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Force the user to sign in before using the browser',
+        },
+        {
+          'value': False,
+          'caption': 'Allow the user to use the browser without signing in',
+        },
+      ],
       'example_value': False,
       'id': 346,
       'caption': '''Enable force sign in for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
@@ -18156,7 +18406,7 @@
       'id': 280,
       'caption': '''Minimum TLS version to fallback to''',
       'tags': ['system-security'],
-      'desc': '''Warning: The TLS version fallback will be removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> after version 52 (around September 2016) and this policy will stop working then.
+      'desc': '''This policy was removed in M53 after TLS version fallback was removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       When a TLS handshake fails, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> would previously retry the connection with a lesser version of TLS in order to work around bugs in HTTPS servers. This setting configures the version at which this fallback process will stop. If a server performs version negotiation correctly (i.e. without breaking the connection) then this setting doesn't apply. Regardless, the resulting connection must still comply with SSLVersionMin.
 
@@ -18201,7 +18451,7 @@
       'id': 361,
       'caption': '''Maximum SSL version enabled''',
       'tags': ['system-security'],
-      'desc': '''Warning: The max TLS version policy will be entirely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> around version 75 (around June 2019).
+      'desc': '''This policy was removed in M75 after the max TLS version policy was removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the default maximum version.
 
@@ -18354,7 +18604,7 @@
       'id': 310,
       'caption': '''Enable RC4 cipher suites in TLS''',
       'tags': ['system-security'],
-      'desc': '''Warning: RC4 will be completely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> after version 52 (around September 2016) and this policy will stop working then.
+      'desc': '''This policy was removed in M53 after RC4 was removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If the policy is not set, or is set to false, then RC4 cipher suites in TLS will not be enabled. Otherwise it may be set to true to retain compatibility with an outdated server. This is a stopgap measure and the server should be reconfigured.''',
     },
@@ -18379,7 +18629,7 @@
       'id': 334,
       'caption': '''Enable DHE cipher suites in TLS''',
       'tags': ['system-security'],
-      'desc': '''Warning: DHE will be completely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> after version 57 (around March 2017) and this policy will stop working then.
+      'desc': '''This policy was removed in M58 after DHE was removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If the policy is not set, or is set to false, then DHE cipher suites in TLS will not be enabled. Otherwise it may be set to true to enable DHE cipher suites and retain compatibility with an outdated server. This is a stopgap measure and the server should be reconfigured.
 
@@ -18426,6 +18676,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Only allow users to turn off the device using the physical power button',
+        },
+        {
+          'value': False,
+          'caption': 'Allow users to turn off the device using either the shut down icon or the physical power button',
+        },
+      ],
       'example_value': True,
       'id': 284,
       'caption': '''Automatic reboot on device shutdown''',
@@ -18481,6 +18741,16 @@
         'dynamic_refresh': False,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Maximize the first browser window on first run',
+        },
+        {
+          'value': False,
+          'caption': 'Default system behavior (depends on screen size)',
+        },
+      ],
       'example_value': True,
       'id': 298,
       'caption': '''Maximize the first browser window on first run''',
@@ -18566,6 +18836,16 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow QUIC',
+        },
+        {
+          'value': False,
+          'caption': 'Disallow QUIC',
+        },
+      ],
       'example_value': True,
       'id': 301,
       'caption': '''Allow QUIC protocol''',
@@ -18647,6 +18927,16 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable hardware acceleration',
+        },
+        {
+          'value': False,
+          'caption': 'Disable hardware acceleration',
+        },
+      ],
       'example_value': True,
       'id': 304,
       'caption': '''Use hardware acceleration when available''',
@@ -21799,6 +22089,16 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Require site isolation for all websites',
+        },
+        {
+          'value': False,
+          'caption': 'Enable site isolation for all websites, but allow the user to opt out',
+        },
+      ],
       'example_value': True,
       'id': 399,
       'caption': '''Require Site Isolation for every site''',
@@ -21893,7 +22193,22 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Require site isolation for all websites',
+        },
+        {
+          'value': False,
+          'caption': 'Disable site isolation for all websites, but allow the user to enable it',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 446,
       'caption': '''Enable Site Isolation for every site''',
       'tags': ['system-security'],
@@ -22327,6 +22642,16 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Prevent third party code from being injected into Chrome',
+        },
+        {
+          'value': False,
+          'caption': 'Allow third party code to be injected into Chrome',
+        },
+      ],
       'example_value': False,
       'id': 407,
       'caption': '''Enable third party software injection blocking''',
@@ -22642,6 +22967,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow the device to run virtual machines',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow the device to run virtual machines',
+        },
+      ],
       'example_value': True,
       'default_for_managed_devices_doc_only': False,
       'id': 421,
@@ -22661,6 +22996,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow users to use virtual machines needed to support Linux apps',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow users to use virtual machines needed to support Linux apps',
+        },
+      ],
       'example_value': False,
       'id': 481,
       'caption': '''User is enabled to run Crostini''',
@@ -22677,6 +23022,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow unaffiliated users to use virtual machines needed to support Linux apps',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow unaffiliated users to use virtual machines needed to support Linux apps',
+        },
+      ],
       'example_value': False,
       'id': 482,
       'caption': '''Allow unaffiliated users to use Crostini''',
@@ -22693,6 +23048,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable Linux virtual machine backup and restore',
+        },
+        {
+          'value': False,
+          'caption': 'Disable Linux virtual machine backup and restore',
+        },
+      ],
       'example_value': False,
       'id': 523,
       'caption': '''User is enabled to export / import Crostini containers via the UI''',
@@ -22709,6 +23074,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable root access to Linux virtual machines',
+        },
+        {
+          'value': False,
+          'caption': 'Disable root access to Linux virtual machines',
+        },
+      ],
       'example_value': False,
       'id': 576,
       'caption': '''User is allowed to have root access to Crostini containers''',
@@ -24590,7 +24965,6 @@
       },
       'example_value': '${ie}',
       'supported_on': ['chrome.*:71-'],
-      'future_on': ['fuchsia'],
       'caption': '''Alternative browser to launch for configured websites.''',
       'tags': [],
       'desc': '''Setting the policy controls which command to use to open URLs in an alternative browser. The policy can be set to one of <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER">${ie}</ph>, <ph name="FIREFOX_VALUE_PLACEHOLDER">${firefox}</ph>, <ph name="SAFARI_VALUE_PLACEHOLDER">${safari}</ph>, <ph name="OPERA_VALUE_PLACEHOLDER">${opera}</ph>, <ph name="EDGE_VALUE_PLACEHOLDER">${edge}</ph> or a file path. When this policy is set to a file path, that file is used as an executable file. <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER">${ie}</ph> is only available on <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>. <ph name="SAFARI_VALUE_PLACEHOLDER">${safari}</ph> and <ph name="EDGE_VALUE_PLACEHOLDER">${edge}</ph> are only available on <ph name="MS_WIN_NAME">Microsoft® Windows®</ph> and <ph name="MAC_OS_NAME">macOS</ph>.
@@ -24618,7 +24992,6 @@
         'per_profile': True,
       },
       'supported_on': ['chrome.*:71-'],
-      'future_on': ['fuchsia'],
       'caption': '''Command-line parameters for the alternative browser.''',
       'tags': [],
       'desc': '''Setting the policy to a list of strings means each string is passed to the alternative browser as separate command-line parameters. On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, the parameters are joined with spaces. On <ph name="MAC_OS_NAME">macOS</ph> and <ph name="LINUX_OS_NAME">Linux®</ph>, a parameter can have spaces and still be treated as a single parameter.
@@ -24695,7 +25068,6 @@
         'per_profile': True,
       },
       'supported_on': ['chrome.*:71-'],
-      'future_on': ['fuchsia'],
       'caption': '''Websites to open in alternative browser''',
       'tags': [],
       'desc': '''Setting the policy controls the list of websites to open in an alternative browser. Each item is treated as a rule for something to open in an alternative browser. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses those rules when choosing if a URL should open in an alternative browser. When the <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph> add-in is on, <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph> switches back to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when the rules don't match. If rules contradict each other, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the most specific rule.
@@ -24787,7 +25159,6 @@
         'per_profile': True,
       },
       'supported_on': ['chrome.*:77-'],
-      'future_on': ['fuchsia'],
       'caption': '''URL of an XML file that contains URLs that should never trigger a browser switch.''',
       'tags': [],
       'desc': '''Setting the policy to a valid URL has <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> download the site list from that URL and apply the rules as if they were set up with the <ph name="BROWSER_SWITCHER_URL_GREYLIST_POLICY_NAME">BrowserSwitcherUrlGreylist</ph> policy. These policies prevent <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and the alternative browser from opening one another.
@@ -24808,7 +25179,6 @@
         'per_profile': True,
       },
       'supported_on': ['chrome.*:74-'],
-      'future_on': ['fuchsia'],
       'caption': '''Delay before launching alternative browser (milliseconds)''',
       'tags': [],
       'desc': '''Setting the policy to a number has <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> show a message for that number of milliseconds, then it opens an alternative browser.
@@ -24827,7 +25197,6 @@
         'per_profile': True,
       },
       'supported_on': ['chrome.*:73-'],
-      'future_on': ['fuchsia'],
       'caption': '''Enable the Legacy Browser Support feature.''',
       'tags': [],
       'desc': '''Setting the policy to Enabled means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will try to launch some URLs in an alternate browser, such as <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph>. This feature is set using the policies in the <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP">Legacy Browser support</ph> group.
@@ -24861,7 +25230,6 @@
       },
       'default': 0,
       'supported_on': ['chrome.*:95-'],
-      'future_on': ['fuchsia'],
       'caption': '''Sitelist parsing mode''',
       'tags': [],
       'desc': '''This policy controls how <ph name="PRODUCT_NAME">Google Chrome</ph> interprets sitelist/greylist policies for the Legacy Browser Support feature. It affects the following policies: <ph name="URL_LIST_POLICY_NAME">BrowserSwitcherUrlList</ph>, <ph name="URL_GREYLIST_POLICY_NAME">BrowserSwitcherUrlGreylist</ph>, <ph name="USE_IE_SITELIST_POLICY_NAME">BrowserSwitcherUseIeSitelist</ph>, <ph name="EXTERNAL_SITELIST_POLICY_NAME">BrowserSwitcherExternalSitelistUrl</ph>, and <ph name="EXTERNAL_GREYLIST_POLICY_NAME">BrowserSwitcherExternalGreylistUrl</ph>.
@@ -24890,7 +25258,6 @@
         'per_profile': True,
       },
       'supported_on': ['chrome.*:74-'],
-      'future_on': ['fuchsia'],
       'caption': '''Keep last tab open in Chrome.''',
       'tags': [],
       'desc': '''Setting the policy to Enabled or leaving it unset has <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> keep at least one tab open, after switching to an alternate browser.
@@ -25323,7 +25690,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow Google Assistant to access screen context',
+        },
+        {
+          'value': False,
+          'caption': 'Block Google Assistant from accessing screen context during interactions',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 527,
       'caption': '''Allow Google Assistant to access screen context''',
       'desc': '''Setting the policy to Enabled lets Google Assistant access screen context and send that data to a server. Setting the policy to Disabled keeps Google Assistant from screen context.
@@ -25341,7 +25723,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the Google Assistant hotword',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the Google Assistant hotword',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 529,
       'caption': '''Allow Google Assistant to listen for the voice activation phrase''',
       'desc': '''Setting the policy to Enabled lets Google Assistant listen for the voice activation phrase. Setting the policy to Disabled keeps Google Assistant from listening for the phrase.
@@ -25572,6 +25969,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the wilco diagnostics and telemetry controller',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the wilco diagnostics and telemetry controller',
+        },
+      ],
       'example_value': False,
       'id': 532,
       'caption': '''Allows wilco diagnostics and telemetry controller''',
@@ -25645,6 +26052,16 @@
         'dynamic_refresh': True,
         'per_profile': False
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable peak shift power management',
+        },
+        {
+          'value': False,
+          'caption': 'Disable peak shift power management',
+        },
+      ],
       'example_value': False,
       'id': 538,
       'caption': '''Enable peak shift power management''',
@@ -25768,6 +26185,16 @@
         'dynamic_refresh': True,
         'per_profile': False
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable boot on AC',
+        },
+        {
+          'value': False,
+          'caption': 'Disable boot on AC',
+        },
+      ],
       'example_value': False,
       'id': 541,
       'caption': '''Enable boot on AC (alternating current)''',
@@ -25789,6 +26216,16 @@
         'dynamic_refresh': True,
         'per_profile': False
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable USB power share',
+        },
+        {
+          'value': False,
+          'caption': 'Disable USB power share',
+        },
+      ],
       'example_value': True,
       'id': 553,
       'caption': '''Enable USB power share''',
@@ -25966,6 +26403,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enforce online logins on the login and lock screens',
+        },
+        {
+          'value': False,
+          'caption': 'Only enforce online logins on the login screen',
+        },
+      ],
       'example_value': True,
       'id': 719,
       'caption': '''Enables online re-authentication on lock screen for SAML users''',
@@ -26042,6 +26489,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable advanced battery charge mode',
+        },
+        {
+          'value': False,
+          'caption': 'Disable advanced battery charge mode',
+        },
+      ],
       'example_value': False,
       'id': 548,
       'caption': '''Enable advanced battery charge mode''',
@@ -26327,6 +26784,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable Kerberos',
+        },
+        {
+          'value': False,
+          'caption': 'Disable Kerberos',
+        },
+      ],
       'example_value': True,
       'id': 557,
       'caption': '''Enable Kerberos functionality''',
@@ -26348,6 +26815,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow users to remember Kerberos passwords',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow users to remember Kerberos passwords',
+        },
+      ],
       'example_value': True,
       'id': 558,
       'caption': '''Enable 'Remember password' feature''',
@@ -26369,6 +26846,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow users to add Kerberos accounts',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow users to add Kerberos accounts',
+        },
+      ],
       'example_value': True,
       'id': 559,
       'caption': '''Users can add Kerberos accounts''',
@@ -26541,6 +27028,16 @@
         'dynamic_refresh': False,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Do not launch the browser on startup',
+        },
+        {
+          'value': False,
+          'caption': 'Automatically launch the browser on startup',
+        },
+      ],
       'example_value': True,
       'id': 568,
       'caption': '''Suppress launching of browser window''',
@@ -26564,6 +27061,16 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow the device to request powerwash',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow the device to request powerwash',
+        },
+      ],
       'supported_on': ['chrome_os:77-'],
       'caption': '''Allow the device to request powerwash''',
       'tags': [],
@@ -26675,6 +27182,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable virtual machine command line access',
+        },
+        {
+          'value': False,
+          'caption': 'Disable virtual machine command line access',
+        },
+      ],
       'example_value': False,
       'id': 577,
       'caption': '''Specify VM CLI permission''',
@@ -26730,6 +27247,16 @@
       'schema': {
         'type': 'boolean',
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow users to play media when the device is locked',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow users to play media when the device is locked',
+        },
+      ],
       'example_value': True,
       'default': True,
       'features': {
@@ -27679,6 +28206,16 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable Renderer Code Integrity',
+        },
+        {
+          'value': False,
+          'caption': 'Disable Renderer Code Integrity',
+        },
+      ],
       'example_value': False,
       'id': 598,
       'caption': '''Enable Renderer Code Integrity''',
@@ -27866,7 +28403,22 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Always sandbox the audio process',
+        },
+        {
+          'value': False,
+          'caption': 'Never sandbox the audio process',
+        },
+        {
+          'value': None,
+          'caption': 'Use the default configuration for the audio sandbox',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 627,
       'caption': '''Allow the audio sandbox to run''',
       'tags': ['system-security'],
@@ -31451,7 +32003,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
       'id': 858,
       'caption': '''Enable 3DES cipher suites in TLS''',
       'tags': ['system-security'],
-      'desc': '''Warning: 3DES will be completely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> in version 95 (around October 2021) and this policy will stop working then.
+      'desc': '''This policy was removed in M97 after 3DES was removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If the policy is set to true, then 3DES cipher suites in TLS will be enabled. If it is set to false, they will be disabled. If the policy is unset, 3DES cipher suites are disabled by default. This policy may be used to temporarily retain compatibility with an outdated server. This is a stopgap measure and the server should be reconfigured.
       ''',

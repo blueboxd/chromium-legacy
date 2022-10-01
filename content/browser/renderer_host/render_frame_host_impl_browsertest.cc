@@ -624,7 +624,7 @@ class RenderFrameHostFactoryForBeforeUnloadInterceptor
         frame_tree_node, routing_id, std::move(frame_remote), frame_token,
         document_token, renderer_initiated_creation, lifecycle_state,
         std::move(browsing_context_state),
-        frame_tree_node->frame_owner_element_type(),
+        frame_tree_node->frame_owner_element_type(), frame_tree_node->parent(),
         frame_tree_node->fenced_frame_status()));
   }
 };
@@ -3114,11 +3114,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   ASSERT_TRUE(NavigateToURL(shell(), main_url));
 
   RenderFrameHostImpl* main_frame = web_contents()->GetPrimaryMainFrame();
-  EXPECT_TRUE(main_frame->AccessibilityIsMainFrame());
+  EXPECT_TRUE(main_frame->AccessibilityIsRootFrame());
 
   ASSERT_EQ(1u, main_frame->child_count());
   RenderFrameHostImpl* iframe = main_frame->child_at(0)->current_frame_host();
-  EXPECT_FALSE(iframe->AccessibilityIsMainFrame());
+  EXPECT_FALSE(iframe->AccessibilityIsRootFrame());
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,

@@ -40,14 +40,8 @@
 # crbug.com/1041822
 -org.chromium.chrome.browser.offlinepages.OfflinePageAutoFetchTest.testAutoFetchTriggersOnDNSErrorWhenOffline
 
-# crbug.com/1061177
--org.chromium.chrome.browser.payments.PaymentRequestPaymentAppsSortingTest.testPaymentAppsSortingByFrecency
-
 # crbug.com/1061178
 -org.chromium.chrome.browser.tasks.tab_management.TabGridDialogTest.testSwipeToDismiss_Dialog
-
-# crbug.com/1061198
--org.chromium.chrome.browser.password_manager.settings.PasswordSettingsTest.testExportMenuDisabled
 
 # crbug.com/1061201
 -org.chromium.chrome.browser.history.HistoryActivityTest.testOpenSelectedItems

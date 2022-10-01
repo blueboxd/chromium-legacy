@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 /**
  * @fileoverview This class acts as the persistent store for all static data
  * about commands.
@@ -302,39 +301,19 @@ export const CommandCategory = {
 /**
  * Collection of command properties.
  * @type {Object<!Command, {
- *                  forward: (undefined|boolean),
- *                  backward: (undefined|boolean),
  *                  announce: boolean,
  *                  category: (undefined|!CommandCategory),
- *                  findNext: (undefined|string),
- *                  doDefault: (undefined|boolean),
  *                  msgId: (undefined|string),
- *                  nodeList: (undefined|string),
- *                  skipInput: (undefined|boolean),
  *                  allowEvents: (undefined|boolean),
- *                  denyContinuation: (undefined|boolean),
  *                  denySignedOut: (undefined|boolean)}>}
- *  forward: Whether this command points forward.
- *  backward: Whether this command points backward. If neither forward or
- *            backward are specified, it stays facing in the current direction.
  *  announce: Whether to call finishNavCommand and announce the current
  *            position after the command is done.
- *  findNext: The id from the map above if this command is used for
- *            finding next/previous of something.
  *  category: The command's category.
- *  doDefault: Whether to do the default action. This means that keys will be
- *             passed through to the usual DOM capture/bubble phases.
  *  msgId: The message resource describing the command.
- *  nodeList: The id from the map above if this command is used for
- *            showing a list of nodes.
- *  skipInput: Explicitly skips this command when text input has focus.
- *             Defaults to false.
  *  denySignedOut: Explicitly denies this command when on chrome://oobe/* or
  *             other signed-out contexts. Defaults to false.
  *  allowEvents: Allows EventWatcher to continue processing events which can
  * trump TTS.
- *  denyContinuation: denies continuous read to proceed. Defaults to
- * false.
  */
 CommandStore.CMD_ALLOWLIST = {
   [Command.TOGGLE_STICKY_MODE]: {
@@ -350,8 +329,6 @@ CommandStore.CMD_ALLOWLIST = {
 
   [Command.STOP_SPEECH]: {
     announce: false,
-    denyContinuation: true,
-    doDefault: true,
     msgId: 'stop_speech_key',
     category: CommandCategory.CONTROLLING_SPEECH,
   },
@@ -422,35 +399,29 @@ CommandStore.CMD_ALLOWLIST = {
   [Command.HANDLE_TAB]: {
     allowEvents: true,
     msgId: 'handle_tab_next',
-    denyContinuation: true,
     category: CommandCategory.NAVIGATION,
   },
   [Command.HANDLE_TAB_PREV]: {
     allowEvents: true,
     msgId: 'handle_tab_prev',
-    denyContinuation: true,
     category: CommandCategory.NAVIGATION,
   },
   [Command.FORWARD]: {
-    forward: true,
     announce: true,
     msgId: 'forward',
     category: CommandCategory.NAVIGATION,
   },
   [Command.BACKWARD]: {
-    backward: true,
     announce: true,
     msgId: 'backward',
     category: CommandCategory.NAVIGATION,
   },
   [Command.RIGHT]: {
-    forward: true,
     announce: true,
     msgId: 'right',
     category: CommandCategory.NAVIGATION,
   },
   [Command.LEFT]: {
-    backward: true,
     announce: true,
     msgId: 'left',
     category: CommandCategory.NAVIGATION,
@@ -477,127 +448,99 @@ CommandStore.CMD_ALLOWLIST = {
   },
 
   [Command.PREVIOUS_CHARACTER]: {
-    backward: true,
     announce: true,
     msgId: 'previous_character',
-    skipInput: true,
     category: CommandCategory.NAVIGATION,
   },
   [Command.NEXT_CHARACTER]: {
-    forward: true,
     announce: true,
     msgId: 'next_character',
-    skipInput: true,
     category: CommandCategory.NAVIGATION,
   },
   [Command.PREVIOUS_WORD]: {
-    backward: true,
     announce: true,
     msgId: 'previous_word',
-    skipInput: true,
     category: CommandCategory.NAVIGATION,
   },
   [Command.NEXT_WORD]: {
-    forward: true,
     announce: true,
     msgId: 'next_word',
-    skipInput: true,
     category: CommandCategory.NAVIGATION,
   },
   [Command.PREVIOUS_LINE]: {
-    backward: true,
     announce: true,
     msgId: 'previous_line',
     category: CommandCategory.NAVIGATION,
   },
   [Command.NEXT_LINE]: {
-    forward: true,
     announce: true,
     msgId: 'next_line',
     category: CommandCategory.NAVIGATION,
   },
   [Command.PREVIOUS_SENTENCE]: {
-    backward: true,
     announce: true,
     msgId: 'previous_sentence',
-    skipInput: true,
     category: CommandCategory.NAVIGATION,
   },
   [Command.NEXT_SENTENCE]: {
-    forward: true,
     announce: true,
     msgId: 'next_sentence',
-    skipInput: true,
     category: CommandCategory.NAVIGATION,
   },
   [Command.PREVIOUS_OBJECT]: {
-    backward: true,
     announce: true,
     msgId: 'previous_object',
-    skipInput: true,
     category: CommandCategory.NAVIGATION,
   },
   [Command.NEXT_OBJECT]: {
-    forward: true,
     announce: true,
     msgId: 'next_object',
-    skipInput: true,
     category: CommandCategory.NAVIGATION,
   },
   [Command.PREVIOUS_GROUP]: {
-    backward: true,
     announce: true,
     msgId: 'previous_group',
-    skipInput: true,
     category: CommandCategory.NAVIGATION,
   },
   [Command.NEXT_GROUP]: {
-    forward: true,
     announce: true,
     msgId: 'next_group',
-    skipInput: true,
     category: CommandCategory.NAVIGATION,
   },
   [Command.PREVIOUS_SIMILAR_ITEM]: {
-    backward: true,
     announce: true,
     msgId: 'previous_similar_item',
     category: CommandCategory.NAVIGATION,
   },
   [Command.NEXT_SIMILAR_ITEM]: {
-    forward: true,
     announce: true,
     msgId: 'next_similar_item',
     category: CommandCategory.NAVIGATION,
   },
   [Command.PREVIOUS_INVALID_ITEM]: {
-    backward: true,
     announce: true,
     msgId: 'previous_invalid_item',
     category: CommandCategory.NAVIGATION,
   },
   [Command.NEXT_INVALID_ITEM]: {
-    forward: true,
     announce: true,
     msgId: 'next_invalid_item',
     category: CommandCategory.NAVIGATION,
   },
 
   [Command.JUMP_TO_TOP]: {
-    forward: true,
     announce: true,
     msgId: 'jump_to_top',
     category: CommandCategory.NAVIGATION,
   },
   [Command.JUMP_TO_BOTTOM]: {
-    backward: true,
     announce: true,
     msgId: 'jump_to_bottom',
     category: CommandCategory.NAVIGATION,
   },
   // Intentionally uncategorized.
-  [Command.MOVE_TO_START_OF_LINE]: {forward: true, announce: true},
-  [Command.MOVE_TO_END_OF_LINE]: {backward: true, announce: true},
+  [Command.MOVE_TO_START_OF_LINE]: {announce: true},
+  [Command.MOVE_TO_END_OF_LINE]: {announce: true},
 
   [Command.JUMP_TO_DETAILS]: {
     announce: false,
@@ -606,7 +549,6 @@ CommandStore.CMD_ALLOWLIST = {
   },
 
   [Command.READ_FROM_HERE]: {
-    forward: true,
     announce: false,
     msgId: 'read_from_here',
     category: CommandCategory.NAVIGATION,
@@ -614,19 +556,17 @@ CommandStore.CMD_ALLOWLIST = {
 
   [Command.FORCE_CLICK_ON_CURRENT_ITEM]: {
     announce: true,
-    denyContinuation: true,
     allowEvents: true,
     msgId: 'force_click_on_current_item',
     category: CommandCategory.ACTIONS,
   },
   [Command.FORCE_LONG_CLICK_ON_CURRENT_ITEM]: {
     announce: true,
-    denyContinuation: true,
     allowEvents: true,
     msgId: 'force_long_click_on_current_item',
   },
   [Command.FORCE_DOUBLE_CLICK_ON_CURRENT_ITEM]:
-      {announce: true, allowEvents: true, denyContinuation: true},
+      {announce: true, allowEvents: true},
 
   [Command.READ_LINK_URL]: {
     announce: false,
@@ -662,7 +602,6 @@ CommandStore.CMD_ALLOWLIST = {
 
   [Command.TOGGLE_SEARCH_WIDGET]: {
     announce: false,
-    denyContinuation: true,
     msgId: 'toggle_search_widget',
     category: CommandCategory.INFORMATION,
   },
@@ -678,7 +617,6 @@ CommandStore.CMD_ALLOWLIST = {
 
   [Command.TOGGLE_KEYBOARD_HELP]: {
     announce: false,
-    denyContinuation: true,
     msgId: 'show_panel_menu',
     category: CommandCategory.HELP_COMMANDS,
   },
@@ -690,33 +628,28 @@ CommandStore.CMD_ALLOWLIST = {
   [Command.HELP]: {
     announce: false,
     msgId: 'help',
-    denyContinuation: true,
     category: CommandCategory.HELP_COMMANDS,
   },
   [Command.CONTEXT_MENU]: {
     announce: false,
     msgId: 'show_context_menu',
-    denyContinuation: true,
     category: CommandCategory.INFORMATION,
   },
 
   [Command.SHOW_OPTIONS_PAGE]: {
     announce: false,
-    denyContinuation: true,
     msgId: 'show_options_page',
     denySignedOut: true,
     category: CommandCategory.HELP_COMMANDS,
   },
   [Command.SHOW_LOG_PAGE]: {
     announce: false,
-    denyContinuation: true,
     msgId: 'show_log_page',
     denySignedOut: true,
     category: CommandCategory.HELP_COMMANDS,
   },
   [Command.SHOW_LEARN_MODE_PAGE]: {
     announce: false,
-    denyContinuation: true,
     msgId: 'show_kb_explorer_page',
     denySignedOut: true,
     category: CommandCategory.HELP_COMMANDS,
@@ -741,314 +674,216 @@ CommandStore.CMD_ALLOWLIST = {
 
   [Command.SHOW_FORMS_LIST]: {
     announce: false,
-    denyContinuation: true,
-    nodeList: 'formField',
     msgId: 'show_forms_list',
     category: CommandCategory.OVERVIEW,
   },
   [Command.SHOW_HEADINGS_LIST]: {
     announce: false,
-    nodeList: 'heading',
-    denyContinuation: true,
     msgId: 'show_headings_list',
     category: CommandCategory.OVERVIEW,
   },
   [Command.SHOW_LANDMARKS_LIST]: {
     announce: false,
-    nodeList: 'landmark',
-    denyContinuation: true,
     msgId: 'show_landmarks_list',
     category: CommandCategory.OVERVIEW,
   },
   [Command.SHOW_LINKS_LIST]: {
     announce: false,
-    nodeList: 'link',
-    denyContinuation: true,
     msgId: 'show_links_list',
     category: CommandCategory.OVERVIEW,
   },
   [Command.SHOW_TABLES_LIST]: {
     announce: false,
-    nodeList: 'table',
-    denyContinuation: true,
     msgId: 'show_tables_list',
     category: CommandCategory.OVERVIEW,
   },
 
-  [Command.NEXT_ARTICLE]: {forward: true, findNext: 'article'},
+  [Command.NEXT_ARTICLE]: {},
 
   [Command.NEXT_BUTTON]: {
-    forward: true,
-    findNext: 'button',
     msgId: 'next_button',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_CHECKBOX]: {
-    forward: true,
-    findNext: 'checkbox',
     msgId: 'next_checkbox',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_COMBO_BOX]: {
-    forward: true,
-    findNext: 'combobox',
     msgId: 'next_combo_box',
     category: CommandCategory.JUMP_COMMANDS,
   },
-  [Command.NEXT_CONTROL]: {forward: true, findNext: 'control'},
+  [Command.NEXT_CONTROL]: {},
   [Command.NEXT_EDIT_TEXT]: {
-    forward: true,
-    findNext: 'editText',
     msgId: 'next_edit_text',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_FORM_FIELD]: {
-    forward: true,
-    findNext: 'formField',
     msgId: 'next_form_field',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_GRAPHIC]: {
-    forward: true,
-    findNext: 'graphic',
     msgId: 'next_graphic',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_HEADING]: {
-    forward: true,
-    findNext: 'heading',
     msgId: 'next_heading',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_HEADING_1]: {
-    forward: true,
-    findNext: 'heading1',
     msgId: 'next_heading1',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_HEADING_2]: {
-    forward: true,
-    findNext: 'heading2',
     msgId: 'next_heading2',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_HEADING_3]: {
-    forward: true,
-    findNext: 'heading3',
     msgId: 'next_heading3',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_HEADING_4]: {
-    forward: true,
-    findNext: 'heading4',
     msgId: 'next_heading4',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_HEADING_5]: {
-    forward: true,
-    findNext: 'heading5',
     msgId: 'next_heading5',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_HEADING_6]: {
-    forward: true,
-    findNext: 'heading6',
     msgId: 'next_heading6',
     category: CommandCategory.JUMP_COMMANDS,
   },
 
   [Command.NEXT_LANDMARK]: {
-    forward: true,
-    findNext: 'landmark',
     msgId: 'next_landmark',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_LINK]: {
-    forward: true,
-    findNext: 'link',
     msgId: 'next_link',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_LIST]: {
-    forward: true,
-    findNext: 'list',
     msgId: 'next_list',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_LIST_ITEM]: {
-    forward: true,
-    findNext: 'listItem',
     msgId: 'next_list_item',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_MATH]: {
-    forward: true,
-    findNext: 'math',
     msgId: 'next_math',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_MEDIA]: {
-    forward: true,
-    findNext: 'media',
     msgId: 'next_media',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_RADIO]: {
-    forward: true,
-    findNext: 'radio',
     msgId: 'next_radio',
     category: CommandCategory.JUMP_COMMANDS,
   },
-  [Command.NEXT_SECTION]: {forward: true, findNext: 'section'},
-  [Command.NEXT_SLIDER]: {forward: true, findNext: 'slider'},
+  [Command.NEXT_SECTION]: {},
+  [Command.NEXT_SLIDER]: {},
   [Command.NEXT_TABLE]: {
-    forward: true,
-    findNext: 'table',
     msgId: 'next_table',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.NEXT_VISITED_LINK]: {
-    forward: true,
-    findNext: 'visitedLink',
     msgId: 'next_visited_link',
     category: CommandCategory.JUMP_COMMANDS,
   },
 
 
-  [Command.PREVIOUS_ARTICLE]: {backward: true, findNext: 'article'},
+  [Command.PREVIOUS_ARTICLE]: {},
 
   [Command.PREVIOUS_BUTTON]: {
-    backward: true,
-    findNext: 'button',
     msgId: 'previous_button',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_CHECKBOX]: {
-    backward: true,
-    findNext: 'checkbox',
     msgId: 'previous_checkbox',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_COMBO_BOX]: {
-    backward: true,
-    findNext: 'combobox',
     msgId: 'previous_combo_box',
     category: CommandCategory.JUMP_COMMANDS,
   },
-  [Command.PREVIOUS_CONTROL]: {backward: true, findNext: 'control'},
+  [Command.PREVIOUS_CONTROL]: {},
   [Command.PREVIOUS_EDIT_TEXT]: {
-    backward: true,
-    findNext: 'editText',
     msgId: 'previous_edit_text',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_FORM_FIELD]: {
-    backward: true,
-    findNext: 'formField',
     msgId: 'previous_form_field',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_GRAPHIC]: {
-    backward: true,
-    findNext: 'graphic',
     msgId: 'previous_graphic',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_HEADING]: {
-    backward: true,
-    findNext: 'heading',
     msgId: 'previous_heading',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_HEADING_1]: {
-    backward: true,
-    findNext: 'heading1',
     msgId: 'previous_heading1',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_HEADING_2]: {
-    backward: true,
-    findNext: 'heading2',
     msgId: 'previous_heading2',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_HEADING_3]: {
-    backward: true,
-    findNext: 'heading3',
     msgId: 'previous_heading3',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_HEADING_4]: {
-    backward: true,
-    findNext: 'heading4',
     msgId: 'previous_heading4',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_HEADING_5]: {
-    backward: true,
-    findNext: 'heading5',
     msgId: 'previous_heading5',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_HEADING_6]: {
-    backward: true,
-    findNext: 'heading6',
     msgId: 'previous_heading6',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_LANDMARK]: {
-    backward: true,
-    findNext: 'landmark',
     msgId: 'previous_landmark',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_LINK]: {
-    backward: true,
-    findNext: 'link',
     msgId: 'previous_link',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_LIST]: {
-    backward: true,
-    findNext: 'list',
     msgId: 'previous_list',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_LIST_ITEM]: {
-    backward: true,
-    findNext: 'listItem',
     msgId: 'previous_list_item',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_MATH]: {
-    backward: true,
-    findNext: 'math',
     msgId: 'previous_math',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_MEDIA]: {
-    backward: true,
-    findNext: 'media',
     msgId: 'previous_media',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_RADIO]: {
-    backward: true,
-    findNext: 'radio',
     msgId: 'previous_radio',
     category: CommandCategory.JUMP_COMMANDS,
   },
-  [Command.PREVIOUS_SECTION]: {backward: true, findNext: 'section'},
-  [Command.PREVIOUS_SLIDER]: {backward: true, findNext: 'slider'},
+  [Command.PREVIOUS_SECTION]: {},
+  [Command.PREVIOUS_SLIDER]: {},
   [Command.PREVIOUS_TABLE]: {
-    backward: true,
-    findNext: 'table',
     msgId: 'previous_table',
     category: CommandCategory.JUMP_COMMANDS,
   },
   [Command.PREVIOUS_VISITED_LINK]: {
-    backward: true,
-    findNext: 'visitedLink',
     msgId: 'previous_visited_link',
     category: CommandCategory.JUMP_COMMANDS,
   },
@@ -1093,30 +928,22 @@ CommandStore.CMD_ALLOWLIST = {
     category: CommandCategory.TABLES,
   },
   [Command.PREVIOUS_ROW]: {
-    backward: true,
     announce: true,
-    skipInput: true,
     msgId: 'skip_to_prev_row',
     category: CommandCategory.TABLES,
   },
   [Command.PREVIOUS_COL]: {
-    backward: true,
     announce: true,
-    skipInput: true,
     msgId: 'skip_to_prev_col',
     category: CommandCategory.TABLES,
   },
   [Command.NEXT_ROW]: {
-    forward: true,
     announce: true,
-    skipInput: true,
     msgId: 'skip_to_next_row',
     category: CommandCategory.TABLES,
   },
   [Command.NEXT_COL]: {
-    forward: true,
     announce: true,
-    skipInput: true,
     msgId: 'skip_to_next_col',
     category: CommandCategory.TABLES,
   },
@@ -1181,37 +1008,31 @@ CommandStore.CMD_ALLOWLIST = {
     category: CommandCategory.BRAILLE,
   },
   [Command.PAN_LEFT]: {
-    backward: true,
     announce: true,
     msgId: 'braille_pan_left',
     category: CommandCategory.BRAILLE,
   },
   [Command.PAN_RIGHT]: {
-    forward: true,
     announce: true,
     msgId: 'braille_pan_right',
     category: CommandCategory.BRAILLE,
   },
   [Command.LINE_UP]: {
-    backward: true,
     announce: true,
     msgId: 'braille_line_up',
     category: CommandCategory.BRAILLE,
   },
   [Command.LINE_DOWN]: {
-    forward: true,
     announce: true,
     msgId: 'braille_line_down',
     category: CommandCategory.BRAILLE,
   },
   [Command.TOP]: {
-    forward: true,
     announce: true,
     msgId: 'braille_top',
     category: CommandCategory.BRAILLE,
   },
   [Command.BOTTOM]: {
-    backward: true,
     announce: true,
     msgId: 'braille_bottom',
     category: CommandCategory.BRAILLE,

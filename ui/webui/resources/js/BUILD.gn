@@ -27,7 +27,6 @@ group("preprocess") {
   public_deps = [
     ":preprocess_src",
     ":preprocess_src_ts",
-    "cr/ui:preprocess",
   ]
   if (include_polymer) {
     public_deps += [ "browser_command:build_ts" ]
@@ -44,8 +43,21 @@ preprocess_if_expr("preprocess_src_ts") {
     "assert_ts.ts",
     "color_utils.ts",
     "custom_element.ts",
+    "drag_wrapper.ts",
+    "focus_grid.ts",
+    "focus_outline_manager.ts",
+    "focus_row.ts",
+    "keyboard_shortcut_list.ts",
     "search_highlight_utils.ts",
+    "store_ts.ts",
   ]
+
+  if (include_polymer) {
+    in_files += [
+      "focus_row_mixin.ts",
+      "focus_without_ink.ts",
+    ]
+  }
 }
 
 preprocess_if_expr("preprocess_src") {
@@ -67,9 +79,6 @@ preprocess_if_expr("preprocess_src") {
     "static_types.js",
     "test_loader.js",
     "test_loader_util.js",
-
-    # Used by security interstitials and ios inspect UI
-    "util_deprecated.js",
     "util.js",
     "webui_resource_test.js",
   ]
@@ -78,9 +87,9 @@ preprocess_if_expr("preprocess_src") {
     in_files += [ "os_about.js" ]
   }
 
-  # TODO(crbug.com/1184053): Fully remove once no longer used by CrOS.
-  if (is_chromeos_ash) {
-    in_files += [ "list_property_update_behavior.js" ]
+  if (is_chromeos_ash || is_ios) {
+    # Used by ChromeOS UIs and ios inspect and omaha UIs
+    in_files += [ "util_deprecated.js" ]
   }
 
   if (is_ios) {
@@ -139,7 +148,6 @@ js_type_check("js_resources_modules") {
     ":cr.m",
     ":event_tracker",
     ":icon",
-    ":list_property_update_behavior",
     ":load_time_data.m",
     ":parse_html_subset",
     ":plural_string_proxy",
@@ -165,12 +173,6 @@ js_library("event_tracker") {
 
 js_library("icon") {
   deps = [ ":cr.m" ]
-}
-
-js_library("list_property_update_behavior") {
-  deps = [
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
 }
 
 js_library("load_time_data.m") {

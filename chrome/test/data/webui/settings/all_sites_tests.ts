@@ -8,7 +8,8 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {AllSitesElement, ContentSetting, ContentSettingsTypes, LocalDataBrowserProxyImpl, SiteGroup, SiteSettingsPrefsBrowserProxyImpl, SortMethod} from 'chrome://settings/lazy_load.js';
 import {CrSettingsPrefs, Router, routes} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks, isChildVisible} from 'chrome://webui-test/test_util.js';
+import {isChildVisible} from 'chrome://webui-test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {TestLocalDataBrowserProxy} from './test_local_data_browser_proxy.js';
 import {TestSiteSettingsPrefsBrowserProxy} from './test_site_settings_prefs_browser_proxy.js';
@@ -385,6 +386,28 @@ suite('AllSites_DisabledConsolidatedControls', function() {
       assertEquals(
           loadTimeData.getString(state.signout), confirmationSignOutLabel);
     }
+  });
+
+  test('clear data "no sites" string', async function() {
+    testElement.siteGroupMap.set(
+        TEST_MULTIPLE_SITE_GROUP.etldPlus1,
+        JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP)));
+    const googleSiteGroup = createSiteGroup('google.com', [
+      'https://www.google.com',
+      'https://docs.google.com',
+      'https://mail.google.com',
+    ]);
+    testElement.siteGroupMap.set(googleSiteGroup.etldPlus1, googleSiteGroup);
+    testElement.filter = 'google';
+    testElement.forceListUpdateForTesting();
+    await flushTasks();
+
+    assertFalse(isChildVisible(testElement, '#noSitesFoundText'));
+
+    clearDataViaClearAllButton('action-button');
+    await flushTasks();
+
+    assertTrue(isChildVisible(testElement, '#noSitesFoundText'));
   });
 
   test('can be sorted by storage', async function() {

@@ -7,6 +7,7 @@
 #include "base/check_op.h"
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/geometry/angle_conversions.h"
+#include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -82,20 +83,17 @@ void Transform::GetColMajorF(float a[16]) const {
 
 void Transform::RotateAboutXAxis(double degrees) {
   double radians = gfx::DegToRad(degrees);
-  PreconcatTransform(
-      RotationAboutXAxisSinCos(std::sin(radians), std::cos(radians)));
+  PreConcat(RotationAboutXAxisSinCos(std::sin(radians), std::cos(radians)));
 }
 
 void Transform::RotateAboutYAxis(double degrees) {
   double radians = gfx::DegToRad(degrees);
-  PreconcatTransform(
-      RotationAboutYAxisSinCos(std::sin(radians), std::cos(radians)));
+  PreConcat(RotationAboutYAxisSinCos(std::sin(radians), std::cos(radians)));
 }
 
 void Transform::RotateAboutZAxis(double degrees) {
   double radians = gfx::DegToRad(degrees);
-  PreconcatTransform(
-      RotationAboutZAxisSinCos(std::sin(radians), std::cos(radians)));
+  PreConcat(RotationAboutZAxisSinCos(std::sin(radians), std::cos(radians)));
 }
 
 void Transform::RotateAbout(const Vector3dF& axis, double degrees) {
@@ -112,8 +110,7 @@ void Transform::RotateAbout(const Vector3dF& axis, double degrees) {
     z *= scale;
   }
   double radians = gfx::DegToRad(degrees);
-  PreconcatTransform(
-      RotationUnitSinCos(x, y, z, std::sin(radians), std::cos(radians)));
+  PreConcat(RotationUnitSinCos(x, y, z, std::sin(radians), std::cos(radians)));
 }
 
 // static
@@ -232,12 +229,22 @@ void Transform::ApplyPerspectiveDepth(SkScalar depth) {
   }
 }
 
-void Transform::PreconcatTransform(const Transform& transform) {
+void Transform::PreConcat(const Transform& transform) {
   matrix_.preConcat(transform.matrix_);
 }
 
-void Transform::ConcatTransform(const Transform& transform) {
+void Transform::PostConcat(const Transform& transform) {
   matrix_.postConcat(transform.matrix_);
+}
+
+void Transform::PreConcat(const AxisTransform2d& transform) {
+  Translate(transform.translation());
+  Scale(transform.scale().x(), transform.scale().y());
+}
+
+void Transform::PostConcat(const AxisTransform2d& transform) {
+  PostScale(transform.scale().x(), transform.scale().y());
+  PostTranslate(transform.translation());
 }
 
 bool Transform::IsApproximatelyIdentityOrTranslation(SkScalar tolerance) const {
@@ -437,19 +444,32 @@ Vector2dF Transform::To2dTranslation() const {
                         SkScalarToFloat(matrix_.rc(1, 3)));
 }
 
+Point Transform::MapPoint(const Point& point) const {
+  return MapPointInternal(matrix_, point);
+}
+
+PointF Transform::MapPoint(const PointF& point) const {
+  return MapPointInternal(matrix_, point);
+}
+
+Point3F Transform::MapPoint(const Point3F& point) const {
+  return MapPointInternal(matrix_, point);
+}
+
+// TODO(crbug.com/1359528): Remove these methods in favor of MapPoint().
 void Transform::TransformPoint(Point* point) const {
   DCHECK(point);
-  *point = TransformPointInternal(matrix_, *point);
+  *point = MapPointInternal(matrix_, *point);
 }
 
 void Transform::TransformPoint(PointF* point) const {
   DCHECK(point);
-  *point = TransformPointInternal(matrix_, *point);
+  *point = MapPointInternal(matrix_, *point);
 }
 
 void Transform::TransformPoint(Point3F* point) const {
   DCHECK(point);
-  *point = TransformPointInternal(matrix_, *point);
+  *point = MapPointInternal(matrix_, *point);
 }
 
 void Transform::TransformVector(Vector3dF* vector) const {
@@ -462,31 +482,28 @@ void Transform::TransformVector4(float vector[4]) const {
   matrix_.mapScalars(vector);
 }
 
-absl::optional<PointF> Transform::TransformPointReverse(
-    const PointF& point) const {
+absl::optional<PointF> Transform::InverseMapPoint(const PointF& point) const {
   // TODO(sad): Try to avoid trying to invert the matrix.
   Matrix44 inverse(Matrix44::kUninitialized_Constructor);
   if (!matrix_.invert(&inverse))
     return absl::nullopt;
-  return absl::make_optional(TransformPointInternal(inverse, point));
+  return absl::make_optional(MapPointInternal(inverse, point));
 }
 
-absl::optional<Point> Transform::TransformPointReverse(
-    const Point& point) const {
+absl::optional<Point> Transform::InverseMapPoint(const Point& point) const {
   // TODO(sad): Try to avoid trying to invert the matrix.
   Matrix44 inverse(Matrix44::kUninitialized_Constructor);
   if (!matrix_.invert(&inverse))
     return absl::nullopt;
-  return absl::make_optional(TransformPointInternal(inverse, point));
+  return absl::make_optional(MapPointInternal(inverse, point));
 }
 
-absl::optional<Point3F> Transform::TransformPointReverse(
-    const Point3F& point) const {
+absl::optional<Point3F> Transform::InverseMapPoint(const Point3F& point) const {
   // TODO(sad): Try to avoid trying to invert the matrix.
   Matrix44 inverse(Matrix44::kUninitialized_Constructor);
   if (!matrix_.invert(&inverse))
     return absl::nullopt;
-  return absl::make_optional(TransformPointInternal(inverse, point));
+  return absl::make_optional(MapPointInternal(inverse, point));
 }
 
 void Transform::TransformRect(RectF* rect) const {
@@ -543,7 +560,7 @@ void Transform::TransformBox(BoxF* box) const {
     point += gfx::Vector3dF(corner & 1 ? box->width() : 0.f,
                             corner & 2 ? box->height() : 0.f,
                             corner & 4 ? box->depth() : 0.f);
-    TransformPoint(&point);
+    point = MapPoint(point);
     if (first_point) {
       bounds.set_origin(point);
       first_point = false;
@@ -580,8 +597,8 @@ void Transform::RoundTranslationComponents() {
   matrix_.setRC(1, 3, std::round(matrix_.rc(1, 3)));
 }
 
-Point3F Transform::TransformPointInternal(const Matrix44& xform,
-                                          const Point3F& point) const {
+Point3F Transform::MapPointInternal(const Matrix44& xform,
+                                    const Point3F& point) const {
   if (xform.isIdentity())
     return point;
 
@@ -610,8 +627,8 @@ void Transform::TransformVectorInternal(const Matrix44& xform,
   vector->set_z(p[2]);
 }
 
-PointF Transform::TransformPointInternal(const Matrix44& xform,
-                                         const PointF& point) const {
+PointF Transform::MapPointInternal(const Matrix44& xform,
+                                   const PointF& point) const {
   if (xform.isIdentity())
     return point;
 
@@ -625,9 +642,9 @@ PointF Transform::TransformPointInternal(const Matrix44& xform,
   return gfx::PointF(p[0], p[1]);
 }
 
-Point Transform::TransformPointInternal(const Matrix44& xform,
-                                        const Point& point) const {
-  return ToRoundedPoint(TransformPointInternal(xform, PointF(point)));
+Point Transform::MapPointInternal(const Matrix44& xform,
+                                  const Point& point) const {
+  return ToRoundedPoint(MapPointInternal(xform, PointF(point)));
 }
 
 bool Transform::ApproximatelyEqual(const gfx::Transform& transform) const {

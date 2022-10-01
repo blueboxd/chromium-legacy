@@ -15,6 +15,14 @@
 #include "chrome/browser/browser_switcher/browser_switcher_service_win.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS)
+#error BrowserSwitcher is not supported on ChromeOS. Neither Ash nor LaCrOS.
+#endif
+
+#if BUILDFLAG(IS_FUCHSIA)
+#error BrowserSwitcher is not support on Fuchsia.
+#endif
+
 namespace browser_switcher {
 
 namespace {
@@ -40,11 +48,10 @@ BrowserSwitcherService* BrowserSwitcherServiceFactory::GetForBrowserContext(
 }
 
 BrowserSwitcherServiceFactory::BrowserSwitcherServiceFactory()
-    : ProfileKeyedServiceFactory(
-          "BrowserSwitcherServiceFactory",
-          // Use the original profile's BrowserSwitcherService, even in
-          // Incognito mode.
-          ProfileSelections::BuildRedirectedInIncognito()) {}
+    : ProfileKeyedServiceFactory("BrowserSwitcherServiceFactory",
+                                 // Only create BrowserSwitcherService for
+                                 // regular, non-Incognito profiles.
+                                 ProfileSelections::BuildForRegularProfile()) {}
 
 BrowserSwitcherServiceFactory::~BrowserSwitcherServiceFactory() {}
 

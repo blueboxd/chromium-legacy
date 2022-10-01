@@ -9,7 +9,8 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {ClearBrowsingDataBrowserProxyImpl, ContentSettingsTypes, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {CrLinkRowElement, CrSettingsPrefs, HatsBrowserProxyImpl, MetricsBrowserProxyImpl, PrivacyGuideInteractions, PrivacyPageBrowserProxyImpl, Route, Router, routes, SettingsPrefsElement, SettingsPrivacyPageElement, StatusAction, SyncStatus, TrustSafetyInteraction} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks, isChildVisible, isVisible} from 'chrome://webui-test/test_util.js';
+import {isChildVisible, isVisible} from 'chrome://webui-test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {TestClearBrowsingDataBrowserProxy} from './test_clear_browsing_data_browser_proxy.js';
 import {TestHatsBrowserProxy} from './test_hats_browser_proxy.js';
@@ -171,7 +172,6 @@ suite('PrivacySandboxEnabled', function() {
   suiteSetup(function() {
     loadTimeData.overrideValues({
       isPrivacySandboxRestricted: false,
-      privacySandboxSettings3Enabled: false,
     });
 
     settingsPrefs = document.createElement('settings-prefs');
@@ -193,7 +193,6 @@ suite('PrivacySandboxEnabled', function() {
   });
 
   test('privacySandboxRowSublabel', async function() {
-    page.set('prefs.privacy_sandbox.apis_enabled.value', true);
     page.set('prefs.privacy_sandbox.apis_enabled_v2.value', true);
     assertTrue(isChildVisible(page, '#privacySandboxLinkRow'));
     const privacySandboxLinkRow =
@@ -204,24 +203,10 @@ suite('PrivacySandboxEnabled', function() {
         loadTimeData.getString('privacySandboxTrialsEnabled'),
         privacySandboxLinkRow.subLabel);
 
-    page.set('prefs.privacy_sandbox.apis_enabled.value', false);
-    await flushTasks();
-    assertEquals(
-        loadTimeData.getString('privacySandboxTrialsDisabled'),
-        privacySandboxLinkRow.subLabel);
-
-    loadTimeData.overrideValues({privacySandboxSettings3Enabled: true});
-    page.set('prefs.privacy_sandbox.apis_enabled.value', true);
     page.set('prefs.privacy_sandbox.apis_enabled_v2.value', false);
     await flushTasks();
     assertEquals(
         loadTimeData.getString('privacySandboxTrialsDisabled'),
-        privacySandboxLinkRow.subLabel);
-
-    page.set('prefs.privacy_sandbox.apis_enabled_v2.value', true);
-    await flushTasks();
-    assertEquals(
-        loadTimeData.getString('privacySandboxTrialsEnabled'),
         privacySandboxLinkRow.subLabel);
   });
 

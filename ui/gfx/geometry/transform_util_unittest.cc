@@ -29,9 +29,8 @@ TEST(TransformUtilTest, GetScaleTransform) {
   const int kOffset = 10;
   for (int sign_x = -1; sign_x <= 1; ++sign_x) {
     for (int sign_y = -1; sign_y <= 1; ++sign_y) {
-      Point test(kAnchor.x() + sign_x * kOffset,
-                 kAnchor.y() + sign_y * kOffset);
-      scale.TransformPoint(&test);
+      Point test = scale.MapPoint(Point(kAnchor.x() + sign_x * kOffset,
+                                        kAnchor.y() + sign_y * kOffset));
 
       EXPECT_EQ(Point(kAnchor.x() + sign_x * kOffset * kScale,
                       kAnchor.y() + sign_y * kOffset * kScale),
@@ -145,22 +144,16 @@ TEST(TransformUtilTest, SnapCompositeTransform) {
   bool snapped = SnapTransform(&result, transform, viewport);
   ASSERT_TRUE(snapped) << "Viewport should snap all components.";
 
-  Point3F point;
-
-  point = Point3F(PointF(viewport.origin()));
-  result.TransformPoint(&point);
+  Point3F point = result.MapPoint(Point3F(PointF(viewport.origin())));
   EXPECT_EQ(Point3F(31.f, 20.f, 10.f), point) << "Transformed origin";
 
-  point = Point3F(PointF(viewport.top_right()));
-  result.TransformPoint(&point);
+  point = result.MapPoint(Point3F(PointF(viewport.top_right())));
   EXPECT_EQ(Point3F(31.f, 1940.f, 10.f), point) << "Transformed top-right";
 
-  point = Point3F(PointF(viewport.bottom_left()));
-  result.TransformPoint(&point);
+  point = result.MapPoint(Point3F(PointF(viewport.bottom_left())));
   EXPECT_EQ(Point3F(-3569.f, 20.f, 10.f), point) << "Transformed bottom-left";
 
-  point = Point3F(PointF(viewport.bottom_right()));
-  result.TransformPoint(&point);
+  point = result.MapPoint(Point3F(PointF(viewport.bottom_right())));
   EXPECT_EQ(Point3F(-3569.f, 1940.f, 10.f), point)
       << "Transformed bottom-right";
 }
@@ -185,14 +178,10 @@ TEST(TransformUtilTest, TransformAboutPivot) {
   transform.Scale(3, 4);
   transform = TransformAboutPivot(PointF(7, 8), transform);
 
-  Point point;
-
-  point = Point(0, 0);
-  transform.TransformPoint(&point);
+  Point point = transform.MapPoint(Point(0, 0));
   EXPECT_EQ(Point(-14, -24).ToString(), point.ToString());
 
-  point = Point(1, 1);
-  transform.TransformPoint(&point);
+  point = transform.MapPoint(Point(1, 1));
   EXPECT_EQ(Point(-11, -20).ToString(), point.ToString());
 }
 
@@ -352,6 +341,39 @@ TEST(TransformUtilTest, TransformBetweenRects) {
 
   // Tests the case where the destination is an empty rectangle.
   verify(RectF(0.f, 0.f, 3.f, 5.f), RectF());
+}
+
+TEST(TransformUtilTest, OrthoProjectionTransform) {
+  auto verify = [](float left, float right, float bottom, float top) {
+    AxisTransform2d t = OrthoProjectionTransform(left, right, bottom, top);
+    if (right == left || top == bottom) {
+      EXPECT_EQ(AxisTransform2d(), t);
+    } else {
+      EXPECT_EQ(PointF(-1, -1), t.MapPoint(PointF(left, bottom)));
+      EXPECT_EQ(PointF(1, 1), t.MapPoint(PointF(right, top)));
+    }
+  };
+
+  verify(0, 0, 0, 0);
+  verify(10, 20, 10, 30);
+  verify(10, 30, 20, 30);
+  verify(0, 0, 10, 20);
+  verify(-100, 400, 200, -200);
+  verify(-1.5, 4.25, 2.75, -3.75);
+}
+
+TEST(TransformUtilTest, WindowTransform) {
+  auto verify = [](int x, int y, int width, int height) {
+    AxisTransform2d t = WindowTransform(x, y, width, height);
+    EXPECT_EQ(PointF(x, y), t.MapPoint(PointF(-1, -1)));
+    EXPECT_EQ(PointF(x + width, y + height), t.MapPoint(PointF(1, 1)));
+  };
+
+  verify(0, 0, 0, 0);
+  verify(10, 20, 0, 30);
+  verify(10, 30, 20, 0);
+  verify(0, 0, 10, 20);
+  verify(-100, -400, 200, 300);
 }
 
 TEST(TransformUtilTest, Transform2dScaleComponents) {

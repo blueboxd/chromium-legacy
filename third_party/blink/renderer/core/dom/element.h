@@ -75,6 +75,7 @@ class CSSPropertyValueSet;
 class CSSStyleDeclaration;
 class CSSToggleMap;
 class CustomElementDefinition;
+class CustomElementRegistry;
 class DOMRect;
 class DOMRectList;
 class DOMStringMap;
@@ -407,11 +408,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   Vector<gfx::Rect> OutlineRectsInWidget(
       DocumentUpdateReason reason = DocumentUpdateReason::kUnknown) const;
 
-  // Returns an intersection rectangle of the bounds rectangle and the visual
-  // viewport's rectangle in the visual viewport's coordinate space.
-  // Applies ancestors' frames' clipping, but does not (yet) apply (overflow)
-  // element clipping (crbug.com/889840).
-  gfx::Rect VisibleBoundsInVisualViewport() const;
+  // Returns the bounds of this element relative to the local root frame's
+  // origin. While the rect is relative to the local root, it is intersected
+  // with all ancestor frame clips, including the visual viewport transform and
+  // clip in the main frame. While this applies ancestor frame clipping, it
+  // does not (yet) apply (overflow) element clipping (crbug.com/889840).
+  gfx::Rect VisibleBoundsInLocalRoot() const;
 
   DOMRectList* getClientRects();
   // Returns a rectangle in zoomed pixel units.
@@ -722,7 +724,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   ShadowRoot& AttachShadowRootInternal(
       ShadowRootType,
       FocusDelegation focus_delegation = FocusDelegation::kNone,
-      SlotAssignmentMode slot_assignment_mode = SlotAssignmentMode::kNamed);
+      SlotAssignmentMode slot_assignment_mode = SlotAssignmentMode::kNamed,
+      CustomElementRegistry* registry = nullptr);
 
   // Returns the shadow root attached to this element if it is a shadow host.
   ShadowRoot* GetShadowRoot() const;

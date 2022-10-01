@@ -936,7 +936,7 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
   query->GetTransformToTarget(original_view->GetFrameSinkId(),
                               &transform_root_to_original);
   const absl::optional<gfx::PointF> point_in_pixels =
-      transform_root_to_original.TransformPointReverse(
+      transform_root_to_original.InverseMapPoint(
           gfx::ConvertPointToPixels(point, device_scale_factor));
   if (!point_in_pixels.has_value())
     return false;
@@ -999,10 +999,10 @@ bool RenderWidgetHostViewBase::GetTransformToViewCoordSpace(
   // concatenating an identity matrix, so we don't add those checks here.
   transform->MakeIdentity();
 
-  transform->ConcatTransform(transform_to_pixel);
-  transform->ConcatTransform(transform_this_to_root);
-  transform->ConcatTransform(transform_root_to_target);
-  transform->ConcatTransform(transform_from_pixel);
+  transform->PostConcat(transform_to_pixel);
+  transform->PostConcat(transform_this_to_root);
+  transform->PostConcat(transform_root_to_target);
+  transform->PostConcat(transform_from_pixel);
 
   return true;
 }

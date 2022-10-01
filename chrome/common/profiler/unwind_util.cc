@@ -10,6 +10,7 @@
 #include "base/android/library_loader/anchor_functions.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/profiler/profiler_buildflags.h"
@@ -47,6 +48,10 @@ extern "C" {
 extern char __executable_start;
 }
 #endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
+
+// See `RequestUnwindPrerequisitesInstallation` below.
+extern const base::Feature kInstallAndroidUnwindDfm{
+    "InstallAndroidUnwindDfm", base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 
@@ -189,17 +194,17 @@ class ModuleUnwindPrerequisitesDelegate : public UnwindPrerequisitesDelegate {
 
 void RequestUnwindPrerequisitesInstallation(
     version_info::Channel channel,
-    UnwindPrerequisitesDelegate* delegate) {
+    UnwindPrerequisitesDelegate* prerequites_delegate) {
   CHECK_EQ(metrics::CallStackProfileParams::Process::kBrowser,
            GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess()));
-  if (AreUnwindPrerequisitesAvailable(channel, delegate)) {
+  if (AreUnwindPrerequisitesAvailable(channel, prerequites_delegate)) {
     return;
   }
 #if ANDROID_ARM32_UNWINDING_SUPPORTED && defined(OFFICIAL_BUILD) && \
     BUILDFLAG(GOOGLE_CHROME_BRANDING)
   ModuleUnwindPrerequisitesDelegate default_delegate;
-  if (delegate == nullptr) {
-    delegate = &default_delegate;
+  if (prerequites_delegate == nullptr) {
+    prerequites_delegate = &default_delegate;
   }
   // We only want to incur the cost of universally downloading the module in
   // early channels, where profiling will occur over substantially all of
@@ -210,8 +215,10 @@ void RequestUnwindPrerequisitesInstallation(
   // The install occurs asynchronously, with the module available at the first
   // run of Chrome following install.
   if (channel == version_info::Channel::CANARY ||
-      channel == version_info::Channel::DEV) {
-    delegate->RequestInstallation(channel);
+      channel == version_info::Channel::DEV ||
+      (channel == version_info::Channel::BETA &&
+       base::FeatureList::IsEnabled(kInstallAndroidUnwindDfm))) {
+    prerequites_delegate->RequestInstallation(channel);
   }
 #endif
 }
@@ -226,7 +233,8 @@ bool AreUnwindPrerequisitesAvailable(
   // unwinder module is installed, we only consider it to be available for
   // specific channels.
   if (!(channel == version_info::Channel::CANARY ||
-        channel == version_info::Channel::DEV)) {
+        channel == version_info::Channel::DEV ||
+        channel == version_info::Channel::BETA)) {
     return false;
   }
 #endif  // defined(OFFICIAL_BUILD) && BUILDFLAG(GOOGLE_CHROME_BRANDING)

@@ -12,6 +12,7 @@
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/traced_value.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
@@ -65,12 +66,7 @@ void HardwareDisplayPlane::WriteIntoTrace(perfetto::TracedValue context) const {
   dict.Add("owning_crtc", owning_crtc_);
   dict.Add("in_use", in_use_);
 
-  {
-    auto array = dict.AddArray("possible_crtc_ids");
-    for (auto id : possible_crtc_ids_) {
-      array.AppendItem().WriteUInt64(id);
-    }
-  }
+  dict.Add("possible_crtc_ids", possible_crtc_ids_);
 
   auto type = dict.AddItem("type");
   switch (properties_.type.value) {

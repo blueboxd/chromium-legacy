@@ -342,7 +342,7 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/chrome_browser_main_win.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/application_lifetime_desktop.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/services/util_win/public/mojom/util_win.mojom.h"
 #include "sandbox/win/src/sandbox_policy.h"
@@ -4687,10 +4687,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
             handle));
   }
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
-    (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   MaybeAddThrottle(browser_switcher::BrowserSwitcherNavigationThrottle::
                        MaybeCreateThrottleFor(handle),
                    &throttles);

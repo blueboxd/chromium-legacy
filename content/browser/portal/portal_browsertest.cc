@@ -1623,7 +1623,7 @@ class RenderFrameHostFactoryForLocalMainFrameInterceptor
         frame_tree_node, routing_id, std::move(frame_remote), frame_token,
         document_token, renderer_initiated_creation, lifecycle_state,
         std::move(browsing_context_state),
-        frame_tree_node->frame_owner_element_type(),
+        frame_tree_node->frame_owner_element_type(), frame_tree_node->parent(),
         frame_tree_node->fenced_frame_status()));
   }
 };
@@ -2029,12 +2029,13 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   RenderFrameHostImpl* portal_frame = portal_contents->GetPrimaryMainFrame();
   WaitForAccessibilityTree(portal_contents);
   if (!main_frame->browser_accessibility_manager() ||
-      !portal_frame->browser_accessibility_manager()->GetRootManager())
+      !portal_frame->browser_accessibility_manager()->GetManagerForRootFrame())
     WaitForAccessibilityTree(web_contents_impl);
 
   EXPECT_NE(nullptr, portal_frame->browser_accessibility_manager());
-  EXPECT_EQ(main_frame->browser_accessibility_manager(),
-            portal_frame->browser_accessibility_manager()->GetRootManager());
+  EXPECT_EQ(
+      main_frame->browser_accessibility_manager(),
+      portal_frame->browser_accessibility_manager()->GetManagerForRootFrame());
   // Activate portal and adopt predecessor.
   EXPECT_TRUE(ExecJs(portal_frame,
                      "window.addEventListener('portalactivate', e => { "
@@ -2054,8 +2055,9 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
     adoption_observer.WaitUntilPortalCreated();
   }
 
-  EXPECT_EQ(portal_frame->browser_accessibility_manager()->GetRootManager(),
-            portal_frame->browser_accessibility_manager());
+  EXPECT_EQ(
+      portal_frame->browser_accessibility_manager()->GetManagerForRootFrame(),
+      portal_frame->browser_accessibility_manager());
 }
 
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest, OrphanedPortalAccessibilityReset) {

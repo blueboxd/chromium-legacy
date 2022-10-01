@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/ozone/platform/drm/gpu/crtc_commit_request.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
 
@@ -55,12 +56,7 @@ void CrtcCommitRequest::WriteIntoTrace(perfetto::TracedValue context) const {
       plane_list_->WriteIntoTrace(std::move(hardware_display_plane_list));
   }
 
-  {
-    auto array = dict.AddArray("overlays");
-    for (auto& overlay : overlays_) {
-      overlay.WriteIntoTrace(array.AppendItem());
-    }
-  }
+  dict.Add("overlays", overlays_);
 }
 
 // static

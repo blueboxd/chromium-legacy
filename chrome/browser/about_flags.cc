@@ -1189,13 +1189,21 @@ const FeatureEntry::FeatureVariation
          kSidePanelJourneysOpensFromOmniboxParams,
          std::size(kSidePanelJourneysOpensFromOmniboxParams), nullptr},
 };
-const FeatureEntry::FeatureParam kJourneysContentClusteringParams[] = {
+const FeatureEntry::FeatureParam kJourneysJaccardSimilarityParams[] = {
     {"collections_blocklist", "/collection/software"},
     {"exclude_entities_that_have_no_collections", "true"},
+    {"use_content_clustering_cosine_similarity", "false"},
+};
+const FeatureEntry::FeatureParam kJourneysCosineSimilarityParams[] = {
+    {"collections_blocklist", "/collection/software"},
+    {"exclude_entities_that_have_no_collections", "true"},
+    {"use_content_clustering_cosine_similarity", "true"},
 };
 const FeatureEntry::FeatureVariation kJourneysContentClusteringVariations[] = {
-    {"With Blocklist", kJourneysContentClusteringParams,
-     std::size(kJourneysContentClusteringParams), nullptr},
+    {"Jaccard Similarity With Blocklist", kJourneysJaccardSimilarityParams,
+     std::size(kJourneysJaccardSimilarityParams), nullptr},
+    {"Cosine Similarity With Blocklist", kJourneysCosineSimilarityParams,
+     std::size(kJourneysCosineSimilarityParams), nullptr},
 };
 const FeatureEntry::FeatureParam kJourneysLabelsWithEntitiesParams[] = {
     {"labels_from_entities", "true"},
@@ -5473,6 +5481,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxLocalHistoryZeroSuggestBeyondNTPDescription,
      kOsAll, FEATURE_VALUE_TYPE(omnibox::kLocalHistoryZeroSuggestBeyondNTP)},
 
+    {"omnibox-on-clobber-focus-type-on-android",
+     flag_descriptions::kOmniboxOnClobberFocusTypeOnAndroidName,
+     flag_descriptions::kOmniboxOnClobberFocusTypeOnAndroidDescription, kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxOnClobberFocusTypeOnAndroid)},
+
     {"omnibox-on-focus-suggestions-contextual-web",
      flag_descriptions::kOmniboxFocusTriggersContextualWebZeroSuggestName,
      flag_descriptions::
@@ -6570,12 +6583,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableQuickAnswersV2TranslationDescription,
      kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(chromeos::features::kDisableQuickAnswersV2Translation)},
-
-    {"quick-answers-for-more-locales",
-     flag_descriptions::kQuickAnswersForMoreLocalesName,
-     flag_descriptions::kQuickAnswersForMoreLocalesDescription,
-     kOsCrOS | kOsLacros,
-     FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersForMoreLocales)},
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_ANDROID)
@@ -7767,11 +7774,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          password_manager::features::kPasswordViewPageInSettings)},
 
-    {"password-notes", flag_descriptions::kPasswordNotesName,
-     flag_descriptions::kPasswordNotesDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(password_manager::features::kPasswordNotes,
+    {"password-notes", flag_descriptions::kPasswordNotesWithBackupName,
+     flag_descriptions::kPasswordNotesWithBackupDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(syncer::kPasswordNotesWithBackup,
                                     kPasswordNotesAuthValidityVariations,
-                                    "PasswordNotes")},
+                                    "PasswordNotesWithBackup")},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"frame-throttle-fps", flag_descriptions::kFrameThrottleFpsName,
@@ -8693,6 +8700,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExtensionsMenuAccessControlName,
      flag_descriptions::kExtensionsMenuAccessControlDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(extensions_features::kExtensionsMenuAccessControl)},
+
+    {"extensions-fsp-in-service-workers",
+     flag_descriptions::kExtensionsFSPInServiceWorkersName,
+     flag_descriptions::kExtensionsFSPInServiceWorkersDescription,
+     kOsCrOS | kOsLacros,
+     FEATURE_VALUE_TYPE(extensions_features::kExtensionsFSPInServiceWorkers)},
 #endif
 
     {"persistent-quota-is-temporary-quota",
@@ -9591,6 +9604,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextMenuPopupForAllScreenSizes)},
 #endif
+
+    {"enable-web-usb-on-extension-service-worker",
+     flag_descriptions::kEnableWebUsbOnExtensionServiceWorkerName,
+     flag_descriptions::kEnableWebUsbOnExtensionServiceWorkerDescription,
+     kOsAndroid | kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kEnableWebUsbOnExtensionServiceWorker)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

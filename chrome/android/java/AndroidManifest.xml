@@ -191,7 +191,12 @@ by a child template that "extends" this file.
         android:networkSecurityConfig="@xml/network_security_config"
         android:allowAudioPlaybackCapture="false"
         android:appComponentFactory="org.chromium.chrome.browser.base.SplitCompatAppComponentFactory"
+        android:enableOnBackInvokedCallback="true"
         {% block extra_application_attributes %}{% endblock %}>
+
+        {% if channel in ['canary', 'dev', 'default'] %}
+        <profileable android:shell="true"/>
+        {% endif %}
 
       {% macro application_definitions() %}
         <!-- Note: All activities directly or indirectly derived from ChromeActivity

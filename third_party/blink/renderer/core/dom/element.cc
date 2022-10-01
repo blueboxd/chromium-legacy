@@ -2052,7 +2052,7 @@ Vector<gfx::Rect> Element::OutlineRectsInWidget(
   return rects;
 }
 
-gfx::Rect Element::VisibleBoundsInVisualViewport() const {
+gfx::Rect Element::VisibleBoundsInLocalRoot() const {
   if (!GetLayoutObject() || !GetDocument().GetPage() ||
       !GetDocument().GetFrame())
     return gfx::Rect();
@@ -2066,17 +2066,14 @@ gfx::Rect Element::VisibleBoundsInVisualViewport() const {
   rect.Intersect(frame_clip_rect);
 
   // MapToVisualRectInAncestorSpace, called with a null ancestor argument,
-  // returns the viewport-visible rect in the root frame's coordinate space.
+  // returns the root-frame-visible rect in the root frame's coordinate space.
+  // TODO(bokan): When the root is remote this appears to be document space,
+  // rather than frame.
   // MapToVisualRectInAncestorSpace applies ancestors' frame's clipping but does
   // not apply (overflow) element clipping.
   GetDocument().View()->GetLayoutView()->MapToVisualRectInAncestorSpace(nullptr,
                                                                         rect);
 
-  // TODO(layout-dev): Callers of this method don't expect the offset of the
-  // local frame root from a remote top-level frame to be applied here. They
-  // expect the result to be in the coordinate system of the local root frame.
-  // Either the method should be renamed to something which communicates that,
-  // or callers should be updated to expect actual top-level frame coordinates.
   rect = GetDocument()
              .GetFrame()
              ->LocalFrameRoot()
@@ -2084,20 +2081,7 @@ gfx::Rect Element::VisibleBoundsInVisualViewport() const {
              ->AbsoluteToLocalRect(rect, kTraverseDocumentBoundaries |
                                              kApplyRemoteMainFrameTransform);
 
-  gfx::Rect visible_rect = ToPixelSnappedRect(rect);
-  // If the rect is in the coordinates of the main frame, then it should
-  // also be clipped to the viewport to account for page scale. For OOPIFs,
-  // local frame root -> viewport coordinate conversion is done in the
-  // browser process.
-  if (GetDocument().GetFrame()->LocalFrameRoot().IsMainFrame()) {
-    gfx::Size viewport_size =
-        GetDocument().GetPage()->GetVisualViewport().Size();
-    visible_rect =
-        GetDocument().GetPage()->GetVisualViewport().RootFrameToViewport(
-            visible_rect);
-    visible_rect.Intersect(gfx::Rect(gfx::Point(), viewport_size));
-  }
-  return visible_rect;
+  return ToPixelSnappedRect(rect);
 }
 
 void Element::ClientQuads(Vector<gfx::QuadF>& quads) const {
@@ -5040,14 +5024,17 @@ ShadowRoot* Element::attachShadow(const ShadowRootInit* shadow_root_init_dict,
                           shadow_root_init_dict->slotAssignment() == "manual")
                              ? SlotAssignmentMode::kManual
                              : SlotAssignmentMode::kNamed;
+  CustomElementRegistry* registry = shadow_root_init_dict->hasRegistry()
+                                        ? shadow_root_init_dict->registry()
+                                        : nullptr;
   if (const char* error_message = ErrorMessageForAttachShadow()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       error_message);
     return nullptr;
   }
 
-  ShadowRoot& shadow_root =
-      AttachShadowRootInternal(type, focus_delegation, slot_assignment);
+  ShadowRoot& shadow_root = AttachShadowRootInternal(type, focus_delegation,
+                                                     slot_assignment, registry);
 
   // Ensure that the returned shadow root is not marked as declarative so that
   // attachShadow() calls after the first one do not succeed for a shadow host
@@ -5103,7 +5090,8 @@ ShadowRoot& Element::CreateUserAgentShadowRoot() {
 ShadowRoot& Element::AttachShadowRootInternal(
     ShadowRootType type,
     FocusDelegation focus_delegation,
-    SlotAssignmentMode slot_assignment_mode) {
+    SlotAssignmentMode slot_assignment_mode,
+    CustomElementRegistry* registry) {
   // SVG <use> is a special case for using this API to create a closed shadow
   // root.
   DCHECK(CanAttachShadowRoot() || IsA<SVGUseElement>(*this));
@@ -5130,6 +5118,8 @@ ShadowRoot& Element::AttachShadowRootInternal(
                                 FocusDelegation::kDelegateFocus);
   // NEW. Set shadow’s "is declarative shadow root" property to false.
   shadow_root.SetIsDeclarativeShadowRoot(false);
+
+  shadow_root.SetRegistry(registry);
 
   // 7. If this’s custom element state is "precustomized" or "custom", then set
   // shadow’s available to element internals to true.

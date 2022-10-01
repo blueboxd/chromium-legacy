@@ -42,7 +42,13 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
 
   static get properties() {
     return {
-      feedbackContext: {type: FeedbackContext, readOnly: false, notify: true},
+      feedbackContext: {
+        type: FeedbackContext,
+        readOnly: false,
+        notify: true,
+        observer: 'onFeedbackContextChanged_',
+      },
+
       screenshotUrl: {type: String, readOnly: false, notify: true},
       shouldShowBluetoothCheckbox:
           {type: Boolean, readOnly: false, notify: true},
@@ -105,7 +111,7 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
     super.ready();
     this.setPrivacyNote_();
     this.setSysInfoCheckboxLabelAndAttributes_();
-    this.setPerformanceTraceCheckboxLabelAndAttributes_();
+    this.setPerformanceTraceCheckboxLabel_();
     this.setAssistantLogsCheckboxLabelAndAttributes_();
     this.setBluetoothLogsCheckboxLabelAndAttributes_();
     // Set the aria description works the best for screen reader.
@@ -132,6 +138,16 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
   hasEmail_() {
     return (this.feedbackContext !== null && !!this.feedbackContext.email);
   }
+
+  /**
+   * @return {boolean}
+   * @protected
+   */
+  shouldShowPerformanceTraceCheckbox_() {
+    return (
+        this.feedbackContext !== null && this.feedbackContext.traceId !== 0);
+  }
+
 
   /**
    * @return {boolean}
@@ -216,6 +232,26 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
   /** @protected */
   handleCloseBluetoothDialogClicked_() {
     this.getElement_('#bluetoothDialog').close();
+  }
+
+  /**
+   * @param {!Event} e
+   * @protected
+   */
+  handleOpenAssistantLogsDialog_(e) {
+    // The default behavior of clicking on an anchor tag
+    // with href="#" is a scroll to the top of the page.
+    // This link opens a dialog, so we want to prevent
+    // this default behavior.
+    e.preventDefault();
+
+    this.getElement_('#assistantDialog').showModal();
+    this.getElement_('#assistantDialogDoneButton').focus();
+  }
+
+  /** @protected */
+  handleCloseAssistantDialogClicked_() {
+    this.getElement_('#assistantDialog').close();
   }
 
   /**
@@ -313,6 +349,12 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
       report.sendBluetoothLogs = false;
     }
 
+    if (this.getElement_('#performanceTraceCheckbox').checked) {
+      report.feedbackContext.traceId = this.feedbackContext.traceId;
+    } else {
+      report.feedbackContext.traceId = 0;
+    }
+
     return report;
   }
 
@@ -370,19 +412,21 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
   }
 
   /** @private */
-  setPerformanceTraceCheckboxLabelAndAttributes_() {
+  setPerformanceTraceCheckboxLabel_() {
     this.performanceTraceCheckboxLabel_ = this.i18nAdvanced(
         'includePerformanceTraceCheckboxLabel', {attrs: ['id']});
-    // TODO(swifton): Make the hyperlink download the trace like in the original
-    // app.
   }
 
   /** @private */
   setAssistantLogsCheckboxLabelAndAttributes_() {
     this.assistantLogsCheckboxLabel_ =
         this.i18nAdvanced('includeAssistantLogsCheckboxLabel', {attrs: ['id']});
-    // TODO(yyhyyh): Clicking the link will open a dialog showing assistant
-    // log message.
+
+    const assistantLogsLink = this.getElement_('#assistantLogsLink');
+    // Setting href causes <a> tag to display as link.
+    assistantLogsLink.setAttribute('href', '#');
+    assistantLogsLink.addEventListener(
+        'click', (e) => void this.handleOpenAssistantLogsDialog_(e));
   }
 
   /** @private */
@@ -396,6 +440,17 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
     bluetoothLogsLink.setAttribute('href', '#');
     bluetoothLogsLink.addEventListener(
         'click', (e) => void this.handleOpenBluetoothLogsInfoDialog_(e));
+  }
+
+  /** @private */
+  onFeedbackContextChanged_() {
+    // We can only set up the hyperlink for the performance trace checkbox once
+    // we receive the trace id.
+    if (this.feedbackContext !== null && this.feedbackContext.traceId !== 0) {
+      this.openLinkInNewWindow_(
+          '#performanceTraceLink',
+          `chrome://slow_trace/tracing.zip#${this.feedbackContext.traceId}`);
+    }
   }
 }
 

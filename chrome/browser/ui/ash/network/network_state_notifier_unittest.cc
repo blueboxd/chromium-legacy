@@ -64,6 +64,7 @@ class NetworkConnectTestDelegate : public NetworkConnect::Delegate {
   }
   void ShowMobileSetupDialog(const std::string& service_path) override {}
   void ShowCarrierAccountDetail(const std::string& service_path) override {}
+  void ShowPortalSignin(const std::string& service_path) override {}
   void ShowNetworkConnectError(const std::string& error_name,
                                const std::string& network_id) override {
     network_state_notifier_->ShowNetworkConnectErrorForGuid(error_name,
@@ -115,7 +116,6 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
 
  protected:
   void SetupESimNetwork() {
-    const char kCellularEsimServicePath[] = "/service/cellular_esim1";
     const char kTestEuiccPath[] = "euicc_path";
     const char kTestEidName[] = "eid";
     const char kTestIccid[] = "iccid";

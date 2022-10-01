@@ -312,7 +312,7 @@ bool PrivacySandboxService::IsFirstPartySetsDataAccessEnabled() {
   return pref_service_->GetBoolean(prefs::kPrivacySandboxFirstPartySetsEnabled);
 }
 
-bool PrivacySandboxService::IsFirstPartySetsDataAccessManaged() {
+bool PrivacySandboxService::IsFirstPartySetsDataAccessManaged() const {
   return pref_service_->IsManagedPreference(
       prefs::kPrivacySandboxFirstPartySetsEnabled);
 }
@@ -648,8 +648,7 @@ PrivacySandboxService::GetFirstPartySets() const {
   return {};
 }
 
-absl::optional<std::u16string>
-PrivacySandboxService::GetFirstPartySetOwnerForDisplay(
+absl::optional<net::SchemefulSite> PrivacySandboxService::GetFirstPartySetOwner(
     const GURL& site_url) const {
   auto sets = GetFirstPartySets();
   auto schemeful_site = net::SchemefulSite(site_url);
@@ -657,19 +656,31 @@ PrivacySandboxService::GetFirstPartySetOwnerForDisplay(
   if (!sets.count(schemeful_site))
     return absl::nullopt;
 
+  return sets[schemeful_site];
+}
+
+absl::optional<std::u16string>
+PrivacySandboxService::GetFirstPartySetOwnerForDisplay(
+    const GURL& site_url) const {
+  auto fpsOwner = GetFirstPartySetOwner(site_url);
+  if (!fpsOwner.has_value()) {
+    return absl::nullopt;
+  }
+
   // TODO(crbug.com/1332513): Apply formatting that correctly displays unicode
   // domains.
-  return base::UTF8ToUTF16(sets[schemeful_site].GetURL().host());
+  return base::UTF8ToUTF16(fpsOwner->GetURL().host());
 }
 
 bool PrivacySandboxService::IsPartOfManagedFirstPartySet(
     const net::SchemefulSite& site) const {
   if (privacy_sandbox::kPrivacySandboxFirstPartySetsUISampleSets.Get()) {
-    return GetFirstPartySets()[site] ==
-           net::SchemefulSite(GURL("https://chromium.org"));
+    return IsFirstPartySetsDataAccessManaged() ||
+           GetFirstPartySets()[site] ==
+               net::SchemefulSite(GURL("https://chromium.org"));
   }
   // TODO(crbug.com/1332513): Retrieve set information from FPS delegate.
-  return false;
+  return IsFirstPartySetsDataAccessManaged();
 }
 
 /*static*/ PrivacySandboxService::PromptType

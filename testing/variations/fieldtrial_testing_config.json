@@ -3791,6 +3791,21 @@
             ]
         }
     ],
+    "DiacriticsOnPhysicalKeyboardLongpress": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DiacriticsOnPhysicalKeyboardLongpress"
+                    ]
+                }
+            ]
+        }
+    ],
     "DifferentWorkQueueCapacities": [
         {
             "platforms": [
@@ -3967,6 +3982,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DmTokenDeletion"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DnsHttpsSvcbSchemeUpgrade": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20220927",
+                    "enable_features": [
+                        "UseDnsHttpsSvcbAlpn"
                     ]
                 }
             ]
@@ -5877,28 +5911,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "InfobarScrollOptimization"
-                    ]
-                }
-            ]
-        }
-    ],
-    "InitialNavigationEntry": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "InitialNavigationEntry"
                     ]
                 }
             ]
@@ -9634,6 +9646,21 @@
             ]
         }
     ],
+    "SmartLockBluetoothScreenOffFix": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SmartLockBluetoothScreenOffFix"
+                    ]
+                }
+            ]
+        }
+    ],
     "SmartLockUIRevamp": [
         {
             "platforms": [
@@ -9786,23 +9813,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SuppressToolbarCaptures"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SurfaceSyncThrottlingRelaunch": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SurfaceSyncThrottling"
                     ]
                 }
             ]

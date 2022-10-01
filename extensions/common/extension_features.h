@@ -30,7 +30,6 @@ BASE_DECLARE_FEATURE(kStructuredCloningForMV3Messaging);
 
 BASE_DECLARE_FEATURE(kRestrictDeveloperModeAPIs);
 
-BASE_DECLARE_FEATURE(kCheckingUnexpectedExtensionIdInContentScriptIpcs);
 BASE_DECLARE_FEATURE(kCheckingNoExtensionIdInExtensionIpcs);
 
 BASE_DECLARE_FEATURE(kNewExtensionFaviconHandling);
@@ -46,6 +45,8 @@ BASE_DECLARE_FEATURE(kExtensionsOffscreenDocuments);
 BASE_DECLARE_FEATURE(kNewWebstoreDomain);
 
 BASE_DECLARE_FEATURE(kExtensionSidePanelIntegration);
+
+BASE_DECLARE_FEATURE(kExtensionsFSPInServiceWorkers);
 
 }  // namespace extensions_features
 

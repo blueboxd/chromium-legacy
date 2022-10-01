@@ -8,7 +8,8 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {ContentSetting, ContentSettingsTypes,CookiePrimarySetting, SettingsCookiesPageElement, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {CrLinkRowElement, CrSettingsPrefs, MetricsBrowserProxyImpl, PrivacyElementInteractions, Router, routes, SettingsPrefsElement, SettingsToggleButtonElement} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {flushTasks, isChildVisible} from 'chrome://webui-test/test_util.js';
+import {isChildVisible} from 'chrome://webui-test/test_util.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
 import {TestSiteSettingsPrefsBrowserProxy} from './test_site_settings_prefs_browser_proxy.js';
@@ -44,7 +45,6 @@ suite('CrSettingsCookiesPageTest', function() {
     page.set('prefs.generated.cookie_session_only', {
       value: false,
     });
-    page.set('prefs.privacy_sandbox.apis_enabled.value', true);
     page.set('prefs.privacy_sandbox.apis_enabled_v2.value', true);
     page.set(
         'prefs.generated.cookie_primary_setting.value',
@@ -236,7 +236,6 @@ suite('CrSettingsCookiesPageTest', function() {
 
     // The toast should not be displayed if the user has the privacy sandbox
     // APIs disabled.
-    page.set('prefs.privacy_sandbox.apis_enabled.value', false);
     page.set('prefs.privacy_sandbox.apis_enabled_v2.value', false);
     page.$.blockAll.click();
     await flushTasks();
@@ -244,7 +243,6 @@ suite('CrSettingsCookiesPageTest', function() {
     assertEquals(0, testMetricsBrowserProxy.getCallCount('recordAction'));
 
     // Disabling only 3P cookies should display the toast.
-    page.set('prefs.privacy_sandbox.apis_enabled.value', true);
     page.set('prefs.privacy_sandbox.apis_enabled_v2.value', true);
     page.set(
         'prefs.generated.cookie_primary_setting.value',
@@ -302,7 +300,6 @@ suite('CrSettingsCookiesPageTest_consolidatedControlsDisabled', function() {
     page.set('prefs.generated.cookie_session_only', {
       value: false,
     });
-    page.set('prefs.privacy_sandbox.apis_enabled.value', true);
     page.set('prefs.privacy_sandbox.apis_enabled_v2.value', true);
     page.set(
         'prefs.generated.cookie_primary_setting.value',
@@ -346,7 +343,6 @@ suite('CrSettingsCookiesPageTest_consolidatedControlsEnabled', function() {
     page.set('prefs.generated.cookie_session_only', {
       value: false,
     });
-    page.set('prefs.privacy_sandbox.apis_enabled.value', true);
     page.set('prefs.privacy_sandbox.apis_enabled_v2.value', true);
     page.set(
         'prefs.generated.cookie_primary_setting.value',

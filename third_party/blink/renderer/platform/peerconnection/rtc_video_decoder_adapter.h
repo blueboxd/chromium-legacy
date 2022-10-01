@@ -111,15 +111,14 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   static bool Vp9HwSupportForSpatialLayers();
 
  private:
-  using CreateVideoDecoderCB =
-      base::RepeatingCallback<std::unique_ptr<media::VideoDecoder>(
-          media::MediaLog*)>;
-  using InitCB = CrossThreadOnceFunction<void(bool)>;
-  using FlushDoneCB = CrossThreadOnceFunction<void()>;
-
   enum class DecodeResult {
     kOk,
     kErrorRequestKeyFrame,
+  };
+  enum class Status : uint8_t {
+    kOk = 0,            // Status other than kNeedKeyFrame and kError.
+    kNeedKeyFrame = 1,  // A decoder needs a key frame.
+    kError = 2,         // A decoder will never be able to decode frames.
   };
 
   // Called on the worker thread.
@@ -128,7 +127,7 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
 
   bool InitializeSync(const media::VideoDecoderConfig& config);
   void InitializeOnMediaThread(const media::VideoDecoderConfig& config,
-                               InitCB init_cb,
+                               CrossThreadOnceFunction<void(bool)> init_cb,
                                base::TimeTicks start_time,
                                std::string* decoder_name);
   absl::optional<RTCVideoDecoderFallbackReason>
@@ -149,8 +148,9 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   bool ShouldReinitializeForSettingHDRColorSpace(
       const webrtc::EncodedImage& input_image) const;
   bool ReinitializeSync(const media::VideoDecoderConfig& config);
-  void FlushOnMediaThread(FlushDoneCB flush_success_cb,
-                          FlushDoneCB flush_fail_cb);
+  void FlushOnMediaThread(WTF::CrossThreadOnceClosure flush_success_cb,
+                          WTF::CrossThreadOnceClosure flush_fail_cb);
+  void ChangeStatus(Status new_status) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Construction parameters.
   const scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
@@ -167,14 +167,13 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
       GUARDED_BY_CONTEXT(media_sequence_checker_);
 
   // Decoding thread members.
-  bool key_frame_required_ = true;
   // Has anything been sent to Decode() yet?
   bool have_started_decoding_ = false;
 
   // Shared members.
   base::Lock lock_;
   int32_t consecutive_error_count_ = 0;
-  bool has_error_ = false;
+  Status status_ GUARDED_BY(lock_){Status::kNeedKeyFrame};
   webrtc::DecodedImageCallback* decode_complete_callback_ = nullptr;
   // Requests that have not been submitted to the decoder yet.
   WTF::Deque<scoped_refptr<media::DecoderBuffer>> pending_buffers_;

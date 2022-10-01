@@ -21,7 +21,7 @@
 #include "net/base/schemeful_site.h"
 #include "net/first_party_sets/first_party_set_entry.h"
 #include "net/first_party_sets/first_party_sets_context_config.h"
-#include "net/first_party_sets/public_sets.h"
+#include "net/first_party_sets/global_first_party_sets.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,17 +51,17 @@ BrowserContext* FakeBrowserContextGetter() {
   return nullptr;
 }
 
-net::PublicSets GetSetsAndWait() {
-  base::test::TestFuture<net::PublicSets> future;
-  absl::optional<net::PublicSets> result =
+net::GlobalFirstPartySets GetSetsAndWait() {
+  base::test::TestFuture<net::GlobalFirstPartySets> future;
+  absl::optional<net::GlobalFirstPartySets> result =
       FirstPartySetsHandlerImpl::GetInstance()->GetSets(future.GetCallback());
   return result.has_value() ? std::move(result).value() : future.Take();
 }
 
-absl::optional<net::PublicSets> GetPersistedPublicSetsAndWait(
+absl::optional<net::GlobalFirstPartySets> GetPersistedGlobalSetsAndWait(
     const std::string& browser_context_id) {
-  base::test::TestFuture<absl::optional<net::PublicSets>> future;
-  FirstPartySetsHandlerImpl::GetInstance()->GetPersistedPublicSetsForTesting(
+  base::test::TestFuture<absl::optional<net::GlobalFirstPartySets>> future;
+  FirstPartySetsHandlerImpl::GetInstance()->GetPersistedGlobalSetsForTesting(
       browser_context_id, future.GetCallback());
   return future.Take();
 }
@@ -247,7 +247,7 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
           /*context_config=*/nullptr, run_loop.QuitClosure());
   run_loop.Run();
 
-  EXPECT_THAT(GetPersistedPublicSetsAndWait(browser_context_id)
+  EXPECT_THAT(GetPersistedGlobalSetsAndWait(browser_context_id)
                   ->FindEntries({foo, associated}, /*config=*/nullptr),
               UnorderedElementsAre(
                   Pair(foo, net::FirstPartySetEntry(
@@ -289,7 +289,7 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
           /*context_config=*/nullptr, run_loop.QuitClosure());
   run_loop.Run();
 
-  EXPECT_EQ(GetPersistedPublicSetsAndWait(browser_context_id), absl::nullopt);
+  EXPECT_EQ(GetPersistedGlobalSetsAndWait(browser_context_id), absl::nullopt);
 }
 
 TEST_F(FirstPartySetsHandlerImplEnabledTest,
@@ -334,7 +334,7 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
       ->SetEmbedderWillProvidePublicSetsForTesting(true);
 
   // Call GetSets before the sets are ready, and before Init has been called.
-  base::test::TestFuture<net::PublicSets> future;
+  base::test::TestFuture<net::GlobalFirstPartySets> future;
   EXPECT_EQ(
       FirstPartySetsHandlerImpl::GetInstance()->GetSets(future.GetCallback()),
       absl::nullopt);

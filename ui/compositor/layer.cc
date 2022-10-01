@@ -1442,7 +1442,7 @@ bool Layer::ConvertPointForAncestor(const Layer* ancestor,
   bool result = use_target_transform
                     ? GetTargetTransformRelativeTo(ancestor, &transform)
                     : GetTransformRelativeTo(ancestor, &transform);
-  transform.TransformPoint(point);
+  *point = transform.MapPoint(*point);
   return result;
 }
 
@@ -1456,7 +1456,7 @@ bool Layer::ConvertPointFromAncestor(const Layer* ancestor,
     return false;
   }
   const absl::optional<gfx::PointF> transformed_point =
-      transform.TransformPointReverse(*point);
+      transform.InverseMapPoint(*point);
   if (!transformed_point.has_value())
     return false;
   *point = transformed_point.value();
@@ -1816,8 +1816,8 @@ bool Layer::GetTransformRelativeToImpl(const Layer* ancestor,
     const gfx::Transform& layer_transform =
         is_target_transform ? p->GetTargetTransform() : p->transform();
     if (!layer_transform.IsIdentity())
-      transform->ConcatTransform(layer_transform);
-    transform->ConcatTransform(translation);
+      transform->PostConcat(layer_transform);
+    transform->PostConcat(translation);
   }
   return p == ancestor;
 }

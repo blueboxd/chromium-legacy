@@ -289,31 +289,30 @@ void OverviewItem::RestoreWindow(bool reset_transform,
   }
 
   GetWindow()->ClearProperty(kForceVisibleInMiniViewKey);
-  for (aura::Window* transient_child : GetTransientTreeIterator(GetWindow())) {
+  for (aura::Window* transient_child : GetTransientTreeIterator(GetWindow()))
     transient_child->ClearProperty(kForceVisibleInMiniViewKey);
-  }
 
   overview_item_view_->OnOverviewItemWindowRestoring();
   transform_window_.RestoreWindow(reset_transform,
                                   was_desks_templates_grid_showing);
 
-  if (transform_window_.IsMinimized()) {
-    const auto enter_exit_type = overview_session_->enter_exit_overview_type();
+  if (!transform_window_.IsMinimized())
+    return;
 
-    if (is_moving_to_another_desk_ ||
-        enter_exit_type == OverviewEnterExitType::kImmediateExit) {
-      overview_session_->highlight_controller()->OnViewDestroyingOrDisabling(
-          overview_item_view_);
-      ImmediatelyCloseWidgetOnExit(std::move(item_widget_));
-      overview_item_view_ = nullptr;
-      return;
-    }
-
-    OverviewAnimationType animation_type =
-        GetExitOverviewAnimationTypeForMinimizedWindow(
-            enter_exit_type, should_animate_when_exiting_);
-    FadeOutWidgetFromOverview(std::move(item_widget_), animation_type);
+  const auto enter_exit_type = overview_session_->enter_exit_overview_type();
+  if (is_moving_to_another_desk_ ||
+      enter_exit_type == OverviewEnterExitType::kImmediateExit) {
+    overview_session_->highlight_controller()->OnViewDestroyingOrDisabling(
+        overview_item_view_);
+    ImmediatelyCloseWidgetOnExit(std::move(item_widget_));
+    overview_item_view_ = nullptr;
+    return;
   }
+
+  OverviewAnimationType animation_type =
+      GetExitOverviewAnimationTypeForMinimizedWindow(
+          enter_exit_type, should_animate_when_exiting_);
+  FadeOutWidgetFromOverview(std::move(item_widget_), animation_type);
 }
 
 void OverviewItem::EnsureVisible() {
@@ -496,7 +495,7 @@ void OverviewItem::AnimateAndCloseWindow(bool up) {
     ScopedOverviewAnimationSettings settings(
         OVERVIEW_ANIMATION_CLOSE_OVERVIEW_ITEM, window);
     gfx::Transform original_transform = window->transform();
-    original_transform.ConcatTransform(transform);
+    original_transform.PostConcat(transform);
     window->SetTransform(original_transform);
     if (observe) {
       settings.AddObserver(new AnimationObserver{
@@ -761,8 +760,7 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
   const bool is_shutting_down =
       !overview_controller || !overview_controller->InOverviewSession();
   const bool should_show_rounded_corners =
-      !disable_mask_ && !is_shutting_down &&
-      !overview_controller->IsInStartAnimation();
+      !is_shutting_down && !overview_controller->IsInStartAnimation();
 
   if (transform_window_.IsMinimized()) {
     overview_item_view_->UpdatePreviewRoundedCorners(
@@ -1444,15 +1442,23 @@ aura::Window::Windows OverviewItem::GetWindowsForHomeGesture() {
 void OverviewItem::HideWindowInOverview() {
   ScopedOverviewHideWindows* hide_windows =
       overview_session_->hide_windows_for_saved_desks_grid();
-  if (hide_windows && !hide_windows->HasWindow(GetWindow()))
+  DCHECK(hide_windows);
+
+  if (!hide_windows->HasWindow(GetWindow()))
     hide_windows->AddWindow(GetWindow());
+  if (item_widget_ && !hide_windows->HasWindow(item_widget_->GetNativeWindow()))
+    hide_windows->AddWindow(item_widget_->GetNativeWindow());
 }
 
 void OverviewItem::ShowWindowInOverview() {
   ScopedOverviewHideWindows* hide_windows =
       overview_session_->hide_windows_for_saved_desks_grid();
-  if (hide_windows && hide_windows->HasWindow(GetWindow()))
+  DCHECK(hide_windows);
+
+  if (hide_windows->HasWindow(GetWindow()))
     hide_windows->RemoveWindow(GetWindow());
+  if (item_widget_ && hide_windows->HasWindow(item_widget_->GetNativeWindow()))
+    hide_windows->RemoveWindow(item_widget_->GetNativeWindow());
 }
 
 }  // namespace ash

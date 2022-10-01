@@ -25,11 +25,18 @@ class MockPrivacySandboxService : public PrivacySandboxService {
               PromptActionOccurred,
               (PrivacySandboxService::PromptAction),
               (override));
+  MOCK_METHOD(void, DialogOpenedForBrowser, (Browser*), (override));
+  MOCK_METHOD(void, DialogClosedForBrowser, (Browser*), (override));
+  MOCK_METHOD(bool, IsDialogOpenForBrowser, (Browser*), (override));
   // Mock this method to enable opening the settings page in tests.
   MOCK_METHOD(bool, IsPrivacySandboxRestricted, (), (override));
   MOCK_METHOD((base::flat_map<net::SchemefulSite, net::SchemefulSite>),
               GetFirstPartySets,
               (),
+              (override, const));
+  MOCK_METHOD(absl::optional<net::SchemefulSite>,
+              GetFirstPartySetOwner,
+              (const GURL& site_url),
               (override, const));
   MOCK_METHOD(absl::optional<std::u16string>,
               GetFirstPartySetOwnerForDisplay,
@@ -43,7 +50,7 @@ class MockPrivacySandboxService : public PrivacySandboxService {
               IsPartOfManagedFirstPartySet,
               (const net::SchemefulSite& site),
               (override, const));
-  MOCK_METHOD(bool, IsFirstPartySetsDataAccessManaged, (), (override));
+  MOCK_METHOD(bool, IsFirstPartySetsDataAccessManaged, (), (override, const));
 };
 
 std::unique_ptr<KeyedService> BuildMockPrivacySandboxService(

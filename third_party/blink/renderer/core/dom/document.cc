@@ -377,11 +377,17 @@ enum class RequestStorageResult {
   REJECTED_EXISTING_DENIAL = 5,
   REJECTED_SANDBOXED = 6,
   REJECTED_GRANT_DENIED = 7,
-  kMaxValue = REJECTED_GRANT_DENIED,
+  REJECTED_INCORRECT_FRAME = 8,
+  kMaxValue = REJECTED_INCORRECT_FRAME,
 };
 void FireRequestStorageAccessHistogram(RequestStorageResult result) {
   base::UmaHistogramEnumeration("API.StorageAccess.RequestStorageAccess",
                                 result);
+}
+
+void FireRequestStorageAccessForOriginHistogram(RequestStorageResult result) {
+  base::UmaHistogramEnumeration(
+      "API.StorageAccess.RequestStorageAccessForOrigin", result);
 }
 
 class IntrinsicSizeResizeObserverDelegate : public ResizeObserver::Delegate {
@@ -6062,6 +6068,8 @@ ScriptPromise Document::requestStorageAccessForOrigin(
     ScriptState* script_state,
     const AtomicString& origin) {
   if (!GetFrame()) {
+    FireRequestStorageAccessForOriginHistogram(
+        RequestStorageResult::REJECTED_NO_ORIGIN);
     // Note that in detached frames, resolvers are not able to return a promise.
     return ScriptPromise::RejectWithDOMException(
         script_state,
@@ -6087,6 +6095,8 @@ ScriptPromise Document::requestStorageAccessForOrigin(
         "requestStorageAccessForOrigin: Must be handling a user gesture to "
         "use."));
 
+    FireRequestStorageAccessForOriginHistogram(
+        RequestStorageResult::REJECTED_NO_USER_GESTURE);
     resolver->Reject();
     return promise;
   }
@@ -6097,6 +6107,8 @@ ScriptPromise Document::requestStorageAccessForOrigin(
         mojom::blink::ConsoleMessageLevel::kError,
         "requestStorageAccessForOrigin: Only supported in primary top-level "
         "browsing contexts."));
+    FireRequestStorageAccessForOriginHistogram(
+        RequestStorageResult::REJECTED_INCORRECT_FRAME);
     resolver->Reject();
     return promise;
   }
@@ -6107,6 +6119,8 @@ ScriptPromise Document::requestStorageAccessForOrigin(
         mojom::blink::ConsoleMessageLevel::kError,
         "requestStorageAccessForOrigin: Cannot be used by opaque origins."));
 
+    FireRequestStorageAccessForOriginHistogram(
+        RequestStorageResult::REJECTED_OPAQUE_ORIGIN);
     resolver->Reject();
     return promise;
   }
@@ -6119,6 +6133,8 @@ ScriptPromise Document::requestStorageAccessForOrigin(
         mojom::blink::ConsoleMessageSource::kSecurity,
         mojom::blink::ConsoleMessageLevel::kError,
         "requestStorageAccessForOrigin: Invalid origin parameter."));
+    FireRequestStorageAccessForOriginHistogram(
+        RequestStorageResult::REJECTED_OPAQUE_ORIGIN);
     resolver->Reject();
     return promise;
   }
@@ -6126,6 +6142,8 @@ ScriptPromise Document::requestStorageAccessForOrigin(
   if (dom_window_->GetSecurityOrigin()->IsSameSiteWith(supplied_origin.get())) {
     // Access is not actually disabled, so accept the request.
     resolver->Resolve();
+    FireRequestStorageAccessForOriginHistogram(
+        RequestStorageResult::APPROVED_EXISTING_ACCESS);
     return promise;
   }
 
@@ -6150,6 +6168,8 @@ ScriptPromise Document::requestStorageAccessForOrigin(
                 switch (status) {
                   case mojom::blink::PermissionStatus::GRANTED:
                     document->expressly_denied_storage_access_ = false;
+                    FireRequestStorageAccessForOriginHistogram(
+                        RequestStorageResult::APPROVED_NEW_GRANT);
                     resolver->Resolve();
                     break;
                   case mojom::blink::PermissionStatus::DENIED:
@@ -6159,6 +6179,8 @@ ScriptPromise Document::requestStorageAccessForOrigin(
                     [[fallthrough]];
                   case mojom::blink::PermissionStatus::ASK:
                   default:
+                    FireRequestStorageAccessForOriginHistogram(
+                        RequestStorageResult::REJECTED_GRANT_DENIED);
                     resolver->Reject();
                 }
               },
@@ -8400,6 +8422,8 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(anchor_element_interaction_tracker_);
   visitor->Trace(focused_element_change_observers_);
   visitor->Trace(pending_link_header_preloads_);
+  visitor->Trace(event_node_path_cache_);
+  visitor->Trace(event_node_path_cache_key_list_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
@@ -8784,6 +8808,62 @@ Document::PendingJavascriptUrl::~PendingJavascriptUrl() = default;
 void Document::CheckPartitionedCookiesOriginTrial(
     const ResourceResponse& response) {
   cookie_jar_->CheckPartitionedCookiesOriginTrial(response);
+}
+
+static wtf_size_t MaxEventNodePathCachedEntriesValue() {
+  // The cache stores N entries/nodes that are receiving events simultaneously
+  // in a document. The size of this cache will be O(kN) where k is the average
+  // tree depth of the stored nodes.
+  static const wtf_size_t kMaxEventNodePathCachedEntriesValue =
+      features::kDocumentMaxEventNodePathCachedEntries.Get();
+  return kMaxEventNodePathCachedEntriesValue;
+}
+
+static bool EventNodePathCachingEnabled() {
+  // Cache the feature value since checking for each event path regresses
+  // performance.
+  static const bool kEnabled =
+      base::FeatureList::IsEnabled(features::kDocumentEventNodePathCaching);
+  return kEnabled;
+}
+
+const EventPath::NodePath& Document::GetOrCalculateEventNodePath(Node& node) {
+  DCHECK(EventNodePathCachingEnabled());
+  if (event_node_path_dom_tree_version_ != dom_tree_version_) {
+    if (!event_node_path_cache_.empty()) {
+      event_node_path_cache_.clear();
+      event_node_path_cache_key_list_.clear();
+    } else {
+      DCHECK(event_node_path_cache_key_list_.empty());
+    }
+    event_node_path_dom_tree_version_ = dom_tree_version_;
+  }
+
+  Member<EventPath::NodePath> event_node_path;
+  {
+    // Keep `result` within own scope to avoid dangling references into cache,
+    // because it might get modified during pruning.
+    auto result = event_node_path_cache_.insert(&node, nullptr);
+    if (result.is_new_entry) {
+      EventPath::NodePath node_path = EventPath::CalculateNodePath(node);
+      result.stored_value->value =
+          MakeGarbageCollected<EventPath::NodePath>(std::move(node_path));
+    }
+    event_node_path = result.stored_value->value;
+  }
+  event_node_path_cache_key_list_.PrependOrMoveToFirst(&node);
+
+  // Prune oldest cached node if size is bigger than max.
+  wtf_size_t max_entries = MaxEventNodePathCachedEntriesValue();
+  if (event_node_path_cache_key_list_.size() > max_entries) {
+    DCHECK_EQ(event_node_path_cache_key_list_.size(), max_entries + 1);
+    event_node_path_cache_.erase(event_node_path_cache_key_list_.back());
+    event_node_path_cache_key_list_.pop_back();
+  }
+
+  DCHECK_EQ(event_node_path_cache_.size(),
+            event_node_path_cache_key_list_.size());
+  return *event_node_path;
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;

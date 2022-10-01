@@ -665,7 +665,7 @@ BASE_FEATURE(kEapGtcWifiAuthentication,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the System Web App (SWA) version of Eche.
-BASE_FEATURE(kEcheSWA, "EcheSWA", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kEcheSWA, "EcheSWA", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the Debug Mode of Eche.
 BASE_FEATURE(kEcheSWADebugMode,
@@ -680,7 +680,7 @@ BASE_FEATURE(kEcheSWAMeasureLatency,
 // Enables sending start signaling to establish Eche's WebRTC connection.
 BASE_FEATURE(kEcheSWASendStartSignaling,
              "EcheSWASendStartSignaling",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Allows disabling the stun servers when establishing a WebRTC connection to
 // Eche.
@@ -1070,15 +1070,20 @@ BASE_FEATURE(kHoldingSpacePredictability,
              "HoldingSpacePredictability",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables rebranding of holding space to convey the relationship with
-// Files to simplify feature comprehension.
-BASE_FEATURE(kHoldingSpaceRebrand,
-             "HoldingSpaceRebrand",
+// Enables refresh of holding space UI to better convey the relationship with
+// the Files app to simplify feature comprehension.
+BASE_FEATURE(kHoldingSpaceRefresh,
+             "HoldingSpaceRefresh",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables suggestions in the pinned files section of Holding Space.
 BASE_FEATURE(kHoldingSpaceSuggestions,
              "HoldingSpaceSuggestions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables a call-to-action label beside the home button.
+BASE_FEATURE(kHomeButtonWithText,
+             "HomeButtonWithText",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Control whether the hotspot tethering is enabled. When enabled, it will allow
@@ -2453,12 +2458,16 @@ bool IsHoldingSpacePredictabilityEnabled() {
   return base::FeatureList::IsEnabled(kHoldingSpacePredictability);
 }
 
-bool IsHoldingSpaceRebrandEnabled() {
-  return base::FeatureList::IsEnabled(kHoldingSpaceRebrand);
+bool IsHoldingSpaceRefreshEnabled() {
+  return base::FeatureList::IsEnabled(kHoldingSpaceRefresh);
 }
 
 bool IsHoldingSpaceSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(kHoldingSpaceSuggestions);
+}
+
+bool IsHomeButtonWithTextEnabled() {
+  return base::FeatureList::IsEnabled(kHomeButtonWithText);
 }
 
 bool IsHostnameSettingEnabled() {

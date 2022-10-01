@@ -3235,6 +3235,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-web-usb-on-extension-service-worker",
+    "owners": [ "deviceapi-team@google.com" ],
+    "expiry_milestone": 115
+  },
+  {
     "name": "enable-webassembly-baseline",
     "owners": [ "clemensb", "wasm-team@google.com" ],
     // This flag is often used by developers and partners to test
@@ -3448,6 +3453,11 @@
     "name": "extension-workflow-justification",
     "owners": [ "igorruvinov", "zmin" ],
     "expiry_milestone": 110
+  },
+  {
+    "name": "extensions-fsp-in-service-workers",
+    "owners": [ "alexbn", "petermarshall" ],
+    "expiry_milestone": 120
   },
   {
     "name": "extensions-menu-access-control",
@@ -4998,6 +5008,11 @@
       "expiry_milestone": 107
   },
   {
+    "name": "omnibox-on-clobber-focus-type-on-android",
+    "owners": [ "rongtan", "ender", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 120
+  },
+  {
     "name": "omnibox-on-device-head-suggestions",
     "owners": [ "cechen@google.com", "suggest-2g@google.com" ],
     "expiry_milestone": 120
@@ -5608,11 +5623,6 @@
   {
     "name": "query-tiles-swap-trending",
     "owners": [ "qinmin" ],
-    "expiry_milestone": 120
-  },
-  {
-    "name": "quick-answers-for-more-locales",
-    "owners": [ "croissant-eng", "updowndota" ],
     "expiry_milestone": 120
   },
   {

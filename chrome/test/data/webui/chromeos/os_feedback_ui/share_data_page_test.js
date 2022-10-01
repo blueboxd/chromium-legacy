@@ -250,6 +250,39 @@ export function shareDataPageTestSuite() {
     fakeFeedbackContext.pageUrl.url = 'chrome://tab/';
   });
 
+  // Test that the performanceTraceContainer section is hidden when the trace id
+  // is zero.
+  test('performanceTraceContainerHidden', async () => {
+    await initializePage();
+    // Trace id will be zero in this context.
+    page.feedbackContext = fakeEmptyFeedbackContext;
+
+    // The performanceTraceContainer section should be hidden
+    const performanceTraceContainer = getElement('#performanceTraceContainer');
+    assertTrue(!!performanceTraceContainer);
+    assertFalse(isVisible(performanceTraceContainer));
+
+    // Now use the context with a non-zero trace id.
+    page.feedbackContext = fakeFeedbackContext;
+    // The performanceTraceContainer section should be visible
+    assertTrue(isVisible(performanceTraceContainer));
+  });
+
+  // Test clicking performanceTraceLink link.
+  test('performanceTraceLink', async () => {
+    await initializePage();
+
+    // Set up performance trace id.
+    page.feedbackContext = fakeFeedbackContext;
+
+    const link = getElement('#performanceTraceLink');
+
+    assertEquals('_blank', link.getAttribute('target'));
+    // Performance trace id is the last number in the URL, which is 1.
+    assertEquals(
+        'chrome://slow_trace/tracing.zip#1', link.getAttribute('href'));
+  });
+
   /**
    * Test that when when the send button is clicked, an on-continue is fired.
    * Case 1: Share pageUrl, do not share system logs.
@@ -373,6 +406,36 @@ export function shareDataPageTestSuite() {
 
     assertFalse(!!request.feedbackContext.email);
     assertFalse(request.includeScreenshot);
+  });
+
+  /**
+   * Test that when the send button is clicked, an on-continue is fired.
+   * Case 5: Send performance trace id.
+   */
+  test('SendPerformanceTraceId', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+
+    getElement('#performanceTraceCheckbox').checked = true;
+
+    const report = (await clickSendAndWait(page)).report;
+
+    assertEquals(fakeFeedbackContext.traceId, report.feedbackContext.traceId);
+  });
+
+  /**
+   * Test that when the send button is clicked, an on-continue is fired.
+   * Case 6: Don't send performance trace id.
+   */
+  test('DontSendPerformanceTraceId', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+
+    getElement('#performanceTraceCheckbox').checked = false;
+
+    const report = (await clickSendAndWait(page)).report;
+
+    assertEquals(0, report.feedbackContext.traceId);
   });
 
   // Test that the send button will be disabled once clicked.
@@ -692,6 +755,34 @@ export function shareDataPageTestSuite() {
 
     // After clicking the #bluetoothLogsLink, the dialog pops up.
     getElement('#bluetoothLogsInfoLink').click();
+    assertTrue(isVisible(closeDialogButton));
+
+    // The preview dialog's close icon button is focused.
+    assertEquals(closeDialogButton, getDeepActiveElement());
+
+    // Press enter should close the preview dialog.
+    closeDialogButton.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 'Enter'}));
+    await flushTasks();
+
+    // The preview dialog's close icon button is not visible now.
+    assertFalse(isVisible(closeDialogButton));
+  });
+
+  /**
+   * Test that clicking the #assistantLogsLink will open the dialog and set the
+   * focus on the close dialog icon button.
+   */
+  test('openAssistantLogsDialog', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+
+    // The assistant dialog is not visible as default.
+    const closeDialogButton = getElement('#assistantDialogDoneButton');
+    assertFalse(isVisible(closeDialogButton));
+
+    // After clicking the #bluetoothLogsLink, the dialog pops up.
+    getElement('#assistantLogsLink').click();
     assertTrue(isVisible(closeDialogButton));
 
     // The preview dialog's close icon button is focused.

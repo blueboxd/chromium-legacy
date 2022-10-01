@@ -23,6 +23,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
@@ -615,13 +616,7 @@ void DrmDevice::WriteIntoTrace(perfetto::TracedValue context) const {
   auto dict = std::move(context).WriteDictionary();
 
   dict.Add("device_path", device_path_.value());
-
-  {
-    auto array = dict.AddArray("planes");
-    for (const auto& plane : plane_manager_->planes()) {
-      plane->WriteIntoTrace(array.AppendItem());
-    }
-  }
+  dict.Add("planes", plane_manager_->planes());
 }
 
 bool DrmDevice::SetGammaRamp(

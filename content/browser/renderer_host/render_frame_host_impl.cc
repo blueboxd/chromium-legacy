@@ -1613,6 +1613,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
     LifecycleStateImpl lifecycle_state,
     scoped_refptr<BrowsingContextState> browsing_context_state,
     blink::FrameOwnerElementType frame_owner_element_type,
+    RenderFrameHostImpl* parent,
     FencedFrameStatus fenced_frame_status)
     : render_view_host_(std::move(render_view_host)),
       delegate_(delegate),
@@ -1623,7 +1624,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       frame_tree_node_(frame_tree_node),
       browsing_context_state_(std::move(browsing_context_state)),
       frame_owner_element_type_(frame_owner_element_type),
-      parent_(frame_tree_node_->parent()),
+      parent_(parent),
       depth_(parent_ ? parent_->GetFrameDepth() + 1 : 0),
       last_committed_site_info_(site_instance_->GetBrowserContext()),
       routing_id_(routing_id),
@@ -2910,7 +2911,7 @@ void RenderFrameHostImpl::AccessibilityFatalError() {
 
 gfx::AcceleratedWidget
 RenderFrameHostImpl::AccessibilityGetAcceleratedWidget() {
-  DCHECK(AccessibilityIsMainFrame());
+  DCHECK(AccessibilityIsRootFrame());
   // Only the active RenderFrameHost is connected to the native widget tree for
   // accessibility, so return null if this is queried on any other frame.
   if (!IsActive())
@@ -2985,7 +2986,7 @@ void RenderFrameHostImpl::AccessibilityHitTest(
                      opt_event_to_fire, std::move(opt_callback)));
 }
 
-bool RenderFrameHostImpl::AccessibilityIsMainFrame() {
+bool RenderFrameHostImpl::AccessibilityIsRootFrame() {
   // Do not use is_main_frame() or IsOutermostMainFrame().
   // Frame trees may be nested so it can be the case that is_main_frame() is
   // true, but is not the outermost RenderFrameHost (it only checks for nullity
@@ -2998,7 +2999,7 @@ bool RenderFrameHostImpl::AccessibilityIsMainFrame() {
 
 WebContentsAccessibility*
 RenderFrameHostImpl::AccessibilityGetWebContentsAccessibility() {
-  DCHECK(AccessibilityIsMainFrame());
+  DCHECK(AccessibilityIsRootFrame());
   auto* view = static_cast<RenderWidgetHostViewBase*>(GetView());
   if (!view)
     return nullptr;
@@ -3230,7 +3231,8 @@ void RenderFrameHostImpl::RenderProcessGone(
 
   // If this was the current pending or speculative RFH dying, cancel and
   // destroy it.
-  frame_tree_node_->render_manager()->CancelPendingIfNecessary(this);
+  frame_tree_node_->render_manager()->CleanupIfSpeculativeForRenderProcessGone(
+      this);
 
   // Note: don't add any more code at this point in the function because
   // |this| may be deleted. Any additional cleanup should happen before
@@ -10249,7 +10251,7 @@ RenderFrameHost* RenderFrameHost::FromPlaceholderToken(
 ui::AXTreeID RenderFrameHostImpl::GetParentAXTreeID() {
   auto* parent = GetParentOrOuterDocumentOrEmbedder();
   if (!parent) {
-    DCHECK(AccessibilityIsMainFrame())
+    DCHECK(AccessibilityIsRootFrame())
         << "Child frame requires a parent, root=" << GetLastCommittedURL();
     return ui::AXTreeIDUnknown();
   }
@@ -10262,7 +10264,7 @@ ui::AXTreeID RenderFrameHostImpl::GetParentAXTreeID() {
   //     << "Parent frame must have an id, child url = " <<
   //     GetLastCommittedURL()
   //     << "    parent url = " << parent->GetLastCommittedURL();
-  DCHECK(!AccessibilityIsMainFrame())
+  DCHECK(!AccessibilityIsRootFrame())
       << "Root frame must not have a parent, root=" << GetLastCommittedURL()
       << "  parent=" << parent->GetLastCommittedURL();
   return parent->GetAXTreeID();
@@ -10270,7 +10272,7 @@ ui::AXTreeID RenderFrameHostImpl::GetParentAXTreeID() {
 
 ui::AXTreeID RenderFrameHostImpl::GetFocusedAXTreeID() {
   // If this is not the root frame tree node, we're done.
-  if (!AccessibilityIsMainFrame())
+  if (!AccessibilityIsRootFrame())
     return ui::AXTreeIDUnknown();
 
   RenderFrameHostImpl* focused_frame = delegate_->GetFocusedFrame();

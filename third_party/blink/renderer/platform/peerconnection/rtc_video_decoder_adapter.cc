@@ -166,7 +166,7 @@ scoped_refptr<media::DecoderBuffer> ConvertToDecoderBuffer(
 
 void RTCVideoDecoderAdapter::InitializeOnMediaThread(
     const media::VideoDecoderConfig& config,
-    InitCB init_cb,
+    CrossThreadOnceFunction<void(bool)> init_cb,
     base::TimeTicks start_time,
     std::string* decoder_name) {
   DVLOG(3) << __func__;
@@ -274,7 +274,8 @@ RTCVideoDecoderAdapter::EnqueueBuffer(
     return *fallback_reason;
   }
 
-  if (key_frame_required_) {
+  base::AutoLock auto_lock(lock_);
+  if (status_ == Status::kNeedKeyFrame) {
     // We discarded previous frame because we have too many pending buffers (see
     // logic) below. Now we need to wait for the key frame and discard
     // everything else.
@@ -284,14 +285,12 @@ RTCVideoDecoderAdapter::EnqueueBuffer(
     }
     DVLOG(2) << "Key frame received, resume decoding";
     // ok, we got key frame and can continue decoding
-    key_frame_required_ = false;
+    ChangeStatus(Status::kOk);
   }
 
   // Queue for decoding.
-  base::AutoLock auto_lock(lock_);
-  if (has_error_) {
+  if (status_ == Status::kError)
     return RTCVideoDecoderFallbackReason::kPreviousErrorOnDecode;
-  }
 
   if (HasSoftwareFallback(config_.codec()) &&
       pending_buffers_.size() >= kMaxPendingBuffers) {
@@ -301,11 +300,12 @@ RTCVideoDecoderAdapter::EnqueueBuffer(
     pending_buffers_.clear();
     // Actually we just discarded a frame. We must wait for the key frame and
     // drop any other non-key frame.
-    key_frame_required_ = true;
     if (++consecutive_error_count_ > kMaxConsecutiveErrors) {
       decode_timestamps_.clear();
+      ChangeStatus(Status::kError);
       return RTCVideoDecoderFallbackReason::kConsecutivePendingBufferOverflow;
     }
+    ChangeStatus(Status::kNeedKeyFrame);
     return DecodeResult::kErrorRequestKeyFrame;
   }
 
@@ -343,8 +343,9 @@ void RTCVideoDecoderAdapter::DecodeOnMediaThread() {
   }
 }
 
-void RTCVideoDecoderAdapter::FlushOnMediaThread(FlushDoneCB flush_success_cb,
-                                                FlushDoneCB flush_fail_cb) {
+void RTCVideoDecoderAdapter::FlushOnMediaThread(
+    WTF::CrossThreadOnceClosure flush_success_cb,
+    WTF::CrossThreadOnceClosure flush_fail_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(media_sequence_checker_);
 
   // Remove any pending tasks.
@@ -357,7 +358,8 @@ void RTCVideoDecoderAdapter::FlushOnMediaThread(FlushDoneCB flush_success_cb,
   video_decoder_->Decode(
       media::DecoderBuffer::CreateEOSBuffer(),
       WTF::BindOnce(
-          [](FlushDoneCB flush_success, FlushDoneCB flush_fail,
+          [](WTF::CrossThreadOnceClosure flush_success,
+             WTF::CrossThreadOnceClosure flush_fail,
              media::DecoderStatus status) {
             if (status.is_ok())
               std::move(flush_success).Run();
@@ -381,7 +383,7 @@ void RTCVideoDecoderAdapter::OnDecodeDone(media::DecoderStatus status) {
                              static_cast<int>(status.code()));
 
     base::AutoLock auto_lock(lock_);
-    has_error_ = true;
+    ChangeStatus(Status::kError);
     pending_buffers_.clear();
     decode_timestamps_.clear();
     return;
@@ -551,13 +553,15 @@ bool RTCVideoDecoderAdapter::Configure(const Settings& settings) {
       static_cast<int32_t>(settings.max_render_resolution().Width()) *
       settings.max_render_resolution().Height();
 
+  const bool init_success = status_ != Status::kError;
   base::UmaHistogramBoolean("Media.RTCVideoDecoderInitDecodeSuccess",
-                            !has_error_);
-  if (!has_error_) {
+                            init_success);
+
+  if (init_success) {
     UMA_HISTOGRAM_ENUMERATION("Media.RTCVideoDecoderProfile", config_.profile(),
                               media::VIDEO_CODEC_PROFILE_MAX + 1);
   }
-  return !has_error_;
+  return init_success;
 }
 
 int32_t RTCVideoDecoderAdapter::Decode(const webrtc::EncodedImage& input_image,
@@ -618,13 +622,13 @@ int32_t RTCVideoDecoderAdapter::RegisterDecodeCompleteCallback(
 
   base::AutoLock auto_lock(lock_);
   decode_complete_callback_ = callback;
-  if (has_error_) {
+  if (status_ == Status::kError) {
     RecordRTCVideoDecoderFallbackReason(
         config_.codec(),
         RTCVideoDecoderFallbackReason::kPreviousErrorOnRegisterCallback);
+    return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
   }
-  return has_error_ ? WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE
-                    : WEBRTC_VIDEO_CODEC_OK;
+  return WEBRTC_VIDEO_CODEC_OK;
 }
 
 int32_t RTCVideoDecoderAdapter::Release() {
@@ -633,8 +637,8 @@ int32_t RTCVideoDecoderAdapter::Release() {
   base::AutoLock auto_lock(lock_);
   pending_buffers_.clear();
   decode_timestamps_.clear();
-  return has_error_ ? WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE
-                    : WEBRTC_VIDEO_CODEC_OK;
+  return status_ == Status::kError ? WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE
+                                   : WEBRTC_VIDEO_CODEC_OK;
 }
 
 bool RTCVideoDecoderAdapter::ShouldReinitializeForSettingHDRColorSpace(
@@ -666,12 +670,12 @@ bool RTCVideoDecoderAdapter::ReinitializeSync(
       CrossThreadBindOnce(&FinishWait, CrossThreadUnretained(&waiter),
                           CrossThreadUnretained(&result));
   std::string decoder_name;
-  FlushDoneCB flush_success_cb = CrossThreadBindOnce(
+  WTF::CrossThreadOnceClosure flush_success_cb = CrossThreadBindOnce(
       &RTCVideoDecoderAdapter::InitializeOnMediaThread, weak_this_, config,
       std::move(init_cb),
       /*start_time=*/base::TimeTicks(),
       /*decoder_name=*/CrossThreadUnretained(&decoder_name));
-  FlushDoneCB flush_fail_cb =
+  WTF::CrossThreadOnceClosure flush_fail_cb =
       CrossThreadBindOnce(&FinishWait, CrossThreadUnretained(&waiter),
                           CrossThreadUnretained(&result), false);
   if (PostCrossThreadTask(
@@ -683,6 +687,12 @@ bool RTCVideoDecoderAdapter::ReinitializeSync(
     RecordReinitializationLatency(base::TimeTicks::Now() - start_time);
   }
   return result;
+}
+
+void RTCVideoDecoderAdapter::ChangeStatus(Status new_status) {
+  // It is impossible to recover once status becomes kError.
+  if (status_ != Status::kError)
+    status_ = new_status;
 }
 
 // static

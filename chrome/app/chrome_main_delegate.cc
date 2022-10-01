@@ -73,6 +73,7 @@
 #include "components/nacl/common/buildflags.h"
 #include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "components/version_info/channel.h"
 #include "components/version_info/version_info.h"
 #include "content/public/app/initialize_mojo_core.h"
 #include "content/public/common/content_client.h"
@@ -161,6 +162,7 @@
 #include "base/android/java_exception_reporter.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "chrome/browser/android/metrics/uma_session_stats.h"
+#include "chrome/browser/flags/android/cached_feature_flags.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/common/chrome_descriptors.h"
 #include "components/crash/android/pure_java_exception_handler.h"
@@ -805,6 +807,10 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
   chrome::CacheChannelInfo();
 #endif
 
+  // TODO(https://crbug.com/1360376): Consider deferring this to run after
+  // startup.
+  RequestUnwindPrerequisitesInstallation(chrome::GetChannel());
+
   return absl::nullopt;
 }
 
@@ -968,9 +974,24 @@ absl::optional<int> ChromeMainDelegate::BasicStartupComplete() {
   // Setup tracing sampler profiler as early as possible at startup if needed.
   // We pass in CreateCoreUnwindersFactory here since it lives in the chrome/
   // layer while TracingSamplerProfiler is outside of chrome/.
+  //
+  // When we're the browser on android use libunwindstack completely for tracing
+  // sampler profiler because it can support java frames which is essential for
+  // the main thread.
+  base::RepeatingCallback tracing_factory =
+      base::BindRepeating(&CreateCoreUnwindersFactory);
+#if BUILDFLAG(IS_ANDROID)
+  // If we are the browser process (missing process type), then use the
+  // experimental libunwindstack unwinder.
+  if (!command_line.HasSwitch(switches::kProcessType) &&
+      chrome::android::IsJavaDrivenFeatureEnabled(
+          chrome::android::kUseLibunwindstackNativeUnwinderAndroid)) {
+    tracing_factory = base::BindRepeating(&CreateLibunwindstackUnwinderFactory);
+  }
+#endif
   tracing_sampler_profiler_ =
       tracing::TracingSamplerProfiler::CreateOnMainThread(
-          base::BindRepeating(&CreateCoreUnwindersFactory));
+          std::move(tracing_factory));
 
 #if BUILDFLAG(IS_WIN)
   v8_crashpad_support::SetUp();

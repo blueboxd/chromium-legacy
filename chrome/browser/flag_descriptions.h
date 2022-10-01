@@ -119,8 +119,8 @@ extern const char kLauncherAppSortDescription[];
 extern const char kEditPasswordsInSettingsName[];
 extern const char kEditPasswordsInSettingsDescription[];
 
-extern const char kPasswordNotesName[];
-extern const char kPasswordNotesDescription[];
+extern const char kPasswordNotesWithBackupName[];
+extern const char kPasswordNotesWithBackupDescription[];
 
 extern const char kPasswordViewPageInSettingsName[];
 extern const char kPasswordViewPageInSettingsDescription[];
@@ -629,6 +629,9 @@ extern const char kEnableNetworkLoggingToFileDescription[];
 extern const char kEnableTranslateSubFramesName[];
 extern const char kEnableTranslateSubFramesDescription[];
 
+extern const char kEnableWebUsbOnExtensionServiceWorkerName[];
+extern const char kEnableWebUsbOnExtensionServiceWorkerDescription[];
+
 extern const char kEnableWindowsGamingInputDataFetcherName[];
 extern const char kEnableWindowsGamingInputDataFetcherDescription[];
 
@@ -812,6 +815,9 @@ extern const char kExtensionContentVerificationEnforceStrict[];
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 extern const char kExtensionsMenuAccessControlName[];
 extern const char kExtensionsMenuAccessControlDescription[];
+
+extern const char kExtensionsFSPInServiceWorkersName[];
+extern const char kExtensionsFSPInServiceWorkersDescription[];
 #endif
 
 extern const char kExtensionsOnChromeUrlsName[];
@@ -1149,6 +1155,9 @@ extern const char kOmniboxMostVisitedTilesFadingOnTabletDescription[];
 
 extern const char kOmniboxMostVisitedTilesOnSrpName[];
 extern const char kOmniboxMostVisitedTilesOnSrpDescription[];
+
+extern const char kOmniboxOnClobberFocusTypeOnAndroidName[];
+extern const char kOmniboxOnClobberFocusTypeOnAndroidDescription[];
 
 extern const char kOmniboxShortBookmarkSuggestionsName[];
 extern const char kOmniboxShortBookmarkSuggestionsDescription[];
@@ -3649,9 +3658,6 @@ extern const char kOneGroupPerRendererDescription[];
 
 extern const char kDisableQuickAnswersV2TranslationName[];
 extern const char kDisableQuickAnswersV2TranslationDescription[];
-
-extern const char kQuickAnswersForMoreLocalesName[];
-extern const char kQuickAnswersForMoreLocalesDescription[];
 
 extern const char kSyncChromeOSExplicitPassphraseSharingName[];
 extern const char kSyncChromeOSExplicitPassphraseSharingDescription[];

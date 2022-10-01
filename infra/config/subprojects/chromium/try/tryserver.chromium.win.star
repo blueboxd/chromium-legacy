@@ -146,6 +146,14 @@ try_.builder(
 )
 
 try_.builder(
+    name = "win10-wpt-content-shell-fyi-rel",
+    mirrors = [
+        "ci/win10-wpt-content-shell-fyi-rel",
+    ],
+    os = os.WINDOWS_10,
+)
+
+try_.builder(
     name = "win11-x64-fyi-rel",
     mirrors = [
         "ci/Win x64 Builder",
@@ -189,7 +197,6 @@ try_.orchestrator_builder(
     main_list_view = "try",
     tryjob = try_.job(),
     experiments = {
-        "chromium_swarming.expose_merge_script_failures": 1,
         "remove_src_checkout_experiment": 100,
         "enable_weetbix_queries": 100,
         "weetbix.retry_weak_exonerations": 100,

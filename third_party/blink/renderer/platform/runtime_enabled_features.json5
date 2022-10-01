@@ -547,7 +547,7 @@
     },
     {
       name: "ContentVisibilityAutoStateChangedEvent",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ContextMenu",
@@ -1505,7 +1505,8 @@
     {
       name: "LayoutNGPrinting",
       depends_on: ["LayoutNG","LayoutNGBlockFragmentation"],
-      status: "test",
+      status: "stable",
+      base_feature: "LayoutNGPrinting",
     },
     {
       name: "LayoutNGSubgrid",
@@ -1652,15 +1653,17 @@
     },
     {
       name: "MediaSourceInWorkers",
-      status: "experimental",
+      status: "stable",
       origin_trial_feature_name: "MediaSourceInWorkers",
+      base_feature: "MediaSourceInWorkers",
     },
     {
       // Availability of this feature depends on MediaSourceInWorkers also
       // being enabled. MediaSourceInWorkers is an OT feature, so this cannot
       // use the "depends_on" key.
       name: "MediaSourceInWorkersUsingHandle",
-      status: "experimental",
+      status: "stable",
+      base_feature: "MediaSourceInWorkersUsingHandle",
     },
     {
       name: "MediaSourceNewAbortAndDuration",
@@ -2300,12 +2303,7 @@
     },
     {
       name: "SecureContextFixForSharedWorkers",
-      status: "experimental",
-    },
-    {
-      name: "SecureContextFixForWorkers",
       status: "stable",
-      base_feature: "SecureContextFixForWorkers",
     },
     // SecurePaymentConfirmation has shipped on some platforms, but its
     // availability is controlled by the browser process (via the

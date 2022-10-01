@@ -1111,6 +1111,8 @@ static_library("browser") {
     "performance_manager/policies/working_set_trimmer_policy.h",
     "performance_manager/public/chrome_browser_main_extra_parts_performance_manager.h",
     "performance_manager/public/chrome_content_browser_client_performance_manager_part.h",
+    "performance_manager/public/user_tuning/user_tuning_utils.h",
+    "performance_manager/user_tuning/user_tuning_utils.cc",
     "performance_monitor/chrome_browser_main_extra_parts_performance_monitor.cc",
     "performance_monitor/chrome_browser_main_extra_parts_performance_monitor.h",
     "performance_monitor/system_monitor.cc",
@@ -3905,6 +3907,8 @@ static_library("browser") {
       "importer/profile_writer.h",
       "intranet_redirect_detector.cc",
       "intranet_redirect_detector.h",
+      "lifetime/application_lifetime_desktop.cc",
+      "lifetime/application_lifetime_desktop.h",
       "lifetime/browser_close_manager.cc",
       "lifetime/browser_close_manager.h",
       "media/capture_access_handler_base.cc",
@@ -5090,10 +5094,10 @@ static_library("browser") {
       "speech/crosapi_tts_engine_delegate_ash.h",
       "speech/network_speech_recognizer.cc",
       "speech/network_speech_recognizer.h",
-      "speech/on_device_speech_recognizer.cc",
-      "speech/on_device_speech_recognizer.h",
       "speech/speech_recognition_constants.cc",
       "speech/speech_recognition_constants.h",
+      "speech/speech_recognition_recognizer_client_impl.cc",
+      "speech/speech_recognition_recognizer_client_impl.h",
       "speech/speech_recognizer.cc",
       "speech/speech_recognizer.h",
       "speech/speech_recognizer_delegate.h",
@@ -5461,6 +5465,8 @@ static_library("browser") {
       "chromeos/policy/dlp/dlp_clipboard_notifier.h",
       "chromeos/policy/dlp/dlp_confidential_contents.cc",
       "chromeos/policy/dlp/dlp_confidential_contents.h",
+      "chromeos/policy/dlp/dlp_confidential_file.cc",
+      "chromeos/policy/dlp/dlp_confidential_file.h",
       "chromeos/policy/dlp/dlp_content_manager.cc",
       "chromeos/policy/dlp/dlp_content_manager.h",
       "chromeos/policy/dlp/dlp_content_manager_lacros.cc",
@@ -6611,7 +6617,7 @@ static_library("browser") {
     ]
   }
 
-  if (is_win || is_mac || is_linux || is_chromeos_lacros || is_fuchsia) {
+  if (is_win || is_mac || is_linux) {
     sources += [
       "browser_switcher/alternative_browser_driver.h",
       "browser_switcher/browser_switcher_features.cc",
@@ -6632,7 +6638,7 @@ static_library("browser") {
     if (is_win) {
       sources += [ "browser_switcher/alternative_browser_driver_win.cc" ]
     }
-    if (is_mac || is_linux || is_chromeos_lacros) {
+    if (is_mac || is_linux) {
       sources += [ "browser_switcher/alternative_browser_driver_posix.cc" ]
     }
   }

@@ -1341,6 +1341,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_HOLDING_SPACE_SUGGESTIONS_TITLE" desc="Title of the suggestions area in the holding space bubble.">
         Suggested files
       </message>
+      <message name="IDS_ASH_HOLDING_SPACE_RECENT_FILES_PLACEHOLDER" desc="Text displayed in the holding space recent files bubble when the user has no downloads or screen captures.">
+        You'll find your recent downloads and screen captures here
+      </message>
       <message name="IDS_ASH_HOLDING_SPACE_DOWNLOADS_TITLE" desc="Title of the downloads area in the holding space bubble.">
         Downloads
       </message>
@@ -4576,6 +4579,14 @@ Here are some things you can try to get started.
 
       <message name="IDS_ASH_PROJECTOR_SAVE_FAILURE_TEXT" desc="The text of the notification when saving Projector recording fails.">
         Something went wrong. Try again.
+      </message>
+
+      <message name="IDS_ASH_PROJECTOR_ABORT_BY_AUDIO_POLICY_TITLE" desc="The title of the notification when Projector session is aborted due to audio capture policy disabled.">
+        Can’t create screencast
+      </message>
+
+      <message name="IDS_ASH_PROJECTOR_ABORT_BY_AUDIO_POLICY_TEXT" desc="The text of the notification when Projector session is aborted due to audio capture policy disabled.">
+        Your administrator doesn’t allow audio capture. Contact your administrator for more info.
       </message>
 
       <message name="IDS_ASH_PROJECTOR_FAILURE_MESSAGE_TRANSCRIPTION" desc="The test of the notification when Projector transcription fails.">

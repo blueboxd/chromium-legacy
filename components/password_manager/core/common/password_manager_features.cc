@@ -135,18 +135,6 @@ BASE_FEATURE(kMuteCompromisedPasswords,
 #endif
 );
 
-// Decides how long the user does not require reuathentication after
-// successfully authenticated.
-const base::FeatureParam<base::TimeDelta> kPasswordNotesAuthValidity{
-    &kPasswordNotes, "authentication_validity_duration", base::Minutes(5)};
-
-// Enables adding, displaying and modifying extra notes to stored credentials.
-// When enabled, "PasswordViewPageInSettings" feature is ignored and the new
-// password view subpage is force enabled.
-BASE_FEATURE(kPasswordNotes,
-             "PasswordNotes",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables the new password viewing subpage.
 BASE_FEATURE(kPasswordViewPageInSettings,
              "PasswordViewPageInSettings",
@@ -257,9 +245,11 @@ BASE_FEATURE(kShowUPMErrorNotification,
 
 // Enables the experiment to automatically submit a form after filling by
 // TouchToFill
+// TODO(crbug/1283004): Clean up the flag once the feature is completely landed
+// in Stable.
 BASE_FEATURE(kTouchToFillPasswordSubmission,
              "TouchToFillPasswordSubmission",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the intent fetching for the credential manager in Google Mobile
 // Services. It does not enable launching the credential manager.

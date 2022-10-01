@@ -170,6 +170,7 @@
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/hid/hid_policy_allowed_devices.h"
 #include "chrome/browser/intranet_redirect_detector.h"
+#include "chrome/browser/lifetime/application_lifetime_desktop.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/serial/serial_policy_allowed_ports.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -1199,6 +1200,10 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   bool result = base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   DCHECK(result);
   if (breadcrumbs::IsEnabled()) {
+    // Start crash reporter listening for breadcrumb events. Collected
+    // breadcrumbs will be attached to crash reports.
+    breadcrumbs::CrashReporterBreadcrumbObserver::GetInstance();
+
     application_breadcrumbs_logger_ =
         std::make_unique<breadcrumbs::ApplicationBreadcrumbsLogger>(
             user_data_dir, base::BindRepeating([] {

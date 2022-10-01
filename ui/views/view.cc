@@ -495,11 +495,11 @@ gfx::Rect View::GetVisibleBounds() const {
   gfx::Transform transform;
 
   while (view != nullptr && !vis_bounds.IsEmpty()) {
-    transform.ConcatTransform(view->GetTransform());
+    transform.PostConcat(view->GetTransform());
     gfx::Transform translation;
     translation.Translate(static_cast<float>(view->GetMirroredX()),
                           static_cast<float>(view->y()));
-    transform.ConcatTransform(translation);
+    transform.PostConcat(translation);
 
     vis_bounds = view->ConvertRectToParent(vis_bounds);
     const View* ancestor = view->parent_;
@@ -2936,11 +2936,11 @@ bool View::GetTransformRelativeTo(const View* ancestor,
   const View* p = this;
 
   while (p && p != ancestor) {
-    transform->ConcatTransform(p->GetTransform());
+    transform->PostConcat(p->GetTransform());
     gfx::Transform translation;
     translation.Translate(static_cast<float>(p->GetMirroredX()),
                           static_cast<float>(p->y()));
-    transform->ConcatTransform(translation);
+    transform->PostConcat(translation);
 
     p = p->parent_;
   }
@@ -2955,9 +2955,7 @@ bool View::ConvertPointForAncestor(const View* ancestor,
   gfx::Transform trans;
   // TODO(sad): Have some way of caching the transformation results.
   bool result = GetTransformRelativeTo(ancestor, &trans);
-  auto p = gfx::PointF(*point);
-  trans.TransformPoint(&p);
-  *point = gfx::ToFlooredPoint(p);
+  *point = gfx::ToFlooredPoint(trans.MapPoint(gfx::PointF(*point)));
   return result;
 }
 
@@ -2966,8 +2964,7 @@ bool View::ConvertPointFromAncestor(const View* ancestor,
   gfx::Transform trans;
   bool result = GetTransformRelativeTo(ancestor, &trans);
   if (const absl::optional<gfx::PointF> transformed_point =
-          trans.TransformPointReverse(gfx::PointF(*point));
-      transformed_point.has_value()) {
+          trans.InverseMapPoint(gfx::PointF(*point))) {
     *point = gfx::ToFlooredPoint(transformed_point.value());
   }
   return result;

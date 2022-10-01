@@ -9405,8 +9405,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android30.textpb",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.blink_unittests.filter"
+          "--avd-config=../../tools/android/avd/proto/generic_android30.textpb"
         ],
         "merge": {
           "args": [
@@ -12524,8 +12523,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android30.textpb",
-          "--gtest_filter=-DownloadBrowserTest.OverrideDownloadDirectory"
+          "--avd-config=../../tools/android/avd/proto/generic_android30.textpb"
         ],
         "merge": {
           "args": [
@@ -13548,8 +13546,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.blink_unittests.filter"
+          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
         ],
         "merge": {
           "args": [
@@ -16728,8 +16725,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb",
-          "--gtest_filter=-DownloadBrowserTest.OverrideDownloadDirectory"
+          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
         ],
         "merge": {
           "args": [
@@ -36263,7 +36259,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "shards": 3
         },
         "test": "android_browsertests",
         "test_id_prefix": "ninja://chrome/test:android_browsertests/"
@@ -37423,7 +37419,8 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "components_browsertests",
         "test_id_prefix": "ninja://components:components_browsertests/"
@@ -40327,7 +40324,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 7
+          "shards": 9
         },
         "test": "webview_instrumentation_test_apk",
         "test_id_prefix": "ninja://android_webview/test:webview_instrumentation_test_apk/"

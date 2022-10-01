@@ -67,7 +67,7 @@
       },
       'android-nougat-x86-rel': {
         'swarming': {
-          'shards': 2,
+          'shards': 3,
         },
       },
       'android-pie-arm64-rel': {
@@ -394,15 +394,6 @@
           'Debug_x64',
         ],
       },
-      'Win10 Tests x64 (py2 less)': {
-        'args': [
-          '--target',
-          'Release_x64',
-        ],
-        'swarming': {
-          "shards": 12
-        },
-      },
       'Win11 Tests x64': {
         'args': [
           '--target',
@@ -710,15 +701,6 @@
           '--target',
           'Debug_x64',
         ],
-      },
-      'Win10 Tests x64 (py2 less)': {
-        'args': [
-          '--target',
-          'Release_x64',
-        ],
-        'swarming': {
-          "shards": 18
-        },
       },
       'Win11 Tests x64': {
         'args': [
@@ -1591,6 +1573,11 @@
       'android-marshmallow-arm64-rel': {
         'swarming': {
           'quickrun_shards': 2,
+        },
+      },
+      'android-nougat-x86-rel': {
+        'swarming': {
+          'shards': 2,
         },
       },
     },
@@ -3437,12 +3424,6 @@
           '--jobs=1',
         ],
       },
-      'Linux Tests (py2 less)': {
-        'args': [
-          '--xvfb',
-          '--jobs=1',
-        ],
-      },
       'Mac11 Tests': {
         'ci_only': True,
       },
@@ -4048,36 +4029,12 @@
           'hard_timeout': 1200,
         },
       },
-      'android-11-x86-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.blink_unittests.filter',
-        ],
-      },
-      'android-12-x64-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.blink_unittests.filter',
-        ],
-      },
     },
   },
   'weblayer_browsertests': {
     'remove_from': [
       'android-pie-arm64-rel', # crbug.com/1354867
     ],
-    'modifications': {
-      'android-11-x86-rel': {
-        'args': [
-          # TODO(crbug.com/1191784): Fix the test failure
-          '--gtest_filter=-DownloadBrowserTest.OverrideDownloadDirectory',
-        ],
-      },
-      'android-12-x64-rel': {
-        'args': [
-          # TODO(crbug.com/1191784): Fix the test failure
-          '--gtest_filter=-DownloadBrowserTest.OverrideDownloadDirectory',
-        ],
-      },
-    },
   },
   'weblayer_bundle_test': {
     'remove_from': [
@@ -4207,6 +4164,11 @@
         },
       },
       'android-marshmallow-x86-rel': {
+        'swarming': {
+          'shards': 9,
+        },
+      },
+      'android-nougat-x86-rel': {
         'swarming': {
           'shards': 9,
         },

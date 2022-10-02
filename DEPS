@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'e9a6af1a179ea0a5ba24c8dea48986213702e8b0',
+  'v8_revision': '69ffa9cea07d4a4177d0224c2c8fabfd0c314f2f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -1477,6 +1477,28 @@ deps = {
       'condition': 'checkout_android or checkout_linux',
   },
 
+  'src/third_party/lzma_sdk/bin/host_platform': {
+      'packages': [
+          {
+              'package': 'infra/3pp/tools/7z/${{platform}}',
+              'version': 'version:2@22.01',
+          },
+      ],
+      'condition': 'checkout_win',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/lzma_sdk/bin/win64': {
+      'packages': [
+          {
+              'package': 'infra/3pp/tools/7z/windows-amd64',
+              'version': 'version:2@22.01',
+          },
+      ],
+      'condition': 'checkout_win',
+      'dep_type': 'cipd',
+  },
+
   'src/third_party/material_design_icons/src': {
       'url': Var('chromium_git') + '/external/github.com/google/material-design-icons.git' + '@' +
           '5ab428852e35dc177a8c37a2df9dc9ccf768c65a',
@@ -1805,7 +1827,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0d170ecd796b18c6a41452b948e8b0e7110523c9',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@fa84529d9b58900f7476a217edf9dfbf8ac19b95',
     'condition': 'checkout_src_internal',
   },
 

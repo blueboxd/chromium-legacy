@@ -3083,6 +3083,21 @@
             ]
         }
     ],
+    "CrOSBluetoothLLPrivacy": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_LLPrivacy_NonDogfood",
+                    "enable_features": [
+                        "LinkLayerPrivacy"
+                    ]
+                }
+            ]
+        }
+    ],
     "CrOSClipboardHistoryReorderExperiment": [
         {
             "platforms": [
@@ -5911,6 +5926,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "InfobarScrollOptimization"
+                    ]
+                }
+            ]
+        }
+    ],
+    "InstallAndroidUnwindDfm": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "InstallAndroidUnwindDfm"
                     ]
                 }
             ]

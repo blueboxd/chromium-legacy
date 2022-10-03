@@ -765,10 +765,10 @@ class PCScanScanLoop final : public ScanLoop<PCScanScanLoop> {
 
  private:
 #if defined(PA_HAS_64_BITS_POINTERS)
-  PA_ALWAYS_INLINE static uintptr_t CageBase() {
+  PA_ALWAYS_INLINE static uintptr_t RegularPoolBase() {
     return PartitionAddressSpace::RegularPoolBase();
   }
-  PA_ALWAYS_INLINE static uintptr_t CageMask() {
+  PA_ALWAYS_INLINE static uintptr_t RegularPoolMask() {
     return PartitionAddressSpace::RegularPoolBaseMask();
   }
 #endif  // defined(PA_HAS_64_BITS_POINTERS)
@@ -1274,7 +1274,7 @@ PCScanInternal::~PCScanInternal() = default;
 void PCScanInternal::Initialize(PCScan::InitConfig config) {
   PA_DCHECK(!is_initialized_);
 #if defined(PA_HAS_64_BITS_POINTERS)
-  // Make sure that GigaCage is initialized.
+  // Make sure that pools are initialized.
   PartitionAddressSpace::Init();
 #endif
   CommitCardTable();

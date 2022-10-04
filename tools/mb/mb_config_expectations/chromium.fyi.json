@@ -32,6 +32,7 @@
   "Comparison Android (reclient)": {
     "goma": {
       "gn_args": {
+        "debuggable_apks": false,
         "ffmpeg_branding": "Chrome",
         "is_component_build": false,
         "is_debug": true,
@@ -45,6 +46,7 @@
     },
     "reclient": {
       "gn_args": {
+        "debuggable_apks": false,
         "ffmpeg_branding": "Chrome",
         "is_component_build": false,
         "is_debug": true,
@@ -507,6 +509,7 @@
   "Site Isolation Android": {
     "gn_args": {
       "dcheck_always_on": false,
+      "debuggable_apks": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
@@ -586,6 +589,7 @@
   "android-backuprefptr-arm-fyi-rel": {
     "gn_args": {
       "dcheck_always_on": true,
+      "debuggable_apks": false,
       "enable_backup_ref_ptr_slow_checks": true,
       "enable_backup_ref_ptr_support": true,
       "enable_dangling_raw_ptr_checks": true,
@@ -605,6 +609,7 @@
   "android-backuprefptr-arm64-fyi-rel": {
     "gn_args": {
       "dcheck_always_on": true,
+      "debuggable_apks": false,
       "enable_backup_ref_ptr_slow_checks": true,
       "enable_backup_ref_ptr_support": true,
       "enable_dangling_raw_ptr_checks": true,
@@ -625,6 +630,7 @@
     "gn_args": {
       "android_static_analysis": "off",
       "dcheck_always_on": false,
+      "debuggable_apks": false,
       "enable_resource_allowlist_generation": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
@@ -644,6 +650,7 @@
     "gn_args": {
       "android_static_analysis": "off",
       "dcheck_always_on": false,
+      "debuggable_apks": false,
       "enable_resource_allowlist_generation": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
@@ -662,6 +669,7 @@
     "gn_args": {
       "android_static_analysis": "off",
       "dcheck_always_on": false,
+      "debuggable_apks": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
@@ -677,6 +685,7 @@
   "android-perfetto-rel": {
     "gn_args": {
       "dcheck_always_on": false,
+      "debuggable_apks": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
@@ -690,8 +699,8 @@
   "build-perf-android": {
     "gn_args": {
       "android_static_analysis": "off",
-      "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
       "dcheck_always_on": true,
+      "debuggable_apks": false,
       "fail_on_android_expectations": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
@@ -703,7 +712,6 @@
       "system_webview_package_name": "com.google.android.apps.chrome",
       "target_cpu": "arm64",
       "target_os": "android",
-      "use_jacoco_coverage": true,
       "use_remoteexec": true
     }
   },
@@ -1014,20 +1022,6 @@
       "use_remoteexec": true
     }
   },
-  "ios15-sdk-device": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "enable_run_ios_unittests_with_xctest": true,
-      "ios_enable_code_signing": false,
-      "ios_set_attributes_for_xcode_project_generation": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "target_cpu": "arm64",
-      "target_environment": "device",
-      "target_os": "ios",
-      "use_remoteexec": true
-    }
-  },
   "ios15-sdk-simulator": {
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
@@ -1052,6 +1046,20 @@
       "target_environment": "simulator",
       "target_os": "ios",
       "use_goma": true
+    }
+  },
+  "ios16-sdk-device": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "enable_run_ios_unittests_with_xctest": true,
+      "ios_enable_code_signing": false,
+      "ios_set_attributes_for_xcode_project_generation": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "target_cpu": "arm64",
+      "target_environment": "device",
+      "target_os": "ios",
+      "use_remoteexec": true
     }
   },
   "ios16-sdk-simulator": {
@@ -1518,7 +1526,7 @@
       "enable_perfetto_zlib": true,
       "is_component_build": false,
       "is_debug": false,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "win-annotator-rel": {

@@ -320,6 +320,14 @@ void SetupFragmentBuilderForFragmentation(
   // SetHasBlockFragmentation(), but we still need to resume layout correctly,
   // based on the previous break token.
   DCHECK(space.HasBlockFragmentation() || previous_break_token);
+  // If the node itself is monolithic, we shouldn't be here.
+  DCHECK(!node.IsMonolithic() || space.IsAnonymous());
+  // If we turn off fragmentation on a non-monolithic node, we need to treat the
+  // resulting fragment as monolithic. This matters when it comes to determining
+  // the containing block of out-of-flow positioned descendants.
+  builder->SetIsMonolithic(!space.IsAnonymous() &&
+                           space.IsBlockFragmentationForcedOff());
+
   if (space.HasBlockFragmentation())
     builder->SetHasBlockFragmentation();
   builder->SetPreviousBreakToken(previous_break_token);
@@ -1327,13 +1335,15 @@ bool CanPaintMultipleFragments(const LayoutObject& layout_object) {
     return true;
 
   // There seems to be many issues preventing us from allowing repeated
-  // scrollable containers, so we need to disallow them. Should we be able to
-  // fix all the issues some day (after removing the legacy layout code), we
-  // could change this policy. But for now we need to forbid this, which also
-  // means that we cannot paint repeated text input form elements (because they
-  // use scrollable containers internally) (if it makes sense at all to repeat
-  // form elements...).
-  if (layout_box->IsScrollContainer())
+  // scrollable containers, so we need to disallow them (unless we're printing,
+  // in which case they're not really scrollable). Should we be able to fix all
+  // the issues some day (after removing the legacy layout code), we could
+  // change this policy. But for now we need to forbid this, which also means
+  // that we cannot paint repeated text input form elements (because they use
+  // scrollable containers internally) (if it makes sense at all to repeat form
+  // elements...).
+  if (layout_box->IsScrollContainer() &&
+      !layout_object.GetDocument().Printing())
     return false;
 
   // It's somewhat problematic and strange to repeat most kinds of

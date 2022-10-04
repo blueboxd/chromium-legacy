@@ -101,6 +101,17 @@ struct Config {
   // every hour.
   int persist_clusters_in_history_db_period_minutes = 60;
 
+  // Hard cap on max clusters to fetch after exhausting unclustered visits and
+  // fetching persisted clusters for the get most recent flow. Doesn't affect
+  // the update flow, which uses day boundaries as well as
+  // `max_visits_to_cluster` to keep the number of clusters and visits
+  // reasonable.
+  size_t max_persisted_clusters_to_fetch = 100;
+
+  // Like `max_persisted_clusters_to_fetch`, but an additional soft cap on max
+  // visits in case there are a few very large clusters in the same batch.
+  size_t max_persisted_cluster_visits_to_fetch_soft_cap = 1000;
+
   // The `kOmniboxAction` feature and child params.
 
   // Enables the Journeys Omnibox Action chip. `kJourneys` must also be enabled
@@ -168,6 +179,18 @@ struct Config {
   // don't have lingering effects when they leave the group. Meaningless if
   // `omnibox_history_cluster_provider` is disabled.
   bool omnibox_history_cluster_provider_shortcuts = false;
+
+  // If `omnibox_history_cluster_provider_on_navigation_intents` is false, this
+  // threshold helps determine when the user is intending to perform a
+  // navigation. Meaningless if either `omnibox_history_cluster_provider` is
+  // disabled or `omnibox_history_cluster_provider_on_navigation_intents` is
+  // true
+  int omnibox_history_cluster_provider_navigation_intent_score_threshold = 1300;
+
+  // If enabled, allows the suggestion row to appear when it's likely the user
+  // is intending to perform a navigation. Meaningless if
+  // `omnibox_history_cluster_provider` is disabled.
+  bool omnibox_history_cluster_provider_on_navigation_intents = false;
 
   // The `kOnDeviceClusteringKeywordFiltering` feature and child params.
 

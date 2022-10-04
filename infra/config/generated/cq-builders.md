@@ -19,9 +19,7 @@ These builders must pass before a CL may land that affects files outside of
 
 * [android-binary-size](https://ci.chromium.org/p/chromium/builders/try/android-binary-size) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-binary-size"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-binary-size""))
 
-* [android-marshmallow-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/android-marshmallow-arm64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-marshmallow-arm64-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-marshmallow-arm64-rel""))
-
-* [android-marshmallow-x86-rel](https://ci.chromium.org/p/chromium/builders/try/android-marshmallow-x86-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-marshmallow-x86-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-marshmallow-x86-rel""))
+* [android-nougat-x86-rel](https://ci.chromium.org/p/chromium/builders/try/android-nougat-x86-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-nougat-x86-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-nougat-x86-rel""))
 
 * [android-pie-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/android-pie-arm64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-pie-arm64-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-pie-arm64-rel""))
 
@@ -213,6 +211,21 @@ builder.
   * [`//build/chromeos/.+`](https://cs.chromium.org/chromium/src/build/chromeos/)
   * [`//build/config/chromeos/.*`](https://cs.chromium.org/search?q=+file:build/config/chromeos/.*)
   * [`//chromeos/CHROMEOS_LKGM`](https://cs.chromium.org/chromium/src/chromeos/CHROMEOS_LKGM)
+
+* [dawn-android-arm-deps-rel](https://ci.chromium.org/p/chromium/builders/try/dawn-android-arm-deps-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""dawn-android-arm-deps-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""dawn-android-arm-deps-rel""))
+
+  Path regular expressions:
+  * [`//content/test/gpu/.+`](https://cs.chromium.org/chromium/src/content/test/gpu/)
+  * [`//gpu/.+`](https://cs.chromium.org/chromium/src/gpu/)
+  * [`//testing/buildbot/chromium.dawn.json`](https://cs.chromium.org/search?q=+file:testing/buildbot/chromium.dawn.json)
+  * [`//third_party/blink/renderer/modules/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgpu/)
+  * [`//third_party/blink/web_tests/external/wpt/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/external/wpt/webgpu/)
+  * [`//third_party/blink/web_tests/wpt_internal/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/wpt_internal/webgpu/)
+  * [`//third_party/blink/web_tests/WebGPUExpectations`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/WebGPUExpectations)
+  * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
+  * [`//third_party/webgpu-cts/.+`](https://cs.chromium.org/chromium/src/third_party/webgpu-cts/)
+  * [`//tools/clang/scripts/update.py`](https://cs.chromium.org/search?q=+file:tools/clang/scripts/update.py)
+  * [`//ui/gl/features.gni`](https://cs.chromium.org/search?q=+file:ui/gl/features.gni)
 
 * [dawn-linux-x64-deps-rel](https://ci.chromium.org/p/chromium/builders/try/dawn-linux-x64-deps-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""dawn-linux-x64-deps-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""dawn-linux-x64-deps-rel""))
 
@@ -492,9 +505,6 @@ as required builders.
 
 * [android-marshmallow-x86-rel-reclient](https://ci.chromium.org/p/chromium/builders/try/android-marshmallow-x86-rel-reclient) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-marshmallow-x86-rel-reclient"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-marshmallow-x86-rel-reclient""))
   * Experiment percentage: 5.0
-
-* [android-nougat-x86-rel](https://ci.chromium.org/p/chromium/builders/try/android-nougat-x86-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-nougat-x86-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-nougat-x86-rel""))
-  * Experiment percentage: 100.0
 
 * [android-pie-arm64-coverage-experimental-rel](https://ci.chromium.org/p/chromium/builders/try/android-pie-arm64-coverage-experimental-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-pie-arm64-coverage-experimental-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-pie-arm64-coverage-experimental-rel""))
   * Experiment percentage: 3.0

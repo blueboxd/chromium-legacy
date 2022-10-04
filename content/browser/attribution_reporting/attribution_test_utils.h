@@ -177,7 +177,7 @@ class MockDataHostManager : public AttributionDataHostManager {
   MOCK_METHOD(void,
               NotifyNavigationRedirectRegistration,
               (const blink::AttributionSrcToken& attribution_src_token,
-               const std::string& header_value,
+               std::string header_value,
                url::Origin reporting_origin,
                const url::Origin& source_origin),
               (override));
@@ -326,8 +326,15 @@ class MockAttributionManager : public AttributionManager {
               (base::Time delete_begin,
                base::Time delete_end,
                StoragePartition::StorageKeyMatcherFunction filter,
+               BrowsingDataFilterBuilder* filter_builder,
                bool delete_rate_limit_data,
                base::OnceClosure done),
+              (override));
+
+  MOCK_METHOD(void,
+              NotifyFailedSourceRegistration,
+              (const std::string& header_value,
+               const url::Origin& reporting_origin),
               (override));
 
   void AddObserver(AttributionObserver* observer) override;
@@ -343,6 +350,8 @@ class MockAttributionManager : public AttributionManager {
                         const SendResult& info);
   void NotifyTriggerHandled(const AttributionTrigger& trigger,
                             const CreateReportResult& result);
+  void NotifySourceRegistrationFailure(const std::string& header_value,
+                                       const url::Origin& reporting_origin);
 
   void SetDataHostManager(std::unique_ptr<AttributionDataHostManager> manager);
 

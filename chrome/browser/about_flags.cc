@@ -1111,14 +1111,9 @@ const FeatureEntry::FeatureVariation
          std::size(kPageEntitiesPageContentAnnotationsAllLocalesParams),
          nullptr},
 };
-const FeatureEntry::FeatureParam
-    kJourneysSortClustersWithinBatchForQueryParams[] = {
-        {"JourneysLocaleOrLanguageAllowlist", "*"},
-        {"JourneysSortClustersWithinBatchForQuery", "true"},
-};
-const FeatureEntry::FeatureParam kJourneysDropHiddenVisitsParams[] = {
+const FeatureEntry::FeatureParam kJourneysHiddenVisitsParams[] = {
     {"JourneysLocaleOrLanguageAllowlist", "*"},
-    {"drop_hidden_visits", "true"},
+    {"drop_hidden_visits", "false"},
 };
 const FeatureEntry::FeatureParam kJourneysShowAllVisitsParams[] = {
     {"JourneysLocaleOrLanguageAllowlist", "*"},
@@ -1132,13 +1127,10 @@ const FeatureEntry::FeatureParam kJourneysAllLocalesParams[] = {
     {"JourneysLocaleOrLanguageAllowlist", "*"},
 };
 const FeatureEntry::FeatureVariation kJourneysVariations[] = {
-    {"Sort Clusters Within Batch for Query",
-     kJourneysSortClustersWithinBatchForQueryParams,
-     std::size(kJourneysSortClustersWithinBatchForQueryParams), nullptr},
-    {"No 'Show More' - Drop hidden visits", kJourneysDropHiddenVisitsParams,
-     std::size(kJourneysDropHiddenVisitsParams), nullptr},
     {"No 'Show More' - Show all visits", kJourneysShowAllVisitsParams,
      std::size(kJourneysShowAllVisitsParams), nullptr},
+    {"'Show More' - Hide hidden visits", kJourneysHiddenVisitsParams,
+     std::size(kJourneysHiddenVisitsParams), nullptr},
     {"All Supported Locales", kJourneysAllLocalesParams,
      std::size(kJourneysAllLocalesParams), nullptr},
 };
@@ -7606,9 +7598,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShimlessRMADisableDarkModeName,
      flag_descriptions::kShimlessRMADisableDarkModeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kShimlessRMADisableDarkMode)},
-    {"nearby-sharing-arc", flag_descriptions::kNearbySharingArcName,
-     flag_descriptions::kNearbySharingArcDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(arc::kEnableArcNearbyShare)},
     {"nearby-sharing-one-page-onboarding",
      flag_descriptions::kNearbySharingOnePageOnboardingName,
      flag_descriptions::kNearbySharingOnePageOnboardingDescription, kOsCrOS,
@@ -8971,6 +8960,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopCaptureLacrosV2Description, kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(features::kDesktopCaptureLacrosV2)},
 
+    {"enable-lacros-aura-capture", flag_descriptions::kLacrosAuraCaptureName,
+     flag_descriptions::kLacrosAuraCaptureDescription, kOsCrOS | kOsLacros,
+     FEATURE_VALUE_TYPE(features::kLacrosAuraCapture)},
+
     {"lacros-merge-icu-data-file",
      flag_descriptions::kLacrosMergeIcuDataFileName,
      flag_descriptions::kLacrosMergeIcuDataFileDescription, kOsCrOS | kOsLacros,
@@ -9579,6 +9572,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebAuthnConditionalUIDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebAuthConditionalUI)},
 
+    {"webauthn-new-desktop-ui", flag_descriptions::kWebAuthnNewDesktopUIName,
+     flag_descriptions::kWebAuthnNewDesktopUIDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(device::kWebAuthnNewDiscoverableCredentialsUi)},
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"arc-nearby-share-fuse-box", flag_descriptions::kArcNearbyShareFuseBoxName,
      flag_descriptions::kArcNearbyShareFuseBoxDescription, kOsCrOS,
@@ -9608,6 +9605,9 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextMenuPopupForAllScreenSizes)},
 #endif
+    {"use-dmsaa-for-tiles", flag_descriptions::kUseDMSAAForTilesName,
+     flag_descriptions::kUseDMSAAForTilesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(::features::kUseDMSAAForTiles)},
 
     {"enable-web-usb-on-extension-service-worker",
      flag_descriptions::kEnableWebUsbOnExtensionServiceWorkerName,

@@ -1271,7 +1271,6 @@
       'args': [
         '--extra-browser-args=--force_high_performance_gpu',
         '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
-        '--stable-jobs',
       ],
       'linux_args': [
         '--extra-browser-args=--enable-features=Vulkan',

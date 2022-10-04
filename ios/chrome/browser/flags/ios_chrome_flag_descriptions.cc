@@ -152,11 +152,6 @@ const char kBubbleRichIPHDescription[] =
     "highlight IPH. When enabled with no option, uses the default bubble "
     "style.";
 
-const char kBookmarkStringName[] = "Bookmark action string";
-const char kBookmarkStringDescription[] =
-    "This flag is used to change the string of the action allowing the user to "
-    "bookmark a page from the overflow menu.";
-
 extern const char kCalendarExperienceKitName[] = "Experience Kit Calendar";
 extern const char kCalendarExperienceKitDescription[] =
     "When enabled, long pressing on dates will trigger Experience Kit Calendar "
@@ -374,6 +369,12 @@ const char kFullscreenPromosManagerName[] = "Fullscreen Promos Manager";
 const char kFullscreenPromosManagerDescription[] =
     "When enabled, the display of fullscreen promos will be coordinated by a "
     "central manager living at the application level.";
+
+const char kFullscreenPromosManagerSkipInternalLimitsName[] =
+    "Fullscreen Promos Manager (Skip internal Impression Limits)";
+const char kFullscreenPromosManagerSkipInternalLimitsDescription[] =
+    "When enabled, the internal Impression Limits of the Promos Manager will "
+    "be ignored; this is useful for local development.";
 
 const char kFullscreenSmoothScrollingName[] = "Fullscreen Smooth Scrolling";
 const char kFullscreenSmoothScrollingDescription[] =

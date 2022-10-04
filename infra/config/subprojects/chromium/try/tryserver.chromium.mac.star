@@ -21,9 +21,6 @@ try_.defaults.set(
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
     ssd = True,
-
-    # TODO(crbug.com/1362440): remove this.
-    omit_python2 = False,
 )
 
 def ios_builder(*, name, **kwargs):
@@ -113,9 +110,6 @@ try_.orchestrator_builder(
     tryjob = try_.job(),
     experiments = {
         "remove_src_checkout_experiment": 100,
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
     },
     use_orchestrator_pool = True,
 )
@@ -126,9 +120,6 @@ try_.compilator_builder(
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
     os = os.MAC_DEFAULT,
-    experiments = {
-        "luci.buildbucket.omit_python2": 100,
-    },
 )
 
 try_.builder(
@@ -153,11 +144,6 @@ try_.orchestrator_builder(
     tryjob = try_.job(
         experiment_percentage = 100,
     ),
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
-    },
 )
 
 try_.compilator_builder(
@@ -167,9 +153,6 @@ try_.compilator_builder(
     os = os.MAC_12,
     # TODO (crbug.com/1245171): Revert when root issue is fixed
     grace_period = 4 * time.minute,
-    experiments = {
-        "luci.buildbucket.omit_python2": 100,
-    },
 )
 
 # NOTE: the following trybots aren't sensitive to Mac version on which
@@ -355,21 +338,17 @@ try_.orchestrator_builder(
     tryjob = try_.job(),
     experiments = {
         "remove_src_checkout_experiment": 100,
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
     },
     use_orchestrator_pool = True,
 )
 
 try_.compilator_builder(
     name = "ios-simulator-compilator",
+    # Set builderless to False so that branch builders use builderful bots
+    builderless = False,
     check_for_flakiness = True,
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
-    experiments = {
-        "luci.buildbucket.omit_python2": 100,
-    },
     os = os.MAC_DEFAULT,
     ssd = None,
     xcode = xcode.x14main,
@@ -393,11 +372,6 @@ ios_builder(
             ".+/[+]/components/cronet/android/.+",
         ],
     ),
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
-    },
 )
 
 ios_builder(
@@ -416,11 +390,6 @@ ios_builder(
             ".+/[+]/ios/.+",
         ],
     ),
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
-    },
 )
 
 ios_builder(
@@ -444,9 +413,6 @@ ios_builder(
     ),
     experiments = {
         "remove_src_checkout_experiment": 100,
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
     },
 )
 

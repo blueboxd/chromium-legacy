@@ -429,6 +429,9 @@ extern const char kDoubleBufferCompositingDescription[];
 extern const char kDnsHttpsSvcbName[];
 extern const char kDnsHttpsSvcbDescription[];
 
+extern const char kUseDMSAAForTilesName[];
+extern const char kUseDMSAAForTilesDescription[];
+
 extern const char kUseDnsHttpsSvcbAlpnName[];
 extern const char kUseDnsHttpsSvcbAlpnDescription[];
 
@@ -1783,6 +1786,9 @@ extern const char kAppStoreBillingDebugDescription[];
 
 extern const char kWebAuthnConditionalUIName[];
 extern const char kWebAuthnConditionalUIDescription[];
+
+extern const char kWebAuthnNewDesktopUIName[];
+extern const char kWebAuthnNewDesktopUIDescription[];
 
 extern const char kWebrtcCaptureMultiChannelApmName[];
 extern const char kWebrtcCaptureMultiChannelApmDescription[];
@@ -3325,9 +3331,6 @@ extern const char kMicrophoneMuteSwitchDeviceDescription[];
 extern const char kMultilingualTypingName[];
 extern const char kMultilingualTypingDescription[];
 
-extern const char kNearbySharingArcName[];
-extern const char kNearbySharingArcDescription[];
-
 extern const char kNearbySharingOnePageOnboardingName[];
 extern const char kNearbySharingOnePageOnboardingDescription[];
 
@@ -3571,6 +3574,9 @@ extern const char kOobeMaterialNextDescription[];
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 extern const char kDesktopCaptureLacrosV2Name[];
 extern const char kDesktopCaptureLacrosV2Description[];
+
+extern const char kLacrosAuraCaptureName[];
+extern const char kLacrosAuraCaptureDescription[];
 
 extern const char kLacrosMergeIcuDataFileName[];
 extern const char kLacrosMergeIcuDataFileDescription[];

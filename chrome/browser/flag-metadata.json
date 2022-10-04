@@ -256,7 +256,7 @@
   },
   {
     "name": "arc-nearby-share-fuse-box",
-    "owners": ["tsergeant", "phshah", "cros-sharesheet@google.com"],
+    "owners": ["tsergeant", "alanding", "phshah", "cros-sharesheet@google.com"],
     "expiry_milestone": 111
   },
   {
@@ -746,11 +746,6 @@
   {
     "name": "bookmark-bottom-sheet",
     "owners": [ "wylieb" ],
-    "expiry_milestone": 107
-  },
-  {
-    "name": "bookmark-string-menu",
-    "owners": ["gambard", "bling-flags@google.com"],
     "expiry_milestone": 107
   },
   {
@@ -2514,6 +2509,11 @@
     "expiry_milestone": 105
   },
   {
+    "name": "enable-lacros-aura-capture",
+    "owners": ["alcooper", "mfoltz", "petermcneeley"],
+    "expiry_milestone": 120
+  },
+  {
     "name": "enable-lacros-in-chrome-kiosk",
     "owners": ["bfranz", "chromeos-kiosk-eng@google.com"],
     "expiry_milestone": 120
@@ -3789,6 +3789,12 @@
     "expiry_milestone": 109
   },
   {
+    "name": "fullscreen-promos-manager-skip-internal-limits",
+    "owners": [ "bwwilliams@google.com", "bling-flags@google.com" ],
+    // Used by developers for testing their promos' display behavior locally, without being restricted by the Promos Manager's internal impression limits.
+    "expiry_milestone": -1
+  },
+  {
     "name": "fullscreen-viewport-adjustment-experiment",
     "owners": [ "thegreenfrog", "bling-flags@google.com" ],
     // Needed for manual testing of fallback flow on iOS.
@@ -4625,11 +4631,6 @@
     "name": "mute-notification-snooze-action",
     "owners": [ "knollr@chromium.org", "peter@chromium.org" ],
     "expiry_milestone": 96
-  },
-  {
-    "name": "nearby-sharing-arc",
-    "owners": [ "phshah", "alanding", "cros-sharesheet@google.com", "arc-app-dev@google.com" ],
-    "expiry_milestone": 99
   },
   {
     "name": "nearby-sharing-one-page-onboarding",
@@ -6663,6 +6664,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "use-dmsaa-for-tiles",
+    "owners": [ "vasilyt" ],
+    "expiry_milestone": 115
+  },
+  {
     "name": "use-dns-https-svcb-alpn",
     "owners": [ "horo" ],
     "expiry_milestone": 115
@@ -6907,6 +6913,13 @@
   {
     "name": "webauthn-conditional-ui",
     "owners": [ "chrome-webauthn@google.com" ],
+    "expiry_milestone": 110
+  },
+  {
+    "name": "webauthn-new-desktop-ui",
+    "owners": [
+      "chrome-webauthn@google.com"
+    ],
     "expiry_milestone": 110
   },
   {

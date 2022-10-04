@@ -66,11 +66,6 @@ try_.orchestrator_builder(
     tryjob = try_.job(
         experiment_percentage = 60,
     ),
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
-    },
 )
 
 try_.compilator_builder(
@@ -124,11 +119,6 @@ try_.builder(
                 "validate_expectations",
             ],
         },
-    },
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
     },
     tryjob = try_.job(),
     ssd = True,
@@ -265,12 +255,9 @@ try_.orchestrator_builder(
     main_list_view = "try",
     use_java_coverage = True,
     coverage_test_types = ["unit", "overall"],
-    tryjob = try_.job(),
+    # tryjob = try_.job(),
     experiments = {
         "remove_src_checkout_experiment": 100,
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
     },
     use_orchestrator_pool = True,
 )
@@ -299,12 +286,9 @@ try_.orchestrator_builder(
     main_list_view = "try",
     use_java_coverage = True,
     coverage_test_types = ["unit", "overall"],
-    tryjob = try_.job(),
+    # tryjob = try_.job(),
     experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
         "remove_src_checkout_experiment": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
     },
     use_orchestrator_pool = True,
 )
@@ -337,11 +321,6 @@ try_.orchestrator_builder(
     tryjob = try_.job(
         experiment_percentage = 5,
     ),
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
-    },
 )
 
 try_.compilator_builder(
@@ -372,25 +351,18 @@ try_.orchestrator_builder(
     ),
     check_for_flakiness = True,
     compilator = "android-nougat-x86-rel-compilator",
-    # TODO(crbug.com/1367389): Enable it on branch after running on CQ
-    # branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
-    tryjob = try_.job(
-        experiment_percentage = 100,
-    ),
+    tryjob = try_.job(),
     experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
         "remove_src_checkout_experiment": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
     },
     use_orchestrator_pool = True,
 )
 
 try_.compilator_builder(
     name = "android-nougat-x86-rel-compilator",
-    # TODO(crbug.com/1367389): Enable it on branch after running on CQ
-    # branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.STANDARD_MILESTONE,
     check_for_flakiness = True,
     main_list_view = "try",
 )
@@ -472,13 +444,8 @@ try_.orchestrator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(),
-    use_java_coverage = True,
-    coverage_test_types = ["unit", "overall"],
     experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
         "remove_src_checkout_experiment": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
     },
     use_orchestrator_pool = True,
 )
@@ -626,10 +593,6 @@ try_.builder(
     ],
     builderless = not settings.is_main,
     main_list_view = "try",
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-    },
 )
 
 try_.builder(
@@ -717,11 +680,6 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
-    },
 )
 
 try_.builder(
@@ -749,11 +707,6 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
-    },
 )
 
 try_.builder(

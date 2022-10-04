@@ -49,6 +49,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/attribution_reporting.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
@@ -640,6 +641,7 @@ void AttributionManagerImpl::ClearData(
     base::Time delete_begin,
     base::Time delete_end,
     StoragePartition::StorageKeyMatcherFunction filter,
+    BrowsingDataFilterBuilder* filter_builder,
     bool delete_rate_limit_data,
     base::OnceClosure done) {
   attribution_storage_.AsyncCall(&AttributionStorage::ClearData)
@@ -882,6 +884,16 @@ void AttributionManagerImpl::NotifyReportsChanged(
     AttributionReport::Type report_type) {
   for (auto& observer : observers_)
     observer.OnReportsChanged(report_type);
+}
+
+void AttributionManagerImpl::NotifyFailedSourceRegistration(
+    const std::string& header_value,
+    const url::Origin& reporting_origin) {
+  base::Time source_time = base::Time::Now();
+  for (auto& observer : observers_) {
+    observer.OnFailedSourceRegistration(header_value, source_time,
+                                        reporting_origin);
+  }
 }
 
 }  // namespace content

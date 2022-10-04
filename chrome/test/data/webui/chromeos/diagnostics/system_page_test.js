@@ -7,7 +7,7 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 
 import {DiagnosticsBrowserProxyImpl} from 'chrome://diagnostics/diagnostics_browser_proxy.js';
 import {NavigationView} from 'chrome://diagnostics/diagnostics_types.js';
-import {fakeBatteryChargeStatus, fakeBatteryHealth, fakeBatteryInfo, fakeCellularNetwork, fakeCpuUsage, fakeEthernetNetwork, fakeMemoryUsage, fakeNetworkGuidInfoList, fakePowerRoutineResults, fakeRoutineResults, fakeSystemInfo, fakeSystemInfoWithoutBattery, fakeWifiNetwork} from 'chrome://diagnostics/fake_data.js';
+import {fakeBatteryChargeStatus, fakeBatteryHealth, fakeBatteryInfo, fakeCellularNetwork, fakeCpuUsage, fakeEthernetNetwork, fakeMemoryUsage, fakeNetworkGuidInfoList, fakeSystemInfo, fakeSystemInfoWithoutBattery, fakeWifiNetwork} from 'chrome://diagnostics/fake_data.js';
 import {FakeNetworkHealthProvider} from 'chrome://diagnostics/fake_network_health_provider.js';
 import {FakeSystemDataProvider} from 'chrome://diagnostics/fake_system_data_provider.js';
 import {FakeSystemRoutineController} from 'chrome://diagnostics/fake_system_routine_controller.js';
@@ -18,9 +18,10 @@ import {BatteryChargeStatus, BatteryHealth, BatteryInfo, CpuUsage, MemoryUsage, 
 import {SystemPageElement} from 'chrome://diagnostics/system_page.js';
 import {RoutineType, StandardRoutineResult} from 'chrome://diagnostics/system_routine_controller.mojom-webui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks, isVisible} from '../../test_util.js';
+import {isVisible} from '../../test_util.js';
 
 import * as dx_utils from './diagnostics_test_utils.js';
 import {TestDiagnosticsBrowserProxy} from './test_diagnostics_browser_proxy.js';
@@ -85,7 +86,7 @@ export function systemPageTestSuite() {
 
     // Enable all routines by default.
     routineController.setFakeSupportedRoutines(
-        [...fakeRoutineResults.keys(), ...fakePowerRoutineResults.keys()]);
+        routineController.getAllRoutines());
 
     setSystemRoutineControllerForTesting(routineController);
   });

@@ -12,6 +12,8 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,6 +29,40 @@ namespace web_app {
 
 namespace {
 
+void ReportInstallationResult(
+    base::expected<InstallIsolatedAppCommandSuccess,
+                   InstallIsolatedAppCommandError> result) {
+  if (!result.has_value()) {
+    LOG(ERROR) << "Isolated app auto installation "
+                  "failed. Error: "
+               << result.error();
+  }
+}
+
+void ScheduleInstallIsolatedApp(WebAppProvider& provider,
+                                GURL url,
+                                base::OnceClosure callback) {
+  DCHECK(url.is_valid());
+  DCHECK(!callback.is_null());
+
+  provider.command_manager().ScheduleCommand(
+      std::make_unique<InstallIsolatedAppCommand>(
+          url, std::make_unique<WebAppUrlLoader>(),
+          provider.install_finalizer(),
+          base::BindOnce(&ReportInstallationResult).Then(std::move(callback))));
+}
+
+void InstallApplicationFromUrl(WebAppProvider& provider,
+                               GURL url,
+                               base::OnceClosure callback) {
+  DCHECK(url.is_valid());
+  DCHECK(!callback.is_null());
+
+  provider.on_registry_ready().Post(
+      FROM_HERE, base::BindOnce(ScheduleInstallIsolatedApp, std::ref(provider),
+                                url, std::move(callback)));
+}
+
 base::RepeatingCallback<void(GURL url, base::OnceClosure callback)>
 CreateProductionInstallApplicationFromUrl(Profile& profile) {
   WebAppProvider* provider = WebAppProvider::GetForWebApps(&profile);
@@ -39,69 +75,19 @@ CreateProductionInstallApplicationFromUrl(Profile& profile) {
     return base::DoNothing();
   }
 
-  return base::BindRepeating(
-      [](WebAppProvider& provider, GURL url, base::OnceClosure callback) {
-        DCHECK(!callback.is_null());
-
-        provider.on_registry_ready().Post(
-            FROM_HERE,
-            base::BindOnce(
-                [](WebAppProvider& provider, GURL url,
-                   base::OnceClosure callback) {
-                  base::OnceCallback<void(
-                      base::expected<InstallIsolatedAppCommandSuccess,
-                                     InstallIsolatedAppCommandError>)>
-                      install_isolated_app_callback = base::BindOnce(
-                          [](base::expected<InstallIsolatedAppCommandSuccess,
-                                            InstallIsolatedAppCommandError>
-                                 result) {
-                            if (!result.has_value()) {
-                              LOG(ERROR) << "Isolated app auto installation "
-                                            "failed. Error: "
-                                         << result.error();
-                            }
-                          });
-
-                  DCHECK(url.is_valid());
-                  std::unique_ptr<InstallIsolatedAppCommand> command =
-                      std::make_unique<InstallIsolatedAppCommand>(
-                          url, std::make_unique<WebAppUrlLoader>(),
-                          provider.install_finalizer(),
-                          std::move(install_isolated_app_callback)
-                              .Then(std::move(callback)));
-                  provider.command_manager().ScheduleCommand(
-                      std::move(command));
-                },
-                std::ref(provider), url, std::move(callback)));
-      },
-      std::ref(*provider));
+  return base::BindRepeating(InstallApplicationFromUrl, std::ref(*provider));
 }
 
-struct NextDoneCallbackHolder {
-  base::OnceClosure Get() {
-    auto value = std::move(next_done_callback_).value_or(base::DoNothing());
-    next_done_callback_ = absl::nullopt;
-    return value;
-  }
-
-  void Set(base::OnceClosure next_done_callback) {
-    next_done_callback_ = std::move(next_done_callback);
-  }
-
-  static NextDoneCallbackHolder& GetInstance() {
-    static base::NoDestructor<NextDoneCallbackHolder> kInstance{};
-    return *kInstance;
-  }
-
- private:
-  absl::optional<base::OnceClosure> next_done_callback_;
-};
+base::OnceClosure& GetNextDoneCallbackInstance() {
+  static base::NoDestructor<base::OnceClosure> kInstance{base::NullCallback()};
+  return *kInstance;
+}
 
 }  // namespace
 
 void SetNextInstallationDoneCallbackForTesting(  // IN-TEST
     base::OnceClosure done_callback) {
-  NextDoneCallbackHolder::GetInstance().Set(std::move(done_callback));
+  GetNextDoneCallbackInstance() = std::move(done_callback);
 }
 
 absl::optional<GURL> GetAppToInstallFromCommandLine(
@@ -137,12 +123,11 @@ void MaybeInstallAppFromCommandLine(
 
 void MaybeInstallAppFromCommandLine(const base::CommandLine& command_line,
                                     Profile& profile) {
-  base::OnceClosure done = NextDoneCallbackHolder::GetInstance().Get();
-  DCHECK(!done.is_null());
+  base::OnceClosure& done = GetNextDoneCallbackInstance();
 
   MaybeInstallAppFromCommandLine(
       command_line, CreateProductionInstallApplicationFromUrl(profile),
-      std::move(done));
+      done.is_null() ? base::DoNothing() : std::move(done));
 }
 
 }  // namespace web_app

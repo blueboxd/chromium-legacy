@@ -52,7 +52,7 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
     NGLayoutCacheStatus cache_status;
     absl::optional<NGFragmentGeometry> initial_fragment_geometry;
     return To<LayoutBlockFlow>(node.GetLayoutBox())
-        ->CachedLayoutResult(space, nullptr, nullptr,
+        ->CachedLayoutResult(space, nullptr, nullptr, nullptr,
                              &initial_fragment_geometry, &cache_status);
   }
 
@@ -2105,7 +2105,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationOrthogonalFlows) {
       #container {
         width: 150px;
         height: 60px;
-        overflow: hidden;
+        display: flow-root;
       }
       #float1 {
         width: 100px;

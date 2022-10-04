@@ -1189,25 +1189,6 @@
             ]
         }
     ],
-    "AutofillIgnoreAutocompleteForImport": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillIgnoreAutocompleteForImport"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillKeyboardAccessory": [
         {
             "platforms": [
@@ -2546,17 +2527,17 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledGroupB_20220815",
+                    "name": "EnabledGroupA_20221003",
                     "params": {
                         "CrOSZramWritebackWritebackBackoffTimeSec": "900",
-                        "ZramWritebackHuge": "false",
+                        "ZramWritebackHuge": "true",
                         "ZramWritebackHugeIdle": "true",
-                        "ZramWritebackIdle": "true",
-                        "ZramWritebackIdleMaxTimeSec": "86400",
-                        "ZramWritebackIdleMinTimeSec": "7200",
+                        "ZramWritebackIdle": "false",
+                        "ZramWritebackIdleMaxTimeSec": "10800",
+                        "ZramWritebackIdleMinTimeSec": "1800",
                         "ZramWritebackMaxPages": "25600",
-                        "ZramWritebackMinPages": "1792",
-                        "ZramWritebackPeriodicTimeSec": "600"
+                        "ZramWritebackMinPages": "2560",
+                        "ZramWritebackPeriodicTimeSec": "180"
                     },
                     "enable_features": [
                         "ChromeOSZramWriteback"
@@ -3983,25 +3964,6 @@
             ]
         }
     ],
-    "DmTokenDeletion": [
-        {
-            "platforms": [
-                "android",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DmTokenDeletion"
-                    ]
-                }
-            ]
-        }
-    ],
     "DnsHttpsSvcbSchemeUpgrade": [
         {
             "platforms": [
@@ -5283,24 +5245,6 @@
             ]
         }
     ],
-    "IOSBookmarkString": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "AddToBookmarks",
-                    "params": {
-                        "PopupMenuBookmarkStringParamName": "PopupMenuBookmarkStringParamAddToBookmarks"
-                    },
-                    "enable_features": [
-                        "BookmarkString"
-                    ]
-                }
-            ]
-        }
-    ],
     "IOSCVCPromptV2": [
         {
             "platforms": [
@@ -6088,6 +6032,26 @@
             ]
         }
     ],
+    "JourneysPersistence": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {},
+                    "enable_features": [
+                        "HistoryClustersPersistedClusters"
+                    ]
+                }
+            ]
+        }
+    ],
     "JourneysSearchTermsKeywords": [
         {
             "platforms": [
@@ -6457,7 +6421,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20220926",
+                    "name": "Enabled_20221013",
                     "params": {
                         "minPhotosVersionForImage": "6.8",
                         "minPhotosVersionForVideo": "6.8"
@@ -6796,6 +6760,25 @@
                     },
                     "enable_features": [
                         "NewEvSignalsEnabled"
+                    ]
+                }
+            ]
+        }
+    ],
+    "NewGetDisplayMediaPickerOrder": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NewGetDisplayMediaPickerOrder"
                     ]
                 }
             ]

@@ -6,7 +6,6 @@
 
 #include <aura-shell-client-protocol.h>
 #include <xdg-decoration-unstable-v1-client-protocol.h>
-#include <xdg-shell-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
 
 #include "base/logging.h"
@@ -88,8 +87,7 @@ XDGToplevelWrapperImpl::XDGToplevelWrapperImpl(
     WaylandConnection* connection)
     : xdg_surface_wrapper_(std::move(surface)),
       wayland_window_(wayland_window),
-      connection_(connection),
-      decoration_mode_(DecorationMode::kNone) {}
+      connection_(connection) {}
 
 XDGToplevelWrapperImpl::~XDGToplevelWrapperImpl() = default;
 
@@ -100,12 +98,16 @@ bool XDGToplevelWrapperImpl::Initialize() {
   }
 
   static constexpr xdg_toplevel_listener xdg_toplevel_listener = {
-      &ConfigureTopLevel,
-      &CloseTopLevel,
-      // Since v4
-      &ConfigureBounds,
-      // Since v5
-      &WmCapabilities,
+    &ConfigureTopLevel,
+    &CloseTopLevel,
+#if defined(XDG_TOPLEVEL_CONFIGURE_BOUNDS_SINCE_VERSION)
+    // Since v4
+    &ConfigureBounds,
+#endif
+#if defined(XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION)
+    // Since v5
+    &WmCapabilities,
+#endif
   };
 
   if (!xdg_surface_wrapper_)
@@ -339,6 +341,7 @@ void XDGToplevelWrapperImpl::CloseTopLevel(void* data,
   surface->wayland_window_->OnCloseRequest();
 }
 
+#if defined(XDG_TOPLEVEL_CONFIGURE_BOUNDS_SINCE_VERSION)
 // static
 void XDGToplevelWrapperImpl::ConfigureBounds(void* data,
                                              struct xdg_toplevel* xdg_toplevel,
@@ -346,17 +349,20 @@ void XDGToplevelWrapperImpl::ConfigureBounds(void* data,
                                              int32_t height) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
+#endif
 
+#if defined(XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION)
 // static
 void XDGToplevelWrapperImpl::WmCapabilities(void* data,
                                             struct xdg_toplevel* xdg_toplevel,
                                             struct wl_array* capabilities) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
+#endif
 
 void XDGToplevelWrapperImpl::SetTopLevelDecorationMode(
     DecorationMode requested_mode) {
-  if (!zxdg_toplevel_decoration_ || requested_mode == decoration_mode_)
+  if (!zxdg_toplevel_decoration_ || requested_mode == decoration_mode())
     return;
 
   zxdg_toplevel_decoration_v1_set_mode(zxdg_toplevel_decoration_.get(),
@@ -370,7 +376,7 @@ void XDGToplevelWrapperImpl::ConfigureDecoration(
     uint32_t mode) {
   auto* surface = static_cast<XDGToplevelWrapperImpl*>(data);
   DCHECK(surface);
-  surface->decoration_mode_ = ToDecorationMode(mode);
+  surface->set_decoration_mode(ToDecorationMode(mode));
 }
 
 void XDGToplevelWrapperImpl::InitializeXdgDecoration() {

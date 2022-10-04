@@ -497,6 +497,9 @@
   <message name="IDS_OS_SETTINGS_LANGUAGES_EDIT_DICTIONARY_LABEL" desc="Label for the section for users to add words that they don’t want get flagged by the spell check.">
     Customize spell check
   </message>
+  <message name="IDS_OS_SETTINGS_LANGUAGES_JAPANESE_MANAGE_USER_DICTIONARY_LABEL" desc="Label for the section of the Japanese user settings which allows them to manage their custom dictionaries for Japaneses input. This is the string which appears at the top of the User dictionaries subpage.">
+    User dictionaries
+  </message>
   <message name="IDS_OS_SETTINGS_LANGUAGES_EDIT_DICTIONARY_DESCRIPTION" desc="Description for the section for users to add words that they don’t want get flagged by the spell check.">
     Add words you want spell check to skip
   </message>
@@ -582,7 +585,7 @@
   <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_SECTION_TITLE" desc="The label for the section in input method options page section title.">
     Section
   </message>
-  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_AUTOMATICALLY_SWITCH_TO_HALFWIDTH" desc="The label for the setting to toggle if the Japanese input method should automatically switch to using halfwidth.">
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_AUTOMATICALLY_SWITCH_TO_HALFWIDTH" desc="The label for the input method option to enable double-space to type period (when an user types two consecutive space, it outputs a period).">
     Automatically switch to halfwidth
   </message>
   <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_SHIFT_KEY_MODE_STYLE" desc="The label for the setting to set the shift key mode style.">
@@ -738,6 +741,12 @@
   <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_KEYMAP_STYLE_CHROMEOS" translateable="false">
     ChromeOS
   </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_MANAGE_USER_DICTIONARY" desc="Label on the settings page which if the user clicks on, will bring up the Japaneses dictionary management page. There are multiple dictionary which the user can modify.">
+    Manage user dictionaries
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_JAPANESE_MANAGE_USER_DICTIONARY_SUBTITLE" desc="Subheading for the label on the settings page which if the user clicks on, will bring up the Japaneses dictionary management page. There are multiple dictionary which the user can modify.">
+    Add your own words to the user dictionaries in order to customize the conversion candidates.
+  </message>
   <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_PINYIN_CHINESE_PUNCTUATION" desc="The label for the pinyin input method option for whether to output full-width or half-with punctuation.">
     Initial punctuation width is Full
   </message>
@@ -795,62 +804,6 @@
   <!-- Personalization Page (OS settings) -->
   <message name="IDS_OS_SETTINGS_PERSONALIZATION" desc="Name of the OS settings page which displays personalization preferences.">
     Personalization
-  </message>
-  <message name="IDS_SETTINGS_CHANGE_PICTURE_TAKE_PHOTO" desc="The text on the button to take photo of the current user.">
-    Take photo
-  </message>
-  <message name="IDS_SETTINGS_CHANGE_PICTURE_CAPTURE_VIDEO" desc="The text on the button to capture video of the current user.">
-    Capture video
-  </message>
-  <message name="IDS_SETTINGS_CHANGE_PICTURE_DISCARD_PHOTO" desc="The text on the button to discard the captured photo or video of the current user.">
-    Discard photo or video
-  </message>
-  <message name="IDS_SETTINGS_CHANGE_PICTURE_PREVIEW_ALT" desc="Alt text for the big preview of user image.">
-    User image preview
-  </message>
-  <message name="IDS_SETTINGS_CHANGE_PICTURE_SWITCH_MODE_TO_VIDEO" desc="The text on the button to switch the mode of the camera to video.">
-    Switch to video recorder
-  </message>
-  <message name="IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TEXT" desc="Text with description of what to do on Change picture subpage.">
-    Choose a picture to display for your account on the sign-in screen
-  </message>
-  <message name="IDS_SETTINGS_CHANGE_PICTURE_SWITCH_MODE_TO_CAMERA" desc="The text on the button to switch the mode of the camera to photo.">
-    Switch to camera mode
-  </message>
-  <message name="IDS_SETTINGS_CHANGE_PICTURE_CHOOSE_FILE" desc="Text on a button that shows file dialog to choose a picture from file.">
-    Choose a file
-  </message>
-  <message name="IDS_SETTINGS_CHANGE_PICTURE_OLD_PHOTO" desc="The text on the existing photo, which was either taken by the webcam or read from a file.">
-    Existing photo from camera or file
-  </message>
-  <message name="IDS_SETTINGS_CHANGE_PICTURE_OLD_VIDEO" desc="The text on the existing video, which was either taken by the webcam or read from a file.">
-    Existing video from camera or file
-  </message>
-  <message name="IDS_SETTINGS_CHANGE_PICTURE_AUTHOR_CREDIT_TEXT" desc="Label in the profile picture picker for the photo credit for the selected image.">
-    Photo by <ph name="NAME">$1<ex>John Doe</ex></ph>
-  </message>
-  <message name="IDS_SETTINGS_PHOTO_CAPTURE_ACCESSIBLE_TEXT" desc="The accessible message to speak to announce that a photo was captured.">
-    Photo was captured
-  </message>
-  <message name="IDS_SETTINGS_PHOTO_DISCARD_ACCESSIBLE_TEXT" desc="The accessible message to speak to announce that a photo was discarded.">
-    Photo was discarded
-  </message>
-  <message name="IDS_SETTINGS_PHOTO_MODE_ACCESSIBLE_TEXT" desc="The accessible message to speak to announce a switch to photo mode for camera.">
-    Photo mode entered
-  </message>
-  <message name="IDS_SETTINGS_VIDEO_MODE_ACCESSIBLE_TEXT" desc="The accessible message to speak to announce a switch to video mode for camera.">
-    Video mode entered
-  </message>
-
-  <!-- Personalization Page (OS settings) and Appearance Page (Browser settings) -->
-  <message name="IDS_OS_SETTINGS_SET_WALLPAPER" desc="Name of the control which allows the user to set the wallpaper.">
-    Wallpaper
-  </message>
-  <message name="IDS_OS_SETTINGS_OPEN_WALLPAPER_APP" desc="Sub-label about opening the wallpaper app.">
-    Open the wallpaper app
-  </message>
-  <message name="IDS_OS_SETTINGS_CHANGE_PICTURE_TITLE" desc="Label for row in settings page that shows the user image picker.">
-    Change device account image
   </message>
   <message name="IDS_OS_SETTINGS_OPEN_PERSONALIZATION_HUB" desc="Title for the link to open personalization hub.">
     Set your wallpaper &amp; style
@@ -3050,6 +3003,9 @@ Press an assigned switch or key to remove assignment.
   </message>
   <message name="IDS_SETTINGS_INTERNET_BUTTON_FORGET" desc="Settings > Internet > Network details: The label for the button to forget a network (remove from the list of known networks).">
     Forget
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_BUTTON_SIGNIN" desc="Settings > Internet > Network details: The label for the button to signin to a network behind a captive portal.">
+    Sign in
   </message>
   <message name="IDS_SETTINGS_INTERNET_BUTTON_VIEW_ACCOUNT" desc="Settings > Internet > Network details: The label for the button to view the account details for a Cellular network.">
     View Account

@@ -405,7 +405,7 @@ class SearchPrefetchServiceEnabledBrowserTest
                              {{"max_attempts_per_caching_duration", "3"},
                               {"cache_size", "1"},
                               {"device_memory_threshold_MB", "0"}}}};
-    std::vector<base::Feature> disabled_features = {};
+    std::vector<base::test::FeatureRef> disabled_features = {};
     if (BlockOnHeadersEnabled()) {
       enabled_features.push_back({kSearchPrefetchBlockBeforeHeaders, {}});
     } else {
@@ -2606,6 +2606,7 @@ IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest, NoServeReload) {
       "Omnibox.SearchPrefetch.PrefetchServingReason2",
       SearchPrefetchServingReason::kPostReloadFormOrLink, 1);
 }
+
 IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest, NoServePost) {
   base::HistogramTester histogram_tester;
   auto* search_prefetch_service =
@@ -2644,6 +2645,94 @@ IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest, NoServePost) {
   histogram_tester.ExpectUniqueSample(
       "Omnibox.SearchPrefetch.PrefetchServingReason2",
       SearchPrefetchServingReason::kPostReloadFormOrLink, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest,
+                       NoServeSideSearch) {
+  base::HistogramTester histogram_tester;
+  auto* search_prefetch_service =
+      SearchPrefetchServiceFactory::GetForProfile(browser()->profile());
+  EXPECT_NE(nullptr, search_prefetch_service);
+
+  std::string search_terms = "prefetch_content";
+
+  auto [prefetch_url, search_url] =
+      GetSearchPrefetchAndNonPrefetch(search_terms);
+
+  EXPECT_TRUE(search_prefetch_service->MaybePrefetchURL(prefetch_url,
+                                                        GetWebContents()));
+
+  auto prefetch_status =
+      search_prefetch_service->GetSearchPrefetchStatusForTesting(
+          base::ASCIIToUTF16(search_terms));
+  ASSERT_TRUE(prefetch_status.has_value());
+  EXPECT_EQ(BlockOnHeadersEnabled() ? SearchPrefetchStatus::kCanBeServed
+                                    : SearchPrefetchStatus::kInFlight,
+            prefetch_status.value());
+
+  WaitUntilStatusChangesTo(base::ASCIIToUTF16(search_terms),
+                           SearchPrefetchStatus::kComplete);
+
+  prefetch_status = search_prefetch_service->GetSearchPrefetchStatusForTesting(
+      base::ASCIIToUTF16(search_terms));
+  ASSERT_TRUE(prefetch_status.has_value());
+  EXPECT_EQ(SearchPrefetchStatus::kComplete, prefetch_status.value());
+  EXPECT_EQ(1u, search_server_request_count());
+
+  auto* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(),
+      template_url_service->GetDefaultSearchProvider()->GenerateSideSearchURL(
+          search_url, "1", template_url_service->search_terms_data())));
+
+  EXPECT_EQ(2u, search_server_request_count());
+  histogram_tester.ExpectUniqueSample(
+      "Omnibox.SearchPrefetch.PrefetchServingReason2",
+      SearchPrefetchServingReason::kNotDefaultSearchWithTerms, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest,
+                       NoServeSideSearchImage) {
+  base::HistogramTester histogram_tester;
+  auto* search_prefetch_service =
+      SearchPrefetchServiceFactory::GetForProfile(browser()->profile());
+  EXPECT_NE(nullptr, search_prefetch_service);
+
+  std::string search_terms = "prefetch_content";
+
+  auto [prefetch_url, search_url] =
+      GetSearchPrefetchAndNonPrefetch(search_terms);
+
+  EXPECT_TRUE(search_prefetch_service->MaybePrefetchURL(prefetch_url,
+                                                        GetWebContents()));
+
+  auto prefetch_status =
+      search_prefetch_service->GetSearchPrefetchStatusForTesting(
+          base::ASCIIToUTF16(search_terms));
+  ASSERT_TRUE(prefetch_status.has_value());
+  EXPECT_EQ(BlockOnHeadersEnabled() ? SearchPrefetchStatus::kCanBeServed
+                                    : SearchPrefetchStatus::kInFlight,
+            prefetch_status.value());
+
+  WaitUntilStatusChangesTo(base::ASCIIToUTF16(search_terms),
+                           SearchPrefetchStatus::kComplete);
+
+  prefetch_status = search_prefetch_service->GetSearchPrefetchStatusForTesting(
+      base::ASCIIToUTF16(search_terms));
+  ASSERT_TRUE(prefetch_status.has_value());
+  EXPECT_EQ(SearchPrefetchStatus::kComplete, prefetch_status.value());
+  EXPECT_EQ(1u, search_server_request_count());
+  auto* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), template_url_service->GetDefaultSearchProvider()
+                     ->GenerateSideImageSearchURL(search_url, "1")));
+
+  EXPECT_EQ(2u, search_server_request_count());
+  histogram_tester.ExpectUniqueSample(
+      "Omnibox.SearchPrefetch.PrefetchServingReason2",
+      SearchPrefetchServingReason::kNotDefaultSearchWithTerms, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(SearchPrefetchServiceEnabledBrowserTest,
@@ -3293,7 +3382,7 @@ class SearchPrefetchServiceNavigationPrefetchBrowserTest
                               {"cache_size", "1"},
                               {"device_memory_threshold_MB", "0"}}},
                             {kSearchNavigationPrefetch, {}}};
-    std::vector<base::Feature> disabled_features = {};
+    std::vector<base::test::FeatureRef> disabled_features = {};
 
     feature_list_.InitWithFeaturesAndParameters(enabled_features,
                                                 disabled_features);
@@ -3588,7 +3677,7 @@ class SearchNavigationPrefetchHoldbackBrowserTest
                               {"device_memory_threshold_MB", "0"},
                               {"prefetch_holdback", "true"}}},
                             {kSearchNavigationPrefetch, {{}}}};
-    std::vector<base::Feature> disabled_features = {};
+    std::vector<base::test::FeatureRef> disabled_features = {};
 
     feature_list_.InitWithFeaturesAndParameters(enabled_features,
                                                 disabled_features);
@@ -3691,7 +3780,7 @@ class SearchNavigationPrefetchNoCancelBrowserTest
                               {"device_memory_threshold_MB", "0"}}},
                             {kSearchPrefetchSkipsCancel, {}},
                             {kSearchNavigationPrefetch, {{}}}};
-    std::vector<base::Feature> disabled_features = {};
+    std::vector<base::test::FeatureRef> disabled_features = {};
 
     feature_list_.InitWithFeaturesAndParameters(enabled_features,
                                                 disabled_features);

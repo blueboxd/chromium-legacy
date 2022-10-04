@@ -2139,16 +2139,19 @@ bool VTVideoDecodeAccelerator::ProcessFrame(const Frame& frame) {
     // Request new pictures.
     picture_size_ = frame.image_size;
 
-    // TODO(https://crbug.com/1210994): Remove RGBAF16 support, and expose only
-    // PIXEL_FORMAT_NV12 and PIXEL_FORMAT_YUV420P10.
     picture_format_ = PIXEL_FORMAT_RGBAF16;
-    if (base::FeatureList::IsEnabled(kMultiPlaneVideoToolboxSharedImages)) {
-      // TODO(https://crbug.com/1233228): The UV planes of P010 frames cannot
-      // be represented in the current gfx::BufferFormat.
-      if (config_.profile != VP9PROFILE_PROFILE2 &&
-          config_.profile != HEVCPROFILE_MAIN10 &&
-          config_.profile != HEVCPROFILE_REXT)
+    if (config_.profile == VP9PROFILE_PROFILE2 ||
+        config_.profile == HEVCPROFILE_MAIN10 ||
+        config_.profile == HEVCPROFILE_REXT) {
+      buffer_format_ = gfx::BufferFormat::P010;
+      if (base::FeatureList::IsEnabled(kMultiPlaneVideoToolboxSharedImages)) {
+        picture_format_ = PIXEL_FORMAT_P016LE;
+      }
+    } else {
+      buffer_format_ = gfx::BufferFormat::YUV_420_BIPLANAR;
+      if (base::FeatureList::IsEnabled(kMultiPlaneVideoToolboxSharedImages)) {
         picture_format_ = PIXEL_FORMAT_NV12;
+      }
     }
 
     DVLOG(3) << "ProvidePictureBuffers(" << kNumPictureBuffers
@@ -2176,18 +2179,11 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   PictureInfo* picture_info = it->second.get();
   DCHECK(picture_info->gl_images.empty());
 
-  const gfx::BufferFormat buffer_format =
-      config_.profile == VP9PROFILE_PROFILE2 ||
-              config_.profile == HEVCPROFILE_MAIN10 ||
-              config_.profile == HEVCPROFILE_REXT
-          ? gfx::BufferFormat::P010
-          : gfx::BufferFormat::YUV_420_BIPLANAR;
-  gfx::ColorSpace color_space = GetImageBufferColorSpace(frame.image);
-
+  const gfx::ColorSpace color_space = GetImageBufferColorSpace(frame.image);
   std::vector<gfx::BufferPlane> planes;
   switch (picture_format_) {
     case PIXEL_FORMAT_NV12:
-    case PIXEL_FORMAT_YUV420P10:
+    case PIXEL_FORMAT_P016LE:
       planes.push_back(gfx::BufferPlane::Y);
       planes.push_back(gfx::BufferPlane::UV);
       break;
@@ -2204,7 +2200,7 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
         CVPixelBufferGetWidthOfPlane(frame.image.get(), plane),
         CVPixelBufferGetHeightOfPlane(frame.image.get(), plane));
     gfx::BufferFormat plane_buffer_format =
-        gpu::GetPlaneBufferFormat(planes[plane], buffer_format);
+        gpu::GetPlaneBufferFormat(planes[plane], buffer_format_);
     // TODO(https://crbug.com/1108909): BGRA is not an appropriate value for
     // these parameters.
     const viz::ResourceFormat viz_resource_format =
@@ -2229,8 +2225,8 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
     if (picture_info->uses_shared_images) {
       gpu::SharedImageStub* shared_image_stub = client_->GetSharedImageStub();
       DCHECK(shared_image_stub);
-      const uint32_t shared_image_usage =
-          gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      const uint32_t shared_image_usage = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
+                                          gpu::SHARED_IMAGE_USAGE_SCANOUT;
       gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
 
       gpu::GLTextureImageBackingHelper::InitializeGLTextureParams gl_params;

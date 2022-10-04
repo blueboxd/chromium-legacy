@@ -282,7 +282,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.PreloadData.VersionAtAbuseCheckTime"
-    units="date" expires_after="2023-01-29">
+    units="date" expires_after="2023-04-02">
   <owner>elklm@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -1046,7 +1046,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SiteEngagementService.EngagementType"
-    enum="SiteEngagementServiceEngagementType" expires_after="2023-01-29">
+    enum="SiteEngagementServiceEngagementType" expires_after="2023-04-02">
   <owner>calamity@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <summary>
@@ -1205,6 +1205,19 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the amount of time the store icon is shown in the omnibox before the
     user clicks into page info.
+  </summary>
+</histogram>
+
+<histogram name="WebsiteSettings.GetAllSitesLoadTime" units="ms"
+    expires_after="M111">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <summary>
+    Records the load time of the &quot;All sites&quot; settings page. The load
+    time is the time between the &quot;GetAllSites&quot; request start and the
+    time when the storage is fetched and the full information is returned to the
+    UI.
   </summary>
 </histogram>
 

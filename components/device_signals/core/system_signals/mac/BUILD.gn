@@ -8,14 +8,21 @@ static_library("mac") {
   sources = [ "mac_platform_delegate.mm" ]
 
   public_deps = [
-    "//components/device_signals/core/common",
     "//components/device_signals/core/system_signals",
     "//components/device_signals/core/system_signals/posix",
   ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//components/device_signals/core/common",
+    "//crypto",
+    "//net",
+  ]
 
-  frameworks = [ "Foundation.framework" ]
+  frameworks = [
+    "CoreFoundation.framework",
+    "Foundation.framework",
+  ]
 }
 
 source_set("unit_tests") {
@@ -28,6 +35,7 @@ source_set("unit_tests") {
     "//components/device_signals/core/common",
     "//components/device_signals/core/system_signals",
     "//components/device_signals/core/system_signals:test_support",
+    "//components/device_signals/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

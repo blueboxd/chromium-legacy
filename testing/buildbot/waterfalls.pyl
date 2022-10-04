@@ -1081,7 +1081,6 @@
       'android-pie-arm64-rel': {
         'mixins': [
           'has_native_resultdb_integration',
-          'isolate_profile_data',
           'pie_fleet',
           'walleye',
         ],
@@ -1796,7 +1795,7 @@
           'gpu_telemetry_tests': 'gpu_fuchsia_telemetry_tests',
         },
       },
-      'ToTFuchsiaOfficial': {
+      'ToTFuchsiaOfficial arm64': {
         'test_suites': {
           'gtest_tests': 'fuchsia_web_engine_non_graphical_gtests',
           'isolated_scripts': 'fuchsia_arm64_isolated_scripts',
@@ -2150,6 +2149,28 @@
     'name': 'chromium.dawn',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
+      'Dawn Android arm DEPS Release (Pixel 4)': {
+        'os_type': 'android',
+        'browser_config': 'android-chromium',
+        'mixins': [
+          'android_r',
+          'has_native_resultdb_integration',
+          'flame',
+          'gpu-swarming-pool',
+        ],
+        'test_suites': {},
+      },
+      'Dawn Android arm Release (Pixel 4)': {
+        'os_type': 'android',
+        'browser_config': 'android-chromium',
+        'mixins': [
+          'android_r',
+          'has_native_resultdb_integration',
+          'flame',
+          'gpu-swarming-pool',
+        ],
+        'test_suites': {},
+      },
       'Dawn Linux x64 Builder' : {},
       'Dawn Linux x64 DEPS Builder' : {},
       'Dawn Linux x64 DEPS Release (Intel UHD 630)': {
@@ -3411,11 +3432,6 @@
           'isolated_scripts': 'ios15_beta_simulator_tests'
         },
       },
-      'ios15-sdk-device': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
       'ios15-sdk-simulator': {
         'additional_compile_targets': [
           'all',
@@ -3449,6 +3465,11 @@
         'test_suites': {
           'isolated_scripts': 'ios16_beta_simulator_tests'
         },
+      },
+      'ios16-sdk-device': {
+        'additional_compile_targets': [
+          'all',
+        ],
       },
       # ios16-sdk-sim compiles with xcode version n, and runs
       # testers with xcode n during an xcode roll.

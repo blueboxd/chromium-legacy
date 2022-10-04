@@ -1451,6 +1451,11 @@
       settable_from_internals: true,
     },
     {
+      name: "LangAttributeAwareSvgText",
+      base_feature: "LangAttributeAwareSvgText",
+      status: "stable",
+    },
+    {
       // LayoutNG has been enabled in M76, but we still keep this flag for
       // testing. See web_tests/FlagExpectations/disable-layout-ng for more
       // details about running web tests with LayoutNG disabled. This flag also
@@ -3084,6 +3089,14 @@
     {
       name: "WGIGamepadTriggerRumble",
       status: "test",
+    },
+    // If enabled, window.default[Ss]tatus will be supported. This is disabled
+    // by default, and is here to allow this behavior to be re-enabled via Finch
+    // in case of problems. This flag should be removed by Q1 2023, assuming
+    // no problems are encountered.
+    {
+      name: "WindowDefaultStatus",
+      base_feature: "WindowDefaultStatus",
     },
     // New behavior for window.open's interpretation of the windowFeatures parameter.
     {

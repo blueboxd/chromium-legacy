@@ -54,7 +54,7 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) AddressPoolManager {
   AddressPoolManager& operator=(const AddressPoolManager&) = delete;
 
 #if defined(PA_HAS_64_BITS_POINTERS)
-  pool_handle Add(uintptr_t address, size_t length);
+  void Add(pool_handle handle, uintptr_t address, size_t length);
   void Remove(pool_handle handle);
 
   // Populate a |used| bitset of superpages currently in use.
@@ -160,19 +160,6 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) AddressPoolManager {
 
   static AddressPoolManager singleton_;
 };
-
-PA_ALWAYS_INLINE pool_handle GetRegularPool() {
-  return kRegularPoolHandle;
-}
-
-PA_ALWAYS_INLINE pool_handle GetBRPPool() {
-  return kBRPPoolHandle;
-}
-
-PA_ALWAYS_INLINE pool_handle GetConfigurablePool() {
-  PA_DCHECK(IsConfigurablePoolAvailable());
-  return kConfigurablePoolHandle;
-}
 
 }  // namespace partition_alloc::internal
 

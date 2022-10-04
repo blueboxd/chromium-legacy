@@ -19,9 +19,6 @@ ci.defaults.set(
     pool = ci.DEFAULT_POOL,
     priority = ci.DEFAULT_FYI_PRIORITY,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
-
-    # TODO(crbug.com/1362440): remove this.
-    omit_python2 = False,
 )
 
 consoles.console_view(
@@ -203,6 +200,12 @@ ci.builder(
             category = "fuchsia|arm64",
             short_name = "emu-arg",
         ),
+        consoles.console_view_entry(
+            branch_selector = branches.MAIN,
+            console_view = "sheriff.fuchsia",
+            category = "fyi|arm64",
+            short_name = "emu-arg",
+        ),
     ],
     notifies = ["cr-fuchsia-engprod"],
     os = os.LINUX_DEFAULT,
@@ -218,8 +221,8 @@ ci.builder(
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "fyi",
-            short_name = "arm64",
+            category = "fyi|arm64",
+            short_name = "fyi-rel",
         ),
     ],
     notifies = ["cr-fuchsia"],
@@ -250,6 +253,12 @@ ci.builder(
     console_view_entry = [
         consoles.console_view_entry(
             category = "fuchsia|x64",
+            short_name = "cfv2",
+        ),
+        consoles.console_view_entry(
+            branch_selector = branches.MAIN,
+            console_view = "sheriff.fuchsia",
+            category = "fyi|x64",
             short_name = "cfv2",
         ),
     ],
@@ -284,6 +293,12 @@ ci.builder(
             category = "fuchsia|arm64",
             short_name = "cfv2",
         ),
+        consoles.console_view_entry(
+            branch_selector = branches.MAIN,
+            console_view = "sheriff.fuchsia",
+            category = "fyi|arm64",
+            short_name = "cfv2",
+        ),
     ],
     os = os.LINUX_DEFAULT,
 )
@@ -298,8 +313,8 @@ ci.builder(
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "fyi",
-            short_name = "x64",
+            category = "fyi|x64",
+            short_name = "fyi-rel",
         ),
     ],
     notifies = ["cr-fuchsia"],
@@ -316,7 +331,7 @@ ci.builder(
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "fyi",
+            category = "fyi|x64",
             short_name = "work",
         ),
     ],
@@ -1054,6 +1069,9 @@ ci.builder(
     os = os.MAC_DEFAULT,
     schedule = "with 3h interval",
     triggered_by = [],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -1825,12 +1843,12 @@ fyi_coverage_builder(
     console_view_entry = [
         consoles.console_view_entry(
             category = "code_coverage",
-            short_name = "fsa",
+            short_name = "fx",
         ),
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "fyi",
+            category = "fyi|x64",
             short_name = "cov",
         ),
     ],
@@ -2099,20 +2117,6 @@ fyi_ios_builder(
 )
 
 fyi_ios_builder(
-    name = "ios15-sdk-device",
-    console_view_entry = [
-        consoles.console_view_entry(
-            category = "iOS|iOS15",
-            short_name = "dev",
-        ),
-    ],
-    os = os.MAC_12,
-    goma_backend = None,
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
-    reclient_jobs = reclient.jobs.DEFAULT,
-)
-
-fyi_ios_builder(
     name = "ios15-sdk-simulator",
     console_view_entry = [
         consoles.console_view_entry(
@@ -2151,6 +2155,36 @@ fyi_ios_builder(
     os = os.MAC_DEFAULT,
     schedule = "0 0,4,8,12,16,20 * * *",
     triggered_by = [],
+)
+
+fyi_ios_builder(
+    name = "ios16-sdk-device",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "ios",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+                "mac_toolchain",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.IOS,
+        ),
+        build_gs_bucket = "chromium-fyi-archive",
+    ),
+    console_view_entry = [
+        consoles.console_view_entry(
+            category = "iOS|iOS16",
+            short_name = "dev",
+        ),
+    ],
+    os = os.MAC_DEFAULT,
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )
 
 fyi_ios_builder(

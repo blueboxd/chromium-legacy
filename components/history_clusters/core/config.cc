@@ -102,6 +102,16 @@ Config::Config() {
             internal::kPersistedClusters,
             "JourneysPersistClustersInHistoryDbPeriodMinutes",
             persist_clusters_in_history_db_period_minutes);
+
+    max_persisted_clusters_to_fetch = base::GetFieldTrialParamByFeatureAsInt(
+        internal::kPersistedClusters, "max_persisted_clusters_to_fetch",
+        max_persisted_clusters_to_fetch);
+
+    max_persisted_cluster_visits_to_fetch_soft_cap =
+        base::GetFieldTrialParamByFeatureAsInt(
+            internal::kPersistedClusters,
+            "max_persisted_cluster_visits_to_fetch_soft_cap",
+            max_persisted_cluster_visits_to_fetch_soft_cap);
   }
 
   // The `kOmniboxAction` feature and child params.
@@ -158,6 +168,19 @@ Config::Config() {
             internal::kOmniboxHistoryClusterProvider,
             "omnibox_history_cluster_provider_shortcuts",
             omnibox_history_cluster_provider_shortcuts);
+
+    omnibox_history_cluster_provider_navigation_intent_score_threshold =
+        base::GetFieldTrialParamByFeatureAsInt(
+            internal::kOmniboxHistoryClusterProvider,
+            "omnibox_history_cluster_provider_navigation_intent_score_"
+            "threshold",
+            omnibox_history_cluster_provider_navigation_intent_score_threshold);
+
+    omnibox_history_cluster_provider_on_navigation_intents =
+        base::GetFieldTrialParamByFeatureAsBool(
+            internal::kOmniboxHistoryClusterProvider,
+            "omnibox_history_cluster_provider_on_navigation_intents",
+            omnibox_history_cluster_provider_on_navigation_intents);
   }
 
   // The `kOnDeviceClusteringKeywordFiltering` feature and child params.

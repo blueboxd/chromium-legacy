@@ -13,6 +13,8 @@ namespace {
 
 constexpr char kProductName[] = "Test Product Name";
 constexpr char kProductVersion[] = "1.0.0.2";
+constexpr char kTestBundleProductName[] = "TestApp";
+constexpr char kTestBundleProductVersion[] = "10.8";
 
 }  // namespace
 
@@ -46,6 +48,33 @@ std::string GetMetadataProductName() {
 
 std::string GetMetadataProductVersion() {
   return kProductVersion;
+}
+
+base::FilePath GetTestBundlePath() {
+  return GetTestDataDir().AppendASCII("TestApp.app");
+}
+
+base::FilePath GetTestBundleBinaryPath() {
+  return GetTestBundlePath()
+      .AppendASCII("Contents")
+      .AppendASCII("MacOS")
+      .AppendASCII("TestApp");
+}
+
+std::string GetTestBundleProductName() {
+  return kTestBundleProductName;
+}
+
+std::string GetTestBundleProductVersion() {
+  return kTestBundleProductVersion;
+}
+
+base::FilePath GetUnsignedBundlePath() {
+  return GetTestDataDir().AppendASCII("UnsignedApp.app");
+}
+
+base::FilePath GetUnusedPath() {
+  return GetTestDataDir().AppendASCII("Unused");
 }
 
 }  // namespace device_signals::test

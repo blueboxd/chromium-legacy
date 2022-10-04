@@ -291,6 +291,10 @@ const char kDnsHttpsSvcbDescription[] =
     "ClientHello, depending on server support and whether those features are "
     "enabled.";
 
+const char kUseDMSAAForTilesName[] = "Use DMSAA for tiles";
+const char kUseDMSAAForTilesDescription[] =
+    "Switches skia to use DMSAA instead of MSAA for tile raster";
+
 const char kUseDnsHttpsSvcbAlpnName[] = "Use DNS https alpn";
 const char kUseDnsHttpsSvcbAlpnDescription[] =
     "When enabled, Chrome may try QUIC on the first connection using the ALPN"
@@ -3183,6 +3187,10 @@ const char kWebAuthnConditionalUIName[] = "Web Authentication Conditional UI";
 const char kWebAuthnConditionalUIDescription[] =
     "Enable support for Conditional UI WebAuthn requests.";
 
+const char kWebAuthnNewDesktopUIName[] = "Web Authentication new desktop UI";
+const char kWebAuthnNewDesktopUIDescription[] =
+    "Enable updated UI dialog for WebAuthn requests.";
+
 const char kWebrtcCaptureMultiChannelApmName[] =
     "WebRTC multi-channel capture audio processing.";
 const char kWebrtcCaptureMultiChannelApmDescription[] =
@@ -5825,10 +5833,6 @@ const char kMultilingualTypingName[] = "Multilingual typing on CrOS";
 const char kMultilingualTypingDescription[] =
     "Enables support for multilingual assistive typing on ChromeOS.";
 
-const char kNearbySharingArcName[] = "ARC Nearby Sharing";
-const char kNearbySharingArcDescription[] =
-    "Enables Nearby Sharing from ARC apps.";
-
 const char kNearbySharingOnePageOnboardingName[] =
     "Nearby Sharing one-page Onboarding.";
 const char kNearbySharingOnePageOnboardingDescription[] =
@@ -6235,6 +6239,11 @@ const char kDesktopCaptureLacrosV2Name[] = "Enable Lacros Desktop Capture V2";
 const char kDesktopCaptureLacrosV2Description[] =
     "Enables the improved desktop/window capturer for doing screen/window "
     "sharing on Lacros";
+
+const char kLacrosAuraCaptureName[] = "Enable Lacros Aura Capture";
+const char kLacrosAuraCaptureDescription[] =
+    "Enables LaCrOS to perform an in-process capture of it's own windows "
+    "rather than needing to delegate the capture to Ash";
 
 const char kLacrosMergeIcuDataFileName[] =
     "Enable merging of icudtl.dat in Lacros";

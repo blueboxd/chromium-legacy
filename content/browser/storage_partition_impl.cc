@@ -1042,7 +1042,8 @@ class StoragePartitionImpl::DataDeletionHelper {
     kSharedStorage = 10,
     kGpuCache = 11,
     kPrivateAggregation = 12,
-    kMaxValue = kPrivateAggregation,
+    kInterestGroups = 13,
+    kMaxValue = kInterestGroups,
   };
 
   base::OnceClosure CreateTaskCompletionClosure(TracingDataType data_type);
@@ -2520,9 +2521,25 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
                 CreateTaskCompletionClosure(TracingDataType::kCookies))));
   }
 
+  // It is not expected to only delete internal interest group data.
+  DCHECK(!(remove_mask_ & REMOVE_DATA_MASK_INTEREST_GROUPS_INTERNAL) ||
+         remove_mask_ & REMOVE_DATA_MASK_INTEREST_GROUPS);
   if (remove_mask_ & REMOVE_DATA_MASK_INTEREST_GROUPS) {
     if (interest_group_manager) {
-      interest_group_manager->DeleteInterestGroupData(generic_filter);
+      // The internal interest group data is not specific to a site so it only
+      // makes sense to delete it for all sites (i.e. when
+      // generic_filter.is_null()).
+      if ((remove_mask_ & REMOVE_DATA_MASK_INTEREST_GROUPS_INTERNAL) &&
+          generic_filter.is_null()) {
+        interest_group_manager->DeleteAllInterestGroupData(
+            mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+                CreateTaskCompletionClosure(TracingDataType::kInterestGroups)));
+      } else {
+        interest_group_manager->DeleteInterestGroupData(
+            generic_filter,
+            mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+                CreateTaskCompletionClosure(TracingDataType::kInterestGroups)));
+      }
     }
   }
 
@@ -2592,10 +2609,22 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
          remove_mask_ & REMOVE_DATA_MASK_ATTRIBUTION_REPORTING_SITE_CREATED);
   if (attribution_manager &&
       (remove_mask_ & REMOVE_DATA_MASK_ATTRIBUTION_REPORTING_SITE_CREATED)) {
-    attribution_manager->ClearData(
-        begin, end, generic_filter,
-        remove_mask_ & REMOVE_DATA_MASK_ATTRIBUTION_REPORTING_INTERNAL,
-        CreateTaskCompletionClosure(TracingDataType::kConversions));
+    if (storage_key_origin_empty) {
+      attribution_manager->ClearData(
+          begin, end, generic_filter, filter_builder,
+          remove_mask_ & REMOVE_DATA_MASK_ATTRIBUTION_REPORTING_INTERNAL,
+          CreateTaskCompletionClosure(TracingDataType::kConversions));
+    } else if (storage_key.IsFirstPartyContext()) {
+      // Attribution Reporting API doesn't support cross-site data deletion.
+      std::unique_ptr<BrowsingDataFilterBuilder> effective_filter_builder =
+          BrowsingDataFilterBuilder::Create(
+              BrowsingDataFilterBuilder::Mode::kDelete);
+      effective_filter_builder->AddOrigin(storage_key.origin());
+      attribution_manager->ClearData(
+          begin, end, generic_filter, effective_filter_builder.get(),
+          remove_mask_ & REMOVE_DATA_MASK_ATTRIBUTION_REPORTING_INTERNAL,
+          CreateTaskCompletionClosure(TracingDataType::kConversions));
+    }
   }
 
   if (aggregation_service &&

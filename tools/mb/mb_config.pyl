@@ -197,7 +197,7 @@
       'ToTChromeOS': 'lacros_on_linux_tot_release',
       'ToTChromeOS (dbg)': 'lacros_on_linux_tot_debug',
       'ToTFuchsia x64': 'fuchsia_clang_tot_release_x64',
-      'ToTFuchsiaOfficial': 'fuchsia_clang_tot_official_arm64',
+      'ToTFuchsiaOfficial arm64': 'fuchsia_clang_tot_official_arm64',
       'ToTLinux': 'clang_tot_linux_full_symbols_shared_release',
       'ToTLinux (dbg)': 'clang_tot_shared_debug',
       'ToTLinuxASan': 'clang_tot_asan_lsan_static_release',
@@ -230,6 +230,9 @@
     },
 
     'chromium.dawn': {
+      'Dawn Android arm DEPS Release (Pixel 4)': 'dawn_tests_android_release_trybot_reclient',
+      'Dawn Android arm Release (Pixel 4)': 'dawn_tests_android_release_trybot_reclient',
+
       'Dawn Linux x64 Builder': 'dawn_tests_with_desktop_gl_release_trybot_reclient',
       'Dawn Linux x64 DEPS Builder': 'dawn_tests_with_desktop_gl_release_trybot_reclient',
 
@@ -398,7 +401,7 @@
       'android-fieldtrial-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
       'android-perfetto-rel': 'perfetto_release_bot_reclient_android',
       # Keep in sync with android-pie-arm64-rel, but with reclient.
-      'build-perf-android': 'android_release_trybot_arm64_webview_monochrome_expectations_fastbuild_coverage_reclient',
+      'build-perf-android': 'android_release_trybot_arm64_webview_monochrome_expectations_fastbuild_reclient',
       # Keep in sync with linux-rel, but with reclient.
       'build-perf-linux': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_do_typecheck_reclient',
       # Keep in sync with win10_chromium_x64_rel_ng, but with reclient.
@@ -425,9 +428,9 @@
       'ios-webkit-tot': 'ios_simulator_debug_static_bot_xctest_reclient',
       'ios-wpt-fyi-rel': 'ios_simulator_debug_static_bot_xctest',
       'ios15-beta-simulator': 'ios_simulator_debug_static_bot_xctest_reclient',
-      'ios15-sdk-device': 'ios_device_release_static_bot_xctest_reclient',
       'ios15-sdk-simulator': 'ios_simulator_debug_static_bot_xctest_reclient',
       'ios16-beta-simulator': 'ios_simulator_debug_static_bot_xctest',
+      'ios16-sdk-device': 'ios_device_release_static_bot_xctest_reclient',
       'ios16-sdk-simulator': 'ios_simulator_debug_static_bot_xctest',
       'lacros-amd64-generic-rel (goma cache silo)': 'chromeos_amd64-generic_lacros_rel',
       'lacros-amd64-generic-rel (reclient)': 'chromeos_amd64-generic-vm_lacros_rel_reclient',
@@ -471,7 +474,7 @@
       'mac-fieldtrial-rel': 'mac_arm64_gpu_tests_release_bot_minimal_symbols_no_nacl',
       'mac-hermetic-upgrade-rel': 'release_bot_reclient',
       'mac-perfetto-rel': 'perfetto_release_bot_reclient',
-      'mac-upload-perfetto': 'release_bot_perfetto_zlib',
+      'mac-upload-perfetto': 'release_bot_perfetto_zlib_reclient',
       'win-annotator-rel': 'release_bot_reclient',
       'win-backuprefptr-x64-fyi-rel': 'release_trybot_backuprefptr_x64_reclient',
       'win-backuprefptr-x86-fyi-rel': 'release_trybot_backuprefptr_x86_reclient',
@@ -635,7 +638,7 @@
       'ios-simulator': 'ios_simulator_debug_static_bot_xctest_reclient',
       'ios-simulator-full-configs': 'ios_simulator_debug_static_bot_xctest_reclient',
       'ios-simulator-noncq': 'ios_simulator_debug_static_bot_xctest_reclient',
-      'mac-arm64-on-arm64-rel': 'mac_arm64_release_bot',
+      'mac-arm64-on-arm64-rel': 'mac_arm64_release_bot_reclient',
       'mac-arm64-rel': 'mac_arm64_gpu_tests_release_bot_minimal_symbols_no_nacl_reclient',
     },
 
@@ -743,7 +746,7 @@
     'chromium.updater': {
       'mac-updater-builder-arm64-dbg': 'updater_debug_bot_arm64',
       'mac-updater-builder-arm64-rel': 'updater_release_bot_arm64',
-      'mac-updater-builder-dbg': 'updater_debug_bot',
+      'mac-updater-builder-dbg': 'updater_debug_bot_reclient',
       'mac-updater-builder-rel': 'updater_release_bot_reclient',
       'win-updater-builder-dbg': 'updater_debug_bot_reclient',
       'win-updater-builder-rel': 'updater_release_bot_reclient',
@@ -1018,7 +1021,7 @@
       'android-pie-arm64-coverage-experimental-rel': 'android_release_trybot_arm64_webview_monochrome_expectations_native_coverage',
       'android-pie-arm64-coverage-rel': 'android_release_trybot_arm64_webview_monochrome_native_coverage',
       'android-pie-arm64-dbg': 'android_debug_trybot_arm64',
-      'android-pie-arm64-rel': 'android_release_trybot_arm64_webview_monochrome_expectations_fastbuild_coverage',
+      'android-pie-arm64-rel': 'android_release_trybot_arm64_webview_monochrome_expectations_fastbuild',
       'android-pie-arm64-wpt-rel-non-cq': 'android_release_trybot_arm64_webview_monochrome',
       'android-pie-x86-fyi-rel-reviver': 'android_release_trybot_x86_fastbuild_webview_monochrome',
       'android-pie-x86-rel': 'android_release_trybot_x86_fastbuild_webview_monochrome',
@@ -1119,6 +1122,8 @@
     },
 
     'tryserver.chromium.dawn': {
+      'android-dawn-arm-rel': 'dawn_tests_android_release_trybot',
+      'dawn-android-arm-deps-rel': 'dawn_tests_android_release_trybot',
       'dawn-linux-x64-deps-rel': 'dawn_tests_with_desktop_gl_release_trybot',
       'dawn-mac-x64-deps-rel': 'dawn_tests_release_trybot_alloc_none',
       'dawn-try-mac-amd-exp': 'dawn_tests_release_trybot_alloc_none',
@@ -1756,10 +1761,10 @@
       'webview_monochrome',
     ],
 
-    'android_release_trybot_arm64_webview_monochrome_expectations_fastbuild_coverage': [
+    'android_release_trybot_arm64_webview_monochrome_expectations_fastbuild': [
       'android', 'release_trybot', 'arm64', 'strip_debug_info',
       'android_fastbuild', 'webview_monochrome', 'fail_on_android_expectations',
-      'no_secondary_abi', 'use_java_coverage', 'partial_code_coverage_instrumentation',
+      'no_secondary_abi',
     ],
 
     'android_release_trybot_arm64_webview_monochrome_expectations_fastbuild_coverage_reclient': [
@@ -1773,6 +1778,12 @@
       'android_fastbuild', 'webview_monochrome', 'fail_on_android_expectations',
       'no_secondary_abi', 'use_java_coverage', 'partial_code_coverage_instrumentation',
       'no_goma', 'no_reclient',
+    ],
+
+    'android_release_trybot_arm64_webview_monochrome_expectations_fastbuild_reclient': [
+      'android', 'release_trybot_reclient', 'arm64', 'strip_debug_info',
+      'android_fastbuild', 'webview_monochrome', 'fail_on_android_expectations',
+      'no_secondary_abi',
     ],
 
     # TODO(crbug/1182468) Remove these android coverage expectations after
@@ -2460,6 +2471,14 @@
 
     'codesearch_gen_chromium_webview_bot': [
       'codesearch', 'android_without_codecs', 'static', 'goma',
+    ],
+
+    'dawn_tests_android_release_trybot': [
+      'dawn_tests', 'android', 'release_trybot_minimal_symbols',
+    ],
+
+    'dawn_tests_android_release_trybot_reclient': [
+      'dawn_tests', 'android', 'release_trybot_minimal_symbols_reclient',
     ],
 
     'dawn_tests_asan_release_bot_dcheck_always_on_reclient': [
@@ -3233,10 +3252,6 @@
       'arm64', 'gpu_tests', 'release_trybot', 'no_symbols',
     ],
 
-    'mac_arm64_release_bot': [
-      'release_bot', 'arm64',
-    ],
-
     'mac_arm64_release_bot_reclient': [
       'release_bot_reclient', 'arm64',
     ],
@@ -3541,10 +3556,6 @@
       'release_bot_reclient', 'minimal_symbols',
     ],
 
-    'release_bot_perfetto_zlib': [
-      'release_bot', 'perfetto_zlib',
-    ],
-
     'release_bot_perfetto_zlib_reclient' : [
       'release_bot_reclient', 'perfetto_zlib',
     ],
@@ -3835,7 +3846,12 @@
     },
 
     'android_without_codecs': {
-      'gn_args': 'target_os="android"',
+      # Bots never have a use for android:debuggable="true". They do not use
+      # JWDP (java debugger), and do not need it to access application files
+      # since they always use userdebug OS builds (which have root access).
+      # android:debuggable="true" causes ART to run more slowly, so tests run
+      # faster without it. https://crbug.com/1276429
+      'gn_args': 'target_os="android" debuggable_apks=false',
     },
 
     'angle_deqp_tests': {

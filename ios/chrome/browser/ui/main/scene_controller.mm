@@ -32,7 +32,6 @@
 #import "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
-#import "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/app/application_delegate/url_opener.h"
 #import "ios/chrome/app/application_delegate/url_opener_params.h"
 #import "ios/chrome/app/application_delegate/user_activity_handler.h"
@@ -2259,21 +2258,6 @@ bool IsSigninForcedByPolicy() {
       showDefaultBrowserSettingsFromViewController:nil
                                       sourceForUMA:DefaultBrowserPromoSource::
                                                        kExternalIntent];
-}
-
-#pragma mark - TabSwitching
-
-- (BOOL)openNewTabFromTabSwitcher {
-  if (!self.mainCoordinator)
-    return NO;
-
-  UrlLoadParams urlLoadParams =
-      UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
-  urlLoadParams.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
-
-  [self addANewTabAndPresentBrowser:self.mainInterface.browser
-                  withURLLoadParams:urlLoadParams];
-  return YES;
 }
 
 #pragma mark - TabOpening implementation.

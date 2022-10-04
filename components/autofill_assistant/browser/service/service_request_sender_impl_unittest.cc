@@ -73,8 +73,8 @@ class ServiceRequestSenderImplTest : public testing::Test {
   absl::optional<URLLoaderCompletionStatus> completion_status_ = absl::nullopt;
 
   void InitCupFeatures(bool enableSigning, bool enableVerifying) {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
 
     if (enableSigning) {
       enabled_features.push_back(autofill_assistant::features::
@@ -100,6 +100,7 @@ class ServiceRequestSenderImplTest : public testing::Test {
 };
 
 TEST_F(ServiceRequestSenderImplTest, SendUnauthenticatedRequest) {
+  InitCupFeatures(false, false);
   auto cup_factory =
       std::make_unique<NiceMock<autofill_assistant::cup::MockCUPFactory>>();
   auto loader_factory =
@@ -136,6 +137,7 @@ TEST_F(ServiceRequestSenderImplTest, SendUnauthenticatedRequest) {
 }
 
 TEST_F(ServiceRequestSenderImplTest, SendAuthenticatedRequest) {
+  InitCupFeatures(false, false);
   auto cup_factory =
       std::make_unique<NiceMock<autofill_assistant::cup::MockCUPFactory>>();
   auto loader_factory =
@@ -227,6 +229,7 @@ TEST_F(ServiceRequestSenderImplTest, ForceAuthenticatedRequest) {
 
 TEST_F(ServiceRequestSenderImplTest,
        AuthRequestFallsBackToApiKeyOnEmptyAccessToken) {
+  InitCupFeatures(false, false);
   EXPECT_CALL(mock_access_token_fetcher_, OnFetchAccessToken)
       .WillOnce(RunOnceCallback<0>(true, /*access_token = */ ""));
 
@@ -268,6 +271,7 @@ TEST_F(ServiceRequestSenderImplTest,
 
 TEST_F(ServiceRequestSenderImplTest,
        AuthRequestFallsBackToApiKeyIfFetchingAccessTokenFails) {
+  InitCupFeatures(false, false);
   EXPECT_CALL(mock_access_token_fetcher_, OnFetchAccessToken)
       .WillOnce(
           RunOnceCallback<0>(/*success = */ false, /*access_token = */ ""));
@@ -387,8 +391,7 @@ TEST_F(ServiceRequestSenderImplTest, SignsGetActionsRequestWhenFeatureEnabled) {
       RpcType::GET_ACTIONS);
 }
 
-TEST_F(ServiceRequestSenderImplTest, ValidatesGetActionsResponsesWhenEnabled) {
-  InitCupFeatures(true, true);
+TEST_F(ServiceRequestSenderImplTest, ValidatesGetActionsResponsesByDefault) {
   auto cup_factory =
       std::make_unique<NiceMock<autofill_assistant::cup::MockCUPFactory>>();
   auto cup = std::make_unique<NiceMock<autofill_assistant::cup::MockCUP>>();

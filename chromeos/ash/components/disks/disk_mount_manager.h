@@ -20,21 +20,6 @@
 namespace ash {
 namespace disks {
 
-// State of a mounted filesystem.
-// This enum is a subset of ash::MountError (but with different numeric values).
-// This enum matches extensions::api::file_manager_private::MountCondition (but
-// with different names).
-enum class MountCondition {
-  kNone,
-  kUnknownFilesystem,
-  kUnsupportedFilesystem,
-  kInProgress,
-};
-
-// Output operator for logging.
-COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DISKS)
-std::ostream& operator<<(std::ostream& out, MountCondition condition);
-
 // Possible filesystem types that can be passed to FormatMountedDevice.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -99,34 +84,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DISKS) DiskMountManager {
 
   using Disks = std::set<std::unique_ptr<Disk>, SortByDevicePath>;
 
-  // Information about a mount point.
-  struct MountPoint {
-    // Device's path.
-    std::string source_path;
-    // Mounted path.
-    std::string mount_path;
-    // Type of mount.
-    MountType mount_type;
-    // Condition of mount.
-    MountCondition mount_condition;
-    // Progress percent between 0 and 100 when mount_condition is kInProgress.
-    int progress_percent;
-    // Read-only file system?
-    bool read_only;
-
-    MountPoint(const MountPoint&);
-    MountPoint& operator=(const MountPoint&);
-
-    MountPoint(MountPoint&&);
-    MountPoint& operator=(MountPoint&&);
-
-    MountPoint(base::StringPiece source_path,
-               base::StringPiece mount_path,
-               MountType mount_type,
-               MountCondition mount_condition = MountCondition::kNone,
-               int progress_percent = 0,
-               bool read_only = false);
-  };
+  using MountPoint = ::ash::MountPoint;
 
   // Comparator sorting MountPoint objects by mount_path.
   struct SortByMountPath {

@@ -988,7 +988,6 @@
           'cronet_test_instrumentation_apk',
           'chrome_nocompile_tests',
           'monochrome_static_initializers',
-          'weblayer_shell',
         ],
         'test_suites': {
           'gtest_tests': 'android_marshmallow_device_gtests',
@@ -1055,7 +1054,6 @@
         'additional_compile_targets': [
           'monochrome_static_initializers',
           'validate_expectations',
-          'weblayer_shell',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
@@ -1086,7 +1084,6 @@
         ],
         'additional_compile_targets': [
           'monochrome_static_initializers',
-          'weblayer_shell',
         ],
         'test_suites': {
           'gtest_tests': 'android_pie_rel_gtests',
@@ -1200,26 +1197,6 @@
         },
         'os_type': 'android',
       },
-      # A builder for early prototype of test-reviver in Clank.
-      # TODO(crbug.com/1300020): Remove this builder once we have a way to reuse
-      # the built binaries or a formal solution for test-reviver.
-      'android-marshmallow-x86-fyi-rel-reviver': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          'isolate_profile_data',
-          'marshmallow-x86-emulator',
-          'emulator-4-cores',
-          'linux-bionic',
-          'x86-64',
-          'gtest_run_disabled',
-        ],
-        'os_type': 'android',
-        'test_suites': {
-          'gtest_tests': 'android_marshmallow_emulator_gtests',
-          'isolated_scripts': 'monochrome_public_apk_checker_isolated_script',
-          'scripts': 'chromium_android_scripts',
-        },
-      },
       'android-pie-arm64-wpt-rel-non-cq': {
         'mixins': [
           'has_native_resultdb_integration',
@@ -1249,34 +1226,6 @@
           'gtest_tests': 'android_pie_rel_emulator_gtests',
           'scripts': 'chromium_android_scripts',
         }
-      },
-      'android-weblayer-pie-x86-wpt-fyi-rel': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          'pie-x86-emulator',
-          'emulator-8-cores',
-          'linux-bionic',
-          'x86-64',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'weblayer_shell_wpt',
-        },
-        'use_swarming': True,
-        'os_type': 'android',
-      },
-      'android-weblayer-pie-x86-wpt-smoketest': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          'pie-x86-emulator',
-          'emulator-8-cores',
-          'linux-bionic',
-          'x86-64',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'weblayer_shell_wpt',
-        },
-        'use_swarming': True,
-        'os_type': 'android',
       },
       'android-webview-12-x64-dbg-tests': {
         'mixins': [
@@ -2158,6 +2107,14 @@
           'flame',
           'gpu-swarming-pool',
         ],
+        'additional_compile_targets': [
+          'dawn_end2end_tests',
+          'dawn_perf_tests',
+          'gl_tests',
+          'gl_unittests',
+          'telemetry_gpu_integration_test_android_chrome',
+          'webgpu_blink_web_tests',
+        ],
         'test_suites': {},
       },
       'Dawn Android arm Release (Pixel 4)': {
@@ -2168,6 +2125,14 @@
           'has_native_resultdb_integration',
           'flame',
           'gpu-swarming-pool',
+        ],
+        'additional_compile_targets': [
+          'dawn_end2end_tests',
+          'dawn_perf_tests',
+          'gl_tests',
+          'gl_unittests',
+          'telemetry_gpu_integration_test_android_chrome',
+          'webgpu_blink_web_tests',
         ],
         'test_suites': {},
       },
@@ -3600,15 +3565,6 @@
           'gtest_tests': 'linux_chromeos_gtests',
         },
       },
-      'linux-chromeos-js-code-coverage': {
-        'mixins': [
-          'isolate_profile_data',
-          'linux-bionic',
-        ],
-        'test_suites': {
-          'gtest_tests': 'js_code_coverage_browser_tests'
-        },
-      },
       'linux-code-coverage': {
         'mixins': [
           'isolate_profile_data',
@@ -3640,6 +3596,16 @@
       'linux-headless-shell-rel': {
         'test_suites': {
           'gtest_tests': 'headless_browser_gtests',
+        },
+      },
+
+      'linux-js-code-coverage': {
+        'mixins': [
+          'isolate_profile_data',
+          'linux-bionic',
+        ],
+        'test_suites': {
+          'gtest_tests': 'js_code_coverage_browser_tests'
         },
       },
       'linux-lacros-code-coverage': {

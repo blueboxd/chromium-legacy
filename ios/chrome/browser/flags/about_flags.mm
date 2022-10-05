@@ -474,9 +474,15 @@ const FeatureEntry::FeatureVariation kTrendingQueriesModuleVariations[] = {
 const FeatureEntry::FeatureParam kNewMICEFREWithUMADialog[] = {
     {kNewMobileIdentityConsistencyFREParam,
      kNewMobileIdentityConsistencyFREParamUMADialog}};
-const FeatureEntry::FeatureParam kNewMICEFREWithTangibleSync[] = {
+const FeatureEntry::FeatureParam kNewMICEFREWithTangibleSyncA[] = {
     {kNewMobileIdentityConsistencyFREParam,
-     kNewMobileIdentityConsistencyFREParamTangibleSync}};
+     kNewMobileIdentityConsistencyFREParamTangibleSyncA}};
+const FeatureEntry::FeatureParam kNewMICEFREWithTangibleSyncB[] = {
+    {kNewMobileIdentityConsistencyFREParam,
+     kNewMobileIdentityConsistencyFREParamTangibleSyncB}};
+const FeatureEntry::FeatureParam kNewMICEFREWithTangibleSyncC[] = {
+    {kNewMobileIdentityConsistencyFREParam,
+     kNewMobileIdentityConsistencyFREParamTangibleSyncC}};
 const FeatureEntry::FeatureParam kNewMICEFREWithTwoSteps[] = {
     {kNewMobileIdentityConsistencyFREParam,
      kNewMobileIdentityConsistencyFREParamTwoSteps}};
@@ -484,8 +490,12 @@ const FeatureEntry::FeatureVariation
     kNewMobileIdentityConsistencyFREVariations[] = {
         {"New FRE with UMA dialog", kNewMICEFREWithUMADialog,
          std::size(kNewMICEFREWithUMADialog), nullptr},
-        {"new FRE with tangible sync", kNewMICEFREWithTangibleSync,
-         std::size(kNewMICEFREWithTangibleSync), nullptr},
+        {"new FRE with tangible sync A", kNewMICEFREWithTangibleSyncA,
+         std::size(kNewMICEFREWithTangibleSyncA), nullptr},
+        {"new FRE with tangible sync B", kNewMICEFREWithTangibleSyncB,
+         std::size(kNewMICEFREWithTangibleSyncB), nullptr},
+        {"new FRE with tangible sync C", kNewMICEFREWithTangibleSyncC,
+         std::size(kNewMICEFREWithTangibleSyncC), nullptr},
         {"new FRE with 2 steps", kNewMICEFREWithTwoSteps,
          std::size(kNewMICEFREWithTwoSteps), nullptr}};
 
@@ -526,11 +536,15 @@ const FeatureEntry::FeatureVariation kDmTokenDeletionVariation[] = {
     {"(Forced)", kDmTokenDeletionParam, std::size(kDmTokenDeletionParam),
      nullptr}};
 
+const FeatureEntry::FeatureParam kOpenInDownloadInShareButton[] = {
+    {kOpenInDownloadInShareButtonParam, "true"}};
 const FeatureEntry::FeatureParam kOpenInDownloadWithWKDownload[] = {
     {kOpenInDownloadWithWKDownloadParam, "true"}};
 const FeatureEntry::FeatureParam kOpenInDownloadWithV2[] = {
     {kOpenInDownloadWithV2Param, "true"}};
 const FeatureEntry::FeatureVariation kOpenInDownloadVariations[] = {
+    {"With legacy download", kOpenInDownloadInShareButton,
+     std::size(kOpenInDownloadInShareButton), nullptr},
     {"With WKDownload", kOpenInDownloadWithWKDownload,
      std::size(kOpenInDownloadWithWKDownload), nullptr},
     {"With V2", kOpenInDownloadWithV2, std::size(kOpenInDownloadWithV2),
@@ -854,11 +868,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewOverflowMenuAlternateIPHName,
      flag_descriptions::kNewOverflowMenuAlternateIPHDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kNewOverflowMenuAlternateIPH)},
-    {"new-overflow-menu-simple-destination-icons",
-     flag_descriptions::kNewOverflowMenuSimpleDestinationIconsName,
-     flag_descriptions::kNewOverflowMenuSimpleDestinationIconsDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kNewOverflowMenuSimpleDestinationIcons)},
     {"new-overflow-menu-cbd-action",
      flag_descriptions::kNewOverflowMenuCBDActionName,
      flag_descriptions::kNewOverflowMenuCBDActionDescription, flags_ui::kOsIos,
@@ -1230,9 +1239,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTFLiteLanguageDetectionIgnoreDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(translate::kTFLiteLanguageDetectionIgnoreEnabled)},
-    {"disable-feed-ios14", flag_descriptions::kDisableFeediOS14Name,
-     flag_descriptions::kDisableFeediOS14Description, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kDisableFeediOS14)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

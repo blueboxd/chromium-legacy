@@ -33,8 +33,15 @@ swift_source_set("popup_swift") {
     ":popup_ui_protocols",
     "//base",
     "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/app/theme",
     "//ios/chrome/browser/net:crurl",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/omnibox/popup:popup_accessibility_identifier_constants",
+    "//ios/chrome/browser/ui/toolbar/buttons",
+    "//ios/chrome/browser/ui/toolbar/public:constants",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui/colors:swift",
+    "//ui/base",
   ]
 
   frameworks = [
@@ -236,6 +243,7 @@ source_set("unit_tests") {
     "omnibox_pedal_annotator_unittest.mm",
     "omnibox_popup_mediator_unittest.mm",
     "omnibox_popup_row_cell_unittest.mm",
+    "omnibox_popup_view_controller_unittest.mm",
     "pedal_section_extractor_unittest.mm",
   ]
   deps = [

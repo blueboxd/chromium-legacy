@@ -69,9 +69,9 @@ BASE_FEATURE(kEnablePasswordsAccountStorage,
 #endif
 );
 
-const base::Feature KEnablePasswordGenerationForClearTextFields = {
-    "EnablePasswordGenerationForClearTextFields",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+BASE_FEATURE(kEnablePasswordGenerationForClearTextFields,
+             "EnablePasswordGenerationForClearTextFields",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // By default, Password Manager is disabled in fenced frames for now.
 // TODO(crbug.com/1294378): Remove once launched.
@@ -177,7 +177,11 @@ BASE_FEATURE(kPasswordChangeWellKnown,
 // |PasswordChangeInSettings| and |PasswordChange| features.
 BASE_FEATURE(kPasswordDomainCapabilitiesFetching,
              "PasswordDomainCapabilitiesFetching",
+#if BUILDFLAG(IS_ANDROID)
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
              base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // Controls the ability to import passwords from Chrome's settings page.
 BASE_FEATURE(kPasswordImport,

@@ -1172,6 +1172,49 @@ const FeatureEntry::FeatureVariation kJourneysOmniboxActionVariations[] = {
     {"Action Chips Enabled with Pedals", kJourneysOmniboxActionWithPedalsParams,
      std::size(kJourneysOmniboxActionWithPedalsParams), nullptr},
 };
+
+const FeatureEntry::FeatureParam
+    kJourneysOmniboxHistoryClusterProviderVariationsAggressive[] = {
+        {"omnibox_history_cluster_provider_score", "1100"},
+        {"omnibox_history_cluster_provider_shortcuts", "true"},
+        {"omnibox_history_cluster_provider_navigation_intent_score_threshold",
+         "1400"},
+        {"omnibox_history_cluster_provider_on_navigation_intents", "false"},
+};
+const FeatureEntry::FeatureParam
+    kJourneysOmniboxHistoryClusterProviderVariationsModerate[] = {
+        {"omnibox_history_cluster_provider_score", "900"},
+        {"omnibox_history_cluster_provider_shortcuts", "true"},
+        {"omnibox_history_cluster_provider_navigation_intent_score_threshold",
+         "1300"},
+        {"omnibox_history_cluster_provider_on_navigation_intents", "false"},
+};
+const FeatureEntry::FeatureParam
+    kJourneysOmniboxHistoryClusterProviderVariationsConservative[] = {
+        {"omnibox_history_cluster_provider_score", "700"},
+        {"omnibox_history_cluster_provider_shortcuts", "false"},
+        {"omnibox_history_cluster_provider_navigation_intent_score_threshold",
+         "1100"},
+        {"omnibox_history_cluster_provider_on_navigation_intents", "false"},
+};
+const FeatureEntry::FeatureVariation
+    kJourneysOmniboxHistoryClusterProviderVariations[] = {
+        {"Aggressive - score 1100, shortcut boosting, nav-intent filtering "
+         "1400",
+         kJourneysOmniboxHistoryClusterProviderVariationsAggressive,
+         std::size(kJourneysOmniboxHistoryClusterProviderVariationsAggressive),
+         nullptr},
+        {"Moderate - Score 900, shortcut boosting, nav-intent filtering 1300",
+         kJourneysOmniboxHistoryClusterProviderVariationsModerate,
+         std::size(kJourneysOmniboxHistoryClusterProviderVariationsModerate),
+         nullptr},
+        {"Conservative  - score 700, nav-intent filtering 1100",
+         kJourneysOmniboxHistoryClusterProviderVariationsConservative,
+         std::size(
+             kJourneysOmniboxHistoryClusterProviderVariationsConservative),
+         nullptr},
+};
+
 const FeatureEntry::FeatureParam kSidePanelJourneysOpensFromOmniboxParams[] = {
     {"SidePanelJourneysOpensFromOmnibox", "true"},
 };
@@ -1810,9 +1853,6 @@ const FeatureEntry::FeatureVariation
         {"(Zero threshold)", kTranslateForceTriggerOnEnglishBackoff,
          std::size(kTranslateForceTriggerOnEnglishBackoff), nullptr}};
 
-const FeatureEntry::FeatureParam kExploreSitesExperimental = {
-    chrome::android::explore_sites::kExploreSitesVariationParameterName,
-    chrome::android::explore_sites::kExploreSitesVariationExperimental};
 const FeatureEntry::FeatureParam kExploreSitesDenseTitleBottom[] = {
     {chrome::android::explore_sites::kExploreSitesDenseVariationParameterName,
      chrome::android::explore_sites::
@@ -1824,7 +1864,6 @@ const FeatureEntry::FeatureParam kExploreSitesDenseTitleRight[] = {
          kExploreSitesDenseVariationDenseTitleRight},
 };
 const FeatureEntry::FeatureVariation kExploreSitesVariations[] = {
-    {"Experimental", &kExploreSitesExperimental, 1, nullptr},
     {"Dense Title Bottom", kExploreSitesDenseTitleBottom,
      std::size(kExploreSitesDenseTitleBottom), nullptr},
     {"Dense Title Right", kExploreSitesDenseTitleRight,
@@ -3709,14 +3748,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalWebAssemblyFeaturesName,
      flag_descriptions::kExperimentalWebAssemblyFeaturesDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableExperimentalWebAssemblyFeatures)},
-#if defined(ARCH_CPU_X86_64)
+#if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
     {"enable-experimental-webassembly-stack-switching",
      flag_descriptions::kExperimentalWebAssemblyStackSwitchingName,
      flag_descriptions::kExperimentalWebAssemblyStackSwitchingDescription,
      kOsAll,
      FEATURE_VALUE_TYPE(
          features::kEnableExperimentalWebAssemblyStackSwitching)},
-#endif  // defined(ARCH_CPU_X86_64)
+#endif  // defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
     {"enable-webassembly-baseline", flag_descriptions::kEnableWasmBaselineName,
      flag_descriptions::kEnableWasmBaselineDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebAssemblyBaseline)},
@@ -5526,13 +5565,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxExperimentalKeywordModeName,
      flag_descriptions::kOmniboxExperimentalKeywordModeDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kExperimentalKeywordMode)},
+    {"omnibox-domain-suggestions",
+     flag_descriptions::kOmniboxDomainSuggestionsName,
+     flag_descriptions::kOmniboxDomainSuggestionsDescriptions, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kDomainSuggestions)},
     {"omnibox-drive-suggestions",
      flag_descriptions::kOmniboxDriveSuggestionsName,
      flag_descriptions::kOmniboxDriveSuggestionsDescriptions, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         omnibox::kDocumentProvider,
-         kOmniboxDocumentProviderVariations,
-         "OmniboxDocumentProviderNonDogfoodExperiments")},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kDocumentProvider,
+                                    kOmniboxDocumentProviderVariations,
+                                    "OmniboxBundledExperimentV1")},
     {"omnibox-rich-autocompletion-promising",
      flag_descriptions::kOmniboxRichAutocompletionPromisingName,
      flag_descriptions::kOmniboxRichAutocompletionPromisingDescription,
@@ -5726,14 +5768,16 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop | kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(history_clusters::internal::kOmniboxAction,
                                     kJourneysOmniboxActionVariations,
-                                    "HistoryJourneysOmniboxAction")},
+                                    "JourneysOmniboxTriggering")},
 
     {"history-journeys-omnibox-history-cluster-provider",
      flag_descriptions::kJourneysOmniboxHistoryClusterProviderName,
      flag_descriptions::kJourneysOmniboxHistoryClusterProviderDescription,
      kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         history_clusters::internal::kOmniboxHistoryClusterProvider)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         history_clusters::internal::kOmniboxHistoryClusterProvider,
+         kJourneysOmniboxHistoryClusterProviderVariations,
+         "JourneysOmniboxTriggering")},
 
     {"history-journeys-on-device-clustering",
      flag_descriptions::kJourneysOnDeviceClusteringBackendName,
@@ -9614,6 +9658,18 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableWebUsbOnExtensionServiceWorkerDescription,
      kOsAndroid | kOsDesktop,
      FEATURE_VALUE_TYPE(features::kEnableWebUsbOnExtensionServiceWorker)},
+
+#if BUILDFLAG(IS_ANDROID)
+    {"discard-occluded-bitmaps", flag_descriptions::kDiscardOccludedBitmapsName,
+     flag_descriptions::kDiscardOccludedBitmapsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kDiscardOccludedBitmaps)},
+#endif
+
+    {"autofill-enable-cvc-for-vcn-yellow-path",
+     flag_descriptions::kAutofillEnableCvcForVcnYellowPathName,
+     flag_descriptions::kAutofillEnableCvcForVcnYellowPathDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableCvcForVcnYellowPath)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

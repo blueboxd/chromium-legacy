@@ -269,6 +269,7 @@ public abstract class ChromeFeatureList {
     public static final String CCT_SHOW_ABOUT_BLANK_URL = "CCTShowAboutBlankUrl";
     public static final String CCT_TOOLBAR_CUSTOMIZATIONS = "CCTToolbarCustomizations";
     public static final String CLOSE_TAB_SUGGESTIONS = "CloseTabSuggestions";
+    public static final String DISCARD_OCCLUDED_BITMAPS = "DiscardOccludedBitmaps";
     public static final String DONT_AUTO_HIDE_BROWSER_CONTROLS = "DontAutoHideBrowserControls";
     public static final String CHROME_NEW_DOWNLOAD_TAB = "ChromeNewDownloadTab";
     public static final String CHROME_SHARE_LONG_SCREENSHOT = "ChromeShareLongScreenshot";
@@ -562,7 +563,6 @@ public abstract class ChromeFeatureList {
     public static final String SUPPRESS_TOOLBAR_CAPTURES = "SuppressToolbarCaptures";
     public static final String SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
             "SwapPixelFormatToFixConvertFromTranslucent";
-    public static final String ENABLE_SYNC_IMMEDIATELY_IN_FRE = "EnableSyncImmediatelyInFRE";
     public static final String SYNC_TRUSTED_VAULT_PASSPHRASE_RECOVERY =
             "SyncTrustedVaultPassphraseRecovery";
     public static final String TAB_ENGAGEMENT_REPORTING_ANDROID = "TabEngagementReportingAndroid";
@@ -671,6 +671,8 @@ public abstract class ChromeFeatureList {
             new CachedFlag(CREATE_SAFEBROWSING_ON_STARTUP, false);
     public static final CachedFlag sCriticalPersistedTabData =
             new CachedFlag(CRITICAL_PERSISTED_TAB_DATA, false);
+    public static final CachedFlag sDiscardOccludedBitmaps =
+            new CachedFlag(DISCARD_OCCLUDED_BITMAPS, false);
     public static final CachedFlag sDownloadsAutoResumptionNative =
             new CachedFlag(DOWNLOADS_AUTO_RESUMPTION_NATIVE, true);
     public static final CachedFlag sEarlyLibraryLoad = new CachedFlag(EARLY_LIBRARY_LOAD, true);

@@ -2253,9 +2253,8 @@ IN_PROC_BROWSER_TEST_P(WebViewSSLErrorTest, MAYBE_ErrorPageTearDown) {
 
 // This test makes sure the browser process does not crash if browser is shut
 // down while an error page is being shown in guest.
-// Flaky. http://crbug.com/627962.
 IN_PROC_BROWSER_TEST_P(WebViewSSLErrorTest,
-                       DISABLED_ErrorPageTearDownOnBrowserShutdown) {
+                       ErrorPageTearDownOnBrowserShutdown) {
   SSLTestHelper();
 
   // Now close the app while error page being shown in guest.
@@ -2492,8 +2491,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, CookieIsolation) {
 
 // This tests that in-memory storage partitions are reset on browser restart,
 // but persistent ones maintain state for cookies and HTML5 storage.
-// TODO(1144228): Flaky.
-IN_PROC_BROWSER_TEST_P(WebViewTest, DISABLED_PRE_StoragePersistence) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, PRE_StoragePersistence) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   // We don't care where the main browser is on this test.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
@@ -2506,8 +2504,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DISABLED_PRE_StoragePersistence) {
 
 // This is the post-reset portion of the StoragePersistence test.  See
 // PRE_StoragePersistence for main comment.
-// TODO(1144228): Flaky.
-IN_PROC_BROWSER_TEST_P(WebViewTest, DISABLED_StoragePersistence) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, StoragePersistence) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   // We don't care where the main browser is on this test.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
@@ -3383,7 +3380,7 @@ class DownloadManagerWaiter : public content::DownloadManager::Observer {
   ~DownloadManagerWaiter() override { download_manager_->RemoveObserver(this); }
 
   void WaitForInitialized() {
-    if (initialized_)
+    if (initialized_ || download_manager_->IsManagerInitialized())
       return;
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
@@ -3549,19 +3546,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
   content::EnsureCookiesFlushed(profile());
 }
 
-// TODO(crbug.com/994789): Flaky on MSan, Linux, and ChromeOS.
-// TODO(crbug.com/1204299): Flaky on Windows. Consistently failing on Mac.
-#if defined(MEMORY_SANITIZER) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-#define MAYBE_DownloadCookieIsolation_CrossSession \
-  DISABLED_DownloadCookieIsolation_CrossSession
-#else
-#define MAYBE_DownloadCookieIsolation_CrossSession \
-  DownloadCookieIsolation_CrossSession
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-
-IN_PROC_BROWSER_TEST_P(WebViewTest,
-                       MAYBE_DownloadCookieIsolation_CrossSession) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation_CrossSession) {
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(&HandleDownloadRequestWithCookie));
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
@@ -3620,7 +3605,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest,
   for (auto* download : downloads) {
     ASSERT_TRUE(download->CanResume());
     ASSERT_TRUE(download->GetFullPath().empty());
-    EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
+    EXPECT_NE(download::DOWNLOAD_INTERRUPT_REASON_NONE,
               download->GetLastReason());
     download->Resume(true);
   }
@@ -6454,7 +6439,7 @@ class WebViewFencedFrameTest
     bool should_enable_site_isolation_for_guests = std::get<0>(GetParam());
     bool should_enable_process_isolation_for_fenced_frames =
         std::get<1>(GetParam());
-    std::vector<base::Feature> enabled_features, disabled_features;
+    std::vector<base::test::FeatureRef> enabled_features, disabled_features;
 
     if (should_enable_site_isolation_for_guests) {
       enabled_features.push_back(features::kSiteIsolationForGuests);

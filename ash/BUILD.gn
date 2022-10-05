@@ -1025,6 +1025,8 @@ component("ash") {
     "style/scoped_light_mode_as_default.cc",
     "style/style_util.cc",
     "style/style_util.h",
+    "style/style_viewer/system_ui_components_grid_view.cc",
+    "style/style_viewer/system_ui_components_grid_view.h",
     "style/system_shadow.cc",
     "style/system_shadow.h",
     "style/system_shadow_on_nine_patch_layer.cc",
@@ -1795,6 +1797,8 @@ component("ash") {
     "system/unified/notification_icons_controller.h",
     "system/unified/page_indicator_view.cc",
     "system/unified/page_indicator_view.h",
+    "system/unified/power_button.cc",
+    "system/unified/power_button.h",
     "system/unified/quick_settings_metrics_util.cc",
     "system/unified/quick_settings_metrics_util.h",
     "system/unified/quick_settings_view.cc",
@@ -2998,6 +3002,7 @@ test("ash_unittests") {
     "system/unified/notification_counter_view_unittest.cc",
     "system/unified/notification_icons_controller_unittest.cc",
     "system/unified/page_indicator_view_unittest.cc",
+    "system/unified/power_button_unittest.cc",
     "system/unified/quiet_mode_feature_pod_controller_unittest.cc",
     "system/unified/top_shortcuts_view_unittest.cc",
     "system/unified/unified_system_info_view_unittest.cc",
@@ -3326,8 +3331,6 @@ test("ash_pixeltests") {
     "app_list/views/app_list_view_pixeltest.cc",
     "shelf/login_shelf_view_pixeltest.cc",
     "shelf/scrollable_shelf_view_pixeltest.cc",
-    "test/ash_pixel_diff_test_helper.cc",
-    "test/ash_pixel_diff_test_helper.h",
     "test/demo_ash_pixel_diff_test.cc",
   ]
 
@@ -3343,7 +3346,6 @@ test("ash_pixeltests") {
     "//components/viz/test:test_support",
     "//mojo/core/embedder:embedder",
     "//ui/views:test_support",
-    "//ui/views:view_pixel_diff_test_support",
   ]
 }
 
@@ -3467,6 +3469,8 @@ static_library("test_support") {
     "system/geolocation/test_geolocation_url_loader_factory.h",
     "system/tray/system_nudge_label.cc",
     "system/tray/system_nudge_label.h",
+    "test/ash_pixel_diff_test_helper.cc",
+    "test/ash_pixel_diff_test_helper.h",
     "utility/haptics_tracking_test_input_controller.cc",
     "utility/haptics_tracking_test_input_controller.h",
 
@@ -3676,6 +3680,7 @@ static_library("test_support") {
     "//ui/snapshot:snapshot",
     "//ui/views",
     "//ui/views:test_support",
+    "//ui/views:view_pixel_diff_test_support",
     "//ui/wm",
     "//ui/wm/public",
   ]

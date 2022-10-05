@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Externs generated from namespace: fileManagerPrivate */
+/**
+ * @fileoverview Externs generated from namespace: fileManagerPrivate
+ * @externs
+ */
 
 /** @const */
 chrome.fileManagerPrivate = {};
@@ -244,6 +247,7 @@ chrome.fileManagerPrivate.EntryPropertyName = {
   IS_MACHINE_ROOT: 'isMachineRoot',
   IS_EXTERNAL_MEDIA: 'isExternalMedia',
   IS_ARBITRARY_SYNC_FOLDER: 'isArbitrarySyncFolder',
+  SYNC_STATUS: 'syncStatus',
 };
 
 /** @enum {string} */
@@ -770,6 +774,13 @@ chrome.fileManagerPrivate.DlpLevel = {
   WARN: 'warn',
   BLOCK: 'block',
   ALLOW: 'allow',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.SyncStatus = {
+  NOT_FOUND: 'not_found',
+  IN_PROGRESS: 'in_progress',
+  ERROR: 'error'
 };
 
 /**

@@ -9,9 +9,11 @@
 #include <string>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/notreached.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
@@ -94,8 +96,8 @@ void GetSelectedFileInfoInternal(
     std::unique_ptr<GetSelectedFileInfoParams> params) {
   DCHECK(profile);
 
-  for (size_t i = params->selected_files.size();
-       i < params->file_paths.size(); ++i) {
+  for (size_t i = params->selected_files.size(); i < params->file_paths.size();
+       ++i) {
     const base::FilePath& file_path = params->file_paths[i];
 
     if (file_manager::util::IsUnderNonNativeLocalPath(profile, file_path)) {
@@ -309,6 +311,29 @@ void SingleEntryPropertiesGetterForDriveFs::OnGetFileInfo(
     return;
   }
 
+  if (base::FeatureList::IsEnabled(ash::features::kFilesInlineSyncStatus)) {
+    drive::DriveIntegrationService* integration_service =
+        drive::DriveIntegrationServiceFactory::FindForProfile(running_profile_);
+    auto sync_status = (!integration_service)
+                           ? drivefs::SyncStatus::kNotFound
+                           : integration_service->GetSyncStatusForPath(
+                                 file_system_url_.path());
+    switch (sync_status) {
+      case drivefs::SyncStatus::kInProgress:
+        properties_->sync_status =
+            file_manager_private::SYNC_STATUS_IN_PROGRESS;
+        break;
+      case drivefs::SyncStatus::kError:
+        properties_->sync_status = file_manager_private::SYNC_STATUS_ERROR;
+        break;
+      default:
+        properties_->sync_status = file_manager_private::SYNC_STATUS_NOT_FOUND;
+        break;
+    }
+  } else {
+    properties_->sync_status = file_manager_private::SYNC_STATUS_NOT_FOUND;
+  }
+
   properties_->size = metadata->size;
   properties_->present = metadata->available_offline;
   properties_->dirty = metadata->dirty;
@@ -423,8 +448,8 @@ void VolumeToVolumeMetadata(
       break;
     case SOURCE_DEVICE:
       volume_metadata->source = file_manager_private::SOURCE_DEVICE;
-      volume_metadata->is_read_only_removable_device = volume
-          .is_read_only_removable_device();
+      volume_metadata->is_read_only_removable_device =
+          volume.is_read_only_removable_device();
       break;
     case SOURCE_NETWORK:
       volume_metadata->source =
@@ -452,8 +477,7 @@ void VolumeToVolumeMetadata(
 
   switch (volume.type()) {
     case VOLUME_TYPE_GOOGLE_DRIVE:
-      volume_metadata->volume_type =
-          file_manager_private::VOLUME_TYPE_DRIVE;
+      volume_metadata->volume_type = file_manager_private::VOLUME_TYPE_DRIVE;
       break;
     case VOLUME_TYPE_DOWNLOADS_DIRECTORY:
       volume_metadata->volume_type =
@@ -488,8 +512,7 @@ void VolumeToVolumeMetadata(
           file_manager_private::VOLUME_TYPE_DOCUMENTS_PROVIDER;
       break;
     case VOLUME_TYPE_TESTING:
-      volume_metadata->volume_type =
-          file_manager_private::VOLUME_TYPE_TESTING;
+      volume_metadata->volume_type = file_manager_private::VOLUME_TYPE_TESTING;
       break;
     case VOLUME_TYPE_SMB:
       volume_metadata->volume_type = file_manager_private::VOLUME_TYPE_SMB;
@@ -531,8 +554,7 @@ void VolumeToVolumeMetadata(
     volume_metadata->device_path = volume.storage_device_path().AsUTF8Unsafe();
     volume_metadata->is_parent_device = volume.is_parent();
   } else {
-    volume_metadata->device_type =
-        file_manager_private::DEVICE_TYPE_NONE;
+    volume_metadata->device_type = file_manager_private::DEVICE_TYPE_NONE;
   }
 
   volume_metadata->is_read_only = volume.is_read_only();
@@ -540,19 +562,22 @@ void VolumeToVolumeMetadata(
   volume_metadata->hidden = volume.hidden();
 
   switch (volume.mount_condition()) {
-    case ash::disks::MountCondition::kNone:
+    default:
+      NOTREACHED() << "Unexpected mount condition " << volume.mount_condition();
+      [[fallthrough]];
+    case ash::MountError::kNone:
       volume_metadata->mount_condition =
           file_manager_private::MOUNT_CONDITION_NONE;
       break;
-    case ash::disks::MountCondition::kUnknownFilesystem:
+    case ash::MountError::kUnknownFilesystem:
       volume_metadata->mount_condition =
           file_manager_private::MOUNT_CONDITION_UNKNOWN;
       break;
-    case ash::disks::MountCondition::kUnsupportedFilesystem:
+    case ash::MountError::kUnsupportedFilesystem:
       volume_metadata->mount_condition =
           file_manager_private::MOUNT_CONDITION_UNSUPPORTED;
       break;
-    case ash::disks::MountCondition::kInProgress:
+    case ash::MountError::kInProgress:
       volume_metadata->mount_condition =
           file_manager_private::MOUNT_CONDITION_IN_PROGRESS;
       break;

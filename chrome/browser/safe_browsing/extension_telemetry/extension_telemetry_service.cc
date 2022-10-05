@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/cookies_get_all_signal_processor.h"
+#include "chrome/browser/safe_browsing/extension_telemetry/cookies_get_signal_processor.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/extension_signal.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_persister.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_uploader.h"
@@ -58,11 +59,6 @@ void RecordWhenFileWasPersisted(bool persisted_at_write_interval) {
   base::UmaHistogramBoolean(
       "SafeBrowsing.ExtensionTelemetry.FilePersistedAtWriteInterval",
       persisted_at_write_interval);
-}
-
-void RecordSignalType(ExtensionSignalType signal_type) {
-  base::UmaHistogramEnumeration(
-      "SafeBrowsing.ExtensionTelemetry.Signals.SignalType", signal_type);
 }
 
 static_assert(extensions::Manifest::NUM_LOAD_TYPES == 10,
@@ -178,6 +174,12 @@ ExtensionTelemetryService::ExtensionTelemetryService(
   SetEnabled(IsEnhancedProtectionEnabled(*pref_service_));
 }
 
+void ExtensionTelemetryService::RecordSignalType(
+    ExtensionSignalType signal_type) {
+  base::UmaHistogramEnumeration(
+      "SafeBrowsing.ExtensionTelemetry.Signals.SignalType", signal_type);
+}
+
 void ExtensionTelemetryService::OnPrefChanged() {
   SetEnabled(IsEnhancedProtectionEnabled(*pref_service_));
 }
@@ -192,6 +194,8 @@ void ExtensionTelemetryService::SetEnabled(bool enable) {
   if (enabled_) {
     // Create signal processors.
     // Map the processors to the signals they eventually generate.
+    signal_processors_.emplace(ExtensionSignalType::kCookiesGet,
+                               std::make_unique<CookiesGetSignalProcessor>());
     signal_processors_.emplace(
         ExtensionSignalType::kCookiesGetAll,
         std::make_unique<CookiesGetAllSignalProcessor>());
@@ -207,6 +211,8 @@ void ExtensionTelemetryService::SetEnabled(bool enable) {
 
     // Create subscriber lists for each telemetry signal type.
     // Map the signal processors to the signals that they consume.
+    std::vector<ExtensionSignalProcessor*> subscribers_for_cookies_get = {
+        signal_processors_[ExtensionSignalType::kCookiesGet].get()};
     std::vector<ExtensionSignalProcessor*> subscribers_for_cookies_get_all = {
         signal_processors_[ExtensionSignalType::kCookiesGetAll].get()};
     std::vector<ExtensionSignalProcessor*> subscribers_for_tabs_execute_script =
@@ -219,6 +225,8 @@ void ExtensionTelemetryService::SetEnabled(bool enable) {
     std::vector<ExtensionSignalProcessor*> subscribers_for_password_reuse = {
         signal_processors_[ExtensionSignalType::kPotentialPasswordTheft].get()};
 
+    signal_subscribers_.emplace(ExtensionSignalType::kCookiesGet,
+                                std::move(subscribers_for_cookies_get));
     signal_subscribers_.emplace(ExtensionSignalType::kCookiesGetAll,
                                 std::move(subscribers_for_cookies_get_all));
     signal_subscribers_.emplace(ExtensionSignalType::kTabsExecuteScript,
@@ -312,7 +320,7 @@ void ExtensionTelemetryService::AddSignal(
   ExtensionSignalType signal_type = signal->GetType();
   RecordSignalType(signal_type);
 
-  DCHECK(base::Contains(signal_processors_, signal_type));
+  DCHECK(base::Contains(signal_subscribers_, signal_type));
 
   if (extension_store_.find(signal->extension_id()) == extension_store_.end()) {
     // This is the first signal triggered by this extension since the last

@@ -19,9 +19,6 @@ ci.defaults.set(
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     reclient_jobs = reclient.jobs.DEFAULT,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
-
-    # TODO(crbug.com/1362440): remove this.
-    omit_python2 = False,
 )
 
 consoles.console_view(
@@ -81,20 +78,6 @@ ci.builder(
         category = "wpt|webview",
         short_name = "p-x86",
     ),
-)
-
-ci.builder(
-    name = "android-marshmallow-x86-fyi-rel-reviver",
-    console_view_entry = consoles.console_view_entry(
-        category = "reviver",
-        short_name = "M",
-    ),
-    # To avoid peak hours, we run it at 1 AM, 4 AM, 7 AM, 10AM, 1 PM UTC.
-    schedule = "0 1,4,7,10,13 * * *",
-    # Set to an empty list to avoid chromium-gitiles-trigger triggering new
-    # builds. Also we don't set any `schedule` since this builder is for
-    # reference only and should not run any new builds.
-    triggered_by = [],
 )
 
 # TODO(crbug.com/1022533#c40): Remove this builder once there are no associated

@@ -39,14 +39,13 @@ class EGLAccess {
 // EGL_ANGLE_iosurface_client_buffer extension to bind the IOSurface to textures
 class GL_EXPORT GLImageIOSurfaceEGL : public GLImageIOSurface {
  public:
-  GLImageIOSurfaceEGL(const gfx::Size& size, unsigned internalformat);
+  GLImageIOSurfaceEGL(const gfx::Size& size);
 
+  bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override;
 
  protected:
   ~GLImageIOSurfaceEGL() override;
-  bool BindTexImageImpl(unsigned target, unsigned internalformat) override;
-  bool CopyTexImage(unsigned target) override;
 
  private:
   EGLAccess& GetEGLAccessForCurrentContext();

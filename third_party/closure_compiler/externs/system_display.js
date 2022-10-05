@@ -7,13 +7,16 @@
 // NOTE: The format of types has changed. 'FooType' is now
 //   'chrome.system.display.FooType'.
 // Please run the closure compiler before committing changes.
-// See https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
+// See https://chromium.googlesource.com/chromium/src/+/main/docs/closure_compilation.md
 
 // This was modified to add 'chrome.system = {};'
 // If the above tool that generates this file removes it, please readd it or
 // the closure compiler will fail.
 
-/** @fileoverview Externs generated from namespace: system.display */
+/**
+ * @fileoverview Externs generated from namespace: system.display
+ * @externs
+ */
 
 /** @const */
 chrome.system = {};

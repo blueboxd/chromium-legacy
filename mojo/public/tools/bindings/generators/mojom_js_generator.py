@@ -291,8 +291,6 @@ class Generator(generator.Generator):
         self.module.enums,
         "for_bindings_internals":
         self.disallow_native_types,
-        "html_imports":
-        self._GenerateHtmlImports(),
         "imports":
         self.module.imports,
         "interfaces":
@@ -303,8 +301,6 @@ class Generator(generator.Generator):
         self.module.kinds,
         "module":
         self.module,
-        "mojom_filename":
-        os.path.basename(self.module.path),
         "mojom_namespace":
         self.module.mojom_namespace,
         "structs":
@@ -399,10 +395,6 @@ class Generator(generator.Generator):
   def _GenerateAMDModule(self):
     return self._GetParameters()
 
-  @UseJinja("lite/mojom.html.tmpl")
-  def _GenerateLiteHtml(self):
-    return self._GetParameters()
-
   @UseJinja("lite/mojom-lite.js.tmpl")
   def _GenerateLiteBindings(self):
     return self._GetParameters()
@@ -431,18 +423,15 @@ class Generator(generator.Generator):
     self._SetUniqueNameForImports()
 
     self.WriteWithComment(self._GenerateAMDModule(), "%s.js" % self.module.path)
-    if self.js_bindings_mode == "new":
-      self.WriteWithComment(self._GenerateLiteHtml(),
-                            "%s.html" % self.module.path)
-      self.WriteWithComment(self._GenerateLiteBindings(),
-                            "%s-lite.js" % self.module.path)
-      self.WriteWithComment(self._GenerateLiteBindingsForCompile(),
-                            "%s-lite-for-compile.js" % self.module.path)
-      self.WriteWithComment(self._GenerateJsModule(),
-                            "%s.m.js" % self.module.path)
-      if _GetWebUiModulePath(self.module) is not None:
-        self.WriteWithComment(self._GenerateWebUiModule(),
-                              "mojom-webui/%s-webui.js" % self.module.path)
+    self.WriteWithComment(self._GenerateLiteBindings(),
+                          "%s-lite.js" % self.module.path)
+    self.WriteWithComment(self._GenerateLiteBindingsForCompile(),
+                          "%s-lite-for-compile.js" % self.module.path)
+    self.WriteWithComment(self._GenerateJsModule(),
+                          "%s.m.js" % self.module.path)
+    if _GetWebUiModulePath(self.module) is not None:
+      self.WriteWithComment(self._GenerateWebUiModule(),
+                            "mojom-webui/%s-webui.js" % self.module.path)
 
   def _GetRelativePath(self, path):
     relpath = urllib.request.pathname2url(

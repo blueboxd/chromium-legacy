@@ -417,6 +417,14 @@ const char kAutofillEnableCardProductNameDescription[] =
     "When enabled, card product name (instead of issuer network) will be shown "
     "in Payments Autofill UI.";
 
+const char kAutofillEnableCvcForVcnYellowPathName[] =
+    "Enable CVC Authentication in the yellow path of the VCN retrieval flow";
+const char kAutofillEnableCvcForVcnYellowPathDescription[] =
+    "When enabled, if the user encounters the yellow path (challenge path) in "
+    "the VCN retrieval flow and the server denotes that the card is eligible "
+    "for CVC authentication, CVC authentication will be offered as one of the "
+    "challenge options.";
+
 const char kAutofillEnableOfferNotificationForPromoCodesName[] =
     "Extend Autofill offers and rewards notification to promo code offers";
 const char kAutofillEnableOfferNotificationForPromoCodesDescription[] =
@@ -1971,6 +1979,11 @@ const char kOmniboxDocumentProviderAsoDescription[] =
     "If document suggestions are enabled, swaps the backend from cloudsearch "
     "to ASO (Apps Search Overlay) search.";
 
+const char kOmniboxDomainSuggestionsName[] = "Omnibox Domain Suggestions";
+const char kOmniboxDomainSuggestionsDescriptions[] =
+    "If enabled, history URL suggestions from hosts visited often bypass the "
+    "per provider limit.";
+
 const char kOmniboxExperimentalSuggestScoringName[] =
     "Omnibox Experimental Suggest Scoring";
 const char kOmniboxExperimentalSuggestScoringDescription[] =
@@ -3523,6 +3536,12 @@ const char kChromeSharingHubLaunchAdjacentName[] =
 const char kChromeSharingHubLaunchAdjacentDescription[] =
     "In multi-window mode, launches share hub actions in an adjacent window. "
     "For internal debugging.";
+
+const char kDiscardOccludedBitmapsName[] =
+    "Discard occluded bitmaps in Android UI";
+const char kDiscardOccludedBitmapsDescription[] =
+    "Proactively discard cached bitmaps that are occluded/offscreen. Applies "
+    "to several UI surfaces. May introduce jank if the bitmap is needed again.";
 
 const char kEnableCbdSignOutName[] =
     "Decouple Sign out from clearing browsing data";

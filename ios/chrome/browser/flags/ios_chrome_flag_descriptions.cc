@@ -281,10 +281,6 @@ const char kEnableFeedAblationName[] = "Enables Feed Ablation";
 const char kEnableFeedAblationDescription[] =
     "If Enabled the Feed will be removed from the NTP";
 
-const char kDisableFeediOS14Name[] = "Disable the feed on iOS14 devices";
-const char kDisableFeediOS14Description[] =
-    "If disabled the feed will be removed from the iOS14 devices.";
-
 const char kEnableFREUIModuleIOSName[] = "Enable FRE UI module";
 const char kEnableFREUIModuleIOSDescription[] =
     "Use the new FRE UI module for first run.";
@@ -491,11 +487,6 @@ const char kNewOverflowMenuAlternateIPHName[] =
     "New Overflow Menu Alternative IPH";
 const char kNewOverflowMenuAlternateIPHDescription[] =
     "Uses the alternative IPH flow for the new overflow menu";
-
-extern const char kNewOverflowMenuSimpleDestinationIconsName[] =
-    "Simple Destination icons in the new overflow menu";
-extern const char kNewOverflowMenuSimpleDestinationIconsDescription[] =
-    "Uses a simple icon style for destination icons in the new overflow menu";
 
 const char kNTPViewHierarchyRepairName[] = "NTP View Hierarchy Repair";
 const char kNTPViewHierarchyRepairDescription[] =

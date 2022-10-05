@@ -1215,9 +1215,9 @@ TEST_F(CrostiniManagerRestartTest, HeartbeatKeepsCreateContainerFromTimingOut) {
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
 
-  task_environment_.FastForwardBy(base::Minutes(4));
+  task_environment_.FastForwardBy(base::Minutes(7));
   crostini_manager_->OnLxdContainerDownloading(signal);
-  task_environment_.FastForwardBy(base::Minutes(4));
+  task_environment_.FastForwardBy(base::Minutes(7));
   ASSERT_EQ(0, restart_crostini_callback_count_);
 
   task_environment_.FastForwardBy(base::Minutes(6));
@@ -1687,6 +1687,7 @@ TEST_F(CrostiniManagerRestartTest, VmStoppedDuringRestart) {
   vm_stopped_signal.set_owner_id(CryptohomeIdForProfile(profile()));
   vm_stopped_signal.set_name(kVmName);
   crostini_manager()->OnVmStopped(vm_stopped_signal);
+  run_loop()->RunUntilIdle();
   EXPECT_FALSE(crostini_manager()->IsRestartPending(restart_id_));
   EXPECT_EQ(1, restart_crostini_callback_count_);
 }

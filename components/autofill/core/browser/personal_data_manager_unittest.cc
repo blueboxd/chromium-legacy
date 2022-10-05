@@ -124,9 +124,10 @@ void ExpectSameElements(const std::vector<T*>& expectations,
 class ScopedFeatureListWrapper {
  public:
   explicit ScopedFeatureListWrapper(
-      const std::vector<base::Feature>& default_enabled_features,
-      const std::vector<base::Feature>& additional_enabled_features) {
-    std::vector<base::Feature> all_enabled_features(default_enabled_features);
+      const std::vector<base::test::FeatureRef>& default_enabled_features,
+      const std::vector<base::test::FeatureRef>& additional_enabled_features) {
+    std::vector<base::test::FeatureRef> all_enabled_features(
+        default_enabled_features);
     std::copy(additional_enabled_features.begin(),
               additional_enabled_features.end(),
               std::back_inserter(all_enabled_features));
@@ -153,7 +154,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
   PersonalDataManagerHelper() = default;
 
   explicit PersonalDataManagerHelper(
-      const std::vector<base::Feature>& additional_enabled_features)
+      const std::vector<base::test::FeatureRef>& additional_enabled_features)
       : PersonalDataManagerTestBase(additional_enabled_features) {}
 
   virtual ~PersonalDataManagerHelper() {
@@ -4778,14 +4779,12 @@ TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NotActiveSyncService) {
 
   // Call OnSyncServiceInitialized with a sync service in auth error.
   syncer::TestSyncService sync_service;
-  sync_service.SetAuthError(
-      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+  sync_service.SetPersistentAuthErrorOtherThanWebSignout();
   personal_data_->OnSyncServiceInitialized(&sync_service);
   WaitForOnPersonalDataChanged();
 
   // Remove the auth error to be able to get the server cards.
-  sync_service.SetAuthError(
-      GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+  sync_service.ClearAuthError();
 
   // Check that cards were masked and other were untouched.
   EXPECT_EQ(3U, personal_data_->GetCreditCards().size());

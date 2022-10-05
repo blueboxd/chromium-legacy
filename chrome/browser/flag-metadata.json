@@ -461,6 +461,11 @@
     "expiry_milestone": 120
   },
   {
+    "name": "autofill-enable-cvc-for-vcn-yellow-path",
+     "owners": ["vinnypersky@google.com"],
+     "expiry_milestone": 120
+  },
+  {
     "name": "autofill-enable-fido-progress-dialog",
     "owners": [ "siashah", "yiian" ],
     "expiry_milestone": 113
@@ -1474,6 +1479,11 @@
     "owners": [ "//chrome/browser/data_saver/OWNERS" ],
     // This is a web-developer facing flag and should not be removed.
     "expiry_milestone": -1
+  },
+  {
+    "name": "discard-occluded-bitmaps",
+    "owners": [ "ckitagawa" ],
+    "expiry_milestone": 112
   },
   {
     "name": "display-alignment-assistance",
@@ -4914,9 +4924,14 @@
     "expiry_milestone": 115
   },
   {
+    "name": "omnibox-domain-suggestions",
+    "owners": ["manukh", "chrome-omnibox-team@google.com"],
+    "expiry_milestone": 120
+  },
+  {
     "name": "omnibox-drive-suggestions",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 120
   },
   {
     "name": "omnibox-dynamic-max-autocomplete",

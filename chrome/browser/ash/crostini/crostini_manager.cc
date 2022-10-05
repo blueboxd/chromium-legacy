@@ -134,7 +134,14 @@ void InvokeAndErasePendingContainerCallbacks(
   for (auto it = range.first; it != range.second; ++it) {
     VLOG(1) << "Invoking pending container callback for "
             << it->first.container_name;
-    std::move(it->second).Run(result);
+    // We end up here when triggered by an observer method, which is
+    // synchronous. Post the callback instead of continuing to run it in the
+    // same task so other observers of e.g. ContainerStarted have a chance to
+    // run and update first, so callers get a consistent view across GuestOS
+    // services. See e.g. b/249219794 for an example of what can break without
+    // this.
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(it->second), result));
   }
   container_callbacks->erase(range.first, range.second);
 }
@@ -299,12 +306,12 @@ class CrostiniManager::CrostiniRestarter
       {mojom::InstallerState::kStart, base::Minutes(2)},
       {mojom::InstallerState::kInstallImageLoader,
        base::Hours(6)},  // May need to download DLC or component
-      {mojom::InstallerState::kCreateDiskImage, base::Minutes(5)},
+      {mojom::InstallerState::kCreateDiskImage, base::Minutes(8)},
       {mojom::InstallerState::kStartTerminaVm, kStartVmTimeout},
       {mojom::InstallerState::kStartLxd, base::Minutes(5)},
       // While CreateContainer may need to download a file, we get progress
       // messages that reset the countdown.
-      {mojom::InstallerState::kCreateContainer, base::Minutes(5)},
+      {mojom::InstallerState::kCreateContainer, base::Minutes(8)},
       {mojom::InstallerState::kSetupContainer, base::Minutes(5)},
       // StartContainer sends heartbeat messages on a 30-second interval, but
       // there's a bit of work that's not covered by heartbeat messages so to be

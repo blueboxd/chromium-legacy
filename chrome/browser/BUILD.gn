@@ -2664,7 +2664,6 @@ static_library("browser") {
       "android/explore_sites/clear_catalog_task.h",
       "android/explore_sites/explore_sites_bridge.cc",
       "android/explore_sites/explore_sites_bridge.h",
-      "android/explore_sites/explore_sites_bridge_experimental.cc",
       "android/explore_sites/explore_sites_feature.cc",
       "android/explore_sites/explore_sites_feature.h",
       "android/explore_sites/explore_sites_fetcher.cc",
@@ -2696,14 +2695,10 @@ static_library("browser") {
       "android/explore_sites/increment_shown_count_task.h",
       "android/explore_sites/most_visited_client.cc",
       "android/explore_sites/most_visited_client.h",
-      "android/explore_sites/ntp_json_fetcher.cc",
-      "android/explore_sites/ntp_json_fetcher.h",
       "android/explore_sites/record_site_click_task.cc",
       "android/explore_sites/record_site_click_task.h",
       "android/explore_sites/url_util.cc",
       "android/explore_sites/url_util.h",
-      "android/explore_sites/url_util_experimental.cc",
-      "android/explore_sites/url_util_experimental.h",
       "android/favicon_helper.cc",
       "android/favicon_helper.h",
       "android/feature_engagement/tracker_factory_android.cc",
@@ -4790,6 +4785,8 @@ static_library("browser") {
       "apps/app_service/metrics/browser_to_tab_list.h",
       "apps/app_service/metrics/website_metrics.cc",
       "apps/app_service/metrics/website_metrics.h",
+      "apps/app_service/policy_util.cc",
+      "apps/app_service/policy_util.h",
       "apps/app_service/publishers/arc_apps.cc",
       "apps/app_service/publishers/arc_apps.h",
       "apps/app_service/publishers/arc_apps_factory.cc",
@@ -5243,8 +5240,8 @@ static_library("browser") {
       "//chrome/browser/ui/webui/ash/add_supervision:mojo_bindings",
       "//chrome/browser/ui/webui/ash/audio:mojo_bindings",
       "//chrome/browser/ui/webui/ash/cloud_upload:mojo_bindings",
-      "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings",
-      "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings",
+      "//chrome/browser/ui/webui/ash/crostini_installer:mojo_bindings",
+      "//chrome/browser/ui/webui/ash/crostini_upgrader:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/emoji:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/launcher_internals:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/manage_mirrorsync:mojo_bindings",
@@ -6432,6 +6429,10 @@ static_library("browser") {
         "//components/device_signals/core/browser/win",
         "//components/device_signals/core/common/win",
       ]
+    }
+
+    if (is_mac) {
+      deps += [ "//components/device_signals/core/browser/mac" ]
     }
   }
 
@@ -8037,8 +8038,8 @@ grit("resources") {
       "//chrome/browser/resources/chromeos/vm:web_components",
       "//chrome/browser/supervised_user:supervised_user_unscaled_resources",
       "//chrome/browser/ui/webui/ash/add_supervision:mojo_bindings_js",
-      "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings_js",
-      "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings_js",
+      "//chrome/browser/ui/webui/ash/crostini_installer:mojo_bindings_js",
+      "//chrome/browser/ui/webui/ash/crostini_upgrader:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/parent_access:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/vm:mojo_bindings_webui_js",
       "//chrome/browser/ui/webui/settings/ash:mojom_js",

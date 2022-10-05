@@ -855,13 +855,14 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, EditCommands) {
 }
 
 // Tests that guests receive edit commands and respond appropriately.
-// Flaky test - crbug.com/859478
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_EditCommandsNoMenu) {
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, EditCommandsNoMenu) {
+  ExtensionTestMessageListener focus_listener("Focused");
   SetupTest("web_view/edit_commands_no_menu",
             "/extensions/platform_apps/web_view/edit_commands_no_menu/"
             "guest.html");
-
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
+  // Ensure that an input gets focused before sending a key event.
+  ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
 
   // Flush any pending events to make sure we start with a clean slate.
   content::RunAllPendingInMessageLoop();
@@ -1276,7 +1277,16 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, WordLookup) {
 }
 #endif
 
-IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, FocusAndVisibility) {
+// Flaky on Mac: http://crbug.com/811893
+// Flaky on Linux/ChromeOS/Windows: http://crbug.com/845638
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_WIN)
+#define MAYBE_FocusAndVisibility DISABLED_FocusAndVisibility
+#else
+#define MAYBE_FocusAndVisibility FocusAndVisibility
+#endif
+
+IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, MAYBE_FocusAndVisibility) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   LoadAndLaunchPlatformApp("web_view/focus_visibility",
                            "WebViewInteractiveTest.LOADED");
@@ -1334,11 +1344,9 @@ IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, FocusAndVisibility) {
   EXPECT_TRUE(webview_button_not_focused_listener.WaitUntilSatisfied());
 }
 
-// Flaky on MacOSX, crbug.com/817066.
 // Flaky timeouts on Linux. https://crbug.com/709202
 // Flaky timeouts on Win. https://crbug.com/846695
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || \
-    BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
 #define MAYBE_KeyboardFocusSimple DISABLED_KeyboardFocusSimple
 #else
 #define MAYBE_KeyboardFocusSimple KeyboardFocusSimple
@@ -1380,11 +1388,8 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_KeyboardFocusSimple) {
 // and regains focus. Additionally, the webview does not process keypresses sent
 // while another window is focused.
 // http://crbug.com/660044.
-// Flaky on MacOSX, crbug.com/817067.
 // Flaky on linux, crbug.com/706830.
-// Flaky on Windows, crbug.com/847201.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || \
-    BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_LINUX)
 #define MAYBE_KeyboardFocusWindowCycle DISABLED_KeyboardFocusWindowCycle
 #else
 #define MAYBE_KeyboardFocusWindowCycle KeyboardFocusWindowCycle

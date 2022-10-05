@@ -1919,9 +1919,9 @@ void WebAppIntegrationTestDriver::CheckAppInListIconCorrect(Site site) {
   SkBitmap icon_bitmap;
   base::RunLoop run_loop;
 
+  NavigateTabbedBrowserToSite(icon_url, NavigationMode::kNewTab);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  NavigateTabbedBrowserToSite(icon_url, NavigationMode::kNewTab);
 
   web_contents->DownloadImage(
       icon_url, false, gfx::Size(), 0, false,
@@ -1996,6 +1996,15 @@ void WebAppIntegrationTestDriver::CheckAppNavigationIsStartUrl() {
   GURL url =
       app_browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL();
   EXPECT_EQ(url, provider()->registrar().GetAppStartUrl(active_app_id_));
+  AfterStateCheckAction();
+}
+
+void WebAppIntegrationTestDriver::CheckBrowserNavigation(Site site) {
+  if (!BeforeStateCheckAction(__FUNCTION__))
+    return;
+  ASSERT_TRUE(browser());
+  GURL url = browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
+  EXPECT_EQ(url, GetUrlForSite(site));
   AfterStateCheckAction();
 }
 
@@ -3089,8 +3098,8 @@ WebAppIntegrationTestDriver::GetTestServerForSiteMode(Site site) const {
 }
 
 WebAppIntegrationTest::WebAppIntegrationTest() : helper_(this) {
-  std::vector<base::Feature> enabled_features;
-  std::vector<base::Feature> disabled_features;
+  std::vector<base::test::FeatureRef> enabled_features;
+  std::vector<base::test::FeatureRef> disabled_features;
   enabled_features.push_back(features::kPwaUpdateDialogForIcon);
   enabled_features.push_back(features::kPwaUpdateDialogForName);
   enabled_features.push_back(features::kDesktopPWAsEnforceWebAppSettingsPolicy);

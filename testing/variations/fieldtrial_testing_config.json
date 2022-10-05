@@ -379,6 +379,30 @@
             ]
         }
     ],
+    "AndroidRdsDomainAndDefault": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_Domain_20221003",
+                    "params": {
+                        "SubdomainSettings": "false"
+                    },
+                    "enable_features": [
+                        "RequestDesktopSiteExceptions",
+                        "RequestDesktopSiteExceptionsDowngrade"
+                    ],
+                    "disable_features": [
+                        "RequestDesktopSiteDefaults",
+                        "RequestDesktopSiteDefaultsControl",
+                        "RequestDesktopSiteDefaultsDowngrade"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidScrollOptimizations": [
         {
             "platforms": [
@@ -940,6 +964,24 @@
                     },
                     "enable_features": [
                         "AutofillAssistantUrlHeuristic1"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillAssistantNiuEaadharDownloadInChromeTriggering": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "json_parameters": "\n        {\n          \"intent\":\"NIU_ID_DOWNLOAD\",\n          \"heuristics\":[\n           {\n            \"conditionSet\":{\n              \"urlMatches\":\"https://myaadhaar.uidai.gov.in\"\n             }\n           }\n          ],\n          \"enabledInCustomTabs\":true,\n          \"enabledForSignedOutUsers\":true\n        }\n        "
+                    },
+                    "enable_features": [
+                        "AutofillAssistantUrlHeuristic3"
                     ]
                 }
             ]
@@ -3567,6 +3609,31 @@
                         "BookmarkTypedUrlsMap",
                         "OmniboxBookmarkPaths",
                         "OmniboxShortBookmarkSuggestionsByTotalInputLength"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DesktopOmniboxDomainSuggestions": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "DomainSuggestionsMaxMatchesPerDomain": "2",
+                        "DomainSuggestionsMinInputLength": "4",
+                        "DomainSuggestionsVisitCapPerVisit": "2",
+                        "DomainSuggestionsVisitThreshold": "4"
+                    },
+                    "enable_features": [
+                        "OmniboxDomainSuggestions"
                     ]
                 }
             ]
@@ -7062,9 +7129,6 @@
                         "OmniboxRemoveSuggestionHeaderChevron",
                         "OmniboxRetainSuggestionsWithHeaders",
                         "OmniboxUIExperimentMaxAutocompleteMatches"
-                    ],
-                    "disable_features": [
-                        "UseSharedInstanceForZeroSuggestPrefetching"
                     ]
                 }
             ]
@@ -7792,24 +7856,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "IOSEnablePasswordManagerBrandingUpdate"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PasswordsCapabilitiesFetching": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20220217",
-                    "params": {
-                        "live_experiment": "true"
-                    },
-                    "enable_features": [
-                        "PasswordDomainCapabilitiesFetching"
                     ]
                 }
             ]
@@ -8828,6 +8874,66 @@
             ]
         }
     ],
+    "RequestDesktopSiteDefaultsControlCohort": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "RequestDesktopSiteDefaultsControlSynthetic"
+                    ]
+                }
+            ]
+        }
+    ],
+    "RequestDesktopSiteDefaultsEnabledCohort": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "RequestDesktopSiteDefaultsSynthetic"
+                    ]
+                }
+            ]
+        }
+    ],
+    "RequestDesktopSiteOptInControlCohort": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "RequestDesktopSiteOptInControlSynthetic"
+                    ]
+                }
+            ]
+        }
+    ],
+    "RequestDesktopSiteOptInEnabledCohort": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "RequestDesktopSiteOptInSynthetic"
+                    ]
+                }
+            ]
+        }
+    ],
     "RevokeNotificationsPermissionIfDisabledOnAppLevel": [
         {
             "platforms": [
@@ -9771,6 +9877,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "StartAssistantAudioDecoderOnDemand"
+                    ]
+                }
+            ]
+        }
+    ],
+    "StartupProfilePickerWithoutGuest": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ObserverBasedPostProfileInit"
                     ]
                 }
             ]

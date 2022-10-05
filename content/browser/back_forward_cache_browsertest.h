@@ -46,24 +46,6 @@ MATCHER(Deleted, "") {
 std::initializer_list<RenderFrameHostImpl*> Elements(
     std::initializer_list<RenderFrameHostImpl*> t);
 
-namespace {
-
-// hash for std::unordered_map.
-struct FeatureHash {
-  size_t operator()(base::Feature feature) const {
-    return base::FastHash(feature.name);
-  }
-};
-
-// compare operator for std::unordered_map.
-struct FeatureEqualOperator {
-  bool operator()(base::Feature feature1, base::Feature feature2) const {
-    return std::strcmp(feature1.name, feature2.name) == 0;
-  }
-};
-
-}  // namespace
-
 // Test about the BackForwardCache.
 class BackForwardCacheBrowserTest
     : public ContentBrowserTest,
@@ -87,11 +69,11 @@ class BackForwardCacheBrowserTest
 
   void SetupFeaturesAndParameters();
 
-  void EnableFeatureAndSetParams(base::Feature feature,
+  void EnableFeatureAndSetParams(const base::Feature& feature,
                                  std::string param_name,
                                  std::string param_value);
 
-  void DisableFeature(base::Feature feature);
+  void DisableFeature(const base::Feature& feature);
 
   void SetUpOnMainThread() override;
 
@@ -195,12 +177,9 @@ class BackForwardCacheBrowserTest
 
   FrameTreeVisualizer visualizer_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
-  std::unordered_map<base::Feature,
-                     std::map<std::string, std::string>,
-                     FeatureHash,
-                     FeatureEqualOperator>
+  std::map<base::test::FeatureRef, std::map<std::string, std::string>>
       features_with_params_;
-  std::vector<base::Feature> disabled_features_;
+  std::vector<base::test::FeatureRef> disabled_features_;
 
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;

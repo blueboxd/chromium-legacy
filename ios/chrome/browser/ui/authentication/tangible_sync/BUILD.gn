@@ -17,6 +17,7 @@ source_set("tangible_sync") {
     ":signin_ui",
     "//base",
     "//components/consent_auditor",
+    "//components/signin/public/identity_manager/objc",
     "//components/sync/driver",
     "//components/unified_consent",
     "//ios/chrome/app/application_delegate:app_state_header",
@@ -32,7 +33,6 @@ source_set("tangible_sync") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/elements:activity_overlay",
     "//ios/chrome/browser/ui/first_run:utils",
-    "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/unified_consent",
   ]
   public_deps =
@@ -54,6 +54,7 @@ source_set("signin_ui") {
     "//ios/chrome/browser/ui/authentication/tangible_sync/resources:tangible_sync_bookmarks",
     "//ios/chrome/browser/ui/authentication/tangible_sync/resources:tangible_sync_history",
     "//ios/chrome/browser/ui/elements",
+    "//ios/chrome/browser/ui/first_run:field_trial",
     "//ios/chrome/common/ui/promo_style",
     "//ios/chrome/common/ui/util",
     "//net",

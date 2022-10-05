@@ -4386,9 +4386,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
 
 // Test that when the running prerender is destroyed due to the activation of
 // another already prerendered page, some pending prerender's outcome is
-// recorded as `kRunning` because the running prerender's cancellation brings
-// the pending prerender's initial navigation before the pending prerender is
-// cancelled.
+// recorded as `kUnspecified`.
 // TODO(crbug.com/1355151): Record kTriggeredButPending instead in
 // this case once the outcome value is newly supported.
 IN_PROC_BROWSER_TEST_F(
@@ -4453,7 +4451,7 @@ IN_PROC_BROWSER_TEST_F(
             ukm_source_id, PreloadingType::kPrerender,
             PreloadingEligibility::kEligible,
             PreloadingHoldbackStatus::kAllowed,
-            PreloadingTriggeringOutcome::kRunning,
+            PreloadingTriggeringOutcome::kUnspecified,
             PreloadingFailureReason::kUnspecified,
             /*accurate=*/false),
     };
@@ -5803,7 +5801,7 @@ class PrerenderWithBackForwardCacheBrowserTest
     feature_params["TimeToLiveInBackForwardCacheInSeconds"] = "3600";
 
     // Allow the BFCache for all devices regardless of their memory.
-    std::vector<base::Feature> disabled_features{
+    std::vector<base::test::FeatureRef> disabled_features{
         features::kBackForwardCacheMemoryControls};
 
     switch (GetParam()) {

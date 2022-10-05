@@ -293,9 +293,9 @@ void UninstallSodaForTesting() {
 }
 
 void ClearDictationOfflineNudgePref(const std::string& locale) {
-  DictionaryPrefUpdate update(GetActiveUserPrefs(),
+  ScopedDictPrefUpdate update(GetActiveUserPrefs(),
                               prefs::kAccessibilityDictationLocaleOfflineNudge);
-  update.Get()->RemovePath(locale);
+  update->RemoveByDottedPath(locale);
 }
 
 absl::optional<bool> GetDictationOfflineNudgePref(const std::string& locale) {
@@ -1149,8 +1149,8 @@ class AccessibilityManagerDictationDialogTest
     locale_ = "it-IT";
     command_line->AppendSwitchASCII(::switches::kLang, locale_);
 
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
     if (GetParam() == DictationDialogTestVariant::kOfflineEnabledAndAvailable) {
       enabled_features.push_back(ash::features::kOnDeviceSpeechRecognition);
     } else if (GetParam() ==

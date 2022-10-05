@@ -227,6 +227,9 @@ extern const char kAutofillEnableCardArtImageDescription[];
 extern const char kAutofillEnableCardProductNameName[];
 extern const char kAutofillEnableCardProductNameDescription[];
 
+extern const char kAutofillEnableCvcForVcnYellowPathName[];
+extern const char kAutofillEnableCvcForVcnYellowPathDescription[];
+
 extern const char kAutofillEnableOfferNotificationForPromoCodesName[];
 extern const char kAutofillEnableOfferNotificationForPromoCodesDescription[];
 
@@ -1111,6 +1114,9 @@ extern const char kOmniboxDisableCGIParamMatchingDescription[];
 extern const char kOmniboxDocumentProviderAsoName[];
 extern const char kOmniboxDocumentProviderAsoDescription[];
 
+extern const char kOmniboxDomainSuggestionsName[];
+extern const char kOmniboxDomainSuggestionsDescriptions[];
+
 extern const char kOmniboxExperimentalSuggestScoringName[];
 extern const char kOmniboxExperimentalSuggestScoringDescription[];
 
@@ -1984,6 +1990,9 @@ extern const char kChromeSharingCrowLaunchTabDescription[];
 
 extern const char kChromeSharingHubLaunchAdjacentName[];
 extern const char kChromeSharingHubLaunchAdjacentDescription[];
+
+extern const char kDiscardOccludedBitmapsName[];
+extern const char kDiscardOccludedBitmapsDescription[];
 
 extern const char kEnableCbdSignOutName[];
 extern const char kEnableCbdSignOutDescription[];

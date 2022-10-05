@@ -780,16 +780,6 @@ const base::FeatureParam<int> kLocalHistoryZeroSuggestRelevanceScore(
     "LocalHistoryZeroSuggestRelevanceScore",
     500);
 
-BASE_FEATURE(kUseSharedInstanceForZeroSuggestPrefetching,
-             "UseSharedInstanceForZeroSuggestPrefetching",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-bool UseSharedInstanceForZeroSuggestPrefetching() {
-  return base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetching) &&
-         base::FeatureList::IsEnabled(
-             kUseSharedInstanceForZeroSuggestPrefetching);
-}
-
 bool IsZeroSuggestPrefetchingEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetching) ||
          base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetchingOnSRP) ||
@@ -960,6 +950,41 @@ const base::FeatureParam<int> kSiteSearchStarterPackRelevanceScore(
     &omnibox::kSiteSearchStarterPack,
     "SiteSearchStarterPackRelevanceScore",
     1350);
+
+const base::FeatureParam<int> kDomainSuggestionsTypedUrlsThreshold(
+    &omnibox::kDomainSuggestions,
+    "DomainSuggestionsTypedUrlsThreshold",
+    7);
+
+const base::FeatureParam<int> kDomainSuggestionsTypedUrlsOffset(
+    &omnibox::kDomainSuggestions,
+    "DomainSuggestionsTypedUrlsOffset",
+    1);
+
+const base::FeatureParam<int> kDomainSuggestionsTypedVisitThreshold(
+    &omnibox::kDomainSuggestions,
+    "DomainSuggestionsTypedVisitThreshold",
+    4);
+
+const base::FeatureParam<int> kDomainSuggestionsTypedVisitOffset(
+    &omnibox::kDomainSuggestions,
+    "DomainSuggestionsTypedVisitOffset",
+    1);
+
+const base::FeatureParam<int> kDomainSuggestionsTypedVisitCapPerVisit(
+    &omnibox::kDomainSuggestions,
+    "DomainSuggestionsTypedVisitCapPerVisit",
+    2);
+
+const base::FeatureParam<int> kDomainSuggestionsMinInputLength(
+    &omnibox::kDomainSuggestions,
+    "DomainSuggestionsMinInputLength",
+    4);
+
+const base::FeatureParam<int> kDomainSuggestionsMaxMatchesPerDomain(
+    &omnibox::kDomainSuggestions,
+    "DomainSuggestionsMaxMatchesPerDomain",
+    2);
 
 }  // namespace OmniboxFieldTrial
 

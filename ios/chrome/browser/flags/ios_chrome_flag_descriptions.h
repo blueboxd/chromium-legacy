@@ -257,10 +257,6 @@ extern const char kEnableFaviconForPasswordsDescription[];
 extern const char kEnableFeedAblationName[];
 extern const char kEnableFeedAblationDescription[];
 
-// Title and description for the flag to remove the Feed from iOS14 devices.
-extern const char kDisableFeediOS14Name[];
-extern const char kDisableFeediOS14Description[];
-
 // Title and description for the flag to test the FRE default browser promo
 // experiment.
 extern const char kEnableFREDefaultBrowserPromoScreenName[];
@@ -450,11 +446,6 @@ extern const char kNewOverflowMenuDescription[];
 // IPH flow.
 extern const char kNewOverflowMenuAlternateIPHName[];
 extern const char kNewOverflowMenuAlternateIPHDescription[];
-
-// Title and description for the flag to use simple icons for the Destinations
-// in the new overflow menu.
-extern const char kNewOverflowMenuSimpleDestinationIconsName[];
-extern const char kNewOverflowMenuSimpleDestinationIconsDescription[];
 
 // Title and description for temporary bug fix to broken NTP view hierarhy.
 // TODO(crbug.com/1262536): Remove this when fixed.

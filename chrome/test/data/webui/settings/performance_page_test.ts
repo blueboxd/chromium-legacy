@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://settings/lazy_load.js';
+import 'chrome://settings/settings.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {SettingsPerformancePageElement, SUBMIT_EVENT, TabDiscardExceptionDialogElement, TabDiscardExceptionEntryElement, TabDiscardExceptionListElement} from 'chrome://settings/lazy_load.js';
-import {OpenWindowProxyImpl, PerformanceBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {OpenWindowProxyImpl, PerformanceBrowserProxyImpl, SettingsPerformancePageElement, SUBMIT_EVENT, TabDiscardExceptionDialogElement, TabDiscardExceptionEntryElement, TabDiscardExceptionListElement} from 'chrome://settings/settings.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 import {TestOpenWindowProxy} from './test_open_window_proxy.js';
@@ -196,10 +195,22 @@ suite('PerformancePage', function() {
     const dialog = openAddDialog();
     dialog.fire(SUBMIT_EVENT, 'bar');
 
-    // tabDiscardExceptionsList.$.list._render();
     assertDeepEquals(
         ['foo', 'bar'], tabDiscardExceptionsList.$.list.items,
         'expected valid rule to be added to the end of the list');
+  });
+
+  test('testTabDiscardExceptionsListAddAfterMenuClick', function() {
+    setupExceptionListEntries(['foo']);
+    getExceptionListEntries()[0]!.$.button.click();
+    tabDiscardExceptionsList.$.addButton.click();
+    flush();
+
+    const dialog = getDialog();
+    assertTrue(!!dialog);
+    assertEquals(
+        '', dialog.$.input.value,
+        'add dialog should be opened instead of edit dialog');
   });
 
   test('testTabDiscardExceptionsListEdit', function() {
@@ -207,7 +218,6 @@ suite('PerformancePage', function() {
     const dialog = openEditDialog(getExceptionListEntries()[1]!);
     dialog.fire(SUBMIT_EVENT, 'baz');
 
-    // tabDiscardExceptionsList.$.list._render();
     assertDeepEquals(
         ['foo', 'baz'], tabDiscardExceptionsList.$.list.items,
         'expected valid rule to be added to the end of the list');

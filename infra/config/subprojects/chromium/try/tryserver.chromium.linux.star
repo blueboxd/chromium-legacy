@@ -178,6 +178,7 @@ try_.builder(
         "ci/linux-gcc-rel",
     ],
     goma_backend = None,
+    os = os.LINUX_FOCAL,
 )
 
 try_.builder(
@@ -286,6 +287,36 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
+)
+
+# TODO (crbug.com/1287228): Remove when orchestrator is confirmed to work
+try_.orchestrator_builder(
+    name = "linux-wayland-rel-orchestrator",
+    compilator = "linux-wayland-rel-compilator",
+    branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Linux Builder (Wayland)",
+        "ci/Linux Tests (Wayland)",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
+    main_list_view = "try",
+    experiments = {
+        "remove_src_checkout_experiment": 100,
+    },
+    use_orchestrator_pool = True,
+)
+
+try_.compilator_builder(
+    name = "linux-wayland-rel-compilator",
+    branch_selector = branches.STANDARD_MILESTONE,
+    main_list_view = "try",
+    # TODO (crbug.com/1287228): Set correct values once bots are set up
+    ssd = None,
+    cores = None,
 )
 
 try_.builder(

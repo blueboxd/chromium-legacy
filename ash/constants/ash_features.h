@@ -743,7 +743,6 @@ bool IsPhoneHubFeatureSetupErrorHandlingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsPhoneHubMonochromeNotificationIconsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPerformantSplitViewResizingEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPersonalizationHubEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPhoneHubEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPhoneHubCallNotificationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPinAutosubmitBackfillFeatureEnabled();
@@ -798,7 +797,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSnoopingProtectionEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsStartAssistantAudioDecoderOnDemandEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsImeTrayHideVoiceButtonEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSyncSettingsCategorizationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSystemTrayShadowEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsStylusBatteryStatusEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTabClusterUIEnabled();

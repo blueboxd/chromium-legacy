@@ -7,9 +7,12 @@
 // NOTE: The format of types has changed. 'FooType' is now
 //   'chrome.events.FooType'.
 // Please run the closure compiler before committing changes.
-// See https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
+// See https://chromium.googlesource.com/chromium/src/+/main/docs/closure_compilation.md
 
-/** @fileoverview Externs generated from namespace: events */
+/**
+ * @fileoverview Externs generated from namespace: events
+ * @externs
+ */
 
 /** @const */
 chrome.events = {};

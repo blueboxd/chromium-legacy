@@ -114,6 +114,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kAnonymousUpdateChecks,
     &features::kEarlyLibraryLoad,
     &features::kGenericSensorExtraClasses,
+    &features::kAsyncSensorCalls,
     &features::kHttpsOnlyMode,
     &features::kMetricsSettingsAndroid,
     &features::kNetworkServiceInProcess,
@@ -203,6 +204,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResourcePrefetch,
     &kCCTShowAboutBlankUrl,
     &kCCTToolbarCustomizations,
+    &kDiscardOccludedBitmaps,
     &kDontAutoHideBrowserControls,
     &kCacheDeprecatedSystemLocationSetting,
     &kChromeNewDownloadTab,
@@ -414,7 +416,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &switches::kForceDisableExtendedSyncPromos,
     &switches::kGaiaIdInAMF,
     &switches::kTangibleSync,
-    &syncer::kEnableSyncImmediatelyInFRE,
     &syncer::kSyncTrustedVaultPassphraseRecovery,
     &syncer::kSyncAndroidLimitNTPPromoImpressions,
     &syncer::kSyncAndroidPromosWithAlternativeTitle,
@@ -627,6 +628,10 @@ BASE_FEATURE(kCCTShowAboutBlankUrl,
 BASE_FEATURE(kCCTToolbarCustomizations,
              "CCTToolbarCustomizations",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kDiscardOccludedBitmaps,
+             "DiscardOccludedBitmaps",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDontAutoHideBrowserControls,
              "DontAutoHideBrowserControls",

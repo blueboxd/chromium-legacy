@@ -1809,7 +1809,7 @@ BASE_FEATURE(kSmartLockSignInRemoved,
 // settings.
 BASE_FEATURE(kSmartLockUIRevamp,
              "SmartLockUIRevamp",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables battery indicator for styluses in the palette tray
 BASE_FEATURE(kStylusBatteryStatus,
@@ -2886,11 +2886,6 @@ bool IsShimlessRMADarkModeDisabled() {
 
 bool IsSimLockPolicyEnabled() {
   return base::FeatureList::IsEnabled(kSimLockPolicy);
-}
-
-// TODO(crbug.com/1249845): Remove this function.
-bool IsSyncSettingsCategorizationEnabled() {
-  return true;
 }
 
 bool IsSystemTrayShadowEnabled() {

@@ -615,9 +615,10 @@
   {
     "prefix": "fluent-non-overlay-scrollbar",
     "platforms": ["Win"],
-    "bases": [],
+    "bases": ["fast/scrolling/scrollbars"],
     "args": ["--enable-features=FluentScrollbar",
-             "--enable-threaded-compositing"]
+             "--enable-threaded-compositing",
+             "--disable-smooth-scrolling"]
   },
   {
     "prefix": "fluent-non-overlay-scrollbar-dsf-150",
@@ -804,6 +805,12 @@
       "http/tests/storage/partitioned-storage"
     ],
     "args": [ "--enable-features=ThirdPartyStoragePartitioning" ]
+  },
+  {
+    "prefix": "post-message-different-partition-same-origin-blocked",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/html/browsers/windows/post-message"],
+    "args": ["--enable-features=PostMessageDifferentPartitionSameOriginBlocked"]
   },
   {
     "prefix": "threaded-composited-iframes",
@@ -1218,7 +1225,7 @@
       "http/tests/inspector-protocol/prefetch"
     ],
     "args": [
-      "--enable-blink-features=SpeculationRulesPrefetchProxy",
+      "--enable-blink-features=SpeculationRulesPrefetchProxy,SpeculationRulesFetchFromHeader",
       "--enable-features=SpeculationRulesPrefetchProxy,PrefetchUseContentRefactor",
       "--bypass-prefetch-proxy-for-host=not-web-platform.test",
       "--isolated-prerender-allow-all-domains"

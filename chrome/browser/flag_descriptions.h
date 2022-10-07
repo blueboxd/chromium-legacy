@@ -429,9 +429,6 @@ extern const char kDisruptiveNotificationPermissionRevocationDescription[];
 extern const char kDoubleBufferCompositingName[];
 extern const char kDoubleBufferCompositingDescription[];
 
-extern const char kDnsHttpsSvcbName[];
-extern const char kDnsHttpsSvcbDescription[];
-
 extern const char kUseDMSAAForTilesName[];
 extern const char kUseDMSAAForTilesDescription[];
 
@@ -758,6 +755,9 @@ extern const char kEnableRgbKeyboardDescription[];
 
 extern const char kEnableShortcutCustomizationAppName[];
 extern const char kEnableShortcutCustomizationAppDescription[];
+
+extern const char kEnableShortcutCustomizationName[];
+extern const char kEnableShortcutCustomizationDescription[];
 
 extern const char kExperimentalRgbKeyboardPatternsName[];
 extern const char kExperimentalRgbKeyboardPatternsDescription[];
@@ -1168,8 +1168,8 @@ extern const char kOmniboxMostVisitedTilesFadingOnTabletDescription[];
 extern const char kOmniboxMostVisitedTilesOnSrpName[];
 extern const char kOmniboxMostVisitedTilesOnSrpDescription[];
 
-extern const char kOmniboxOnClobberFocusTypeOnAndroidName[];
-extern const char kOmniboxOnClobberFocusTypeOnAndroidDescription[];
+extern const char kOmniboxOnClobberFocusTypeOnContentName[];
+extern const char kOmniboxOnClobberFocusTypeOnContentDescription[];
 
 extern const char kOmniboxShortBookmarkSuggestionsName[];
 extern const char kOmniboxShortBookmarkSuggestionsDescription[];
@@ -1641,6 +1641,9 @@ extern const char kTailoredSecurityDesktopNoticeDescription[];
 extern const char kTextBasedAudioDescriptionName[];
 extern const char kTextBasedAudioDescriptionDescription[];
 
+extern const char kTextInShelfName[];
+extern const char kTextInShelfDescription[];
+
 extern const char kTFLiteLanguageDetectionName[];
 extern const char kTFLiteLanguageDetectionDescription[];
 
@@ -1966,6 +1969,8 @@ extern const char kCCTResizable90MaximumHeightName[];
 extern const char kCCTResizable90MaximumHeightDescription[];
 extern const char kCCTResizableAllowResizeByUserGestureName[];
 extern const char kCCTResizableAllowResizeByUserGestureDescription[];
+extern const char kCCTResizableAlwaysShowNavBarButtonsName[];
+extern const char kCCTResizableAlwaysShowNavBarButtonsDescription[];
 extern const char kCCTResizableForFirstPartiesName[];
 extern const char kCCTResizableForFirstPartiesDescription[];
 extern const char kCCTResizableForThirdPartiesName[];
@@ -3611,11 +3616,8 @@ extern const char kCrOSDspBasedAgcAllowedDescription[];
 extern const char kCrosPrivacyHubName[];
 extern const char kCrosPrivacyHubDescription[];
 
-extern const char kCrosPrivacyHubDogfoodName[];
-extern const char kCrosPrivacyHubDogfoodDescription[];
-
-extern const char kCrosPrivacyHubFutureName[];
-extern const char kCrosPrivacyHubFutureDescription[];
+extern const char kCrosPrivacyHubV0Name[];
+extern const char kCrosPrivacyHubV0Description[];
 
 extern const char kCrOSEnforceSystemAecName[];
 extern const char kCrOSEnforceSystemAecDescription[];

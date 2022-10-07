@@ -35,6 +35,14 @@
 
 namespace chromeos {
 namespace settings {
+
+// TODO(https://crbug.com/1164001): remove after migrating to ash.
+namespace mojom {
+using ::ash::settings::mojom::SearchResultDefaultRank;
+using ::ash::settings::mojom::SearchResultIcon;
+using ::ash::settings::mojom::SearchResultType;
+}  // namespace mojom
+
 namespace {
 
 const std::vector<SearchConcept>& GetPrivacySearchConcepts() {
@@ -349,9 +357,9 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("showPrivacyHubPage",
                           ash::features::IsCrosPrivacyHubEnabled());
   html_source->AddBoolean("showPrivacyHubMVPPage",
-                          ash::features::IsCrosPrivacyHubMVPEnabled());
+                          ash::features::IsCrosPrivacyHubV1Enabled());
   html_source->AddBoolean("showPrivacyHubFuturePage",
-                          ash::features::IsCrosPrivacyHubFutureEnabled());
+                          ash::features::IsCrosPrivacyHubV2Enabled());
 
   html_source->AddString(
       "smartPrivacyDesc",

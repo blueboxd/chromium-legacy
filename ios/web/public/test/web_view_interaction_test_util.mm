@@ -46,7 +46,8 @@ std::unique_ptr<base::Value> ExecuteJavaScript(web::WebState* web_state,
   web_state->ExecuteJavaScript(base::UTF8ToUTF16(script),
                                base::BindOnce(^(const base::Value* value) {
                                  if (value)
-                                   result = value->CreateDeepCopy();
+                                   result = std::make_unique<base::Value>(
+                                       value->Clone());
                                  did_finish = true;
                                }));
 
@@ -118,7 +119,7 @@ std::unique_ptr<base::Value> CallJavaScriptFunctionForFeature(
   bool function_call_successful = frame->CallJavaScriptFunctionInContentWorld(
       function, parameters, world, base::BindOnce(^(const base::Value* value) {
         if (value)
-          result = value->CreateDeepCopy();
+          result = std::make_unique<base::Value>(value->Clone());
         did_finish = true;
       }),
       kWaitForJSCompletionTimeout);

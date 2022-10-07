@@ -284,13 +284,6 @@ const char kAndroidPictureInPictureAPIName[] =
 const char kAndroidPictureInPictureAPIDescription[] =
     "Enable Picture-in-Picture Web API for Android";
 
-const char kDnsHttpsSvcbName[] = "Support for HTTPS records in DNS";
-const char kDnsHttpsSvcbDescription[] =
-    "When enabled, Chrome may query for HTTPS records in DNS. If any are "
-    "found, Chrome may upgrade the URL to HTTPS or enable Encrypted "
-    "ClientHello, depending on server support and whether those features are "
-    "enabled.";
-
 const char kUseDMSAAForTilesName[] = "Use DMSAA for tiles";
 const char kUseDMSAAForTilesDescription[] =
     "Switches skia to use DMSAA instead of MSAA for tile raster";
@@ -1145,6 +1138,11 @@ const char kEnableShortcutCustomizationAppName[] =
 const char kEnableShortcutCustomizationAppDescription[] =
     "Enable the shortcut customization SWA, allowing users to customize system "
     "shortcuts.";
+
+extern const char kEnableShortcutCustomizationName[] =
+    "Enable customization in new shortcuts app";
+extern const char kEnableShortcutCustomizationDescription[] =
+    "Enable customization of shortcuts in the new shortcuts app.";
 
 const char kExperimentalRgbKeyboardPatternsName[] =
     "Enable experimental RGB Keyboard patterns support";
@@ -2115,11 +2113,11 @@ const char kOmniboxMostVisitedTilesOnSrpDescription[] =
     "Offer most visited website tiles when the User is on the Search Results "
     "Page.";
 
-const char kOmniboxOnClobberFocusTypeOnAndroidName[] =
-    "Omnibox On Clobber Focus Type On Android";
-const char kOmniboxOnClobberFocusTypeOnAndroidDescription[] =
+const char kOmniboxOnClobberFocusTypeOnContentName[] =
+    "Omnibox On Clobber Focus Type On Content";
+const char kOmniboxOnClobberFocusTypeOnContentDescription[] =
     "Send ON_CLOBBER focus type for zero-prefix requests with an empty input "
-    "on Web/SRP on Android platform.";
+    "on Web/SRP.";
 
 const char kOmniboxShortBookmarkSuggestionsName[] =
     "Omnibox short bookmark suggestions";
@@ -2911,6 +2909,10 @@ const char kTailoredSecurityDesktopNoticeDescription[] =
     "Protection within Chrome when they enable or disable Enhanced Protection "
     "on their Account.";
 
+const char kTextInShelfName[] = "Internal test: text in shelf";
+const char kTextInShelfDescription[] =
+    "Extend text in shelf timeout to learn about user education";
+
 const char kTFLiteLanguageDetectionName[] = "TFLite-based Language Detection";
 const char kTFLiteLanguageDetectionDescription[] =
     "Uses TFLite for language detection in place of CLD3";
@@ -3505,7 +3507,11 @@ const char kCCTResizableWindowAboveNavbarDescription[] =
     "Avoid various UI glitches/misbehavior by always keeping bottom sheet "
     "custom tab above the navigation bar. The navigation bar color is not "
     "customizable - it is up to the host app to ensure the bar looks okay.";
-
+const char kCCTResizableAlwaysShowNavBarButtonsName[] =
+    "Always show the navigation bar buttons";
+const char kCCTResizableAlwaysShowNavBarButtonsDescription[] =
+    "The navigation bar buttons will remain visible while a Partial Chrome "
+    "Custom Tab is being resized.";
 const char kCCTRealTimeEngagementSignalsName[] =
     "Enable CCT real-time engagement signals.";
 const char kCCTRealTimeEngagementSignalsDescription[] =
@@ -6327,15 +6333,10 @@ const char kCrOSEnforceSystemAecNsAgcDescription[] =
 const char kCrosPrivacyHubName[] = "Enable ChromeOS Privacy Hub";
 const char kCrosPrivacyHubDescription[] = "Enables ChromeOS Privacy Hub.";
 
-const char kCrosPrivacyHubDogfoodName[] =
-    "Enable ChromeOS Privacy Hub dogfood features";
-const char kCrosPrivacyHubDogfoodDescription[] =
-    "Enables ChromeOS Privacy Hub dogfood features.";
-
-const char kCrosPrivacyHubFutureName[] =
-    "Enable ChromeOS Privacy Hub future features";
-const char kCrosPrivacyHubFutureDescription[] =
-    "Enables ChromeOS Privacy Hub future features.";
+const char kCrosPrivacyHubV0Name[] =
+    "Enable ChromeOS Privacy Hub without the location switch.";
+const char kCrosPrivacyHubV0Description[] =
+    "Enables ChromeOS Privacy Hub without the location switch.";
 
 const char kDefaultCalculatorWebAppName[] = "Default install Calculator PWA";
 const char kDefaultCalculatorWebAppDescription[] =

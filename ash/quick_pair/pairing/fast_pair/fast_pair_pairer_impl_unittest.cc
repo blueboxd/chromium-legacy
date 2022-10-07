@@ -25,9 +25,6 @@
 #include "ash/quick_pair/pairing/fast_pair/fast_pair_pairer.h"
 #include "ash/quick_pair/proto/fastpair.pb.h"
 #include "ash/quick_pair/repository/fake_fast_pair_repository.h"
-#include "ash/services/quick_pair/public/cpp/decrypted_passkey.h"
-#include "ash/services/quick_pair/public/cpp/decrypted_response.h"
-#include "ash/services/quick_pair/public/cpp/fast_pair_message_type.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
@@ -40,6 +37,9 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "chromeos/ash/services/quick_pair/public/cpp/decrypted_passkey.h"
+#include "chromeos/ash/services/quick_pair/public/cpp/decrypted_response.h"
+#include "chromeos/ash/services/quick_pair/public/cpp/fast_pair_message_type.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -944,6 +944,31 @@ TEST_F(FastPairPairerImplTest, PairSuccess_Initial) {
   histogram_tester().ExpectTotalCount(kPasskeyCharacteristicDecryptResult, 1);
   histogram_tester().ExpectTotalCount(kConfirmPasskeyAskTime, 1);
   histogram_tester().ExpectTotalCount(kConfirmPasskeyConfirmTime, 1);
+}
+
+TEST_F(FastPairPairerImplTest, BleDeviceLostMidPair) {
+  Login(user_manager::UserType::USER_TYPE_REGULAR);
+  base::RunLoop().RunUntilIdle();
+
+  CreateMockDevice(/*fast_pair_v1=*/false,
+                   /*protocol=*/Protocol::kFastPairInitial);
+  // When pairing starts, if the classic address can't be resolved to
+  // a device then we pair via address.
+  SetGetDeviceNullptr();
+  CreatePairer();
+  fake_fast_pair_handshake_->InvokeCallback();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(GetPairFailure(), absl::nullopt);
+  SetDecryptPasskeyForSuccess();
+
+  // Simulate BLE device being lost in the middle of pairing flow.
+  EraseHandshake();
+
+  NotifyConfirmPasskey();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(PairFailure::kBleDeviceLostMidPair, GetPairFailure());
+  EXPECT_FALSE(IsDevicePaired());
 }
 
 TEST_F(FastPairPairerImplTest, PairSuccess_Initial_FactoryCreate) {

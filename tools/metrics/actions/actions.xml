@@ -11115,12 +11115,29 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOS.ExperienceKit.Calendar.Copy">
+  <owner>erahmaoui@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    Recorded when user taps Copy in context menu after a long press on an date.
+  </description>
+</action>
+
 <action name="IOS.ExperienceKit.Calendar.Display">
   <owner>erahmaoui@google.com</owner>
   <owner>djean@chromium.org</owner>
   <description>
     The number of times the user triggered the &quot;add-to-calendar&quot;
     context after a long press on a date.
+  </description>
+</action>
+
+<action name="IOS.ExperienceKit.Maps.Copy">
+  <owner>erahmaoui@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    Recorded when user taps Copy in context menu after a long press on an
+    address.
   </description>
 </action>
 
@@ -18511,7 +18528,9 @@ should be able to be added at any place in this file.
 
 <action name="MobileMenuSelectTabs">
   <owner>ckitagawa@chromium.org</owner>
-  <description>User selected tabs in the mobile tab switcher.</description>
+  <description>
+    User pressed 'Select tabs' in the mobile tab switcher.
+  </description>
 </action>
 
 <action name="MobileMenuSettings">
@@ -21069,6 +21088,14 @@ should be able to be added at any place in this file.
     Emitted when a navigation happens to a page whose URL looks like it's a URL
     from the user's default search engine. I.e., emitted when it looks like--via
     a simple pattern match--the user navigated to a search results page.
+
+    Prior to M-108, this was possible to be emitted for all navigations, even
+    within profiles such as &quot;system&quot; profiles that don't allow the
+    user to search. (We expect it was rarely if even logged in those settings.)
+    In those settings, it looked for the search engine used by default in this
+    install of Chrome. This is typically Google. In M-108 and later, this user
+    action is eligible to be emitted only for profiles that allow the user to
+    search: regular profiles, Incognito profiles, and Guest profiles.
 
     NavEntryCommitted will also always be emitted at the same time (in the same
     code, just a few lines before).
@@ -34964,6 +34991,8 @@ should be able to be added at any place in this file.
              back arrow or through the system back."/>
   <suffix name="Done"
       label="Users tapped the action button on the top right corner."/>
+  <suffix name="OpenFromDialog"
+      label="Users tapped the ungroup button in the tab grid dialog."/>
   <suffix name="TabSelected"
       label="Users selected a tab in TabSelectionEditor."/>
   <suffix name="TabUnselected"
@@ -34972,12 +35001,32 @@ should be able to be added at any place in this file.
 </action-suffix>
 
 <action-suffix separator="." ordering="suffix">
+  <suffix name="Closed"
+      label="Catch all for closures of the TabSelectionEditorV2."/>
+  <suffix name="ClosedAutomatically"
+      label="Users closed the TabSelectionEditorV2 via an action."/>
+  <suffix name="ClosedByUser"
+      label="Users closed the TabSelectionEditorV2 explictly."/>
+  <suffix name="CloseTabs"
+      label="Users tapped on the close tabs button in TabSelectionEditorV2."/>
+  <suffix name="DeselectAll"
+      label="Users tapped on the deselect all button in TabSelectionEditorV2."/>
+  <suffix name="GroupTabs"
+      label="Users tapped on the group tabs button in TabSelectionEditorV2."/>
+  <suffix name="OpenFromDialog"
+      label="Users opened TabSelectionEditorV2 from the Tab Dialog."/>
+  <suffix name="OpenFromGrid"
+      label="Users opened TabSelectionEditorV2 from the Tab Switcher."/>
+  <suffix name="SelectAll"
+      label="Users tapped on the select all button in TabSelectionEditorV2."/>
   <suffix name="SharedTabAsTextList"
       label="Users tapped on the share button for a single tab in
              TabSelectionEditorV2."/>
   <suffix name="SharedTabsListAsTextList"
       label="Users tapped on the share button for multiple tabs in
              TabSelectionEditorV2."/>
+  <suffix name="UngroupTabs"
+      label="Users tapped on the ungroup tabs button in TabSelectionEditorV2."/>
   <affected-action name="TabMultiSelectV2"/>
 </action-suffix>
 

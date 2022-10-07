@@ -34,7 +34,7 @@ Refer to README.md for content description and update process.
  <item id="cablev2_websocket_from_authenticator" added_in_milestone="87" content_hash_code="0724f93c" os_list="linux,windows,chromeos,android" file_path="device/fido/cable/v2_authenticator.cc" />
  <item id="cablev2_websocket_from_client" added_in_milestone="86" content_hash_code="06f37377" os_list="windows,linux,chromeos" file_path="device/fido/cable/fido_tunnel_device.cc" />
  <item id="captive_portal_service" added_in_milestone="62" content_hash_code="04375eac" os_list="linux,windows,chromeos" file_path="components/captive_portal/content/captive_portal_service.cc" />
- <item id="cast_socket" added_in_milestone="66" content_hash_code="028e5273" os_list="linux,windows,chromeos,android" file_path="components/cast_channel/cast_socket.cc" />
+ <item id="cast_socket" added_in_milestone="66" content_hash_code="028e5273" os_list="linux,windows,chromeos,android" file_path="components/media_router/common/providers/cast/channel/cast_socket.cc" />
  <item id="cast_udp_socket" added_in_milestone="66" content_hash_code="047d6b2d" os_list="linux,windows,chromeos,android" file_path="components/mirroring/service/udp_socket_client.cc" />
  <item id="cast_udp_transport" added_in_milestone="65" content_hash_code="066a8189" os_list="linux,windows,chromeos,android" file_path="media/cast/net/udp_transport_impl.cc" />
  <item id="certificate_verifier_url_loader" added_in_milestone="80" content_hash_code="05856cc0" os_list="linux,windows,chromeos,android" file_path="services/cert_verifier/cert_net_url_loader/cert_net_fetcher_url_loader.cc" />
@@ -338,7 +338,7 @@ Refer to README.md for content description and update process.
  <item id="wallpaper_backdrop_images_info" added_in_milestone="99" content_hash_code="0010428c" os_list="chromeos" file_path="chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.cc" />
  <item id="wallpaper_backdrop_surprise_me_image" added_in_milestone="99" content_hash_code="0383b9db" os_list="chromeos" file_path="chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.cc" />
  <item id="nearby_connections_wifi_lan" added_in_milestone="99" content_hash_code="06b30010" os_list="chromeos" file_path="chrome/services/sharing/nearby/platform/wifi_lan_medium.cc" />
- <item id="timezone_lookup" added_in_milestone="98" content_hash_code="01e64e71" os_list="chromeos" file_path="ash/components/timezone/timezone_request.cc" />
+ <item id="timezone_lookup" added_in_milestone="98" content_hash_code="01e64e71" os_list="chromeos" file_path="chromeos/ash/components/timezone/timezone_request.cc" />
  <item id="oma_download_handler_android" added_in_milestone="99" content_hash_code="03226fe2" os_list="android" file_path="chrome/android/java/src/org/chromium/chrome/browser/download/OMADownloadHandler.java" />
  <item id="wallpaper_google_photos_albums" added_in_milestone="99" content_hash_code="00248f64" os_list="chromeos" file_path="chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.cc" />
  <item id="webapk_create" added_in_milestone="99" content_hash_code="07b8fd35" os_list="android" file_path="chrome/browser/android/webapk/webapk_installer.cc" />
@@ -395,4 +395,5 @@ Refer to README.md for content description and update process.
  <item id="supervised_user_favicon_request" added_in_milestone="108" content_hash_code="06636c2a" os_list="chromeos,android" file_path="chrome/browser/supervised_user/supervised_user_favicon_request_handler.cc" />
  <item id="app_preload_service" added_in_milestone="108" content_hash_code="00720713" os_list="chromeos" file_path="chrome/browser/apps/app_preload_service/app_preload_server_connector.cc" />
  <item id="search_and_assistant_enabled_checker" added_in_milestone="106" content_hash_code="003a5b64" os_list="chromeos" file_path="chrome/browser/ui/ash/assistant/search_and_assistant_enabled_checker.cc" />
+ <item id="user_image_downloader" added_in_milestone="108" content_hash_code="07c2217f" os_list="chromeos" file_path="chrome/browser/ash/login/users/avatar/user_image_loader.cc" />
 </annotations>

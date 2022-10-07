@@ -853,8 +853,7 @@ TEST_P(SurfaceTest, SubpixelCoordinate) {
   for (int j = 0; j < 2; j++) {
     const bool kTestCaseRotation = (j == 1);
     for (size_t i = 0; i < std::size(kTestRects); i++) {
-      auto rect_in_dip = kTestRects[i];
-      device_scale_transform.TransformRect(&rect_in_dip);
+      auto rect_in_dip = device_scale_transform.MapRect(kTestRects[i]);
       sub_surface->SetPosition(rect_in_dip.origin());
       child_surface->SetViewport(rect_in_dip.size());
       const int kChildBufferScale = 2;
@@ -873,8 +872,7 @@ TEST_P(SurfaceTest, SubpixelCoordinate) {
       ASSERT_EQ(2u, quad_list.size());
       auto transform =
           quad_list.front()->shared_quad_state->quad_to_target_transform;
-      auto rect = gfx::RectF(quad_list.front()->rect);
-      transform.TransformRect(&rect);
+      auto rect = transform.MapRect(gfx::RectF(quad_list.front()->rect));
       if (kExpectedAligned[i] && !kTestCaseRotation) {
         // A transformed rect cannot express a rotation.
         // Manipulation of texture coordinates, in addition to a transformed
@@ -1244,7 +1242,7 @@ TEST_P(SurfaceTest, ScaledSurfaceQuad) {
                   ->quad_list.back()
                   ->shared_quad_state->clip_rect);
 
-    auto testing_rect = gfx::RectF(gfx::PointF(0, 0), gfx::SizeF(256, 256));
+    gfx::Rect testing_rect(256, 256);
     // To get 32,32 -> 160,160 into the correct position it must be translated
     // backwards and scaled 0.5x in Y, then everything is scaled by the scale
     // factor.
@@ -1258,8 +1256,7 @@ TEST_P(SurfaceTest, ScaledSurfaceQuad) {
     if (gfx::Transform() == frame.render_pass_list.back()
                                 ->quad_list.back()
                                 ->shared_quad_state->quad_to_target_transform) {
-      expected_transform.TransformRect(&testing_rect);
-      auto expected_rect = gfx::ToNearestRect(testing_rect);
+      auto expected_rect = expected_transform.MapRect(testing_rect);
       EXPECT_EQ(expected_rect,
                 frame.render_pass_list.back()->quad_list.back()->rect);
     } else {
@@ -1267,7 +1264,7 @@ TEST_P(SurfaceTest, ScaledSurfaceQuad) {
                 frame.render_pass_list.back()
                     ->quad_list.back()
                     ->shared_quad_state->quad_to_target_transform);
-      EXPECT_EQ(gfx::ToNearestRect(testing_rect),
+      EXPECT_EQ(testing_rect,
                 frame.render_pass_list.back()->quad_list.back()->rect);
     }
   }

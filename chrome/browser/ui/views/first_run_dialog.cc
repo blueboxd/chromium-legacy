@@ -22,7 +22,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/crash/core/app/breakpad_linux.h"
 #include "components/crash/core/app/crashpad.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -33,20 +32,9 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
-namespace {
-
-#if !BUILDFLAG(IS_MAC)
-void InitCrashReporterIfEnabled(bool enabled) {
-  if (!crash_reporter::IsCrashpadEnabled() && enabled)
-    breakpad::InitCrashReporter(std::string());
-}
-#endif
-
-}  // namespace
-
 namespace first_run {
 
-void ShowFirstRunDialog(Profile* profile) {
+void ShowFirstRunDialog() {
   // Don't show first run dialog when running in headless mode since this
   // would effectively block the UI because there is no one to interact with
   // the dialog.
@@ -55,19 +43,18 @@ void ShowFirstRunDialog(Profile* profile) {
 
 #if BUILDFLAG(IS_MAC)
   if (base::FeatureList::IsEnabled(features::kViewsFirstRunDialog))
-    ShowFirstRunDialogViews(profile);
+    ShowFirstRunDialogViews();
   else
-    ShowFirstRunDialogCocoa(profile);
+    ShowFirstRunDialogCocoa();
 #else
-  ShowFirstRunDialogViews(profile);
+  ShowFirstRunDialogViews();
 #endif
 }
 
-void ShowFirstRunDialogViews(Profile* profile) {
+void ShowFirstRunDialogViews() {
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   FirstRunDialog::Show(
       base::BindRepeating(&platform_util::OpenExternal,
-                          base::Unretained(profile),
                           GURL(chrome::kLearnMoreReportingURL)),
       run_loop.QuitClosure());
   run_loop.Run();
@@ -127,13 +114,7 @@ bool FirstRunDialog::Accept() {
   GetWidget()->Hide();
   closed_through_accept_button_ = true;
 
-#if BUILDFLAG(IS_MAC)
   ChangeMetricsReportingState(report_crashes_->GetChecked());
-#else
-  ChangeMetricsReportingStateWithReply(
-      report_crashes_->GetChecked(),
-      base::BindOnce(&InitCrashReporterIfEnabled));
-#endif
 
   if (make_default_->GetChecked())
     shell_integration::SetAsDefaultBrowser();

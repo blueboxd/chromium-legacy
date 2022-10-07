@@ -190,6 +190,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="1989113344093894667">Vsebine ni mogoče zajeti</translation>
 <translation id="1990046457226896323">Datoteke za govor so bile prenesene.</translation>
 <translation id="1993072747612765854">Več informacij o najnovejši posodobitvi za <ph name="SYSTEM_APP_NAME" /></translation>
+<translation id="1995660704900986789">Izklop</translation>
 <translation id="1998100899771863792">Trenutno namizje</translation>
 <translation id="2001444736072756133">Iščite po <ph name="CATEGORY" />, datotekah, aplikacijah in drugem.</translation>
 <translation id="2016340657076538683">Vnesite sporočilo</translation>
@@ -770,16 +771,6 @@ Priklopite napravo v vir napajanja.</translation>
 <translation id="5393156353051693207">Če želite preurediti aplikacije, se kjer koli dotaknite in pridržite.</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> na <ph name="IN_PLACE_APP" />, spustite, da ustvarite mapo.</translation>
 <translation id="5397578532367286026">Upravitelj (<ph name="MANAGER_EMAIL" />) lahko na chrome.com pregleduje uporabo in zgodovino tega uporabnika.</translation>
-<translation id="5399673806694250334">Vrstica stanja, čas <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="CHANNEL" />
-        <ph name="NETWORK" />,
-        <ph name="MIC" />,
-        <ph name="CAMERA" />,
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">Hitre nastavitve, pritisnite tipko za iskanje in puščico levo, če želite dostopati do središča za obvestila.</translation>
 <translation id="5426063383988017631">Meni z nastavitvami je zaprt</translation>
 <translation id="5428899915242071344">Začni izbiranje</translation>

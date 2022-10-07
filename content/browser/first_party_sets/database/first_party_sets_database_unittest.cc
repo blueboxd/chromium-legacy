@@ -4,12 +4,16 @@
 
 #include "content/browser/first_party_sets/database/first_party_sets_database.h"
 
+#include <memory>
+#include <string>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
+#include "base/strings/string_piece.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/version.h"
 #include "net/base/schemeful_site.h"
 #include "net/first_party_sets/first_party_set_entry.h"
 #include "net/first_party_sets/first_party_sets_context_config.h"
@@ -17,17 +21,16 @@
 #include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/test/test_helpers.h"
-#include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-using ::testing::IsEmpty;
-using ::testing::Pair;
-using ::testing::UnorderedElementsAre;
 
 namespace content {
 
 namespace {
+
+using ::testing::IsEmpty;
+using ::testing::Pair;
+using ::testing::UnorderedElementsAre;
 
 static const size_t kTableCount = 7u;
 
@@ -334,7 +337,7 @@ TEST_F(FirstPartySetsDatabaseTest, PersistSets_NoPreExistingDB) {
 
   // ============ Verify persisting context config
   const char kSelectConfigSql[] =
-      "SELECT browser_context_id,site,primary_site FROM policy_modifications";
+      "SELECT browser_context_id,site,site_owner FROM policy_modifications";
   sql::Statement s_config(db.GetUniqueStatement(kSelectConfigSql));
   EXPECT_TRUE(s_config.Step());
   EXPECT_EQ(browser_context_id, s_config.ColumnString(0));
@@ -380,7 +383,7 @@ TEST_F(FirstPartySetsDatabaseTest, PersistSets_PreExistingDB) {
 
     // Verify data in the policy_modifications table.
     const char kSelectConfigSql[] =
-        "SELECT browser_context_id,site,primary_site FROM policy_modifications";
+        "SELECT browser_context_id,site,site_owner FROM policy_modifications";
     sql::Statement s_config(db.GetUniqueStatement(kSelectConfigSql));
     EXPECT_TRUE(s_config.Step());
     EXPECT_EQ(browser_context_id, s_config.ColumnString(0));
@@ -462,7 +465,7 @@ TEST_F(FirstPartySetsDatabaseTest, PersistSets_PreExistingDB) {
   // ============ Verify the new context config overwrote the pre-existing
   // data.
   const char kSelectConfigSql[] =
-      "SELECT browser_context_id,site,primary_site FROM policy_modifications "
+      "SELECT browser_context_id,site,site_owner FROM policy_modifications "
       "WHERE browser_context_id=?";
   sql::Statement s_config(db.GetUniqueStatement(kSelectConfigSql));
   s_config.BindString(0, browser_context_id);
@@ -997,7 +1000,7 @@ TEST_F(FirstPartySetsDatabaseTest, GetGlobalSets_NoPreExistingDB) {
   OpenDatabase();
   EXPECT_THAT(db()->GetGlobalSets("b").FindEntries(
                   {net::SchemefulSite(GURL("https://example.test"))},
-                  /*config=*/nullptr),
+                  net::FirstPartySetsContextConfig()),
               IsEmpty());
 }
 
@@ -1017,7 +1020,7 @@ TEST_F(FirstPartySetsDatabaseTest, GetGlobalSets) {
   OpenDatabase();
   EXPECT_THAT(
       db()->GetGlobalSets("b0").FindEntries({aaa, bbb},
-                                            /*config=*/nullptr),
+                                            net::FirstPartySetsContextConfig()),
       UnorderedElementsAre(
           Pair(aaa, net::FirstPartySetEntry(bbb, net::SiteType::kAssociated,
                                             absl::nullopt)),
@@ -1052,4 +1055,5 @@ TEST_F(FirstPartySetsDatabaseTest, FetchManualSets) {
   OpenDatabase();
   EXPECT_THAT(db()->FetchManualSets("b2"), res);
 }
+
 }  // namespace content

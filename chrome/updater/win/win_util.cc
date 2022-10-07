@@ -41,8 +41,10 @@
 #include "base/time/time.h"
 #include "base/win/atl.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_bstr.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
+#include "base/win/scoped_variant.h"
 #include "base/win/startup_information.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/updater_branding.h"
@@ -71,7 +73,7 @@ HResultOr<bool> IsUserRunningSplitToken() {
   bool is_split_token = elevation_type == TokenElevationTypeFull ||
                         elevation_type == TokenElevationTypeLimited;
   DCHECK(is_split_token || elevation_type == TokenElevationTypeDefault);
-  return is_split_token;
+  return base::ok(is_split_token);
 }
 
 HRESULT GetSidIntegrityLevel(PSID sid, MANDATORY_LEVEL* level) {
@@ -398,6 +400,8 @@ absl::optional<CSecurityDesc> GetCurrentUserDefaultSecurityDescriptor() {
   if (!dacl.AddAllowedAce(sid_user, GENERIC_ALL))
     return absl::nullopt;
 
+  security_desc.SetDacl(dacl);
+
   return security_desc;
 }
 
@@ -497,7 +501,7 @@ HResultOr<bool> IsTokenAdmin(HANDLE token) {
   BOOL is_member = false;
   if (!::CheckTokenMembership(token, administrators_group, &is_member))
     return base::unexpected(HRESULTFromLastError());
-  return static_cast<bool>(is_member);
+  return base::ok(is_member);
 }
 
 // TODO(crbug.com/1212187): maybe handle filtered tokens.
@@ -520,7 +524,7 @@ HResultOr<bool> IsUserNonElevatedAdmin() {
       is_user_non_elevated_admin = true;
     }
   }
-  return is_user_non_elevated_admin;
+  return base::ok(is_user_non_elevated_admin);
 }
 
 HResultOr<bool> IsCOMCallerAdmin() {
@@ -530,7 +534,7 @@ HResultOr<bool> IsCOMCallerAdmin() {
     HRESULT hr = ::CoImpersonateClient();
     if (hr == RPC_E_CALL_COMPLETE) {
       // RPC_E_CALL_COMPLETE indicates that the caller is in-proc.
-      return static_cast<bool>(::IsUserAnAdmin());
+      return base::ok(::IsUserAnAdmin());
     }
 
     if (FAILED(hr)) {
@@ -554,10 +558,8 @@ HResultOr<bool> IsCOMCallerAdmin() {
     HRESULT hr = result.error();
     DCHECK(FAILED(hr));
     LOG(ERROR) << __func__ << ": IsTokenAdmin failed: " << std::hex << hr;
-    return base::unexpected(hr);
   }
-
-  return result.value();
+  return result;
 }
 
 bool IsUACOn() {
@@ -652,7 +654,7 @@ HResultOr<DWORD> ShellExecuteAndWait(const base::FilePath& file_path,
 
   if (!shell_execute_info.hProcess) {
     VLOG(1) << __func__ << ": Started process, PID unknown";
-    return DWORD{0};
+    return base::ok(0);
   }
 
   const base::Process process(shell_execute_info.hProcess);
@@ -669,7 +671,7 @@ HResultOr<DWORD> ShellExecuteAndWait(const base::FilePath& file_path,
   if (!process.WaitForExit(&ret_val))
     return base::unexpected(HRESULTFromLastError());
 
-  return static_cast<DWORD>(ret_val);
+  return base::ok(static_cast<DWORD>(ret_val));
 }
 
 HResultOr<DWORD> RunElevated(const base::FilePath& file_path,
@@ -677,56 +679,61 @@ HResultOr<DWORD> RunElevated(const base::FilePath& file_path,
   return ShellExecuteAndWait(file_path, parameters, L"runas");
 }
 
-HRESULT RunDeElevated(const base::FilePath& file_path,
-                      const std::wstring& parameters,
-                      DWORD* exit_code) {
-  HWND hwnd = ::GetShellWindow();
-  if (!hwnd)
-    return HRESULTFromLastError();
-
-  DWORD explorer_pid = 0;
-  ::GetWindowThreadProcessId(hwnd, &explorer_pid);
-  if (!explorer_pid)
-    return HRESULTFromLastError();
-
-  base::win::ScopedHandle explorer_process(
-      ::OpenProcess(PROCESS_CREATE_PROCESS, FALSE, explorer_pid));
-  if (!explorer_process.is_valid())
-    return HRESULTFromLastError();
-
-  base::win::StartupInformation startup_info;
-  if (!startup_info.InitializeProcThreadAttributeList(1))
-    return HRESULTFromLastError();
-
-  if (!startup_info.UpdateProcThreadAttribute(
-          PROC_THREAD_ATTRIBUTE_PARENT_PROCESS, &explorer_process,
-          sizeof(HANDLE))) {
-    return HRESULTFromLastError();
-  }
-
-  PROCESS_INFORMATION process_info = {};
-  if (!::CreateProcess(file_path.value().c_str(),
-                       std::wstring(parameters).data(), nullptr, nullptr, TRUE,
-                       EXTENDED_STARTUPINFO_PRESENT, nullptr, nullptr,
-                       startup_info.startup_info(), &process_info)) {
-    HRESULT hr = HRESULTFromLastError();
-    LOG(ERROR) << "::CreateProcess() failed, " << std::hex << hr;
+HRESULT RunDeElevated(const std::wstring& path,
+                      const std::wstring& parameters) {
+  Microsoft::WRL::ComPtr<IShellWindows> shell;
+  HRESULT hr = ::CoCreateInstance(CLSID_ShellWindows, nullptr,
+                                  CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&shell));
+  if (FAILED(hr))
     return hr;
-  }
-  base::win::ScopedProcessInformation process_information(process_info);
 
-  const base::Process process(process_information.TakeProcessHandle());
-  const DWORD pid = process.Pid();
-  VLOG(1) << __func__ << ": Started process, PID: " << pid;
+  long hwnd = 0;
+  Microsoft::WRL::ComPtr<IDispatch> dispatch;
+  hr = shell->FindWindowSW(base::win::ScopedVariant(CSIDL_DESKTOP).AsInput(),
+                           base::win::ScopedVariant().AsInput(), SWC_DESKTOP,
+                           &hwnd, SWFO_NEEDDISPATCH, &dispatch);
+  if (FAILED(hr))
+    return hr;
 
-  ::AllowSetForegroundWindow(pid);
+  Microsoft::WRL::ComPtr<IServiceProvider> service;
+  hr = dispatch.As(&service);
+  if (FAILED(hr))
+    return hr;
 
-  int ret_val = 0;
-  if (!process.WaitForExit(&ret_val))
-    return HRESULTFromLastError();
+  Microsoft::WRL::ComPtr<IShellBrowser> browser;
+  hr = service->QueryService(SID_STopLevelBrowser, IID_PPV_ARGS(&browser));
+  if (FAILED(hr))
+    return hr;
 
-  *exit_code = ret_val;
-  return S_OK;
+  Microsoft::WRL::ComPtr<IShellView> view;
+  hr = browser->QueryActiveShellView(&view);
+  if (FAILED(hr))
+    return hr;
+
+  hr = view->GetItemObject(SVGIO_BACKGROUND, IID_PPV_ARGS(&dispatch));
+  if (FAILED(hr))
+    return hr;
+
+  Microsoft::WRL::ComPtr<IShellFolderViewDual> folder;
+  hr = dispatch.As(&folder);
+  if (FAILED(hr))
+    return hr;
+
+  hr = folder->get_Application(&dispatch);
+  if (FAILED(hr))
+    return hr;
+
+  Microsoft::WRL::ComPtr<IShellDispatch2> shell_dispatch;
+  hr = dispatch.As(&shell_dispatch);
+  if (FAILED(hr))
+    return hr;
+
+  return shell_dispatch->ShellExecute(
+      base::win::ScopedBstr(path).Get(),
+      base::win::ScopedVariant(parameters.c_str()),
+      base::win::ScopedVariant::kEmptyVariant,
+      base::win::ScopedVariant::kEmptyVariant,
+      base::win::ScopedVariant::kEmptyVariant);
 }
 
 absl::optional<base::FilePath> GetGoogleUpdateExePath(UpdaterScope scope) {

@@ -198,6 +198,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "app-store-rating-test-engaged-user",
+    "owners": [ "hiramahmood@google.com", "bling-flags@google.com" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "arc-custom-tabs-experiment",
     "owners": [ "hashimoto", "dominickn" ],
     "expiry_milestone": 95
@@ -894,6 +899,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "cct-resizable-always-show-navbar-buttons",
+    "owners": ["kgrosu", "twellington"],
+    "expiry_milestone": 110
+  },
+  {
     "name": "cct-resizable-for-first-parties",
     "owners": ["jinsukkim", "twellington"],
     "expiry_milestone": 110
@@ -1166,12 +1176,12 @@
     "expiry_milestone": 110
   },
   {
-    "name": "cros-privacy-hub-dogfood",
+    "name": "cros-privacy-hub-v0",
     "owners": [ "chromeos-privacyhub@google.com" ],
     "expiry_milestone": 120
   },
   {
-    "name": "cros-privacy-hub-future",
+    "name": "cros-privacy-hub-v2",
     "owners": [ "chromeos-privacyhub@google.com" ],
     "expiry_milestone": 120
   },
@@ -1505,11 +1515,6 @@
     "name": "dm-token-deletion",
     "owners": [ "igorruvinov", "zmin" ],
     "expiry_milestone": 115
-  },
-  {
-    "name": "dns-https-svcb",
-    "owners": [ "dmcardle", "ericorth", "davidben" ],
-    "expiry_milestone": 114
   },
   {
     "name": "dns-proxy-enable-doh",
@@ -2929,6 +2934,11 @@
     "name": "enable-service-workers-for-chrome-untrusted",
     "owners": [ "ortuno", "dominicschulz" ],
     "expiry_milestone": 110
+  },
+  {
+    "name": "enable-shortcut-customization",
+    "owners": [ "jimmyxgong", "zentaro", "cros-peripherals@google.com"],
+    "expiry_milestone": 115
   },
   {
     "name": "enable-shortcut-customization-app",
@@ -5029,7 +5039,7 @@
       "expiry_milestone": 107
   },
   {
-    "name": "omnibox-on-clobber-focus-type-on-android",
+    "name": "omnibox-on-clobber-focus-type-on-content",
     "owners": [ "rongtan", "ender", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 120
   },
@@ -6474,6 +6484,11 @@
     "name": "text-based-audio-descriptions",
     "owners": [ "abigailbklein@google.com", "evliu@google.com", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 115
+  },
+  {
+    "name": "text-in-shelf",
+    "owners": [ "wcwang@google.com", "//ash/shelf/OWNERS"  ],
+    "expiry_milestone": 120
   },
   {
     "name": "third-party-storage-partitioning",

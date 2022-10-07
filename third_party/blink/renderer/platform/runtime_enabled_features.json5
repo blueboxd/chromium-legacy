@@ -662,7 +662,7 @@
     },
     {
       name: "CSSFontFaceSrcTechParsing",
-      status: "experimental"
+      status: "stable"
     },
     {
       name: "CSSFontFamilyMath",
@@ -1241,6 +1241,9 @@
       name: "Fledge",
       origin_trial_feature_name: "PrivacySandboxAdsAPIs",
       origin_trial_allows_third_party: true,
+    },
+    {
+      name: "FluentScrollbars",
     },
     {
       name: "Focusgroup",
@@ -2089,7 +2092,7 @@
     {
       // https://crbug.com/1126305
       name: "Prerender2",
-      status: {"Android": "stable"},
+      status: "stable",
       base_feature: "Prerender2",
     },
     // This RTE feature is used to indicate the status of RTE feature Prerender2
@@ -2443,6 +2446,9 @@
       implied_by: ["SpeculationRulesPrefetchProxy", "SpeculationRulesPrefetchWithSubresources", "Prerender2"],
       origin_trial_feature_name: "SpeculationRules__DONOTUSE",
     },
+    {
+      name: "SpeculationRulesFetchFromHeader"
+    },
     // Origin trial to enable Speculation Rules for access to the prefetch proxy.
     // https://crbug.com/1190167
     {
@@ -2494,7 +2500,7 @@
     },
     {
       name: "SupportsFontFormatTech",
-      status: "experimental"
+      status: "stable"
     },
     {
       // When a Web application calls getDisplayMedia() and asks for video,
@@ -2697,7 +2703,7 @@
     },
     {
       name: "VariableCOLRV1",
-      status: "test",
+      status: "stable",
       base_feature: "VariableCOLRV1",
     },
     {

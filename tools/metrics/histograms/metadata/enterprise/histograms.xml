@@ -882,12 +882,22 @@ chromium-metrics-reviews@google.com.
   <token key="Variant">
     <variant name="Ash" summary="Ash"/>
     <variant name="Browser" summary="Browser (without cache)"/>
-    <variant name="Browser.WithCache" summary="Browser (with cache)"/>
     <variant name="Common" summary="Common (without cache)"/>
     <variant name="Common.WithCache" summary="Common (with cache)"/>
-    <variant name="Content" summary="Content"/>
+    <variant name="Context" summary="Context"/>
     <variant name="Full" summary="full set of"/>
   </token>
+</histogram>
+
+<histogram name="Enterprise.Dlp.ActiveFileEventsCount" units="entries"
+    expires_after="2023-03-01">
+  <owner>accorsi@google.com</owner>
+  <owner>chromeos-dlp@google.com</owner>
+  <summary>
+    Number of non-expired file events stored in the
+    DlpFilesController::EventStorage. It is recorded each time an entry is added
+    or updated.
+  </summary>
 </histogram>
 
 <histogram name="Enterprise.Dlp.CaptureModeInitBlocked" enum="BooleanBlocked"

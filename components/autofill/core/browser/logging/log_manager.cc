@@ -24,10 +24,10 @@ class LogManagerImpl : public LogManager {
   // LogManager
   void OnLogRouterAvailabilityChanged(bool router_can_be_used) override;
   void SetSuspended(bool suspended) override;
-  void LogTextMessage(const std::string& text) const override;
-  void LogEntry(const base::Value::Dict& entry) const override;
   bool IsLoggingActive() const override;
   LogBufferSubmitter Log() override;
+  void ProcessLog(base::Value::Dict node,
+                  base::PassKey<LogBufferSubmitter>) override;
 
  private:
   // A LogRouter instance obtained on construction. May be null.
@@ -77,24 +77,17 @@ void LogManagerImpl::SetSuspended(bool suspended) {
   }
 }
 
-void LogManagerImpl::LogTextMessage(const std::string& text) const {
-  if (!IsLoggingActive())
-    return;
-  log_router_->ProcessLog(text);
-}
-
-void LogManagerImpl::LogEntry(const base::Value::Dict& entry) const {
-  if (!IsLoggingActive())
-    return;
-  log_router_->ProcessLog(entry);
-}
-
 bool LogManagerImpl::IsLoggingActive() const {
   return can_use_log_router_ && !is_suspended_;
 }
 
 LogBufferSubmitter LogManagerImpl::Log() {
-  return LogBufferSubmitter(log_router_, IsLoggingActive());
+  return LogBufferSubmitter(this);
+}
+
+void LogManagerImpl::ProcessLog(base::Value::Dict node,
+                                base::PassKey<LogBufferSubmitter>) {
+  log_router_->ProcessLog(std::move(node));
 }
 
 }  // namespace

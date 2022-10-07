@@ -197,6 +197,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTReportParallelRequestStatus,
     &kCCTResizable90MaximumHeight,
     &kCCTResizableAllowResizeByUserGesture,
+    &kCCTResizableAlwaysShowNavBarButtons,
     &kCCTResizableForFirstParties,
     &kCCTResizableForThirdParties,
     &kCCTResizableWindowAboveNavbar,
@@ -371,7 +372,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &omnibox::kOmniboxRemoveSuggestionHeaderChevron,
     &omnibox::kOmniboxMostVisitedTilesFadingOnTablet,
     &omnibox::kOmniboxMostVisitedTilesOnSrp,
-    &omnibox::kOmniboxOnClobberFocusTypeOnAndroid,
+    &omnibox::kOmniboxOnClobberFocusTypeOnContent,
     &omnibox::kSuggestionAnswersColorReverse,
     &omnibox::kUpdatedConnectionSecurityIndicators,
     &optimization_guide::features::kPushNotifications,
@@ -599,6 +600,10 @@ BASE_FEATURE(kCCTResizable90MaximumHeight,
 
 BASE_FEATURE(kCCTResizableAllowResizeByUserGesture,
              "CCTResizableAllowResizeByUserGesture",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCCTResizableAlwaysShowNavBarButtons,
+             "CCTResizableAlwaysShowNavBarButtons",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTResizableForFirstParties,

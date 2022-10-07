@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_paths.h"
 #include "ash/constants/ash_switches.h"
 #include "base/barrier_closure.h"
@@ -45,6 +44,7 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/crosapi/mojom/chrome_app_kiosk_service.mojom.h"
 #include "components/account_id/account_id.h"
 #include "components/ownership/owner_key_util.h"
@@ -599,7 +599,7 @@ bool KioskAppManager::GetCachedCrx(const std::string& app_id,
 crosapi::mojom::AppInstallParams KioskAppManager::CreatePrimaryAppInstallData(
     const std::string& id) const {
   const base::Value::Dict* extension =
-      external_cache_->GetCachedExtensions()->GetDict().FindDict(id);
+      external_cache_->GetCachedExtensions().FindDict(id);
   if (!extension) {
     return crosapi::mojom::AppInstallParams(id, std::string(), std::string(),
                                             false);

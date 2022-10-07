@@ -2248,10 +2248,10 @@ void SurfaceAggregator::TransformAndStoreDelegatedInkMetadata(
       return;
   }
 
-  gfx::RectF area(metadata->presentation_area());
   gfx::PointF point =
       parent_quad_to_root_target_transform.MapPoint(metadata->point());
-  parent_quad_to_root_target_transform.TransformRect(&area);
+  gfx::RectF area = parent_quad_to_root_target_transform.MapRect(
+      metadata->presentation_area());
   delegated_ink_metadata_ = std::make_unique<gfx::DelegatedInkMetadata>(
       point, metadata->diameter(), metadata->color(), metadata->timestamp(),
       area, metadata->frame_time(), metadata->is_hovering());
@@ -2406,7 +2406,7 @@ void SurfaceAggregator::CreateDeJellyRenderPassQuads(
 
   // Compute the required renderpass rect in target space.
   // First, find the un-transformed visible rect.
-  gfx::RectF render_pass_visible_rect_f(state->visible_quad_layer_rect);
+  gfx::Rect render_pass_visible_rect = state->visible_quad_layer_rect;
   // Next, if this is a RenderPass quad, find any filters and expand the
   // visible rect.
   if (quad->material == DrawQuad::Material::kCompositorRenderPass) {
@@ -2414,16 +2414,15 @@ void SurfaceAggregator::CreateDeJellyRenderPassQuads(
         CompositorRenderPassDrawQuad::MaterialCast(quad)->render_pass_id});
     for (auto& rp : *dest_pass_list_) {
       if (rp->id == target_id) {
-        render_pass_visible_rect_f = gfx::RectF(
-            rp->filters.MapRect(state->visible_quad_layer_rect, SkMatrix()));
+        render_pass_visible_rect =
+            rp->filters.MapRect(state->visible_quad_layer_rect, SkMatrix());
         break;
       }
     }
   }
   // Next, find the enclosing Rect for the transformed target space RectF.
-  state->quad_to_target_transform.TransformRect(&render_pass_visible_rect_f);
-  gfx::Rect render_pass_visible_rect =
-      gfx::ToEnclosingRect(render_pass_visible_rect_f);
+  render_pass_visible_rect =
+      state->quad_to_target_transform.MapRect(render_pass_visible_rect);
   // Finally, expand by our un_clip amounts.
   render_pass_visible_rect.Inset(
       gfx::Insets::TLBR(-un_clip_top, 0, -un_clip_bottom, 0));

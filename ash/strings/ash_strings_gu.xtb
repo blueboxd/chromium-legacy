@@ -190,6 +190,7 @@
 <translation id="1989113344093894667">કન્ટેન્ટ કૅપ્ચર કરી શકાતું નથી</translation>
 <translation id="1990046457226896323">સ્પીચ ફાઇલો ડાઉનલોડ કરી</translation>
 <translation id="1993072747612765854">નવીનતમ <ph name="SYSTEM_APP_NAME" /> અપડેટ વિશે વધુ જાણો</translation>
+<translation id="1995660704900986789">પાવર બંધ કરો</translation>
 <translation id="1998100899771863792">વર્તમાન ડેસ્ક</translation>
 <translation id="2001444736072756133">તમારી <ph name="CATEGORY" />, ફાઇલો, ઍપ અને બીજું ઘણું શોધો.</translation>
 <translation id="2016340657076538683">એક સંદેશ લખો</translation>
@@ -770,16 +771,6 @@
 <translation id="5393156353051693207">તમારી ઍપનો ક્રમ બદલવા માટે ગમે ત્યાં ટચ કરીને થોડીવાર દબાવી રાખો</translation>
 <translation id="5395308026110844773"><ph name="IN_PLACE_APP" />ની સૌથી ઉપર <ph name="DRAGGED_APP_NAME" /> પર, ફોલ્ડર બનાવવા માટે રિલીઝ કરો.</translation>
 <translation id="5397578532367286026">આ વપરાશકર્તાના ઉપયોગ અને ઇતિહાસની chrome.com પર સંચાલક (<ph name="MANAGER_EMAIL" />) દ્વારા સમીક્ષા કરવામાં આવી શકે છે.</translation>
-<translation id="5399673806694250334">સ્ટેટસ ટ્રે, સમય <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="CHANNEL" />
-        <ph name="NETWORK" />,
-        <ph name="MIC" />,
-        <ph name="CAMERA" />,
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">ઝડપી સેટિંગ, નોટિફિકેશન કેન્દ્ર ઍક્સેસ કરવા માટે Search + ડાબી ઍરો કી દબાવો.</translation>
 <translation id="5426063383988017631">સેટિંગ મેનૂ બંધ કર્યું</translation>
 <translation id="5428899915242071344">પસંદ કરવાનું શરૂ કરો</translation>

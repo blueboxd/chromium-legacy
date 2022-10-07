@@ -44,6 +44,7 @@
 #include "ash/wm/window_cycle/window_cycle_controller.h"
 #include "ash/wm/window_restore/window_restore_controller.h"
 #include "ash/wm/window_restore/window_restore_util.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
@@ -84,12 +85,10 @@ namespace {
 // Used to initialize toasts to undo desk removal with different IDs.
 unsigned int g_close_desk_toast_counter = 0;
 
-constexpr char kNewDeskHistogramName[] = "Ash.Desks.NewDesk2";
 constexpr char kDesksCountHistogramName[] = "Ash.Desks.DesksCount3";
 constexpr char kWeeklyActiveDesksHistogramName[] =
     "Ash.Desks.WeeklyActiveDesks";
 constexpr char kRemoveDeskHistogramName[] = "Ash.Desks.RemoveDesk";
-constexpr char kDeskSwitchHistogramName[] = "Ash.Desks.DesksSwitch";
 constexpr char kMoveWindowFromActiveDeskHistogramName[] =
     "Ash.Desks.MoveWindowFromActiveDesk";
 constexpr char kCloseAllUndoHistogramName[] = "Ash.Desks.CloseAllUndo";
@@ -796,8 +795,10 @@ bool DesksController::MoveWindowFromActiveDeskTo(
   DCHECK_NE(active_desk_, target_desk);
 
   // An active window might be an always-on-top or pip which doesn't belong to
-  // the active desk, and hence cannot be removed.
-  if (!base::Contains(active_desk_->windows(), window))
+  // the active desk, and cannot be removed. Except floated window, which is
+  // handled by `FloatController::OnMovingFloatedWindowToDesk`.
+  const bool is_floated = WindowState::Get(window)->IsFloated();
+  if (!base::Contains(active_desk_->windows(), window) && !is_floated)
     return false;
 
   const bool visible_on_all_desks =
@@ -842,8 +843,15 @@ bool DesksController::MoveWindowFromActiveDeskTo(
     }
   }
 
-  active_desk_->MoveWindowToDesk(window, target_desk, target_root,
-                                 /*unminimize=*/true);
+  // Floated window doesn't belong to the desk container, float controller
+  // handles its desk-window relationship.
+  if (is_floated) {
+    Shell::Get()->float_controller()->OnMovingFloatedWindowToDesk(
+        window, target_desk, target_root);
+  } else {
+    active_desk_->MoveWindowToDesk(window, target_desk, target_root,
+                                   /*unminimize=*/true);
+  }
 
   MaybeUpdateShelfItems(/*windows_on_inactive_desk=*/{window},
                         /*windows_on_active_desk=*/{});
@@ -1060,7 +1068,7 @@ void DesksController::CaptureActiveDeskAsTemplate(
 }
 
 const Desk* DesksController::CreateNewDeskForTemplate(
-    bool activate_desk,
+    DeskTemplateType template_type,
     const std::u16string& customized_desk_name) {
   DCHECK(CanCreateDesks());
 
@@ -1084,7 +1092,17 @@ const Desk* DesksController::CreateNewDeskForTemplate(
     }
   }
 
-  NewDesk(DesksCreationRemovalSource::kLaunchTemplate);
+  switch (template_type) {
+    case DeskTemplateType::kTemplate:
+      NewDesk(DesksCreationRemovalSource::kLaunchTemplate);
+      break;
+    case DeskTemplateType::kSaveAndRecall:
+      NewDesk(DesksCreationRemovalSource::kSaveAndRecall);
+      break;
+    case DeskTemplateType::kUnknown:
+      return nullptr;
+  }
+
   Desk* desk = desks().back().get();
 
   if (!desk_name.empty()) {
@@ -1097,7 +1115,7 @@ const Desk* DesksController::CreateNewDeskForTemplate(
   // Force update user prefs because `SetName()` does not trigger it.
   desks_restore_util::UpdatePrimaryUserDeskNamesPrefs();
 
-  if (activate_desk) {
+  if (template_type == DeskTemplateType::kTemplate) {
     // We're staying in overview mode, so move desks bar window and the save
     // template button to the new desk. They would otherwise disappear when the
     // new desk is activated.

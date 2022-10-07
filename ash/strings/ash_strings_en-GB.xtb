@@ -159,6 +159,15 @@ Here are some things that you can try to get started.</translation>
 <translation id="1797271123677381264">Forgot password</translation>
 <translation id="181103072419391116">Signal strength <ph name="SIGNAL_STRENGTH" />, managed by your administrator</translation>
 <translation id="1812997170047690955">What's on my screen?</translation>
+<translation id="1823280932251546115">Status tray, time <ph name="TIME" />,
+        <ph name="BATTERY" />
+        <ph name="CHANNEL" />
+        <ph name="NETWORK" />,
+        <ph name="PRIVACY" />,
+        <ph name="MANAGED" />
+        <ph name="NOTIFICATION" />,
+        <ph name="IME" />
+        <ph name="LOCALE" /></translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1830308660060964064"><ph name="ITEM_TITLE" /> was un-pinned</translation>
 <translation id="1836215606488044471">Assistant (loading...)</translation>
@@ -190,6 +199,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="1989113344093894667">Can't capture content</translation>
 <translation id="1990046457226896323">Speech files downloaded</translation>
 <translation id="1993072747612765854">Learn more about the latest <ph name="SYSTEM_APP_NAME" /> update</translation>
+<translation id="1995660704900986789">Power off</translation>
 <translation id="1998100899771863792">Current desk</translation>
 <translation id="2001444736072756133">Search your <ph name="CATEGORY" />, files, apps and more.</translation>
 <translation id="2016340657076538683">Type a message</translation>
@@ -413,6 +423,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="3368922792935385530">Connected</translation>
 <translation id="3371140690572404006">USB-C device (right-hand-side front port)</translation>
 <translation id="3375634426936648815">Connected</translation>
+<translation id="3378438761594387761">You'll find your recent downloads and screen captures here</translation>
 <translation id="3378442621503952303">Connecting to profile. Wait a few minutes.</translation>
 <translation id="3386978599540877378">the full-screen magnifier</translation>
 <translation id="3387527074123400161">Chromium OS</translation>
@@ -456,6 +467,8 @@ Here are some things that you can try to get started.</translation>
 <translation id="3600061223661453002">Off</translation>
 <translation id="3604801046548457007">Desk <ph name="DESK_TITILE" /> created</translation>
 <translation id="3606978283550408104">Braille display connected.</translation>
+<translation id="3609301425104788351"><ph name="MIC" />,
+        <ph name="CAMERA" /></translation>
 <translation id="3615926715408477684">Enabling mobile data will enable Bluetooth</translation>
 <translation id="3616883743181209306">Menu moved to the top-right corner of the screen.</translation>
 <translation id="3619536907358025872">Screen capture settings</translation>
@@ -719,6 +732,7 @@ Connect your device to power.</translation>
 <translation id="5083553833479578423">Unlock more Assistant features.</translation>
 <translation id="509790653408515442">When you stream your phone’s apps, they will appear here</translation>
 <translation id="5098537242461068432">Desk and windows reopened</translation>
+<translation id="5104236669533825617">Can’t create screencast</translation>
 <translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Show next month</translation>
 <translation id="5136175204352732067">Different keyboard connected</translation>
@@ -764,22 +778,13 @@ Connect your device to power.</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (right)</translation>
 <translation id="5352250171825660495">Dark theme is on</translation>
 <translation id="5356963482258194581">Switch between Dark and Light theme. Right-click on the desktop and select Wallpaper and style.</translation>
+<translation id="536019650977002321">Your administrator doesn’t allow audio capture. Contact your administrator for more info.</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> Go to this tab</translation>
 <translation id="5379115545237091094">Too many attempts</translation>
 <translation id="5391307769715781764">Replace saved desk?</translation>
 <translation id="5393156353051693207">Touch &amp; hold anywhere to reorder your apps</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> on top of <ph name="IN_PLACE_APP" />, release to create folder.</translation>
 <translation id="5397578532367286026">Usage and history of this user can be reviewed by the manager (<ph name="MANAGER_EMAIL" />) on chrome.com.</translation>
-<translation id="5399673806694250334">Status tray, time <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="CHANNEL" />
-        <ph name="NETWORK" />,
-        <ph name="MIC" />,
-        <ph name="CAMERA" />,
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">Quick Settings: press search + left to access the notification centre.</translation>
 <translation id="5426063383988017631">Settings menu closed</translation>
 <translation id="5428899915242071344">Start selecting</translation>

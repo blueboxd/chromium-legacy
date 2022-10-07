@@ -1101,6 +1101,8 @@ static_library("browser") {
     "performance_manager/mechanisms/working_set_trimmer.h",
     "performance_manager/metrics/memory_pressure_metrics.cc",
     "performance_manager/metrics/memory_pressure_metrics.h",
+    "performance_manager/metrics/page_timeline_monitor.cc",
+    "performance_manager/metrics/page_timeline_monitor.h",
     "performance_manager/observers/page_load_metrics_observer.cc",
     "performance_manager/observers/page_load_metrics_observer.h",
     "performance_manager/policies/page_freezing_policy.cc",
@@ -4675,6 +4677,10 @@ static_library("browser") {
       ]
     }
 
+    if (!is_fuchsia) {
+      deps += [ "//third_party/crashpad/crashpad/client:common" ]
+    }
+
     # On Windows, the hashes are embedded in //chrome:chrome_initial rather
     # than here in :chrome_dll.
     if (!is_win) {
@@ -5149,8 +5155,6 @@ static_library("browser") {
       "//ash/components/arc/enterprise",
       "//ash/components/arc/mojom",
       "//ash/components/arc/mojom",
-      "//ash/components/settings",
-      "//ash/components/timezone",
       "//ash/components/tpm",
       "//ash/constants",
       "//ash/public/cpp",
@@ -5280,7 +5284,9 @@ static_library("browser") {
       "//chromeos/ash/components/login/session",
       "//chromeos/ash/components/memory",
       "//chromeos/ash/components/network",
+      "//chromeos/ash/components/settings",
       "//chromeos/ash/components/sync_wifi",
+      "//chromeos/ash/components/timezone",
       "//chromeos/ash/services/assistant/public/cpp",
       "//chromeos/ash/services/auth_factor_config",
       "//chromeos/ash/services/bluetooth_config",
@@ -6344,6 +6350,8 @@ static_library("browser") {
       "enterprise/connectors/device_trust/device_trust_service_factory.h",
       "enterprise/connectors/device_trust/navigation_throttle.cc",
       "enterprise/connectors/device_trust/navigation_throttle.h",
+      "enterprise/connectors/device_trust/signals/decorators/common/context_signals_decorator.cc",
+      "enterprise/connectors/device_trust/signals/decorators/common/context_signals_decorator.h",
       "enterprise/connectors/device_trust/signals/signals_service_factory.cc",
       "enterprise/connectors/device_trust/signals/signals_service_factory.h",
       "enterprise/connectors/device_trust/signals/signals_service_impl.cc",
@@ -6356,7 +6364,6 @@ static_library("browser") {
       "//chrome/browser/enterprise/connectors/device_trust/common",
       "//chrome/browser/enterprise/connectors/device_trust/signals",
       "//chrome/browser/enterprise/connectors/device_trust/signals/decorators/common",
-      "//chrome/browser/enterprise/connectors/device_trust/signals/decorators/content",
       "//chrome/browser/ui/webui/connectors_internals:mojo_bindings",
       "//components/policy/proto:proto",
       "//services/data_decoder/public/cpp",

@@ -84,8 +84,7 @@ gfx::Rect OverviewTestBase::GetTransformedBounds(aura::Window* window) {
   wm::TranslateRectToScreen(window->parent(), &bounds);
   const gfx::Transform transform =
       gfx::TransformAboutPivot(bounds.origin(), window->layer()->transform());
-  transform.TransformRect(&bounds);
-  return ToStableSizeRoundedRect(bounds);
+  return ToStableSizeRoundedRect(transform.MapRect(bounds));
 }
 
 gfx::Rect OverviewTestBase::GetTransformedTargetBounds(aura::Window* window) {
@@ -93,13 +92,11 @@ gfx::Rect OverviewTestBase::GetTransformedTargetBounds(aura::Window* window) {
   wm::TranslateRectToScreen(window->parent(), &bounds);
   const gfx::Transform transform = gfx::TransformAboutPivot(
       bounds.origin(), window->layer()->GetTargetTransform());
-  transform.TransformRect(&bounds);
-  return ToStableSizeRoundedRect(bounds);
+  return ToStableSizeRoundedRect(transform.MapRect(bounds));
 }
 
 gfx::Rect OverviewTestBase::GetTransformedBoundsInRootWindow(
     aura::Window* window) {
-  gfx::RectF bounds = gfx::RectF(gfx::SizeF(window->bounds().size()));
   aura::Window* root = window->GetRootWindow();
   CHECK(window->layer());
   CHECK(root->layer());
@@ -108,8 +105,7 @@ gfx::Rect OverviewTestBase::GetTransformedBoundsInRootWindow(
                                                      &transform)) {
     return gfx::Rect();
   }
-  transform.TransformRect(&bounds);
-  return gfx::ToEnclosingRect(bounds);
+  return transform.MapRect(gfx::Rect(window->bounds().size()));
 }
 
 OverviewItem* OverviewTestBase::GetDropTarget(int grid_index) {

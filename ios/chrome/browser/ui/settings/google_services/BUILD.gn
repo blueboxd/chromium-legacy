@@ -172,6 +172,7 @@ source_set("eg2_tests") {
     "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
+    "//net:test_support",
     "//ui/base",
   ]
   frameworks = [ "UIKit.framework" ]
@@ -193,7 +194,7 @@ source_set("unit_tests") {
     "//components/sync:test_support",
     "//components/sync/driver",
     "//components/variations:test_support",
-    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/signin",

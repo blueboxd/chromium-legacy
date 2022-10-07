@@ -161,7 +161,7 @@ base::ScopedCFTypeRef<CFMutableDictionaryRef> BuildImageConfig(
   // macOS support 8 bit (they actually only recommand main profile)
   // HEVC with alpha layer well.
   if (has_alpha)
-    pixel_format = kCVPixelFormatType_420YpCbCr8VideoRange_8A_TriPlanar;
+    pixel_format = kCVPixelFormatType_32BGRA;
 
 #define CFINT(i) CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &i)
   base::ScopedCFTypeRef<CFNumberRef> cf_pixel_format(CFINT(pixel_format));
@@ -2139,10 +2139,14 @@ bool VTVideoDecodeAccelerator::ProcessFrame(const Frame& frame) {
     // Request new pictures.
     picture_size_ = frame.image_size;
 
-    picture_format_ = PIXEL_FORMAT_UNKNOWN;
-    if (config_.profile == VP9PROFILE_PROFILE2 ||
-        config_.profile == HEVCPROFILE_MAIN10 ||
-        config_.profile == HEVCPROFILE_REXT) {
+    // ARGB is required to make alpha video has a non-transparent background
+    // when playing in PiP mode.
+    if (has_alpha_) {
+      buffer_format_ = gfx::BufferFormat::BGRA_8888;
+      picture_format_ = PIXEL_FORMAT_ARGB;
+    } else if (config_.profile == VP9PROFILE_PROFILE2 ||
+               config_.profile == HEVCPROFILE_MAIN10 ||
+               config_.profile == HEVCPROFILE_REXT) {
       buffer_format_ = gfx::BufferFormat::P010;
       picture_format_ = PIXEL_FORMAT_P016LE;
     } else {
@@ -2177,8 +2181,19 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
 
   const gfx::ColorSpace color_space = GetImageBufferColorSpace(frame.image);
   std::vector<gfx::BufferPlane> planes;
-  planes.push_back(gfx::BufferPlane::Y);
-  planes.push_back(gfx::BufferPlane::UV);
+  switch (picture_format_) {
+    case PIXEL_FORMAT_NV12:
+    case PIXEL_FORMAT_P016LE:
+      planes.push_back(gfx::BufferPlane::Y);
+      planes.push_back(gfx::BufferPlane::UV);
+      break;
+    case PIXEL_FORMAT_ARGB:
+      planes.push_back(gfx::BufferPlane::DEFAULT);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
   for (size_t plane = 0; plane < planes.size(); ++plane) {
     const gfx::Size plane_size(
         CVPixelBufferGetWidthOfPlane(frame.image.get(), plane),
@@ -2226,9 +2241,10 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
       }
 
       auto shared_image = std::make_unique<gpu::GLImageBacking>(
-          gl_image, mailbox, viz_resource_format, plane_size, color_space,
-          kTopLeft_GrSurfaceOrigin, kOpaque_SkAlphaType, shared_image_usage,
-          gl_params, gl_client_.is_passthrough);
+          gl_image, mailbox,
+          viz::SharedImageFormat::SinglePlane(viz_resource_format), plane_size,
+          color_space, kTopLeft_GrSurfaceOrigin, kOpaque_SkAlphaType,
+          shared_image_usage, gl_params, gl_client_.is_passthrough);
 
       const bool success = shared_image_stub->factory()->RegisterBacking(
           std::move(shared_image));

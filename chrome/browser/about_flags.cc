@@ -886,6 +886,8 @@ const char kLacrosPrimaryInternalName[] = "lacros-primary";
 const char kLacrosSupportInternalName[] = "lacros-support";
 const char kLacrosStabilityInternalName[] = "lacros-stability";
 const char kWebAppsCrosapiInternalName[] = "web-apps-crosapi";
+const char kArcEnableVirtioBlkForDataInternalName[] =
+    "arc-enable-virtio-blk-for-data";
 const char kArcVmBalloonPolicyInternalName[] =
     "arc-use-limit-cache-balloon-policy";
 
@@ -2769,18 +2771,6 @@ const FeatureEntry::FeatureVariation kSCTAuditingVariations[] = {
 };
 #endif  // !BUILDFLAG(IS_ANDROID)
 
-const FeatureEntry::FeatureParam kUseDnsHttpsSvcbBoth[] = {
-    {"UseDnsHttpsSvcbEnableInsecure", "true"}};
-const FeatureEntry::FeatureParam kUseDnsHttpsSvcbDohOnly[] = {
-    {"UseDnsHttpsSvcbEnableInsecure", "false"}};
-
-const FeatureEntry::FeatureVariation kUseDnsHttpsSvcbVariations[] = {
-    {"for DNS-over-HTTPS and insecure DNS", kUseDnsHttpsSvcbBoth,
-     std::size(kUseDnsHttpsSvcbBoth), nullptr},
-    {"for DNS-over-HTTPS only", kUseDnsHttpsSvcbDohOnly,
-     std::size(kUseDnsHttpsSvcbDohOnly), nullptr},
-};
-
 #if BUILDFLAG(IS_ANDROID)
 // The variations of ContentLanguagesInLanguagePicker.
 const FeatureEntry::FeatureParam
@@ -3907,12 +3897,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCellularUseSecondEuiccName,
      flag_descriptions::kCellularUseSecondEuiccDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCellularUseSecondEuicc)},
-    {"cros-privacy-hub-dogfood", flag_descriptions::kCrosPrivacyHubDogfoodName,
-     flag_descriptions::kCrosPrivacyHubDogfoodDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kCrosPrivacyHubDogfood)},
-    {"cros-privacy-hub-future", flag_descriptions::kCrosPrivacyHubFutureName,
-     flag_descriptions::kCrosPrivacyHubFutureDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kCrosPrivacyHubFuture)},
+    {"cros-privacy-hub-v0", flag_descriptions::kCrosPrivacyHubV0Name,
+     flag_descriptions::kCrosPrivacyHubV0Description, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kCrosPrivacyHubV0)},
     {"enable-cros-privacy-hub", flag_descriptions::kCrosPrivacyHubName,
      flag_descriptions::kCrosPrivacyHubDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kCrosPrivacyHub)},
@@ -5236,7 +5223,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"arc-enable-usap", flag_descriptions::kArcEnableUsapName,
      flag_descriptions::kArcEnableUsapDesc, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kEnableUsap)},
-    {"arc-enable-virtio-blk-for-data",
+    {kArcEnableVirtioBlkForDataInternalName,
      flag_descriptions::kArcEnableVirtioBlkForDataName,
      flag_descriptions::kArcEnableVirtioBlkForDataDesc, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kEnableVirtioBlkForData)},
@@ -5512,10 +5499,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxLocalHistoryZeroSuggestBeyondNTPDescription,
      kOsAll, FEATURE_VALUE_TYPE(omnibox::kLocalHistoryZeroSuggestBeyondNTP)},
 
-    {"omnibox-on-clobber-focus-type-on-android",
-     flag_descriptions::kOmniboxOnClobberFocusTypeOnAndroidName,
-     flag_descriptions::kOmniboxOnClobberFocusTypeOnAndroidDescription, kOsAll,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxOnClobberFocusTypeOnAndroid)},
+    {"omnibox-on-clobber-focus-type-on-content",
+     flag_descriptions::kOmniboxOnClobberFocusTypeOnContentName,
+     flag_descriptions::kOmniboxOnClobberFocusTypeOnContentDescription, kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxOnClobberFocusTypeOnContent)},
 
     {"omnibox-on-focus-suggestions-contextual-web",
      flag_descriptions::kOmniboxFocusTriggersContextualWebZeroSuggestName,
@@ -6434,6 +6421,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(
          chrome::android::kCCTResizableAllowResizeByUserGesture)},
+    {"cct-resizable-always-show-navbar-buttons",
+     flag_descriptions::kCCTResizableAlwaysShowNavBarButtonsName,
+     flag_descriptions::kCCTResizableAlwaysShowNavBarButtonsDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCCTResizableAlwaysShowNavBarButtons)},
     {"cct-resizable-for-first-parties",
      flag_descriptions::kCCTResizableForFirstPartiesName,
      flag_descriptions::kCCTResizableForFirstPartiesDescription, kOsAndroid,
@@ -6924,6 +6916,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableShortcutCustomizationAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kShortcutCustomizationApp)},
 
+    {"enable-shortcut-customization",
+     flag_descriptions::kEnableShortcutCustomizationName,
+     flag_descriptions::kEnableShortcutCustomizationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kShortcutCustomization)},
+
     {"enable-firmware-updater-app",
      flag_descriptions::kEnableFirmwareUpdaterAppName,
      flag_descriptions::kEnableFirmwareUpdaterAppDescription, kOsCrOS,
@@ -7140,12 +7137,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSettingsAppNotificationSettingsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kSettingsAppNotificationSettings)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-    {"dns-https-svcb", flag_descriptions::kDnsHttpsSvcbName,
-     flag_descriptions::kDnsHttpsSvcbDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(net::features::kUseDnsHttpsSvcb,
-                                    kUseDnsHttpsSvcbVariations,
-                                    "UseDnsHttpsSvcb")},
 
     {"encrypted-client-hello", flag_descriptions::kEncryptedClientHelloName,
      flag_descriptions::kEncryptedClientHelloDescription, kOsAll,
@@ -7773,6 +7764,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kQuickActionShowBubbleLauncherName,
      flag_descriptions::kQuickActionShowBubbleLauncherDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kQuickActionShowBubbleLauncher)},
+    {"text-in-shelf", flag_descriptions::kTextInShelfName,
+     flag_descriptions::kTextInShelfDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kHomeButtonWithText)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -9758,6 +9752,10 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
 
   if (!strcmp(kWebAppsCrosapiInternalName, entry.internal_name)) {
     return !crosapi::browser_util::IsLacrosAllowedToBeEnabled();
+  }
+
+  if (!strcmp(kArcEnableVirtioBlkForDataInternalName, entry.internal_name)) {
+    return !arc::IsArcVmEnabled();
   }
 
   if (!strcmp(kArcVmBalloonPolicyInternalName, entry.internal_name)) {

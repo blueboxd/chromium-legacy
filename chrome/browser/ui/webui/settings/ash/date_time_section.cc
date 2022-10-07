@@ -4,9 +4,6 @@
 
 #include "chrome/browser/ui/webui/settings/ash/date_time_section.h"
 
-#include "ash/components/settings/cros_settings_names.h"
-#include "ash/components/settings/system_settings_provider.h"
-#include "ash/components/settings/timezone_settings.h"
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,6 +14,9 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ash/components/settings/system_settings_provider.h"
+#include "chromeos/ash/components/settings/timezone_settings.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -24,6 +24,14 @@
 
 namespace chromeos {
 namespace settings {
+
+// TODO(https://crbug.com/1164001): remove after migrating to ash.
+namespace mojom {
+using ::ash::settings::mojom::SearchResultDefaultRank;
+using ::ash::settings::mojom::SearchResultIcon;
+using ::ash::settings::mojom::SearchResultType;
+}  // namespace mojom
+
 namespace {
 
 const std::vector<SearchConcept>& GetDateTimeSearchConcepts() {

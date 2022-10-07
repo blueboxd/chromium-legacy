@@ -224,12 +224,14 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
 @property(nonatomic, strong)
     FeedTopSectionCoordinator* feedTopSectionCoordinator;
 
+// Currently selected feed. Redefined to readwrite.
+@property(nonatomic, assign, readwrite) FeedType selectedFeed;
+
 @end
 
 @implementation NewTabPageCoordinator
 
 // Synthesize NewTabPageConfiguring properties.
-@synthesize selectedFeed = _selectedFeed;
 @synthesize shouldScrollIntoFeed = _shouldScrollIntoFeed;
 @synthesize baseViewController = _baseViewController;
 
@@ -347,10 +349,6 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
     if (appState.initStage < InitStageFinal) {
       self.headerController.focusOmniboxWhenViewAppears = NO;
     }
-  }
-
-  if (IsDiscoverFeedTopSyncPromoEnabled()) {
-    self.feedTopSectionCoordinator = [self createFeedTopSectionCoordinator];
   }
 
   self.contentSuggestionsCoordinator =
@@ -648,14 +646,6 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
   }
 }
 
-- (void)selectFeedType:(FeedType)feedType {
-  if (!self.ntpViewController.viewDidAppear) {
-    self.selectedFeed = feedType;
-    return;
-  }
-  [self handleFeedSelected:feedType];
-}
-
 - (void)ntpDidChangeVisibility:(BOOL)visible {
   if (!self.browser->GetBrowserState()->IsOffTheRecord()) {
     if (visible && self.started) {
@@ -902,6 +892,17 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
   [self.ntpViewController updateScrollPositionForFeedTopSectionClosed];
 }
 
+#pragma mark - NewTabPageConfiguring
+
+- (void)selectFeedType:(FeedType)feedType {
+  if (!self.ntpViewController.viewDidAppear ||
+      ![self isFollowingFeedAvailable]) {
+    self.selectedFeed = feedType;
+    return;
+  }
+  [self handleFeedSelected:feedType];
+}
+
 #pragma mark - AppStateObserver
 
 - (void)appState:(AppState*)appState
@@ -1146,6 +1147,7 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
   self.ntpViewController.feedTopSectionViewController = nil;
   self.feedWrapperViewController = nil;
   self.feedViewController = nil;
+  self.feedTopSectionCoordinator = nil;
 
   // Fetches feed header and conditionally fetches feed. Feed can only be
   // visible if feed header is visible.
@@ -1171,6 +1173,7 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
       self.feedWrapperViewController;
 
   [self.ntpViewController layoutContentInParentCollectionView];
+  [self updateFeedLayout];
 }
 
 // Creates and configures the feed and feed header based on user prefs.
@@ -1179,6 +1182,10 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
 
   self.ntpViewController.feedHeaderViewController =
       self.feedHeaderViewController;
+
+  if ([self isFeedTopSectionVisible]) {
+    self.feedTopSectionCoordinator = [self createFeedTopSectionCoordinator];
+  }
 
   // Requests feeds here if the correct flags and prefs are enabled.
   if ([self shouldFeedBeVisible]) {

@@ -190,6 +190,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1989113344093894667">Não é possível capturar conteúdo</translation>
 <translation id="1990046457226896323">Ficheiros de voz transferidos.</translation>
 <translation id="1993072747612765854">Saiba mais sobre a mais recente atualização do <ph name="SYSTEM_APP_NAME" />.</translation>
+<translation id="1995660704900986789">Desligar</translation>
 <translation id="1998100899771863792">Espaço de trabalho atual</translation>
 <translation id="2001444736072756133">Pesquise na categoria <ph name="CATEGORY" />, ficheiros, apps e muito mais.</translation>
 <translation id="2016340657076538683">Escrever uma mensagem</translation>
@@ -770,16 +771,6 @@ Ligue o dispositivo à corrente.</translation>
 <translation id="5393156353051693207">Toque sem soltar em qualquer local para reordenar as suas apps</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> sobre <ph name="IN_PLACE_APP" />, solte para criar uma pasta.</translation>
 <translation id="5397578532367286026">A utilização e o histórico deste utilizador podem ser consultados pelo gestor (<ph name="MANAGER_EMAIL" />) em chrome.com.</translation>
-<translation id="5399673806694250334">Tabuleiro do estado, hora <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="CHANNEL" />
-        <ph name="NETWORK" />,
-        <ph name="MIC" />,
-        <ph name="CAMERA" />,
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">Nas Definições rápidas, prima Pesquisa + seta para a esquerda para aceder ao centro de notificações.</translation>
 <translation id="5426063383988017631">Menu de definições fechado</translation>
 <translation id="5428899915242071344">Iniciar seleção</translation>

@@ -190,6 +190,7 @@ Para comezar, podes probar o seguinte.</translation>
 <translation id="1989113344093894667">Non se puido realizar unha captura do contido</translation>
 <translation id="1990046457226896323">Descargáronse os ficheiros de voz</translation>
 <translation id="1993072747612765854">Máis información sobre a última actualización de <ph name="SYSTEM_APP_NAME" /></translation>
+<translation id="1995660704900986789">Apagar</translation>
 <translation id="1998100899771863792">Este escritorio</translation>
 <translation id="2001444736072756133">Busca <ph name="CATEGORY" />, ficheiros, aplicacións e moito máis.</translation>
 <translation id="2016340657076538683">Escribe unha mensaxe</translation>
@@ -771,16 +772,6 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="5393156353051693207">Mantén premida calquera parte da pantalla para reordenar as aplicacións</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> está sobre <ph name="IN_PLACE_APP" />, solta a aplicación para crear un cartafol.</translation>
 <translation id="5397578532367286026">O administrador pode revisar o uso e o historial deste usuario (<ph name="MANAGER_EMAIL" />) en chrome.com.</translation>
-<translation id="5399673806694250334">Bandexa de estado, hora: <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="CHANNEL" />
-        <ph name="NETWORK" />,
-        <ph name="MIC" />,
-        <ph name="CAMERA" />,
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">Configuración rápida, preme buscar + esquerda para acceder ao centro de notificacións.</translation>
 <translation id="5426063383988017631">Pechouse o menú de configuración</translation>
 <translation id="5428899915242071344">Comezar selección</translation>

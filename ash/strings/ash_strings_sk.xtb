@@ -190,6 +190,7 @@ Na začiatok môžete vyskúšať niektoré z týchto vecí.</translation>
 <translation id="1989113344093894667">Obsah nie je možné nasnímať</translation>
 <translation id="1990046457226896323">Súbory s balíkmi reči boli stiahnuté</translation>
 <translation id="1993072747612765854">Ďalšie informácie o najnovšej aktualizácii aplikácie <ph name="SYSTEM_APP_NAME" /></translation>
+<translation id="1995660704900986789">Vypnúť</translation>
 <translation id="1998100899771863792">Aktuálna plocha</translation>
 <translation id="2001444736072756133">Hľadajte <ph name="CATEGORY" />, súbory, aplikácie a ďalší obsah.</translation>
 <translation id="2016340657076538683">Zadajte správu</translation>
@@ -773,16 +774,6 @@ Pripojte svoje zariadenie k napájaniu.</translation>
 <translation id="5393156353051693207">Pridržte ľubovoľné miesto a zmeňte poradie aplikácií</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> na aplikáciu <ph name="IN_PLACE_APP" />, uvoľnením vytvoríte priečinok.</translation>
 <translation id="5397578532367286026">Aktivitu a históriu tohto používateľa môže skontrolovať správca (<ph name="MANAGER_EMAIL" />) na adrese chrome.com.</translation>
-<translation id="5399673806694250334">Stavový panel, čas <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="CHANNEL" />
-        <ph name="NETWORK" />,
-        <ph name="MIC" />,
-        <ph name="CAMERA" />,
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">Rýchle nastavenia, do centra upozornení prejdete stlačením klávesa vyhľadávania + šípky doľava</translation>
 <translation id="5426063383988017631">Ponuka Nastavenia bola zavretá</translation>
 <translation id="5428899915242071344">Začať výber</translation>

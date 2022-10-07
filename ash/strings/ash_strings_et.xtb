@@ -190,6 +190,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="1989113344093894667">Ei saa sisu jäädvustada</translation>
 <translation id="1990046457226896323">Kõnefailid laaditi alla</translation>
 <translation id="1993072747612765854">Vaadake lisateavet operatsioonisüsteemi <ph name="SYSTEM_APP_NAME" /> uusima värskenduse kohta</translation>
+<translation id="1995660704900986789">Lülita välja</translation>
 <translation id="1998100899771863792">Praegune töölaud</translation>
 <translation id="2001444736072756133">Otsige <ph name="CATEGORY" />, faile, rakendusi ja muud.</translation>
 <translation id="2016340657076538683">Sisestage sõnum</translation>
@@ -774,16 +775,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="5393156353051693207">Rakenduste järjestuse muutmiseks puudutage pikalt kus tahes</translation>
 <translation id="5395308026110844773">Rakendus <ph name="DRAGGED_APP_NAME" /> rakenduse <ph name="IN_PLACE_APP" /> kohal, kausta loomiseks vabastage.</translation>
 <translation id="5397578532367286026">Haldur (<ph name="MANAGER_EMAIL" />) saab kasutaja kasutusandmeid ja ajalugu vaadata aadressil chrome.com.</translation>
-<translation id="5399673806694250334">Olekusalv, aeg <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="CHANNEL" />
-        <ph name="NETWORK" />,
-        <ph name="MIC" />,
-        <ph name="CAMERA" />,
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">Kiirseaded, märguandekeskusele juurdepääsemiseks vajutage otsinguklahvi ja vasaknoolt.</translation>
 <translation id="5426063383988017631">Seadete menüü on suletud</translation>
 <translation id="5428899915242071344">Alustage valimist</translation>

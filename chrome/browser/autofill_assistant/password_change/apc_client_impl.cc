@@ -9,9 +9,11 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/autofill_assistant/common_dependencies_chrome.h"
 #include "chrome/browser/autofill_assistant/password_change/apc_external_action_delegate.h"
 #include "chrome/browser/autofill_assistant/password_change/apc_onboarding_coordinator.h"
@@ -35,10 +37,15 @@
 
 namespace {
 constexpr char kIntent[] = "PASSWORD_CHANGE";
+constexpr char kTrue[] = "true";
+constexpr char kFalse[] = "false";
 
 constexpr int kInChromeCaller = 7;
 constexpr int kSourcePasswordChangeLeakWarning = 10;
 constexpr int kSourcePasswordChangeSettings = 11;
+
+// The command line switch for specifying a custom server URL.
+constexpr char kAutofillAssistantUrl[] = "autofill-assistant-url";
 }  // namespace
 
 ApcClientImpl::ApcClientImpl(content::WebContents* web_contents)
@@ -104,7 +111,11 @@ void ApcClientImpl::Stop(bool success) {
   GetRuntimeManager()->SetUIState(autofill_assistant::UIState::kNotShown);
   onboarding_coordinator_.reset();
   external_script_controller_.reset();
-  scrim_manager_.reset();
+
+  if (scrim_manager_) {
+    scrim_manager_->ShutDown();
+  }
+
   is_running_ = false;
   if (result_callback_)
     std::move(result_callback_).Run(success);
@@ -137,6 +148,53 @@ void ApcClientImpl::RevokeConsent(const std::vector<int>& description_grd_ids) {
   onboarding_coordinator_.reset();
 }
 
+base::flat_map<std::string, std::string> ApcClientImpl::GetScriptParameters()
+    const {
+  base::flat_map<std::string, std::string> params_map = {
+      {autofill_assistant::public_script_parameters::
+           kPasswordChangeUsernameParameterName,
+       username_},
+      {autofill_assistant::public_script_parameters::kIntentParameterName,
+       kIntent},
+      {autofill_assistant::public_script_parameters::
+           kStartImmediatelyParameterName,
+       kTrue},
+      {autofill_assistant::public_script_parameters::
+           kOriginalDeeplinkParameterName,
+       url_.spec()},
+      {autofill_assistant::public_script_parameters::
+           kPasswordChangeSkipLoginParameterName,
+       skip_login_ ? kTrue : kFalse},
+      {autofill_assistant::public_script_parameters::kEnabledParameterName,
+       kTrue},
+      {autofill_assistant::public_script_parameters::kCallerParameterName,
+       base::NumberToString(kInChromeCaller)},
+      {autofill_assistant::public_script_parameters::kSourceParameterName,
+       skip_login_ ? base::NumberToString(kSourcePasswordChangeLeakWarning)
+                   : base::NumberToString(kSourcePasswordChangeSettings)}};
+
+  if (debug_run_information_.has_value()) {
+    params_map[autofill_assistant::public_script_parameters::
+                   kDebugBundleIdParameterName] =
+        debug_run_information_.value().bundle_id;
+    params_map[autofill_assistant::public_script_parameters::
+                   kDebugSocketIdParameterName] =
+        debug_run_information_.value().socket_id;
+  }
+
+  // TODO(b/251365675): Remove once all endpoints support RPC signing.
+  if (!base::CommandLine::ForCurrentProcess()
+           ->GetSwitchValueASCII(kAutofillAssistantUrl)
+           .empty()) {
+    DVLOG(0) << __func__
+             << " custom server URL provided - CUP will not be used.";
+    params_map[autofill_assistant::public_script_parameters::
+                   kDisableRpcSigningParameterName] = kTrue;
+  }
+
+  return params_map;
+}
+
 // `success` indicates whether onboarding was successful, i.e. whether consent
 // has been given.
 void ApcClientImpl::OnOnboardingComplete(bool success) {
@@ -156,43 +214,10 @@ void ApcClientImpl::OnOnboardingComplete(bool success) {
     side_panel_coordinator_->AddObserver(this);
   }
 
-  base::flat_map<std::string, std::string> params_map = {
-      {autofill_assistant::public_script_parameters::
-           kPasswordChangeUsernameParameterName,
-       username_},
-      {autofill_assistant::public_script_parameters::kIntentParameterName,
-       kIntent},
-      {autofill_assistant::public_script_parameters::
-           kStartImmediatelyParameterName,
-       "true"},
-      {autofill_assistant::public_script_parameters::
-           kOriginalDeeplinkParameterName,
-       url_.spec()},
-      {autofill_assistant::public_script_parameters::
-           kPasswordChangeSkipLoginParameterName,
-       skip_login_ ? "true" : "false"},
-      {autofill_assistant::public_script_parameters::kEnabledParameterName,
-       "true"},
-      {autofill_assistant::public_script_parameters::kCallerParameterName,
-       base::NumberToString(kInChromeCaller)},
-      {autofill_assistant::public_script_parameters::kSourceParameterName,
-       skip_login_ ? base::NumberToString(kSourcePasswordChangeLeakWarning)
-                   : base::NumberToString(kSourcePasswordChangeSettings)}};
-
-  if (debug_run_information_.has_value()) {
-    params_map[autofill_assistant::public_script_parameters::
-                   kDebugBundleIdParameterName] =
-        debug_run_information_.value().bundle_id;
-    params_map[autofill_assistant::public_script_parameters::
-                   kDebugSocketIdParameterName] =
-        debug_run_information_.value().socket_id;
-  }
-
   assistant_stopped_bubble_coordinator_ =
       CreateAssistantStoppedBubbleCoordinator();
 
   scrim_manager_ = CreateApcScrimManager();
-
   website_login_manager_ = CreateWebsiteLoginManager();
 
   apc_external_action_delegate_ = CreateApcExternalActionDelegate();
@@ -202,7 +227,7 @@ void ApcClientImpl::OnOnboardingComplete(bool success) {
   external_script_controller_ = CreateHeadlessScriptController();
   scrim_manager_->Show();
   external_script_controller_->StartScript(
-      params_map,
+      GetScriptParameters(),
       base::BindOnce(&ApcClientImpl::OnRunComplete, base::Unretained(this)));
 }
 

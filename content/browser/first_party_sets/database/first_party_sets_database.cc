@@ -5,6 +5,8 @@
 #include "content/browser/first_party_sets/database/first_party_sets_database.h"
 
 #include <inttypes.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -17,15 +19,17 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/sequence_checker.h"
 #include "base/version.h"
+#include "content/browser/first_party_sets/first_party_set_parser.h"
 #include "net/base/schemeful_site.h"
 #include "net/first_party_sets/first_party_set_entry.h"
+#include "net/first_party_sets/first_party_sets_context_config.h"
 #include "net/first_party_sets/global_first_party_sets.h"
 #include "sql/database.h"
-#include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
 #include "sql/recovery.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 
@@ -96,7 +100,7 @@ const char kRunCountKey[] = "run_count";
       "CREATE TABLE IF NOT EXISTS policy_modifications("
       "browser_context_id TEXT NOT NULL,"
       "site TEXT NOT NULL,"
-      "primary_site TEXT,"  // May be NULL if this row represents a deletion.
+      "site_owner TEXT,"  // May be NULL if this row represents a deletion.
       "PRIMARY KEY(browser_context_id,site)"
       ")WITHOUT ROWID";
   if (!db.Execute(kPolicyModificationsSql))
@@ -303,7 +307,7 @@ bool FirstPartySetsDatabase::InsertPolicyModifications(
         DCHECK(!site.opaque());
         static constexpr char kInsertSql[] =
             "INSERT INTO "
-            "policy_modifications(browser_context_id,site,primary_site)"
+            "policy_modifications(browser_context_id,site,site_owner)"
             "VALUES(?,?,?)";
         sql::Statement insert_statement(
             db_->GetCachedStatement(SQL_FROM_HERE, kInsertSql));
@@ -501,7 +505,7 @@ FirstPartySetsDatabase::FetchPolicyModifications(
       results;
   static constexpr char kSelectSql[] =
       // clang-format off
-      "SELECT site,primary_site FROM policy_modifications "
+      "SELECT site,site_owner FROM policy_modifications "
       "WHERE browser_context_id=?";
   // clang-format on
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSelectSql));
@@ -513,9 +517,10 @@ FirstPartySetsDatabase::FetchPolicyModifications(
             statement.ColumnString(0), /*emit_errors=*/false);
 
     absl::optional<net::SchemefulSite> maybe_primary_site;
-    if (statement.ColumnString(1) != "") {
+    if (std::string primary_site = statement.ColumnString(1);
+        !primary_site.empty()) {
       maybe_primary_site = FirstPartySetParser::CanonicalizeRegisteredDomain(
-          statement.ColumnString(1), /*emit_errors=*/false);
+          primary_site, /*emit_errors=*/false);
     }
 
     // TODO(crbug/1314039): Invalid sites should be rare case but possible.

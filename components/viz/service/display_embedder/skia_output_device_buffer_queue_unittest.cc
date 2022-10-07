@@ -147,7 +147,7 @@ class TestImageBackingFactory : public gpu::SharedImageBackingFactory {
   // gpu::SharedImageBackingFactory implementation.
   std::unique_ptr<gpu::SharedImageBacking> CreateSharedImage(
       const gpu::Mailbox& mailbox,
-      ResourceFormat format,
+      SharedImageFormat format,
       gpu::SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
@@ -163,7 +163,7 @@ class TestImageBackingFactory : public gpu::SharedImageBackingFactory {
   }
   std::unique_ptr<gpu::SharedImageBacking> CreateSharedImage(
       const gpu::Mailbox& mailbox,
-      ResourceFormat format,
+      SharedImageFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
@@ -190,7 +190,7 @@ class TestImageBackingFactory : public gpu::SharedImageBackingFactory {
     return nullptr;
   }
   bool IsSupported(uint32_t usage,
-                   ResourceFormat format,
+                   SharedImageFormat format,
                    const gfx::Size& size,
                    bool thread_safe,
                    gfx::GpuMemoryBufferType gmb_type,
@@ -205,14 +205,15 @@ class MockGLSurfaceAsync : public gl::GLSurfaceStub {
   bool SupportsAsyncSwap() override { return true; }
 
   void SwapBuffersAsync(SwapCompletionCallback completion_callback,
-                        PresentationCallback presentation_callback) override {
+                        PresentationCallback presentation_callback,
+                        gl::FrameData data) override {
     swap_completion_callbacks_.push_back(std::move(completion_callback));
     presentation_callbacks_.push_back(std::move(presentation_callback));
   }
 
-  void CommitOverlayPlanesAsync(
-      SwapCompletionCallback completion_callback,
-      PresentationCallback presentation_callback) override {
+  void CommitOverlayPlanesAsync(SwapCompletionCallback completion_callback,
+                                PresentationCallback presentation_callback,
+                                gl::FrameData data) override {
     swap_completion_callbacks_.push_back(std::move(completion_callback));
     presentation_callbacks_.push_back(std::move(presentation_callback));
   }

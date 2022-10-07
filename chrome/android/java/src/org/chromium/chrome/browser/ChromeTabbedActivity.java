@@ -693,7 +693,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     private void refreshSignIn() {
         try (TraceEvent e = TraceEvent.scoped("ChromeTabbedActivity.refreshSignIn")) {
-            FirstRunSignInProcessor.start(this);
+            FirstRunSignInProcessor.openSyncSettingsIfScheduled(this);
+            BackupSigninProcessor.start(this);
         }
     }
 
@@ -2630,6 +2631,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     @Override
     public void onDestroyInternal() {
+        if (mReturnToChromeBackPressHandler != null) {
+            mReturnToChromeBackPressHandler.destroy();
+            mReturnToChromeBackPressHandler = null;
+        }
+
         if (mReadingListBackPressHandler != null) {
             mReadingListBackPressHandler.destroy();
             mReadingListBackPressHandler = null;

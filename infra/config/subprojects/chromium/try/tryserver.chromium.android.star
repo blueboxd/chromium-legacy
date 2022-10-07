@@ -296,38 +296,6 @@ try_.compilator_builder(
     main_list_view = "try",
 )
 
-# b/236070074: Experimental builder to test reclient migration
-try_.orchestrator_builder(
-    name = "android-marshmallow-x86-rel-reclient",
-    mirrors = [
-        "ci/android-marshmallow-x86-rel",
-    ],
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
-        ),
-    ),
-    description_html = "Experimental shadow builder to test reclient migration. <br/>The bot is shadowing <a href=\"https://ci.chromium.org/p/chromium/builders/try/android-marshmallow-x86-rel\">android-marshmallow-x86-rel</a>.",
-    check_for_flakiness = True,
-    compilator = "android-marshmallow-x86-rel-reclient-compilator",
-    branch_selector = branches.STANDARD_MILESTONE,
-    main_list_view = "try",
-    use_java_coverage = True,
-    coverage_test_types = ["unit", "overall"],
-    tryjob = try_.job(
-        experiment_percentage = 5,
-    ),
-)
-
-try_.compilator_builder(
-    name = "android-marshmallow-x86-rel-reclient-compilator",
-    branch_selector = branches.STANDARD_MILESTONE,
-    check_for_flakiness = True,
-    main_list_view = "try",
-    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
-)
-
 try_.builder(
     name = "android-marshmallow-x86-rel-non-cq",
     mirrors = [
@@ -361,6 +329,36 @@ try_.compilator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     check_for_flakiness = True,
     main_list_view = "try",
+)
+
+# b/236070074: Experimental builder to test reclient migration
+try_.orchestrator_builder(
+    name = "android-nougat-x86-rel-reclient",
+    mirrors = [
+        "ci/android-nougat-x86-rel",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
+    description_html = "Experimental shadow builder to test reclient migration. <br/>The bot is shadowing <a href=\"https://ci.chromium.org/p/chromium/builders/try/android-nougat-x86-rel\">android-nougat-x86-rel</a>.",
+    check_for_flakiness = True,
+    compilator = "android-nougat-x86-rel-reclient-compilator",
+    main_list_view = "try",
+    use_java_coverage = True,
+    coverage_test_types = ["unit", "overall"],
+    tryjob = try_.job(
+        experiment_percentage = 5,
+    ),
+)
+
+try_.compilator_builder(
+    name = "android-nougat-x86-rel-reclient-compilator",
+    check_for_flakiness = True,
+    main_list_view = "try",
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -589,6 +587,7 @@ try_.builder(
     ],
     builderless = not settings.is_main,
     main_list_view = "try",
+    tryjob = try_.job(),
 )
 
 try_.builder(
@@ -692,17 +691,6 @@ try_.builder(
         "ci/Android arm64 Builder (dbg)",
         "ci/Android WebView N (dbg)",
     ],
-)
-
-try_.builder(
-    name = "cast_shell_android",
-    branch_selector = branches.STANDARD_MILESTONE,
-    mirrors = [
-        "ci/Cast Android (dbg)",
-    ],
-    builderless = not settings.is_main,
-    main_list_view = "try",
-    tryjob = try_.job(),
 )
 
 try_.builder(

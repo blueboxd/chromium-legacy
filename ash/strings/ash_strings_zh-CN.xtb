@@ -190,6 +190,7 @@
 <translation id="1989113344093894667">无法截取/录制内容</translation>
 <translation id="1990046457226896323">实时字幕文件已下载完毕</translation>
 <translation id="1993072747612765854">详细了解最新的 <ph name="SYSTEM_APP_NAME" />更新</translation>
+<translation id="1995660704900986789">关机</translation>
 <translation id="1998100899771863792">当前桌面</translation>
 <translation id="2001444736072756133">搜索您的<ph name="CATEGORY" />、文件、应用等内容。</translation>
 <translation id="2016340657076538683">请输入消息</translation>
@@ -770,16 +771,6 @@
 <translation id="5393156353051693207">若要将您的应用重新排序，请轻触并按住任意位置</translation>
 <translation id="5395308026110844773">“<ph name="DRAGGED_APP_NAME" />”已拖至“<ph name="IN_PLACE_APP" />”上，松开即可创建文件夹。</translation>
 <translation id="5397578532367286026">管理员 (<ph name="MANAGER_EMAIL" />) 可在 chrome.com 上查看该用户的使用情况和历史记录。</translation>
-<translation id="5399673806694250334">状态栏，时间为 <ph name="TIME" />，
-        <ph name="BATTERY" />
-        <ph name="CHANNEL" />
-        <ph name="NETWORK" />，
-        <ph name="MIC" />，
-        <ph name="CAMERA" />，
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />，
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">快捷设置，按搜索键 + 向左箭头键可访问通知中心。</translation>
 <translation id="5426063383988017631">已关闭“设置”菜单</translation>
 <translation id="5428899915242071344">开始选择</translation>

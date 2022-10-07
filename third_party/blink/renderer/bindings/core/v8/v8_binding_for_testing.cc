@@ -33,6 +33,7 @@ V8TestingScope::V8TestingScope(const KURL& url)
       context_scope_(GetContext()),
       try_catch_(GetIsolate()),
       microtasks_scope_(GetIsolate(),
+                        ToMicrotaskQueue(GetScriptState()),
                         v8::MicrotasksScope::kDoNotRunMicrotasks) {
   GetFrame().GetSettings()->SetScriptEnabled(true);
 }
@@ -75,14 +76,17 @@ Document& V8TestingScope::GetDocument() {
 
 V8TestingScope::~V8TestingScope() {
   // Execute all pending microtasks.
-  // The document can be manually shut down here, so we cannot use GetIsolate()
-  // which relies on the active document.
-  v8::MicrotasksScope::PerformCheckpoint(GetContext()->GetIsolate());
+  PerformMicrotaskCheckpoint();
 
   // TODO(yukishiino): We put this statement here to clear an exception from
   // the isolate.  Otherwise, the leak detector complains.  Really mysterious
   // hack.
   v8::Function::New(GetContext(), nullptr);
+}
+
+void V8TestingScope::PerformMicrotaskCheckpoint() {
+  GetContext()->GetMicrotaskQueue()->PerformCheckpoint(
+      GetContext()->GetIsolate());
 }
 
 }  // namespace blink

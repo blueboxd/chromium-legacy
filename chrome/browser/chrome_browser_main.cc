@@ -220,6 +220,7 @@
 #if BUILDFLAG(IS_CHROMEOS)
 #include "base/process/process.h"
 #include "base/task/task_traits.h"
+#include "components/crash/core/app/breakpad_linux.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -228,12 +229,12 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/metrics/stability_metrics_manager.h"
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_switches.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/hardware_data_usage_controller.h"
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
@@ -243,7 +244,6 @@
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-#include "components/crash/core/app/breakpad_linux.h"
 #include "components/crash/core/app/crashpad.h"
 #endif
 
@@ -1058,14 +1058,13 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_OPENBSD)
+#if BUILDFLAG(IS_CHROMEOS)
   // Set the product channel for crash reports.
   if (!crash_reporter::IsCrashpadEnabled()) {
     breakpad::SetChannelCrashKey(
         chrome::GetChannelName(chrome::WithExtendedStable(true)));
   }
-#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
-        // BUILDFLAG(IS_OPENBSD)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_MAC)
 #if defined(ARCH_CPU_X86_64)
@@ -1651,8 +1650,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     first_run::AutoImport(profile, master_prefs_->import_bookmarks_path);
 
     // Note: This can pop-up the first run consent dialog on Linux & Mac.
-    first_run::DoPostImportTasks(profile,
-                                 master_prefs_->make_chrome_default_for_user);
+    first_run::DoPostImportTasks(master_prefs_->make_chrome_default_for_user);
 
     // The first run dialog is modal, and spins a RunLoop, which could receive
     // a SIGTERM, and call chrome::AttemptExit(). Exit cleanly in that case.

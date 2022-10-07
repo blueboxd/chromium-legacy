@@ -36,8 +36,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "base/values.h"
-#include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_icon/arc_icon_once_loader.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -2613,9 +2611,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderForShelfGroup) {
 }
 
 // Test that icon is correctly updated for suspended/non-suspended app.
-//
-// TODO(https://crbug.com/1211227): The test is flaky.
-TEST_P(ArcAppModelBuilderTest, DISABLED_IconLoaderForSuspendedApps) {
+TEST_P(ArcAppModelBuilderTest, IconLoaderForSuspendedApps) {
   std::vector<arc::mojom::AppInfoPtr> apps;
   apps.emplace_back(fake_apps()[0]->Clone());
   const std::string app_id = ArcAppTest::GetAppId(*apps[0]);
@@ -2642,8 +2638,7 @@ TEST_P(ArcAppModelBuilderTest, DISABLED_IconLoaderForSuspendedApps) {
   // is loaded and we only apply gray effect.
   apps[0]->suspended = true;
   SendPackageAppListRefreshed(apps[0]->package_name, apps);
-  EXPECT_EQ(update_count + 1, delegate.update_image_count());
-  // No futher updates.
+  // One more update as suspended app icon turned grey.
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(update_count + 1, delegate.update_image_count());
 
@@ -3000,12 +2995,7 @@ TEST_P(ArcAppModelIconTest, DISABLED_IconInvalidationOnIconVersionUpdate) {
 }
 
 // TODO(crbug.com/1005069) Disabled on Chrome OS due to flake
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#define MAYBE_IconLoadNonSupportedScales DISABLED_IconLoadNonSupportedScales
-#else
-#define MAYBE_IconLoadNonSupportedScales IconLoadNonSupportedScales
-#endif
-TEST_P(ArcAppModelIconTest, MAYBE_IconLoadNonSupportedScales) {
+TEST_P(ArcAppModelIconTest, DISABLED_IconLoadNonSupportedScales) {
   ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_TRUE(prefs);
 

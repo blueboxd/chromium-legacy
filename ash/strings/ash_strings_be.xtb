@@ -190,6 +190,7 @@
 <translation id="1989113344093894667">Здыманне змесціва немагчымае</translation>
 <translation id="1990046457226896323">Файлы для ператварэння маўлення ў тэкст спампаваны</translation>
 <translation id="1993072747612765854">Даведацца больш пра апошняе абнаўленне <ph name="SYSTEM_APP_NAME" /></translation>
+<translation id="1995660704900986789">Выключыць</translation>
 <translation id="1998100899771863792">Бягучы працоўны стол</translation>
 <translation id="2001444736072756133">Пошук: <ph name="CATEGORY" />, файлы, праграмы і не толькі.</translation>
 <translation id="2016340657076538683">Напішыце паведамленне</translation>
@@ -770,16 +771,6 @@
 <translation id="5393156353051693207">Каб змяніць парадак размяшчэння праграм, націсніце экран у любым месцы і ўтрымлівайце</translation>
 <translation id="5395308026110844773">Праграма "<ph name="DRAGGED_APP_NAME" />" зараз над праграмай "<ph name="IN_PLACE_APP" />". Каб стварыць папку, адпусціце праграму.</translation>
 <translation id="5397578532367286026">Выкарыстанне і гісторыя гэтага карыстальніка могуць праглядацца менеджарам (<ph name="MANAGER_EMAIL" />) на chrome.com.</translation>
-<translation id="5399673806694250334">Панэль стану, час <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="CHANNEL" />
-        <ph name="NETWORK" />,
-        <ph name="MIC" />,
-        <ph name="CAMERA" />,
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">Хуткія налады. Каб адкрыць цэнтр апавяшчэнняў, націсніце "пошук + улева".</translation>
 <translation id="5426063383988017631">Меню налад закрыта</translation>
 <translation id="5428899915242071344">Пачаць выбар</translation>

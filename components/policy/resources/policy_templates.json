@@ -794,6 +794,7 @@
       'policies': [
         'EnableMediaRouter',
         'ShowCastIconInToolbar',
+        'MediaRouterCastAllowAllIPs'
       ],
     },
     {
@@ -17333,7 +17334,22 @@
         'can_be_recommended': True,
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable dictation on the login screen',
+        },
+        {
+          'value': False,
+          'caption': 'Disable dictation on the login screen',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 611,
       'caption': '''Enable the dictation on the login screen''',
       'tags': [],
@@ -17358,7 +17374,22 @@
         'can_be_recommended': True,
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable select to speak on the login screen',
+        },
+        {
+          'value': False,
+          'caption': 'Disable select to speak on the login screen',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 612,
       'caption': '''Enable the select to speak on the login screen''',
       'tags': [],
@@ -17383,7 +17414,22 @@
         'can_be_recommended': True,
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable cursor highlight on the login screen',
+        },
+        {
+          'value': False,
+          'caption': 'Disable cursor highlight on the login screen',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 613,
       'caption': '''Enable the cursor highlight on the login screen''',
       'tags': [],
@@ -17408,9 +17454,24 @@
         'can_be_recommended': True,
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable caret highlight on the login screen',
+        },
+        {
+          'value': False,
+          'caption': 'Disable caret highlight on the login screen',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 614,
-      'caption': '''Enable the caret highlight on the login screen''',
+      'caption': '''Enable caret highlight on the login screen''',
       'tags': [],
       'desc': '''Enable the caret highlight accessibility feature on the login screen.
 
@@ -17433,9 +17494,24 @@
         'can_be_recommended': True,
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable mono audio on the login screen',
+        },
+        {
+          'value': False,
+          'caption': 'Disable mono audio on the login screen',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 615,
-      'caption': '''Enable the mono audio on the login screen''',
+      'caption': '''Enable mono audio on the login screen''',
       'tags': [],
       'desc': '''Enable the mono audio accessibility feature on the login screen.
 
@@ -17460,9 +17536,24 @@
         'can_be_recommended': True,
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable auto-click on the login screen',
+        },
+        {
+          'value': False,
+          'caption': 'Disable auto-click on the login screen',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 617,
-      'caption': '''Enable the autoclick on the login screen''',
+      'caption': '''Enable autoclick on the login screen''',
       'tags': [],
       'desc': '''Enable the autoclick accessibility feature on the login screen.
 
@@ -17487,9 +17578,24 @@
         'can_be_recommended': True,
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable sticky keys on the login screen',
+        },
+        {
+          'value': False,
+          'caption': 'Disable sticky keys on the login screen',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 618,
-      'caption': '''Enable the sticky keys on the login screen''',
+      'caption': '''Enable sticky keys on the login screen''',
       'tags': [],
       'desc': '''Enable the sticky keys accessibility feature on the login screen.
 
@@ -17511,8 +17617,23 @@
         'can_be_recommended': True,
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable keyboard focus highlighting on the login screen',
+        },
+        {
+          'value': False,
+          'caption': 'Disable keyboard focus highlighting on the login screen',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
       'device_only': True,
       'example_value': True,
+      'default': None,
       'id': 619,
       'caption': '''Enable the keyboard focus highlighting accessibility feature''',
       'tags': [],
@@ -17539,6 +17660,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Do not show the Chrome Web Store icon in the <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> launcher or on the new tab page',
+        },
+        {
+          'value': False,
+          'caption': 'Show the Chrome Web Store icon in the <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> launcher and on the new tab page',
+        },
+      ],
       'example_value': True,
       'id': 189,
       'caption': '''Hide the web store from the New Tab Page and app launcher''',
@@ -17602,6 +17733,16 @@
       'features': {
         'dynamic_refresh': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow automatic reboot after updates',
+        },
+        {
+          'value': False,
+          'caption': 'Disallow automatic reboot after updates',
+        },
+      ],
       'example_value': True,
       'id': 193,
       'caption': '''Automatically reboot after update''',
@@ -21530,6 +21671,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow users to sign into their device with Smart Lock',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow users to sign into their device with Smart Lock',
+        },
+      ],
       'example_value': True,
       'default_for_enterprise_users': False,
       'id': 488,
@@ -21551,6 +21702,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow users to use Instant Tethering',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow users to use Instant Tethering',
+        },
+      ],
       'example_value': True,
       'default_for_enterprise_users': False,
       'id': 367,
@@ -21572,6 +21733,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow Phone Hub to be enabled',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow Phone Hub to be enabled',
+        },
+      ],
       'example_value': True,
       'default_for_enterprise_users': False,
       'id': 795,
@@ -21624,6 +21795,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow Phone Hub notifications to be enabled',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow Phone Hub notifications to be enabled',
+        },
+      ],
       'example_value': True,
       'id': 796,
       'caption': '''Allow Phone Hub notifications to be enabled.''',
@@ -21644,6 +21825,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow Phone Hub task continuation to be enabled',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow Phone Hub task continuation to be enabled',
+        },
+      ],
       'example_value': True,
       'id': 797,
       'caption': '''Allow Phone Hub task continuation to be enabled.''',
@@ -21695,6 +21886,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow users to enable Nearby Share',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent users from enabling Nearby Share',
+        },
+      ],
       'example_value': True,
       'default_for_enterprise_users': False,
       'id': 761,
@@ -22178,6 +22379,16 @@
         'per_profile': False,
         'metapolicy_type': 'precedence',
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Cloud machine policies take precedence over platform machine policies',
+        },
+        {
+          'value': False,
+          'caption': 'Platform machine policies take precedence over cloud machine policies',
+        },
+      ],
       'example_value': False,
       'id': 381,
       'caption': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cloud policy overrides Platform policy.''',
@@ -22236,6 +22447,21 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Ask the user where to save the file before downloading',
+        },
+        {
+          'value': False,
+          'caption': 'Do not ask the user (downloads start immediately)',
+        },
+        {
+          'value': None,
+          'caption': 'Allow the user to decide',
+        },
+      ],
+      'default': None,
       'example_value': False,
       'id': 395,
       'caption': '''Ask where to save each file before downloading''',
@@ -22254,6 +22480,16 @@
       'features': {
         'dynamic_refresh': False,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow unaffiliated users to use Android apps',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow unaffiliated users to use Android apps',
+        },
+      ],
       'example_value': False,
       'id': 397,
       'caption': '''Allow unaffiliated users to use ARC''',
@@ -35180,6 +35416,25 @@ This policy has no effect if the option to keep existing browsing data is not av
       'desc': '''Setting the policy to Enabled allows third-party web applications to use Desk API to control ChromeOS desks. If the policy is not set or disabled, the Desk API will be unavailable.'''
     },
     {
+      'name': 'DeskAPIThirdPartyAllowlist',
+      'owners': ['aprilzhou@google.com', 'yzd@google.com'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'future_on': ['chrome_os'],
+      'example_value': ['https://*.chromium.org/*'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'id': 1023,
+      'caption': '''Enable Desk API for a list of third-party domains''',
+      'tags': [],
+      'desc': '''Specifies the list of third-party web application domains that are allowed to use Desk API to control ChromeOS desks. These URL patterns should follow the format defined for "matches" property in https://developer.chrome.com/docs/extensions/mv3/manifest/externally_connectable/#reference'''
+    },
+    {
       'name': 'DefaultHandlersForFileExtensions',
       'owners': ['greengrape@google.com', 'file://ui/file_manager/OWNERS'],
       'type': 'dict',
@@ -36232,6 +36487,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 438, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 1022,
+  'highest_id_currently_used': 1023,
   'highest_atomic_group_id_currently_used': 43
 }

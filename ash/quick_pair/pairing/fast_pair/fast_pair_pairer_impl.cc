@@ -20,12 +20,12 @@
 #include "ash/quick_pair/fast_pair_handshake/fast_pair_handshake.h"
 #include "ash/quick_pair/fast_pair_handshake/fast_pair_handshake_lookup.h"
 #include "ash/quick_pair/repository/fast_pair_repository.h"
-#include "ash/services/quick_pair/public/cpp/fast_pair_message_type.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/model/system_tray_model.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chromeos/ash/services/quick_pair/public/cpp/fast_pair_message_type.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/public/cpp/bluetooth_address.h"
@@ -309,6 +309,22 @@ void FastPairPairerImpl::ConfirmPasskey(device::BluetoothDevice* device,
   RecordConfirmPasskeyAskTime(base::TimeTicks::Now() -
                               ask_confirm_passkey_initial_time_);
   confirm_passkey_initial_time_ = base::TimeTicks::Now();
+
+  // TODO(b/251281330): Make handling this edge case more robust.
+  //
+  // We can get to this point where the BLE instance of the device is lost
+  // (due to device specific flaky ADV), thus the FastPairHandshake is null,
+  // and |fast_pair_handshake_| is garbage memory, but the classic Bluetooth
+  // pairing continues. We stop the pairing in this case and show an error to
+  // the user.
+  if (!FastPairHandshakeLookup::GetInstance()->Get(device_)) {
+    QP_LOG(ERROR) << __func__
+                  << ": BLE device instance lost during passkey exchange";
+    device->CancelPairing();
+    std::move(pair_failed_callback_)
+        .Run(device_, PairFailure::kBleDeviceLostMidPair);
+    return;
+  }
 
   pairing_device_address_ = device->GetAddress();
   expected_passkey_ = passkey;

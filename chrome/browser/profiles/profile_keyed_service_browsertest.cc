@@ -20,10 +20,10 @@
 
 namespace {
 
-// Creates a Profile and it's underlying OTR Profile for testing.
-// Waits for all tasks to be done to get as much services created as possible.
+// Creates a Profile and its underlying OTR Profile for testing.
+// Waits for all tasks to be done to get as many services created as possible.
 // Returns the Original Profile.
-Profile* CreateProfileAndWaitForAllTaks(const base::FilePath& profile_path) {
+Profile* CreateProfileAndWaitForAllTasks(const base::FilePath& profile_path) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileWaiter profile_waiter;
   profile_manager->CreateProfileAsync(profile_path, {});
@@ -72,13 +72,13 @@ std::string DisplaySetDifference(
   error << "Differences between expected and reached services:" << std::endl;
 
   error << "-- Missing Expected Services:" << std::endl;
-  error << GetDifferenceString(active_services_names,
-                               expected_active_services_names)
+  error << GetDifferenceString(expected_active_services_names,
+                               active_services_names)
         << std::endl;
 
   error << "-- Added Extra Services:" << std::endl;
-  error << GetDifferenceString(expected_active_services_names,
-                               active_services_names)
+  error << GetDifferenceString(active_services_names,
+                               expected_active_services_names)
         << std::endl;
 
   return error.str();
@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
   // clang-format on
 
   Profile* system_profile =
-      CreateProfileAndWaitForAllTaks(ProfileManager::GetSystemProfilePath());
+      CreateProfileAndWaitForAllTasks(ProfileManager::GetSystemProfilePath());
   ASSERT_TRUE(system_profile->HasAnyOffTheRecordProfile());
   Profile* system_profile_otr = system_profile->GetPrimaryOTRProfile(false);
   ASSERT_TRUE(system_profile_otr->IsOffTheRecord());
@@ -293,6 +293,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "FaviconService",
     "FeedbackPrivateAPI",
     "FileSystemAccessPermissionContext",
+    "FirstPartySetsPolicyService",
     "FontPrefChangeNotifier",
     "FontSettingsAPI",
     "GAIAInfoUpdateService",
@@ -400,7 +401,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "TCPSocketEventDispatcher",
     "TabGroupsEventRouter",
     "TabsWindowsAPI",
-    "TemplateURLServiceFactory",
     "ThemeService",
     "ToolbarActionsModel",
     "TranslateRanker",
@@ -428,7 +428,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
   // clang-format on
 
   Profile* system_profile =
-      CreateProfileAndWaitForAllTaks(ProfileManager::GetSystemProfilePath());
+      CreateProfileAndWaitForAllTasks(ProfileManager::GetSystemProfilePath());
   ASSERT_FALSE(system_profile->IsOffTheRecord());
   ASSERT_TRUE(system_profile->IsSystemProfile());
   TestKeyedProfileServicesActives(system_profile, system_active_services);
@@ -492,7 +492,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
   // clang-format on
 
   Profile* guest_profile =
-      CreateProfileAndWaitForAllTaks(ProfileManager::GetGuestProfilePath());
+      CreateProfileAndWaitForAllTasks(ProfileManager::GetGuestProfilePath());
   ASSERT_TRUE(guest_profile->HasAnyOffTheRecordProfile());
   Profile* guest_profile_otr = guest_profile->GetPrimaryOTRProfile(false);
   ASSERT_TRUE(guest_profile_otr->IsOffTheRecord());
@@ -500,8 +500,9 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
   TestKeyedProfileServicesActives(guest_profile_otr, guest_otr_active_services);
 }
 
+// TODO(crbug.com/1372157)  Re-enable once test is fixed.
 IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
-                       GuestProfileParent_NeededServices) {
+                       DISABLED_GuestProfileParent_NeededServices) {
   // clang-format off
   std::set<std::string> guest_active_services {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -591,6 +592,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "FaviconService",
     "FeedbackPrivateAPI",
     "FileSystemAccessPermissionContext",
+    "FirstPartySetsPolicyService",
     "FontPrefChangeNotifier",
     "FontSettingsAPI",
     "GAIAInfoUpdateService",
@@ -729,7 +731,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
   // clang-format on
 
   Profile* guest_profile =
-      CreateProfileAndWaitForAllTaks(ProfileManager::GetGuestProfilePath());
+      CreateProfileAndWaitForAllTasks(ProfileManager::GetGuestProfilePath());
   ASSERT_FALSE(guest_profile->IsOffTheRecord());
   ASSERT_TRUE(guest_profile->IsGuestSession());
   TestKeyedProfileServicesActives(guest_profile, guest_active_services);

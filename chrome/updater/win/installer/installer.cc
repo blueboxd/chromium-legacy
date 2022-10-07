@@ -26,9 +26,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
 #include "chrome/installer/util/lzma_util.h"
 #include "chrome/installer/util/util_constants.h"
@@ -293,18 +295,19 @@ ProcessExitResult HandleRunDeElevated(const base::CommandLine& command_line) {
     return ProcessExitResult(UNABLE_TO_DE_ELEVATE_METAINSTALLER);
   }
 
+  base::win::ScopedCOMInitializer com_initializer(
+      base::win::ScopedCOMInitializer::kMTA);
+  DCHECK(com_initializer.Succeeded());
+
   // Deelevate the metainstaller.
-  DWORD exit_code = 0;
-  HRESULT hr = RunDeElevated(
-      command_line.GetProgram(),
-      [&command_line]() {
+  HRESULT hr =
+      RunDeElevated(command_line.GetProgram().value(), [&command_line]() {
         base::CommandLine de_elevate_command_line = command_line;
         de_elevate_command_line.AppendSwitch(kCmdLineExpectDeElevated);
         return de_elevate_command_line.GetArgumentsString();
-      }(),
-      &exit_code);
+      }());
   return SUCCEEDED(hr)
-             ? ProcessExitResult(exit_code)
+             ? ProcessExitResult(SUCCESS_EXIT_CODE)
              : ProcessExitResult(RUN_SETUP_FAILED_COULD_NOT_CREATE_PROCESS, hr);
 }
 
@@ -322,8 +325,15 @@ ProcessExitResult WMain(HMODULE module) {
   if (args_result.exit_code != SUCCESS_EXIT_CODE)
     return args_result;
 
-  const base::CommandLine command_line =
-      base::CommandLine::FromString(::GetCommandLineW());
+  // Both `RunElevated` and `RunDeElevated` use shell APIs to run the process,
+  // which can have issues with relative paths. So we use the full exe path for
+  // the program in the command line.
+  base::FilePath exe_path;
+  if (!base::PathService::Get(base::FILE_EXE, &exe_path))
+    return ProcessExitResult(UNABLE_TO_GET_EXE_PATH);
+  const base::CommandLine command_line = base::CommandLine::FromString(
+      base::StrCat({L"\"", exe_path.value(), L"\" ", cmd_line_args.get()}));
+
   const UpdaterScope scope = GetUpdaterScopeForCommandLine(command_line);
 
   if (!::IsUserAnAdmin() && scope == UpdaterScope::kSystem) {
@@ -341,10 +351,9 @@ ProcessExitResult WMain(HMODULE module) {
             base::SysUTF8ToWide(kCmdLinePrefersUser).c_str())) {
       return ProcessExitResult(COMMAND_STRING_OVERFLOW);
     }
-  }
-
-  if (::IsUserAnAdmin() && scope == UpdaterScope::kUser && IsUACOn())
+  } else if (::IsUserAnAdmin() && scope == UpdaterScope::kUser && IsUACOn()) {
     return HandleRunDeElevated(command_line);
+  }
 
   ProcessExitResult exit_code = ProcessExitResult(SUCCESS_EXIT_CODE);
 

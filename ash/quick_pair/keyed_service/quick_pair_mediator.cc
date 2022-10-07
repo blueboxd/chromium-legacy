@@ -30,10 +30,10 @@
 #include "ash/quick_pair/scanning/scanner_broker_impl.h"
 #include "ash/quick_pair/ui/actions.h"
 #include "ash/quick_pair/ui/ui_broker_impl.h"
-#include "ash/services/quick_pair/quick_pair_process.h"
-#include "ash/services/quick_pair/quick_pair_process_manager_impl.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/ash/services/bluetooth_config/fast_pair_delegate.h"
+#include "chromeos/ash/services/quick_pair/quick_pair_process.h"
+#include "chromeos/ash/services/quick_pair/quick_pair_process_manager_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 
 namespace ash {
@@ -176,6 +176,11 @@ void Mediator::OnDeviceLost(scoped_refptr<Device> device) {
   ui_broker_->RemoveNotifications(
       /*clear_already_shown_discovery_notification_cache=*/false);
   FastPairHandshakeLookup::GetInstance()->Erase(device);
+
+  if (ash::features::
+          IsFastPairPreventNotificationsForRecentlyLostDeviceEnabled()) {
+    ui_broker_->StartDeviceLostTimer(device);
+  }
 }
 
 void Mediator::OnRetroactivePairFound(scoped_refptr<Device> device) {
@@ -209,8 +214,10 @@ void Mediator::SetFastPairState(bool is_enabled) {
 
 void Mediator::CancelPairing() {
   QP_LOG(INFO) << __func__ << ": Clearing handshakes and pairiers.";
-  FastPairHandshakeLookup::GetInstance()->Clear();
+  // |pairer_broker_| and its children objects depend on the handshake
+  // instance. Shut them down before destroying the handshakes.
   pairer_broker_->StopPairing();
+  FastPairHandshakeLookup::GetInstance()->Clear();
 }
 
 void Mediator::OnDevicePaired(scoped_refptr<Device> device) {
@@ -219,12 +226,22 @@ void Mediator::OnDevicePaired(scoped_refptr<Device> device) {
       /*clear_already_shown_discovery_notification_cache=*/false);
   scanner_broker_->OnDevicePaired(device);
   fast_pair_repository_->PersistDeviceImages(device);
+
+  if (ash::features::
+          IsFastPairPreventNotificationsForRecentlyLostDeviceEnabled()) {
+    ui_broker_->RemoveDeviceFromAlreadyShownDiscoveryNotificationCache(device);
+  }
 }
 
 void Mediator::OnPairFailure(scoped_refptr<Device> device,
                              PairFailure failure) {
   QP_LOG(INFO) << __func__ << ": Device=" << device << ",Failure=" << failure;
-  ui_broker_->ShowPairingFailed(std::move(device));
+  ui_broker_->ShowPairingFailed(device);
+
+  if (ash::features::
+          IsFastPairPreventNotificationsForRecentlyLostDeviceEnabled()) {
+    ui_broker_->RemoveDeviceFromAlreadyShownDiscoveryNotificationCache(device);
+  }
 }
 
 void Mediator::OnAccountKeyWrite(scoped_refptr<Device> device,

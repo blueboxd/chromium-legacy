@@ -1643,54 +1643,39 @@ IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest,
   content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(embedder_web_contents);
 
-  GURL::Replacements replace_host;
-  replace_host.SetHostStr("localhost");
-
-  std::string empty_guest_path(
-      "/extensions/platform_apps/web_view/shim/empty_guest.html");
-  GURL empty_guest_url = embedded_test_server()->GetURL(empty_guest_path);
-  empty_guest_url = empty_guest_url.ReplaceComponents(replace_host);
-
-  ui_test_utils::UrlLoadObserver empty_guest_observer(
-      empty_guest_url, content::NotificationService::AllSources());
-
   // Run the test and wait until the guest WebContents is available and has
   // finished loading.
   ExtensionTestMessageListener done_listener("TEST_PASSED");
   done_listener.set_failure_message("TEST_FAILED");
   EXPECT_TRUE(content::ExecuteScript(
       embedder_web_contents, "runTest('testWebViewAndEmbedderInNewWindow')"));
-
-  empty_guest_observer.Wait();
-
-  content::Source<content::NavigationController> source =
-      empty_guest_observer.source();
-  EXPECT_TRUE(source->DeprecatedGetWebContents()
-                  ->GetPrimaryMainFrame()
-                  ->GetProcess()
-                  ->IsForGuestsOnly());
   ASSERT_TRUE(done_listener.WaitUntilSatisfied());
 
   // Make sure opener and owner for the empty_guest source are different.
-  // In general, we should have two guests and two embedders. Once we know the
-  // guests are different and the embedders are different, then we have four
-  // distinct WebContents, as we expect.
-  std::vector<content::WebContents*> guest_contents_list;
-  GetGuestViewManager()->DeprecatedGetGuestWebContentsList(
-      &guest_contents_list);
-  ASSERT_EQ(2u, guest_contents_list.size());
-  content::WebContents* new_window_guest_contents = guest_contents_list[0];
+  // In general, we should have two guests and two embedders and all four
+  // should be different.
+  std::vector<content::RenderFrameHost*> guest_rfh_list;
+  GetGuestViewManager()->GetGuestRenderFrameHostList(&guest_rfh_list);
+  ASSERT_EQ(2u, guest_rfh_list.size());
+  content::RenderFrameHost* new_window_guest_frame = guest_rfh_list[0];
+  content::RenderFrameHost* empty_guest_frame = guest_rfh_list[1];
+  EXPECT_TRUE(empty_guest_frame->GetProcess()->IsForGuestsOnly());
 
-  content::WebContents* empty_guest_web_contents =
-      source->DeprecatedGetWebContents();
-  ASSERT_EQ(empty_guest_web_contents, guest_contents_list[1]);
-  ASSERT_NE(empty_guest_web_contents, new_window_guest_contents);
+  guest_view::GuestViewBase* empty_guest_view =
+      GetGuestViewManager()->GetLastGuestViewCreated();
+  ASSERT_EQ(empty_guest_view->GetGuestMainFrame(), empty_guest_frame);
+  ASSERT_NE(empty_guest_view->GetGuestMainFrame(), new_window_guest_frame);
+
   content::WebContents* empty_guest_embedder =
-      GetEmbedderForGuest(empty_guest_web_contents);
-  ASSERT_NE(empty_guest_embedder, embedder_web_contents);
+      empty_guest_view->embedder_web_contents();
   ASSERT_TRUE(empty_guest_embedder);
+  ASSERT_NE(empty_guest_embedder->GetPrimaryMainFrame(), empty_guest_frame);
+
+  // TODO(1261928): Introduce a test helper to expose the opener as a
+  // `content::Page`.
   content::RenderFrameHost* empty_guest_opener =
-      empty_guest_web_contents->GetFirstWebContentsInLiveOriginalOpenerChain()
+      empty_guest_view->web_contents()
+          ->GetFirstWebContentsInLiveOriginalOpenerChain()
           ->GetPrimaryMainFrame();
   ASSERT_TRUE(empty_guest_opener);
   ASSERT_NE(empty_guest_opener, empty_guest_embedder->GetPrimaryMainFrame());
@@ -4121,10 +4106,8 @@ class WebViewChannelTest : public WebViewTestBase,
 
 // This test verify that the set of rules registries of a webview will be
 // removed from RulesRegistryService after the webview is gone.
-// http://crbug.com/438327
-IN_PROC_BROWSER_TEST_P(
-    WebViewChannelTest,
-    DISABLED_Shim_TestRulesRegistryIDAreRemovedAfterWebViewIsGone) {
+IN_PROC_BROWSER_TEST_P(WebViewChannelTest,
+                       Shim_TestRulesRegistryIDAreRemovedAfterWebViewIsGone) {
   ASSERT_EQ(extensions::GetCurrentChannel(), GetChannelParam());
   SCOPED_TRACE(base::StringPrintf(
       "Testing Channel %s",
@@ -4158,8 +4141,9 @@ IN_PROC_BROWSER_TEST_P(
   registry_service->RegisterRulesRegistry(base::WrapRefCounted(rules_registry));
 
   EXPECT_TRUE(
-      registry_service->GetRulesRegistry(rules_registry_id, "ui").get());
+      registry_service->HasRulesRegistryForTesting(rules_registry_id, "ui"));
 
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   // Kill the embedder's render process, so the webview will go as well.
   embedder_web_contents->GetPrimaryMainFrame()
       ->GetProcess()
@@ -4168,7 +4152,7 @@ IN_PROC_BROWSER_TEST_P(
   observer->WaitForEmbedderRenderProcessTerminate();
 
   EXPECT_FALSE(
-      registry_service->GetRulesRegistry(rules_registry_id, "ui").get());
+      registry_service->HasRulesRegistryForTesting(rules_registry_id, "ui"));
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewChannelTest,
@@ -5096,8 +5080,6 @@ IN_PROC_BROWSER_TEST_P(ChromeSignInWebViewTest,
       GetGuestViewManager()->WaitForSingleGuestViewCreated();
   ASSERT_TRUE(attached_guest_view);
 
-  auto* attached_guest_rfh =
-      GetGuestViewManager()->GetLastGuestRenderFrameHostCreated();
   auto* find_helper =
       find_in_page::FindTabHelper::FromWebContents(embedder_web_contents);
 
@@ -5111,6 +5093,7 @@ IN_PROC_BROWSER_TEST_P(ChromeSignInWebViewTest,
         ASSERT_TRUE(guest_view);
         ASSERT_FALSE(guest_view->attached());
 
+        auto* attached_guest_rfh = attached_guest_view->GetGuestMainFrame();
         auto* unattached_guest_rfh = guest_view->GetGuestMainFrame();
         EXPECT_NE(unattached_guest_rfh, attached_guest_rfh);
         find_helper->StartFinding(u"doesn't matter", true, true, false);

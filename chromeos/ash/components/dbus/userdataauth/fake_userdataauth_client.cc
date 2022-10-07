@@ -332,6 +332,15 @@ class ReplyOnReturn {
 
 }  // namespace
 
+// =============== `AuthSessionData` =====================
+FakeUserDataAuthClient::AuthSessionData::AuthSessionData() = default;
+FakeUserDataAuthClient::AuthSessionData::AuthSessionData(
+    const AuthSessionData& other) = default;
+FakeUserDataAuthClient::AuthSessionData&
+FakeUserDataAuthClient::AuthSessionData::operator=(const AuthSessionData&) =
+    default;
+FakeUserDataAuthClient::AuthSessionData::~AuthSessionData() = default;
+
 // static
 FakeUserDataAuthClient::TestApi* FakeUserDataAuthClient::TestApi::Get() {
   // TestApi assumes that the FakeUserDataAuthClient singleton is initialized.
@@ -443,6 +452,25 @@ bool FakeUserDataAuthClient::TestApi::HasRecoveryFactor(
     const cryptohome::AccountIdentifier& account_id) {
   const UserCryptohomeState& user_state = GetUserState(account_id);
   return ContainsFakeFactor<RecoveryFactor>(user_state.auth_factors);
+}
+
+std::string FakeUserDataAuthClient::TestApi::AddSession(
+    const cryptohome::AccountIdentifier& account_id,
+    bool authenticated) {
+  CHECK(g_instance->users_.contains(account_id));
+
+  std::string auth_session_id = base::StringPrintf(
+      kAuthSessionIdTemplate, g_instance->next_auth_session_id_++);
+
+  CHECK_EQ(g_instance->auth_sessions_.count(auth_session_id), 0u);
+  AuthSessionData& session = g_instance->auth_sessions_[auth_session_id];
+
+  session.id = auth_session_id;
+  session.ephemeral = false;
+  session.account = account_id;
+  session.authenticated = authenticated;
+
+  return auth_session_id;
 }
 
 FakeUserDataAuthClient::UserCryptohomeState&
@@ -895,6 +923,7 @@ void FakeUserDataAuthClient::StartAuthSession(
       (request.flags() & ::user_data_auth::AUTH_SESSION_FLAGS_EPHEMERAL_USER) !=
       0;
   session.account = request.account_id();
+  session.requested_auth_session_intent = request.intent();
 
   if (cryptohome_error_ !=
       ::user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_NOT_SET) {
@@ -1380,7 +1409,12 @@ void FakeUserDataAuthClient::AuthenticateAuthFactor(
   }
 
   session.authenticated = true;
-  reply.set_authenticated(true);
+  session.authorized_auth_session_intent.Put(
+      session.requested_auth_session_intent);
+  if (session.requested_auth_session_intent ==
+      user_data_auth::AUTH_INTENT_DECRYPT)
+    reply.set_authenticated(true);
+  reply.add_authorized_for(session.requested_auth_session_intent);
   reply.set_seconds_left(kSessionTimeoutSeconds);
 }
 

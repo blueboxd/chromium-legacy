@@ -811,28 +811,7 @@
       "use_goma": true
     }
   },
-  "fuchsia-fyi-arm64-rel": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "target_cpu": "arm64",
-      "target_os": "fuchsia",
-      "test_host_cpu": "arm64",
-      "use_goma": true
-    }
-  },
   "fuchsia-fyi-cfv2-script": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "target_os": "fuchsia",
-      "use_cfv2_script": true,
-      "use_goma": true
-    }
-  },
-  "fuchsia-fyi-x64-rel": {
     "gn_args": {
       "dcheck_always_on": false,
       "is_component_build": false,
@@ -1210,6 +1189,17 @@
       "proprietary_codecs": true,
       "use_remoteexec": true,
       "v8_enable_sandbox_future": true
+    }
+  },
+  "linux-blink-wpt-reset-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "use_remoteexec": true
     }
   },
   "linux-chromeos-annotator-rel": {

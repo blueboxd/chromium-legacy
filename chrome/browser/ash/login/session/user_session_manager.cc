@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "ash/components/arc/arc_prefs.h"
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/tpm/prepare_tpm.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
@@ -133,6 +132,7 @@
 #include "chromeos/ash/components/login/auth/stub_authenticator_builder.h"
 #include "chromeos/ash/components/login/session/session_termination_manager.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
@@ -1676,8 +1676,11 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     }
 
     UpdateEasyUnlockKeys(user_context_);
-    quick_unlock::PinBackend::GetInstance()->MigrateToCryptohome(
-        profile, *user_context_.GetKey());
+    if (!features::IsUseAuthFactorsEnabled()) {
+      // Migration to cryptohome uses legacy AddKey-based cryptohome methods.
+      quick_unlock::PinBackend::GetInstance()->MigrateToCryptohome(
+          profile, std::make_unique<UserContext>(user_context_));
+    }
 
     // Save sync password hash and salt to profile prefs if they are available.
     // These will be used to detect Gaia password reuses.

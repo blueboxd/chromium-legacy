@@ -194,7 +194,7 @@ bool ChromeAccountManagerService::HasRestrictedIdentities() const {
 }
 
 bool ChromeAccountManagerService::IsValidIdentity(
-    ChromeIdentity* identity) const {
+    id<SystemIdentity> identity) const {
   return GetIdentityWithGaiaID(identity.gaiaID) != nil;
 }
 
@@ -237,7 +237,7 @@ ChromeIdentity* ChromeAccountManagerService::GetDefaultIdentity() const {
 }
 
 UIImage* ChromeAccountManagerService::GetIdentityAvatarWithIdentity(
-    ChromeIdentity* identity,
+    id<SystemIdentity> identity,
     IdentityAvatarSize avatar_size) {
   ResizedAvatarCache* avatar_cache =
       GetAvatarCacheForIdentityAvatarSize(avatar_size);
@@ -267,7 +267,7 @@ void ChromeAccountManagerService::RemoveObserver(Observer* observer) {
 }
 
 void ChromeAccountManagerService::OnAccessTokenRefreshFailed(
-    ChromeIdentity* identity,
+    id<SystemIdentity> identity,
     NSDictionary* user_info) {
   for (auto& observer : observer_list_)
     observer.OnAccessTokenRefreshFailed(identity, user_info);
@@ -279,7 +279,7 @@ void ChromeAccountManagerService::OnIdentityListChanged(
     observer.OnIdentityListChanged(need_user_approval);
 }
 
-void ChromeAccountManagerService::OnProfileUpdate(ChromeIdentity* identity) {
+void ChromeAccountManagerService::OnProfileUpdate(id<SystemIdentity> identity) {
   for (auto& observer : observer_list_)
     observer.OnIdentityChanged(identity);
 }

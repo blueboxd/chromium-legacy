@@ -2015,6 +2015,21 @@
             ]
         }
     ],
+    "BrowserPeriodicYieldingToNative": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "BrowserPeriodicYieldingToNative"
+                    ]
+                }
+            ]
+        }
+    ],
     "BrowserSwitcherNoneIsGreylist": [
         {
             "platforms": [
@@ -3323,6 +3338,21 @@
             ]
         }
     ],
+    "CrosQuickSettingsNetworkRevamp": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "QuickSettingsNetworkRevamp"
+                    ]
+                }
+            ]
+        }
+    ],
     "CrostiniLxd4Rollout": [
         {
             "platforms": [
@@ -3560,25 +3590,6 @@
                     ],
                     "disable_features": [
                         "NtpShoppingTasksModule"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DesktopNtpRemoveScrim": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "NtpRemoveScrim",
-                    "enable_features": [
-                        "NtpRemoveScrim"
                     ]
                 }
             ]
@@ -4042,7 +4053,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20220927",
+                    "name": "Enabled_20221001",
                     "enable_features": [
                         "UseDnsHttpsSvcbAlpn"
                     ]
@@ -4451,9 +4462,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20220412",
+                    "name": "Enabled_20220919",
                     "enable_features": [
-                        "FastPair"
+                        "FastPair",
+                        "FastPairSavedDevices"
                     ]
                 }
             ]
@@ -5458,6 +5470,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "FastApplicationWillTerminate"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IOSFeedSyncPromo": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableDiscoverFeedTopSyncPromo"
                     ]
                 }
             ]
@@ -7034,6 +7061,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "NtpRealboxPedals"
+                    ]
+                }
+            ]
+        }
+    ],
+    "NtpRemoveScrim": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NtpRemoveScrim"
                     ]
                 }
             ]
@@ -8634,17 +8680,12 @@
             ],
             "experiments": [
                 {
-                    "name": "DrDc",
+                    "name": "DrDc_vulkan",
                     "params": {
-                        "BlockListByDevice": "amber|chopin|secret|a03|SO-51B",
-                        "BlockListByModel": "21081111RG|21061110AG|M2101K7BG|SM-A035F|SO-51B"
+                        "BlockListByDevice": "amber|chopin|secret|a03|SO-51B|on7xelte|j7xelte|F41B|doha|HWYAL|a20s|begonia|b2q|t2s|channel|galahad|rk322x_box|a32|ellis|dandelion|tonga|RMX3231"
                     },
                     "enable_features": [
-                        "EnableDrDc",
                         "EnableDrDcVulkan"
-                    ],
-                    "disable_features": [
-                        "RawDraw"
                     ]
                 }
             ]
@@ -8736,8 +8777,6 @@
     "ReduceUserAgentPlatformOsCpu": [
         {
             "platforms": [
-                "android",
-                "android_weblayer",
                 "chromeos",
                 "chromeos_lacros",
                 "linux",
@@ -8746,7 +8785,7 @@
             ],
             "experiments": [
                 {
-                    "name": "All",
+                    "name": "Enabled",
                     "params": {
                         "all_except_legacy_windows_platform": "true",
                         "legacy_windows_platform": "true"
@@ -8754,25 +8793,24 @@
                     "enable_features": [
                         "ReduceUserAgentPlatformOsCpu"
                     ]
-                },
+                }
+            ]
+        }
+    ],
+    "RegionCaptureExperimentalSubtypes": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
                 {
-                    "name": "AllExceptLegacyWindows",
-                    "params": {
-                        "all_except_legacy_windows_platform": "true",
-                        "legacy_windows_platform": "false"
-                    },
+                    "name": "Enabled",
                     "enable_features": [
-                        "ReduceUserAgentPlatformOsCpu"
-                    ]
-                },
-                {
-                    "name": "LegacyWindows",
-                    "params": {
-                        "all_except_legacy_windows_platform": "false",
-                        "legacy_windows_platform": "true"
-                    },
-                    "enable_features": [
-                        "ReduceUserAgentPlatformOsCpu"
+                        "RegionCaptureExperimentalSubtypes"
                     ]
                 }
             ]
@@ -9790,21 +9828,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SmartLockBluetoothScreenOffFix"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SmartLockUIRevamp": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20220325",
-                    "enable_features": [
-                        "SmartLockUIRevamp"
                     ]
                 }
             ]

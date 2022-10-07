@@ -11,6 +11,9 @@
 # Tests that fail in legacy but pass in NG
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/fetch/api/abort/serviceworker-intercepted.https.html [ Timeout ]
+crbug.com/626703 virtual/orb-v01/external/wpt/fetch/api/abort/serviceworker-intercepted.https.html [ Timeout ]
+crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/api/abort/serviceworker-intercepted.https.html [ Timeout ]
 crbug.com/626703 external/wpt/encoding/unsupported-labels.window.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/css-flexbox/flexbox-definite-cross-size-constrained-percentage.html [ Failure ]
 crbug.com/626703 external/wpt/resize-observer/notify.html [ Timeout ]
@@ -170,6 +173,8 @@ crbug.com/829028 external/wpt/css/css-break/break-between-avoid-007.html [ Failu
 crbug.com/829028 external/wpt/css/css-break/break-between-avoid-009.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-between-avoid-010.html [ Failure ]
 crbug.com/726125 external/wpt/css/css-break/chrome-bug-1289999-crash.https.html [ Skip ]
+crbug.com/829028 external/wpt/css/css-break/clearance-parallel-flow-001.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/clearance-parallel-flow-002.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/fieldset-003.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/fieldset-004.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/fieldset-005.html [ Failure ]
@@ -457,6 +462,9 @@ crbug.com/591099 external/wpt/css/css-flexbox/alignment/flex-align-baseline-flex
 crbug.com/591099 external/wpt/css/css-flexbox/alignment/flex-align-baseline-grid-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/alignment/flex-align-baseline-grid-002.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/alignment/flex-align-baseline-grid-003.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-flexbox/alignment/flex-align-baseline-line-clamp-001.tentative.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-flexbox/alignment/flex-align-baseline-line-clamp-002.tentative.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-flexbox/alignment/flex-align-baseline-line-clamp-003.tentative.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/alignment/flex-align-baseline-overflow-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/alignment/flex-align-baseline-overflow-002.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-flexbox/alignment/flex-align-baseline-overflow-003.html [ Failure ]
@@ -623,6 +631,9 @@ crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-align-baseline-flex-0
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-align-baseline-grid-001.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-align-baseline-grid-002.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-align-baseline-grid-003.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-align-baseline-line-clamp-001.tentative.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-align-baseline-line-clamp-002.tentative.html [ Failure ]
+crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-align-baseline-line-clamp-003.tentative.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-align-baseline-overflow-001.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-align-baseline-overflow-002.html [ Failure ]
 crbug.com/1045599 external/wpt/css/css-grid/alignment/grid-align-baseline-overflow-003.html [ Failure ]

@@ -13,6 +13,7 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/geometry/transform_util.h"
@@ -487,27 +488,49 @@ absl::optional<Point3F> Transform::InverseMapPoint(const Point3F& point) const {
   return absl::make_optional(MapPointInternal(inverse, point));
 }
 
-void Transform::TransformRect(RectF* rect) const {
+RectF Transform::MapRect(const RectF& rect) const {
   if (IsIdentity())
-    return;
+    return rect;
 
-  SkRect src = RectFToSkRect(*rect);
+  // TODO(crbug.com/1359528): Use local implementation.
+  SkRect src = RectFToSkRect(rect);
   TransformToFlattenedSkMatrix(*this).mapRect(&src);
-  *rect = SkRectToRectF(src);
+  return SkRectToRectF(src);
 }
 
-bool Transform::TransformRectReverse(RectF* rect) const {
+Rect Transform::MapRect(const Rect& rect) const {
   if (IsIdentity())
-    return true;
+    return rect;
+
+  return ToEnclosingRect(MapRect(RectF(rect)));
+}
+
+// TODO(crbug.com/1359528): Remove this.
+void Transform::TransformRect(RectF* rect) const {
+  *rect = MapRect(*rect);
+}
+
+absl::optional<RectF> Transform::InverseMapRect(const RectF& rect) const {
+  if (IsIdentity())
+    return rect;
 
   Transform inverse(kSkipInitialization);
   if (!GetInverse(&inverse))
-    return false;
+    return absl::nullopt;
 
-  SkRect src = RectFToSkRect(*rect);
+  // TODO(crbug.com/1359528): Use local implementation.
+  SkRect src = RectFToSkRect(rect);
   TransformToFlattenedSkMatrix(inverse).mapRect(&src);
-  *rect = SkRectToRectF(src);
-  return true;
+  return SkRectToRectF(src);
+}
+
+absl::optional<Rect> Transform::InverseMapRect(const Rect& rect) const {
+  if (IsIdentity())
+    return rect;
+
+  if (absl::optional<RectF> mapped = InverseMapRect(RectF(rect)))
+    return ToEnclosingRect(mapped.value());
+  return absl::nullopt;
 }
 
 bool Transform::TransformRRectF(RRectF* rrect) const {

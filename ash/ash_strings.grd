@@ -269,12 +269,15 @@ This file contains the strings for ash.
         <ph name="battery">$2<ex>Battery is full.</ex></ph>
         <ph name="channel">$3<ex>Stable Channel</ex></ph>
         <ph name="network">$4<ex>Connected to Wifi.</ex></ph>,
-        <ph name="mic">$5<ex>A virtual machine is using your microphone</ex></ph>,
-        <ph name="camera">$6<ex>A virtual machine is using your camera</ex></ph>,
-        <ph name="managed">$7<ex>This account is managed by Family Link</ex></ph>
-        <ph name="notification">$8<ex>1 notification</ex></ph>,
-        <ph name="ime">$9<ex>Using US keyboard</ex></ph>
-        <ph name="locale">$10<ex>Using English</ex></ph>
+        <ph name="privacy">$5<ex>Camera in use</ex></ph>,
+        <ph name="managed">$6<ex>This account is managed by Family Link</ex></ph>
+        <ph name="notification">$7<ex>1 notification</ex></ph>,
+        <ph name="ime">$8<ex>Using US keyboard</ex></ph>
+        <ph name="locale">$9<ex>Using English</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_PRIVACY_ACCESSIBLE_DESCRIPTION" is_accessibility_with_no_ui="true" desc="The accessible description of privacy in the status tray and the information on it.">
+        <ph name="mic">$1<ex>A virtual machine is using your microphone</ex></ph>,
+        <ph name="camera">$2<ex>A virtual machine is using your camera</ex></ph>
       </message>
       <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the quick settings bubble and the information in it.">
         Quick Settings, Press search + left to access the notification center.
@@ -2240,6 +2243,12 @@ Connect your device to power.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING" desc="The label used when a network connection is connecting. [CHAR_LIMIT=14]">
         Connecting...
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_SIGNIN" desc="The label used when a network connection is behind a captive portal and requires signin.">
+        Sign in to network
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED_NO_INTERNET" desc="The label used when a network connection is connected but has no internet.">
+        Connected, no internet
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CLICK_TO_ACTIVATE" desc="The label used in quick settings to indicate an unactivated cellular network that can be clicked to launch activation through setup flow. [CHAR_LIMIT=29]">
         Click to activate
       </message>
@@ -2985,6 +2994,20 @@ Connect your device to power.
         Full-screen Magnifier enabled. Press Ctrl+Search+M again to toggle it off.
       </message>
 
+      <!-- Accelerator Actions-->
+      <message name="IDS_ASH_ACCELERATOR_ACTION_BRIGHTNESS_DOWN" translateable="false" desc="Label for accelerator action - Turn brightness down.">
+        Turn brightness down
+      </message>
+      <message name="IDS_ASH_ACCELERATOR_ACTION_BRIGHTNESS_UP" translateable="false" desc="Label for accelerator action - Turn brightness up.">
+        Turn brightness up
+      </message>
+      <message name="IDS_ASH_ACCELERATOR_ACTION_DESKS_ACTIVATE_DESK_LEFT" translateable="false" desc="Label for accelerator action - Activate desk on left.">
+        Activate desk on left
+      </message>
+      <message name="IDS_ASH_ACCELERATOR_ACTION_DESKS_ACTIVATE_DESK_RIGHT" translateable="false" desc="Label for accelerator action - Activate desk on right.">
+        Activate desk on right
+      </message>
+
       <!-- Tray scale strings -->
       <message name="IDS_ASH_STATUS_TRAY_SCALE" desc="The label used in scale setting detailed page of ash tray popup.">
         Display scale settings
@@ -3324,8 +3347,8 @@ Connect your device to power.
       <message name="IDS_FAST_PAIR_SAVE_BUTTON" desc="Message on button to tell users to save Fast Pair device to the user's Google account.">
         Save
       </message>
-      <message name="IDS_FAST_PAIR_LEARN_MORE_BUTTON" desc="Message on button to tell users to learn more about saving their Fast Pair device to the user's Google account.">
-        Learn More
+      <message name="IDS_FAST_PAIR_LEARN_MORE_BUTTON" meaning="button that links users to a help center support article" desc="Message on button to tell users to learn more about saving their Fast Pair device to the user's Google account.">
+        Learn more
       </message>
       <message name="IDS_FAST_PAIR_DISCOVERY_NOTIFICATION_TITLE" desc="Notification title shown when a there is a device discovered with Fast Pair.">
         Connect your <ph name="NAME">$1<ex>Pixel Buds</ex></ph>
@@ -3964,6 +3987,10 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_PRIVACY_NOTIFICATION_BUTTON_APP_SETTINGS" desc="Title for the launch app button of the notification shown when an app is using the camera/microphone.">
         App settings
+      </message>
+      <message name="IDS_PRIVACY_INDICATORS_VIEW_TOOLTIP" desc="Tooltip for the privacy indicators view in the status area.">
+        <ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS">$1<ex>You're sharing your screen</ex></ph>,
+        <ph name="SCREEN_SHARE_STATUS">$2<ex>Camera in use</ex></ph>
       </message>
 
       <!-- Strings for camera privacy hub switch notifications -->
@@ -4937,9 +4964,6 @@ New install
       <message name="IDS_APP_LIST_PAGE_SWITCHER" desc="Tooltip for page switcher for each page in fullscreen view which shows all apps.">
         Page <ph name="selected_page">$1<ex>1</ex></ph> of <ph name="total_page_num">$2<ex>3</ex></ph>
       </message>
-      <message name="IDS_APP_LIST_CONTINUE_READING_ACCESSIBILE_NAME" desc="The spoken feedback text for the suggestion chip of continue reading.">
-        Continue reading from your mobile device <ph name="title">$1<ex>Title</ex></ph>
-      </message>
       <message name="IDS_APP_LIST_LEARN_MORE" desc="Text of Learn more links.">
         Learn more
       </message>
@@ -5038,6 +5062,9 @@ New install
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SHELF_PARTY_OFF_SUBLABEL" desc="The sub label text shown under the tray menu button when Shelf Party mode is off.">
         Off
+      </message>
+      <message name="IDS_ASH_SHELF_ALL_PINNED_ITEMS_ARE_PARTYING" desc="The message that is displayed on the shelf when all pinned items are in Shelf Party (and therefore not shown on the shelf).">
+        All pinned items are partying
       </message>
 
       <!-- Firmware UI notifications -->

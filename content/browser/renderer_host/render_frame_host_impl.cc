@@ -424,6 +424,13 @@ using TokenFrameMap = std::unordered_map<blink::LocalFrameToken,
 base::LazyInstance<TokenFrameMap>::Leaky g_token_frame_map =
     LAZY_INSTANCE_INITIALIZER;
 
+auto& GetDocumentTokenMap() {
+  static base::NoDestructor<std::unordered_map<
+      blink::DocumentToken, RenderFrameHostImpl*, blink::DocumentToken::Hasher>>
+      map;
+  return *map;
+}
+
 BackForwardCacheMetrics::NotRestoredReason
 RendererEvictionReasonToNotRestoredReason(
     blink::mojom::RendererEvictionReason reason) {
@@ -1280,6 +1287,35 @@ void RecordIdentifiabilityDocumentCreatedMetrics(
   }
 }
 
+bool PopupInheritCOOP(const RenderFrameHostImpl* opener) {
+  return opener->GetLastCommittedOrigin() ==
+         opener->GetMainFrame()->GetLastCommittedOrigin();
+}
+
+// See https://html.spec.whatwg.org/C/#browsing-context-names (step 8)
+// ```
+// If current's top-level browsing context's active document's
+// cross-origin opener policy's value is "same-origin" or
+// "same-origin-plus-COEP", then [...] set noopener to true, name to
+// "_blank", and windowType to "new with no opener".
+// ```
+bool CoopSuppressOpener(const RenderFrameHostImpl* opener) {
+  // Those values are explicitly listed here, to force creator of new
+  // values to make an explicit decision in the future.
+  // See regression: https://crbug.com/1181673
+  switch (opener->GetMainFrame()->cross_origin_opener_policy().value) {
+    case network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone:
+    case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginAllowPopups:
+    case network::mojom::CrossOriginOpenerPolicyValue::kRestrictProperties:
+    case network::mojom::CrossOriginOpenerPolicyValue::
+        kRestrictPropertiesPlusCoep:
+      return false;
+    case network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin:
+    case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep:
+      return !PopupInheritCOOP(opener);
+  }
+}
+
 }  // namespace
 
 class RenderFrameHostImpl::SubresourceLoaderFactoriesConfig {
@@ -1545,6 +1581,29 @@ RenderFrameHostImpl* RenderFrameHostImpl::FromFrameToken(
           .Run(
               "Unknown LocalFrame made RenderFrameHost::FromFrameToken "
               "request.");
+    }
+    return nullptr;
+  }
+
+  return it->second;
+}
+
+// static
+RenderFrameHostImpl* RenderFrameHostImpl::FromDocumentToken(
+    int process_id,
+    const blink::DocumentToken& document_token,
+    mojo::ReportBadMessageCallback* process_mismatch_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  const auto it = GetDocumentTokenMap().find(document_token);
+  if (it == GetDocumentTokenMap().end())
+    return nullptr;
+
+  if (it->second->GetProcess()->GetID() != process_id) {
+    if (process_mismatch_callback) {
+      SYSLOG(WARNING)
+          << "Denying illegal RenderFrameHost::FromDocumentToken request.";
+      std::move(*process_mismatch_callback)
+          .Run("process ID does not match requested DocumentToken");
     }
     return nullptr;
   }
@@ -2571,9 +2630,9 @@ RenderFrameHostImpl::CreateSubresourceLoaderFactoriesForInitialEmptyDocument() {
           subresource_loader_factories->pending_default_factory()
               .InitWithNewPipeAndPassReceiver());
 
-      // The caller will send the returned factory to the renderer process.
-      // Therefore, after a NetworkService crash we need to push to the renderer
-      // an updated factory.
+      // The caller will send the returned factory to the renderer process (as
+      // the default factory).  Therefore, after a NetworkService crash we need
+      // to push to the renderer an updated factory.
       recreate_default_url_loader_factory_after_network_service_crash_ = true;
       break;
   }
@@ -3217,6 +3276,8 @@ void RenderFrameHostImpl::RenderProcessGone(
   // reset.
   RenderFrameDeleted();
   SetLastCommittedUrl(GURL());
+  set_base_url_from_renderer(GURL());
+  set_inherited_base_url(GURL());
   renderer_url_info_ = RendererURLInfo();
   web_bundle_handle_.reset();
 
@@ -5819,6 +5880,25 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   if (!frame_)
     return;
 
+  // Disregard if the IPC payload would have been empty.
+  //
+  // Examples of when this can happen:
+  // 1. DevTools tries to inject its proxies by calling this method on *all*
+  //    frames, regardless of whether a frame has actually used one or more
+  //    NetworkService-based URLLoaderFactory.  See also
+  //    RenderFrameDevToolsAgentHost::UpdateResourceLoaderFactories.
+  // 2. The RenderFrameHostImpl::CreateNetworkServiceDefaultFactory method
+  //    (exposed via //content/public) is called on a frame that doesn't
+  //    actually use a NetworkService-backed URLLoaderFactory.  This means
+  //    that CreateNetworkServiceDefaultFactoryAndObserve sets up
+  //    `network_service_disconnect_handler_holder_`, but
+  //    `recreate_default_url_loader_factory_after_network_service_crash_` is
+  //    false.
+  if (!recreate_default_url_loader_factory_after_network_service_crash_ &&
+      isolated_worlds_requiring_separate_url_loader_factory_.empty()) {
+    return;
+  }
+
   // The `subresource_loader_factories_config` of the new factories might need
   // to depend on the pending (rather than the last committed) navigation,
   // because we can't predict if an in-flight Commit IPC might be present when
@@ -7414,51 +7494,15 @@ void RenderFrameHostImpl::CreateNewWindow(
         dom_storage_context, params->session_storage_namespace_id);
   }
 
-  RenderFrameHostImpl* top_level_opener = GetMainFrame();
-  bool coop_is_inherited = true;
-  if (IsAnonymous() || IsNestedWithinFencedFrame()) {
+  if (IsAnonymous() || IsNestedWithinFencedFrame() ||
+      CoopSuppressOpener(/*opener=*/this)) {
     params->opener_suppressed = true;
+    // TODO(https://crbug.com/1060691) This should be applied to all
+    // popups opened with noopener.
     params->frame_name.clear();
-  } else {
-    // Check that this RFH and its main document are same origin.
-    if (!top_level_opener->GetLastCommittedOrigin().IsSameOriginWith(
-            GetLastCommittedOrigin())) {
-      // The documents are cross origin, the PolicyContainer did not inherit the
-      // top-level COOP value, and the initial empty document will have a COOP
-      // value of unsafe-none.
-      coop_is_inherited = false;
-      switch (top_level_opener->cross_origin_opener_policy().value) {
-        // Those values are explicitly listed here, to force creator of new
-        // values to make an explicit decision in the future.
-        // See regression: https://crbug.com/1181673
-        case network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone:
-        case network::mojom::CrossOriginOpenerPolicyValue::
-            kSameOriginAllowPopups:
-        case network::mojom::CrossOriginOpenerPolicyValue::kRestrictProperties:
-        case network::mojom::CrossOriginOpenerPolicyValue::
-            kRestrictPropertiesPlusCoep:
-          break;
-
-        // See https://html.spec.whatwg.org/C/#browsing-context-names (step 8)
-        // ```
-        // If current's top-level browsing context's active document's
-        // cross-origin opener policy's value is "same-origin" or
-        // "same-origin-plus-COEP", then [...] set noopener to true, name to
-        // "_blank", and windowType to "new with no opener".
-        // ```
-        case network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin:
-        case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep:
-          DCHECK(base::FeatureList::IsEnabled(
-              network::features::kCrossOriginOpenerPolicy));
-          params->opener_suppressed = true;
-          // The frame name should not be forwarded to a noopener popup.
-          // TODO(https://crbug.com/1060691) This should be applied to all
-          // popups opened with noopener.
-          params->frame_name.clear();
-      }
-    }
   }
 
+  RenderFrameHostImpl* top_level_opener = GetMainFrame();
   int popup_virtual_browsing_context_group =
       params->opener_suppressed
           ? CrossOriginOpenerPolicyAccessReportManager::
@@ -7506,9 +7550,9 @@ void RenderFrameHostImpl::CreateNewWindow(
   new_main_rfh->soap_by_default_virtual_browsing_context_group_ =
       popup_soap_by_default_virtual_browsing_context_group;
 
-  // If COOP is inherited (via the PolicyContainer) by the initial empty
-  // document, inherit the COOP reporter as well.
-  if (coop_is_inherited &&
+  // COOP and COOP reporter are inherited from the opener to the popup's initial
+  // empty document.
+  if (PopupInheritCOOP(/*opener=*/this) &&
       GetMainFrame()->coop_access_report_manager()->coop_reporter()) {
     new_main_rfh->SetCrossOriginOpenerPolicyReporter(
         std::make_unique<CrossOriginOpenerPolicyReporter>(
@@ -7822,6 +7866,43 @@ void RenderFrameHostImpl::DidChangeSrcDoc(
     return;
 
   child->SetSrcdocValue(srcdoc_value);
+}
+
+void RenderFrameHostImpl::DidChangeBaseURL(const GURL& base_url) {
+  if (!SiteIsolationPolicy::AreIsolatedSandboxedIframesEnabled())
+    return;
+
+  // TODO(https://crbug.com/1356658,1366593): consider restricting base URL in
+  // web renderers to non-chrome:// URLs.
+  set_base_url_from_renderer(base_url);
+}
+
+const GURL& RenderFrameHostImpl::GetBaseUrl() const {
+  if (!SiteIsolationPolicy::AreIsolatedSandboxedIframesEnabled()) {
+    NOTREACHED() << __func__
+                 << " should only be invoked when the feature "
+                    "IsolateSandboxedIframes is enabled.";
+    return GURL::EmptyGURL();
+  }
+
+  if (!base_url_from_renderer_.is_empty())
+    return base_url_from_renderer_;
+
+  // If `base_url_from_renderer_` is not set, then the document uses either the
+  // inherited or default (i.e. last committed URL) value for base URL.
+  if (!snapshotted_base_url_from_parent_.is_empty()) {
+    // TODO(wjmaclean): update this DCHECK when we start sending base urls for
+    // about:blank as well.
+    DCHECK(GetLastCommittedURL().IsAboutSrcdoc());
+    return snapshotted_base_url_from_parent_;
+  }
+
+  // If no other base URL is specified or inherited, the last committed URL is
+  // used. Note that srcdoc cases should always inherit.
+  // TODO(wjmaclean): update this DCHECK when we start sending base urls for
+  // about:blank as well.
+  DCHECK(!GetLastCommittedURL().IsAboutSrcdoc());
+  return GetLastCommittedURL();
 }
 
 void RenderFrameHostImpl::ReceivedDelegatedCapability(
@@ -8856,6 +8937,8 @@ void RenderFrameHostImpl::CommitNavigation(
 
   bool is_srcdoc = common_params->url.IsAboutSrcdoc();
   if (is_srcdoc) {
+    // TODO(wjmaclean): initialize this in NavigationRequest's constructor
+    // instead.
     commit_params->srcdoc_value =
         navigation_request->frame_tree_node()->srcdoc_value();
     // Main frame srcdoc navigation are meaningless. They are blocked whenever a
@@ -9303,6 +9386,7 @@ void RenderFrameHostImpl::FailedNavigation(
           blink::PendingURLLoaderFactoryBundle::SchemeMap(),
           blink::PendingURLLoaderFactoryBundle::OriginMap(),
           bypass_redirect_checks);
+  recreate_default_url_loader_factory_after_network_service_crash_ = true;
 
   mojom::NavigationClient* navigation_client =
       navigation_request->GetCommitNavigationClient();
@@ -10025,7 +10109,7 @@ FrameTreeNode* RenderFrameHostImpl::GetSibling(int relative_offset) const {
 }
 
 RenderFrameHostImpl* RenderFrameHostImpl::GetMainFrame() {
-  return const_cast<RenderFrameHostImpl*>(base::as_const(*this).GetMainFrame());
+  return const_cast<RenderFrameHostImpl*>(std::as_const(*this).GetMainFrame());
 }
 
 const RenderFrameHostImpl* RenderFrameHostImpl::GetMainFrame() const {
@@ -12004,6 +12088,16 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   // document.
   DCHECK(!navigation_request->IsSameDocument());
   DCHECK(!navigation_request->IsPageActivation());
+
+  // On every cross-document navigation, reset the the base url as sent from the
+  // renderer.
+  set_base_url_from_renderer(GURL());
+  // Remember any snapshot of the inherited base URL, in case subframes need it.
+  // This is currently only used for srcdoc frames when the
+  // IsolateSandboxedIframes feature is enabled.
+  DCHECK(navigation_request->inherited_base_url().is_empty() ||
+         navigation_request->GetURL().IsAboutSrcdoc());
+  set_inherited_base_url(navigation_request->inherited_base_url());
 
   // The nonce to use in anonymous iframe is a page scoped attribute. So it
   // needs to change every time the top-level document change.
@@ -14483,6 +14577,9 @@ RenderFrameHostImpl::DocumentAssociatedData::DocumentAssociatedData(
     RenderFrameHostImpl& document,
     const blink::DocumentToken& token)
     : token_(token), weak_factory_(&document) {
+  auto [_, inserted] = GetDocumentTokenMap().insert({token_, &document});
+  CHECK(inserted);
+
   // Only create page object for the main document as the PageImpl is 1:1 with
   // main document.
   if (!document.GetParent()) {
@@ -14503,6 +14600,10 @@ RenderFrameHostImpl::DocumentAssociatedData::~DocumentAssociatedData() {
   // Explicitly clear all user data here, so that the other fields of
   // DocumentAssociatedData are still valid while user data is being destroyed.
   ClearAllUserData();
+
+  // Last in case any DocumentService / DocumentUserData service destructors try
+  // to look up RenderFrameHosts by DocumentToken.
+  CHECK_EQ(1u, GetDocumentTokenMap().erase(token_));
 }
 
 void RenderFrameHostImpl::DocumentAssociatedData::

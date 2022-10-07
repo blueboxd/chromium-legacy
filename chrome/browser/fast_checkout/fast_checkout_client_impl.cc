@@ -74,9 +74,7 @@ base::flat_map<std::string, std::string> CreateScriptParameters(
            kCaller},
           {autofill_assistant::public_script_parameters::kSourceParameterName,
            kSource},
-          {kIsNoRoundTrip, run_consentless ? kTrue : kFalse},
-          // TODO(b/247072871): Remove once RPC signing works.
-          {"DISABLE_RPC_SIGNING", kTrue}};
+          {kIsNoRoundTrip, run_consentless ? kTrue : kFalse}};
 }
 
 }  // namespace
@@ -88,7 +86,12 @@ FastCheckoutClientImpl::FastCheckoutClientImpl(
           Profile::FromBrowserContext(web_contents->GetBrowserContext())
               ->GetPrefs()) {}
 
-FastCheckoutClientImpl::~FastCheckoutClientImpl() = default;
+FastCheckoutClientImpl::~FastCheckoutClientImpl() {
+  if (is_running_) {
+    base::UmaHistogramEnumeration(kUmaKeyFastCheckoutRunOutcome,
+                                  FastCheckoutRunOutcome::kIncompleteRun);
+  }
+}
 
 bool FastCheckoutClientImpl::Start(
     base::WeakPtr<autofill::FastCheckoutDelegate> delegate,
@@ -200,10 +203,17 @@ void FastCheckoutClientImpl::SetShouldSuppressKeyboard(bool suppress) {
 
 void FastCheckoutClientImpl::OnRunComplete(
     autofill_assistant::HeadlessScriptController::ScriptResult result) {
-  // TODO(crbug.com/1338522): Handle failed result.
   if (result.onboarding_result ==
       autofill_assistant::HeadlessOnboardingResult::kRejected) {
     fast_checkout_prefs_.DeclineOnboarding();
+    base::UmaHistogramEnumeration(kUmaKeyFastCheckoutRunOutcome,
+                                  FastCheckoutRunOutcome::kOnboardingDeclined);
+  } else if (result.success) {
+    base::UmaHistogramEnumeration(kUmaKeyFastCheckoutRunOutcome,
+                                  FastCheckoutRunOutcome::kSuccess);
+  } else {
+    base::UmaHistogramEnumeration(kUmaKeyFastCheckoutRunOutcome,
+                                  FastCheckoutRunOutcome::kFail);
   }
 
   OnHidden();

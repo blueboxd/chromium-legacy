@@ -223,7 +223,7 @@ BASE_FEATURE(kAssistantNativeIcons,
 // Enables Peripheral volume change by hardware reported steps
 BASE_FEATURE(kAudioPeripheralVolumeGranularity,
              "AudioPeripheralVolumeGranularity",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the AudioSourceFetcher resamples the audio for speech
 // recongnition.
@@ -428,13 +428,13 @@ BASE_FEATURE(kCrosPrivacyHub,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables Privacy Hub features selected for dogfooding.
-BASE_FEATURE(kCrosPrivacyHubDogfood,
-             "CrosPrivacyHubDogfood",
+BASE_FEATURE(kCrosPrivacyHubV0,
+             "CrosPrivacyHubV0",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables future features for Privacy Hub for ChromeOS.
-BASE_FEATURE(kCrosPrivacyHubFuture,
-             "CrosPrivacyHubFuture",
+BASE_FEATURE(kCrosPrivacyHubV2,
+             "CrosPrivacyHubV2",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables generation of attestation certificates used by Cross Device features,
@@ -852,6 +852,17 @@ BASE_FEATURE(kFamilyLinkOnSchoolDevice,
 
 // Enables the Fast Pair feature.
 BASE_FEATURE(kFastPair, "FastPair", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// The amount of minutes we should wait before allowing notifications for a
+// recently lost device.
+const base::FeatureParam<double> kFastPairDeviceLostNotificationTimeoutMinutes{
+    &kFastPair, "fast-pair-device-lost-notification-timeout-minutes", 5};
+
+// Enabled Fast Pair sub feature to prevent notifications for recently lost
+// devices for |kFastPairDeviceLostNotificationTimeout|.
+BASE_FEATURE(kFastPairPreventNotificationsForRecentlyLostDevice,
+             "FastPairPreventNotificationsForRecentlyLostDevice",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Sets Fast Pair scanning to low power mode.
 BASE_FEATURE(kFastPairLowPower,
@@ -1501,6 +1512,10 @@ BASE_FEATURE(kPhoneHubMonochromeNotificationIcons,
              "PhoneHubMonochromeNotificationIcons",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kPhoneHubPingOnBubbleOpen,
+             "PhoneHubPingOnBubbleOpen",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enables or disables the preference of using constant frame rate for camera
 // when streaming.
 BASE_FEATURE(kPreferConstantFrameRate,
@@ -1906,14 +1921,11 @@ BASE_FEATURE(kUseAuthsessionAuthentication,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Uses new AuthFactor-based API when communicating with cryptohome.
+// This feature flag also affects usage of AuthSessions in QuickUnlock, but
+// only in case when cryptohome is used as backend.
+// This feature flag also affects usage of AuthSession on lock screen.
 BASE_FEATURE(kUseAuthFactors,
              "UseAuthFactors",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, uses the new AuthSession-based API as backend of the
-// quickUnlockPrivate extension API.
-BASE_FEATURE(kUseAuthsessionQuickUnlock,
-             "UseAuthsessionQuickUnlock",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
@@ -2275,22 +2287,22 @@ bool IsConsumerAutoUpdateToggleAllowed() {
 }
 
 bool IsCrosPrivacyHubEnabled() {
-  return IsCrosPrivacyHubDogfoodEnabled() || IsCrosPrivacyHubMVPEnabled() ||
-         IsCrosPrivacyHubFutureEnabled();
+  return IsCrosPrivacyHubV0Enabled() || IsCrosPrivacyHubV1Enabled() ||
+         IsCrosPrivacyHubV2Enabled();
 }
 
-bool IsCrosPrivacyHubDogfoodEnabled() {
-  return base::FeatureList::IsEnabled(kCrosPrivacyHubDogfood) ||
-         IsCrosPrivacyHubMVPEnabled();
+bool IsCrosPrivacyHubV0Enabled() {
+  return base::FeatureList::IsEnabled(kCrosPrivacyHubV0) ||
+         IsCrosPrivacyHubV1Enabled();
 }
 
-bool IsCrosPrivacyHubFutureEnabled() {
-  return base::FeatureList::IsEnabled(kCrosPrivacyHubFuture);
+bool IsCrosPrivacyHubV2Enabled() {
+  return base::FeatureList::IsEnabled(kCrosPrivacyHubV2);
 }
 
-bool IsCrosPrivacyHubMVPEnabled() {
+bool IsCrosPrivacyHubV1Enabled() {
   return base::FeatureList::IsEnabled(kCrosPrivacyHub) ||
-         IsCrosPrivacyHubFutureEnabled();
+         IsCrosPrivacyHubV2Enabled();
 }
 
 bool IsCrosNextWMPEnabled() {
@@ -2385,6 +2397,11 @@ bool IsFastPairEnabled() {
 
 bool IsFastPairLowPowerEnabled() {
   return base::FeatureList::IsEnabled(kFastPairLowPower);
+}
+
+bool IsFastPairPreventNotificationsForRecentlyLostDeviceEnabled() {
+  return base::FeatureList::IsEnabled(
+      kFastPairPreventNotificationsForRecentlyLostDevice);
 }
 
 bool IsFastPairSoftwareScanningEnabled() {
@@ -2714,6 +2731,10 @@ bool IsPhoneHubFeatureSetupErrorHandlingEnabled() {
   return base::FeatureList::IsEnabled(kPhoneHubFeatureSetupErrorHandling);
 }
 
+bool IsPhoneHubPingOnBubbleOpenEnabled() {
+  return base::FeatureList::IsEnabled(kPhoneHubPingOnBubbleOpen);
+}
+
 bool IsPerformantSplitViewResizingEnabled() {
   return base::FeatureList::IsEnabled(kPerformantSplitViewResizing);
 }
@@ -2924,11 +2945,6 @@ bool IsUploadOfficeToCloudEnabled() {
 
 bool IsUseAuthFactorsEnabled() {
   return base::FeatureList::IsEnabled(kUseAuthFactors);
-}
-
-bool IsUseAuthsessionQuickUnlockEnabled() {
-  return IsUseAuthFactorsEnabled() &&
-         base::FeatureList::IsEnabled(kUseAuthsessionQuickUnlock);
 }
 
 bool IsUseLoginShelfWidgetEnabled() {

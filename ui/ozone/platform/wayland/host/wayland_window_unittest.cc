@@ -783,8 +783,6 @@ TEST_P(WaylandWindowTest, Minimize) {
 }
 
 TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
-  uint32_t serial = 0;
-
   // Make sure the window is initialized to normal state from the beginning.
   EXPECT_EQ(PlatformWindowState::kNormal, window_->GetPlatformWindowState());
 
@@ -807,12 +805,7 @@ TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
   EXPECT_CALL(*GetXdgToplevel(), UnsetFullscreen());
   EXPECT_CALL(delegate_, OnWindowStateChanged(_, _)).Times(1);
   window_->Restore();
-  states = InitializeWlArrayWithActivatedState();
-  SendConfigureEvent(xdg_surface_, {0, 0}, ++serial, states.get());
-  Sync();
   EXPECT_EQ(window_->GetPlatformWindowState(), PlatformWindowState::kNormal);
-  VerifyAndClearExpectations();
-
   // Reinitialize wl_array, which removes previous old states.
   states = InitializeWlArrayWithActivatedState();
   SendConfigureEvent(xdg_surface_, {0, 0}, 3, states.get());
@@ -1031,7 +1024,7 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
   SendConfigureEvent(xdg_surface_, {0, 0}, ++serial, empty_state.get());
   Sync();
 
-  auto states = MakeStateArray(
+  auto active_maximized = MakeStateArray(
       {XDG_TOPLEVEL_STATE_ACTIVATED, XDG_TOPLEVEL_STATE_MAXIMIZED});
   EXPECT_CALL(*GetXdgToplevel(), SetMaximized());
   EXPECT_CALL(*xdg_surface_,
@@ -1043,7 +1036,7 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
   // State changes are synchronous.
   EXPECT_EQ(PlatformWindowState::kMaximized, window_->GetPlatformWindowState());
   SendConfigureEvent(xdg_surface_, kMaximizedBounds.size(), ++serial,
-                     states.get());
+                     active_maximized.get());
   Sync();
   // Verify that the state has not been changed.
   EXPECT_EQ(PlatformWindowState::kMaximized, window_->GetPlatformWindowState());
@@ -1058,27 +1051,22 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
   // State changes are synchronous.
   EXPECT_EQ(PlatformWindowState::kFullScreen,
             window_->GetPlatformWindowState());
-  AddStateToWlArray(XDG_TOPLEVEL_STATE_FULLSCREEN, states.get());
+  AddStateToWlArray(XDG_TOPLEVEL_STATE_FULLSCREEN, active_maximized.get());
   SendConfigureEvent(xdg_surface_, kMaximizedBounds.size(), ++serial,
-                     states.get());
+                     active_maximized.get());
   Sync();
   // Verify that the state has not been changed.
   EXPECT_EQ(PlatformWindowState::kFullScreen,
             window_->GetPlatformWindowState());
   VerifyAndClearExpectations();
 
+  EXPECT_CALL(*xdg_surface_,
+              SetWindowGeometry(gfx::Rect(kNormalBounds.size())));
   EXPECT_CALL(*GetXdgToplevel(), UnsetFullscreen());
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(kDefaultBoundsChange)));
   EXPECT_CALL(delegate_, OnWindowStateChanged(_, _)).Times(1);
   window_->Restore();
-  auto active_maximized = MakeStateArray(
-      {XDG_TOPLEVEL_STATE_ACTIVATED, XDG_TOPLEVEL_STATE_MAXIMIZED});
-  SendConfigureEvent(xdg_surface_,
-                     {kMaximizedBounds.width(), kMaximizedBounds.height()},
-                     ++serial, active_maximized.get());
-  Sync();
-  EXPECT_EQ(PlatformWindowState::kMaximized, window_->GetPlatformWindowState());
-  VerifyAndClearExpectations();
-
+  EXPECT_EQ(PlatformWindowState::kNormal, window_->GetPlatformWindowState());
   // Reinitialize wl_array, which removes previous old states.
   auto active = InitializeWlArrayWithActivatedState();
   SendConfigureEvent(xdg_surface_, {0, 0}, ++serial, active.get());
@@ -2123,9 +2111,7 @@ TEST_P(WaylandWindowTest, WaylandPopupInitialBufferScale) {
         const int32_t effective_scale = entered_output.output->GetScale();
         gfx::Transform transform;
         transform.Scale(effective_scale, effective_scale);
-        gfx::RectF rect_in_pixels = gfx::RectF(bounds_dip);
-        transform.TransformRect(&rect_in_pixels);
-        gfx::Rect wayland_popup_bounds = gfx::ToEnclosingRect(rect_in_pixels);
+        gfx::Rect wayland_popup_bounds = transform.MapRect(bounds_dip);
 
         std::unique_ptr<WaylandWindow> wayland_popup =
             CreateWaylandWindowWithParams(PlatformWindowType::kMenu,
@@ -3315,54 +3301,6 @@ TEST_P(WaylandWindowTest, SecondarySnappedState) {
   static_cast<WaylandToplevelWindow*>(toplevel.get())->ApplyPendingBounds();
   EXPECT_EQ(gfx::Rect(100, 0, 100, 200), toplevel->GetBoundsInDIP());
 }
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-
-TEST_P(WaylandWindowTest, ImmersiveFullscreen) {
-  if (GetParam().shell_version == wl::ShellVersion::kV6)
-    GTEST_SKIP();
-
-  testing::NiceMock<MockWaylandPlatformWindowDelegate> delegate_2;
-  auto toplevel = CreateWaylandWindowWithParams(
-      PlatformWindowType::kWindow, 0, gfx::Rect(10, 10, 200, 200), &delegate_2);
-  EXPECT_CALL(delegate_2, OnImmersiveModeChanged(true)).Times(1);
-  toplevel->HandleAuraToplevelConfigure(0, 0, 0, 0,
-                                        {.is_maximized = false,
-                                         .is_fullscreen = true,
-                                         .is_immersive_fullscreen = true,
-                                         .is_activated = true});
-  toplevel->HandleSurfaceConfigure(2);
-}
-
-TEST_P(WaylandWindowTest, ImmersiveFullscreen_Disabled) {
-  if (GetParam().shell_version == wl::ShellVersion::kV6)
-    GTEST_SKIP();
-
-  uint32_t serial = 0;
-
-  testing::NiceMock<MockWaylandPlatformWindowDelegate> delegate_2;
-  auto toplevel = CreateWaylandWindowWithParams(
-      PlatformWindowType::kWindow, 0, gfx::Rect(10, 10, 200, 200), &delegate_2);
-
-  // First we have to enable it, or the top level window will not detect
-  // immersive state change.
-  toplevel->HandleAuraToplevelConfigure(0, 0, 0, 0,
-                                        {.is_maximized = false,
-                                         .is_fullscreen = true,
-                                         .is_immersive_fullscreen = true,
-                                         .is_activated = true});
-  toplevel->HandleSurfaceConfigure(++serial);
-
-  EXPECT_CALL(delegate_2, OnImmersiveModeChanged(false)).Times(1);
-  toplevel->HandleAuraToplevelConfigure(0, 0, 0, 0,
-                                        {.is_maximized = false,
-                                         .is_fullscreen = false,
-                                         .is_immersive_fullscreen = false,
-                                         .is_activated = true});
-  toplevel->HandleSurfaceConfigure(++serial);
-}
-
-#endif
 
 namespace {
 

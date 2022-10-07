@@ -435,7 +435,7 @@
 <translation id="1412681350727866021">الإضافات الأخرى</translation>
 <translation id="1414315029670184034">عدم السماح للمواقع الإلكترونية باستخدام الكاميرا</translation>
 <translation id="1414648216875402825">إنك تُجري تحديثًا لإصدار غير ثابت من <ph name="PRODUCT_NAME" /> والذي يشتمل على ميزات قيد التقدم. لذا قد تحدث أعطال وأخطاء غير متوقعة. يُرجى المتابعة مع توخّي الحذر.</translation>
-<translation id="1415708812149920388">تم رفض الوصول لقراءة الحافظة</translation>
+<translation id="1415708812149920388">تم رفض الإذن بالاطّلاع على الحافظة</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (معرف الإضافة "<ph name="EXTENSION_ID" />") غير مسموح بها في هذا النوع من الجلسات.</translation>
 <translation id="1417428793154876133">{NUM_APPS,plural, =1{إزالة التطبيق}zero{إزالة التطبيقات}two{إزالة التطبيقَين}few{إزالة التطبيقات}many{إزالة التطبيقات}other{إزالة التطبيقات}}</translation>
 <translation id="1418552618736477642">الإشعارات والتطبيقات</translation>
@@ -2857,7 +2857,7 @@
 <translation id="3653160965917900914">مشاركات ملفات الشبكة</translation>
 <translation id="3653999333232393305">مواصلة السماح لـ <ph name="HOST" /> بالدخول إلى الميكروفون</translation>
 <translation id="3654045516529121250">الاطّلاع على إعدادات إمكانية الوصول</translation>
-<translation id="3655712721956801464">{NUM_FILES,plural, =1{لديه حق الوصول الدائم إلى ملف واحد.}zero{لديه حق الوصول الدائم إلى # من الملفات.}two{لديه حق الوصول الدائم إلى ملفين (#).}few{ لديه حق الوصول الدائم إلى # ملفات.}many{لديه حق الوصول الدائم إلى # ملفًا.}other{لديه حق الوصول الدائم إلى # من الملفات.}}</translation>
+<translation id="3655712721956801464">{NUM_FILES,plural, =1{لديه لإذن بالوصول الدائم إلى ملف واحد.}zero{لديه لإذن بالوصول الدائم إلى # من الملفات.}two{لديه لإذن بالوصول الدائم إلى ملفين (#).}few{ لديه لإذن بالوصول الدائم إلى # ملفات.}many{لديه لإذن بالوصول الدائم إلى # ملفًا.}other{لديه لإذن بالوصول الدائم إلى # من الملفات.}}</translation>
 <translation id="3658871634334445293">‏تسارع TrackPoint</translation>
 <translation id="3659929705630080526">لقد أدخلت رمز دخول غير صحيح عدّة مرات. يُرجى إعادة المحاولة لاحقًا.</translation>
 <translation id="3660234220361471169">غير موثوق بها</translation>
@@ -5641,7 +5641,6 @@
 <translation id="6345878117466430440">وضع علامة "مقروءة"</translation>
 <translation id="6347010704471250799">عرض إشعار</translation>
 <translation id="6349101878882523185">تثبيت <ph name="APP_NAME" /></translation>
-<translation id="6351383110065274390">‏الاستمتاع بألعاب الفيديو على جهاز Chromebook</translation>
 <translation id="6354918092619878358">‏منحنى SECG ناقص المقطع secp256r1‏ (aka ANSI X9.62 prime256v1‏، NIST P-256)</translation>
 <translation id="6355789186038748882">يُرجى العِلم أنّ هذا متصفّح تجريبي (جودة الإصدار الأولي) وأنّ بعض الميزات غير متوفّرة أو غير مكتملة. يمكنك الإبلاغ عن أي مشاكل من خلال الانتقال إلى مساعدة &gt; "الإبلاغ عن مشكلة...".</translation>
 <translation id="635609604405270300">يُرجى إبقاء الجهاز مشغَّلاً</translation>
@@ -6004,7 +6003,6 @@
 <translation id="6691541770654083180">الأرض</translation>
 <translation id="6691936601825168937">إعا&amp;دة توجيه</translation>
 <translation id="6693745645188488741">{COUNT,plural, =1{صفحة واحدة}zero{{COUNT} صفحة}two{صفحتان ({COUNT})}few{{COUNT} صفحات}many{{COUNT} صفحة}other{{COUNT} صفحة}}</translation>
-<translation id="6694430008315398925">‏جارٍ إعداد Steam</translation>
 <translation id="6697172646384837537">اختيار مكان استيراد كلمات المرور</translation>
 <translation id="6697492270171225480">عرض اقتراحات للصفحات المشابهة عند تعذّر العثور على صفحة</translation>
 <translation id="6697690052557311665">‏للمشاركة، انقر بزر الماوس الأيمن على مجلَّد في تطبيق "الملفات"، ثم اختَر "المشاركة مع نظام التشغيل Linux".</translation>
@@ -8263,6 +8261,7 @@
 <translation id="8838601485495657486">معتم</translation>
 <translation id="8838770651474809439">هامبورجر</translation>
 <translation id="8838778928843281408">إدارة أجهزة الهاتف</translation>
+<translation id="883924185304953854">البحث باستخدام الصور</translation>
 <translation id="8841843049738266382">قراءة قائمة المستخدمين المسموح بهم وتغييرها</translation>
 <translation id="8842594465773264717">حذف بصمة الإصبع هذه</translation>
 <translation id="8845001906332463065">الحصول على مساعدة</translation>
@@ -8412,7 +8411,6 @@
 <translation id="8983018820925880511">ستتم إدارة هذا الملف الشخصي الجديد بواسطة <ph name="DOMAIN" />. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="8983632908660087688">بإمكان <ph name="ORIGIN" /> تعديل <ph name="FILENAME" />.</translation>
 <translation id="8984694057134206124">سيكون جهازك مرئيًا لجميع المستخدمين لمدة <ph name="MINUTES" /> دقيقة. <ph name="LINK_BEGIN" />مزيد من المعلومات<ph name="LINK_END" /></translation>
-<translation id="8985191021574400965">‏مرحبًا بك في Steam على جهاز Chromebook</translation>
 <translation id="8985264973231822211">نشط قبل <ph name="DEVICE_LAST_ACTIVATED_TIME" /> يوم</translation>
 <translation id="8985661493893822002">يُرجى الاتصال بالإنترنت لتسجيل الدخول إلى <ph name="DEVICE_TYPE" />.</translation>
 <translation id="8986362086234534611">حذف</translation>

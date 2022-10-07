@@ -31,7 +31,7 @@ AngleVulkanImageBackingFactory::~AngleVulkanImageBackingFactory() = default;
 std::unique_ptr<SharedImageBacking>
 AngleVulkanImageBackingFactory::CreateSharedImage(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -43,7 +43,7 @@ AngleVulkanImageBackingFactory::CreateSharedImage(
       context_state_, mailbox, format, size, color_space, surface_origin,
       alpha_type, usage);
 
-  if (!backing->Initialize(format_info_[format], {}))
+  if (!backing->Initialize({}))
     return nullptr;
 
   return backing;
@@ -52,7 +52,7 @@ AngleVulkanImageBackingFactory::CreateSharedImage(
 std::unique_ptr<SharedImageBacking>
 AngleVulkanImageBackingFactory::CreateSharedImage(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
@@ -63,7 +63,7 @@ AngleVulkanImageBackingFactory::CreateSharedImage(
       context_state_, mailbox, format, size, color_space, surface_origin,
       alpha_type, usage);
 
-  if (!backing->Initialize(format_info_[format], data))
+  if (!backing->Initialize(data))
     return nullptr;
 
   return backing;
@@ -113,7 +113,7 @@ bool AngleVulkanImageBackingFactory::CanUseAngleVulkanImageBacking(
 
 bool AngleVulkanImageBackingFactory::IsSupported(
     uint32_t usage,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     const gfx::Size& size,
     bool thread_safe,
     gfx::GpuMemoryBufferType gmb_type,
@@ -130,7 +130,7 @@ bool AngleVulkanImageBackingFactory::IsSupported(
     return false;
   }
 
-  return CanCreateSharedImage(size, pixel_data, format_info_[format],
+  return CanCreateSharedImage(size, pixel_data, GetFormatInfo(format),
                               GL_TEXTURE_2D);
 }
 

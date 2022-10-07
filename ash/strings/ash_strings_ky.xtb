@@ -190,6 +190,7 @@
 <translation id="1989113344093894667">Мазмун сүрөткө тартылган жок</translation>
 <translation id="1990046457226896323">Кеп файлдары жүктөлүп алынды</translation>
 <translation id="1993072747612765854"><ph name="SYSTEM_APP_NAME" /> колдонмосундагы жаңыртуу жөнүндө кененирээк маалымат алуу</translation>
+<translation id="1995660704900986789">Өчүрүү</translation>
 <translation id="1998100899771863792">Учурдагы иш такта</translation>
 <translation id="2001444736072756133">Төмөнкү категорияларда издеңиз: <ph name="CATEGORY" />, файлдар, колдонмолор жана башкалар.</translation>
 <translation id="2016340657076538683">Бир нерсе деңиз</translation>
@@ -770,16 +771,6 @@
 <translation id="5393156353051693207">Колдонмолоруңуздун иретин өзгөртүү үчүн каалаган жерди басып кармап туруңуз</translation>
 <translation id="5395308026110844773">Папка түзүү үчүн, <ph name="DRAGGED_APP_NAME" /> колдонмосун <ph name="IN_PLACE_APP" /> колдонмосунун үстүнө сүйрөп барып, коё бериңиз.</translation>
 <translation id="5397578532367286026">Башкаруучу бул колдонуучунун пайдалангандарын жана таржымалын (<ph name="MANAGER_EMAIL" />) chrome.com дарегинен карап чыга алат.</translation>
-<translation id="5399673806694250334">Абал түпкүчү, убакыт <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="CHANNEL" />
-        <ph name="NETWORK" />,
-        <ph name="MIC" />,
-        <ph name="CAMERA" />,
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">Ыкчам жөндөөлөр, Билдирмелер борборуна өтүү үчүн Издөө + сол баскычты басыңыз.</translation>
 <translation id="5426063383988017631">Жөндөөлөр менюсу жабылды</translation>
 <translation id="5428899915242071344">Тандап баштоо</translation>

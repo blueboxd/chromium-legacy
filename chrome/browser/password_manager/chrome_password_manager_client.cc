@@ -920,7 +920,7 @@ ChromePasswordManagerClient::GetStoreResultFilter() const {
   return &credentials_filter_;
 }
 
-const autofill::LogManager* ChromePasswordManagerClient::GetLogManager() const {
+autofill::LogManager* ChromePasswordManagerClient::GetLogManager() {
   return log_manager_.get();
 }
 
@@ -1456,6 +1456,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       password_manager_(this),
       password_feature_manager_(profile_->GetPrefs(),
+                                g_browser_process->local_state(),
                                 SyncServiceFactory::GetForProfile(profile_)),
       httpauth_manager_(this),
       password_reuse_detection_manager_(this),

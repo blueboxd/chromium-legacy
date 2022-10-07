@@ -190,6 +190,7 @@
 <translation id="1989113344093894667">Δεν είναι δυνατή η λήψη του περιεχομένου</translation>
 <translation id="1990046457226896323">Έγινε λήψη των αρχείων ομιλίας.</translation>
 <translation id="1993072747612765854">Μάθετε περισσότερα σχετικά με την πιο πρόσφατη ενημέρωση της εφαρμογής <ph name="SYSTEM_APP_NAME" /></translation>
+<translation id="1995660704900986789">Απενεργοποίηση</translation>
 <translation id="1998100899771863792">Τρέχον γραφείο</translation>
 <translation id="2001444736072756133">Αναζητήστε <ph name="CATEGORY" />, αρχεία, εφαρμογές και άλλα.</translation>
 <translation id="2016340657076538683">Πληκτρολογήστε ένα μήνυμα</translation>
@@ -770,16 +771,6 @@
 <translation id="5393156353051693207">Αγγίξτε παρατεταμένα οπουδήποτε για να αναδιατάξετε τις εφαρμογές σας</translation>
 <translation id="5395308026110844773">Η εφαρμογή <ph name="DRAGGED_APP_NAME" /> πάνω από την εφαρμογή <ph name="IN_PLACE_APP" />, αφήστε για να δημιουργήσετε φάκελο.</translation>
 <translation id="5397578532367286026">Ο διαχειριστής (<ph name="MANAGER_EMAIL" />) μπορεί να ελέγξει τη χρήση και το ιστορικό αυτού του χρήστη στη διεύθυνση chrome.com.</translation>
-<translation id="5399673806694250334">Περιοχή κατάστασης, ώρα <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="CHANNEL" />
-        <ph name="NETWORK" />,
-        <ph name="MIC" />,
-        <ph name="CAMERA" />,
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">Γρήγορες ρυθμίσεις, πατήστε Αναζήτηση και αριστερά για πρόσβαση στο κέντρο ειδοποιήσεων.</translation>
 <translation id="5426063383988017631">Το μενού Ρυθμίσεις έκλεισε.</translation>
 <translation id="5428899915242071344">Έναρξη επιλογής</translation>

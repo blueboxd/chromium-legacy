@@ -190,6 +190,7 @@
 <translation id="1989113344093894667">კონტენტის აღბეჭდვა ვერ ხერხდება</translation>
 <translation id="1990046457226896323">მეტყველების ფაილები ჩამოიტვირთა</translation>
 <translation id="1993072747612765854">შეიტყვეთ მეტი <ph name="SYSTEM_APP_NAME" />-ის ბოლო განახლების შესახებ</translation>
+<translation id="1995660704900986789">გამორთვა</translation>
 <translation id="1998100899771863792">ამჟამინდელი სამუშაო მაგიდა</translation>
 <translation id="2001444736072756133">მოიძიეთ თქვენი <ph name="CATEGORY" />, ფაილები, აპები და სხვა კონტენტი.</translation>
 <translation id="2016340657076538683">აკრიფეთ შეტყობინება</translation>
@@ -773,16 +774,6 @@
 <translation id="5393156353051693207">აპების გადასალაგებლად დააწკაპუნეთ ხანგრძლივად შეეხეთ ნებისმიერ ადგილს</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> არის <ph name="IN_PLACE_APP" />-ის ზემოდან, აუშვით საქაღალდის შესაქმნელად.</translation>
 <translation id="5397578532367286026">ამ მომხმარებლის გამოყენების და ისტორიის დათვალიერება შესაძლებელია მენეჯერის მიერ (<ph name="MANAGER_EMAIL" />) chrome.com-ზე.</translation>
-<translation id="5399673806694250334">სტატუსის პანელი, დრო: <ph name="TIME" />,
-        <ph name="BATTERY" />
-        <ph name="CHANNEL" />
-        <ph name="NETWORK" />,
-        <ph name="MIC" />,
-        <ph name="CAMERA" />,
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />,
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="5400461572260843123">სწრაფი პარამეტრები, შეტყობინებების ცენტრზე წვდომისთვის დააჭირეთ კლავიშთა კომბინაციაზე: search + მარცხნივ მიმართული ისარი.</translation>
 <translation id="5426063383988017631">პარამეტრების მენიუ დახურულია</translation>
 <translation id="5428899915242071344">არჩევის დაწყება</translation>

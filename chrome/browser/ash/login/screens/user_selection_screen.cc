@@ -10,9 +10,6 @@
 #include <utility>
 
 #include "ash/components/arc/arc_util.h"
-#include "ash/components/proximity_auth/screenlock_bridge.h"
-#include "ash/components/proximity_auth/smart_lock_metrics_recorder.h"
-#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
@@ -52,6 +49,9 @@
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
+#include "chromeos/ash/components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/ash/components/proximity_auth/smart_lock_metrics_recorder.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "components/account_id/account_id.h"
@@ -521,11 +521,16 @@ UserAvatar UserSelectionScreen::BuildAshUserAvatarForUser(
         resource_id, rb.GetMaxResourceScaleFactor());
     avatar.bytes.assign(avatar_data.begin(), avatar_data.end());
   };
+  // After the default avatar images are moved to cloud, the user
+  // will have image bytes when using default images. Therefore, after
+  // the migration, remove the second if case.
   if (user.has_image_bytes()) {
     avatar.bytes.assign(
         user.image_bytes()->front(),
         user.image_bytes()->front() + user.image_bytes()->size());
   } else if (user.HasDefaultImage()) {
+    if (ash::features::IsAvatarsCloudMigrationEnabled())
+      LOG(ERROR) << "No image bytes found for default user image";
     int resource_id =
         default_user_image::GetDefaultImageResourceId(user.image_index());
     load_image_from_resource(resource_id);

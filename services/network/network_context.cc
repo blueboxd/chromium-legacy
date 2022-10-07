@@ -798,9 +798,7 @@ void NetworkContext::OnComputedFirstPartySetMetadata(
       std::make_unique<RestrictedCookieManager>(
           role, url_request_context_->cookie_store(),
           cookie_manager_->cookie_settings(), origin, isolation_info,
-          std::move(cookie_observer),
-          first_party_sets_access_delegate_.is_enabled(),
-          std::move(first_party_set_metadata)),
+          std::move(cookie_observer), std::move(first_party_set_metadata)),
       std::move(receiver));
 }
 
@@ -1156,9 +1154,11 @@ void NetworkContext::QueueReport(
         request_context->http_user_agent_settings()->GetUserAgent();
   }
 
-  reporting_service->QueueReport(url, reporting_source, network_isolation_key,
-                                 reported_user_agent, group, type,
-                                 std::move(body), 0 /* depth */);
+  reporting_service->QueueReport(
+      url, reporting_source,
+      net::NetworkAnonymizationKey::
+          CreateFromNetworkIsolationKey(network_isolation_key),
+      reported_user_agent, group, type, std::move(body), 0 /* depth */);
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 }
 
@@ -1179,7 +1179,9 @@ void NetworkContext::QueueSignedExchangeReport(
         url_request_context_->http_user_agent_settings()->GetUserAgent();
   }
   net::NetworkErrorLoggingService::SignedExchangeReportDetails details;
-  details.network_isolation_key = network_isolation_key;
+  details.network_anonymization_key = net::NetworkAnonymizationKey::
+      CreateFromNetworkIsolationKeyTemporaryMigrationHelper(
+          network_isolation_key);
   details.success = report->success;
   details.type = std::move(report->type);
   details.outer_url = std::move(report->outer_url);
@@ -2384,9 +2386,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
 
   if (session_cleanup_cookie_store) {
     std::unique_ptr<net::CookieMonster> cookie_store =
-        std::make_unique<net::CookieMonster>(
-            session_cleanup_cookie_store.get(), net_log,
-            first_party_sets_access_delegate_.is_enabled());
+        std::make_unique<net::CookieMonster>(session_cleanup_cookie_store.get(),
+                                             net_log);
     if (params_->persist_session_cookies)
       cookie_store->SetPersistSessionCookies(true);
 
@@ -2602,9 +2603,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
 
   builder.set_host_mapping_rules(
       command_line->GetSwitchValueASCII(switches::kHostResolverRules));
-
-  builder.set_first_party_sets_enabled(
-      first_party_sets_access_delegate_.is_enabled());
 
   if (params_->socket_broker) {
     builder.set_client_socket_factory(

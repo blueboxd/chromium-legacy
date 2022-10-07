@@ -5,6 +5,7 @@
 #include "ash/public/cpp/test/app_list_test_api.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
+#include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/test/browser_test.h"
 #include "ui/aura/window.h"
@@ -32,6 +33,13 @@ class AppListWithRecentAppBrowserTest
     // Ensure async callbacks are run.
     base::RunLoop().RunUntilIdle();
 
+    // In release builds (without DCHECKs) this test sometimes fails because the
+    // search ranking subsystem filters out all the recent app items due to a
+    // race between zero state search request and initialization of the ranker
+    // for removed results. Work around this by disabling ranking.
+    // https://crbug.com/1371600
+    client->search_controller()->disable_ranking_for_test();
+
     // Install enough apps to show the recent apps view.
     LoadExtension(test_data_dir_.AppendASCII("app1"));
     LoadExtension(test_data_dir_.AppendASCII("app2"));
@@ -47,6 +55,7 @@ class AppListWithRecentAppBrowserTest
 
 IN_PROC_BROWSER_TEST_F(AppListWithRecentAppBrowserTest, MouseClickAtRecentApp) {
   views::View* recent_app = app_list_test_api_.GetRecentAppAt(0);
+  ASSERT_TRUE(recent_app);
   event_generator_->MoveMouseTo(recent_app->GetBoundsInScreen().CenterPoint());
   base::HistogramTester histogram_tester;
   event_generator_->ClickLeftButton();

@@ -84,6 +84,7 @@
 #import "ios/chrome/browser/ui/first_run/field_trial_constants.h"
 #import "ios/chrome/browser/ui/first_run/trending_queries_field_trial.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
+#import "ios/chrome/browser/ui/keyboard/features.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/open_in/features.h"
@@ -206,6 +207,14 @@ const FeatureEntry::FeatureVariation kOmniboxMaxURLMatchesVariations[] = {
      nullptr},
     {"7 matches", kOmniboxMaxURLMatches7, std::size(kOmniboxMaxURLMatches7),
      nullptr},
+};
+
+const FeatureEntry::FeatureParam kWhatsNewModuleLayout[] = {
+    {kWhatsNewModuleBasedLayoutParam, "true"}};
+
+const FeatureEntry::FeatureVariation kWhatsNewLayoutVariations[] = {
+    {"Display module layout", kWhatsNewModuleLayout,
+     std::size(kWhatsNewModuleLayout), nullptr},
 };
 
 const FeatureEntry::FeatureParam
@@ -1214,7 +1223,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
                                     "EnableOpenInDownload")},
     {"whats-new-ios", flag_descriptions::kWhatsNewIOSName,
      flag_descriptions::kWhatsNewIOSDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kWhatsNewIOS)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kWhatsNewIOS,
+                                    kWhatsNewLayoutVariations,
+                                    "WhatsNewLayoutVariations")},
     {"ios-autofill-branding", flag_descriptions::kAutofillBrandingIOSName,
      flag_descriptions::kAutofillBrandingIOSDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(autofill::features::kAutofillBrandingIOS,
@@ -1244,6 +1255,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAppStoreRatingIgnoreEligibilityCheckTestDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kAppStoreRatingIgnoreEligibilityCheckTest)},
+    {"keyboard-shortcuts-menu", flag_descriptions::kKeyboardShortcutsMenuName,
+     flag_descriptions::kKeyboardShortcutsMenuDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kKeyboardShortcutsMenu)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

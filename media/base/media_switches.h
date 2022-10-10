@@ -24,6 +24,10 @@ namespace switches {
 
 MEDIA_EXPORT extern const char kAudioBufferSize[];
 
+#if BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO) && BUILDFLAG(IS_WIN)
+MEDIA_EXPORT extern const char kAudioCodecsFromEDID[];
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO) && BUILDFLAG(IS_WIN)
+
 MEDIA_EXPORT extern const char kAudioServiceQuitTimeoutMs[];
 
 MEDIA_EXPORT extern const char kAutoplayPolicy[];
@@ -155,6 +159,10 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kHardwareMediaKeyHandling);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kHardwareSecureDecryption);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kHardwareSecureDecryptionExperiment);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kHardwareSecureDecryptionFallback);
+MEDIA_EXPORT extern const base::FeatureParam<int>
+    kHardwareSecureDecryptionFallbackMinDisablingDays;
+MEDIA_EXPORT extern const base::FeatureParam<int>
+    kHardwareSecureDecryptionFallbackMaxDisablingDays;
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kInternalMediaSession);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kKeepRvfcFrameAlive);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kKeyPressMonitoring);

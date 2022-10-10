@@ -257,6 +257,7 @@
 <translation id="2405664212338326887">Δεν συνδέθηκε</translation>
 <translation id="2408955596600435184">Εισαγάγετε το PIN</translation>
 <translation id="2412593942846481727">Υπάρχει διαθέσιμη ενημέρωση</translation>
+<translation id="2417486498593892439">Σύνδεση στο δίκτυο</translation>
 <translation id="2426051945783024481">Έγινε αυτόματο κεντράρισμα κάμερας</translation>
 <translation id="2427507373259914951">Αριστερό κλικ</translation>
 <translation id="2429753432712299108">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης. Προτού αποδεχτείτε, επιβεβαιώστε ότι αυτό το κλειδί πρόσβασης εμφανίζεται στη συγκεκριμένη συσκευή: <ph name="PASSKEY" /></translation>
@@ -414,6 +415,7 @@
 <translation id="3368922792935385530">Σε σύνδεση</translation>
 <translation id="3371140690572404006">Συσκευή USB-C (δεξιά μπροστινή θύρα)</translation>
 <translation id="3375634426936648815">Συνδέθηκε</translation>
+<translation id="3378438761594387761">Εδώ θα βρείτε τις πρόσφατες λήψεις και τις καταγραφές οθόνης</translation>
 <translation id="3378442621503952303">Η σύνδεση στο προφίλ βρίσκεται σε εξέλιξη. Περιμένετε λίγα λεπτά.</translation>
 <translation id="3386978599540877378">ο μεγεθυντικός φακός πλήρους οθόνης</translation>
 <translation id="3387527074123400161">Chromium OS</translation>
@@ -496,7 +498,6 @@
 <translation id="383058930331066723">Η λειτουργία εξοικονόμησης μπαταρίας είναι ενεργοποιημένη</translation>
 <translation id="383629559565718788">Εμφάνιση ρυθμίσεων πληκτρολογίου</translation>
 <translation id="384082539148746321">Διαγραφή προτύπου;</translation>
-<translation id="3842239759367498783">Συνέχεια ανάγνωσης από την κινητή συσκευή σας <ph name="TITLE" /></translation>
 <translation id="3846575436967432996">Δεν υπάρχουν διαθέσιμες πληροφορίες δικτύου</translation>
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="385300504083504382">Αρχή</translation>
@@ -720,6 +721,7 @@
 <translation id="5083553833479578423">Ξεκλειδώστε περισσότερες λειτουργίες του Βοηθού.</translation>
 <translation id="509790653408515442">Όταν μεταδίδετε τις εφαρμογές του τηλεφώνου σας σε ροή, θα εμφανίζονται εδώ.</translation>
 <translation id="5098537242461068432">Εκ νέου άνοιγμα γραφείου και παραθύρων</translation>
+<translation id="5104236669533825617">Δεν είναι δυνατή η δημιουργία ψηφιακής εγγραφής οθόνης</translation>
 <translation id="5107522548814527560">Ιστός</translation>
 <translation id="5117590920725113268">Εμφάνιση επόμενου μήνα</translation>
 <translation id="5136175204352732067">Συνδέθηκε διαφορετικό πληκτρολόγιο</translation>
@@ -765,6 +767,7 @@
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (Δεξί)</translation>
 <translation id="5352250171825660495">Το Σκούρο θέμα είναι ενεργοποιημένο.</translation>
 <translation id="5356963482258194581">Εναλλαγή μεταξύ Σκούρου και Φωτεινού θέματος. Κάντε δεξί κλικ στην επιφάνεια εργασίας και επιλέξτε Ταπετσαρία και στιλ.</translation>
+<translation id="536019650977002321">Ο διαχειριστής σας δεν επιτρέπει την καταγραφή ήχου. Επικοινωνήστε με τον διαχειριστή σας για περισσότερες πληροφορίες.</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> Μετάβαση σε αυτήν την καρτέλα</translation>
 <translation id="5379115545237091094">Πάρα πολλές προσπάθειες</translation>
 <translation id="5391307769715781764">Αντικατάσταση αποθηκευμένου γραφείου;</translation>
@@ -995,7 +998,6 @@
 <translation id="6700713906295497288">Κουμπί μενού IME</translation>
 <translation id="6707693040195709527">Η αλλαγή της συσκευής στην προηγούμενη έκδοση είναι εκπρόθεσμη</translation>
 <translation id="6710213216561001401">Προηγούμενο</translation>
-<translation id="6713285437468012787">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" έχει συζευχθεί και είναι πλέον διαθέσιμη σε όλους τους χρήστες. Μπορείτε να καταργήσετε αυτήν τη σύζευξη μέσω των Ρυθμίσεων.</translation>
 <translation id="6723839937902243910">Ενεργοποίηση</translation>
 <translation id="6727969043791803658">Συνδεδεμένη, μπαταρία <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6732800389263199929">+<ph name="COUNT" /></translation>
@@ -1385,6 +1387,7 @@
 <translation id="8936501819958976551">απενεργοποιημένο</translation>
 <translation id="8938800817013097409">Συσκευή USB-C (πίσω δεξιά θύρα)</translation>
 <translation id="8940956008527784070">Χαμηλή στάθμη μπαταρίας (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8949925099261528566">Συνδέθηκε, χωρίς σύνδεση στο διαδίκτυο</translation>
 <translation id="8951539504029375108">Μόνο εγκεκριμένες συσκευές Thunderbolt είναι συμβατές με το Chromebook σας.</translation>
 <translation id="8982906748181120328">Ορατότ. κοντά</translation>
 <translation id="8983038754672563810">HSPA</translation>

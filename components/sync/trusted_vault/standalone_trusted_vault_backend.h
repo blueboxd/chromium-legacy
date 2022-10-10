@@ -129,10 +129,14 @@ class StandaloneTrustedVaultBackend
 
   void SetDeviceRegisteredVersionForTesting(const std::string& gaia_id,
                                             int version);
+  void SetLastRegistrationReturnedLocalDataObsoleteForTesting(
+      const std::string& gaia_id);
 
   void SetClockForTesting(base::Clock* clock);
 
   bool HasPendingTrustedRecoveryMethodForTesting() const;
+
+  bool AreConnectionRequestsThrottledForTesting();
 
  private:
   friend class base::RefCountedThreadSafe<StandaloneTrustedVaultBackend>;

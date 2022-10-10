@@ -2294,9 +2294,7 @@ void DocumentLoader::CommitNavigation() {
     // trials to be initialized.
     // TODO(iclelland): Add Permissions-Policy-Report-Only to Origin Policy.
     security_init.ApplyPermissionsPolicy(
-        *frame_.Get(), response_, frame_policy_,
-        Agent::IsIsolatedApplication() ? initial_permissions_policy_
-                                       : absl::nullopt);
+        *frame_.Get(), response_, frame_policy_, initial_permissions_policy_);
 
     // |document_policy_| is parsed in document loader because it is
     // compared with |frame_policy.required_document_policy| to decide
@@ -2505,8 +2503,7 @@ void DocumentLoader::CreateParserPostCommit() {
     auto& speculation_rules_header =
         response_.HttpHeaderField(http_names::kSpeculationRules);
     PreloadHelper::LoadSpeculationRuleLinkFromHeader(
-        speculation_rules_header, response_.CurrentRequestUrl(),
-        GetFrame()->GetDocument(), *GetFrame());
+        speculation_rules_header, GetFrame()->GetDocument(), *GetFrame());
   }
 
   // DidObserveLoadingBehavior() must be called after DispatchDidCommitLoad() is

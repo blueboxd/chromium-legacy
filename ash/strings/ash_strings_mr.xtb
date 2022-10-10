@@ -257,6 +257,7 @@
 <translation id="2405664212338326887">कनेक्ट केलेले नाही</translation>
 <translation id="2408955596600435184">तुमचा पिन प्रविष्‍ट करा</translation>
 <translation id="2412593942846481727">अपडेट उपलब्ध आहे</translation>
+<translation id="2417486498593892439">नेटवर्कमध्ये साइन इन करा</translation>
 <translation id="2426051945783024481">कॅमेराची फ्रेम आपोआप मध्यभागी आहे</translation>
 <translation id="2427507373259914951">लेफ्ट क्लिक करा</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. स्वीकार करण्यापूर्वी, कृपया त्या डिव्हाइसवर ही पासकी दर्शवली असल्याची पुष्टी करा: <ph name="PASSKEY" /></translation>
@@ -414,6 +415,7 @@
 <translation id="3368922792935385530">कनेक्ट केले</translation>
 <translation id="3371140690572404006">USB-C डिव्‍हाइस (उजव्‍या बाजूचे पुढील पोर्ट)</translation>
 <translation id="3375634426936648815">कनेक्ट केले आहे</translation>
+<translation id="3378438761594387761">तुम्हाला तुमचे अलीकडील डाउनलोड आणि स्‍क्रीन कॅप्‍चर येथे दिसतील</translation>
 <translation id="3378442621503952303">प्रोफाइलशी कनेक्ट करत आहे. काही मिनिटे प्रतीक्षा करा.</translation>
 <translation id="3386978599540877378">फुल-स्क्रीन मॅग्निफायर</translation>
 <translation id="3387527074123400161">ChromiumOS</translation>
@@ -496,7 +498,6 @@
 <translation id="383058930331066723">बॅटरी सेव्हर मोड सुरू आहे</translation>
 <translation id="383629559565718788">कीबोर्ड सेटिंग्ज दाखवा</translation>
 <translation id="384082539148746321">टेंप्लेट हटवायचे आहे का?</translation>
-<translation id="3842239759367498783">तुमच्या मोबाइल डिव्हाइसवरून वाचणे सुरू ठेवा <ph name="TITLE" /></translation>
 <translation id="3846575436967432996">कोणतीही नेटवर्क माहिती उपलब्ध नाही</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="385300504083504382">सुरुवातीला</translation>
@@ -720,6 +721,7 @@
 <translation id="5083553833479578423">असिस्टंटची आणखी वैशिष्ट्ये अनलॉक करा.</translation>
 <translation id="509790653408515442">तुम्ही तुमच्या फोनची अ‍ॅप्स स्ट्रीम कराल, तेव्हा ती येथे दिसतील</translation>
 <translation id="5098537242461068432">डेस्‍क आणि विंडो पुन्हा उघडल्या</translation>
+<translation id="5104236669533825617">स्क्रीनकास्ट तयार करू शकत नाही</translation>
 <translation id="5107522548814527560">वेब</translation>
 <translation id="5117590920725113268">पुढील महिना दर्शवा</translation>
 <translation id="5136175204352732067">वेगळा कीबोर्ड कनेक्ट केला आहे</translation>
@@ -765,6 +767,7 @@
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (उजवे)</translation>
 <translation id="5352250171825660495">गडद थीम सुरू आहे</translation>
 <translation id="5356963482258194581">गडद आणि फिकट थीमदरम्यान स्विच करा. डेस्कटॉपवर राइट-क्लिक करा आणि वॉलपेपर आणि स्टाइल निवडा.</translation>
+<translation id="536019650977002321">तुमचा अ‍ॅडमिनिस्ट्रेटर ऑडिओ कॅप्चरला अनुमती देत नाही. अधिक माहितीसाठी तुमच्या अ‍ॅडमिनिस्ट्रेटरशी संपर्क साधा.</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> या टॅबवर जा</translation>
 <translation id="5379115545237091094">खूप जास्त प्रयत्न</translation>
 <translation id="5391307769715781764">सेव्ह केलेले डेस्क बदलायचे आहे का?</translation>
@@ -995,7 +998,6 @@
 <translation id="6700713906295497288">IME मेनू बटण</translation>
 <translation id="6707693040195709527">डिव्हाइस मागील आवृत्तीवर बदलण्याची मुदत संपली आहे</translation>
 <translation id="6710213216561001401">मागील</translation>
-<translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" ब्लूटूथ डिव्हाइस जोडले गेले आहे आणि सर्व वापरकर्त्यांसाठी आता उपलब्ध आहे. तुम्ही सेटिंग्ज वापरून हे पेअरिंग काढू शकता.</translation>
 <translation id="6723839937902243910">सामर्थ्य</translation>
 <translation id="6727969043791803658">कनेक्ट केले, <ph name="BATTERY_PERCENTAGE" />% बॅटरी</translation>
 <translation id="6732800389263199929">+<ph name="COUNT" /></translation>
@@ -1385,6 +1387,7 @@
 <translation id="8936501819958976551">डीॲक्टिव्हेट केले आहे</translation>
 <translation id="8938800817013097409">USB-C डिव्‍हाइस (मागील बाजूचे उजवे पोर्ट)</translation>
 <translation id="8940956008527784070">बॅटरी कमी झाली (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8949925099261528566">कनेक्‍ट केले, इंटरनेट नाही</translation>
 <translation id="8951539504029375108">तुमच्या Chromebook सह फक्त मंजुरी दिलेली थंडरबोल्ट डिव्हाइस कंपॅटिबल आहेत</translation>
 <translation id="8982906748181120328">Nearby असलेले</translation>
 <translation id="8983038754672563810">HSPA</translation>

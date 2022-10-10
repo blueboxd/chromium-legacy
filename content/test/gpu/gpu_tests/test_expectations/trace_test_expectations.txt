@@ -9,7 +9,8 @@
 #         win win8 win10 ]
 # Devices
 # tags: [ android-nexus-5 android-nexus-5x android-pixel-2 android-pixel-4
-#             android-pixel-6 android-shield-android-tv
+#             android-pixel-6 android-shield-android-tv android-sm-a135m
+#             android-sm-a235m
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
 #         fuchsia-board-astro fuchsia-board-sherlock fuchsia-board-qemu-x64 ]
 # Platform
@@ -217,6 +218,12 @@ crbug.com/852089 [ android ] WebGPUTraceTest_* [ Skip ]
 crbug.com/852089 [ linux ] WebGPUTraceTest_* [ Skip ]
 crbug.com/852089 [ chromeos ] WebGPUTraceTest_* [ Skip ]
 crbug.com/852089 [ fuchsia ] WebGPUTraceTest_* [ Skip ]
+
+# WebGPU caching is currently only supporting Win10 and Linux. (D3D12 and Vulkan)
+crbug.com/dawn/549 [ android ] WebGPUCachingTraceTest_* [ Skip ]
+crbug.com/dawn/549 [ mac ] WebGPUCachingTraceTest_* [ Skip ]
+crbug.com/dawn/549 [ chromeos ] WebGPUCachingTraceTest_* [ Skip ]
+crbug.com/dawn/549 [ fuchsia ] WebGPUCachingTraceTest_* [ Skip ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

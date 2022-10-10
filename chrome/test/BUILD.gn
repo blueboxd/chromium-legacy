@@ -562,7 +562,6 @@ static_library("test_support") {
     public_deps += [
       "//ash",
       "//ash:test_support",
-      "//ash/components/tpm",
       "//ash/constants",
       "//ash/public/cpp:test_support",
       "//chrome/browser/ash",
@@ -572,6 +571,7 @@ static_library("test_support") {
       "//chromeos/ash/components/dbus/userdataauth",
       "//chromeos/ash/components/install_attributes:test_support",
       "//chromeos/ash/components/settings",
+      "//chromeos/ash/components/tpm",
       "//chromeos/dbus/tpm_manager",
       "//chromeos/login/login_state",
       "//components/exo",
@@ -1844,8 +1844,6 @@ if (!is_android) {
       "../browser/media/test_license_server.h",
       "../browser/media/test_license_server_config.h",
       "../browser/media/unified_autoplay_browsertest.cc",
-      "../browser/media/webrtc/capture_handle_browsertest.cc",
-      "../browser/media/webrtc/conditional_focus_browsertest.cc",
       "../browser/media/webrtc/media_stream_devices_controller_browsertest.cc",
       "../browser/media/webrtc/multi_capture_browsertest.cc",
       "../browser/media/webrtc/region_capture_browsertest.cc",
@@ -2317,9 +2315,9 @@ if (!is_android) {
       "../browser/wake_lock/wake_lock_browsertest.cc",
       "../browser/web_applications/alternative_error_page_override_info_browsertest.cc",
       "../browser/webauthn/chrome_webauthn_browsertest.cc",
-      "../browser/window_placement/screen_details_browsertest.cc",
-      "../browser/window_placement/window_placement_browsertest.cc",
-      "../browser/window_placement/window_placement_permission_context_browsertest.cc",
+      "../browser/window_management/screen_details_browsertest.cc",
+      "../browser/window_management/window_management_browsertest.cc",
+      "../browser/window_management/window_management_permission_context_browsertest.cc",
       "../common/time_format_browsertest.cc",
       "../renderer/accessibility/read_anything_app_controller_browsertest.cc",
       "../renderer/autofill/autofill_renderer_browsertest.cc",
@@ -2411,6 +2409,8 @@ if (!is_android) {
 
         # These tests also run on Lacros, as part of
         # lacros_chrome_browsertests_run_in_series below.
+        "../browser/media/webrtc/capture_handle_browsertest.cc",
+        "../browser/media/webrtc/conditional_focus_browsertest.cc",
         "../browser/media/webrtc/webrtc_getdisplaymedia_browsertest.cc",
         "../browser/ui/views/intent_picker_bubble_view_browsertest.cc",
         "../browser/ui/views/location_bar/intent_chip_button_browsertest.cc",
@@ -3338,6 +3338,7 @@ if (!is_android) {
         "../browser/ui/views/certificate_selector_dialog_browsertest.cc",
         "../browser/ui/views/collected_cookies_views_browsertest.cc",
         "../browser/ui/views/commerce/ntp_discount_consent_dialog_view_browsertest.cc",
+        "../browser/ui/views/commerce/price_tracking_entry_point_feature_flag_browser_test.cc",
         "../browser/ui/views/commerce/price_tracking_icon_view_browsertest.cc",
         "../browser/ui/views/desktop_capture/desktop_media_picker_views_browsertest.cc",
         "../browser/ui/views/extensions/extension_install_blocked_dialog_view_browsertest.cc",
@@ -3586,6 +3587,7 @@ if (!is_android) {
         "../browser/ash/accessibility/magnification_controller_browsertest.cc",
         "../browser/ash/accessibility/magnification_manager_browsertest.cc",
         "../browser/ash/accessibility/select_to_speak_browsertest.cc",
+        "../browser/ash/accessibility/service/accessibility_service_client_browsertest.cc",
         "../browser/ash/accessibility/spoken_feedback_app_list_browsertest.cc",
         "../browser/ash/accessibility/spoken_feedback_browsertest.cc",
         "../browser/ash/accessibility/spoken_feedback_browsertest.h",
@@ -4820,6 +4822,8 @@ if (is_chromeos_lacros) {
       "../browser/lacros/wallpaper_lacros_browsertest.cc",
       "../browser/lacros/web_contents_can_go_back_observer_browsertest.cc",
       "../browser/lacros/window_lacros_browsertest.cc",
+      "../browser/media/webrtc/capture_handle_browsertest.cc",
+      "../browser/media/webrtc/conditional_focus_browsertest.cc",
       "../browser/media/webrtc/webrtc_getdisplaymedia_browsertest.cc",
       "../browser/metrics/structured/lacros_structured_metrics_recorder_browsertest.cc",
       "../browser/speech/extension_api/tts_extension_api_lacros_browsertest.cc",
@@ -6088,6 +6092,7 @@ test("unit_tests") {
       "../browser/install_verification/win/module_verification_test.cc",
       "../browser/install_verification/win/module_verification_test.h",
       "../browser/media/cdm_document_service_impl_test.cc",
+      "../browser/media/media_foundation_service_monitor_unittest.cc",
       "../browser/metrics/antivirus_metrics_provider_win_unittest.cc",
       "../browser/notifications/win/fake_notification_image_retainer.cc",
       "../browser/notifications/win/fake_notification_image_retainer.h",
@@ -10032,7 +10037,7 @@ if (!is_android) {
     }
 
     if (enable_print_preview) {
-      sources += [ "../browser/window_placement/window_placement_printing_interactive_uitest.cc" ]
+      sources += [ "../browser/window_management/window_management_printing_interactive_uitest.cc" ]
     }
 
     # TODO(crbug.com/931218): Ninja cannot handle certain characters appearing

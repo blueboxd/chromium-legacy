@@ -83,8 +83,8 @@
 #include "content/browser/media/webaudio/audio_context_manager_impl.h"
 #include "content/browser/navigation_or_document_handle.h"
 #include "content/browser/navigation_subresource_loader_params.h"
-#include "content/browser/net/cross_origin_embedder_policy_reporter.h"
-#include "content/browser/net/cross_origin_opener_policy_reporter.h"
+#include "content/browser/network/cross_origin_embedder_policy_reporter.h"
+#include "content/browser/network/cross_origin_opener_policy_reporter.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/portal/portal.h"
@@ -9867,14 +9867,6 @@ void RenderFrameHostImpl::UpdateAccessibilityMode() {
     // in the renderer.
     render_accessibility_.reset();
   }
-
-  if (!ax_mode.has_mode(ui::kAXModeBasic.mode()) &&
-      browser_accessibility_manager_) {
-    // Missing either kWebContents and kNativeAPIs, so
-    // BrowserAccessibilityManager is no longer necessary.
-    browser_accessibility_manager_->DetachFromParentManager();
-    browser_accessibility_manager_.reset();
-  }
 }
 
 void RenderFrameHostImpl::RequestAXTreeSnapshot(
@@ -10962,6 +10954,14 @@ void RenderFrameHostImpl::GetSensorProvider(
 
 void RenderFrameHostImpl::BindCacheStorage(
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
+  BindCacheStorageInternal(
+      std::move(receiver),
+      storage::BucketLocator::ForDefaultBucket(storage_key()));
+}
+
+void RenderFrameHostImpl::BindCacheStorageInternal(
+    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
+    const storage::BucketLocator& bucket_locator) {
   mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
       coep_reporter_remote;
   if (coep_reporter_) {
@@ -10969,8 +10969,8 @@ void RenderFrameHostImpl::BindCacheStorage(
         coep_reporter_remote.InitWithNewPipeAndPassReceiver());
   }
   GetProcess()->BindCacheStorage(cross_origin_embedder_policy(),
-                                 std::move(coep_reporter_remote), storage_key(),
-                                 std::move(receiver));
+                                 std::move(coep_reporter_remote),
+                                 bucket_locator, std::move(receiver));
 }
 
 void RenderFrameHostImpl::BindInputInjectorReceiver(
@@ -14568,9 +14568,7 @@ blink::mojom::PermissionStatus RenderFrameHostImpl::GetPermissionStatus(
 void RenderFrameHostImpl::BindCacheStorageForBucket(
     const storage::BucketInfo& bucket,
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
-  // TODO(estade): pass the bucket rather than the storage key to support
-  // non-default buckets.
-  BindCacheStorage(std::move(receiver));
+  BindCacheStorageInternal(std::move(receiver), bucket.ToBucketLocator());
 }
 
 RenderFrameHostImpl::DocumentAssociatedData::DocumentAssociatedData(

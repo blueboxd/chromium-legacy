@@ -40,7 +40,6 @@
 #include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_preview_view.h"
-#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
@@ -62,6 +61,9 @@
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/drag_utils.h"
+#include "ui/views/test/views_test_utils.h"
+#include "ui/views/view_utils.h"
+#include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
 namespace ash {
@@ -149,6 +151,16 @@ void RightClick(const views::View* view, int flags = ui::EF_NONE) {
   event_generator.MoveMouseTo(view->GetBoundsInScreen().CenterPoint());
   event_generator.set_flags(flags);
   event_generator.ClickRightButton();
+}
+
+void GestureScrollBy(const views::View* view, int offset_x, int offset_y) {
+  auto* root_window = view->GetWidget()->GetNativeWindow()->GetRootWindow();
+  gfx::Point start(view->GetBoundsInScreen().CenterPoint()), end(start);
+  end.Offset(offset_x, offset_y);
+  ui::test::EventGenerator event_generator(root_window);
+  event_generator.GestureScrollSequence(start, end,
+                                        /*duration=*/base::Milliseconds(100),
+                                        /*steps=*/10);
 }
 
 void GestureTap(const views::View* view) {
@@ -286,6 +298,27 @@ class ViewVisibilityChangedWaiter : public views::ViewObserver {
                                views::View* starting_view) override {
     wait_loop_->Quit();
   }
+
+  std::unique_ptr<base::RunLoop> wait_loop_;
+};
+
+// WidgetWaiter ----------------------------------------------------------------
+
+// A class capable of waiting until a widget is closing.
+class WidgetWaiter : public views::WidgetObserver {
+ public:
+  void WaitForClose(views::Widget* widget) {
+    base::ScopedObservation<views::Widget, views::WidgetObserver>
+        widget_observation_{this};
+    widget_observation_.Observe(widget);
+    wait_loop_ = std::make_unique<base::RunLoop>();
+    wait_loop_->Run();
+    wait_loop_.reset();
+  }
+
+ private:
+  // views::WidgetObserver:
+  void OnWidgetClosing(views::Widget* widget) override { wait_loop_->Quit(); }
 
   std::unique_ptr<base::RunLoop> wait_loop_;
 };
@@ -2006,6 +2039,27 @@ TEST_F(HoldingSpaceTrayTest, OpenItemsViaDoubleClickWithEventModifiers) {
   testing::Mock::VerifyAndClearExpectations(client());
 }
 
+// Verifies that holding space tray bubble closes after double clicking on a
+// holding space item.
+TEST_F(HoldingSpaceTrayTest, CloseTrayBubbleAfterDoubleClick) {
+  StartSession();
+  // Add a file to holding space.
+  AddItem(HoldingSpaceItem::Type::kPinnedFile, base::FilePath("/tmp/fake1"));
+
+  // Show and open the first item.
+  test_api()->Show();
+  std::vector<views::View*> pinned_file_chips =
+      test_api()->GetPinnedFileChips();
+  ASSERT_EQ(pinned_file_chips.size(), 1u);
+  DoubleClick(pinned_file_chips[0]);
+
+  // Monitor the tray bubble widget for an `OnWidgetClosing()` call.
+  WidgetWaiter().WaitForClose(test_api()->GetBubble()->GetWidget());
+
+  // Expect holding space tray bubble to be closed.
+  EXPECT_FALSE(test_api()->IsShowing());
+}
+
 // TODO(crbug.com/1208501): Fix flakes and re-enable.
 // Verifies that the holding space tray animates in and out as expected.
 TEST_F(HoldingSpaceTrayTest, DISABLED_EnterAndExitAnimations) {
@@ -2120,6 +2174,72 @@ TEST_F(HoldingSpaceTrayTest, DISABLED_EnterAndExitAnimations) {
 
   // Clean up.
   UnregisterModelForUser(kSecondaryUserId);
+}
+
+// Verifies that the holding space bubble supports scrolling of pinned files.
+TEST_F(HoldingSpaceTrayTest, SupportsScrollingOfPinnedFiles) {
+  StartSession();
+
+  // Show the holding space bubble.
+  test_api()->Show();
+  views::View* const pinned_files_bubble = test_api()->GetPinnedFilesBubble();
+  ASSERT_TRUE(pinned_files_bubble);
+
+  // Add batches of pinned files to holding space until the pinned files
+  // bubble stops growing. Once the pinned files bubble has stopped growing, it
+  // should be scrollable.
+  for (size_t batch = 0u;; ++batch) {
+    const int previous_height(pinned_files_bubble->height());
+
+    for (size_t i = 0; i < 25u; ++i) {
+      AddItem(HoldingSpaceItem::Type::kPinnedFile,
+              base::FilePath(base::UnguessableToken().ToString()));
+    }
+
+    if (pinned_files_bubble->height() == previous_height)
+      break;
+
+    // Fail the test if the pinned files bubble does not overflow within a
+    // reasonable number of batches.
+    if (batch > 4u)
+      GTEST_FAIL() << "Failed to overflow the pinned files bubble.";
+  }
+
+  // Add a suggested file so that the suggestions section will also be shown.
+  AddItem(HoldingSpaceItem::Type::kLocalSuggestion,
+          base::FilePath(base::UnguessableToken().ToString()));
+
+  views::test::RunScheduledLayout(pinned_files_bubble->GetWidget());
+
+  // Verify that the `pinned_files section` is completely contained within the
+  // `pinned_files_bubble`.
+  const auto* pinned_files_section =
+      pinned_files_bubble->GetViewByID(kHoldingSpacePinnedFilesSectionId);
+  ASSERT_TRUE(pinned_files_section);
+  EXPECT_TRUE(pinned_files_bubble->GetContentsBounds().Contains(
+      pinned_files_section->bounds()));
+
+  // Verify that the `suggestions_section` is completely contained within the
+  // `pinned_files_bubble`.
+  const auto* suggestions_section =
+      pinned_files_bubble->GetViewByID(kHoldingSpaceSuggestionsSectionId);
+  ASSERT_TRUE(suggestions_section);
+  EXPECT_TRUE(pinned_files_bubble->GetContentsBounds().Contains(
+      suggestions_section->bounds()));
+
+  // Verify that the `suggestions_section` appears below the
+  // `pinned_files_section`.
+  EXPECT_LT(pinned_files_section->bounds().bottom(),
+            suggestions_section->bounds().y());
+
+  // Cache the chips that were added to the pinned files bubble.
+  const std::vector<views::View*> chips = test_api()->GetPinnedFileChips();
+  ASSERT_GT(chips.size(), 0u);
+
+  // Attempt to scroll the pinned files bubble and verify scroll success.
+  const int previous_y = chips[0]->GetBoundsInScreen().y();
+  GestureScrollBy(chips[0], /*offset_x=*/0, /*offset_y=*/-100);
+  EXPECT_LT(chips[0]->GetBoundsInScreen().y(), previous_y);
 }
 
 using HoldingSpacePreviewsTrayTest = HoldingSpaceTrayTestBase;
@@ -3707,6 +3827,12 @@ TEST_P(HoldingSpaceTrayRefreshTest, HasExpectedBubbleTreatment) {
     EXPECT_TRUE(bubble->layer()->is_fast_rounded_corner());
     EXPECT_EQ(bubble->layer()->rounded_corner_radii(),
               gfx::RoundedCornersF(kBubbleCornerRadius));
+
+    // Header.
+    auto* header = bubble->GetViewByID(kHoldingSpaceHeaderLabelId);
+    ASSERT_TRUE(header);
+    EXPECT_EQ(views::AsViewClass<views::Label>(header)->GetText(),
+              u"Quick files");
   } else {
     // Background.
     auto* background = bubble->GetBackground();
@@ -3721,6 +3847,9 @@ TEST_P(HoldingSpaceTrayRefreshTest, HasExpectedBubbleTreatment) {
     EXPECT_FALSE(bubble->layer()->is_fast_rounded_corner());
     EXPECT_EQ(bubble->layer()->rounded_corner_radii(),
               gfx::RoundedCornersF(0.f));
+
+    // Header.
+    EXPECT_FALSE(bubble->GetViewByID(kHoldingSpaceHeaderLabelId));
   }
 }
 
@@ -3789,8 +3918,15 @@ TEST_P(HoldingSpaceTrayRefreshTest, PaintsSeparatorBetweenBubbles) {
   ASSERT_TRUE(recent_files_bubble);
   const int separator_midpoint_x = std::round(bubble->width() / 2.f);
   const int separator_midpoint_y = gfx::Tween::LinearIntValueBetween(
-      0.5f, pinned_files_bubble->bounds().bottom(),
-      recent_files_bubble->bounds().y());
+      0.5f,
+      views::View::ConvertRectToTarget(
+          /*source=*/pinned_files_bubble, /*target=*/bubble,
+          gfx::RectF(pinned_files_bubble->GetLocalBounds()))
+          .bottom(),
+      views::View::ConvertRectToTarget(
+          /*source=*/recent_files_bubble, /*target=*/bubble,
+          gfx::RectF(recent_files_bubble->GetLocalBounds()))
+          .y());
 
   // Cache the `actual_color` of the pixel at the midpoint of where a separator
   // would appear as well as the `expected_color` given feature flag state.

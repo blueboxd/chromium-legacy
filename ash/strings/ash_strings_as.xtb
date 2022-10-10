@@ -496,7 +496,6 @@
 <translation id="383058930331066723">বেটাৰী সঞ্চয়কাৰী মোড অন কৰা আছে</translation>
 <translation id="383629559565718788">কীব’ৰ্ডৰ ছেটিংসমূহ দেখুৱাওক</translation>
 <translation id="384082539148746321">টেমপ্লে’ট মচিবনে?</translation>
-<translation id="3842239759367498783">আপোনাৰ ম’বাইল ডিভাইচ <ph name="TITLE" />ৰ পৰা পঢ়ি থাকক</translation>
 <translation id="3846575436967432996">নেটৱৰ্কৰ বিষয়ে কোনো তথ্য নাই</translation>
 <translation id="385051799172605136">উভতি যাওক</translation>
 <translation id="385300504083504382">আৰম্ভণি</translation>
@@ -653,7 +652,7 @@
 <translation id="4666082839192943839">সকলো সময়তে আটাইবোৰ কেমেৰা অৱৰোধ কৰিবলৈ এই ডিভাইচটোত কেমেৰাৰ এক্সেছ অফ কৰক।</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> ডাউনল’ড কৰি থকা হৈছে</translation>
 <translation id="4690510401873698237">শ্বেল্ফ একেবাৰে তলিত আছে</translation>
-<translation id="4696813013609194136">অভিভাৱকৰ প্ৰৱেশ ক'ডৰ সহায়ত ডিভাইচ আনলক কৰক</translation>
+<translation id="4696813013609194136">অভিভাৱকৰ এক্সেছ ক'ডৰ সহায়ত ডিভাইচ আনলক কৰক</translation>
 <translation id="4702647871202761252">গোপনীয়তাৰ স্ক্ৰীনখন অফ আছে</translation>
 <translation id="470644585772471629">ৰং বিপৰীতকৰণ</translation>
 <translation id="4717575069099566988">আপোনাৰ USB-C কে’বলে USB4 সমৰ্থন নকৰে। ডিভাইচৰ কাৰ্যক্ষমতা সীমিত হ’ব পাৰে।</translation>
@@ -995,7 +994,6 @@
 <translation id="6700713906295497288">IME মেনু বুটাম</translation>
 <translation id="6707693040195709527">ডিভাইচটো পূৰ্বৱৰ্তী সংস্কৰণলৈ সলনি কৰাৰ সময় উকলিছে</translation>
 <translation id="6710213216561001401">পূৰ্বৱৰ্তী</translation>
-<translation id="6713285437468012787">ব্লুটুথ ডিভাইচ "<ph name="DEVICE_NAME" />" যোৰা লগোৱা হৈছে আৰু বর্তমান ই সকলো ব্যৱহাৰকাৰীৰ বাবে উপলব্ধ। আপুনি ছেটিংসমূহ ব্যৱহাৰ কৰি এই যোৰা লগোৱা কার্য আঁতৰাব পাৰে।</translation>
 <translation id="6723839937902243910">পাৱাৰ</translation>
 <translation id="6727969043791803658">সংযোগ কৰা আছে, <ph name="BATTERY_PERCENTAGE" />% বেটাৰী</translation>
 <translation id="6732800389263199929">+<ph name="COUNT" /> টা</translation>
@@ -1108,7 +1106,7 @@
 <translation id="7382680553121047388">অন কৰক</translation>
 <translation id="7384028040782072252">আপোনাৰ এপ্ পুনৰ সজাবলৈ যিকোনো ঠাইতে ৰাইট-ক্লিক কৰক</translation>
 <translation id="7392563512730092880">আপুনি ছেটিঙৰ পৰা পাছত যিকোনো সময়তে ছেট আপ কৰিব পাৰে।</translation>
-<translation id="7405710164030118432">ডিভাইচটো আনলক কৰিবলৈ আপোনাৰ Family Linkৰ অভিভাৱকৰ প্ৰৱেশ ক'ডটো দিয়ক</translation>
+<translation id="7405710164030118432">ডিভাইচটো আনলক কৰিবলৈ আপোনাৰ Family Linkৰ অভিভাৱকৰ এক্সেছ ক'ডটো দিয়ক</translation>
 <translation id="7406608787870898861">আপোনাৰ ম’বাইল নেটৱৰ্ক ছেট আপ কৰা সমাপ্ত কৰক</translation>
 <translation id="740790383907119240">এপ্‌ শ্বৰ্টকাট</translation>
 <translation id="7413851974711031813">বন্ধ কৰিবলৈ এস্কে’প টিপক</translation>

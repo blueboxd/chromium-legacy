@@ -418,26 +418,6 @@ void ScopedFeatureList::InitWithFeatures(
   InitWithFeaturesImpl(enabled_features, {}, disabled_features);
 }
 
-void ScopedFeatureList::InitWithFeatures(
-    const std::vector<Feature>& enabled_features,
-    const std::vector<Feature>& disabled_features) {
-  std::vector<FeatureRef> enabled_features_as_refs(enabled_features.begin(),
-                                                   enabled_features.end());
-  std::vector<FeatureRef> disabled_features_as_refs(disabled_features.begin(),
-                                                    disabled_features.end());
-  InitWithFeaturesImpl(enabled_features_as_refs, {}, disabled_features_as_refs);
-}
-
-void ScopedFeatureList::InitWithFeatures(
-    std::initializer_list<Feature> enabled_features,
-    std::initializer_list<Feature> disabled_features) {
-  std::vector<FeatureRef> enabled_features_as_refs(enabled_features.begin(),
-                                                   enabled_features.end());
-  std::vector<FeatureRef> disabled_features_as_refs(disabled_features.begin(),
-                                                    disabled_features.end());
-  InitWithFeaturesImpl(enabled_features_as_refs, {}, disabled_features_as_refs);
-}
-
 void ScopedFeatureList::InitAndEnableFeature(const Feature& feature) {
   InitWithFeaturesImpl({feature}, {}, {});
 }
@@ -507,22 +487,6 @@ void ScopedFeatureList::InitWithFeaturesAndParameters(
     const std::vector<FeatureAndParams>& enabled_features,
     const std::vector<FeatureRef>& disabled_features) {
   InitWithFeaturesImpl({}, enabled_features, disabled_features);
-}
-
-void ScopedFeatureList::InitWithFeaturesAndParameters(
-    const std::vector<FeatureAndParams>& enabled_features,
-    const std::vector<Feature>& disabled_features) {
-  std::vector<FeatureRef> disabled_features_as_refs(disabled_features.begin(),
-                                                    disabled_features.end());
-  InitWithFeaturesImpl({}, enabled_features, disabled_features_as_refs);
-}
-
-void ScopedFeatureList::InitWithFeaturesAndParameters(
-    const std::vector<FeatureAndParams>& enabled_features,
-    std::initializer_list<Feature> disabled_features) {
-  std::vector<FeatureRef> disabled_features_as_refs(disabled_features.begin(),
-                                                    disabled_features.end());
-  InitWithFeaturesImpl({}, enabled_features, disabled_features_as_refs);
 }
 
 void ScopedFeatureList::InitWithMergedFeatures(

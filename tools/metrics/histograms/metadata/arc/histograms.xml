@@ -353,7 +353,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.App.LowMemoryKills.{ArcAppKillType}Count10Minutes"
-    units="Apps" expires_after="2022-10-04">
+    units="Apps" expires_after="2023-04-07">
   <owner>cwd@google.com</owner>
   <owner>cros-platform-kernel-core@google.com</owner>
   <summary>
@@ -365,7 +365,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Arc.App.LowMemoryKills.{ArcBackgroundVms}.{ArcAppKillType}Count10Minutes"
-    units="Apps" expires_after="2022-10-04">
+    units="Apps" expires_after="2023-04-07">
   <owner>cwd@google.com</owner>
   <owner>cros-platform-kernel-core@google.com</owner>
   <summary>
@@ -1166,6 +1166,16 @@ chromium-metrics-reviews@google.com.
     <variant name="Entire" summary="the entire fixup process"/>
     <variant name="PerApp" summary="per Android app"/>
   </token>
+</histogram>
+
+<histogram name="Arc.GhostWindowViewType" units="ArcGhostWindowViewType"
+    expires_after="2023-04-05">
+  <owner>sstan@chromium.org</owner>
+  <owner>arc-framework-tok@google.com</owner>
+  <summary>
+    Number of the view type of ARC app ghost window. Counted when the ghost
+    window created or the view updated.
+  </summary>
 </histogram>
 
 <histogram name="Arc.IconLoadFromFileTime.compressedFirst5" units="ms"

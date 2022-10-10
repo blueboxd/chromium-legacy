@@ -291,12 +291,6 @@ BASE_FEATURE(kBluetoothQualityReport,
              "BluetoothQualityReport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables or disables the ChromeOS Bluetooth Revamp, which updates Bluetooth
-// system UI and related infrastructure. See https://crbug.com/1010321.
-BASE_FEATURE(kBluetoothRevamp,
-             "BluetoothRevamp",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables or disables Bluetooth WBS microphone be selected as default
 // audio input option.
 BASE_FEATURE(kBluetoothWbsDogfood,
@@ -1006,6 +1000,11 @@ BASE_FEATURE(kHandwritingLibraryDlc,
              "HandwritingLibraryDlc",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables new histogram logic for ChromeOS HaTS surveys.
+BASE_FEATURE(kHatsUseNewHistograms,
+             "HatsUseNewHistograms",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables the Background Page in the help app.
 BASE_FEATURE(kHelpAppBackgroundPage,
              "HelpAppBackgroundPage",
@@ -1100,6 +1099,11 @@ BASE_FEATURE(kHomeButtonWithText,
 // Control whether the hotspot tethering is enabled. When enabled, it will allow
 // the Chromebook to share its cellular internet connection to other devices.
 BASE_FEATURE(kHotspot, "Hotspot", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, allows the user to cycle between windows of an app using Alt + `.
+BASE_FEATURE(kSameAppWindowCycle,
+             "SameAppWindowCycle",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether the snooping protection prototype is enabled.
 BASE_FEATURE(kSnoopingProtection,
@@ -1626,6 +1630,12 @@ BASE_FEATURE(kProjectorUseApiKeyForTranslation,
 // Enable or disable quick settings revamped view.
 BASE_FEATURE(kQsRevamp, "QsRevamp", base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether the Projector Viewer supports the user experience for
+// secondary account.
+BASE_FEATURE(kProjectorViewerUseSecondaryAccount,
+             "ProjectorViewerUseSecondaryAccount",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether the quick dim prototype is enabled.
 BASE_FEATURE(kQuickDim, "QuickDim", base::FEATURE_ENABLED_BY_DEFAULT);
 
@@ -1741,6 +1751,24 @@ BASE_FEATURE(kSettingsAppThemeChangeAnimation,
 // and tablet.
 BASE_FEATURE(kShelfAutoHideSeparation,
              "ShelfAutoHideSeparation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the "V1" focus ordering of shelf items. Once the drag handle has
+// accessibility focus the focus ordering is as follows:
+//   1. If the drag handle is pressed: the hotseat gets focus before and after
+//      the drag handle, but once the hotseat has focus that focus cannot
+//      naturally return to the drag handle (i.e. the hotseat's previous focus
+//      becomes the shelf navigation area and its next focus becomes the status
+//      area).
+//   2. If the drag handle is not pressed: the shelf navigation area gets the
+//      previous focus, and the status area gets the next focus.
+// Note that the drag handle is never included in the natural focus order, i.e.
+// the navigation area's next focus and the status area's previous focus is
+// always the hotseat (even if the hotseat is currently hidden). In other words,
+// this change simply allows the focus to more easily move to other parts of the
+// shelf when the drag handle is forcibly focused.
+BASE_FEATURE(kShelfFocusOrderV1,
+             "ShelfFocusOrderV1",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables shelf gestures (swipe to show hotseat, swipe to go home or overview)
@@ -2111,7 +2139,7 @@ BASE_FEATURE(kPerUserMetrics,
 // Guest OS apps.
 BASE_FEATURE(kArcAndGuestOsFileTasksUseAppService,
              "ArcAndGuestOsFileTasksUseAppService",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2238,10 +2266,6 @@ bool IsBentoBarEnabled() {
 
 bool IsBluetoothQualityReportEnabled() {
   return base::FeatureList::IsEnabled(kBluetoothQualityReport);
-}
-
-bool IsBluetoothRevampEnabled() {
-  return base::FeatureList::IsEnabled(kBluetoothRevamp);
 }
 
 bool IsCalendarViewEnabled() {
@@ -2460,6 +2484,10 @@ bool IsGuestOsFilesEnabled() {
   return base::FeatureList::IsEnabled(kGuestOsFiles);
 }
 
+bool IsHatsUseNewHistogramsEnabled() {
+  return base::FeatureList::IsEnabled(kHatsUseNewHistograms);
+}
+
 bool IsHibernateEnabled() {
   return base::FeatureList::IsEnabled(kHibernate);
 }
@@ -2671,8 +2699,7 @@ bool IsOobeChromeVoxHintEnabled() {
 }
 
 bool IsOobeHidDetectionRevampEnabled() {
-  return base::FeatureList::IsEnabled(kOobeHidDetectionRevamp) &&
-         base::FeatureList::IsEnabled(kBluetoothRevamp);
+  return base::FeatureList::IsEnabled(kOobeHidDetectionRevamp);
 }
 
 bool IsKioskEnrollmentInOobeEnabled() {
@@ -2833,6 +2860,12 @@ bool IsQsRevampEnabled() {
   return base::FeatureList::IsEnabled(kQsRevamp);
 }
 
+bool IsProjectorViewerUseSecondaryAccountEnabled() {
+  // TODO(b/250646696): enable this feature based on
+  // ProjectorBleedingEdgeExperience when it is ready to be tested.
+  return base::FeatureList::IsEnabled(kProjectorViewerUseSecondaryAccount);
+}
+
 bool IsQuickDimEnabled() {
   return base::FeatureList::IsEnabled(kQuickDim) && ash::switches::HasHps();
 }
@@ -2851,6 +2884,10 @@ bool IsReverseScrollGesturesEnabled() {
 
 bool IsRgbKeyboardEnabled() {
   return base::FeatureList::IsEnabled(kRgbKeyboard);
+}
+
+bool IsSameAppWindowCycleEnabled() {
+  return base::FeatureList::IsEnabled(kSameAppWindowCycle);
 }
 
 bool IsSamlNotificationOnPasswordChangeSuccessEnabled() {

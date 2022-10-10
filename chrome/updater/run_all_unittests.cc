@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
@@ -25,6 +26,7 @@
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"
@@ -72,9 +74,9 @@ class ScopedSymbolPath {
         subkey_(is_system ? L"SYSTEM\\CurrentControlSet\\Control\\Session "
                             L"Manager\\Environment"
                           : L"Environment") {
-    base::FilePath this_executable_path;
-    base::PathService::Get(base::FILE_EXE, &this_executable_path);
-    const std::wstring symbol_path = this_executable_path.DirName().value();
+    base::FilePath out_dir;
+    base::PathService::Get(base::DIR_EXE, &out_dir);
+    const std::wstring symbol_path = out_dir.value();
 
     // For an unknown reason, symbolized stacks for code running as user
     // requires setting up the environment variable for this unit test process.
@@ -202,6 +204,10 @@ int main(int argc, char** argv) {
                              false);  // enable_tickcount
         LOG(ERROR) << "A test timeout has occured in "
                    << updater::test::GetTestName();
+#if BUILDFLAG(IS_WIN)
+        const base::FilePath updater_test = updater::test::GetUpdaterTestPath();
+        PLOG_IF(0, !base::PathExists(updater_test)) << ", " << updater_test;
+#endif
         updater::test::CreateIntegrationTestCommands()->PrintLog();
       }),
       base::BindOnce(&base::TestSuite::Run, base::Unretained(&test_suite)));

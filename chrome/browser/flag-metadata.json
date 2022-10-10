@@ -729,11 +729,6 @@
     "expiry_milestone": 111
   },
   {
-    "name": "bluetooth-revamp",
-    "owners": [ "khorimoto", "cros-connectivity@google.com" ],
-    "expiry_milestone": 108
-  },
-  {
     "name": "bluetooth-sessionized-metrics",
     "owners": [ "yudiliu", "chromeos-bt-champs@google.com" ],
     "expiry_milestone": 100
@@ -2457,6 +2452,21 @@
     "expiry_milestone": 90
   },
   {
+    "name": "enable-holding-space-predictability",
+    "owners": [ "//ash/public/cpp/holding_space/OWNERS" ],
+    "expiry_milestone": 110
+  },
+  {
+    "name": "enable-holding-space-refresh",
+    "owners": [ "//ash/public/cpp/holding_space/OWNERS" ],
+    "expiry_milestone": 110
+  },
+  {
+    "name": "enable-holding-space-suggestions",
+    "owners": [ "//ash/public/cpp/holding_space/OWNERS" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "enable-hostname-setting",
     "owners": [ "khorimoto", "cros-connectivity@google.com" ],
     "expiry_milestone": 115
@@ -3922,6 +3932,11 @@
     "expiry_milestone": 113
   },
   {
+    "name": "hats-use-new-histograms",
+    "owners": [ "jackshira", "cros-telemetry@google.com" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "hdrnet-override",
     "owners": [ "jcliang", "chromeos-camera-eng@google.com" ],
     "expiry_milestone": 110
@@ -4237,6 +4252,11 @@
   {
     "name": "keyboard-based-display-arrangement-in-settings",
     "owners": [ "zentaro", "cros-peripherals@google.com"],
+    "expiry_milestone": 112
+  },
+  {
+    "name": "keyboard-shortcuts-menu",
+    "owners": [ "lpromero", "bling-flags@google.com" ],
     "expiry_milestone": 112
   },
   {
@@ -6071,6 +6091,11 @@
     "name": "shelf-drag-to-pin",
     "owners": ["tbarzic", "//ash/shelf/OWNERS" ],
     "expiry_milestone": 110
+  },
+  {
+    "name": "shelf-focus-order-v1",
+    "owners": [ "etuck", "//ash/shelf/OWNERS" ],
+    "expiry_milestone": 111
   },
   {
     "name": "shelf-gestures-with-vk",

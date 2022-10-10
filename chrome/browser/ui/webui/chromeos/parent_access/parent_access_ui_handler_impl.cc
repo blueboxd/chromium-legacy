@@ -9,6 +9,7 @@
 
 #include "base/base64.h"
 #include "base/notreached.h"
+#include "base/time/time.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/chromeos/parent_access/parent_access_callback.pb.h"
 #include "chrome/browser/ui/webui/chromeos/parent_access/parent_access_dialog.h"
@@ -80,6 +81,19 @@ void ParentAccessUIHandlerImpl::GetParentAccessParams(
   return;
 }
 
+void ParentAccessUIHandlerImpl::OnParentApproved(
+    OnParentApprovedCallback callback) {
+  DCHECK(parent_access_token_);
+  auto result = std::make_unique<ParentAccessDialog::Result>();
+  result->status = ParentAccessDialog::Result::Status::kApproved;
+  result->parent_access_token = parent_access_token_->token();
+  // Only keep the seconds, not the nanoseconds.
+  result->parent_access_token_expire_timestamp_ =
+      base::Time::FromDoubleT(parent_access_token_->expire_time().seconds());
+  ParentAccessDialog::GetInstance()->SetResultAndClose(std::move(result));
+  std::move(callback).Run();
+}
+
 const kids::platform::parentaccess::client::proto::ParentAccessToken*
 ParentAccessUIHandlerImpl::GetParentAccessTokenForTest() {
   return parent_access_token_.get();
@@ -112,8 +126,6 @@ void ParentAccessUIHandlerImpl::OnParentAccessCallbackReceived(
     std::move(callback).Run(std::move(message));
     return;
   }
-
-  //  TODO(b/200587178): Communicate parsed callback to ChromeOS caller.
 
   switch (parent_access_callback.callback_case()) {
     case kids::platform::parentaccess::client::proto::ParentAccessCallback::

@@ -2255,6 +2255,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.MemoryPressureMonitor.GetMyMemoryState.Failed.Time"
     units="microseconds" expires_after="M77">
+  <obsolete>
+    Removed 09/2022. Expired and not needed anymore.
+  </obsolete>
   <owner>ssid@chromium.org</owner>
   <summary>
     The duration of each failed ActivityManager.getMyMemoryState() call made by
@@ -2270,6 +2273,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.MemoryPressureMonitor.GetMyMemoryState.Succeeded.Time"
     units="microseconds" expires_after="2020-04-26">
+  <obsolete>
+    Removed 09/2022. Expired and not needed anymore.
+  </obsolete>
   <owner>ssid@chromium.org</owner>
   <summary>
     The duration of each successful ActivityManager.getMyMemoryState() call made
@@ -2457,6 +2463,17 @@ chromium-metrics-reviews@google.com.
     Recents if they are associated with a live ChromeTabbedActivity or Android
     Task. Recorded on every ChromeTabbedActivity start-up. Applicable to Android
     S+ only.
+  </summary>
+</histogram>
+
+<histogram name="Android.MultipleUserProfilesState"
+    enum="MultipleUserProfilesState" expires_after="2023-03-23">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <owner>chrome-metrics-team@google.com</owner>
+  <summary>
+    Records whether multiple user profiles are present in Android. This is
+    recorded every time a metrics log is closed.
   </summary>
 </histogram>
 

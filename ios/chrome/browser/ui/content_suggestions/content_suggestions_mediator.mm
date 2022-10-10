@@ -60,9 +60,8 @@
 #import "ios/chrome/browser/ui/ntp/ntp_tile_saver.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_util.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/whats_new/feature_flags.h"
+#import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -633,7 +632,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 }
 
 - (BOOL)shouldShowWhatsNewActionItem {
-  if (!base::FeatureList::IsEnabled(kWhatsNewIOS)) {
+  if (!IsWhatsNewEnabled()) {
     return NO;
   }
 

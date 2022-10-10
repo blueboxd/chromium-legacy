@@ -861,22 +861,7 @@ void Element::SetElementAttribute(const QualifiedName& name, Element* element) {
     return;
   }
 
-  const AtomicString id = element->GetIdAttribute();
-
-  // In order to sprout a non-empty content attribute from an explicitly set
-  // attr-element, |element| must:
-  //  1) have a valid ID attribute, and
-  //  2) be the first element in tree order with this ID.
-  // Otherwise the content attribute will reflect the empty string.
-  //
-  // Note that the explicitly set attr-element is still set. See the spec for
-  // more details:
-  // https://whatpr.org/html/3917/common-dom-interfaces.html#reflecting-content-attributes-in-idl-attributes
-  if (id.IsNull() || GetTreeScope() != element->GetTreeScope() ||
-      GetTreeScope().getElementById(id) != element)
-    setAttribute(name, g_empty_atom);
-  else
-    setAttribute(name, id);
+  setAttribute(name, g_empty_atom);
 
   auto result = explicitly_set_attr_elements_map->insert(name, nullptr);
   if (result.is_new_entry) {
@@ -931,6 +916,8 @@ void Element::SetElementArrayAttribute(
     return;
   }
 
+  setAttribute(name, g_empty_atom);
+
   // Get or create element array, and remove any pre-existing elements.
   //
   // Note that this code intentionally performs two look ups on |name| within
@@ -947,39 +934,11 @@ void Element::SetElementArrayAttribute(
   } else {
     stored_elements->clear();
   }
-  SpaceSplitString value;
 
   for (auto element : *given_elements) {
-    // If |value| is null and |stored_elements| is non-empty, then a previous
-    // element must have been invalid wrt. the content attribute string rules,
-    // and therefore the content attribute string should reflect the empty
-    // string. This means we can stop trying to compute the content attribute
-    // string.
-    if (value.IsNull() && !stored_elements->empty()) {
-      stored_elements->insert(element);
-      continue;
-    }
-
     stored_elements->insert(element);
-    const AtomicString given_element_id = element->GetIdAttribute();
-
-    // We compute the content attribute string as a space separated string of
-    // the given |element| ids. Every |element| in |given_elements| must have an
-    // id, must be in the same tree scope and must be the first id in tree order
-    // with that id, otherwise the content attribute should reflect the empty
-    // string.
-    if (given_element_id.IsNull() ||
-        GetTreeScope() != element->GetTreeScope() ||
-        GetTreeScope().getElementById(given_element_id) != element) {
-      value.Clear();
-      continue;
-    }
-
-    // Whitespace between elements is added when the string is serialized.
-    value.Add(given_element_id);
   }
 
-  setAttribute(name, value.SerializeToString());
   if (isConnected()) {
     if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
       cache->HandleAttributeChanged(name, this);
@@ -2509,14 +2468,14 @@ void Element::showPopUp(ExceptionState& exception_state) {
         "Invalid on already-showing or disconnected popup elements");
   }
 
-  // Fire the show event (bubbles, cancelable).
-  Event* event = Event::CreateCancelableBubble(event_type_names::kShow);
+  // Fire the popupshow event (bubbles, cancelable).
+  Event* event = Event::CreateCancelableBubble(event_type_names::kPopupshow);
   event->SetTarget(this);
   if (DispatchEvent(*event) != DispatchEventResult::kNotCanceled)
     return;
 
-  // The 'show' event handler could have changed this pop-up, e.g. by changing
-  // its type, removing it from the document, or calling showPopUp().
+  // The 'popupshow' event handler could have changed this pop-up, e.g. by
+  // changing its type, removing it from the document, or calling showPopUp().
   if (!HasPopupAttribute() || !isConnected() || popupOpen())
     return;
 
@@ -2551,8 +2510,8 @@ void Element::showPopUp(ExceptionState& exception_state) {
                          HidePopupIndependence::kHideUnrelated);
     }
 
-    // The 'hide' event handlers could have changed this popup, e.g. by changing
-    // its type, removing it from the document, or calling showPopUp().
+    // The 'popuphide' event handlers could have changed this popup, e.g. by
+    // changing its type, removing it from the document, or calling showPopUp().
     if (!HasPopupAttribute() || !isConnected() || popupOpen())
       return;
 
@@ -2687,7 +2646,7 @@ void Element::hidePopUp(ExceptionState& exception_state) {
 // 1. Capture any already-running animations via getAnimations(), including
 //    animations on descendant elements.
 // 2. Remove the `:open` pseudo class.
-// 3. Fire the 'hide' event.
+// 3. Fire the 'popuphide' event.
 // 4. If the hidePopup() call is *not* the result of the pop-up being "forced
 //    out" of the top layer, e.g. by a modal dialog or fullscreen element:
 //   a. Restore focus to the previously-focused element.
@@ -2708,8 +2667,8 @@ void Element::HidePopUpInternal(HidePopupFocusBehavior focus_behavior,
     HideAllPopupsUntil(this, document, focus_behavior, forcing_level,
                        HidePopupIndependence::kLeaveUnrelated);
 
-    // The 'hide' event handlers could have changed this popup, e.g. by changing
-    // its type, removing it from the document, or calling hidePopUp().
+    // The 'popuphide' event handlers could have changed this popup, e.g. by
+    // changing its type, removing it from the document, or calling hidePopUp().
     if (!HasPopupAttribute() || !isConnected() ||
         GetPopupData()->visibilityState() != PopupVisibilityState::kShowing) {
       DCHECK(!GetDocument().PopupStack().Contains(this));
@@ -2743,8 +2702,8 @@ void Element::HidePopUpInternal(HidePopupFocusBehavior focus_behavior,
   GetPopupData()->setVisibilityState(PopupVisibilityState::kTransitioning);
   PseudoStateChanged(CSSSelector::kPseudoOpen);
 
-  // Fire the hide event (bubbles, not cancelable).
-  Event* event = Event::CreateBubble(event_type_names::kHide);
+  // Fire the popuphide event (bubbles, not cancelable).
+  Event* event = Event::CreateBubble(event_type_names::kPopuphide);
   event->SetTarget(this);
   if (force_hide) {
     // We will be force-hidden when the pop-up element is being removed from
@@ -2756,8 +2715,8 @@ void Element::HidePopUpInternal(HidePopupFocusBehavior focus_behavior,
   auto result = DispatchEvent(*event);
   DCHECK_EQ(result, DispatchEventResult::kNotCanceled);
 
-  // The 'hide' event handler could have changed this popup, e.g. by changing
-  // its type, removing it from the document, or calling showPopUp().
+  // The 'popuphide' event handler could have changed this popup, e.g. by
+  // changing its type, removing it from the document, or calling showPopUp().
   if (!isConnected() || !HasPopupAttribute() ||
       GetPopupData()->visibilityState() !=
           PopupVisibilityState::kTransitioning) {
@@ -4065,7 +4024,16 @@ StyleRecalcChange Element::RecalcStyle(
     // If we are re-attaching us or any of our descendants, we need to attach
     // the descendants before we know if this element generates a ::first-letter
     // and which element the ::first-letter inherits style from.
-    if (!child_change.ReattachLayoutTree() && !ChildNeedsReattachLayoutTree()) {
+    if (child_change.ReattachLayoutTree()) {
+      // Make sure we reach this element during reattachment. There are cases
+      // where we compute and store the styles for a subtree but stop attaching
+      // layout objects at an element that does not allow child boxes. Marking
+      // dirty for re-attachment means we AttachLayoutTree() will still traverse
+      // down to all elements with a ComputedStyle which clears the
+      // NeedsStyleRecalc() flag.
+      if (PseudoElement* first_letter = GetPseudoElement(kPseudoIdFirstLetter))
+        first_letter->SetNeedsReattachLayoutTree();
+    } else if (!ChildNeedsReattachLayoutTree()) {
       UpdateFirstLetterPseudoElement(StyleUpdatePhase::kRecalc,
                                      child_recalc_context);
     }

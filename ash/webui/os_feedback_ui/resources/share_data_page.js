@@ -362,6 +362,13 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
       report.feedbackContext.traceId = 0;
     }
 
+    report.feedbackContext.fromAssistant = this.feedbackContext.fromAssistant;
+
+    report.feedbackContext.assistantDebugInfoAllowed =
+        this.feedbackContext.fromAssistant &&
+        !this.getElement_('#assistantLogsContainer').hidden &&
+        this.getElement_('#assiatantLogsCheckbox').checked;
+
     return report;
   }
 
@@ -458,6 +465,22 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
           '#performanceTraceLink',
           `chrome://slow_trace/tracing.zip#${this.feedbackContext.traceId}`);
     }
+  }
+
+  /** @protected */
+  onContainerScroll_() {
+    const shadowShield = this.getElement_('#shadowShield');
+    const shadowElevation = this.getElement_('#shadowElevation');
+    const separator = this.getElement_('#separator');
+    const container = this.getElement_('#scrollContainer');
+    shadowElevation.classList.toggle(
+        'scrolling-elevation', container.scrollTop > 0);
+    shadowShield.classList.toggle(
+        'scrolling-shield',
+        container.scrollTop + container.clientHeight < container.scrollHeight);
+    separator.classList.toggle(
+        'separator-visible',
+        container.scrollTop + container.clientHeight == container.scrollHeight);
   }
 }
 

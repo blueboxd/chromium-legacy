@@ -21,7 +21,7 @@
 #include "content/browser/devtools/network_service_devtools_observer.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
-#include "content/browser/net/cross_origin_embedder_policy_reporter.h"
+#include "content/browser/network/cross_origin_embedder_policy_reporter.h"
 #include "content/browser/process_lock.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -34,11 +34,13 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/url_loader_factory_params_helper.h"
+#include "content/browser/usb/web_usb_service_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/url_schemes.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/hid_delegate.h"
+#include "content/public/browser/usb_delegate.h"
 #include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
@@ -53,7 +55,6 @@
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -466,7 +467,8 @@ void EmbeddedWorkerInstance::Start(
       // path should be better than making the execution get stuck.
       owner_version_->cross_origin_embedder_policy()) {
     BindCacheStorage(
-        params->provider_info->cache_storage.InitWithNewPipeAndPassReceiver());
+        params->provider_info->cache_storage.InitWithNewPipeAndPassReceiver(),
+        storage::BucketLocator::ForDefaultBucket(owner_version_->key()));
   }
 
   inflight_start_info_ = std::make_unique<StartInfo>(
@@ -764,9 +766,11 @@ void EmbeddedWorkerInstance::UpdateLoaderFactories(
 }
 
 void EmbeddedWorkerInstance::BindCacheStorage(
-    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
+    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
+    const storage::BucketLocator& bucket_locator) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  pending_cache_storage_receivers_.push_back(std::move(receiver));
+  pending_cache_storage_requests_.emplace_back(std::move(receiver),
+                                               bucket_locator);
   BindCacheStorageInternal();
 }
 
@@ -775,11 +779,6 @@ void EmbeddedWorkerInstance::BindHidService(
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::HidService> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* rph = static_cast<RenderProcessHostImpl*>(
-      RenderProcessHost::FromID(process_id()));
-  if (!rph)
-    return;
-
   HidDelegate* hid_delegate = GetContentClient()->browser()->GetHidDelegate();
   if (!hid_delegate) {
     return;
@@ -789,6 +788,19 @@ void EmbeddedWorkerInstance::BindHidService(
   }
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+void EmbeddedWorkerInstance::BindUsbService(
+    const url::Origin& origin,
+    mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  UsbDelegate* usb_delegate = GetContentClient()->browser()->GetUsbDelegate();
+  if (!usb_delegate) {
+    return;
+  }
+  if (usb_delegate->IsServiceWorkerAllowedForOrigin(origin)) {
+    WebUsbServiceImpl::Create(context_, origin, std::move(receiver));
+  }
+}
 
 base::WeakPtr<EmbeddedWorkerInstance> EmbeddedWorkerInstance::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
@@ -1080,7 +1092,7 @@ void EmbeddedWorkerInstance::BindCacheStorageInternal() {
   if (!coep)
     return;
 
-  for (auto& receiver : pending_cache_storage_receivers_) {
+  for (auto& request : pending_cache_storage_requests_) {
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
         coep_reporter_remote;
     if (coep_reporter_) {
@@ -1093,9 +1105,18 @@ void EmbeddedWorkerInstance::BindCacheStorageInternal() {
       return;
 
     rph->BindCacheStorage(*coep, std::move(coep_reporter_remote),
-                          owner_version_->key(), std::move(receiver));
+                          request.bucket, std::move(request.receiver));
   }
-  pending_cache_storage_receivers_.clear();
+  pending_cache_storage_requests_.clear();
 }
+
+EmbeddedWorkerInstance::CacheStorageRequest::CacheStorageRequest(
+    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
+    storage::BucketLocator bucket)
+    : receiver(std::move(receiver)), bucket(std::move(bucket)) {}
+
+EmbeddedWorkerInstance::CacheStorageRequest::CacheStorageRequest(
+    CacheStorageRequest&& other) = default;
+EmbeddedWorkerInstance::CacheStorageRequest::~CacheStorageRequest() = default;
 
 }  // namespace content

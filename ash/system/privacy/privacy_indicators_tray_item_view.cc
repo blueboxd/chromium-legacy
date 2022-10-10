@@ -14,11 +14,13 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_item_view.h"
+#include "base/containers/flat_set.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
@@ -27,6 +29,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/animation_builder.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
@@ -48,6 +51,9 @@ constexpr auto kShorterSizeShrinkAnimationDelay =
     kDwellInExpandDuration + base::Milliseconds(133);
 constexpr auto kSizeChangeAnimationDuration = base::Milliseconds(333);
 constexpr auto kExpandAnimationDuration = base::Milliseconds(400);
+constexpr auto kIconFadeInDelayDuration = base::Milliseconds(83);
+constexpr auto kCameraIconFadeInDuration = base::Milliseconds(233);
+constexpr auto kMicAndScreenshareFadeInDuration = base::Milliseconds(116);
 
 void StartAnimation(gfx::LinearAnimation* animation) {
   if (!animation)
@@ -72,6 +78,41 @@ void StartRecordAnimationSmoothness(
         base::UmaHistogramPercentage(
             "Ash.PrivacyIndicators.AnimationSmoothness", smoothness);
       })));
+}
+
+void StartReportLayerAnimationSmoothness(
+    const std::string& animation_histogram_name,
+    int smoothness) {
+  // Only record animation smoothness if `animation_histogram_name` is given.
+  if (animation_histogram_name.empty())
+    return;
+  base::UmaHistogramPercentage(animation_histogram_name, smoothness);
+}
+
+void FadeInView(views::View* view,
+                base::TimeDelta duration,
+                const std::string& animation_histogram_name) {
+  // The view must have a layer to perform animation.
+  DCHECK(view->layer());
+
+  // Stop any ongoing animation.
+  if (view->layer()->GetAnimator()->is_animating())
+    view->layer()->GetAnimator()->StopAnimating();
+
+  ui::AnimationThroughputReporter reporter(
+      view->layer()->GetAnimator(),
+      metrics_util::ForSmoothness(base::BindRepeating(
+          &StartReportLayerAnimationSmoothness, animation_histogram_name)));
+
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .Once()
+      .SetDuration(base::TimeDelta())
+      .SetOpacity(view, 0.0f)
+      .At(kIconFadeInDelayDuration)
+      .SetDuration(duration)
+      .SetOpacity(view, 1.0f);
 }
 
 }  // namespace
@@ -128,21 +169,19 @@ PrivacyIndicatorsTrayItemView::PrivacyIndicatorsTrayItemView(Shelf* shelf)
 
 PrivacyIndicatorsTrayItemView::~PrivacyIndicatorsTrayItemView() = default;
 
-void PrivacyIndicatorsTrayItemView::Update(bool camera_is_used,
-                                           bool microphone_is_used) {
-  if (camera_is_used_ == camera_is_used &&
-      microphone_is_used_ == microphone_is_used) {
-    return;
-  }
-  camera_is_used_ = camera_is_used;
-  microphone_is_used_ = microphone_is_used;
+void PrivacyIndicatorsTrayItemView::Update(const std::string& app_id,
+                                           bool is_camera_used,
+                                           bool is_microphone_used) {
+  UpdateAccessStatus(app_id, /*is_accessed=*/is_camera_used, use_camera_apps_);
+  UpdateAccessStatus(app_id,
+                     /*is_accessed=*/is_microphone_used, use_microphone_apps_);
 
-  SetVisible(camera_is_used_ || microphone_is_used_ || is_screen_sharing_);
+  UpdateVisibility();
   if (!GetVisible())
     return;
 
-  camera_icon_->SetVisible(camera_is_used);
-  microphone_icon_->SetVisible(microphone_is_used);
+  camera_icon_->SetVisible(IsCameraUsed());
+  microphone_icon_->SetVisible(IsMicrophoneUsed());
   TooltipTextChanged();
 }
 
@@ -152,7 +191,7 @@ void PrivacyIndicatorsTrayItemView::UpdateScreenShareStatus(
     return;
   is_screen_sharing_ = is_screen_sharing;
 
-  SetVisible(camera_is_used_ || microphone_is_used_ || is_screen_sharing_);
+  UpdateVisibility();
   screen_share_icon_->SetVisible(is_screen_sharing_);
   TooltipTextChanged();
 }
@@ -167,13 +206,13 @@ void PrivacyIndicatorsTrayItemView::UpdateAlignmentForShelf(Shelf* shelf) {
 std::u16string PrivacyIndicatorsTrayItemView::GetTooltipText(
     const gfx::Point& point) const {
   auto cam_and_mic_status = std::u16string();
-  if (camera_is_used_ && microphone_is_used_) {
+  if (IsCameraUsed() && IsMicrophoneUsed()) {
     cam_and_mic_status = l10n_util::GetStringUTF16(
         IDS_PRIVACY_NOTIFICATION_TITLE_CAMERA_AND_MIC);
-  } else if (camera_is_used_) {
+  } else if (IsCameraUsed()) {
     cam_and_mic_status =
         l10n_util::GetStringUTF16(IDS_PRIVACY_NOTIFICATION_TITLE_CAMERA);
-  } else if (microphone_is_used_) {
+  } else if (IsMicrophoneUsed()) {
     cam_and_mic_status =
         l10n_util::GetStringUTF16(IDS_PRIVACY_NOTIFICATION_TITLE_MIC);
   }
@@ -208,6 +247,20 @@ void PrivacyIndicatorsTrayItemView::PerformVisibilityAnimation(bool visible) {
   // short side to the final size (a green dot).
   expand_animation_->Start();
   StartRecordAnimationSmoothness(GetWidget(), throughput_tracker_);
+
+  // At the same time, fade in icons.
+  if (camera_icon_->GetVisible()) {
+    FadeInView(camera_icon_, kCameraIconFadeInDuration,
+               "Ash.PrivacyIndicators.CameraIcon.AnimationSmoothness");
+  }
+  if (microphone_icon_->GetVisible()) {
+    FadeInView(camera_icon_, kMicAndScreenshareFadeInDuration,
+               "Ash.PrivacyIndicators.MicrophoneIcon.AnimationSmoothness");
+  }
+  if (screen_share_icon_->GetVisible()) {
+    FadeInView(camera_icon_, kMicAndScreenshareFadeInDuration,
+               "Ash.PrivacyIndicators.ScreenshareIcon.AnimationSmoothness");
+  }
 }
 
 void PrivacyIndicatorsTrayItemView::HandleLocaleChange() {
@@ -327,6 +380,14 @@ void PrivacyIndicatorsTrayItemView::AnimationCanceled(
   UpdateBoundsInset();
 }
 
+bool PrivacyIndicatorsTrayItemView::IsCameraUsed() const {
+  return !use_camera_apps_.empty();
+}
+
+bool PrivacyIndicatorsTrayItemView::IsMicrophoneUsed() const {
+  return !use_microphone_apps_.empty();
+}
+
 void PrivacyIndicatorsTrayItemView::UpdateIcons() {
   const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kIconColorPrimary);
@@ -378,9 +439,27 @@ int PrivacyIndicatorsTrayItemView::CalculateSizeDuringShrinkAnimation(
 
 int PrivacyIndicatorsTrayItemView::GetLongerSideLengthInExpandedMode() const {
   // If all three icons are visible, the view should be longer.
-  return camera_is_used_ && microphone_is_used_ && is_screen_sharing_
+  return IsCameraUsed() && IsMicrophoneUsed() && is_screen_sharing_
              ? kPrivacyIndicatorsViewExpandedWithScreenShareSize
              : kPrivacyIndicatorsViewExpandedLongerSideSize;
+}
+
+void PrivacyIndicatorsTrayItemView::UpdateAccessStatus(
+    const std::string& app_id,
+    bool is_accessed,
+    base::flat_set<std::string>& access_set) {
+  if (access_set.contains(app_id) == is_accessed)
+    return;
+
+  if (is_accessed)
+    access_set.insert(app_id);
+  else
+    access_set.erase(app_id);
+}
+
+void PrivacyIndicatorsTrayItemView::UpdateVisibility() {
+  // We only hide the view when all the sets are empty.
+  SetVisible(IsCameraUsed() || IsMicrophoneUsed() || is_screen_sharing_);
 }
 
 void PrivacyIndicatorsTrayItemView::EndAllAnimations() {

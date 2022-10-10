@@ -257,6 +257,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="2405664212338326887">Tidak terhubung</translation>
 <translation id="2408955596600435184">Masukkan PIN</translation>
 <translation id="2412593942846481727">Update tersedia</translation>
+<translation id="2417486498593892439">Login ke jaringan</translation>
 <translation id="2426051945783024481">Bingkai kamera dipusatkan secara otomatis</translation>
 <translation id="2427507373259914951">Klik kiri</translation>
 <translation id="2429753432712299108">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Sebelum menerima, konfirmasikan bahwa kunci sandi ini ditampilkan pada perangkat tersebut: <ph name="PASSKEY" /></translation>
@@ -414,6 +415,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="3368922792935385530">Terhubung</translation>
 <translation id="3371140690572404006">Perangkat USB-C (port depan sebelah kanan)</translation>
 <translation id="3375634426936648815">Terhubung</translation>
+<translation id="3378438761594387761">Anda akan menemukan download dan screenshot terbaru di sini</translation>
 <translation id="3378442621503952303">Menghubungkan ke profil. Tunggu beberapa menit.</translation>
 <translation id="3386978599540877378">kaca pembesar layar penuh</translation>
 <translation id="3387527074123400161">ChromiumOS</translation>
@@ -496,7 +498,6 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="383058930331066723">Mode penghemat baterai aktif</translation>
 <translation id="383629559565718788">Tampilkan setelan keyboard</translation>
 <translation id="384082539148746321">Hapus template?</translation>
-<translation id="3842239759367498783">Lanjutkan membaca dari perangkat seluler <ph name="TITLE" /></translation>
 <translation id="3846575436967432996">Tidak tersedia informasi jaringan</translation>
 <translation id="385051799172605136">Kembali</translation>
 <translation id="385300504083504382">Awal</translation>
@@ -720,6 +721,7 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="5083553833479578423">Dapatkan lebih banyak fitur Asisten.</translation>
 <translation id="509790653408515442">Aplikasi yang di-streaming pada ponsel Anda akan ditampilkan di sini</translation>
 <translation id="5098537242461068432">Desktop dan jendela dibuka kembali</translation>
+<translation id="5104236669533825617">Tidak dapat membuat screencast</translation>
 <translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Tampilkan bulan berikutnya</translation>
 <translation id="5136175204352732067">Keyboard yang berbeda terhubung</translation>
@@ -765,6 +767,7 @@ Hubungkan perangkat ke sumber listrik.</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (Kanan)</translation>
 <translation id="5352250171825660495">Tema gelap aktif</translation>
 <translation id="5356963482258194581">Berpindah-pindah antara tema gelap dan terang. Klik kanan desktop lalu pilih Wallpaper &amp; Gaya.</translation>
+<translation id="536019650977002321">Administrator tidak mengizinkan perekaman audio. Hubungi administrator untuk mendapatkan info selengkapnya.</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> Buka tab ini</translation>
 <translation id="5379115545237091094">Terlalu banyak upaya gagal</translation>
 <translation id="5391307769715781764">Ganti desktop tersimpan?</translation>
@@ -995,7 +998,6 @@ Baru diinstal</translation>
 <translation id="6700713906295497288">Tombol menu IME</translation>
 <translation id="6707693040195709527">Perubahan perangkat ke versi sebelumnya sudah lewat batas waktu</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
-<translation id="6713285437468012787">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" telah disandingkan dan kini tersedia bagi semua pengguna. Anda dapat menghapus penyandingan ini menggunakan Setelan.</translation>
 <translation id="6723839937902243910">Daya</translation>
 <translation id="6727969043791803658">Terhubung, baterai <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6732800389263199929">+<ph name="COUNT" /></translation>
@@ -1385,6 +1387,7 @@ Baru diinstal</translation>
 <translation id="8936501819958976551">dinonaktifkan</translation>
 <translation id="8938800817013097409">Perangkat USB-C (port belakang sebelah kanan)</translation>
 <translation id="8940956008527784070">Baterai lemah (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8949925099261528566">Terhubung, tidak ada internet</translation>
 <translation id="8951539504029375108">Hanya perangkat Thunderbolt yang disetujui yang kompatibel dengan Chromebook</translation>
 <translation id="8982906748181120328">Visibilitas Berbagi Langsung</translation>
 <translation id="8983038754672563810">HSPA</translation>

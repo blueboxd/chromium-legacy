@@ -30,8 +30,9 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
-import org.chromium.components.omnibox.AutocompleteResult.GroupDetails;
+import org.chromium.components.omnibox.GroupsProto.GroupConfig;
 import org.chromium.ui.modelutil.ListObservable.ListObserver;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -104,6 +105,21 @@ public class DropdownItemViewInfoListManagerUnitTest {
         }
     }
 
+    /**
+     * Create a simple GroupConfig instance with supplied text and visibility.
+     *
+     * @param headerText The header text to apply to group config.
+     * @param isHidden Whether the newly built group is default-collapsed.
+     * @return Newly constructed GroupConfig.
+     */
+    private GroupConfig buildGroupConfig(String headerText, boolean isHidden) {
+        return GroupConfig.newBuilder()
+                .setHeaderText(headerText)
+                .setVisibility(isHidden ? GroupConfig.Visibility.HIDDEN
+                                        : GroupConfig.Visibility.DEFAULT_VISIBLE)
+                .build();
+    }
+
     @Test
     @SmallTest
     public void modelUpdates_visibilityChangesOnlyUpdateTheModel() {
@@ -119,7 +135,7 @@ public class DropdownItemViewInfoListManagerUnitTest {
                 new DropdownItemViewInfo(mBasicSuggestionProcessor, mModel, 2),
                 new DropdownItemViewInfo(mBasicSuggestionProcessor, mModel, 2));
 
-        mManager.setSourceViewInfoList(list, new SparseArray<GroupDetails>());
+        mManager.setSourceViewInfoList(list, new SparseArray<GroupConfig>());
         verifyModelEquals(list);
 
         // Monitor updates moving forward.
@@ -156,7 +172,7 @@ public class DropdownItemViewInfoListManagerUnitTest {
                 new DropdownItemViewInfo(mBasicSuggestionProcessor, mModel, 2),
                 new DropdownItemViewInfo(mBasicSuggestionProcessor, mModel, 2));
 
-        mManager.setSourceViewInfoList(listWithBothGroupsExpanded, new SparseArray<GroupDetails>());
+        mManager.setSourceViewInfoList(listWithBothGroupsExpanded, new SparseArray<GroupConfig>());
         verifyModelEquals(listWithBothGroupsExpanded);
 
         // Toggle group 1.
@@ -203,10 +219,10 @@ public class DropdownItemViewInfoListManagerUnitTest {
                 new DropdownItemViewInfo(mBasicSuggestionProcessor, mModel, 2));
 
         // Receive suggestions list with group 1 default-collapsed.
-        mManager.setSourceViewInfoList(listWithBothGroupsExpanded, new SparseArray<GroupDetails>() {
+        mManager.setSourceViewInfoList(listWithBothGroupsExpanded, new SparseArray<GroupConfig>() {
             {
-                put(1, new GroupDetails("Collapsed", true));
-                put(2, new GroupDetails("Expanded", false));
+                put(1, buildGroupConfig("Collapsed", true));
+                put(2, buildGroupConfig("Expanded", false));
             }
         });
 
@@ -220,10 +236,10 @@ public class DropdownItemViewInfoListManagerUnitTest {
         verifyModelEquals(listWithBothGroupsExpanded);
 
         // Receive suggestions list with group 2 default-collapsed.
-        mManager.setSourceViewInfoList(listWithBothGroupsExpanded, new SparseArray<GroupDetails>() {
+        mManager.setSourceViewInfoList(listWithBothGroupsExpanded, new SparseArray<GroupConfig>() {
             {
-                put(1, new GroupDetails("Expanded", false));
-                put(2, new GroupDetails("Collapsed", true));
+                put(1, buildGroupConfig("Expanded", false));
+                put(2, buildGroupConfig("Collapsed", true));
             }
         });
         final List<DropdownItemViewInfo> listWithGroup2Collapsed =
@@ -234,10 +250,10 @@ public class DropdownItemViewInfoListManagerUnitTest {
         verifyModelEquals(listWithBothGroupsExpanded);
 
         // Receive suggestions list with both groups default-collapsed.
-        mManager.setSourceViewInfoList(listWithBothGroupsExpanded, new SparseArray<GroupDetails>() {
+        mManager.setSourceViewInfoList(listWithBothGroupsExpanded, new SparseArray<GroupConfig>() {
             {
-                put(1, new GroupDetails("Collapsed", true));
-                put(2, new GroupDetails("Collapsed", true));
+                put(1, buildGroupConfig("Collapsed", true));
+                put(2, buildGroupConfig("Collapsed", true));
             }
         });
         final List<DropdownItemViewInfo> listWithBothGroupsCollapsed =
@@ -262,7 +278,7 @@ public class DropdownItemViewInfoListManagerUnitTest {
                 new DropdownItemViewInfo(mBasicSuggestionProcessor, mModel, 2),
                 new DropdownItemViewInfo(mBasicSuggestionProcessor, mModel, 2));
 
-        mManager.setSourceViewInfoList(list, new SparseArray<GroupDetails>());
+        mManager.setSourceViewInfoList(list, new SparseArray<GroupConfig>());
         verifyModelEquals(list);
 
         // Expand group 1.
@@ -287,7 +303,7 @@ public class DropdownItemViewInfoListManagerUnitTest {
                 new DropdownItemViewInfo(mBasicSuggestionProcessor, mModel, 2),
                 new DropdownItemViewInfo(mBasicSuggestionProcessor, mModel, 2));
 
-        mManager.setSourceViewInfoList(list, new SparseArray<GroupDetails>());
+        mManager.setSourceViewInfoList(list, new SparseArray<GroupConfig>());
         verifyModelEquals(list);
 
         // Collapse group 1.
@@ -328,12 +344,12 @@ public class DropdownItemViewInfoListManagerUnitTest {
                         new DropdownItemViewInfo(mBasicSuggestionProcessor, mModel, 1),
                         new DropdownItemViewInfo(mBasicSuggestionProcessor, mModel, 1));
 
-        mManager.setSourceViewInfoList(list1, new SparseArray<GroupDetails>());
+        mManager.setSourceViewInfoList(list1, new SparseArray<GroupConfig>());
         verifyModelEquals(list1);
 
         mManager.clear();
 
-        mManager.setSourceViewInfoList(list2, new SparseArray<GroupDetails>());
+        mManager.setSourceViewInfoList(list2, new SparseArray<GroupConfig>());
         verifyModelEquals(list2);
     }
 
@@ -348,7 +364,7 @@ public class DropdownItemViewInfoListManagerUnitTest {
                         new DropdownItemViewInfo(mBasicSuggestionProcessor,
                                 new PropertyModel(SuggestionCommonProperties.ALL_KEYS), 1));
 
-        mManager.setSourceViewInfoList(list, new SparseArray<GroupDetails>());
+        mManager.setSourceViewInfoList(list, new SparseArray<GroupConfig>());
         verifyModelEquals(list);
         verifyPropertyValues(View.LAYOUT_DIRECTION_INHERIT, BrandedColorScheme.LIGHT_BRANDED_THEME);
 
@@ -370,7 +386,7 @@ public class DropdownItemViewInfoListManagerUnitTest {
                         new PropertyModel(SuggestionCommonProperties.ALL_KEYS), 2),
                 new DropdownItemViewInfo(mBasicSuggestionProcessor,
                         new PropertyModel(SuggestionCommonProperties.ALL_KEYS), 2));
-        mManager.setSourceViewInfoList(list, new SparseArray<GroupDetails>());
+        mManager.setSourceViewInfoList(list, new SparseArray<GroupConfig>());
         verifyModelEquals(list);
         verifyPropertyValues(View.LAYOUT_DIRECTION_RTL, BrandedColorScheme.INCOGNITO);
     }
@@ -392,7 +408,7 @@ public class DropdownItemViewInfoListManagerUnitTest {
                 new DropdownItemViewInfo(mBasicSuggestionProcessor,
                         new PropertyModel(SuggestionCommonProperties.ALL_KEYS), groupId));
 
-        mManager.setSourceViewInfoList(list, new SparseArray<GroupDetails>());
+        mManager.setSourceViewInfoList(list, new SparseArray<GroupConfig>());
         verifyModelEquals(list);
 
         //
@@ -425,5 +441,62 @@ public class DropdownItemViewInfoListManagerUnitTest {
                 mSuggestionModels.get(3).model.get(DropdownCommonProperties.BG_TOP_CORNER_ROUNDED));
         Assert.assertTrue(mSuggestionModels.get(3).model.get(
                 DropdownCommonProperties.BG_BOTTOM_CORNER_ROUNDED));
+    }
+
+    @Test
+    @SmallTest
+    public void suggestionsListSpacing() {
+        int groupVerticalSpacing = mContext.getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_group_vertical_margin);
+        int suggestionVerticalSpacing = mContext.getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_vertical_margin);
+
+        final int groupId = 1;
+        when(mHeaderProcessor.allowBackgroundRounding()).thenReturn(false);
+        when(mBasicSuggestionProcessor.allowBackgroundRounding()).thenReturn(true);
+
+        List<DropdownItemViewInfo> list = Arrays.asList(
+                new DropdownItemViewInfo(mBasicSuggestionProcessor,
+                        new PropertyModel(SuggestionCommonProperties.ALL_KEYS), groupId),
+                new DropdownItemViewInfo(mHeaderProcessor,
+                        new PropertyModel(SuggestionCommonProperties.ALL_KEYS), groupId),
+                new DropdownItemViewInfo(mBasicSuggestionProcessor,
+                        new PropertyModel(SuggestionCommonProperties.ALL_KEYS), groupId),
+                new DropdownItemViewInfo(mBasicSuggestionProcessor,
+                        new PropertyModel(SuggestionCommonProperties.ALL_KEYS), groupId));
+
+        mManager.setSourceViewInfoList(list, new SparseArray<GroupConfig>());
+        verifyModelEquals(list);
+
+        //
+        // ******************** <--- very first one, no margin.
+        // * basic suggestion *
+        // ******************** <--- last one in a group, group margin.
+        //                      <--- no background, no margin
+        //  header suggestion
+        //                      <--- no background, no margin
+        // ******************** <--- first one in a group, group margin.
+        // * basic suggestion *
+        // ******************** <--- normal bottom, no margin.
+        // ******************** <--- normal top, suggestion margin.
+        // * basic suggestion *
+        // ******************** <--- very last one, no margin.
+        //
+        Assert.assertEquals(
+                0, mSuggestionModels.get(0).model.get(DropdownCommonProperties.TOP_MARGIN));
+        Assert.assertEquals(groupVerticalSpacing,
+                mSuggestionModels.get(0).model.get(DropdownCommonProperties.BOTTOM_MARGIN));
+        Assert.assertEquals(
+                0, mSuggestionModels.get(1).model.get(DropdownCommonProperties.TOP_MARGIN));
+        Assert.assertEquals(
+                0, mSuggestionModels.get(1).model.get(DropdownCommonProperties.BOTTOM_MARGIN));
+        Assert.assertEquals(groupVerticalSpacing,
+                mSuggestionModels.get(2).model.get(DropdownCommonProperties.TOP_MARGIN));
+        Assert.assertEquals(
+                0, mSuggestionModels.get(2).model.get(DropdownCommonProperties.BOTTOM_MARGIN));
+        Assert.assertEquals(suggestionVerticalSpacing,
+                mSuggestionModels.get(3).model.get(DropdownCommonProperties.TOP_MARGIN));
+        Assert.assertEquals(
+                0, mSuggestionModels.get(3).model.get(DropdownCommonProperties.BOTTOM_MARGIN));
     }
 }

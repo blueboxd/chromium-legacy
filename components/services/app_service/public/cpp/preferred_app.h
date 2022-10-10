@@ -64,26 +64,11 @@ PreferredAppPtr ConvertMojomPreferredAppToPreferredApp(
 apps::mojom::PreferredAppPtr ConvertPreferredAppToMojomPreferredApp(
     const PreferredAppPtr& preferred_app);
 
-PreferredAppChangesPtr ConvertMojomPreferredAppChangesToPreferredAppChanges(
-    const apps::mojom::PreferredAppChangesPtr& mojom_preferred_app_changes);
-
-apps::mojom::PreferredAppChangesPtr
-ConvertPreferredAppChangesToMojomPreferredAppChanges(
-    const PreferredAppChangesPtr& preferred_app_changes);
-
 PreferredApps ConvertMojomPreferredAppsToPreferredApps(
     const std::vector<apps::mojom::PreferredAppPtr>& mojom_preferred_apps);
 
 std::vector<apps::mojom::PreferredAppPtr>
 ConvertPreferredAppsToMojomPreferredApps(const PreferredApps& preferred_apps);
-
-apps::mojom::ReplacedAppPreferencesPtr
-ConvertReplacedAppPreferencesToMojomReplacedAppPreferences(
-    const ReplacedAppPreferences& replace_preferences);
-
-ReplacedAppPreferences
-ConvertMojomReplacedAppPreferencesToReplacedAppPreferences(
-    const apps::mojom::ReplacedAppPreferencesPtr& mojom_replace_preferences);
 
 }  // namespace apps
 

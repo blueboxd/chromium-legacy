@@ -3812,6 +3812,135 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Autofill.FastCheckout.Accepted">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user accepted their selections of profile and credit card.
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.Destroyed" not_user_triggered="true">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>The bottomsheet was destroyed.</description>
+</action>
+
+<action name="Autofill.FastCheckout.Dismissed">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>The bottomsheet was dismissed by the user.</description>
+</action>
+
+<action name="Autofill.FastCheckout.Initialized">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>The FastCheckout bottomsheet was initialized.</description>
+</action>
+
+<action name="Autofill.FastCheckout.NavigatedBackHome">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>The user tapped the back button on a detail sheet.</description>
+</action>
+
+<action name="Autofill.FastCheckout.NavigatedToAddresses">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>The user navigated to the addresses details sheet.</description>
+</action>
+
+<action name="Autofill.FastCheckout.NavigatedToAddressesSettingsViaFooter">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user tapped the &quot;Add new address&quot; footer.
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.NavigatedToAddressesSettingsViaIcon">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user tapped the settings icon on the addresses details sheet.
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.NavigatedToCreditCards">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user navigated to the credit cards details sheet.
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.NavigatedToCreditCardsSettingsViaFooter">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user tapped the &quot;Add new credit card&quot; footer.
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.NavigatedToCreditCardsSettingsViaIcon">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user tapped the settings icon on the credit cards details sheet.
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.SelectedDifferentAddress">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user selected a different address from the already selected one
+    (navigates back to home screen).
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.SelectedDifferentCreditCard">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user selected a different credit card from the already selected one
+    (navigates back to home screen).
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.SelectedSameAddress">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user selected the same address that was already selected (navigates back
+    to home screen).
+  </description>
+</action>
+
+<action name="Autofill.FastCheckout.SelectedSameCreditCard">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <description>
+    The user selected the same credit card that was already selected (navigates
+    back to home screen).
+  </description>
+</action>
+
 <action name="Autofill_BrandingTapped">
   <owner>ginnyhuang@chromium.org</owner>
   <description>
@@ -18593,6 +18722,12 @@ should be able to be added at any place in this file.
 <action name="MobileMenuVoiceSearch">
   <owner>gambard@chromium.org</owner>
   <description>User pressed 'Voice Search' in the app menu.</description>
+</action>
+
+<action name="MobileMenuWhatsNew">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@google.com</owner>
+  <description>User pressed 'What's New' in the app menu.</description>
 </action>
 
 <action name="MobileMenuWindowManager">
@@ -34178,6 +34313,52 @@ should be able to be added at any place in this file.
     The user clicked the Sign In button on the Welcome page, starting the
     authentication flow.
   </description>
+</action>
+
+<action name="WhatsNew.AddPasswordManually">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user opened Add Password Manually in What's New.
+  </description>
+</action>
+
+<action name="WhatsNew.Autofill">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>The user opened Autofill in What's New.</description>
+</action>
+
+<action name="WhatsNew.NewOverflowMenu">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>The user opened New Overflow Menu in What's New.</description>
+</action>
+
+<action name="WhatsNew.PasswordsInOtherApps">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user opened Passwords In Other Apps in What's New.
+  </description>
+</action>
+
+<action name="WhatsNew.SearchTabs">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>The user opened Search Tabs in What's New.</description>
+</action>
+
+<action name="WhatsNew.SharedHighlighting">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>The user opened Shared Highlighting in What's New.</description>
+</action>
+
+<action name="WhatsNew.UseChromeByDefault">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>The user opened Chrome By Default in What's New.</description>
 </action>
 
 <action name="Win10WelcomePage_SetAsDefaultBrowser">

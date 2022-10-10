@@ -144,11 +144,6 @@ class ScopedFeatureList final {
   // interactions.
   void InitWithFeatures(const std::vector<FeatureRef>& enabled_features,
                         const std::vector<FeatureRef>& disabled_features);
-  // TODO(https://crbug.com/1370572): Remove these temporary forwarding helpers.
-  void InitWithFeatures(const std::vector<Feature>& enabled_features,
-                        const std::vector<Feature>& disabled_features);
-  void InitWithFeatures(std::initializer_list<Feature> enabled_features,
-                        std::initializer_list<Feature> disabled_features);
 
   // Initializes and registers a FeatureList instance based on the current
   // FeatureList and overridden with single enabled feature.
@@ -171,13 +166,6 @@ class ScopedFeatureList final {
   void InitWithFeaturesAndParameters(
       const std::vector<FeatureAndParams>& enabled_features,
       const std::vector<FeatureRef>& disabled_features);
-  // TODO(https://crbug.com/1370572): Remove these temporary forwarding helpers.
-  void InitWithFeaturesAndParameters(
-      const std::vector<FeatureAndParams>& enabled_features,
-      const std::vector<Feature>& disabled_features);
-  void InitWithFeaturesAndParameters(
-      const std::vector<FeatureAndParams>& enabled_features,
-      std::initializer_list<Feature> disabled_features);
 
   // Initializes and registers a FeatureList instance based on the current
   // FeatureList and overridden with single disabled feature.

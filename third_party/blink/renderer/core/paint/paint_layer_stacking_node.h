@@ -62,7 +62,7 @@ class ComputedStyle;
 // PaintLayerStackingNode represents a stacked element which is either a
 // stacking context or a positioned element.
 // See
-// https://chromium.googlesource.com/chromium/src.git/+/master/third_party/blink/renderer/core/paint/README.md
+// https://chromium.googlesource.com/chromium/src.git/+/main/third_party/blink/renderer/core/paint/README.md
 // for more details of stacked elements.
 //
 // Stacked elements are the basis for the CSS painting algorithm. The paint
@@ -143,11 +143,6 @@ class CORE_EXPORT PaintLayerStackingNode
   // Holds descendants within our stacking context with negative z-indices.
   PaintLayers neg_z_order_list_;
 
-  // All PaintLayers (just in current stacking context, child stacking contexts
-  // will have their own list) that have overlay overflow controls that should
-  // paint reordered. For the above example, this has one entry {target}.
-  PaintLayers overlay_overflow_controls_reordered_list_;
-
   // Overlay overflow controls(scrollbar or resizer) need to be painted above
   // all child contents, even if the contents are stacked in a stacking context
   // which is an ancestor of the scrolling or resizing layer, for example:
@@ -191,6 +186,11 @@ class CORE_EXPORT PaintLayerStackingNode
   // that |target|'s overlay overflow controls should be painted after |child|.
   HeapHashMap<Member<const PaintLayer>, Member<PaintLayers>>
       layer_to_overlay_overflow_controls_painting_after_;
+
+  // All PaintLayers (just in current stacking context, child stacking contexts
+  // will have their own list) that have overlay overflow controls that should
+  // paint reordered. For the above example, this has one entry {target}.
+  PaintLayers overlay_overflow_controls_reordered_list_;
 
   Member<PaintLayer> layer_;
 

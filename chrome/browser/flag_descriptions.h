@@ -912,6 +912,9 @@ extern const char kHandwritingLibraryDlcDescription[];
 extern const char kHardwareMediaKeyHandling[];
 extern const char kHardwareMediaKeyHandlingDescription[];
 
+extern const char kHatsUseNewHistogramsName[];
+extern const char kHatsUseNewHistogramsDescription[];
+
 extern const char kHeavyAdPrivacyMitigationsName[];
 extern const char kHeavyAdPrivacyMitigationsDescription[];
 
@@ -2803,9 +2806,6 @@ extern const char kBluetoothFixA2dpPacketSizeDescription[];
 extern const char kBluetoothQualityReportName[];
 extern const char kBluetoothQualityReportDescription[];
 
-extern const char kBluetoothRevampName[];
-extern const char kBluetoothRevampDescription[];
-
 extern const char kBluetoothWbsDogfoodName[];
 extern const char kBluetoothWbsDogfoodDescription[];
 
@@ -3223,6 +3223,15 @@ extern const char kHotspotDescription[];
 extern const char kDiacriticsOnPhysicalKeyboardLongpressName[];
 extern const char kDiacriticsOnPhysicalKeyboardLongpressDescription[];
 
+extern const char kHoldingSpacePredictabilityName[];
+extern const char kHoldingSpacePredictabilityDescription[];
+
+extern const char kHoldingSpaceRefreshName[];
+extern const char kHoldingSpaceRefreshDescription[];
+
+extern const char kHoldingSpaceSuggestionsName[];
+extern const char kHoldingSpaceSuggestionsDescription[];
+
 extern const char kImeAssistAutocorrectName[];
 extern const char kImeAssistAutocorrectDescription[];
 
@@ -3425,6 +3434,9 @@ extern const char kSecondaryGoogleAccountUsageDescription[];
 
 extern const char kShelfAutoHideSeparationName[];
 extern const char kShelfAutoHideSeparationDescription[];
+
+extern const char kShelfFocusOrderV1Name[];
+extern const char kShelfFocusOrderV1Description[];
 
 extern const char kShimlessRMAFlowName[];
 extern const char kShimlessRMAFlowDescription[];

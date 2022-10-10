@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "ash/focus_cycler.h"
+#include "ash/login/ui/lock_contents_view.h"
+#include "ash/login/ui/lock_screen.h"
+#include "ash/login/ui/login_big_user_view.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf.h"
@@ -32,7 +35,13 @@ class LoginShelfViewPixelTestBase : public LoginTestBase {
     ShowLoginScreen(/*set_wallpaper=*/false);
 
     SetUserCount(1);
+    primary_big_user_view_ =
+        LockContentsView::TestApi(
+            LockScreen::TestApi(LockScreen::Get()).contents_view())
+            .primary_big_view();
   }
+
+  views::View* primary_big_user_view_ = nullptr;
 };
 
 class LoginShelfViewPixelTest : public LoginShelfViewPixelTestBase {
@@ -47,24 +56,29 @@ class LoginShelfViewPixelTest : public LoginShelfViewPixelTestBase {
 // to the login shelf works as expected.
 TEST_F(LoginShelfViewPixelTest, FocusTraversalFromLockContents) {
   // Trigger the tab key. Verify that the login user expand button is focused.
+  aura::Window* primary_shelf_window = GetPrimaryShelf()->GetWindow();
   PressAndReleaseKey(ui::VKEY_TAB);
-  EXPECT_TRUE(GetPixelDiffer()->ComparePrimaryFullScreen(
-      "focus_on_login_user_expand_button"));
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      "focus_on_login_user_expand_button", primary_big_user_view_,
+      primary_shelf_window));
 
   // Trigger the tab key. Check that the login shelf shutdown button is focused.
   PressAndReleaseKey(ui::VKEY_TAB);
-  EXPECT_TRUE(
-      GetPixelDiffer()->ComparePrimaryFullScreen("focus_on_shutdown_button"));
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      "focus_on_shutdown_button", primary_big_user_view_,
+      primary_shelf_window));
 
   // Trigger the tab key. Check that the browser as guest button is focused.
   PressAndReleaseKey(ui::VKEY_TAB);
-  EXPECT_TRUE(GetPixelDiffer()->ComparePrimaryFullScreen(
-      "focus_on_browser_as_guest_button"));
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      "focus_on_browser_as_guest_button", primary_big_user_view_,
+      primary_shelf_window));
 
   // Trigger the tab key. Check that the add person button is focused.
   PressAndReleaseKey(ui::VKEY_TAB);
-  EXPECT_TRUE(
-      GetPixelDiffer()->ComparePrimaryFullScreen("focus_on_add_person_button"));
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      "focus_on_add_person_button", primary_big_user_view_,
+      primary_shelf_window));
 }
 
 // Used to verify the login shelf features with a policy wallpaper.
@@ -75,22 +89,21 @@ TEST_F(LoginShelfViewPixelTest, FocusTraversalWithinShelf) {
   PressAndReleaseKey(ui::VKEY_TAB);
   PressAndReleaseKey(ui::VKEY_TAB);
 
-  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentScreenshot(
-      "focus_on_calendar_view",
-      AshPixelDiffTestHelper::UiComponent::kShelfWidget));
+  aura::Window* primary_shelf_window = GetPrimaryShelf()->GetWindow();
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      "focus_on_calendar_view", primary_shelf_window));
 
   // Focus on the time view.
   PressAndReleaseKey(ui::VKEY_TAB);
-  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentScreenshot(
-      "focus_on_time_view", AshPixelDiffTestHelper::UiComponent::kShelfWidget));
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      "focus_on_time_view", primary_shelf_window));
 
   PressAndReleaseKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
   PressAndReleaseKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
 
   // Move the focus back to the add person button.
-  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentScreenshot(
-      "refocus_on_login_shelf",
-      AshPixelDiffTestHelper::UiComponent::kShelfWidget));
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      "refocus_on_login_shelf", primary_shelf_window));
 }
 
 class LoginShelfWithPolicyWallpaperPixelTestWithRTL
@@ -121,9 +134,9 @@ INSTANTIATE_TEST_SUITE_P(RTL,
 // works as expected (see https://crbug.com/1197052).
 TEST_P(LoginShelfWithPolicyWallpaperPixelTestWithRTL, FocusOnShutdownButton) {
   FocusOnShutdownButton();
-  EXPECT_TRUE(GetPixelDiffer()->ComparePrimaryFullScreen(
-      GetParam() ? "focus_on_shutdown_button_rtl"
-                 : "focus_on_shutdown_button"));
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      GetParam() ? "focus_on_shutdown_button_rtl" : "focus_on_shutdown_button",
+      primary_big_user_view_, GetPrimaryShelf()->GetWindow()));
 }
 
 }  // namespace ash

@@ -13,6 +13,14 @@
 
 namespace webapps {
 
+Screenshot::Screenshot(SkBitmap image, absl::optional<std::u16string> label)
+    : image(std::move(image)), label(label) {}
+
+Screenshot::Screenshot(const Screenshot& screenshot) = default;
+Screenshot& Screenshot::operator=(const Screenshot& screenshot) = default;
+
+Screenshot::~Screenshot() = default;
+
 InstallableData::InstallableData(std::vector<InstallableStatusCode> errors,
                                  const GURL& manifest_url,
                                  const blink::mojom::Manifest& manifest,
@@ -22,7 +30,7 @@ InstallableData::InstallableData(std::vector<InstallableStatusCode> errors,
                                  const GURL& splash_icon_url,
                                  const SkBitmap* splash_icon,
                                  bool has_maskable_splash_icon,
-                                 const std::vector<SkBitmap>& screenshots,
+                                 const std::vector<Screenshot>& screenshots,
                                  bool valid_manifest,
                                  bool worker_check_passed)
     : errors(std::move(errors)),
@@ -41,10 +49,6 @@ InstallableData::InstallableData(std::vector<InstallableStatusCode> errors,
 InstallableData::~InstallableData() = default;
 
 bool InstallableData::NoBlockingErrors() const {
-  return FirstNoBlockingError() == NO_ERROR_DETECTED;
-}
-
-InstallableStatusCode InstallableData::FirstNoBlockingError() const {
   for (auto e : errors) {
     switch (e) {
       case WARN_NOT_OFFLINE_CAPABLE:
@@ -56,12 +60,12 @@ InstallableStatusCode InstallableData::FirstNoBlockingError() const {
           continue;
         }
 #endif
-        [[fallthrough]];
+        return false;
       default:
-        return e;
+        return false;
     }
   }
-  return NO_ERROR_DETECTED;
+  return true;
 }
 
 bool InstallableData::HasErrorOnlyServiceWorkerErrors() const {

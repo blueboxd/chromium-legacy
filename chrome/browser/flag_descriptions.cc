@@ -1637,6 +1637,10 @@ const char kHardwareMediaKeyHandlingDescription[] =
     "Enables using media keys to control the active media session. This "
     "requires MediaSessionService to be enabled too";
 
+const char kHatsUseNewHistogramsName[] = "New ChromeOS HaTS Histograms";
+const char kHatsUseNewHistogramsDescription[] =
+    "Enables the ability for surveys to emit new, more inclusive histograms";
+
 const char kHeavyAdPrivacyMitigationsName[] = "Heavy ad privacy mitigations";
 const char kHeavyAdPrivacyMitigationsDescription[] =
     "Enables privacy mitigations for the heavy ad intervention. Disabling "
@@ -4905,11 +4909,6 @@ const char kBluetoothQualityReportDescription[] =
     "which will send the Bluetooth link quality statistics such as the "
     "signal strength, the lost packet count, etc. to the host.";
 
-const char kBluetoothRevampName[] = "Bluetooth Revamp";
-const char kBluetoothRevampDescription[] =
-    "Enables the ChromeOS Bluetooth Revamp, which updates Bluetooth system UI "
-    "and related infrastructure.";
-
 const char kBluetoothWbsDogfoodName[] = "Bluetooth WBS dogfood";
 const char kBluetoothWbsDogfoodDescription[] =
     "Enables Bluetooth wideband speech mic as default audio option. "
@@ -5643,6 +5642,22 @@ const char kDiacriticsOnPhysicalKeyboardLongpressDescription[] =
     "Enable diacritics and other varient character selection on physical "
     "keyboard longpress.";
 
+const char kHoldingSpacePredictabilityName[] =
+    "Enable holding space predictability";
+const char kHoldingSpacePredictabilityDescription[] =
+    "Increases predictability of holding space by being ever present in the "
+    "shelf and always reserving space for downloads and screen captures.";
+
+const char kHoldingSpaceRefreshName[] = "Enable holding space refresh";
+const char kHoldingSpaceRefreshDescription[] =
+    "Enables a refresh of holding space which better conveys the relationship "
+    "with the Files app.";
+
+const char kHoldingSpaceSuggestionsName[] = "Enable holding space suggestions";
+const char kHoldingSpaceSuggestionsDescription[] =
+    "Enables pinned file suggestions in holding space to help the user "
+    "understand and discover the ability to pin.";
+
 const char kImeAssistAutocorrectName[] = "Enable assistive autocorrect";
 const char kImeAssistAutocorrectDescription[] =
     "Enable assistive auto-correct features for native IME";
@@ -5995,6 +6010,23 @@ const char kShelfAutoHideSeparationName[] =
 const char kShelfAutoHideSeparationDescription[] =
     "Allows for the shelf's auto-hide preference to be specified separately "
     "for clamshell and tablet mode.";
+
+const char kShelfFocusOrderV1Name[] =
+    "Enable \"V1\" focus ordering of shelf items.";
+const char kShelfFocusOrderV1Description[] =
+    "Enables the \"V1\" focus ordering of shelf items. Once the drag handle "
+    "has accessibility focus the focus ordering is as follows: (1) If the drag "
+    "handle is pressed: the hotseat gets focus before and after the drag "
+    "handle, but once the hotseat has focus that focus cannot naturally return "
+    "to the drag handle (i.e. the hotseat's previous focus becomes the shelf "
+    "navigation area and its next focus becomes the status area); (2) If the "
+    "drag handle is not pressed: the shelf navigation area gets the previous "
+    "focus, and the status area gets the next focus. Note that, in all cases, "
+    "the drag handle is never included in the natural focus order, i.e. the "
+    "navigation area's next focus and the status area's previous focus is "
+    "always the hotseat (even if the hotseat is currently hidden). In other "
+    "words, this change simply allows the focus to more easily move to other "
+    "parts of the shelf when the drag handle is forcibly focused.";
 
 const char kShimlessRMAFlowName[] = "Enable shimless RMA flow";
 const char kShimlessRMAFlowDescription[] = "Enable shimless RMA flow";

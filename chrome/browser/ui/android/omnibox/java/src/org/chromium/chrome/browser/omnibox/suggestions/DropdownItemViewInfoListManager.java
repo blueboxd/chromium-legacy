@@ -12,8 +12,9 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
+import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
-import org.chromium.components.omnibox.AutocompleteResult;
+import org.chromium.components.omnibox.GroupsProto.GroupConfig;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
@@ -110,17 +111,17 @@ class DropdownItemViewInfoListManager {
      * Specify the input list of DropdownItemViewInfo elements.
      *
      * @param sourceList Source list of ViewInfo elements.
-     * @param groupsDetails Group ID to GroupDetails map carrying group collapsed state information.
+     * @param groupsDetails Group ID to GroupConfig map carrying group collapsed state information.
      */
     void setSourceViewInfoList(@NonNull List<DropdownItemViewInfo> sourceList,
-            @NonNull SparseArray<AutocompleteResult.GroupDetails> groupsDetails) {
+            @NonNull SparseArray<GroupConfig> groupsDetails) {
         mSourceViewInfoList = sourceList;
         mGroupsCollapsedState.clear();
 
         // Clone information about the recommended group collapsed state.
         for (int index = 0; index < groupsDetails.size(); index++) {
-            mGroupsCollapsedState.put(
-                    groupsDetails.keyAt(index), groupsDetails.valueAt(index).collapsedByDefault);
+            mGroupsCollapsedState.put(groupsDetails.keyAt(index),
+                    groupsDetails.valueAt(index).getVisibility() == GroupConfig.Visibility.HIDDEN);
         }
 
         // Build a new list of suggestions. Honor the default collapsed state.
@@ -130,6 +131,10 @@ class DropdownItemViewInfoListManager {
                 : SuggestionCommonProperties.FormFactor.PHONE;
         DropdownItemViewInfo prevSuggestionWithBackground = null;
         boolean inDropdownItemBackgroundRoundingGroup = false;
+        int groupVerticalMargin = mContext.getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_group_vertical_margin);
+        int suggestionVerticalMargin = mContext.getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_vertical_margin);
         for (int i = 0; i < mSourceViewInfoList.size(); i++) {
             final DropdownItemViewInfo item = mSourceViewInfoList.get(i);
             final PropertyModel model = item.model;
@@ -144,6 +149,18 @@ class DropdownItemViewInfoListManager {
                 // The default value is false, so we do not need to assign false to
                 // BG_BOTTOM_CORNER_ROUNDED here.
 
+                if (inDropdownItemBackgroundRoundingGroup) {
+                    // This is not the first in the group, use the normal margin.
+                    model.set(DropdownCommonProperties.TOP_MARGIN, suggestionVerticalMargin);
+                    model.set(DropdownCommonProperties.BOTTOM_MARGIN, 0);
+                } else {
+                    // First one in the group, this suggestion should use the group margin. Except
+                    // for the first group since dropdown has the margin.
+                    model.set(DropdownCommonProperties.TOP_MARGIN,
+                            prevSuggestionWithBackground == null ? 0 : groupVerticalMargin);
+                    model.set(DropdownCommonProperties.BOTTOM_MARGIN, 0);
+                }
+
                 prevSuggestionWithBackground = item;
                 inDropdownItemBackgroundRoundingGroup = true;
             } else {
@@ -152,6 +169,8 @@ class DropdownItemViewInfoListManager {
                 if (prevSuggestionWithBackground != null) {
                     prevSuggestionWithBackground.model.set(
                             DropdownCommonProperties.BG_BOTTOM_CORNER_ROUNDED, true);
+                    prevSuggestionWithBackground.model.set(
+                            DropdownCommonProperties.BOTTOM_MARGIN, groupVerticalMargin);
                 }
                 inDropdownItemBackgroundRoundingGroup = false;
             }
@@ -166,6 +185,8 @@ class DropdownItemViewInfoListManager {
         if (prevSuggestionWithBackground != null) {
             prevSuggestionWithBackground.model.set(
                     DropdownCommonProperties.BG_BOTTOM_CORNER_ROUNDED, true);
+            // No margin for the very last suggestion since the dropdown has the margin.
+            prevSuggestionWithBackground.model.set(DropdownCommonProperties.BOTTOM_MARGIN, 0);
         }
 
         mManagedModel.set(suggestionsList);

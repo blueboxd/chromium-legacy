@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/commerce/core/price_tracking_utils.h"
+#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -63,6 +64,7 @@ PriceTrackingView::PriceTrackingView(Profile* profile,
           l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE_DIALOG_TITLE),
           views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_PRIMARY));
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_label->SetFocusBehavior(View::FocusBehavior::ACCESSIBLE_ONLY);
   // Body label
   body_label_ = text_container->AddChildView(std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(
@@ -73,6 +75,7 @@ PriceTrackingView::PriceTrackingView(Profile* profile,
   body_label_->SetAllowCharacterBreak(true);
   body_label_->SetMultiLine(true);
   body_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  body_label_->SetFocusBehavior(View::FocusBehavior::ACCESSIBLE_ONLY);
   AddChildView(std::move(text_container));
 
   // Toggle button column
@@ -127,6 +130,9 @@ void PriceTrackingView::UpdatePriceTrackingState(const GURL& url) {
       BookmarkModelFactory::GetForBrowserContext(profile_);
   const bookmarks::BookmarkNode* node =
       model->GetMostRecentlyAddedUserNodeForURL(url);
+  if (profile_ && is_price_track_enabled_) {
+    commerce::MaybeEnableEmailNotifications(profile_->GetPrefs());
+  }
   commerce::SetPriceTrackingStateForBookmark(
       commerce::ShoppingServiceFactory::GetForBrowserContext(profile_), model,
       node, is_price_track_enabled_,

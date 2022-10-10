@@ -307,6 +307,7 @@
 <translation id="168841957122794586">சேவையக சான்றிதழில் வலுவற்ற குறியீட்டாக்க விசை இருக்கிறது.</translation>
 <translation id="1697532407822776718">எல்லாவற்றையும் அமைத்துவிட்டீர்கள்!</translation>
 <translation id="1699570257714336246">தகவல் முழுமையாக இல்லை</translation>
+<translation id="1702815194757674443">ROC 16K</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706625117072057435">அளவுமாற்ற நிலைகள்</translation>
 <translation id="1706954506755087368">{1,plural, =1{இந்தச் சேவையகம் தான் <ph name="DOMAIN" /> என்பதை நிரூபிக்க முடியவில்லை; இதன் பாதுகாப்புச் சான்றிதழ் நாளை முதலே செல்லுபடியாகும். இது தவறான உள்ளமைவால் ஏற்பட்டிருக்கலாம் அல்லது தீங்கிழைப்பவர் உங்கள் இணைப்பில் குறுக்கிட்டிருக்கலாம்.}other{இந்தச் சேவையகம் தான் <ph name="DOMAIN" /> என்பதை நிரூபிக்க முடியவில்லை; இதன் பாதுகாப்புச் சான்றிதழ் எதிர்காலத்தில் # நாட்களில் ஏற்றுக்கொள்ளப்படும். இது தவறான உள்ளமைவால் ஏற்பட்டிருக்கலாம் அல்லது தீங்கிழைப்பவர் உங்கள் இணைப்பில் குறுக்கிட்டிருக்கலாம்.}}</translation>
@@ -395,6 +396,7 @@
 <translation id="192020519938775529">{COUNT,plural, =0{ஏதுமில்லை}=1{1 தளம்}other{# தளங்கள்}}</translation>
 <translation id="1924727005275031552">புதிய முகவரி</translation>
 <translation id="1927439593081478069">Chrome பாதுகாப்புச் சரிபார்ப்பை இயக்குவதற்கான பட்டன். Chrome அமைப்புகளில் பாதுகாப்புச் சரிபார்ப்பை இயக்க, Enter பட்டனை அழுத்துங்கள்</translation>
+<translation id="1935995810530254458">பரவாயில்லை நகலெடு</translation>
 <translation id="1939175642807587452">அறிவிப்புகளை அனுப்ப அனுமதி கேட்க வேண்டும்</translation>
 <translation id="1943994668912612445">வடிவமைப்பு</translation>
 <translation id="1945968466830820669">உங்கள் நிறுவனத்தின் கணக்கிற்கான அணுகலை நீங்கள் இழக்கக்கூடும் அல்லது அடையாளத் திருட்டை எதிர்கொள்ளக்கூடும். இப்போதே உங்கள் கடவுச்சொல்லை மாற்றும்படி Chromium பரிந்துரைக்கிறது.</translation>
@@ -448,6 +450,7 @@
 <translation id="2085876078937250610">சேமி…</translation>
 <translation id="2088086323192747268">ஒத்திசைவை நிர்வகிப்பதற்கான பட்டன். எந்தெந்தத் தகவல்களை ஒத்திசைக்க வேண்டும் என்பதை Chrome அமைப்புகளில் நிர்வகிக்க, Enter விசையை அழுத்துங்கள்</translation>
 <translation id="2091887806945687916">ஒலி</translation>
+<translation id="2093982008204312032">கடவுச்சொற்களை நிரப்புவதற்காக Windows Helloவை முடக்க Google Chrome முயல்கிறது.</translation>
 <translation id="2094505752054353250">டொமைன் பொருந்தவில்லை</translation>
 <translation id="2099652385553570808">டிரிப்பில் ஸ்டேப்பில் லெஃப்ட்</translation>
 <translation id="2101225219012730419">பதிப்பு:</translation>
@@ -550,6 +553,7 @@
 <translation id="2359347814217202136">{NUM_DAYS,plural, =0{ஒரு நாளுக்குள்}=1{ஒரு நாளில்}other{{NUM_DAYS} நாட்களில்}}</translation>
 <translation id="2359629602545592467">பல</translation>
 <translation id="2359808026110333948">தொடர்க</translation>
+<translation id="2361263712565360498">275 x 395 மிமீ</translation>
 <translation id="236340516568226369">அளவை மாற்றும் பட்டன்களைக் காட்டும் மெனு</translation>
 <translation id="2367567093518048410">நிலை</translation>
 <translation id="2380886658946992094">Legal</translation>
@@ -1137,6 +1141,7 @@
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} பக்கத்தைக் கொண்ட PDF ஆவணம்}other{{COUNT} பக்கங்களைக் கொண்ட PDF ஆவணம்}}</translation>
 <translation id="4022639246993848966">3.5x5</translation>
 <translation id="4023431997072828269">பாதுகாப்பற்ற இணைப்பைப் பயன்படுத்தி இந்தப் படிவம் சமர்ப்பிக்கப்படுவதால் உங்கள் தகவல்களைப் பிறரால் பார்க்க முடியும்.</translation>
+<translation id="4024923292610332139">கடவுச்சொற்களை நிரப்புவதற்காக TouchIDயை முடக்க</translation>
 <translation id="4025913568718019429">Google தனியுரிமை அமைப்புகளை நிர்வகிப்பதற்கான பட்டன். Google கணக்கின் தனியுரிமை அமைப்புகளைப் பார்க்க, Enter பட்டனை அழுத்துங்கள்</translation>
 <translation id="4030383055268325496">&amp;சேர்த்தலைச் செயல்தவிர்</translation>
 <translation id="4031179711345676612">மைக்ரோஃபோன் அனுமதிக்கப்பட்டது</translation>
@@ -1198,6 +1203,7 @@
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4186035307311647330">விலையைக் கண்காணிப்பதை நிறுத்து</translation>
 <translation id="4194250254487269611">உங்கள் கார்டு விவரங்களைத் தற்போது சேமிக்க இயலாது</translation>
+<translation id="4195643157523330669">புதிய தாவலில் திற</translation>
 <translation id="4196861286325780578">&amp;நகர்த்தலை மீண்டும் செய்</translation>
 <translation id="4202554117186904723">ரோல் 5</translation>
 <translation id="4203769790323223880">கேமரா அனுமதி வழங்கப்படவில்லை</translation>
@@ -1253,6 +1259,7 @@
 <translation id="42981349822642051">விரி</translation>
 <translation id="4300675098767811073">மல்டிப்பில் பஞ்ச் ரைட்</translation>
 <translation id="4302514097724775343">விளையாட டைனோசரைத் தட்டுங்கள்</translation>
+<translation id="4304049446746819918">{0,plural, =1{<ph name="DESTINATION_NAME" />க்கு இந்த ஃபைலை நகர்த்துவதை நிர்வாகக் கொள்கை பரிந்துரைக்கவில்லை}other{<ph name="DESTINATION_NAME" />க்கு இந்த ஃபைல்களை நகர்த்துவதை நிர்வாகக் கொள்கை பரிந்துரைக்கவில்லை}}</translation>
 <translation id="4305666528087210886">உங்கள் ஃபைலை அணுக முடியவில்லை</translation>
 <translation id="4306529830550717874">முகவரியைச் சேமிக்கவா?</translation>
 <translation id="4306812610847412719">கிளிப்போர்டு</translation>
@@ -1421,6 +1428,7 @@
 <translation id="4751476147751820511">நகர்வு அல்லது ஒளி உணர்விகள்</translation>
 <translation id="4754461935447132332">பாதுகாப்பற்ற தளங்களில் அனுமதிக்கப்படாது</translation>
 <translation id="4756388243121344051">&amp;வரலாறு</translation>
+<translation id="4756501505996488486">PRC 16K</translation>
 <translation id="4757993714154412917">ஏமாற்றக்கூடிய தளத்தில் கடவுச்சொல்லை உள்ளிட்டுள்ளீர்கள். உங்கள் கணக்குகளைப் பாதுகாக்க, நீங்கள் சேமித்துள்ள கடவுச்சொற்களைச் சரிபார்க்குமாறு Chromium பரிந்துரைக்கிறது.</translation>
 <translation id="4758311279753947758">தொடர்புத் தகவலைச் சேர்</translation>
 <translation id="4761104368405085019">உங்கள் மைக்ரோஃபோனைப் பயன்படுத்தலாம்</translation>
@@ -1627,6 +1635,7 @@
 <translation id="5254043433801397071">அச்சிடுவதற்கான உள்ளடக்கத்தை மேம்படுத்து</translation>
 <translation id="5254958791078852567">E1</translation>
 <translation id="5255690596502591079">பரவாயில்லை, படமெடு</translation>
+<translation id="5257739419779698609">{0,plural, =1{<ph name="DESTINATION_NAME" />க்கு இந்த ஃபைலை நகலெடுப்பதை நிர்வாகக் கொள்கை பரிந்துரைக்கவில்லை}other{<ph name="DESTINATION_NAME" />க்கு இந்த ஃபைல்களை நகலெடுப்பதை நிர்வாகக் கொள்கை பரிந்துரைக்கவில்லை}}</translation>
 <translation id="5266128565379329178">பைண்டு டாப்</translation>
 <translation id="5269225904387178860">குவாட் பஞ்ச் பாட்டம்</translation>
 <translation id="5269999699920406580">சிஸ்டம் முழுவதிலும் பயன்படுத்தப்படும் அம்சங்களை உரிமையாளரால் மட்டுமே அமைக்க முடியும்: <ph name="OWNER_EMAIL" /></translation>
@@ -1689,6 +1698,7 @@
 <translation id="5412236728747081950">மிகவும் தொடர்புடைய விளம்பரங்களைக் காட்டுவதற்காக Chromeமில் இருந்து உங்கள் ஆர்வங்களை இந்தத் தளம் பெறுகிறது</translation>
 <translation id="5412245327974352290"><ph name="TRADITIONAL_TEXT" /> - <ph name="ADDITIONAL_TEXT" /></translation>
 <translation id="541416427766103491">ஸ்டேக்கர் 4</translation>
+<translation id="5414511064953050917">பரவாயில்லை நகர்த்து</translation>
 <translation id="5421136146218899937">உலாவிய தரவை அழி...</translation>
 <translation id="5425241977284572032">{NUM_COOKIES,plural, =0{தளங்கள் எதுவும் தடுக்கப்படவில்லை}=1{1 தளம் தடுக்கப்பட்டுள்ளது}other{# தளங்கள் தடுக்கப்பட்டுள்ளன}}</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> உங்களுக்கு அறிவிப்புகளை அனுப்ப விரும்புகிறது</translation>
@@ -2158,6 +2168,7 @@
 <translation id="6738516213925468394"><ph name="TIME" />க்கு உங்கள் தரவு உங்கள் <ph name="BEGIN_LINK" />ஒத்திசைவுக் கடவுச்சொற்றொடரைக்<ph name="END_LINK" /> கொண்டு என்க்ரிப்ட் செய்யப்பட்டது. ஒத்திசைவைத் தொடங்க, அதை உள்ளிடவும்.</translation>
 <translation id="674375294223700098">தெரியாத சேவையகச் சான்றிதழ் பிழை.</translation>
 <translation id="6744009308914054259">இணைப்புக்காகக் காத்திருக்கும்போது ​​ஆஃப்லைன் கட்டுரைகளைப் படிக்க, ‘பதிவிறக்கங்கள்’ என்பதைப் பார்க்கவும்.</translation>
+<translation id="6751487147225428522">ROC 8K</translation>
 <translation id="6752086006821653994">டெலி கான்ஃபிரன்ஸிங்</translation>
 <translation id="6753269504797312559">கொள்கை மதிப்பு</translation>
 <translation id="6755241357817244406">chrome://flags</translation>
@@ -2191,6 +2202,7 @@
 <translation id="6846340164947227603">விர்ச்சுவல் கார்டு எண்ணைப் பயன்படுத்துக...</translation>
 <translation id="6852204201400771460">ஆப்ஸை ரெஃப்ரெஷ் செய்யவா?</translation>
 <translation id="6857776781123259569">கடவுச்சொற்களை நிர்வகி...</translation>
+<translation id="6864189428899665393">267 x 389 மிமீ</translation>
 <translation id="686485648936420384">வாடிக்கையாளருக்கு வழங்கக்கூடிய தகவல்கள்</translation>
 <translation id="6865412394715372076">இந்தக் கார்டை இப்போது சரிபார்க்க முடியாது</translation>
 <translation id="6869334554832814367">தனிநபர் கடன்கள்</translation>
@@ -2303,9 +2315,11 @@
 <translation id="7138472120740807366">டெலிவரி முறை</translation>
 <translation id="7139892792842608322">முதன்மை டிரே</translation>
 <translation id="714064300541049402">சைடு 2 இமேஜ் X ஷிஃப்ட்</translation>
+<translation id="7143682719845053166">PRC 32K</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" />, மேலும் <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />, மேலும் <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">லாவெண்டர் நிறம்</translation>
 <translation id="7156870133441232244">சேவையகத்தை TLS 1.2 அல்லது அதற்குப் பிந்தைய பதிப்பிற்கு மேம்படுத்த வேண்டும்.</translation>
+<translation id="7163295244162773898">{0,plural, =1{ரகசியமான ஃபைலை நிச்சயம் நகலெடுக்க வேண்டுமா?}other{ரகசியமான ஃபைல்களை நிச்சயம் நகலெடுக்க வேண்டுமா?}}</translation>
 <translation id="717330890047184534">Gaia ஐடி:</translation>
 <translation id="7174545416324379297">ஒன்றிணைக்கப்பட்டது</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" />, மேலும் <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />, மேலும் <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
@@ -2383,6 +2397,7 @@
 <translation id="7363096869660964304">இருப்பினும் உங்கள் செயல்பாடுகள் மறைக்கப்படாது. மறைநிலைப் பயன்முறையில் உலாவினாலும் அதுகுறித்த தகவல்களை உங்கள் நிறுவனம், இணையச் சேவை வழங்குநர், நீங்கள் பார்வையிடும் இணையதளம் போன்றவற்றால் அறிந்துகொள்ள முடியும்.</translation>
 <translation id="7365596969960773405"><ph name="MANAGE_ADDRESSES_FOCUSED_FRIENDLY_MATCH_TEXT" />. Chrome அமைப்புகளில் இணைய முகவரிகளைச் சேர்க்கவும் நிர்வகிக்கவும் Tab விசையை அழுத்திவிட்டு Enter விசையை அழுத்துங்கள்</translation>
 <translation id="7365849542400970216">சாதனத்தில் நீங்கள் செயலில் இருப்பதை அறிந்துகொள்ளவா?</translation>
+<translation id="7366117520888504990">198 x 275 மிமீ</translation>
 <translation id="7366362069757178916">பேமெண்ட் ஹேண்ட்லர்கள்</translation>
 <translation id="7372973238305370288">தேடல் முடிவு</translation>
 <translation id="7374461526650987610">நெறிமுறை ஹேண்ட்லர்கள்</translation>
@@ -2542,6 +2557,7 @@
 <translation id="7687186412095877299">கட்டணப் படிவங்களில் உங்கள் சேமிக்கப்பட்ட கட்டண முறைகளை நிரப்பும்</translation>
 <translation id="7687305263118037187">மீண்டும் முயல்வதற்கான நேர முடிவு</translation>
 <translation id="7687451951329798396">பிற மூலங்கள் என்ன சொல்கின்றன?</translation>
+<translation id="7690647519407127574">Oufuku Hagaki Postcard</translation>
 <translation id="7693583928066320343">பெறப்பட்ட பக்க வரிசை</translation>
 <translation id="7696089921647603491">கிளாசிக் ராக் &amp; பழைய பாடல்கள்</translation>
 <translation id="769721561045429135">தற்போது, இந்தச் சாதனத்தில் மட்டுமே பயன்படுத்தக்கூடிய கார்டுகள் உள்ளன கார்டுகளைப் பார்க்க, ‘தொடர்க’ என்பதைக் கிளிக் செய்யவும்.</translation>
@@ -2715,6 +2731,7 @@
 <translation id="8202370299023114387">முரண்பாடு</translation>
 <translation id="8210604850413485128">இணைய ஹோஸ்டிங்</translation>
 <translation id="8211406090763984747">இணைப்பு பாதுகாப்பானது</translation>
+<translation id="8213853114485953510">JIS Exec</translation>
 <translation id="8217240300496046857">உங்கள் இணையச் செயல்பாடுகளைக் கண்காணிக்கும் குக்கீகளைத் தளங்களால் பயன்படுத்த முடியாது. சில தளங்களிலுள்ள அம்சங்கள் செயல்படாமல் போகக்கூடும்.</translation>
 <translation id="8217748145574471584">மனித வளங்கள்</translation>
 <translation id="8218327578424803826">ஒதுக்கிய இருப்பிடம்:</translation>
@@ -2911,6 +2928,7 @@
 <translation id="8763986294015493060">தற்போது திறந்துள்ள மறைநிலைச் சாளரங்கள் அனைத்தையும் மூடும்</translation>
 <translation id="8766943070169463815">பாதுகாப்பான பேமெண்ட்டின் அனுமதிச் சான்றை அங்கீகரிப்பதற்கான தாள் திறக்கப்பட்டது</translation>
 <translation id="8767765348545497220">உதவிக் குமிழை மூடும்</translation>
+<translation id="877348612833018844">{0,plural, =1{ரகசியமான ஃபைலை நிச்சயம் நகர்த்த வேண்டுமா?}other{ரகசியமான ஃபைல்களை நிச்சயம் நகர்த்த வேண்டுமா?}}</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8785658048882205566">பைக்குகள்</translation>
 <translation id="8790007591277257123">&amp;நீக்குதலை மீண்டும் செய்</translation>
@@ -2927,6 +2945,7 @@
 <translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome அமைப்புகளில் Chromeமைப் புதுப்பிக்க Tab விசையை அழுத்திய பிறகு Enter விசையை அழுத்துங்கள்</translation>
 <translation id="8820817407110198400">புக்மார்க்குகள்</translation>
 <translation id="882338992931677877">மேனுவல் ஸ்லாட்</translation>
+<translation id="8830320733681313421">Hagaki Postcard</translation>
 <translation id="8834380158646307944">மறைநிலைச் சாளரங்களை மூடுவதற்கான பட்டன். தற்போது திறந்துள்ள மறைநிலைச் சாளரங்களை மூட Enter பட்டனை அழுத்துங்கள்</translation>
 <translation id="883848425547221593">மற்ற புக்மார்க்குகள்</translation>
 <translation id="884264119367021077">ஷிப்பிங் முகவரி</translation>

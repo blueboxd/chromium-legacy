@@ -1637,14 +1637,14 @@ BASE_FEATURE(kFastPathPaintPropertyUpdates,
 
 BASE_FEATURE(kWildcardSubdomainsInPermissionsPolicy,
              "WildcardSubdomainsInPermissionsPolicy",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDocumentEventNodePathCaching,
              "DocumentEventNodePathCaching",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 const base::FeatureParam<int> kDocumentMaxEventNodePathCachedEntries{
-    &kDocumentEventNodePathCaching, "max-cache-entries", 100};
+    &kDocumentEventNodePathCaching, "max-cache-entries", 10};
 
 BASE_FEATURE(kPostMessageDifferentPartitionSameOriginBlocked,
              "PostMessageDifferentPartitionSameOriginBlocked",

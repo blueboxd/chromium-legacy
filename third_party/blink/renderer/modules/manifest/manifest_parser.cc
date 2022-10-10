@@ -681,6 +681,11 @@ ManifestParser::ParseScreenshotFormFactor(const JSONObject* screenshot) {
   return mojom::blink::ManifestScreenshot::FormFactor::kUnknown;
 }
 
+String ManifestParser::ParseScreenshotLabel(const JSONObject* object) {
+  absl::optional<String> label = ParseString(object, "label", Trim(true));
+  return label.has_value() ? *label : String();
+}
+
 Vector<mojom::blink::ManifestImageResourcePtr> ManifestParser::ParseIcons(
     const JSONObject* object) {
   return ParseImageResourceArray("icons", object);
@@ -711,6 +716,7 @@ Vector<mojom::blink::ManifestScreenshotPtr> ManifestParser::ParseScreenshots(
 
     screenshot->image = std::move(*image);
     screenshot->form_factor = ParseScreenshotFormFactor(screenshot_object);
+    screenshot->label = ParseScreenshotLabel(screenshot_object);
 
     screenshots.push_back(std::move(screenshot));
   }
@@ -1612,7 +1618,8 @@ bool ManifestParser::ParseIsolatedStorage(const JSONObject* object) {
 
 Vector<blink::ParsedPermissionsPolicyDeclaration>
 ManifestParser::ParseIsolatedAppPermissions(const JSONObject* object) {
-  PermissionsPolicyParser::Node policy;
+  PermissionsPolicyParser::Node policy{
+      PermissionsPolicyParser::NodeType::kHeader};
 
   JSONValue* json_value = object->Get("permissions_policy");
   if (!json_value)
@@ -1649,7 +1656,7 @@ ManifestParser::ParseIsolatedAppPermissions(const JSONObject* object) {
       String wrapped_origin = (origin == "*" ? origin : "'" + origin + "'");
       new_policy.allowlist.push_back(wrapped_origin);
     }
-    policy.push_back(new_policy);
+    policy.declarations.push_back(new_policy);
   }
 
   PolicyParserMessageBuffer logger(

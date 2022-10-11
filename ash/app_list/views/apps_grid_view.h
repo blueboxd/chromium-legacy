@@ -410,10 +410,6 @@ class ASH_EXPORT AppsGridView : public views::View,
   // Returns the current selected page, or zero if the grid does not use pages.
   virtual int GetSelectedPage() const = 0;
 
-  // Returns true if scrolling is vertical (the common case). Folders may scroll
-  // horizontally.
-  virtual bool IsScrollAxisVertical() const = 0;
-
   // Records the different ways to move an app in app list's apps grid for UMA
   // histograms.
   virtual void RecordAppMovingTypeMetrics(AppListAppMovingType type) = 0;
@@ -1091,6 +1087,11 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   // Used to trigger and manage row change animations.
   std::unique_ptr<AppsGridRowChangeAnimator> row_change_animator_;
+
+  // Tracks the animation smoothness of item reorders during drag. Gets
+  // triggered by AnimateToIdealBounds(), which is mainly caused
+  // by app dragging reorders. This does not track reorders due to sort.
+  absl::optional<ui::ThroughputTracker> item_reorder_animation_tracker_;
 
   base::WeakPtrFactory<AppsGridView> weak_factory_{this};
 };

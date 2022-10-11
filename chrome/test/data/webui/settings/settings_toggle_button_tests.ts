@@ -27,7 +27,8 @@ suite('SettingsToggleButton', () => {
       type: chrome.settingsPrivate.PrefType.BOOLEAN,
       value: true,
     };
-    document.body.innerHTML = '';
+    document.body.innerHTML =
+        window.trustedTypes!.emptyHTML as unknown as string;
     testElement = document.createElement('settings-toggle-button');
     testElement.set('pref', pref);
     document.body.appendChild(testElement);
@@ -326,6 +327,23 @@ suite('SettingsToggleButton', () => {
 
     subLabelTextWithLink!.click();
     assertFalse(testElement.checked);
+  });
+
+  test('sub label with action link should have proper role', () => {
+    let subLabelTextWithLink =
+        testElement.shadowRoot!.querySelector<HTMLElement>(
+            '#sub-label-text-with-link');
+    testElement.set('subLabelWithLink', `<a is="action-link"></a>`);
+    flush();
+
+    subLabelTextWithLink = testElement.shadowRoot!.querySelector<HTMLElement>(
+        '#sub-label-text-with-link');
+    assertTrue(!!subLabelTextWithLink);
+    flush();
+
+    const actionLink = subLabelTextWithLink!.querySelector('a');
+    assertTrue(!!actionLink);
+    assertEquals(actionLink.getAttribute('role'), 'link');
   });
   // </if>
 });

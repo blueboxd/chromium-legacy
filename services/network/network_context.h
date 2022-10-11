@@ -382,7 +382,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void CreateWebTransport(
       const GURL& url,
       const url::Origin& origin,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
       std::vector<mojom::WebTransportCertificateFingerprintPtr> fingerprints,
       mojo::PendingRemote<mojom::WebTransportHandshakeClient> handshake_client)
       override;
@@ -600,6 +600,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   cors::NonWildcardRequestHeadersSupport
   cors_non_wildcard_request_headers_support() const {
     return cors_non_wildcard_request_headers_support_;
+  }
+
+  FirstPartySetsAccessDelegate& first_party_sets_access_delegate() {
+    return first_party_sets_access_delegate_;
   }
 
 #if BUILDFLAG(ENABLE_REPORTING)

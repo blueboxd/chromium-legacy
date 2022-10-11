@@ -58,6 +58,7 @@
 #import "ios/chrome/app/startup/setup_debugging.h"
 #import "ios/chrome/app/startup_tasks.h"
 #import "ios/chrome/app/tests_hook.h"
+#import "ios/chrome/app/variations_app_state_agent.h"
 #import "ios/chrome/browser/accessibility/window_accessibility_change_notifier_app_agent.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -322,7 +323,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // Handles collecting metrics on user triggered screenshots
 @property(nonatomic, strong)
     ScreenshotMetricsRecorder* screenshotMetricsRecorder;
-
 // Returns whether the restore infobar should be displayed.
 - (bool)mustShowRestoreInfobar;
 // Cleanup snapshots on disk.
@@ -680,6 +680,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     case InitStageSafeMode:
       [self addPostSafeModeAgents];
       break;
+    case InitStageVariationsSeed:
+      break;
     case InitStageBrowserObjectsForBackgroundHandlers:
       [self startUpBrowserBackgroundInitialization];
       [appState queueTransitionToNextInitStage];
@@ -739,6 +741,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [appState addAgent:[[AppMetricsAppStateAgent alloc] init]];
   [appState addAgent:[[SafeModeAppAgent alloc] init]];
   [appState addAgent:[[FeedAppAgent alloc] init]];
+  [appState addAgent:[[VariationsAppStateAgent alloc] init]];
 
   // Create the window accessibility agent only when multiple windows are
   // possible.
@@ -1036,13 +1039,15 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                   }];
 }
 
-// Schedule a call to `saveFieldTrialValuesForExtensions` for deferred
-// execution.
-- (void)scheduleSaveFieldTrialValuesForExtensions {
+// Schedule a call to `scheduleSaveFieldTrialValuesForExternals` for deferred
+// execution. Externals can be extensions or 1st party apps.
+- (void)scheduleSaveFieldTrialValuesForExternals {
+  __weak __typeof(self) weakSelf = self;
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kSaveFieldTrialValues
                   block:^{
-                    [self saveFieldTrialValuesForExtensions];
+                    [weakSelf saveFieldTrialValuesForExtensions];
+                    [weakSelf saveFieldTrialValuesForGroupApp];
                   }];
 }
 
@@ -1164,7 +1169,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self startFreeMemoryMonitoring];
   [self scheduleAppDistributionPings];
   [self initializeMailtoHandling];
-  [self scheduleSaveFieldTrialValuesForExtensions];
+  [self scheduleSaveFieldTrialValuesForExternals];
   [self scheduleEnterpriseManagedDeviceCheck];
   [self scheduleFaviconsCleanup];
 }

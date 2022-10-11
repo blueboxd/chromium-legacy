@@ -7582,15 +7582,6 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="DemoMode.AttractLoop.Break">
-  <owner>lbowen@google.com</owner>
-  <owner>cros-demo-mode-eng@google.com</owner>
-  <description>
-    Recorded when exiting current Attract Loop by moving cursor, clicking mouse
-    or pressing key.
-  </description>
-</action>
-
 <action name="DemoMode.ExitFromShelf">
   <owner>michaelpg@chromium.org</owner>
   <owner>wzang@chromium.org</owner>
@@ -7605,6 +7596,49 @@ should be able to be added at any place in this file.
   <description>
     Recorded when user exits Demo Mode from the logout button in the system
     tray.
+  </description>
+</action>
+
+<action name="DemoMode_AttractLoop_Break">
+  <owner>lbowen@google.com</owner>
+  <owner>cros-demo-mode-eng@google.com</owner>
+  <description>
+    Recorded when exiting current Attract Loop by moving cursor, clicking mouse
+    or pressing key.
+  </description>
+</action>
+
+<action name="DemoMode_Highlights_HomeButtonClick">
+  <owner>lbowen@google.com</owner>
+  <owner>cros-demo-mode-eng@google.com</owner>
+  <description>
+    Recorded when Home button is clicked in the Highlights app.
+  </description>
+</action>
+
+<action name="DemoMode_Highlights_HomePage_Click">
+  <owner>lbowen@google.com</owner>
+  <owner>cros-demo-mode-eng@google.com</owner>
+  <description>
+    Recorded when buttons are clicked in the Home page of the Highlights app.
+  </description>
+</action>
+
+<action name="DemoMode_Highlights_Navbar_Click">
+  <owner>lbowen@google.com</owner>
+  <owner>cros-demo-mode-eng@google.com</owner>
+  <description>
+    Recorded when pillar buttons are clicked on the nav bar of the Highlights
+    app.
+  </description>
+</action>
+
+<action name="DemoMode_Highlights_PillarPage_Click">
+  <owner>lbowen@google.com</owner>
+  <owner>cros-demo-mode-eng@google.com</owner>
+  <description>
+    Recorded when the buttons are clicked in the pillar page of the Highlights
+    app.
   </description>
 </action>
 
@@ -19737,6 +19771,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileShareMenuMarkupPDF">
+  <owner>alionadangla@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User pressed &quot;Markup&quot; from the share action menu.
+  </description>
+</action>
+
 <action name="MobileShareMenuPrint">
   <owner>gambard@chromium.org</owner>
   <owner>seblalancette@chromium.org</owner>
@@ -19756,6 +19798,12 @@ should be able to be added at any place in this file.
     User requested the desktop or mobile version of a site web from the share
     menu.
   </description>
+</action>
+
+<action name="MobileShareMenuSaveFile">
+  <owner>alionadangla@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <description>User saved a file from share action menu.</description>
 </action>
 
 <action name="MobileShareMenuSaveImage">
@@ -35283,6 +35331,26 @@ should be able to be added at any place in this file.
   <suffix name="Feed" label="via Feed entry point"/>
   <affected-action name="Crow.EntryPointShown"/>
   <affected-action name="Crow.LaunchCustomTab"/>
+</action-suffix>
+
+<action-suffix separator="_" ordering="suffix">
+  <suffix name="DisplayButton" label="Display pillar page button"/>
+  <suffix name="EasyButton" label="Easy pillar page button"/>
+  <suffix name="FastButton" label="Fast pillar page button"/>
+  <suffix name="GameButton" label="Game pillar page button"/>
+  <suffix name="GraphicsButton" label="Graphics pillar page button"/>
+  <suffix name="KeyboardButton" label="Keyboard pillar page button"/>
+  <suffix name="PeripheralsButton" label="Peripherals pillar page button"/>
+  <suffix name="PowerfulButton" label="Powerful pillar page button"/>
+  <suffix name="SecureButton" label="Secure pillar page button"/>
+  <affected-action name="DemoMode_Highlights_HomePage_Click"/>
+  <affected-action name="DemoMode_Highlights_Navbar_Click"/>
+</action-suffix>
+
+<action-suffix separator="_" ordering="suffix">
+  <suffix name="NextButton" label="next button in pillar pages"/>
+  <suffix name="PreviousButton" label="previous button in pillar pages"/>
+  <affected-action name="DemoMode_Highlights_PillarPage_Click"/>
 </action-suffix>
 
 </actions>

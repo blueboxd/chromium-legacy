@@ -414,6 +414,9 @@ extern const char kChromeWhatsNewInMainMenuNewBadgeName[];
 extern const char kChromeWhatsNewInMainMenuNewBadgeDescription[];
 #endif
 
+extern const char kDarkLightModeKMeansColorName[];
+extern const char kDarkLightModeKMeansColorDescription[];
+
 extern const char kDarkLightTestName[];
 extern const char kDarkLightTestDescription[];
 
@@ -1071,6 +1074,9 @@ extern const char kDestroyProfileOnBrowserCloseDescription[];
 extern const char kDestroySystemProfilesName[];
 extern const char kDestroySystemProfilesDescription[];
 
+extern const char kNotificationInteractionHistoryName[];
+extern const char kNotificationInteractionHistoryDescription[];
+
 extern const char kNotificationsRevampName[];
 extern const char kNotificationsRevampDescription[];
 
@@ -1118,7 +1124,7 @@ extern const char kOmniboxDocumentProviderAsoName[];
 extern const char kOmniboxDocumentProviderAsoDescription[];
 
 extern const char kOmniboxDomainSuggestionsName[];
-extern const char kOmniboxDomainSuggestionsDescriptions[];
+extern const char kOmniboxDomainSuggestionsDescription[];
 
 extern const char kOmniboxExperimentalSuggestScoringName[];
 extern const char kOmniboxExperimentalSuggestScoringDescription[];
@@ -1128,6 +1134,11 @@ extern const char kOmniboxFuzzyUrlSuggestionsDescription[];
 
 extern const char kOmniboxHeaderPaddingUpdateName[];
 extern const char kOmniboxHeaderPaddingUpdateDescription[];
+
+extern const char
+    kOmniboxHistoryQuickProviderSpecificityScoreCountUniqueHostsName[];
+extern const char
+    kOmniboxHistoryQuickProviderSpecificityScoreCountUniqueHostsDescription[];
 
 extern const char kOmniboxModernizeVisualUpdateName[];
 extern const char kOmniboxModernizeVisualUpdateDescription[];
@@ -1473,6 +1484,10 @@ extern const char kSidePanelImprovedClobberingDescription[];
 extern const char kSidePanelJourneysFlagId[];
 extern const char kSidePanelJourneysName[];
 extern const char kSidePanelJourneysDescription[];
+
+extern const char kSidePanelJourneysQuerylessFlagId[];
+extern const char kSidePanelJourneysQuerylessName[];
+extern const char kSidePanelJourneysQuerylessDescription[];
 
 extern const char kSidePanelWebViewName[];
 extern const char kSidePanelWebViewDescription[];
@@ -2541,7 +2556,7 @@ extern const char kHappinessTrackingSurveysForDesktopDemoName[];
 extern const char kHappinessTrackingSurveysForDesktopDemoDescription[];
 
 extern const char kOmniboxDriveSuggestionsName[];
-extern const char kOmniboxDriveSuggestionsDescriptions[];
+extern const char kOmniboxDriveSuggestionsDescription[];
 
 extern const char kOmniboxExperimentalKeywordModeName[];
 extern const char kOmniboxExperimentalKeywordModeDescription[];
@@ -3369,6 +3384,9 @@ extern const char kNearbySharingWifiLanDescription[];
 extern const char kOobeHidDetectionRevampName[];
 extern const char kOobeHidDetectionRevampDescription[];
 
+extern const char kOsSettingsSearchFeedbackName[];
+extern const char kOsSettingsSearchFeedbackDescription[];
+
 extern const char kPartialSplit[];
 extern const char kPartialSplitDescription[];
 
@@ -3708,6 +3726,8 @@ extern const char kChromeOSHWVBREncodingDescription[];
 #if defined(ARCH_CPU_ARM_FAMILY)
 extern const char kPreferLibYuvImageProcessorName[];
 extern const char kPreferLibYuvImageProcessorDescription[];
+extern const char kPreferGLImageProcessorName[];
+extern const char kPreferGLImageProcessorDescription[];
 #endif  // defined(ARCH_CPU_ARM_FAMILY
 #endif  // BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 

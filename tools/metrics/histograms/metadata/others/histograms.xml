@@ -85,6 +85,19 @@ chromium-metrics-reviews@google.com.
       summary="the message introducing price chips"/>
 </variants>
 
+<variants name="HighlightsPageName">
+  <variant name="DisplayPage" summary="Highlights app Display page"/>
+  <variant name="EasyPage" summary="Highlights app Easy page"/>
+  <variant name="FastPage" summary="Highlights app Fast page"/>
+  <variant name="GamePage" summary="Highlights app Game page"/>
+  <variant name="GraphicsPage" summary="Highlights app Graphics page"/>
+  <variant name="HomePage" summary="Highlights app Home page"/>
+  <variant name="KeyboardPage" summary="Highlights app Keyboard page"/>
+  <variant name="PeripheralsPage" summary="Highlights app Peripherals page"/>
+  <variant name="PowerfulPage" summary="Highlights app Powerful page"/>
+  <variant name="SecurePage" summary="Highlights app Secure page"/>
+</variants>
+
 <variants name="ImportantFileClients">
   <variant name="" summary="Unknown file"/>
   <variant name=".BookmarkStorage" summary="Bookmarks file"/>
@@ -3068,9 +3081,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContextMenu.iOS.CopyImage" enum="ContextMenuIOSCopyImage"
-    expires_after="2021-12-05">
+    expires_after="M108">
   <obsolete>
-    Previously removed from code.
+    Replaced by Mobile.ContextMenu.CopyImage
   </obsolete>
   <owner>mrsuyi@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
@@ -3081,7 +3094,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContextMenu.iOS.GetImageDataByJsResult"
-    enum="ContextMenuIOSGetImageDataByJsResult" expires_after="2022-10-16">
+    enum="ContextMenuIOSGetImageDataByJsResult" expires_after="M108">
+  <obsolete>
+    Replaced by Mobile.ContextMenu.GetImageDataByJsResult
+  </obsolete>
   <owner>mrsuyi@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -3092,7 +3108,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContextMenu.iOS.LensSupportStatus" enum="IOSLensSupportStatus"
-    expires_after="2023-02-26">
+    expires_after="M108">
+  <obsolete>
+    Replaced by Mobile.ContextMenu.LensSupportStatus
+  </obsolete>
   <owner>hujasonx@google.com</owner>
   <owner>lens-in-bling-team@google.com</owner>
   <summary>
@@ -3103,7 +3122,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContextMenu.iOS.LensWebUploadStatus"
-    enum="IOSLensWebUploadStatus" expires_after="2023-06-23">
+    enum="IOSLensWebUploadStatus" expires_after="M108">
+  <obsolete>
+    Replaced by Mobile.ContextMenu.LensWebUploadStatus
+  </obsolete>
   <owner>hujasonx@google.com</owner>
   <owner>lens-in-bling-team@google.com</owner>
   <summary>
@@ -3113,7 +3135,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContextMenu.iOS.LensWebUploadTime" units="ms"
-    expires_after="2023-06-28">
+    expires_after="M108">
+  <obsolete>
+    Replaced by Mobile.ContextMenu.LensWebUploadTime
+  </obsolete>
   <owner>hujasonx@google.com</owner>
   <owner>lens-in-bling-team@google.com</owner>
   <summary>
@@ -4645,6 +4670,28 @@ chromium-metrics-reviews@google.com.
     the first user activity to the last user activity. This metric rounds the
     duration to the nearest second and uses exponential bucketing capped at 1
     hour.
+  </summary>
+</histogram>
+
+<histogram name="DemoMode.Highlights.FirstInteraction"
+    enum="DemoModeHighlightsAction" expires_after="2023-05-22">
+  <owner>lbowen@google.com</owner>
+  <owner>cros-demo-mode-eng@google.com</owner>
+  <summary>
+    The first interaction (button clicks) after entering the Highlights app. The
+    metric will be emitted once the user clicks on a button in Hightlights app,
+    e.g. pillar page button or the home button on the home page.
+  </summary>
+</histogram>
+
+<histogram name="DemoMode.Highlights.PageStayDuration.{HighlightsPageName}"
+    units="seconds" expires_after="2023-05-22">
+  <owner>lbowen@google.com</owner>
+  <owner>cros-demo-mode-eng@google.com</owner>
+  <summary>
+    The time duration a user stays in each page of the Highlights app, e.g. the
+    home page, each pillar page. The metric will be emitted when the user enters
+    another page or exits the Highlights app.
   </summary>
 </histogram>
 
@@ -6222,6 +6269,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records initialization status of First-Party Sets database. Recorded when
     the database is lazily initialised when the first operation is encountered.
+  </summary>
+</histogram>
+
+<histogram name="FirstPartySets.Initialization.ClearSiteDataOutcomeType"
+    enum="FirstPartySetsClearSiteDataOutcomeType" expires_after="2023-08-20">
+  <owner>shuuran@google.com</owner>
+  <owner>kaustubhag@google.com</owner>
+  <summary>
+    Measures the outcome of site data clearing. Recorded when First-Party Sets
+    initialization triggers site data clearing for a given browser context.
   </summary>
 </histogram>
 
@@ -8136,59 +8193,60 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MixedAutoupgrade.ResourceRequest.ErrorOrResponseCode"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="M89">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="M112">
   <owner>carlosil@chromium.org</owner>
   <summary>
     The net error or HTTP response code of a mixed content resource request that
-    was autoupgraded to HTTPS
+    was autoupgraded to HTTPS. This histogram was expired from M80 to M108.
   </summary>
 </histogram>
 
 <histogram name="MixedAutoupgrade.ResourceRequest.Failure.IsAd" enum="Boolean"
-    expires_after="M89">
+    expires_after="M112">
   <owner>carlosil@chromium.org</owner>
   <summary>
     Whether or not an autoupgrade mixed content request was for a resource we
-    know to be an ad
+    know to be an ad. This histogram was expired from M80 to M108.
   </summary>
 </histogram>
 
 <histogram name="MixedAutoupgrade.ResourceRequest.Failure.Type"
-    enum="ResourceType" expires_after="M89">
+    enum="ResourceType" expires_after="M112">
   <owner>carlosil@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
     Logs the type of each resource request that is autoupgraded to HTTPS and
-    fails to load.
+    fails to load. This histogram was expired from M80 to M108.
   </summary>
 </histogram>
 
 <histogram name="MixedAutoupgrade.ResourceRequest.Response.Type"
-    enum="ResourceType" expires_after="M89">
+    enum="ResourceType" expires_after="M112">
   <owner>carlosil@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
     Logs the type of each resource request that was autoupgraded to HTTPS and
-    resulted in a response.
+    resulted in a response. This histogram was expired from M80 to M108.
   </summary>
 </histogram>
 
 <histogram name="MixedAutoupgrade.ResourceRequest.Start.Type"
-    enum="ResourceType" expires_after="M89">
+    enum="ResourceType" expires_after="M112">
   <owner>carlosil@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
     Logs the type of each resource request that is autoupgraded to HTTPS. This
-    is logged when the request is started.
+    is logged when the request is started. This histogram was expired from M80
+    to M108.
   </summary>
 </histogram>
 
 <histogram name="MixedAutoupgrade.ResourceRequest.Status"
-    enum="MixedContentAutoupgradeStatus" expires_after="M89">
+    enum="MixedContentAutoupgradeStatus" expires_after="M112">
   <owner>carlosil@chromium.org</owner>
   <summary>
     The status of a mixed content resource request that was autoupgraded to
-    HTTPS
+    HTTPS. This histogram was expired from M80 to M108.
   </summary>
 </histogram>
 

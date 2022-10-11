@@ -3433,7 +3433,7 @@ if (!is_android) {
         "../browser/ui/views/safe_browsing/deep_scanning_failure_modal_dialog_browsertest.cc",
         "../browser/ui/views/safe_browsing/password_reuse_modal_warning_dialog_browsertest.cc",
         "../browser/ui/views/safe_browsing/prompt_for_scanning_modal_dialog_browsertest.cc",
-        "../browser/ui/views/safe_browsing/tailored_security_desktop_dialog_browsertest.cc",
+        "../browser/ui/views/safe_browsing/tailored_security_desktop_dialog_manager_browsertest.cc",
         "../browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_browsertest.cc",
         "../browser/ui/views/session_crashed_bubble_view_browsertest.cc",
         "../browser/ui/views/side_search/default_search_icon_source_browsertest.cc",
@@ -7384,6 +7384,7 @@ test("unit_tests") {
       "../browser/ui/app_list/search/ranking/mrfu_ranker_unittest.cc",
       "../browser/ui/app_list/search/ranking/query_highlighter_unittest.cc",
       "../browser/ui/app_list/search/ranking/ranking_item_util_unittest.cc",
+      "../browser/ui/app_list/search/ranking/removed_results_proto_unittest.cc",
       "../browser/ui/app_list/search/ranking/removed_results_ranker_unittest.cc",
       "../browser/ui/app_list/search/ranking/score_normalizing_ranker_unittest.cc",
       "../browser/ui/app_list/search/search_controller_impl_new_unittest.cc",
@@ -8944,9 +8945,9 @@ test("unit_tests") {
       "../browser/supervised_user/child_accounts/permission_request_creator_apiary_unittest.cc",
       "../browser/supervised_user/kids_chrome_management/kids_access_token_fetcher_unittest.cc",
       "../browser/supervised_user/kids_chrome_management/kids_external_fetcher_unittest.cc",
+      "../browser/supervised_user/kids_chrome_management/kids_profile_manager_unittest.cc",
       "../browser/supervised_user/kids_management_url_checker_client_unittest.cc",
       "../browser/supervised_user/parental_control_metrics_unittest.cc",
-      "../browser/supervised_user/supervised_user_favicon_request_handler_unittest.cc",
       "../browser/supervised_user/supervised_user_metrics_service_unittest.cc",
       "../browser/supervised_user/supervised_user_model_type_controller_unittest.cc",
       "../browser/supervised_user/supervised_user_pref_store_unittest.cc",
@@ -8958,6 +8959,9 @@ test("unit_tests") {
     if (enable_extensions) {
       sources +=
           [ "../browser/supervised_user/supervised_user_extension_unittest.cc" ]
+    }
+    if (is_chromeos) {
+      sources += [ "../browser/supervised_user/chromeos/supervised_user_favicon_request_handler_unittest.cc" ]
     }
     deps += [
       "//chrome/browser/supervised_user:test_support",

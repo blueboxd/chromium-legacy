@@ -153,9 +153,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.GMS_CORE_EMOJI,
                     "Enables retrieval of the emoji font through GMS Core "
                             + "improving emoji glyph coverage."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_SERVER_TYPE_TAKES_PRECEDENCE,
-                    "Enables server type marked as overrides to take precedence over the "
-                            + "autocomplete attribute."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ACROSS_IFRAMES,
                     "Enable Autofill for frame-transcending forms (forms whose fields live in "
                             + "different frames)."),
@@ -180,8 +177,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_PARSE_MERCHANT_PROMO_CODE_FIELDS,
                     "When enabled, Autofill will attempt to find merchant promo/coupon/gift code "
                             + "fields when parsing forms."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_NAME_SURENAME_PARSING,
-                    "Adds new name surname field combinations to the parsing logic"),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_RATIONALIZE_STREET_ADDRESS_AND_ADDRESS_LINE,
                     "Rationalizes (street address, address line 2) field sequences to "
                             + "(address line1, address line 2)."),
@@ -381,6 +376,9 @@ public final class ProductionSupportedFlagList {
                     CcFeatures.AVOID_RASTER_DURING_ELASTIC_OVERSCROLL, "No effect on webview"),
             Flag.baseFeature(BlinkFeatures.DOCUMENT_EVENT_NODE_PATH_CACHING,
                     "Enables a performance optimization that caches event paths."),
+            Flag.baseFeature(BlinkFeatures.WEB_RTC_METRONOME,
+                    "Inject a metronome into webrtc to allow task coalescing, "
+                            + " including synchronized decoding.")
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

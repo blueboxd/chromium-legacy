@@ -301,7 +301,6 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view)
   apps_grid_view_ =
       scrollable_container_->AddChildView(std::make_unique<PagedAppsGridView>(
           contents_view, a11y_announcer,
-          /*folder_delegate=*/nullptr,
           /*folder_controller=*/this,
           /*container_delegate=*/this, app_list_keyboard_controller_.get()));
   apps_grid_view_->pagination_model()->AddObserver(this);
@@ -315,7 +314,7 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view)
   page_switcher_ = AddChildView(std::move(page_switcher));
 
   auto app_list_folder_view = std::make_unique<AppListFolderView>(
-      this, apps_grid_view_, contents_view_, a11y_announcer, view_delegate);
+      this, apps_grid_view_, a11y_announcer, view_delegate);
   folder_background_view_ = AddChildView(
       std::make_unique<FolderBackgroundView>(app_list_folder_view.get()));
 
@@ -850,9 +849,8 @@ void AppsContainerView::UpdateControlVisibility(
   if (app_list_state == AppListViewState::kClosed)
     return;
 
-  SetCanProcessEventsWithinSubtree(
-      app_list_state == AppListViewState::kFullscreenAllApps ||
-      app_list_state == AppListViewState::kPeeking);
+  SetCanProcessEventsWithinSubtree(app_list_state ==
+                                   AppListViewState::kFullscreenAllApps);
 
   apps_grid_view_->UpdateControlVisibility(app_list_state);
   page_switcher_->SetVisible(
@@ -1283,6 +1281,10 @@ const gfx::Insets& AppsContainerView::CalculateMarginsForAvailableBounds(
       cached_container_margins_.search_box_size == search_box_size) {
     return cached_container_margins_.margins;
   }
+
+  // `app_list_config_` is required for apps_grid_view to calculate the tile
+  // grid sizes.
+  DCHECK(app_list_config_);
 
   // For productivity launcher, the `grid_layout`'s rows will be ignored because
   // the vertical margin will be constant.

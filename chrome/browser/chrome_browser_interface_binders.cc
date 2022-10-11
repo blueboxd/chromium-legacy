@@ -262,9 +262,9 @@
 #include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer_ui.h"
 #include "chrome/browser/ui/webui/ash/crostini_upgrader/crostini_upgrader.mojom.h"
 #include "chrome/browser/ui/webui/ash/crostini_upgrader/crostini_upgrader_ui.h"
+#include "chrome/browser/ui/webui/ash/emoji/emoji_picker.mojom.h"
+#include "chrome/browser/ui/webui/ash/emoji/emoji_ui.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/emoji/emoji_picker.mojom.h"
-#include "chrome/browser/ui/webui/chromeos/emoji/emoji_ui.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/lock_screen_network_ui.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
@@ -904,6 +904,9 @@ void PopulateChromeWebUIFrameBinders(
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
       TabStripUI,
 #endif
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      ash::personalization_app::PersonalizationAppUI,
+#endif
       NewTabPageUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
@@ -1204,7 +1207,7 @@ void PopulateChromeWebUIFrameBinders(
   }
 
   RegisterWebUIControllerInterfaceBinder<
-      emoji_picker::mojom::PageHandlerFactory, chromeos::EmojiUI>(map);
+      emoji_picker::mojom::PageHandlerFactory, ash::EmojiUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       ash::personalization_app::mojom::WallpaperProvider,

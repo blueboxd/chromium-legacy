@@ -112,15 +112,21 @@ constexpr char kAppListAppLaunchedHomecherAllApps[] =
 constexpr char kAppListAppLaunchedHomecherSearch[] =
     "Apps.AppListAppLaunchedV2.HomecherSearch";
 
+// UMA histograms for app list sort reorder.
 constexpr char kClamshellReorderAnimationSmoothnessHistogram[] =
     "Apps.Launcher.ProductivityReorderAnimationSmoothness.ClamshellMode";
 constexpr char kTabletReorderAnimationSmoothnessHistogram[] =
     "Apps.Launcher.ProductivityReorderAnimationSmoothness.TabletMode";
-
 constexpr char kClamshellReorderActionHistogram[] =
     "Apps.Launcher.ProductivityReorderAction.ClamshellMode";
 constexpr char kTabletReorderActionHistogram[] =
     "Apps.Launcher.ProductivityReorderAction.TabletMode";
+
+// UMA histograms for app list drag reorder.
+constexpr char kClamshellDragReorderAnimationSmoothnessHistogram[] =
+    "Apps.Launcher.DragReorderAnimationSmoothness.ClamshellMode";
+constexpr char kTabletDragReorderAnimationSmoothnessHistogram[] =
+    "Apps.Launcher.DragReorderAnimationSmoothness.TabletMode";
 
 // The prefix for all the variants that track how long the app list is kept
 // open by open method. Suffix is decided in `GetAppListOpenMethod`
@@ -331,9 +337,6 @@ void RecordAppListAppLaunched(AppListLaunchedFrom launched_from,
       // Only exists in clamshell mode with ProductivityLauncher disabled.
       UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedClosed, launched_from);
       break;
-    case AppListViewState::kPeeking:
-      NOTREACHED();
-      break;
     case AppListViewState::kFullscreenAllApps:
       if (is_tablet_mode) {
         if (app_list_shown) {
@@ -516,6 +519,16 @@ void RecordAppListSortAction(AppListSortOrder new_order, bool in_tablet) {
     base::UmaHistogramEnumeration(kTabletReorderActionHistogram, new_order);
   else
     base::UmaHistogramEnumeration(kClamshellReorderActionHistogram, new_order);
+}
+
+void ReportItemDragReorderAnimationSmoothness(bool in_tablet, int smoothness) {
+  if (in_tablet) {
+    base::UmaHistogramPercentage(kTabletDragReorderAnimationSmoothnessHistogram,
+                                 smoothness);
+  } else {
+    base::UmaHistogramPercentage(
+        kClamshellDragReorderAnimationSmoothnessHistogram, smoothness);
+  }
 }
 
 void RecordMetricsOnSessionEnd() {

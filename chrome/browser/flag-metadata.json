@@ -1251,6 +1251,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "dark-light-mode-k-means-color",
+    "owners": [ "cowmoo" ],
+    "expiry_milestone": 114
+  },
+  {
     "name": "darken-websites-checkbox-in-themes-setting",
     "owners": [ "nemco@google.com", "wenyufu@google.com", "twellington" ],
     "expiry_milestone": 110
@@ -4758,6 +4763,15 @@
     "expiry_milestone": 112
   },
   {
+    "name": "notification-interaction-history",
+    "owners": [
+      "sideyilmaz",
+      "msramek",
+      "chrome-friendly-settings@google.com"
+    ],
+    "expiry_milestone": 115
+  },
+  {
     "name": "notification-permission-rationale-dialog",
     "owners": ["shaktisahu", "salg"],
     "expiry_milestone": 110
@@ -4987,6 +5001,11 @@
     "name": "omnibox-header-padding-update",
     "owners": [ "rongtan", "ender", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 115
+  },
+  {
+    "name": "omnibox-history-quick-provider-specificity-score-count-unique-hosts",
+    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 120
   },
   {
     "name": "omnibox-https-upgrades",
@@ -5252,6 +5271,11 @@
     "name": "os-settings-app-notifications-page",
     "owners": ["hsuregan"],
     "expiry_milestone": 99
+  },
+  {
+    "name": "os-settings-search-feedback",
+    "owners": [ "wesokuhara", "cros-settings@google.com" ],
+    "expiry_milestone": 114
   },
   {
     "name": "osk-resizes-visual-viewport",
@@ -6197,6 +6221,11 @@
     "name" : "side-panel-journeys",
     "owners": [ "mfacey", "chrome-journeys@google.com", "chrome-desktop-ui-sea@google.com"],
     "expiry_milestone" : 110
+  },
+  {
+    "name" : "side-panel-journeys-queryless",
+    "owners": [ "mfacey", "chrome-journeys@google.com", "chrome-desktop-ui-sea@google.com"],
+    "expiry_milestone" : 115
   },
   {
     "name": "side-panel-web-view",

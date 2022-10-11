@@ -133,52 +133,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="WebRTC.Audio.Agc.ClippingPredictor.F1Score" units="%"
-    expires_after="2022-04-03">
-  <owner>alessiob@chromium.org</owner>
-  <owner>silen@chromium.org</owner>
-  <summary>
-    Logs the F1 score for the clipping predictor used in AgcManagerDirect. A log
-    call is made every 30 seconds during an active WebRTC call using the analog
-    gain controller and the clipping predictor feature.
-  </summary>
-</histogram>
-
-<histogram name="WebRTC.Audio.Agc.ClippingPredictor.Precision" units="%"
-    expires_after="2022-04-24">
-  <owner>silen@chromium.org</owner>
-  <owner>alessiob@chromium.org</owner>
-  <summary>
-    Logs the precision for the clipping predictor used in AgcManagerDirect. A
-    log call is made every 30 seconds during an active WebRTC call using the
-    analog gain controller and the clipping predictor feature.
-  </summary>
-</histogram>
-
-<histogram name="WebRTC.Audio.Agc.ClippingPredictor.PredictionInterval"
-    units="frames" expires_after="2022-04-03">
-  <owner>alessiob@chromium.org</owner>
-  <owner>silen@chromium.org</owner>
-  <summary>
-    Logs the time elapsed between a clipping prediction and a matched clipping
-    detection for the clipping predictor used in AgcManagerDirect. A log call is
-    made every time a predicted clipping event is matched (theoretical upper
-    bound: one call every 10 ms) during an active WebRTC call using the analog
-    gain controller and the clipping predictor feature.
-  </summary>
-</histogram>
-
-<histogram name="WebRTC.Audio.Agc.ClippingPredictor.Recall" units="%"
-    expires_after="2022-05-01">
-  <owner>silen@chromium.org</owner>
-  <owner>alessiob@chromium.org</owner>
-  <summary>
-    Logs the recall for the clipping predictor used in AgcManagerDirect. A log
-    call is made every 30 seconds during an active WebRTC call using the analog
-    gain controller and the clipping predictor feature.
-  </summary>
-</histogram>
-
 <histogram name="WebRTC.Audio.Agc.DigitalGainApplied" units="dB"
     expires_after="2023-02-26">
   <owner>alessiob@chromium.org</owner>
@@ -337,7 +291,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.ApmAnalogGainIncreaseRate" units="changes/minute"
-    expires_after="2022-10-05">
+    expires_after="2023-02-12">
   <owner>silen@chromium.org</owner>
   <owner>alessiob@chromium.org</owner>
   <summary>
@@ -1349,24 +1303,30 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.BundlePolicy"
-    enum="PeerConnectionBundlePolicy" expires_after="2022-08-28">
+    enum="PeerConnectionBundlePolicy" expires_after="2023-02-28">
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
     Determines whether BUNDLE is configured. Recorded during the first DTLS
     connection establishment. Values are specified in
     https://w3c.github.io/webrtc-pc/#dom-rtcbundlepolicy
+
+    Warning: This histogram was expired from 2022-08-28 to 2022-10-10. Data may
+    be missing.
   </summary>
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.BundleUsage"
-    enum="PeerConnectionBundleUsage" expires_after="2022-08-28">
+    enum="PeerConnectionBundleUsage" expires_after="2023-02-28">
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
     Determines whether BUNDLE is used in remote offers or answers. Recorded
     during setRemoteDescription calls. Distinguishes between simple, complex,
     datachannel-only and legacy plan-b usage.
+
+    Warning: This histogram was expired from 2022-08-28 to 2022-10-10. Data may
+    be missing.
   </summary>
 </histogram>
 
@@ -1485,6 +1445,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="WebRTC.PeerConnection.IceServers.{MeasuredAt}" units="servers"
     expires_after="2023-04-15">
+  <obsolete>
+    Removed 10/2022.
+  </obsolete>
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
@@ -1643,12 +1606,16 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.RtcpMux" enum="PeerConnectionRtcpMux"
-    expires_after="2020-02-23">
-  <owner>pthatcher@chromium.org</owner>
+    expires_after="2023-04-07">
+  <owner>hta@chromium.org</owner>
+  <owner>webrtc-dev@chromium.org</owner>
   <summary>
     Whether RTCP-mux is used for the PeerConnection (both the local and remote
     description enable RTCP-mux). Recorded after SetLocalDescription and
     SetRemoteDescription are called, once per PeerConnection.
+
+    Warning: This histogram was expired from 2020-02-23 to 2022-10-10. Data may
+    be missing.
   </summary>
 </histogram>
 
@@ -2138,6 +2105,31 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="NatType" variants="NatType">
     <variant name=""/>
+  </token>
+</histogram>
+
+<histogram name="WebRTC.Stun.Integrity.{StunPacketType}"
+    enum="WebRtcStunIntegrityOutcome" expires_after="2023-04-07">
+  <owner>hta@chromium.org</owner>
+  <owner>webrtc-dev@chromium.org</owner>
+  <summary>
+    Records outcome of integrity checks for STUN requests. This is used in
+    investigation of crbug.com/1177125, in order to figure out if it is safe to
+    turn on checking of these attributes.
+  </summary>
+  <token key="StunPacketType">
+    <variant name="ErrorResponse.BadRequest"/>
+    <variant name="ErrorResponse.ErrorOther"/>
+    <variant name="ErrorResponse.GlobalFailure"/>
+    <variant name="ErrorResponse.NoErrorAttribute"/>
+    <variant name="ErrorResponse.ServerError"/>
+    <variant name="ErrorResponse.StaleNonce"/>
+    <variant name="ErrorResponse.TryAlternate"/>
+    <variant name="ErrorResponse.Unauthorized"/>
+    <variant name="ErrorResponse.UnknownAttribute"/>
+    <variant name="Indication"/>
+    <variant name="Request"/>
+    <variant name="Response"/>
   </token>
 </histogram>
 

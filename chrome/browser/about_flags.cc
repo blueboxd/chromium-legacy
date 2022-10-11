@@ -3931,6 +3931,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOobeHidDetectionRevampName,
      flag_descriptions::kOobeHidDetectionRevampDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kOobeHidDetectionRevamp)},
+    {"os-settings-search-feedback",
+     flag_descriptions::kOsSettingsSearchFeedbackName,
+     flag_descriptions::kOsSettingsSearchFeedbackDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kOsSettingsSearchFeedback)},
     {"qs-revamp", flag_descriptions::kQsRevampName,
      flag_descriptions::kQsRevampDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kQsRevamp)},
@@ -4104,6 +4108,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableLacrosTtsSupportName,
      flag_descriptions::kDisableLacrosTtsSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDisableLacrosTtsSupport)},
+    {"dark-light-mode-k-means-color",
+     flag_descriptions::kDarkLightModeKMeansColorName,
+     flag_descriptions::kDarkLightModeKMeansColorDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kDarkLightModeKMeansColor)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -5572,11 +5580,19 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(omnibox::kExperimentalKeywordMode)},
     {"omnibox-domain-suggestions",
      flag_descriptions::kOmniboxDomainSuggestionsName,
-     flag_descriptions::kOmniboxDomainSuggestionsDescriptions, kOsDesktop,
+     flag_descriptions::kOmniboxDomainSuggestionsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kDomainSuggestions)},
+    {"omnibox-history-quick-provider-specificity-score-count-unique-hosts",
+     flag_descriptions::
+         kOmniboxHistoryQuickProviderSpecificityScoreCountUniqueHostsName,
+     flag_descriptions::
+         kOmniboxHistoryQuickProviderSpecificityScoreCountUniqueHostsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         omnibox::kHistoryQuickProviderSpecificityScoreCountUniqueHosts)},
     {"omnibox-drive-suggestions",
      flag_descriptions::kOmniboxDriveSuggestionsName,
-     flag_descriptions::kOmniboxDriveSuggestionsDescriptions, kOsDesktop,
+     flag_descriptions::kOmniboxDriveSuggestionsDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kDocumentProvider,
                                     kOmniboxDocumentProviderVariations,
                                     "OmniboxBundledExperimentV1")},
@@ -5942,6 +5958,11 @@ const FeatureEntry kFeatureEntries[] = {
          features::kSidePanelJourneys,
          kSidePanelJourneysOpensFromOmniboxVariations,
          "SidePanelJourneys")},
+
+    {flag_descriptions::kSidePanelJourneysQuerylessFlagId,
+     flag_descriptions::kSidePanelJourneysQuerylessName,
+     flag_descriptions::kSidePanelJourneysQuerylessDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSidePanelJourneysQueryless)},
 
     {"side-panel-web-view", flag_descriptions::kSidePanelWebViewName,
      flag_descriptions::kSidePanelWebViewDescription, kOsDesktop,
@@ -6754,6 +6775,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPreferLibYuvImageProcessorDescription,
      kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(media::kPreferLibYuvImageProcessor)},
+    {"prefer-gl-image-processor",
+     flag_descriptions::kPreferGLImageProcessorName,
+     flag_descriptions::kPreferGLImageProcessorDescription, kOsCrOS | kOsLacros,
+     FEATURE_VALUE_TYPE(media::kPreferGLImageProcessor)},
 #endif  // defined(ARCH_CPU_ARM_FAMILY)
 #endif  // BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
@@ -9316,6 +9341,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSafetyCheckNotificationPermissionsDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSafetyCheckNotificationPermissions)},
+
+    {"notification-interaction-history",
+     flag_descriptions::kNotificationInteractionHistoryName,
+     flag_descriptions::kNotificationInteractionHistoryDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         permissions::features::kNotificationInteractionHistory)},
 
     {"safety-check-unused-site-permissions",
      flag_descriptions::kSafetyCheckUnusedSitePermissionsName,

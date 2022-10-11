@@ -152,7 +152,6 @@ crbug.com/1339293 [ Linux ] fast/frames/empty-frame-src.html [ Failure Pass ]
 crbug.com/1339293 crbug.com/1347321 fast/frames/frame-scrolling-attribute.html [ Failure Pass ]
 crbug.com/1339293 [ Linux ] media/controls/rotated-video-has-right-panel-width.html [ Failure Pass ]
 crbug.com/1339293 [ Linux ] media/media-controls-overflow-hidden.html [ Failure Pass ]
-crbug.com/1339293 [ Linux ] external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/029.html [ Failure Pass ]
 crbug.com/1351106 [ Linux ] fast/frames/invalid-cols-rows-value.html [ Failure Pass ]
 
 # ====== Timed HTML parser budget tests to here ========================
@@ -768,9 +767,6 @@ crbug.com/1308431 external/wpt/css/css-masking/clip-path/clip-path-shape-003.htm
 crbug.com/1308431 external/wpt/css/css-masking/clip-path/clip-path-shape-004.html [ Failure ]
 crbug.com/1308431 external/wpt/css/css-masking/clip-path/clip-path-shape-interpolation-001.html [ Failure ]
 crbug.com/1308431 external/wpt/css/css-masking/clip-path/clip-path-shape-interpolation-002.html [ Failure ]
-
-# CSS cascade layers
-crbug.com/1277637 external/wpt/css/css-cascade/layer-stylesheet-sharing.html [ Failure ]
 
 # Fails, at a minimum, due to lack of support for CSS mask property in html elements
 crbug.com/432153 external/wpt/svg/painting/reftests/display-none-mask.html [ Skip ]
@@ -1763,6 +1759,8 @@ crbug.com/1347984 fragmentation/table-row-dimensions-with-thead.html [ Failure ]
 crbug.com/1347984 fragmentation/table-row-dimensions.html [ Failure ]
 
 ### Tests failing with LayoutNGFlexFragmentation enabled:
+crbug.com/1367912 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-058.html [ Failure ]
+crbug.com/1367912 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-043.html [ Failure ]
 crbug.com/660611 fast/multicol/flexbox/doubly-nested-with-zero-width-flexbox-and-forced-break-crash.html [ Skip ]
 
 ### Tests failing with LayoutNGTableFragmentation enabled:
@@ -1800,11 +1798,6 @@ crbug.com/958381 [ Mac ] fragmentation/single-line-cells-paginated-with-text.htm
 crbug.com/1356256 fast/table/percent-widths-float.html [ Failure Pass ]
 
 # TablesNG ends
-
-### With LayoutNGPrinting enabled:
-
-crbug.com/1367912 external/wpt/css/css-break/flexbox/flex-container-fragmentation-008.html [ Failure ]
-crbug.com/1367912 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-029.html [ Failure ]
 
 # ====== LayoutNG-only failures until here ======
 
@@ -5220,9 +5213,6 @@ crbug.com/1365858 http/tests/devtools/console/console-format-es6.js [ Failure Pa
 crbug.com/1365858 http/tests/devtools/console/console-functions.js [ Failure Pass ]
 crbug.com/1365858 http/tests/devtools/sources/debugger/properties-special.js [ Failure Pass ]
 
-# Temporarily disabled to land the V8 CL https://crrev.com/c/3929037
-crbug.com/1371072 http/tests/devtools/tracing/timeline-js/timeline-microtasks.js [ Failure Pass ]
-
 crbug.com/1093445 http/tests/loading/pdf-commit-load-callbacks.html [ Failure Pass ]
 crbug.com/1093497 http/tests/history/client-redirect-after-push-state.html [ Failure Pass ]
 
@@ -5586,7 +5576,6 @@ crbug.com/1196317 [ Mac ] scrollbars/custom-scrollbar-thumb-width-changed-on-ina
 
 # Sheriff 2021-04-21
 crbug.com/1201225 external/wpt/pointerevents/pointerlock/pointerevent_pointerrawupdate_in_pointerlock.html [ Failure Pass Timeout ]
-crbug.com/1201346 http/tests/origin_trials/webexposed/bfcache-experiment-http-header-origin-trial.php [ Failure Pass ]
 crbug.com/1201365 virtual/portals/http/tests/inspector-protocol/portals/device-emulation-portals.js [ Pass Timeout ]
 
 # Sheriff 2021-04-22
@@ -7204,6 +7193,7 @@ crbug.com/1159586 virtual/post-message-different-partition-same-origin-blocked/e
 crbug.com/1159586 virtual/post-message-different-partition-same-origin-blocked/external/wpt/html/browsers/windows/post-message/third-party-to-third-party-cross-partition-same-origin.sub.html [ Timeout ]
 
 # Sheriff 2022-10-03
+crbug.com/1368767 wpt_internal/webmidi/requestmidiaccess-basic.https.html [ Failure Pass ]
 crbug.com/1362405 css3/filters/effect-reference-hidpi.html [ Skip ]
 
 # These tests are optional and not reliably supported in Chrome.
@@ -7245,8 +7235,12 @@ crbug.com/1363138 http/tests/inspector-protocol/cachestorage/read-cached-respons
 # Investigate the flake
 crbug.com/1371395 virtual/not-restored-reasons/external/wpt/performance-timeline/not-restored-reasons/performance-navigation-timing-same-origin-bfcache.window.html [ Failure Pass ]
 
-crbug.com/1370050 http/tests/devtools/network/network-columns-sorted.js [ Skip ]
-crbug.com/1370050 http/tests/devtools/network/waterfall-header-height-updates.js [ Skip ]
+# Disable top flakes trigger step failure on builders
+crbug.com/1371949 [ Mac12 ] virtual/low-priority-script-loading/http/tests/devtools/network/resource-priority.js [ Failure Pass ]
+crbug.com/1371949 [ Mac11 ] virtual/low-priority-script-loading/http/tests/devtools/network/resource-priority.js [ Failure Pass ]
 
 # Sheriff 2022-10-07
 crbug.com/1372556 [ Linux ] external/wpt/css/css-text/text-transform/text-transform-capitalize-* [ Failure Pass ]
+
+# Sheriff 2022-10-10
+crbug.com/1373206 [ Win ] external/wpt/css/css-fonts/font-palette-vs-shorthand.html [ Failure ]

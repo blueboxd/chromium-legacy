@@ -20,6 +20,11 @@
     width: calc(100% + 8px);
   }
 
+  :host([is-dragging_]), 
+  :host([is-loading_]) {
+    --upload-dialog-drag-drop-background: var(--google-blue-50);
+  }
+
   #dialog {
     background: var(--upload-dialog-background);
     border-radius: 22px;
@@ -68,22 +73,12 @@
     width: 100%;
   }
 
-  #dragDropNormal {
-    align-items: center;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    height: 100%;
-    justify-content: center;
-    margin-top: 0;
-  }
-
-  #dragDropTitleContainer {
+  .drag-drop-title-container {
     align-items: center;
     display: inline-flex;
     flex-direction: row;
     flex-grow: 1;
-    justify-content: initial;
+    justify-content: center;
   }
 
   #dragDropIllustration {
@@ -95,7 +90,7 @@
     width: 59px;
   }
 
-  #dragDropTitle {
+  .drag-drop-title {
     color: var(--upload-dialog-drag-drop-title-color);
     font-size: 16px;
     line-height: 25px;
@@ -214,6 +209,19 @@
     --upload-dialog-input-submit-border-color: var(--google-grey-300);
     --upload-dialog-input-submit-color: var(--google-blue-600);
   }
+
+  #loadingContainer {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    justify-content: center;
+  }
+
+  #loadingSpinner {
+    display: block;
+    margin-bottom: 12px;
+  }
 </style>
 
 <div id="dialog" hidden$="{{isHidden_}}" tabindex="-1" lang="$i18n{language}">
@@ -226,10 +234,11 @@
       $i18n{lensSearchUploadDialogTitle}
     </div>
     <div id="dragDropArea">
-      <div id="dragDropNormal">
-        <div id="dragDropTitleContainer">
+      <!-- Normal state -->
+      <template is="dom-if" if="{{isNormal_}}">
+        <div class="drag-drop-title-container">
           <div id="dragDropIllustration"></div>
-          <div id="dragDropTitle">
+          <div class="drag-drop-title">
             <span id="dragText">$i18n{lensSearchUploadDialogDragTitle}</span>
             <span tabindex="0" role="button" id="uploadText">
               $i18n{lensSearchUploadDialogUploadFileTitle}
@@ -251,7 +260,25 @@
             </div>
           </div>
         </div>
-      </div>
+      </template>
+      <!-- Dragging state -->
+      <template is="dom-if" if="{{isDragging_}}">
+        <div class="drag-drop-title-container">
+          <div class="drag-drop-title">
+            $i18n{lensSearchUploadDialogDragDropTitle}
+          </div>
+        </div>
+      </template>
+      <!-- Loading state -->
+      <template is="dom-if" if="{{isLoading_}}">
+        <div id="loadingContainer">
+          <paper-spinner-lite id="loadingSpinner" active>
+          </paper-spinner-lite>
+          <div class="drag-drop-title">
+            $i18n{lensSearchUploadDialogLoadingText}
+          </div>
+        </div>
+      </template>
     </div>
-  </div>
+  </div>  
 </div>

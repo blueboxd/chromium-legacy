@@ -5,8 +5,10 @@
 #include "third_party/blink/public/common/permissions_policy/origin_with_possible_wildcards.h"
 
 #include "base/feature_list.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/network/public/cpp/cors/origin_access_entry.h"
 #include "third_party/blink/public/common/features.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace blink {
@@ -28,6 +30,63 @@ OriginWithPossibleWildcards& OriginWithPossibleWildcards::operator=(
     const OriginWithPossibleWildcards& rhs) = default;
 
 OriginWithPossibleWildcards::~OriginWithPossibleWildcards() = default;
+
+// static
+OriginWithPossibleWildcards OriginWithPossibleWildcards::Parse(
+    const std::string& allowlist_entry,
+    const NodeType type) {
+  auto wildcard_pos = std::string::npos;
+  // If there's a subdomain wildcard in the `allowlist_entry` of a permissions
+  // policy, then we can parse it out and validate the origin. We know there's a
+  // subdomain wildcard if there is a exactly one `*` and it's after the scheme
+  // and before the rest of the host. Invalid origins return an instance of
+  // OriginWithPossibleWildcards with an opaque origin member.
+  if (base::FeatureList::IsEnabled(
+          features::kWildcardSubdomainsInPermissionsPolicy) &&
+      type == NodeType::kHeader &&
+      (wildcard_pos = allowlist_entry.find("://*.")) != std::string::npos &&
+      allowlist_entry.find('*') == allowlist_entry.rfind('*')) {
+    // We need a copy as erase modifies the original.
+    auto allowlist_entry_copy(allowlist_entry);
+    allowlist_entry_copy.erase(wildcard_pos + 3, 2);
+    const auto parsed_origin = url::Origin::Create(GURL(allowlist_entry_copy));
+    // The origin must not be opaque and its host must be registrable.
+    if (parsed_origin.opaque()) {
+      // We early return here assuming even with the `*.` the origin parses
+      // opaque.
+      return OriginWithPossibleWildcards();
+    } else if (
+        net::registry_controlled_domains::HostHasRegistryControlledDomain(
+            parsed_origin.host(),
+            net::registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+      return OriginWithPossibleWildcards(parsed_origin,
+                                         /*has_subdomain_wildcard=*/true);
+    }
+  }
+  // Otherwise, parse the origin string and verify that the result is
+  // valid. Invalid strings will produce an opaque origin.
+  const auto parsed_origin = url::Origin::Create(GURL(allowlist_entry));
+  if (parsed_origin.opaque()) {
+    return OriginWithPossibleWildcards();
+  } else {
+    return OriginWithPossibleWildcards(parsed_origin,
+                                       /*has_subdomain_wildcard=*/false);
+  }
+}
+
+std::string OriginWithPossibleWildcards::Serialize() const {
+  auto wildcard_pos = std::string::npos;
+  auto serialized_origin = origin.Serialize();
+  if (has_subdomain_wildcard &&
+      (wildcard_pos = serialized_origin.find("://")) != std::string::npos) {
+    // Restore the missing wildcard (`*.`) to the front of the host so this
+    // permissions policy element is inspectable. Before subdomain wildcard
+    // support this would have been parsed into a `%2A.`.
+    serialized_origin.insert(wildcard_pos + 3, "*.");
+  }
+  return serialized_origin;
+}
 
 bool OriginWithPossibleWildcards::DoesMatchOrigin(
     const url::Origin& match_origin) const {

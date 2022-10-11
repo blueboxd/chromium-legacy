@@ -709,6 +709,11 @@ BASE_FEATURE(kLiveCaptionMultiLanguage,
              "LiveCaptionMultiLanguage",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enable or disable Live Caption from the right click menu.
+BASE_FEATURE(kLiveCaptionRightClick,
+             "LiveCaptionRightClick",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Live Caption runs system-wide on ChromeOS, as opposed to just in the browser.
 BASE_FEATURE(kLiveCaptionSystemWideOnChromeOS,
              "LiveCaptionSystemWideOnChromeOS",
@@ -914,9 +919,13 @@ BASE_FEATURE(kLimitConcurrentDecoderInstances,
 // Some architectures have separate image processor hardware that
 // can be used by Chromium's ImageProcessor to color convert/crop/etc.
 // video buffers.  Sometimes it is more efficient/performant/correct
-// to use libYUV instead of the hardware to do this processing.
+// to use a libYUV or GL based implementation instead of the hardware to
+// do this processing.
 BASE_FEATURE(kPreferLibYuvImageProcessor,
              "PreferLibYUVImageProcessor",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kPreferGLImageProcessor,
+             "PreferGLImageProcessor",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // defined(ARCH_CPU_ARM_FAMILY)
 #if BUILDFLAG(IS_CHROMEOS)

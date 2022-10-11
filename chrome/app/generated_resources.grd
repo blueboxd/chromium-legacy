@@ -548,6 +548,12 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_BUBBLE_DISABLE" desc="The button text that disallows integrating the accessibility labels service of Google.">
           No thanks
         </message>
+        <message name="IDS_CONTENT_CONTEXT_LIVE_CAPTION_ENABLE" desc="The name of the Live Caption command in the content area context menu to enable Live Caption">
+          &amp;Enable Live Caption
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_LIVE_CAPTION_DISABLE" desc="The name of the Live Caption command in the content area context menu to disable Live Caption">
+          &amp;Disable Live Caption
+        </message>
         <if expr="not use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_BACK" desc="The name of the Back command in the content area context menu">
             &amp;Back
@@ -859,7 +865,6 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE" desc="In Title Case: The name of the View Frame Source command in the content area context menu">
             &amp;View Frame Source
           </message>
-
           <!-- Also update IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP in google_chrome_strings.grd and chromium_strings.grd. -->
           <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWTAB" desc="In Title Case: The name of the Open Link in New Tab command in the content area context menu">
             Open Link in New &amp;Tab
@@ -7296,6 +7301,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_LENS_SEARCH_UPLOAD_DIALOG_SEARCH_BUTTON_LABEL" desc="Label for button which allows the user to submit URL for upload.">
         Search
+      </message>
+      <message name="IDS_LENS_SEARCH_UPLOAD_DIALOG_DRAG_DROP_TITLE" desc="Message to user when they are dragging an image over the image drop zone.">
+        Drop an image here
+      </message>
+      <message name="IDS_LENS_SEARCH_UPLOAD_DIALOG_LOADING_TEXT" desc="Message to user when their is uploading.">
+        Uploading...
       </message>
       <message name="IDS_TOOLTIP_SAVE_CREDIT_CARD" desc="The tooltip for the icon that shows the save credit card bubble">
         Save card
@@ -13823,6 +13834,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <!-- Automated Password Change on Desktop strings -->
     <if expr="not is_android">
+      <message name="IDS_ACCESSIBLE_AUTOFILL_ASSISTANT_PASSWORD_CHANGE" desc="The text announced by screenreaders once focus in brought to automatic password change side panel UI.">
+        Automatic password change
+      </message>
       <message name="IDS_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_ONBOARDING_TITLE" desc="The title for the Automated Password Change on Desktop onboarding dialog. The onboarding dialog is a modal dialog that is shown if a user has not previously consented to using Assistant features.">
         Let Google Assistant help you change your password
       </message>
@@ -13834,6 +13848,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_ONBOARDING_LEARN_MORE" desc="The text displayed on a link on the onboarding dialog that a user can click to navigate to a Google website with detailed information on how Automated Password Change on Desktop/ Assistant works and what data is collected.">
         Learn more
+      </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_ONBOARDING_LEARN_MORE_ABOUT_AUTOMATIC_PASSWORD_CHANGE" desc="The text displayed on a link on the onboarding dialog that a user can click to navigate to a Google website with detailed information on how Automated Password Change on Desktop/ Assistant works and what data is collected.">
+        Learn more about automatic password change
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_PASSWORD_CHANGE_ONBOARDING_BUTTON_CANCEL_TEXT" desc="The text on the button that declines the onboarding for Automated Password Change on Desktop.">
         Cancel

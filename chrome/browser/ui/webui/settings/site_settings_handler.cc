@@ -47,12 +47,14 @@
 #include "chrome/browser/ui/webui/settings/site_settings_helper.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browsing_topics/browsing_topics_service.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -584,14 +586,18 @@ bool ShouldAddToNotificationPermissionReviewList(
   // more than 3. Otherwise, the notification permission should not be added
   // to review list.
   double score = service->GetScore(url);
+  int low_engagement_notification_limit =
+      features::kSafetyCheckNotificationPermissionsLowEnagementLimit.Get();
   bool is_low_engagement =
       !site_engagement::SiteEngagementService::IsEngagementAtLeast(
           score, blink::mojom::EngagementLevel::MEDIUM) &&
-      notification_count > 3;
+      notification_count > low_engagement_notification_limit;
+  int min_engagement_notification_limit =
+      features::kSafetyCheckNotificationPermissionsMinEnagementLimit.Get();
   bool is_minimal_engagement =
       !site_engagement::SiteEngagementService::IsEngagementAtLeast(
           score, blink::mojom::EngagementLevel::LOW) &&
-      notification_count > 0;
+      notification_count > min_engagement_notification_limit;
 
   return is_minimal_engagement || is_low_engagement;
 }
@@ -704,6 +710,17 @@ void SiteSettingsHandler::RegisterMessages() {
       "blockNotificationPermissionForOrigin",
       base::BindRepeating(
           &SiteSettingsHandler::HandleBlockNotificationPermissionForOrigin,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "allowNotificationPermissionForOrigin",
+      base::BindRepeating(
+          &SiteSettingsHandler::HandleAllowNotificationPermissionForOrigin,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "undoIgnoreNotificationPermissionReviewForOrigin",
+      base::BindRepeating(
+          &SiteSettingsHandler::
+              HandleUndoIgnoreOriginForNotificationPermissionReview,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "isOriginValid",
@@ -1634,6 +1651,37 @@ void SiteSettingsHandler::HandleBlockNotificationPermissionForOrigin(
                                     ContentSettingsPattern::Wildcard(),
                                     ContentSettingsType::NOTIFICATIONS,
                                     CONTENT_SETTING_BLOCK);
+
+  FireWebUIListener("notification-permission-review-list-changed",
+                    PopulateNotificationPermissionReviewData());
+}
+
+void SiteSettingsHandler::HandleAllowNotificationPermissionForOrigin(
+    const base::Value::List& args) {
+  CHECK_EQ(1U, args.size());
+  const std::string& origin = args[0].GetString();
+
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
+  map->SetContentSettingCustomScope(ContentSettingsPattern::FromString(origin),
+                                    ContentSettingsPattern::Wildcard(),
+                                    ContentSettingsType::NOTIFICATIONS,
+                                    CONTENT_SETTING_ALLOW);
+
+  FireWebUIListener("notification-permission-review-list-changed",
+                    PopulateNotificationPermissionReviewData());
+}
+
+void SiteSettingsHandler::HandleUndoIgnoreOriginForNotificationPermissionReview(
+    const base::Value::List& args) {
+  CHECK_EQ(1U, args.size());
+  const ContentSettingsPattern& primary_pattern =
+      ContentSettingsPattern::FromString(args[0].GetString());
+
+  auto* service =
+      NotificationPermissionsReviewServiceFactory::GetForProfile(profile_);
+  service->RemovePatternFromNotificationPermissionReviewBlocklist(
+      primary_pattern, ContentSettingsPattern::Wildcard());
 
   FireWebUIListener("notification-permission-review-list-changed",
                     PopulateNotificationPermissionReviewData());

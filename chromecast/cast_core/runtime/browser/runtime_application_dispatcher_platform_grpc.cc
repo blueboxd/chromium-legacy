@@ -17,10 +17,8 @@
 #include "chromecast/cast_core/runtime/browser/runtime_application_platform_grpc.h"
 #include "chromecast/cast_core/runtime/browser/streaming_runtime_application.h"
 #include "chromecast/cast_core/runtime/browser/web_runtime_application.h"
+#include "chromecast/metrics/cast_event_builder_simple.h"
 #include "third_party/cast_core/public/src/proto/common/application_config.pb.h"
-#include "third_party/grpc/src/include/grpcpp/channel.h"
-#include "third_party/grpc/src/include/grpcpp/create_channel.h"
-#include "third_party/grpc/src/include/grpcpp/server_builder.h"
 #include "third_party/openscreen/src/cast/common/public/cast_streaming_app_ids.h"
 
 namespace chromecast {
@@ -43,14 +41,13 @@ RuntimeApplicationDispatcherPlatformGrpc::
     RuntimeApplicationDispatcherPlatformGrpc(
         RuntimeApplicationDispatcherPlatform::Client& client,
         CastWebService* web_service,
-        CastRuntimeMetricsRecorder::EventBuilderFactory* event_builder_factory,
         std::string runtime_id,
         std::string runtime_service_endpoint)
     : client_(client),
       runtime_id_(std::move(runtime_id)),
       runtime_service_endpoint_(std::move(runtime_service_endpoint)),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      metrics_recorder_(event_builder_factory) {
+      metrics_recorder_(this) {
   heartbeat_timer_.SetTaskRunner(task_runner_);
 }
 
@@ -116,6 +113,8 @@ bool RuntimeApplicationDispatcherPlatformGrpc::Start() {
 void RuntimeApplicationDispatcherPlatformGrpc::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  action_recorder_.reset();
+
   if (heartbeat_reactor_) {
     heartbeat_timer_.Stop();
     heartbeat_reactor_->Write(grpc::Status::OK);
@@ -134,12 +133,18 @@ void RuntimeApplicationDispatcherPlatformGrpc::Stop() {
   }
 }
 
+std::unique_ptr<CastEventBuilder>
+RuntimeApplicationDispatcherPlatformGrpc::CreateEventBuilder() {
+  return std::make_unique<CastEventBuilderSimple>();
+}
+
 void RuntimeApplicationDispatcherPlatformGrpc::HandleLoadApplication(
     cast::runtime::LoadApplicationRequest request,
     cast::runtime::RuntimeServiceHandler::LoadApplication::Reactor* reactor) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (request.cast_session_id().empty()) {
+    LOG(ERROR) << "Session ID is empty";
     reactor->Write(grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
                                 "Application session ID is missing"));
     return;
@@ -147,8 +152,9 @@ void RuntimeApplicationDispatcherPlatformGrpc::HandleLoadApplication(
 
   std::string session_id = request.cast_session_id();
   if (client_->HasApplication(session_id)) {
-    reactor->Write(grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
-                                "Application already exists"));
+    LOG(ERROR) << "Application already exists";
+    reactor->Write(grpc::Status(grpc::StatusCode::FAILED_PRECONDITION,
+                                "Application already exist"));
     return;
   }
 
@@ -173,6 +179,20 @@ void RuntimeApplicationDispatcherPlatformGrpc::HandleLaunchApplication(
     cast::runtime::LaunchApplicationRequest request,
     cast::runtime::RuntimeServiceHandler::LaunchApplication::Reactor* reactor) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (request.cast_session_id().empty()) {
+    LOG(ERROR) << "Session id is empty";
+    reactor->Write(grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
+                                "Sesssion id is missing"));
+    return;
+  }
+
+  std::string session_id = request.cast_session_id();
+  if (!client_->HasApplication(session_id)) {
+    LOG(ERROR) << "Application does not exist";
+    reactor->Write(grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
+                                "Application does not exists"));
+    return;
+  }
 
   client_->LaunchApplication(
       std::move(request),
@@ -180,7 +200,7 @@ void RuntimeApplicationDispatcherPlatformGrpc::HandleLaunchApplication(
           task_runner_,
           base::BindOnce(
               &RuntimeApplicationDispatcherPlatformGrpc::OnApplicationLaunching,
-              weak_factory_.GetWeakPtr(), request.cast_session_id(),
+              weak_factory_.GetWeakPtr(), std::move(session_id),
               std::move(reactor))));
 }
 
@@ -188,11 +208,17 @@ void RuntimeApplicationDispatcherPlatformGrpc::HandleStopApplication(
     cast::runtime::StopApplicationRequest request,
     cast::runtime::RuntimeServiceHandler::StopApplication::Reactor* reactor) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (request.cast_session_id().empty()) {
+    LOG(ERROR) << "Session id is missing";
+    reactor->Write(grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
+                                "Sesssion id is missing"));
+    return;
+  }
 
   std::unique_ptr<RuntimeApplication> app =
       client_->StopApplication(request.cast_session_id());
   if (!app) {
-    LOG(ERROR) << "Application doesn't exist anymore: session_id"
+    LOG(ERROR) << "Application doesn't exist anymore: session_id="
                << request.cast_session_id();
     reactor->Write(
         grpc::Status(grpc::StatusCode::NOT_FOUND, "Application not found"));
@@ -243,10 +269,14 @@ void RuntimeApplicationDispatcherPlatformGrpc::HandleStartMetricsRecorder(
     return;
   }
 
+  if (!action_recorder_) {
+    action_recorder_.emplace();
+  }
+
   metrics_recorder_stub_.emplace(
       request.metrics_recorder_service_info().grpc_endpoint());
   metrics_recorder_service_.emplace(
-      &metrics_recorder_, &action_recorder_,
+      &metrics_recorder_, &*action_recorder_,
       base::BindRepeating(
           &RuntimeApplicationDispatcherPlatformGrpc::RecordMetrics,
           weak_factory_.GetWeakPtr()),
@@ -272,7 +302,8 @@ void RuntimeApplicationDispatcherPlatformGrpc::OnApplicationLoaded(
     cast::runtime::RuntimeServiceHandler::LoadApplication::Reactor* reactor,
     cast_receiver::Status success) {
   if (!client_->HasApplication(session_id)) {
-    LOG(ERROR) << "Application doesn't exist anymore: session_id" << session_id;
+    LOG(ERROR) << "Application doesn't exist anymore: session_id="
+               << session_id;
     reactor->Write(
         grpc::Status(grpc::StatusCode::NOT_FOUND, "Application not found"));
     return;
@@ -294,7 +325,8 @@ void RuntimeApplicationDispatcherPlatformGrpc::OnApplicationLaunching(
     cast::runtime::RuntimeServiceHandler::LaunchApplication::Reactor* reactor,
     cast_receiver::Status success) {
   if (!client_->HasApplication(session_id)) {
-    LOG(ERROR) << "Application doesn't exist anymore: session_id" << session_id;
+    LOG(ERROR) << "Application doesn't exist anymore: session_id="
+               << session_id;
     reactor->Write(
         grpc::Status(grpc::StatusCode::NOT_FOUND, "Application not found"));
     return;

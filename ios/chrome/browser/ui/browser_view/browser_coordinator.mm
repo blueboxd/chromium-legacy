@@ -76,6 +76,7 @@
 #import "ios/chrome/browser/ui/commands/password_protection_commands.h"
 #import "ios/chrome/browser/ui/commands/password_suggestion_commands.h"
 #import "ios/chrome/browser/ui/commands/policy_change_commands.h"
+#import "ios/chrome/browser/ui/commands/price_notifications_commands.h"
 #import "ios/chrome/browser/ui/commands/promos_manager_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_generation_commands.h"
 #import "ios/chrome/browser/ui/commands/share_highlight_command.h"
@@ -117,6 +118,7 @@
 #import "ios/chrome/browser/ui/passwords/password_suggestion_coordinator.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
+#import "ios/chrome/browser/ui/price_notifications/price_notifications_view_coordinator.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/promos_manager/promos_manager_coordinator.h"
 #import "ios/chrome/browser/ui/qr_generator/qr_generator_coordinator.h"
@@ -201,6 +203,7 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
                                   PasswordSettingsCoordinatorDelegate,
                                   PasswordSuggestionCommands,
                                   PasswordSuggestionCoordinatorDelegate,
+                                  PriceNotificationsCommands,
                                   PromosManagerCommands,
                                   PolicyChangeCommands,
                                   PreloadControllerDelegate,
@@ -306,6 +309,10 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
 // Coordinator for the password suggestion UI presentation.
 @property(nonatomic, strong)
     PasswordSuggestionCoordinator* passwordSuggestionCoordinator;
+
+// Coordinator for the price notifications UI presentation.
+@property(nonatomic, strong)
+    PriceNotificationsViewCoordinator* priceNotificationsViewCoordiantor;
 
 // Used to display the Print UI. Nil if not visible.
 // TODO(crbug.com/910017): Convert to coordinator.
@@ -521,6 +528,9 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
   self.passwordSettingsCoordinator.delegate = nil;
   self.passwordSettingsCoordinator = nil;
 
+  [self.priceNotificationsViewCoordiantor stop];
+  self.priceNotificationsViewCoordiantor = nil;
+
   [self.viewController clearPresentedStateWithCompletion:completion
                                           dismissOmnibox:dismissOmnibox];
 }
@@ -613,6 +623,7 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
     @protocol(PasswordProtectionCommands),
     @protocol(PasswordSuggestionCommands),
     @protocol(PolicyChangeCommands),
+    @protocol(PriceNotificationsCommands),
     @protocol(TextZoomCommands),
   ];
 
@@ -900,6 +911,9 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
 
   /* passwordSuggestionCoordinator is created and started by a BrowserCommand */
 
+  /* PriceNotificationsViewCoordinator is created and started by a
+   * BrowserCommand */
+
   /* ReadingListCoordinator is created and started by a BrowserCommand */
 
   /* RecentTabsCoordinator is created and started by a BrowserCommand */
@@ -1006,6 +1020,9 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
   self.passwordSuggestionCoordinator = nil;
 
   self.printController = nil;
+
+  [self.priceNotificationsViewCoordiantor stop];
+  self.priceNotificationsViewCoordiantor = nil;
 
   if (IsFullscreenPromosManagerEnabled()) {
     [self.promosManagerCoordinator stop];
@@ -2003,6 +2020,20 @@ const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
                  decisionHandler:decisionHandler];
   self.passwordSuggestionCoordinator.delegate = self;
   [self.passwordSuggestionCoordinator start];
+}
+
+#pragma mark - PriceNotificationsCommands
+
+- (void)showPriceNotifications {
+  self.priceNotificationsViewCoordiantor =
+      [[PriceNotificationsViewCoordinator alloc]
+          initWithBaseViewController:self.viewController
+                             browser:self.browser];
+  [self.priceNotificationsViewCoordiantor start];
+}
+
+- (void)hidePriceNotifications {
+  [self.priceNotificationsViewCoordiantor stop];
 }
 
 #pragma mark - PolicyChangeCommands

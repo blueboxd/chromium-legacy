@@ -481,7 +481,7 @@ BASE_FEATURE(kCrostiniResetLxdDb,
 // Do we use the default LXD version or try LXD 4?
 BASE_FEATURE(kCrostiniUseLxd4,
              "CrostiniUseLxd4",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables experimental UI creating and managing multiple Crostini containers.
 BASE_FEATURE(kCrostiniMultiContainer,
@@ -573,6 +573,10 @@ BASE_FEATURE(kCryptohomeRecoveryFlowUI,
 // cryptohome backend.
 BASE_FEATURE(kCryptohomeRecoverySetup,
              "CryptohomeRecoverySetup",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kDarkLightModeKMeansColor,
+             "DarkLightModeKMeansColor",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDemoModeSWA, "DemoModeSWA", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1466,6 +1470,12 @@ BASE_FEATURE(kOsSettingsAppNotificationsPage,
              "OsSettingsAppNotificationsPage",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables search result feedback in ChromeOS Settings when no search results
+// are returned.
+BASE_FEATURE(kOsSettingsSearchFeedback,
+             "OsSettingsSearchFeedback",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kOverviewButton,
              "OverviewButton",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -2349,6 +2359,11 @@ bool IsDarkLightModeEnabled() {
   return chromeos::features::IsDarkLightModeEnabled();
 }
 
+bool IsDarkLightModeKMeansColorEnabled() {
+  return IsDarkLightModeEnabled() &&
+         base::FeatureList::IsEnabled(kDarkLightModeKMeansColor);
+}
+
 bool IsDemoModeSWAEnabled() {
   return base::FeatureList::IsEnabled(kDemoModeSWA);
 }
@@ -2375,6 +2390,10 @@ bool IsDragWindowToNewDeskEnabled() {
 
 bool IsDriveFsMirroringEnabled() {
   return base::FeatureList::IsEnabled(kDriveFsMirroring);
+}
+
+bool IsInlineSyncStatusEnabled() {
+  return base::FeatureList::IsEnabled(kFilesInlineSyncStatus);
 }
 
 bool IsEapGtcWifiAuthenticationEnabled() {
@@ -2736,6 +2755,10 @@ bool IsOobeRemoveShutdownButtonEnabled() {
 
 bool IsOobeThemeSelectionEnabled() {
   return base::FeatureList::IsEnabled(kEnableOobeThemeSelection);
+}
+
+bool IsOsSettingsSearchFeedbackEnabled() {
+  return base::FeatureList::IsEnabled(kOsSettingsSearchFeedback);
 }
 
 bool IsPcieBillboardNotificationEnabled() {

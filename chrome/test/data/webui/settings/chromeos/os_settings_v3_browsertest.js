@@ -380,6 +380,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    'os_bluetooth_change_device_name_dialog_tests.js',
  ],
  ['OsEditDictionaryPage', 'os_edit_dictionary_page_test.js'],
+ [
+   'OsClearPersonalizationDataPage',
+   'os_clear_personalization_data_page_test.js'
+ ],
  ['OsLanguagesPageV2', 'os_languages_page_v2_tests.js'],
  ['OsPairedBluetoothList', 'os_paired_bluetooth_list_tests.js'],
  [
@@ -393,7 +397,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['OsPairedBluetoothListItem', 'os_paired_bluetooth_list_item_tests.js'],
  ['OsSettingsPage', 'os_settings_page_test.js'],
  ['OsSettingsUi', 'os_settings_ui_test.js'],
- ['OsSettingsUi2', 'os_settings_ui_test_2.js'],
+ /*
+   Flaky failures: https://crbug.com/1373052
+   ['OsSettingsUi2', 'os_settings_ui_test_2.js'],
+ */
  ['OsSettingsMain', 'os_settings_main_test.js'],
  ['OsSearchPage', 'os_search_page_test.js'],
  ['OsSettingsSearchBox', 'os_settings_search_box_test.js'],

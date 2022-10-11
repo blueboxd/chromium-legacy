@@ -84,7 +84,7 @@ constexpr uint32_t kMaxZXdgShellVersion = 1;
 constexpr uint32_t kMaxWpPresentationVersion = 1;
 constexpr uint32_t kMaxWpViewporterVersion = 1;
 constexpr uint32_t kMaxTextInputManagerVersion = 1;
-constexpr uint32_t kMaxTextInputExtensionVersion = 5;
+constexpr uint32_t kMaxTextInputExtensionVersion = 6;
 constexpr uint32_t kMaxExplicitSyncVersion = 2;
 constexpr uint32_t kMaxAlphaCompositingVersion = 1;
 constexpr uint32_t kMaxXdgDecorationVersion = 1;
@@ -340,7 +340,8 @@ wl::Object<wl_surface> WaylandConnection::CreateSurface() {
 void WaylandConnection::RegisterGlobalObjectFactory(
     const char* interface_name,
     wl::GlobalObjectFactory factory) {
-  DCHECK_EQ(global_object_factories_.count(interface_name), 0U);
+  // If we get duplicate interface names, something is seriously wrong.
+  CHECK_EQ(global_object_factories_.count(interface_name), 0U);
 
   global_object_factories_[interface_name] = factory;
 }

@@ -342,6 +342,7 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_CONFIRM_EMPTY_TRASH_DESC);
   SET_STRING("EMPTY_TRASH_DELETE_FOREVER",
              IDS_FILE_BROWSER_EMPTY_TRASH_DELETE_FOREVER);
+  SET_STRING("TRASH_NUDGE_LABEL", IDS_FILE_BROWSER_TRASH_NUDGE_LABEL);
   SET_STRING("CONFIRM_DELETE_ONE", IDS_FILE_BROWSER_CONFIRM_DELETE_ONE);
   SET_STRING("CONFIRM_DELETE_SOME", IDS_FILE_BROWSER_CONFIRM_DELETE_SOME);
   SET_STRING("CANT_RESTORE_SINGLE_ITEM",
@@ -1067,6 +1068,9 @@ void AddFileManagerFeatureStrings(const std::string& locale,
 
   dict->Set("DRIVEFS_MIRRORING",
             chromeos::features::IsDriveFsMirroringEnabled());
+
+  dict->Set("INLINE_SYNC_STATUS",
+            chromeos::features::IsInlineSyncStatusEnabled());
 
   dict->Set("GUEST_OS",
             base::FeatureList::IsEnabled(chromeos::features::kGuestOsFiles));

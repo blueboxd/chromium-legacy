@@ -3325,6 +3325,9 @@ Connect your device to power.
       <message name="IDS_ASH_ACCELERATOR_ACTION_DEBUG_SHOW_TOAST" translateable="false" desc="Label for accelerator action - Show Toast.">
         Show Toast
       </message>
+      <message name="IDS_ASH_ACCELERATOR_ACTION_DEBUG_SYSTEM_UI_STYLE_VIEWER" translateable="false" desc="Label for accelerator action - System UI Style Viewer.">
+        System UI Style Viewer
+      </message>
       <message name="IDS_ASH_ACCELERATOR_ACTION_DEBUG_TUCK_FLOATED_WINDOW_LEFT" translateable="false" desc="Label for accelerator action - Tuck floated window to leftt.">
         Tuck floated window to left
       </message>
@@ -5246,9 +5249,6 @@ New install
       </message>
       <message name="IDS_APP_LIST_ALL_APPS_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement that notifies users that all of their apps are showing, as opposed to showing only suggested apps">
         Launcher, all apps
-      </message>
-      <message name="IDS_APP_LIST_SUGGESTED_APPS_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement that notifies users that the UI is showing a small version of the app list">
-        Launcher, partial view
       </message>
       <message name="IDS_APP_LIST_LAUNCHER_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement that notifies users that the UI is showing the search results">
         Launcher

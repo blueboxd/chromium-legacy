@@ -68,8 +68,8 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_anonymization_key.h"
 #include "net/base/network_interfaces.h"
-#include "net/base/network_isolation_key.h"
 #include "net/base/prioritized_dispatcher.h"
 #include "net/base/request_priority.h"
 #include "net/base/trace_constants.h"
@@ -703,7 +703,7 @@ class HostResolverManager::RequestImpl
 
   const HostResolver::Host& request_host() const { return request_host_; }
 
-  const NetworkAnonymizationKey& network_isolation_key() const {
+  const NetworkAnonymizationKey& network_anonymization_key() const {
     return network_anonymization_key_;
   }
 
@@ -1746,11 +1746,11 @@ struct HostResolverManager::JobKey {
   bool operator<(const JobKey& other) const {
     return std::forward_as_tuple(query_types.ToEnumBitmask(), flags, source,
                                  secure_dns_mode, &*resolve_context, host,
-                                 network_isolation_key) <
+                                 network_anonymization_key) <
            std::forward_as_tuple(other.query_types.ToEnumBitmask(), other.flags,
                                  other.source, other.secure_dns_mode,
                                  &*other.resolve_context, other.host,
-                                 other.network_isolation_key);
+                                 other.network_anonymization_key);
   }
 
   bool operator==(const JobKey& other) const {
@@ -1758,7 +1758,7 @@ struct HostResolverManager::JobKey {
   }
 
   absl::variant<url::SchemeHostPort, std::string> host;
-  NetworkIsolationKey network_isolation_key;
+  NetworkAnonymizationKey network_anonymization_key;
   DnsQueryTypeSet query_types;
   HostResolverFlags flags;
   HostResolverSource source;
@@ -1782,7 +1782,7 @@ struct HostResolverManager::JobKey {
                                                 ? *query_types.begin()
                                                 : DnsQueryType::UNSPECIFIED;
     HostCache::Key key(host, query_type_for_key, flags, source,
-                       network_isolation_key);
+                       network_anonymization_key);
     key.secure = secure;
     return key;
   }
@@ -2133,8 +2133,8 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       query_types_list.Append(kDnsQueryTypes.at(query_type));
     dict.Set("dns_query_types", std::move(query_types_list));
     dict.Set("secure_dns_mode", base::strict_cast<int>(key_.secure_dns_mode));
-    dict.Set("network_isolation_key",
-             key_.network_isolation_key.ToDebugString());
+    dict.Set("network_anonymization_key",
+             key_.network_anonymization_key.ToDebugString());
     return base::Value(std::move(dict));
   }
 
@@ -2234,18 +2234,17 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     DCHECK_EQ(1, num_occupied_job_slots_);
     DCHECK(HasAddressType(key_.query_types));
 
-    system_task_ = std::make_unique<HostResolverSystemTask>(
+    system_task_ = HostResolverSystemTask::Create(
         std::string(GetHostname(key_.host)),
         HostResolver::DnsQueryTypeSetToAddressFamily(key_.query_types),
-        key_.flags,
-        base::BindOnce(&Job::OnSystemTaskComplete, base::Unretained(this),
-                       tick_clock_->NowTicks()),
-        resolver_->host_resolver_system_params_, net_log_,
+        key_.flags, resolver_->host_resolver_system_params_, net_log_,
         key_.GetTargetNetwork());
 
     // Start() could be called from within Resolve(), hence it must NOT directly
     // call OnSystemTaskComplete, for example, on synchronous failure.
-    system_task_->Start();
+    system_task_->Start(base::BindOnce(&Job::OnSystemTaskComplete,
+                                       base::Unretained(this),
+                                       tick_clock_->NowTicks()));
   }
 
   // Called by HostResolverSystemTask when it completes.
@@ -3064,7 +3063,7 @@ int HostResolverManager::Resolve(RequestImpl* request) {
   job_key.host =
       CreateHostForJobKey(request->request_host(), parameters.dns_query_type,
                           https_svcb_options_.enable);
-  job_key.network_isolation_key = request->network_isolation_key();
+  job_key.network_anonymization_key = request->network_anonymization_key();
   job_key.source = parameters.source;
 
   IPAddress ip_address;

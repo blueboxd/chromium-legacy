@@ -162,6 +162,9 @@ def parse_args(args):
                                    'to x64.')),
         optparse.make_option('--fuchsia-out-dir',
                              help=('Path to Fuchsia build output directory.')),
+        optparse.make_option('--custom-image',
+                             help=('Specify an image used for booting up the '
+                                   'emulator.')),
         optparse.make_option(
             '--fuchsia-ssh-config',
             help=('The path to the SSH configuration used for '
@@ -535,14 +538,17 @@ def parse_args(args):
                 help=
                 'Run the N% fastest tests as well as any tests listed on the command line'
             ),
+            optparse.make_option('--test-list',
+                                 action='append',
+                                 metavar='FILE',
+                                 help='read filters for tests to run'),
             optparse.make_option(
-                '--test-list',
                 '--isolated-script-test-filter-file',
                 '--test-launcher-filter-file',
                 action='append',
                 metavar='FILE',
                 help=
-                'read list of tests to run from file, as if they were specified on the command line'
+                'read filters for tests to not run as if they were specified on the command line'
             ),
             optparse.make_option(
                 '--isolated-script-test-filter',

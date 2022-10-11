@@ -130,6 +130,32 @@ void ForceExperimentState(
   }
 }
 
+// Associates features for groups that do not specify them manually.
+void AssociateDefaultFeatures(const Study& study,
+                              base::FieldTrial* trial,
+                              base::FeatureList* feature_list) {
+  // Note: We only compute feature associations for ACTIVATE_ON_QUERY studies,
+  // since these associations are only used to determine that the trial has
+  // been queried when the feature is queried.
+  if (study.activation_type() != Study_ActivationType_ACTIVATE_ON_QUERY)
+    return;
+
+  std::set<std::string> features_to_associate;
+  for (const auto& experiment : study.experiment()) {
+    const auto& features = experiment.feature_association();
+    for (const auto& feature : features.enable_feature()) {
+      features_to_associate.insert(feature);
+    }
+    for (const auto& feature : features.disable_feature()) {
+      features_to_associate.insert(feature);
+    }
+  }
+  for (const auto& feature_name : features_to_associate) {
+    feature_list->RegisterFieldTrialOverride(
+        feature_name, base::FeatureList::OVERRIDE_USE_DEFAULT, trial);
+  }
+}
+
 // Registers feature overrides for the chosen experiment in the specified study.
 void RegisterFeatureOverrides(const ProcessedStudy& processed_study,
                               base::FieldTrial* trial,
@@ -164,10 +190,7 @@ void RegisterFeatureOverrides(const ProcessedStudy& processed_study,
   // Associate features for groups that do not specify them manually (e.g.
   // "Default" group), so that such groups are reported.
   if (!experiment.has_feature_association()) {
-    for (const auto& feature_name : processed_study.associated_features()) {
-      feature_list->RegisterFieldTrialOverride(
-          feature_name, base::FeatureList::OVERRIDE_USE_DEFAULT, trial);
-    }
+    AssociateDefaultFeatures(study, trial, feature_list);
   }
 }
 
@@ -229,7 +252,7 @@ void VariationsSeedProcessor::CreateTrialsFromSeed(
   SetSeedVersion(seed.version());
 
   for (const ProcessedStudy& study : filtered_studies) {
-    CreateTrialFromStudy(study, override_callback, entropy_providers,
+    CreateTrialFromStudy(study, override_callback, entropy_providers, layers,
                          feature_list);
   }
 }
@@ -238,6 +261,7 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
     const ProcessedStudy& processed_study,
     const UIStringOverrideCallback& override_callback,
     const EntropyProviders& entropy_providers,
+    const VariationsLayers& layers,
     base::FeatureList* feature_list) {
   // Since trials and features can come from many different sources (variations
   // seed, about://flags, and command line), there are special cases for when
@@ -324,7 +348,7 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
     return;
 
   const auto& entropy_provider =
-      processed_study.SelectEntropyProviderForStudy(entropy_providers);
+      processed_study.SelectEntropyProviderForStudy(entropy_providers, layers);
 
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(

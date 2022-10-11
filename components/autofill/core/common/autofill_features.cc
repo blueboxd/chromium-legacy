@@ -286,13 +286,6 @@ BASE_FEATURE(kAutofillEnableLabelPrecedenceForTurkishAddresses,
              "AutofillEnableLabelPrecedenceForTurkishAddresses",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables the parsing of a sequence of fields that follows the pattern of Name,
-// Surname.
-// TODO(crbug.com/1277480): Remove once launched.
-BASE_FEATURE(kAutofillEnableNameSurenameParsing,
-             "AutofillEnableNameSurenameParsing",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When enabled, the address profile deduplication logic runs after the browser
 // startup, once per chrome version.
 BASE_FEATURE(kAutofillEnableProfileDeduplication,
@@ -369,13 +362,6 @@ BASE_FEATURE(kAutofillImprovedLabelForInference,
 BASE_FEATURE(kAutofillHighlightOnlyChangedValuesInPreviewMode,
              "AutofillHighlightOnlyChangedValuesInPreviewMode",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Controls if a server prediction with a prediction source |OVERRIDE| is
-// granted precedence over html type attributes.
-// TODO(crbug.com/1170384) Remove once launched
-BASE_FEATURE(kAutofillServerTypeTakesPrecedence,
-             "AutofillServerTypeTakesPrecedence",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, Autofill suggestions are displayed in the keyboard accessory
 // instead of the regular popup.

@@ -760,6 +760,12 @@ const char kChromeWhatsNewInMainMenuNewBadgeDescription[] =
     "menu.";
 #endif
 
+const char kDarkLightModeKMeansColorName[] =
+    "K Means color algorithm for dark light mode";
+const char kDarkLightModeKMeansColorDescription[] =
+    "Enables the alternate K Means color algorithm for extracting color from "
+    "user wallpaper to mix into system UI for dark light mode";
+
 const char kDarkLightTestName[] = "Dark/light mode of system UI";
 const char kDarkLightTestDescription[] =
     "Enables the dark/light mode of system UI, which includes shelf, launcher, "
@@ -1904,6 +1910,11 @@ const char kDestroySystemProfilesDescription[] =
     "owned by the System Profile. This requires "
     "#destroy-profile-on-browser-close.";
 
+const char kNotificationInteractionHistoryName[] =
+    "Notification Interaction History";
+const char kNotificationInteractionHistoryDescription[] =
+    "Enable recording notification count and interaction.";
+
 const char kNotificationsRevampName[] = "Notifications Revamp";
 const char kNotificationsRevampDescription[] =
     "Enable notification UI revamp and grouped web notifications.";
@@ -1982,7 +1993,7 @@ const char kOmniboxDocumentProviderAsoDescription[] =
     "to ASO (Apps Search Overlay) search.";
 
 const char kOmniboxDomainSuggestionsName[] = "Omnibox Domain Suggestions";
-const char kOmniboxDomainSuggestionsDescriptions[] =
+const char kOmniboxDomainSuggestionsDescription[] =
     "If enabled, history URL suggestions from hosts visited often bypass the "
     "per provider limit.";
 
@@ -1999,6 +2010,12 @@ const char kOmniboxFuzzyUrlSuggestionsDescription[] =
 const char kOmniboxHeaderPaddingUpdateName[] = "Omnibox Header Padding Update";
 const char kOmniboxHeaderPaddingUpdateDescription[] =
     "Update Omnibox suggestion header's position.";
+
+const char kOmniboxHistoryQuickProviderSpecificityScoreCountUniqueHostsName[] =
+    "Omnibox HQP Specificity";
+const char
+    kOmniboxHistoryQuickProviderSpecificityScoreCountUniqueHostsDescription[] =
+        "When enabled, HQP doesn't demote same-host suggestions.";
 
 const char kOmniboxModernizeVisualUpdateName[] =
     "Omnibox Modernize Visual Update";
@@ -2365,8 +2382,7 @@ const char kChipLocationBarIconOverrideDescription[] =
 const char kConfirmationChipName[] = "Confirmation Chip Experiment";
 const char kConfirmationChipNameDescription[] =
     "Enables an experimental confirmation chip in the location bar after a "
-    "permission prompt shown with the chip UI has been decided by the user. "
-    "Requires #permission-chip to be enabled.";
+    "permission prompt shown has been decided by the user.";
 
 const char kPermissionChipGestureSensitiveName[] =
     "Gesture-sensitive Permissions Chip";
@@ -2640,6 +2656,12 @@ const char kSidePanelJourneysFlagId[] = "side-panel-journeys";
 const char kSidePanelJourneysName[] = "Side panel journeys";
 const char kSidePanelJourneysDescription[] =
     "Enables Journeys within the side panel.";
+
+const char kSidePanelJourneysQuerylessFlagId[] =
+    "side-panel-journeys-queryless";
+const char kSidePanelJourneysQuerylessName[] = "Side panel journeys queryless";
+const char kSidePanelJourneysQuerylessDescription[] =
+    "Enables Journeys queryless view within the side panel.";
 
 const char kSidePanelWebViewName[] = "Side panel webview";
 const char kSidePanelWebViewDescription[] =
@@ -4452,7 +4474,7 @@ const char kHappinessTrackingSurveysForDesktopDemoDescription[] =
 
 const char kOmniboxDriveSuggestionsName[] =
     "Omnibox Google Drive Document suggestions";
-const char kOmniboxDriveSuggestionsDescriptions[] =
+const char kOmniboxDriveSuggestionsDescription[] =
     "Display suggestions for Google Drive documents in the omnibox when Google "
     "is the default search engine.";
 
@@ -5898,6 +5920,12 @@ const char kOobeHidDetectionRevampDescription[] =
     "Enables the ChromeOS HID Detection Revamp, which updates OOBE HID "
     "detection screen UI and related infrastructure.";
 
+const char kOsSettingsSearchFeedbackName[] =
+    "ChromeOS Settings Search Feedback";
+const char kOsSettingsSearchFeedbackDescription[] =
+    "Enables search result feedback in ChromeOS Settings when no search "
+    "results are returned.";
+
 const char kPartialSplit[] = "Partial Split";
 const char kPartialSplitDescription[] =
     "Enables the option to snap two windows into 2/3 and 1/3 for split view.";
@@ -6494,6 +6522,10 @@ const char kPreferLibYuvImageProcessorName[] = "Prefer libYUV image processor";
 const char kPreferLibYuvImageProcessorDescription[] =
     "Prefers the libYUV image processor for format conversion of video frames "
     "over the hardware implementation";
+const char kPreferGLImageProcessorName[] = "Prefer GL image processor";
+const char kPreferGLImageProcessorDescription[] =
+    "Prefers the GL image processor for format conversion of video frames over"
+    " both the libYUV and hardware implementations";
 #endif  // defined(ARCH_CPU_ARM_FAMILY)
 #endif  // BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 

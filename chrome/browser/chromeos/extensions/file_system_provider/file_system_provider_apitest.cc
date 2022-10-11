@@ -359,6 +359,27 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, CopyEntry) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, DeleteEntry) {
+  ASSERT_TRUE(RunExtensionTest(
+      "file_system_provider/service_worker/delete_entry",
+      {.extension_url = "test.html"}, {.load_as_component = true}))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, GetAll) {
+  ASSERT_TRUE(RunExtensionTest("file_system_provider/service_worker/get_all",
+                               {.extension_url = "test.html"},
+                               {.load_as_component = true}))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, ReadDirectory) {
+  ASSERT_TRUE(RunExtensionTest(
+      "file_system_provider/service_worker/read_directory",
+      {.extension_url = "test.html"}, {.load_as_component = true}))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, ReadFile) {
   ASSERT_TRUE(RunExtensionTest("file_system_provider/service_worker/read_file",
                                {.extension_url = "test.html"},

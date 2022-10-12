@@ -118,6 +118,8 @@ void ParentAccessUI::SetUpResources() {
                           IDR_PARENT_ACCESS_CONTROLLER_JS);
   source->AddResourcePath("parent_access_app.js", IDR_PARENT_ACCESS_APP_JS);
   source->AddResourcePath("parent_access_ui.js", IDR_PARENT_ACCESS_UI_JS);
+  source->AddResourcePath("parent_access_ui_handler.js",
+                          IDR_PARENT_ACCESS_UI_HANDLER_JS);
   source->AddResourcePath("parent_access_after.js", IDR_PARENT_ACCESS_AFTER_JS);
   source->AddResourcePath("flows/local_web_approvals_after.js",
                           IDR_LOCAL_WEB_APPROVALS_AFTER_JS);
@@ -125,10 +127,6 @@ void ParentAccessUI::SetUpResources() {
                           IDR_PARENT_ACCESS_UI_MOJOM_WEBUI_JS);
   source->AddResourcePath("webview_manager.js",
                           IDR_PARENT_ACCESS_WEBVIEW_MANAGER_JS);
-  source->AddResourcePath("images/parent_access_illustration_light_theme.svg",
-                          IDR_PARENT_ACCESS_ILLUSTRATION_LIGHT_THEME_SVG);
-  source->AddResourcePath("images/parent_access_illustration_dark_theme.svg",
-                          IDR_PARENT_ACCESS_ILLUSTRATION_DARK_THEME_SVG);
 
   source->UseStringsJs();
   source->SetDefaultResource(IDR_PARENT_ACCESS_HTML);

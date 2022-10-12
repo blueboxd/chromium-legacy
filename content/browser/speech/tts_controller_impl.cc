@@ -155,14 +155,14 @@ TtsControllerImpl::~TtsControllerImpl() {
 
 void TtsControllerImpl::SpeakOrEnqueue(
     std::unique_ptr<TtsUtterance> utterance) {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (GetTtsPlatform()->PlatformImplSupported())
-    GetTtsPlatform()->Enqueue(std::move(utterance));
-  else
-    SpeakOrEnqueueInternal(std::move(utterance));
-#else
+  auto* external_delegate = GetTtsPlatform()->GetExternalPlatformDelegate();
+  if (external_delegate) {
+    GetTtsPlatform()->GetExternalPlatformDelegate()->Enqueue(
+        std::move(utterance));
+    return;
+  }
+
   SpeakOrEnqueueInternal(std::move(utterance));
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 void TtsControllerImpl::SpeakOrEnqueueInternal(
@@ -357,16 +357,14 @@ void TtsControllerImpl::OnTtsUtteranceBecameInvalid(int utterance_id) {
 void TtsControllerImpl::GetVoices(BrowserContext* browser_context,
                                   const GURL& source_url,
                                   std::vector<VoiceData>* out_voices) {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (GetTtsPlatform()->PlatformImplSupported()) {
-    GetTtsPlatform()->GetVoicesForBrowserContext(browser_context, source_url,
-                                                 out_voices);
-  } else {
-    GetVoicesInternal(browser_context, source_url, out_voices);
+  auto* external_delegate = GetTtsPlatform()->GetExternalPlatformDelegate();
+  if (external_delegate) {
+    external_delegate->GetVoicesForBrowserContext(browser_context, source_url,
+                                                  out_voices);
+    return;
   }
-#else
+
   GetVoicesInternal(browser_context, source_url, out_voices);
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 void TtsControllerImpl::GetVoicesInternal(BrowserContext* browser_context,
@@ -771,10 +769,10 @@ void TtsControllerImpl::PopulateParsedText(std::string* parsed_text,
   if (!children || !children->is_list())
     return;
 
-  for (size_t i = 0; i < children->GetListDeprecated().size(); ++i) {
+  for (const auto& entry : children->GetList()) {
     // We need to iterate over all children because some text elements are
     // nested within other types of elements, such as <emphasis> tags.
-    PopulateParsedText(parsed_text, &children->GetListDeprecated()[i]);
+    PopulateParsedText(parsed_text, &entry);
   }
 }
 

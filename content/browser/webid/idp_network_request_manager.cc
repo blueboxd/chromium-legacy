@@ -51,8 +51,7 @@ constexpr char kManifestListPath[] = "/.well-known/web-identity";
 constexpr char kProviderUrlListKey[] = "provider_urls";
 
 // fedcm.json configuration keys.
-// TODO(crbug.com/1339373): Rename id_token_endpoint to another name.
-constexpr char kTokenEndpointKey[] = "id_token_endpoint";
+constexpr char kIdAssertionEndpoint[] = "id_assertion_endpoint";
 constexpr char kAccountsEndpointKey[] = "accounts_endpoint";
 constexpr char kClientMetadataEndpointKey[] = "client_metadata_endpoint";
 constexpr char kRevocationEndpoint[] = "revocation_endpoint";
@@ -148,7 +147,7 @@ absl::optional<content::IdentityRequestAccount> ParseAccount(
 
   absl::optional<LoginState> approved_value;
   if (approved_clients) {
-    for (const base::Value& entry : approved_clients->GetListDeprecated()) {
+    for (const base::Value& entry : approved_clients->GetList()) {
       if (entry.is_string() && entry.GetString() == client_id) {
         approved_value = LoginState::kSignIn;
         break;
@@ -178,7 +177,7 @@ bool ParseAccounts(const base::Value* accounts,
     return false;
 
   base::flat_set<std::string> account_ids;
-  for (auto& account : accounts->GetListDeprecated()) {
+  for (auto& account : accounts->GetList()) {
     if (!account.is_dict())
       return false;
 
@@ -230,7 +229,7 @@ void ParseIdentityProviderMetadata(const base::Value& idp_metadata_value,
       idp_metadata_value.FindKey(kIdpBrandingIcons);
   if (icons_value != nullptr && icons_value->is_list()) {
     std::vector<blink::Manifest::ImageResource> icons;
-    for (const base::Value& icon_value : icons_value->GetListDeprecated()) {
+    for (const base::Value& icon_value : icons_value->GetList()) {
       if (!icon_value.is_dict())
         continue;
 
@@ -377,7 +376,7 @@ void OnManifestParsed(const GURL& provider,
   };
 
   Endpoints endpoints;
-  endpoints.token = ExtractEndpoint(kTokenEndpointKey);
+  endpoints.token = ExtractEndpoint(kIdAssertionEndpoint);
   endpoints.accounts = ExtractEndpoint(kAccountsEndpointKey);
   endpoints.client_metadata = ExtractEndpoint(kClientMetadataEndpointKey);
   endpoints.revocation = ExtractEndpoint(kRevocationEndpoint);

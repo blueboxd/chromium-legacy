@@ -14,7 +14,6 @@
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector3d_f.h"
@@ -438,25 +437,13 @@ Point3F Transform::MapPoint(const Point3F& point) const {
   return MapPointInternal(matrix_, point);
 }
 
-// TODO(crbug.com/1359528): Remove these methods in favor of MapPoint().
-void Transform::TransformPoint(Point* point) const {
-  DCHECK(point);
-  *point = MapPointInternal(matrix_, *point);
-}
+Vector3dF Transform::MapVector(const Vector3dF& vector) const {
+  if (IsIdentity())
+    return vector;
 
-void Transform::TransformPoint(PointF* point) const {
-  DCHECK(point);
-  *point = MapPointInternal(matrix_, *point);
-}
-
-void Transform::TransformPoint(Point3F* point) const {
-  DCHECK(point);
-  *point = MapPointInternal(matrix_, *point);
-}
-
-void Transform::TransformVector(Vector3dF* vector) const {
-  DCHECK(vector);
-  TransformVectorInternal(matrix_, vector);
+  SkScalar p[4] = {vector.x(), vector.y(), vector.z(), 0};
+  matrix_.mapScalars(p);
+  return Vector3dF(p[0], p[1], p[2]);
 }
 
 void Transform::TransformVector4(float vector[4]) const {
@@ -505,11 +492,6 @@ Rect Transform::MapRect(const Rect& rect) const {
   return ToEnclosingRect(MapRect(RectF(rect)));
 }
 
-// TODO(crbug.com/1359528): Remove this.
-void Transform::TransformRect(RectF* rect) const {
-  *rect = MapRect(*rect);
-}
-
 absl::optional<RectF> Transform::InverseMapRect(const RectF& rect) const {
   if (IsIdentity())
     return rect;
@@ -531,29 +513,6 @@ absl::optional<Rect> Transform::InverseMapRect(const Rect& rect) const {
   if (absl::optional<RectF> mapped = InverseMapRect(RectF(rect)))
     return ToEnclosingRect(mapped.value());
   return absl::nullopt;
-}
-
-bool Transform::TransformRRectF(RRectF* rrect) const {
-  // We want this to fail only in cases where our
-  // Transform::Preserves2dAxisAlignment returns false.  However,
-  // SkMatrix::preservesAxisAlignment is stricter (it lacks the kEpsilon
-  // test).  So after converting our Matrix44 to SkMatrix, round
-  // relevant values less than kEpsilon to zero.
-  SkMatrix rounded_matrix = TransformToFlattenedSkMatrix(*this);
-  if (std::abs(rounded_matrix.get(SkMatrix::kMScaleX)) < kEpsilon)
-    rounded_matrix.set(SkMatrix::kMScaleX, 0.0f);
-  if (std::abs(rounded_matrix.get(SkMatrix::kMSkewX)) < kEpsilon)
-    rounded_matrix.set(SkMatrix::kMSkewX, 0.0f);
-  if (std::abs(rounded_matrix.get(SkMatrix::kMSkewY)) < kEpsilon)
-    rounded_matrix.set(SkMatrix::kMSkewY, 0.0f);
-  if (std::abs(rounded_matrix.get(SkMatrix::kMScaleY)) < kEpsilon)
-    rounded_matrix.set(SkMatrix::kMScaleY, 0.0f);
-
-  SkRRect result;
-  if (!SkRRect(*rrect).transform(rounded_matrix, &result))
-    return false;
-  *rrect = gfx::RRectF(result);
-  return true;
 }
 
 BoxF Transform::MapBox(const BoxF& box) const {
@@ -607,20 +566,6 @@ Point3F Transform::MapPointInternal(const Matrix44& xform,
     return gfx::Point3F(p[0] * w_inverse, p[1] * w_inverse, p[2] * w_inverse);
   }
   return gfx::Point3F(p[0], p[1], p[2]);
-}
-
-void Transform::TransformVectorInternal(const Matrix44& xform,
-                                        Vector3dF* vector) const {
-  if (xform.isIdentity())
-    return;
-
-  SkScalar p[4] = {vector->x(), vector->y(), vector->z(), 0};
-
-  xform.mapScalars(p);
-
-  vector->set_x(p[0]);
-  vector->set_y(p[1]);
-  vector->set_z(p[2]);
 }
 
 PointF Transform::MapPointInternal(const Matrix44& xform,

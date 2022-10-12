@@ -50,6 +50,7 @@
 #include "third_party/blink/public/mojom/loader/same_document_navigation_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/page.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/page_state/page_state.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 #include "third_party/blink/public/web/web_document_loader.h"
@@ -414,6 +415,30 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // have this problem.
   bool IsReloadedOrFormSubmitted() const;
 
+  // (crbug.com/1371756) Record the page if the main resource is not fetched via
+  // ServiceWorker and at least one subresource is fetched via ServiceWorker.
+  // This method won't record the page if the main resource was not controlled
+  // by ServiceWorker at the time of the initial navigation. This helps us to
+  // understand the potential impact of the fetch fast-path effort.
+  void MaybeRecordServiceWorkerFallbackMainResource(
+      bool was_subresource_fetched_via_service_worker);
+
+  // (crbug.com/1371756) Returns the initial state of
+  // ControllerServiceWorkerMode in the document. We store this info to capture
+  // the case when the main document has installed ServiceWorker and the page is
+  // already controlled or not.
+  mojom::blink::ControllerServiceWorkerMode ServiceWorkerInitialControllerMode()
+      const {
+    return service_worker_initial_controller_mode_;
+  }
+
+  // Starts loading the navigation body in a background thread.
+  static void MaybeStartLoadingBodyInBackground(
+      WebNavigationBodyLoader* body_loader,
+      LocalFrame* frame,
+      const KURL& url,
+      const ResourceResponse& response);
+
  protected:
   // Based on its MIME type, if the main document's response corresponds to an
   // MHTML archive, then every resources will be loaded from this archive.
@@ -514,10 +539,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   // WebNavigationBodyLoader::Client
   void BodyDataReceived(base::span<const char> data) override;
-  void DecodedBodyDataReceived(
-      const WebString& data,
-      const WebTextDecoder::EncodingData& encoding_data,
-      base::span<const char> encoded_data) override;
+  void DecodedBodyDataReceived(const WebString& data,
+                               const WebEncodingData& encoding_data,
+                               base::span<const char> encoded_data) override;
   void BodyLoadingFinished(base::TimeTicks completion_time,
                            int64_t total_encoded_data_length,
                            int64_t total_encoded_body_length,
@@ -618,6 +642,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   DocumentLoadTiming document_load_timing_;
 
   base::TimeTicks time_of_last_data_received_;
+
+  mojom::blink::ControllerServiceWorkerMode
+      service_worker_initial_controller_mode_ =
+          mojom::blink::ControllerServiceWorkerMode::kNoController;
 
   std::unique_ptr<WebServiceWorkerNetworkProvider>
       service_worker_network_provider_;

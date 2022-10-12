@@ -510,14 +510,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="WebRTC.Audio.EchoCanceller.BufferDelay" units="Blocks"
+<histogram name="WebRTC.Audio.EchoCanceller.BufferDelay" units="Blocks/2"
     expires_after="2023-03-19">
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
-    This histogram logs the applied render buffer delay used in the WebRTC echo
-    canceller. A new value is logged every 10 seconds and the logged value
-    constitutes the current buffer delay at the time when the value is logged.
+    This histogram logs half the applied render buffer delay used in the WebRTC
+    echo canceller. The value 0 means that no delay could be estimated,
+    otherwise the logged delay corresponds to the actual delay + 1. A new value
+    is logged every 10 seconds and the logged value constitutes the current
+    buffer delay at the time when the value is logged.
   </summary>
 </histogram>
 
@@ -555,15 +557,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="WebRTC.Audio.EchoCanceller.EchoPathDelay" units="Blocks"
+<histogram name="WebRTC.Audio.EchoCanceller.EchoPathDelay" units="Blocks/2"
     expires_after="2023-03-19">
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
-    This histogram logs the estimated echo path delay in 64 sample blocks as
-    seen by the delay estimator in the WebRTC echo canceller. A new value is
-    logged every 10 seconds and the logged value is the estimate of the delay of
-    the echo path at the time when the value is logged.
+    This histogram logs half the estimated echo path delay in 64 sample blocks
+    as seen by the delay estimator in the WebRTC echo canceller. The value 0
+    means that no delay could be estimated, otherwise the logged delay
+    corresponds to the actual delay + 1. A new value is logged every 10 seconds
+    and the logged value is the estimate of the delay of the echo path at the
+    time when the value is logged.
   </summary>
 </histogram>
 
@@ -634,7 +638,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.MaxSkewShiftCount"
-    units="events/minute" expires_after="2023-09-13">
+    units="events/minute" expires_after="2022-10-11">
+  <obsolete>
+    Removed Oct 2022. Reports a constant value since Jan 2019.
+  </obsolete>
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -697,7 +704,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.ReliableDelayEstimates"
-    enum="WebRTCAecDelayEstimateReliability" expires_after="2023-01-15">
+    enum="WebRTCAecDelayEstimateReliability" expires_after="2023-04-09">
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -1238,6 +1245,18 @@ chromium-metrics-reviews@google.com.
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
     Counters on creation of DesktopCaptureDevice and the first capture call.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.EnumerateDevices.Latency" units="ms"
+    expires_after="2023-10-11">
+  <owner>toprice@chromium.org</owner>
+  <owner>agpalak@chromium.org</owner>
+  <summary>
+    Measures the time between a page calling enumerateDevices() and the returned
+    promise resolving (either successfully or with an error), intended for
+    monitoring for latency regressions in the wild. Note a call which never
+    resolves won't be counted in this metric.
   </summary>
 </histogram>
 
@@ -2233,7 +2252,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.UserMediaRequest.Result2"
-    enum="MediaStreamRequestResult2" expires_after="2023-02-07">
+    enum="MediaStreamRequestResult2" expires_after="2023-04-09">
   <owner>toprice@chromium.org</owner>
   <owner>agpalak@chromium.org</owner>
   <summary>

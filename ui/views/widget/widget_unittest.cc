@@ -1060,12 +1060,26 @@ TEST_P(WidgetWithDestroyedNativeViewTest, Hide) {
   widget()->Hide();
 }
 
+TEST_P(WidgetWithDestroyedNativeViewTest, Init) {
+  Widget::InitParams params;
+  EXPECT_DEATH_IF_SUPPORTED({ widget()->Init(std::move(params)); },
+                            "This widget has already been initialized");
+}
+
+TEST_P(WidgetWithDestroyedNativeViewTest, is_secondary_widget) {
+  widget()->is_secondary_widget();
+}
+
 TEST_P(WidgetWithDestroyedNativeViewTest, IsActive) {
   widget()->IsActive();
 }
 
 TEST_P(WidgetWithDestroyedNativeViewTest, IsClosed) {
   widget()->IsClosed();
+}
+
+TEST_P(WidgetWithDestroyedNativeViewTest, IsDialogBox) {
+  widget()->IsDialogBox();
 }
 
 TEST_P(WidgetWithDestroyedNativeViewTest, IsFullscreen) {
@@ -1076,8 +1090,29 @@ TEST_P(WidgetWithDestroyedNativeViewTest, IsMaximized) {
   widget()->IsMaximized();
 }
 
+TEST_P(WidgetWithDestroyedNativeViewTest, IsMinimized) {
+  widget()->IsMinimized();
+}
+
+TEST_P(WidgetWithDestroyedNativeViewTest, IsModal) {
+  widget()->IsModal();
+}
+
 TEST_P(WidgetWithDestroyedNativeViewTest, IsMouseEventsEnabled) {
   widget()->IsMouseEventsEnabled();
+}
+
+TEST_P(WidgetWithDestroyedNativeViewTest, IsMoveLoopSupported) {
+  widget()->IsMoveLoopSupported();
+}
+
+TEST_P(WidgetWithDestroyedNativeViewTest, IsNativeWidgetInitialized) {
+  widget()->IsNativeWidgetInitialized();
+}
+
+TEST_P(WidgetWithDestroyedNativeViewTest, IsStackedAbove) {
+  std::unique_ptr<Widget> other_widget = CreateTestWidget();
+  widget()->IsStackedAbove(other_widget->GetNativeView());
 }
 
 TEST_P(WidgetWithDestroyedNativeViewTest, IsTranslucentWindowOpacitySupported) {
@@ -1086,6 +1121,10 @@ TEST_P(WidgetWithDestroyedNativeViewTest, IsTranslucentWindowOpacitySupported) {
 
 TEST_P(WidgetWithDestroyedNativeViewTest, IsVisible) {
   widget()->IsVisible();
+}
+
+TEST_P(WidgetWithDestroyedNativeViewTest, IsVisibleOnAllWorkspaces) {
+  widget()->IsVisibleOnAllWorkspaces();
 }
 
 TEST_P(WidgetWithDestroyedNativeViewTest, Maximize) {

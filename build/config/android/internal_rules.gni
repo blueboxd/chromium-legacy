@@ -5,7 +5,6 @@
 # Do not add any imports to non-//build directories here.
 # Some projects (e.g. V8) do not have non-build directories DEPS'ed in.
 import("//build/config/android/config.gni")
-import("//build/config/android/copy_ex.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/compute_inputs_for_analyze.gni")
 import("//build/config/coverage/coverage.gni")
@@ -1713,13 +1712,18 @@ if (enable_java_templates) {
           }
         }
         if (_desugar_needs_classpath) {
-          if (defined(invoker.unprocessed_jar_path)) {
-            # Cannot use header jar for the active jar, because it does not
-            # contain anonymous classes. https://crbug.com/1342018#c5
-            # Cannot use processed .jar here because it might have classes
-            # filtered out via jar_excluded_patterns.
-            # Must come first in classpath in order to take precedence over
-            # deps that defined the same classes (via jar_excluded_patterns).
+          # Cannot use header jar for the active jar, because it does not
+          # contain anonymous classes. https://crbug.com/1342018#c5
+          # Cannot use processed .jar here because it might have classes
+          # filtered out via jar_excluded_patterns.
+          # Must come first in classpath in order to take precedence over
+          # deps that defined the same classes (via jar_excluded_patterns).
+          if (defined(invoker.unprocessed_jar_path_filearg)) {
+            args += [
+              "--classpath",
+              invoker.unprocessed_jar_path_filearg,
+            ]
+          } else if (defined(invoker.unprocessed_jar_path)) {
             args += [
               "--classpath",
               rebase_path(invoker.unprocessed_jar_path, root_build_dir),

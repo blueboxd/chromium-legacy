@@ -9076,7 +9076,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 10
+          "shards": 20
         },
         "test": "browser_tests",
         "test_id_prefix": "ninja://chrome/test:browser_tests/"
@@ -13913,7 +13913,8 @@
               "os": "Mac-12"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "sync_integration_tests",
         "test_id_prefix": "ninja://chrome/test:sync_integration_tests/"
@@ -14519,6 +14520,7 @@
           "14a309",
           "--xctest"
         ],
+        "ci_only": true,
         "isolate_name": "base_unittests",
         "isolate_profile_data": true,
         "merge": {
@@ -14897,6 +14899,7 @@
           "14a309",
           "--xctest"
         ],
+        "ci_only": true,
         "isolate_name": "components_unittests",
         "isolate_profile_data": true,
         "merge": {
@@ -15275,6 +15278,7 @@
           "14a309",
           "--xctest"
         ],
+        "ci_only": true,
         "isolate_name": "gfx_unittests",
         "isolate_profile_data": true,
         "merge": {
@@ -15767,6 +15771,7 @@
           "14a309",
           "--xctest"
         ],
+        "ci_only": true,
         "isolate_name": "ios_chrome_unittests",
         "isolate_profile_data": true,
         "merge": {
@@ -16254,6 +16259,7 @@
           "14a309",
           "--xctest"
         ],
+        "ci_only": true,
         "isolate_name": "ios_web_inttests",
         "isolate_profile_data": true,
         "merge": {
@@ -16579,6 +16585,7 @@
           "14a309",
           "--xctest"
         ],
+        "ci_only": true,
         "isolate_name": "ios_web_unittests",
         "isolate_profile_data": true,
         "merge": {
@@ -16849,6 +16856,7 @@
           "14a309",
           "--xctest"
         ],
+        "ci_only": true,
         "isolate_name": "ios_web_view_inttests",
         "isolate_profile_data": true,
         "merge": {
@@ -17119,6 +17127,7 @@
           "14a309",
           "--xctest"
         ],
+        "ci_only": true,
         "isolate_name": "ios_web_view_unittests",
         "isolate_profile_data": true,
         "merge": {
@@ -17497,6 +17506,7 @@
           "14a309",
           "--xctest"
         ],
+        "ci_only": true,
         "isolate_name": "skia_unittests",
         "isolate_profile_data": true,
         "merge": {
@@ -17821,6 +17831,7 @@
           "14a309",
           "--xctest"
         ],
+        "ci_only": true,
         "isolate_name": "ui_base_unittests",
         "isolate_profile_data": true,
         "merge": {
@@ -19398,6 +19409,7 @@
           "--xctest",
           "--xcode-parallelization"
         ],
+        "ci_only": true,
         "isolate_name": "ios_chrome_bookmarks_eg2tests_module",
         "isolate_profile_data": true,
         "merge": {
@@ -19841,6 +19853,7 @@
           "--xctest",
           "--xcode-parallelization"
         ],
+        "ci_only": true,
         "isolate_name": "ios_chrome_integration_eg2tests_module",
         "isolate_profile_data": true,
         "merge": {
@@ -20233,6 +20246,7 @@
           "--xctest",
           "--xcode-parallelization"
         ],
+        "ci_only": true,
         "isolate_name": "ios_chrome_settings_eg2tests_module",
         "isolate_profile_data": true,
         "merge": {
@@ -20681,6 +20695,7 @@
           "--xctest",
           "--xcode-parallelization"
         ],
+        "ci_only": true,
         "isolate_name": "ios_chrome_signin_eg2tests_module",
         "isolate_profile_data": true,
         "merge": {
@@ -21070,6 +21085,7 @@
           "--xctest",
           "--xcode-parallelization"
         ],
+        "ci_only": true,
         "isolate_name": "ios_chrome_smoke_eg2tests_module",
         "isolate_profile_data": true,
         "merge": {
@@ -21513,6 +21529,7 @@
           "--xctest",
           "--xcode-parallelization"
         ],
+        "ci_only": true,
         "isolate_name": "ios_chrome_ui_eg2tests_module",
         "isolate_profile_data": true,
         "merge": {
@@ -22172,6 +22189,7 @@
           "--xctest",
           "--xcode-parallelization"
         ],
+        "ci_only": true,
         "isolate_name": "ios_chrome_web_eg2tests_module",
         "isolate_profile_data": true,
         "merge": {
@@ -22775,6 +22793,7 @@
           "--xctest",
           "--xcode-parallelization"
         ],
+        "ci_only": true,
         "isolate_name": "ios_showcase_eg2tests_module",
         "isolate_profile_data": true,
         "merge": {
@@ -23539,6 +23558,7 @@
           "--xctest",
           "--xcode-parallelization"
         ],
+        "ci_only": true,
         "isolate_name": "ios_web_shell_eg2tests_module",
         "isolate_profile_data": true,
         "merge": {

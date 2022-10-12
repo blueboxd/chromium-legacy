@@ -64,6 +64,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
 
@@ -1742,27 +1743,30 @@ TEST_P(CertVerifyProcInternalTest, MAYBE_WrongKeyPurpose) {
 // serverAuth EKU.
 // TODO(crbug.com/843735): Deprecate support for this.
 TEST_P(CertVerifyProcInternalTest, Sha1IntermediateUsesServerGatedCrypto) {
-  base::FilePath certs_dir =
-      GetTestNetDataDirectory()
-          .AppendASCII("verify_certificate_chain_unittest")
-          .AppendASCII("intermediate-eku-server-gated-crypto");
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
 
-  scoped_refptr<X509Certificate> cert_chain = CreateCertificateChainFromFile(
-      certs_dir, "sha1-chain.pem", X509Certificate::FORMAT_AUTO);
+  root->GenerateRSAKey();
+  root->SetSignatureAlgorithm(SignatureAlgorithm::kRsaPkcs1Sha1);
 
-  ASSERT_TRUE(cert_chain);
-  ASSERT_FALSE(cert_chain->intermediate_buffers().empty());
+  intermediate->SetExtendedKeyUsages({der::Input(kNetscapeServerGatedCrypto)});
+  intermediate->SetSignatureAlgorithm(SignatureAlgorithm::kRsaPkcs1Sha1);
 
-  auto root = X509Certificate::CreateFromBuffer(
-      bssl::UpRef(cert_chain->intermediate_buffers().back().get()), {});
-
-  ScopedTestRoot scoped_root(root.get());
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
 
   int flags = 0;
   CertVerifyResult verify_result;
-  int error =
-      Verify(cert_chain.get(), "test.example", flags,
-             CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
+  // The cert chain including the root is passed to Verify, as on recent
+  // Android versions (something like 11+) the verifier fails on SHA1 certs and
+  // then the CertVerifyProc wrapper just returns the input chain, which this
+  // test then depends on for its expectations. (This is all kind of silly, but
+  // this is just matching how the test was originally written, and we'll
+  // delete this sometime soon anyway so there's not much benefit to thinking
+  // about it too hard.)
+  int error = Verify(leaf->GetX509CertificateFullChain().get(),
+                     "www.example.com", flags, CRLSet::BuiltinCRLSet().get(),
+                     CertificateList(), &verify_result);
 
   if (AreSHA1IntermediatesAllowed()) {
     EXPECT_THAT(error, IsOk());
@@ -2852,15 +2856,6 @@ TEST_P(CertVerifyProcInternalTest, FailedTargetSignatureValidation) {
 
 class CertVerifyProcNameNormalizationTest : public CertVerifyProcInternalTest {
  protected:
-  void SetUp() override {
-    CertVerifyProcInternalTest::SetUp();
-
-    scoped_refptr<X509Certificate> root_cert =
-        ImportCertFromFile(GetTestCertsDirectory(), "ocsp-test-root.pem");
-    ASSERT_TRUE(root_cert);
-    test_root_ = std::make_unique<ScopedTestRoot>(root_cert.get());
-  }
-
   std::string HistogramName() const {
     std::string prefix("Net.CertVerifier.NameNormalizationPrivateRoots.");
     switch (verify_proc_type()) {
@@ -2895,7 +2890,6 @@ class CertVerifyProcNameNormalizationTest : public CertVerifyProcInternalTest {
   }
 
  private:
-  std::unique_ptr<ScopedTestRoot> test_root_;
   base::HistogramTester histograms_;
 };
 
@@ -2908,24 +2902,31 @@ INSTANTIATE_TEST_SUITE_P(All,
 // the intermediate's subject CN is UTF8String, and verifies the proper
 // histogram is logged.
 TEST_P(CertVerifyProcNameNormalizationTest, StringType) {
-  scoped_refptr<X509Certificate> chain = CreateCertificateChainFromFile(
-      GetTestCertsDirectory(), "name-normalization-printable-utf8.pem",
-      X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
-  ASSERT_TRUE(chain);
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
+
+  std::string issuer_cn = CertBuilder::MakeRandomHexString(12);
+  leaf->SetIssuerTLV(CertBuilder::BuildNameWithCommonNameOfType(
+      issuer_cn, CBS_ASN1_PRINTABLESTRING));
+  intermediate->SetSubject(CertBuilder::BuildNameWithCommonNameOfType(
+      issuer_cn, CBS_ASN1_UTF8STRING));
+
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
 
   int flags = 0;
   CertVerifyResult verify_result;
   int error =
-      Verify(chain.get(), "example.test", flags, CRLSet::BuiltinCRLSet().get(),
-             CertificateList(), &verify_result);
+      Verify(leaf->GetX509CertificateChain().get(), "www.example.com", flags,
+             CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
 
   switch (verify_proc_type()) {
     case CERT_VERIFY_PROC_IOS:
     case CERT_VERIFY_PROC_MAC:
-    case CERT_VERIFY_PROC_WIN:
       EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
       break;
     case CERT_VERIFY_PROC_ANDROID:
+    case CERT_VERIFY_PROC_WIN:
     case CERT_VERIFY_PROC_BUILTIN:
     case CERT_VERIFY_PROC_BUILTIN_CHROME_ROOTS:
       EXPECT_THAT(error, IsOk());
@@ -2939,47 +2940,49 @@ TEST_P(CertVerifyProcNameNormalizationTest, StringType) {
 // subject CN are both PrintableString but have differing case on the first
 // character, and verifies the proper histogram is logged.
 TEST_P(CertVerifyProcNameNormalizationTest, CaseFolding) {
-  scoped_refptr<X509Certificate> chain = CreateCertificateChainFromFile(
-      GetTestCertsDirectory(), "name-normalization-case-folding.pem",
-      X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
-  ASSERT_TRUE(chain);
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
+
+  std::string issuer_hex = CertBuilder::MakeRandomHexString(12);
+  leaf->SetIssuerTLV(CertBuilder::BuildNameWithCommonNameOfType(
+      "Z" + issuer_hex, CBS_ASN1_PRINTABLESTRING));
+  intermediate->SetSubject(CertBuilder::BuildNameWithCommonNameOfType(
+      "z" + issuer_hex, CBS_ASN1_PRINTABLESTRING));
+
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
 
   int flags = 0;
   CertVerifyResult verify_result;
   int error =
-      Verify(chain.get(), "example.test", flags, CRLSet::BuiltinCRLSet().get(),
-             CertificateList(), &verify_result);
+      Verify(leaf->GetX509CertificateChain().get(), "www.example.com", flags,
+             CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
 
-  switch (verify_proc_type()) {
-    case CERT_VERIFY_PROC_WIN:
-      EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
-      break;
-    case CERT_VERIFY_PROC_ANDROID:
-    case CERT_VERIFY_PROC_IOS:
-    case CERT_VERIFY_PROC_MAC:
-    case CERT_VERIFY_PROC_BUILTIN:
-    case CERT_VERIFY_PROC_BUILTIN_CHROME_ROOTS:
-      EXPECT_THAT(error, IsOk());
-      break;
-  }
-
+  EXPECT_THAT(error, IsOk());
   ExpectNormalizationHistogram(error);
 }
 
-// Confirms that a chain generated by the generate-name-normalization-certs.py
-// script which does not require normalization validates ok, and that the
-// ByteEqual histogram is logged.
+// Confirms that a chain generated by the same pattern as the other
+// NameNormalizationTest cases which does not require normalization validates
+// ok, and that the ByteEqual histogram is logged.
 TEST_P(CertVerifyProcNameNormalizationTest, ByteEqual) {
-  scoped_refptr<X509Certificate> chain = CreateCertificateChainFromFile(
-      GetTestCertsDirectory(), "name-normalization-byteequal.pem",
-      X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
-  ASSERT_TRUE(chain);
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
+
+  std::string issuer_hex = CertBuilder::MakeRandomHexString(12);
+  leaf->SetIssuerTLV(CertBuilder::BuildNameWithCommonNameOfType(
+      issuer_hex, CBS_ASN1_PRINTABLESTRING));
+  intermediate->SetSubject(CertBuilder::BuildNameWithCommonNameOfType(
+      issuer_hex, CBS_ASN1_PRINTABLESTRING));
+
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
 
   int flags = 0;
   CertVerifyResult verify_result;
   int error =
-      Verify(chain.get(), "example.test", flags, CRLSet::BuiltinCRLSet().get(),
-             CertificateList(), &verify_result);
+      Verify(leaf->GetX509CertificateChain().get(), "www.example.com", flags,
+             CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
 
   EXPECT_THAT(error, IsOk());
   ExpectByteEqualHistogram();

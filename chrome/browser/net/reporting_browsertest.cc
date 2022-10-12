@@ -191,9 +191,9 @@ class NonIsolatedReportingBrowserTest : public BaseReportingBrowserTest {
 };
 
 std::unique_ptr<base::Value> ParseReportUpload(const std::string& payload) {
-  auto parsed_payload = base::test::ParseJsonDeprecated(payload);
+  base::Value parsed_payload = base::test::ParseJson(payload);
   // Clear out any non-reproducible fields.
-  for (auto& report : parsed_payload->GetListDeprecated()) {
+  for (auto& report : parsed_payload.GetListDeprecated()) {
     report.RemoveKey("age");
     report.RemovePath("body.elapsed_time");
     auto* user_agent =
@@ -201,7 +201,7 @@ std::unique_ptr<base::Value> ParseReportUpload(const std::string& payload) {
     if (user_agent)
       *user_agent = base::Value("Mozilla/1.0");
   }
-  return parsed_payload;
+  return base::Value::ToUniquePtrValue(std::move(parsed_payload));
 }
 
 }  // namespace
@@ -381,7 +381,7 @@ IN_PROC_BROWSER_TEST_P(ReportingBrowserTest,
   original_response()->Done();
 
   // Open a cross-origin kReportingHost iframe that fails to load. No report
-  // should be uploaded, since the NetworkIsolationKey does not match.
+  // should be uploaded, since the NetworkAnonymizationKey does not match.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), server()->GetURL("/iframe_blank.html")));
   content::NavigateIframeToURL(
@@ -389,8 +389,8 @@ IN_PROC_BROWSER_TEST_P(ReportingBrowserTest,
       server()->GetURL(kReportingHost, "/close-socket?should-not-be-reported"));
 
   // Navigate the main frame to a kReportingHost URL that fails to load. A
-  // report should be uploaded, since the NetworkIsolationKey matches that of
-  // the original request where reporting information was learned.
+  // report should be uploaded, since the NetworkAnonymizationKey matches that
+  // of the original request where reporting information was learned.
   GURL expect_reported_url =
       server()->GetURL(kReportingHost, "/close-socket?should-be-reported");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), expect_reported_url));
@@ -400,9 +400,8 @@ IN_PROC_BROWSER_TEST_P(ReportingBrowserTest,
 
   // Verify the contents of the received report.
   ASSERT_TRUE(actual);
-  std::unique_ptr<base::Value> expected =
-      base::test::ParseJsonDeprecated(base::StringPrintf(
-          R"json(
+  const base::Value expected = base::test::ParseJson(base::StringPrintf(
+      R"json(
         [
           {
             "body": {
@@ -421,8 +420,8 @@ IN_PROC_BROWSER_TEST_P(ReportingBrowserTest,
           },
         ]
       )json",
-          expect_reported_url.spec().c_str()));
-  EXPECT_EQ(*expected, *actual);
+      expect_reported_url.spec().c_str()));
+  EXPECT_EQ(expected, *actual);
 }
 
 // These tests intentionally crash a render process, and so fail ASan tests.

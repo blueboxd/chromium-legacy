@@ -141,6 +141,15 @@ export class TestFileSystemProvider {
           TestFileSystemProvider.FILE_READ_SUCCESS,
           new Date(2014, 1, 25, 7, 36, 12),
           TestFileSystemProvider.INITIAL_TEXT),
+      // A big file to test access at offset greater than the max unsigned
+      // 32-bit value.
+      (() => {
+        const entry = Entry.file(
+            TestFileSystemProvider.FILE_BIG, new Date(2014, 1, 25, 7, 36, 12),
+            '');
+        entry.metadata.size = 6 * 1024 * 1024 * 1024;
+        return entry;
+      })(),
     ]);
 
     /**
@@ -180,6 +189,13 @@ export class TestFileSystemProvider {
      * @private {!Object<number, function()>}
      */
     this.stalledRequests = {};
+
+    /**
+     * Configuration set by tests.
+     *
+     * @private {!Object<string, ?>}
+     */
+    this.testConfig = {};
   }
 
   setUpProviderListeners() {
@@ -289,6 +305,20 @@ export class TestFileSystemProvider {
   }
 
   /**
+   * Called by the tests to control provider configuration for different test
+   * scenarios.
+   * @param {string} key
+   * @param {?} value
+   */
+  setConfig(key, value) {
+    if (value === undefined || value === null) {
+      delete this.testConfig[key];
+    } else {
+      this.testConfig[key] = value;
+    }
+  }
+
+  /**
    * Called by the FSP. Adds a record of a function call to the queue. The test
    * will read from this queue to wait for a specific FSP call to happen.
    *
@@ -334,14 +364,14 @@ export class TestFileSystemProvider {
   }
 
   /**
-   * Clears all the state mutated by FSP handlers (test queues, max open file
-   * count).
+   * Clears all the state mutated by tests or FSP handlers.
    */
   resetState() {
     this.openedFiles = {};
     this.eventQueues = {};
     this.maxOpenedFiles = 0;
     this.stalledRequests = {};
+    this.testConfig = {};
   }
 
   /**
@@ -654,6 +684,23 @@ export class TestFileSystemProvider {
       return;
     }
 
+    if (filePath == '/' + TestFileSystemProvider.FILE_BIG) {
+      // This file is not intended to be read below the max 32-bit unsigned
+      // value, so fail immediately.
+      if (options.offset <= 2 ** 32 - 1) {
+        onError(chrome.fileSystemProvider.ProviderError.INVALID_OPERATION);
+        return;
+      }
+      // The return value does not matter, so just return a string of "A"s.
+      onSuccess(
+          /*data=*/ new Uint8Array(options.length)
+              .fill('A'.charCodeAt(0))
+              .buffer,
+          /*hasMore=*/ false,
+      );
+      return;
+    }
+
     onError(chrome.fileSystemProvider.ProviderError.INVALID_OPERATION);
   }
 
@@ -842,6 +889,14 @@ TestFileSystemProvider.FILE_BLOCKS_FOREVER = 'blocks-forever.txt';
  * @const
  */
 TestFileSystemProvider.FILE_READ_SUCCESS = 'read-normal.txt';
+
+/**
+ * A file bigger than the max unsigned 32-bit value.
+ *
+ * @type {string}
+ * @const
+ */
+TestFileSystemProvider.FILE_BIG = 'read-big.txt';
 
 /**
  * Initial contents of default testing files.

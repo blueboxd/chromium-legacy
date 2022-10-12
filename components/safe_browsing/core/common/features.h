@@ -134,6 +134,9 @@ const char kFileTypePoliciesTagParamName[] = "policy_omaha_tag";
 // Enable logging of the account enhanced protection setting in Protego pings.
 BASE_DECLARE_FEATURE(kLogAccountEnhancedProtectionStateInProtegoPings);
 
+// Enables unpacking of nested archives during downloads.
+BASE_DECLARE_FEATURE(kNestedArchives);
+
 // Enable omitting non-user gesture from referrer chain.
 BASE_DECLARE_FEATURE(kOmitNonUserGesturesFromReferrerChain);
 
@@ -164,9 +167,6 @@ BASE_DECLARE_FEATURE(kSuspiciousSiteTriggerQuotaFeature);
 // Controls whether to send sample pings of Protego allowlist domains on
 // the allowlist to Safe Browsing.
 BASE_DECLARE_FEATURE(kSendSampledPingsForProtegoAllowlistDomains);
-
-// Killswitch for using the SevenZipReader in the installer.
-BASE_DECLARE_FEATURE(kSevenZipReaderInInstaller);
 
 // Controls whether the new 7z evaluation is performed on downloads.
 BASE_DECLARE_FEATURE(kSevenZipEvaluationEnabled);

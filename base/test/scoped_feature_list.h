@@ -19,21 +19,7 @@
 #include "base/types/pass_key.h"
 #include "third_party/abseil-cpp/absl/base/attributes.h"
 
-namespace base {
-namespace test {
-
-// A reference to a base::Feature and field trial params that should be force
-// enabled and overwritten for test purposes.
-struct FeatureRefAndParams {
-  FeatureRefAndParams(const Feature& feature ABSL_ATTRIBUTE_LIFETIME_BOUND,
-                      const FieldTrialParams& params);
-  ~FeatureRefAndParams();
-
-  FeatureRefAndParams(const FeatureRefAndParams& other);
-
-  const Feature& feature;
-  const FieldTrialParams params;
-};
+namespace base::test {
 
 // A lightweight wrapper for a reference to a base::Feature. Allows lists of
 // features to be enabled/disabled to be easily passed without actually copying
@@ -60,9 +46,8 @@ class FeatureRef {
 // instance and restores the original instance upon destruction. When using the
 // non-deprecated APIs, a corresponding FieldTrialList is also created.
 //
-// Note: Re-using the same object is not allowed. To reset the feature
-// list and initialize it anew, destroy an existing scoped list and init
-// a new one.
+// Note: Re-using the same object is allowed. To reset the feature list and
+// initialize it anew, call `Reset` and then one of the `Init` methods.
 //
 // If multiple instances of this class are used in a nested fashion, they
 // should be destroyed in the opposite order of their Init*() methods being
@@ -84,8 +69,17 @@ class ScopedFeatureList final {
 
   // TODO(https://crbug.com/1370851): Temporary "alias" to allow incremental
   // migration.
-  struct FeatureAndParams : public ::base::test::FeatureRefAndParams {
-    using ::base::test::FeatureRefAndParams::FeatureRefAndParams;
+  // A reference to a base::Feature and field trial params that should be force
+  // enabled and overwritten for test purposes.
+  struct FeatureAndParams {
+    FeatureAndParams(const Feature& feature ABSL_ATTRIBUTE_LIFETIME_BOUND,
+                     const FieldTrialParams& params);
+    ~FeatureAndParams();
+
+    FeatureAndParams(const FeatureAndParams& other);
+
+    const Feature& feature;
+    const FieldTrialParams params;
   };
 
   // Constructs the instance in a non-initialized state.
@@ -215,7 +209,8 @@ class ScopedFeatureList final {
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
 };
 
-}  // namespace test
-}  // namespace base
+using FeatureRefAndParams = ScopedFeatureList::FeatureAndParams;
+
+}  // namespace base::test
 
 #endif  // BASE_TEST_SCOPED_FEATURE_LIST_H_

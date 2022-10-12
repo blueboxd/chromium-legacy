@@ -165,6 +165,11 @@ void RecordUma(ProduceCropTargetPromiseResult result) {
 }
 #endif
 
+void RecordEnumerateDevicesLatency(base::TimeTicks start_time) {
+  const base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+  base::UmaHistogramTimes("WebRTC.EnumerateDevices.Latency", elapsed);
+}
+
 }  // namespace
 
 const char MediaDevices::kSupplementName[] = "MediaDevices";
@@ -199,7 +204,8 @@ ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state,
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-  requests_.insert(resolver);
+  enumerate_device_requests_.Set(
+      resolver, RequestMetadata{.start_time = base::TimeTicks::Now()});
 
   LocalFrame* frame = LocalDOMWindow::From(script_state)->GetFrame();
   GetDispatcherHost(frame).EnumerateDevices(
@@ -294,7 +300,7 @@ ScriptPromise MediaDevices::getDisplayMediaSet(
   ExecutionContext* const context = GetExecutionContext();
   if (!context) {
     exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
+        DOMExceptionCode::kInvalidStateError,
         "No media device client available; is this a detached window?");
     return ScriptPromise();
   }
@@ -308,12 +314,19 @@ ScriptPromise MediaDevices::getDisplayMedia(
     ScriptState* script_state,
     const MediaStreamConstraints* options,
     ExceptionState& exception_state) {
-  ExecutionContext* const context = GetExecutionContext();
-  if (!context) {
+  LocalDOMWindow* const window = DomWindow();
+  if (!window) {
     exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "No media device client available; is this a detached window?");
+        DOMExceptionCode::kInvalidStateError,
+        "No local DOM window; is this a detached window?");
     return ScriptPromise();
+  }
+
+  // Measure calls without transient activation as required by spec in
+  // https://github.com/w3c/mediacapture-screen-share/pull/106
+  if (!LocalFrame::HasTransientUserActivation(window->GetFrame())) {
+    UseCounter::Count(window,
+                      WebFeature::kGetDisplayMediaWithoutUserActivation);
   }
 
   // The kDisplayCapturePermissionsPolicyEnabled preference controls whether
@@ -321,10 +334,9 @@ ScriptPromise MediaDevices::getDisplayMedia(
   // The kDisplayCapturePermissionsPolicyEnabled preference is translated
   // into DisplayCapturePermissionsPolicyEnabled RuntimeEnabledFeature.
   if (RuntimeEnabledFeatures::DisplayCapturePermissionsPolicyEnabled()) {
-    const bool capture_allowed_by_permissions_policy =
-        context->IsFeatureEnabled(
-            mojom::blink::PermissionsPolicyFeature::kDisplayCapture,
-            ReportOptions::kReportOnFailure);
+    const bool capture_allowed_by_permissions_policy = window->IsFeatureEnabled(
+        mojom::blink::PermissionsPolicyFeature::kDisplayCapture,
+        ReportOptions::kReportOnFailure);
 
     base::UmaHistogramEnumeration(
         "Media.Ui.GetDisplayMedia.DisplayCapturePolicyResult",
@@ -531,7 +543,7 @@ void MediaDevices::ContextDestroyed() {
     return;
 
   stopped_ = true;
-  requests_.clear();
+  enumerate_device_requests_.clear();
 }
 
 void MediaDevices::OnDevicesChanged(
@@ -624,10 +636,12 @@ void MediaDevices::DevicesEnumerated(
         video_input_capabilities,
     Vector<mojom::blink::AudioInputDeviceCapabilitiesPtr>
         audio_input_capabilities) {
-  if (!requests_.Contains(resolver))
+  if (!enumerate_device_requests_.Contains(resolver))
     return;
 
-  requests_.erase(resolver);
+  RequestMetadata request_metadata = enumerate_device_requests_.at(resolver);
+
+  enumerate_device_requests_.erase(resolver);
 
   if (!resolver->GetExecutionContext() ||
       resolver->GetExecutionContext()->IsContextDestroyed()) {
@@ -690,6 +704,7 @@ void MediaDevices::DevicesEnumerated(
   }
 
   RecordEnumeratedDevices(resolver, media_devices);
+  RecordEnumerateDevicesLatency(request_metadata.start_time);
 
   if (enumerate_devices_test_callback_)
     std::move(enumerate_devices_test_callback_).Run(media_devices);
@@ -698,11 +713,15 @@ void MediaDevices::DevicesEnumerated(
 }
 
 void MediaDevices::OnDispatcherHostConnectionError() {
-  for (ScriptPromiseResolver* resolver : requests_) {
+  for (auto& entry : enumerate_device_requests_) {
+    ScriptPromiseResolver* resolver = entry.key;
+    RequestMetadata& metadata = entry.value;
+
+    RecordEnumerateDevicesLatency(metadata.start_time);
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kAbortError, "enumerateDevices() failed."));
   }
-  requests_.clear();
+  enumerate_device_requests_.clear();
   dispatcher_host_.reset();
 
   if (connection_error_test_callback_)
@@ -747,7 +766,7 @@ void MediaDevices::Trace(Visitor* visitor) const {
   visitor->Trace(dispatcher_host_);
   visitor->Trace(receiver_);
   visitor->Trace(scheduled_events_);
-  visitor->Trace(requests_);
+  visitor->Trace(enumerate_device_requests_);
 #if !BUILDFLAG(IS_ANDROID)
   visitor->Trace(crop_id_resolvers_);
 #endif

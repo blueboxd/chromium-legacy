@@ -734,6 +734,7 @@ crbug.com/1310144 [ linux intel mesa_ge_21.0 ] conformance2/rendering/blitframeb
 crbug.com/1343520 [ linux nvidia angle-opengl passthrough ] conformance2/textures/canvas/tex-2d-r8-red-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/angleproject/5783 [ linux nvidia angle-opengl passthrough ] conformance2/textures/misc/immutable-tex-render-feedback.html [ Failure ]
 crbug.com/1115314 [ linux nvidia-0x2184 angle-opengl passthrough ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
+crbug.com/1372694 [ linux nvidia-0x2184 angle-opengl passthrough ] conformance2/samplers/sampler-drawing-test.html [ RetryOnFailure ]
 
 # Linux AMD RX 5500 XT
 crbug.com/1147232 [ linux amd-0x7340 angle-opengl passthrough ] conformance/textures/misc/texture-size-limit.html [ Failure ]
@@ -917,6 +918,8 @@ crbug.com/1328444 [ chromeos chromeos-board-kevin ] conformance2/rendering/blitf
 crbug.com/1328444 [ chromeos chromeos-board-kevin ] conformance2/textures/misc/tex-input-validation.html [ Failure ]
 
 crbug.com/1337803 [ chromeos chromeos-board-kevin ] conformance2/misc/expando-loss-2.html [ Failure ]
+
+crbug.com/1373277 [ chromeos chromeos-board-kevin ] conformance2/textures/video/tex-3d-srgb8-rgb-unsigned_byte.html [ Failure ]
 
 # Must investigate ChromeOS failures with passthrough command decoder.
 crbug.com/angleproject/5038 [ chromeos passthrough ] conformance/extensions/ext-color-buffer-half-float.html [ Failure ]

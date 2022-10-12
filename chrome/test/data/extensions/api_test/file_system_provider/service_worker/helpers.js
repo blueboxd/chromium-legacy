@@ -45,7 +45,9 @@ export async function getVolumeInfo(fileSystemId) {
 /**
  * @param {number=} openedFilesLimit Limit of opened files at once. If 0 or
  *     unspecified, then not limited.
- * @returns {!Promise<!FileSystem>} mounted filesystem instance.
+ * @returns {!Promise<{fileSystem: !FileSystem, volumeInfo:
+ *     !chrome.fileManagerPrivate.VolumeMetadata}>} information about the
+ *     mounted filesystem instance.
  */
 async function mount(openedFilesLimit) {
   const fileSystemId = TestFileSystemProvider.FILESYSTEM_ID;
@@ -68,7 +70,7 @@ async function mount(openedFilesLimit) {
   if (!fileSystem) {
     throw new Error(`filesystem not found for volume: ${volumeInfo.volumeId}`);
   }
-  return fileSystem;
+  return {fileSystem, volumeInfo};
 };
 
 /**
@@ -80,34 +82,37 @@ export async function openFile(fileEntry) {
 }
 
 /**
- * @param {!File} file
+ * @param {!Blob} blob
  * @returns {!Promise<string>}
  */
-export async function readTextFromFile(file) {
-  const {promise} = startReadTextFromFile(file);
+export async function readTextFromBlob(blob) {
+  const {promise} = startReadTextFromBlob(blob);
   return promise;
 }
 
 /**
- * @param {!File} file
+ * @param {!Blob} blob
  * @returns {{promise: !Promise<string>, reader: !FileReader}}
  */
-export function startReadTextFromFile(file) {
+export function startReadTextFromBlob(blob) {
   const reader = new FileReader();
   const promise = new Promise((resolve, reject) => {
     reader.onload = e => resolve(reader.result);
     reader.onerror = e => reject(reader.error);
     reader.onabort = e => reject(reader.error);
-    reader.readAsText(file);
+    reader.readAsText(blob);
   });
   return {reader, promise};
 }
 
 export class MountedTestFileSystem {
-  /** @param {!FileSystem} fileSystem */
-  constructor(fileSystem) {
-    /** @type {!FileSystem} */
+  /**
+   * @param {!FileSystem} fileSystem
+   * @param {!chrome.fileManagerPrivate.VolumeMetadata} volumeInfo
+   */
+  constructor(fileSystem, volumeInfo) {
     this.fileSystem = fileSystem;
+    this.volumeInfo = volumeInfo;
   }
 
   /**
@@ -119,7 +124,9 @@ export class MountedTestFileSystem {
     await promisifyWithLastError(chrome.fileSystemProvider.unmount, {
       fileSystemId: TestFileSystemProvider.FILESYSTEM_ID,
     });
-    this.fileSystem = await mount(openedFilesLimit);
+    const {fileSystem, volumeInfo} = await mount(openedFilesLimit);
+    this.fileSystem = fileSystem;
+    this.volumeInfo = volumeInfo;
   }
 
   /**
@@ -159,7 +166,8 @@ export class MountedTestFileSystem {
  * @return {!Promise<!MountedTestFileSystem>}
  */
 export async function mountTestFileSystem(openedFilesLimit) {
-  return new MountedTestFileSystem(await mount(openedFilesLimit));
+  const {fileSystem, volumeInfo} = await mount(openedFilesLimit);
+  return new MountedTestFileSystem(fileSystem, volumeInfo);
 }
 
 /**
@@ -226,6 +234,11 @@ export const remoteProvider = {
    * @returns {!Promise<number>}
    */
   getOpenedFiles: async () => callServiceWorker('getOpenedFiles'),
+  /**
+   * @param {string} key
+   * @param {?} value
+   */
+  setConfig: async (key, value) => callServiceWorker('setConfig', key, value),
   /**
    * @param {string} handlerName
    * @param {boolean} enabled

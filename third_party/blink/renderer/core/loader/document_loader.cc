@@ -71,6 +71,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
@@ -88,6 +89,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder_builder.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
@@ -128,6 +130,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/navigation_body_loader.h"
 #include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
@@ -137,6 +140,7 @@
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
@@ -242,6 +246,8 @@ struct SameSizeAsDocumentLoader
   WebNavigationType navigation_type;
   DocumentLoadTiming document_load_timing;
   base::TimeTicks time_of_last_data_received;
+  mojom::blink::ControllerServiceWorkerMode
+      service_worker_initial_controller_mode;
   std::unique_ptr<WebServiceWorkerNetworkProvider>
       service_worker_network_provider;
   DocumentPolicy::ParsedDocumentPolicy document_policy;
@@ -531,6 +537,11 @@ DocumentLoader::DocumentLoader(
       }
       fenced_frame_reporting_->metadata.insert(destination, std::move(data));
     }
+  }
+
+  if (service_worker_network_provider_) {
+    service_worker_initial_controller_mode_ =
+        service_worker_network_provider_->GetControllerServiceWorkerMode();
   }
 
   frame_->SetAncestorOrSelfHasCSPEE(params_->ancestor_or_self_has_cspee);
@@ -1000,7 +1011,7 @@ void DocumentLoader::BodyDataReceived(base::span<const char> data) {
 
 void DocumentLoader::DecodedBodyDataReceived(
     const WebString& data,
-    const WebTextDecoder::EncodingData& encoding_data,
+    const WebEncodingData& encoding_data,
     base::span<const char> encoded_data) {
   // Decoding has already happened, we don't need the decoder anymore.
   parser_->SetDecoder(nullptr);
@@ -1582,6 +1593,11 @@ void DocumentLoader::SetDefersLoading(LoaderFreezeMode mode) {
 void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
   DCHECK(frame_);
   StopLoading();
+  // `frame_` may become null because this method can get re-entered. If it
+  // is null we've already run the code below so just return early.
+  if (!frame_)
+    return;
+
   if (flush_microtask_queue) {
     // Flush microtask queue so that they all run on pre-navigation context.
     // TODO(dcheng): This is a temporary hack that should be removed. This is
@@ -1594,10 +1610,12 @@ void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
     // since flushing microtasks can only be done after any other JS (which can
     // queue additional microtasks) has run. Once it is possible to associate
     // microtasks with a v8::Context, remove this hack.
-    Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
+    frame_->GetDocument()
+        ->GetAgent()
+        ->event_loop()
+        ->PerformMicrotaskCheckpoint();
   }
   ScriptForbiddenScope forbid_scripts;
-
   // If that load cancellation triggered another detach, leave.
   // (fast/frames/detach-frame-nested-no-crash.html is an example of this.)
   if (!frame_)
@@ -2347,6 +2365,9 @@ void DocumentLoader::CommitNavigation() {
   LocalDOMWindow* previous_window = frame_->DomWindow();
   InitializeWindow(owner_document);
 
+  MaybeStartLoadingBodyInBackground(body_loader_.get(), frame_, url_,
+                                    response_);
+
   // Record if we have navigated to a non-secure page served from a IP address
   // in the private address space.
   //
@@ -2956,11 +2977,46 @@ bool DocumentLoader::IsReloadedOrFormSubmitted() const {
   switch (navigation_type_) {
     case WebNavigationType::kWebNavigationTypeReload:
     case WebNavigationType::kWebNavigationTypeFormSubmitted:
-    case WebNavigationType::kWebNavigationTypeFormResubmitted:
+    case WebNavigationType::kWebNavigationTypeFormResubmittedBackForward:
+    case WebNavigationType::kWebNavigationTypeFormResubmittedReload:
       return true;
     default:
       return false;
   }
+}
+
+void DocumentLoader::MaybeRecordServiceWorkerFallbackMainResource(
+    bool was_subresource_fetched_via_service_worker) {
+  if (was_subresource_fetched_via_service_worker &&
+      !response_.WasFetchedViaServiceWorker() &&
+      service_worker_initial_controller_mode_ ==
+          mojom::blink::ControllerServiceWorkerMode::kControlled) {
+    CountUse(WebFeature::kSerivceWorkerFallbackMainResource);
+  }
+}
+
+// static
+void DocumentLoader::MaybeStartLoadingBodyInBackground(
+    WebNavigationBodyLoader* body_loader,
+    LocalFrame* frame,
+    const KURL& url,
+    const ResourceResponse& response) {
+  if (!body_loader ||
+      !base::FeatureList::IsEnabled(features::kThreadedBodyLoader) ||
+      !EqualIgnoringASCIICase(response.MimeType(), "text/html")) {
+    return;
+  }
+
+  auto* navigation_body_loader = DynamicTo<NavigationBodyLoader>(*body_loader);
+  if (!navigation_body_loader)
+    return;
+
+  auto decoder = BuildTextResourceDecoder(frame, url, response.MimeType(),
+                                          response.TextEncodingName());
+  navigation_body_loader->StartLoadingBodyInBackground(
+      std::move(decoder),
+      // The network inspector needs the raw data.
+      probe::ToCoreProbeSink(frame)->HasInspectorNetworkAgents());
 }
 
 ContentSecurityPolicy* DocumentLoader::CreateCSP() {

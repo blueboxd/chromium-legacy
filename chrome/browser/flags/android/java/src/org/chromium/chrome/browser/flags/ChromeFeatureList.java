@@ -301,6 +301,8 @@ public abstract class ChromeFeatureList {
     public static final String CONTEXTUAL_PAGE_ACTIONS = "ContextualPageActions";
     public static final String CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING =
             "ContextualPageActionPriceTracking";
+    public static final String CONTEXTUAL_PAGE_ACTION_READER_MODE =
+            "ContextualPageActionReaderMode";
     /** Used only in native code. */
     public static final String CONTEXTUAL_SEARCH_DEBUG = "ContextualSearchDebug";
     public static final String CONTEXTUAL_SEARCH_DELAYED_INTELLIGENCE =
@@ -457,14 +459,13 @@ public abstract class ChromeFeatureList {
     public static final String OPTIMIZE_GEOLOCATION_HEADER_GENERATION =
             "OptimizeGeolocationHeaderGeneration";
     public static final String OPTIMIZE_LAYOUTS_FOR_PULL_REFRESH = "OptimizeLayoutsForPullRefresh";
-    public static final String OSK_RESIZES_VISUAL_VIEWPORT = "OSKResizesVisualViewport";
+    public static final String OSK_RESIZES_VISUAL_VIEWPORT = "OSKResizesVisualViewportByDefault";
     public static final String OVERLAY_NEW_LAYOUT = "OverlayNewLayout";
     public static final String PAGE_ANNOTATIONS_SERVICE = "PageAnnotationsService";
     public static final String PAGE_INFO_ABOUT_THIS_SITE_EN = "PageInfoAboutThisSiteEn";
     public static final String PAGE_INFO_ABOUT_THIS_SITE_MORE_INFO =
             "PageInfoAboutThisSiteMoreInfo";
     public static final String PAGE_INFO_ABOUT_THIS_SITE_NON_EN = "PageInfoAboutThisSiteNonEn";
-    public static final String PAGE_INFO_DISCOVERABILITY = "PageInfoDiscoverability";
     public static final String PAINT_PREVIEW_DEMO = "PaintPreviewDemo";
     public static final String PAINT_PREVIEW_SHOW_ON_STARTUP = "PaintPreviewShowOnStartup";
     public static final String PASSWORD_DOMAIN_CAPABILITIES_FETCHING =
@@ -687,7 +688,7 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sFeedLoadingPlaceholder =
             new CachedFlag(FEED_LOADING_PLACEHOLDER, false);
     public static final CachedFlag sGridTabSwitcherForTablets =
-            new CachedFlag(GRID_TAB_SWITCHER_FOR_TABLETS, false);
+            new CachedFlag(GRID_TAB_SWITCHER_FOR_TABLETS, true);
     public static final CachedFlag sImmersiveUiMode = new CachedFlag(IMMERSIVE_UI_MODE, false);
     public static final CachedFlag sIncognitoReauthenticationForAndroid =
             new CachedFlag(INCOGNITO_REAUTHENTICATION_FOR_ANDROID, false);
@@ -703,7 +704,7 @@ public abstract class ChromeFeatureList {
             new CachedFlag(OMNIBOX_MODERNIZE_VISUAL_UPDATE, false);
     public static final CachedFlag sOptimizationGuidePushNotifications =
             new CachedFlag(OPTIMIZATION_GUIDE_PUSH_NOTIFICATIONS, false);
-    public static final CachedFlag sOSKResizesVisualViewport =
+    public static final CachedFlag sOSKResizesVisualViewportByDefault =
             new CachedFlag(OSK_RESIZES_VISUAL_VIEWPORT, false);
     public static final CachedFlag sPaintPreviewDemo = new CachedFlag(PAINT_PREVIEW_DEMO, false);
     public static final CachedFlag sPaintPreviewShowOnStartup =

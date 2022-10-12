@@ -2714,29 +2714,6 @@ const FeatureEntry::FeatureVariation
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
-const FeatureEntry::FeatureParam kPermissionIconTimeout6000[] = {
-    {"PermissionIconTimeoutMs", "6000"}};
-const FeatureEntry::FeatureParam kPermissionIconTimeout4000[] = {
-    {"PermissionIconTimeoutMs", "4000"}};
-const FeatureEntry::FeatureParam kPermissionIconTimeout3000[] = {
-    {"PermissionIconTimeoutMs", "3000"}};
-const FeatureEntry::FeatureParam kPermissionIconTimeout2000[] = {
-    {"PermissionIconTimeoutMs", "2000"}};
-
-const FeatureEntry::FeatureVariation
-    kPageInfoDiscoverabilityTimeoutVariations[] = {
-        {"Long (6s)", kPermissionIconTimeout6000,
-         std::size(kPermissionIconTimeout6000), nullptr},
-        {"Medium (4s)", kPermissionIconTimeout4000,
-         std::size(kPermissionIconTimeout4000), nullptr},
-        {"Short (3s)", kPermissionIconTimeout3000,
-         std::size(kPermissionIconTimeout3000), nullptr},
-        {"Extra-Short (2s)", kPermissionIconTimeout2000,
-         std::size(kPermissionIconTimeout2000), nullptr},
-};
-#endif  // BUILDFLAG(IS_ANDROID)
-
-#if BUILDFLAG(IS_ANDROID)
 // The variations of --metrics-settings-android.
 const FeatureEntry::FeatureParam kMetricsSettingsAndroidAlternativeOne[] = {
     {"fre", "1"}};
@@ -3492,6 +3469,15 @@ const FeatureEntry::FeatureVariation
 };
 #endif  // BUILDFLAG(IS_ANDROID)
 
+#if BUILDFLAG(IS_ANDROID)
+const FeatureEntry::FeatureParam kTabSelectionEditorV2_share_enabled[] = {
+    {"enable_share", "true"}};
+const FeatureEntry::FeatureVariation kTabSelectionEditorV2Variations[] = {
+    {"- with share", kTabSelectionEditorV2_share_enabled,
+     std::size(kTabSelectionEditorV2_share_enabled), nullptr},
+};
+#endif  // BUILDFLAG(IS_ANDROID)
+
 const FeatureEntry::FeatureParam kPasswordNotesAuthValidity1m[] = {
     {"authentication_validity_duration", "1m"}};
 const FeatureEntry::FeatureParam kPasswordNotesAuthValidity5m[] = {
@@ -3635,10 +3621,11 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(extensions::switches::kExtensionsOnChromeURLs)},
 #endif  // ENABLE_EXTENSIONS
 #if BUILDFLAG(IS_ANDROID)
-    {"osk-resizes-visual-viewport",
-     flag_descriptions::kEnableOskResizesVisualViewportName,
-     flag_descriptions::kEnableOskResizesVisualViewportDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(blink::features::kOSKResizesVisualViewport)},
+    {"osk-resizes-visual-viewport-by-default",
+     flag_descriptions::kEnableOskResizesVisualViewportByDefaultName,
+     flag_descriptions::kEnableOskResizesVisualViewportByDefaultDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(blink::features::kOSKResizesVisualViewportByDefault)},
     {"contextual-search-debug", flag_descriptions::kContextualSearchDebugName,
      flag_descriptions::kContextualSearchDebugDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(kContextualSearchDebug)},
@@ -4115,9 +4102,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
-    {"dark-light-mode", flag_descriptions::kDarkLightTestName,
-     flag_descriptions::kDarkLightTestDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kDarkLightMode)},
     {"deprecate-low-usage-codecs",
      flag_descriptions::kDeprecateLowUsageCodecsName,
      flag_descriptions::kDeprecateLowUsageCodecsDescription,
@@ -4358,16 +4342,21 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(photo_picker::features::kAndroidMediaPickerSupport)},
     {"contextual-page-actions", flag_descriptions::kContextualPageActionsName,
      flag_descriptions::kContextualPageActionsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         segmentation_platform::features::kContextualPageActions)},
-    {"contextual-page-actions-with-price-tracking",
-     flag_descriptions::kContextualPageActionsWithPriceTrackingName,
-     flag_descriptions::kContextualPageActionsWithPriceTrackingDescription,
-     kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
-         segmentation_platform::features::kContextualPageActionPriceTracking,
+         segmentation_platform::features::kContextualPageActions,
          kContextualPageActionPriceTrackingVariations,
-         "ContextualPageActionPriceTracking")},
+         "ContextualPageActions")},
+    {"contextual-page-actions-with-price-tracking",
+     flag_descriptions::kContextualPageActionsPriceTrackingName,
+     flag_descriptions::kContextualPageActionsPriceTrackingDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         segmentation_platform::features::kContextualPageActionPriceTracking)},
+    {"contextual-page-actions-reader-mode",
+     flag_descriptions::kContextualPageActionsReaderModeName,
+     flag_descriptions::kContextualPageActionsReaderModeDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         segmentation_platform::features::kContextualPageActionReaderMode)},
     {"reader-mode-heuristics", flag_descriptions::kReaderModeHeuristicsName,
      flag_descriptions::kReaderModeHeuristicsDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kReaderModeHeuristicsChoices)},
@@ -4541,10 +4530,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-isolated-web-apps", flag_descriptions::kEnableIsolatedWebAppsName,
      flag_descriptions::kEnableIsolatedWebAppsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kIsolatedWebApps)},
-    {"install-isolated-apps-at-startup",
-     flag_descriptions::kInstallIssolatedAppsAtStartup,
-     flag_descriptions::kInstallIssolatedAppsAtStartupDescription, kOsAll,
-     ORIGIN_LIST_VALUE_TYPE(switches::kInstallIsolatedAppAtStartup, "")},
+    {"install-isolated-web-app-from-file",
+     flag_descriptions::kInstallIsolatedWebAppFromFile,
+     flag_descriptions::kInstallIsolatedWebAppFromFileDescription, kOsAll,
+     ORIGIN_LIST_VALUE_TYPE(switches::kInstallIsolatedWebAppFromFile, "")},
+    {"install-isolated-web-app-from-url",
+     flag_descriptions::kInstallIsolatedWebAppFromUrl,
+     flag_descriptions::kInstallIsolatedWebAppFromUrlDescription, kOsAll,
+     ORIGIN_LIST_VALUE_TYPE(switches::kInstallIsolatedWebAppFromUrl, "")},
     {"isolate-origins", flag_descriptions::kIsolateOriginsName,
      flag_descriptions::kIsolateOriginsDescription, kOsAll,
      ORIGIN_LIST_VALUE_TYPE(switches::kIsolateOrigins, "")},
@@ -5215,11 +5208,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"web-payment-api-csp", flag_descriptions::kWebPaymentAPICSPName,
      flag_descriptions::kWebPaymentAPICSPDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebPaymentAPICSP)},
-    {"identity-in-can-make-payment",
-     flag_descriptions::kIdentityInCanMakePaymentEventFeatureName,
-     flag_descriptions::kIdentityInCanMakePaymentEventFeatureDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(features::kIdentityInCanMakePaymentEventFeature)},
+    {"clear-identity-in-can-make-payment",
+     flag_descriptions::kClearIdentityInCanMakePaymentEventName,
+     flag_descriptions::kClearIdentityInCanMakePaymentEventDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kClearIdentityInCanMakePaymentEvent)},
     {"enable-debug-for-store-billing",
      flag_descriptions::kAppStoreBillingDebugName,
      flag_descriptions::kAppStoreBillingDebugDescription, kOsAll,
@@ -7545,16 +7537,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordScriptsFetching)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
-#if BUILDFLAG(IS_ANDROID)
-    {"page-info-discoverability-timeouts",
-     flag_descriptions::kPageInfoDiscoverabilityTimeoutsName,
-     flag_descriptions::kPageInfoDiscoverabilityTimeoutsDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         page_info::kPageInfoDiscoverability,
-         kPageInfoDiscoverabilityTimeoutVariations,
-         "kPageInfoDiscoverabilityTimeoutVariations")},
-#endif  // BUILDFLAG(IS_ANDROID)
-
 #if !BUILDFLAG(IS_ANDROID)
     {"page-info-cookies-subpage",
      flag_descriptions::kPageInfoCookiesSubpageName,
@@ -7973,10 +7955,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMessagesForAndroidStackingAnimationDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(messages::kMessagesForAndroidStackingAnimation)},
-    {"messages-for-android-sync-error",
-     flag_descriptions::kMessagesForAndroidSyncErrorName,
-     flag_descriptions::kMessagesForAndroidSyncErrorDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(messages::kMessagesForAndroidSyncError)},
     {"messages-for-android-update-password",
      flag_descriptions::kMessagesForAndroidUpdatePasswordName,
      flag_descriptions::kMessagesForAndroidUpdatePasswordDescription,
@@ -9693,7 +9671,9 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(IS_ANDROID)
     {"tab-selection-editor-v2", flag_descriptions::kTabSelectionEditorV2Name,
      flag_descriptions::kTabSelectionEditorV2Description, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kTabSelectionEditorV2)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kTabSelectionEditorV2,
+                                    kTabSelectionEditorV2Variations,
+                                    "TabSelectionEditorV2")},
 
     {"context-menu-popup-for-all-screen-sizes",
      flag_descriptions::kContextMenuPopupForAllScreenSizesName,
@@ -9736,6 +9716,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHoldingSpaceSuggestionsName,
      flag_descriptions::kHoldingSpaceSuggestionsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kHoldingSpaceSuggestions)},
+    {"vc-controls-ui", flag_descriptions::kVcControlsUiName,
+     flag_descriptions::kVcControlsUiDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kVcControlsUi)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

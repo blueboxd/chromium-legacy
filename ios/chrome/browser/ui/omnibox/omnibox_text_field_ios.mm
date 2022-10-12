@@ -25,7 +25,6 @@
 #import "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #import "ios/chrome/browser/ui/util/reversed_animation.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -150,6 +149,15 @@
 
 - (UILabel*)preEditStaticLabel {
   return nil;
+}
+
+#pragma mark - OmniboxKeyboardDelegate
+
+- (BOOL)canPerformKeyboardAction:(OmniboxKeyboardAction)keyboardAction {
+  return NO;
+}
+
+- (void)performKeyboardAction:(OmniboxKeyboardAction)keyboardAction {
 }
 
 #pragma mark - Properties

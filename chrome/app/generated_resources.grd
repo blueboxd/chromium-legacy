@@ -9529,6 +9529,11 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         Allow to save data
       </message>
 
+      <message name="IDS_PAGE_SPECIFIC_SITE_DATA_DIALOG_ALLOW_THIRD_PARTY_MENU_ITEM"
+          desc="The name of a menu item that allows storage access for third party cookies (creates an allow exception) for a site. The user has blocked third-party cookies in settings. The site has access to some cookies (partitioned cookies) and doesn't have access to regular third party cookies. This menu item will allow third party cookie access. The menu item is shown in the `Cookies and site data` dialog.">
+        Allow to set third-party cookies
+      </message>
+
       <message name="IDS_PAGE_SPECIFIC_SITE_DATA_DIALOG_BLOCK_MENU_ITEM"
           desc="The name of a menu item that blocks storage access (creates a block exception) for a site. The menu item is shown in the `Cookies and site data` dialog.">
         Don’t allow to save data
@@ -13654,6 +13659,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_ACCOUNT_SELECTION_SHEET_TITLE_EXPLICIT" desc="Header for sign in sheet. Sheet is shown to prompt user for sign in consent.">
       Sign in to <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph> with <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$2<ex>idp.example</ex></ph>
     </message>
+    <message name="IDS_ACCOUNT_SELECTION_SHEET_SUBTITLE" desc="Message shown when the user is shown the federated identity login prompt. This message is the subtitle for the sign in sheet, which contains the top-level domain of the page the user is signing on to when the user is receiving a prompt from an iframe of such page.">
+      on <ph name="RP_MAIN_ETLD_PLUS_ONE">$1<ex>rp-main.example</ex></ph>
+    </message>
     <message name="IDS_ACCOUNT_SELECTION_CONTINUE" desc="Title of the button that continues filling with the only available set of credentials.">
       Continue as <ph name="NAME">$1<ex>Albus (or Albus Dumbledore)</ex></ph>
     </message>
@@ -13834,6 +13842,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <!-- Automated Password Change on Desktop strings -->
     <if expr="not is_android">
+      <message name="IDS_AUTOFILL_ASSISTANT" desc="The text rendered on the side panel entry.">
+        Assistant
+      </message>
       <message name="IDS_ACCESSIBLE_AUTOFILL_ASSISTANT_PASSWORD_CHANGE" desc="The text announced by screenreaders once focus in brought to automatic password change side panel UI.">
         Automatic password change
       </message>

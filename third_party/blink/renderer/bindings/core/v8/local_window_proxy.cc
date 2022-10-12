@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/platform/bindings/extensions_registry.h"
 #include "third_party/blink/renderer/platform/bindings/origin_trial_features.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
@@ -226,6 +227,7 @@ void LocalWindowProxy::CreateContext() {
   v8::ExtensionConfiguration extension_configuration =
       ScriptController::ExtensionsFor(GetFrame()->DomWindow());
 
+  DCHECK(GetFrame()->DomWindow());
   v8::Local<v8::Context> context;
   {
     v8::Isolate* isolate = GetIsolate();
@@ -248,7 +250,9 @@ void LocalWindowProxy::CreateContext() {
               ->InstanceTemplate();
       CHECK(!global_template.IsEmpty());
       context = v8::Context::New(isolate, &extension_configuration,
-                                 global_template, global_proxy);
+                                 global_template, global_proxy,
+                                 v8::DeserializeInternalFieldsCallback(),
+                                 GetFrame()->DomWindow()->GetMicrotaskQueue());
       VLOG(1) << "A context is created NOT from snapshot";
     }
   }
@@ -258,7 +262,6 @@ void LocalWindowProxy::CreateContext() {
   DidAttachGlobalObject();
 #endif
 
-  DCHECK(GetFrame()->DomWindow());
   script_state_ = MakeGarbageCollected<ScriptState>(context, world_,
                                                     GetFrame()->DomWindow());
 

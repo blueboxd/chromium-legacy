@@ -36,6 +36,7 @@
 #include "ui/views/widget/widget.h"
 
 constexpr auto kExpandDuration = base::Milliseconds(350);
+constexpr auto kAnimateToFitDuration = base::Milliseconds(200);
 constexpr auto kPromptCollapseDuration = base::Milliseconds(250);
 constexpr auto kConfirmationCollapseDuration = base::Milliseconds(75);
 constexpr auto kConfirmationDisplayDuration = base::Seconds(4);
@@ -214,14 +215,13 @@ void ChipController::ResetChip() {
 }
 
 void ChipController::ResetChipCallbacks() {
-  chip_->SetCallback(
-      base::BindRepeating(&ChipController::DoNothing, base::Unretained(this)));
+  chip_->SetCallback(base::RepeatingCallback<void()>(base::DoNothing()));
   chip_->SetCollapseEndedCallback(
-      base::BindRepeating(&ChipController::DoNothing, base::Unretained(this)));
+      base::RepeatingCallback<void()>(base::DoNothing()));
   chip_->SetExpandAnimationEndedCallback(
-      base::BindRepeating(&ChipController::DoNothing, base::Unretained(this)));
+      base::RepeatingCallback<void()>(base::DoNothing()));
   chip_->SetVisibilityChangedCallback(
-      base::BindRepeating(&ChipController::DoNothing, base::Unretained(this)));
+      base::RepeatingCallback<void()>(base::DoNothing()));
 }
 
 void ChipController::RemoveBubbleObserverAndResetTimersAndChipCallbacks() {
@@ -310,11 +310,6 @@ void ChipController::CollapseConfirmation() {
   GetLocationBarView()->ResetConfirmationChipShownTime();
 }
 
-bool ChipController::should_start_open_for_testing() {
-  CHECK_IS_TEST();
-  return permission_prompt_model_->ShouldBubbleStartOpen();
-}
-
 bool ChipController::should_expand_for_testing() {
   CHECK_IS_TEST();
   return permission_prompt_model_->ShouldExpand();
@@ -332,11 +327,22 @@ void ChipController::AnimateExpand(
 void ChipController::HandleConfirmation(
     permissions::PermissionAction user_decision) {
   SyncChipWithModel();
-  if (permission_prompt_model_->CanDisplayConfirmation()) {
+  if (active_chip_permission_request_manager_.has_value() &&
+      !active_chip_permission_request_manager_.value()
+           ->has_pending_requests() &&
+      permission_prompt_model_->CanDisplayConfirmation()) {
     is_confirmation_showing_ = true;
-    chip_->SetVisible(true);
-    chip_->ResetAnimation();
-    chip_->AnimateExpand(kExpandDuration);
+
+    if (chip_->GetVisible()) {
+      chip_->AnimateToFit(kAnimateToFitDuration);
+    } else {
+      // No request chip was shown, always expand independently of what contents
+      // are stored in the previous chip (which is not visible before the
+      // SetVisible call).
+      chip_->SetVisible(true);
+      chip_->AnimateExpand(kExpandDuration);
+    }
+
     chip_->SetCallback(base::BindRepeating(&ChipController::ShowPageInfoDialog,
                                            base::Unretained(this)));
     collapse_timer_.Start(FROM_HERE, kConfirmationDisplayDuration, this,
@@ -363,7 +369,9 @@ void ChipController::CollapsePrompt(bool allow_restart) {
   } else {
     permission_prompt_model_->UpdateAutoCollapsePromptChipState(true);
     SyncChipWithModel();
-    chip_->AnimateCollapse(kPromptCollapseDuration);
+
+    if (!chip_->is_fully_collapsed())
+      chip_->AnimateCollapse(kPromptCollapseDuration);
 
     StartDismissTimer();
   }

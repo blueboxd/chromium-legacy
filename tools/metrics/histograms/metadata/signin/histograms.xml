@@ -1119,26 +1119,23 @@ kept as long as profile signout is possible -->
 
 <histogram name="Signin.SyncConsentScreen.DataRowClicked"
     enum="SigninSyncConsentDataRow" expires_after="2023-08-18">
+  <owner>arthurmilchior@chromium.org</owner>
   <owner>triploblastic@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
     This histogram records which sync data row was clicked by the user on the
-    tangible sync consent page on Android.
+    tangible sync consent page on Android and iOS.
   </summary>
 </histogram>
 
-<histogram name="Signin.SyncError{PromptUI}{SyncErrorReason}"
+<histogram name="Signin.SyncErrorMessage{SyncErrorReason}"
     enum="SyncErrorPromptUIAction" expires_after="2023-09-12">
   <owner>triploblastic@chromium.org</owner>
   <owner>bsazonov@chromium.org</owner>
   <summary>
-    Records various UI and user action events related to the sync error
-    {PromptUI}. Android only.
+    Records various UI and user action events related to the sync error message.
+    Android only.
   </summary>
-  <token key="PromptUI">
-    <variant name="InfoBar" summary="infobar ui"/>
-    <variant name="Message" summary="message ui"/>
-  </token>
   <token key="SyncErrorReason">
     <variant name=".AuthError" summary="Auth error."/>
     <variant name=".ClientOutOfDate" summary="Client out of date."/>

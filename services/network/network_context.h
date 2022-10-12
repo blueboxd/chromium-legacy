@@ -41,6 +41,7 @@
 #include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/net_buildflags.h"
+#include "services/network/cache_transparency_settings.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/first_party_sets/first_party_sets_access_delegate.h"
 #include "services/network/http_cache_data_counter.h"
@@ -80,7 +81,7 @@ namespace net {
 class CertVerifier;
 class HostPortPair;
 class IsolationInfo;
-class NetworkIsolationKey;
+class NetworkAnonymizationKey;
 class ReportSender;
 class StaticHttpUserAgentSettings;
 class URLRequestContext;
@@ -304,17 +305,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 #endif
 #if BUILDFLAG(IS_CT_SUPPORTED)
   void SetCTPolicy(mojom::CTPolicyPtr ct_policy) override;
-  void AddExpectCT(const std::string& domain,
-                   base::Time expiry,
-                   bool enforce,
-                   const GURL& report_uri,
-                   const net::NetworkIsolationKey& network_isolation_key,
-                   AddExpectCTCallback callback) override;
+  void AddExpectCT(
+      const std::string& domain,
+      base::Time expiry,
+      bool enforce,
+      const GURL& report_uri,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
+      AddExpectCTCallback callback) override;
   void SetExpectCTTestReport(const GURL& report_uri,
                              SetExpectCTTestReportCallback callback) override;
-  void GetExpectCTState(const std::string& domain,
-                        const net::NetworkIsolationKey& network_isolation_key,
-                        GetExpectCTStateCallback callback) override;
+  void GetExpectCTState(
+      const std::string& domain,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
+      GetExpectCTStateCallback callback) override;
   void MaybeEnqueueSCTReport(
       const net::HostPortPair& host_port_pair,
       const net::X509Certificate* validated_certificate_chain,
@@ -356,10 +359,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void CreateProxyResolvingSocketFactory(
       mojo::PendingReceiver<mojom::ProxyResolvingSocketFactory> receiver)
       override;
-  void LookUpProxyForURL(const GURL& url,
-                         const net::NetworkIsolationKey& network_isolation_key,
-                         mojo::PendingRemote<mojom::ProxyLookupClient>
-                             proxy_lookup_client) override;
+  void LookUpProxyForURL(
+      const GURL& url,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
+      mojo::PendingRemote<mojom::ProxyLookupClient> proxy_lookup_client)
+      override;
   void ForceReloadProxyConfig(ForceReloadProxyConfigCallback callback) override;
   void ClearBadProxiesCache(ClearBadProxiesCacheCallback callback) override;
   void CreateWebSocket(
@@ -390,7 +394,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojo::PendingReceiver<mojom::NetLogExporter> receiver) override;
   void ResolveHost(
       mojom::HostResolverHostPtr host,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
       mojom::ResolveHostParametersPtr optional_parameters,
       mojo::PendingRemote<mojom::ResolveHostClient> response_client) override;
   void CreateHostResolver(
@@ -399,7 +403,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void VerifyCertForSignedExchange(
       const scoped_refptr<net::X509Certificate>& certificate,
       const GURL& url,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
       const std::string& ocsp_result,
       const std::string& sct_list,
       VerifyCertForSignedExchangeCallback callback) override;
@@ -431,10 +435,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       uint32_t num_streams,
       const GURL& url,
       bool allow_credentials,
-      const net::NetworkIsolationKey& network_isolation_key) override;
+      const net::NetworkAnonymizationKey& network_anonymization_key) override;
 #if BUILDFLAG(IS_P2P_ENABLED)
   void CreateP2PSocketManager(
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
       mojo::PendingRemote<mojom::P2PTrustedSocketManagerClient> client,
       mojo::PendingReceiver<mojom::P2PTrustedSocketManager>
           trusted_socket_manager,
@@ -455,12 +459,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const std::string& group,
       const GURL& url,
       const absl::optional<base::UnguessableToken>& reporting_source,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
       const absl::optional<std::string>& user_agent,
       base::Value::Dict body) override;
   void QueueSignedExchangeReport(
       mojom::SignedExchangeReportPtr report,
-      const net::NetworkIsolationKey& network_isolation_key) override;
+      const net::NetworkAnonymizationKey& network_anonymization_key) override;
   void AddDomainReliabilityContextForTesting(
       const url::Origin& origin,
       const GURL& upload_url,
@@ -617,6 +621,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const std::vector<net::ReportingEndpoint>& endpoints) override;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
+  const CacheTransparencySettings* cache_transparency_settings() const {
+    return &cache_transparency_settings_;
+  }
+
  private:
   URLRequestContextOwner MakeURLRequestContext(
       mojo::PendingRemote<mojom::URLLoaderFactory>
@@ -688,7 +696,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       net::CertVerifyResult& cert_verify_result,
       const net::X509Certificate& certificate,
       const net::HostPortPair& host_port_pair,
-      const net::NetworkIsolationKey& network_isolation_key);
+      const net::NetworkAnonymizationKey& network_anonymization_key);
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 #if BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
@@ -860,7 +868,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     VerifyCertForSignedExchangeCallback callback;
     scoped_refptr<net::X509Certificate> certificate;
     GURL url;
-    net::NetworkIsolationKey network_isolation_key;
+    net::NetworkAnonymizationKey network_anonymization_key;
     std::string ocsp_result;
     std::string sct_list;
   };
@@ -897,7 +905,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::unique_ptr<NetworkServiceMemoryCache> memory_cache_;
 
   // Whether all external consumers are expected to provide a non-empty
-  // NetworkIsolationKey with all requests. When set, enabled a variety of
+  // NetworkAnonymizationKey with all requests. When set, enabled a variety of
   // DCHECKs on APIs used by external callers.
   bool require_network_isolation_key_ = false;
 
@@ -924,6 +932,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   scoped_refptr<MojoBackendFileOperationsFactory>
       http_cache_file_operations_factory_;
+
+  const CacheTransparencySettings cache_transparency_settings_;
 
   base::WeakPtrFactory<NetworkContext> weak_factory_{this};
 };

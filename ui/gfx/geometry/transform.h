@@ -9,7 +9,6 @@
 #include <string>
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/skia/include/core/SkM44.h"
 #include "ui/gfx/geometry/geometry_skia_export.h"
 #include "ui/gfx/geometry/matrix44.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -20,7 +19,6 @@ class AxisTransform2d;
 class BoxF;
 class Rect;
 class RectF;
-class RRectF;
 class Point;
 class PointF;
 class Point3F;
@@ -304,14 +302,10 @@ class GEOMETRY_SKIA_EXPORT Transform {
   [[nodiscard]] PointF MapPoint(const PointF& point) const;
   [[nodiscard]] Point MapPoint(const Point& point) const;
 
-  // Applies the transformation to the point.
-  // TODO(crbug.com/1359528): Remove these in favor of MapPoint().
-  void TransformPoint(Point3F* point) const;
-  void TransformPoint(PointF* point) const;
-  void TransformPoint(Point* point) const;
-
-  // Applies the transformation to the vector.
-  void TransformVector(Vector3dF* vector) const;
+  // Returns the vector with the transformation applied to |vector|.
+  // It differs from MapPoint() by that the translation and perspective
+  // components of the matrix are ignored.
+  [[nodiscard]] Vector3dF MapVector(const Vector3dF& vector) const;
 
   // Applies the transformation to the vector.
   void TransformVector4(float vector[4]) const;
@@ -341,13 +335,6 @@ class GEOMETRY_SKIA_EXPORT Transform {
   // is the smallest axis aligned bounding rect containing the transformed rect.
   [[nodiscard]] absl::optional<RectF> InverseMapRect(const RectF& rect) const;
   [[nodiscard]] absl::optional<Rect> InverseMapRect(const Rect& rect) const;
-
-  // TODO(crbug.com/1359528): Remove these in favor of MapRect().
-  void TransformRect(RectF* rect) const;
-
-  // Applies transformation on the given |rrect|. Returns false if the transform
-  // matrix cannot be applied to rrect.
-  bool TransformRRectF(RRectF* rrect) const;
 
   // Returns the box with transformation applied on the given box. The returned
   // box will be the smallest axis aligned bounding box containing the
@@ -426,12 +413,8 @@ class GEOMETRY_SKIA_EXPORT Transform {
       : matrix_(lhs.matrix_, rhs.matrix_) {}
 
   Point MapPointInternal(const Matrix44& xform, const Point& point) const;
-
   PointF MapPointInternal(const Matrix44& xform, const PointF& point) const;
-
   Point3F MapPointInternal(const Matrix44& xform, const Point3F& point) const;
-
-  void TransformVectorInternal(const Matrix44& xform, Vector3dF* vector) const;
 
   Matrix44 matrix_;
 

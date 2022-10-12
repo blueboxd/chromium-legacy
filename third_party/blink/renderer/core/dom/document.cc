@@ -683,8 +683,9 @@ Document* Document::Create(Document& document) {
   return new_document;
 }
 
-Document* Document::CreateForTest() {
-  return MakeGarbageCollected<Document>(DocumentInit::Create().ForTest());
+Document* Document::CreateForTest(ExecutionContext* execution_context) {
+  return MakeGarbageCollected<Document>(
+      DocumentInit::Create().ForTest(execution_context));
 }
 
 Document::Document(const DocumentInit& initializer,
@@ -3390,8 +3391,10 @@ DocumentParser* Document::OpenForNavigation(
     const AtomicString& mime_type,
     const AtomicString& encoding) {
   DocumentParser* parser = ImplicitOpen(parser_sync_policy);
-  if (parser->NeedsDecoder())
-    parser->SetDecoder(BuildTextResourceDecoderFor(this, mime_type, encoding));
+  if (parser->NeedsDecoder()) {
+    parser->SetDecoder(
+        BuildTextResourceDecoder(GetFrame(), Url(), mime_type, encoding));
+  }
   if (AnchorElementInteractionTracker::IsFeatureEnabled() &&
       !GetFrame()->IsProvisional()) {
     anchor_element_interaction_tracker_ =
@@ -7125,8 +7128,7 @@ void Document::FinishedParsing() {
   // Ensure Custom Element callbacks are drained before DOMContentLoaded.
   // FIXME: Remove this ad-hoc checkpoint when DOMContentLoaded is dispatched in
   // a queued task, which will do a checkpoint anyway. https://crbug.com/425790
-  if (!ScriptForbiddenScope::IsScriptForbidden())
-    Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
+  agent_->event_loop()->PerformMicrotaskCheckpoint();
 
   ScriptableDocumentParser* parser = GetScriptableDocumentParser();
   well_formed_ = parser && parser->WellFormed();

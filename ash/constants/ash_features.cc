@@ -1312,11 +1312,6 @@ BASE_FEATURE(kMacAddressRandomization,
              "MacAddressRandomization",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables the redesigned managed device info UI in the system tray.
-BASE_FEATURE(kManagedDeviceUIRedesign,
-             "ManagedDeviceUIRedesign",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables the custom color picker and recent colors UI in the media app.
 BASE_FEATURE(kMediaAppCustomColors,
              "MediaAppCustomColors",
@@ -1705,11 +1700,6 @@ BASE_FEATURE(kReverseScrollGestures,
 BASE_FEATURE(kRgbKeyboard, "RgbKeyboard", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the system tray to show more information in larger screen.
-BASE_FEATURE(kScalableStatusArea,
-             "ScalableStatusArea",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables the system tray to show more information in larger screen.
 BASE_FEATURE(kSeamlessRefreshRateSwitching,
              "SeamlessRefreshRateSwitching",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1880,6 +1870,11 @@ BASE_FEATURE(kSystemExtensions,
              "SystemExtensions",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables or disables the OEM diagnostics and control System Extensions type.
+BASE_FEATURE(kSystemExtensionsOemDiagnosticsAndControl,
+             "SystemExtensionsOemDiagnosticsAndControl",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or disables using the system input engine for physical typing in
 // Japanese.
 BASE_FEATURE(kSystemJapanesePhysicalTyping,
@@ -1964,7 +1959,7 @@ BASE_FEATURE(kUseAuthsessionAuthentication,
 // This feature flag also affects usage of AuthSession on lock screen.
 BASE_FEATURE(kUseAuthFactors,
              "UseAuthFactors",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
 BASE_FEATURE(kUseBluetoothSystemInAsh,
@@ -2007,6 +2002,9 @@ BASE_FEATURE(kUseWallpaperStagingUrl,
 BASE_FEATURE(kUserActivityPrediction,
              "UserActivityPrediction",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enable or disable the ChromeOS video conferencing controls UI.
+BASE_FEATURE(kVcControlsUi, "VcControlsUi", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable or disable bordered key for virtual keyboard on ChromeOS.
 BASE_FEATURE(kVirtualKeyboardBorderedKey,
@@ -2661,10 +2659,6 @@ bool IsMacAddressRandomizationEnabled() {
   return base::FeatureList::IsEnabled(kMacAddressRandomization);
 }
 
-bool IsManagedDeviceUIRedesignEnabled() {
-  return base::FeatureList::IsEnabled(kManagedDeviceUIRedesign);
-}
-
 bool IsManagedTermsOfServiceEnabled() {
   return base::FeatureList::IsEnabled(kManagedTermsOfService);
 }
@@ -2922,10 +2916,6 @@ bool IsSavedDesksEnabled() {
   return base::FeatureList::IsEnabled(kEnableSavedDesks);
 }
 
-bool IsScalableStatusAreaEnabled() {
-  return base::FeatureList::IsEnabled(kScalableStatusArea);
-}
-
 bool IsSeparateNetworkIconsEnabled() {
   return base::FeatureList::IsEnabled(kSeparateNetworkIcons);
 }
@@ -3017,6 +3007,10 @@ bool IsUseStorkSmdsServerAddressEnabled() {
 
 bool IsVCBackgroundBlurEnabled() {
   return base::FeatureList::IsEnabled(kVCBackgroundBlur);
+}
+
+bool IsVcControlsUiEnabled() {
+  return base::FeatureList::IsEnabled(kVcControlsUi);
 }
 
 bool IsWallpaperFastRefreshEnabled() {

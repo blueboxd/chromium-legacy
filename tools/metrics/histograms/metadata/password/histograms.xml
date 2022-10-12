@@ -207,7 +207,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordBubble.CompromisedBubble.CheckClicked"
-    enum="BooleanClicked" expires_after="2023-01-22">
+    enum="BooleanClicked" expires_after="2023-04-09">
   <owner>vasilii@chromium.org</owner>
   <owner>kazinova@google.com</owner>
   <summary>
@@ -363,7 +363,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.AccountChooserDialogOneAccount"
-    enum="AccountChooserDismissalReason" expires_after="2023-01-22">
+    enum="AccountChooserDismissalReason" expires_after="2023-04-09">
   <owner>vasilii@chromium.org</owner>
   <owner>kazinova@google.com</owner>
   <summary>
@@ -1140,7 +1140,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.CredentialsWithMismatchedDuplicates2"
-    units="units" expires_after="M111">
+    units="units" expires_after="2023-04-09">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1418,7 +1418,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.Import.DesktopInteractions"
-    enum="PasswordsImportDesktopInteractions" expires_after="2023-02-01">
+    enum="PasswordsImportDesktopInteractions" expires_after="2023-04-09">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1428,7 +1428,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ImportDuration" units="ms"
-    expires_after="2023-02-01">
+    expires_after="2023-04-09">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1463,7 +1463,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ImportFileSize" units="bytes"
-    expires_after="2023-02-01">
+    expires_after="2023-04-09">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1474,7 +1474,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ImportResultsStatus"
-    enum="PasswordManagerImportResultsStatus" expires_after="2023-02-01">
+    enum="PasswordManagerImportResultsStatus" expires_after="2023-04-09">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1490,15 +1490,6 @@ chromium-metrics-reviews@google.com.
   <owner>sczs@google.com</owner>
   <summary>
     This metric counts how many times the Save Password infobar is shown.
-  </summary>
-</histogram>
-
-<histogram name="PasswordManager.iOS.InfoBar.PasswordUpdate" enum="Boolean"
-    expires_after="2022-10-16">
-  <owner>djean@chromium.org</owner>
-  <owner>sczs@google.com</owner>
-  <summary>
-    This metric counts how many times the Update Password infobar is shown.
   </summary>
 </histogram>
 
@@ -1754,7 +1745,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.MigratedSettingsUPMAndroid"
-    enum="BooleanEnabled" expires_after="M110">
+    enum="BooleanEnabled" expires_after="2023-04-09">
   <owner>ioanap@chromium.org</owner>
   <owner>kazinova@google.com</owner>
   <summary>
@@ -2258,6 +2249,73 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="PasswordManager.PasswordStoreAndroidBackend.Retry{Operation}.APIError"
+    enum="PasswordStoreAndroidBackendAPIError" expires_after="M110">
+  <owner>maxan@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    Records the last error code returned by the GMS ChromeSync 1P API when
+    scheduling a retry for the {Operation} operation. This is recorded after the
+    asynchronous call comes back with an error and it is checked that operation
+    could be retried. This is only recorded for GMS API errors on Android.
+  </summary>
+  <token key="Operation">
+    <variant name=""/>
+    <variant name=".AddLoginAsync" summary="AddLogin"/>
+    <variant name=".ClearAllLocalPasswords" summary="ClearAllLocalPasswords"/>
+    <variant name=".DisableAutoSignInForOriginsAsync"
+        summary="DisableAutoSignInForOrigins"/>
+    <variant name=".FillMatchingLoginsAsync" summary="FillMatchingLogins"/>
+    <variant name=".GetAllLoginsAsync" summary="GetAllLogins"/>
+    <variant name=".GetAllLoginsForAccountAsync"
+        summary="GetAllLoginsForAccount"/>
+    <variant name=".GetAutofillableLoginsAsync"
+        summary="GetAutofillableLogins"/>
+    <variant name=".RemoveLoginAsync" summary="RemoveLogin"/>
+    <variant name=".RemoveLoginForAccount" summary="RemoveLoginForAccount"/>
+    <variant name=".RemoveLoginsByURLAndTimeAsync"
+        summary="RemoveLoginsByURLAndTime"/>
+    <variant name=".RemoveLoginsCreatedBetweenAsync"
+        summary="RemoveLoginsCreatedBetween"/>
+    <variant name=".UpdateLoginAsync" summary="UpdateLogin"/>
+  </token>
+</histogram>
+
+<histogram
+    name="PasswordManager.PasswordStoreAndroidBackend.Retry{Operation}.Attempt"
+    units="Times" expires_after="M110">
+  <owner>maxan@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    Records the retry attempt number when the GMS ChromeSync 1P API returned an
+    error and a retry for the {Operation} operation is about to be scheduled.
+    This is recorded after the asynchronous call comes back with an error and it
+    is checked that operation could be retried. This is only recorded for GMS
+    API errors on Android.
+  </summary>
+  <token key="Operation">
+    <variant name=""/>
+    <variant name=".AddLoginAsync" summary="AddLoginAsync"/>
+    <variant name=".ClearAllLocalPasswords" summary="ClearAllLocalPasswords"/>
+    <variant name=".DisableAutoSignInForOriginsAsync"
+        summary="DisableAutoSignInForOriginsAsync"/>
+    <variant name=".FillMatchingLoginsAsync" summary="FillMatchingLoginsAsync"/>
+    <variant name=".GetAllLoginsAsync" summary="GetAllLoginsAsync"/>
+    <variant name=".GetAllLoginsForAccountAsync"
+        summary="GetAllLoginsForAccountAsync"/>
+    <variant name=".GetAutofillableLoginsAsync"
+        summary="GetAutofillableLoginsAsync"/>
+    <variant name=".RemoveLoginAsync" summary="RemoveLoginAsync"/>
+    <variant name=".RemoveLoginForAccount" summary="RemoveLoginForAccount"/>
+    <variant name=".RemoveLoginsByURLAndTimeAsync"
+        summary="RemoveLoginsByURLAndTimeAsync"/>
+    <variant name=".RemoveLoginsCreatedBetweenAsync"
+        summary="RemoveLoginsCreatedBetweenAsync"/>
+    <variant name=".UpdateLoginAsync" summary="UpdateLoginAsync"/>
+  </token>
+</histogram>
+
+<histogram
     name="PasswordManager.PasswordStoreAndroidBackend.UptimeOnAPIError{ErrorCode}"
     units="ms" expires_after="M110">
   <owner>maxan@google.com</owner>
@@ -2660,7 +2718,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ReusedPasswordType" enum="ReusedPasswordType"
-    expires_after="2023-02-05">
+    expires_after="2023-04-09">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>

@@ -18287,7 +18287,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileFreUMALinkTapped">
-  <owner>arthurmilchior@google.com</owner>
+  <owner>arthurmilchior@chromium.org</owner>
   <owner>jlebel@google.com</owner>
   <owner>chrome-signin-team@google.com</owner>
   <description>
@@ -18617,6 +18617,12 @@ should be able to be added at any place in this file.
 <action name="MobileMenuPasteAndGo">
   <owner>gambard@chromium.org</owner>
   <description>User pressed 'Paste and Go' in the app menu.</description>
+</action>
+
+<action name="MobileMenuPriceNotifications">
+  <owner>danieltwhite@google.com</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>User pressed 'Track Price' in the app menu.</description>
 </action>
 
 <action name="MobileMenuPrint">
@@ -25112,6 +25118,37 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="PasswordProtection.PasswordUpdated.AutomatedFlowPasswordChosen">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    Reported when the automated change password flow completes with a generated
+    password.
+  </description>
+</action>
+
+<action
+    name="PasswordProtection.PasswordUpdated.AutomatedFlowResetLinkRequested">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>Reported when a password-reset link is requested.</description>
+</action>
+
+<action name="PasswordProtection.PasswordUpdated.ManualFlowPasswordChosen">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    Reported when password change/reset flow completes with a user chosen
+    password.
+  </description>
+</action>
+
+<action name="PasswordProtection.PasswordUpdated.Timeout">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>Reported when the password change flow times out.</description>
+</action>
+
 <action name="PasswordProtection.SavedPassword.ChangePasswordButtonClicked">
   <owner>nwokedi@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
@@ -28977,8 +29014,11 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_Impression_FromPostDeviceRestoreSigninPromo">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <owner>scottyoder@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    Recorded when showing sign in after the post restore signin promo.
+  </description>
 </action>
 
 <action name="Signin_Impression_FromRecentTabs" not_user_triggered="true">
@@ -29603,8 +29643,12 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_Signin_FromPostDeviceRestoreSigninPromo">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <owner>scottyoder@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO.
+  </description>
 </action>
 
 <action name="Signin_Signin_FromRecentTabs">

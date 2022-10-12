@@ -309,8 +309,9 @@ void SidePanelCoordinator::OpenInNewTab() {
   if (!GetContentView() || !current_entry_)
     return;
 
-  // TODO(tommycli): Hook this up to the current entry's Open in New Tab GURL.
-  GURL new_tab_url("https://www.google.com/");
+  GURL new_tab_url = current_entry_->GetOpenInNewTabURL();
+  if (!new_tab_url.is_valid())
+    return;
 
   content::OpenURLParams params(new_tab_url, content::Referrer(),
                                 WindowOpenDisposition::NEW_FOREGROUND_TAB,
@@ -431,8 +432,13 @@ void SidePanelCoordinator::PopulateSidePanel(
   auto* previous_entry = current_entry_.get();
   current_entry_ = entry->GetWeakPtr();
   entry->OnEntryShown();
-  if (previous_entry)
+  if (previous_entry) {
     previous_entry->OnEntryHidden();
+  } else {
+    header_combobox_->RequestFocus();
+  }
+  header_open_in_new_tab_button_->SetVisible(
+      current_entry_->GetOpenInNewTabURL().is_valid());
 }
 
 void SidePanelCoordinator::ClearCachedEntryViews() {
@@ -530,7 +536,6 @@ std::unique_ptr<views::View> SidePanelCoordinator::CreateHeader() {
   header_open_in_new_tab_button_->SetFocusBehavior(
       views::View::FocusBehavior::ALWAYS);
   // The icon is later set as visible for side panels that support it.
-  // TODO(tommycli): Implement setting this button as visible later.
   header_open_in_new_tab_button_->SetVisible(false);
 
   auto* header_close_button = header->AddChildView(CreateControlButton(

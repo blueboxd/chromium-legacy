@@ -827,7 +827,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.CardUploadEnabled" enum="AutofillCardUploadEnabled"
-    expires_after="2023-02-05">
+    expires_after="2023-04-09">
   <owner>jsaul@google.com</owner>
   <owner>aneeshali@google.com</owner>
   <summary>
@@ -872,7 +872,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.CreditCard.Seamless{AutofillSeamlessnessFillability}{AutofillSeamlessnessMeasurementTime}{AutofillSeamlessnessVisibility}"
-    enum="CreditCardSeamlessFill" expires_after="2022-10-31">
+    enum="CreditCardSeamlessFill" expires_after="2023-10-31">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -912,7 +912,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.CreditCard.Seamless{AutofillSeamlessnessFillability}{AutofillSeamlessnessMeasurementTime}{AutofillSeamlessnessVisibility}.Bitmask"
-    enum="AutofillCreditCardSeamlessnessBitmask" expires_after="2022-10-31">
+    enum="AutofillCreditCardSeamlessnessBitmask" expires_after="2023-10-31">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -2950,7 +2950,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.UpdateProfileEditedType"
-    enum="AutofillSettingsVisibleTypes" expires_after="2023-01-15">
+    enum="AutofillSettingsVisibleTypes" expires_after="2023-04-09">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -3489,7 +3489,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.StoredProfileWithoutCountryCount" units="units"
-    expires_after="2023-02-05">
+    expires_after="2023-04-09">
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -3629,7 +3629,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.SubmittedCardState" enum="AutofillSubmittedCardState"
-    expires_after="2023-01-31">
+    expires_after="2023-04-09">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -3640,7 +3640,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.SubmittedServerCardExpirationStatus"
     enum="AutofillSubmittedServerCardExpirationStatus"
-    expires_after="2023-01-31">
+    expires_after="2023-04-09">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>

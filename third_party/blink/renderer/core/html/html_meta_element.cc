@@ -333,10 +333,10 @@ blink::mojom::ViewportFit HTMLMetaElement::ParseViewportFitValueAsEnum(
 // static
 absl::optional<ui::mojom::blink::VirtualKeyboardMode>
 HTMLMetaElement::ParseVirtualKeyboardValueAsEnum(const String& value) {
-  if (EqualIgnoringASCIICase(value, "resize-layout"))
-    return ui::mojom::blink::VirtualKeyboardMode::kResizeLayout;
-  else if (EqualIgnoringASCIICase(value, "resize-visual"))
-    return ui::mojom::blink::VirtualKeyboardMode::kResizeVisual;
+  if (EqualIgnoringASCIICase(value, "resizes-content"))
+    return ui::mojom::blink::VirtualKeyboardMode::kResizesContent;
+  else if (EqualIgnoringASCIICase(value, "resizes-visual"))
+    return ui::mojom::blink::VirtualKeyboardMode::kResizesVisual;
   else if (EqualIgnoringASCIICase(value, "overlays-content"))
     return ui::mojom::blink::VirtualKeyboardMode::kOverlaysContent;
 
@@ -404,12 +404,29 @@ void HTMLMetaElement::ProcessViewportKeyValuePair(
     // Ignore vendor-specific argument.
   } else if (RuntimeEnabledFeatures::
                  ViewportMetaInteractiveWidgetPropertyEnabled() &&
-             key_string == "interactive-widgets") {
+             key_string == "interactive-widget") {
     absl::optional<ui::mojom::blink::VirtualKeyboardMode> resize_type =
         ParseVirtualKeyboardValueAsEnum(value_string);
 
     if (resize_type) {
       description.virtual_keyboard_mode = resize_type.value();
+      switch (resize_type.value()) {
+        case ui::mojom::blink::VirtualKeyboardMode::kOverlaysContent: {
+          UseCounter::Count(document,
+                            WebFeature::kInteractiveWidgetOverlaysContent);
+        } break;
+        case ui::mojom::blink::VirtualKeyboardMode::kResizesContent: {
+          UseCounter::Count(document,
+                            WebFeature::kInteractiveWidgetResizesContent);
+        } break;
+        case ui::mojom::blink::VirtualKeyboardMode::kResizesVisual: {
+          UseCounter::Count(document,
+                            WebFeature::kInteractiveWidgetResizesVisual);
+        } break;
+        case ui::mojom::blink::VirtualKeyboardMode::kUnset: {
+          NOTREACHED();
+        } break;
+      }
     } else {
       description.virtual_keyboard_mode =
           ui::mojom::blink::VirtualKeyboardMode::kUnset;

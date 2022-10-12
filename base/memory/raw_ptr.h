@@ -15,10 +15,10 @@
 #include <utility>
 
 #include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/debug/debugging_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/check.h"
 #include "base/compiler_specific.h"
-#include "base/dcheck_is_on.h"
 #include "base/trace_event/base_tracing_forward.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -38,7 +38,6 @@
 #include "base/allocator/partition_allocator/partition_tag.h"
 #include "base/allocator/partition_allocator/partition_tag_types.h"
 #include "base/allocator/partition_allocator/tagging.h"
-#include "base/check_op.h"
 #endif  // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
 #if BUILDFLAG(IS_WIN)
@@ -211,7 +210,7 @@ struct MTECheckedPtrImpl {
     // Disambiguation: UntagPtr removes the hardware MTE tag, whereas this
     // function is responsible for adding the software MTE tag.
     uintptr_t addr = partition_alloc::UntagPtr(ptr);
-    DCHECK_EQ(ExtractTag(addr), 0ull);
+    DCHECK(ExtractTag(addr) == 0ull);
 
     // Return a not-wrapped |addr|, if it's either nullptr or if the protection
     // for this pointer is disabled.
@@ -365,7 +364,7 @@ struct MTECheckedPtrImpl {
 
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
 
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
 BASE_EXPORT void CheckThatAddressIsntWithinFirstPartitionPage(
     uintptr_t address);
 #endif
@@ -387,9 +386,10 @@ struct BackupRefPtrImpl {
     // address is nullptr.
 #if HAS_BUILTIN(__builtin_constant_p)
     if (__builtin_constant_p(address == 0) && (address == 0)) {
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
       CHECK(!partition_alloc::IsManagedByPartitionAllocBRPPool(address));
-#endif  // DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+#endif  // BUILDFLAG(PA_DCHECK_IS_ON) ||
+        // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
       return false;
     }
 #endif  // HAS_BUILTIN(__builtin_constant_p)
@@ -416,7 +416,7 @@ struct BackupRefPtrImpl {
     // IsManagedByPartitionAllocBRPPool returns true for a valid pointer,
     // it must be at least partition page away from the beginning of a super
     // page.
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
     if (is_in_brp_pool) {
       CheckThatAddressIsntWithinFirstPartitionPage(address);
     }
@@ -430,7 +430,7 @@ struct BackupRefPtrImpl {
   static ALWAYS_INLINE T* WrapRawPtr(T* ptr) {
     uintptr_t address = partition_alloc::UntagPtr(ptr);
     if (IsSupportedAndNotNull(address)) {
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
       CHECK(ptr != nullptr);
 #endif
       AcquireInternal(address);
@@ -461,7 +461,7 @@ struct BackupRefPtrImpl {
   static ALWAYS_INLINE void ReleaseWrappedPtr(T* wrapped_ptr) {
     uintptr_t address = partition_alloc::UntagPtr(wrapped_ptr);
     if (IsSupportedAndNotNull(address)) {
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
       CHECK(wrapped_ptr != nullptr);
 #endif
       ReleaseInternal(address);
@@ -479,7 +479,7 @@ struct BackupRefPtrImpl {
   // function is allowed to crash on nullptr.
   template <typename T>
   static ALWAYS_INLINE T* SafelyUnwrapPtrForDereference(T* wrapped_ptr) {
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
     uintptr_t address = partition_alloc::UntagPtr(wrapped_ptr);
     if (IsSupportedAndNotNull(address)) {
       CHECK(wrapped_ptr != nullptr);
@@ -1054,7 +1054,7 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
   ALWAYS_INLINE raw_ptr& operator=(const raw_ptr<U, RawPtrType>& ptr) noexcept {
     // Make sure that pointer isn't assigned to itself (look at pointer address,
     // not its value).
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
     CHECK(reinterpret_cast<uintptr_t>(this) !=
           reinterpret_cast<uintptr_t>(&ptr));
 #endif
@@ -1070,7 +1070,7 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
   ALWAYS_INLINE raw_ptr& operator=(raw_ptr<U, RawPtrType>&& ptr) noexcept {
     // Make sure that pointer isn't assigned to itself (look at pointer address,
     // not its value).
-#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+#if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
     CHECK(reinterpret_cast<uintptr_t>(this) !=
           reinterpret_cast<uintptr_t>(&ptr));
 #endif

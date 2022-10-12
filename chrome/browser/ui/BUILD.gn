@@ -802,8 +802,6 @@ static_library("ui") {
       "android/infobars/simple_confirm_infobar_builder.cc",
       "android/infobars/survey_infobar.cc",
       "android/infobars/survey_infobar.h",
-      "android/infobars/sync_error_infobar.cc",
-      "android/infobars/sync_error_infobar.h",
       "android/infobars/translate_compact_infobar.cc",
       "android/infobars/translate_compact_infobar.h",
       "android/infobars/update_password_infobar.cc",
@@ -3337,10 +3335,10 @@ static_library("ui") {
     if (!is_official_build) {
       if (!use_real_dbus_clients) {
         sources += [
-          "webui/chromeos/emulator/device_emulator_message_handler.cc",
-          "webui/chromeos/emulator/device_emulator_message_handler.h",
-          "webui/chromeos/emulator/device_emulator_ui.cc",
-          "webui/chromeos/emulator/device_emulator_ui.h",
+          "webui/ash/emulator/device_emulator_message_handler.cc",
+          "webui/ash/emulator/device_emulator_message_handler.h",
+          "webui/ash/emulator/device_emulator_ui.cc",
+          "webui/ash/emulator/device_emulator_ui.h",
         ]
       }
       deps += [ "//ash/webui/sample_system_web_app_ui" ]
@@ -5544,6 +5542,7 @@ static_library("ui") {
       "//chrome/common/extensions/api",
       "//components/drive",
       "//components/guest_view/browser",
+      "//components/services/app_service/public/cpp:icon_loader",
       "//extensions/browser",
       "//extensions/browser/api/management",
       "//extensions/common:mojom",

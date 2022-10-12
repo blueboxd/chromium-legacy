@@ -41,7 +41,7 @@
   {
     "name": "account-id-migration",
     "owners": [ "msarda" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 111
   },
   {
     "name": "activate-metrics-reporting-enabled-policy",
@@ -1007,6 +1007,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "clear-identity-in-can-make-payment",
+    "owners": [ "rouslan", "web-payments-team@google.com" ],
+    "expiry_milestone": 115
+  },
+  {
     "name": "client-storage-access-context-auditing",
     "owners": [
       "sauski",
@@ -1112,12 +1117,17 @@
   {
     "name": "contextual-page-actions",
     "owners": [ "shaktisahu@google.com", "salg@google.com" ],
-    "expiry_milestone": 109
+    "expiry_milestone": 112
+  },
+  {
+    "name": "contextual-page-actions-reader-mode",
+    "owners": [ "shaktisahu@google.com", "salg@google.com" ],
+    "expiry_milestone": 112
   },
   {
     "name": "contextual-page-actions-with-price-tracking",
     "owners": [ "shaktisahu@google.com", "salg@google.com" ],
-    "expiry_milestone": 109
+    "expiry_milestone": 112
   },
   {
     "name": "contextual-search-debug",
@@ -1243,11 +1253,6 @@
   {
     "name": "customize-chrome-side-panel",
     "owners": [ "chrome-desktop-ntp@google.com" ],
-    "expiry_milestone": 110
-  },
-  {
-    "name": "dark-light-mode",
-    "owners": [ "minch", "tclaiborne" ],
     "expiry_milestone": 110
   },
   {
@@ -2617,6 +2622,11 @@
     // console messages in system logs for debugging purposes. It's disabled by
     // default because logs may contain PII.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-long-press-surrounding-text",
+    "owners": [ "erahmaoui@google.com", "djean@google.com", "bling-flags@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "enable-machine-learning-model-loader-web-platform-api",
@@ -4037,11 +4047,6 @@
     "expiry_milestone": 97
   },
   {
-    "name": "identity-in-can-make-payment",
-    "owners": [ "rouslan", "web-payments-team@google.com" ],
-    "expiry_milestone": 115
-  },
-  {
     "name": "ignore-gpu-blocklist",
     "owners": [ "kbr", "zmo" ],
     // A debugging flag intended for end-users where there may not be any other
@@ -4125,8 +4130,13 @@
     "expiry_milestone": 105
   },
   {
-    "name": "install-isolated-apps-at-startup",
-    "owners": [ "jarrydg", "kuragin", "reillyg", "rmcelrath" ],
+    "name": "install-isolated-web-app-from-file",
+    "owners": [ "kuragin", "reillyg", "rmcelrath" ],
+    "expiry_milestone": 140
+  },
+  {
+    "name": "install-isolated-web-app-from-url",
+    "owners": [ "kuragin", "reillyg", "rmcelrath" ],
     "expiry_milestone": 140
   },
   {
@@ -4582,11 +4592,6 @@
     "name": "messages-for-android-stacking-animation",
     "owners": [ "lazzzis", "aishwaryarj"],
     "expiry_milestone": 110
-  },
-  {
-    "name": "messages-for-android-sync-error",
-    "owners": [ "pavely", "lazzzis" ],
-    "expiry_milestone": 101
   },
   {
     "name": "messages-for-android-update-password",
@@ -5278,7 +5283,7 @@
     "expiry_milestone": 114
   },
   {
-    "name": "osk-resizes-visual-viewport",
+    "name": "osk-resizes-visual-viewport-by-default",
     "owners": [ "bokan", "rendering-core-dev@chromium.org" ],
     "expiry_milestone": 116
   },
@@ -5337,11 +5342,6 @@
     "name": "page-info-cookies-subpage",
     "owners": [ "zsalata@google.com", "olesiamarukhno@google.com", "dullweber" ],
     "expiry_milestone": 109
-  },
-  {
-    "name": "page-info-discoverability-timeouts",
-    "owners": [ "eokoyomon", "dullweber" ],
-    "expiry_milestone": 103
   },
   {
     "name": "page-info-hide-site-settings",
@@ -6863,6 +6863,11 @@
     "name": "vc-background-blur",
     "owners": [ "shafron", "skyostil", "charleszhao" ],
     "expiry_milestone": 115
+  },
+  {
+    "name": "vc-controls-ui",
+    "owners": [ "rtinkoff", "cros-status-area-eng@google.com" ],
+    "expiry_milestone": 117
   },
   {
     "name": "verbose-logging-in-nacl",

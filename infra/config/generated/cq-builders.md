@@ -35,13 +35,13 @@ These builders must pass before a CL may land that affects files outside of
 
 * [chromium_presubmit](https://ci.chromium.org/p/chromium/builders/try/chromium_presubmit) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""chromium_presubmit"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""chromium_presubmit""))
 
+* [fuchsia-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/fuchsia-arm64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia-arm64-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""fuchsia-arm64-rel""))
+
 * [fuchsia-binary-size](https://ci.chromium.org/p/chromium/builders/try/fuchsia-binary-size) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia-binary-size"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""fuchsia-binary-size""))
 
-* [fuchsia-x64-cast](https://ci.chromium.org/p/chromium/builders/try/fuchsia-x64-cast) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia-x64-cast"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""fuchsia-x64-cast""))
+* [fuchsia-x64-cast-receiver-rel](https://ci.chromium.org/p/chromium/builders/try/fuchsia-x64-cast-receiver-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia-x64-cast-receiver-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""fuchsia-x64-cast-receiver-rel""))
 
-* [fuchsia_arm64](https://ci.chromium.org/p/chromium/builders/try/fuchsia_arm64) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia_arm64"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""fuchsia_arm64""))
-
-* [fuchsia_x64](https://ci.chromium.org/p/chromium/builders/try/fuchsia_x64) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia_x64"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""fuchsia_x64""))
+* [ios-simulator](https://ci.chromium.org/p/chromium/builders/try/ios-simulator) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""ios-simulator"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""ios-simulator""))
 
 * [lacros-amd64-generic-rel](https://ci.chromium.org/p/chromium/builders/try/lacros-amd64-generic-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""lacros-amd64-generic-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""lacros-amd64-generic-rel""))
 
@@ -275,7 +275,7 @@ builder.
   * [`//tools/clang/scripts/update.py`](https://cs.chromium.org/search?q=+file:tools/clang/scripts/update.py)
   * [`//ui/gl/features.gni`](https://cs.chromium.org/search?q=+file:ui/gl/features.gni)
 
-* [fuchsia-arm64-cast](https://ci.chromium.org/p/chromium/builders/try/fuchsia-arm64-cast) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia-arm64-cast"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""fuchsia-arm64-cast""))
+* [fuchsia-arm64-cast-receiver-rel](https://ci.chromium.org/p/chromium/builders/try/fuchsia-arm64-cast-receiver-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia-arm64-cast-receiver-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""fuchsia-arm64-cast-receiver-rel""))
 
   Path regular expressions:
   * [`//chromecast/.+`](https://cs.chromium.org/chromium/src/chromecast/)
@@ -507,9 +507,6 @@ as required builders.
 * [android-pie-arm64-coverage-experimental-rel](https://ci.chromium.org/p/chromium/builders/try/android-pie-arm64-coverage-experimental-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-pie-arm64-coverage-experimental-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-pie-arm64-coverage-experimental-rel""))
   * Experiment percentage: 3.0
 
-* [ios-simulator](https://ci.chromium.org/p/chromium/builders/try/ios-simulator) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""ios-simulator"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""ios-simulator""))
-  * Experiment percentage: 1.0
-
 * [linux-1mbu-compile-fyi-rel](https://ci.chromium.org/p/chromium/builders/try/linux-1mbu-compile-fyi-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-1mbu-compile-fyi-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""linux-1mbu-compile-fyi-rel""))
   * Experiment percentage: 5.0
 
@@ -517,7 +514,7 @@ as required builders.
   * Experiment percentage: 5.0
 
 * [linux-rel-inverse-fyi](https://ci.chromium.org/p/chromium/builders/try/linux-rel-inverse-fyi) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-rel-inverse-fyi"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""linux-rel-inverse-fyi""))
-  * Experiment percentage: 5.0
+  * Experiment percentage: 25.0
 
 * [linux-rel-ml](https://ci.chromium.org/p/chromium/builders/try/linux-rel-ml) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-rel-ml"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""linux-rel-ml""))
   * Experiment percentage: 5.0

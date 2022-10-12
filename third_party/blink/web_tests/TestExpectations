@@ -3189,6 +3189,9 @@ crbug.com/1333451 external/wpt/css/css-ruby/intra-base-white-space-001.html [ Fa
 # WebRTC: there's an open bug with some capture scenarios not working.
 crbug.com/1156408 external/wpt/webrtc/RTCPeerConnection-relay-canvas.https.html [ Failure Pass Timeout ]
 
+# WebRTC: temporarily disabled to allow WebRTC to roll.
+crbug.com/webrtc/14539 external/wpt/webrtc/RTCConfiguration-iceServers.html [ Failure Pass ]
+
 crbug.com/1074547 external/wpt/css/css-transitions/transitioncancel-002.html [ Timeout ]
 
 crbug.com/1024156 external/wpt/css/css-pseudo/cascade-highlight-004.html [ Failure ]
@@ -3338,21 +3341,11 @@ crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/preren
 crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/css/css-transforms/transform-background-007.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-transforms/transform-background-008.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-transforms/transform-root-bg-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-transforms/transform-root-bg-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-transforms/transform-root-bg-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-transforms/transform-translate-background-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-transforms/transform-translate-background-002.html [ Failure ]
+crbug.com/626703 [ Win10.20h2 ] external/wpt/webaudio/idlharness.https.window.html [ Failure Timeout ]
+crbug.com/626703 [ Win10.20h2 ] virtual/css-highlight-overlay-painting/external/wpt/css/css-highlight-api/idlharness.window.html [ Failure Timeout ]
+crbug.com/626703 virtual/storage-access-api/external/wpt/storage-access-api/requestStorageAccess.sub.window.html [ Failure ]
+crbug.com/626703 external/wpt/storage-access-api/requestStorageAccess.sub.window.html [ Failure Pass ]
 crbug.com/626703 [ Mac12-arm64 ] external/wpt/fetch/api/abort/serviceworker-intercepted.https.html [ Timeout ]
-crbug.com/626703 virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-background-007.html [ Failure ]
-crbug.com/626703 virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-background-008.html [ Failure ]
-crbug.com/626703 virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-root-bg-001.html [ Failure ]
-crbug.com/626703 virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-root-bg-002.html [ Failure ]
-crbug.com/626703 virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-root-bg-003.html [ Failure ]
-crbug.com/626703 virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-translate-background-001.html [ Failure ]
-crbug.com/626703 virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-translate-background-002.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/fetch/api/abort/serviceworker-intercepted.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/fetch/api/abort/serviceworker-intercepted.https.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] external/wpt/fetch/api/abort/serviceworker-intercepted.https.html [ Timeout ]
@@ -6306,6 +6299,15 @@ crbug.com/1339051 [ Linux ] virtual/document-transition/wpt_internal/document-tr
 crbug.com/1339051 [ Linux ] virtual/oopr-canvas2d/fast/canvas/canvas-createImageBitmap-out-of-bounds-src.html [ Failure ]
 crbug.com/1339051 [ Linux ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-render-surfaces.html [ Failure ]
 
+# crbug.com/1373055 Spec change to no longer apply transform to root elements.
+crbug.com/1373055 external/wpt/css/css-transforms/transform-background-007.html [ Failure ]
+crbug.com/1373055 external/wpt/css/css-transforms/transform-background-008.html [ Failure ]
+crbug.com/1373055 external/wpt/css/css-transforms/transform-root-bg-001.html [ Failure ]
+crbug.com/1373055 external/wpt/css/css-transforms/transform-root-bg-002.html [ Failure ]
+crbug.com/1373055 external/wpt/css/css-transforms/transform-root-bg-003.html [ Failure ]
+crbug.com/1373055 external/wpt/css/css-transforms/transform-translate-background-001.html [ Failure ]
+crbug.com/1373055 external/wpt/css/css-transforms/transform-translate-background-002.html [ Failure ]
+
 # Sheriff 2021-09-27
 # Revisit once crbug.com/1123886 is addressed.
 # Likely has the same root cause for crashes.
@@ -6537,6 +6539,9 @@ crbug.com/1183990 http/tests/devtools/bindings/suspendtarget-navigator.js [ Fail
 crbug.com/1183990 http/tests/devtools/sources/debugger/network-uisourcecode-provider.js [ Failure Pass ]
 crbug.com/1183990 http/tests/devtools/sources/debugger-ui/scripts-panel.js [ Failure Pass ]
 crbug.com/1183990 http/tests/devtools/sources/debugger-ui/scripts-with-same-source-url.js [ Failure Pass ]
+
+# Interop PE 2022-2023 investigation
+crbug.com/269917 external/wpt/uievents/mouse/cancel-mousedown-in-subframe.html [ Timeout ]
 
 # Sheriff 2022-01-17
 crbug.com/1233938 http/tests/notifications/click-shared-worker.html [ Pass Timeout ]
@@ -7048,7 +7053,8 @@ crbug.com/1358383 [ Mac ] fast/scrolling/scrollbars/scrollbar-rtl-manipulation.h
 crbug.com/1358383 fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure ]
 crbug.com/1358383 virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar-thumb.html [ Failure ]
 crbug.com/1358383 virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar-thumb.html [ Failure ]
-virtual/percent-based-scrolling/fast/scrolling/scrollbars/touch-scrolling-on-root-scrollbar.html [ Pass ]
+[ Linux ] virtual/percent-based-scrolling/fast/scrolling/scrollbars/touch-scrolling-on-root-scrollbar.html [ Pass ]
+[ Mac ] virtual/percent-based-scrolling/fast/scrolling/scrollbars/touch-scrolling-on-root-scrollbar.html [ Pass ]
 virtual/main-threaded-percent-based-scrolling/fast/scrolling/scrollbars/touch-scrolling-on-root-scrollbar.html [ Pass ]
 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/scrollbars/touch-scrolling-on-root-scrollbar.html [ Pass ]
 virtual/fractional-scroll-offsets/fast/scrolling/scrollbars/touch-scrolling-on-root-scrollbar.html [ Pass ]
@@ -7244,3 +7250,24 @@ crbug.com/1372556 [ Linux ] external/wpt/css/css-text/text-transform/text-transf
 
 # Sheriff 2022-10-10
 crbug.com/1373206 [ Win ] external/wpt/css/css-fonts/font-palette-vs-shorthand.html [ Failure ]
+
+crbug.com/1370050 http/tests/devtools/debugger/stop-on-debugger-from-detached-iframe.js [ Skip ]
+crbug.com/1370050 http/tests/devtools/sources/debugger-ui/debugger-save-to-temp-var.js [ Skip ]
+
+# Temporarily disable tests till frontend part of this CL lands
+crbug.com/1349331 http/tests/devtools/storage-panel-dom-storage-update.js [ Skip ]
+crbug.com/1349331 http/tests/devtools/storage-panel-dom-storage.js [ Skip ]
+
+crbug.com/1279220 [ Win ] virtual/percent-based-scrolling/fast/scrolling/scrollbars/touch-scrolling-on-root-scrollbar.html [ Pass Timeout ]
+crbug.com/1279220 [ Linux ] fast/scrolling/non-composited-scroller-in-position-fixed-scroller.html [ Failure Pass ]
+
+# Temporarily disable tests to show storage keys in DOMStorage instead of origin
+crbug.com/1349331 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Skip ]
+crbug.com/1349331 http/tests/devtools/application-panel/resources-panel-on-navigation.js [ Skip ]
+crbug.com/1349331 http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Skip ]
+crbug.com/1349331 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Skip ]
+crbug.com/1349331 http/tests/devtools/application-panel/resources-panel-websql.js [ Skip ]
+crbug.com/1349331 http/tests/devtools/oopif/oopif-storage.js [ Skip ]
+
+# Sheriff 2022-10-12
+crbug.com/1367495 [ Debug Linux ] virtual/threaded-no-composited-antialiasing/animations/direction-and-fill/animation-direction-reverse-timing-functions.html [ Failure Pass ]

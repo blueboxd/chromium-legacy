@@ -215,7 +215,7 @@ class PixelTestPages():
                       test_rect=[0, 0, 300, 300]),
         PixelTestPage('pixel_background.html',
                       base_name + '_SolidColorBackground',
-                      test_rect=[500, 500, 100, 100]),
+                      test_rect=[500, 500, 600, 600]),
         PixelTestPage(
             'pixel_video_mp4.html?width=240&height=135&use_timer=1',
             base_name + '_Video_MP4',
@@ -519,10 +519,6 @@ class PixelTestPages():
         'one_copy': False,
         'accelerated_two_copy': True
     }
-    other_args_canvas_cpu_two_copy = {
-        'one_copy': False,
-        'accelerated_two_copy': False
-    }
 
     # Setting grace_period_end to monitor the affects on bots for 2 weeks
     # without making the bots red unexpectedly.
@@ -542,15 +538,6 @@ class PixelTestPages():
             matching_algorithm=GENERAL_MP4_ALGO,
             browser_args=browser_args_canvas_disable_one_copy_capture,
             other_args=other_args_canvas_accelerated_two_copy,
-            grace_period_end=date(2022, 8, 30)),
-        # Disabled OneCopyCapture + canvas has alpha
-        PixelTestPage(
-            'pixel_webgpu_canvas_capture_to_video.html?has_alpha=true',
-            base_name + '_WebGPUCanvasDisableOneCopyCapture_CpuReadback',
-            test_rect=[0, 0, 400, 200],
-            matching_algorithm=GENERAL_MP4_ALGO,
-            browser_args=browser_args_canvas_disable_one_copy_capture,
-            other_args=other_args_canvas_cpu_two_copy,
             grace_period_end=date(2022, 8, 30)),
     ]
 
@@ -1248,19 +1235,6 @@ class PixelTestPages():
                       other_args={
                           'one_copy': False,
                           'accelerated_two_copy': True
-                      },
-                      matching_algorithm=match_algo,
-                      grace_period_end=grace_period_end,
-                      timeout=timeout),
-        # Having alpha channel would disable TwoCopy's accelerated path
-        PixelTestPage('pixel_video_from_canvas_webgl2_alpha.html',
-                      base_name +
-                      '_VideoStreamFromWebGLAlphaCanvas_TwoCopy_CpuReadback',
-                      test_rect=test_rect,
-                      browser_args=['--disable-features=OneCopyCanvasCapture'],
-                      other_args={
-                          'one_copy': False,
-                          'accelerated_two_copy': False
                       },
                       matching_algorithm=match_algo,
                       grace_period_end=grace_period_end,

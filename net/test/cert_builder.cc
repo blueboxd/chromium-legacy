@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
@@ -30,14 +31,6 @@
 namespace net {
 
 namespace {
-
-std::string MakeRandomHexString(size_t num_bytes) {
-  std::vector<char> rand_bytes;
-  rand_bytes.resize(num_bytes);
-
-  base::RandBytes(rand_bytes.data(), rand_bytes.size());
-  return base::HexEncode(rand_bytes.data(), rand_bytes.size());
-}
 
 std::string Sha256WithRSAEncryption() {
   const uint8_t kSha256WithRSAEncryption[] = {0x30, 0x0D, 0x06, 0x09, 0x2a,
@@ -93,6 +86,20 @@ std::string FinishCBB(CBB* cbb) {
 
   bssl::UniquePtr<uint8_t> delete_bytes(cbb_bytes);
   return std::string(reinterpret_cast<char*>(cbb_bytes), cbb_len);
+}
+
+// Finalizes the CBB to a std::vector.
+std::vector<uint8_t> FinishCBBToVector(CBB* cbb) {
+  size_t cbb_len;
+  uint8_t* cbb_bytes;
+
+  if (!CBB_finish(cbb, &cbb_bytes, &cbb_len)) {
+    ADD_FAILURE() << "CBB_finish() failed";
+    return {};
+  }
+
+  bssl::UniquePtr<uint8_t> delete_bytes(cbb_bytes);
+  return std::vector<uint8_t>(cbb_bytes, cbb_bytes + cbb_len);
 }
 
 }  // namespace
@@ -345,6 +352,40 @@ std::string CertBuilder::SignatureAlgorithmToDer(
   }
 }
 
+// static
+std::string CertBuilder::MakeRandomHexString(size_t num_bytes) {
+  std::vector<char> rand_bytes;
+  rand_bytes.resize(num_bytes);
+
+  base::RandBytes(rand_bytes.data(), rand_bytes.size());
+  return base::HexEncode(rand_bytes.data(), rand_bytes.size());
+}
+
+// static
+std::vector<uint8_t> CertBuilder::BuildNameWithCommonNameOfType(
+    base::StringPiece common_name,
+    unsigned common_name_tag) {
+  // See RFC 4519.
+  static const uint8_t kCommonName[] = {0x55, 0x04, 0x03};
+
+  // See RFC 5280, section 4.1.2.4.
+  bssl::ScopedCBB cbb;
+  CBB rdns, rdn, attr, type, value;
+  if (!CBB_init(cbb.get(), 64) ||
+      !CBB_add_asn1(cbb.get(), &rdns, CBS_ASN1_SEQUENCE) ||
+      !CBB_add_asn1(&rdns, &rdn, CBS_ASN1_SET) ||
+      !CBB_add_asn1(&rdn, &attr, CBS_ASN1_SEQUENCE) ||
+      !CBB_add_asn1(&attr, &type, CBS_ASN1_OBJECT) ||
+      !CBBAddBytes(&type, kCommonName) ||
+      !CBB_add_asn1(&attr, &value, common_name_tag) ||
+      !CBBAddBytes(&value, common_name)) {
+    ADD_FAILURE();
+    return {};
+  }
+
+  return FinishCBBToVector(cbb.get());
+}
+
 void CertBuilder::SetExtension(const der::Input& oid,
                                std::string value,
                                bool critical) {
@@ -467,23 +508,16 @@ void CertBuilder::SetCrlDistributionPointUrls(const std::vector<GURL>& urls) {
   SetExtension(der::Input(kCrlDistributionPointsOid), FinishCBB(cbb.get()));
 }
 
+void CertBuilder::SetIssuerTLV(base::span<const uint8_t> issuer_tlv) {
+  if (issuer_tlv.empty())
+    issuer_tlv_ = absl::nullopt;
+  else
+    issuer_tlv_ = std::string(issuer_tlv.begin(), issuer_tlv.end());
+  Invalidate();
+}
+
 void CertBuilder::SetSubjectCommonName(base::StringPiece common_name) {
-  // See RFC 4519.
-  static const uint8_t kCommonName[] = {0x55, 0x04, 0x03};
-
-  // See RFC 5280, section 4.1.2.4.
-  bssl::ScopedCBB cbb;
-  CBB rdns, rdn, attr, type, value;
-  ASSERT_TRUE(CBB_init(cbb.get(), 64));
-  ASSERT_TRUE(CBB_add_asn1(cbb.get(), &rdns, CBS_ASN1_SEQUENCE));
-  ASSERT_TRUE(CBB_add_asn1(&rdns, &rdn, CBS_ASN1_SET));
-  ASSERT_TRUE(CBB_add_asn1(&rdn, &attr, CBS_ASN1_SEQUENCE));
-  ASSERT_TRUE(CBB_add_asn1(&attr, &type, CBS_ASN1_OBJECT));
-  ASSERT_TRUE(CBBAddBytes(&type, kCommonName));
-  ASSERT_TRUE(CBB_add_asn1(&attr, &value, CBS_ASN1_UTF8STRING));
-  ASSERT_TRUE(CBBAddBytes(&value, common_name));
-
-  subject_tlv_ = FinishCBB(cbb.get());
+  SetSubject(BuildNameWithCommonNameOfType(common_name, CBS_ASN1_UTF8STRING));
   Invalidate();
 }
 
@@ -837,8 +871,38 @@ scoped_refptr<X509Certificate> CertBuilder::GetX509CertificateChain() {
                                            std::move(intermediates));
 }
 
+scoped_refptr<X509Certificate> CertBuilder::GetX509CertificateFullChain() {
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
+  // Add intermediates and the self-signed root.
+  for (CertBuilder* cert = issuer_; cert; cert = cert->issuer_) {
+    intermediates.push_back(cert->DupCertBuffer());
+    if (cert == cert->issuer_)
+      break;
+  }
+  return X509Certificate::CreateFromBuffer(DupCertBuffer(),
+                                           std::move(intermediates));
+}
+
 std::string CertBuilder::GetDER() {
   return std::string(x509_util::CryptoBufferAsStringPiece(GetCertBuffer()));
+}
+
+std::string CertBuilder::GetPEM() {
+  std::string pem_encoded;
+  EXPECT_TRUE(X509Certificate::GetPEMEncoded(GetCertBuffer(), &pem_encoded));
+  return pem_encoded;
+}
+
+std::string CertBuilder::GetPEMFullChain() {
+  std::vector<std::string> pems;
+  CertBuilder* cert = this;
+  while (cert) {
+    pems.push_back(cert->GetPEM());
+    if (cert == cert->issuer_)
+      break;
+    cert = cert->issuer_;
+  }
+  return base::JoinString(pems, "\n");
 }
 
 CertBuilder::CertBuilder(CRYPTO_BUFFER* orig_cert,
@@ -1002,7 +1066,9 @@ void CertBuilder::BuildTBSCertificate(base::StringPiece signature_algorithm_tlv,
   ASSERT_TRUE(CBB_add_asn1_uint64(&version, 2));
   ASSERT_TRUE(CBB_add_asn1_uint64(&tbs_cert, GetSerialNumber()));
   ASSERT_TRUE(CBBAddBytes(&tbs_cert, signature_algorithm_tlv));
-  ASSERT_TRUE(CBBAddBytes(&tbs_cert, issuer_->GetSubject()));
+  ASSERT_TRUE(CBBAddBytes(&tbs_cert, issuer_tlv_.has_value()
+                                         ? *issuer_tlv_
+                                         : issuer_->GetSubject()));
   ASSERT_TRUE(CBBAddBytes(&tbs_cert, validity_tlv_));
   ASSERT_TRUE(CBBAddBytes(&tbs_cert, GetSubject()));
   ASSERT_TRUE(GetKey());

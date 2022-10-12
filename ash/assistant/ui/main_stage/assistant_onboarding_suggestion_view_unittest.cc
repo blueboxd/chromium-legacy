@@ -133,12 +133,10 @@ TEST_F(AssistantOnboardingSuggestionViewTest, DarkAndLightTheme) {
 }
 
 TEST_F(AssistantOnboardingSuggestionViewTest, DarkAndLightModeFlagOff) {
-  // ProductivityLauncher uses DarkLightMode colors.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       /*enabled_features=*/{}, /*disabled_features=*/{
-          chromeos::features::kDarkLightMode, features::kNotificationsRefresh,
-          features::kProductivityLauncher});
+          chromeos::features::kDarkLightMode, features::kNotificationsRefresh});
 
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
 

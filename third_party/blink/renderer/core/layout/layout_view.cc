@@ -346,7 +346,7 @@ void LayoutView::UpdateBlockLayout(bool relayout_children) {
 void LayoutView::UpdateLayout() {
   NOT_DESTROYED();
   if (!GetDocument().Printing()) {
-    SetPageLogicalHeight(LayoutUnit());
+    page_size_ = PhysicalSize();
     named_pages_mapper_ = nullptr;
   }
 
@@ -596,14 +596,15 @@ PhysicalRect LayoutView::ViewRect() const {
       // UI like mobile URL bars and virtual keyboards.
 
       // This adjustment should always be an expansion of the current viewport.
-      DCHECK_GE(supplement->GetTransition()->GetRootContainerSize().width(),
+      DCHECK_GE(supplement->GetTransition()->GetSnapshotViewportRect().width(),
                 frame_view_->Size().width());
-      DCHECK_GE(supplement->GetTransition()->GetRootContainerSize().height(),
+      DCHECK_GE(supplement->GetTransition()->GetSnapshotViewportRect().height(),
                 frame_view_->Size().height());
 
       return PhysicalRect(
           PhysicalOffset(),
-          PhysicalSize(supplement->GetTransition()->GetRootContainerSize()));
+          PhysicalSize(
+              supplement->GetTransition()->GetSnapshotViewportRect().size()));
     }
   }
 
@@ -763,14 +764,8 @@ PhysicalRect LayoutView::DocumentRect() const {
 gfx::Size LayoutView::GetLayoutSize(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   NOT_DESTROYED();
-  if (ShouldUsePrintingLayout()) {
-    LayoutSize size = Size();
-    if (StyleRef().IsHorizontalWritingMode())
-      size.SetHeight(PageLogicalHeight());
-    else
-      size.SetWidth(PageLogicalHeight());
-    return ToFlooredSize(size);
-  }
+  if (ShouldUsePrintingLayout())
+    return ToFlooredSize(page_size_);
 
   if (!frame_view_)
     return gfx::Size();

@@ -274,7 +274,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.DrawToSwapUs" units="microseconds"
-    expires_after="2023-02-05">
+    expires_after="2023-04-09">
   <owner>backer@chromium.org</owner>
   <owner>rjkroege@chromium.org</owner>
   <summary>
@@ -722,7 +722,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.SkiaRenderer.DrawTileDrawQuad.UsingRawDraw"
-    units="boolean" expires_after="2023-02-01">
+    units="boolean" expires_after="2023-04-09">
   <owner>backer@chromium.org</owner>
   <owner>penghuang@chromium.org</owner>
   <summary>Records if the TileDrawQuad is rendered with RawDraw.</summary>
@@ -780,16 +780,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Compositing.SurfaceAggregator.DeclareResourceCount"
-    units="resources" expires_after="2022-10-23">
-  <owner>kylechar@chromium.org</owner>
-  <owner>jonross@chromium.org</owner>
-  <summary>
-    The number of TransferableResources processed while declaring resources as
-    used during surface aggregation. This is logged once per frame.
-  </summary>
-</histogram>
-
 <histogram name="Compositing.SurfaceAggregator.DeclareResourcesUs"
     units="microseconds" expires_after="2023-02-12">
   <owner>kylechar@chromium.org</owner>
@@ -805,7 +795,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.PrewalkedSurfaceCount"
-    units="surfaces" expires_after="2022-10-30">
+    units="surfaces" expires_after="2023-02-12">
   <owner>kylechar@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
@@ -1466,7 +1456,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Graphics.Smoothness.PerSession.MaxPercentDroppedFrames_1sWindow"
-    units="%" expires_after="2023-02-05">
+    units="%" expires_after="2023-04-09">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>

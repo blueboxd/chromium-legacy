@@ -417,9 +417,6 @@ extern const char kChromeWhatsNewInMainMenuNewBadgeDescription[];
 extern const char kDarkLightModeKMeansColorName[];
 extern const char kDarkLightModeKMeansColorDescription[];
 
-extern const char kDarkLightTestName[];
-extern const char kDarkLightTestDescription[];
-
 extern const char kDisableProcessReuse[];
 extern const char kDisableProcessReuseDescription[];
 
@@ -894,8 +891,11 @@ extern const char kCastForceEnableRemotingQueryDescription[];
 extern const char kContextualPageActionsName[];
 extern const char kContextualPageActionsDescription[];
 
-extern const char kContextualPageActionsWithPriceTrackingName[];
-extern const char kContextualPageActionsWithPriceTrackingDescription[];
+extern const char kContextualPageActionsPriceTrackingName[];
+extern const char kContextualPageActionsPriceTrackingDescription[];
+
+extern const char kContextualPageActionsReaderModeName[];
+extern const char kContextualPageActionsReaderModeDescription[];
 
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
@@ -987,8 +987,11 @@ extern const char kInProductHelpSnoozeDescription[];
 extern const char kInProductHelpUseClientConfigName[];
 extern const char kInProductHelpUseClientConfigDescription[];
 
-extern const char kInstallIssolatedAppsAtStartup[];
-extern const char kInstallIssolatedAppsAtStartupDescription[];
+extern const char kInstallIsolatedWebAppFromFile[];
+extern const char kInstallIsolatedWebAppFromFileDescription[];
+
+extern const char kInstallIsolatedWebAppFromUrl[];
+extern const char kInstallIsolatedWebAppFromUrlDescription[];
 
 extern const char kInstalledAppsInCbdName[];
 extern const char kInstalledAppsInCbdDescription[];
@@ -1805,8 +1808,8 @@ extern const char kWebPaymentAPICSPDescription[];
 extern const char kPaymentRequestBasicCardName[];
 extern const char kPaymentRequestBasicCardDescription[];
 
-extern const char kIdentityInCanMakePaymentEventFeatureName[];
-extern const char kIdentityInCanMakePaymentEventFeatureDescription[];
+extern const char kClearIdentityInCanMakePaymentEventName[];
+extern const char kClearIdentityInCanMakePaymentEventDescription[];
 
 extern const char kAppStoreBillingDebugName[];
 extern const char kAppStoreBillingDebugDescription[];
@@ -2062,8 +2065,8 @@ extern const char kEnableCommandLineOnNoRootedDescription[];
 extern const char kEnableFamilyInfoFeedbackName[];
 extern const char kEnableFamilyInfoFeedbackDescription[];
 
-extern const char kEnableOskResizesVisualViewportName[];
-extern const char kEnableOskResizesVisualViewportDescription[];
+extern const char kEnableOskResizesVisualViewportByDefaultName[];
+extern const char kEnableOskResizesVisualViewportByDefaultDescription[];
 
 extern const char kExploreSitesName[];
 extern const char kExploreSitesDescription[];
@@ -2202,9 +2205,6 @@ extern const char kNotificationPermissionRationaleDescription[];
 
 extern const char kOfflinePagesLivePageSharingName[];
 extern const char kOfflinePagesLivePageSharingDescription[];
-
-extern const char kPageInfoDiscoverabilityTimeoutsName[];
-extern const char kPageInfoDiscoverabilityTimeoutsDescription[];
 
 extern const char kPageInfoHistoryName[];
 extern const char kPageInfoHistoryDescription[];
@@ -3905,6 +3905,9 @@ extern const char kWebKioskEnableLacrosDescription[];
 extern const char kDisableLacrosTtsSupportName[];
 extern const char kDisableLacrosTtsSupportDescription[];
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+extern const char kVcControlsUiName[];
+extern const char kVcControlsUiDescription[];
 
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in

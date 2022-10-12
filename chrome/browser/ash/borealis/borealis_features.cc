@@ -43,7 +43,7 @@ constexpr char kSaltForPrefStorage[] = "/!RoFN8,nDxiVgTI6CvU";
 
 // Regex used for CPU checks on intel processors, this means "any 11th
 // generation or greater i5/i7 processor".
-constexpr char kBorealisCapableIntelCpuRegex[] = "[1-9][1-9].. Gen.*i[57]-";
+constexpr char kBorealisCapableIntelCpuRegex[] = "[1-9][1-9].. Gen.*i[357]-";
 
 // Checks the current hardware+token configuration to determine if the user
 // should be able to run borealis.
@@ -106,7 +106,7 @@ class FullChecker : public TokenHardwareChecker {
         LOG(WARNING) << "Vendor token provided, bypassing hardware checks.";
         return AllowStatus::kAllowed;
       }
-      return ReleasedBoardChecks("Ryzen [57]");
+      return ReleasedBoardChecks("Ryzen [357]");
     } else if (IsBoard("draco")) {
       return AllowStatus::kAllowed;
     }
@@ -124,12 +124,8 @@ class FullChecker : public TokenHardwareChecker {
     if (!HasMemory(7 * kGibi)) {
       return AllowStatus::kHardwareChecksFailed;
     }
-    return CpuRegexMatches(cpu_regex) ||
-                   TokenHashMatches(
-                       "XIS4WQ+,^OZ5E,RG",
-                       "r37i7j1MV0mNmgAz0k/ItNjwLdupxYhFiYSjjRHSkWI=")
-               ? AllowStatus::kAllowed
-               : AllowStatus::kHardwareChecksFailed;
+    return CpuRegexMatches(cpu_regex) ? AllowStatus::kAllowed
+                                      : AllowStatus::kHardwareChecksFailed;
   }
 };
 
@@ -240,8 +236,8 @@ AllowStatus BorealisFeatures::MightBeAllowed() {
   }
 
   version_info::Channel c = chrome::GetChannel();
-  if (c == version_info::Channel::STABLE || c == version_info::Channel::BETA)
-    return AllowStatus::kBlockedOnBetaStable;
+  if (c == version_info::Channel::STABLE)
+    return AllowStatus::kBlockedOnStable;
 
   if (!base::FeatureList::IsEnabled(chromeos::features::kBorealisPermitted))
     return AllowStatus::kBlockedByFlag;
@@ -303,9 +299,9 @@ std::ostream& operator<<(std::ostream& os, const AllowStatus& reason) {
                    "disabled)";
     case AllowStatus::kUserPrefBlocked:
       return os << "Your admin has blocked borealis (for your account)";
-    case AllowStatus::kBlockedOnBetaStable:
-      return os << "Your ChromeOS channel must be set to Dev or Canary "
-                   "to run Borealis";
+    case AllowStatus::kBlockedOnStable:
+      return os << "Your ChromeOS channel must be set to Beta or Dev to run "
+                   "Borealis";
     case AllowStatus::kBlockedByFlag:
       return os << "Borealis is still being worked on. You must set the "
                    "#borealis-enabled feature flag.";

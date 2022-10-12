@@ -97,7 +97,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillEnableUpdateVirtualCardEnrollment,
     &autofill::features::kAutofillEnableVirtualCardMetadata,
     &blink::features::kForceWebContentsDarkMode,
-    &blink::features::kOSKResizesVisualViewport,
+    &blink::features::kOSKResizesVisualViewportByDefault,
     &blink::features::kPrerender2,
     &commerce::kCommerceMerchantViewer,
     &commerce::kCommercePriceTracking,
@@ -354,7 +354,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &messages::kMessagesForAndroidReaderMode,
     &messages::kMessagesForAndroidReduceLayoutChanges,
     &messages::kMessagesForAndroidSaveCard,
-    &messages::kMessagesForAndroidSyncError,
     &offline_pages::kOfflineIndicatorFeature,
     &offline_pages::kOfflinePagesCTFeature,  // See crbug.com/620421.
     &offline_pages::kOfflinePagesDescriptiveFailStatusFeature,
@@ -379,7 +378,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &page_info::kPageInfoAboutThisSiteEn,
     &page_info::kPageInfoAboutThisSiteMoreInfo,
     &page_info::kPageInfoAboutThisSiteNonEn,
-    &page_info::kPageInfoDiscoverability,
     &password_manager::features::kBiometricTouchToFill,
     &password_manager::features::kLeakDetectionUnauthenticated,
     &password_manager::features::kPasswordDomainCapabilitiesFetching,
@@ -401,6 +399,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &safe_browsing::kCreateSafebrowsingOnStartup,
     &segmentation_platform::features::kContextualPageActions,
     &segmentation_platform::features::kContextualPageActionPriceTracking,
+    &segmentation_platform::features::kContextualPageActionReaderMode,
     &send_tab_to_self::kSendTabToSelfSigninPromo,
     &send_tab_to_self::kSendTabToSelfV2,
     &share::kCormorant,
@@ -776,7 +775,7 @@ BASE_FEATURE(kExploreSites, "ExploreSites", base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kGridTabSwitcherForTablets,
              "GridTabSwitcherForTablets",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kHandleMediaIntents,
              "HandleMediaIntents",

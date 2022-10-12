@@ -766,11 +766,6 @@ const char kDarkLightModeKMeansColorDescription[] =
     "Enables the alternate K Means color algorithm for extracting color from "
     "user wallpaper to mix into system UI for dark light mode";
 
-const char kDarkLightTestName[] = "Dark/light mode of system UI";
-const char kDarkLightTestDescription[] =
-    "Enables the dark/light mode of system UI, which includes shelf, launcher, "
-    "system tray etc.";
-
 extern const char kDeviceForceScheduledRebootName[] =
     "Enable DeviceScheduledReboot policy for all sessions.";
 extern const char kDeviceForceScheduledRebootDescription[] =
@@ -1612,10 +1607,15 @@ const char kContextualPageActionsName[] = "Contextual page actions";
 const char kContextualPageActionsDescription[] =
     "Enables contextual page action feature.";
 
-const char kContextualPageActionsWithPriceTrackingName[] =
-    "Contextual page actions with price tracking";
-const char kContextualPageActionsWithPriceTrackingDescription[] =
+const char kContextualPageActionsPriceTrackingName[] =
+    "Contextual page actions - price tracking";
+const char kContextualPageActionsPriceTrackingDescription[] =
     "Enables price tracking as a contextual page action.";
+
+const char kContextualPageActionsReaderModeName[] =
+    "Contextual page actions - reader mode";
+const char kContextualPageActionsReaderModeDescription[] =
+    "Enables reader mode as a contextual page action.";
 
 const char kHandwritingGestureEditingName[] = "Handwriting Gestures Editing";
 const char kHandwritingGestureEditingDescription[] =
@@ -1766,11 +1766,17 @@ const char kInProductHelpUseClientConfigName[] = "IPH Use Client Config";
 const char kInProductHelpUseClientConfigDescription[] =
     "Enable In-Product Help to use client side configuration.";
 
-const char kInstallIssolatedAppsAtStartup[] =
-    "Install Isolated Apps at Startup";
-const char kInstallIssolatedAppsAtStartupDescription[] =
-    "Isolated application URLs that Chrome should install during startup, "
-    "specified as a comma-separated list";
+const char kInstallIsolatedWebAppFromFile[] =
+    "Install Isolated Web App from Unsigned Web Bundle";
+const char kInstallIsolatedWebAppFromFileDescription[] =
+    "Installs a new developer mode Isolated Web App backed by the unsigned "
+    "Web Bundle at the provided path.";
+
+const char kInstallIsolatedWebAppFromUrl[] =
+    "Install Isolated Web App from Proxy URL";
+const char kInstallIsolatedWebAppFromUrlDescription[] =
+    "Installs a new developer mode Isolated Web App whose contents are hosted "
+    "at the provided HTTP(S) URL.";
 
 const char kInstalledAppsInCbdName[] = "Installed Apps in Clear Browsing Data";
 const char kInstalledAppsInCbdDescription[] =
@@ -3211,11 +3217,11 @@ const char kPaymentRequestBasicCardName[] =
 const char kPaymentRequestBasicCardDescription[] =
     "The 'basic-card' payment method of the PaymentRequest API.";
 
-const char kIdentityInCanMakePaymentEventFeatureName[] =
-    "Identity in canmakepayment event";
-const char kIdentityInCanMakePaymentEventFeatureDescription[] =
-    "The payment app receives the merchant and user identity when the merchant "
-    "checks whether this payment app is present and can make payments.";
+const char kClearIdentityInCanMakePaymentEventName[] =
+    "Remove identity from canmakepayment event";
+const char kClearIdentityInCanMakePaymentEventDescription[] =
+    "Do not share the merchant and user identity with the payment app when the "
+    "merchant checks whether the payment app can make payments.";
 
 const char kAppStoreBillingDebugName[] =
     "Web Payments App Store Billing Debug Mode";
@@ -3660,12 +3666,12 @@ const char kEnableFamilyInfoFeedbackName[] =
 const char kEnableFamilyInfoFeedbackDescription[] =
     "Enable FamilyLink feedback source in Chrome Settings feedback";
 
-const char kEnableOskResizesVisualViewportName[] =
-    "Enable OSK resizes visual viewport";
-const char kEnableOskResizesVisualViewportDescription[] =
-    "With this flag on, the Android On-Screen-Keyboard (OSK) will avoid "
-    "changing the page height,"
-    "resizing only the visual viewport.";
+const char kEnableOskResizesVisualViewportByDefaultName[] =
+    "Enable OSK resizes visual viewport by default";
+const char kEnableOskResizesVisualViewportByDefaultDescription[] =
+    "Unless explicitly overriden by the page author, the Android "
+    "On-Screen-Keyboard (OSK) will avoid changing the page height, resizing "
+    "only the visual viewport.";
 
 const char kExploreSitesName[] = "Explore websites";
 const char kExploreSitesDescription[] =
@@ -3872,11 +3878,6 @@ const char kOfflinePagesLivePageSharingName[] =
 const char kOfflinePagesLivePageSharingDescription[] =
     "Enables to share current loaded page as offline page by saving as MHTML "
     "first.";
-
-const char kPageInfoDiscoverabilityTimeoutsName[] =
-    "Page info discoverability timeouts";
-const char kPageInfoDiscoverabilityTimeoutsDescription[] =
-    "Configure different timeouts for the permission icon in the omnibox.";
 
 const char kPageInfoHistoryName[] = "Page info history";
 const char kPageInfoHistoryDescription[] =
@@ -6778,6 +6779,10 @@ const char kWebKioskEnableLacrosDescription[] =
 const char kDisableLacrosTtsSupportName[] = "Disable lacros tts support";
 const char kDisableLacrosTtsSupportDescription[] =
     "Disable lacros support for text to speech.";
+
+const char kVcControlsUiName[] = "Video conferencing controls UI";
+const char kVcControlsUiDescription[] =
+    "Enables the built-in video conference controls UI";
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

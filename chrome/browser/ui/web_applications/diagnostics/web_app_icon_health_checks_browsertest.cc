@@ -5,6 +5,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/files/file_util.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ui/browser.h"
@@ -16,6 +18,7 @@
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
 
@@ -71,6 +74,14 @@ class WebAppIconHealthChecksBrowserTest : public InProcessBrowserTest {
                     expected_result.has_generated_icon_flag_false_negative);
     check_histogram("WebApp.Icon.AppsWithEmptyIconBitmap",
                     expected_result.has_empty_icon_bitmap);
+    check_histogram("WebApp.Icon.AppsWithEmptyIconFile",
+                    expected_result.has_empty_icon_file);
+    check_histogram("WebApp.Icon.AppsWithMissingIconFile",
+                    expected_result.has_missing_icon_file);
+    check_histogram("WebApp.Icon.AppsWithAppServiceMissingIcon",
+                    expected_result.has_app_service_missing_icon);
+    check_histogram("WebApp.Icon.AppsWithAppServiceFallbackIcon",
+                    expected_result.has_app_service_fallback_icon);
   }
 
   AppId InstallWebAppAndAwaitAppService(const char* path) {
@@ -88,13 +99,32 @@ IN_PROC_BROWSER_TEST_F(WebAppIconHealthChecksBrowserTest, HealthyIcons) {
   RunIconChecksWithMetricExpectations({});
 }
 
+IN_PROC_BROWSER_TEST_F(WebAppIconHealthChecksBrowserTest, EmptyAppName) {
+  AppId app_id = InstallWebAppAndAwaitAppService("/web_apps/basic.html");
+
+  // Delete the app name (some users may have corrupt web app databases with
+  // missing app names).
+  {
+    WebAppSyncBridge& sync_bridge =
+        WebAppProvider::GetForTest(profile())->sync_bridge();
+    sync_bridge.set_disable_checks_for_testing(true);
+    ScopedRegistryUpdate update(&sync_bridge);
+    WebApp* web_app = update->UpdateApp(app_id);
+    web_app->SetName("");
+  }
+
+  // Check that we don't crash on empty app names.
+  RunIconChecksWithMetricExpectations({});
+}
+
 IN_PROC_BROWSER_TEST_F(WebAppIconHealthChecksBrowserTest,
                        MissingDownloadedIconSizes) {
   AppId app_id = InstallWebAppAndAwaitAppService("/web_apps/basic.html");
   CreateUpdateScope()->UpdateApp(app_id)->SetDownloadedIconSizes(
       IconPurpose::ANY, {});
-  RunIconChecksWithMetricExpectations(
-      {.has_empty_downloaded_icon_sizes = true, .has_empty_icon_bitmap = true});
+  RunIconChecksWithMetricExpectations({.has_empty_downloaded_icon_sizes = true,
+                                       .has_empty_icon_bitmap = true,
+                                       .has_app_service_missing_icon = true});
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppIconHealthChecksBrowserTest, GeneratedIcon) {
@@ -115,7 +145,8 @@ IN_PROC_BROWSER_TEST_F(WebAppIconHealthChecksBrowserTest,
        .has_generated_icon_bitmap = true});
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppIconHealthChecksBrowserTest, PRE_EmptyIconBitmap) {
+IN_PROC_BROWSER_TEST_F(WebAppIconHealthChecksBrowserTest,
+                       PRE_DeletedIconFiles) {
   AppId app_id = InstallWebAppAndAwaitAppService("/web_apps/basic.html");
   RunIconChecksWithMetricExpectations({});
 
@@ -128,7 +159,61 @@ IN_PROC_BROWSER_TEST_F(WebAppIconHealthChecksBrowserTest, PRE_EmptyIconBitmap) {
 
   // Restart to reload the app.
 }
-IN_PROC_BROWSER_TEST_F(WebAppIconHealthChecksBrowserTest, EmptyIconBitmap) {
+IN_PROC_BROWSER_TEST_F(WebAppIconHealthChecksBrowserTest, DeletedIconFiles) {
+  RunIconChecksWithMetricExpectations({.has_empty_icon_bitmap = true,
+                                       .has_missing_icon_file = true,
+                                       .has_app_service_fallback_icon = true});
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppIconHealthChecksBrowserTest, PRE_EmptyIconFile) {
+  AppId app_id = InstallWebAppAndAwaitAppService("/web_apps/basic.html");
+  RunIconChecksWithMetricExpectations({});
+
+  // Empty the contents of one of the icon files.
+  base::FilePath icon_path =
+      WebAppProvider::GetForTest(profile())
+          ->icon_manager()
+          .GetIconFilePathForTesting(app_id, IconPurpose::ANY, 32);
+  base::RunLoop run_loop;
+  base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN})
+      ->PostTaskAndReply(FROM_HERE, base::BindLambdaForTesting([icon_path]() {
+                           base::WriteFile(icon_path, "");
+                         }),
+                         run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Restart to reload the app.
+}
+IN_PROC_BROWSER_TEST_F(WebAppIconHealthChecksBrowserTest, EmptyIconFile) {
+  RunIconChecksWithMetricExpectations(
+      {.has_empty_icon_bitmap = true, .has_empty_icon_file = true});
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppIconHealthChecksBrowserTest, PRE_CorruptIconFile) {
+  AppId app_id = InstallWebAppAndAwaitAppService("/web_apps/basic.html");
+  RunIconChecksWithMetricExpectations({});
+
+  // Corrupt the contents of one of the icon files.
+  base::FilePath icon_path =
+      WebAppProvider::GetForTest(profile())
+          ->icon_manager()
+          .GetIconFilePathForTesting(app_id, IconPurpose::ANY, 32);
+  base::RunLoop run_loop;
+  base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN})
+      ->PostTaskAndReply(
+          FROM_HERE, base::BindLambdaForTesting([icon_path]() {
+            base::WriteFile(icon_path, "This is invalid data for a PNG file.");
+          }),
+          run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Restart to reload the app.
+}
+IN_PROC_BROWSER_TEST_F(WebAppIconHealthChecksBrowserTest, CorruptIconFile) {
   RunIconChecksWithMetricExpectations({.has_empty_icon_bitmap = true});
 }
 

@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.layouts.components.VirtualView;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
@@ -69,6 +70,7 @@ import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.components.browser_ui.widget.TouchEventObserver;
 import org.chromium.components.content_capture.OnscreenContentProvider;
 import org.chromium.components.embedder_support.view.ContentView;
+import org.chromium.components.prefs.PrefService;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -195,9 +197,10 @@ public class CompositorViewHolder extends FrameLayout
     private boolean mHasKeyboardGeometryChangeFired;
 
     @VirtualKeyboardMode.EnumType
-    private int mVirtualKeyboardMode = ChromeFeatureList.sOSKResizesVisualViewport.isEnabled()
-            ? VirtualKeyboardMode.RESIZE_VISUAL
-            : VirtualKeyboardMode.RESIZE_LAYOUT;
+    private int mVirtualKeyboardMode =
+            ChromeFeatureList.sOSKResizesVisualViewportByDefault.isEnabled()
+            ? VirtualKeyboardMode.RESIZES_VISUAL
+            : VirtualKeyboardMode.RESIZES_CONTENT;
 
     private OnscreenContentProvider mOnscreenContentProvider;
 
@@ -258,6 +261,8 @@ public class CompositorViewHolder extends FrameLayout
     private View mUrlBar;
 
     private ApplicationViewportInsetSupplier mApplicationViewportInsetSupplier;
+
+    private PrefService mPrefService;
 
     /**
      * Creates a {@link CompositorView}.
@@ -423,7 +428,8 @@ public class CompositorViewHolder extends FrameLayout
         // contents.
         //
         // [1] - https://developer.android.com/reference/android/view/WindowManager.LayoutParams.html#FLAG_FULLSCREEN
-        if (mShowingFullscreen && (!ChromeFeatureList.sOSKResizesVisualViewport.isEnabled())
+        if (mShowingFullscreen
+                && (!ChromeFeatureList.sOSKResizesVisualViewportByDefault.isEnabled())
                 && KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(getContext(), this)) {
             getWindowVisibleDisplayFrame(mCacheRect);
 
@@ -650,8 +656,8 @@ public class CompositorViewHolder extends FrameLayout
     /**
      * This is called when the native library are ready.
      */
-    public void onNativeLibraryReady(
-            WindowAndroid windowAndroid, TabContentManager tabContentManager) {
+    public void onNativeLibraryReady(WindowAndroid windowAndroid,
+            TabContentManager tabContentManager, PrefService prefService) {
         mCompositorView.initNativeCompositor(
                 SysUtils.isLowEndDevice(), windowAndroid, tabContentManager);
 
@@ -662,6 +668,7 @@ public class CompositorViewHolder extends FrameLayout
 
         mApplicationBottomInsetSupplier = windowAndroid.getApplicationBottomInsetProvider();
         mApplicationBottomInsetSupplier.addObserver(mBottomInsetObserver);
+        mPrefService = prefService;
     }
 
     /**
@@ -912,11 +919,22 @@ public class CompositorViewHolder extends FrameLayout
         return view != null && view.getWindowToken() != null;
     }
 
+    @VirtualKeyboardMode.EnumType
+    private int defaultVirtualKeyboardMode() {
+        if (mPrefService.getBoolean(Pref.VIRTUAL_KEYBOARD_RESIZES_LAYOUT_BY_DEFAULT)) {
+            return VirtualKeyboardMode.RESIZES_CONTENT;
+        }
+        if (ChromeFeatureList.sOSKResizesVisualViewportByDefault.isEnabled()) {
+            return VirtualKeyboardMode.RESIZES_VISUAL;
+        }
+        return VirtualKeyboardMode.RESIZES_CONTENT;
+    }
+
     private boolean oskResizesVisualViewport() {
         // UNSET means the author hasn't explicitly set a preference but the mode should have been
         // set to the default in that case.
         assert mVirtualKeyboardMode != VirtualKeyboardMode.UNSET;
-        return mVirtualKeyboardMode == VirtualKeyboardMode.RESIZE_VISUAL;
+        return mVirtualKeyboardMode == VirtualKeyboardMode.RESIZES_VISUAL;
     }
 
     /**
@@ -1342,9 +1360,7 @@ public class CompositorViewHolder extends FrameLayout
      * @return The inset height in pixels.
      */
     private int getKeyboardBottomInsetForControlsPixels() {
-        // If osk-resizes-visual-viewport is enabled, the OSK and its
-        // accessories don't resize the view/page so the autofill inset
-        // supplier must not have been set.
+        // If the OSK mode resizes only the visual viewport avoid insetting the the container.
         if (oskResizesVisualViewport()) {
             return 0;
         }
@@ -1549,9 +1565,7 @@ public class CompositorViewHolder extends FrameLayout
     @VisibleForTesting
     void updateVirtualKeyboardMode(@VirtualKeyboardMode.EnumType int newMode) {
         if (newMode == VirtualKeyboardMode.UNSET) {
-            newMode = ChromeFeatureList.sOSKResizesVisualViewport.isEnabled()
-                    ? VirtualKeyboardMode.RESIZE_VISUAL
-                    : VirtualKeyboardMode.RESIZE_LAYOUT;
+            newMode = defaultVirtualKeyboardMode();
         }
 
         if (mVirtualKeyboardMode == newMode) return;
@@ -1563,8 +1577,8 @@ public class CompositorViewHolder extends FrameLayout
         // If we're going into or out of the default OSK resizes visual viewport mode
         // we're changing whether the ApplicationViewportInsetSupplier needs to listen to
         // the keyboard since its responsible for insetting the visual viewport.
-        if (oldMode == VirtualKeyboardMode.RESIZE_VISUAL
-                || newMode == VirtualKeyboardMode.RESIZE_VISUAL) {
+        if (oldMode == VirtualKeyboardMode.RESIZES_VISUAL
+                || newMode == VirtualKeyboardMode.RESIZES_VISUAL) {
             updateApplicationViewportInsetSuppliers();
         }
     }

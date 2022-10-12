@@ -17,6 +17,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/holding_space/holding_space_item_view.h"
 #include "ash/system/holding_space/holding_space_tray.h"
+#include "ash/system/holding_space/holding_space_ui.h"
 #include "ash/system/holding_space/pinned_files_bubble.h"
 #include "ash/system/holding_space/recent_files_bubble.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
@@ -33,6 +34,7 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/proposed_layout.h"
@@ -299,7 +301,8 @@ class HoldingSpaceTrayBubble::ChildBubbleContainer
       if (last_visible_child) {
         float y = gfx::Tween::FloatValueBetween(
             0.5f, last_visible_child->bounds().bottom(), child->bounds().y());
-        canvas->DrawRect(gfx::RectF(x, y, width, height), color);
+        canvas->FillRect(gfx::ToRoundedRect(gfx::RectF(x, y, width, height)),
+                         color);
       }
 
       last_visible_child = child;
@@ -364,10 +367,8 @@ HoldingSpaceTrayBubble::HoldingSpaceTrayBubble(
   // Add header.
   if (features::IsHoldingSpaceRefreshEnabled()) {
     bubble_view->AddChildView(
-        views::Builder<views::Label>(
-            bubble_utils::CreateLabel(
-                bubble_utils::LabelStyle::kHeader,
-                l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_TITLE_REFRESH)))
+        holding_space_ui::CreateTopLevelBubbleHeaderLabel(
+            IDS_ASH_HOLDING_SPACE_TITLE_REFRESH)
             .CopyAddressTo(&header_)
             .SetID(kHoldingSpaceHeaderLabelId)
             .SetBorder(views::CreateEmptyBorder(

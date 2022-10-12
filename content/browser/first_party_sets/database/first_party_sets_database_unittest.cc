@@ -148,7 +148,7 @@ TEST_F(FirstPartySetsDatabaseTest, CreateDB_TablesAndIndexesLazilyInitialized) {
   // [manual_sets], [browser_context_sites_to_clear],
   // [browser_contexts_cleared], and [meta].
   EXPECT_EQ(kTableCount, sql::test::CountSQLTables(&db));
-  EXPECT_EQ(1, VersionFromMetaTable(db));
+  EXPECT_EQ(2, VersionFromMetaTable(db));
   // [idx_public_sets_version_browser_contexts], [idx_marked_at_run_sites],
   // [idx_cleared_at_run_browser_contexts], and [sqlite_autoindex_meta_1].
   EXPECT_EQ(4u, sql::test::CountSQLIndices(&db));
@@ -187,7 +187,7 @@ TEST_F(FirstPartySetsDatabaseTest, LoadDBFile_CurrentVersion_Success) {
   EXPECT_EQ(kTableCount, sql::test::CountSQLTables(&db));
   EXPECT_EQ(2u, CountPublicSetsEntries(&db));
   EXPECT_EQ(3u, CountBrowserContextSetsVersionEntries(&db));
-  EXPECT_EQ(1, VersionFromMetaTable(db));
+  EXPECT_EQ(2, VersionFromMetaTable(db));
   EXPECT_EQ(2u, CountBrowserContextSitesToClearEntries(&db));
   EXPECT_EQ(1u, CountBrowserContextsClearedEntries(&db));
   EXPECT_EQ(2u, CountPolicyModificationsEntries(&db));
@@ -198,55 +198,62 @@ TEST_F(FirstPartySetsDatabaseTest, LoadDBFile_CurrentVersion_Success) {
                                 1);
 }
 
-TEST_F(FirstPartySetsDatabaseTest, LoadDBFile_TooOld_Fail) {
+TEST_F(FirstPartySetsDatabaseTest, LoadDBFile_RecreateOnTooOld) {
   base::HistogramTester histograms;
   ASSERT_TRUE(sql::test::CreateDatabaseFromSQL(
       db_path(), GetSqlFilePath("v0.init_too_old.sql")));
 
   OpenDatabase();
   // Trigger the lazy-initialization.
-  EXPECT_FALSE(db()->InsertSitesToClear("b", {}));
+  EXPECT_TRUE(db()->InsertSitesToClear(
+      "b", {net::SchemefulSite(GURL("https://example.com"))}));
   CloseDatabase();
 
-  // Expect that the initialization was unsuccessful. The original database was
-  // unaffected.
+  // Expect that the original database was razed and the initialization is
+  // successful with newly inserted data.
   sql::Database db;
   EXPECT_TRUE(db.Open(db_path()));
   EXPECT_EQ(kTableCount, sql::test::CountSQLTables(&db));
-  EXPECT_EQ(0, VersionFromMetaTable(db));
-  EXPECT_EQ(2u, CountPublicSetsEntries(&db));
-  EXPECT_EQ(2u, CountBrowserContextSitesToClearEntries(&db));
-  EXPECT_EQ(1u, CountBrowserContextsClearedEntries(&db));
-  EXPECT_EQ(2u, CountPolicyModificationsEntries(&db));
+  EXPECT_EQ(2, VersionFromMetaTable(db));
+  EXPECT_EQ(0u, CountPublicSetsEntries(&db));
+  EXPECT_EQ(0u, CountBrowserContextSetsVersionEntries(&db));
+  EXPECT_EQ(1u, CountBrowserContextSitesToClearEntries(&db));
+  EXPECT_EQ(0u, CountBrowserContextsClearedEntries(&db));
+  EXPECT_EQ(0u, CountPolicyModificationsEntries(&db));
+  EXPECT_EQ(0u, CountManualSetsEntries(&db));
 
   histograms.ExpectUniqueSample("FirstPartySets.Database.InitStatus",
-                                FirstPartySetsDatabase::InitStatus::kTooOld, 1);
+                                FirstPartySetsDatabase::InitStatus::kSuccess,
+                                1);
 }
 
-TEST_F(FirstPartySetsDatabaseTest, LoadDBFile_TooNew_Fail) {
+TEST_F(FirstPartySetsDatabaseTest, LoadDBFile_RecreateOnTooNew) {
   base::HistogramTester histograms;
   ASSERT_TRUE(sql::test::CreateDatabaseFromSQL(
       db_path(), GetSqlFilePath("v1.init_too_new.sql")));
 
   OpenDatabase();
   // Trigger the lazy-initialization.
-  EXPECT_FALSE(db()->InsertSitesToClear("b", {}));
+  EXPECT_TRUE(db()->InsertSitesToClear(
+      "b", {net::SchemefulSite(GURL("https://example.com"))}));
   CloseDatabase();
 
-  // Expect that the initialization was unsuccessful. The original database was
-  // unaffected.
+  // Expect that the original database was razed and the initialization is
+  // successful with newly inserted data.
   sql::Database db;
   EXPECT_TRUE(db.Open(db_path()));
   EXPECT_EQ(kTableCount, sql::test::CountSQLTables(&db));
   EXPECT_EQ(2, VersionFromMetaTable(db));
-  EXPECT_EQ(2u, CountPublicSetsEntries(&db));
-  EXPECT_EQ(2u, CountBrowserContextSitesToClearEntries(&db));
-  EXPECT_EQ(1u, CountBrowserContextsClearedEntries(&db));
-  EXPECT_EQ(2u, CountPolicyModificationsEntries(&db));
-  EXPECT_EQ(2u, CountPolicyModificationsEntries(&db));
+  EXPECT_EQ(0u, CountPublicSetsEntries(&db));
+  EXPECT_EQ(0u, CountBrowserContextSetsVersionEntries(&db));
+  EXPECT_EQ(1u, CountBrowserContextSitesToClearEntries(&db));
+  EXPECT_EQ(0u, CountBrowserContextsClearedEntries(&db));
+  EXPECT_EQ(0u, CountPolicyModificationsEntries(&db));
+  EXPECT_EQ(0u, CountManualSetsEntries(&db));
 
   histograms.ExpectUniqueSample("FirstPartySets.Database.InitStatus",
-                                FirstPartySetsDatabase::InitStatus::kTooNew, 1);
+                                FirstPartySetsDatabase::InitStatus::kSuccess,
+                                1);
 }
 
 TEST_F(FirstPartySetsDatabaseTest, LoadDBFile_InvalidRunCount_Fail) {
@@ -995,14 +1002,37 @@ TEST_F(FirstPartySetsDatabaseTest, GetGlobalSets) {
                                             absl::nullopt))));
 }
 
+TEST_F(FirstPartySetsDatabaseTest,
+       HasEntryInBrowserContextsClearedForTesting_NoPreExistingDB) {
+  OpenDatabase();
+  EXPECT_FALSE(db()->HasEntryInBrowserContextsClearedForTesting("b"));
+}
+
+TEST_F(FirstPartySetsDatabaseTest, HasEntryInBrowserContextsClearedForTesting) {
+  ASSERT_TRUE(
+      sql::test::CreateDatabaseFromSQL(db_path(), GetSqlFilePath("v1.sql")));
+
+  // Verify data in the pre-existing DB.
+  {
+    sql::Database db;
+    EXPECT_TRUE(db.Open(db_path()));
+    EXPECT_EQ(1u, CountBrowserContextsClearedEntries(&db));
+  }
+
+  OpenDatabase();
+  EXPECT_TRUE(db()->HasEntryInBrowserContextsClearedForTesting("b0"));
+}
+
 TEST_F(FirstPartySetsDatabaseTest, PersistSets_FormatCheck) {
   const base::Version version("0.0.1");
   const std::string browser_context_id = "b";
   const net::SchemefulSite primary(GURL("https://aaa.test"));
   const net::SchemefulSite associated_site(GURL("https://bbb.test"));
+  const net::SchemefulSite service_site(GURL("https://ccc.test"));
 
-  const net::SchemefulSite manual_primary(GURL("https://ccc.test"));
-  const net::SchemefulSite manual_associated_site(GURL("https://ddd.test"));
+  const net::SchemefulSite manual_primary(GURL("https://ddd.test"));
+  const net::SchemefulSite manual_associated_site(GURL("https://eee.test"));
+  const net::SchemefulSite manual_service_site(GURL("https://fff.test"));
 
   const net::SchemefulSite config_primary_site(GURL("https://example.test"));
   const net::SchemefulSite config_site_member1(GURL("https://member1.test"));
@@ -1012,6 +1042,9 @@ TEST_F(FirstPartySetsDatabaseTest, PersistSets_FormatCheck) {
       /*entries=*/{{associated_site,
                     net::FirstPartySetEntry(primary, net::SiteType::kAssociated,
                                             absl::nullopt)},
+                   {service_site,
+                    net::FirstPartySetEntry(primary, net::SiteType::kService,
+                                            absl::nullopt)},
                    {primary,
                     net::FirstPartySetEntry(primary, net::SiteType::kPrimary,
                                             absl::nullopt)}},
@@ -1019,6 +1052,9 @@ TEST_F(FirstPartySetsDatabaseTest, PersistSets_FormatCheck) {
   base::flat_map<net::SchemefulSite, net::FirstPartySetEntry> manual_sets = {
       {manual_associated_site,
        net::FirstPartySetEntry(manual_primary, net::SiteType::kAssociated,
+                               absl::nullopt)},
+      {manual_service_site,
+       net::FirstPartySetEntry(manual_primary, net::SiteType::kService,
                                absl::nullopt)},
       {manual_primary,
        net::FirstPartySetEntry(manual_primary, net::SiteType::kPrimary,

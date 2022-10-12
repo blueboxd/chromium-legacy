@@ -112,7 +112,7 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sNewWindowAppMenu);
                 add(ChromeFeatureList.sOmniboxModernizeVisualUpdate);
                 add(ChromeFeatureList.sOptimizationGuidePushNotifications);
-                add(ChromeFeatureList.sOSKResizesVisualViewport);
+                add(ChromeFeatureList.sOSKResizesVisualViewportByDefault);
                 add(ChromeFeatureList.sPaintPreviewDemo);
                 add(ChromeFeatureList.sPaintPreviewShowOnStartup);
                 add(ChromeFeatureList.sQueryTiles);
@@ -196,6 +196,7 @@ public class ChromeCachedFlags {
                         add(TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO);
                         add(TabUiFeatureUtilities.GRID_TAB_SWITCHER_FOR_TABLETS_POLISH);
                         add(TabUiFeatureUtilities.TAB_STRIP_TAB_WIDTH);
+                        add(TabUiFeatureUtilities.ENABLE_TAB_SELECTION_EDITOR_V2_SHARE);
                         add(VersionNumberGetter.MIN_SDK_VERSION);
                     }
                 };

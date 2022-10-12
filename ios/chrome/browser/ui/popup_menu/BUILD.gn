@@ -31,6 +31,7 @@ source_set("popup_menu") {
     "resources:popup_menu_new_tab",
     "resources:popup_menu_new_window",
     "resources:popup_menu_paste_and_go",
+    "resources:popup_menu_price_notifications",
     "resources:popup_menu_qr_scanner",
     "resources:popup_menu_read_later",
     "resources:popup_menu_reading_list",
@@ -62,6 +63,7 @@ source_set("popup_menu") {
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state_metrics",
+    "//ios/chrome/browser/commerce",
     "//ios/chrome/browser/feature_engagement",
     "//ios/chrome/browser/find_in_page",
     "//ios/chrome/browser/follow:browser_agent",
@@ -142,7 +144,10 @@ source_set("metrics_protocols") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [ "popup_menu_mediator_unittest.mm" ]
+  sources = [
+    "popup_menu_coordinator_unittest.mm",
+    "popup_menu_mediator_unittest.mm",
+  ]
   deps = [
     ":constants",
     ":popup_menu",
@@ -168,9 +173,12 @@ source_set("unit_tests") {
     "//ios/chrome/browser/policy",
     "//ios/chrome/browser/policy:test_support",
     "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/popup_menu/cells",
+    "//ios/chrome/browser/ui/popup_menu/public",
     "//ios/chrome/browser/ui/popup_menu/public:popup_menu_ui",
     "//ios/chrome/browser/ui/toolbar/test",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web",
     "//ios/chrome/browser/web:feature_flags",
     "//ios/chrome/browser/web:web_internal",

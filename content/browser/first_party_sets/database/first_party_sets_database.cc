@@ -36,7 +36,15 @@ namespace content {
 namespace {
 
 // Version number of the database.
-const int kCurrentVersionNumber = 1;
+const int kCurrentVersionNumber = 2;
+
+// Earliest version which can use a |kCurrentVersionNumber| database
+// without failing.
+const int kCompatibleVersionNumber = 2;
+
+// Latest version of the database that cannot be upgraded to
+// |kCurrentVersionNumber| without razing the database.
+const int kDeprecatedVersionNumber = 1;
 
 const char kRunCountKey[] = "run_count";
 
@@ -122,16 +130,6 @@ const char kRunCountKey[] = "run_count";
 
 void RecordInitializationStatus(FirstPartySetsDatabase::InitStatus status) {
   base::UmaHistogramEnumeration("FirstPartySets.Database.InitStatus", status);
-}
-
-absl::optional<net::SiteType> DeserializeSiteType(int value) {
-  switch (value) {
-    case static_cast<int>(net::SiteType::kPrimary):
-      return net::SiteType::kPrimary;
-    case static_cast<int>(net::SiteType::kAssociated):
-      return net::SiteType::kAssociated;
-  }
-  return absl::nullopt;
 }
 
 }  // namespace
@@ -394,7 +392,7 @@ net::GlobalFirstPartySets FirstPartySetsDatabase::GetGlobalSets(
             statement.ColumnString(1), /*emit_errors=*/false);
 
     absl::optional<net::SiteType> site_type =
-        DeserializeSiteType(statement.ColumnInt(2));
+        net::FirstPartySetEntry::DeserializeSiteType(statement.ColumnInt(2));
 
     // TODO(crbug.com/1314039): Invalid entries should be rare case but
     // possible. Consider deleting them from DB.
@@ -548,6 +546,26 @@ FirstPartySetsDatabase::FetchPolicyModifications(
   return net::FirstPartySetsContextConfig(std::move(results));
 }
 
+bool FirstPartySetsDatabase::HasEntryInBrowserContextsClearedForTesting(
+    const std::string& browser_context_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!browser_context_id.empty());
+
+  if (!LazyInit())
+    return {};
+
+  static constexpr char kSelectSql[] =
+      // clang-format off
+      "SELECT 1 FROM browser_contexts_cleared "
+      "WHERE browser_context_id=? LIMIT 1";
+  // clang-format on
+
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSelectSql));
+  statement.BindString(0, browser_context_id);
+
+  return statement.Step() && statement.Succeeded();
+}
+
 base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>
 FirstPartySetsDatabase::FetchManualSets(const std::string& browser_context_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -574,7 +592,7 @@ FirstPartySetsDatabase::FetchManualSets(const std::string& browser_context_id) {
             statement.ColumnString(1), /*emit_errors=*/false);
 
     absl::optional<net::SiteType> site_type =
-        DeserializeSiteType(statement.ColumnInt(2));
+        net::FirstPartySetEntry::DeserializeSiteType(statement.ColumnInt(2));
 
     // TODO(crbug.com/1314039): Invalid entries should be rare case but
     // possible. Consider deleting them from DB.
@@ -666,6 +684,16 @@ FirstPartySetsDatabase::InitStatus FirstPartySetsDatabase::InitializeTables() {
   // Database should now be open.
   DCHECK(db_->is_open());
 
+  // Razes the DB if the version is deprecated or too new to get the feature
+  // working.
+  //
+  // TODO(crbug.com/1372445): Re-enable track DB init status kTooNew and kTooOld
+  // after the bug is resolved and migration is implemented.
+  DCHECK_LT(kDeprecatedVersionNumber, kCurrentVersionNumber);
+  sql::MetaTable::RazeIfIncompatible(
+      db_.get(), /*lowest_supported_version=*/kDeprecatedVersionNumber + 1,
+      kCurrentVersionNumber);
+
   // Scope initialization in a transaction so we can't be partially initialized.
   sql::Transaction transaction(db_.get());
   if (!transaction.Begin()) {
@@ -676,19 +704,9 @@ FirstPartySetsDatabase::InitStatus FirstPartySetsDatabase::InitializeTables() {
 
   // Create the tables.
   if (!meta_table_.Init(db_.get(), kCurrentVersionNumber,
-                        kCurrentVersionNumber) ||
+                        kCompatibleVersionNumber) ||
       !InitSchema(*db_)) {
     return InitStatus::kError;
-  }
-
-  if (meta_table_.GetCompatibleVersionNumber() > kCurrentVersionNumber) {
-    LOG(WARNING) << "First-Party Sets database is too new.";
-    return InitStatus::kTooNew;
-  }
-
-  if (meta_table_.GetVersionNumber() < kCurrentVersionNumber) {
-    LOG(WARNING) << "First-Party Sets database is too old to be compatible.";
-    return InitStatus::kTooOld;
   }
 
   if (!transaction.Commit()) {

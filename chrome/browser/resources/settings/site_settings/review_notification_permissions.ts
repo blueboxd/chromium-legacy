@@ -9,13 +9,10 @@ import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import '../settings_shared.css.js';
 import '../i18n_setup.js';
 
-import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
-import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUIListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
-import {PaperTooltipElement} from 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
@@ -26,8 +23,6 @@ import {NotificationPermission, SiteSettingsPrefsBrowserProxy, SiteSettingsPrefs
 
 export interface SettingsReviewNotificationPermissionsElement {
   $: {
-    tooltip: PaperTooltipElement,
-    actionMenu: CrLazyRenderElement<CrActionMenuElement>,
     undoToast: CrToastElement,
     undoNotification: HTMLElement,
   };
@@ -40,7 +35,7 @@ export interface SettingsReviewNotificationPermissionsElement {
 enum Actions {
   BLOCK = 'block',
   IGNORE = 'ignore',
-  RESET = 'reset'
+  RESET = 'reset',
 }
 
 const SettingsReviewNotificationPermissionsElementBase =
@@ -61,15 +56,39 @@ export class SettingsReviewNotificationPermissionsElement extends
       /* List of domains that sends a lot of notifications. */
       notificationPermissionReviewList_: {
         type: Array,
-        value: () => [],
+        value: null,
+      },
+
+      /* If the list of notification permissions is expanded or collapsed. */
+      notificationPermissionReviewListExpanded_: {
+        type: Boolean,
+        value: true,
       },
 
       /* The last origin that the user interacted with. */
       lastOrigin_: String,
+
+      /* Action type for use in bindings. */
+      actionsEnum_: {
+        type: Object,
+        value: Actions,
+      },
+
+      /**
+       * Indicates whether to show completion info after user has finished the
+       * review process.
+       */
+      shouldShowCompletionInfo_: {
+        type: Boolean,
+        computed: 'computeShouldShowCompletionInfo_' +
+            '(notificationPermissionReviewList_.*)',
+      },
     };
   }
 
-  private notificationPermissionReviewList_: NotificationPermission[];
+  private notificationPermissionReviewList_: NotificationPermission[]|null;
+  private notificationPermissionReviewListExpanded_: boolean;
+  private shouldShowCompletionInfo_: boolean;
   private browserProxy_: SiteSettingsPrefsBrowserProxy =
       SiteSettingsPrefsBrowserProxyImpl.getInstance();
   private lastOrigin_: string;
@@ -106,7 +125,9 @@ export class SettingsReviewNotificationPermissionsElement extends
   /* Show action menu when clicked to three dot menu. */
   private onShowActionMenuClick_(e: DomRepeatEvent<NotificationPermission>) {
     this.lastOrigin_ = e.model.item.origin;
-    this.$.actionMenu.get().showAt(e.target as HTMLElement);
+    const actionMenu = this.shadowRoot!.querySelector('cr-action-menu');
+    assert(actionMenu);
+    actionMenu.showAt(e.target as HTMLElement);
   }
 
   private onBlockNotificationPermissionClick_(
@@ -124,7 +145,7 @@ export class SettingsReviewNotificationPermissionsElement extends
     this.browserProxy_.ignoreNotificationPermissionForOrigin(this.lastOrigin_);
     this.lastUserAction_ = Actions.IGNORE;
     this.showUndoToast_();
-    this.$.actionMenu.get().close();
+    this.shadowRoot!.querySelector('cr-action-menu')!.close();
   }
 
   private onResetClick_(e: DomRepeatEvent<NotificationPermission>) {
@@ -132,7 +153,7 @@ export class SettingsReviewNotificationPermissionsElement extends
     this.browserProxy_.resetNotificationPermissionForOrigin(this.lastOrigin_);
     this.lastUserAction_ = Actions.RESET;
     this.showUndoToast_();
-    this.$.actionMenu.get().close();
+    this.shadowRoot!.querySelector('cr-action-menu')!.close();
   }
 
   /* Repopulate the list when notification permission list is updated. */
@@ -144,7 +165,8 @@ export class SettingsReviewNotificationPermissionsElement extends
   private onShowTooltip_(e: Event) {
     e.stopPropagation();
     const target = e.target!;
-    const tooltip = this.$.tooltip;
+    const tooltip = this.shadowRoot!.querySelector('paper-tooltip');
+    assert(tooltip);
     tooltip.target = target;
     tooltip.updatePosition();
     const hide = () => {
@@ -209,6 +231,32 @@ export class SettingsReviewNotificationPermissionsElement extends
     this.$.undoToast.hide();
   }
 
+  private getAriaLabelText_(): string {
+    if (!this.lastUserAction_ || !this.lastOrigin_) {
+      return '';
+    }
+    switch (this.lastUserAction_) {
+      case Actions.BLOCK: {
+        return this.i18n(
+            'safetyCheckNotificationPermissionReviewDontAllowAriaLabel',
+            this.lastOrigin_);
+      }
+      case Actions.IGNORE: {
+        return this.i18n(
+            'safetyCheckNotificationPermissionReviewIgnoreAriaLabel',
+            this.lastOrigin_);
+      }
+      case Actions.RESET: {
+        return this.i18n(
+            'safetyCheckNotificationPermissionReviewResetAriaLabel',
+            this.lastOrigin_);
+      }
+      default: {
+        assertNotReached();
+      }
+    }
+  }
+
   /**
    * Retrieve the list of domains that send lots of notification and implicitly
    * trigger the update of the display list.
@@ -216,6 +264,21 @@ export class SettingsReviewNotificationPermissionsElement extends
   private async populateList_() {
     this.notificationPermissionReviewList_ =
         await this.browserProxy_.getNotificationPermissionReview();
+  }
+
+  private getMoreActionsAriaLabelText_(): string {
+    if (!this.lastOrigin_) {
+      return '';
+    }
+    return this.i18n(
+        'safetyCheckNotificationPermissionReviewMoreActionsAriaLabel',
+        this.lastOrigin_);
+  }
+
+  /** Show info that review is completed when there are no permissions left. */
+  private computeShouldShowCompletionInfo_(): boolean {
+    return !!this.notificationPermissionReviewList_ &&
+        this.notificationPermissionReviewList_.length === 0;
   }
 }
 

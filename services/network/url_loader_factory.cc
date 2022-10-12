@@ -30,6 +30,7 @@
 #include "services/network/trust_tokens/local_trust_token_operation_delegate_impl.h"
 #include "services/network/trust_tokens/trust_token_request_helper_factory.h"
 #include "services/network/url_loader.h"
+#include "services/network/web_bundle/web_bundle_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -340,7 +341,7 @@ void URLLoaderFactory::CreateLoaderAndStartWithSyncClient(
       std::move(keepalive_statistics_recorder), std::move(trust_token_factory),
       std::move(cookie_observer), std::move(url_loader_network_observer),
       std::move(devtools_observer), std::move(accept_ch_frame_observer),
-      third_party_cookies_enabled);
+      third_party_cookies_enabled, context_->cache_transparency_settings());
 
   if (context_->GetMemoryCache())
     loader->SetMemoryCache(context_->GetMemoryCache()->GetWeakPtr());

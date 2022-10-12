@@ -1494,7 +1494,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   chromeos::EduCoexistenceLoginHandler::RegisterProfilePrefs(registry);
   ash::SigninErrorNotifier::RegisterPrefs(registry);
   ash::ServicesCustomizationDocument::RegisterProfilePrefs(registry);
-  chromeos::settings::OSSettingsUI::RegisterProfilePrefs(registry);
+  ash::settings::OSSettingsUI::RegisterProfilePrefs(registry);
   ash::StartupUtils::RegisterOobeProfilePrefs(registry);
   ash::UserImageSyncObserver::RegisterProfilePrefs(registry);
   ChromeMetricsServiceClient::RegisterProfilePrefs(registry);
@@ -1586,6 +1586,11 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 
 #if !BUILDFLAG(IS_ANDROID)
   registry->RegisterIntegerPref(prefs::kHighEfficiencyChipExpandedCount, 0);
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
+  registry->RegisterBooleanPref(prefs::kVirtualKeyboardResizesLayoutByDefault,
+                                false);
 #endif
 }
 

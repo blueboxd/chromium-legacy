@@ -310,7 +310,7 @@ crbug.com/1066979 [ win ] Pixel_Canvas2DRedBoxHdr10 [ Failure ]
 # Failure on win10 capturing a VideoFrame from unaccelerated OffscreenCanvas clears the source canvas
 crbug.com/1300550 [ win ] Pixel_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
 
-# Flakes on gpu-fyi-try-chromeos-kevin and Fuchsia x64, produces notably different image.
+# Flakes on gpu-fyi-try-chromeos-kevin and fuchsia-x64, produces notably different image.
 crbug.com/1086687 [ chromeos chromeos-board-kevin ] Pixel_PrecisionRoundedCorner [ Failure ]
 
 # Flakes on gpu-fyi-try-chromeos-amd64-generic, times out.
@@ -447,17 +447,6 @@ crbug.com/1345777 [ android ] Pixel_VideoStreamFromWebGLCanvas [ Skip ]
 # Pixel_VideoStreamFromWebGL* tests sporadically fail on Linux FYI Release (NVIDIA) bot
 crbug.com/1348002 [ linux nvidia ] Pixel_VideoStreamFromWebGLCanvas [ RetryOnFailure ]
 crbug.com/1348002 [ linux nvidia ] Pixel_VideoStreamFromWebGLAlphaCanvas [ Failure ]
-
-# Timeout on Nexus 5
-crbug.com/1353189 [ android android-nexus-5 ] Pixel_VideoStreamFromWebGLAlphaCanvas_TwoCopy_CpuReadback [ Failure ]
-
-# Crash on Linux FYI Release (NVIDIA) using SkiaRenderer/Vulkan
-crbug.com/1353189 [ linux renderer-skia-vulkan nvidia-0x2184 ] Pixel_VideoStreamFromWebGLAlphaCanvas_TwoCopy_CpuReadback [ Failure ]
-
-crbug.com/1372173 [ fuchsia ] Pixel_MediaRecorderFrom2DCanvas [ Failure ]
-crbug.com/1372173 [ fuchsia ] Pixel_VideoStreamFrom2DAlphaCanvas_DisableReadbackFromTexture [ Failure ]
-crbug.com/1372173 [ fuchsia ] Pixel_VideoStreamFrom2DCanvas [ Failure ]
-crbug.com/1372173 [ fuchsia ] Pixel_VideoStreamFromWebGLCanvas [ Failure ]
 
 # Currently expected to fail on non-rooted devices since minidump collection
 # does not work yet, meaning that we can't verify that we crashed exactly once

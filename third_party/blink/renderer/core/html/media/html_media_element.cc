@@ -3643,7 +3643,7 @@ void HTMLMediaElement::TimeChanged() {
   // these steps:
   if (EndedPlayback(LoopCondition::kIgnored)) {
     // If the media element has a loop attribute specified
-    if (Loop()) {
+    if (Loop() && EarliestPossiblePosition() != CurrentPlaybackPosition()) {
       //  then seek to the earliest possible position of the media resource and
       //  abort these steps.
       Seek(EarliestPossiblePosition());
@@ -3819,7 +3819,8 @@ bool HTMLMediaElement::EndedPlayback(LoopCondition loop_condition) const {
   DCHECK_EQ(GetDirectionOfPlayback(), kForward);
   if (auto* wmp = GetWebMediaPlayer()) {
     return wmp->IsEnded() &&
-           (loop_condition == LoopCondition::kIgnored || !Loop());
+           (loop_condition == LoopCondition::kIgnored || !Loop() ||
+            dur <= std::numeric_limits<double>::epsilon());
   }
 
   return false;
@@ -3948,8 +3949,10 @@ void HTMLMediaElement::ContextLifecycleStateChanged(
   if (state == mojom::FrameLifecycleState::kFrozenAutoResumeMedia && playing_) {
     paused_by_context_paused_ = true;
     pause();
+    GetWebMediaPlayer()->OnFrozen();
   } else if (state == mojom::FrameLifecycleState::kFrozen && playing_) {
     pause();
+    GetWebMediaPlayer()->OnFrozen();
   } else if (state == mojom::FrameLifecycleState::kRunning &&
              paused_by_context_paused_) {
     paused_by_context_paused_ = false;

@@ -1621,10 +1621,6 @@ gfx::ImageSkia WallpaperControllerImpl::GetWallpaperImage() {
   return GetWallpaper();
 }
 
-const std::vector<SkColor>& WallpaperControllerImpl::GetWallpaperColors() {
-  return calculated_colors_.prominent_colors;
-}
-
 bool WallpaperControllerImpl::IsWallpaperBlurredForLockState() const {
   return is_wallpaper_blurred_for_lock_state_;
 }
@@ -1719,6 +1715,8 @@ void WallpaperControllerImpl::OnShellDestroying() {
 void WallpaperControllerImpl::OnWallpaperResized() {
   CalculateWallpaperColors();
   compositor_lock_.reset();
+  for (auto& observer : observers_)
+    observer.OnWallpaperResized();
 }
 
 void WallpaperControllerImpl::OnColorCalculationComplete() {

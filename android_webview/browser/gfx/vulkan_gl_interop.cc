@@ -9,6 +9,7 @@
 #include "android_webview/browser/gfx/render_thread_manager.h"
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
+#include "gpu/command_buffer/service/ahardwarebuffer_utils.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/ipc/common/android/android_image_reader_utils.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
@@ -22,7 +23,6 @@
 #include "third_party/skia/include/gpu/vk/GrVkExtensions.h"
 #include "third_party/skia/src/gpu/vk/GrVkSecondaryCBDrawContext.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -148,14 +148,6 @@ VulkanGLInterop::InFlightInteropDraw::~InFlightInteropDraw() {
         ->GetFenceHelper()
         ->EnqueueVulkanObjectCleanupForSubmittedWork(std::move(vulkan_image));
   }
-
-  if (egl_image != EGL_NO_IMAGE_KHR) {
-    const EGLBoolean result = eglDestroyImageKHR(
-        gl::GLSurfaceEGL::GetGLDisplayEGL()->GetDisplay(), egl_image);
-    if (result == EGL_FALSE)
-      LOG(ERROR) << "Error destroying EGLImage: "
-                 << ui::GetLastEGLErrorString();
-  }
 }
 
 VulkanGLInterop::VulkanGLInterop(
@@ -232,22 +224,17 @@ void VulkanGLInterop::DrawVk(sk_sp<GrVkSecondaryCBDrawContext> draw_context,
     pending_draw->image_size = gfx::Size(params.width, params.height);
 
     // Create an EGLImage for the buffer.
-    EGLint egl_image_attribs[] = {EGL_IMAGE_PRESERVED_KHR, EGL_FALSE, EGL_NONE};
-    EGLClientBuffer client_buffer =
-        eglGetNativeClientBufferANDROID(pending_draw->scoped_buffer.get());
-    pending_draw->egl_image = eglCreateImageKHR(
-        gl::GLSurfaceEGL::GetGLDisplayEGL()->GetDisplay(), EGL_NO_CONTEXT,
-        EGL_NATIVE_BUFFER_ANDROID, client_buffer, egl_image_attribs);
-    if (pending_draw->egl_image == EGL_NO_IMAGE_KHR) {
-      LOG(ERROR) << "Failed to initialize EGLImage for AHardwareBuffer: "
-                 << ui::GetLastEGLErrorString();
+    pending_draw->egl_image = gpu::CreateEGLImageFromAHardwareBuffer(
+        pending_draw->scoped_buffer.get());
+    if (!pending_draw->egl_image.is_valid()) {
+      LOG(ERROR) << "Failed to initialize EGLImage for AHardwareBuffer";
       return;
     }
 
     glGenTextures(1, static_cast<GLuint*>(&pending_draw->texture_id));
     GLenum target = GL_TEXTURE_2D;
     glBindTexture(target, pending_draw->texture_id);
-    glEGLImageTargetTexture2DOES(target, pending_draw->egl_image);
+    glEGLImageTargetTexture2DOES(target, pending_draw->egl_image.get());
     glBindTexture(target, 0);
     glGenFramebuffersEXT(1, &pending_draw->framebuffer_id);
     glBindFramebufferEXT(GL_FRAMEBUFFER, pending_draw->framebuffer_id);

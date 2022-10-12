@@ -251,8 +251,9 @@ RenderFrameHostImpl* FindOpenerRFH(const WebContents::CreateParams& params) {
 // Returns |true| if |type| is the kind of user input that should trigger the
 // user interaction observers.
 bool IsUserInteractionInputType(blink::WebInputEvent::Type type) {
-  // Ideally, this list would be based more off of
-  // https://whatwg.org/C/interaction.html#triggered-by-user-activation.
+  // TODO(mustaq): This list should be based off the HTML spec:
+  // https://html.spec.whatwg.org/multipage/interaction.html#tracking-user-activation,
+  // and kGestureScrollBegin is a clear outlier.
   return type == blink::WebInputEvent::Type::kMouseDown ||
          type == blink::WebInputEvent::Type::kGestureScrollBegin ||
          type == blink::WebInputEvent::Type::kTouchStart ||
@@ -8355,7 +8356,7 @@ void WebContentsImpl::OnDialogClosed(int render_process_id,
   is_showing_before_unload_dialog_ = false;
 }
 
-RenderFrameHostManager* WebContentsImpl::GetRenderManager() const {
+RenderFrameHostManager* WebContentsImpl::GetRenderManager() {
   return primary_frame_tree_.root()->render_manager();
 }
 

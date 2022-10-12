@@ -297,11 +297,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'ba6bc7d02d406a262e155a83e71cf4c19736a312',
+  'skia_revision': '07a2ce61e31a5dfdc758e4ef1543fd3d0fa774d2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '69ffa9cea07d4a4177d0224c2c8fabfd0c314f2f',
+  'v8_revision': '2b4d51cfd44d0119e25772642993ed7df58d34a6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -1671,7 +1671,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/google/snappy.git' + '@' + '65dc7b383985eb4f63cd3e752136db8d9b4be8c0',
 
   'src/third_party/sqlite/src':
-    Var('chromium_git') + '/chromium/deps/sqlite.git' + '@' + '5fb64c1a111a36e7530a8d2132e6ce0c46607942',
+    Var('chromium_git') + '/chromium/deps/sqlite.git' + '@' + 'b48b7b78fcdf0227c59a1fde8bc7e19362239e97',
 
   'src/third_party/sqlite4java': {
       'packages': [
@@ -1827,7 +1827,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@493667218fb9e18b5d8602b964047ad11b2a138e',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b5a39b84bf7a3d099313ceb2a90e9428da34c509',
     'condition': 'checkout_src_internal',
   },
 
@@ -3686,20 +3686,6 @@ skip_child_includes = [
 
 
 hooks = [
-  # Download and initialize "vpython" VirtualEnv environment packages for
-  # Python2. We do this before running any other hooks so that any other
-  # hooks that might use vpython don't trip over unexpected issues and
-  # don't run slower than they might otherwise need to.
-  {
-    'name': 'vpython_common',
-    'pattern': '.',
-    # TODO(https://crbug.com/1205263): Run this on mac/arm too once it works.
-    'condition': 'not (host_os == "mac" and host_cpu == "arm64") and enable_vpython_common_crbug_1329052',
-    'action': [ 'vpython',
-                '-vpython-spec', 'src/.vpython',
-                '-vpython-tool', 'install',
-    ],
-  },
   # Download and initialize "vpython" VirtualEnv environment packages for
   # Python3. We do this before running any other hooks so that any other
   # hooks that might use vpython don't trip over unexpected issues and

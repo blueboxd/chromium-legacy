@@ -7152,6 +7152,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCNAME_SIDE_PANEL_RESIZE" is_accessibility_with_no_ui="true" desc="Screen reader announcement when the side panel resize handle is focused.">
         Side Panel Resize Handle
       </message>
+      <message name="IDS_ACCNAME_SIDE_PANEL_SELECTOR" is_accessibility_with_no_ui="true" desc="Screen reader announcement when the side panel header combobox is focused.">
+        Side Panel Selector
+      </message>
       <message name="IDS_SIDE_PANEL_CUSTOMIZE_CHROME_TITLE" desc="The name of the Customize Chrome feature in the side panel combo box.">
         Customize Chrome
       </message>
@@ -7305,8 +7308,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LENS_SEARCH_UPLOAD_DIALOG_DRAG_DROP_TITLE" desc="Message to user when they are dragging an image over the image drop zone.">
         Drop an image here
       </message>
-      <message name="IDS_LENS_SEARCH_UPLOAD_DIALOG_LOADING_TEXT" desc="Message to user when their is uploading.">
+      <message name="IDS_LENS_SEARCH_UPLOAD_DIALOG_LOADING_TEXT" desc="Message to user when their image is uploading.">
         Uploading...
+      </message>
+      <message name="IDS_LENS_SEARCH_UPLOAD_DIALOG_OFFLINE_TEXT" desc="Message to user when they are offline.">
+        No network connection
+      </message>
+      <message name="IDS_LENS_SEARCH_UPLOAD_DIALOG_OFFLINE_SUBTITLE_TEXT" desc="Instructions to user when they are offline.">
+        please check your internet connection and try again
+      </message>
+      <message name="IDS_LENS_SEARCH_UPLOAD_DIALOG_OFFLINE_BUTTON_LABEL" desc="Label for button which allows the user to retry connection.">
+        Try again
       </message>
       <message name="IDS_TOOLTIP_SAVE_CREDIT_CARD" desc="The tooltip for the icon that shows the save credit card bubble">
         Save card
@@ -7608,9 +7620,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Energy Saver turned on
         </message>
       </if>
-      <message name="IDS_BATTERY_SAVER_MODE_PROMO_TEXT" desc="The text shown for the battery saver mode in-product promo bubble.">
-        This extends battery power by limiting background activity and visual effects like smooth scrolling
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_BATTERY_SAVER_MODE_PROMO_TEXT" desc="The text shown for the battery saver mode in-product promo bubble.">
+          This extends battery power by limiting background activity and visual effects like smooth scrolling.
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_BATTERY_SAVER_MODE_PROMO_TEXT" desc="The text shown for the battery saver mode in-product promo bubble.">
+          This extends battery power by limiting background activity and visual effects like smooth scrolling
+        </message>
+      </if>
       <message name="IDS_BATTERY_SAVER_MODE_PROMO_ACTION_TEXT" desc="The custom action button text for the battery saver mode in-product promo bubble.">
         Settings
       </message>
@@ -7620,9 +7639,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_HIGH_EFFICIENCY_INFO_MODE_PROMO_ACTION_TEXT" desc="The custom action button text for the high efficiency info mode in-product promo bubble.">
         Settings
       </message>
-      <message name="IDS_HIGH_EFFICIENCY_MODE_PROMO_TEXT" desc="The text shown for the high efficiency mode in-product promo bubble">
-        Memory Saver frees up memory from inactive tabs so it can be used by active tabs and other apps
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_HIGH_EFFICIENCY_MODE_PROMO_TEXT" desc="The text shown for the high efficiency mode in-product promo bubble">
+          Memory Saver frees up memory from inactive tabs so it can be used by active tabs and other apps.
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_HIGH_EFFICIENCY_MODE_PROMO_TEXT" desc="The text shown for the high efficiency mode in-product promo bubble">
+          Memory Saver frees up memory from inactive tabs so it can be used by active tabs and other apps
+        </message>
+      </if>
       <if expr="use_titlecase">
         <message name="IDS_HIGH_EFFICIENCY_MODE_PROMO_ACTION_TEXT" desc="In Title Case: The custom action button text for the high efficiency mode in-product promo bubble">
           Turn On
@@ -12774,6 +12800,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_WEBAUTHN_ERROR_WRONG_KEY_REGISTER_DESCRIPTION" desc="Description in the dialog informing the user that they are trying to register a security key (an external physical device for user authentication) that they have already registered with the given web site before.">
         You already registered this security key. You don't have to register it again.
+      </message>
+      <message name="IDS_WEBAUTHN_ERROR_WRONG_DEVICE_TITLE" desc="Title of the dialog informing the user that they are trying to register a passkey on a device that they have already registered with the given web site before.">
+        Try a different device
+      </message>
+      <message name="IDS_WEBAUTHN_ERROR_WRONG_DEVICE_REGISTER_DESCRIPTION" desc="Description in the dialog informing the user that they are trying to register a passkey on a device that they have already registered with the given web site before.">
+        You already registered this device. You don't have to register it again.
       </message>
       <message name="IDS_WEBAUTHN_ERROR_WRONG_KEY_SIGN_DESCRIPTION" desc="Description in the dialog informing the user that they are trying to use the wrong security key (an external physical device for user authentication) to sign in to a given web site, that is, not the one they have previously registered on that site.">
         You're using a security key that's not registered with this website

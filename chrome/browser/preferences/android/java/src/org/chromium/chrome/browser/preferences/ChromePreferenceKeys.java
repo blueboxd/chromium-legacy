@@ -625,6 +625,13 @@ public final class ChromePreferenceKeys {
             "Chrome.OfflineMeasurements.SystemStateList";
 
     /**
+     * Serialized GroupsInfo data used by Omnibox Suggestions to present suggestions before
+     * natives are ready.
+     */
+    public static final String OMNIBOX_CACHED_ZERO_SUGGEST_GROUPS_INFO =
+            "Chrome.Omnibox.CachedZeroSuggestGroupsInfo";
+
+    /**
      * Prefix of the preferences to persist pushed notifications when native is not initialized.
      * Each suffix pertains to a specific OptimizationType. All entries are cleared when native is
      * initialized.
@@ -993,9 +1000,6 @@ public final class ChromePreferenceKeys {
     public static final KeyPrefix WEB_FEED_INTRO_WEB_FEED_ID_SHOWN_COUNT_PREFIX =
             new KeyPrefix("Chrome.WebFeed.IntroWebFeedIdShownCount.*");
 
-    public static final String LOCK_ICON_IN_ADDRESS_BAR_ENABLED =
-            "omnibox.lock_icon_in_address_bar_enabled";
-
     /** Cached Suggestions and Suggestion Headers. */
     public static final String KEY_ZERO_SUGGEST_LIST_SIZE = "zero_suggest_list_size";
     public static final KeyPrefix KEY_ZERO_SUGGEST_URL_PREFIX = new KeyPrefix("zero_suggest_url*");
@@ -1022,13 +1026,6 @@ public final class ChromePreferenceKeys {
             new KeyPrefix("zero_suggest_post_content_type*");
     public static final KeyPrefix KEY_ZERO_SUGGEST_POST_CONTENT_DATA_PREFIX =
             new KeyPrefix("zero_suggest_post_content_data*");
-    public static final String KEY_ZERO_SUGGEST_HEADER_LIST_SIZE = "zero_suggest_header_list_size";
-    public static final KeyPrefix KEY_ZERO_SUGGEST_HEADER_GROUP_ID_PREFIX =
-            new KeyPrefix("zero_suggest_header_group_id*");
-    public static final KeyPrefix KEY_ZERO_SUGGEST_HEADER_GROUP_TITLE_PREFIX =
-            new KeyPrefix("zero_suggest_header_group_title*");
-    public static final KeyPrefix KEY_ZERO_SUGGEST_HEADER_GROUP_COLLAPSED_BY_DEFAULT_PREFIX =
-            new KeyPrefix("zero_suggest_header_group_collapsed_by_default*");
 
     public static final String BLUETOOTH_NOTIFICATION_IDS = "Chrome.Bluetooth.NotificationIds";
     public static final String USB_NOTIFICATION_IDS = "Chrome.USB.NotificationIds";
@@ -1141,6 +1138,7 @@ public final class ChromePreferenceKeys {
                 OFFLINE_MEASUREMENTS_LAST_CHECK_MILLIS,
                 OFFLINE_MEASUREMENTS_SYSTEM_STATE_LIST,
                 OFFLINE_MEASUREMENTS_USER_AGENT_STRING,
+                OMNIBOX_CACHED_ZERO_SUGGEST_GROUPS_INFO,
                 OPEN_HISTORY_COUNT,
                 OPEN_NEW_TAB_PAGE_COUNT,
                 OPEN_RECENT_TABS_COUNT,

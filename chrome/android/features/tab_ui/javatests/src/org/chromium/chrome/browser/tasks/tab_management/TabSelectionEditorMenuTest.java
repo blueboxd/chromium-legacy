@@ -16,6 +16,9 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.chrome.browser.flags.ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS;
+import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_FOR_TABLETS;
+import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_STRIP_IMPROVEMENTS;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
 import android.content.Context;
@@ -29,6 +32,7 @@ import androidx.test.filters.MediumTest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -38,7 +42,6 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
@@ -50,6 +53,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorAction
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorAction.IconPosition;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorAction.ShowMode;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -61,7 +65,6 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.BlankUiTestActivityTestCase;
 import org.chromium.ui.test.util.RenderTestRule;
 import org.chromium.ui.test.util.RenderTestRule.Component;
-import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,9 +78,9 @@ import java.util.concurrent.TimeoutException;
  * classes.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+@Features.
+EnableFeatures({GRID_TAB_SWITCHER_FOR_TABLETS, TAB_STRIP_IMPROVEMENTS, TAB_GROUPS_FOR_TABLETS})
 @Batch(Batch.UNIT_TESTS)
-// TODO(crbug/1371594): Fix test on tablets.
-@Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
 public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
     private static final int TAB_COUNT = 3;
     private static final Integer TAB_ID_0 = 0;
@@ -89,9 +92,12 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
     public RenderTestRule mRenderTestRule =
             RenderTestRule.Builder.withPublicCorpus()
                     .setBugComponent(Component.UI_BROWSER_MOBILE_TAB_SWITCHER_GRID)
-                    .setRevision(2)
-                    .setDescription("TabSelectionEditorV2 Menu Refactor")
+                    .setRevision(3)
+                    .setDescription("Pluralize strings")
                     .build();
+
+    @Rule
+    public TestRule mProcessor = new Features.JUnitProcessor();
 
     static class FakeTabSelectionEditorAction extends TabSelectionEditorAction {
         private boolean mShouldEnableAction = true;
@@ -233,7 +239,7 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
             actions.add(new FakeTabSelectionEditorAction(getActivity(),
                     R.id.tab_selection_editor_close_menu_item, ShowMode.IF_ROOM,
                     ButtonType.ICON_AND_TEXT, IconPosition.END,
-                    R.string.tab_selection_editor_close_tabs, R.drawable.ic_close_tabs_24dp));
+                    R.plurals.tab_selection_editor_close_tabs, R.drawable.ic_close_tabs_24dp));
             configureMenuWithActions(actions);
         });
 
@@ -252,7 +258,7 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
             actions.add(new FakeTabSelectionEditorAction(getActivity(),
                     R.id.tab_selection_editor_close_menu_item, ShowMode.IF_ROOM,
                     ButtonType.ICON_AND_TEXT, IconPosition.END,
-                    R.string.tab_selection_editor_close_tabs, R.drawable.ic_close_tabs_24dp));
+                    R.plurals.tab_selection_editor_close_tabs, R.drawable.ic_close_tabs_24dp));
             configureMenuWithActions(actions);
         });
 
@@ -272,7 +278,7 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             actions.add(new FakeTabSelectionEditorAction(getActivity(),
                     R.id.tab_selection_editor_close_menu_item, ShowMode.IF_ROOM, ButtonType.ICON,
-                    IconPosition.END, R.string.tab_selection_editor_close_tabs,
+                    IconPosition.END, R.plurals.tab_selection_editor_close_tabs,
                     R.drawable.ic_close_tabs_24dp));
             configureMenuWithActions(actions);
         });
@@ -293,7 +299,7 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             actions.add(new FakeTabSelectionEditorAction(getActivity(),
                     R.id.tab_selection_editor_close_menu_item, ShowMode.IF_ROOM, ButtonType.TEXT,
-                    IconPosition.END, R.string.tab_selection_editor_close_tabs,
+                    IconPosition.END, R.plurals.tab_selection_editor_close_tabs,
                     R.drawable.ic_close_tabs_24dp));
             configureMenuWithActions(actions);
         });
@@ -330,14 +336,14 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             actions.add(new FakeTabSelectionEditorAction(getActivity(),
                     R.id.tab_selection_editor_close_menu_item, ShowMode.MENU_ONLY, ButtonType.TEXT,
-                    IconPosition.START, R.string.tab_selection_editor_close_tabs,
+                    IconPosition.START, R.plurals.tab_selection_editor_close_tabs,
                     R.drawable.ic_close_tabs_24dp));
             configureMenuWithActions(actions);
         });
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { actions.get(0).setShouldEnableAction(false); });
-        setSelectedItems(new HashSet<Integer>(Arrays.asList(new Integer[] {TAB_ID_0})));
+        setSelectedItems(new HashSet<Integer>(Arrays.asList(new Integer[] {TAB_ID_0, TAB_ID_1})));
 
         PopupListener listener = new PopupListener();
         openMenu(listener);
@@ -356,7 +362,7 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             actions.add(new FakeTabSelectionEditorAction(getActivity(),
                     R.id.tab_selection_editor_close_menu_item, ShowMode.MENU_ONLY, ButtonType.TEXT,
-                    IconPosition.START, R.string.tab_selection_editor_close_tabs,
+                    IconPosition.START, R.plurals.tab_selection_editor_close_tabs,
                     R.drawable.ic_close_tabs_24dp));
             configureMenuWithActions(actions);
         });
@@ -378,8 +384,8 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
 
         PopupListener listener = new PopupListener();
         openMenu(listener);
-        assertMenuItem("Close tabs", true);
-        clickMenuItem("Close tabs");
+        assertMenuItem("Close tab", true);
+        clickMenuItem("Close tab");
         helper.waitForCallback(0);
 
         mRenderTestRule.render(mToolbar, "singleMenuItemEnabled_Toolbar");
@@ -399,11 +405,11 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             actions.add(new FakeTabSelectionEditorAction(getActivity(),
                     R.id.tab_selection_editor_close_menu_item, ShowMode.IF_ROOM, ButtonType.ICON,
-                    IconPosition.START, R.string.tab_selection_editor_close_tabs,
+                    IconPosition.START, R.plurals.tab_selection_editor_close_tabs,
                     R.drawable.ic_close_tabs_24dp));
             actions.add(new FakeTabSelectionEditorAction(getActivity(),
                     R.id.tab_selection_editor_group_menu_item, ShowMode.IF_ROOM, ButtonType.ICON,
-                    IconPosition.END, R.string.tab_selection_editor_group_tabs,
+                    IconPosition.END, R.plurals.tab_selection_editor_group_tabs,
                     R.drawable.ic_widgets));
             configureMenuWithActions(actions);
         });
@@ -425,11 +431,11 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             actions.add(new FakeTabSelectionEditorAction(getActivity(),
                     R.id.tab_selection_editor_close_menu_item, ShowMode.MENU_ONLY, ButtonType.TEXT,
-                    IconPosition.START, R.string.tab_selection_editor_close_tabs,
+                    IconPosition.START, R.plurals.tab_selection_editor_close_tabs,
                     R.drawable.ic_close_tabs_24dp));
             actions.add(new FakeTabSelectionEditorAction(getActivity(),
                     R.id.tab_selection_editor_group_menu_item, ShowMode.IF_ROOM, ButtonType.ICON,
-                    IconPosition.START, R.string.tab_selection_editor_group_tabs,
+                    IconPosition.START, R.plurals.tab_selection_editor_group_tabs,
                     R.drawable.ic_widgets));
             configureMenuWithActions(actions);
         });
@@ -440,7 +446,7 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
 
         PopupListener listener = new PopupListener();
         openMenu(listener);
-        assertMenuItem("Close tabs", true);
+        assertMenuItem("Close tab", true);
         mRenderTestRule.render(mToolbar, "oneActionToolbarOneMenuItemEnabled_Toobar");
         mRenderTestRule.render(mTabSelectionEditorMenu.getContentView(),
                 "oneActionToolbarOneMenuItemEnabled_Menu");
@@ -455,11 +461,11 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             actions.add(new FakeTabSelectionEditorAction(getActivity(),
                     R.id.tab_selection_editor_close_menu_item, ShowMode.MENU_ONLY, ButtonType.TEXT,
-                    IconPosition.END, R.string.tab_selection_editor_close_tabs,
+                    IconPosition.END, R.plurals.tab_selection_editor_close_tabs,
                     R.drawable.ic_close_tabs_24dp));
             actions.add(new FakeTabSelectionEditorAction(getActivity(),
                     R.id.tab_selection_editor_group_menu_item, ShowMode.MENU_ONLY, ButtonType.ICON,
-                    IconPosition.START, R.string.tab_selection_editor_group_tabs,
+                    IconPosition.START, R.plurals.tab_selection_editor_group_tabs,
                     R.drawable.ic_widgets));
             configureMenuWithActions(actions);
         });
@@ -470,8 +476,8 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
 
         PopupListener listener = new PopupListener();
         openMenu(listener);
-        assertMenuItem("Close tabs", true);
-        assertMenuItem("Group tabs", false);
+        assertMenuItem("Close tab", true);
+        assertMenuItem("Group tab", false);
         mRenderTestRule.render(
                 mTabSelectionEditorMenu.getContentView(), "twoMenuItemsPartlyDisabled_Menu");
         closeMenu(listener);

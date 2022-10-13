@@ -75,14 +75,6 @@ constexpr size_t kMaxPedalMatchIndex = std::numeric_limits<size_t>::max();
 
 }  // namespace
 
-struct MatchGURLHash {
-  // The |bool| is whether the match is a calculator suggestion. We want them
-  // compare differently against other matches with the same URL.
-  size_t operator()(const std::pair<GURL, bool>& p) const {
-    return std::hash<std::string>()(p.first.spec()) + p.second;
-  }
-};
-
 // static
 size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
 #if BUILDFLAG(IS_ANDROID)
@@ -254,10 +246,18 @@ void AutocompleteResult::TransferOldMatches(const AutocompleteInput& input,
   // suggestions. Skipping those suggestions is fine, since
   // `SetAllowedToBeDefault()` here is only intended to make
   // `allowed_to_be_default` more conservative (true -> false, not vice versa).
+  static bool prevent_default_previous_matches =
+      OmniboxFieldTrial::kPreventDefaultPreviousMatches.Get();
   for (auto& m : matches_) {
-    if (input.prevent_inline_autocomplete() && m.from_previous &&
-        m.allowed_to_be_default_match) {
+    if (!m.from_previous)
+      continue;
+    if (input.prevent_inline_autocomplete() && m.allowed_to_be_default_match) {
       m.SetAllowedToBeDefault(input);
+    } else if (prevent_default_previous_matches) {
+      // Transferred matches may no longer match the new input. E.g., when the
+      // user types 'gi' (and presses enter), don't inline (and navigate to)
+      // 'gi[oogle.com]'.
+      m.allowed_to_be_default_match = false;
     }
   }
 }
@@ -311,14 +311,20 @@ void AutocompleteResult::SortAndCull(
     // If we are trying to keep a default match from a previous pass stable,
     // search the current results for it, and if found, make it the top match.
     if (preserve_default_match) {
-      std::pair<GURL, bool> default_match_fields =
+      const auto default_match_fields =
           GetMatchComparisonFields(*preserve_default_match);
-
       top_match =
-          base::ranges::find_if(matches_, [&](const AutocompleteMatch& m) {
+          base::ranges::find_if(matches_, [&](const AutocompleteMatch& match) {
             // Find a match that is a duplicate AND has the same fill_into_edit.
-            return default_match_fields == GetMatchComparisonFields(m) &&
-                   preserve_default_match->fill_into_edit == m.fill_into_edit;
+            // Don't preserve suggestions that are not default-able; e.g.,
+            // typing 'xy' shouldn't preserve default 'xz.com/xy'.
+            static bool prevent_default_previous_matches =
+                OmniboxFieldTrial::kPreventDefaultPreviousMatches.Get();
+            return default_match_fields == GetMatchComparisonFields(match) &&
+                   preserve_default_match->fill_into_edit ==
+                       match.fill_into_edit &&
+                   (!prevent_default_previous_matches ||
+                    match.allowed_to_be_default_match);
           });
     }
 
@@ -895,21 +901,21 @@ GURL AutocompleteResult::ComputeAlternateNavUrl(
 // static
 void AutocompleteResult::DeduplicateMatches(ACMatches* matches) {
   // Group matches by stripped URL and whether it's a calculator suggestion.
-  std::unordered_map<std::pair<GURL, bool>, std::vector<ACMatches::iterator>,
-                     MatchGURLHash>
+  std::unordered_map<AutocompleteResult::MatchDedupComparator,
+                     std::vector<ACMatches::iterator>,
+                     ACMatchKeyHash<std::string, bool>>
       url_to_matches;
   for (auto i = matches->begin(); i != matches->end(); ++i) {
-    std::pair<GURL, bool> p = GetMatchComparisonFields(*i);
-    url_to_matches[p].push_back(i);
+    url_to_matches[GetMatchComparisonFields(*i)].push_back(i);
   }
 
   // For each group of duplicate matches, choose the one that's considered best.
   for (auto& group : url_to_matches) {
     const auto& key = group.first;
-    const GURL& gurl = key.first;
+
     // The vector of matches whose URL are equivalent.
     std::vector<ACMatches::iterator>& duplicate_matches = group.second;
-    if (gurl.is_empty() || duplicate_matches.size() == 1)
+    if (key.first.empty() || duplicate_matches.size() == 1)
       continue;
 
     // Sort the matches best to worst, according to the deduplication criteria.
@@ -943,10 +949,10 @@ void AutocompleteResult::DeduplicateMatches(ACMatches* matches) {
   }
 
   // Erase duplicate matches.
-  base::EraseIf(*matches, [&url_to_matches](const AutocompleteMatch& m) {
-    std::pair<GURL, bool> p = GetMatchComparisonFields(m);
-    return !m.stripped_destination_url.is_empty() &&
-           &(*url_to_matches[p].front()) != &m;
+  base::EraseIf(*matches, [&url_to_matches](const AutocompleteMatch& match) {
+    auto match_comparison_fields = GetMatchComparisonFields(match);
+    return !match.stripped_destination_url.is_empty() &&
+           &(*url_to_matches[match_comparison_fields].front()) != &match;
   });
 }
 
@@ -993,9 +999,9 @@ size_t AutocompleteResult::EstimateMemoryUsage() const {
 
 std::vector<AutocompleteResult::MatchDedupComparator>
 AutocompleteResult::GetMatchDedupComparators() const {
-  std::vector<MatchDedupComparator> comparators;
+  std::vector<AutocompleteResult::MatchDedupComparator> comparators;
   for (const auto& match : *this)
-    comparators.push_back(AutocompleteResult::GetMatchComparisonFields(match));
+    comparators.push_back(GetMatchComparisonFields(match));
   return comparators;
 }
 
@@ -1199,9 +1205,9 @@ void AutocompleteResult::MergeMatchesByProvider(ACMatches* old_matches,
   }
 }
 
-std::pair<GURL, bool> AutocompleteResult::GetMatchComparisonFields(
-    const AutocompleteMatch& match) {
-  return std::make_pair(match.stripped_destination_url,
+AutocompleteResult::MatchDedupComparator
+AutocompleteResult::GetMatchComparisonFields(const AutocompleteMatch& match) {
+  return std::make_pair(match.stripped_destination_url.spec(),
                         match.type == ACMatchType::CALCULATOR);
 }
 

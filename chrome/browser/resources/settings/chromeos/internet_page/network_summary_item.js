@@ -19,8 +19,8 @@ import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classe
 import {getSimSlotCount} from 'chrome://resources/ash/common/network/cellular_utils.js';
 import {CrPolicyNetworkBehaviorMojo, CrPolicyNetworkBehaviorMojoInterface} from 'chrome://resources/ash/common/network/cr_policy_network_behavior_mojo.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
-import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
+import {CrPolicyIndicatorType} from 'chrome://resources/ash/common/cr_policy_indicator_behavior.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {GlobalPolicy, VpnType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
@@ -547,6 +547,45 @@ export class NetworkSummaryItemElement extends NetworkSummaryItemElementBase {
       this.browserProxy_.showPortalSignin(this.activeNetworkState.guid);
     } else if (this.shouldShowSubpage_(
                    this.deviceState, this.networkStateList)) {
+      const showNetworksEvent = new CustomEvent('show-networks', {
+        bubbles: true,
+        composed: true,
+        detail: this.deviceState.type,
+      });
+      this.dispatchEvent(showNetworksEvent);
+    } else if (this.shouldShowDetails_(
+                   this.activeNetworkState, this.deviceState,
+                   this.networkStateList)) {
+      if (this.activeNetworkState.guid) {
+        const showDetailEvent = new CustomEvent('show-detail', {
+          bubbles: true,
+          composed: true,
+          detail: this.activeNetworkState,
+        });
+        this.dispatchEvent(showDetailEvent);
+      } else if (this.networkStateList.length > 0) {
+        const showDetailEvent = new CustomEvent('show-detail', {
+          bubbles: true,
+          composed: true,
+          detail: this.networkStateList[0],
+        });
+        this.dispatchEvent(showDetailEvent);
+      }
+    }
+    event.stopPropagation();
+  }
+
+  /**
+   * This handles clicking the subpage arrow. Clicking this icon can lead
+   * to showing the corresponding networks list or showing details about
+   * a network or doing nothing based on the device and networks states.
+   * TODO(b/253326370) Cleanup duplicate functionality between this
+   * function and `onShowDetailsTap_`.
+   * @param {!Event} event The enable button event.
+   * @private
+   */
+  onShowDetailsArrowTap_(event) {
+    if (this.shouldShowSubpage_(this.deviceState, this.networkStateList)) {
       const showNetworksEvent = new CustomEvent('show-networks', {
         bubbles: true,
         composed: true,

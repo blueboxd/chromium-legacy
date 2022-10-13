@@ -246,9 +246,9 @@ void VariationsSeedProcessor::CreateTrialsFromSeed(
     base::FeatureList* feature_list) {
   base::UmaHistogramCounts1000("Variations.AppliedSeed.StudyCount",
                                seed.study().size());
-  std::vector<ProcessedStudy> filtered_studies;
   VariationsLayers layers(seed, entropy_providers);
-  FilterAndValidateStudies(seed, client_state, layers, &filtered_studies);
+  std::vector<ProcessedStudy> filtered_studies =
+      FilterAndValidateStudies(seed, client_state, layers);
   SetSeedVersion(seed.version());
 
   for (const ProcessedStudy& study : filtered_studies) {
@@ -316,8 +316,7 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
   // Check if any experiments need to be forced due to a command line
   // flag. Force the first experiment with an existing flag.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  for (int i = 0; i < study.experiment_size(); ++i) {
-    const Study::Experiment& experiment = study.experiment(i);
+  for (const auto& experiment : study.experiment()) {
     if (ShouldForceExperiment(experiment, *command_line, *feature_list)) {
       base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
           study.name(), experiment.name());
@@ -358,8 +357,7 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
 
   bool has_overrides = false;
   bool enables_or_disables_features = false;
-  for (int i = 0; i < study.experiment_size(); ++i) {
-    const Study::Experiment& experiment = study.experiment(i);
+  for (const auto& experiment : study.experiment()) {
     RegisterExperimentParams(study, experiment);
 
     // Groups with forcing flags have probability 0 and will never be selected.

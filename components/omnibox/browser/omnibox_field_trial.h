@@ -503,6 +503,9 @@ extern const base::FeatureParam<bool>
 // providers whose suggestions are pending have their old matches copied over.
 extern const base::FeatureParam<bool>
     kAutocompleteStabilityDontCopyDoneProviders;
+// If enabled, transferred matches from the previous input are not allowed to
+// be default.
+extern const base::FeatureParam<bool> kPreventDefaultPreviousMatches;
 // Begin async providers before sync providers so their async requests can
 // happen in parallel. This effects only the search, history_url, document, and
 // on device head providers.
@@ -555,13 +558,7 @@ extern const base::FeatureParam<int>
     kShortBookmarkSuggestionsByTotalInputLengthThreshold;
 
 // Bookmark paths.
-// Parameter names used for bookmark path variations that determine whether
-// bookmark suggestion texts will contain the title, URL, and/or path.
 extern const base::FeatureParam<std::string> kBookmarkPathsCounterfactual;
-extern const base::FeatureParam<bool> kBookmarkPathsUiReplaceTitle;
-extern const base::FeatureParam<bool> kBookmarkPathsUiReplaceUrl;
-extern const base::FeatureParam<bool> kBookmarkPathsUiAppendAfterTitle;
-extern const base::FeatureParam<bool> kBookmarkPathsUiDynamicReplaceUrl;
 
 // Shortcut Expanding.
 bool IsShortcutExpandingEnabled();

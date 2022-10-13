@@ -1358,6 +1358,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.DeskApi.{Method}.Result" units="BooleanSuccess"
+    expires_after="2023-10-07">
+  <owner>aprilzhou@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    Recorded when a desk API {Method} method succeeded or failed.
+  </summary>
+  <token key="Method">
+    <variant name="AllDesk" summary="set to all desks"/>
+    <variant name="LaunchDesk" summary="launch desk"/>
+    <variant name="RemoveDesk" summary="remove desk"/>
+    <variant name="SwitchDesk" summary="switch desk"/>
+  </token>
+</histogram>
+
 <histogram name="Ash.Desks.AnimationLatency.DeskActivation" units="ms"
     expires_after="2023-04-23">
   <owner>amusbach@chromium.org</owner>
@@ -1629,6 +1644,76 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.Desks.NumberOfWindowsOnDesk_10" units="units"
+    expires_after="2023-04-23">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of windows on the tenth desk. Emitted when a desk is removed, or
+    a window is moved to another desk.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.NumberOfWindowsOnDesk_11" units="units"
+    expires_after="2023-04-23">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of windows on the eleventh desk. Emitted when a desk is removed,
+    or a window is moved to another desk.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.NumberOfWindowsOnDesk_12" units="units"
+    expires_after="2023-04-23">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of windows on the twelfth desk. Emitted when a desk is removed,
+    or a window is moved to another desk.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.NumberOfWindowsOnDesk_13" units="units"
+    expires_after="2023-04-23">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of windows on the thirteenth desk. Emitted when a desk is
+    removed, or a window is moved to another desk.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.NumberOfWindowsOnDesk_14" units="units"
+    expires_after="2023-04-23">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of windows on the fourteenth desk. Emitted when a desk is
+    removed, or a window is moved to another desk.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.NumberOfWindowsOnDesk_15" units="units"
+    expires_after="2023-04-23">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of windows on the fifteenth desk. Emitted when a desk is removed,
+    or a window is moved to another desk.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.NumberOfWindowsOnDesk_16" units="units"
+    expires_after="2023-04-23">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of windows on the sixteenth desk. Emitted when a desk is removed,
+    or a window is moved to another desk.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Desks.NumberOfWindowsOnDesk_2" units="units"
     expires_after="2023-04-23">
   <owner>afakhry@chromium.org</owner>
@@ -1695,6 +1780,16 @@ chromium-metrics-reviews@google.com.
   <owner>janetmac@chromium.org</owner>
   <summary>
     The number of windows on the eighth desk. Emitted when a desk is removed, or
+    a window is moved to another desk.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.NumberOfWindowsOnDesk_9" units="units"
+    expires_after="2023-04-23">
+  <owner>dandersson@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    The number of windows on the ninth desk. Emitted when a desk is removed, or
     a window is moved to another desk.
   </summary>
 </histogram>
@@ -2581,13 +2676,15 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Ash.Login.TimeUntilGoodADF" units="ms"
+<histogram name="Ash.Login.TimeUntilGoodADF" units="microseconds"
     expires_after="2023-08-07">
   <owner>xiyuan@chromium.org</owner>
   <owner>chromeos-perfmetrics-eng@google.com</owner>
   <summary>
     Time between user logged in (i.e. a successful cryptohome mount) and when
     good ADF (&lt;= 20%) is observed for more than 5 seconds.
+
+    This histogram only records metrics on machines with high-resolution clocks.
   </summary>
 </histogram>
 

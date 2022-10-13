@@ -342,6 +342,9 @@
       name: "BackForwardCacheNotRestoredReasons",
       status: "experimental",
       origin_trial_feature_name: "BackForwardCacheNotRestoredReasons",
+      base_feature: "BackForwardCacheSendNotRestoredReasons",
+      base_feature_status: "enabled",
+      copied_from_base_feature_if: "overridden",
       public: true,
     },
     {
@@ -706,8 +709,14 @@
       status: "stable",
     },
     {
+        // http://crbug.com/1276900
+        name: "CSSInitialLetter",
+        depends_on: ["LayoutNG"],
+        status: "test",
+    },
+    {
       name: "CSSLastBaseline",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSLayoutAPI",
@@ -1004,15 +1013,6 @@
       status: "experimental",
     },
     {
-      // When on, the display-capture permissions-policy is enforced.
-      // When off, enforcement of this permissions-policy is skipped.
-      // This is driven from the browser process by the Enterprise policy
-      // called "DisplayCapturePermissionsPolicyEnabled".
-      // TODO(crbug.com/1233969): Remove this around m100.
-      name: "DisplayCapturePermissionsPolicy",
-      public: true,
-    },
-    {
       name: "DisplayCutoutAPI",
       public: true,
       settable_from_internals: true,
@@ -1155,23 +1155,24 @@
     },
     {
       name: "FedCm",
-      origin_trial_feature_name: "FedCM",
-      origin_trial_allows_third_party: true,
       public: true,
-      status: "test",
+      status: "stable",
     },
     {
       name: "FedCmIdpSigninStatus",
+      depends_on: ["FedCm"],
       public: true,
       status: "test",
     },
     {
       name: "FedCmIdpSignout",
+      depends_on: ["FedCm"],
       public: true,
       status: "test",
     },
     {
       name: "FedCmIframeSupport",
+      depends_on: ["FedCm"],
       public: true,
       status: "test",
     },
@@ -2494,6 +2495,7 @@
     {
       name: "StorageBuckets",
       status: "experimental",
+      base_feature: "StorageBuckets",
     },
     {
       name: "StorageFoundationAPI",
@@ -2776,6 +2778,12 @@
       name: "WakeLock",
       status: "stable",
       implied_by: ["SystemWakeLock"],
+    },
+    {
+      // When enabled, this will issue a warning to the console any time
+      // rendering is forced withing content-visibility subtrees (both
+      // content-visibility: auto and content-visibility: hidden).
+      name: "WarnOnContentVisibilityRenderAccess",
     },
     {
       name: "WebAnimationsAPI",

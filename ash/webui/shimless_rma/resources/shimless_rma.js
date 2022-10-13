@@ -29,7 +29,7 @@ import './wrapup_restock_page.js';
 import './wrapup_wait_for_manual_wp_enable_page.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/cr_elements/i18n_behavior.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -501,6 +501,11 @@ export class ShimlessRma extends ShimlessRmaBase {
     this.openLogsDialogCallback_ = () => {
       this.openLogsDialog_();
     };
+
+    /** @private {?Function} */
+    this.onKeyDownCallback_ = (event) => {
+      this.isOpenLogsKeyboardShortcut_(event);
+    };
   }
 
   /** @override */
@@ -520,6 +525,8 @@ export class ShimlessRma extends ShimlessRmaBase {
     window.addEventListener(
         'fatal-hardware-error', this.fatalHardwareErrorCallback_);
     window.addEventListener('open-logs-dialog', this.openLogsDialogCallback_);
+
+    window.addEventListener('keydown', this.onKeyDownCallback_);
   }
 
   /** @override */
@@ -540,6 +547,8 @@ export class ShimlessRma extends ShimlessRmaBase {
         'fatal-hardware-error', this.fatalHardwareErrorCallback_);
     window.removeEventListener(
         'open-logs-dialog', this.openLogsDialogCallback_);
+
+    window.removeEventListener('keydown', this.onKeyDownCallback_);
   }
 
   /** @override */
@@ -989,6 +998,22 @@ export class ShimlessRma extends ShimlessRmaBase {
         return 'shimless-icon:warning';
       default:
         return '';
+    }
+  }
+
+  /**
+   * Opens the logs dialog if the `Alt + Shift + L` keyboard shortcut is
+   * pressed.
+   * @param {Event} event
+   * @private
+   */
+  isOpenLogsKeyboardShortcut_(event) {
+    const altKeyPressed = event.altKey;
+    const shiftKeyPressed = event.shiftKey;
+    const lKeyPressed = event.key.toLowerCase() === 'l';
+
+    if (altKeyPressed && shiftKeyPressed && lKeyPressed) {
+      this.openLogsDialog_();
     }
   }
 }

@@ -480,7 +480,7 @@
       "dcheck_always_on": false,
       "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
+      "is_component_build": true,
       "is_debug": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
@@ -677,6 +677,7 @@
       "strip_debug_info": true,
       "symbol_level": 1,
       "system_webview_package_name": "com.google.android.apps.chrome",
+      "system_webview_shell_package_name": "org.chromium.my_webview_shell",
       "target_cpu": "x86",
       "target_os": "android",
       "use_remoteexec": true
@@ -806,19 +807,6 @@
       "is_debug": false,
       "target_os": "fuchsia",
       "use_cfv2_script": true,
-      "use_goma": true
-    }
-  },
-  "fuchsia-fyi-x64-wst": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "fuchsia_additional_boot_images": [
-        "//third_party/fuchsia-sdk/images/qemu-x64-release/"
-      ],
-      "fuchsia_browser_type": "chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "target_os": "fuchsia",
       "use_goma": true
     }
   },

@@ -3138,70 +3138,37 @@ const FeatureEntry::FeatureVariation kQuickDimVariations[] = {
      std::size(kQuickDim10sQuickLock130sFeedback), nullptr},
 };
 
-const FeatureEntry::FeatureParam kVCBackgroundBlurScale15Sample4[] = {
-    {"blur_scale", "0.15"},
-    {"blur_samples", "4"},
+const FeatureEntry::FeatureParam kVCBackgroundBlurLowest[] = {
+    {"blur_level", "lowest"},
 };
 
-const FeatureEntry::FeatureParam kVCBackgroundBlurScale15Sample8[] = {
-    {"blur_scale", "0.15"},
-    {"blur_samples", "8"},
+const FeatureEntry::FeatureParam kVCBackgroundBlurLight[] = {
+    {"blur_level", "light"},
 };
 
-const FeatureEntry::FeatureParam kVCBackgroundBlurScale15Sample16[] = {
-    {"blur_scale", "0.15"},
-    {"blur_samples", "16"},
+const FeatureEntry::FeatureParam kVCBackgroundBlurMedium[] = {
+    {"blur_level", "medium"},
 };
 
-const FeatureEntry::FeatureParam kVCBackgroundBlurScale25Sample4[] = {
-    {"blur_scale", "0.25"},
-    {"blur_samples", "4"},
+const FeatureEntry::FeatureParam kVCBackgroundBlurHeavy[] = {
+    {"blur_level", "heavy"},
 };
 
-const FeatureEntry::FeatureParam kVCBackgroundBlurScale25Sample8[] = {
-    {"blur_scale", "0.25"},
-    {"blur_samples", "8"},
-};
-
-const FeatureEntry::FeatureParam kVCBackgroundBlurScale25Sample16[] = {
-    {"blur_scale", "0.25"},
-    {"blur_samples", "16"},
-};
-
-const FeatureEntry::FeatureParam kVCBackgroundBlurScale35Sample4[] = {
-    {"blur_scale", "0.35"},
-    {"blur_samples", "4"},
-};
-
-const FeatureEntry::FeatureParam kVCBackgroundBlurScale35Sample8[] = {
-    {"blur_scale", "0.35"},
-    {"blur_samples", "8"},
-};
-
-const FeatureEntry::FeatureParam kVCBackgroundBlurScale35Sample16[] = {
-    {"blur_scale", "0.35"},
-    {"blur_samples", "16"},
+const FeatureEntry::FeatureParam kVCBackgroundBlurMaximum[] = {
+    {"blur_level", "maximum"},
 };
 
 const FeatureEntry::FeatureVariation kVCBackgroundBlurVariations[] = {
-    {"Scale15Sample4", kVCBackgroundBlurScale15Sample4,
-     std::size(kVCBackgroundBlurScale15Sample4), nullptr},
-    {"Scale15Sample8", kVCBackgroundBlurScale15Sample8,
-     std::size(kVCBackgroundBlurScale15Sample8), nullptr},
-    {"Scale15Sample16", kVCBackgroundBlurScale15Sample16,
-     std::size(kVCBackgroundBlurScale15Sample16), nullptr},
-    {"Scale25Sample4", kVCBackgroundBlurScale25Sample4,
-     std::size(kVCBackgroundBlurScale25Sample4), nullptr},
-    {"Scale25Sample8", kVCBackgroundBlurScale25Sample8,
-     std::size(kVCBackgroundBlurScale25Sample8), nullptr},
-    {"Scale25Sample16", kVCBackgroundBlurScale25Sample16,
-     std::size(kVCBackgroundBlurScale25Sample16), nullptr},
-    {"Scale35Sample4", kVCBackgroundBlurScale35Sample4,
-     std::size(kVCBackgroundBlurScale35Sample4), nullptr},
-    {"Scale35Sample8", kVCBackgroundBlurScale35Sample8,
-     std::size(kVCBackgroundBlurScale35Sample8), nullptr},
-    {"Scale35Sample16", kVCBackgroundBlurScale35Sample16,
-     std::size(kVCBackgroundBlurScale35Sample16), nullptr},
+    {"Lowest Blur", kVCBackgroundBlurLowest, std::size(kVCBackgroundBlurLowest),
+     nullptr},
+    {"Light Blur", kVCBackgroundBlurLight, std::size(kVCBackgroundBlurLight),
+     nullptr},
+    {"Medium Blur", kVCBackgroundBlurMedium, std::size(kVCBackgroundBlurMedium),
+     nullptr},
+    {"Heavy Blur", kVCBackgroundBlurHeavy, std::size(kVCBackgroundBlurHeavy),
+     nullptr},
+    {"Maximum Blur", kVCBackgroundBlurMaximum,
+     std::size(kVCBackgroundBlurMaximum), nullptr},
 };
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -6101,6 +6068,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpSafeBrowsingModule,
                                     kNtpSafeBrowsingModuleVariations,
                                     "DesktopNtpModules")},
+
+    {"ntp-desktop-lens", flag_descriptions::kNtpDesktopLensName,
+     flag_descriptions::kNtpDesktopLensDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpRealboxLensSearch)},
+
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
@@ -6392,6 +6364,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDiscoverFeedMultiColumnAndroidName,
      flag_descriptions::kDiscoverFeedMultiColumnAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kDiscoverFeedMultiColumn)},
+
+    {"enable-tab-strip-redesign",
+     flag_descriptions::kTabStripRedesignAndroidName,
+     flag_descriptions::kTabStripRedesignAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTabStripRedesign)},
 
     {"enable-conditional-tabstrip",
      flag_descriptions::kConditionalTabStripAndroidName,
@@ -7741,10 +7718,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAttributionReportingDebugModeDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAttributionReportingDebugMode)},
 
-    {"private-aggregation-debug-mode",
-     flag_descriptions::kPrivateAggregationDebugModeName,
-     flag_descriptions::kPrivateAggregationDebugModeDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kPrivateAggregationDebugMode)},
+    {"private-aggregation-developer-mode",
+     flag_descriptions::kPrivateAggregationDeveloperModeName,
+     flag_descriptions::kPrivateAggregationDeveloperModeDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kPrivateAggregationDeveloperMode)},
 
     {"client-storage-access-context-auditing",
      flag_descriptions::kClientStorageAccessContextAuditingName,
@@ -8980,6 +8957,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(ash::features::kVCBackgroundBlur,
                                     kVCBackgroundBlurVariations,
                                     "VCBackgroundBlur")},
+
+    {"vc-background-replace", flag_descriptions::kVCBackgroundReplaceName,
+     flag_descriptions::kVCBackgroundReplaceDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kVCBackgroundReplace)},
+
+    {"vc-portrait-relighting", flag_descriptions::kVCPortraitRelightingName,
+     flag_descriptions::kVCPortraitRelightingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kVCPortraitRelighting)},
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -9719,6 +9704,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"vc-controls-ui", flag_descriptions::kVcControlsUiName,
      flag_descriptions::kVcControlsUiDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kVcControlsUi)},
+    {"enable-16-desks", flag_descriptions::kDesks16Name,
+     flag_descriptions::kDesks16Description, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kEnable16Desks)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

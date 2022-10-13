@@ -37,10 +37,13 @@ class WebDocument;
 }  // namespace blink
 
 namespace ui {
+
 struct AXActionData;
 class AXActionTarget;
 struct AXEvent;
-}
+class AXTreeID;
+
+}  // namespace ui
 
 namespace ukm {
 class MojoUkmRecorder;
@@ -51,8 +54,6 @@ namespace content {
 class AXImageAnnotator;
 class RenderFrameImpl;
 class RenderAccessibilityManager;
-
-using BlinkAXTreeSerializer = ui::AXTreeSerializer<blink::WebAXObject>;
 
 // The browser process implements native accessibility APIs, allowing assistive
 // technology (e.g., screen readers, magnifiers) to access and control the web
@@ -93,6 +94,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
 
   // RenderAccessibility implementation.
   int GenerateAXID() override;
+  ui::AXTreeID GetTreeIDForPluginHost() const override;
   void SetPluginTreeSource(PluginAXTreeSource* source) override;
   void OnPluginRootNodeUpdated() override;
   void ShowPluginContextMenu() override;

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
+#include "base/test/gtest_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1062,8 +1063,7 @@ TEST_P(WidgetWithDestroyedNativeViewTest, Hide) {
 
 TEST_P(WidgetWithDestroyedNativeViewTest, Init) {
   Widget::InitParams params;
-  EXPECT_DEATH_IF_SUPPORTED({ widget()->Init(std::move(params)); },
-                            "This widget has already been initialized");
+  EXPECT_DCHECK_DEATH(widget()->Init(std::move(params)));
 }
 
 TEST_P(WidgetWithDestroyedNativeViewTest, is_secondary_widget) {
@@ -1127,12 +1127,52 @@ TEST_P(WidgetWithDestroyedNativeViewTest, IsVisibleOnAllWorkspaces) {
   widget()->IsVisibleOnAllWorkspaces();
 }
 
+TEST_P(WidgetWithDestroyedNativeViewTest, LayerTreeChanged) {
+  widget()->LayerTreeChanged();
+}
+
+TEST_P(WidgetWithDestroyedNativeViewTest, LayoutRootViewIfNecessary) {
+  widget()->LayoutRootViewIfNecessary();
+}
+
+TEST_P(WidgetWithDestroyedNativeViewTest, LockPaintAsActive) {
+  widget()->LockPaintAsActive();
+}
+
 TEST_P(WidgetWithDestroyedNativeViewTest, Maximize) {
   widget()->Maximize();
 }
 
 TEST_P(WidgetWithDestroyedNativeViewTest, Minimize) {
   widget()->Minimize();
+}
+
+TEST_P(WidgetWithDestroyedNativeViewTest, movement_disabled) {
+  widget()->movement_disabled();
+}
+
+TEST_P(WidgetWithDestroyedNativeViewTest, native_widget_private) {
+  widget()->native_widget_private();
+}
+
+TEST_P(WidgetWithDestroyedNativeViewTest, native_widget) {
+  widget()->native_widget();
+}
+
+TEST_P(WidgetWithDestroyedNativeViewTest, non_client_view) {
+  widget()->non_client_view();
+}
+
+TEST_P(WidgetWithDestroyedNativeViewTest, NotifyNativeViewHierarchyChanged) {
+  widget()->NotifyNativeViewHierarchyChanged();
+}
+
+TEST_P(WidgetWithDestroyedNativeViewTest, NotifyNativeViewHierarchyWillChange) {
+  widget()->NotifyNativeViewHierarchyWillChange();
+}
+
+TEST_P(WidgetWithDestroyedNativeViewTest, NotifyWillRemoveView) {
+  widget()->NotifyWillRemoveView(widget()->non_client_view());
 }
 
 TEST_P(WidgetWithDestroyedNativeViewTest, ReleaseCapture) {

@@ -663,7 +663,7 @@ BASE_FEATURE(kEapGtcWifiAuthentication,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the System Web App (SWA) version of Eche.
-BASE_FEATURE(kEcheSWA, "EcheSWA", base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kEcheSWA, "EcheSWA", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the Debug Mode of Eche.
 BASE_FEATURE(kEcheSWADebugMode,
@@ -684,6 +684,11 @@ BASE_FEATURE(kEcheSWASendStartSignaling,
 // Eche.
 BASE_FEATURE(kEcheSWADisableStunServer,
              "EcheSWADisableStunServer",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, allows the creation of up to 16 desks (default is 8).
+BASE_FEATURE(kEnable16Desks,
+             "Enable16Desks",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables background blur for the app list, shelf, unified system tray,
@@ -1639,7 +1644,7 @@ BASE_FEATURE(kQsRevamp, "QsRevamp", base::FEATURE_DISABLED_BY_DEFAULT);
 // secondary account.
 BASE_FEATURE(kProjectorViewerUseSecondaryAccount,
              "ProjectorViewerUseSecondaryAccount",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the quick dim prototype is enabled.
 BASE_FEATURE(kQuickDim, "QuickDim", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1647,6 +1652,16 @@ BASE_FEATURE(kQuickDim, "QuickDim", base::FEATURE_ENABLED_BY_DEFAULT);
 // Controls whether the vc background blur is enabled.
 BASE_FEATURE(kVCBackgroundBlur,
              "VCBackgroundBlur",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether the vc background replace is enabled.
+BASE_FEATURE(kVCBackgroundReplace,
+             "VCBackgroundReplace",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether the vc portrait relighting is enabled.
+BASE_FEATURE(kVCPortraitRelighting,
+             "VCPortraitRelighting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables the Quick Settings Network revamp, which updates Network
@@ -1961,11 +1976,6 @@ BASE_FEATURE(kUseAuthFactors,
              "UseAuthFactors",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
-BASE_FEATURE(kUseBluetoothSystemInAsh,
-             "UseBluetoothSystemInAsh",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // When enabled, the login shelf view is placed in its own widget instead of
 // sharing the shelf widget with other components.
 BASE_FEATURE(kUseLoginShelfWidget,
@@ -2179,6 +2189,10 @@ bool IsAvatarsCloudMigrationEnabled() {
 
 bool DoWindowsFollowCursor() {
   return base::FeatureList::IsEnabled(kWindowsFollowCursor);
+}
+
+bool Is16DesksEnabled() {
+  return base::FeatureList::IsEnabled(kEnable16Desks);
 }
 
 bool IsAdaptiveChargingEnabled() {
@@ -2878,8 +2892,6 @@ bool IsQsRevampEnabled() {
 }
 
 bool IsProjectorViewerUseSecondaryAccountEnabled() {
-  // TODO(b/250646696): enable this feature based on
-  // ProjectorBleedingEdgeExperience when it is ready to be tested.
   return base::FeatureList::IsEnabled(kProjectorViewerUseSecondaryAccount);
 }
 
@@ -3007,6 +3019,14 @@ bool IsUseStorkSmdsServerAddressEnabled() {
 
 bool IsVCBackgroundBlurEnabled() {
   return base::FeatureList::IsEnabled(kVCBackgroundBlur);
+}
+
+bool IsVCBackgroundReplaceEnabled() {
+  return base::FeatureList::IsEnabled(kVCBackgroundReplace);
+}
+
+bool IsVCPortraitRelightingEnabled() {
+  return base::FeatureList::IsEnabled(kVCPortraitRelighting);
 }
 
 bool IsVcControlsUiEnabled() {

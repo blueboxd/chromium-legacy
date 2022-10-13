@@ -1097,29 +1097,23 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms(
       !is_get_assertion && kShowCreatePlatformPasskeyStep &&
       base::FeatureList::IsEnabled(
           device::kWebAuthnNewDiscoverableCredentialsUi);
-
-  // Advance to the platform authenticator for:
-  // - getAssertion requests with a matching platform credential
-  // - makeCredential requests with attachment=platform
   if (base::Contains(transport_availability_.available_transports,
                      AuthenticatorTransport::kInternal) &&
       (transport_availability_.has_platform_authenticator_credential ==
            device::FidoRequestHandlerBase::RecognizedCredential::
                kHasRecognizedCredential ||
-       (show_create_passkey_step &&
-        transport_availability_.available_transports.size() == 1)) &&
+       show_create_passkey_step) &&
       !use_conditional_mediation_) {
     priority_transport = AuthenticatorTransport::kInternal;
   }
 
-  std::vector<AuthenticatorTransport> transports_to_list_if_active = {
-      AuthenticatorTransport::kUsbHumanInterfaceDevice,
-  };
-
+  std::vector<AuthenticatorTransport> transports_to_list_if_active;
   if (!use_conditional_mediation_) {
     // Conditional requests offer platform credentials through the autofill UI.
     transports_to_list_if_active.push_back(AuthenticatorTransport::kInternal);
   }
+  transports_to_list_if_active.push_back(
+      AuthenticatorTransport::kUsbHumanInterfaceDevice);
 
   const auto kCable = AuthenticatorTransport::kHybrid;
   bool include_add_phone_option = false;

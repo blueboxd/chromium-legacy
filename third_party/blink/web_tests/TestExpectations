@@ -307,14 +307,14 @@ crbug.com/1351556 virtual/document-transition-wide-gamut/wpt_internal/document-t
 crbug.com/1351556 virtual/document-transition/document-transition/capture-callback-exception.html [ Failure ]
 crbug.com/1351556 virtual/document-transition-wide-gamut/document-transition/capture-callback-exception.html [ Failure ]
 crbug.com/1366886 [ Mac12-arm64 ] virtual/document-transition-wide-gamut/wpt_internal/document-transition/iframe-transition.sub.html [ Failure Timeout ]
+crbug.com/1366886 [ Mac11-arm64 ] virtual/document-transition-wide-gamut/wpt_internal/document-transition/iframe-transition.sub.html [ Failure Timeout ]
 
 ########## Ref tests can't be rebaselined ##########
 crbug.com/619103 paint/invalidation/background/background-resize-width.html [ Failure Pass ]
 
 crbug.com/784956 fast/history/frameset-repeated-name.html [ Failure Pass ]
 
-# These are both related to images not painting as expected, and are primarily CQ hidden flakes
-crbug.com/1284609 images/image-load-reset-on-new-base.html [ Failure Pass ]
+# Image not painting as expected, primarily shows as CQ hidden flakes.
 crbug.com/1271092 paint/invalidation/scroll/fixed-img-src-change-after-scroll.html [ Failure Pass ]
 
 ########## Genuinely flaky ##########
@@ -562,7 +562,6 @@ crbug.com/1186753 virtual/threaded-prefer-compositing/fast/scroll-snap/snaps-aft
 crbug.com/936891 virtual/threaded-prefer-compositing/fast/scrolling/document-level-touchmove-event-listener-passive-by-default.html [ Pass ]
 crbug.com/1049599 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/events/overscroll-event-fired-to-element-with-overscroll-behavior.html [ Failure Pass Skip Timeout ]
 crbug.com/1193920 virtual/threaded-prefer-compositing/fast/scrolling/events/overscroll-event-fired-to-scrolled-element.html [ Failure Pass Timeout ]
-crbug.com/1335172 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/inertial-scrolling-with-pointer-events-none-overlay.html [ Failure Pass ]
 crbug.com/841567 [ Debug Mac11 ] virtual/threaded-prefer-compositing/fast/scrolling/listbox-wheel-event.html [ Failure Pass Timeout ]
 crbug.com/841567 [ Debug Mac12 ] virtual/threaded-prefer-compositing/fast/scrolling/listbox-wheel-event.html [ Failure Pass Timeout ]
 crbug.com/841567 virtual/threaded-prefer-compositing/fast/scrolling/overflow-scrollability.html [ Failure Pass Timeout ]
@@ -6668,7 +6667,6 @@ crbug.com/1285275 virtual/partitioned-cookies/external/wpt/html/anonymous-iframe
 crbug.com/1304956 storage/indexeddb/dont-wedge.html [ Failure Pass ]
 
 # Sheriff 2022-03-15
-crbug.com/626703 external/wpt/scroll-to-text-fragment/force-load-at-top.html [ Pass Timeout ]
 crbug.com/1269534 fast/spatial-navigation/snav-zero-margin-content.html [ Failure Pass ]
 crbug.com/1295980 virtual/fenced-frame-mparch/wpt_internal/fenced_frame/user-activation.https.html [ Failure Pass Timeout ]
 crbug.com/1295980 virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/user-activation.https.html [ Failure Pass Timeout ]
@@ -7239,7 +7237,7 @@ crbug.com/1370307 external/wpt/encoding-detection/zh-GBK-late.tentative.html [ F
 crbug.com/1363138 http/tests/inspector-protocol/cachestorage/read-cached-response.js [ Skip ]
 
 # Investigate the flake
-crbug.com/1371395 virtual/not-restored-reasons/external/wpt/performance-timeline/not-restored-reasons/performance-navigation-timing-same-origin-bfcache.window.html [ Failure Pass ]
+crbug.com/1371395 external/wpt/performance-timeline/not-restored-reasons/performance-navigation-timing-same-origin-bfcache.window.js [ Failure Pass ]
 
 # Disable top flakes trigger step failure on builders
 crbug.com/1371949 [ Mac12 ] virtual/low-priority-script-loading/http/tests/devtools/network/resource-priority.js [ Failure Pass ]

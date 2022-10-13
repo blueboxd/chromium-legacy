@@ -359,6 +359,13 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, BigFile) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, Configure) {
+  ASSERT_TRUE(RunExtensionTest("file_system_provider/service_worker/configure",
+                               {.extension_url = "test.html"},
+                               {.load_as_component = true}))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, CopyEntry) {
   ASSERT_TRUE(RunExtensionTest("file_system_provider/service_worker/copy_entry",
                                {.extension_url = "test.html"},
@@ -373,8 +380,22 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, DeleteEntry) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, Evil) {
+  ASSERT_TRUE(RunExtensionTest("file_system_provider/service_worker/evil",
+                               {.extension_url = "test.html"},
+                               {.load_as_component = true}))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, GetAll) {
   ASSERT_TRUE(RunExtensionTest("file_system_provider/service_worker/get_all",
+                               {.extension_url = "test.html"},
+                               {.load_as_component = true}))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, MoveEntry) {
+  ASSERT_TRUE(RunExtensionTest("file_system_provider/service_worker/move_entry",
                                {.extension_url = "test.html"},
                                {.load_as_component = true}))
       << message_;

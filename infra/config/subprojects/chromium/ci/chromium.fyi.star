@@ -244,24 +244,6 @@ ci.builder(
 )
 
 ci.builder(
-    name = "fuchsia-fyi-x64-wst",
-    console_view_entry = [
-        consoles.console_view_entry(
-            category = "fuchsia|x64",
-            short_name = "work",
-        ),
-        consoles.console_view_entry(
-            branch_selector = branches.MAIN,
-            console_view = "sheriff.fuchsia",
-            category = "fyi|x64",
-            short_name = "work",
-        ),
-    ],
-    notifies = ["cr-fuchsia"],
-    os = os.LINUX_DEFAULT,
-)
-
-ci.builder(
     name = "lacros-amd64-generic-rel-fyi",
     console_view_entry = consoles.console_view_entry(
         category = "lacros",
@@ -364,6 +346,26 @@ ci.builder(
     name = "linux-chromeos-annotator-rel",
     builderless = True,
     branch_selector = branches.STANDARD_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chromeos",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        test_results_config = builder_config.test_results_config(
+            config = "staging_server",
+        ),
+        build_gs_bucket = "chromium-fyi-archive",
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "release",
         short_name = "rel",
@@ -1113,6 +1115,9 @@ ci.builder(
     reclient_jobs = 250,
     os = os.MAC_DEFAULT,
     cores = None,
+    reclient_bootstrap_env = {
+        "GLOG_vmodule": "bridge*=2",
+    },
 )
 
 ci.builder(
@@ -1130,6 +1135,9 @@ ci.builder(
     reclient_jobs = 250,
     os = os.MAC_DEFAULT,
     cores = None,
+    reclient_bootstrap_env = {
+        "GLOG_vmodule": "bridge*=2",
+    },
 )
 
 ci.builder(
@@ -1148,6 +1156,9 @@ ci.builder(
     os = os.MAC_DEFAULT,
     cores = None,
     cpu = cpu.ARM64,
+    reclient_bootstrap_env = {
+        "GLOG_vmodule": "bridge*=2",
+    },
 )
 
 ci.builder(
@@ -1302,6 +1313,9 @@ The bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium
     os = os.MAC_DEFAULT,
     ssd = True,
     cores = None,
+    reclient_bootstrap_env = {
+        "GLOG_vmodule": "bridge*=2",
+    },
 )
 
 ci.builder(

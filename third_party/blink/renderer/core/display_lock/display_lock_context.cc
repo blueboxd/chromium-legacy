@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/pre_paint_tree_walk.h"
-#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -505,9 +504,11 @@ void DisplayLockContext::UpgradeForcedScope(ForcedPhase old_phase,
       MarkAncestorsForPrePaintIfNeeded();
     }
 
-    if (emit_warnings && v8::Isolate::GetCurrent()->InContext() &&
-        !IsActivatable(DisplayLockActivationReason::kAny) && document_ &&
-        element_) {
+    if (emit_warnings && v8::Isolate::GetCurrent()->InContext() && document_ &&
+        element_ &&
+        (!IsActivatable(DisplayLockActivationReason::kAny) ||
+         RuntimeEnabledFeatures::
+             WarnOnContentVisibilityRenderAccessEnabled())) {
       document_->GetDisplayLockDocumentState().IssueForcedRenderWarning(
           element_);
     }

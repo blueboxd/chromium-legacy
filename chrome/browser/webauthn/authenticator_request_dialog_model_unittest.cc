@@ -204,26 +204,26 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
       {mc, {usb}, {}, {}, {t(usb)}, usb_ui},
       {ga, {usb}, {}, {}, {t(usb)}, usb_ui},
       // ... otherwise should the selection sheet.
-      {mc, {usb, internal}, {}, {}, {t(usb), t(internal)}, mss},
-      {ga, {usb, internal}, {}, {}, {t(usb), t(internal)}, mss},
+      {ga, {usb, cable}, {}, {}, {t(usb), add}, mss},
+      {ga, {usb, cable}, {}, {}, {t(usb), add}, mss},
 
       // If the platform authenticator has a credential it should activate.
-      {ga, {usb, internal}, {has_plat}, {}, {t(usb), t(internal)}, plat_ui},
+      {ga, {usb, internal}, {has_plat}, {}, {t(internal), t(usb)}, plat_ui},
       // ... but with an empty allow list the user should be prompted first.
       {ga,
        {usb, internal},
        {has_plat, one_cred, empty_al},
        {},
-       {t(usb), t(internal)},
+       {t(internal), t(usb)},
        use_pk},
       {ga,
        {usb, internal},
        {has_plat, two_cred, empty_al},
        {},
-       {t(usb), t(internal)},
+       {t(internal), t(usb)},
        use_pk_multi},
 
-      // MakeCredential with attachmemt=platform shows the 'Create a passkey'
+      // MakeCredential with attachment=platform shows the 'Create a passkey'
       // step, but only on macOS. On other OSes, we defer to the platform.
       {mc,
        {internal},
@@ -234,6 +234,19 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
        create_pk
 #else
        plat_ui
+#endif
+      },
+      // MakeCredential with attachment=undefined also shows the 'Create a
+      // passkey' step on macOS. On other OSes, we show mechanism selection.
+      {mc,
+       {usb, internal},
+       {},
+       {},
+       {t(internal), t(usb)},
+#if BUILDFLAG(IS_MAC)
+       create_pk
+#else
+       mss
 #endif
       },
 
@@ -581,6 +594,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, AwaitingAcknowledgement) {
     model.AddObserver(&mock_observer);
 
     TransportAvailabilityInfo transports_info;
+    transports_info.request_type = RequestType::kGetAssertion;
     transports_info.available_transports = kAllTransportsWithoutCable;
 
     EXPECT_CALL(mock_observer, OnStepTransition());

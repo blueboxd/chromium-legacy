@@ -1385,8 +1385,8 @@ extern const char kPrivacyGuideAndroidDescription[];
 extern const char kPrivacySandboxAdsAPIsOverrideName[];
 extern const char kPrivacySandboxAdsAPIsOverrideDescription[];
 
-extern const char kPrivateAggregationDebugModeName[];
-extern const char kPrivateAggregationDebugModeDescription[];
+extern const char kPrivateAggregationDeveloperModeName[];
+extern const char kPrivateAggregationDeveloperModeDescription[];
 
 extern const char kProminentDarkModeActiveTabTitleName[];
 extern const char kProminentDarkModeActiveTabTitleDescription[];
@@ -1656,6 +1656,9 @@ extern const char kTabStripImprovementsAndroidDescription[];
 extern const char kDiscoverFeedMultiColumnAndroidName[];
 extern const char kDiscoverFeedMultiColumnAndroidDescription[];
 
+extern const char kTabStripRedesignAndroidName[];
+extern const char kTabStripRedesignAndroidDescription[];
+
 extern const char kTailoredSecurityDesktopNoticeName[];
 extern const char kTailoredSecurityDesktopNoticeDescription[];
 
@@ -1738,6 +1741,12 @@ extern const char kUseSearchClickForRightClickDescription[];
 
 extern const char kVCBackgroundBlurName[];
 extern const char kVCBackgroundBlurDescription[];
+
+extern const char kVCBackgroundReplaceName[];
+extern const char kVCBackgroundReplaceDescription[];
+
+extern const char kVCPortraitRelightingName[];
+extern const char kVCPortraitRelightingDescription[];
 
 extern const char kV8VmFutureName[];
 extern const char kV8VmFutureDescription[];
@@ -2490,6 +2499,9 @@ extern const char kNtpCacheOneGoogleBarDescription[];
 extern const char kNtpChromeCartModuleName[];
 extern const char kNtpChromeCartModuleDescription[];
 
+extern const char kNtpDesktopLensName[];
+extern const char kNtpDesktopLensDescription[];
+
 extern const char kNtpDriveModuleName[];
 extern const char kNtpDriveModuleDescription[];
 
@@ -2844,6 +2856,9 @@ extern const char kCalendarModelDebugModeDescription[];
 
 extern const char kDefaultLinkCapturingInBrowserName[];
 extern const char kDefaultLinkCapturingInBrowserDescription[];
+
+extern const char kDesks16Name[];
+extern const char kDesks16Description[];
 
 extern const char kDesksCloseAllName[];
 extern const char kDesksCloseAllDescription[];

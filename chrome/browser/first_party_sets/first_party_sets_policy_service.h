@@ -6,20 +6,23 @@
 #define CHROME_BROWSER_FIRST_PARTY_SETS_FIRST_PARTY_SETS_POLICY_SERVICE_H_
 
 #include "base/memory/raw_ptr.h"
-#include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
-#include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/privacy_sandbox/privacy_sandbox_settings.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "net/first_party_sets/first_party_sets_context_config.h"
 #include "services/network/public/mojom/first_party_sets_access_delegate.mojom.h"
 
+class PrefService;
+
 namespace content {
 class BrowserContext;
 }  // namespace content
+
+namespace net {
+class SchemefulSite;
+}  // namespace net
 
 namespace first_party_sets {
 
@@ -28,9 +31,7 @@ namespace first_party_sets {
 // This service always exists for a BrowserContext, regardless of whether the
 // First-Party Sets feature is enabled globally or for this particular
 // BrowserContext.
-class FirstPartySetsPolicyService
-    : public KeyedService,
-      public privacy_sandbox::PrivacySandboxSettings::Observer {
+class FirstPartySetsPolicyService : public KeyedService {
  public:
   explicit FirstPartySetsPolicyService(content::BrowserContext* context);
   FirstPartySetsPolicyService(const FirstPartySetsPolicyService&) = delete;
@@ -53,8 +54,9 @@ class FirstPartySetsPolicyService
       mojo::Remote<network::mojom::FirstPartySetsAccessDelegate>
           access_delegate);
 
-  // PrivacySandboxSettings::Observer:
-  void OnFirstPartySetsEnabledChanged(bool enabled) override;
+  // Triggers changes to `access_delegates` that should occur when the
+  // First-Party Sets enabled pref changes.
+  void OnFirstPartySetsEnabledChanged(bool enabled);
 
   // KeyedService:
   void Shutdown() override;
@@ -79,6 +81,23 @@ class FirstPartySetsPolicyService
           get_config);
 
   void ResetForTesting();
+
+  // Looks up `site` in Chrome's list of First-Party Sets and returns its
+  // associated entry if `site` is found.
+  //
+  // This will return nullopt if:
+  // - First-Party Sets is disabled or
+  // - the list of First-Party Sets isn't initialized yet or
+  // - `site` isn't in Chrome's list of First-Party Sets or
+  // - this instance has not received the config yet
+  absl::optional<net::FirstPartySetEntry> FindEntry(
+      const net::SchemefulSite& site) const;
+
+  // Checks if ownership of `site` is managed by an enterprise.
+  //
+  // Note: this doesn't consider `site` as managed if it was removed by an
+  // enterprise using policy.
+  bool IsSiteInManagedSet(const net::SchemefulSite& site) const;
 
   content::BrowserContext* browser_context() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -118,10 +137,6 @@ class FirstPartySetsPolicyService
   // profile that created this service.
   absl::optional<net::FirstPartySetsContextConfig> config_
       GUARDED_BY_CONTEXT(sequence_checker_);
-
-  base::ScopedObservation<privacy_sandbox::PrivacySandboxSettings,
-                          privacy_sandbox::PrivacySandboxSettings::Observer>
-      privacy_sandbox_settings_observer_{this};
 
   // Callback used by tests to wait for the ctor's initialization flow to
   // complete.

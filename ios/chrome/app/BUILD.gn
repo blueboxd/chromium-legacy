@@ -91,7 +91,9 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/metrics:metrics",
     "//ios/chrome/browser/prefs:browser_prefs",
+    "//ios/chrome/browser/promos_manager:constants",
     "//ios/chrome/browser/promos_manager:promos_manager",
+    "//ios/chrome/browser/promos_manager:test_support",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/signin:signin_util",
     "//ios/chrome/browser/signin:test_support",
@@ -109,6 +111,7 @@ source_set("unit_tests") {
     "//ios/testing:block_swizzler",
     "//ios/third_party/material_components_ios",
     "//ios/web/public/test:test",
+    "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
     "//url",
@@ -317,6 +320,7 @@ source_set("post_restore_app_agent") {
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
     "//ios/chrome/browser/application_context:application_context",
+    "//ios/chrome/browser/promos_manager:constants",
     "//ios/chrome/browser/promos_manager:promos_manager",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/signin:signin_util",
@@ -543,6 +547,7 @@ source_set("main") {
     "//ios/chrome/app/startup:startup_basic",
     "//ios/chrome/browser/crash_report",
     "//ios/chrome/common",
+    "//ios/public/provider/chrome/browser/primes:primes_api",
   ]
   if (ios_enable_sandbox_dump) {
     deps += [ "//ios/chrome/app/startup:sandbox_dump" ]

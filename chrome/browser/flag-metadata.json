@@ -1655,6 +1655,11 @@
     "expiry_milestone": 99
   },
   {
+    "name": "enable-16-desks",
+    "owners": [ "dandersson", "janetmac" ],
+    "expiry_milestone": 118
+  },
+  {
     "name": "enable-accelerated-video-decode",
     "owners": [ "media-dev@chromium.org" ],
     "expiry_milestone": 93
@@ -3086,6 +3091,11 @@
     "name": "enable-tab-strip-improvements",
     "owners": [ "skavuluru", "clank-app-team@google.com" ],
     "expiry_milestone": 114
+  },
+  {
+    "name": "enable-tab-strip-redesign",
+    "owners": [ "zheliooo", "skavuluru", "nemco", "clank-app-team@google.com" ],
+    "expiry_milestone": 120
   },
   {
     "name": "enable-tab-switcher-on-return",
@@ -4802,6 +4812,11 @@
     "expiry_milestone": 108
   },
   {
+    "name": "ntp-desktop-lens",
+    "owners": [ "yowakita", "tiborg" ],
+    "expiry_milestone": 112
+  },
+  {
     "name": "ntp-drive-module",
     "owners": [ "mahmadi", "tiborg" ],
     "expiry_milestone": 108
@@ -5579,7 +5594,7 @@
     "expiry_milestone": 108
   },
   {
-    "name": "private-aggregation-debug-mode",
+    "name": "private-aggregation-developer-mode",
     "owners": [
       "//content/browser/private_aggregation/OWNERS"
     ],
@@ -6861,13 +6876,23 @@
   },
   {
     "name": "vc-background-blur",
-    "owners": [ "shafron", "skyostil", "charleszhao" ],
+    "owners": [ "shafron", "skyostil", "charleszhao", "jmpollock" ],
+    "expiry_milestone": 115
+  },
+  {
+    "name": "vc-background-replace",
+    "owners": [ "shafron", "skyostil", "charleszhao", "jmpollock" ],
     "expiry_milestone": 115
   },
   {
     "name": "vc-controls-ui",
     "owners": [ "rtinkoff", "cros-status-area-eng@google.com" ],
     "expiry_milestone": 117
+  },
+  {
+    "name": "vc-portrait-relighting",
+    "owners": [ "shafron", "skyostil", "charleszhao", "jmpollock" ],
+    "expiry_milestone": 115
   },
   {
     "name": "verbose-logging-in-nacl",

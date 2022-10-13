@@ -413,8 +413,11 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Holdback_20221012",
                     "enable_features": [
+                        "AndroidBatteryMetricsReportOnUIThread"
+                    ],
+                    "disable_features": [
                         "AndroidScrollOptimizations"
                     ]
                 }
@@ -1831,49 +1834,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "BackForwardCacheDedicatedWorker"
-                    ]
-                }
-            ]
-        }
-    ],
-    "BackForwardCacheEnabledForNonPluginEmbed": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "fuchsia",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "BackForwardCacheEnabledForNonPluginEmbed"
-                    ]
-                }
-            ]
-        }
-    ],
-    "BackForwardCacheExtendTimeToLive": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "fuchsia",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "time_to_live_seconds": "600"
-                    },
-                    "enable_features": [
-                        "BackForwardCacheTimeToLiveControl"
                     ]
                 }
             ]
@@ -4552,6 +4512,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ShoppingPDPMetrics"
+                    ]
+                }
+            ]
+        }
+    ],
+    "EnableShoppingListDesktop": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20221005",
+                    "enable_features": [
+                        "ShoppingList"
                     ]
                 }
             ]
@@ -7852,6 +7831,25 @@
             ]
         }
     ],
+    "PageInfoAboutThisSiteDescriptionPlaceholder": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PageInfoAboutThisSiteDescriptionPlaceholder"
+                    ]
+                }
+            ]
+        }
+    ],
     "PageInfoAboutThisSiteMoreInfo": [
         {
             "platforms": [
@@ -8057,7 +8055,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Denser",
+                    "name": "Denser_V4",
                     "params": {
                         "mode": "denser"
                     },
@@ -8082,7 +8080,7 @@
             ],
             "experiments": [
                 {
-                    "name": "enabled3_doublekey",
+                    "name": "enabled_doublekey",
                     "enable_features": [
                         "EnableDoubleKeyNetworkAnonymizationKey",
                         "ForceIsolationInfoFrameOriginToTopLevelFrame",
@@ -8096,7 +8094,7 @@
                     ]
                 },
                 {
-                    "name": "enabled3_triplekey",
+                    "name": "enabled_triplekey",
                     "enable_features": [
                         "PartitionConnectionsByNetworkIsolationKey",
                         "PartitionDomainReliabilityByNetworkIsolationKey",
@@ -8105,6 +8103,32 @@
                         "PartitionNelAndReportingByNetworkIsolationKey",
                         "PartitionSSLSessionsByNetworkIsolationKey",
                         "SplitHostCacheByNetworkIsolationKey"
+                    ]
+                },
+                {
+                    "name": "enabled_triple_double_key",
+                    "enable_features": [
+                        "EnableDoubleKeyNetworkAnonymizationKey",
+                        "PartitionConnectionsByNetworkIsolationKey",
+                        "PartitionDomainReliabilityByNetworkIsolationKey",
+                        "PartitionExpectCTStateByNetworkIsolationKey",
+                        "PartitionHttpServerPropertiesByNetworkIsolationKey",
+                        "PartitionNelAndReportingByNetworkIsolationKey",
+                        "PartitionSSLSessionsByNetworkIsolationKey",
+                        "SplitHostCacheByNetworkIsolationKey"
+                    ]
+                },
+                {
+                    "name": "enabled_triple_double_cross_site_key",
+                    "enable_features": [
+                        "PartitionConnectionsByNetworkIsolationKey",
+                        "PartitionDomainReliabilityByNetworkIsolationKey",
+                        "PartitionExpectCTStateByNetworkIsolationKey",
+                        "PartitionHttpServerPropertiesByNetworkIsolationKey",
+                        "PartitionNelAndReportingByNetworkIsolationKey",
+                        "PartitionSSLSessionsByNetworkIsolationKey",
+                        "SplitHostCacheByNetworkIsolationKey",
+                        "kEnableCrossSiteFlagNetworkAnonymizationKey"
                     ]
                 }
             ]
@@ -8938,6 +8962,9 @@
                     },
                     "enable_features": [
                         "EnableDrDcVulkan"
+                    ],
+                    "disable_features": [
+                        "RawDraw"
                     ]
                 }
             ]
@@ -9376,6 +9403,25 @@
             ]
         }
     ],
+    "SafeBrowsingSevenZipEvaluationEnabled": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingSevenZipEvaluationEnabled"
+                    ]
+                }
+            ]
+        }
+    ],
     "ScrollUnification": [
         {
             "platforms": [
@@ -9751,25 +9797,6 @@
                     "enable_features": [
                         "DesktopScreenshots",
                         "SharingDesktopScreenshotsEdit"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ShoppingList": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20221005",
-                    "enable_features": [
-                        "ShoppingList"
                     ]
                 }
             ]
@@ -12112,6 +12139,21 @@
                     },
                     "enable_features": [
                         "LowLatencyVideoRendererAlgorithm"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebRTCPipeWireCapturer": [
+        {
+            "platforms": [
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebRTCPipeWireCapturer"
                     ]
                 }
             ]

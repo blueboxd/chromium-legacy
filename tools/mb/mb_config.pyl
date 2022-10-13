@@ -117,7 +117,7 @@
       'android-weblayer-with-aosp-webview-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_disable_proguard_chrome_google',
       # Use webview_monochrome as this builder triggers tests on Android O & P
       'android-weblayer-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_disable_proguard_webview_monochrome',
-      'android-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_trichrome_webview_shell_reclient',
+      'android-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_trichrome_reclient',
     },
 
     'chromium.android.fyi': {
@@ -131,7 +131,7 @@
       'android-weblayer-pie-x86-wpt-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
       'android-weblayer-pie-x86-wpt-smoketest': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
       'android-weblayer-with-aosp-webview-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_disable_proguard_chrome_google_reclient',
-      'android-webview-pie-x86-wpt-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_webview_shell_reclient',
+      'android-webview-pie-x86-wpt-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
     },
 
     'chromium.angle': {
@@ -274,6 +274,7 @@
       'fuchsia-fyi-x64-asan': 'asan_lsan_bot_fuchsia',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-x64-chrome-rel': 'release_bot_fuchsia_cfv2_script_chrome',
+      'fuchsia-x64-workstation': 'release_bot_fuchsia_workstation',
     },
 
     'chromium.fuzz': {
@@ -401,7 +402,6 @@
       'fuchsia-code-coverage': 'fuchsia_clang_code_coverage',
       'fuchsia-fyi-arm64-cfv2-script': 'release_bot_fuchsia_cfv2_script_arm64',
       'fuchsia-fyi-cfv2-script': 'release_bot_fuchsia_cfv2_script',
-      'fuchsia-fyi-x64-wst': 'fuchsia_workstation_bot',
       'ios-fieldtrial-rel': 'ios_simulator_debug_static_bot_xctest_arm64',
       'ios-m1-simulator': 'ios_simulator_debug_static_bot_xctest_arm64',
       'ios-m1-simulator-cronet': 'ios_cronet_xctest_arm64',
@@ -1138,6 +1138,7 @@
       'fuchsia-x64-cast-receiver-rel': 'release_trybot_fuchsia_cast_receiver',
       'fuchsia-x64-chrome-rel': 'release_trybot_fuchsia_cfv2_script_chrome',
       'fuchsia-x64-rel': 'release_trybot_fuchsia',
+      'fuchsia-x64-workstation': 'release_trybot_fuchsia_workstation',
       # TODO(crbug.com/1294938): Remove this bot after the transition.
       'fuchsia_arm64': 'release_trybot_fuchsia_arm64',
       # TODO(crbug.com/1294938): Remove this bot after the transition.
@@ -1588,7 +1589,7 @@
     ],
 
     'android_debug_static_bot_x86_reclient': [
-      'android', 'debug_static_bot_reclient', 'x86',
+      'android', 'debug_static_bot_reclient', 'x86', 'webview_shell',
     ],
 
     'android_debug_static_external_bot': [
@@ -1674,7 +1675,7 @@
     'android_release_bot_minimal_symbols_x64_fastbuild_webview_trichrome_reclient': [
       'android', 'release_bot_reclient', 'minimal_symbols', 'x64',
       'strip_debug_info', 'android_fastbuild', 'webview_trichrome',
-      'no_secondary_abi',
+      'no_secondary_abi', 'webview_shell'
     ],
 
     'android_release_bot_minimal_symbols_x86_fastbuild_disable_proguard_webview_monochrome': [
@@ -1698,6 +1699,7 @@
     'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient': [
       'android', 'release_bot_reclient', 'minimal_symbols', 'x86',
       'strip_debug_info', 'android_fastbuild', 'webview_monochrome',
+      'webview_shell',
     ],
 
     'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_webview_shell': [
@@ -1705,19 +1707,10 @@
       'strip_debug_info', 'android_fastbuild', 'webview_monochrome', 'webview_shell',
     ],
 
-    'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_webview_shell_reclient': [
-      'android', 'release_bot_reclient', 'minimal_symbols', 'x86',
-      'strip_debug_info', 'android_fastbuild', 'webview_monochrome', 'webview_shell',
-    ],
-
     'android_release_bot_minimal_symbols_x86_fastbuild_webview_trichrome_reclient': [
       'android', 'release_bot_reclient', 'minimal_symbols', 'x86',
       'strip_debug_info', 'android_fastbuild', 'webview_trichrome',
-    ],
-
-    'android_release_bot_minimal_symbols_x86_fastbuild_webview_trichrome_webview_shell_reclient': [
-      'android', 'release_bot_reclient', 'minimal_symbols', 'x86',
-      'strip_debug_info', 'android_fastbuild', 'webview_trichrome', 'webview_shell',
+      'webview_shell',
     ],
 
     'android_release_trybot': [
@@ -1786,7 +1779,7 @@
     'android_release_trybot_x64_fastbuild_webview_trichrome': [
       'android', 'release_trybot', 'strip_debug_info', 'x64',
       'android_fastbuild', 'webview_trichrome',
-      'no_secondary_abi',
+      'no_secondary_abi', 'webview_shell',
     ],
 
     'android_release_trybot_x86_fastbuild_webview_google_invert_fieldtrials': [
@@ -1796,17 +1789,17 @@
 
     'android_release_trybot_x86_fastbuild_webview_monochrome': [
       'android', 'release_trybot', 'strip_debug_info', 'x86',
-      'android_fastbuild', 'webview_monochrome',
+      'android_fastbuild', 'webview_monochrome', 'webview_shell',
     ],
 
     'android_release_trybot_x86_fastbuild_webview_monochrome_reclient': [
       'android', 'release_trybot_reclient', 'strip_debug_info', 'x86',
-      'android_fastbuild', 'webview_monochrome',
+      'android_fastbuild', 'webview_monochrome', 'webview_shell',
     ],
 
     'android_release_trybot_x86_fastbuild_webview_trichrome': [
       'android', 'release_trybot', 'strip_debug_info', 'x86',
-      'android_fastbuild', 'webview_trichrome',
+      'android_fastbuild', 'webview_trichrome', 'webview_shell',
     ],
 
     'android_webview_google_debug_static_bot_arm64': [
@@ -2107,7 +2100,7 @@
     ],
 
     'chromeos_amd64-generic_use_fake_dbus_clients_vm_optimized_dchecks': [
-      'chromeos_amd64-generic-vm', 'use_fake_dbus_clients', 'dcheck_always_on',
+      'chromeos_amd64-generic-vm', 'use_fake_dbus_clients', 'dcheck_always_on', 'also_build_lacros_chrome_for_architecture_amd64'
     ],
 
     'chromeos_arm-generic_cfi_thin_lto_official': [
@@ -2564,11 +2557,6 @@
 
     'fuchsia_official_optimize_goma_trybot': [
       'official_optimize_goma_trybot', 'fuchsia',
-    ],
-
-    'fuchsia_workstation_bot': [
-      'release_bot', 'fuchsia', 'fuchsia_include_workstation_image',
-      'fuchsia_chrome'
     ],
 
     'gn_linux_upload': [
@@ -3177,7 +3165,7 @@
 
     'mac_arm64_gpu_tests_debug_bot_minimal_symbols_no_nacl_reclient': [
       'arm64', 'gpu_tests', 'static_bot_reclient', 'minimal_symbols', 'disable_nacl',
-      'dcheck_off', 'debug',
+      'dcheck_off', 'debug', 'shared'
     ],
 
     'mac_arm64_gpu_tests_release_bot_minimal_symbols_no_nacl': [
@@ -3467,6 +3455,11 @@
       'release_bot', 'fuchsia',  'fuchsia_cfv2_script', 'fuchsia_chrome',
     ],
 
+    'release_bot_fuchsia_workstation': [
+      'release_bot', 'fuchsia', 'fuchsia_include_workstation_image',
+      'fuchsia_chrome'
+    ],
+
     'release_bot_mac_strip_minimal_symbols': [
       'release_bot', 'mac_strip', 'minimal_symbols',
     ],
@@ -3610,6 +3603,11 @@
 
     'release_trybot_fuchsia_cfv2_script_chrome': [
       'release_trybot', 'fuchsia', 'fuchsia_cfv2_script', 'fuchsia_chrome',
+    ],
+
+    'release_trybot_fuchsia_workstation': [
+      'release_trybot', 'fuchsia', 'fuchsia_include_workstation_image',
+      'fuchsia_chrome'
     ],
 
     'release_trybot_minimal_symbols_reclient': [

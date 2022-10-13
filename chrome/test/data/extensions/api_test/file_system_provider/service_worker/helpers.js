@@ -8,7 +8,7 @@ import {TestFileSystemProvider} from '/_test_resources/api_test/file_system_prov
  * @param {...?} args
  * @returns {!Promise<?>}
  */
-async function promisifyWithLastError(fn, ...args) {
+export async function promisifyWithLastError(fn, ...args) {
   return new Promise((resolve, reject) => {
     fn(...args, (result) => {
       if (chrome.runtime.lastError) {
@@ -224,6 +224,12 @@ export const remoteProvider = {
    */
   continueRequest: async (requestId) =>
       callServiceWorker('continueRequest', requestId),
+  /**
+   * @param {string} eventName
+   * @returns {!Promise<number>}
+   */
+  getEventCount: async (eventName) =>
+      callServiceWorker('getEventCount', eventName),
   /**
    * @param {string} filePath
    * @returns {!Promise<string>}

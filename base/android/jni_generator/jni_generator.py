@@ -1591,13 +1591,12 @@ See SampleForTests.java for more details.
       help='Uses as a namespace in the generated header '
       'instead of the javap class name, or when there is '
       'no JNINamespace annotation in the java source.')
-  parser.add_argument(
-      '--input_file',
-      action='append',
-      required=True,
-      dest='input_files',
-      help='Input filenames, or paths within a .jar if '
-      '--jar-file is used.')
+  parser.add_argument('--input_file',
+                      action='append',
+                      required=True,
+                      dest='input_files',
+                      help='Input filenames, or paths within a .jar if '
+                      '--jar-file is used.')
   parser.add_argument('--output_dir', required=True, help='Output directory.')
   # TODO(agrieve): --prev_output_dir used only to make incremental builds work.
   #     Remove --prev_output_dir at some point after 2022.

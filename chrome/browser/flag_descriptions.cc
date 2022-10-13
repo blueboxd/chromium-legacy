@@ -2480,12 +2480,12 @@ const char kPrivacySandboxAdsAPIsOverrideDescription[] =
     "Fenced Frames, Shared Storage, Private Aggregation, and their associated "
     "features.";
 
-const char kPrivateAggregationDebugModeName[] =
-    "Private Aggregation debug mode";
-const char kPrivateAggregationDebugModeDescription[] =
-    "Enables debug mode for the Private Aggregation API. This removes all "
-    "reporting delays. Only works if the Private Aggregation API is already "
-    "enabled.";
+const char kPrivateAggregationDeveloperModeName[] =
+    "Private Aggregation developer mode";
+const char kPrivateAggregationDeveloperModeDescription[] =
+    "Enables the developer mode for the Private Aggregation API. This removes "
+    "all reporting delays. Only works if the Private Aggregation API is "
+    "already enabled.";
 
 const char kProminentDarkModeActiveTabTitleName[] =
     "Prominent Dark Mode Active Tab Titles";
@@ -3104,6 +3104,16 @@ const char kUseSearchClickForRightClickDescription[] =
 const char kVCBackgroundBlurName[] = "Enable vc background blur";
 const char kVCBackgroundBlurDescription[] =
     "Enables background blur feature for video conferencing on chromebooks.";
+
+const char kVCBackgroundReplaceName[] = "Enable vc background replacement";
+const char kVCBackgroundReplaceDescription[] =
+    "Enables background replacement feature for video conferencing on "
+    "chromebooks. THIS WILL OVERRIDE BACKGROUND BLUR.";
+
+const char kVCPortraitRelightingName[] = "Enable vc portrait relighting";
+const char kVCPortraitRelightingDescription[] =
+    "Enables portrait relighting feature for video conferencing on "
+    "chromebooks. THIS WILL OVERRIDE BACKGROUND BLUR & REPLACE.";
 
 const char kV8VmFutureName[] = "Future V8 VM features";
 const char kV8VmFutureDescription[] =
@@ -4185,6 +4195,11 @@ const char kDiscoverFeedMultiColumnAndroidDescription[] =
     "Enabled single or multi-column Discover feed based on screen width on "
     "Android.";
 
+const char kTabStripRedesignAndroidName[] = "Tab Strip Redesign Android.";
+const char kTabStripRedesignAndroidDescription[] =
+    "Enabled Tab Strip Redesign on Android - A visual redesign of Clank Tab "
+    "Strip that is consistent with GM3.";
+
 const char kTouchDragAndContextMenuName[] =
     "Simultaneous touch drag and context menu";
 const char kTouchDragAndContextMenuDescription[] =
@@ -4376,6 +4391,10 @@ const char kNtpCacheOneGoogleBarDescription[] =
 const char kNtpChromeCartModuleName[] = "NTP Chrome Cart Module";
 const char kNtpChromeCartModuleDescription[] =
     "Shows the chrome cart module on the New Tab Page.";
+
+const char kNtpDesktopLensName[] = "NTP Desktop Lens Entrypoint";
+const char kNtpDesktopLensDescription[] =
+    "Shows a Lens entrypoint and upload dialog in desktop NTP when enabled.";
 
 const char kNtpDriveModuleName[] = "NTP Drive Module";
 const char kNtpDriveModuleDescription[] =
@@ -4983,6 +5002,10 @@ const char kDefaultLinkCapturingInBrowserName[] =
 const char kDefaultLinkCapturingInBrowserDescription[] =
     "When enabled, newly installed apps will not capture links clicked in the "
     "browser.";
+
+extern const char kDesks16Name[] = "Enable up to 16 virtual desks";
+extern const char kDesks16Description[] =
+    "When enabled, up to 16 virtual desks are allowed.";
 
 const char kDesksCloseAllName[] = "Desks Close All";
 const char kDesksCloseAllDescription[] =

@@ -315,7 +315,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '94b451811838c540f8ef682ad7da45c6ccf0b450',
+  'angle_revision': '8e644365328cf908e0c4de02707c58322228b589',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -689,7 +689,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/third_party/updater/chrome_win_x86',
-          'version': 'rqP-urpwa5NOuHhuLVNHyT9d_Psk1xDc8ELSstaIkUUC',
+          'version': '_YCMx6KK9JLuRq3i2A1hNXPeWPs3xx7DU9pKGBHaY9MC',
         },
       ],
   },
@@ -700,7 +700,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/third_party/updater/chrome_win_x86_64',
-          'version': '7nSN9jjsZ507lwEcJQKUFM_Z2wHmjJmU3nzo1s-r8-UC',
+          'version': 'B219feMqLtKlWnB8ll-PE7Dyk9odtx1_hMshE5e6lWgC',
         },
       ],
   },
@@ -735,7 +735,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/third_party/updater/chromium_win_x86',
-          'version': '2yELAOdPaRyB3HuFsiecHXc4zcXVupx9cLa9ZAh-Z2wC',
+          'version': 'IC4eBusb77p8RW3eBAhJ2LQzPffPuV6lqwqm7NwxNSkC',
         },
       ],
   },
@@ -746,7 +746,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/third_party/updater/chromium_win_x86_64',
-          'version': 'vuc_q-ghg3H11b1O-ENURYlDO8hrcpCc4AuN1Expx3gC',
+          'version': 'Ea-jhu4lipIfpqmOJBH1nfruzXa0ETDXcjHa7NP-5PcC',
         },
       ],
   },
@@ -818,7 +818,7 @@ deps = {
 
   'src/clank': {
     'url': 'https://chrome-internal.googlesource.com/clank/internal/apps.git' + '@' +
-    'd71ee488b3dfc34f836410eaace4f52915ad7872',
+    '9bba755dde5c69b1e60c024679799e47f6e3cb9e',
     'condition': 'checkout_android and checkout_src_internal and not checkout_clank_via_src_internal',
   },
 
@@ -1848,7 +1848,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'd1b65aa5a88f6efd900604dfcda840154e9f16e2',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '9c402f750efed2504482b9ac8f075c2907e4ca1e',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '9ff9ec53c07190a7add65392239939961a064da5',
 
   'src/third_party/webrtc':
     Var('webrtc_git') + '/src.git' + '@' + 'fb3bd4a01d7c840dfe7b3efa144c0fbcb6a97fef',
@@ -1921,7 +1921,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@73f9ffba35357a86d519287005b767c26e56f004',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c28674d458e4b56ff137d8f29f20481c93a14db5',
     'condition': 'checkout_src_internal',
   },
 

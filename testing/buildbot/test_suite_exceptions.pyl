@@ -1233,6 +1233,16 @@
       },
     },
   },
+  # TODO(crbug/1239300): Remove when experiment is done.
+  'chrome_public_persistent_shell_unit_test_apk': {
+    'modifications': {
+      'android-nougat-x86-rel': {
+        'swarming': {
+          'shards': 4,
+        },
+      },
+    },
+  },
   'chrome_public_smoke_test': {
     'remove_from': [
       'android-code-coverage-native', # Does not generate profraw data.
@@ -3426,6 +3436,11 @@
       'linux_optional_gpu_tests_rel',  # crbug.com/1080749
     ],
   },
+  'testing_pytype': {
+    'remove_from': [
+      'linux-code-coverage',
+    ],
+  },
   'trace_test': {
     'remove_from': [
       # Trace tests currently don't work on non-rooted devices due to a private
@@ -3440,11 +3455,6 @@
         'experiment_percentage': 100,
       },
     },
-  },
-  'unexpected_passes_common_pytype': {
-    'remove_from': [
-      'linux-code-coverage',
-    ],
   },
   'unit_tests': {
     'remove_from': [

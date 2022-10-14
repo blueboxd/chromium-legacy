@@ -183,6 +183,9 @@
       'filepath': 'ash/webui/common/'\
                   '|chrome/test/data/webui/chromeos/ash_common/',
     },
+    'ash_wm_desks': {
+      'filepath': 'ash/wm/desks/',
+    },
     'assistive': {
       'filepath': 'ash/ambient/'\
                   '|ash/app_list/views/assistant/'\
@@ -1949,9 +1952,9 @@
       'filepath': 'apitest|unittest|browsertest|uitest|chrome/test/',
     },
     'tether': {
-      'filepath': 'ash/components/tether/'\
-                  '|chrome/browser/ash/tether/'\
+      'filepath': 'chrome/browser/ash/tether/'\
                   '|chrome/browser/ui/ash/network/tether'\
+                  '|chromeos/ash/components/tether/',
     },
     'text_to_speech': {
       'filepath': 'tts'
@@ -2245,7 +2248,7 @@
     'android_studio': ['wnwen+watch@chromium.org',
                        'nyquist+watch@chromium.org'],
     'android_tab': ['dtrainor+watch@chromium.org'],
-    'android_toolbar': ['hanxi+watch@chromium.org', 'spdonghao+watch@chromium.org'],
+    'android_toolbar': ['hanxi+watch@chromium.org'],
     'android_toolbar_deps': ['jinsukkim+watch@chromium.org'],
     'android_uma_settings': ['asvitkine+watch@chromium.org',
                              'gayane+watch@chromium.org'],
@@ -2286,6 +2289,8 @@
     'ash_webui_common': ['gavinwill+watch-ash-webui-common@chromium.org',
                          'jimmyxgong+watch-ash-webui-common@chromium.org',
                          'zentaro+watch-ash-webui-common@chromium.org'],
+    'ash_wm_desks': ['dandersson@chromium.org',
+                     'bicioglu@google.com'],
     'assistive': ['croissant-eng+reviews@chromium.org'],
     'audio_service': ['marinaciocea+watch@chromium.org',
                       'olka+watch@chromium.org'],
@@ -2978,8 +2983,7 @@
                                  'gogerald+watch@chromium.org',
                                  'hanxi+watch@chromium.org',
                                  'mattsimmons+watch@chromium.org',
-                                 'davidjm+watch@chromium.org',
-                                 'spdonghao+watch@chromium.org'],
+                                 'davidjm+watch@chromium.org'],
     'tabs': ['mickeyburks+watch@chromium.org'],
     'tbmv2_metrics': ['speed-metrics-reviews@chromium.org'],
     'telemetry': ['telemetry-reviews@chromium.org'],

@@ -1010,61 +1010,86 @@ cr.define('cr.ui.login.debug', function() {
         {
           id: 'regular-owner',
           trigger: (screen) => {
-            screen.setIsDeviceOwner(true);
+            screen.setUsageOptinHidden(false);
           },
           data: {
             isArcEnabled: true,
             isDemo: false,
             isChildAccount: false,
-            isEnterpriseManagedAccount: false,
+            isTosHidden: false,
             googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
             crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
             countryCode: 'us',
+            showRecoveryOption: false,
+            recoveryOptionDefault: false,
           },
         },
         {
           id: 'regular',
           trigger: (screen) => {
-            screen.setIsDeviceOwner(false);
+            screen.setUsageOptinHidden(true);
           },
           data: {
             isArcEnabled: true,
             isDemo: false,
             isChildAccount: false,
-            isEnterpriseManagedAccount: false,
+            isTosHidden: false,
             googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
             crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
             countryCode: 'us',
+            showRecoveryOption: false,
+            recoveryOptionDefault: false,
+          },
+        },
+        {
+          id: 'regular-recovery',
+          trigger: (screen) => {
+            screen.setUsageOptinHidden(true);
+          },
+          data: {
+            isArcEnabled: true,
+            isDemo: false,
+            isChildAccount: false,
+            isTosHidden: false,
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+            showRecoveryOption: true,
+            recoveryOptionDefault: true,
           },
         },
         {
           id: 'child-owner',
           trigger: (screen) => {
-            screen.setIsDeviceOwner(true);
+            screen.setUsageOptinHidden(false);
           },
           data: {
             isArcEnabled: true,
             isDemo: false,
             isChildAccount: true,
-            isEnterpriseManagedAccount: false,
+            isTosHidden: false,
             googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
             crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
             countryCode: 'us',
+            showRecoveryOption: false,
+            recoveryOptionDefault: false,
           },
         },
         {
           id: 'child',
           trigger: (screen) => {
-            screen.setIsDeviceOwner(false);
+            screen.setUsageOptinHidden(true);
           },
           data: {
             isArcEnabled: true,
             isDemo: false,
             isChildAccount: true,
-            isEnterpriseManagedAccount: false,
+            isTosHidden: false,
             googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
             crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
             countryCode: 'us',
+            showRecoveryOption: false,
+            recoveryOptionDefault: false,
           },
         },
         {
@@ -1073,40 +1098,46 @@ cr.define('cr.ui.login.debug', function() {
             isArcEnabled: true,
             isDemo: true,
             isChildAccount: false,
-            isEnterpriseManagedAccount: false,
+            isTosHidden: false,
             googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
             crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
             countryCode: 'us',
+            showRecoveryOption: false,
+            recoveryOptionDefault: false,
           },
         },
         {
           id: 'arc-disabled-owner',
           trigger: (screen) => {
-            screen.setIsDeviceOwner(true);
+            screen.setUsageOptinHidden(false);
           },
           data: {
             isArcEnabled: false,
             isDemo: false,
             isChildAccount: false,
-            isEnterpriseManagedAccount: false,
+            isTosHidden: false,
             googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
             crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
             countryCode: 'us',
+            showRecoveryOption: false,
+            recoveryOptionDefault: false,
           },
         },
         {
           id: 'arc-disabled',
           trigger: (screen) => {
-            screen.setIsDeviceOwner(false);
+            screen.setUsageOptinHidden(true);
           },
           data: {
             isArcEnabled: false,
             isDemo: false,
             isChildAccount: false,
-            isEnterpriseManagedAccount: false,
+            isTosHidden: false,
             googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
             crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
             countryCode: 'us',
+            showRecoveryOption: false,
+            recoveryOptionDefault: false,
           },
         },
         {
@@ -1114,32 +1145,36 @@ cr.define('cr.ui.login.debug', function() {
           trigger: (screen) => {
             screen.setBackupMode(true, true);
             screen.setLocationMode(false, true);
-            screen.setIsDeviceOwner(false);
+            screen.setUsageOptinHidden(true);
           },
           data: {
             isArcEnabled: true,
             isDemo: false,
             isChildAccount: false,
-            isEnterpriseManagedAccount: true,
+            isTosHidden: true,
             googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
             crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
             countryCode: 'us',
+            showRecoveryOption: false,
+            recoveryOptionDefault: false,
           },
         },
         {
           id: 'error',
           trigger: (screen) => {
             screen.setUIStep('error');
-            screen.setIsDeviceOwner(true);
+            screen.setUsageOptinHidden(false);
           },
           data: {
             isArcEnabled: true,
             isDemo: false,
             isChildAccount: false,
-            isEnterpriseManagedAccount: false,
+            isTosHidden: false,
             googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
             crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
             countryCode: 'us',
+            showRecoveryOption: false,
+            recoveryOptionDefault: false,
           },
         },
 

@@ -23,6 +23,7 @@ BASE_DECLARE_FEATURE(kAndroidAuxiliarySearch);
 BASE_DECLARE_FEATURE(kAutocompleteStability);
 BASE_DECLARE_FEATURE(kDocumentProviderDedupingOptimization);
 BASE_DECLARE_FEATURE(kOmniboxDemoteByType);
+BASE_DECLARE_FEATURE(kOmniboxRemoveExcessiveRecycledViewClearCalls);
 BASE_DECLARE_FEATURE(kPreserveDefault);
 BASE_DECLARE_FEATURE(kStrippedGurlOptimization);
 BASE_DECLARE_FEATURE(kUpdateResultDebounce);
@@ -40,6 +41,9 @@ extern const bool kOmniboxMaxURLMatchesEnabledByDefault;
 BASE_DECLARE_FEATURE(kOmniboxMaxURLMatches);
 BASE_DECLARE_FEATURE(kDynamicMaxAutocomplete);
 BASE_DECLARE_FEATURE(kRetainSuggestionsWithHeaders);
+
+// Entity suggestion disambiguation.
+BASE_DECLARE_FEATURE(kDisambiguateEntitySuggestions);
 
 // Local history zero-prefix (aka zero-suggest) and prefix suggestions.
 BASE_DECLARE_FEATURE(kAdjustLocalHistoryZeroSuggestRelevanceScore);
@@ -95,6 +99,7 @@ BASE_DECLARE_FEATURE(kOmniboxRemoveSuggestionHeaderCapitalization);
 BASE_DECLARE_FEATURE(kOmniboxRemoveSuggestionHeaderChevron);
 BASE_DECLARE_FEATURE(kOmniboxMostVisitedTilesFadingOnTablet);
 BASE_DECLARE_FEATURE(kOmniboxMostVisitedTilesOnSrp);
+BASE_DECLARE_FEATURE(kUniformRowHeight);
 
 // Omnibox UI - these affect the UI or function of the location bar (not the
 // popup).

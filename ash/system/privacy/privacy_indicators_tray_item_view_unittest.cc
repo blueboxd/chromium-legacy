@@ -399,7 +399,7 @@ TEST_F(PrivacyIndicatorsTrayItemViewTest, SideShelfVisibilityAnimation) {
             privacy_indicators_view()->GetPreferredSize().height());
 }
 
-TEST_F(PrivacyIndicatorsTrayItemViewTest, StateChangeDuringAnimation) {
+TEST_F(PrivacyIndicatorsTrayItemViewTest, DISABLED_StateChangeDuringAnimation) {
   SetViewVisibleWithAnimation();
   double progress = 0.5;
 
@@ -431,6 +431,10 @@ TEST_F(PrivacyIndicatorsTrayItemViewTest, StateChangeDuringAnimation) {
   privacy_indicators_view()->UpdateScreenShareStatus(
       /*is_screen_sharing=*/false);
   EXPECT_FALSE(privacy_indicators_view()->GetVisible());
+
+  // Clean up.
+  longer_side_shrink_animation()->End();
+  shorter_side_shrink_animation()->End();
 }
 
 TEST_F(PrivacyIndicatorsTrayItemViewTest, MultipleAppsAccess) {

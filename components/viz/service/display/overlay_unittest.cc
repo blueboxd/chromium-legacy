@@ -411,8 +411,8 @@ static ResourceId CreateResourceInLayerTree(
     bool is_overlay_candidate,
     ResourceFormat resource_format) {
   auto resource = TransferableResource::MakeGpu(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
-      size, resource_format, is_overlay_candidate);
+      gpu::Mailbox::GenerateForSharedImage(), GL_LINEAR, GL_TEXTURE_2D,
+      gpu::SyncToken(), size, resource_format, is_overlay_candidate);
 
   ResourceId resource_id =
       child_resource_provider->ImportResource(resource, base::DoNothing());
@@ -738,10 +738,9 @@ class UseMultipleOverlaysTest : public OverlayTest<OverlayProcessorType> {
  public:
   UseMultipleOverlaysTest() {
     // To use more than one overlay, we need to enable some features.
-    const std::vector<base::test::ScopedFeatureList::FeatureAndParams>
-        featureAndParamsList = {{features::kEnableOverlayPrioritization, {}},
-                                {features::kUseMultipleOverlays,
-                                 {{features::kMaxOverlaysParam, "4"}}}};
+    const std::vector<base::test::FeatureRefAndParams> featureAndParamsList = {
+        {features::kEnableOverlayPrioritization, {}},
+        {features::kUseMultipleOverlays, {{features::kMaxOverlaysParam, "4"}}}};
     scoped_features.InitWithFeaturesAndParameters(featureAndParamsList, {});
   }
 

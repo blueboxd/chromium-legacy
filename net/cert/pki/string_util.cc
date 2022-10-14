@@ -7,6 +7,9 @@
 #include "third_party/boringssl/src/include/openssl/mem.h"
 
 #include <algorithm>
+#include <iomanip>
+#include <sstream>
+#include <string>
 
 namespace net::string_util {
 
@@ -39,6 +42,27 @@ bool StartsWithNoCase(std::string_view str, std::string_view prefix) {
          IsEqualNoCase(prefix, str.substr(0, prefix.size()));
 }
 
+std::string FindAndReplace(std::string_view str,
+                           std::string_view find,
+                           std::string_view replace) {
+  std::string ret;
+
+  if (find.empty()) {
+    return std::string(str);
+  }
+  while (!str.empty()) {
+    size_t index = str.find(find);
+    if (index == std::string_view::npos) {
+      ret.append(str);
+      break;
+    }
+    ret.append(str.substr(0, index));
+    ret.append(replace);
+    str = str.substr(index + find.size());
+  }
+  return ret;
+}
+
 // TODO(bbe) get rid of this once we can c++20.
 bool EndsWith(std::string_view str, std::string_view suffix) {
   return suffix.size() <= str.size() &&
@@ -48,6 +72,23 @@ bool EndsWith(std::string_view str, std::string_view suffix) {
 // TODO(bbe) get rid of this once we can c++20.
 bool StartsWith(std::string_view str, std::string_view prefix) {
   return prefix.size() <= str.size() && prefix == str.substr(0, prefix.size());
+}
+
+std::string HexEncode(const uint8_t* data, size_t length) {
+  std::ostringstream out;
+  for (size_t i = 0; i < length; i++) {
+    out << std::hex << std::setfill('0') << std::setw(2) << std::uppercase
+        << int{data[i]};
+  }
+  return out.str();
+}
+
+// TODO(bbe) get rid of this once extracted to boringssl. Everything else
+// in third_party uses std::to_string
+std::string NumberToDecimalString(int i) {
+  std::ostringstream out;
+  out << std::dec << i;
+  return out.str();
 }
 
 }  // namespace net::string_util

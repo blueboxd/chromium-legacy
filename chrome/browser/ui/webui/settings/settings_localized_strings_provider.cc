@@ -248,10 +248,10 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_SLIDER_MIN_MAX_ARIA_ROLE_DESCRIPTION},
     {"caretBrowsingTitle", IDS_SETTINGS_ENABLE_CARET_BROWSING_TITLE},
     {"caretBrowsingSubtitle", IDS_SETTINGS_ENABLE_CARET_BROWSING_SUBTITLE},
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
     {"manageAccessibilityFeatures",
      IDS_SETTINGS_ACCESSIBILITY_MANAGE_ACCESSIBILITY_FEATURES},
-#else  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#else  // !BUILDFLAG(IS_CHROMEOS)
     {"focusHighlightLabel",
      IDS_SETTINGS_ACCESSIBILITY_FOCUS_HIGHLIGHT_DESCRIPTION},
 #endif
@@ -1660,16 +1660,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "driveSuggestAvailable",
       base::FeatureList::IsEnabled(omnibox::kDocumentProvider));
-  html_source->AddBoolean(
-      "consolidatedSiteStorageControlsEnabled",
-      base::FeatureList::IsEnabled(
-          features::kConsolidatedSiteStorageControls) ||
-          // The third release of Privacy Sandbox settings depends on the
-          // simplified control structure. Ideally simplified controls will
-          // launch to 100% in advance of the Privacy Sandbox, but the Sandbox
-          // cannot launch without this simplification enabled.
-          base::FeatureList::IsEnabled(
-              privacy_sandbox::kPrivacySandboxSettings3));
 
   bool show_secure_dns = IsSecureDnsAvailable();
   bool link_secure_dns = ShouldLinkSecureDnsOsSettings();
@@ -2015,6 +2005,8 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_UNDO},
     {"safetyCheckNotificationPermissionReviewDoneLabel",
      IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_DONE_LABEL},
+    {"safetyCheckNotificationPermissionReviewBlockAllToastLabel",
+     IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_BLOCK_ALL_TOAST_LABEL},
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"safetyCheckChromeCleanerPrimaryLabel",
      IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_PRIMARY_LABEL},
@@ -2472,33 +2464,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsSourceKillSwitch",
      IDS_SETTINGS_SITE_SETTINGS_SOURCE_KILL_SWITCH},
     {"siteSettingsReset", IDS_SETTINGS_SITE_SETTINGS_RESET_BUTTON},
-    {"siteSettingsCookieHeader", IDS_SETTINGS_SITE_SETTINGS_COOKIE_HEADER},
-    {"siteSettingsCookieLink", IDS_SETTINGS_SITE_SETTINGS_COOKIE_LINK},
-    {"siteSettingsCookieRemove", IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE},
-    {"siteSettingsCookieRemoveAll",
-     IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_ALL},
-    {"siteSettingsCookieRemoveAllShown",
-     IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_ALL_SHOWN},
-    {"siteSettingsCookieRemoveAllThirdParty",
-     IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_ALL_THIRD_PARTY},
-    {"siteSettingsCookieRemoveThirdPartyDialogTitle",
-     IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_REMOVE_DIALOG_TITLE},
-    {"siteSettingsCookieRemoveThirdPartyConfirmation",
-     IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_REMOVE_CONFIRMATION},
-    {"siteSettingsCookiesClearThirdParty",
-     IDS_SETTINGS_SITE_SETTINGS_CLEAR_THIRD_PARTY_COOKIES},
     {"siteSettingsCookiesThirdPartyExceptionLabel",
      IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIES_EXCEPTION_LABEL},
-    {"siteSettingsCookieRemoveDialogTitle",
-     IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_DIALOG_TITLE},
-    {"siteSettingsCookieRemoveMultipleConfirmation",
-     IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_MULTIPLE},
     {"siteSettingsCookieRemoveSite",
      IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_SITE},
-    {"siteSettingsCookiesClearAll",
-     IDS_SETTINGS_SITE_SETTINGS_COOKIES_CLEAR_ALL},
-    {"siteSettingsCookieSearch", IDS_SETTINGS_SITE_SETTINGS_COOKIE_SEARCH},
-    {"siteSettingsCookieSubpage", IDS_SETTINGS_SITE_SETTINGS_COOKIE_SUBPAGE},
     {"siteSettingsDelete", IDS_SETTINGS_SITE_SETTINGS_DELETE},
     {"siteSettingsClearAllStorageDialogTitle",
      IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_DIALOG_TITLE},
@@ -2528,14 +2497,12 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_CLEAR_DISPLAYED_STORAGE_SIGN_OUT},
     {"firstPartySetsMembershipLabel",
      IDS_SETTINGS_SITE_SETTINGS_FIRST_PARTY_SETS_MEMBERSHIP_LABEL},
+    {"firstPartySetsMoreActionsTitle",
+     IDS_SETTINGS_SITE_SETTINGS_FIRST_PARTY_SETS_MORE_ACTIONS_TITLE},
     {"firstPartySetsShowRelatedSitesButton",
      IDS_SETTINGS_SITE_SETTINGS_FIRST_PARTY_SETS_SHOW_RELATED_SITES_BUTTON},
     {"firstPartySetsSiteClearStorageButton",
      IDS_SETTINGS_SITE_SETTINGS_FIRST_PARTY_SETS_SITE_CLEAR_STORAGE_BUTTON},
-    {"siteSettingsOriginDeleteConfirmation",
-     IDS_SETTINGS_SITE_SETTINGS_ORIGIN_DELETE_CONFIRMATION},
-    {"siteSettingsOriginDeleteConfirmationInstalled",
-     IDS_SETTINGS_SITE_SETTINGS_ORIGIN_DELETE_CONFIRMATION_INSTALLED},
     {"siteSettingsSiteGroupDeleteConfirmationInstalledPlural",
      IDS_SETTINGS_SITE_SETTINGS_SITE_GROUP_DELETE_CONFIRMATION_INSTALLED_PLURAL},
     {"siteSettingsSiteClearStorage",
@@ -2957,11 +2924,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "enableExperimentalWebPlatformFeatures",
       cmd.HasSwitch(::switches::kEnableExperimentalWebPlatformFeatures));
-
-  html_source->AddBoolean(
-      "enableRemovingAllThirdPartyCookies",
-      base::FeatureList::IsEnabled(
-          browsing_data::features::kEnableRemovingAllThirdPartyCookies));
 
   html_source->AddBoolean(
       "enableQuietNotificationPromptsSetting",

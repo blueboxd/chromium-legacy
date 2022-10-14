@@ -156,7 +156,17 @@ chromium-metrics-reviews@google.com.
     expires_after="2023-04-05">
   <owner>tomhughes@chromium.org</owner>
   <owner>chromeos-fingerprint@google.com</owner>
-  <summary>Counts the number of fingers enrolled by the user.</summary>
+  <summary>
+    Counts the number of fingers enrolled by the user.
+
+    This metric is reported in biod when the first user logs in. It is not
+    reported when a secondary user logs in, nor when all users log-off, nor when
+    the primary user uses fingerprint unlock. It may be reported again if
+    session_manage crashes.
+
+    This metric is emitted in SendStatsOnLogin() along with
+    Fingerprint.UnlockEnabled.
+  </summary>
 </histogram>
 
 <histogram name="Fingerprint.Unlock.Match.PositiveMatchSecretCorrect"
@@ -178,6 +188,28 @@ chromium-metrics-reviews@google.com.
     power button press. Fingerprint matches will be ignored for a duration of
     kAuthIgnoreTimeoutmsecs (1000 ms) after each power button press. This only
     applies to fingerprint sensors that reside on a power button.
+  </summary>
+</histogram>
+
+<histogram name="Fingerprint.Unlock.PartialAttemptsBeforeSuccess"
+    units="attempts" expires_after="2023-10-11">
+  <owner>hcyang@google.com</owner>
+  <owner>tomhughes@google.com</owner>
+  <owner>chromeos-fingerprint@google.com</owner>
+  <summary>
+    Counts the number of partial fingerprint attempts until successful result is
+    reported in biod. Partial attempts refers to the &quot;low coverage&quot;
+    error, which means that the sensor is only partially covered with a finger.
+    It often occurs when the user just dropped their finger onto the sensor. We
+    expect the user to adjust their finger position soon after that, so instead
+    of reporting an error biod silently allows up to 20 retries for this kind of
+    error. We want to observe in average how many partial attempts are needed
+    before successfully matching.
+
+    A count of 0 means that the fingerprint match attempt is successful without
+    any preceding partial matches. The maximum number of partial attempts is
+    governed by kMaxPartialAttempts, such that this value must be less than the
+    max.
   </summary>
 </histogram>
 
@@ -261,8 +293,17 @@ chromium-metrics-reviews@google.com.
   <owner>tomhughes@chromium.org</owner>
   <owner>chromeos-fingerprint@google.com</owner>
   <summary>
-    Track whether fingerprint is enabled to unlock the screen, when the user
-    logs in.
+    Indicates whether at least one finger is enrolled, which effectively permits
+    fingerprint unlock.
+
+    This metric is reported in biod when the first user logs in. It is not
+    reported when a secondary user logs in, nor when all users log-off, nor when
+    the primary user uses fingerprint unlock. It may be reported again if
+    session_manage crashes. It does not take into account if policy has
+    subsequently disabled fingerprint unlock.
+
+    This metric is emitted in SendStatsOnLogin() along with
+    Fingerprint.Unlock.EnrolledFingerCount.
   </summary>
 </histogram>
 

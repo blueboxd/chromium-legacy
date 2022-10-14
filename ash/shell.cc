@@ -1090,8 +1090,9 @@ void Shell::Init(
   wallpaper_controller_ = WallpaperControllerImpl::Create(local_state_);
 
   if (features::IsRgbKeyboardEnabled()) {
-    // Initialized after |wallpaper_controller_| because we will need to observe
-    // when the extracted wallpaper color changes.
+    // Initialized after |rgb_keyboard_manager_| to observe the state of rgb
+    // keyboard and |wallpaper_controller_| because we will need to observe when
+    // the extracted wallpaper color changes.
     keyboard_backlight_color_controller_ =
         std::make_unique<KeyboardBacklightColorController>();
   }
@@ -1166,8 +1167,8 @@ void Shell::Init(
 
   screen_position_controller_ = std::make_unique<ScreenPositionController>();
 
-  frame_throttling_controller_ =
-      std::make_unique<FrameThrottlingController>(context_factory);
+  frame_throttling_controller_ = std::make_unique<FrameThrottlingController>(
+      context_factory->GetHostFrameSinkManager());
 
   if (features::IsTabClusterUIEnabled())
     tab_cluster_ui_controller_ = std::make_unique<TabClusterUIController>();

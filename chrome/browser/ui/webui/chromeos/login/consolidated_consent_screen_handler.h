@@ -31,25 +31,6 @@ class ConsolidatedConsentScreenView
   inline constexpr static StaticOobeScreenId kScreenId{
       "consolidated-consent", "ConsolidatedConsentScreen"};
 
-  struct ScreenConfig {
-    ScreenConfig();
-    ~ScreenConfig();
-    ScreenConfig(const ScreenConfig&) = delete;
-    ScreenConfig& operator=(const ScreenConfig&) = delete;
-
-    bool is_arc_enabled = true;
-    bool is_demo = false;
-    bool is_tos_hidden = false;
-    bool is_child_account = false;
-    std::string country_code = "us";
-
-    // Default URLs with english locales.
-    // ScreenConfig created in ConsolidatedConsentScreen::ShowImpl() should
-    // include the localized versions.
-    std::string google_eula_url = kGoogleEulaDefaultUrl;
-    std::string cros_eula_url = kCrosEulaDefaultUrl;
-  };
-
   virtual ~ConsolidatedConsentScreenView() = default;
 
   // Shows the contents of the screen.
@@ -63,7 +44,7 @@ class ConsolidatedConsentScreenView
 
   // Set the visibility of the usage opt-in. For non-demo scenarios, the screen
   // will stay in the `loading` step until this method is called.
-  virtual void SetUsageOptinOptinHidden(bool hidden) = 0;
+  virtual void SetUsageOptinHidden(bool hidden) = 0;
 };
 
 class ConsolidatedConsentScreenHandler : public ConsolidatedConsentScreenView,
@@ -86,7 +67,7 @@ class ConsolidatedConsentScreenHandler : public ConsolidatedConsentScreenView,
   void SetUsageMode(bool enabled, bool managed) override;
   void SetBackupMode(bool enabled, bool managed) override;
   void SetLocationMode(bool enabled, bool managed) override;
-  void SetUsageOptinOptinHidden(bool hidden) override;
+  void SetUsageOptinHidden(bool hidden) override;
 
   // BaseScreenHandler:
   void DeclareLocalizedValues(

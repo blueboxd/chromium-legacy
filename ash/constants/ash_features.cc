@@ -363,7 +363,7 @@ BASE_FEATURE(kCameraAppDocScanDlc,
 // camera app.
 BASE_FEATURE(kCameraAppMultiPageDocScan,
              "CameraAppMultiPageDocScan",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the camera privacy switch toasts and notification should be
 // displayed.
@@ -1226,11 +1226,10 @@ BASE_FEATURE(kLacrosProfileMigrationForceOff,
              "LacrosProfileMigrationForceOff",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enable this to turn on profile migration for non-googlers. Currently the
-// feature is only limited to googlers only.
+// Disable this to turn off profile migration for non-googlers.
 BASE_FEATURE(kLacrosProfileMigrationForAnyUser,
              "LacrosProfileMigrationForAnyUser",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, use `MoveMigrator` instead of `CopyMigrator` to migrate data.
 // `MoveMigrator` moves data from ash to lacros instead of copying them.
@@ -1654,16 +1653,6 @@ BASE_FEATURE(kVCBackgroundBlur,
              "VCBackgroundBlur",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Controls whether the vc background replace is enabled.
-BASE_FEATURE(kVCBackgroundReplace,
-             "VCBackgroundReplace",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Controls whether the vc portrait relighting is enabled.
-BASE_FEATURE(kVCPortraitRelighting,
-             "VCPortraitRelighting",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables or disables the Quick Settings Network revamp, which updates Network
 // Quick Settings UI and related infrastructure. See https://crbug.com/1169479.
 BASE_FEATURE(kQuickSettingsNetworkRevamp,
@@ -1885,9 +1874,9 @@ BASE_FEATURE(kSystemExtensions,
              "SystemExtensions",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables or disables the OEM diagnostics and control System Extensions type.
-BASE_FEATURE(kSystemExtensionsOemDiagnosticsAndControl,
-             "SystemExtensionsOemDiagnosticsAndControl",
+// Enables or disables the managed device health service System Extensions type.
+BASE_FEATURE(kSystemExtensionsManagedDeviceHealthServices,
+             "SystemExtensionsManagedDeviceHealthServices",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables using the system input engine for physical typing in
@@ -3019,14 +3008,6 @@ bool IsUseStorkSmdsServerAddressEnabled() {
 
 bool IsVCBackgroundBlurEnabled() {
   return base::FeatureList::IsEnabled(kVCBackgroundBlur);
-}
-
-bool IsVCBackgroundReplaceEnabled() {
-  return base::FeatureList::IsEnabled(kVCBackgroundReplace);
-}
-
-bool IsVCPortraitRelightingEnabled() {
-  return base::FeatureList::IsEnabled(kVCPortraitRelighting);
 }
 
 bool IsVcControlsUiEnabled() {

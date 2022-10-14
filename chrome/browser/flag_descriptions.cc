@@ -704,11 +704,6 @@ const char kCommerceHintAndroidName[] = "Commerce Hint Android";
 const char kCommerceHintAndroidDescription[] =
     "Enables commerce hint detection on Android.";
 
-const char kConsolidatedSiteStorageControlsName[] =
-    "Consolidated Site Storage Controls";
-const char kConsolidatedSiteStorageControlsDescription[] =
-    "Enables the consolidated version of Site Storage controls in settings";
-
 const char kConsumerAutoUpdateToggleAllowedName[] =
     "Allow Consumer Auto Update Toggle";
 const char kConsumerAutoUpdateToggleAllowedDescription[] =
@@ -1068,6 +1063,12 @@ const char kAccessibilitySelectToSpeakPageMigrationName[] =
 const char kAccessibilitySelectToSpeakPageMigrationDescription[] =
     "This option enables Select-to-Speak page migration from extension options "
     "page to a Chrome OS settings page.";
+
+const char kAccessibilitySelectToSpeakHoverTextImprovementsName[] =
+    "Select-to-Speak Hover Text Improvements";
+const char kAccessibilitySelectToSpeakHoverTextImprovementsDescription[] =
+    "This option enables improvements in the text shown when hovering over the "
+    "Select-to-Speak feature icon in the system tray.";
 
 const char kPostQuantumCECPQ2Name[] = "TLS Post-Quantum Confidentiality";
 const char kPostQuantumCECPQ2Description[] =
@@ -1511,6 +1512,11 @@ const char kFractionalScrollOffsetsDescription[] =
 const char kFedCmName[] = "FedCM";
 const char kFedCmDescription[] =
     "Enables JavaScript API to intermediate federated identity requests.";
+
+const char kFedCmMetricsEndpointName[] = "FedCmMetricsEndpoint";
+const char kFedCmMetricsEndpointDescription[] =
+    "Allows the FedCM API to send performance measurement to the metrics "
+    "endpoint on the identity provider side. Requires FedCM to be enabled.";
 
 const char kFedCmMultiIdpName[] = "FedCmMultiIdp";
 const char kFedCmMultiIdpDescription[] =
@@ -2051,6 +2057,11 @@ const char kOmniboxRemoveSuggestionHeaderCapitalizationName[] =
 const char kOmniboxRemoveSuggestionHeaderCapitalizationDescription[] =
     "Remove the capitalization of the omnibox suggestion search header.";
 
+const char kOmniboxRemoveExcessiveRecycledViewClearCallsName[] =
+    "Omnibox Remove Excessive Recycled View Clear Calls";
+const char kOmniboxRemoveExcessiveRecycledViewClearCallsDescription[] =
+    "Remove excessive clear calls on RecycledViewPool in omnibox.";
+
 const char kOmniboxRemoveSuggestionHeaderChevronName[] =
     "Omnibox Remove Suggestion Header Chevron";
 const char kOmniboxRemoveSuggestionHeaderChevronDescription[] =
@@ -2175,6 +2186,11 @@ const char kOmniboxUIMaxAutocompleteMatchesName[] =
 const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
     "Changes the maximum number of autocomplete matches displayed in the "
     "Omnibox UI.";
+
+const char kOmniboxSimplifiedUiUniformRowHeightName[] =
+    "Omnibox Suggestion Row Height";
+const char kOmniboxSimplifiedUiUniformRowHeightDescription[] =
+    "Changes the row height of omnibox suggetions.";
 
 const char kOmniboxUpdatedConnectionSecurityIndicatorsName[] =
     "Omnibox Updated connection security indicators";
@@ -3071,6 +3087,12 @@ const char kUnsafeFastJSCallsDescription[] =
 const char kUiPartialSwapName[] = "Partial swap";
 const char kUiPartialSwapDescription[] = "Sets partial swap behavior.";
 
+const char kUseNAT64ForIPv4LiteralName[] =
+    "Use NAT64 translation for IPv4 literals";
+const char kUseNAT64ForIPv4LiteralDescription[] =
+    "Enables IPv4 to IPv6 address translation for IPv4 literals when chrome is "
+    "on an IPv6 only network";
+
 const char kUsernameFirstFlowName[] = "Username first flow voting";
 const char kUsernameFirstFlowDescription[] =
     "Support of sending votes on username first flow i.e. login "
@@ -3104,16 +3126,6 @@ const char kUseSearchClickForRightClickDescription[] =
 const char kVCBackgroundBlurName[] = "Enable vc background blur";
 const char kVCBackgroundBlurDescription[] =
     "Enables background blur feature for video conferencing on chromebooks.";
-
-const char kVCBackgroundReplaceName[] = "Enable vc background replacement";
-const char kVCBackgroundReplaceDescription[] =
-    "Enables background replacement feature for video conferencing on "
-    "chromebooks. THIS WILL OVERRIDE BACKGROUND BLUR.";
-
-const char kVCPortraitRelightingName[] = "Enable vc portrait relighting";
-const char kVCPortraitRelightingDescription[] =
-    "Enables portrait relighting feature for video conferencing on "
-    "chromebooks. THIS WILL OVERRIDE BACKGROUND BLUR & REPLACE.";
 
 const char kV8VmFutureName[] = "Future V8 VM features";
 const char kV8VmFutureDescription[] =

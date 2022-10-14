@@ -23,7 +23,6 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events/form_events.h"
-#include "components/autofill/core/browser/metrics/form_interactions_counter.h"
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/dense_set.h"
@@ -982,7 +981,9 @@ class AutofillMetrics {
                        bool suggestions_shown,
                        bool edited_autofilled_field,
                        bool suggestion_filled,
-                       autofill_assistant::AutofillAssistantIntent intent);
+                       autofill_assistant::AutofillAssistantIntent intent,
+                       const FormInteractionCounts& form_interaction_counts,
+                       const FormInteractionsFlowId& flow_id);
     void LogFormEvent(FormEvent form_event,
                       const DenseSet<FormType>& form_types,
                       const base::TimeTicks& form_parsed_timestamp);
@@ -1542,7 +1543,18 @@ class AutofillMetrics {
       bool is_line1_missing);
 
   // Records if an autofilled field of a specific type was edited by the user.
+  // TODO(crbug.com/1368096): This metric is the successor of
+  // LogEditedAutofilledFieldAtSubmissionDeprecated which is defective. Remove
+  // comment once the old metric was removed.
   static void LogEditedAutofilledFieldAtSubmission(
+      FormInteractionsUkmLogger* form_interactions_ukm_logger,
+      const FormStructure& form,
+      const AutofillField& field);
+
+  // Records if an autofilled field of a specific type was edited by the user.
+  // TODO(crbug.com/1368096): This metric is defective because it is falsely
+  // conditioned on having a detected field type. Remove after M112.
+  static void LogEditedAutofilledFieldAtSubmissionDeprecated(
       FormInteractionsUkmLogger* form_interactions_ukm_logger,
       const FormStructure& form,
       const AutofillField& field);

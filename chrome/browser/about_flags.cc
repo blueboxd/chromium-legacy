@@ -1573,6 +1573,18 @@ const FeatureEntry::FeatureVariation
         {"10 suggestions if 2 or fewer URLs", kOmniboxDynamicMaxAutocomplete102,
          std::size(kOmniboxDynamicMaxAutocomplete102), nullptr}};
 
+const FeatureEntry::FeatureParam kOmniboxUniformRowHeight36[] = {
+    {"OmniboxUniformRowHeight", "36"}};
+const FeatureEntry::FeatureParam kOmniboxUniformRowHeight40[] = {
+    {"OmniboxUniformRowHeight", "40"}};
+
+const FeatureEntry::FeatureVariation kOmniboxSuggestionHeightVariations[] = {
+    {"36 px height for all omnibox suggestions", kOmniboxUniformRowHeight36,
+     std::size(kOmniboxUniformRowHeight36), nullptr},
+    {"40 px height for all omnibox suggestions", kOmniboxUniformRowHeight40,
+     std::size(kOmniboxUniformRowHeight40), nullptr},
+};
+
 const FeatureEntry::FeatureParam
     kOrganicRepeatableQueriesCappedWithHighPrivilege[] = {
         {"MaxNumRepeatableQueries", "4"},
@@ -2251,6 +2263,8 @@ const FeatureEntry::FeatureVariation kWebFeedVariations[] = {
 
 const FeatureEntry::FeatureParam kWebFeedAwareness_new_animation[] = {
     {"awareness_style", "new_animation"}};
+const FeatureEntry::FeatureParam kWebFeedAwareness_new_animation_no_limit[] = {
+    {"awareness_style", "new_animation_no_limit"}};
 
 const FeatureEntry::FeatureParam kWebFeedAwareness_IPH[] = {
     {"awareness_style", "IPH"}};
@@ -2258,6 +2272,8 @@ const FeatureEntry::FeatureParam kWebFeedAwareness_IPH[] = {
 const FeatureEntry::FeatureVariation kWebFeedAwarenessVariations[] = {
     {"new animation", kWebFeedAwareness_new_animation,
      std::size(kWebFeedAwareness_new_animation), nullptr},
+    {"new animation rate limit off", kWebFeedAwareness_new_animation_no_limit,
+     std::size(kWebFeedAwareness_new_animation_no_limit), nullptr},
     {"IPH and dot", kWebFeedAwareness_IPH, std::size(kWebFeedAwareness_IPH),
      nullptr},
 };
@@ -3138,37 +3154,70 @@ const FeatureEntry::FeatureVariation kQuickDimVariations[] = {
      std::size(kQuickDim10sQuickLock130sFeedback), nullptr},
 };
 
-const FeatureEntry::FeatureParam kVCBackgroundBlurLowest[] = {
-    {"blur_level", "lowest"},
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale15Sample4[] = {
+    {"blur_scale", "0.15"},
+    {"blur_samples", "4"},
 };
 
-const FeatureEntry::FeatureParam kVCBackgroundBlurLight[] = {
-    {"blur_level", "light"},
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale15Sample8[] = {
+    {"blur_scale", "0.15"},
+    {"blur_samples", "8"},
 };
 
-const FeatureEntry::FeatureParam kVCBackgroundBlurMedium[] = {
-    {"blur_level", "medium"},
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale15Sample16[] = {
+    {"blur_scale", "0.15"},
+    {"blur_samples", "16"},
 };
 
-const FeatureEntry::FeatureParam kVCBackgroundBlurHeavy[] = {
-    {"blur_level", "heavy"},
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale25Sample4[] = {
+    {"blur_scale", "0.25"},
+    {"blur_samples", "4"},
 };
 
-const FeatureEntry::FeatureParam kVCBackgroundBlurMaximum[] = {
-    {"blur_level", "maximum"},
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale25Sample8[] = {
+    {"blur_scale", "0.25"},
+    {"blur_samples", "8"},
+};
+
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale25Sample16[] = {
+    {"blur_scale", "0.25"},
+    {"blur_samples", "16"},
+};
+
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale35Sample4[] = {
+    {"blur_scale", "0.35"},
+    {"blur_samples", "4"},
+};
+
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale35Sample8[] = {
+    {"blur_scale", "0.35"},
+    {"blur_samples", "8"},
+};
+
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale35Sample16[] = {
+    {"blur_scale", "0.35"},
+    {"blur_samples", "16"},
 };
 
 const FeatureEntry::FeatureVariation kVCBackgroundBlurVariations[] = {
-    {"Lowest Blur", kVCBackgroundBlurLowest, std::size(kVCBackgroundBlurLowest),
-     nullptr},
-    {"Light Blur", kVCBackgroundBlurLight, std::size(kVCBackgroundBlurLight),
-     nullptr},
-    {"Medium Blur", kVCBackgroundBlurMedium, std::size(kVCBackgroundBlurMedium),
-     nullptr},
-    {"Heavy Blur", kVCBackgroundBlurHeavy, std::size(kVCBackgroundBlurHeavy),
-     nullptr},
-    {"Maximum Blur", kVCBackgroundBlurMaximum,
-     std::size(kVCBackgroundBlurMaximum), nullptr},
+    {"Scale15Sample4", kVCBackgroundBlurScale15Sample4,
+     std::size(kVCBackgroundBlurScale15Sample4), nullptr},
+    {"Scale15Sample8", kVCBackgroundBlurScale15Sample8,
+     std::size(kVCBackgroundBlurScale15Sample8), nullptr},
+    {"Scale15Sample16", kVCBackgroundBlurScale15Sample16,
+     std::size(kVCBackgroundBlurScale15Sample16), nullptr},
+    {"Scale25Sample4", kVCBackgroundBlurScale25Sample4,
+     std::size(kVCBackgroundBlurScale25Sample4), nullptr},
+    {"Scale25Sample8", kVCBackgroundBlurScale25Sample8,
+     std::size(kVCBackgroundBlurScale25Sample8), nullptr},
+    {"Scale25Sample16", kVCBackgroundBlurScale25Sample16,
+     std::size(kVCBackgroundBlurScale25Sample16), nullptr},
+    {"Scale35Sample4", kVCBackgroundBlurScale35Sample4,
+     std::size(kVCBackgroundBlurScale35Sample4), nullptr},
+    {"Scale35Sample8", kVCBackgroundBlurScale35Sample8,
+     std::size(kVCBackgroundBlurScale35Sample8), nullptr},
+    {"Scale35Sample16", kVCBackgroundBlurScale35Sample16,
+     std::size(kVCBackgroundBlurScale35Sample16), nullptr},
 };
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -5477,6 +5526,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxMostVisitedTilesTitleWrapAroundName,
      flag_descriptions::kOmniboxMostVisitedTilesTitleWrapAroundDescription,
      kOsAndroid, FEATURE_VALUE_TYPE(omnibox::kMostVisitedTilesTitleWrapAround)},
+
+    {"omnibox-remove-excessive-recycled-view-clear-calls",
+     flag_descriptions::kOmniboxRemoveExcessiveRecycledViewClearCallsName,
+     flag_descriptions::
+         kOmniboxRemoveExcessiveRecycledViewClearCallsDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         omnibox::kOmniboxRemoveExcessiveRecycledViewClearCalls)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
     {"omnibox-local-history-zero-suggest-beyond-ntp",
@@ -5707,6 +5764,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxShortBookmarkSuggestionsName,
      flag_descriptions::kOmniboxShortBookmarkSuggestionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kShortBookmarkSuggestions)},
+
+    {"omnibox-uniform-suggestion-height",
+     flag_descriptions::kOmniboxSimplifiedUiUniformRowHeightName,
+     flag_descriptions::kOmniboxSimplifiedUiUniformRowHeightDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kUniformRowHeight,
+                                    kOmniboxSuggestionHeightVariations,
+                                    "Uniform Omnibox Suggest Heights")},
 
     {"optimization-guide-debug-logs",
      flag_descriptions::kOptimizationGuideDebugLogsName,
@@ -6962,6 +7026,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAccessibilityServiceDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAccessibilityService)},
 
+    {"enable-accessibility-select-to-speak-hover-text-improvements",
+     flag_descriptions::kAccessibilitySelectToSpeakHoverTextImprovementsName,
+     flag_descriptions::
+         kAccessibilitySelectToSpeakHoverTextImprovementsDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         features::kAccessibilitySelectToSpeakHoverTextImprovements)},
+
     {"enable-accessibility-select-to-speak-page-migration",
      flag_descriptions::kAccessibilitySelectToSpeakPageMigrationName,
      flag_descriptions::kAccessibilitySelectToSpeakPageMigrationDescription,
@@ -7836,11 +7908,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kIncognitoReauthenticationForAndroid)},
 #endif
 
-    {"consolidated-site-storage-controls",
-     flag_descriptions::kConsolidatedSiteStorageControlsName,
-     flag_descriptions::kConsolidatedSiteStorageControlsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kConsolidatedSiteStorageControls)},
-
 #if BUILDFLAG(IS_ANDROID)
     {"enable-surface-control", flag_descriptions::kAndroidSurfaceControlName,
      flag_descriptions::kAndroidSurfaceControlDescription, kOsAndroid,
@@ -8311,6 +8378,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kFedCm,
                                     kFedCmFeatureVariations,
                                     "FedCmFeatureVariations")},
+
+    {"fedcm-metrics-endpoint", flag_descriptions::kFedCmMetricsEndpointName,
+     flag_descriptions::kFedCmMetricsEndpointDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kFedCmMetricsEndpoint)},
+
     {"fedcm-multi-idp", flag_descriptions::kFedCmMultiIdpName,
      flag_descriptions::kFedCmMultiIdpDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kFedCmMultipleIdentityProviders)},
@@ -8957,14 +9029,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(ash::features::kVCBackgroundBlur,
                                     kVCBackgroundBlurVariations,
                                     "VCBackgroundBlur")},
-
-    {"vc-background-replace", flag_descriptions::kVCBackgroundReplaceName,
-     flag_descriptions::kVCBackgroundReplaceDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kVCBackgroundReplace)},
-
-    {"vc-portrait-relighting", flag_descriptions::kVCPortraitRelightingName,
-     flag_descriptions::kVCPortraitRelightingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kVCPortraitRelighting)},
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -9708,6 +9772,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesks16Description, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEnable16Desks)},
 #endif
+
+    {"use-nat64-for-ipv4-literal",
+     flag_descriptions::kUseNAT64ForIPv4LiteralName,
+     flag_descriptions::kUseNAT64ForIPv4LiteralDescription, kOsAll,
+     FEATURE_VALUE_TYPE(net::features::kUseNAT64ForIPv4Literal)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

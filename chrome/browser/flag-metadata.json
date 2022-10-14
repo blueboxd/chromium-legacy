@@ -1680,6 +1680,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "enable-accessibility-select-to-speak-hover-text-improvements",
+    "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 130
+  },
+  {
     "name": "enable-accessibility-select-to-speak-page-migration",
     "owners": [ "josiahk", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 120
@@ -1825,6 +1830,11 @@
     "name": "enable-cbd-sign-out",
     "owners": [ "triploblastic", "chrome-signin-team", "arthurmilchior"],
     "expiry_milestone":120
+  },
+  {
+    "name": "enable-check-visibility-on-attention-log-start",
+    "owners": [ "sczs", "tinazwang" ],
+    "expiry_milestone": 120
   },
   {
     "name": "enable-chrome-management-page-android",
@@ -2325,7 +2335,7 @@
   },
   {
     "name": "enable-feed-position-on-ntp",
-    "owners": ["clank-start","hanxi","spdonghao", "andrewheard"],
+    "owners": ["clank-start","hanxi"],
     "expiry_milestone": 110
   },
   {
@@ -2901,6 +2911,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-refine-data-source-reload-reporting",
+    "owners": [ "sczs", "tinazwang" ],
+    "expiry_milestone": 120
+  },
+  {
     "name": "enable-region-search-on-pdf-viewer",
     "owners": ["nguyenbryan@google.com"],
     "expiry_milestone": 120
@@ -2952,7 +2967,7 @@
   },
   {
     "name": "enable-search-resumption-module",
-    "owners": ["clank-start","hanxi","spdonghao", "andrewheard"],
+    "owners": ["clank-start","hanxi"],
     "expiry_milestone": 110
   },
   {
@@ -2983,7 +2998,7 @@
   },
   {
     "name": "enable-show-scrollable-mvt-on-ntp",
-    "owners": ["clank-start","hanxi","spdonghao"],
+    "owners": ["clank-start","hanxi"],
     "expiry_milestone": 110
   },
   {
@@ -3009,12 +3024,12 @@
   },
   {
     "name": "enable-start-surface-disabled-feed-improvement",
-    "owners": [ "hanxi", "spdonghao" ],
+    "owners": [ "hanxi", "clank-start" ],
     "expiry_milestone": 115
   },
   {
     "name": "enable-start-surface-refactor",
-    "owners": [ "hanxi", "spdonghao" ],
+    "owners": [ "hanxi", "clank-start" ],
     "expiry_milestone": 115
   },
   {
@@ -3584,6 +3599,11 @@
   {
     "name": "fedcm",
     "owners": [ "goto", "web-identity-eng@google.com"],
+    "expiry_milestone": 120
+  },
+  {
+    "name": "fedcm-metrics-endpoint",
+    "owners": ["yigu", "web-identity-eng@google.com"],
     "expiry_milestone": 120
   },
   {
@@ -5128,6 +5148,11 @@
     "expiry_milestone": 108
   },
   {
+    "name": "omnibox-remove-excessive-recycled-view-clear-calls",
+    "owners": [ "rongtan", "ender", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "omnibox-remove-suggestion-header-capitalization",
     "owners": [ "rongtan", "ender", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 110
@@ -5215,6 +5240,11 @@
   {
     "name": "omnibox-ui-max-autocomplete-matches",
     "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 110
+  },
+  {
+    "name": "omnibox-uniform-suggestion-height",
+    "owners": [ "yohanes@google.com", "manukh", "chrome-omnibox-team@google.com"],
     "expiry_milestone": 110
   },
   {
@@ -6805,6 +6835,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "use-nat64-for-ipv4-literal",
+    "owners": [ "horo", "net-dev" ],
+    "expiry_milestone": 120
+  },
+  {
     "name": "use-passthrough-command-decoder",
     "owners": [ "//third_party/angle/OWNERS" ],
     "expiry_milestone": 120
@@ -6876,23 +6911,13 @@
   },
   {
     "name": "vc-background-blur",
-    "owners": [ "shafron", "skyostil", "charleszhao", "jmpollock" ],
-    "expiry_milestone": 115
-  },
-  {
-    "name": "vc-background-replace",
-    "owners": [ "shafron", "skyostil", "charleszhao", "jmpollock" ],
+    "owners": [ "shafron", "skyostil", "charleszhao" ],
     "expiry_milestone": 115
   },
   {
     "name": "vc-controls-ui",
     "owners": [ "rtinkoff", "cros-status-area-eng@google.com" ],
     "expiry_milestone": 117
-  },
-  {
-    "name": "vc-portrait-relighting",
-    "owners": [ "shafron", "skyostil", "charleszhao", "jmpollock" ],
-    "expiry_milestone": 115
   },
   {
     "name": "verbose-logging-in-nacl",

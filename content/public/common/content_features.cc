@@ -373,10 +373,10 @@ const char kFedCmIdpSignoutFieldTrialParamName[] = "IdpSignout";
 // cross-origin iframes.
 const char kFedCmIframeSupportFieldTrialParamName[] = "IframeSupport";
 
-// Kill switch for FedCm manifest validation.
-BASE_FEATURE(kFedCmManifestValidation,
-             "FedCmManifestValidation",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+// Enables usage of the FedCM API with metrics endpoint at the same time.
+BASE_FEATURE(kFedCmMetricsEndpoint,
+             "FedCmMetricsEndpoint",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM API with multiple identity providers at the same
 // time.
@@ -425,12 +425,7 @@ BASE_FEATURE(kFontSrcLocalMatching,
 // to the GPU process.
 BASE_FEATURE(kForwardMemoryPressureEventsToGpuProcess,
              "ForwardMemoryPressureEventsToGpuProcess",
-#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_WIN)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 // If enabled, limits the number of FLEDGE auctions that can be run between page

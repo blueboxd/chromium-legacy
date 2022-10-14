@@ -4,6 +4,7 @@
 
 #include "components/omnibox/common/omnibox_features.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 
 namespace omnibox {
@@ -87,6 +88,13 @@ BASE_FEATURE(kOmniboxDemoteByType,
              "OmniboxDemoteByType",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Remove Excessive Clear Calls on RecycledViewPool in Omnibox.
+// The feature improves efficiency of the RecycledViewPool by removing excessive
+// calls to RecycledViewPool#clear().
+BASE_FEATURE(kOmniboxRemoveExcessiveRecycledViewClearCalls,
+             "OmniboxRemoveExcessiveRecycledViewClearCalls",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Feature to enable memoizing URLs when replacing search terms in
 // `AutocompleteMatch::GURLToStrippedGURL()`.
 BASE_FEATURE(kStrippedGurlOptimization,
@@ -135,6 +143,12 @@ BASE_FEATURE(kOmniboxMaxURLMatches,
 BASE_FEATURE(kDynamicMaxAutocomplete,
              "OmniboxDynamicMaxAutocomplete",
              enabled_by_default_desktop_android);
+
+// If enabled, proactively sets the `stripped_destination_url` for the entity
+// suggestions with identical search terms so they are not erroneously deduped.
+BASE_FEATURE(kDisambiguateEntitySuggestions,
+             "DisambiguateEntitySuggestions",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Used to adjust the relevance for the local history zero-prefix suggestions.
 // If enabled, the relevance is determined by this feature's companion
@@ -402,6 +416,11 @@ BASE_FEATURE(kOmniboxMostVisitedTilesFadingOnTablet,
 // a search result page that does not do search term replacement.
 BASE_FEATURE(kOmniboxMostVisitedTilesOnSrp,
              "OmniboxMostVisitedTilesOnSrp",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, forces omnibox suggestion rows to be uniformly sized.
+BASE_FEATURE(kUniformRowHeight,
+             "OmniboxUniformRowHeight",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, use Assistant for omnibox voice query recognition instead of

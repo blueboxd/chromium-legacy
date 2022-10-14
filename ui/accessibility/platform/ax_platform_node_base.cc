@@ -4,7 +4,6 @@
 
 #include "ui/accessibility/platform/ax_platform_node_base.h"
 
-#include <algorithm>
 #include <iomanip>
 #include <limits>
 #include <set>
@@ -15,6 +14,7 @@
 #include "base/cpu_reduction_experiment.h"
 #include "base/no_destructor.h"
 #include "base/numerics/checked_math.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1770,8 +1770,8 @@ int32_t AXPlatformNodeBase::GetHyperlinkIndexFromChild(
   if (hypertext_.hyperlinks.empty())
     return -1;
 
-  auto iterator = std::find(hypertext_.hyperlinks.begin(),
-                            hypertext_.hyperlinks.end(), child->GetUniqueId());
+  auto iterator =
+      base::ranges::find(hypertext_.hyperlinks, child->GetUniqueId());
   if (iterator == hypertext_.hyperlinks.end())
     return -1;
 
@@ -1902,9 +1902,14 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
 
     // If the endpoint is after this node, then return the node's
     // hypertext length, otherwise 0 as the endpoint points before the node.
-    if (endpoint_offset >
-        static_cast<int>(*closest_ancestor->GetIndexInParent()))
+    absl::optional<size_t> index_in_parent =
+        closest_ancestor->GetIndexInParent();
+    DCHECK(index_in_parent)
+        << "No index in parent for ancestor: " << *closest_ancestor;
+    if (index_in_parent &&
+        endpoint_offset > static_cast<int>(*index_in_parent)) {
       return static_cast<int>(GetHypertext().size());
+    }
     return 0;
   }
 

@@ -109,6 +109,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHNewTabTipFeature,
     &kIPHNewIncognitoTabTipFeature,
     &kIPHBadgedReadingListFeature,
+    &kIPHBadgedWhatsNewFeature,
     &kIPHReadingListMessagesFeature,
     &kIPHBadgedTranslateManualTriggerFeature,
     &kIPHDiscoverFeedHeaderFeature,
@@ -144,6 +145,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHDesktopSharedHighlightingFeature,
     &kIPHIntentChipFeature,
     &kIPHWebUiHelpBubbleTestFeature,
+    &kIPHPriceTrackingInSidePanelFeature,
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 

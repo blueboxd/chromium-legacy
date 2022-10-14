@@ -82,13 +82,24 @@ void ChipController::OnPermissionRequestManagerDestructed() {
   }
 }
 
+void ChipController::OnWebContentsChanged() {
+  if (active_chip_permission_request_manager_.has_value() &&
+      active_chip_permission_request_manager_.value()->IsRequestInProgress()) {
+    chip_->AnimateExpand(kExpandDuration);
+  } else {
+    // Because the web contents changed, we should no longer display any chip
+    // that was displayed for the previous web contents.
+    ResetChip();
+  }
+}
+
 void ChipController::OnNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsSameDocument()) {
     ResetPermissionPromptChip();
   }
 }
-void ChipController::OnBubbleRemoved() {
+void ChipController::OnPromptRemoved() {
   bool is_tab_hidden = active_chip_permission_request_manager_.value()
                            ->GetWebContents()
                            .GetVisibility() == content::Visibility::HIDDEN;
@@ -327,7 +338,9 @@ void ChipController::AnimateExpand(
 void ChipController::HandleConfirmation(
     permissions::PermissionAction user_decision) {
   SyncChipWithModel();
-  if (active_chip_permission_request_manager_.has_value() &&
+  if (user_decision != permissions::PermissionAction::IGNORED &&
+      user_decision != permissions::PermissionAction::DISMISSED &&
+      active_chip_permission_request_manager_.has_value() &&
       !active_chip_permission_request_manager_.value()
            ->has_pending_requests() &&
       permission_prompt_model_->CanDisplayConfirmation()) {
@@ -433,7 +446,7 @@ void ChipController::OpenPermissionPromptBubble() {
   // displayed.
   if (permission_prompt_model_ && IsBubbleShowing()) {
     GetBubbleWidget()->AddObserver(this);
-    permission_prompt_model_->GetDelegate().value()->SetBubbleShown();
+    permission_prompt_model_->GetDelegate().value()->SetPromptShown();
   }
 }
 

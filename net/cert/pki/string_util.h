@@ -29,6 +29,12 @@ NET_EXPORT_PRIVATE bool StartsWithNoCase(std::string_view str,
 NET_EXPORT_PRIVATE bool EndsWithNoCase(std::string_view str,
                                        std::string_view suffix);
 
+// Finds and replaces all occurrences of |find| of non zero length with
+// |replace| in |str|, returning the result.
+NET_EXPORT_PRIVATE std::string FindAndReplace(std::string_view str,
+                                              std::string_view find,
+                                              std::string_view replace);
+
 // TODO(bbe) transition below to c++20
 // Compares |str1| and |prefix|. Returns true if |str1| starts with |prefix|.
 NET_EXPORT_PRIVATE bool StartsWith(std::string_view str,
@@ -37,6 +43,12 @@ NET_EXPORT_PRIVATE bool StartsWith(std::string_view str,
 // TODO(bbe) transition below to c++20
 // Compares |str1| and |suffix|. Returns true if |str1| ends with |suffix|.
 NET_EXPORT_PRIVATE bool EndsWith(std::string_view str, std::string_view suffix);
+
+// Returns a hexadecimal string encoding |data| of length |length|.
+NET_EXPORT_PRIVATE std::string HexEncode(const uint8_t* data, size_t length);
+
+// Returns a decimal string representation of |i|.
+NET_EXPORT_PRIVATE std::string NumberToDecimalString(int i);
 
 }  // namespace net::string_util
 

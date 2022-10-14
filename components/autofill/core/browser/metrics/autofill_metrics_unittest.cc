@@ -40,7 +40,6 @@
 #include "components/autofill/core/browser/metrics/form_events/address_form_event_logger.h"
 #include "components/autofill/core/browser/metrics/form_events/credit_card_form_event_logger.h"
 #include "components/autofill/core/browser/metrics/form_events/form_events.h"
-#include "components/autofill/core/browser/metrics/form_interactions_counter.h"
 #include "components/autofill/core/browser/metrics/payments/credit_card_save_metrics.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/payments/test_credit_card_save_manager.h"
@@ -64,6 +63,7 @@
 #include "components/autofill/core/common/dense_set.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/form_interactions_flow.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/prefs/pref_service.h"
@@ -231,9 +231,7 @@ void VerifySubmitFormUkm(
               {UkmFormSubmittedType::kFormElementUserModificationsName,
                form_interaction_counts.form_element_user_modifications},
               {UkmFormSubmittedType::kAutofillFillsName,
-               form_interaction_counts.autofill_fills},
-              {UkmFormSubmittedType::kAutocompleteFillsName,
-               form_interaction_counts.autocomplete_fills}}});
+               form_interaction_counts.autofill_fills}}});
 }
 
 void AppendFieldFillStatusUkm(const FormData& form,
@@ -2499,9 +2497,65 @@ TEST_F(AutofillMetricsTest, TypeOfEditedAutofilledFieldsUkmLogging) {
             {name_field_ukm_record});
 }
 
+// Tests the logging of type-specific field-wise correctness.
+TEST_F(AutofillMetricsTest, EditedAutofilledFieldAtSubmission) {
+  test::FormDescription form_description = {
+      .description_for_logging = "NumberOfAutofilledFields",
+      .fields = {{.role = NAME_FULL,
+                  .value = u"Elvis Aaron Presley",
+                  .is_autofilled = true},
+                 {.role = EMAIL_ADDRESS,
+                  .value = u"buddy@gmail.com",
+                  .is_autofilled = true},
+                 {.role = PHONE_HOME_CITY_AND_NUMBER, .is_autofilled = true}},
+      .unique_renderer_id = test::MakeFormRendererId(),
+      .main_frame_origin =
+          url::Origin::Create(autofill_client_->form_origin())};
+
+  FormData form = GetAndAddSeenForm(form_description);
+
+  base::HistogramTester histogram_tester;
+  // Simulate text input in the first and second fields.
+  SimulateUserChangedTextField(form, form.fields[0]);
+  SimulateUserChangedTextField(form, form.fields[1]);
+
+  SubmitForm(form);
+
+  // The |NAME_FULL| field was edited (bucket 112).
+  histogram_tester.ExpectBucketCount(
+      "Autofill.EditedAutofilledFieldAtSubmission2.ByFieldType", 112, 1);
+
+  // The |EMAIL_ADDRESS| field was edited (bucket 144).
+  histogram_tester.ExpectBucketCount(
+      "Autofill.EditedAutofilledFieldAtSubmission2.ByFieldType", 144, 1);
+
+  // The |PHONE_HOME_CITY_AND_NUMBER| field was not edited (bucket 209).
+  histogram_tester.ExpectBucketCount(
+      "Autofill.EditedAutofilledFieldAtSubmission2.ByFieldType", 209, 1);
+
+  // The aggregated histogram should have two counts on edited fields.
+  histogram_tester.ExpectBucketCount(
+      "Autofill.EditedAutofilledFieldAtSubmission2.Aggregate", 0, 2);
+
+  // The aggregated histogram should have one count on accepted fields.
+  histogram_tester.ExpectBucketCount(
+      "Autofill.EditedAutofilledFieldAtSubmission2.Aggregate", 1, 1);
+
+  // The autocomplete!=off histogram should have one count on accepted fields.
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Autocomplete.NotOff.EditedAutofilledFieldAtSubmission2."
+      "Address",
+      1, 1);
+
+  // The autocomplete!=off histogram should have no count on accepted fields.
+  histogram_tester.ExpectTotalCount(
+      "Autofill.Autocomplete.Off.EditedAutofilledFieldAtSubmission2.Address",
+      0);
+}
+
 // Verify that when submitting an autofillable form, the proper tppe of
 // the edited fields is correctly logged to UMA.
-TEST_F(AutofillMetricsTest, TypeOfEditedAutofilledFieldsUmaLogging) {
+TEST_F(AutofillMetricsTest, TypeOfEditedAutofilledFieldsUmaLogging_Deprecated) {
   FormData form = CreateForm(
       {CreateField("Autofilled", "autofilled", "Elvis Aaron Presley", "text"),
        CreateField("Autofill Failed", "autofillfailed", "buddy@gmail.com",
@@ -3282,8 +3336,8 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
   // because |field.value| is empty in |DeterminePossibleFieldTypesForUpload|.
   VerifySubmitFormUkm(test_ukm_recorder_, form,
                       AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
-                      /*is_for_credit_card=*/true, /* has_upi_vpa_field=*/false,
-                      {FormType::kCreditCardForm}, {0, 3, 0});
+                      /*is_for_credit_card=*/true, /*has_upi_vpa_field=*/false,
+                      {FormType::kCreditCardForm}, {.autofill_fills = 3});
 }
 
 // Test that the UPI Checkout flow form submit is correctly logged
@@ -3423,10 +3477,11 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
                Collapse(CalculateFormSignature(form)).value()}}});
   // Expect |NON_FILLABLE_FORM_OR_NEW_DATA| in |AutofillFormSubmittedState|
   // because |field.value| is empty in |DeterminePossibleFieldTypesForUpload|.
-  VerifySubmitFormUkm(
-      test_ukm_recorder_, form, AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
-      /*is_for_credit_card=*/false,
-      /* has_upi_vpa_field=*/false, {FormType::kAddressForm}, {0, 2, 0});
+  VerifySubmitFormUkm(test_ukm_recorder_, form,
+                      AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
+                      /*is_for_credit_card=*/false,
+                      /*has_upi_vpa_field=*/false, {FormType::kAddressForm},
+                      {.autofill_fills = 2});
 }
 
 // Tests that the Autofill_PolledCreditCardSuggestions user action is only
@@ -4852,7 +4907,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
-                        /* has_upi_vpa_field=*/false,
+                        /*has_upi_vpa_field=*/false,
                         {FormType::kCreditCardForm});
   }
 
@@ -4895,7 +4950,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
-                        /* has_upi_vpa_field=*/false,
+                        /*has_upi_vpa_field=*/false,
                         {FormType::kCreditCardForm});
   }
 
@@ -4942,7 +4997,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
-                        /* has_upi_vpa_field=*/false,
+                        /*has_upi_vpa_field=*/false,
                         {FormType::kCreditCardForm});
   }
 
@@ -4987,8 +5042,8 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
-                        /* has_upi_vpa_field=*/false,
-                        {FormType::kCreditCardForm}, {0, 1, 0});
+                        /*has_upi_vpa_field=*/false,
+                        {FormType::kCreditCardForm}, {.autofill_fills = 1});
   }
 
   // Reset the autofill manager state and purge UKM logs.
@@ -5034,8 +5089,8 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
-                        /* has_upi_vpa_field=*/false,
-                        {FormType::kCreditCardForm}, {0, 1, 0});
+                        /*has_upi_vpa_field=*/false,
+                        {FormType::kCreditCardForm}, {.autofill_fills = 1});
   }
 
   // Reset the autofill manager state and purge UKM logs.
@@ -5081,8 +5136,8 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
-                        /* has_upi_vpa_field=*/false,
-                        {FormType::kCreditCardForm}, {0, 1, 0});
+                        /*has_upi_vpa_field=*/false,
+                        {FormType::kCreditCardForm}, {.autofill_fills = 1});
   }
 
   // Reset the autofill manager state and purge UKM logs.
@@ -5127,8 +5182,8 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
-                        /* has_upi_vpa_field=*/false,
-                        {FormType::kCreditCardForm}, {0, 1, 0});
+                        /*has_upi_vpa_field=*/false,
+                        {FormType::kCreditCardForm}, {.autofill_fills = 1});
   }
 
   // Reset the autofill manager state and purge UKM logs.
@@ -5154,7 +5209,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
-                        /* has_upi_vpa_field=*/false,
+                        /*has_upi_vpa_field=*/false,
                         {FormType::kCreditCardForm});
 
     SubmitForm(form);
@@ -5171,8 +5226,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
           {UkmFormSubmittedType::kFormSignatureName,
            Collapse(CalculateFormSignature(form)).value()},
           {UkmFormSubmittedType::kFormElementUserModificationsName, 0},
-          {UkmFormSubmittedType::kAutofillFillsName, 0},
-          {UkmFormSubmittedType::kAutocompleteFillsName, 0}},
+          {UkmFormSubmittedType::kAutofillFillsName, 0}},
          {{UkmFormSubmittedType::kAutofillFormSubmittedStateName,
            AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA},
           {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
@@ -5183,8 +5237,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
           {UkmFormSubmittedType::kFormSignatureName,
            Collapse(CalculateFormSignature(form)).value()},
           {UkmFormSubmittedType::kFormElementUserModificationsName, 0},
-          {UkmFormSubmittedType::kAutofillFillsName, 0},
-          {UkmFormSubmittedType::kAutocompleteFillsName, 0}}});
+          {UkmFormSubmittedType::kAutofillFillsName, 0}}});
 
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
@@ -5335,7 +5388,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
-                        /* has_upi_vpa_field=*/false,
+                        /*has_upi_vpa_field=*/false,
                         {FormType::kCreditCardForm});
   }
 }
@@ -6505,7 +6558,7 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/false,
-                        /* has_upi_vpa_field=*/false, {FormType::kAddressForm});
+                        /*has_upi_vpa_field=*/false, {FormType::kAddressForm});
   }
 
   // Reset the autofill manager state and purge UKM logs.
@@ -6532,7 +6585,7 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/false,
-                        /* has_upi_vpa_field=*/false, {FormType::kAddressForm});
+                        /*has_upi_vpa_field=*/false, {FormType::kAddressForm});
   }
 
   // Reset the autofill manager state and purge UKM logs.
@@ -7099,8 +7152,7 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
          {UkmFormSubmittedType::kFormSignatureName,
           Collapse(CalculateFormSignature(form)).value()},
          {UkmFormSubmittedType::kFormElementUserModificationsName, 0},
-         {UkmFormSubmittedType::kAutofillFillsName, 0},
-         {UkmFormSubmittedType::kAutocompleteFillsName, 0}});
+         {UkmFormSubmittedType::kAutofillFillsName, 0}});
     VerifyUkm(test_ukm_recorder_, form, UkmFormSubmittedType::kEntryName,
               expected_form_submission_ukm_metrics);
 
@@ -7135,8 +7187,7 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
          {UkmFormSubmittedType::kFormSignatureName,
           Collapse(CalculateFormSignature(form)).value()},
          {UkmFormSubmittedType::kFormElementUserModificationsName, 0},
-         {UkmFormSubmittedType::kAutofillFillsName, 0},
-         {UkmFormSubmittedType::kAutocompleteFillsName, 0}});
+         {UkmFormSubmittedType::kAutofillFillsName, 0}});
     VerifyUkm(test_ukm_recorder_, form, UkmFormSubmittedType::kEntryName,
               expected_form_submission_ukm_metrics);
 
@@ -7175,8 +7226,7 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
          {UkmFormSubmittedType::kFormSignatureName,
           Collapse(CalculateFormSignature(form)).value()},
          {UkmFormSubmittedType::kFormElementUserModificationsName, 0},
-         {UkmFormSubmittedType::kAutofillFillsName, 0},
-         {UkmFormSubmittedType::kAutocompleteFillsName, 0}});
+         {UkmFormSubmittedType::kAutofillFillsName, 0}});
 
     VerifyUkm(test_ukm_recorder_, form, UkmFormSubmittedType::kEntryName,
               expected_form_submission_ukm_metrics);
@@ -7223,8 +7273,7 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
          {UkmFormSubmittedType::kFormSignatureName,
           Collapse(CalculateFormSignature(form)).value()},
          {UkmFormSubmittedType::kFormElementUserModificationsName, 0},
-         {UkmFormSubmittedType::kAutofillFillsName, 0},
-         {UkmFormSubmittedType::kAutocompleteFillsName, 0}});
+         {UkmFormSubmittedType::kAutofillFillsName, 0}});
     VerifyUkm(test_ukm_recorder_, form, UkmFormSubmittedType::kEntryName,
               expected_form_submission_ukm_metrics);
 
@@ -7259,8 +7308,7 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
          {UkmFormSubmittedType::kFormSignatureName,
           Collapse(CalculateFormSignature(form)).value()},
          {UkmFormSubmittedType::kFormElementUserModificationsName, 0},
-         {UkmFormSubmittedType::kAutofillFillsName, 0},
-         {UkmFormSubmittedType::kAutocompleteFillsName, 0}});
+         {UkmFormSubmittedType::kAutofillFillsName, 0}});
     VerifyUkm(test_ukm_recorder_, form, UkmFormSubmittedType::kEntryName,
               expected_form_submission_ukm_metrics);
 
@@ -7296,8 +7344,7 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
          {UkmFormSubmittedType::kFormSignatureName,
           Collapse(CalculateFormSignature(form)).value()},
          {UkmFormSubmittedType::kFormElementUserModificationsName, 0},
-         {UkmFormSubmittedType::kAutofillFillsName, 0},
-         {UkmFormSubmittedType::kAutocompleteFillsName, 0}});
+         {UkmFormSubmittedType::kAutofillFillsName, 0}});
     VerifyUkm(test_ukm_recorder_, form, UkmFormSubmittedType::kEntryName,
               expected_form_submission_ukm_metrics);
 
@@ -7358,8 +7405,7 @@ TEST_F(
          {UkmFormSubmittedType::kFormSignatureName,
           Collapse(CalculateFormSignature(form)).value()},
          {UkmFormSubmittedType::kFormElementUserModificationsName, 0},
-         {UkmFormSubmittedType::kAutofillFillsName, 0},
-         {UkmFormSubmittedType::kAutocompleteFillsName, 0}});
+         {UkmFormSubmittedType::kAutofillFillsName, 0}});
     VerifyUkm(test_ukm_recorder_, form, UkmFormSubmittedType::kEntryName,
               expected_form_submission_ukm_metrics);
 
@@ -9456,7 +9502,7 @@ TEST_F(AutofillMetricsTest, FormEventMetrics_BySyncState) {
     AddressFormEventLogger logger(
         /*is_in_any_main_frame=*/true,
         /*form_interactions_ukm_logger=*/nullptr,
-        /*client=*/nullptr);
+        /*client=*/autofill_client_.get());
     logger.OnDidSeeFillableDynamicForm(AutofillSyncSigninState::kSignedOut,
                                        form_structure);
     histogram_tester.ExpectBucketCount(
@@ -9468,7 +9514,7 @@ TEST_F(AutofillMetricsTest, FormEventMetrics_BySyncState) {
     AddressFormEventLogger logger(
         /*is_in_any_main_frame=*/true,
         /*form_interactions_ukm_logger=*/nullptr,
-        /*client=*/nullptr);
+        /*client=*/autofill_client_.get());
     logger.OnDidRefill(AutofillSyncSigninState::kSignedIn, form_structure);
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.Address.WithNoData.SignedIn",
@@ -9582,6 +9628,7 @@ TEST_P(AutofillMetricsFunnelTest, LogFunnelMetrics) {
     SubmitForm(form);
   }
 
+  uint64_t flow_id = address_form_flow_id_hash();
   ResetDriverToCommitMetrics();
 
   // Phase 2: Validate Funnel expectations.
@@ -9635,12 +9682,16 @@ TEST_P(AutofillMetricsFunnelTest, LogFunnelMetrics) {
         "Autofill.Autocomplete.NotOff.FillingAcceptance.Address", 1, 1);
     histogram_tester.ExpectTotalCount(
         "Autofill.Autocomplete.Off.FillingAcceptance.Address", 0);
-    VerifyUkm(test_ukm_recorder_, form, UkmAutofillKeyMetricsType::kEntryName,
-              {{{UkmAutofillKeyMetricsType::kFillingReadinessName, 1},
-                {UkmAutofillKeyMetricsType::kFillingAcceptanceName, 1},
-                {UkmAutofillKeyMetricsType::kFillingCorrectnessName, 1},
-                {UkmAutofillKeyMetricsType::kFillingAssistanceName, 1},
-                {UkmAutofillKeyMetricsType::kFormTypesName, 2}}});
+    VerifyUkm(
+        test_ukm_recorder_, form, UkmAutofillKeyMetricsType::kEntryName,
+        {{{UkmAutofillKeyMetricsType::kFillingReadinessName, 1},
+          {UkmAutofillKeyMetricsType::kFillingAcceptanceName, 1},
+          {UkmAutofillKeyMetricsType::kFillingCorrectnessName, 1},
+          {UkmAutofillKeyMetricsType::kFillingAssistanceName, 1},
+          {UkmAutofillKeyMetricsType::kAutofillFillsName, 1},
+          {UkmAutofillKeyMetricsType::kFormElementUserModificationsName, 0},
+          {UkmAutofillKeyMetricsType::kFlowIdName, flow_id},
+          {UkmAutofillKeyMetricsType::kFormTypesName, 2}}});
   } else {
     histogram_tester.ExpectTotalCount(
         "Autofill.KeyMetrics.FillingReadiness.Address", 0);
@@ -9756,6 +9807,7 @@ TEST_F(AutofillMetricsKeyMetricsTest, LogEmptyForm) {
 
   SubmitForm(form_);
 
+  uint64_t flow_id = address_form_flow_id_hash();
   ResetDriverToCommitMetrics();
 
   histogram_tester.ExpectBucketCount(
@@ -9772,6 +9824,9 @@ TEST_F(AutofillMetricsKeyMetricsTest, LogEmptyForm) {
   VerifyUkm(test_ukm_recorder_, form_, UkmAutofillKeyMetricsType::kEntryName,
             {{{UkmAutofillKeyMetricsType::kFillingReadinessName, 1},
               {UkmAutofillKeyMetricsType::kFillingAssistanceName, 0},
+              {UkmAutofillKeyMetricsType::kAutofillFillsName, 0},
+              {UkmAutofillKeyMetricsType::kFormElementUserModificationsName, 0},
+              {UkmAutofillKeyMetricsType::kFlowIdName, flow_id},
               {UkmAutofillKeyMetricsType::kFormTypesName, 2}}});
 }
 
@@ -9789,6 +9844,7 @@ TEST_F(AutofillMetricsKeyMetricsTest, LogNoProfile) {
   SimulateUserChangedTextField(form_, form_.fields[1]);
   SubmitForm(form_);
 
+  uint64_t flow_id = address_form_flow_id_hash();
   ResetDriverToCommitMetrics();
 
   histogram_tester.ExpectBucketCount(
@@ -9805,6 +9861,9 @@ TEST_F(AutofillMetricsKeyMetricsTest, LogNoProfile) {
   VerifyUkm(test_ukm_recorder_, form_, UkmAutofillKeyMetricsType::kEntryName,
             {{{UkmAutofillKeyMetricsType::kFillingReadinessName, 0},
               {UkmAutofillKeyMetricsType::kFillingAssistanceName, 0},
+              {UkmAutofillKeyMetricsType::kAutofillFillsName, 0},
+              {UkmAutofillKeyMetricsType::kFormElementUserModificationsName, 2},
+              {UkmAutofillKeyMetricsType::kFlowIdName, flow_id},
               {UkmAutofillKeyMetricsType::kFormTypesName, 2}}});
 }
 
@@ -9822,6 +9881,7 @@ TEST_F(AutofillMetricsKeyMetricsTest, LogUserDoesNotAcceptSuggestion) {
   SimulateUserChangedTextField(form_, form_.fields[1]);
   SubmitForm(form_);
 
+  uint64_t flow_id = address_form_flow_id_hash();
   ResetDriverToCommitMetrics();
 
   histogram_tester.ExpectBucketCount(
@@ -9839,6 +9899,9 @@ TEST_F(AutofillMetricsKeyMetricsTest, LogUserDoesNotAcceptSuggestion) {
             {{{UkmAutofillKeyMetricsType::kFillingReadinessName, 1},
               {UkmAutofillKeyMetricsType::kFillingAcceptanceName, 0},
               {UkmAutofillKeyMetricsType::kFillingAssistanceName, 0},
+              {UkmAutofillKeyMetricsType::kAutofillFillsName, 0},
+              {UkmAutofillKeyMetricsType::kFormElementUserModificationsName, 2},
+              {UkmAutofillKeyMetricsType::kFlowIdName, flow_id},
               {UkmAutofillKeyMetricsType::kFormTypesName, 2}}});
 }
 
@@ -9857,6 +9920,7 @@ TEST_F(AutofillMetricsKeyMetricsTest, LogUserFixesFilledData) {
   SimulateUserChangedTextField(form_, form_.fields[1]);
   SubmitForm(form_);
 
+  uint64_t flow_id = address_form_flow_id_hash();
   ResetDriverToCommitMetrics();
 
   histogram_tester.ExpectBucketCount(
@@ -9875,6 +9939,9 @@ TEST_F(AutofillMetricsKeyMetricsTest, LogUserFixesFilledData) {
               {UkmAutofillKeyMetricsType::kFillingAcceptanceName, 1},
               {UkmAutofillKeyMetricsType::kFillingCorrectnessName, 0},
               {UkmAutofillKeyMetricsType::kFillingAssistanceName, 1},
+              {UkmAutofillKeyMetricsType::kAutofillFillsName, 1},
+              {UkmAutofillKeyMetricsType::kFormElementUserModificationsName, 1},
+              {UkmAutofillKeyMetricsType::kFlowIdName, flow_id},
               {UkmAutofillKeyMetricsType::kFormTypesName, 2}}});
 }
 
@@ -9895,6 +9962,7 @@ TEST_F(AutofillMetricsKeyMetricsTest, LogUserFixesFilledDataButDoesNotSubmit) {
 
   // Don't submit form.
 
+  uint64_t flow_id = address_form_flow_id_hash();
   ResetDriverToCommitMetrics();
 
   histogram_tester.ExpectTotalCount(
@@ -9913,6 +9981,9 @@ TEST_F(AutofillMetricsKeyMetricsTest, LogUserFixesFilledDataButDoesNotSubmit) {
               {UkmAutofillKeyMetricsType::kFillingAcceptanceName, 0},
               {UkmAutofillKeyMetricsType::kFillingCorrectnessName, 0},
               {UkmAutofillKeyMetricsType::kFillingAssistanceName, 0},
+              {UkmAutofillKeyMetricsType::kAutofillFillsName, 0},
+              {UkmAutofillKeyMetricsType::kFormElementUserModificationsName, 0},
+              {UkmAutofillKeyMetricsType::kFlowIdName, flow_id},
               {UkmAutofillKeyMetricsType::kFormTypesName, 2}}});
 }
 
@@ -10114,9 +10185,8 @@ TEST_F(AutofillMetricsTest, FormInteractionsAreCounted) {
   VerifySubmitFormUkm(
       test_ukm_recorder_, form, AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
       /*is_for_credit_card=*/false,
-      /* has_upi_vpa_field=*/false, {FormType::kAddressForm},
-      {/*form_element_user_modifications=*/1, /*autofill_fills=*/1,
-       /*autocomplete_fills=*/2});
+      /*has_upi_vpa_field=*/false, {FormType::kAddressForm},
+      {.form_element_user_modifications = 1, .autofill_fills = 1});
 }
 
 TEST_F(AutofillMetricsTest, FormInteractionsAreInitiallyZero) {
@@ -10131,12 +10201,10 @@ TEST_F(AutofillMetricsTest, FormInteractionsAreInitiallyZero) {
   SubmitForm(form);
 
   // THEN
-  VerifySubmitFormUkm(
-      test_ukm_recorder_, form, AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
-      /*is_for_credit_card=*/false,
-      /* has_upi_vpa_field=*/false, {FormType::kAddressForm},
-      {/*form_element_user_modifications=*/0, /*autofill_fills=*/0,
-       /*autocomplete_fills=*/0});
+  VerifySubmitFormUkm(test_ukm_recorder_, form,
+                      AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
+                      /*is_for_credit_card=*/false,
+                      /*has_upi_vpa_field=*/false, {FormType::kAddressForm});
 }
 
 // Base class for cross-frame filling metrics, in particular for
@@ -10150,11 +10218,9 @@ class AutofillMetricsCrossFrameFormTest : public AutofillMetricsTest {
 
   AutofillMetricsCrossFrameFormTest() {
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {base::test::ScopedFeatureList::FeatureAndParams(
-             features::kAutofillAcrossIframes, {}),
-         base::test::ScopedFeatureList::FeatureAndParams(
-             features::kAutofillSharedAutofill,
-             {{"relax_shared_autofill", "true"}})},
+        {base::test::FeatureRefAndParams(features::kAutofillAcrossIframes, {}),
+         base::test::FeatureRefAndParams(features::kAutofillSharedAutofill,
+                                         {{"relax_shared_autofill", "true"}})},
         {});
   }
   ~AutofillMetricsCrossFrameFormTest() override = default;

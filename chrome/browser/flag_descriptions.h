@@ -376,9 +376,6 @@ extern const char kChromeLabsDescription[];
 extern const char kCommerceHintAndroidName[];
 extern const char kCommerceHintAndroidDescription[];
 
-extern const char kConsolidatedSiteStorageControlsName[];
-extern const char kConsolidatedSiteStorageControlsDescription[];
-
 extern const char kConsumerAutoUpdateToggleAllowedName[];
 extern const char kConsumerAutoUpdateToggleAllowedDescription[];
 
@@ -611,6 +608,9 @@ extern const char kAccessibilitySelectToSpeakPageMigrationDescription[];
 extern const char kAccessibilitySelectToSpeakPrefsMigrationName[];
 extern const char kAccessibilitySelectToSpeakPrefsMigrationDescription[];
 
+extern const char kAccessibilitySelectToSpeakHoverTextImprovementsName[];
+extern const char kAccessibilitySelectToSpeakHoverTextImprovementsDescription[];
+
 extern const char kPostQuantumCECPQ2Name[];
 extern const char kPostQuantumCECPQ2Description[];
 
@@ -840,6 +840,9 @@ extern const char kFractionalScrollOffsetsDescription[];
 
 extern const char kFedCmName[];
 extern const char kFedCmDescription[];
+
+extern const char kFedCmMetricsEndpointName[];
+extern const char kFedCmMetricsEndpointDescription[];
 
 extern const char kFedCmMultiIdpName[];
 extern const char kFedCmMultiIdpDescription[];
@@ -1161,6 +1164,9 @@ extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
 extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[];
 extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[];
 
+extern const char kOmniboxRemoveExcessiveRecycledViewClearCallsName[];
+extern const char kOmniboxRemoveExcessiveRecycledViewClearCallsDescription[];
+
 extern const char kOmniboxRemoveSuggestionHeaderChevronName[];
 extern const char kOmniboxRemoveSuggestionHeaderChevronDescription[];
 
@@ -1220,6 +1226,9 @@ extern const char kOmniboxMaxZeroSuggestMatchesDescription[];
 
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];
 extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
+
+extern const char kOmniboxSimplifiedUiUniformRowHeightName[];
+extern const char kOmniboxSimplifiedUiUniformRowHeightDescription[];
 
 extern const char kOmniboxUpdatedConnectionSecurityIndicatorsName[];
 extern const char kOmniboxUpdatedConnectionSecurityIndicatorsDescription[];
@@ -1736,17 +1745,14 @@ extern const char kUnsafeFastJSCallsDescription[];
 extern const char kUiPartialSwapName[];
 extern const char kUiPartialSwapDescription[];
 
+extern const char kUseNAT64ForIPv4LiteralName[];
+extern const char kUseNAT64ForIPv4LiteralDescription[];
+
 extern const char kUseSearchClickForRightClickName[];
 extern const char kUseSearchClickForRightClickDescription[];
 
 extern const char kVCBackgroundBlurName[];
 extern const char kVCBackgroundBlurDescription[];
-
-extern const char kVCBackgroundReplaceName[];
-extern const char kVCBackgroundReplaceDescription[];
-
-extern const char kVCPortraitRelightingName[];
-extern const char kVCPortraitRelightingDescription[];
 
 extern const char kV8VmFutureName[];
 extern const char kV8VmFutureDescription[];

@@ -5418,6 +5418,8 @@ static_library("browser") {
       "apps/app_service/app_service_proxy_lacros.h",
       "apps/app_service/browser_app_instance_forwarder.cc",
       "apps/app_service/browser_app_instance_forwarder.h",
+      "apps/app_service/metrics/website_metrics_service_lacros.cc",
+      "apps/app_service/metrics/website_metrics_service_lacros.h",
       "apps/digital_goods/digital_goods_factory_stub.cc",
       "apps/digital_goods/digital_goods_factory_stub.h",
       "apps/digital_goods/digital_goods_lacros.cc",
@@ -6923,6 +6925,13 @@ static_library("browser") {
         "//chrome/services/printing/public/mojom",
         "//components/crash/core/common",
       ]
+      if (is_win) {
+        sources += [
+          "printing/printer_xml_parser_impl.cc",
+          "printing/printer_xml_parser_impl.h",
+        ]
+        deps += [ "//printing:printing_base" ]
+      }
     }
     if (is_win || enable_print_preview) {
       deps += [ "//chrome/services/printing/public/mojom" ]

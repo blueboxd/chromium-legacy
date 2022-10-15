@@ -1035,6 +1035,9 @@ extern const char kLargeFaviconFromGoogleDescription[];
 extern const char kLensCameraAssistedSearchName[];
 extern const char kLensCameraAssistedSearchDescription[];
 
+extern const char kLensRegionSearchStaticPageName[];
+extern const char kLensRegionSearchStaticPageDescription[];
+
 extern const char kLensOnQuickActionSearchWidgetName[];
 extern const char kLensOnQuickActionSearchWidgetDescription[];
 
@@ -1363,9 +1366,6 @@ extern const char kPermissionPredictionsDescription[];
 
 extern const char kPermissionQuietChipName[];
 extern const char kPermissionQuietChipDescription[];
-
-extern const char kPersistentQuotaIsTemporaryQuotaName[];
-extern const char kPersistentQuotaIsTemporaryQuotaDescription[];
 
 extern const char kPointerLockOptionsName[];
 extern const char kPointerLockOptionsDescription[];
@@ -2098,6 +2098,9 @@ extern const char
 
 extern const char kFeedBackToTopName[];
 extern const char kFeedBackToTopDescription[];
+
+extern const char kFeedHeaderStickToTopName[];
+extern const char kFeedHeaderStickToTopDescription[];
 
 extern const char kFeedInteractiveRefreshName[];
 extern const char kFeedInteractiveRefreshDescription[];
@@ -3189,6 +3192,10 @@ extern const char kExperimentalAccessibilityDictationMoreCommandsDescription[];
 extern const char kExperimentalAccessibilityGoogleTtsLanguagePacksName[];
 extern const char kExperimentalAccessibilityGoogleTtsLanguagePacksDescription[];
 
+extern const char kExperimentalAccessibilitySelectToSpeakVoiceSwitchingName[];
+extern const char
+    kExperimentalAccessibilitySelectToSpeakVoiceSwitchingDescription[];
+
 extern const char kExperimentalAccessibilitySwitchAccessTextName[];
 extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];
 
@@ -3404,6 +3411,9 @@ extern const char kNearbySharingWifiLanDescription[];
 
 extern const char kOobeHidDetectionRevampName[];
 extern const char kOobeHidDetectionRevampDescription[];
+
+extern const char kOsSettingsAppBadgingToggleName[];
+extern const char kOsSettingsAppBadgingToggleDescription[];
 
 extern const char kOsSettingsSearchFeedbackName[];
 extern const char kOsSettingsSearchFeedbackDescription[];

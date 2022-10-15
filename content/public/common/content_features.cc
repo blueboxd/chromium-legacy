@@ -30,12 +30,6 @@ BASE_FEATURE(kAndroidDownloadableFontsMatching,
              "AndroidDownloadableFontsMatching",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-#if BUILDFLAG(IS_WIN)
-BASE_FEATURE(kAudioProcessHighPriorityWin,
-             "AudioProcessHighPriorityWin",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
 // Launches the audio service on the browser startup.
 BASE_FEATURE(kAudioServiceLaunchOnStartup,
              "AudioServiceLaunchOnStartup",
@@ -529,24 +523,6 @@ BASE_FEATURE(kIsolateOrigins,
              "IsolateOrigins",
              base::FEATURE_DISABLED_BY_DEFAULT);
 const char kIsolateOriginsFieldTrialParamName[] = "OriginsList";
-
-// Allow process isolation of iframes with the 'sandbox' attribute set. Whether
-// or not such an iframe will be isolated may depend on options specified with
-// the attribute. Note: At present, only iframes with origin-restricted
-// sandboxes are isolated.
-BASE_FEATURE(kIsolateSandboxedIframes,
-             "IsolateSandboxedIframes",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<IsolateSandboxedIframesGrouping>::Option
-    isolated_sandboxed_iframes_grouping_types[] = {
-        {IsolateSandboxedIframesGrouping::kPerSite, "per-site"},
-        {IsolateSandboxedIframesGrouping::kPerOrigin, "per-origin"},
-        {IsolateSandboxedIframesGrouping::kPerDocument, "per-document"}};
-const base::FeatureParam<IsolateSandboxedIframesGrouping>
-    kIsolateSandboxedIframesGroupingParam{
-        &kIsolateSandboxedIframes, "grouping",
-        IsolateSandboxedIframesGrouping::kPerSite,
-        &isolated_sandboxed_iframes_grouping_types};
 
 // Enables the TC39 Array grouping proposal.
 BASE_FEATURE(kJavaScriptArrayGrouping,
@@ -1249,12 +1225,6 @@ BASE_FEATURE(kWebAssemblyDynamicTiering,
 BASE_FEATURE(kWebAssemblyLazyCompilation,
              "WebAssemblyLazyCompilation",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enable WebAssembly SIMD.
-// https://github.com/WebAssembly/Simd
-BASE_FEATURE(kWebAssemblySimd,
-             "WebAssemblySimd",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable WebAssembly tiering (Liftoff -> TurboFan).
 BASE_FEATURE(kWebAssemblyTiering,

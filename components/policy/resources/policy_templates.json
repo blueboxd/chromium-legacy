@@ -14363,6 +14363,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'default': False,
       'items': [
         {
           'value': True,
@@ -14377,7 +14378,10 @@
       'id': 153,
       'caption': '''Disable taking screenshots''',
       'tags': [],
-      'desc': '''Setting the policy to True disallows screenshots taken with keyboard shortcuts or extension APIs. Setting the policy to False allows screenshots.'''
+      'desc': '''Setting the policy to Enabled disallows screenshots taken with keyboard shortcuts or extension APIs. Setting the policy to Disabled or not set allows screenshots.
+
+      Note that on <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, <ph name="MAC_OS_NAME">macOS</ph> and <ph name="LINUX_OS_NAME">Linux</ph>, this does not prevent screenshots that are taken with operating system or third party applications.
+      '''
     },
     {
       'name': 'SystemTimezone',
@@ -35428,7 +35432,7 @@ This policy has no effect if the option to keep existing browsing data is not av
       'caption': 'Enable High Efficiency Mode',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['chrome.*' ],
+      'supported_on': [ 'chrome.*:108-', 'chrome_os:108-', ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -35464,7 +35468,7 @@ This policy has no effect if the option to keep existing browsing data is not av
         'type': 'integer',
         'enum': [ 0, 1, 2 ],
       },
-      'future_on': ['chrome.*' ],
+      'supported_on': [ 'chrome.*:108-', 'chrome_os:108-', ],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -35508,7 +35512,7 @@ This policy has no effect if the option to keep existing browsing data is not av
         'type': 'array',
         'items': { 'type': 'string' }
       },
-      'future_on': ['chrome.*' ],
+      'supported_on': [ 'chrome.*:108-', 'chrome_os:108-', ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,

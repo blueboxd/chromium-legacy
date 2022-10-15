@@ -57,6 +57,9 @@ BASE_DECLARE_FEATURE(kXsurfaceMetricsReporting);
 // Whether to log reliability events.
 BASE_DECLARE_FEATURE(kReliabilityLogging);
 
+// Feature that enables sticky header when users scroll down.
+BASE_DECLARE_FEATURE(kFeedHeaderStickToTop);
+
 // Feature that enables refreshing feeds triggered by the users.
 BASE_DECLARE_FEATURE(kFeedInteractiveRefresh);
 
@@ -161,6 +164,11 @@ extern const base::FeatureParam<base::TimeDelta>
 // viewport-stable feed viewing to this time.
 extern const base::FeatureParam<base::TimeDelta>
     kMaxStableContentSliceVisibilityTime;
+// Minimum slice exposure needed for counting time in feed for good visits.
+extern const base::FeatureParam<double> kSliceVisibleExposureThreshold;
+// Minimum slice coverage of viewport needed for counting time in feed for good
+// visits.
+extern const base::FeatureParam<double> kSliceVisibleCoverageThreshold;
 
 }  // namespace feed
 

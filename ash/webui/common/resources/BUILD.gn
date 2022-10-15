@@ -128,6 +128,7 @@ non_web_component_files = [
   "network/onc_mojo.js",
   "network_health/mojo_interface_provider.js",
   "network_health/network_diagnostics_types.js",
+  "parse_html_subset.js",
   "post_message_api/post_message_api_client.js",
   "post_message_api/post_message_api_request_handler.js",
   "post_message_api/post_message_api_server.js",
@@ -218,6 +219,10 @@ generate_grd("build_grdp") {
     "fake_observables.js",
     "keyboard_layouts.js",
     "mojo_utils.js",
+
+    # Test runner used by file manager tests, webui_resource_browsertest.cc, and
+    # default_keyboard_extension_browser_test.cc
+    "webui_resource_test.js",
 
     "cellular_setup/sim_detect_error.svg",
     "cellular_setup/sim_detect_error_dark.svg",
@@ -318,6 +323,7 @@ checked_in_dts_files = [
   "list_property_update_behavior.d.ts",
 
   "page_toolbar.d.ts",
+  "parse_html_subset.d.ts",
   "navigation_view_panel.d.ts",
   "navigation_selector.d.ts",
   "web_ui_listener_behavior.d.ts",
@@ -417,6 +423,8 @@ js_type_check("closure_compile_local") {
     ":navigation_selector",
     ":navigation_view_panel",
     ":page_toolbar",
+    ":parse_html_subset",
+    ":webui_resource_test",
   ]
 }
 
@@ -472,8 +480,8 @@ js_library("focus_without_ink_js") {
 
 js_library("i18n_behavior") {
   deps = [
+    ":parse_html_subset",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js:parse_html_subset",
   ]
 }
 
@@ -529,6 +537,13 @@ js_library("page_toolbar") {
   ]
 }
 
+js_library("parse_html_subset") {
+}
+
 js_library("web_ui_listener_behavior") {
   deps = [ "//ui/webui/resources/js:cr.m" ]
+}
+
+js_library("webui_resource_test") {
+  externs_list = [ "//ui/webui/resources/js/dom_automation_controller.js" ]
 }

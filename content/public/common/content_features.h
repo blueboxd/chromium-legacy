@@ -21,9 +21,6 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kAllowContentInitiatedDataUrlNavigations);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kAndroidDownloadableFontsMatching);
-#if BUILDFLAG(IS_WIN)
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kAudioProcessHighPriorityWin);
-#endif
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kAudioServiceLaunchOnStartup);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kAudioServiceOutOfProcess);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kAudioServiceSandbox);
@@ -113,22 +110,6 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kIsolatedWebApps);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kIsolateFencedFrames);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kIsolateOrigins);
 CONTENT_EXPORT extern const char kIsolateOriginsFieldTrialParamName[];
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kIsolateSandboxedIframes);
-enum class IsolateSandboxedIframesGrouping {
-  // In this grouping, all isolated sandboxed iframes whose URLs share the same
-  // site in a given BrowsingInstance will share a process.
-  kPerSite,
-  // In this grouping, all isolated sandboxed iframes from a given
-  // BrowsingInstance whose URLs share the same origin will be isolated in an
-  // origin-keyed process.
-  kPerOrigin,
-  // Unlike the other two modes, which group sandboxed frames per-site or
-  // per-origin, this one doesn't do any grouping at all and uses one process
-  // per document.
-  kPerDocument,
-};
-CONTENT_EXPORT extern const base::FeatureParam<IsolateSandboxedIframesGrouping>
-    kIsolateSandboxedIframesGroupingParam;
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kJavaScriptArrayGrouping);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kJavaScriptExperimentalSharedMemory);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kLazyFrameLoading);
@@ -281,7 +262,6 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(
     kEnableExperimentalWebAssemblyStackSwitching);
 #endif  // defined(ARCH_CPU_X86_64)
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyLazyCompilation);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAssemblySimd);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyTiering);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyTrapHandler);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAuthConditionalUI);

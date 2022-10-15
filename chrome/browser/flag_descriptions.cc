@@ -697,7 +697,7 @@ const char kChromeLabsDescription[] =
 const char kClosedTabCacheName[] = "Closed Tab Cache";
 const char kClosedTabCacheDescription[] =
     "Enables closed tab cache to instantaneously restore recently closed tabs. "
-    "NOTE: This feature is higly experimental and will lead to various "
+    "NOTE: This feature is highly experimental and will lead to various "
     "breakages, enable at your own risk.";
 
 const char kCommerceHintAndroidName[] = "Commerce Hint Android";
@@ -1414,7 +1414,7 @@ const char kEnableResamplingScrollEventsExperimentalPredictionDescription[] =
     "when the frame is visible.";
 
 const char kEnableRestrictedWebApisName[] =
-    "Enable the restriced web APIs for high-trusted apps.";
+    "Enable the restricted web APIs for high-trusted apps.";
 const char kEnableRestrictedWebApisDescription[] =
     "Enable the restricted web APIs for dev trial. This will be replaced with "
     "permission policies to control the capabilities afterwards.";
@@ -1849,6 +1849,12 @@ const char kLensCameraAssistedSearchName[] =
 const char kLensCameraAssistedSearchDescription[] =
     "Enable an entry point to Google Lens to allow users to search what they "
     "see using their mobile camera.";
+
+const char kLensRegionSearchStaticPageName[] =
+    "Use a static page with the Lens region search feature.";
+const char kLensRegionSearchStaticPageDescription[] =
+    "Enables use of a static page in a new tab when using the Lens region "
+    "search feature.";
 
 const char kLensOnQuickActionSearchWidgetName[] =
     "Google Lens in Chrome's Quick Action Search Widget";
@@ -2432,12 +2438,6 @@ const char kPermissionQuietChipDescription[] =
     "Enables a permission prompt that uses the quiet chip instead of the "
     "right-hand side address bar icon for quiet permission prompts. Requires "
     "chrome://flags/#quiet-notification-prompts to be enabled.";
-
-const char kPersistentQuotaIsTemporaryQuotaName[] =
-    "window.PERSISTENT is temporary quota.";
-const char kPersistentQuotaIsTemporaryQuotaDescription[] =
-    "Causes the window.PERSISTENT quota type to have the same semantics as "
-    "window.TEMPORARY.";
 
 const char kPointerLockOptionsName[] = "Enables pointer lock options";
 const char kPointerLockOptionsDescription[] =
@@ -3718,6 +3718,10 @@ const char kFeedBackToTopName[] = "Back to top of the feeds";
 const char kFeedBackToTopDescription[] =
     "Enables showing a callout to help users return to the top of the feeds "
     "quickly.";
+
+const char kFeedHeaderStickToTopName[] = "Feed header stick to top";
+const char kFeedHeaderStickToTopDescription[] =
+    "Stick feed header to top on scroll.";
 
 const char kFeedInteractiveRefreshName[] = "Refresh feeds";
 const char kFeedInteractiveRefreshDescription[] =
@@ -5586,6 +5590,12 @@ const char kExperimentalAccessibilityDictationMoreCommandsName[] =
 const char kExperimentalAccessibilityDictationMoreCommandsDescription[] =
     "Enables experimental dictation commands.";
 
+const char kExperimentalAccessibilitySelectToSpeakVoiceSwitchingName[] =
+    "Experimental accessibility Select-to-Speak voice switching.";
+const char kExperimentalAccessibilitySelectToSpeakVoiceSwitchingDescription[] =
+    "Enables Select-to-Speak voice switching, which will change the "
+    "text-to-speech voice depending on the language it encounters.";
+
 const char kExperimentalAccessibilityGoogleTtsLanguagePacksName[] =
     "Experimental accessibility Google TTS Langauge Packs.";
 const char kExperimentalAccessibilityGoogleTtsLanguagePacksDescription[] =
@@ -5955,6 +5965,12 @@ const char kOobeHidDetectionRevampName[] = "OOBE HID Detection Revamp";
 const char kOobeHidDetectionRevampDescription[] =
     "Enables the ChromeOS HID Detection Revamp, which updates OOBE HID "
     "detection screen UI and related infrastructure.";
+
+const char kOsSettingsAppBadgingToggleName[] =
+    "ChromeOS Settings App Badging Toggle";
+const char kOsSettingsAppBadgingToggleDescription[] =
+    "Enables app badging toggle to be displayed in app notification page in"
+    "ChromeOS Settings.";
 
 const char kOsSettingsSearchFeedbackName[] =
     "ChromeOS Settings Search Feedback";

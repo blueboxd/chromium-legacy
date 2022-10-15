@@ -3493,6 +3493,21 @@
             ]
         }
     ],
+    "CrostiniLxd4Rollout": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_V2",
+                    "enable_features": [
+                        "CrostiniUseLxd4"
+                    ]
+                }
+            ]
+        }
+    ],
     "CursiveStylusPreinstall": [
         {
             "platforms": [
@@ -6635,7 +6650,7 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "nesting": "10"
+                        "nesting": "15"
                     },
                     "enable_features": [
                         "MaxUnthrottledTimeoutNestingLevel"
@@ -6889,25 +6904,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MojoInlineMessagePayloads"
-                    ]
-                }
-            ]
-        }
-    ],
-    "MojoIpcz": [
-        {
-            "platforms": [
-                "android",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MojoIpcz"
                     ]
                 }
             ]
@@ -7256,6 +7252,21 @@
             ]
         }
     ],
+    "NumberOfCoresWithCpuSecurityMitigation": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NumberOfCoresWithCpuSecurityMitigation"
+                    ]
+                }
+            ]
+        }
+    ],
     "OffsetParentNewSpecBehaviorKillswitch": [
         {
             "platforms": [
@@ -7294,20 +7305,15 @@
                     "params": {
                         "EntitySuggestionsReduceLatencyDecoderTimeout": "405",
                         "MaxZeroSuggestMatches": "10",
-                        "OmniboxLocalZeroSuggestAgeThreshold": "90",
                         "OmniboxMaxURLMatches": "7",
-                        "PrefixSuggestIgnoreDuplicateVisits": "true",
-                        "UIMaxAutocompleteMatches": "8",
-                        "ZeroSuggestIgnoreDuplicateVisits": "false"
+                        "UIMaxAutocompleteMatches": "8"
                     },
                     "enable_features": [
-                        "LocalHistorySuggestRevamp",
                         "OmniboxBlurWithEscape",
                         "OmniboxClosePopupWithEscape",
                         "OmniboxDocumentProviderAso",
                         "OmniboxEntitySuggestionsReduceLatency",
                         "OmniboxKeywordSearchButton",
-                        "OmniboxLocalZeroSuggestAgeThreshold",
                         "OmniboxMaxURLMatches",
                         "OmniboxMaxZeroSuggestMatches",
                         "OmniboxPreserveLongerShortcutsText",
@@ -10850,11 +10856,16 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "min_gms_core_version_no_dots": "222612000",
-                        "stage": "0"
+                        "api_error_list_version": "1",
+                        "fallback_on_user_affecting_read_operations": "true",
+                        "ignored_api_errors": "11005,11006",
+                        "min_gms_core_version_no_dots": "223012000",
+                        "retriable_api_errors": "7,17,20,22"
                     },
                     "enable_features": [
-                        "UnifiedPasswordManagerAndroid"
+                        "UnifiedPasswordManagerAndroid",
+                        "UnifiedPasswordManagerErrorMessages",
+                        "UnifiedPasswordManagerReenrollment"
                     ]
                 }
             ]
@@ -12439,6 +12450,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ChromeWhatsNewUI"
+                    ]
+                }
+            ]
+        }
+    ],
+    "Win10UnattendedDefault": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Default"
+                },
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "Win10UnattendedDefault"
                     ]
                 }
             ]

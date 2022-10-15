@@ -14,8 +14,6 @@
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/network/public/mojom/first_party_sets_access_delegate.mojom.h"
 
-class PrefService;
-
 namespace content {
 class BrowserContext;
 }  // namespace content
@@ -76,16 +74,11 @@ class FirstPartySetsPolicyService : public KeyedService {
   // factory for FirstPartySetsPolicyService instances in tests, so every
   // instance calls into the prod logic to eagerly initialize itself. This
   // method allows tests to wait for that eager initialization to complete, then
-  // reset state, and re-run initialization via `InitForTesting`.
+  // reset state, and re-run initialization via `Init`.
   void WaitForFirstInitCompleteForTesting(base::OnceClosure callback);
 
-  // Testing-only method that allows injecting different logic to get the
-  // config.
-  void InitForTesting(
-      base::FunctionRef<
-          void(PrefService*,
-               base::OnceCallback<void(net::FirstPartySetsContextConfig)>)>
-          get_config);
+  // Exposes `Init` for use in tests.
+  void InitForTesting();
 
   // Returns true when this instance has received the config thus has been fully
   // initialized.
@@ -104,8 +97,11 @@ class FirstPartySetsPolicyService : public KeyedService {
   // - the list of First-Party Sets isn't initialized yet or
   // - `site` isn't in Chrome's list of First-Party Sets or
   // - this instance has not received the config yet
+  //
+  // This also logs metrics that track how often this is queried before this
+  // instance has received the config yet.
   absl::optional<net::FirstPartySetEntry> FindEntry(
-      const net::SchemefulSite& site) const;
+      const net::SchemefulSite& site);
 
   // Checks if ownership of `site` is managed by an enterprise.
   //
@@ -119,11 +115,8 @@ class FirstPartySetsPolicyService : public KeyedService {
   }
 
  private:
-  // Initialize this instance by getting the config via `get_config` if needed.
-  void Init(base::FunctionRef<
-            void(PrefService*,
-                 base::OnceCallback<void(net::FirstPartySetsContextConfig)>)>
-                get_config);
+  // Initialize this instance by getting the config if needed.
+  void Init();
 
   // Sets the `config_` member and provides it to all delegates via NotifyReady.
   void OnReadyToNotifyDelegates(net::FirstPartySetsContextConfig config,
@@ -168,6 +161,10 @@ class FirstPartySetsPolicyService : public KeyedService {
   // Keeps track of whether this instance has ever been initialized fully. Must
   // not be reset in `ResetForTesting`.
   bool first_initialization_complete_for_testing_ = false;
+
+  // Tracks the number of queries to the First-Party Sets in the browser process
+  // are received before the `global_sets_` are initialized.
+  int num_queries_before_sets_ready_ GUARDED_BY_CONTEXT(sequence_checker_) = 0;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

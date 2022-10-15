@@ -91,6 +91,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
     // Called when input mute state changed.
     virtual void OnInputMuteChanged(bool mute_on);
 
+    // Called when the input mute is changed by the keyboard switch.
+    // TODO(b/253627924)
+    virtual void OnInputMutedByKeyboardSwitchChanged();
+
     // Called when the state of input mute hw switch state changes.
     virtual void OnInputMutedByMicrophoneMuteSwitchChanged(bool muted);
 
@@ -199,6 +203,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   // ui::MicrophoneMuteSwitchMonitor::Observer:
   void OnMicrophoneMuteSwitchValueChanged(bool muted) override;
+
+  // Called when the microphone mute keyboard switch is pressed and adjusts the
+  // input mute state accordingly.
+  void HandleKeyboardMicrophoneMuteSwitchPressed(bool muted);
 
   // Adds an audio observer.
   void AddAudioObserver(AudioObserver* observer);
@@ -805,6 +813,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // Whether the audio input is muted because the microphone mute switch is on.
   // In this case, input mute changes will be disabled.
   bool input_muted_by_microphone_mute_switch_ = false;
+
+  // Whether the audio device was selected by user, to track user overrides
+  bool input_device_selected_by_user_ = false;
+  bool output_device_selected_by_user_ = false;
 
   // Task runner of browser main thread. All member variables should be accessed
   // on this thread.

@@ -463,10 +463,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAllowDropAlphaForMediaStream);
 // inspector issue anyway.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCORSErrorsIssueOnly);
 
-// Makes Persistent quota the same as Temporary quota.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPersistentQuotaIsTemporaryQuota);
-BLINK_COMMON_EXPORT bool IsPersistentQuotaIsTemporaryQuota();
-
 // If enabled, the ResourceLoadScheculer will take the current network state
 // into consideration, when it plans to delay a low-priority throttleable
 // requests in the tight mode. The factors include:
@@ -854,10 +850,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
 // applied directly instead of using the property tree builder.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFastPathPaintPropertyUpdates);
 
-// If enabled, wildcard subdomains are supported in permissions policies.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
-    kWildcardSubdomainsInPermissionsPolicy);
-
 // If enabled, reads and decodes navigation body data off the main thread.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kThreadedBodyLoader);
 
@@ -872,6 +864,27 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // Whether same-origin different-partition post messages are currently blocked.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kPostMessageDifferentPartitionSameOriginBlocked);
+
+// Combine WebRTC Network and Worker threads. More info at crbug.com/1373439.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcCombinedNetworkAndWorkerThread);
+
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kIsolateSandboxedIframes);
+enum class IsolateSandboxedIframesGrouping {
+  // In this grouping, all isolated sandboxed iframes whose URLs share the same
+  // site in a given BrowsingInstance will share a process.
+  kPerSite,
+  // In this grouping, all isolated sandboxed iframes from a given
+  // BrowsingInstance whose URLs share the same origin will be isolated in an
+  // origin-keyed process.
+  kPerOrigin,
+  // Unlike the other two modes, which group sandboxed frames per-site or
+  // per-origin, this one doesn't do any grouping at all and uses one process
+  // per document.
+  kPerDocument,
+};
+BLINK_COMMON_EXPORT extern const base::FeatureParam<
+    IsolateSandboxedIframesGrouping>
+    kIsolateSandboxedIframesGroupingParam;
 
 }  // namespace features
 }  // namespace blink

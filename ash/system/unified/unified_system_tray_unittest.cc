@@ -87,10 +87,6 @@ class UnifiedSystemTrayTest : public AshTestBase,
         ->slider_bubble_controller_->bubble_widget_;
   }
 
-  bool MoreThanOneVisibleTrayItem() const {
-    return GetPrimaryUnifiedSystemTray()->MoreThanOneVisibleTrayItem();
-  }
-
   UnifiedSliderBubbleController::SliderType GetSliderBubbleType() {
     return GetPrimaryUnifiedSystemTray()
         ->slider_bubble_controller_->slider_type_;
@@ -122,14 +118,6 @@ class UnifiedSystemTrayTest : public AshTestBase,
 
   ImeModeView* ime_mode_view() {
     return GetPrimaryUnifiedSystemTray()->ime_mode_view_;
-  }
-
-  std::list<TrayItemView*> tray_items() {
-    return GetPrimaryUnifiedSystemTray()->tray_items_;
-  }
-
-  views::View* vertical_clock_padding() {
-    return GetPrimaryUnifiedSystemTray()->vertical_clock_padding_;
   }
 
  private:
@@ -278,42 +266,6 @@ TEST_P(UnifiedSystemTrayTest, HorizontalImeAndTimeLabelAlignment) {
 
   EXPECT_EQ(time_bounds.y(), ime_bounds.y());
   EXPECT_EQ(time_bounds.height(), ime_bounds.height());
-}
-
-TEST_P(UnifiedSystemTrayTest, VerticalClockPadding) {
-  // Padding can only be visible if shelf is vertically aligned.
-  GetPrimaryShelf()->SetAlignment(ShelfAlignment::kLeft);
-
-  // Sets all tray items' visibility to false except TimeView.
-  for (TrayItemView* item : tray_items()) {
-    item->SetVisible(item == time_view());
-  }
-
-  // Only one visible tray item, padding should not be visible.
-  EXPECT_FALSE(vertical_clock_padding()->GetVisible());
-
-  // Sets another tray item visibility to true.
-  ime_mode_view()->SetVisible(true);
-
-  // Two visible tray items, padding should be visible.
-  EXPECT_TRUE(vertical_clock_padding()->GetVisible());
-}
-
-TEST_P(UnifiedSystemTrayTest, VerticalClockPaddingAfterAlignmentChange) {
-  auto* shelf = GetPrimaryShelf();
-
-  // Padding can only be visible if shelf is vertically aligned.
-  shelf->SetAlignment(ShelfAlignment::kLeft);
-
-  // Ensure two tray items are visible, padding should be visible.
-  time_view()->SetVisible(true);
-  ime_mode_view()->SetVisible(true);
-
-  EXPECT_TRUE(vertical_clock_padding()->GetVisible());
-
-  // Padding should not be visible when shelf is horizontal.
-  shelf->SetAlignment(ShelfAlignment::kBottom);
-  EXPECT_FALSE(vertical_clock_padding()->GetVisible());
 }
 
 TEST_P(UnifiedSystemTrayTest, FocusMessageCenter) {
@@ -561,9 +513,58 @@ TEST_P(UnifiedSystemTrayTest, CalendarGoesToMainView) {
   EXPECT_FALSE(tray->IsShowingCalendarView());
 }
 
+// Tests if the microphone mute toast is displayed when the mute state is
+// toggled by the software switches.
+TEST_P(UnifiedSystemTrayTest, InputMuteStateToggledBySoftwareSwitch) {
+  // The microphone mute toast should not be visible initially.
+  EXPECT_FALSE(IsMicrophoneMuteToastShown());
+
+  CrasAudioHandler* cras_audio_handler = CrasAudioHandler::Get();
+  // This is similar to toggling the microphone mute state using the software
+  // switches.
+  cras_audio_handler->SetInputMute(!cras_audio_handler->IsInputMuted());
+
+  // The toast should not be visible as the mute state is toggled using a
+  // software switch.
+  EXPECT_FALSE(IsMicrophoneMuteToastShown());
+}
+
+// Tests if the microphone mute toast is displayed when the mute state is
+// toggled by the keyboard switch.
+TEST_P(UnifiedSystemTrayTest, InputMuteStateToggledByKeyboardSwitch) {
+  // The microphone mute toast should not be visible initially.
+  EXPECT_FALSE(IsMicrophoneMuteToastShown());
+
+  CrasAudioHandler* cras_audio_handler = CrasAudioHandler::Get();
+  // This is similar to pressing the keyboard button for toggling the microphone
+  // mute state.
+  cras_audio_handler->HandleKeyboardMicrophoneMuteSwitchPressed(
+      !cras_audio_handler->IsInputMuted());
+
+  // The toast should be visible as the mute state is toggled using the keyboard
+  // switch.
+  EXPECT_TRUE(IsMicrophoneMuteToastShown());
+}
+
+// Tests if the microphone mute toast is displayed when the mute state is
+// toggled by the hw switch.
+TEST_P(UnifiedSystemTrayTest, InputMuteStateToggledByHardwareSwitch) {
+  // The microphone mute toast should not be visible initially.
+  EXPECT_FALSE(IsMicrophoneMuteToastShown());
+
+  CrasAudioHandler* cras_audio_handler = CrasAudioHandler::Get();
+  // Toggling the input mute state using the hw switch.
+  ui::MicrophoneMuteSwitchMonitor::Get()->SetMicrophoneMuteSwitchValue(
+      !cras_audio_handler->IsInputMuted());
+
+  // The toast should be visible as the mute state is toggled using the hw
+  // switch.
+  EXPECT_TRUE(IsMicrophoneMuteToastShown());
+}
+
 // Tests microphone mute toast is visible only when the device has an
 // internal/external microphone attached.
-TEST_P(UnifiedSystemTrayTest, MicrophoneMuteToastVisibility) {
+TEST_P(UnifiedSystemTrayTest, InputMuteStateToggledButNoMicrophoneAvailable) {
   // Creating an input device for simple usage.
   AudioNode internal_mic;
   internal_mic.is_input = true;
@@ -587,14 +588,16 @@ TEST_P(UnifiedSystemTrayTest, MicrophoneMuteToastVisibility) {
 
   fake_cras_audio_client->SetAudioNodesAndNotifyObserversForTesting(
       {internal_speaker, internal_mic});
-  cras_audio_handler->SetInputMute(!cras_audio_handler->IsInputMuted());
+  cras_audio_handler->HandleKeyboardMicrophoneMuteSwitchPressed(
+      !cras_audio_handler->IsInputMuted());
   // The toast should be visible as the input mute has changed and there is a
   // microphone for simple usage attached to the device.
   EXPECT_TRUE(IsMicrophoneMuteToastShown());
 
   fake_cras_audio_client->SetAudioNodesAndNotifyObserversForTesting(
       {internal_speaker});
-  cras_audio_handler->SetInputMute(!cras_audio_handler->IsInputMuted());
+  cras_audio_handler->HandleKeyboardMicrophoneMuteSwitchPressed(
+      !cras_audio_handler->IsInputMuted());
   // There is no microphone for simple usage attached to the device. The toast
   // should not be displayed even though the input mute has changed in the
   // backend.

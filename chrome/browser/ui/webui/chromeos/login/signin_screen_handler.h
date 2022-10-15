@@ -18,7 +18,6 @@
 #include "chrome/browser/ash/login/error_screens_histogram_helper.h"
 #include "chrome/browser/ash/login/screens/error_screen.h"
 #include "chrome/browser/ash/login/signin_specifics.h"
-#include "chrome/browser/ash/login/ui/login_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "content/public/browser/notification_observer.h"
@@ -27,17 +26,11 @@
 #include "net/base/net_errors.h"
 #include "ui/events/event_handler.h"
 
-namespace ash {
-class LoginDisplayHostMojo;
-
-}  // namespace ash
-
 namespace chromeos {
 
 class GaiaScreenHandler;
 
-// A class that handles the WebUI hooks in sign-in screen in OobeUI and
-// LoginDisplay.
+// A class that handles the WebUI hooks in sign-in screen in OobeUI.
 class SigninScreenHandler
     : public BaseWebUIHandler,
       public content::NotificationObserver,
@@ -69,8 +62,6 @@ class SigninScreenHandler
 
  private:
   friend class GaiaScreenHandler;
-  friend class ash::LoginDisplayHostMojo;
-  friend class ReportDnsCacheClearedOnUIThread;
 
   void UpdateStateInternal(NetworkError::ErrorReason reason, bool force_update);
   void HideOfflineMessage(NetworkStateInformer::State state,
@@ -81,16 +72,10 @@ class SigninScreenHandler
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
 
-  // WebUIMessageHandler implementation:
-  void RegisterMessages() override;
-
   // content::NotificationObserver implementation:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
-
-  // WebUI message handlers.
-  void HandleShowLoadingTimeoutError();
 
   // Returns true if current visible screen is the Gaia sign-in page.
   bool IsGaiaVisible();
@@ -109,6 +94,11 @@ class SigninScreenHandler
   // Error screen hide callback which records error screen metrics and shows
   // GAIA.
   void OnErrorScreenHide();
+
+  // This is a helper function to merge SigninScreenHandler with GaiaScreen and
+  // GaiaScreenHandler classes. It will be removed together with the whole
+  // SigninScreenHandler class.
+  NetworkStateInformer::State GetNetworkStateInformerStateForMigration();
 
   // Network state informer used to keep signin screen up.
   scoped_refptr<NetworkStateInformer> network_state_informer_;

@@ -738,7 +738,7 @@ void MetricsReporter::OtherUserAction(const StreamType& stream_type,
   }
 }
 
-void MetricsReporter::ReportStableContentSliceVisibilityTime(
+void MetricsReporter::ReportStableContentSliceVisibilityTimeForGoodVisits(
     base::TimeDelta delta) {
   if (good_visit_state_)
     good_visit_state_->AddTimeInFeed(delta);
@@ -1102,6 +1102,14 @@ void MetricsReporter::OnFollowAttempt(
     base::UmaHistogramBoolean(
         "ContentSuggestions.Feed.WebFeed.NewFollow.IsRecommended",
         result.web_feed_metadata.is_recommended);
+    if (result.change_reason) {
+      // Because WebFeedChangeReason_MAX is not an enum value, we can't use
+      // UmaHistogramEnumeration, but UmaHistogramExactLinear is equivalent.
+      base::UmaHistogramExactLinear(
+          "ContentSuggestions.Feed.WebFeed.NewFollow.ChangeReason",
+          static_cast<int>(result.change_reason),
+          feedwire::webfeed::WebFeedChangeReason_MAX + 1);
+    }
   }
 }
 

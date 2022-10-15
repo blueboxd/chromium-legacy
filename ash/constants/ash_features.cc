@@ -354,6 +354,9 @@ BASE_FEATURE(kCalendarModelDebugMode,
              "CalendarModelDebugMode",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enable or disable calendar V2.
+BASE_FEATURE(kCalendarV2, "CalendarV2", base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables to allow using document scanning feature via DLC in the camera app.
 BASE_FEATURE(kCameraAppDocScanDlc,
              "CameraAppDocScanDlc",
@@ -481,7 +484,7 @@ BASE_FEATURE(kCrostiniResetLxdDb,
 // Do we use the default LXD version or try LXD 4?
 BASE_FEATURE(kCrostiniUseLxd4,
              "CrostiniUseLxd4",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables experimental UI creating and managing multiple Crostini containers.
 BASE_FEATURE(kCrostiniMultiContainer,
@@ -516,6 +519,15 @@ BASE_FEATURE(kBruschettaAlphaMigrate,
 BASE_FEATURE(kCaptivePortalUI2022,
              "CaptivePortalUI2022",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether Active Directory management on ChromeOS (Chromad) is
+// supported or not. When this feature is enabled, Chromad continues working
+// normally. Disabling this feature will block enrollment in AD mode, and will
+// disable devices that are already in AD mode - displaying an error message to
+// the user.
+BASE_FEATURE(kChromadAvailable,
+             "ChromadAvailable",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables always using device-activity-status data to filter
 // eligible host phones.
@@ -1469,6 +1481,12 @@ BASE_FEATURE(kOsSettingsAppNotificationsPage,
              "OsSettingsAppNotificationsPage",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables app badging toggle to be displayed in app notification page in
+// ChromeOS Settings.
+BASE_FEATURE(kOsSettingsAppBadgingToggle,
+             "OsSettingsAppBadgingToggle",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables search result feedback in ChromeOS Settings when no search results
 // are returned.
 BASE_FEATURE(kOsSettingsSearchFeedback,
@@ -1693,7 +1711,7 @@ BASE_FEATURE(kReleaseTrackUi,
              "ReleaseTrackUi",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When enabled, the overivew and desk reverse scrolling behaviors are changed
+// When enabled, the overview and desk reverse scrolling behaviors are changed
 // and if the user performs the old gestures, a notification or toast will show
 // up.
 // TODO(https://crbug.com/1107183): Remove this after the feature is launched.
@@ -2287,12 +2305,20 @@ bool IsCalendarModelDebugModeEnabled() {
   return base::FeatureList::IsEnabled(kCalendarModelDebugMode);
 }
 
+bool IsCalendarV2Enabled() {
+  return base::FeatureList::IsEnabled(kCalendarV2);
+}
+
 bool IsCaptivePortalUI2022Enabled() {
   return base::FeatureList::IsEnabled(kCaptivePortalUI2022);
 }
 
 bool IsCheckPasswordsAgainstCryptohomeHelperEnabled() {
   return base::FeatureList::IsEnabled(kCheckPasswordsAgainstCryptohomeHelper);
+}
+
+bool IsChromadAvailableEnabled() {
+  return base::FeatureList::IsEnabled(kChromadAvailable);
 }
 
 bool IsClipboardHistoryNudgeSessionResetEnabled() {
@@ -2752,6 +2778,10 @@ bool IsOobeRemoveShutdownButtonEnabled() {
 
 bool IsOobeThemeSelectionEnabled() {
   return base::FeatureList::IsEnabled(kEnableOobeThemeSelection);
+}
+
+bool IsOsSettingsAppBadgingToggleEnabled() {
+  return base::FeatureList::IsEnabled(kOsSettingsAppBadgingToggle);
 }
 
 bool IsOsSettingsSearchFeedbackEnabled() {

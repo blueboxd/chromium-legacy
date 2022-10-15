@@ -12,18 +12,22 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
+#include "base/types/expected.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/commands/install_isolated_app_command.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolation_data.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_url_loader.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
 #include "components/webapps/browser/installable/installable_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -61,27 +65,23 @@ void ScheduleInstallIsolatedApp(GURL url,
   DCHECK(url.is_valid());
   DCHECK(!callback.is_null());
 
+  // TODO(zelin): move random generation up to MaybeInstallAppFromCommandLine()
+  web_package::SignedWebBundleId random_signed_web_bundle_id =
+      web_package::SignedWebBundleId::CreateRandomForDevelopment();
+  base::expected<IsolatedWebAppUrlInfo, std::string> url_info =
+      IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(
+          random_signed_web_bundle_id);
+  DCHECK(url_info.has_value());
+
   provider.command_manager().ScheduleCommand(
       std::make_unique<InstallIsolatedAppCommand>(
-          url, isolation_data, CreateWebContents(profile),
+          url_info.value(), isolation_data, CreateWebContents(profile),
           std::make_unique<WebAppUrlLoader>(), provider.install_finalizer(),
           base::BindOnce(&ReportInstallationResult).Then(std::move(callback))));
 }
 
-base::OnceClosure& GetNextDoneCallbackInstance() {
-  static base::NoDestructor<base::OnceClosure> kInstance{base::NullCallback()};
-  return *kInstance;
-}
-
-}  // namespace
-
-void SetNextInstallationDoneCallbackForTesting(  // IN-TEST
-    base::OnceClosure done_callback) {
-  GetNextDoneCallbackInstance() = std::move(done_callback);
-}
-
 base::expected<absl::optional<IsolationData>, std::string>
-GetIsolationDataFromCommandLine(const base::CommandLine& command_line) {
+GetProxyUrlFromCommandLine(const base::CommandLine& command_line) {
   std::string switch_value =
       command_line.GetSwitchValueASCII(switches::kInstallIsolatedWebAppFromUrl);
 
@@ -98,6 +98,60 @@ GetIsolationDataFromCommandLine(const base::CommandLine& command_line) {
   }
 
   return IsolationData{IsolationData::DevModeProxy{.proxy_url = url.spec()}};
+}
+
+base::expected<absl::optional<IsolationData>, std::string>
+GetBundlePathFromCommandLine(const base::CommandLine& command_line) {
+  base::FilePath switch_value =
+      command_line.GetSwitchValuePath(switches::kInstallIsolatedWebAppFromFile);
+
+  if (switch_value.empty()) {
+    return absl::nullopt;
+  }
+
+  base::FilePath absolute_path = base::MakeAbsoluteFilePath(switch_value);
+
+  if (!base::PathExists(absolute_path) ||
+      base::DirectoryExists(absolute_path)) {
+    return base::unexpected(base::StrCat(
+        {"Invalid path provided to --", switches::kInstallIsolatedWebAppFromUrl,
+         " flag: '", absolute_path.AsUTF8Unsafe(), "'"}));
+  }
+
+  return IsolationData{IsolationData::DevModeBundle{.path = absolute_path}};
+}
+
+base::OnceClosure& GetNextDoneCallbackInstance() {
+  static base::NoDestructor<base::OnceClosure> kInstance{base::NullCallback()};
+  return *kInstance;
+}
+
+}  // namespace
+
+void SetNextInstallationDoneCallbackForTesting(  // IN-TEST
+    base::OnceClosure done_callback) {
+  GetNextDoneCallbackInstance() = std::move(done_callback);
+}
+
+base::expected<absl::optional<IsolationData>, std::string>
+GetIsolationDataFromCommandLine(const base::CommandLine& command_line) {
+  base::expected<absl::optional<IsolationData>, std::string> proxy_url =
+      GetProxyUrlFromCommandLine(command_line);
+  base::expected<absl::optional<IsolationData>, std::string> bundle_path =
+      GetBundlePathFromCommandLine(command_line);
+
+  // Return an error if both flags are set.
+  bool was_proxy_url_set = !proxy_url.has_value() || proxy_url->has_value();
+  bool was_bundle_path_set =
+      !bundle_path.has_value() || bundle_path->has_value();
+  if (was_proxy_url_set && was_bundle_path_set) {
+    return base::unexpected(
+        base::StrCat({"--", switches::kInstallIsolatedWebAppFromUrl, " and --",
+                      switches::kInstallIsolatedWebAppFromFile,
+                      " cannot both be provided."}));
+  }
+
+  return was_proxy_url_set ? proxy_url : bundle_path;
 }
 
 void MaybeInstallAppFromCommandLine(const base::CommandLine& command_line,

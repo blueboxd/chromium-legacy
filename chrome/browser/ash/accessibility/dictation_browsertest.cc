@@ -954,6 +954,12 @@ class DictationCommandsTest : public DictationTest {
   DictationCommandsTest(const DictationCommandsTest&) = delete;
   DictationCommandsTest& operator=(const DictationCommandsTest&) = delete;
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    DictationTest::SetUpCommandLine(command_line);
+    scoped_feature_list_.InitAndEnableFeature(
+        ::features::kExperimentalAccessibilityDictationMoreCommands);
+  }
+
   void SetUpOnMainThread() override {
     DictationTest::SetUpOnMainThread();
     ToggleDictationWithKeystroke();
@@ -972,6 +978,9 @@ class DictationCommandsTest : public DictationTest {
         ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &text);
     return base::UTF16ToUTF8(text);
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1152,6 +1161,22 @@ IN_PROC_BROWSER_TEST_P(DictationCommandsTest, DeletePrevWordMiddleOfWord) {
   SendFinalResultAndWaitForTextAreaValue("delete the previous word",
                                          "This is a t.");
 }
+
+IN_PROC_BROWSER_TEST_P(DictationCommandsTest, DeleteAllTextSimple) {
+  SendFinalResultAndWaitForTextAreaValue("Hello, world.", "Hello, world.");
+  SendFinalResultAndWaitForTextAreaValue("delete all", "");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationCommandsTest, DeleteAllTextMultiLineString) {
+  std::string text = " Hello, world. \n Hello, world. \n Hello, world. \n";
+  SendFinalResultAndWaitForTextAreaValue(text, text);
+  SendFinalResultAndWaitForTextAreaValue("delete all", "");
+}
+
+// TODO(crbug.com/1362842) Add a test where
+// you disable the MoreCommands Feature Flag
+// and ensure that you can't run the Dictation
+// Commands under that feature flag
 
 IN_PROC_BROWSER_TEST_P(DictationCommandsTest, DeletePrevSentSimple) {
   SendFinalResultAndWaitForTextAreaValue("Hello, world.", "Hello, world.");
@@ -1687,13 +1712,11 @@ INSTANTIATE_TEST_SUITE_P(
     DictationPumpkinInstallTest,
     ::testing::Values(speech::SpeechRecognitionType::kOnDevice));
 
-// TODO(crbug.com/1368843): Test is flaky on MSAN builds.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_WaitForInstall DISABLED_WaitForInstall
-#else
-#define MAYBE_WaitForInstall WaitForInstall
-#endif
-IN_PROC_BROWSER_TEST_P(DictationPumpkinInstallTest, MAYBE_WaitForInstall) {
+// TODO(crbug.com/1368843): Test is flaky on MSAN builds. This test is
+// temporarily disabled to allow the SandboxedPumpkinTagger prototype to be
+// landed. It will be re-enabled when we can support Pumpkin from C++ tests
+// here: https://crrev.com/c/3938318
+IN_PROC_BROWSER_TEST_P(DictationPumpkinInstallTest, DISABLED_WaitForInstall) {
   // Dictation will request a Pumpkin install when it starts up. Wait for
   // the install to succeed.
   WaitForInstallToSucceed();

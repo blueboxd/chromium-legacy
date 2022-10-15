@@ -521,6 +521,7 @@ const char kChromeUIEnterpriseProfileWelcomeHost[] =
 const char kChromeUIEnterpriseProfileWelcomeURL[] =
     "chrome://enterprise-profile-welcome/";
 const char kChromeUIIntroHost[] = "intro";
+const char kChromeUIIntroURL[] = "chrome://intro";
 const char kChromeUIProfileCustomizationHost[] = "profile-customization";
 const char kChromeUIProfileCustomizationURL[] =
     "chrome://profile-customization";
@@ -616,6 +617,11 @@ const char kCleanupSubPage[] = "cleanup";
 
 #if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const char kChromeUICastFeedbackHost[] = "cast-feedback";
+#endif
+
+#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+const char kChromeUILensURL[] = "chrome://lens/";
+const char kChromeUILensHost[] = "lens";
 #endif
 
 // Extension sub pages.

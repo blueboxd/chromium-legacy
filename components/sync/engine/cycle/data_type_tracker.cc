@@ -30,6 +30,9 @@ constexpr base::TimeDelta kVeryBigLocalChangeNudgeDelay = kDefaultPollInterval;
 constexpr base::TimeDelta kDefaultLocalChangeNudgeDelayForSessions =
     base::Seconds(11);
 
+constexpr base::TimeDelta kDefaultLocalChangeNudgeDelayForSegmentations =
+    base::Seconds(11);
+
 // Nudge delay for remote invalidations. Common to all data types.
 constexpr base::TimeDelta kRemoteInvalidationDelay = base::Milliseconds(250);
 
@@ -56,6 +59,11 @@ base::TimeDelta GetDefaultLocalChangeNudgeDelay(ModelType model_type) {
       // custom nudge delay, tuned for a reasonable trade-off between traffic
       // and freshness.
       return kDefaultLocalChangeNudgeDelayForSessions;
+    case SEGMENTATION:
+      // There are multiple segmentations computed during start-up within
+      // seconds. Applies a custom nudge delay, so that they are batched into
+      // one commit.
+      return kDefaultLocalChangeNudgeDelayForSegmentations;
     case BOOKMARKS:
     case PREFERENCES:
       // Types with sometimes automatic changes get longer delays to allow more
@@ -146,6 +154,7 @@ bool CanGetCommitsFromExtensions(ModelType model_type) {
     case PRINTERS_AUTHORIZATION_SERVERS:
     case READING_LIST:
     case USER_CONSENTS:
+    case SEGMENTATION:
     case SEND_TAB_TO_SELF:
     case SECURITY_EVENTS:
     case WIFI_CONFIGURATIONS:
@@ -192,7 +201,6 @@ DataTypeTracker::DataTypeTracker(ModelType type)
     : type_(type),
       local_nudge_count_(0),
       local_refresh_request_count_(0),
-      payload_buffer_size_(kDefaultMaxPayloadsPerType),
       initial_sync_required_(false),
       sync_required_to_resolve_conflict_(false),
       local_change_nudge_delay_(GetDefaultLocalChangeNudgeDelay(type)),
@@ -277,7 +285,7 @@ void DataTypeTracker::RecordRemoteInvalidation(
 
   // The incoming invalidation may have caused us to exceed our buffer size.
   // Trim some items from our list, if necessary.
-  while (pending_invalidations_.size() > payload_buffer_size_) {
+  while (pending_invalidations_.size() > kDefaultMaxPayloadsPerType) {
     last_dropped_invalidation_ =
         std::move(pending_invalidations_.front().pending_invalidation);
     last_dropped_invalidation_->Drop();
@@ -361,11 +369,6 @@ void DataTypeTracker::RecordInitialSyncDone() {
     return;
   }
   initial_sync_required_ = false;
-}
-
-// This limit will take effect on all future invalidations received.
-void DataTypeTracker::UpdatePayloadBufferSize(size_t new_size) {
-  payload_buffer_size_ = new_size;
 }
 
 bool DataTypeTracker::IsSyncRequired() const {

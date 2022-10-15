@@ -727,7 +727,7 @@ const FeatureEntry::FeatureParam kSearchSuggestionPrerenderIgnoringPrefetch[] =
     {{"implementation_type", "ignore_prefetch"}};
 
 const FeatureEntry::FeatureVariation
-    kSearchSuggsetionPrerenderTypeVariations[] = {
+    kSearchSuggestionPrerenderTypeVariations[] = {
         {"use prefetched request", kSearchSuggestionPrerenderUsingPrefetch,
          std::size(kSearchSuggestionPrerenderUsingPrefetch), nullptr},
         {"ignore prefetched request",
@@ -2429,30 +2429,55 @@ const FeatureEntry::FeatureVariation kOmniboxAssistantVoiceSearchVariations[] =
 };
 
 const FeatureEntry::FeatureParam
-    kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmnibox[] = {
+    kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmniboxSmallMargin[] = {
         {"enable_modernize_visual_update_on_tablet", "false"},
-        {"modernize_visual_update_active_color_on_omnibox", "true"}};
+        {"modernize_visual_update_active_color_on_omnibox", "true"},
+        {"modernize_visual_update_small_bottom_margin", "true"}};
 
 const FeatureEntry::FeatureParam
-    kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmnibox[] = {
+    kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmniboxBigMargin[] = {
         {"enable_modernize_visual_update_on_tablet", "false"},
-        {"modernize_visual_update_active_color_on_omnibox", "false"}};
+        {"modernize_visual_update_active_color_on_omnibox", "true"},
+        {"modernize_visual_update_small_bottom_margin", "false"}};
+
+const FeatureEntry::FeatureParam
+    kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmniboxSmallMargin[] = {
+        {"enable_modernize_visual_update_on_tablet", "false"},
+        {"modernize_visual_update_active_color_on_omnibox", "false"},
+        {"modernize_visual_update_small_bottom_margin", "true"}};
+
+const FeatureEntry::FeatureParam
+    kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmniboxBigMargin[] = {
+        {"enable_modernize_visual_update_on_tablet", "false"},
+        {"modernize_visual_update_active_color_on_omnibox", "false"},
+        {"modernize_visual_update_small_bottom_margin", "false"}};
 
 const FeatureEntry::FeatureParam kOmniboxModernizeVisualUpdateIncludeTablets[] =
     {{"enable_modernize_visual_update_on_tablet", "true"}};
 
-const FeatureEntry::FeatureVariation kOmniboxModernizeVisualUpdateVariations[] =
-    {
-        {"(active color omnibox, exclude tablet)",
-         kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmnibox,
-         std::size(kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmnibox),
-         nullptr},
-        {"(no active color omnibox, exclude tablet)",
-         kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmnibox,
-         std::size(kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmnibox),
-         nullptr},
-        {"(include tablet)", kOmniboxModernizeVisualUpdateIncludeTablets,
-         std::size(kOmniboxModernizeVisualUpdateIncludeTablets), nullptr},
+const FeatureEntry::FeatureVariation kOmniboxModernizeVisualUpdateVariations[] = {
+    {"(+color, Short)",
+     kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmniboxSmallMargin,
+     std::size(
+         kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmniboxSmallMargin),
+     nullptr},
+    {"(+color, Tall)",
+     kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmniboxBigMargin,
+     std::size(
+         kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmniboxBigMargin),
+     nullptr},
+    {"(-color, Short)",
+     kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmniboxSmallMargin,
+     std::size(
+         kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmniboxSmallMargin),
+     nullptr},
+    {"(-color, Tall)",
+     kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmniboxBigMargin,
+     std::size(
+         kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmniboxBigMargin),
+     nullptr},
+    {"(Tablet)", kOmniboxModernizeVisualUpdateIncludeTablets,
+     std::size(kOmniboxModernizeVisualUpdateIncludeTablets), nullptr},
 };
 
 const FeatureEntry::FeatureParam
@@ -3275,6 +3300,20 @@ const FeatureEntry::FeatureVariation kTabStripImprovementsTabWidthVariations[] =
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
+const FeatureEntry::FeatureParam kTabStripRedesignFolio[] = {
+    {"enable_folio", "true"}};
+const FeatureEntry::FeatureParam kTabStripRedesignDetached[] = {
+    {"enable_detached", "true"}};
+
+const FeatureEntry::FeatureVariation kTabStripRedesignVariations[] = {
+    {"Folio", kTabStripRedesignFolio, std::size(kTabStripRedesignFolio),
+     nullptr},
+    {"Detached", kTabStripRedesignDetached,
+     std::size(kTabStripRedesignDetached), nullptr},
+};
+#endif  // BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_ANDROID)
 constexpr FeatureEntry::FeatureParam kUpmAndroidShadowSyncingUsers[] = {
     {password_manager::features::kUpmExperimentVariationParam.name,
      password_manager::features::kUpmExperimentVariationOption[1].name}};
@@ -3327,10 +3366,10 @@ constexpr FeatureEntry::FeatureVariation
 #endif  // BUILDFLAG(IS_ANDROID)
 
 const FeatureEntry::FeatureParam kUnthrottledNestedTimeout_NestingLevel = {
-    "nesting", "100"};
+    "nesting", "15"};
 
 const FeatureEntry::FeatureVariation kUnthrottledNestedTimeout_Variations[] = {
-    {"100", &kUnthrottledNestedTimeout_NestingLevel, 1, nullptr},
+    {"15", &kUnthrottledNestedTimeout_NestingLevel, 1, nullptr},
 };
 
 constexpr FeatureEntry::FeatureParam kLensStandaloneWithSidePanel[] = {
@@ -3934,6 +3973,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOobeHidDetectionRevampName,
      flag_descriptions::kOobeHidDetectionRevampDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kOobeHidDetectionRevamp)},
+    {"os-settings-app-badging-toggle",
+     flag_descriptions::kOsSettingsAppBadgingToggleName,
+     flag_descriptions::kOsSettingsAppBadgingToggleDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kOsSettingsAppBadgingToggle)},
     {"os-settings-search-feedback",
      flag_descriptions::kOsSettingsSearchFeedbackName,
      flag_descriptions::kOsSettingsSearchFeedbackDescription, kOsCrOS,
@@ -4987,6 +5030,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"web-feed-sort", flag_descriptions::kWebFeedSortName,
      flag_descriptions::kWebFeedSortDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kWebFeedSort)},
+    {"feed-header-stick-to-top", flag_descriptions::kFeedHeaderStickToTopName,
+     flag_descriptions::kFeedHeaderStickToTopDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(feed::kFeedHeaderStickToTop)},
     {"xsurface-metrics-reporting",
      flag_descriptions::kXsurfaceMetricsReportingName,
      flag_descriptions::kXsurfaceMetricsReportingDescription, kOsAndroid,
@@ -5183,6 +5229,14 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          features::kExperimentalAccessibilityGoogleTtsLanguagePacks)},
+    {"enable-experimental-accessibility-select-to-speak-voice-switching",
+     flag_descriptions::
+         kExperimentalAccessibilitySelectToSpeakVoiceSwitchingName,
+     flag_descriptions::
+         kExperimentalAccessibilitySelectToSpeakVoiceSwitchingDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         features::kExperimentalAccessibilitySelectToSpeakVoiceSwitching)},
     {"enable-experimental-accessibility-switch-access-text",
      flag_descriptions::kExperimentalAccessibilitySwitchAccessTextName,
      flag_descriptions::kExperimentalAccessibilitySwitchAccessTextDescription,
@@ -6426,7 +6480,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-tab-strip-redesign",
      flag_descriptions::kTabStripRedesignAndroidName,
      flag_descriptions::kTabStripRedesignAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kTabStripRedesign)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kTabStripRedesign,
+                                    kTabStripRedesignVariations,
+                                    "TabStripRedesignAndroid")},
 
     {"enable-conditional-tabstrip",
      flag_descriptions::kConditionalTabStripAndroidName,
@@ -8155,7 +8211,7 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          features::kSupportSearchSuggestionForPrerender2,
-         kSearchSuggsetionPrerenderTypeVariations,
+         kSearchSuggestionPrerenderTypeVariations,
          "SearchSuggestionPrerender")},
 
     {"omnibox-search-prefetch",
@@ -8476,6 +8532,11 @@ const FeatureEntry kFeatureEntries[] = {
          lens::features::kLensInstructionChipImprovements,
          kLensInstructionChipVariations,
          "LensInstructionChipImprovements")},
+
+    {"enable-lens-region-search-static-page",
+     flag_descriptions::kLensRegionSearchStaticPageName,
+     flag_descriptions::kLensRegionSearchStaticPageDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(lens::features::kLensRegionSearchStaticPage)},
 
     {"enable-region-search-on-pdf-viewer",
      flag_descriptions::kEnableRegionSearchOnPdfViewerName,
@@ -8811,11 +8872,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(extensions_features::kExtensionsFSPInServiceWorkers)},
 #endif
-
-    {"persistent-quota-is-temporary-quota",
-     flag_descriptions::kPersistentQuotaIsTemporaryQuotaName,
-     flag_descriptions::kPersistentQuotaIsTemporaryQuotaDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kPersistentQuotaIsTemporaryQuota)},
 
     {"canvas-oop-rasterization", flag_descriptions::kCanvasOopRasterizationName,
      flag_descriptions::kCanvasOopRasterizationDescription, kOsAll,
@@ -9170,7 +9226,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIsolatedSandboxedIframesName,
      flag_descriptions::kIsolatedSandboxedIframesDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
-         features::kIsolateSandboxedIframes,
+         blink::features::kIsolateSandboxedIframes,
          kIsolateSandboxedIframesGroupingVariations,
          "IsolateSandboxedIframes" /* trial name */)},
 #endif

@@ -20,7 +20,7 @@ group("closure_compile") {
     # Local targets
     ":display_manager_types.m",
     ":gaia_button",
-    ":gaia_dialog.m",
+    ":gaia_dialog",
     ":gaia_header",
     ":gaia_input_form",
     ":hd_iron_icon",
@@ -29,7 +29,7 @@ group("closure_compile") {
     ":long_touch_detector.m",
     ":network_select_login.m",
     ":notification_card",
-    ":oobe_a11y_option.m",
+    ":oobe_a11y_option",
     ":oobe_apps_list.m",
     ":oobe_carousel.m",
     ":oobe_cr_lottie.m",
@@ -57,10 +57,7 @@ group("polymer3_elements") {
                   "oobe_vars:polymer3_elements",
 
                   # Local targets
-                  ":gaia_dialog_module",
                   ":network_select_login_module",
-                  ":oobe_a11y_option_module",
-                  ":oobe_a11y_option_module",
                   ":oobe_apps_list_module",
                   ":oobe_carousel_module",
                   ":oobe_cr_lottie_module",
@@ -91,8 +88,8 @@ js_library("gaia_button") {
   extra_deps = [ ":web_components" ]
 }
 
-js_library("gaia_dialog.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/gaia_dialog.m.js" ]
+js_library("gaia_dialog") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/gaia_dialog.js" ]
   deps = [
     ":oobe_types.m",
     "./behaviors:oobe_dialog_host_behavior.m",
@@ -104,7 +101,7 @@ js_library("gaia_dialog.m") {
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
-  extra_deps = [ ":gaia_dialog_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("gaia_header") {
@@ -161,10 +158,10 @@ js_library("notification_card") {
   extra_deps = [ ":web_components" ]
 }
 
-js_library("oobe_a11y_option.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/oobe_a11y_option.m.js" ]
+js_library("oobe_a11y_option") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/oobe_a11y_option.js" ]
   deps = []
-  extra_deps = [ ":oobe_a11y_option_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("oobe_apps_list.m") {
@@ -276,27 +273,9 @@ js_library("web_view_loader.m") {
   extra_deps = [ ":modulize" ]
 }
 
-polymer_modulizer("gaia_dialog") {
-  js_file = "gaia_dialog.js"
-  html_file = "gaia_dialog.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  migrated_imports = oobe_migrated_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
 polymer_modulizer("network_select_login") {
   js_file = "network_select_login.js"
   html_file = "network_select_login.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  migrated_imports = oobe_migrated_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
-polymer_modulizer("oobe_a11y_option") {
-  js_file = "oobe_a11y_option.js"
-  html_file = "oobe_a11y_option.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
   migrated_imports = oobe_migrated_imports
@@ -376,12 +355,14 @@ js_modulizer("modulize") {
 html_to_js("web_components") {
   js_files = [
     "gaia_button.js",
+    "gaia_dialog.js",
     "gaia_header.js",
     "gaia_input_form.js",
     "hd_iron_icon.js",
     "notification_card.js",
-    "progress_list_item.js",
+    "oobe_a11y_option.js",
     "oobe_i18n_dropdown.js",
+    "progress_list_item.js",
     "security_token_pin.js",
   ]
 }

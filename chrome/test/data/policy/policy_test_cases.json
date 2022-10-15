@@ -19873,41 +19873,7 @@
     ]
   },
   "PersistentQuotaEnabled": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros",
-      "android",
-      "fuchsia"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {},
-        "prefs": {
-          "policy.persistent_quota_enabled": {
-            "default_value": false
-          }
-        }
-      },
-      {
-        "policies": { "PersistentQuotaEnabled": false },
-        "prefs": {
-          "policy.persistent_quota_enabled": {
-            "value": false
-          }
-        }
-      },
-      {
-        "policies": { "PersistentQuotaEnabled": true },
-        "prefs": {
-          "policy.persistent_quota_enabled": {
-            "value": true
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "PrefixedStorageInfoEnabled": {
     "os": [
@@ -19950,7 +19916,8 @@
     "os": [
       "win",
       "linux",
-      "mac"
+      "mac",
+      "chromeos_ash"
     ],
     "policy_pref_mapping_tests": [
       {
@@ -19970,7 +19937,8 @@
     "os": [
       "win",
       "linux",
-      "mac"
+      "mac",
+      "chromeos_ash"
     ],
     "policy_pref_mapping_tests": [
       {
@@ -19990,7 +19958,8 @@
     "os": [
       "win",
       "linux",
-      "mac"
+      "mac",
+      "chromeos_ash"
     ],
     "policy_pref_mapping_tests": [
       {

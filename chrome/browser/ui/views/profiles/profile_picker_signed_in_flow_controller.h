@@ -5,12 +5,11 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_PICKER_SIGNED_IN_FLOW_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_PICKER_SIGNED_IN_FLOW_CONTROLLER_H_
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
-#include "chrome/browser/ui/profile_picker.h"
+#include "chrome/browser/ui/views/profiles/profile_management_utils.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_web_contents_host.h"
 #include "chrome/browser/ui/webui/signin/enterprise_profile_welcome_ui.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -25,8 +24,15 @@ class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
-// Class responsible for the signed-in flow (within ProfilePickerView), most
-// notably featuring the sync confirmation.
+// Class triggering the signed-in section of the profile management flow, most
+// notably featuring the sync confirmation. This class:
+// - Expects a primary account to be set with `ConsentLevel::kSignin`.
+// - Runs the `TurnSyncOnHelper` and provides it a delegate to interact with
+//   `host`.
+// - At the end of the flow we are in one of these cases:
+//   - The host is closed and a browser is opened, via `FinishAndOpenBrowser()`;
+//   - The host is not closed and the profile switch screen is shown, via
+//     `SwitchToProfileSwitch()`.
 class ProfilePickerSignedInFlowController
     : public content::WebContentsDelegate {
  public:
@@ -49,12 +55,12 @@ class ProfilePickerSignedInFlowController
   // was closed.
   virtual void Cancel();
 
-  // Finishes the creation flow by marking `profile_being_created_` as fully
-  // created, opening a browser window for this profile and calling
-  // `callback`. If empty `callback` is provided, the default action is
-  // performed: showing the profile customization bubble and/or profile IPH.
-  virtual void FinishAndOpenBrowser(
-      ProfilePicker::BrowserOpenedCallback callback) = 0;
+  // Finishes the creation flow for `profile_`: marks it fully created,
+  // transitions from `host_` to a new browser window and calls `callback` if
+  // the browser window was successfully opened.
+  // TODO(crbug.com/1374315): Tighten this contract by notifying the caller if
+  // the browser open was not possible.
+  virtual void FinishAndOpenBrowser(PostHostClearedCallback callback) = 0;
 
   // Finishes the sign-in process by moving to the sync confirmation screen.
   virtual void SwitchToSyncConfirmation();

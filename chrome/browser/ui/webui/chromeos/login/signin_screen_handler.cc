@@ -96,11 +96,6 @@ SigninScreenHandler::~SigninScreenHandler() {
 void SigninScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {}
 
-void SigninScreenHandler::RegisterMessages() {
-  AddCallback("showLoadingTimeoutError",
-              &SigninScreenHandler::HandleShowLoadingTimeoutError);
-}
-
 void SigninScreenHandler::Show() {
   CHECK(ash::ExistingUserController::current_controller());
   histogram_helper_->OnScreenShow();
@@ -328,10 +323,6 @@ void SigninScreenHandler::OnErrorScreenHide() {
   ShowScreenDeprecated(GaiaView::kScreenId);
 }
 
-void SigninScreenHandler::HandleShowLoadingTimeoutError() {
-  UpdateState(NetworkError::ERROR_REASON_LOADING_TIMEOUT);
-}
-
 bool SigninScreenHandler::IsGaiaVisible() {
   return GetCurrentScreen() == GaiaView::kScreenId;
 }
@@ -343,6 +334,11 @@ bool SigninScreenHandler::IsGaiaHiddenByError() {
 
 net::Error SigninScreenHandler::FrameError() const {
   return gaia_screen_handler_->frame_error();
+}
+
+NetworkStateInformer::State
+SigninScreenHandler::GetNetworkStateInformerStateForMigration() {
+  return network_state_informer_->state();
 }
 
 }  // namespace chromeos

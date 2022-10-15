@@ -10,5 +10,5 @@
 
 const CGFloat kSymbolAccessoryPointSize = 18.;
 
-NSString* const kExternalLinkSmbol = @"arrow.up.forward.square";
+NSString* const kExternalLinkSymbol = @"arrow.up.forward.square";
 NSString* const kChevronForwardSymbol = @"chevron.forward";

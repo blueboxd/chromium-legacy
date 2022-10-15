@@ -1213,6 +1213,8 @@ void ShelfView::EndDrag(bool cancel,
   drag_icon_bounds_in_screen_ = gfx::Rect();
   drag_and_drop_shelf_id_ = ShelfID();
   is_active_drag_and_drop_host_ = false;
+
+  HandleShelfParty();
 }
 
 void ShelfView::SwapButtons(views::View* button_to_swap, bool with_next) {
@@ -1571,7 +1573,8 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
 }
 
 void ShelfView::MoveDragViewTo(int primary_axis_coordinate) {
-  if (visible_views_indices_.empty()) {
+  if (visible_views_indices_.empty() ||
+      !IsItemPinned(model_->items()[visible_views_indices_.front()])) {
     DCHECK(model_->in_shelf_party());
     if (shelf_->IsHorizontalAlignment()) {
       if (drag_view_->x() != app_icons_layout_offset_)
@@ -1856,7 +1859,7 @@ bool ShelfView::ShouldUpdateDraggedViewPinStatus(size_t dragged_view_index) {
   if (!features::IsDragUnpinnedAppToPinEnabled())
     return false;
 
-  if (visible_views_indices_.empty()) {
+  if (!base::Contains(visible_views_indices_, dragged_view_index)) {
     DCHECK(model_->in_shelf_party());
     return false;
   }
@@ -1983,15 +1986,6 @@ gfx::Rect ShelfView::GetDragIconBoundsInScreenForTest() const {
   if (!drag_icon_proxy_)
     return gfx::Rect();
   return drag_icon_proxy_->GetBoundsInScreen();
-}
-
-void ShelfView::AddAnimationObserver(views::BoundsAnimatorObserver* observer) {
-  bounds_animator_->AddObserver(observer);
-}
-
-void ShelfView::RemoveAnimationObserver(
-    views::BoundsAnimatorObserver* observer) {
-  bounds_animator_->RemoveObserver(observer);
 }
 
 void ShelfView::AnnounceShelfAutohideBehavior() {
@@ -2225,6 +2219,8 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
     AnnouncePinUnpinEvent(old_item, /*pinned=*/false);
     RecordPinUnpinUserAction(/*pinned=*/false);
   }
+
+  party_.erase(old_item.id);
 }
 
 void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
@@ -2659,6 +2655,9 @@ gfx::Rect ShelfView::GetChildViewTargetMirroredBounds(
 }
 
 void ShelfView::HandleShelfParty() {
+  if (!base::FeatureList::IsEnabled(features::kShelfParty))
+    return;
+
   UpdateShelfItemViewsVisibility();
   PreferredSizeChanged();
   AnimateToIdealBounds();
@@ -2679,6 +2678,8 @@ void ShelfView::HandleShelfParty() {
     }
     DCHECK(IsItemPinned(item));
     DCHECK(!IsItemVisible(item));
+    if (item.image.isNull() || item.id == drag_and_drop_shelf_id_)
+      continue;
     // Add the item if it is not already partying.
     const auto insertion_results = party_.try_emplace(item.id);
     if (insertion_results.second) {

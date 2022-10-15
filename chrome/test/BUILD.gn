@@ -2363,7 +2363,6 @@ if (!is_android) {
       "data/webui/mojo/mojo_web_ui_controller_browsertest.cc",
       "data/webui/ntp4_browsertest.cc",
       "data/webui/ntp4_browsertest.h",
-      "data/webui/webui_resource_browsertest.cc",
       "gpu/webgl_infobar_browsertest.cc",
       "interaction/webui_interaction_test_util_browsertest.cc",
       "v8/wasm_trap_handler_browsertest.cc",
@@ -2436,6 +2435,7 @@ if (!is_android) {
       sources += [
         "../browser/media/webrtc/get_display_media_set_browsertest.cc",
         "../browser/sessions/tab_restore_service_browsertest.cc",
+        "data/webui/chromeos/webui_resource_browsertest.cc",
       ]
       deps += [
         "//chrome/browser/ash/system_web_apps:browser_tests",
@@ -2616,7 +2616,6 @@ if (!is_android) {
         "../browser/ui/test/test_browser_dialog_mac.h",
         "../browser/ui/test/test_browser_dialog_mac.mm",
         "../browser/ui/views/frame/browser_non_client_frame_view_mac_browsertest.mm",
-        "../browser/webauthn/chrome_webauthn_mac_browsertest.mm",
         "../browser/webshare/mac/sharing_service_operation_browsertest.cc",
         "../common/mac/app_mode_chrome_locator_browsertest.mm",
         "../common/profiler/thread_profiler_browsertest.cc",
@@ -2820,6 +2819,12 @@ if (!is_android) {
       ]
       if (is_win) {
         sources += [ "../browser/signin/signin_util_win_browsertest.cc" ]
+      }
+
+      # TODO(crbug.com/1052397): Update guard when pixel tests support widens.
+      if (is_win || is_linux || is_chromeos_lacros) {
+        sources +=
+            [ "../browser/ui/views/profiles/first_run_intro_browsertest.cc" ]
       }
     } else {
       sources += [ "../browser/signin/mirror_browsertest.cc" ]
@@ -9485,6 +9490,7 @@ if (!is_android) {
       "../browser/ui/webui/settings/settings_interactive_uitest.cc",
       "../browser/webapps/web_app_offline_browsertest.cc",
       "../browser/webauth_interactive_uitest.cc",
+      "../browser/webauthn/chrome_webauthn_autofill_interactive_uitest.cc",
       "//ui/base/clipboard/clipboard_unittest.cc",
       "base/interactive_ui_tests_main.cc",
     ]
@@ -9957,6 +9963,7 @@ if (!is_android) {
         "../browser/ui/cocoa/status_bubble_mac_interactive_uitest.mm",
         "../browser/ui/cocoa/tab_contents/web_contents_view_mac_interactive_uitest.mm",
         "../browser/ui/find_bar/find_bar_platform_helper_mac_interactive_uitest.mm",
+        "../browser/webauthn/chrome_webauthn_autofill_mac_interactive_uitest.mm",
       ]
 
       sources -= [

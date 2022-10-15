@@ -15,6 +15,7 @@
 #include "base/memory/shared_memory_mapper.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_provider.h"
@@ -91,7 +92,7 @@ class ContextProviderCommandBuffer
   // ContextProvider / RasterContextProvider implementation.
   void AddRef() const override;
   void Release() const override;
-  gpu::ContextResult BindToCurrentThread() override;
+  gpu::ContextResult BindToCurrentSequence() override;
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::raster::RasterInterface* RasterInterface() override;
   gpu::ContextSupport* ContextSupport() override;
@@ -123,18 +124,18 @@ class ContextProviderCommandBuffer
   void OnLostContext();
 
  private:
-  void CheckValidThreadOrLockAcquired() const {
+  void CheckValidSequenceOrLockAcquired() const {
 #if DCHECK_IS_ON()
     if (support_locking_) {
       context_lock_.AssertAcquired();
     } else {
-      DCHECK(context_thread_checker_.CalledOnValidThread());
+      DCHECK(context_sequence_checker_.CalledOnValidSequence());
     }
 #endif
   }
 
   base::ThreadChecker main_thread_checker_;
-  base::ThreadChecker context_thread_checker_;
+  base::SequenceChecker context_sequence_checker_;
 
   bool bind_tried_ = false;
   gpu::ContextResult bind_result_;
@@ -153,7 +154,7 @@ class ContextProviderCommandBuffer
   scoped_refptr<gpu::GpuChannelHost> channel_;
   raw_ptr<gpu::GpuMemoryBufferManager, DanglingUntriaged>
       gpu_memory_buffer_manager_;
-  scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> default_task_runner_;
 
   // |shared_image_interface_| must be torn down after |command_buffer_| to
   // ensure any dependent commands in the command stream are flushed before the

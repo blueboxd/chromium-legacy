@@ -178,6 +178,23 @@
              "--disable-composited-antialiasing"]
   },
   {
+    "prefix": "media-foundation-for-clear-dcomp",
+    "platforms": ["Win"],
+    "bases": ["external/wpt/media-source",
+              "media"],
+    "args": ["--use-gpu-in-tests",
+             "--enable-features=MediaFoundationClearPlayback,MediaFoundationClearRendering:strategy/direct-composition"]
+  },
+  {
+    "prefix": "media-foundation-for-clear-frameserver",
+    "platforms": ["Win"],
+    "bases": ["external/wpt/media-source",
+              "media"],
+    "args": ["--use-gpu-in-tests",
+             "--force-mfmediaengine-renderer",
+             "--enable-features=MediaFoundationClearRendering:strategy/frame-server"]
+  },
+  {
     "prefix": "media-gpu-accelerated",
     "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
     "bases": ["external/wpt/media-source",
@@ -696,12 +713,6 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/client-hints", "wpt_internal/client-hints"],
     "args": ["--disable-features=PrefersReducedMotionClientHintHeader"]
-  },
-  {
-    "prefix": "disable-wildcard-subdomains-in-permissions-policy",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/permissions-policy/"],
-    "args": ["--disable-features=WildcardSubdomainsInPermissionsPolicy"]
   },
   {
     "prefix": "storage-access-api",

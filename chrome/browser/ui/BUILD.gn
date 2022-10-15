@@ -1762,6 +1762,13 @@ static_library("ui") {
       ]
     }
 
+    if (toolkit_views && is_chrome_branded) {
+      sources += [
+        "webui/lens/lens_ui.cc",
+        "webui/lens/lens_ui.h",
+      ]
+    }
+
     deps += [
       "//base",
       "//build:chromeos_buildflags",
@@ -3409,8 +3416,6 @@ static_library("ui") {
       "views/frame/immersive_mode_controller_chromeos.h",
       "views/profiles/first_run_flow_controller_lacros.cc",
       "views/profiles/first_run_flow_controller_lacros.h",
-      "views/profiles/lacros_first_run_signed_in_flow_controller.cc",
-      "views/profiles/lacros_first_run_signed_in_flow_controller.h",
       "webui/signin/profile_picker_lacros_sign_in_provider.cc",
       "webui/signin/profile_picker_lacros_sign_in_provider.h",
       "window_sizer/window_sizer_chromeos.cc",
@@ -3546,8 +3551,6 @@ static_library("ui") {
       "startup/default_browser_prompt.h",
       "views/profiles/badged_profile_photo.cc",
       "views/profiles/badged_profile_photo.h",
-      "views/profiles/profile_creation_signed_in_flow_controller.cc",
-      "views/profiles/profile_creation_signed_in_flow_controller.h",
       "views/profiles/profile_customization_bubble_sync_controller.cc",
       "views/profiles/profile_customization_bubble_sync_controller.h",
       "views/profiles/profile_customization_bubble_view.cc",

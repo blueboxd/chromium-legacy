@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "style_rule.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
 #include "third_party/blink/renderer/core/css/css_selector_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
@@ -60,6 +61,15 @@ unsigned MaximumSpecificity(const CSSSelectorList* list) {
   return list->MaximumSpecificity();
 }
 
+unsigned MaximumSpecificity(const CSSSelector* first_selector) {
+  unsigned specificity = 0;
+  for (const CSSSelector* s = first_selector; s;
+       s = CSSSelectorList::Next(*s)) {
+    specificity = std::max(specificity, s->Specificity());
+  }
+  return specificity;
+}
+
 }  // namespace
 
 struct SameSizeAsCSSSelector {
@@ -77,9 +87,9 @@ void CSSSelector::CreateRareData() {
   // to be careful to correctly manage explicitly destruction of |value_|
   // followed by placement new of |rare_data_|. A straight-assignment will
   // compile and may kinda work, but will be undefined behavior.
-  auto rare_data = RareData::Create(data_.value_);
+  auto* rare_data = MakeGarbageCollected<RareData>(data_.value_);
   data_.value_.~AtomicString();
-  new (&data_.rare_data_) scoped_refptr<RareData>(std::move(rare_data));
+  data_.rare_data_ = rare_data;
   has_rare_data_ = true;
 }
 
@@ -137,6 +147,12 @@ inline unsigned CSSSelector::SpecificityForOneSelector() const {
           return MaximumSpecificity(SelectorList());
         case kPseudoHas:
           return MaximumSpecificity(SelectorList());
+        case kPseudoParent:
+          if (data_.parent_rule_ == nullptr) {
+            // & in a non-nesting context matches nothing.
+            return 0;
+          }
+          return MaximumSpecificity(data_.parent_rule_->FirstSelector());
         case kPseudoRelativeAnchor:
           return 0;
         // FIXME: PseudoAny should base the specificity on the sub-selectors.
@@ -322,6 +338,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoOpen:
     case kPseudoOptional:
     case kPseudoOutOfRange:
+    case kPseudoParent:
     case kPseudoPart:
     case kPseudoPastCue:
     case kPseudoPaused:
@@ -774,6 +791,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoOpen:
     case kPseudoOptional:
     case kPseudoOutOfRange:
+    case kPseudoParent:
     case kPseudoPastCue:
     case kPseudoPaused:
     case kPseudoPictureInPicture:
@@ -850,7 +868,8 @@ const CSSSelector* CSSSelector::SerializeCompound(
       SerializeIdentifier(simple_selector->SerializingValue(), builder);
     } else if (simple_selector->match_ == kPseudoClass ||
                simple_selector->match_ == kPagePseudoClass) {
-      if (simple_selector->GetPseudoType() != kPseudoState) {
+      if (simple_selector->GetPseudoType() != kPseudoState &&
+          simple_selector->GetPseudoType() != kPseudoParent) {
         builder.Append(':');
         builder.Append(simple_selector->SerializingValue());
       }
@@ -912,6 +931,9 @@ const CSSSelector* CSSSelector::SerializeCompound(
         case kPseudoAny:
         case kPseudoIs:
         case kPseudoWhere:
+          break;
+        case kPseudoParent:
+          builder.Append('&');
           break;
         case kPseudoRelativeAnchor:
           NOTREACHED();
@@ -1071,10 +1093,9 @@ void CSSSelector::SetArgument(const AtomicString& value) {
   data_.rare_data_->argument_ = value;
 }
 
-void CSSSelector::SetSelectorList(
-    std::unique_ptr<CSSSelectorList> selector_list) {
+void CSSSelector::SetSelectorList(CSSSelectorList* selector_list) {
   CreateRareData();
-  data_.rare_data_->selector_list_ = std::move(selector_list);
+  data_.rare_data_->selector_list_ = selector_list;
 }
 
 void CSSSelector::SetToggle(const AtomicString& name,
@@ -1113,6 +1134,8 @@ static bool ValidateSubSelector(const CSSSelector* selector) {
     case CSSSelector::kPagePseudoClass:
     case CSSSelector::kPseudoClass:
       break;
+    case CSSSelector::kInvalidList:
+      NOTREACHED();
   }
 
   switch (selector->GetPseudoType()) {
@@ -1335,6 +1358,32 @@ void CSSSelector::SetPartNames(
     std::unique_ptr<Vector<AtomicString>> part_names) {
   CreateRareData();
   data_.rare_data_->part_names_ = std::move(part_names);
+}
+
+void CSSSelector::Trace(Visitor* visitor) const {
+  if (match_ == kPseudoClass && pseudo_type_ == kPseudoParent) {
+    visitor->Trace(data_.parent_rule_);
+  } else if (has_rare_data_) {
+    visitor->Trace(data_.rare_data_);
+  }
+}
+
+void CSSSelector::RareData::Trace(Visitor* visitor) const {
+  visitor->Trace(selector_list_);
+}
+
+const CSSSelector* CSSSelector::SelectorListOrParent() const {
+  if (match_ == kPseudoClass && pseudo_type_ == kPseudoParent) {
+    if (ParentRule()) {
+      return ParentRule()->FirstSelector();
+    } else {
+      return nullptr;
+    }
+  } else if (has_rare_data_ && data_.rare_data_->selector_list_) {
+    return data_.rare_data_->selector_list_->First();
+  } else {
+    return nullptr;
+  }
 }
 
 }  // namespace blink

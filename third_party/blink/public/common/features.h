@@ -711,10 +711,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // If enabled, expose non-standard stats in the WebRTC getStats API.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcExposeNonStandardStats);
 
-// If enabled, CSS rulesets with many different rules on the same attribute
-// will be attempted accelerated with a substring set tree.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSubstringSetTreeForAttributeBuckets);
-
 // If enabled, style invalidation will use a Bloom filter for storing
 // CSS classes that need (only) self-invalidation, instead of having them
 // in the main hash map.
@@ -885,6 +881,14 @@ enum class IsolateSandboxedIframesGrouping {
 BLINK_COMMON_EXPORT extern const base::FeatureParam<
     IsolateSandboxedIframesGrouping>
     kIsolateSandboxedIframesGroupingParam;
+
+// Flag to control whether about:blank and srcdoc iframes use newly proposed
+// base url inheritance behavior from https://crbug.com/1356658.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kNewBaseUrlInheritanceBehavior);
+
+// This function checks both kNewBaseUrlInheritanceBehavior and
+// kIsolateSandboxedIframes and returns true if either is enabled.
+BLINK_COMMON_EXPORT bool IsNewBaseUrlInheritanceBehaviorEnabled();
 
 }  // namespace features
 }  // namespace blink

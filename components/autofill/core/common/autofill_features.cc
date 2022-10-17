@@ -63,6 +63,12 @@ BASE_FEATURE(kAutofillAddressProfileSavePromptAddressVerificationSupport,
              "AutofillAddressProfileSavePromptAddressVerificationSupport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Use the heuristic parser to detected unfillable numeric types in field labels
+// and grant the heuristic precedence over non-override server predictions.
+BASE_FEATURE(kAutofillGivePrecedenceToNumericQuantitites,
+             "AutofillGivePrecedenceToNumericQuantitites",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // TODO(crbug.com/1135188): Remove this feature flag after the explicit save
 // prompts for address profiles is complete.
 // When enabled, address profile save problem will contain a dropdown for
@@ -463,13 +469,6 @@ BASE_FEATURE(kAutofillParseNameAsAutocompleteType,
 BASE_FEATURE(kAutofillProbableFormSubmissionInBrowser,
              "AutofillProbableFormSubmissionInBrowser",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// If we observe a sequence of fields of (street address, address line 2), these
-// get rationalized to (address line 1, address line 2).
-// TODO(crbug.com/1326425): Remove once feature is lanuched.
-BASE_FEATURE(kAutofillRationalizeStreetAddressAndAddressLine,
-             "AutofillRationalizeStreetAddressAndAddressLine",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Removes setting-inaccessible field types from existing profiles on startup.
 // TODO(crbug.com/1300548): Cleanup when launched.

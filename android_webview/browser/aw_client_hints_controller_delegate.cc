@@ -5,31 +5,27 @@
 #include "android_webview/browser/aw_client_hints_controller_delegate.h"
 
 #include "base/notreached.h"
+#include "components/embedder_support/user_agent_utils.h"
 #include "content/public/browser/client_hints_controller_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom.h"
 #include "third_party/blink/public/common/client_hints/enabled_client_hints.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
-#include "ui/gfx/geometry/size_f.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace android_webview {
 
-AwClientHintsControllerDelegate::AwClientHintsControllerDelegate() {
-  // TODO(crbug.com/921655): Actually implement function.
-  NOTIMPLEMENTED();
-}
-AwClientHintsControllerDelegate::~AwClientHintsControllerDelegate() {
-  // TODO(crbug.com/921655): Actually implement function.
-  NOTIMPLEMENTED();
-}
+AwClientHintsControllerDelegate::AwClientHintsControllerDelegate(
+    PrefService* pref_service)
+    : pref_service_(pref_service) {}
+
+AwClientHintsControllerDelegate::~AwClientHintsControllerDelegate() = default;
 
 network::NetworkQualityTracker*
 AwClientHintsControllerDelegate::GetNetworkQualityTracker() {
-  // TODO(crbug.com/921655): Actually implement function.
-  NOTIMPLEMENTED();
+  // Android WebViews lack a Network Quality Tracker.
   return nullptr;
 }
 
@@ -57,9 +53,7 @@ bool AwClientHintsControllerDelegate::AreThirdPartyCookiesBlocked(
 
 blink::UserAgentMetadata
 AwClientHintsControllerDelegate::GetUserAgentMetadata() {
-  // TODO(crbug.com/921655): Actually implement function.
-  NOTIMPLEMENTED();
-  return blink::UserAgentMetadata();
+  return embedder_support::GetUserAgentMetadata(pref_service_);
 }
 
 void AwClientHintsControllerDelegate::PersistClientHints(
@@ -83,15 +77,12 @@ void AwClientHintsControllerDelegate::ClearAdditionalClientHints() {
 
 void AwClientHintsControllerDelegate::SetMostRecentMainFrameViewportSize(
     const gfx::Size& viewport_size) {
-  // TODO(crbug.com/921655): Actually implement function.
-  NOTIMPLEMENTED();
+  viewport_size_ = viewport_size;
 }
 
 gfx::Size
 AwClientHintsControllerDelegate::GetMostRecentMainFrameViewportSize() {
-  // TODO(crbug.com/921655): Actually implement function.
-  NOTIMPLEMENTED();
-  return gfx::Size(0, 0);
+  return viewport_size_;
 }
 
 }  // namespace android_webview

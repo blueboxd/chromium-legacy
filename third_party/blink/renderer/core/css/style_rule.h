@@ -106,6 +106,12 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
   CSSRule* CreateCSSOMWrapper(wtf_size_t position_hint,
                               CSSRule* parent_rule) const;
 
+  // Move this rule from being a child of old_parent (which is only given for
+  // sake of DCHECK) to being a child of new_parent, updating parent pointers
+  // in the selector. This happens only when we need to reallocate a StyleRule
+  // because its selector changed.
+  void Reparent(StyleRule* old_parent, StyleRule* new_parent);
+
   void Trace(Visitor*) const;
   void TraceAfterDispatch(blink::Visitor* visitor) const {}
   void FinalizeGarbageCollectedObject();
@@ -160,6 +166,13 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
         base::PassKey<StyleRule>(), selectors, lazy_property_parser);
   }
 
+  // See comment on the corresponding constructor.
+  static StyleRule* Create(base::span<CSSSelector> selectors) {
+    return MakeGarbageCollected<StyleRule>(
+        AdditionalBytesForSelectors(selectors.size()),
+        base::PassKey<StyleRule>(), selectors);
+  }
+
   // Creates a StyleRule with the selectors changed (used by setSelectorText()).
   static StyleRule* Create(base::span<CSSSelector> selectors,
                            StyleRule&& other) {
@@ -180,12 +193,20 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
   StyleRule(base::PassKey<StyleRule>,
             base::span<CSSSelector> selector_vector,
             CSSLazyPropertyParser*);
+  // If you use this constructor, the object will not be fully constructed until
+  // you call SetProperties().
+  StyleRule(base::PassKey<StyleRule>, base::span<CSSSelector> selector_vector);
   StyleRule(base::PassKey<StyleRule>,
             base::span<CSSSelector> selector_vector,
             StyleRule&&);
   StyleRule(const StyleRule&, size_t flattened_size);
   StyleRule(const StyleRule&) = delete;
   ~StyleRule();
+
+  void SetProperties(CSSPropertyValueSet* properties) {
+    DCHECK_EQ(properties_, nullptr);
+    properties_ = properties;
+  }
 
   // Partial subset of the CSSSelector API.
   const CSSSelector* FirstSelector() const { return SelectorArray(); }
@@ -226,7 +247,20 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
 
   void TraceAfterDispatch(blink::Visitor*) const;
 
+  const HeapVector<Member<StyleRuleBase>>* ChildRules() const {
+    return child_rules_.Get();
+  }
+  void AddChildRule(StyleRuleBase* child) {
+    // Allocate the child rule vector only when we need it,
+    // since most rules won't have children (almost by definition).
+    if (child_rules_ == nullptr) {
+      child_rules_ = MakeGarbageCollected<HeapVector<Member<StyleRuleBase>>>();
+    }
+    child_rules_->push_back(child);
+  }
+
  private:
+  friend class StyleRuleBase;
   friend class CSSLazyParsingTest;
   bool HasParsedProperties() const;
 
@@ -240,6 +274,7 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
 
   mutable Member<CSSPropertyValueSet> properties_;
   mutable Member<CSSLazyPropertyParser> lazy_property_parser_;
+  Member<HeapVector<Member<StyleRuleBase>>> child_rules_;
 };
 
 class CORE_EXPORT StyleRuleFontFace : public StyleRuleBase {
@@ -266,15 +301,15 @@ class CORE_EXPORT StyleRuleFontFace : public StyleRuleBase {
 
 class StyleRulePage : public StyleRuleBase {
  public:
-  StyleRulePage(CSSSelectorList, CSSPropertyValueSet*);
+  StyleRulePage(CSSSelectorList*, CSSPropertyValueSet*);
   StyleRulePage(const StyleRulePage&);
 
-  const CSSSelector* Selector() const { return selector_list_.First(); }
+  const CSSSelector* Selector() const { return selector_list_->First(); }
   const CSSPropertyValueSet& Properties() const { return *properties_; }
   MutableCSSPropertyValueSet& MutableProperties();
 
-  void WrapperAdoptSelectorList(CSSSelectorList selectors) {
-    selector_list_ = std::move(selectors);
+  void WrapperAdoptSelectorList(CSSSelectorList* selectors) {
+    selector_list_ = selectors;
   }
 
   StyleRulePage* Copy() const {
@@ -289,7 +324,7 @@ class StyleRulePage : public StyleRuleBase {
  private:
   Member<CSSPropertyValueSet> properties_;  // Cannot be null.
   Member<const CascadeLayer> layer_;
-  CSSSelectorList selector_list_;
+  Member<CSSSelectorList> selector_list_;
 };
 
 class CORE_EXPORT StyleRuleProperty : public StyleRuleBase {

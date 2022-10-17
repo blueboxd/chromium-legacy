@@ -347,14 +347,19 @@ StyleRule::StyleRule(base::PassKey<StyleRule>,
   CSSSelectorList::AdoptSelectorVector(selector_vector, SelectorArray());
 }
 
-// NOTE: Currently, this move constructor leaves the other object fully intact,
-// since there's no benefit in not doing so.
+StyleRule::StyleRule(base::PassKey<StyleRule>,
+                     base::span<CSSSelector> selector_vector)
+    : StyleRuleBase(kStyle) {
+  CSSSelectorList::AdoptSelectorVector(selector_vector, SelectorArray());
+}
+
 StyleRule::StyleRule(base::PassKey<StyleRule>,
                      base::span<CSSSelector> selector_vector,
                      StyleRule&& other)
     : StyleRuleBase(kStyle),
       properties_(other.properties_),
-      lazy_property_parser_(other.lazy_property_parser_) {
+      lazy_property_parser_(other.lazy_property_parser_),
+      child_rules_(std::move(other.child_rules_)) {
   CSSSelectorList::AdoptSelectorVector(selector_vector, SelectorArray());
 }
 
@@ -408,19 +413,65 @@ bool StyleRule::HasParsedProperties() const {
 void StyleRule::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(properties_);
   visitor->Trace(lazy_property_parser_);
+  visitor->Trace(child_rules_);
+
+  const CSSSelector* current = SelectorArray();
+  do {
+    visitor->Trace(*current);
+  } while (!(current++)->IsLastInSelectorList());
+
   StyleRuleBase::TraceAfterDispatch(visitor);
 }
 
-StyleRulePage::StyleRulePage(CSSSelectorList selector_list,
+void StyleRuleBase::Reparent(StyleRule* old_parent, StyleRule* new_parent) {
+  switch (GetType()) {
+    case kStyle:
+      for (CSSSelector* s = DynamicTo<StyleRule>(this)->SelectorArray(); s;
+           s = CSSSelectorList::Next(*s)) {
+        if (s->Match() == CSSSelector::kPseudoClass &&
+            s->GetPseudoType() == CSSSelector::kPseudoParent) {
+          s->Reparent(old_parent, new_parent);
+        }
+      }
+      break;
+    case kScope:
+    case kLayerBlock:
+    case kContainer:
+    case kMedia:
+    case kSupports:
+      for (StyleRuleBase* child :
+           DynamicTo<StyleRuleGroup>(this)->ChildRules()) {
+        child->Reparent(old_parent, new_parent);
+      }
+      break;
+    case kPage:
+    case kProperty:
+    case kFontFace:
+    case kFontPaletteValues:
+    case kImport:
+    case kKeyframes:
+    case kLayerStatement:
+    case kNamespace:
+    case kCounterStyle:
+    case kPositionFallback:
+    case kTry:
+    case kKeyframe:
+    case kCharset:
+      // Cannot have any child rules.
+      break;
+  }
+}
+
+StyleRulePage::StyleRulePage(CSSSelectorList* selector_list,
                              CSSPropertyValueSet* properties)
     : StyleRuleBase(kPage),
       properties_(properties),
-      selector_list_(std::move(selector_list)) {}
+      selector_list_(selector_list) {}
 
 StyleRulePage::StyleRulePage(const StyleRulePage& page_rule)
     : StyleRuleBase(page_rule),
       properties_(page_rule.properties_->MutableCopy()),
-      selector_list_(page_rule.selector_list_.Copy()) {}
+      selector_list_(page_rule.selector_list_->Copy()) {}
 
 MutableCSSPropertyValueSet& StyleRulePage::MutableProperties() {
   if (!properties_->IsMutable())
@@ -431,6 +482,7 @@ MutableCSSPropertyValueSet& StyleRulePage::MutableProperties() {
 void StyleRulePage::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(properties_);
   visitor->Trace(layer_);
+  visitor->Trace(selector_list_);
   StyleRuleBase::TraceAfterDispatch(visitor);
 }
 

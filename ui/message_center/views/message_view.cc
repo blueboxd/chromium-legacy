@@ -47,31 +47,6 @@ namespace message_center {
 
 namespace {
 
-// Creates a text for spoken feedback from the data contained in the
-// notification.
-std::u16string CreateAccessibleName(const Notification& notification) {
-  if (!notification.accessible_name().empty())
-    return notification.accessible_name();
-
-  // Fall back to a text constructed from the notification.
-  // Add non-empty elements.
-
-  std::vector<std::u16string> accessible_lines;
-  if (!notification.title().empty())
-    accessible_lines.push_back(notification.title());
-
-  if (!notification.message().empty())
-    accessible_lines.push_back(notification.message());
-
-  if (!notification.context_message().empty())
-    accessible_lines.push_back(notification.context_message());
-  std::vector<NotificationItem> items = notification.items();
-  for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
-    accessible_lines.push_back(items[i].title + u" " + items[i].message);
-  }
-  return base::JoinString(accessible_lines, u"\n");
-}
-
 bool ShouldShowAeroShadowBorder() {
 #if BUILDFLAG(IS_WIN)
   return ui::win::IsAeroGlassEnabled();
@@ -129,6 +104,32 @@ views::View* MessageView::FindGroupNotificationView(
     const std::string& notification_id) {
   // Not implemented by default.
   return nullptr;
+}
+
+// Creates text for spoken feedback from the data contained in the
+// notification.
+std::u16string MessageView::CreateAccessibleName(
+    const Notification& notification) {
+  if (!notification.accessible_name().empty())
+    return notification.accessible_name();
+
+  // Fall back to text constructed from the notification.
+  // Add non-empty elements.
+
+  std::vector<std::u16string> accessible_lines;
+  if (!notification.title().empty())
+    accessible_lines.push_back(notification.title());
+
+  if (!notification.message().empty())
+    accessible_lines.push_back(notification.message());
+
+  if (!notification.context_message().empty())
+    accessible_lines.push_back(notification.context_message());
+  std::vector<NotificationItem> items = notification.items();
+  for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
+    accessible_lines.push_back(items[i].title + u" " + items[i].message);
+  }
+  return base::JoinString(accessible_lines, u"\n");
 }
 
 void MessageView::UpdateWithNotification(const Notification& notification) {
@@ -234,7 +235,7 @@ void MessageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (accessible_name_.empty())
     node_data->SetNameFrom(ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
 
-  node_data->SetName(accessible_name_);
+  node_data->SetNameChecked(accessible_name_);
 }
 
 bool MessageView::OnMousePressed(const ui::MouseEvent& event) {

@@ -1338,29 +1338,6 @@
             ]
         }
     ],
-    "AutofillRationalizeStreetAddressAndAddressLine": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "fuchsia",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillRationalizeStreetAddressAndAddressLine"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillRefillModifiedCreditCardExpirationDates": [
         {
             "platforms": [
@@ -2303,7 +2280,7 @@
                 {
                     "name": "CacheTransparencyEnabled",
                     "params": {
-                        "pervasive-payloads": "1,http://127.0.0.1:4353/pervasive.js,87F6EE26BD9CFC440B4C805AAE79E0A5671F61C00B5E0AF54B8199EAF64AAAC3"
+                        "pervasive-payloads": "1,http://127.0.0.1:4353/pervasive.js,3790EEB37E2A761CFD3B274CCF45CE5AB86A34DF11E28FB7ED4D82AFBBC13BEB"
                     },
                     "enable_features": [
                         "CacheTransparency",
@@ -2313,7 +2290,7 @@
                 {
                     "name": "InputPervasivePayloadsList",
                     "params": {
-                        "pervasive-payloads": "1,http://127.0.0.1:4353/pervasive.js,87F6EE26BD9CFC440B4C805AAE79E0A5671F61C00B5E0AF54B8199EAF64AAAC3"
+                        "pervasive-payloads": "1,http://127.0.0.1:4353/pervasive.js,3790EEB37E2A761CFD3B274CCF45CE5AB86A34DF11E28FB7ED4D82AFBBC13BEB"
                     },
                     "enable_features": [
                         "PervasivePayloadsList"
@@ -8509,42 +8486,6 @@
             ]
         }
     ],
-    "Prerender2Desktop": [
-        {
-            "platforms": [
-                "windows",
-                "chromeos",
-                "chromeos_lacros",
-                "fuchsia",
-                "mac",
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledPrerenderSpecRulesAndDUI_20220913",
-                    "enable_features": [
-                        "OmniboxTriggerForPrerender2",
-                        "Prerender2"
-                    ],
-                    "disable_features": [
-                        "OmniboxTriggerForNoStatePrefetch",
-                        "SupportSearchSuggestionForPrerender2"
-                    ]
-                },
-                {
-                    "name": "EnabledPrerenderSpecRules_20220913",
-                    "enable_features": [
-                        "OmniboxTriggerForNoStatePrefetch",
-                        "Prerender2"
-                    ],
-                    "disable_features": [
-                        "OmniboxTriggerForPrerender2",
-                        "SupportSearchSuggestionForPrerender2"
-                    ]
-                }
-            ]
-        }
-    ],
     "PriceDropNtpIPH": [
         {
             "platforms": [
@@ -11794,27 +11735,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "kBypassJustificationEnabled"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WebProtectNewEvents": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "fuchsia",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "LoginEventReporting",
-                        "PasswordBreachEventReporting"
                     ]
                 }
             ]

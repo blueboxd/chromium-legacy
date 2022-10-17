@@ -1331,7 +1331,7 @@ BASE_FEATURE(kMacAddressRandomization,
 // Enables the custom color picker and recent colors UI in the media app.
 BASE_FEATURE(kMediaAppCustomColors,
              "MediaAppCustomColors",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Within the ChromeOS media app, reveals the button to edit the current image
 // in Photos.
@@ -1671,6 +1671,16 @@ BASE_FEATURE(kVCBackgroundBlur,
              "VCBackgroundBlur",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether the vc background replace is enabled.
+BASE_FEATURE(kVCBackgroundReplace,
+             "VCBackgroundReplace",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether the vc portrait relighting is enabled.
+BASE_FEATURE(kVCPortraitRelighting,
+             "VCPortraitRelighting",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or disables the Quick Settings Network revamp, which updates Network
 // Quick Settings UI and related infrastructure. See https://crbug.com/1169479.
 BASE_FEATURE(kQuickSettingsNetworkRevamp,
@@ -1942,6 +1952,9 @@ BASE_FEATURE(kTerminalDev, "TerminalDev", base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kTerminalMultiProfile,
              "TerminalMultiProfile",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables SFTP / mount for Terminal..
+BASE_FEATURE(kTerminalSftp, "TerminalSftp", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables tmux integration in the Terminal System App.
 BASE_FEATURE(kTerminalTmuxIntegration,
@@ -3038,6 +3051,14 @@ bool IsUseStorkSmdsServerAddressEnabled() {
 
 bool IsVCBackgroundBlurEnabled() {
   return base::FeatureList::IsEnabled(kVCBackgroundBlur);
+}
+
+bool IsVCBackgroundReplaceEnabled() {
+  return base::FeatureList::IsEnabled(kVCBackgroundReplace);
+}
+
+bool IsVCPortraitRelightingEnabled() {
+  return base::FeatureList::IsEnabled(kVCPortraitRelighting);
 }
 
 bool IsVcControlsUiEnabled() {

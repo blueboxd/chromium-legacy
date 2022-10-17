@@ -215,16 +215,16 @@ const CSSValue* ParseValue(Document& document, String syntax, String value) {
                                   /* is_animation_tainted */ false);
 }
 
-CSSSelectorList ParseSelectorList(const String& string) {
+CSSSelectorList* ParseSelectorList(const String& string) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
   auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
   CSSTokenizer tokenizer(string);
   const auto tokens = tokenizer.TokenizeToEOF();
   CSSParserTokenRange range(tokens);
-  Vector<CSSSelector> arena;
-  base::span<CSSSelector> vector =
-      CSSSelectorParser::ParseSelector(range, context, sheet, arena);
+  HeapVector<CSSSelector> arena;
+  base::span<CSSSelector> vector = CSSSelectorParser::ParseSelector(
+      range, context, /*parent_rule_for_nesting=*/nullptr, sheet, arena);
   return CSSSelectorList::AdoptSelectorVector(vector);
 }
 

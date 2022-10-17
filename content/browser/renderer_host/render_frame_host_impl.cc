@@ -7870,7 +7870,7 @@ void RenderFrameHostImpl::DidChangeSrcDoc(
 }
 
 void RenderFrameHostImpl::DidChangeBaseURL(const GURL& base_url) {
-  if (!SiteIsolationPolicy::AreIsolatedSandboxedIframesEnabled())
+  if (!blink::features::IsNewBaseUrlInheritanceBehaviorEnabled())
     return;
 
   // TODO(https://crbug.com/1356658,1366593): consider restricting base URL in
@@ -7879,10 +7879,10 @@ void RenderFrameHostImpl::DidChangeBaseURL(const GURL& base_url) {
 }
 
 const GURL& RenderFrameHostImpl::GetBaseUrl() const {
-  if (!SiteIsolationPolicy::AreIsolatedSandboxedIframesEnabled()) {
+  if (!blink::features::IsNewBaseUrlInheritanceBehaviorEnabled()) {
     NOTREACHED() << __func__
                  << " should only be invoked when the feature "
-                    "IsolateSandboxedIframes is enabled.";
+                    "NewBaseUrlInheritanceBehavioris enabled.";
     return GURL::EmptyGURL();
   }
 
@@ -11328,7 +11328,7 @@ bool RenderFrameHostImpl::ShouldBypassSecurityChecksForErrorPage(
   if (should_commit_error_page)
     *should_commit_error_page = false;
 
-  if (frame_tree_node_->IsErrorPageIsolationEnabled()) {
+  if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(is_main_frame())) {
     if (GetSiteInstance()->GetSiteInfo().is_error_page()) {
       if (should_commit_error_page)
         *should_commit_error_page = true;
@@ -11712,7 +11712,8 @@ void RenderFrameHost::LogSandboxedIframesIsolationMetrics() {
       sandboxed_rphs.size());
 }
 
-void RenderFrameHostImpl::UpdateIsolatableSandboxedIframeTracking() {
+void RenderFrameHostImpl::UpdateIsolatableSandboxedIframeTracking(
+    NavigationRequest* navigation_request) {
   RoutingIDIsolatableSandboxedIframesSet* oopsifs =
       g_routing_id_isolatable_sandboxed_iframes_set.Pointer();
   GlobalRenderFrameHostId global_id = GetGlobalId();
@@ -11735,8 +11736,9 @@ void RenderFrameHostImpl::UpdateIsolatableSandboxedIframeTracking() {
       // frame, to see if the url can be placed in an OOPSIF, i.e. it's not
       // already isolated because of being cross-site.
       RenderFrameHost* frame_owner = GetParent();
-      if (!frame_owner && frame_tree_node_->opener())
-        frame_owner = frame_tree_node_->opener()->current_frame_host();
+      FrameTreeNode* opener = navigation_request->frame_tree_node()->opener();
+      if (!frame_owner && opener)
+        frame_owner = opener->current_frame_host();
 
       if (!frame_owner) {
         frame_is_isolatable = false;
@@ -12158,7 +12160,7 @@ void RenderFrameHostImpl::DidCommitNewDocument(
 
   accessibility_fatal_error_count_ = 0;
 
-  UpdateIsolatableSandboxedIframeTracking();
+  UpdateIsolatableSandboxedIframeTracking(navigation_request);
 }
 
 // TODO(arthursonzogni): Below, many NavigationRequest's objects are passed from

@@ -265,11 +265,6 @@
     "expiry_milestone": 111
   },
   {
-    "name": "arc-right-click-long-press",
-    "owners": [ "yhanada", "mduggan" ],
-    "expiry_milestone": 102
-  },
-  {
     "name": "arc-rt-vcpu-dual-core",
     "owners": [ "kansho" ],
     "expiry_milestone": 100
@@ -1300,7 +1295,7 @@
   {
     "name": "default-link-capturing-in-browser",
     "owners": [ "tsergeant", "chromeos-apps-foundation-team@google.com"],
-    "expiry_milestone": 108
+    "expiry_milestone": 112
   },
   {
     "name": "deferred-font-shaping",
@@ -1407,7 +1402,7 @@
     "owners": [ "chrome-knowledge-eng@google.com", "chromeos-touch-ml@google.com" ],
     // This flag is use to disable CancelAllTouches() function, which enable the
     // testing for implementation of canceling single touches.
-    "expiry_milestone": 104
+    "expiry_milestone": 115
   },
   {
     "name": "disable-explicit-dma-fences",
@@ -2398,7 +2393,7 @@
   {
     "name": "enable-generic-sensor-extra-classes",
     "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 112
   },
   {
     "name": "enable-get-display-media-set",
@@ -2718,6 +2713,11 @@
     // We add a neural net to change how fingers are handled. We set a milestone
     // deep into the future to allow for experiments.
     "expiry_milestone": 130
+  },
+  {
+    "name": "enable-new-base-url-inheritance-behavior",
+    "owners": [ "wjmaclean", "creis", "alexmos", "domenic" ],
+    "expiry_milestone": 115
   },
   {
     "name": "enable-new-download-api",
@@ -3364,6 +3364,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-webrtc-allow-input-volume-adjustment",
+    "owners": [ "alessiob", "silen" ],
+    "expiry_milestone": 123
+  },
+  {
     "name": "enable-webrtc-analog-agc-clipping-control",
     "owners": [ "alessiob", "silen", "minyue" ],
     "expiry_milestone": 103
@@ -3928,8 +3933,8 @@
   },
   {
     "name": "google-mobile-services-passwords",
-    "owners": [ "fhorschig@chromium.org", "vasilii" ],
-    "expiry_milestone": 108
+    "owners": [ "maxan@google.com", "vasilii" ],
+    "expiry_milestone": 112
   },
   {
     "name": "google-mobile-services-passwords-error-messages",
@@ -3937,7 +3942,7 @@
       "ioanap",
       "izuzic@google.com"
     ],
-    "expiry_milestone": 110
+    "expiry_milestone": 112
   },
   {
     "name": "google-mobile-services-passwords-reenrollment",
@@ -4010,11 +4015,6 @@
     "name": "help-app-background-page",
     "owners": [ "//ash/webui/help_app_ui/OWNERS" ],
     "expiry_milestone": 102
-  },
-  {
-    "name": "help-app-discover-tab",
-    "owners": [ "//ash/webui/help_app_ui/OWNERS" ],
-    "expiry_milestone": 97
   },
   {
     "name": "help-app-launcher-search",
@@ -4207,12 +4207,12 @@
   {
     "name": "intent-chip-app-icon",
     "owners": ["tsergeant", "chromeos-apps-foundation-team@google.com"],
-    "expiry_milestone": 108
+    "expiry_milestone": 112
   },
   {
     "name": "intent-chip-skips-intent-picker",
     "owners": ["tsergeant", "chromeos-apps-foundation-team@google.com"],
-    "expiry_milestone": 108
+    "expiry_milestone": 112
   },
   {
     "name": "interest-feed-notice-card-auto-dismiss",
@@ -4468,17 +4468,17 @@
   {
     "name": "link-capturing-auto-display-intent-picker",
     "owners": [ "tsergeant", "chromeos-apps-foundation-team@google.com" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 112
   },
   {
     "name": "link-capturing-infobar",
     "owners": ["tsergeant", "chromeos-apps-foundation-team@google.com"],
-    "expiry_milestone": 108
+    "expiry_milestone": 112
   },
   {
     "name": "link-capturing-ui-update",
     "owners": ["tsergeant", "chromeos-apps-foundation-team@google.com"],
-    "expiry_milestone": 108
+    "expiry_milestone": 112
   },
   {
     "name": "list-all-display-modes",
@@ -4520,12 +4520,12 @@
   {
     "name": "media-app-photos-integration-image",
     "owners": [ "//ash/webui/media_app_ui/OWNERS" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 115
   },
   {
     "name": "media-app-photos-integration-video",
     "owners": [ "//ash/webui/media_app_ui/OWNERS" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 115
   },
   {
     "name": "media-router-cast-allow-all-ips",
@@ -5505,7 +5505,7 @@
   {
     "name": "password-notes",
     "owners": ["mamir", "derinel@google.com"],
-    "expiry_milestone": 108
+    "expiry_milestone": 111
   },
   {
     "name": "password-scripts-fetching",
@@ -5636,7 +5636,7 @@
       "johnidel",
       "jkarlin",
       "pauljensen"],
-    "expiry_milestone": 108
+    "expiry_milestone": 112
   },
   {
     "name": "private-aggregation-developer-mode",
@@ -5843,11 +5843,6 @@
     "name": "reduce-display-notifications",
     "owners": [ "baileyberro", "zentaro" ],
     "expiry_milestone": 112
-  },
-  {
-    "name": "reduce-gpu-priority-on-background",
-    "owners": [ "boliu" ],
-    "expiry_milestone": 108
   },
   {
     "name": "reduce-horizontal-fling-velocity",
@@ -6149,7 +6144,7 @@
   {
     "name": "sharing-desktop-share-preview",
     "owners": ["ellyjones", "chrome-with-friends-robots@google.com"],
-    "expiry_milestone": 108
+    "expiry_milestone": 111
   },
   {
     "name": "sharing-desktop-share-to-google-collections",
@@ -6590,6 +6585,11 @@
     "expiry_milestone": 120
   },
   {
+    "name": "terminal-sftp",
+    "owners": [ "joelhockey", "lxj", "//chrome/browser/ash/guest_os/OWNERS" ],
+    "expiry_milestone": 120
+  },
+  {
     "name": "terminal-tmux-integration",
     "owners": [ "lxj", "easy", "//chrome/browser/ash/guest_os/OWNERS" ],
     "expiry_milestone": 112
@@ -6926,13 +6926,23 @@
   },
   {
     "name": "vc-background-blur",
-    "owners": [ "shafron", "skyostil", "charleszhao" ],
+    "owners": [ "shafron", "skyostil", "charleszhao", "jmpollock" ],
+    "expiry_milestone": 115
+  },
+  {
+    "name": "vc-background-replace",
+    "owners": [ "shafron", "skyostil", "charleszhao", "jmpollock" ],
     "expiry_milestone": 115
   },
   {
     "name": "vc-controls-ui",
     "owners": [ "rtinkoff", "cros-status-area-eng@google.com" ],
     "expiry_milestone": 117
+  },
+  {
+    "name": "vc-portrait-relighting",
+    "owners": [ "shafron", "skyostil", "charleszhao", "jmpollock" ],
+    "expiry_milestone": 115
   },
   {
     "name": "verbose-logging-in-nacl",

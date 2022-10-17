@@ -32,13 +32,17 @@
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/toggle_root.h"
-#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/wtf/gc_plugin_ignore.h"
 
 namespace blink {
 
 class CSSParserContext;
 class CSSSelectorList;
 class Document;
+class StyleRule;
 
 // This class represents a simple selector for a StyleRule.
 
@@ -93,13 +97,21 @@ class Document;
 // [attr="value"].
 //
 class CORE_EXPORT CSSSelector {
-  USING_FAST_MALLOC_WITH_TYPE_NAME(blink::CSSSelector);
+  // CSSSelector typically lives on Oilpan; either in StyleRule's
+  // AdditionalBytes, as part of CSSSelectorList, or (during parsing)
+  // in a HeapVector. However, it is never really allocated as a separate
+  // Oilpan object, so it does not inherit from GarbageCollected.
+  DISALLOW_NEW();
 
  public:
   CSSSelector();
+
+  // NOTE: Will not deep-copy the selector list, if any.
   CSSSelector(const CSSSelector&);
+
   CSSSelector(CSSSelector&&);
   explicit CSSSelector(const QualifiedName&, bool tag_is_implicit = false);
+  explicit CSSSelector(const StyleRule* parent_rule);
 
   ~CSSSelector();
 
@@ -121,6 +133,7 @@ class CORE_EXPORT CSSSelector {
   /* how the attribute value has to match.... Default is Exact */
   enum MatchType {
     kUnknown,
+    kInvalidList,       // Used as a marker in CSSSelectorList.
     kTag,               // Example: div
     kId,                // Example: #id
     kClass,             // example: .class
@@ -228,6 +241,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoOnlyChild,
     kPseudoOnlyOfType,
     kPseudoOptional,
+    kPseudoParent,  // Written as & (in nested rules).
     kPseudoPart,
     kPseudoPlaceholder,
     kPseudoPlaceholderShown,
@@ -333,6 +347,12 @@ class CORE_EXPORT CSSSelector {
                                      const Document* document);
   static PseudoId GetPseudoId(PseudoType);
 
+  // See StyleRule::Reparent().
+  void Reparent(StyleRule* old_parent, StyleRule* new_parent) {
+    DCHECK_EQ(old_parent, ParentRule());
+    data_.parent_rule_ = new_parent;
+  }
+
   // Selectors are kept in an array by CSSSelectorList. The next component of
   // the selector is the next item in the array.
   const CSSSelector* TagHistory() const {
@@ -341,6 +361,7 @@ class CORE_EXPORT CSSSelector {
 
   static const AtomicString& UniversalSelectorAtom() { return g_null_atom; }
   const QualifiedName& TagQName() const;
+  const StyleRule* ParentRule() const;  // Only valid for kPseudoParent.
   const AtomicString& Value() const;
   const AtomicString& SerializingValue() const;
 
@@ -360,8 +381,14 @@ class CORE_EXPORT CSSSelector {
     return has_rare_data_ ? data_.rare_data_->argument_ : g_null_atom;
   }
   const CSSSelectorList* SelectorList() const {
-    return has_rare_data_ ? data_.rare_data_->selector_list_.get() : nullptr;
+    return has_rare_data_ ? data_.rare_data_->selector_list_.Get() : nullptr;
   }
+  // Similar to SelectorList(), but also works for kPseudoParent
+  // (i.e., nested selectors); on &, will give the parent's selector list.
+  // Will return nullptr if no such list exists (e.g. if we are not a
+  // pseudo selector at all), or if we are a & rule that's in a non-nesting
+  // context (which is valid, but won't match anything).
+  const CSSSelector* SelectorListOrParent() const;
   const Vector<AtomicString>* PartNames() const {
     return has_rare_data_ ? data_.rare_data_->part_names_.get() : nullptr;
   }
@@ -387,7 +414,7 @@ class CORE_EXPORT CSSSelector {
   void SetValue(const AtomicString&, bool match_lower_case);
   void SetAttribute(const QualifiedName&, AttributeMatchType);
   void SetArgument(const AtomicString&);
-  void SetSelectorList(std::unique_ptr<CSSSelectorList>);
+  void SetSelectorList(CSSSelectorList*);
   void SetPartNames(std::unique_ptr<Vector<AtomicString>>);
   void SetToggle(const AtomicString& name,
                  std::unique_ptr<ToggleRoot::State>&& value);
@@ -455,6 +482,8 @@ class CORE_EXPORT CSSSelector {
   // Returns true if the immediately preceeding simple selector is ::slotted.
   bool FollowsSlotted() const;
 
+  void Trace(Visitor* visitor) const;
+
   static String FormatPseudoTypeForDebugging(PseudoType);
 
  private:
@@ -477,10 +506,8 @@ class CORE_EXPORT CSSSelector {
   unsigned SpecificityForPage() const;
   const CSSSelector* SerializeCompound(StringBuilder&) const;
 
-  struct RareData : public RefCounted<RareData> {
-    static scoped_refptr<RareData> Create(const AtomicString& value) {
-      return base::AdoptRef(new RareData(value));
-    }
+  struct RareData : public GarbageCollected<RareData> {
+    explicit RareData(const AtomicString& value);
     ~RareData();
 
     bool MatchNth(unsigned count);
@@ -512,14 +539,13 @@ class CORE_EXPORT CSSSelector {
     } bits_;
     QualifiedName attribute_;  // used for attribute selector
     AtomicString argument_;    // Used for :contains, :lang, :nth-*, :toggle()
-    std::unique_ptr<CSSSelectorList>
-        selector_list_;  // Used for :-webkit-any and :not
+    Member<CSSSelectorList>
+        selector_list_;  // Used :is, :not, :-webkit-any, etc.
     std::unique_ptr<Vector<AtomicString>>
         part_names_;  // Used for ::part() selectors.
     std::unique_ptr<ToggleRoot::State> toggle_value_;  // used for :toggle()
 
-   private:
-    RareData(const AtomicString& value);
+    void Trace(Visitor* visitor) const;
   };
   void CreateRareData();
 
@@ -528,6 +554,8 @@ class CORE_EXPORT CSSSelector {
   //
   //  if (match_ == kTag) {
   //     /* data_.tag_q_name_ is valid */
+  //  } else if (match_ == kPseudoClass && pseudo_type_ == kPseudoParent) {
+  //     /* data_.parent_rule_ is valid */
   //  } else if (has_rare_data_) {
   //     /* data_.rare_data_ is valid */
   //  } else {
@@ -538,6 +566,7 @@ class CORE_EXPORT CSSSelector {
   // fields when shifting between types tags for a DataUnion! Otherwise there
   // will be undefined behavior! This luckily only happens when transitioning
   // from a normal |value_| to a |rare_data_|.
+  GC_PLUGIN_IGNORE("crbug.com/1146383")
   union DataUnion {
     enum ConstructUninitializedTag { kConstructUninitialized };
     explicit DataUnion(ConstructUninitializedTag) {}
@@ -548,11 +577,15 @@ class CORE_EXPORT CSSSelector {
     explicit DataUnion(const QualifiedName& tag_q_name)
         : tag_q_name_(tag_q_name) {}
 
+    explicit DataUnion(const StyleRule* parent_rule)
+        : parent_rule_(parent_rule) {}
+
     ~DataUnion() {}
 
     AtomicString value_;
     QualifiedName tag_q_name_;
-    scoped_refptr<RareData> rare_data_;
+    Member<RareData> rare_data_;
+    Member<const StyleRule> parent_rule_;  // For & (parent in nest).
   } data_;
 };
 
@@ -585,6 +618,7 @@ inline bool CSSSelector::IsASCIILower(const AtomicString& value) {
 inline void CSSSelector::SetValue(const AtomicString& value,
                                   bool match_lower_case = false) {
   DCHECK_NE(match_, static_cast<unsigned>(kTag));
+  DCHECK(!(match_ == kPseudoClass && pseudo_type_ == kPseudoParent));
   if (match_lower_case && !has_rare_data_ && !IsASCIILower(value)) {
     CreateRareData();
   }
@@ -621,6 +655,16 @@ inline CSSSelector::CSSSelector(const QualifiedName& tag_q_name,
       tag_is_implicit_(tag_is_implicit),
       data_(tag_q_name) {}
 
+inline CSSSelector::CSSSelector(const StyleRule* parent_rule)
+    : relation_(kSubSelector),
+      match_(kPseudoClass),
+      pseudo_type_(kPseudoParent),
+      is_last_in_selector_list_(false),
+      is_last_in_tag_history_(false),
+      has_rare_data_(false),
+      is_for_page_(false),
+      data_(parent_rule) {}
+
 inline CSSSelector::CSSSelector(const CSSSelector& o)
     : relation_(o.relation_),
       match_(o.match_),
@@ -633,38 +677,32 @@ inline CSSSelector::CSSSelector(const CSSSelector& o)
       data_(DataUnion::kConstructUninitialized) {
   if (o.match_ == kTag) {
     new (&data_.tag_q_name_) QualifiedName(o.data_.tag_q_name_);
+  } else if (o.match_ == kPseudoClass && o.pseudo_type_ == kPseudoParent) {
+    data_.parent_rule_ = o.data_.parent_rule_;
   } else if (o.has_rare_data_) {
-    new (&data_.rare_data_) scoped_refptr<RareData>(o.data_.rare_data_);
+    data_.rare_data_ = o.data_.rare_data_;  // Oilpan-managed.
   } else {
     new (&data_.value_) AtomicString(o.data_.value_);
   }
 }
 
 inline CSSSelector::CSSSelector(CSSSelector&& o)
-    : relation_(o.relation_),
-      match_(o.match_),
-      pseudo_type_(o.pseudo_type_),
-      is_last_in_selector_list_(o.is_last_in_selector_list_),
-      is_last_in_tag_history_(o.is_last_in_tag_history_),
-      has_rare_data_(o.has_rare_data_),
-      is_for_page_(o.is_for_page_),
-      tag_is_implicit_(o.tag_is_implicit_),
-      data_(DataUnion::kConstructUninitialized) {
-  if (o.match_ == kTag) {
-    new (&data_.tag_q_name_) QualifiedName(std::move(o.data_.tag_q_name_));
-  } else if (o.has_rare_data_) {
-    new (&data_.rare_data_)
-        scoped_refptr<RareData>(std::move(o.data_.rare_data_));
-  } else {
-    new (&data_.value_) AtomicString(std::move(o.data_.value_));
-  }
+    : data_(DataUnion::kConstructUninitialized) {
+  // Seemingly Clang started generating terrible code for the obvious move
+  // constructor (i.e., using similar code as in the copy constructor above)
+  // after moving to Oilpan, copying the bits one by one. We already allow
+  // memcpy + memset by traits, so we can do it by ourselves, too.
+  memcpy(this, &o, sizeof(*this));
+  memset(&o, 0, sizeof(o));
 }
 
 inline CSSSelector::~CSSSelector() {
   if (match_ == kTag)
     data_.tag_q_name_.~QualifiedName();
+  else if (match_ == kPseudoClass && pseudo_type_ == kPseudoParent)
+    ;  // Nothing to do.
   else if (has_rare_data_)
-    data_.rare_data_.~scoped_refptr<RareData>();
+    ;  // Nothing to do.
   else
     data_.value_.~AtomicString();
 }
@@ -678,6 +716,12 @@ inline CSSSelector& CSSSelector::operator=(CSSSelector&& other) {
 inline const QualifiedName& CSSSelector::TagQName() const {
   DCHECK_EQ(match_, static_cast<unsigned>(kTag));
   return data_.tag_q_name_;
+}
+
+inline const StyleRule* CSSSelector::ParentRule() const {
+  DCHECK_EQ(match_, static_cast<unsigned>(kPseudoClass));
+  DCHECK_EQ(pseudo_type_, static_cast<unsigned>(kPseudoParent));
+  return data_.parent_rule_;
 }
 
 inline const AtomicString& CSSSelector::Value() const {

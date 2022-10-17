@@ -18,6 +18,7 @@ class CSSParserTokenStream;
 class CSSParserObserver;
 class CSSSelectorList;
 class Node;
+class StyleRule;
 class StyleSheetContents;
 
 // CSSSelectorParser parses a CSS selector (or a comma-separated list of them)
@@ -29,7 +30,7 @@ class StyleSheetContents;
 // In order to be light on memory allocation, CSSSelectorParser uses a scheme
 // akin to an arena; as we parse the simple selectors that make up a compound
 // (and in turn, a full complex selector), they are being pushed onto a
-// Vector<CSSSelector>. Then, the required reorderings will be done
+// HeapVector<CSSSelector>. Then, the required reorderings will be done
 // in-place. When we're done parsing, the correct data is pulled out of the
 // vector (by the caller), whose memory can then be reused with no further
 // allocations for parsing the next selectors. (When doing so, it is important
@@ -54,15 +55,19 @@ class CORE_EXPORT CSSSelectorParser {
   // (existing elements on the vector are untouched; the output is
   // appended to its end). In other words, if you add new elements
   // to the vector or similar, the span may be invalidated.
-  static base::span<CSSSelector> ParseSelector(CSSParserTokenRange,
-                                               const CSSParserContext*,
-                                               StyleSheetContents*,
-                                               Vector<CSSSelector>&);
-  static base::span<CSSSelector> ConsumeSelector(CSSParserTokenStream&,
-                                                 const CSSParserContext*,
-                                                 StyleSheetContents*,
-                                                 CSSParserObserver*,
-                                                 Vector<CSSSelector>&);
+  static base::span<CSSSelector> ParseSelector(
+      CSSParserTokenRange,
+      const CSSParserContext*,
+      const StyleRule* parent_rule_for_nesting,
+      StyleSheetContents*,
+      HeapVector<CSSSelector>&);
+  static base::span<CSSSelector> ConsumeSelector(
+      CSSParserTokenStream&,
+      const CSSParserContext*,
+      const StyleRule* parent_rule_for_nesting,
+      StyleSheetContents*,
+      CSSParserObserver*,
+      HeapVector<CSSSelector>&);
 
   static bool ConsumeANPlusB(CSSParserTokenRange&, std::pair<int, int>&);
 
@@ -84,37 +89,33 @@ class CORE_EXPORT CSSSelectorParser {
   // Therefore empty lists, represented by !CSSSelectorList::IsValid(), are
   // allowed.
   //
-  // Parse errors are signalled by absl::nullopt.
-  static absl::optional<CSSSelectorList> ParseScopeBoundary(
-      CSSParserTokenRange,
-      const CSSParserContext*,
-      StyleSheetContents*);
+  // Parse errors are signalled by returning nullptr.
+  static CSSSelectorList* ParseScopeBoundary(CSSParserTokenRange,
+                                             const CSSParserContext*,
+                                             StyleSheetContents*);
 
  private:
   CSSSelectorParser(const CSSParserContext*,
+                    const StyleRule* parent_rule_for_nesting,
                     StyleSheetContents*,
-                    Vector<CSSSelector>&);
+                    HeapVector<CSSSelector>&);
 
   // These will all consume trailing comments if successful
 
   base::span<CSSSelector> ConsumeComplexSelectorList(CSSParserTokenRange&);
   base::span<CSSSelector> ConsumeComplexSelectorList(CSSParserTokenStream&,
                                                      CSSParserObserver*);
-  CSSSelectorList ConsumeCompoundSelectorList(CSSParserTokenRange&);
+  CSSSelectorList* ConsumeCompoundSelectorList(CSSParserTokenRange&);
   // Consumes a complex selector list if inside_compound_pseudo_ is false,
   // otherwise consumes a compound selector list.
-  CSSSelectorList ConsumeNestedSelectorList(CSSParserTokenRange&);
-  absl::optional<CSSSelectorList> ConsumeForgivingNestedSelectorList(
-      CSSParserTokenRange&);
+  CSSSelectorList* ConsumeNestedSelectorList(CSSParserTokenRange&);
+  CSSSelectorList* ConsumeForgivingNestedSelectorList(CSSParserTokenRange&);
   // https://drafts.csswg.org/selectors/#typedef-forgiving-selector-list
-  absl::optional<CSSSelectorList> ConsumeForgivingComplexSelectorList(
-      CSSParserTokenRange&);
-  absl::optional<CSSSelectorList> ConsumeForgivingCompoundSelectorList(
-      CSSParserTokenRange&);
+  CSSSelectorList* ConsumeForgivingComplexSelectorList(CSSParserTokenRange&);
+  CSSSelectorList* ConsumeForgivingCompoundSelectorList(CSSParserTokenRange&);
   // https://drafts.csswg.org/selectors/#typedef-relative-selector-list
-  absl::optional<CSSSelectorList> ConsumeForgivingRelativeSelectorList(
-      CSSParserTokenRange&);
-  CSSSelectorList ConsumeRelativeSelectorList(CSSParserTokenRange&);
+  CSSSelectorList* ConsumeForgivingRelativeSelectorList(CSSParserTokenRange&);
+  CSSSelectorList* ConsumeRelativeSelectorList(CSSParserTokenRange&);
 
   base::span<CSSSelector> ConsumeRelativeSelector(CSSParserTokenRange&);
   base::span<CSSSelector> ConsumeComplexSelector(CSSParserTokenRange&);
@@ -146,8 +147,9 @@ class CORE_EXPORT CSSSelectorParser {
   // otherwise, the vector will be pushed onto output_.
   bool ConsumeId(CSSParserTokenRange&);
   bool ConsumeClass(CSSParserTokenRange&);
-  bool ConsumePseudo(CSSParserTokenRange&);
   bool ConsumeAttribute(CSSParserTokenRange&);
+  bool ConsumePseudo(CSSParserTokenRange&);
+  bool ConsumeNestingParent(CSSParserTokenRange& range);
   // This doesn't include element names, since they're handled specially
   bool ConsumeSimpleSelector(CSSParserTokenRange&);
 
@@ -173,6 +175,7 @@ class CORE_EXPORT CSSSelectorParser {
   void SetInSupportsParsing() { in_supports_parsing_ = true; }
 
   const CSSParserContext* context_;
+  const StyleRule* parent_rule_for_nesting_;
   const StyleSheetContents* style_sheet_;
 
   bool failed_parsing_ = false;
@@ -214,7 +217,7 @@ class CORE_EXPORT CSSSelectorParser {
 
   // See the comment on ParseSelector(); when we allocate a CSSSelector,
   // it is on this vector (which we effectively use as an arena).
-  Vector<CSSSelector>& output_;
+  HeapVector<CSSSelector>& output_;
 
   class DisallowPseudoElementsScope {
     STACK_ALLOCATED();
@@ -250,7 +253,7 @@ class CORE_EXPORT CSSSelectorParser {
     STACK_ALLOCATED();
 
    public:
-    explicit ResetVectorAfterScope(Vector<CSSSelector>& vector)
+    explicit ResetVectorAfterScope(HeapVector<CSSSelector>& vector)
         : vector_(vector), initial_size_(vector.size()) {}
 
     ~ResetVectorAfterScope() {
@@ -275,7 +278,7 @@ class CORE_EXPORT CSSSelectorParser {
     }
 
    private:
-    Vector<CSSSelector>& vector_;
+    HeapVector<CSSSelector>& vector_;
     const wtf_size_t initial_size_;
     bool committed_ = false;
   };

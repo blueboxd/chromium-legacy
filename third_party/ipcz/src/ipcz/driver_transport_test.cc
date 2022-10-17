@@ -184,12 +184,14 @@ TEST_F(DriverTransportTest, SerializationFailure) {
                           IpczDriverHandle* handles, size_t* num_handles) {
         if (!data && !handles) {
           // Return valid outputs when ipcz is sizing the object.
-          *num_bytes = 1;
-          *num_handles = 1;
+          if (num_bytes && num_handles) {
+            *num_bytes = 1;
+            *num_handles = 1;
+          }
           return IPCZ_RESULT_RESOURCE_EXHAUSTED;
         }
 
-        // Return error when serializing.
+        // Return an error when serializing.
         return IPCZ_RESULT_FAILED_PRECONDITION;
       });
 

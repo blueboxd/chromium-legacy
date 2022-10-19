@@ -68,6 +68,7 @@ export interface SiteGroup {
   fpsNumMembers?: number;
   fpsEnterpriseManaged?: boolean;
   hasInstalledPWA: boolean;
+  isolatedWebAppName?: string;
 }
 
 /**
@@ -80,6 +81,7 @@ export interface RawSiteException {
   isEmbargoed: boolean;
   origin: string;
   displayName: string;
+  isolatedWebAppName?: string;
   type: string;
   setting: ContentSetting;
   source: SiteSettingSource;
@@ -111,6 +113,7 @@ export interface SiteException {
  */
 export interface RecentSitePermissions {
   origin: string;
+  isolatedWebAppName?: string;
   incognito: boolean;
   recentPermissions: RawSiteException[];
 }

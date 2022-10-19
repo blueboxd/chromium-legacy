@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -21,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -381,10 +381,6 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     return false;
   }
 
-  int CountInString(const std::string& str, char c) {
-    return std::count(str.begin(), str.end(), c);
-  }
-
   void TestHostGarbageCollectHelper() {
     const char kHistogramName[] = "Cookie.NumDomainPurgedKeys";
     int domain_max_cookies = CookieMonster::kDomainMaxCookies;
@@ -400,7 +396,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
         // Make sure we find it in the cookies.
         EXPECT_NE(cookies.find(cookie), std::string::npos);
         // Count the number of cookies.
-        EXPECT_LE(CountInString(cookies, '='), domain_max_cookies);
+        EXPECT_LE(base::ranges::count(cookies, '='), domain_max_cookies);
       }
       base::HistogramTester histogram_tester;
       EXPECT_TRUE(cm->DoRecordPeriodicStatsForTesting());
@@ -425,8 +421,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
         std::string cookies_specific =
             this->GetCookies(cm.get(), url_google_specific);
         EXPECT_NE(cookies_specific.find(cookie_specific), std::string::npos);
-        EXPECT_LE((CountInString(cookies_general, '=') +
-                   CountInString(cookies_specific, '=')),
+        EXPECT_LE((base::ranges::count(cookies_general, '=') +
+                   base::ranges::count(cookies_specific, '=')),
                   domain_max_cookies);
       }
       // After all this, there should be at least
@@ -435,8 +431,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
           this->GetCookies(cm.get(), http_www_foo_.url());
       std::string cookies_specific =
           this->GetCookies(cm.get(), url_google_specific);
-      int total_cookies = (CountInString(cookies_general, '=') +
-                           CountInString(cookies_specific, '='));
+      int total_cookies = (base::ranges::count(cookies_general, '=') +
+                           base::ranges::count(cookies_specific, '='));
       EXPECT_GE(total_cookies, domain_max_cookies - domain_purge_cookies);
       EXPECT_LE(total_cookies, domain_max_cookies);
 
@@ -460,7 +456,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
           // Make sure we find it in the cookies.
           EXPECT_NE(cookies.find(cookie), std::string::npos);
           // Count the number of cookies.
-          EXPECT_LE(CountInString(cookies, '='), domain_max_cookies);
+          EXPECT_LE(base::ranges::count(cookies, '='), domain_max_cookies);
         }
         base::HistogramTester histogram_tester;
         EXPECT_TRUE(cm->DoRecordPeriodicStatsForTesting());
@@ -478,7 +474,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
         // Make sure we find it in the cookies.
         EXPECT_NE(cookies.find(cookie), std::string::npos);
         // Count the number of cookies.
-        EXPECT_LE(CountInString(cookies, '='), domain_max_cookies);
+        EXPECT_LE(base::ranges::count(cookies, '='), domain_max_cookies);
       }
       base::HistogramTester histogram_tester;
       EXPECT_TRUE(cm->DoRecordPeriodicStatsForTesting());
@@ -921,29 +917,6 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     // Round 4 => none; round 5 => none; round 6 =>  7HS.
     TestPriorityCookieCase(cm.get(), "100HS 100LN 100MN", 30U, 76U, 70U, 106U,
                            70U);
-  }
-
-  // Test enforcement of the per-partition domain limit on partitioned cookies.
-  void TestPartitionedCookiesGarbageCollectionHelper() {
-    DCHECK_EQ(10u, CookieMonster::kPerPartitionDomainMaxCookies);
-    int max_cookies = CookieMonster::kPerPartitionDomainMaxCookies;
-    auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
-
-    auto cookie_partition_key =
-        CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite.com"));
-    for (int i = 0; i < max_cookies + 5; ++i) {
-      std::string cookie = base::StringPrintf("__Host-a%02d=b", i);
-      EXPECT_TRUE(SetCookie(cm.get(), https_www_foo_.url(),
-                            cookie + "; secure; path=/; partitioned",
-                            cookie_partition_key));
-      std::string cookies =
-          this->GetCookies(cm.get(), https_www_foo_.url(),
-                           CookiePartitionKeyCollection(cookie_partition_key));
-      EXPECT_NE(cookies.find(cookie), std::string::npos);
-      EXPECT_LE(CountInString(cookies, '='), max_cookies);
-    }
-    // TODO(crbug.com/1225444): Test recording stats for deleting partitioned
-    // cookies.
   }
 
   // Function for creating a CM with a number of cookies in it,
@@ -1780,8 +1753,64 @@ TEST_F(CookieMonsterTest, TestPriorityAwareGarbageCollectionMixed) {
   TestPriorityAwareGarbageCollectHelperMixed();
 }
 
-TEST_F(CookieMonsterTest, TestPartitionedCookiesGarbageCollection) {
-  TestPartitionedCookiesGarbageCollectionHelper();
+TEST_F(CookieMonsterTest, TestPartitionedCookiesGarbageCollection_Memory) {
+  // Limit should be 10 KB.
+  DCHECK_EQ(1024u * 10u, CookieMonster::kPerPartitionDomainMaxCookieBytes);
+
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cookie_partition_key =
+      CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite1.com"));
+
+  for (size_t i = 0; i < 41; ++i) {
+    std::string cookie_value((10240 / 40) - (i < 10 ? 1 : 2), '0');
+    std::string cookie =
+        base::StrCat({base::NumberToString(i), "=", cookie_value});
+    EXPECT_TRUE(SetCookie(cm.get(), https_www_foo_.url(),
+                          cookie + "; secure; path=/; partitioned",
+                          cookie_partition_key))
+        << "Failed to set cookie " << i;
+  }
+
+  std::string cookies =
+      this->GetCookies(cm.get(), https_www_foo_.url(),
+                       CookiePartitionKeyCollection(cookie_partition_key));
+
+  EXPECT_THAT(cookies, CookieStringIs(
+                           testing::Not(testing::Contains(testing::Key("0")))));
+  for (size_t i = 1; i < 41; ++i) {
+    EXPECT_THAT(cookies, CookieStringIs(testing::Contains(
+                             testing::Key(base::NumberToString(i)))))
+        << "Failed to find cookie " << i;
+  }
+}
+
+TEST_F(CookieMonsterTest, TestPartitionedCookiesGarbageCollection_MaxCookies) {
+  // Partitioned cookies also limit domains to 180 cookies per partition.
+  DCHECK_EQ(180u, CookieMonster::kPerPartitionDomainMaxCookies);
+
+  auto cm = std::make_unique<CookieMonster>(nullptr, net::NetLog::Get());
+  auto cookie_partition_key =
+      CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite.com"));
+
+  for (size_t i = 0; i < 181; ++i) {
+    std::string cookie = base::StrCat({base::NumberToString(i), "=0"});
+    EXPECT_TRUE(SetCookie(cm.get(), https_www_foo_.url(),
+                          cookie + "; secure; path=/; partitioned",
+                          cookie_partition_key))
+        << "Failed to set cookie " << i;
+  }
+
+  std::string cookies =
+      this->GetCookies(cm.get(), https_www_foo_.url(),
+                       CookiePartitionKeyCollection(cookie_partition_key));
+  EXPECT_THAT(cookies, CookieStringIs(
+                           testing::Not(testing::Contains(testing::Key("0")))));
+  for (size_t i = 1; i < 181; ++i) {
+    std::string cookie = base::StrCat({base::NumberToString(i), "=0"});
+    EXPECT_THAT(cookies, CookieStringIs(testing::Contains(
+                             testing::Key(base::NumberToString(i)))))
+        << "Failed to find cookie " << i;
+  }
 }
 
 TEST_F(CookieMonsterTest, SetCookieableSchemes) {

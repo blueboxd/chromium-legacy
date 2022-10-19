@@ -266,14 +266,6 @@ chrome.fileManagerPrivate.Source = {
 };
 
 /** @enum {string} */
-chrome.fileManagerPrivate.Verb = {
-  OPEN_WITH: 'open_with',
-  ADD_TO: 'add_to',
-  PACK_WITH: 'pack_with',
-  SHARE_WITH: 'share_with',
-};
-
-/** @enum {string} */
 chrome.fileManagerPrivate.SourceRestriction = {
   ANY_SOURCE: 'any_source',
   NATIVE_SOURCE: 'native_source',
@@ -380,7 +372,6 @@ chrome.fileManagerPrivate.FileTaskDescriptor;
  * @typedef {{
  *   descriptor: !chrome.fileManagerPrivate.FileTaskDescriptor,
  *   title: string,
- *   verb: (!chrome.fileManagerPrivate.Verb|undefined),
  *   iconUrl: (string|undefined),
  *   isDefault: (boolean|undefined),
  *   isGenericFileHandler: (boolean|undefined)
@@ -864,8 +855,8 @@ chrome.fileManagerPrivate.setDefaultTask = function(descriptor, entries, mimeTyp
  * Gets the list of tasks that can be performed over selected files. |entries|
  * Array of selected entries |callback|
  * @param {!Array<!Entry>} entries
- * @param {function((!Array<!chrome.fileManagerPrivate.FileTask>|undefined))}
- *     callback |tasks| The list of matched file entries for this task.
+ * @param {function((!chrome.fileManagerPrivate.ResultingTasks|undefined))}
+ *     callback The list of matched file tasks for the entries.
  */
 chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {};
 

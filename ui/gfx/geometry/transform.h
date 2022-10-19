@@ -44,22 +44,22 @@ class GEOMETRY_SKIA_EXPORT Transform {
   Transform& operator=(Transform&&);
 
   // Creates a transform from explicit 16 matrix elements in row-major order.
-  static Transform RowMajor(SkScalar r0c0,
-                            SkScalar r0c1,
-                            SkScalar r0c2,
-                            SkScalar r0c3,
-                            SkScalar r1c0,
-                            SkScalar r1c1,
-                            SkScalar r1c2,
-                            SkScalar r1c3,
-                            SkScalar r2c0,
-                            SkScalar r2c1,
-                            SkScalar r2c2,
-                            SkScalar r2c3,
-                            SkScalar r3c0,
-                            SkScalar r3c1,
-                            SkScalar r3c2,
-                            SkScalar r3c3) {
+  static Transform RowMajor(double r0c0,
+                            double r0c1,
+                            double r0c2,
+                            double r0c3,
+                            double r1c0,
+                            double r1c1,
+                            double r1c2,
+                            double r1c3,
+                            double r2c0,
+                            double r2c1,
+                            double r2c2,
+                            double r2c3,
+                            double r3c0,
+                            double r3c1,
+                            double r3c2,
+                            double r3c3) {
     return Transform(r0c0, r1c0, r2c0, r3c0,   // col 0
                      r0c1, r1c1, r2c1, r3c1,   // col 1
                      r0c2, r1c2, r2c2, r3c2,   // col 2
@@ -67,56 +67,55 @@ class GEOMETRY_SKIA_EXPORT Transform {
   }
 
   // Creates a transform from explicit 16 matrix elements in col-major order.
-  static Transform ColMajor(SkScalar r0c0,
-                            SkScalar r1c0,
-                            SkScalar r2c0,
-                            SkScalar r3c0,
-                            SkScalar r0c1,
-                            SkScalar r1c1,
-                            SkScalar r2c1,
-                            SkScalar r3c1,
-                            SkScalar r0c2,
-                            SkScalar r1c2,
-                            SkScalar r2c2,
-                            SkScalar r3c2,
-                            SkScalar r0c3,
-                            SkScalar r1c3,
-                            SkScalar r2c3,
-                            SkScalar r3c3) {
+  static Transform ColMajor(double r0c0,
+                            double r1c0,
+                            double r2c0,
+                            double r3c0,
+                            double r0c1,
+                            double r1c1,
+                            double r2c1,
+                            double r3c1,
+                            double r0c2,
+                            double r1c2,
+                            double r2c2,
+                            double r3c2,
+                            double r0c3,
+                            double r1c3,
+                            double r2c3,
+                            double r3c3) {
     return Transform(r0c0, r1c0, r2c0, r3c0,   // col 0
                      r0c1, r1c1, r2c1, r3c1,   // col 1
                      r0c2, r1c2, r2c2, r3c2,   // col 2
                      r0c3, r1c3, r2c3, r3c3);  // col 3
   }
 
-  // TODO(crbug.com/1359528): This is temporary for unit tests to create an
-  // arbitrary affine transform with values without specific meanings, before
-  // the order of parameters of Affine() is fixed.
-  static Transform AffineForTesting(SkScalar v0,
-                                    SkScalar v1,
-                                    SkScalar v2,
-                                    SkScalar v3,
-                                    SkScalar v4,
-                                    SkScalar v5) {
-    return Affine(v0, v1, v2, v3, v4, v5);
+  // Creates a transform from explicit 2d elements. All other matrix elements
+  // remain the same as the corresponding elements of an identity matrix.
+  static Transform Affine(double a,    // a.k.a. r0c0 or scale_x
+                          double b,    // a.k.a. r1c0 or tan(skew_y)
+                          double c,    // a.k.a. r0c1 or tan(skew_x) 
+                          double d,    // a.k.a  r1c1 or scale_y
+                          double e,    // a.k.a  r0c3 or translation_x
+                          double f) {  // a.k.a  r1c3 or translaiton_y
+    return ColMajor(a, b, 0, 0, c, d, 0, 0, 0, 0, 1, 0, e, f, 0, 1);
   }
 
   // Constructs a transform corresponding to the given quaternion.
   explicit Transform(const Quaternion& q);
 
   // Creates a transform as a 2d translation.
-  static Transform MakeTranslation(SkScalar tx, SkScalar ty) {
+  static Transform MakeTranslation(double tx, double ty) {
     return Transform(1, 1, tx, ty);
   }
   // Creates a transform as a 2d scale.
-  static Transform MakeScale(SkScalar scale) { return MakeScale(scale, scale); }
-  static Transform MakeScale(SkScalar sx, SkScalar sy) {
+  static Transform MakeScale(double scale) { return MakeScale(scale, scale); }
+  static Transform MakeScale(double sx, double sy) {
     return Transform(sx, sy, 0, 0);
   }
   // Accurately rotate by 90, 180 or 270 degrees about the z axis.
-  static Transform Make90degRotation() { return Affine(0, -1, 1, 0, 0, 0); }
+  static Transform Make90degRotation() { return Affine(0, 1, -1, 0, 0, 0); }
   static Transform Make180degRotation() { return MakeScale(-1); }
-  static Transform Make270degRotation() { return Affine(0, 1, -1, 0, 0, 0); }
+  static Transform Make270degRotation() { return Affine(0, -1, 1, 0, 0, 0); }
 
   // Returns a const reference to an identity transform. If you just need an
   // identity transform as a value, the default constructor is better.
@@ -137,7 +136,9 @@ class GEOMETRY_SKIA_EXPORT Transform {
   bool operator!=(const Transform& rhs) const { return !(*this == rhs); }
 
   // Gets a value at |row|, |col| from the matrix.
-  float rc(int row, int col) const {
+  double rc(int row, int col) const {
+    DCHECK_LE(static_cast<unsigned>(row), 3u);
+    DCHECK_LE(static_cast<unsigned>(col), 3u);
     if (LIKELY(!matrix_)) {
       float m[4][4] = {{axis_2d_.scale().x(), 0, 0, axis_2d_.translation().x()},
                        {0, axis_2d_.scale().y(), 0, axis_2d_.translation().y()},
@@ -149,8 +150,10 @@ class GEOMETRY_SKIA_EXPORT Transform {
   }
 
   // Set a value in the matrix at |row|, |col|.
-  void set_rc(int row, int col, float v) {
-    EnsureFullMatrix().setRC(row, col, v);
+  void set_rc(int row, int col, double v) {
+    DCHECK_LE(static_cast<unsigned>(row), 3u);
+    DCHECK_LE(static_cast<unsigned>(col), 3u);
+    EnsureFullMatrix().set_rc(row, col, v);
   }
 
   // TODO(crbug.com/1359528): Add ColMajor()/GetColMajor() with double parameter
@@ -181,29 +184,29 @@ class GEOMETRY_SKIA_EXPORT Transform {
 
   // Applies the current transformation on a scaling and assigns the result
   // to |this|, i.e. this = this * scaling.
-  void Scale(SkScalar scale) { Scale(scale, scale); }
-  void Scale(SkScalar x, SkScalar y);
-  void Scale3d(SkScalar x, SkScalar y, SkScalar z);
+  void Scale(double scale) { Scale(scale, scale); }
+  void Scale(double x, double y);
+  void Scale3d(double x, double y, double z);
 
   // Applies a scale to the current transformation and assigns the result to
   // |this|, i.e. this = scaling * this.
-  void PostScale(SkScalar scale) { PostScale(scale, scale); }
-  void PostScale(SkScalar x, SkScalar y);
-  void PostScale3d(SkScalar x, SkScalar y, SkScalar z);
+  void PostScale(double scale) { PostScale(scale, scale); }
+  void PostScale(double x, double y);
+  void PostScale3d(double x, double y, double z);
 
   // Applies the current transformation on a translation and assigns the result
   // to |this|, i.e. this = this * translation.
   void Translate(const Vector2dF& offset);
-  void Translate(SkScalar x, SkScalar y);
+  void Translate(double x, double y);
   void Translate3d(const Vector3dF& offset);
-  void Translate3d(SkScalar x, SkScalar y, SkScalar z);
+  void Translate3d(double x, double y, double z);
 
   // Applies a translation to the current transformation and assigns the result
   // to |this|, i.e. this = translation * this.
   void PostTranslate(const Vector2dF& offset);
-  void PostTranslate(SkScalar x, SkScalar y);
+  void PostTranslate(double x, double y);
   void PostTranslate3d(const Vector3dF& offset);
-  void PostTranslate3d(SkScalar x, SkScalar y, SkScalar z);
+  void PostTranslate3d(double x, double y, double z);
 
   // The following methods have the "Pre" semantics,
   // i.e. this = this * operation.
@@ -227,38 +230,40 @@ class GEOMETRY_SKIA_EXPORT Transform {
 
   // Applies the current transformation on a perspective transform and assigns
   // the result to |this|.
-  void ApplyPerspectiveDepth(SkScalar depth);
+  void ApplyPerspectiveDepth(double depth);
 
   // Returns true if this is the identity matrix.
   // This function modifies a mutable variable in |matrix_|.
   bool IsIdentity() const {
     return LIKELY(!matrix_) ? axis_2d_ == AxisTransform2d()
-                            : matrix_->isIdentity();
+                            : matrix_->IsIdentity();
   }
 
   // Returns true if the matrix is either identity or pure translation.
   bool IsIdentityOrTranslation() const {
     return LIKELY(!matrix_) ? axis_2d_.scale() == Vector2dF(1, 1)
-                            : matrix_->isTranslate();
+                            : matrix_->IsIdentityOrTranslation();
   }
 
   // Returns true if the matrix is either the identity or a 2d translation.
+  // TODO(crbug.com/1359528): Rename "2D" to "2d".
   bool IsIdentityOr2DTranslation() const {
-    return LIKELY(!matrix_) ? axis_2d_.scale() == Vector2dF(1, 1)
-                            : matrix_->isTranslate() && matrix_->rc(2, 3) == 0;
+    return LIKELY(!matrix_)
+               ? axis_2d_.scale() == Vector2dF(1, 1)
+               : matrix_->IsIdentityOrTranslation() && matrix_->rc(2, 3) == 0;
   }
 
   // Returns true if the matrix is either identity or pure translation,
   // allowing for an amount of inaccuracy as specified by the parameter.
-  bool IsApproximatelyIdentityOrTranslation(SkScalar tolerance) const;
-  bool IsApproximatelyIdentityOrIntegerTranslation(SkScalar tolerance) const;
+  bool IsApproximatelyIdentityOrTranslation(double tolerance) const;
+  bool IsApproximatelyIdentityOrIntegerTranslation(double tolerance) const;
 
   // Returns true if the matrix is either a positive scale and/or a translation.
   bool IsPositiveScaleOrTranslation() const {
     if (LIKELY(!matrix_))
       return axis_2d_.scale().x() > 0.0 && axis_2d_.scale().y() > 0.0;
 
-    if (!matrix_->isScaleTranslate())
+    if (!matrix_->IsScaleOrTranslation())
       return false;
     return matrix_->rc(0, 0) > 0.0 && matrix_->rc(1, 1) > 0.0 &&
            matrix_->rc(2, 2) > 0.0;
@@ -270,21 +275,17 @@ class GEOMETRY_SKIA_EXPORT Transform {
   // fit in an integer.
   bool IsIdentityOrIntegerTranslation() const;
 
-  // Returns true if the matrix has only scaling components.
-  bool IsScale() const {
-    return LIKELY(!matrix_) ? axis_2d_.translation().IsZero()
-                            : matrix_->isScale();
-  }
-
-  // Returns true if the matrix has only x and y scaling components.
+  // Returns true if the matrix has only x and y scaling components, including
+  // identity.
   bool IsScale2d() const {
     return LIKELY(!matrix_) ? axis_2d_.translation().IsZero()
-                            : matrix_->isScale() && matrix_->rc(2, 2) == 1;
+                            : matrix_->IsScale() && matrix_->rc(2, 2) == 1;
   }
 
-  // Returns true if the matrix is has only scaling and translation components.
+  // Returns true if the matrix is has only scaling and translation components,
+  // including identity.
   bool IsScaleOrTranslation() const {
-    return LIKELY(!matrix_) || matrix_->isScaleTranslate();
+    return LIKELY(!matrix_) || matrix_->IsScaleOrTranslation();
   }
 
   // Returns true if axis-aligned 2d rects will remain axis-aligned after being
@@ -300,13 +301,12 @@ class GEOMETRY_SKIA_EXPORT Transform {
   // Returns true if the matrix has any perspective component that would
   // change the w-component of a homogeneous point.
   bool HasPerspective() const {
-    return UNLIKELY(matrix_) && matrix_->hasPerspective();
+    return UNLIKELY(matrix_) && matrix_->HasPerspective();
   }
 
   // Returns true if this transform is non-singular.
   bool IsInvertible() const {
-    return LIKELY(!matrix_) ? axis_2d_.IsInvertible()
-                            : matrix_->invert(nullptr);
+    return LIKELY(!matrix_) ? axis_2d_.IsInvertible() : matrix_->IsInvertible();
   }
 
   // Returns true if a layer with a forward-facing normal of (0, 0, 1) would
@@ -361,6 +361,7 @@ class GEOMETRY_SKIA_EXPORT Transform {
   // Applies the transformation to the vector. The results are clamped with
   // ClampFloatGeometry().
   void TransformVector4(float vector[4]) const;
+  void TransformVector4(double vector[4]) const;
 
   // Returns the point with reverse transformation applied to `point`, clamped
   // with ClampFloatGeometry(), or `absl::nullopt` if the transformation cannot
@@ -428,42 +429,23 @@ class GEOMETRY_SKIA_EXPORT Transform {
 
  private:
   // Used internally to construct Transform with parameters in col-major order.
-  Transform(SkScalar r0c0,
-            SkScalar r1c0,
-            SkScalar r2c0,
-            SkScalar r3c0,
-            SkScalar r0c1,
-            SkScalar r1c1,
-            SkScalar r2c1,
-            SkScalar r3c1,
-            SkScalar r0c2,
-            SkScalar r1c2,
-            SkScalar r2c2,
-            SkScalar r3c2,
-            SkScalar r0c3,
-            SkScalar r1c3,
-            SkScalar r2c3,
-            SkScalar r3c3);
-
+  Transform(double r0c0,
+            double r1c0,
+            double r2c0,
+            double r3c0,
+            double r0c1,
+            double r1c1,
+            double r2c1,
+            double r3c1,
+            double r0c2,
+            double r1c2,
+            double r2c2,
+            double r3c2,
+            double r0c3,
+            double r1c3,
+            double r2c3,
+            double r3c3);
   Transform(float scale_x, float scale_y, float trans_x, float trans_y);
-
-  // TODO(crbug.com/1359528): This is temporarily private before the order of
-  // the parameters is fixed. The current order is weird, not conforming to the
-  // normal order of (a, b, c, d, e, f) which is
-  // (r0c0, r1c0, r0c1, r1c1, r0c3, r1c3).
-  // Creates a transform from explicit 2d elements. All other matrix elements
-  // remain the same as the corresponding elements of an identity matrix.
-  static Transform Affine(SkScalar r0c0,
-                          SkScalar r0c1,
-                          SkScalar r1c0,
-                          SkScalar r1c1,
-                          SkScalar x_translation,
-                          SkScalar y_translation) {
-    return ColMajor(r0c0, r1c0, 0, 0,                     // col 0
-                    r0c1, r1c1, 0, 0,                     // col 1
-                    0, 0, 1, 0,                           // col 2
-                    x_translation, y_translation, 0, 1);  // col 3
-  }
 
   Point3F MapPointInternal(const Matrix44& xform, const Point3F& point) const;
 

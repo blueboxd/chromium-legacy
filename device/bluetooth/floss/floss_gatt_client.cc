@@ -11,8 +11,7 @@ namespace floss {
 
 namespace {
 // Randomly generated UUID for use in this client.
-constexpr char kDefaultGattClientUuid[] =
-    "e060b902-508c-485f-8b0e-27639c7f2d41";
+constexpr char kDefaultGattClientUuid[] = "e060b902508c485f8b0e27639c7f2d41";
 
 // Default to requesting eatt support with gatt client.
 constexpr bool kDefaultEattSupport = true;
@@ -74,7 +73,7 @@ const DBusTypeInfo& GetDBusTypeInfo(const GattStatus*) {
 template <>
 void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
                                      const AuthRequired& auth_req) {
-  uint32_t value = static_cast<uint32_t>(auth_req);
+  int32_t value = static_cast<int32_t>(auth_req);
   WriteDBusParam(writer, value);
 }
 
@@ -197,8 +196,9 @@ void FlossGattClient::Connect(ResponseCallback<Void> callback,
   // Gatt client connections occur immediately instead of when next seen.
   const bool is_direct = true;
 
-  // Opportunistic connections.
-  const bool opportunistic = true;
+  // Opportunistic connections should be false because we want connections to
+  // immediately fail with timeout if it doesn't work out.
+  const bool opportunistic = false;
 
   // We want a phy to be chosen automatically.
   const LePhy phy = LePhy::kInvalid;
@@ -280,20 +280,30 @@ void FlossGattClient::WriteDescriptor(ResponseCallback<Void> callback,
                        remote_device, handle, auth_required, data);
 }
 
-void FlossGattClient::RegisterForNotification(ResponseCallback<Void> callback,
-                                              const std::string& remote_device,
-                                              const int32_t handle) {
+void FlossGattClient::RegisterForNotification(
+    ResponseCallback<GattStatus> callback,
+    const std::string& remote_device,
+    const int32_t handle) {
   const bool enable_notification = true;
-  CallGattMethod<Void>(std::move(callback), gatt::kRegisterForNotification,
-                       client_id_, remote_device, handle, enable_notification);
+  CallGattMethod<Void>(
+      base::BindOnce(&FlossGattClient::OnRegisterNotificationResponse,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     enable_notification),
+      gatt::kRegisterForNotification, client_id_, remote_device, handle,
+      enable_notification);
 }
 
-void FlossGattClient::UnregisterNotification(ResponseCallback<Void> callback,
-                                             const std::string& remote_device,
-                                             const int32_t handle) {
+void FlossGattClient::UnregisterNotification(
+    ResponseCallback<GattStatus> callback,
+    const std::string& remote_device,
+    const int32_t handle) {
   const bool enable_notification = false;
-  CallGattMethod<Void>(std::move(callback), gatt::kRegisterForNotification,
-                       client_id_, remote_device, handle, enable_notification);
+  CallGattMethod<Void>(
+      base::BindOnce(&FlossGattClient::OnRegisterNotificationResponse,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     enable_notification),
+      gatt::kRegisterForNotification, client_id_, remote_device, handle,
+      enable_notification);
 }
 
 void FlossGattClient::ReadRemoteRssi(ResponseCallback<Void> callback,
@@ -365,11 +375,15 @@ void FlossGattClient::Init(dbus::Bus* bus,
     return;
   }
 
+  RegisterClient();
+}
+
+void FlossGattClient::RegisterClient() {
   // Finish registering client. We will get client id via
   // |GattClientRegistered|.
   CallGattMethod<Void>(
       base::BindOnce(&HandleResponse, gatt::kRegisterClient),
-      gatt::kRegisterClient, device::BluetoothUUID(kDefaultGattClientUuid),
+      gatt::kRegisterClient, std::string(kDefaultGattClientUuid),
       dbus::ObjectPath(kExportedCallbacksPath), kDefaultEattSupport);
 }
 
@@ -509,6 +523,21 @@ void FlossGattClient::GattServiceChanged(std::string address) {
   for (auto& observer : observers_) {
     observer.GattServiceChanged(address);
   }
+}
+
+// TODO(b/193685841) - Floss currently doesn't emit a callback when
+// a notification registers. Once a callback is available, we should report that
+// via the callback here instead.
+void FlossGattClient::OnRegisterNotificationResponse(
+    ResponseCallback<GattStatus> callback,
+    bool is_registering,
+    DBusResult<Void> result) {
+  if (!result.has_value()) {
+    std::move(callback).Run(GattStatus::kError);
+    return;
+  }
+
+  std::move(callback).Run(GattStatus::kSuccess);
 }
 
 }  // namespace floss

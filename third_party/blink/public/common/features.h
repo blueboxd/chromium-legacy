@@ -717,7 +717,7 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcExposeNonStandardStats);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kInvalidationSetClassBloomFilter);
 
 // Whether the pending beacon API is enabled or not.
-// https://github.com/WICG/unload-beacon/blob/main/README.md
+// https://github.com/WICG/pending-beacon/blob/main/README.md
 // - kPendingBeaconAPI = {true: {"requires_origin_trial": false}} to enable the
 //   features globally.
 // - kPendingBeaconAPI = {true: {"requires_origin_trial": true}} to enable the
@@ -731,7 +731,7 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kPendingBeaconAPIRequiresOriginTrial;
 // Allows control to decide whether to forced sending out beacons on navigating
 // away a page (transitioning to dispatch pagehide event).
-// Details in https://github.com/WICG/unload-beacon/issues/30
+// Details in https://github.com/WICG/pending-beacon/issues/30
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kPendingBeaconAPIForcesSendingOnNavigation;
 
@@ -889,6 +889,32 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kNewBaseUrlInheritanceBehavior);
 // This function checks both kNewBaseUrlInheritanceBehavior and
 // kIsolateSandboxedIframes and returns true if either is enabled.
 BLINK_COMMON_EXPORT bool IsNewBaseUrlInheritanceBehaviorEnabled();
+
+// These control a major serialization change to include information about
+// exposed interfaces in trailer data, to allow emergency fixes.
+// Regardless, data which might have been serialized to disk must continue to be
+// deserializable. These should be removed after a couple milestones.
+//
+// See https://crbug.com/1341844.
+//
+// `kSSVTrailerWriteNewVersion`
+//   If disabled, Blink will revert to writing a pre-trailer format.
+//   This will become impractical once any other incompatible wire format
+//   changes are made.
+// `kSSVTrailerWriteExposureAssertion`
+//   If enabled, Blink will include assertions about which interfaces are
+//   exposed in trailers to serialized messages. Has no effect if
+//   kSSVTrailerWriteNewVersion is disabled.
+// `kSSVTrailerEnforceExposureAssertion`
+//   If enabled, Blink will reject messages which cannot be deserialized in the
+//   current realm. Otherwise, all interfaces will be treated as exposed in all
+//   contexts for the purposes of serialization.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSSVTrailerWriteNewVersion);
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSSVTrailerWriteExposureAssertion);
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSSVTrailerEnforceExposureAssertion);
+
+// Kill switch for AbortSignal algorithm handle-based removal.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAbortSignalHandleBasedRemoval);
 
 }  // namespace features
 }  // namespace blink

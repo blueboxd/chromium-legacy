@@ -104,8 +104,8 @@ extern const char kDocumentPictureInPictureApiDescription[];
 extern const char kForceStartupSigninPromoName[];
 extern const char kForceStartupSigninPromoDescription[];
 
-extern const char kGaiaIdInAMFName[];
-extern const char kGaiaIdInAMFDescription[];
+extern const char kGaiaIdCacheInAccountManagerFacadeName[];
+extern const char kGaiaIdCacheInAccountManagerFacadeDescription[];
 
 extern const char kTangibleSyncName[];
 extern const char kTangibleSyncDescription[];
@@ -532,9 +532,6 @@ extern const char kDesktopPWAsSubAppsDescription[];
 extern const char kDesktopPWAsWebBundlesName[];
 extern const char kDesktopPWAsWebBundlesDescription[];
 
-extern const char kDesktopPWAsWindowControlsOverlayName[];
-extern const char kDesktopPWAsWindowControlsOverlayDescription[];
-
 extern const char kDesktopPWAsBorderlessName[];
 extern const char kDesktopPWAsBorderlessDescription[];
 
@@ -945,9 +942,6 @@ extern const char kIncognitoScreenshotDescription[];
 extern const char kInfobarScrollOptimizationName[];
 extern const char kInfobarScrollOptimizationDescription[];
 
-extern const char kInitialNavigationEntryName[];
-extern const char kInitialNavigationEntryDescription[];
-
 extern const char kInProductHelpDemoModeChoiceName[];
 extern const char kInProductHelpDemoModeChoiceDescription[];
 
@@ -995,6 +989,9 @@ extern const char kJourneysOnDeviceClusteringBackendDescription[];
 
 extern const char kJourneysOnDeviceClusteringKeywordFilteringName[];
 extern const char kJourneysOnDeviceClusteringKeywordFilteringDescription[];
+
+extern const char kJourneysShowAllClustersName[];
+extern const char kJourneysShowAllClustersDescription[];
 
 extern const char kLargeFaviconFromGoogleName[];
 extern const char kLargeFaviconFromGoogleDescription[];
@@ -1917,9 +1914,6 @@ extern const char kAndroidForceAppLanguagePromptDescription[];
 extern const char kAndroidMediaPickerSupportName[];
 extern const char kAndroidMediaPickerSupportDescription[];
 
-extern const char kAndroidPermissionsCacheName[];
-extern const char kAndroidPermissionsCacheDescription[];
-
 extern const char kAndroidSurfaceControlName[];
 extern const char kAndroidSurfaceControlDescription[];
 
@@ -2031,6 +2025,9 @@ extern const char kEnableCommandLineOnNoRootedDescription[];
 
 extern const char kEnableFamilyInfoFeedbackName[];
 extern const char kEnableFamilyInfoFeedbackDescription[];
+
+extern const char kEnablePasswordsAccountStorageName[];
+extern const char kEnablePasswordsAccountStorageDescription[];
 
 extern const char kEnableOskResizesVisualViewportByDefaultName[];
 extern const char kEnableOskResizesVisualViewportByDefaultDescription[];
@@ -2371,8 +2368,6 @@ extern const char kAdaptiveButtonInTopToolbarName[];
 extern const char kAdaptiveButtonInTopToolbarDescription[];
 extern const char kAdaptiveButtonInTopToolbarCustomizationName[];
 extern const char kAdaptiveButtonInTopToolbarCustomizationDescription[];
-extern const char kShareButtonInTopToolbarName[];
-extern const char kShareButtonInTopToolbarDescription[];
 extern const char kVoiceButtonInTopToolbarName[];
 extern const char kVoiceButtonInTopToolbarDescription[];
 
@@ -3093,9 +3088,6 @@ extern const char kExoGamepadVibrationDescription[];
 
 extern const char kExoOrdinalMotionName[];
 extern const char kExoOrdinalMotionDescription[];
-
-extern const char kExoLockNotificationName[];
-extern const char kExoLockNotificationDescription[];
 
 extern const char kExperimentalAccessibilityDictationWithPumpkinName[];
 extern const char kExperimentalAccessibilityDictationWithPumpkinDescription[];

@@ -14,6 +14,12 @@ class PrefService;
 
 namespace history_clusters {
 
+namespace switches {
+
+extern const char kShouldShowAllClustersOnProminentUiSurfaces[];
+
+}  // namespace switches
+
 class HistoryClustersService;
 
 // The default configuration. Always use |GetConfig()| to get the current
@@ -197,6 +203,10 @@ struct Config {
   // is intending to perform a navigation. Meaningless if
   // `omnibox_history_cluster_provider` is disabled.
   bool omnibox_history_cluster_provider_on_navigation_intents = false;
+
+  // If enabled, allows the suggestion row to be ranked in any position;
+  // otherwise, always ranked last.
+  bool omnibox_history_cluster_provider_free_ranking = false;
 
   // The `kOnDeviceClusteringKeywordFiltering` feature and child params.
 

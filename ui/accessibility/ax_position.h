@@ -611,7 +611,8 @@ class AXPosition {
         AXPositionInstance child_position =
             CreateChildPositionAt(adjusted_child_index);
         DCHECK(child_position && !child_position->IsNullPosition());
-        return child_position->GetAnchor()->IsIgnored();
+        return child_position->IsNullPosition() ||
+               child_position->GetAnchor()->IsIgnored();
       }
       case AXPositionKind::TEXT_POSITION:
         // If the corresponding leaf position is ignored, the current text
@@ -2286,27 +2287,33 @@ class AXPosition {
   }
 
   AXPositionInstance CreatePositionAtStartOfAnchor() const {
+    const AXNode* anchor = GetAnchor();
+    if (!anchor)
+      return CreateNullPosition();
+
     switch (kind_) {
       case AXPositionKind::NULL_POSITION:
         return CreateNullPosition();
       case AXPositionKind::TREE_POSITION:
-        return CreateTreePositionAtStartOfAnchor(*GetAnchor());
+        return CreateTreePositionAtStartOfAnchor(*anchor);
       case AXPositionKind::TEXT_POSITION:
-        return CreateTextPosition(*GetAnchor(), 0 /* text_offset */,
+        return CreateTextPosition(*anchor, 0 /* text_offset */,
                                   ax::mojom::TextAffinity::kDownstream);
     }
   }
 
   AXPositionInstance CreatePositionAtEndOfAnchor() const {
+    const AXNode* anchor = GetAnchor();
+    if (!anchor)
+      return CreateNullPosition();
+
     switch (kind_) {
       case AXPositionKind::NULL_POSITION:
         return CreateNullPosition();
-      case AXPositionKind::TREE_POSITION: {
-        DCHECK(GetAnchor());
-        return CreateTreePositionAtEndOfAnchor(*GetAnchor());
-      }
+      case AXPositionKind::TREE_POSITION:
+        return CreateTreePositionAtEndOfAnchor(*anchor);
       case AXPositionKind::TEXT_POSITION:
-        return CreateTextPosition(*GetAnchor(), MaxTextOffset(),
+        return CreateTextPosition(*anchor, MaxTextOffset(),
                                   ax::mojom::TextAffinity::kDownstream);
     }
   }

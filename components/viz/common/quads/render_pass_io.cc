@@ -141,12 +141,10 @@ base::Value PointToDict(const gfx::Point& point) {
   return dict;
 }
 
-bool PointFromDict(const base::Value& dict, gfx::Point* point) {
+bool PointFromDict(const base::Value::Dict& dict, gfx::Point* point) {
   DCHECK(point);
-  if (!dict.is_dict())
-    return false;
-  absl::optional<int> x = dict.FindIntKey("x");
-  absl::optional<int> y = dict.FindIntKey("y");
+  absl::optional<int> x = dict.FindInt("x");
+  absl::optional<int> y = dict.FindInt("y");
   if (!x || !y) {
     return false;
   }
@@ -164,14 +162,12 @@ base::Value SkColor4fToDict(const SkColor4f color) {
   return dict;
 }
 
-bool SkColor4fFromDict(const base::Value& dict, SkColor4f* color) {
+bool SkColor4fFromDict(const base::Value::Dict& dict, SkColor4f* color) {
   DCHECK(color);
-  if (!dict.is_dict())
-    return false;
-  absl::optional<double> red = dict.FindDoubleKey("red");
-  absl::optional<double> green = dict.FindDoubleKey("green");
-  absl::optional<double> blue = dict.FindDoubleKey("blue");
-  absl::optional<double> alpha = dict.FindDoubleKey("alpha");
+  absl::optional<double> red = dict.FindDouble("red");
+  absl::optional<double> green = dict.FindDouble("green");
+  absl::optional<double> blue = dict.FindDouble("blue");
+  absl::optional<double> alpha = dict.FindDouble("alpha");
   if (!red || !green || !blue || !alpha)
     return false;
   color->fR = static_cast<float>(red.value());
@@ -183,13 +179,13 @@ bool SkColor4fFromDict(const base::Value& dict, SkColor4f* color) {
 
 // Many quads now store color as an SkColor4f, but older logs will still store
 // SkColors (which are ints). For backward compatibility's sake, read either.
-bool ColorFromDict(const base::Value& dict,
+bool ColorFromDict(const base::Value::Dict& dict,
                    base::StringPiece key,
                    SkColor4f* output_color) {
-  const base::Value* color_key = dict.FindDictKey(key);
+  const base::Value::Dict* color_key = dict.FindDict(key);
   SkColor4f color_4f;
   if (!color_key || !SkColor4fFromDict(*color_key, &color_4f)) {
-    absl::optional<int> color_int = dict.FindIntKey(key);
+    absl::optional<int> color_int = dict.FindInt(key);
     if (!color_int)
       return false;
     color_4f = SkColor4f::FromColor(static_cast<SkColor>(color_int.value()));
@@ -482,16 +478,14 @@ base::Value ShapeRectsToList(const cc::FilterOperation::ShapeRects& shape) {
   return list;
 }
 
-bool ShapeRectsFromList(const base::Value& list,
+bool ShapeRectsFromList(const base::Value::List& list,
                         cc::FilterOperation::ShapeRects* shape) {
   DCHECK(shape);
-  if (!list.is_list())
-    return false;
-  size_t size = list.GetList().size();
+  size_t size = list.size();
   cc::FilterOperation::ShapeRects data;
   data.resize(size);
   for (size_t ii = 0; ii < size; ++ii) {
-    const base::Value& dict_value = list.GetList()[ii];
+    const base::Value& dict_value = list[ii];
     if (!dict_value.is_dict())
       return false;
     if (!RectFromDict(dict_value.GetDict(), &data[ii]))
@@ -588,24 +582,24 @@ base::Value FilterOperationToDict(const cc::FilterOperation& filter) {
   return dict;
 }
 
-bool FilterOperationFromDict(const base::Value& dict,
+bool FilterOperationFromDict(const base::Value& dict_value,
                              cc::FilterOperation* out) {
   DCHECK(out);
-  if (!dict.is_dict()) {
+  if (!dict_value.is_dict()) {
     return false;
   }
 
-  absl::optional<int> type = dict.FindIntKey("type");
-  absl::optional<double> amount = dict.FindDoubleKey("amount");
-  absl::optional<double> outer_threshold =
-      dict.FindDoubleKey("outer_threshold");
-  const base::Value* drop_shadow_offset =
-      dict.FindDictKey("drop_shadow_offset");
-  const std::string* image_filter = dict.FindStringKey("image_filter");
-  const base::Value::List* matrix = dict.GetDict().FindList("matrix");
-  absl::optional<int> zoom_inset = dict.FindIntKey("zoom_inset");
-  const base::Value* shape = dict.FindListKey("shape");
-  absl::optional<int> blur_tile_mode = dict.FindIntKey("blur_tile_mode");
+  const base::Value::Dict& dict = dict_value.GetDict();
+  absl::optional<int> type = dict.FindInt("type");
+  absl::optional<double> amount = dict.FindDouble("amount");
+  absl::optional<double> outer_threshold = dict.FindDouble("outer_threshold");
+  const base::Value::Dict* drop_shadow_offset =
+      dict.FindDict("drop_shadow_offset");
+  const std::string* image_filter = dict.FindString("image_filter");
+  const base::Value::List* matrix = dict.FindList("matrix");
+  absl::optional<int> zoom_inset = dict.FindInt("zoom_inset");
+  const base::Value::List* shape = dict.FindList("shape");
+  absl::optional<int> blur_tile_mode = dict.FindInt("blur_tile_mode");
 
   cc::FilterOperation filter;
 
@@ -923,14 +917,13 @@ base::Value ColorSpaceToDict(const gfx::ColorSpace& color_space) {
   return dict;
 }
 
-bool ColorSpaceFromDict(const base::Value& dict, gfx::ColorSpace* color_space) {
+bool ColorSpaceFromDict(const base::Value::Dict& dict,
+                        gfx::ColorSpace* color_space) {
   DCHECK(color_space);
-  if (!dict.is_dict())
-    return false;
-  const std::string* primaries = dict.FindStringKey("primaries");
-  const std::string* transfer = dict.FindStringKey("transfer");
-  const std::string* matrix = dict.FindStringKey("matrix");
-  const std::string* range = dict.FindStringKey("range");
+  const std::string* primaries = dict.FindString("primaries");
+  const std::string* transfer = dict.FindString("transfer");
+  const std::string* matrix = dict.FindString("matrix");
+  const std::string* range = dict.FindString("range");
   if (!primaries || !transfer || !matrix || !range)
     return false;
   uint8_t primary_id = StringToColorSpacePrimaryId(*primaries);
@@ -944,7 +937,7 @@ bool ColorSpaceFromDict(const base::Value& dict, gfx::ColorSpace* color_space) {
       primary_id == static_cast<uint8_t>(gfx::ColorSpace::PrimaryID::CUSTOM);
   if (uses_custom_primary_matrix) {
     const base::Value::List* custom_primary_matrix =
-        dict.GetDict().FindList("custom_primary_matrix");
+        dict.FindList("custom_primary_matrix");
     if (!custom_primary_matrix ||
         !Matrix3x3FromList(*custom_primary_matrix, &t_custom_primary_matrix)) {
       return false;
@@ -958,7 +951,7 @@ bool ColorSpaceFromDict(const base::Value& dict, gfx::ColorSpace* color_space) {
           static_cast<uint8_t>(gfx::ColorSpace::TransferID::CUSTOM_HDR);
   if (uses_custom_transfer_params) {
     const base::Value::List* custom_transfer_params =
-        dict.GetDict().FindList("custom_transfer_params");
+        dict.FindList("custom_transfer_params");
     if (!custom_transfer_params ||
         !TransferFunctionFromList(*custom_transfer_params,
                                   &t_custom_transfer_params)) {
@@ -1017,15 +1010,12 @@ base::Value SurfaceIdToDict(const SurfaceId& id) {
   return dict;
 }
 
-absl::optional<SurfaceId> SurfaceIdFromDict(const base::Value& dict) {
-  if (!dict.is_dict()) {
-    return absl::nullopt;
-  }
-  absl::optional<int> client_id = dict.FindIntKey("client_id");
-  absl::optional<int> sink_id = dict.FindIntKey("sink_id");
-  absl::optional<int> parent_seq = dict.FindIntKey("parent_seq");
-  absl::optional<int> child_seq = dict.FindIntKey("child_seq");
-  const base::Value* embed_token_value = dict.FindKey("embed_token");
+absl::optional<SurfaceId> SurfaceIdFromDict(const base::Value::Dict& dict) {
+  absl::optional<int> client_id = dict.FindInt("client_id");
+  absl::optional<int> sink_id = dict.FindInt("sink_id");
+  absl::optional<int> parent_seq = dict.FindInt("parent_seq");
+  absl::optional<int> child_seq = dict.FindInt("child_seq");
+  const base::Value* embed_token_value = dict.Find("embed_token");
   if (!client_id || !sink_id || !parent_seq || !child_seq || !embed_token_value)
     return absl::nullopt;
 
@@ -1046,12 +1036,10 @@ base::Value SurfaceRangeToDict(const SurfaceRange& range) {
   return dict;
 }
 
-absl::optional<SurfaceRange> SurfaceRangeFromDict(const base::Value& dict) {
-  if (!dict.is_dict()) {
-    return absl::nullopt;
-  }
-  const base::Value* start_dict = dict.FindDictKey("start");
-  const base::Value* end_dict = dict.FindDictKey("end");
+absl::optional<SurfaceRange> SurfaceRangeFromDict(
+    const base::Value::Dict& dict) {
+  const base::Value::Dict* start_dict = dict.FindDict("start");
+  const base::Value::Dict* end_dict = dict.FindDict("end");
   if (!end_dict)
     return absl::nullopt;
   absl::optional<SurfaceId> start =
@@ -1459,7 +1447,7 @@ bool SolidColorDrawQuadFromDict(const base::Value& dict,
     return false;
 
   SkColor4f t_color;
-  if (!ColorFromDict(dict, "color", &t_color))
+  if (!ColorFromDict(dict.GetDict(), "color", &t_color))
     return false;
 
   draw_quad->SetAll(common.shared_quad_state, common.rect, common.visible_rect,
@@ -1468,28 +1456,30 @@ bool SolidColorDrawQuadFromDict(const base::Value& dict,
   return true;
 }
 
-bool SurfaceDrawQuadFromDict(const base::Value& dict,
+bool SurfaceDrawQuadFromDict(const base::Value& dict_value,
                              const DrawQuadCommon& common,
                              SurfaceDrawQuad* draw_quad) {
   DCHECK(draw_quad);
-  if (!dict.is_dict())
+  if (!dict_value.is_dict())
     return false;
 
-  const base::Value* surface_range_dict = dict.FindDictKey("surface_range");
+  const base::Value::Dict& dict = dict_value.GetDict();
+  const base::Value::Dict* surface_range_dict = dict.FindDict("surface_range");
   if (!surface_range_dict)
     return false;
   absl::optional<SurfaceRange> surface_range =
       SurfaceRangeFromDict(*surface_range_dict);
-  absl::optional<bool> stretch_content = dict.FindBoolKey("stretch_content");
-  absl::optional<bool> is_reflection = dict.FindBoolKey("is_reflection");
-  absl::optional<bool> allow_merge = dict.FindBoolKey("allow_merge");
+  absl::optional<bool> stretch_content = dict.FindBool("stretch_content");
+  absl::optional<bool> is_reflection = dict.FindBool("is_reflection");
+  absl::optional<bool> allow_merge = dict.FindBool("allow_merge");
   if (!surface_range || !stretch_content || !is_reflection || !allow_merge)
     return false;
 
   SkColor4f t_default_background_color;
   if (!ColorFromDict(dict, "default_background_color",
-                     &t_default_background_color))
+                     &t_default_background_color)) {
     return false;
+  }
 
   draw_quad->SetAll(common.shared_quad_state, common.rect, common.visible_rect,
                     common.needs_blending, *surface_range,
@@ -1538,7 +1528,7 @@ bool TextureDrawQuadFromDict(const base::Value& dict_value,
   if (!PointFFromDict(*uv_top_left, &t_uv_top_left) ||
       !PointFFromDict(*uv_bottom_right, &t_uv_bottom_right) ||
       !SizeFromDict(*resource_size_in_pixels, &t_resource_size_in_pixels) ||
-      !ColorFromDict(dict_value, "background_color", &t_background_color)) {
+      !ColorFromDict(dict, "background_color", &t_background_color)) {
     return false;
   }
   float t_vertex_opacity[4];
@@ -1610,8 +1600,8 @@ bool YUVVideoDrawQuadFromDict(const base::Value& dict_value,
   absl::optional<double> resource_multiplier =
       dict.FindDouble("resource_multiplier");
   absl::optional<int> bits_per_channel = dict.FindInt("bits_per_channel");
-  const base::Value* video_color_space =
-      dict_value.FindDictKey("video_color_space");
+  const base::Value::Dict* video_color_space =
+      dict.FindDict("video_color_space");
   const std::string* protected_video_type =
       dict.FindString("protected_video_type");
 
@@ -2127,7 +2117,7 @@ std::unique_ptr<CompositorRenderPass> CompositorRenderPassFromDict(
   }
 
   if (ProcessRenderPassField(kRenderPassColorSpace)) {
-    const base::Value* color_space = dict_value.FindDictKey("color_space");
+    const base::Value::Dict* color_space = dict.FindDict("color_space");
     if (!color_space)
       return nullptr;
 
@@ -2287,7 +2277,8 @@ bool CompositorFrameFromDict(const base::Value& dict,
     return false;
   }
   for (auto& referenced_surface_dict : referenced_surfaces->GetList()) {
-    auto referenced_surface = SurfaceRangeFromDict(referenced_surface_dict);
+    auto referenced_surface =
+        SurfaceRangeFromDict(referenced_surface_dict.GetDict());
     if (!referenced_surface) {
       return false;
     }
@@ -2328,7 +2319,7 @@ bool FrameDataFromList(const base::Value& list,
   }
   for (const auto& frame_data_dict : list.GetList()) {
     FrameData frame_data;
-    auto* surface_id_dict = frame_data_dict.FindDictKey("surface_id");
+    auto* surface_id_dict = frame_data_dict.GetDict().FindDict("surface_id");
     if (!surface_id_dict) {
       return false;
     }

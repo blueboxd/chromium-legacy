@@ -391,8 +391,6 @@ component("headless_non_renderer") {
     "lib/browser/headless_permission_manager.h",
     "lib/browser/headless_platform_event_source.cc",
     "lib/browser/headless_platform_event_source.h",
-    "lib/browser/headless_quota_permission_context.cc",
-    "lib/browser/headless_quota_permission_context.h",
     "lib/browser/headless_request_context_manager.cc",
     "lib/browser/headless_request_context_manager.h",
     "lib/browser/headless_select_file_dialog_factory.cc",
@@ -469,7 +467,7 @@ component("headless_non_renderer") {
   data = []
   defines = []
 
-  if (enable_basic_printing) {
+  if (enable_printing) {
     public_deps += [ "//skia" ]
   }
 
@@ -508,7 +506,7 @@ component("headless_non_renderer") {
     "//url",
   ]
 
-  if (enable_basic_printing) {
+  if (enable_printing) {
     deps += [
       "//components/printing/browser",
       "//components/printing/browser/headless",
@@ -542,7 +540,7 @@ component("headless_non_renderer") {
       sources += [ "lib/headless_content_main_delegate_mac.mm" ]
     }
 
-    if (enable_basic_printing) {
+    if (enable_printing) {
       sources += [
         "lib/renderer/headless_print_render_frame_helper_delegate.cc",
         "lib/renderer/headless_print_render_frame_helper_delegate.h",
@@ -565,7 +563,7 @@ component("headless_non_renderer") {
       ]
     }
 
-    if (enable_basic_printing) {
+    if (enable_printing) {
       deps += [
         "//components/printing/browser",
         "//components/printing/renderer",
@@ -659,7 +657,7 @@ if (!is_component_build) {
       sources += [ "lib/headless_content_main_delegate_mac.mm" ]
     }
 
-    if (enable_basic_printing) {
+    if (enable_printing) {
       sources += [
         "lib/renderer/headless_print_render_frame_helper_delegate.cc",
         "lib/renderer/headless_print_render_frame_helper_delegate.h",
@@ -687,7 +685,7 @@ if (!is_component_build) {
     if (use_ozone) {
       deps += [ "//ui/ozone" ]
     }
-    if (enable_basic_printing) {
+    if (enable_printing) {
       deps += [
         "//components/printing/browser/headless:headless",
         "//components/printing/renderer",
@@ -751,7 +749,7 @@ test("headless_unittests") {
     deps += [ "//components/crash/core/app:crash_export_thunks" ]
   }
 
-  if (enable_basic_printing) {
+  if (enable_printing) {
     deps += [
       "//components/printing/browser",
       "//components/printing/browser/headless",
@@ -794,7 +792,7 @@ test("headless_browsertests") {
     "test/test_network_interceptor.h",
   ]
 
-  if (enable_basic_printing && enable_pdf) {
+  if (enable_printing && enable_pdf) {
     sources += [ "test/headless_printtopdf_browsertest.cc" ]
   }
 
@@ -874,7 +872,7 @@ test("headless_browsertests") {
     deps += [ "//third_party/crashpad/crashpad/client" ]
   }
 
-  if (enable_basic_printing) {
+  if (enable_printing) {
     deps += [
       "//components/printing/browser",
       "//printing",
@@ -921,7 +919,7 @@ if (is_win) {
     if (headless_use_policy) {
       deps += [ "//components/policy/content" ]
     }
-    if (enable_basic_printing) {
+    if (enable_printing) {
       deps += [ "//components/printing/browser/headless:headless" ]
     }
     configs += [ ":headless_defines_config" ]
@@ -976,7 +974,7 @@ static_library("headless_shell_lib") {
     deps += [ "//components/crash/content/browser" ]
   }
 
-  if (enable_basic_printing) {
+  if (enable_printing) {
     deps += [
       "//components/printing/browser",
       "//components/printing/browser/headless:headless",

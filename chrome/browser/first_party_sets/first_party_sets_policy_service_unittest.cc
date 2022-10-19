@@ -8,7 +8,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/first_party_sets/first_party_sets_policy_service_factory.h"
-#include "chrome/browser/first_party_sets/mock_first_party_sets_handler.h"
+#include "chrome/browser/first_party_sets/scoped_mock_first_party_sets_handler.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -60,7 +60,6 @@ class DefaultFirstPartySetsPolicyServiceTest : public testing::Test {
   DefaultFirstPartySetsPolicyServiceTest() = default;
 
   void SetUp() override {
-    content::FirstPartySetsHandler::GetInstance()->ResetForTesting();
     mock_delegate_receiver_.Bind(
         mock_delegate_remote_.BindNewPipeAndPassReceiver());
   }
@@ -76,6 +75,8 @@ class DefaultFirstPartySetsPolicyServiceTest : public testing::Test {
 
  private:
   content::BrowserTaskEnvironment env_;
+  first_party_sets::ScopedMockFirstPartySetsHandler
+      mock_first_party_sets_handler_;
 };
 
 TEST_F(DefaultFirstPartySetsPolicyServiceTest, DisabledByFeature) {
@@ -149,9 +150,6 @@ class FirstPartySetsPolicyServiceTest
     DefaultFirstPartySetsPolicyServiceTest::SetUp();
     content::FirstPartySetsHandler::GetInstance()->SetInstanceForTesting(
         &first_party_sets_handler_);
-    first_party_sets_handler_.SetGlobalSets({});
-    SetContextConfig(net::FirstPartySetsContextConfig());
-    SetCacheFilter(net::FirstPartySetsCacheFilter());
 
     profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
@@ -202,7 +200,7 @@ class FirstPartySetsPolicyServiceTest
   FirstPartySetsPolicyService* service() { return service_; }
 
  private:
-  MockFirstPartySetsHandler first_party_sets_handler_;
+  ScopedMockFirstPartySetsHandler first_party_sets_handler_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   Profile* profile_;
   base::test::ScopedFeatureList features_;

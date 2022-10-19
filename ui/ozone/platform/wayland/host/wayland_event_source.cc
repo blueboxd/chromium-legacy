@@ -291,6 +291,12 @@ void WaylandEventSource::OnPointerButtonEvent(
   DCHECK(type == ET_MOUSE_PRESSED || type == ET_MOUSE_RELEASED);
   DCHECK(HasAnyPointerButtonFlag(changed_button));
 
+  // Ignore release events for buttons that aren't currently pressed. Such
+  // events should never happen, but there have been compositor bugs before
+  // (e.g. crbug.com/1376393).
+  if (type == ET_MOUSE_RELEASED && (pointer_flags_ & changed_button) == 0)
+    return;
+
   WaylandWindow* prev_focused_window =
       window_manager_->GetCurrentPointerFocusedWindow();
   if (window)
@@ -676,6 +682,17 @@ bool WaylandEventSource::IsPointerButtonPressed(EventFlags button) const {
 
 void WaylandEventSource::OnPointerStylusToolChanged(
     EventPointerType pointer_type) {
+  // When the reported pointer stylus type is `mouse`, handle it as a regular
+  // pointer event.
+  //
+  // TODO(https://crbug.com/1298504): Better handle the `touch` type, which
+  // seems mis-specified in
+  // //t_p/wayland-protocols/unstable/stylus/stylus-unstable-v2.xml.
+  if (pointer_type == ui::EventPointerType::kMouse) {
+    last_pointer_stylus_tool_.reset();
+    return;
+  }
+
   last_pointer_stylus_tool_ = {
       .type = pointer_type,
       .tilt = gfx::Vector2dF(),

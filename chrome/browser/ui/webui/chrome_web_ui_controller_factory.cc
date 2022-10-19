@@ -191,7 +191,7 @@
 #include "ash/webui/eche_app_ui/url_constants.h"
 #include "ash/webui/file_manager/file_manager_ui.h"
 #include "ash/webui/file_manager/url_constants.h"
-#include "ash/webui/files_internals/files_internals.h"
+#include "ash/webui/files_internals/files_internals_ui.h"
 #include "ash/webui/files_internals/url_constants.h"
 #include "ash/webui/firmware_update_ui/firmware_update_app_ui.h"
 #include "ash/webui/firmware_update_ui/url_constants.h"
@@ -266,6 +266,9 @@
 #include "chrome/browser/ui/webui/ash/launcher_internals/launcher_internals_ui.h"
 #include "chrome/browser/ui/webui/ash/multidevice_internals/multidevice_internals_ui.h"
 #include "chrome/browser/ui/webui/ash/multidevice_setup/multidevice_setup_dialog.h"
+#include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui.h"
+#include "chrome/browser/ui/webui/ash/smb_shares/smb_credentials_dialog.h"
+#include "chrome/browser/ui/webui/ash/smb_shares/smb_share_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/certificate_manager_dialog_ui.h"
@@ -278,13 +281,10 @@
 #include "chrome/browser/ui/webui/chromeos/manage_mirrorsync/manage_mirrorsync_ui.h"
 #include "chrome/browser/ui/webui/chromeos/network_ui.h"
 #include "chrome/browser/ui/webui/chromeos/notification_tester/notification_tester_ui.h"
-#include "chrome/browser/ui/webui/chromeos/parent_access/parent_access_ui.h"
 #include "chrome/browser/ui/webui/chromeos/power_ui.h"
 #include "chrome/browser/ui/webui/chromeos/set_time_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_trace_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_ui.h"
-#include "chrome/browser/ui/webui/chromeos/smb_shares/smb_credentials_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/smb_shares/smb_share_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/sys_internals/sys_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/vm/vm_ui.h"
 #include "chrome/browser/ui/webui/nearby_internals/nearby_internals_ui.h"
@@ -578,7 +578,7 @@ template <>
 WebUIController* NewWebUI<ash::FilesInternalsUI>(WebUI* web_ui,
                                                  const GURL& url) {
   return new ash::FilesInternalsUI(
-      web_ui, std::make_unique<ChromeFilesInternalsUIDelegate>());
+      web_ui, std::make_unique<ChromeFilesInternalsUIDelegate>(web_ui));
 }
 
 template <>
@@ -992,7 +992,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUIAddSupervisionHost)
     return &NewWebUI<ash::AddSupervisionUI>;
   if (url.host_piece() == chrome::kChromeUIParentAccessHost)
-    return &NewWebUI<chromeos::ParentAccessUI>;
+    return &NewWebUI<ash::ParentAccessUI>;
   if (url.host_piece() == chrome::kChromeUIAudioHost &&
       base::FeatureList::IsEnabled(chromeos::features::kAudioUrl)) {
     return &NewWebUI<ash::AudioUI>;
@@ -1091,9 +1091,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUISlowTraceHost)
     return &NewWebUI<chromeos::SlowTraceController>;
   if (url.host_piece() == chrome::kChromeUISmbCredentialsHost)
-    return &NewWebUI<chromeos::smb_dialog::SmbCredentialsDialogUI>;
+    return &NewWebUI<ash::smb_dialog::SmbCredentialsDialogUI>;
   if (url.host_piece() == chrome::kChromeUISmbShareHost)
-    return &NewWebUI<chromeos::smb_dialog::SmbShareDialogUI>;
+    return &NewWebUI<ash::smb_dialog::SmbShareDialogUI>;
   if (url.host_piece() == chrome::kChromeUISysInternalsHost)
     return &NewWebUI<SysInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIAssistantOptInHost)

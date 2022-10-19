@@ -118,8 +118,9 @@ const char kForceStartupSigninPromoDescription[] =
     "If enabled, the full screen signin promo will be forced to show up at "
     "Chrome start-up.";
 
-const char kGaiaIdInAMFName[] = "Gaia Id In AccountManagerFacade (AMF)";
-const char kGaiaIdInAMFDescription[] =
+const char kGaiaIdCacheInAccountManagerFacadeName[] =
+    "Gaia Id In AccountManagerFacade (AMF)";
+const char kGaiaIdCacheInAccountManagerFacadeDescription[] =
     "If enabled, starts fetching gaia id from android accounts in "
     "AccountManagerFacade (AMF)";
 
@@ -936,13 +937,6 @@ const char kDesktopPWAsSubAppsDescription[] =
     "Prototype implementation of: "
     "https://github.com/ivansandrk/multi-apps/blob/main/explainer.md";
 
-const char kDesktopPWAsWindowControlsOverlayName[] =
-    "Desktop PWA Window Controls Overlay";
-const char kDesktopPWAsWindowControlsOverlayDescription[] =
-    "Enable web app manifests to declare Window Controls Overlay as a display "
-    "override. Prototype implementation of: "
-    "https://github.com/WICG/window-controls-overlay/blob/main/explainer.md";
-
 const char kDesktopPWAsBorderlessName[] = "Desktop PWA Borderless";
 const char kDesktopPWAsBorderlessDescription[] =
     "Enable web app manifests to declare borderless mode as a display "
@@ -1702,10 +1696,6 @@ const char kInfobarScrollOptimizationName[] = "Infobar scroll optimiaztion";
 const char kInfobarScrollOptimizationDescription[] =
     "Optimize Infobar scroll on Android.";
 
-const char kInitialNavigationEntryName[] = "Initial NavigationEntry";
-const char kInitialNavigationEntryDescription[] =
-    "Enables creation of initial NavigationEntry on tab creation.";
-
 const char kInProductHelpDemoModeChoiceName[] = "In-Product Help Demo Mode";
 const char kInProductHelpDemoModeChoiceDescription[] =
     "Selects the In-Product Help demo mode.";
@@ -1785,6 +1775,11 @@ const char kJourneysOnDeviceClusteringKeywordFilteringName[] =
 const char kJourneysOnDeviceClusteringKeywordFilteringDescription[] =
     "Enables variations for the keywords output by the on-device clustering "
     "for Journeys";
+
+const char kJourneysShowAllClustersName[] =
+    "History Journeys Show All Clusters";
+const char kJourneysShowAllClustersDescription[] =
+    "Enables all Journeys clusters to be shown on prominent UI surfaces";
 
 const char kLargeFaviconFromGoogleName[] = "Large favicons from Google";
 const char kLargeFaviconFromGoogleDescription[] =
@@ -3387,11 +3382,6 @@ const char kAndroidMediaPickerSupportName[] = "Android Media Picker";
 const char kAndroidMediaPickerSupportDescription[] =
     "When enabled the Android Media picker is used instead of the Chrome one.";
 
-const char kAndroidPermissionsCacheName[] = "Android Permissions Cache";
-const char kAndroidPermissionsCacheDescription[] =
-    "When enabled, android "
-    "permissions (such as camera and microphone permissions) will be cached";
-
 const char kAndroidSurfaceControlName[] = "Android SurfaceControl";
 const char kAndroidSurfaceControlDescription[] =
     " Enables SurfaceControl to manage the buffer queue for the "
@@ -3609,6 +3599,12 @@ const char kEnableFamilyInfoFeedbackName[] =
     "Enable feedback from FamilyLink (Android)";
 const char kEnableFamilyInfoFeedbackDescription[] =
     "Enable FamilyLink feedback source in Chrome Settings feedback";
+
+const char kEnablePasswordsAccountStorageName[] =
+    "Enable the account data storage for passwords";
+const char kEnablePasswordsAccountStorageDescription[] =
+    "Enables storing passwords in a second, Gaia-account-scoped storage for "
+    "signed-in but not syncing users";
 
 const char kEnableOskResizesVisualViewportByDefaultName[] =
     "Enable OSK resizes visual viewport by default";
@@ -4184,10 +4180,6 @@ const char kAdaptiveButtonInTopToolbarCustomizationName[] =
     "Adaptive button in top toolbar customization";
 const char kAdaptiveButtonInTopToolbarCustomizationDescription[] =
     "Enables UI for customizing the adaptive action button in the top toolbar";
-const char kShareButtonInTopToolbarName[] = "Share button in top toolbar";
-const char kShareButtonInTopToolbarDescription[] =
-    "Enables UI to initiate sharing from the top toolbar. Enabling Adaptive "
-    "Button overrides this.";
 const char kVoiceButtonInTopToolbarName[] = "Voice button in top toolbar";
 const char kVoiceButtonInTopToolbarDescription[] =
     "Enables showing the voice search button in the top toolbar. Enabling "
@@ -5425,11 +5417,6 @@ const char kExoOrdinalMotionName[] =
     "Raw (unaccelerated) motion for Linux applications";
 const char kExoOrdinalMotionDescription[] =
     "Send unaccelerated values as raw motion events to linux applications.";
-
-const char kExoLockNotificationName[] = "Notification bubble for UI lock";
-const char kExoLockNotificationDescription[] =
-    "Show a notification bubble once an application has switched to "
-    "non-immersive fullscreen mode or obtained pointer lock.";
 
 const char kExperimentalAccessibilityDictationWithPumpkinName[] =
     "Experimental accessibility dictation using the pumpkin semantic parser.";

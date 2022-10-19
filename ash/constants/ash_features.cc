@@ -518,7 +518,7 @@ BASE_FEATURE(kBruschettaAlphaMigrate,
 // notifications, network details page, quick settings, and portal signin UI.
 BASE_FEATURE(kCaptivePortalUI2022,
              "CaptivePortalUI2022",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether Active Directory management on ChromeOS (Chromad) is
 // supported or not. When this feature is enabled, Chromad continues working
@@ -837,11 +837,6 @@ BASE_FEATURE(kEolWarningNotifications,
 // Enable or disable support for touchpad with haptic feedback.
 BASE_FEATURE(kExoHapticFeedbackSupport,
              "ExoHapticFeedbackSupport",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enable or disable bubble showing when an application gains any UI lock.
-BASE_FEATURE(kExoLockNotification,
-             "ExoLockNotification",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable or disable use of ordinal (unaccelerated) motion by Exo clients.
@@ -1170,7 +1165,7 @@ BASE_FEATURE(kImeStylusHandwriting,
 // is already shown in the shelf.
 BASE_FEATURE(kImeTrayHideVoiceButton,
              "ImeTrayHideVoiceButton",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables improved keyboard shortcuts for activating desks at specified indices
 // and toggling whether a window is assigned to all desks.
@@ -1995,6 +1990,12 @@ BASE_FEATURE(kUseAuthsessionAuthentication,
 BASE_FEATURE(kUseAuthFactors,
              "UseAuthFactors",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// When enabled, WebAuthN uses auth session based authentication
+// instead of legacy CheckKey.
+BASE_FEATURE(kUseAuthsessionForWebAuthN,
+             "UseAuthsessionForWebAuthN",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, the login shelf view is placed in its own widget instead of
 // sharing the shelf widget with other components.
@@ -3039,6 +3040,10 @@ bool IsUploadOfficeToCloudEnabled() {
 
 bool IsUseAuthFactorsEnabled() {
   return base::FeatureList::IsEnabled(kUseAuthFactors);
+}
+
+bool IsUseAuthsessionForWebAuthNEnabled() {
+  return base::FeatureList::IsEnabled(kUseAuthsessionForWebAuthN);
 }
 
 bool IsUseLoginShelfWidgetEnabled() {

@@ -47,6 +47,7 @@ class COMPONENT_EXPORT(CHROMEOS_SYSTEM) StatisticsProviderImpl
     base::FilePath machine_info_filepath;
     base::FilePath vpd_echo_filepath;
     base::FilePath vpd_filepath;
+    base::FilePath vpd_status_filepath;
     base::FilePath oem_manifest_filepath;
     base::FilePath cros_regions_filepath;
   };
@@ -90,6 +91,8 @@ class COMPONENT_EXPORT(CHROMEOS_SYSTEM) StatisticsProviderImpl
   // installed it will return false even if Chrome OS is running in a VM.
   bool IsRunningOnVm() override;
 
+  VpdStatus GetVpdStatus() const override;
+
  private:
   using MachineFlags = std::map<std::string, bool>;
   using RegionDataExtractor = bool (*)(const base::Value&, std::string*);
@@ -107,6 +110,15 @@ class COMPONENT_EXPORT(CHROMEOS_SYSTEM) StatisticsProviderImpl
 
   // Loads the machine statistics off of disk. Runs on the file thread.
   void LoadMachineStatistics(bool load_oem_manifest);
+
+  // Loads calls the crossystem tool and loads statistics from its output.
+  void LoadCrossystemTool();
+
+  // Loads the machine info statistics off of disk. Runs on the file thread.
+  void LoadMachineInfoFile();
+
+  // Loads the VPD statistics off of disk. Runs on the file thread.
+  void LoadVpdFiles();
 
   // Loads the OEM statistics off of disk. Runs on the file thread.
   void LoadOemManifestFromFile(const base::FilePath& file);
@@ -132,6 +144,16 @@ class COMPONENT_EXPORT(CHROMEOS_SYSTEM) StatisticsProviderImpl
   std::string region_;
   base::Value region_dict_;
   base::flat_map<std::string, RegionDataExtractor> regional_data_extractors_;
+
+  // Stores VPD partitions status.
+  // VPD partition or partitions are considered in invalid state if:
+  // 1. Status file or VPD file is missing: both RO_VPD and RW_VPD are
+  //    considered being invalid.
+  // 2. Partition key is missing in the status file: corresponding partition is
+  //    considered being invalid.
+  // 3. Partition key has invalid value: corresponding partition is considered
+  //    being invalid.
+  VpdStatus vpd_status_{VpdStatus::kUnknown};
 
   // Lock held when `statistics_loaded_` is signaled and when
   // `statistics_loaded_callbacks_` is accessed.

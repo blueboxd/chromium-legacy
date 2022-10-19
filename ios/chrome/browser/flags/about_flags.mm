@@ -541,11 +541,11 @@ const FeatureEntry::FeatureVariation kDmTokenDeletionVariation[] = {
      nullptr}};
 
 const FeatureEntry::FeatureParam kOpenInDownloadInShareButton[] = {
-    {kOpenInDownloadInShareButtonParam, "true"}};
+    {kOpenInDownloadInShareButtonParam, kOpenInDownloadParameterName}};
 const FeatureEntry::FeatureParam kOpenInDownloadWithWKDownload[] = {
-    {kOpenInDownloadWithWKDownloadParam, "true"}};
+    {kOpenInDownloadWithWKDownloadParam, kOpenInDownloadParameterName}};
 const FeatureEntry::FeatureParam kOpenInDownloadWithV2[] = {
-    {kOpenInDownloadWithV2Param, "true"}};
+    {kOpenInDownloadWithV2Param, kOpenInDownloadParameterName}};
 const FeatureEntry::FeatureVariation kOpenInDownloadVariations[] = {
     {"With legacy download", kOpenInDownloadInShareButton,
      std::size(kOpenInDownloadInShareButton), nullptr},
@@ -674,11 +674,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kMaxZeroSuggestMatches,
                                     kOmniboxMaxZPSMatchesVariations,
                                     "OmniboxMaxZPSVariations")},
-#if BUILDFLAG(DCHECK_IS_CONFIGURABLE)
-    {"dcheck-is-fatal", flag_descriptions::kDcheckIsFatalName,
-     flag_descriptions::kDcheckIsFatalDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(base::kDCheckIsFatalFeature)},
-#endif  // BUILDFLAG(DCHECK_IS_CONFIGURABLE)
     {"autofill-use-mobile-label-disambiguation",
      flag_descriptions::kAutofillUseMobileLabelDisambiguationName,
      flag_descriptions::kAutofillUseMobileLabelDisambiguationDescription,
@@ -1254,11 +1249,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTFLiteLanguageDetectionIgnoreDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(translate::kTFLiteLanguageDetectionIgnoreEnabled)},
-    {"app-store-rating-test-engaged-user",
-     flag_descriptions::kAppStoreRatingIgnoreEligibilityCheckTestName,
-     flag_descriptions::kAppStoreRatingIgnoreEligibilityCheckTestDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kAppStoreRatingIgnoreEligibilityCheckTest)},
     {"keyboard-shortcuts-menu", flag_descriptions::kKeyboardShortcutsMenuName,
      flag_descriptions::kKeyboardShortcutsMenuDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kKeyboardShortcutsMenu)},
@@ -1277,6 +1267,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableCompromisedPasswordsMutingDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kMuteCompromisedPasswords)},
+    {"enable-passwords-account-storage",
+     flag_descriptions::kEnablePasswordsAccountStorageName,
+     flag_descriptions::kEnablePasswordsAccountStorageDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kEnablePasswordsAccountStorage)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -1615,19 +1611,6 @@ void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
 std::vector<std::string> RegisterAllFeatureVariationParameters(
     flags_ui::FlagsStorage* flags_storage,
     base::FeatureList* feature_list) {
-  // Occasionally DCHECK crashes on canary can be very distuptive.  An
-  // experimental flag was added to aid in temporarily disabling this for
-  // canary testers.
-#if BUILDFLAG(DCHECK_IS_CONFIGURABLE)
-  if (experimental_flags::AreDCHECKCrashesDisabled()) {
-    std::vector<base::FeatureList::FeatureOverrideInfo> overrides;
-    overrides.push_back(
-        {std::cref(base::kDCheckIsFatalFeature),
-         base::FeatureList::OverrideState::OVERRIDE_DISABLE_FEATURE});
-    feature_list->RegisterExtraFeatureOverrides(std::move(overrides));
-  }
-#endif  // BUILDFLAG(DCHECK_IS_CONFIGURABLE)
-
   return GetGlobalFlagsState().RegisterAllFeatureVariationParameters(
       flags_storage, feature_list);
 }

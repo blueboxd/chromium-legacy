@@ -271,6 +271,9 @@ crbug.com/1302831 virtual/prerender/wpt_internal/prerender/restriction-web-auth.
 crbug.com/1302831 [ Mac10.14 ] external/wpt/html/browsers/browsing-the-web/back-forward-cache/eligibility/broadcast-channel.html [ Pass Timeout ]
 crbug.com/1302831 [ Win10.20h2 ] external/wpt/html/browsers/browsing-the-web/back-forward-cache/eligibility/broadcast-channel.html [ Pass Timeout ]
 
+# This is temporarily disabled in order to merge http://crrev.com/c/3940518
+crbug.com/1351286 http/tests/devtools/console-xhr-logging.js [ Failure Pass ]
+
 # These tests require the experimental speculative prefetch feature, and requires extra switches to enable content implementation of speculation rules prefetch.
 # This expectation and the virtual suite can be removed once that is enabled by default.
 crbug.com/1343590 external/wpt/speculation-rules/prefetch/* [ Skip ]
@@ -2062,6 +2065,27 @@ crbug.com/248894 external/wpt/web-animations/responsive/textIndent.html [ Failur
 
 crbug.com/1364304 external/wpt/css/css-variables/css-variable-change-style-001.html [ Failure Pass ]
 
+# nth-* selectors
+crbug.com/304163 external/wpt/css/selectors/nth-child-and-nth-last-child.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-child-of-classname.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-child-of-complex-selector.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-child-of-compound-selector.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-child-of-tagname.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-child-specificity-1.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-child-specificity-2.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-child-specificity-3.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-child-specificity-4.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-last-child-of-classname.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-last-child-of-complex-selector.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-last-child-of-compound-selector.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-last-child-of-style-sharing-1.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-last-child-of-style-sharing-2.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-last-child-of-tagname.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-last-child-specificity-1.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-last-child-specificity-2.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-last-child-specificity-3.html [ Failure ]
+crbug.com/304163 external/wpt/css/selectors/nth-last-child-specificity-4.html [ Failure ]
+
 # ====== Style team owned tests to here ======
 
 # Failing WPT html/semantics/* tests. Not all have been investigated.
@@ -3332,6 +3356,16 @@ crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/preren
 crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/fetch/cross-origin-resource-policy/script-loads.html [ Timeout ]
+crbug.com/626703 external/wpt/fetch/metadata/generated/element-script.https.sub.html [ Timeout ]
+crbug.com/626703 external/wpt/fetch/metadata/generated/element-script.sub.html [ Timeout ]
+crbug.com/626703 external/wpt/webaudio/the-audio-api/the-audiocontext-interface/audiocontext-suspend-resume-close.html [ Timeout ]
+crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/cross-origin-resource-policy/script-loads.html [ Timeout ]
+crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/metadata/generated/element-script.https.sub.html [ Timeout ]
+crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/metadata/generated/element-script.sub.html [ Timeout ]
+crbug.com/626703 [ Mac12 ] virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-dynamic.tentative.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-fonts/rlh-in-monospace.html [ Failure ]
+crbug.com/626703 external/wpt/editing/crashtests/inserthorizontalrule-in-textarea-in-editor-and-undo-on-error-events.html [ Timeout ]
 crbug.com/626703 external/wpt/screen-orientation/non-fully-active.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/screen-orientation/lock-basic.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/screen-orientation/lock-sandboxed-iframe.html [ Failure ]
@@ -4847,6 +4881,7 @@ crbug.com/1028684 http/tests/inspector-protocol/animation/animation-release.js [
 crbug.com/1019079 fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Failure Pass ]
 crbug.com/1027434 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Pass Timeout ]
 crbug.com/1027434 [ Mac11 ] external/wpt/html/browsers/origin/cross-origin-objects/location-properties-smoke-test.html [ Timeout ]
+crbug.com/1350255 [ Mac12 ] external/wpt/html/browsers/origin/cross-origin-objects/location-properties-smoke-test.html [ Timeout ]
 
 # Sheriff 2019-12-02
 crbug.com/1029528 [ Linux ] http/tests/devtools/network/oopif-content.js [ Failure Pass ]
@@ -6121,7 +6156,6 @@ crbug.com/1249176 [ Mac12-arm64 ] media/controls/overflow-menu-focus.html [ Fail
 
 # Failures that surfaced on the mac12-arm64 waterfall
 crbug.com/1249176 [ Mac12-arm64 ] media/color-profile-video-seek.html [ Failure ]
-crbug.com/1249176 [ Mac12-arm64 ] media/video-zoom.html [ Failure ]
 crbug.com/1249176 [ Mac12-arm64 ] virtual/exotic-color-space/images/color-profile-background-image-cover.html [ Failure ]
 crbug.com/1249176 [ Mac12-arm64 ] virtual/exotic-color-space/images/color-profile-border-image.html [ Failure ]
 crbug.com/1249176 [ Mac12-arm64 ] virtual/exotic-color-space/images/color-profile-image-canvas-svg.html [ Failure ]
@@ -6175,8 +6209,6 @@ crbug.com/1249176 [ Mac11-arm64 ] http/tests/devtools/elements/accessibility/edi
 crbug.com/1249176 [ Mac12-arm64 ] http/tests/devtools/elements/accessibility/edit-aria-attributes.js [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/overlay/overlay-persistent-overlays-with-emulation.js [ Failure Pass ]
 crbug.com/1249176 [ Mac12-arm64 ] inspector-protocol/overlay/overlay-persistent-overlays-with-emulation.js [ Failure Pass ]
-crbug.com/1249176 [ Mac11-arm64 ] fast/layers/clip-rects-transformed-2.html [ Failure Pass ]
-crbug.com/1249176 [ Mac12-arm64 ] fast/layers/clip-rects-transformed-2.html [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/timeline/page-frames.js [ Failure Pass ]
 crbug.com/1249176 [ Mac12-arm64 ] inspector-protocol/timeline/page-frames.js [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] inspector-protocol/timeline/user-timing.js [ Failure Pass ]
@@ -6497,7 +6529,6 @@ crbug.com/1284572 virtual/threaded/http/tests/devtools/isolated-code-cache/same-
 crbug.com/1285411 external/wpt/css/css-scroll-snap/input/mouse-wheel.html [ Timeout ]
 
 # Sheriff 2022-01-07
-crbug.com/1285438 fast/layers/clip-rects-transformed.html [ Failure Pass ]
 crbug.com/1285436 virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax-browser-navigate.js [ Crash Failure Pass Timeout ]
 crbug.com/1285436 virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax-js-navigate.js [ Crash Failure Pass Timeout ]
 crbug.com/1285436 virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax-js-subresource.js [ Crash Failure Pass Timeout ]
@@ -6548,8 +6579,6 @@ crbug.com/1290976 external/wpt/mediacapture-insertable-streams/MediaStreamTrackG
 crbug.com/1291850 external/wpt/mediacapture-insertable-streams/MediaStreamTrackGenerator-in-service-worker.https.html [ Crash Pass ]
 
 # Temporarily disable tests to land branded types related changes.
-crbug.com/1253323 [ Win ] http/tests/devtools/sources/debugger-breakpoints/nodejs-set-breakpoint.js [ Skip ]
-crbug.com/1253323 http/tests/devtools/persistence/automapping-urlencoded-paths.js [ Skip ]
 crbug.com/1253323 http/tests/devtools/sources/debugger/navigator-view.js [ Skip ]
 
 # Sheriff 2022-01-26
@@ -6580,7 +6609,6 @@ crbug.com/1295317 [ Mac11-arm64 ] compositing/video/video-controls-squashing.htm
 crbug.com/1295317 [ Mac11-arm64 ] media/color-profile-video-seek.html [ Failure ]
 crbug.com/1295317 [ Mac11-arm64 ] media/color-profile-video.html [ Failure ]
 crbug.com/1295317 [ Mac11-arm64 ] media/controls/video-overlay-cast-light-rendering.html [ Failure ]
-crbug.com/1295317 [ Mac11-arm64 ] media/video-zoom.html [ Failure ]
 crbug.com/1295317 [ Mac11-arm64 ] virtual/exotic-color-space/images/2-comp.html [ Failure ]
 crbug.com/1295317 [ Mac11-arm64 ] virtual/exotic-color-space/images/color-jpeg-with-color-profile.html [ Failure ]
 crbug.com/1295317 [ Mac11-arm64 ] virtual/exotic-color-space/images/color-profile-background-image-cover.html [ Failure ]
@@ -7223,19 +7251,15 @@ crbug.com/1370307 external/wpt/encoding-detection/zh-GBK-late.tentative.html [ F
 crbug.com/1363138 http/tests/inspector-protocol/cachestorage/read-cached-response.js [ Skip ]
 
 # Investigate the flake
-crbug.com/1371395 external/wpt/performance-timeline/not-restored-reasons/performance-navigation-timing-same-origin-bfcache.window.js [ Failure Pass ]
+crbug.com/1371395 external/wpt/performance-timeline/not-restored-reasons/performance-navigation-timing-same-origin-bfcache.window.html [ Failure Pass ]
 
 # Disable top flakes trigger step failure on builders
 crbug.com/1371949 [ Mac12 ] virtual/low-priority-script-loading/http/tests/devtools/network/resource-priority.js [ Failure Pass ]
 crbug.com/1371949 [ Mac11 ] virtual/low-priority-script-loading/http/tests/devtools/network/resource-priority.js [ Failure Pass ]
-crbug.com/1374204 [ Linux ] inspector-protocol/debugger/updateCallFrameScopes.js [ Failure Pass ]
-crbug.com/1374204 [ Mac ] inspector-protocol/debugger/updateCallFrameScopes.js [ Failure Pass ]
+crbug.com/1370857 [ Debug Linux ] fast/block/float/float-avoidance.html [ Crash Failure ]
 
 # Sheriff 2022-10-07
 crbug.com/1372556 [ Linux ] external/wpt/css/css-text/text-transform/text-transform-capitalize-* [ Failure Pass ]
-
-# Sheriff 2022-10-10
-crbug.com/1373206 [ Win ] external/wpt/css/css-fonts/font-palette-vs-shorthand.html [ Failure ]
 
 crbug.com/1370050 http/tests/devtools/debugger/stop-on-debugger-from-detached-iframe.js [ Skip ]
 crbug.com/1370050 http/tests/devtools/sources/debugger-ui/debugger-save-to-temp-var.js [ Skip ]
@@ -7266,6 +7290,8 @@ crbug.com/1280883 [ Win ] virtual/compositor-threaded-percent-based-scrolling-ds
 crbug.com/1374264 [ Mac ] external/wpt/screen-capture/permissions-policy-audio+video.https.sub.html [ Failure ]
 crbug.com/1374264 [ Mac ] external/wpt/screen-capture/permissions-policy-audio.https.sub.html [ Failure ]
 crbug.com/1374264 [ Mac ] external/wpt/screen-capture/permissions-policy-video.https.sub.html [ Failure ]
+
+crbug.com/1372181 external/wpt/scroll-animations/css/scroll-timeline-default-iframe-print.html [ Failure ]
 
 # Sheriff 2022-10-04
 crbug.com/1145491 [ Mac ] virtual/controls-refresh-hc/fast/forms/color-scheme/media/video-overlay-menu.html [ Skip ]
@@ -7671,3 +7697,20 @@ crbug.com/1362106 [ Win ] virtual/media-foundation-for-clear-dcomp/media/W3C/vid
 crbug.com/1362106 [ Win ] virtual/media-foundation-for-clear-dcomp/media/W3C/video/readyState/readyState_during_canplaythrough.html [ Skip ]
 crbug.com/1362106 [ Win ] virtual/media-foundation-for-clear-dcomp/media/W3C/video/readyState/readyState_during_loadeddata.html [ Skip ]
 crbug.com/1362106 [ Win ] virtual/media-foundation-for-clear-dcomp/media/W3C/video/readyState/readyState_during_playing.html [ Skip ]
+
+crbug.com/1375928 external/wpt/webrtc-stats/supported-stats.html [ Failure Pass ]
+
+# Sheriff 2022-10-19
+crbug.com/1376307 [ Fuchsia ] tables/mozilla_expected_failures/bugs/bug1055-2.html [ Failure ]
+
+# Temporarily disable tests to land IndexedDB reprioritisation changes
+crbug.com/1347831 http/tests/devtools/indexeddb/delete-entry.js [ Skip ]
+crbug.com/1347831 http/tests/devtools/application-panel/resources-panel-idb-clear-for-origin.js [ Skip ]
+crbug.com/1347831 http/tests/devtools/indexeddb/live-update-indexeddb-content.js [ Skip ]
+crbug.com/1347831 http/tests/devtools/indexeddb/resources-panel.js [ Skip ]
+crbug.com/1347831 http/tests/devtools/indexeddb/database-data.js [ Skip ]
+crbug.com/1347831 http/tests/devtools/indexeddb/database-names.js [ Skip ]
+crbug.com/1347831 http/tests/devtools/indexeddb/database-structure.js [ Skip ]
+crbug.com/1347831 http/tests/devtools/indexeddb/database-version-number.js [ Skip ]
+crbug.com/1347831 http/tests/devtools/indexeddb/track-valid-origin.js [ Skip ]
+crbug.com/1347831 http/tests/devtools/indexeddb/upgrade-events.js [ Skip ]

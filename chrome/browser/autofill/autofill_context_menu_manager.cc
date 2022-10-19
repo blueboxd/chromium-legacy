@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/functional/overloaded.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
@@ -13,6 +14,7 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 
@@ -79,11 +81,6 @@ AutofillContextMenuManager::~AutofillContextMenuManager() {
 }
 
 void AutofillContextMenuManager::AppendItems() {
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillShowManualFallbackInContextMenu)) {
-    return;
-  }
-
   content::RenderFrameHost* rfh = delegate_->GetRenderFrameHost();
   if (!rfh)
     return;
@@ -94,6 +91,23 @@ void AutofillContextMenuManager::AppendItems() {
   // filled by the driver. See crbug.com/1367547.
   if (!driver || !driver->CanShowAutofillUi())
     return;
+
+  if (params_.field_renderer_id) {
+    LocalFrameToken frame_token(rfh->GetFrameToken().value());
+    // Formless fields have default form renderer id.
+    FormGlobalId form_global_id = {
+        frame_token, params_.form_renderer_id
+                         ? FormRendererId(*params_.form_renderer_id)
+                         : FormRendererId()};
+    driver->OnContextMenuShownInField(
+        form_global_id,
+        {frame_token, FieldRendererId(*params_.field_renderer_id)});
+  }
+
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillShowManualFallbackInContextMenu)) {
+    return;
+  }
 
   DCHECK(personal_data_manager_);
   DCHECK(menu_model_);
@@ -368,9 +382,14 @@ bool AutofillContextMenuManager::CreateSubMenuWithData(
     }
 
     std::u16string value = absl::visit(
-        [type](const auto& alternative) {
-          return alternative->GetRawInfo(type);
-        },
+        base::Overloaded{[type](const CreditCard* card) {
+                           if (type == CREDIT_CARD_NUMBER)
+                             return card->ObfuscatedLastFourDigits();
+                           return card->GetRawInfo(type);
+                         },
+                         [type](const AutofillProfile* profile) {
+                           return profile->GetRawInfo(type);
+                         }},
         profile_or_credit_card);
 
     if (value.empty())

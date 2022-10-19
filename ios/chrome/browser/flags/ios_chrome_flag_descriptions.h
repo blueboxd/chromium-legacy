@@ -22,11 +22,6 @@ extern const char kAdaptiveSuggestionsCountDescription[];
 extern const char kAppStoreRatingName[];
 extern const char kAppStoreRatingDescription[];
 
-// Title and description for the flag that overrides the App Store Rating
-// trigger requirements.
-extern const char kAppStoreRatingIgnoreEligibilityCheckTestName[];
-extern const char kAppStoreRatingIgnoreEligibilityCheckTestDescription[];
-
 // Title and description for the flag to enable Chrome branding on form input
 // suggestions.
 extern const char kAutofillBrandingIOSName[];
@@ -161,12 +156,6 @@ extern const char kContentSuggestionsUIModuleRefreshDescription[];
 extern const char kCrashpadIOSName[];
 extern const char kCrashpadIOSDescription[];
 
-#if BUILDFLAG(DCHECK_IS_CONFIGURABLE)
-// Title and description for the flag to enable configurable DCHECKs.
-extern const char kDcheckIsFatalName[];
-extern const char kDcheckIsFatalDescription[];
-#endif  // BUILDFLAG(DCHECK_IS_CONFIGURABLE)
-
 // Title and description for the flag to show a modified fullscreen modal promo
 // with a button that would send the users in the Settings.app to update the
 // default browser.
@@ -297,6 +286,10 @@ extern const char kPasswordsGroupingDescription[];
 // Title and description for the flag to enable open in download
 extern const char kEnableOpenInDownloadName[];
 extern const char kEnableOpenInDownloadDescription[];
+
+// Title and description for the flag to enable the passwords account storage.
+extern const char kEnablePasswordsAccountStorageName[];
+extern const char kEnablePasswordsAccountStorageDescription[];
 
 // Title and description for the flag to enable refining data source reload
 // reporting when having a very short attention log.

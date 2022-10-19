@@ -67,12 +67,6 @@ constexpr float kInProgressImageScaleFactor = 0.7f;
 
 // Helpers ---------------------------------------------------------------------
 
-template <typename... T>
-base::RepeatingCallback<void(T...)> IgnoreArgs(
-    base::RepeatingCallback<void()> callback) {
-  return base::BindRepeating([](T...) {}).Then(std::move(callback));
-}
-
 void ToCenteredSize(gfx::Rect* rect, const gfx::Size& size) {
   rect->Outset(gfx::Outsets::VH(size.height(), size.width()));
   rect->ClampToCenteredSize(size);
@@ -126,7 +120,7 @@ class PaintCallbackLabel : public views::Label {
     layer()->SetFillsBoundsOpaquely(fills_bounds_opaquely);
   }
 
-  void SetStyle(bubble_utils::LabelStyle style) {
+  void SetStyle(bubble_utils::TypographyStyle style) {
     bubble_utils::ApplyStyle(this, style);
   }
 
@@ -147,7 +141,7 @@ class PaintCallbackLabel : public views::Label {
 
 BEGIN_VIEW_BUILDER(/*no export*/, PaintCallbackLabel, views::Label)
 VIEW_BUILDER_PROPERTY(PaintCallbackLabel::Callback, Callback)
-VIEW_BUILDER_PROPERTY(bubble_utils::LabelStyle, Style)
+VIEW_BUILDER_PROPERTY(bubble_utils::TypographyStyle, Style)
 VIEW_BUILDER_PROPERTY(bool, PaintToLayer)
 VIEW_BUILDER_PROPERTY(bool, ViewAccessibilityIsIgnored)
 END_VIEW_BUILDER
@@ -323,14 +317,14 @@ HoldingSpaceItemChipView::HoldingSpaceItemChipView(
                           CreateLabelBuilder()
                               .CopyAddressTo(&primary_label_)
                               .SetID(kHoldingSpaceItemPrimaryChipLabelId)
-                              .SetStyle(bubble_utils::LabelStyle::kChipTitle)
+                              .SetStyle(bubble_utils::TypographyStyle::kBody2)
                               .SetElideBehavior(gfx::ELIDE_MIDDLE)
                               .SetCallback(paint_label_mask_callback))
                       .AddChild(
                           CreateLabelBuilder()
                               .CopyAddressTo(&secondary_label_)
                               .SetID(kHoldingSpaceItemSecondaryChipLabelId)
-                              .SetStyle(bubble_utils::LabelStyle::kChipBody)
+                              .SetStyle(bubble_utils::TypographyStyle::kLabel1)
                               .SetElideBehavior(gfx::FADE_TAIL)
                               .SetCallback(paint_label_mask_callback)))
               .AddChild(views::Builder<views::BoxLayoutView>()
@@ -350,9 +344,10 @@ HoldingSpaceItemChipView::HoldingSpaceItemChipView(
   progress_ring_animation_changed_subscription_ =
       HoldingSpaceAnimationRegistry::GetInstance()
           ->AddProgressRingAnimationChangedCallbackForKey(
-              item, IgnoreArgs<ProgressRingAnimation*>(base::BindRepeating(
-                        &HoldingSpaceItemChipView::UpdateImageTransform,
-                        base::Unretained(this))));
+              item,
+              base::IgnoreArgs<ProgressRingAnimation*>(base::BindRepeating(
+                  &HoldingSpaceItemChipView::UpdateImageTransform,
+                  base::Unretained(this))));
 
   UpdateImage();
   UpdateImageAndProgressIndicatorVisibility();

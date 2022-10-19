@@ -19,10 +19,9 @@ struct AudioDevice;
 class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) AudioDevicesPrefHandler
     : public base::RefCountedThreadSafe<AudioDevicesPrefHandler> {
  public:
-  // Integer because C++ does not allow static const double in header files.
-  static const int kDefaultInputGainPercent = 50;
-  static const int kDefaultOutputVolumePercent = 75;
-  static const int kDefaultHdmiOutputVolumePercent = 100;
+  static constexpr double kDefaultInputGainPercent = 50;
+  static constexpr double kDefaultOutputVolumePercent = 75;
+  static constexpr double kDefaultHdmiOutputVolumePercent = 100;
 
   // Gets the audio output volume value from prefs for a device. Since we can
   // only have either a gain or a volume for a device (depending on whether it
@@ -78,8 +77,14 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) AudioDevicesPrefHandler
   // Removes an audio preference observer.
   virtual void RemoveAudioPrefObserver(AudioPrefObserver* observer) = 0;
 
+  // Mark `connected_devices` as seen and drop the least recently seen devices
+  // if there are more than `keep_devices` stored in preferences.
+  virtual void DropLeastRecentlySeenDevices(
+      const std::vector<AudioDevice>& connected_devices,
+      size_t keep_devices) = 0;
+
  protected:
-  virtual ~AudioDevicesPrefHandler() {}
+  virtual ~AudioDevicesPrefHandler() = default;
 
  private:
   friend class base::RefCountedThreadSafe<AudioDevicesPrefHandler>;

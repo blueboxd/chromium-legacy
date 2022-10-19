@@ -1209,28 +1209,6 @@
             ]
         }
     ],
-    "AutofillFillCreditCardAsPerFormatString": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "fuchsia",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillFillCreditCardAsPerFormatString"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillFillMerchantPromoCodeFields": [
         {
             "platforms": [
@@ -1292,6 +1270,28 @@
             ]
         }
     ],
+    "AutofillMin3FieldTypesForLocalHeuristics": [
+        {
+            "platforms": [
+                "android_webview",
+                "android_weblayer",
+                "android",
+                "chromeos",
+                "fuchsia",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillMin3FieldTypesForLocalHeuristics"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillParseAsync": [
         {
             "platforms": [
@@ -1333,28 +1333,6 @@
                     "name": "Enabled2022-03-01",
                     "enable_features": [
                         "AutofillPreventOverridingPrefilledValues"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillRefillModifiedCreditCardExpirationDates": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "fuchsia",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillRefillModifiedCreditCardExpirationDates"
                     ]
                 }
             ]
@@ -2131,28 +2109,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "CWPCollectsETM"
-                    ]
-                }
-            ]
-        }
-    ],
-    "CacheBaseEntitySpecificsInMetadata": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "fuchsia",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "CacheBaseEntitySpecificsInMetadata"
                     ]
                 }
             ]
@@ -3347,6 +3303,7 @@
     "CrashReportBreadcrumbs": [
         {
             "platforms": [
+                "android",
                 "chromeos",
                 "chromeos_lacros",
                 "fuchsia",
@@ -3686,33 +3643,6 @@
                     "disable_features": [
                         "NtpShoppingTasksModule"
                     ]
-                },
-                {
-                    "name": "Recipes_SAPIV2_20220415",
-                    "params": {
-                        "NtpModulesLoadTimeoutMillisecondsParam": "3000",
-                        "use_sapi_v2": "true"
-                    },
-                    "enable_features": [
-                        "NtpModulesLoadTimeoutMilliseconds",
-                        "NtpRecipeTasksModule"
-                    ],
-                    "disable_features": [
-                        "NtpShoppingTasksModule"
-                    ]
-                },
-                {
-                    "name": "Recipes_SAPIV2_Control_20220415",
-                    "params": {
-                        "NtpModulesLoadTimeoutMillisecondsParam": "3000"
-                    },
-                    "enable_features": [
-                        "NtpModulesLoadTimeoutMilliseconds",
-                        "NtpRecipeTasksModule"
-                    ],
-                    "disable_features": [
-                        "NtpShoppingTasksModule"
-                    ]
                 }
             ]
         }
@@ -3743,32 +3673,6 @@
                         "BookmarkTypedUrlsMap",
                         "OmniboxBookmarkPaths",
                         "OmniboxShortBookmarkSuggestionsByTotalInputLength"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DesktopOmniboxDomainSuggestions": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "fuchsia",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "DomainSuggestionsMaxMatchesPerDomain": "2",
-                        "DomainSuggestionsMinInputLength": "4",
-                        "DomainSuggestionsVisitCapPerVisit": "2",
-                        "DomainSuggestionsVisitThreshold": "4"
-                    },
-                    "enable_features": [
-                        "OmniboxDomainSuggestions"
                     ]
                 }
             ]
@@ -3875,6 +3779,33 @@
                     "enable_features": [
                         "OmniboxRichAutocompletion",
                         "OmniboxShortcutExpanding"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DesktopOmnibox_HistoryQuickProviderSpecificity": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "fuchsia",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "DomainSuggestionsMaxMatchesPerDomain": "2",
+                        "DomainSuggestionsMinInputLength": "4",
+                        "DomainSuggestionsVisitCapPerVisit": "2",
+                        "DomainSuggestionsVisitThreshold": "4"
+                    },
+                    "enable_features": [
+                        "OmniboxDomainSuggestions",
+                        "OmniboxHistoryQuickProviderSpecificityScoreCountUniqueHosts"
                     ]
                 }
             ]
@@ -7826,6 +7757,25 @@
             ]
         }
     ],
+    "PageSpecificSiteDataDialog": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20221012",
+                    "enable_features": [
+                        "PageInfoCookiesSubpage",
+                        "PageSpecificSiteDataDialog"
+                    ]
+                }
+            ]
+        }
+    ],
     "PaintHoldingCrossOrigin": [
         {
             "platforms": [
@@ -8026,7 +7976,7 @@
             ],
             "experiments": [
                 {
-                    "name": "enabled_double_key",
+                    "name": "enabled_double_key_v2",
                     "enable_features": [
                         "EnableDoubleKeyNetworkAnonymizationKey",
                         "ForceIsolationInfoFrameOriginToTopLevelFrame",
@@ -8037,10 +7987,13 @@
                         "PartitionNelAndReportingByNetworkIsolationKey",
                         "PartitionSSLSessionsByNetworkIsolationKey",
                         "SplitHostCacheByNetworkIsolationKey"
+                    ],
+                    "disable_features": [
+                        "EnableCrossSiteFlagNetworkAnonymizationKey"
                     ]
                 },
                 {
-                    "name": "enabled_triple_key",
+                    "name": "enabled_triple_key_v2",
                     "enable_features": [
                         "PartitionConnectionsByNetworkIsolationKey",
                         "PartitionDomainReliabilityByNetworkIsolationKey",
@@ -8049,10 +8002,15 @@
                         "PartitionNelAndReportingByNetworkIsolationKey",
                         "PartitionSSLSessionsByNetworkIsolationKey",
                         "SplitHostCacheByNetworkIsolationKey"
+                    ],
+                    "disable_features": [
+                        "EnableCrossSiteFlagNetworkAnonymizationKey",
+                        "EnableDoubleKeyNetworkAnonymizationKey",
+                        "ForceIsolationInfoFrameOriginToTopLevelFrame"
                     ]
                 },
                 {
-                    "name": "enabled_triple_nik_double_nak",
+                    "name": "enabled_triple_nik_double_nak_v2",
                     "enable_features": [
                         "EnableDoubleKeyNetworkAnonymizationKey",
                         "PartitionConnectionsByNetworkIsolationKey",
@@ -8062,19 +8020,44 @@
                         "PartitionNelAndReportingByNetworkIsolationKey",
                         "PartitionSSLSessionsByNetworkIsolationKey",
                         "SplitHostCacheByNetworkIsolationKey"
+                    ],
+                    "disable_features": [
+                        "EnableCrossSiteFlagNetworkAnonymizationKey",
+                        "ForceIsolationInfoFrameOriginToTopLevelFrame"
                     ]
                 },
                 {
-                    "name": "enabled_triple_nik_cross_site_flag_nak",
+                    "name": "enabled_triple_nik_cross_site_flag_nak_v2",
                     "enable_features": [
+                        "EnableCrossSiteFlagNetworkAnonymizationKey",
                         "PartitionConnectionsByNetworkIsolationKey",
                         "PartitionDomainReliabilityByNetworkIsolationKey",
                         "PartitionExpectCTStateByNetworkIsolationKey",
                         "PartitionHttpServerPropertiesByNetworkIsolationKey",
                         "PartitionNelAndReportingByNetworkIsolationKey",
                         "PartitionSSLSessionsByNetworkIsolationKey",
-                        "SplitHostCacheByNetworkIsolationKey",
-                        "kEnableCrossSiteFlagNetworkAnonymizationKey"
+                        "SplitHostCacheByNetworkIsolationKey"
+                    ],
+                    "disable_features": [
+                        "EnableDoubleKeyNetworkAnonymizationKey",
+                        "ForceIsolationInfoFrameOriginToTopLevelFrame"
+                    ]
+                },
+                {
+                    "name": "enabled_triple_nik_cross_site_flag_nak_v",
+                    "enable_features": [
+                        "EnableCrossSiteFlagNetworkAnonymizationKey",
+                        "PartitionConnectionsByNetworkIsolationKey",
+                        "PartitionDomainReliabilityByNetworkIsolationKey",
+                        "PartitionExpectCTStateByNetworkIsolationKey",
+                        "PartitionHttpServerPropertiesByNetworkIsolationKey",
+                        "PartitionNelAndReportingByNetworkIsolationKey",
+                        "PartitionSSLSessionsByNetworkIsolationKey",
+                        "SplitHostCacheByNetworkIsolationKey"
+                    ],
+                    "disable_features": [
+                        "EnableDoubleKeyNetworkAnonymizationKey",
+                        "ForceIsolationInfoFrameOriginToTopLevelFrame"
                     ]
                 }
             ]
@@ -9501,24 +9484,6 @@
             ]
         }
     ],
-    "ShareButtonInTopToolbar": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "minimum_width": "360"
-                    },
-                    "enable_features": [
-                        "ShareButtonInTopToolbar"
-                    ]
-                }
-            ]
-        }
-    ],
     "ShareCrowButton": [
         {
             "platforms": [
@@ -10152,6 +10117,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ObserverBasedPostProfileInit"
+                    ]
+                }
+            ]
+        }
+    ],
+    "StopLoadingAnimationForHiddenWindow": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "fuchsia",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "StopLoadingAnimationForHiddenWindow"
                     ]
                 }
             ]

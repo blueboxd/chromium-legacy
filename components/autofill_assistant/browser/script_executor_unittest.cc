@@ -1494,6 +1494,39 @@ TEST_F(ScriptExecutorTest, RunPromptInPromptMode) {
   EXPECT_EQ(AutofillAssistantState::PROMPT, delegate_.GetState());
 }
 
+TEST_F(ScriptExecutorTest, TestLegalDisclaimer) {
+  base::MockCallback<base::OnceCallback<void(int)>>
+      legal_disclaimer_link_callback;
+  ActionsResponseProto actions_response;
+  auto legal_disclaimer = std::make_unique<LegalDisclaimerProto>();
+  actions_response.add_actions()->mutable_show_form()->mutable_form();
+  legal_disclaimer->set_legal_disclaimer_message(
+      "Legal disclaimer message with <link1>Links</link1>");
+
+  EXPECT_CALL(mock_service_, GetActions)
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response),
+                                   ServiceRequestSender::ResponseInfo{}));
+  executor_->Run(&user_data_, executor_callback_.Get());
+
+  executor_->Prompt(nullptr, false, base::DoNothing(), false, false,
+                    /* legal_disclaimer= */ nullptr,
+                    /* legal_disclaimer_link_callback= */ base::DoNothing());
+  EXPECT_EQ(nullptr, ui_delegate_.GetLegalDisclaimer());
+  EXPECT_TRUE(ui_delegate_.GetLegalDisclaimerLinkCallback().is_null());
+
+  executor_->Prompt(nullptr, false, base::DoNothing(), false, false,
+                    std::move(legal_disclaimer),
+                    legal_disclaimer_link_callback.Get());
+  EXPECT_NE(nullptr, ui_delegate_.GetLegalDisclaimer());
+  EXPECT_FALSE(ui_delegate_.GetLegalDisclaimerLinkCallback().is_null());
+  EXPECT_EQ(AutofillAssistantState::PROMPT, delegate_.GetState());
+
+  executor_->CleanUpAfterPrompt();
+  EXPECT_EQ(nullptr, ui_delegate_.GetLegalDisclaimer());
+  EXPECT_TRUE(ui_delegate_.GetLegalDisclaimerLinkCallback().is_null());
+  EXPECT_EQ(AutofillAssistantState::RUNNING, delegate_.GetState());
+}
+
 TEST_F(ScriptExecutorTest, RunInterruptMultipleTimesDuringPrompt) {
   SetupInterrupt("interrupt", "interrupt_trigger");
 

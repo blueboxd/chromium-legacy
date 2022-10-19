@@ -27,7 +27,7 @@ import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialo
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
@@ -54,9 +54,9 @@ export interface SiteDetailsElement {
 
 const SiteDetailsElementBase =
     RouteObserverMixin(
-        SiteSettingsMixin(WebUIListenerMixin(I18nMixin(PolymerElement)))) as {
+        SiteSettingsMixin(WebUiListenerMixin(I18nMixin(PolymerElement)))) as {
       new (): PolymerElement & I18nMixinInterface &
-          WebUIListenerMixinInterface & SiteSettingsMixinInterface &
+          WebUiListenerMixinInterface & SiteSettingsMixinInterface &
           RouteObserverMixinInterface,
     };
 
@@ -278,7 +278,7 @@ export class SiteDetailsElement extends SiteDetailsElementBase {
           // The displayName won't change, so just use the first
           // exception.
           assert(exceptionList.length > 0);
-          this.pageTitle =
+          this.pageTitle = exceptionList[0].isolatedWebAppName ??
               this.originRepresentation(exceptionList[0].displayName);
         });
   }

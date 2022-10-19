@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2019 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -44,6 +45,9 @@ For example:
 
 """
 
+import argparse
+from collections import namedtuple
+
 # Package name version bits.
 _PACKAGE_NAMES = {
     'CHROME': 0,
@@ -55,7 +59,6 @@ _PACKAGE_NAMES = {
     'WEBVIEW_BETA': 10,
     'WEBVIEW_DEV': 20,
 }
-
 """ "Next" builds get +500 on their patch number.
 
 This ensures that they are considered "newer" than any non-next build of the
@@ -65,7 +68,6 @@ actual patch number will never reach 500, which has never even come close in
 the past.
 """
 _NEXT_BUILD_VERSION_CODE_DIFF = 50000
-
 """List of version numbers to be created for each build configuration.
 Tuple format:
 
@@ -123,7 +125,6 @@ _ARCH_TO_MFG_AND_BITNESS = {
     'arm64': ('arm', '64'),
     'x86': ('intel', '32'),
     'x64': ('intel', '64'),
-    'mipsel': ('mipsel', '32'),
 }
 
 # Expose the available choices to other scripts.
@@ -166,8 +167,6 @@ things here:
   version on a 64-bit device, otherwise it won't work properly. So, the 64-bit
   version needs to be a higher versionCode, as otherwise a 64-bit device would
   prefer the 32-bit version that does not include any 64-bit code, and fail.
-- The relative order of mips isn't important, but it needs to be a *distinct*
-  value to the other architectures because all builds need unique version codes.
 """
 _ABIS_TO_BIT_MASK = {
     'arm': {
@@ -182,17 +181,22 @@ _ABIS_TO_BIT_MASK = {
         '64_32': 7,
         '64': 8,
     },
-    'mipsel': {
-        '32': 2,
-    }
 }
+
+VersionCodeComponents = namedtuple('VersionCodeComponents', [
+    'build_number',
+    'patch_number',
+    'package_name',
+    'abi',
+    'is_next_build',
+])
 
 
 def TranslateVersionCode(version_code, is_webview=False):
   """Translates a version code to its component parts.
 
   Returns:
-    A 5-tuple with the form:
+    A 5-tuple (VersionCodeComponents) with the form:
       - Build number - integer
       - Patch number - integer
       - Package name - string
@@ -245,7 +249,8 @@ def TranslateVersionCode(version_code, is_webview=False):
           abi += '_' + bitness
         break
 
-  return build_number, patch_number, package_name, abi, is_next_build
+  return VersionCodeComponents(build_number, patch_number, package_name, abi,
+                               is_next_build)
 
 
 def GenerateVersionCodes(version_values, arch, is_next_build):
@@ -291,3 +296,17 @@ def GenerateVersionCodes(version_values, arch, is_next_build):
     version_codes[version_code_name] = str(version_code_val)
 
   return version_codes
+
+
+def main():
+  parser = argparse.ArgumentParser(description='Parses version codes.')
+  parser.add_argument('version_code', help='Version code (e.g. 529700010).')
+  parser.add_argument('--webview',
+                      action='store_true',
+                      help='Whether this is a webview version code.')
+  args = parser.parse_args()
+  print(TranslateVersionCode(args.version_code, is_webview=args.webview))
+
+
+if __name__ == '__main__':
+  main()

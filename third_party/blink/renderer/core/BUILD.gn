@@ -318,6 +318,7 @@ component("core") {
     "//components/performance_manager/public/mojom:mojom_blink",
     "//components/power_scheduler",
     "//components/shared_highlighting/core/common",
+    "//components/web_package",
     "//gin",
     "//gpu/config",
     "//mojo/public/cpp/bindings:bindings",
@@ -346,7 +347,7 @@ component("core") {
     deps += [ "//ui/base/mojom" ]
   }
 
-  if (enable_basic_printing) {
+  if (enable_printing) {
     deps += [ "//printing:metafile" ]
   }
 

@@ -359,10 +359,13 @@ extern const base::FeatureParam<bool> kFuzzyUrlSuggestionsTranspose;
 // assortment of keyword mode experiments.
 bool IsExperimentalKeywordModeEnabled();
 
-// On Device Head Suggestions feature and its helper functions.
+// On Device Suggestions feature and its helper functions.
+// TODO(crbug.com/1307005): clean up head suggest flags once crbug.com/1307005
+// no longer happens.
 bool IsOnDeviceHeadSuggestEnabledForIncognito();
 bool IsOnDeviceHeadSuggestEnabledForNonIncognito();
 bool IsOnDeviceHeadSuggestEnabledForAnyMode();
+bool IsOnDeviceTailSuggestEnabled();
 // Functions can be used in both non-incognito and incognito.
 std::string OnDeviceHeadModelLocaleConstraint(bool is_incognito);
 
@@ -492,14 +495,15 @@ extern const base::FeatureParam<int>
 // updates. True by default.
 extern const base::FeatureParam<bool>
     kAutocompleteStabilityPreserveDefaultForAsyncUpdates;
+// If enabled, transferred matches from the previous input are not allowed to
+// be default.
+extern const base::FeatureParam<bool>
+    kAutocompleteStabilityPreventDefaultPreviousMatches;
 // Matches from the previous input are temporarily copied to carry over the
 // suggestions until the new input's suggestions are ready. If enabled, only
 // providers whose suggestions are pending have their old matches copied over.
 extern const base::FeatureParam<bool>
     kAutocompleteStabilityDontCopyDoneProviders;
-// If enabled, transferred matches from the previous input are not allowed to
-// be default.
-extern const base::FeatureParam<bool> kPreventDefaultPreviousMatches;
 // Begin async providers before sync providers so their async requests can
 // happen in parallel. This effects only the search, history_url, document, and
 // on device head providers.

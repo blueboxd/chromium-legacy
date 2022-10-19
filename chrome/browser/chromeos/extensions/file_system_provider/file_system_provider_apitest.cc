@@ -380,6 +380,14 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, CopyEntry) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest,
+                       CreateDirectory) {
+  ASSERT_TRUE(RunExtensionTest(
+      "file_system_provider/service_worker/create_directory",
+      {.extension_url = "test.html"}, {.load_as_component = true}))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, DeleteEntry) {
   ASSERT_TRUE(RunExtensionTest(
       "file_system_provider/service_worker/delete_entry",
@@ -431,6 +439,20 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, ReadDirectory) {
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, ReadFile) {
   ASSERT_TRUE(RunExtensionTest("file_system_provider/service_worker/read_file",
+                               {.extension_url = "test.html"},
+                               {.load_as_component = true}))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, RemoveWatcher) {
+  ASSERT_TRUE(RunExtensionTest(
+      "file_system_provider/service_worker/remove_watcher",
+      {.extension_url = "test.html"}, {.load_as_component = true}))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, Unmount) {
+  ASSERT_TRUE(RunExtensionTest("file_system_provider/service_worker/unmount",
                                {.extension_url = "test.html"},
                                {.load_as_component = true}))
       << message_;

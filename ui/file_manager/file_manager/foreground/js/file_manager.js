@@ -949,7 +949,6 @@ export class FileManager extends EventTarget {
     }
     this.fileOperationManager_ =
         this.fileBrowserBackground_.fileOperationManager;
-    this.fileOperationManager_.setFileManager(this);
     this.crostini_ = this.fileBrowserBackground_.crostini;
 
     metrics.recordInterval('Load.InitBackgroundPage');
@@ -1139,8 +1138,8 @@ export class FileManager extends EventTarget {
     this.taskController_ = new TaskController(
         this.dialogType, this.volumeManager_, this.ui_, this.metadataModel_,
         this.directoryModel_, this.selectionHandler_,
-        this.metadataUpdateController_, this.namingController_,
-        assert(this.crostini_), this.progressCenter);
+        this.metadataUpdateController_, assert(this.crostini_),
+        this.progressCenter);
 
     // Create search controller.
     this.searchController_ = new SearchController(

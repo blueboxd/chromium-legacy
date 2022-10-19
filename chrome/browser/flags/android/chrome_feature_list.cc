@@ -290,7 +290,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kSearchEnginePromoExistingDeviceV2,
     &kSearchEnginePromoNewDevice,
     &kSearchEnginePromoNewDeviceV2,
-    &kShareButtonInTopToolbar,
     &kShowScrollableMVTOnNTPAndroid,
     &kFeedPositionAndroid,
     &kSearchResumptionModuleAndroid,
@@ -383,6 +382,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &page_info::kPageInfoAboutThisSiteMoreInfo,
     &page_info::kPageInfoAboutThisSiteNonEn,
     &password_manager::features::kBiometricTouchToFill,
+    &password_manager::features::kEnablePasswordsAccountStorage,
     &password_manager::features::kLeakDetectionUnauthenticated,
     &password_manager::features::kPasswordDomainCapabilitiesFetching,
     &password_manager::features::kPasswordChange,
@@ -419,7 +419,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &switches::kEnableCbdSignOut,
     &switches::kForceStartupSigninPromo,
     &switches::kForceDisableExtendedSyncPromos,
-    &switches::kGaiaIdInAMF,
     &switches::kTangibleSync,
     &syncer::kSyncTrustedVaultPassphraseRecovery,
     &syncer::kSyncAndroidLimitNTPPromoImpressions,
@@ -950,10 +949,6 @@ BASE_FEATURE(kRequestDesktopSiteDefaultsDowngrade,
 
 BASE_FEATURE(kSafeModeForCachedFlags,
              "SafeModeForCachedFlags",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kShareButtonInTopToolbar,
-             "ShareButtonInTopToolbar",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kShowScrollableMVTOnNTPAndroid,

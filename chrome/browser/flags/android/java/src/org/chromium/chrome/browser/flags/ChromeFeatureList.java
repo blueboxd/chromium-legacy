@@ -352,6 +352,7 @@ public abstract class ChromeFeatureList {
             "ElidePrioritizationOfPreNativeBootstrapTasks";
     public static final String ENABLE_AUTOMATIC_SNOOZE = "EnableAutomaticSnooze";
     public static final String ENABLE_FAMILY_INFO_FEEDBACK = "EnableFamilyInfoFeedback";
+    public static final String ENABLE_PASSWORDS_ACCOUNT_STORAGE = "EnablePasswordsAccountStorage";
     public static final String ELASTIC_OVERSCROLL = "ElasticOverscroll";
     public static final String EXPERIMENTS_FOR_AGSA = "ExperimentsForAgsa";
     public static final String EXPLICIT_LANGUAGE_ASK = "ExplicitLanguageAsk";
@@ -540,7 +541,6 @@ public abstract class ChromeFeatureList {
             "SearchEnginePromo.NewDeviceVer2";
     public static final String SEND_TAB_TO_SELF_SIGNIN_PROMO = "SendTabToSelfSigninPromo";
     public static final String SEND_TAB_TO_SELF_V2 = "SendTabToSelfV2";
-    public static final String SHARE_BUTTON_IN_TOP_TOOLBAR = "ShareButtonInTopToolbar";
     public static final String SHARE_CROW_BUTTON = "ShareCrowButton";
     public static final String SHARE_CROW_BUTTON_LAUNCH_TAB = "ShareCrowLaunchTab";
     public static final String SHARED_HIGHLIGHTING_AMP = "SharedHighlightingAmp";
@@ -641,6 +641,8 @@ public abstract class ChromeFeatureList {
     public static final String FEED_ABLATION = "FeedAblation";
     public static final String FEED_NO_VIEW_CACHE = "FeedNoViewCache";
     public static final String FEED_REPLACE_ALL = "FeedReplaceAll";
+    public static final String SKIP_SERVICE_WORKER_FOR_INSTALL_PROMPT =
+            "SkipServiceWorkerForInstallPromot";
 
     /* Alphabetical: */
     public static final CachedFlag sAndroidAuxiliarySearch =

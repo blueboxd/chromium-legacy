@@ -192,11 +192,9 @@ class ServiceWorkerMetrics {
   // navigation preload request is to be sent.
   static void RecordNavigationPreloadRequestHeaderSize(size_t size);
 
-  static void RecordSkipServiceWorkerOnNavigationOnBrowserStartup(
-      bool skip_service_worker);
+  static void RecordSkipServiceWorkerOnNavigation(bool skip_service_worker);
 
-  static void RecordFirstFindRegistrationForClientUrlTimeOnBrowserStartup(
-      base::TimeDelta time);
+  static void RecordFindRegistrationForClientUrlTime(base::TimeDelta time);
 };
 
 }  // namespace content

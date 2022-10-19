@@ -245,7 +245,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.DisplayCount" units="count"
-    expires_after="2022-12-11">
+    expires_after="2023-04-16">
   <owner>rkgibson@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -321,7 +321,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.PasswordUseCount" units="count"
-    expires_after="2022-12-11">
+    expires_after="2023-04-16">
   <owner>rkgibson@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -332,7 +332,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.QuickPasswordUseCount" units="count"
-    expires_after="2022-12-11">
+    expires_after="2023-04-16">
   <owner>rkgibson@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -343,7 +343,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.ReauthCount" units="count"
-    expires_after="2022-12-11">
+    expires_after="2023-04-16">
   <owner>rkgibson@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -726,7 +726,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.Frame.FirstInputDelay.MainFrame" units="ms"
-    expires_after="2022-11-30">
+    expires_after="2023-10-18">
   <owner>danieltwhite@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -744,7 +744,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="IOS.Frame.FirstInputDelay.MainFrame.AfterBackForwardCacheRestore"
-    units="ms" expires_after="2022-11-30">
+    units="ms" expires_after="2023-10-18">
   <owner>danieltwhite@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -761,7 +761,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.Frame.FirstInputDelay.SubFrame" units="ms"
-    expires_after="2022-11-30">
+    expires_after="2023-10-18">
   <owner>danieltwhite@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -779,7 +779,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="IOS.Frame.FirstInputDelay.SubFrame.AfterBackForwardCacheRestore"
-    units="ms" expires_after="2022-11-30">
+    units="ms" expires_after="2023-10-18">
   <owner>danieltwhite@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -925,7 +925,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.LinkToText.ShouldOfferResult"
-    enum="LinkToTextShouldOfferResult" expires_after="2022-12-18">
+    enum="LinkToTextShouldOfferResult" expires_after="2023-04-16">
   <owner>tmartino@chromium.org</owner>
   <owner>seblalancette@chromium.org</owner>
   <summary>
@@ -1239,7 +1239,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.PageLoad.DefaultModeMobile" enum="Boolean"
-    expires_after="2023-01-30">
+    expires_after="2023-04-16">
   <owner>gambard@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -1658,7 +1658,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.SiriShortcuts.Count" units="shortcuts"
-    expires_after="2023-02-06">
+    expires_after="2023-04-16">
   <owner>gujen@google.com</owner>
   <owner>ios-google-eng-ios@google.com</owner>
   <summary>
@@ -1940,6 +1940,21 @@ chromium-metrics-reviews@google.com.
     has changed to a nil or empty URL. Recorded on the KVO of the URL of the
     WKWebView.
   </summary>
+</histogram>
+
+<histogram name="IOS.WhatsNew.TableViewDidScroll" enum="Boolean"
+    expires_after="2023-04-01">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@google.com</owner>
+  <summary>
+    Whether or not the table view of the What's New feature was scrolled.
+  </summary>
+</histogram>
+
+<histogram name="IOS.WhatsNew.TimeSpent" units="ms" expires_after="2023-04-01">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@google.com</owner>
+  <summary>Logs the time a user spent on What's New.</summary>
 </histogram>
 
 <histogram name="IOS.WidgetKit.Action" enum="IOSWidgetKitAction"

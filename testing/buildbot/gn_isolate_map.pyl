@@ -180,8 +180,8 @@
     "label": "//ash/components:ash_components_unittests",
     "type": "windowed_test_launcher",
   },
-  "ash_crosapi_browsertests": {
-    "label": "//chrome/test:ash_crosapi_browsertests",
+  "ash_crosapi_tests": {
+    "label": "//chrome/test:ash_crosapi_tests",
     "type": "windowed_test_launcher",
   },
   "ash_webui_unittests": {
@@ -1653,8 +1653,8 @@
     "label": "//sql:sql_unittests",
     "type": "console_test_launcher",
   },
-  "strip_chrome_binary": {
-    "label": "//chrome:strip_chrome_binary",
+  "strip_lacros_files": {
+    "label": "//chrome:strip_lacros_files",
     "type": "additional_compile_target",
   },
   "storage_unittests": {

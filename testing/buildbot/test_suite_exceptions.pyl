@@ -123,6 +123,13 @@
       },
     },
   },
+  'ash_crosapi_tests': {
+    'remove_from': [
+      # Disabling MSan tests since linux-chromeos chrome crashes on MSan build.
+      # TODO(crbug.com/1376064): Re-enable.
+      'Linux ChromiumOS MSan Tests',
+    ]
+  },
   'aura_unittests amd64-generic': {
     'remove_from': [
       # TODO(crbug.com/1204231): Re-enable.
@@ -3676,6 +3683,14 @@
   'webdriver_tests_suite': {
     'remove_from': [
       'Linux Tests',  # https://crbug.com/929689, https://crbug.com/936557
+    ],
+  },
+  'webgl2_conformance_gl_passthrough_tests': {
+    'remove_from': [
+      # Not enough capacity on Mac AMD https://crbug.com/1375306.
+      'Mac FYI Retina ASAN (AMD)',
+      'Mac FYI Retina Release (AMD)',
+      'mac-angle-chromium-amd',
     ],
   },
   'webgl2_conformance_gles_passthrough_tests': {

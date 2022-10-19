@@ -166,7 +166,7 @@ void TurnSyncOnHelper::Delegate::ShowLoginErrorForBrowser(
     const SigninUIError& error,
     Browser* browser) {
   LoginUIServiceFactory::GetForProfile(browser->profile())
-      ->DisplayLoginResult(browser, error);
+      ->DisplayLoginResult(browser, error, /*from_profile_picker=*/false);
 }
 
 TurnSyncOnHelper::TurnSyncOnHelper(
@@ -259,7 +259,10 @@ void TurnSyncOnHelper::TurnSyncOnInternal() {
   }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  LOG(WARNING) << "crbug.com/1340791 | Cross-account error.";
+  LOG(WARNING) << "crbug.com/1340791 | Cross-account error. Last GaiaID: "
+               << profile_->GetPrefs()->GetString(
+                      prefs::kGoogleServicesLastGaiaId)
+               << " -- current GaiaID: " << account_info_.gaia;
 #endif
 
   // Handles cross account sign in error. If |account_info_| does not match the

@@ -183,6 +183,13 @@ void AndroidAutofillManager::Reset() {
     provider->Reset(this);
 }
 
+void AndroidAutofillManager::OnContextMenuShownInField(
+    const FormGlobalId& form_global_id,
+    const FieldGlobalId& field_global_id) {
+  // Not relevant for Android. Only called via context menu in Desktop.
+  NOTREACHED();
+}
+
 AutofillProvider* AndroidAutofillManager::GetAutofillProvider() {
   if (autofill_provider_for_testing_)
     return autofill_provider_for_testing_;
@@ -200,9 +207,9 @@ AutofillProvider* AndroidAutofillManager::GetAutofillProvider() {
 void AndroidAutofillManager::FillOrPreviewForm(
     int query_id,
     mojom::RendererFormDataAction action,
-    const FormData& form) {
-  driver()->FillOrPreviewForm(query_id, action, form, form.main_frame_origin,
-                              {});
+    const FormData& form,
+    const url::Origin& triggered_origin) {
+  driver()->FillOrPreviewForm(query_id, action, form, triggered_origin, {});
 }
 
 }  // namespace autofill

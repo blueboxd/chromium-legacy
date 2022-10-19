@@ -249,7 +249,8 @@ void AutocompleteResult::TransferOldMatches(const AutocompleteInput& input,
   // `SetAllowedToBeDefault()` here is only intended to make
   // `allowed_to_be_default` more conservative (true -> false, not vice versa).
   static bool prevent_default_previous_matches =
-      OmniboxFieldTrial::kPreventDefaultPreviousMatches.Get();
+      OmniboxFieldTrial::kAutocompleteStabilityPreventDefaultPreviousMatches
+          .Get();
   for (auto& m : matches_) {
     if (!m.from_previous)
       continue;
@@ -321,7 +322,8 @@ void AutocompleteResult::SortAndCull(
             // Don't preserve suggestions that are not default-able; e.g.,
             // typing 'xy' shouldn't preserve default 'xz.com/xy'.
             static bool prevent_default_previous_matches =
-                OmniboxFieldTrial::kPreventDefaultPreviousMatches.Get();
+                OmniboxFieldTrial::
+                    kAutocompleteStabilityPreventDefaultPreviousMatches.Get();
             return default_match_fields == GetMatchComparisonFields(match) &&
                    preserve_default_match->fill_into_edit ==
                        match.fill_into_edit &&
@@ -777,6 +779,13 @@ bool AutocompleteResult::DiscourageTopMatchFromBeingSearchEntity(
     AutocompleteMatch non_entity_match_copy = *non_entity_it;
     top_match->duplicate_matches.erase(non_entity_it);
 
+    // When we spawn our non-entity match copy, we still want to preserve any
+    // entity ID that was provided by the server for logging purposes, even if
+    // we don't display it.
+    if (non_entity_match_copy.entity_id.empty()) {
+      non_entity_match_copy.entity_id = top_match->entity_id;
+    }
+
     // Promote the non-entity match to the top, then immediately return, since
     // all our iterators are invalid after the insertion.
     matches->insert(matches->begin(), std::move(non_entity_match_copy));
@@ -1217,8 +1226,8 @@ void AutocompleteResult::LimitNumberOfURLsShown(
     size_t max_matches,
     size_t max_url_count,
     const CompareWithDemoteByType<AutocompleteMatch>& comparing_object) {
-  size_t search_count = std::count_if(
-      matches_.begin(), matches_.end(), [&](const AutocompleteMatch& m) {
+  size_t search_count =
+      base::ranges::count_if(matches_, [&](const AutocompleteMatch& m) {
         return AutocompleteMatch::IsSearchType(m.type) &&
                // Don't count if would be removed.
                comparing_object.GetDemotedRelevance(m) > 0;
@@ -1256,6 +1265,12 @@ void AutocompleteResult::GroupSuggestionsBySearchVsURL(iterator begin,
       begin, end, [](int a, int b) { return a < b; },
       [](const auto& m) {
         if (AutocompleteMatch::IsStarterPackType(m.type))
+          return 0;
+        // Group history cluster suggestions with searches. If the
+        // `omnibox_history_cluster_provider_free_ranking` feature is disabled,
+        // they'll be pushed back to last position, and grouping here will have
+        // no effect.
+        if (m.type == AutocompleteMatchType::HISTORY_CLUSTER)
           return 0;
         if (AutocompleteMatch::IsSearchType(m.type))
           return 1;

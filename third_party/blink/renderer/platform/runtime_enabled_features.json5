@@ -386,6 +386,10 @@
       depends_on: ["BlinkExtensionChromeOS"],
     },
     {
+      name: "BlinkExtensionChromeOSTelemetry",
+      depends_on: ["BlinkExtensionChromeOS"],
+    },
+    {
       name: "BlinkExtensionChromeOSWindowManagement",
       depends_on: ["BlinkExtensionChromeOS"],
     },
@@ -539,6 +543,10 @@
       name: "ConditionalFocus",
       origin_trial_feature_name: "ConditionalFocus",
       status: {"Android": "", "default": "experimental"},
+    },
+    {
+      name: "ConfirmationOfAction",
+      status: "test",
     },
     {
       name: "ConsolidatedMovementXY",
@@ -1408,6 +1416,12 @@
       status: "stable",
     },
     {
+      // A kill-switch for a fix of crbug.com/108489.
+      name: "HTMLMapToImgMatchingByNameAndId",
+      status: "stable",
+      base_feature: "HTMLMapToImgMatchingByNameAndId",
+    },
+    {
       // TODO(crbug.com/1315717): This flag is being used to deprecate support for <param> urls within <object> elements. This feature is controlled by blink::features::kHTMLParamElementUrlSupport.
       name: "HTMLParamElementUrlSupport",
       status: "stable",
@@ -1599,6 +1613,7 @@
       name: "MathMLCore",
       status:"experimental",
       depends_on: ["LayoutNG"],
+      base_feature: "MathMLCore",
     },
     {
       name:"MeasureMemory",
@@ -2445,6 +2460,13 @@
       status: "stable",
     },
     {
+      // If enabled Border, Outline and Column-Rule Widths
+      // will be pixel snapped before layout.
+      name: "SnapBorderWidthsBeforeLayout",
+      status: "stable",
+      base_feature: "SnapBorderWidthsBeforeLayout",
+    },
+    {
       name: "SoftNavigationHeuristics",
       status: "experimental",
       depends_on: ["NavigationId"],
@@ -2712,6 +2734,19 @@
       base_feature: "ReduceUserAgent",
     },
     {
+      // When moving trees between documents, traverse the tree first to
+      // notify nodes that they `WillMoveToNewDocument()` before doing a
+      // second traversal to move them.  If not set, then these two steps are
+      // done during a single traversal at the cost of the ordering of
+      // `WillMoveToNewDocument()` sometimes being called after the node has
+      // already been moved.  `false` is the original behavior, while `true`
+      // is the new default.  Switch is present in case there is some
+      // interaction that causes a web-visible change that wasn't anticipated.
+      name: "UseSeparateTraversalForWillMove",
+      status: "stable",
+      base_feature: "UseSeparateTraversalForWillMove",
+    },
+    {
       name: "V8IdleTasks",
       public: true,
     },
@@ -2787,6 +2822,11 @@
       // rendering is forced withing content-visibility subtrees (both
       // content-visibility: auto and content-visibility: hidden).
       name: "WarnOnContentVisibilityRenderAccess",
+    },
+    {
+      // A kill switch. Please consider removing this after M112.
+      name: "WarnSandboxIneffective",
+      status: "stable",
     },
     {
       name: "WebAnimationsAPI",

@@ -185,6 +185,8 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_PriceTrackingInSidePanel"
       summary="first time user tracks a product to educate them to see the
                price tracking list in side panel"/>
+  <variant name="IPH_PriceTrackingPageActionIconLabel"
+      summary="price tracking page action icon label triggering"/>
   <variant name="IPH_ProfileSwitch"
       summary="switching profiles using the profile menu"/>
   <variant name="IPH_PwaInstallAvailableFeature"
@@ -311,7 +313,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.DismissalReason.iOS"
-    enum="InProductHelpDismissalReason" expires_after="2023-02-12">
+    enum="InProductHelpDismissalReason" expires_after="2023-04-16">
   <owner>lpromero@google.com</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -427,7 +429,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.SnoozeAction" enum="InProductHelpSnoozeAction"
-    expires_after="2022-12-04">
+    expires_after="2023-04-16">
   <owner>haileywang@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>

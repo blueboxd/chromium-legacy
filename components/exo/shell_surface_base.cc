@@ -9,6 +9,7 @@
 #include "ash/constants/ash_constants.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/frame/non_client_frame_view_ash.h"
+#include "ash/metrics/login_unlock_throughput_recorder.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/rounded_corner_utils.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -371,6 +372,9 @@ ShellSurfaceBase::~ShellSurfaceBase() {
 void ShellSurfaceBase::Activate() {
   TRACE_EVENT0("exo", "ShellSurfaceBase::Activate");
 
+  if (pending_show_widget_)
+    initially_activated_ = true;
+
   if (!widget_ || widget_->IsActive())
     return;
 
@@ -379,6 +383,9 @@ void ShellSurfaceBase::Activate() {
 
 void ShellSurfaceBase::Deactivate() {
   TRACE_EVENT0("exo", "ShellSurfaceBase::Deactivate");
+
+  if (pending_show_widget_)
+    initially_activated_ = false;
 
   if (!widget_ || !widget_->IsActive())
     return;
@@ -652,6 +659,9 @@ void ShellSurfaceBase::SetRestoreInfo(int32_t restore_session_id,
   DCHECK(!widget_);
   restore_session_id_.emplace(restore_session_id);
   restore_window_id_.emplace(restore_window_id);
+  ash::LoginUnlockThroughputRecorder* throughput_recorder =
+      ash::Shell::Get()->login_unlock_throughput_recorder();
+  throughput_recorder->OnRestoredWindowCreated(restore_window_id);
 }
 
 void ShellSurfaceBase::SetRestoreInfoWithWindowIdSource(
@@ -1808,7 +1818,24 @@ void ShellSurfaceBase::CommitWidget() {
       needs_layout_on_show_ = false;
     }
 
-    widget_->Show();
+    if (restore_window_id_.has_value()) {
+      ash::LoginUnlockThroughputRecorder* throughput_recorder =
+          ash::Shell::Get()->login_unlock_throughput_recorder();
+
+      aura::Window* root_window = host_window()->GetRootWindow();
+      if (root_window) {
+        ui::Compositor* compositor = root_window->layer()->GetCompositor();
+        throughput_recorder->OnBeforeRestoredWindowShown(
+            restore_window_id_.value(), compositor);
+      }
+    }
+
+    if (initially_activated_) {
+      widget_->Show();
+    } else {
+      widget_->ShowInactive();
+    }
+
     if (has_grab_)
       StartCapture();
 

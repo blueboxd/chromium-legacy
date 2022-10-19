@@ -37,6 +37,7 @@
 #include "extensions/browser/state_store.h"
 #include "extensions/common/api/extension_action/action_info_test_util.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
@@ -1076,8 +1077,9 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, SetIconInTabWithInvalidPath) {
   console_observer.Wait();
 }
 
-// Tests calling setIcon() in the service worker with an invalid icon path
-// specified. Regression test for https://crbug.com/1262029.
+// Tests calling setIcon() in the service worker with an invalid icon paths
+// specified. Regression test for https://crbug.com/1262029. Regression test for
+// https://crbug.com/1372518.
 IN_PROC_BROWSER_TEST_F(ExtensionActionAPITest, SetIconInWorkerWithInvalidPath) {
   constexpr char kManifestTemplate[] =
       R"({
@@ -1090,16 +1092,34 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionAPITest, SetIconInWorkerWithInvalidPath) {
 
   constexpr char kBackgroundJs[] =
       R"(let expectedError = "%s";
+         const singlePath = 'does_not_exist.png';
+         const multiplePaths = {
+           16: 'does_not_exist.png',
+           32: 'also_does_not_exist.png'
+         };
+
          chrome.test.runTests([
-           function withCallback() {
-             chrome.action.setIcon({path: 'does_not_exist.png'}, () => {
+           function singleWithCallback() {
+             chrome.action.setIcon({path: singlePath}, () => {
                chrome.test.assertLastError(expectedError);
                chrome.test.succeed();
              });
            },
-           async function withPromise() {
+           async function singleWithPromise() {
              await chrome.test.assertPromiseRejects(
-                 chrome.action.setIcon({path: 'does_not_exist.png'}),
+                 chrome.action.setIcon({path: singlePath}),
+                 'Error: ' + expectedError);
+             chrome.test.succeed();
+           },
+           function multipleWithCallback() {
+             chrome.action.setIcon({path: multiplePaths}, () => {
+               chrome.test.assertLastError(expectedError);
+               chrome.test.succeed();
+             });
+           },
+           async function multipleWithPromise() {
+             await chrome.test.assertPromiseRejects(
+                 chrome.action.setIcon({path: multiplePaths}),
                  'Error: ' + expectedError);
              chrome.test.succeed();
            }
@@ -1120,6 +1140,86 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionAPITest, SetIconInWorkerWithInvalidPath) {
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
   EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
+}
+
+// Tests multiple cases of setting an invalid popup that violate same-origin
+// checks.
+IN_PROC_BROWSER_TEST_P(MultiActionAPITest, SetPopupWithInvalidPath) {
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "Invalid Popup Path",
+           "manifest_version": %d,
+           "version": "0.1",
+           "%s": {}
+         })";
+  constexpr char kSetPopupJsTemplate[] =
+      R"(
+        function setPopup(details, expectedError) {
+          chrome.%s.setPopup(details, () => {
+            chrome.test.assertLastError(expectedError);
+            chrome.test.succeed();
+          });
+        };
+      )";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(base::StringPrintf(
+      kManifestTemplate, GetManifestVersionForActionType(GetParam()),
+      GetManifestKeyForActionType(GetParam())));
+  test_dir.WriteFile(FILE_PATH_LITERAL("popup.html"),
+                     "// This space left blank.");
+  test_dir.WriteFile(FILE_PATH_LITERAL("page.html"), kPageHtmlTemplate);
+  test_dir.WriteFile(FILE_PATH_LITERAL("page.js"),
+                     base::StringPrintf(kSetPopupJsTemplate,
+                                        GetAPINameForActionType(GetParam())));
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  ExtensionAction* action = GetExtensionAction(*extension);
+  ASSERT_TRUE(action);
+
+  auto get_script = [](int tab_id, const char* popup_input) {
+    constexpr char kSetPopup[] = R"(setPopup({tabId: %d, popup: '%s'}, "%s");)";
+    return base::StringPrintf(kSetPopup, tab_id, popup_input,
+                              manifest_errors::kInvalidExtensionOriginPopup);
+  };
+
+  content::RenderFrameHost* navigated_host = ui_test_utils::NavigateToURL(
+      browser(), extension->GetResourceURL("page.html"));
+  ASSERT_TRUE(navigated_host);
+  content::WebContents* web_contents = GetActiveTab();
+  int tab_id = GetActiveTabId();
+
+  // Set the popup to an invalid nonexistent extension URL and expect an error.
+  {
+    static constexpr char kInvalidPopupUrl[] =
+        "chrome-extension://notavalidextensionid/popup.html";
+    RunTestAndWaitForSuccess(web_contents,
+                             get_script(tab_id, kInvalidPopupUrl));
+  }
+
+  // Set the popup to a web URL and expect an error.
+  {
+    static constexpr char kWebUrl[] = "http://test.com";
+    RunTestAndWaitForSuccess(web_contents, get_script(tab_id, kWebUrl));
+  }
+
+  // Set the popup to another existing extension and expect an error.
+  {
+    TestExtensionDir different_extension_dir;
+    different_extension_dir.WriteManifest(base::StringPrintf(
+        kManifestTemplate, GetManifestVersionForActionType(GetParam()),
+        GetManifestKeyForActionType(GetParam())));
+    different_extension_dir.WriteFile(FILE_PATH_LITERAL("popup.html"),
+                                      "// This space left blank.");
+    const Extension* different_extension =
+        LoadExtension(different_extension_dir.UnpackedPath());
+    ASSERT_TRUE(different_extension);
+    const std::string different_extension_popup_url =
+        different_extension->GetResourceURL("popup.html").spec();
+    RunTestAndWaitForSuccess(
+        web_contents,
+        get_script(tab_id, different_extension_popup_url.c_str()));
+  }
 }
 
 // Tests various getter and setter methods.

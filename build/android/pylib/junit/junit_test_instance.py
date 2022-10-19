@@ -15,12 +15,13 @@ class JunitTestInstance(test_instance.TestInstance):
     self._coverage_dir = args.coverage_dir
     self._debug_socket = args.debug_socket
     self._coverage_on_the_fly = args.coverage_on_the_fly
+    self._native_libs_dir = args.native_libs_dir
     self._package_filter = args.package_filter
     self._resource_apk = args.resource_apk
     self._robolectric_runtime_deps_dir = args.robolectric_runtime_deps_dir
     self._runner_filter = args.runner_filter
     self._shards = args.shards
-    self._test_filter = test_filter.InitializeFilterFromArgs(args)
+    self._test_filters = test_filter.InitializeFiltersFromArgs(args)
     self._test_suite = args.test_suite
 
   #override
@@ -48,6 +49,10 @@ class JunitTestInstance(test_instance.TestInstance):
     return self._debug_socket
 
   @property
+  def native_libs_dir(self):
+    return self._native_libs_dir
+
+  @property
   def package_filter(self):
     return self._package_filter
 
@@ -64,8 +69,8 @@ class JunitTestInstance(test_instance.TestInstance):
     return self._runner_filter
 
   @property
-  def test_filter(self):
-    return self._test_filter
+  def test_filters(self):
+    return self._test_filters
 
   @property
   def shards(self):

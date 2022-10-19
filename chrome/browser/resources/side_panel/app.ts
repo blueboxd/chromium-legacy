@@ -8,7 +8,7 @@ import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import './reading_list/app.js'; /* <reading-list-app> */
 import '../strings.m.js';
 import './bookmarks/bookmarks_list.js';
-import './bookmarks/power_bookmark_row.js';
+import './bookmarks/power_bookmarks_list.js';
 import './read_anything/app.js'; /* <read-anything-app> */
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -62,7 +62,10 @@ export class SidePanelAppElement extends PolymerElement {
   override connectedCallback() {
     super.connectedCallback();
     const lastActiveTab = window.localStorage[LOCAL_STORAGE_TAB_ID_KEY];
-    if (loadTimeData.getBoolean('hasUnseenReadingListEntries')) {
+    if (loadTimeData.getBoolean('shouldShowBookmark')) {
+      window.localStorage[LOCAL_STORAGE_TAB_ID_KEY] = 'bookmarks';
+      this.selectedTab_ = Object.keys(this.tabs_).indexOf('bookmarks');
+    } else if (loadTimeData.getBoolean('hasUnseenReadingListEntries')) {
       window.localStorage[LOCAL_STORAGE_TAB_ID_KEY] = 'readingList';
     } else if (lastActiveTab) {
       this.selectedTab_ = Object.keys(this.tabs_).indexOf(lastActiveTab) || 0;

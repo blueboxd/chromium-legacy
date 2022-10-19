@@ -14,6 +14,8 @@
 #include "base/time/time.h"
 #include "components/browsing_topics/test_util.h"
 #include "components/browsing_topics/util.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
+#include "components/content_settings/browser/test_page_specific_content_settings_delegate.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/history/core/browser/history_database_params.h"
@@ -212,6 +214,16 @@ class BrowsingTopicsServiceImplTest
   }
 
   ~BrowsingTopicsServiceImplTest() override = default;
+
+  void SetUp() override {
+    content::RenderViewHostTestHarness::SetUp();
+
+    content_settings::PageSpecificContentSettings::CreateForWebContents(
+        web_contents(),
+        std::make_unique<
+            content_settings::TestPageSpecificContentSettingsDelegate>(
+            &prefs_, host_content_settings_map_.get()));
+  }
 
   void TearDown() override {
     DCHECK(history_service_);
@@ -587,10 +599,6 @@ TEST_F(BrowsingTopicsServiceImplTest,
           kEmptyReasonName,
       0 /* kStateNotReady */);
 
-  EXPECT_TRUE(browsing_topics_service_
-                  ->GetTopicsForSiteForDisplay(
-                      url::Origin::Create(GURL("https://www.bar.com")))
-                  .empty());
   EXPECT_TRUE(browsing_topics_service_->GetTopTopicsForDisplay().empty());
 
   base::test::TestFuture<mojom::WebUIGetBrowsingTopicsStateResultPtr> future1;
@@ -609,10 +617,6 @@ TEST_F(BrowsingTopicsServiceImplTest,
                            GURL("https://www.bar.com")),
                        web_contents()->GetPrimaryMainFrame(),
                        /*observe=*/true)
-                   .empty());
-  EXPECT_FALSE(browsing_topics_service_
-                   ->GetTopicsForSiteForDisplay(
-                       url::Origin::Create(GURL("https://www.bar.com")))
                    .empty());
   EXPECT_FALSE(browsing_topics_service_->GetTopTopicsForDisplay().empty());
 
@@ -945,7 +949,8 @@ TEST_F(BrowsingTopicsServiceImplTest,
 
   task_environment()->FastForwardBy(kCalculatorDelay);
 
-  NavigateToPage(GURL("https://www.foo.com"));
+  // This domain would let a random topic (Topic(130)) be returned.
+  NavigateToPage(GURL("https://www.foo81.com"));
 
   // Current time is before the epoch switch time.
   std::vector<blink::mojom::EpochTopicPtr> result =
@@ -958,13 +963,22 @@ TEST_F(BrowsingTopicsServiceImplTest,
   // Advance to the time after the epoch switch time.
   task_environment()->AdvanceClock(kEpoch - base::Microseconds(1));
 
+  result = browsing_topics_service_->GetBrowsingTopicsForJsApi(
+      /*context_origin=*/url::Origin::Create(GURL("https://www.bar.com")),
+      web_contents()->GetPrimaryMainFrame(), /*observe=*/true);
+
+  // Some topics are returned.
+  EXPECT_FALSE(result.empty());
+
   privacy_sandbox_settings_->SetTopicAllowed(
-      privacy_sandbox::CanonicalTopic(Topic(2), /*taxonomy_version=*/1), false);
+      privacy_sandbox::CanonicalTopic(Topic(130), /*taxonomy_version=*/1),
+      false);
 
   result = browsing_topics_service_->GetBrowsingTopicsForJsApi(
       /*context_origin=*/url::Origin::Create(GURL("https://www.bar.com")),
       web_contents()->GetPrimaryMainFrame(), /*observe=*/true);
 
+  // The topic was blocked by the settings.
   EXPECT_TRUE(result.empty());
 }
 
@@ -1101,6 +1115,17 @@ TEST_F(BrowsingTopicsServiceImplTest,
   result_set.insert(result[0]->topic);
   result_set.insert(result[1]->topic);
   EXPECT_EQ(result_set, std::set<int>({2, 7}));
+
+  // Ensure access has been reported to the Page Specific Content Settings.
+  auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
+      web_contents()->GetPrimaryPage());
+  EXPECT_TRUE(pscs->HasAccessedTopics());
+  auto topics = pscs->GetAccessedTopics();
+  EXPECT_EQ(2u, topics.size());
+
+  // PSCS::GetAccessedTopics() will return sorted values.
+  EXPECT_EQ(topics[0].topic_id(), Topic(2));
+  EXPECT_EQ(topics[1].topic_id(), Topic(7));
 }
 
 // TODO(yaoxia): Re-enable. This test currently fails solely due to it's
@@ -1401,59 +1426,6 @@ TEST_F(BrowsingTopicsServiceImplTest,
       entries.back(),
       ukm::builders::BrowsingTopics_DocumentBrowsingTopicsApiResult::
           kReturnedTopic2Name));
-}
-
-TEST_F(BrowsingTopicsServiceImplTest, GetTopicsForSiteForDisplay) {
-  base::queue<EpochTopics> mock_calculator_results;
-  mock_calculator_results.push(
-      CreateTestEpochTopics({{Topic(1), {GetHashedDomain("bar.com")}},
-                             {Topic(2), {GetHashedDomain("bar.com")}},
-                             {Topic(3), {GetHashedDomain("bar.com")}},
-                             {Topic(4), {GetHashedDomain("bar.com")}},
-                             {Topic(5), {GetHashedDomain("bar.com")}}},
-                            kTime1));
-  mock_calculator_results.push(
-      CreateTestEpochTopics({{Topic(6), {GetHashedDomain("bar.com")}},
-                             {Topic(7), {GetHashedDomain("bar.com")}},
-                             {Topic(8), {GetHashedDomain("bar.com")}},
-                             {Topic(9), {GetHashedDomain("bar.com")}},
-                             {Topic(10), {GetHashedDomain("bar.com")}}},
-                            kTime1));
-  mock_calculator_results.push(
-      CreateTestEpochTopics({{Topic(1), {GetHashedDomain("bar.com")}},
-                             {Topic(2), {GetHashedDomain("bar.com")}},
-                             {Topic(3), {GetHashedDomain("bar.com")}},
-                             {Topic(4), {GetHashedDomain("bar.com")}},
-                             {Topic(5), {GetHashedDomain("bar.com")}}},
-                            kTime1,
-                            /*padded_top_topics_start_index=*/0));
-  mock_calculator_results.push(
-      CreateTestEpochTopics({{Topic(6), {GetHashedDomain("bar.com")}},
-                             {Topic(7), {GetHashedDomain("bar.com")}},
-                             {Topic(8), {GetHashedDomain("bar.com")}},
-                             {Topic(9), {GetHashedDomain("bar.com")}},
-                             {Topic(10), {GetHashedDomain("bar.com")}}},
-                            kTime1));
-
-  InitializeBrowsingTopicsService(std::move(mock_calculator_results));
-
-  // Finish all calculations.
-  task_environment()->FastForwardBy(4 * kCalculatorDelay + 3 * kEpoch);
-
-  EXPECT_EQ(browsing_topics_state().epochs().size(), 4u);
-
-  NavigateToPage(GURL("https://www.foo.com"));
-
-  // Current time is before the epoch switch time.
-  std::vector<privacy_sandbox::CanonicalTopic> result =
-      browsing_topics_service_->GetTopicsForSiteForDisplay(
-          web_contents()->GetPrimaryMainFrame()->GetLastCommittedOrigin());
-
-  EXPECT_EQ(result.size(), 2u);
-  EXPECT_EQ(result[0].topic_id(), Topic(2));
-  EXPECT_EQ(result[1].topic_id(), Topic(7));
-  EXPECT_EQ(result[0].taxonomy_version(), 1);
-  EXPECT_EQ(result[1].taxonomy_version(), 1);
 }
 
 TEST_F(BrowsingTopicsServiceImplTest, GetTopTopicsForDisplay) {

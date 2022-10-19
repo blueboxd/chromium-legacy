@@ -23,7 +23,6 @@ import("//chrome/test/include_js_tests.gni")
 import("//chrome/version.gni")
 import("//chromeos/ash/components/assistant/assistant.gni")
 import("//components/captive_portal/core/features.gni")
-import("//components/exo/buildflags.gni")
 import("//components/feed/features.gni")
 import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
@@ -2483,7 +2482,7 @@ if (!is_android) {
     # TODO(crbug.com/1240796): Page.printToPdf is currently available only when
     # Chrome is running in headless mode and native headless mode is currently
     # available only on Linux, Windows and Mac platforms.
-    if (enable_basic_printing && enable_pdf && (is_linux || is_win || is_mac)) {
+    if (enable_printing && enable_pdf && (is_linux || is_win || is_mac)) {
       sources +=
           [ "../browser/devtools/protocol/devtools_printtopdf_browsertest.cc" ]
     }
@@ -3141,6 +3140,9 @@ if (!is_android) {
           "../browser/extensions/api/system_indicator/system_indicator_apitest.cc",
           "../browser/extensions/api/web_authentication_proxy/web_authentication_proxy_apitest.cc",
           "../browser/ui/views/web_apps/file_handler_launch_dialog_browsertest.cc",
+          "../browser/ui/webui/app_home/app_home_page_handler_browsertest.cc",
+          "../browser/ui/webui/app_home/mock_app_home_page.cc",
+          "../browser/ui/webui/app_home/mock_app_home_page.h",
         ]
       }
 
@@ -3161,6 +3163,7 @@ if (!is_android) {
         deps += [
           "//chrome/browser/enterprise/connectors/device_trust/key_management/browser/commands:test_support",
           "//chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence:test_support",
+          "//chrome/browser/ui/webui/app_home:mojo_bindings",
         ]
       }
 
@@ -3362,7 +3365,7 @@ if (!is_android) {
         "../browser/ui/views/extensions/settings_overridden_dialog_browsertest.cc",
         "../browser/ui/views/external_protocol_dialog_browsertest.cc",
         "../browser/ui/views/file_system_access/file_system_access_browsertest.cc",
-        "../browser/ui/views/file_system_access/file_system_access_dangerous_file_dialog_view_browsertest.cc",
+        "../browser/ui/views/file_system_access/file_system_access_dangerous_file_dialog_browsertest.cc",
         "../browser/ui/views/file_system_access/file_system_access_permission_view_browsertest.cc",
         "../browser/ui/views/file_system_access/file_system_access_restricted_directory_dialog_view_browsertest.cc",
         "../browser/ui/views/file_system_access/file_system_access_usage_bubble_view_browsertest.cc",
@@ -3593,6 +3596,8 @@ if (!is_android) {
         "../browser/ash/accessibility/dictation_bubble_test_helper.h",
         "../browser/ash/accessibility/magnification_controller_browsertest.cc",
         "../browser/ash/accessibility/magnification_manager_browsertest.cc",
+        "../browser/ash/accessibility/magnifier_animation_waiter.cc",
+        "../browser/ash/accessibility/magnifier_animation_waiter.h",
         "../browser/ash/accessibility/select_to_speak_browsertest.cc",
         "../browser/ash/accessibility/service/accessibility_service_client_browsertest.cc",
         "../browser/ash/accessibility/spoken_feedback_app_list_browsertest.cc",
@@ -4074,17 +4079,17 @@ if (!is_android) {
         "../browser/ui/webui/ash/cloud_upload/drive_upload_handler_browsertest.cc",
         "../browser/ui/webui/ash/cloud_upload/one_drive_upload_handler_browsertest.cc",
         "../browser/ui/webui/ash/crostini_upgrader/crostini_upgrader_dialog_browsertest.cc",
+        "../browser/ui/webui/ash/edu_coexistence/edu_coexistence_login_handler_browsertest.cc",
+        "../browser/ui/webui/ash/parent_access/parent_access_browsertest_base.cc",
+        "../browser/ui/webui/ash/parent_access/parent_access_browsertest_base.h",
+        "../browser/ui/webui/ash/parent_access/parent_access_dialog_browsertest.cc",
+        "../browser/ui/webui/ash/parent_access/parent_access_ui_browsertest.cc",
+        "../browser/ui/webui/ash/parent_access/parent_access_ui_handler_impl_browsertest.cc",
+        "../browser/ui/webui/ash/smb_shares/smb_credentials_dialog_browsertest.cc",
         "../browser/ui/webui/chromeos/bluetooth_pairing_dialog_browsertest-inl.h",
-        "../browser/ui/webui/chromeos/edu_coexistence/edu_coexistence_login_handler_browsertest.cc",
         "../browser/ui/webui/chromeos/login/oobe_display_chooser_browsertest.cc",
         "../browser/ui/webui/chromeos/login/testapi/oobe_test_api_browsertest.cc",
         "../browser/ui/webui/chromeos/manage_mirrorsync/manage_mirrorsync_dialog_browsertest.cc",
-        "../browser/ui/webui/chromeos/parent_access/parent_access_browsertest_base.cc",
-        "../browser/ui/webui/chromeos/parent_access/parent_access_browsertest_base.h",
-        "../browser/ui/webui/chromeos/parent_access/parent_access_dialog_browsertest.cc",
-        "../browser/ui/webui/chromeos/parent_access/parent_access_ui_browsertest.cc",
-        "../browser/ui/webui/chromeos/parent_access/parent_access_ui_handler_impl_browsertest.cc",
-        "../browser/ui/webui/chromeos/smb_shares/smb_credentials_dialog_browsertest.cc",
         "../browser/ui/webui/chromeos/system_web_dialog_browsertest.cc",
         "../browser/ui/webui/nearby_share/nearby_share_dialog_ui_browsertest.cc",
         "../browser/ui/webui/settings/ash/accessibility_handler_browsertest.cc",
@@ -4246,9 +4251,9 @@ if (!is_android) {
         "//chrome/browser/ui/ash/system_web_apps",
         "//chrome/browser/ui/webui/ash/add_supervision:mojo_bindings",
         "//chrome/browser/ui/webui/ash/crostini_upgrader:mojo_bindings",
+        "//chrome/browser/ui/webui/ash/parent_access:mojo_bindings",
+        "//chrome/browser/ui/webui/ash/parent_access:proto",
         "//chrome/browser/ui/webui/chromeos/manage_mirrorsync:mojo_bindings",
-        "//chrome/browser/ui/webui/chromeos/parent_access:mojo_bindings",
-        "//chrome/browser/ui/webui/chromeos/parent_access:proto",
         "//chrome/browser/ui/webui/settings/ash:test_support",
         "//chrome/browser/ui/webui/settings/chromeos/constants:mojom",
         "//chrome/services/file_util/public/cpp:browser_tests",
@@ -6895,6 +6900,7 @@ test("unit_tests") {
       "../browser/ui/views/autofill_assistant/password_change/password_change_animated_icon_unittest.cc",
       "../browser/ui/views/autofill_assistant/password_change/password_change_run_progress_unittest.cc",
       "../browser/ui/views/autofill_assistant/password_change/password_change_run_view_unittest.cc",
+      "../browser/ui/views/file_system_access/file_system_access_dangerous_file_dialog_unittest.cc",
       "../browser/ui/views/file_system_access/file_system_access_ui_helpers_unittest.cc",
       "../browser/ui/views/passwords/move_to_account_store_bubble_view_unittest.cc",
       "../browser/ui/views/passwords/password_bubble_view_test_base.cc",
@@ -7340,6 +7346,7 @@ test("unit_tests") {
       "../browser/speech/tts_controller_delegate_impl_unittest.cc",
       "../browser/support_tool/ash/network_routes_data_collector_unittest.cc",
       "../browser/support_tool/ash/shill_data_collector_unittest.cc",
+      "../browser/support_tool/ash/system_state_data_collector_unittest.cc",
       "../browser/support_tool/ash/ui_hierarchy_data_collector_unittest.cc",
       "../browser/task_manager/providers/crosapi/crosapi_task_provider_ash_unittest.cc",
       "../browser/ui/app_list/app_context_menu_unittest.cc",
@@ -7383,11 +7390,11 @@ test("unit_tests") {
       "../browser/ui/app_list/search/keyboard_shortcut_provider_unittest.cc",
       "../browser/ui/app_list/search/keyboard_shortcut_result_unittest.cc",
       "../browser/ui/app_list/search/mixer_unittest.cc",
-      "../browser/ui/app_list/search/omnibox_answer_result_unittest.cc",
-      "../browser/ui/app_list/search/omnibox_lacros_provider_unittest.cc",
-      "../browser/ui/app_list/search/omnibox_provider_unittest.cc",
-      "../browser/ui/app_list/search/omnibox_result_unittest.cc",
-      "../browser/ui/app_list/search/open_tab_result_unittest.cc",
+      "../browser/ui/app_list/search/omnibox/omnibox_answer_result_unittest.cc",
+      "../browser/ui/app_list/search/omnibox/omnibox_lacros_provider_unittest.cc",
+      "../browser/ui/app_list/search/omnibox/omnibox_provider_unittest.cc",
+      "../browser/ui/app_list/search/omnibox/omnibox_result_unittest.cc",
+      "../browser/ui/app_list/search/omnibox/open_tab_result_unittest.cc",
       "../browser/ui/app_list/search/ranking/answer_ranker_unittest.cc",
       "../browser/ui/app_list/search/ranking/best_match_ranker_unittest.cc",
       "../browser/ui/app_list/search/ranking/filtering_ranker_unittest.cc",
@@ -7466,10 +7473,10 @@ test("unit_tests") {
       "../browser/ui/views/crostini/crostini_app_restart_dialog_unittest.cc",
       "../browser/ui/webui/ash/add_supervision/add_supervision_handler_utils_unittest.cc",
       "../browser/ui/webui/ash/arc_graphics_tracing/arc_graphics_tracing_handler_unittest.cc",
+      "../browser/ui/webui/ash/sync/os_sync_handler_unittest.cc",
       "../browser/ui/webui/chromeos/edu_account_login_handler_unittest.cc",
       "../browser/ui/webui/chromeos/login/fake_update_required_screen_handler.cc",
       "../browser/ui/webui/chromeos/login/fake_update_required_screen_handler.h",
-      "../browser/ui/webui/chromeos/sync/os_sync_handler_unittest.cc",
       "../browser/ui/webui/help/version_updater_chromeos_unittest.cc",
       "../browser/ui/webui/signin/ash/user_cloud_signin_restriction_policy_fetcher_chromeos_unittest.cc",
       "../browser/ui/window_sizer/window_sizer_chromeos_unittest.cc",
@@ -8257,7 +8264,10 @@ test("unit_tests") {
   }
 
   if (is_win || is_mac || is_linux) {
-    sources += [ "../browser/ui/views/sharing_hub/sharing_hub_bubble_view_impl_unittest.cc" ]
+    sources += [
+      "../browser/ui/views/sharing_hub/preview_view_unittest.cc",
+      "../browser/ui/views/sharing_hub/sharing_hub_bubble_view_impl_unittest.cc",
+    ]
   }
 
   if (use_aura) {
@@ -8538,9 +8548,6 @@ test("unit_tests") {
       "../browser/enterprise/remote_commands/rotate_attestation_credential_job_unittest.cc",
       "../browser/enterprise/signals/user_delegate_impl_unittest.cc",
       "../browser/net/disk_cache_dir_policy_handler_unittest.cc",
-      "../browser/ui/webui/app_home/app_home_page_handler_unittest.cc",
-      "../browser/ui/webui/app_home/mock_app_home_page.cc",
-      "../browser/ui/webui/app_home/mock_app_home_page.h",
       "../browser/ui/webui/ntp/app_launcher_handler_unittest.cc",
       "../browser/ui/webui/whats_new/whats_new_util_unittest.cc",
     ]
@@ -8558,7 +8565,6 @@ test("unit_tests") {
       "../browser/enterprise/connectors/device_trust/key_management/core/persistence:unit_tests",
       "../browser/enterprise/connectors/device_trust/key_management/installer:unit_tests",
       "../browser/enterprise/connectors/device_trust/signals/decorators/browser:unit_tests",
-      "//chrome/browser/ui/webui/app_home:mojo_bindings",
       "//components/device_signals/core/browser",
       "//components/device_signals/core/browser:test_support",
       "//components/device_signals/core/common:features",
@@ -8591,7 +8597,7 @@ test("unit_tests") {
     sources += [ "../common/pepper_permission_util_unittest.cc" ]
   }
 
-  if (enable_basic_printing) {
+  if (enable_printing) {
     sources += [
       "../browser/policy/printing_restrictions_policy_handler_unittest.cc",
       "../browser/printing/print_job_unittest.cc",
@@ -8742,6 +8748,7 @@ test("unit_tests") {
       "//chrome/browser/ui/tabs:tab_enums",
       "//chrome/browser/ui/views",
       "//components/app_constants",
+      "//components/commerce/core:pref_names",
       "//components/commerce/core:shopping_service_test_support",
       "//components/constrained_window",
       "//components/global_media_controls",
@@ -9898,7 +9905,7 @@ if (!is_android) {
         "../browser/printing/test_print_view_manager_for_request_preview.h",
       ]
 
-      if (enable_basic_printing) {
+      if (enable_printing) {
         deps += [ "//components/printing/common:mojo_interfaces" ]
       }
     }
@@ -10443,7 +10450,7 @@ if (!is_android) {
     if (toolkit_views) {
       deps += [ "//ui/views" ]
     }
-    if (enable_basic_printing) {
+    if (enable_printing) {
       deps += [ "//printing" ]
     }
   }
@@ -11146,7 +11153,6 @@ if (is_chromeos_ash) {
     ]
     deps = [
       ":ash_crosapi_tests_runner",
-      ":test_ash_chrome",
       "//ash/constants",
       "//base",
       "//base/test:test_support",
@@ -11158,6 +11164,7 @@ if (is_chromeos_ash) {
       "//mojo/public/cpp/system",
       "//testing/gtest",
     ]
+    data_deps = [ ":test_ash_chrome" ]
   }
 
   # This target is for Ash-side crosapi browser testing.

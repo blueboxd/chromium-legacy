@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.feed.webfeed;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -158,6 +159,29 @@ public final class WebFeedSnackbarControllerTest {
     }
 
     @Test
+    public void showPostSuccessfulFollowHelp_ShowsSnackbar_FromForYouFeed() {
+        mWebFeedSnackbarController.showPostSuccessfulFollowHelp(sTitle, true, StreamKind.FOR_YOU);
+
+        assertFalse("Dialog should not be showing.", mDialogManager.isShowing());
+        verify(mSnackbarManager).showSnackbar(mSnackbarCaptor.capture());
+        Snackbar snackbar = mSnackbarCaptor.getValue();
+        assertEquals("Snackbar should be for successful follow.",
+                Snackbar.UMA_WEB_FEED_FOLLOW_SUCCESS, snackbar.getIdentifierForTesting());
+        assertEquals("Snackbar message should be for successful follow with title from metadata.",
+                mContext.getString(R.string.web_feed_follow_success_snackbar_message,
+                        getSuccessfulFollowResult().metadata.title),
+                snackbar.getTextForTesting());
+    }
+
+    @Test
+    public void showPostSuccessfulFollowHelp_NoSnackbar_FromFollowingFeed() {
+        mWebFeedSnackbarController.showPostSuccessfulFollowHelp(sTitle, true, StreamKind.FOLLOWING);
+
+        assertFalse("Dialog should not be showing.", mDialogManager.isShowing());
+        verify(mSnackbarManager, times(0)).showSnackbar(any());
+    }
+
+    @Test
     public void showSnackbarForFollow_successful_noMetadata() {
         WebFeedBridge.FollowResults followResults = new WebFeedBridge.FollowResults(
                 WebFeedSubscriptionRequestStatus.SUCCESS, /*metadata=*/null);
@@ -211,6 +235,24 @@ public final class WebFeedSnackbarControllerTest {
                 mContext.getString(
                         R.string.web_feed_post_follow_dialog_stories_ready_description, sTitle),
                 ((TextView) currentDialog.findViewById(R.id.web_feed_dialog_details)).getText());
+    }
+
+    @Test
+    public void showPostSuccessfulFollowHelp_Dialog_FromForYouFeed() {
+        when(mTracker.shouldTriggerHelpUI(FeatureConstants.IPH_WEB_FEED_POST_FOLLOW_DIALOG_FEATURE))
+                .thenReturn(true);
+        when(mTracker.shouldTriggerHelpUIWithSnooze(
+                     FeatureConstants.IPH_WEB_FEED_POST_FOLLOW_DIALOG_FEATURE))
+                .thenReturn(new TriggerDetails(true, false));
+
+        mWebFeedSnackbarController.showPostSuccessfulFollowHelp(sTitle, true, StreamKind.FOR_YOU);
+
+        View currentDialog =
+                mDialogManager.getCurrentDialogForTest().get(ModalDialogProperties.CUSTOM_VIEW);
+        verify(mSnackbarManager, times(0)).showSnackbar(any());
+        assertTrue("Dialog should be showing.", mDialogManager.isShowing());
+        // TODO(b/243676323): figure out how to test the positive_button label, which is out of the
+        // currentDialog hierarchy.
     }
 
     @Test

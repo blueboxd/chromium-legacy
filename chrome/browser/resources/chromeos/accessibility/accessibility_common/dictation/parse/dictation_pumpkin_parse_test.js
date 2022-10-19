@@ -141,5 +141,44 @@ AX_TEST_F(
       }
     });
 
-// TODO(https://crbug.com/1258190): Add test cases for when Dictation is in
-// another en-* locale (e.g. en-GB).
+AX_TEST_F('DictationPumpkinParseTest', 'ChangeLocale', async function() {
+  await this.waitForPumpkinParseStrategy_();
+  this.alwaysEnableCommands();
+  const testCases = [
+    {
+      locale: 'fr-FR',
+      testCase: new ParseTestCase('copier', 'COPY_SELECTED_TEXT'),
+    },
+    {
+      locale: 'fr-FR',
+      testCase: new ParseTestCase(
+          'supprimer deux caractères précédent', 'DELETE_PREV_CHAR', 2),
+    },
+    {locale: 'it-IT', testCase: new ParseTestCase('annulla', 'UNDO_TEXT_EDIT')},
+    {locale: 'de-DE', testCase: new ParseTestCase('hilf mir', 'LIST_COMMANDS')},
+    {locale: 'es-ES', testCase: new ParseTestCase('ayuda', 'LIST_COMMANDS')},
+    {
+      locale: 'en-GB',
+      testCase: new ParseTestCase('copy selected text', 'COPY_SELECTED_TEXT'),
+    },
+  ];
+  for (const {locale, testCase} of testCases) {
+    await this.setPref(Dictation.DICTATION_LOCALE_PREF, locale);
+    await this.waitForPumpkinParseStrategy_();
+    await this.runParseTestCase(testCase);
+  }
+});
+
+AX_TEST_F('DictationPumpkinParseTest', 'UnsupportedLocale', async function() {
+  await this.waitForPumpkinParseStrategy_();
+  this.alwaysEnableCommands();
+  await this.setPref(Dictation.DICTATION_LOCALE_PREF, 'ja');
+  await this.waitForPumpkinParseStrategy_();
+  await this.runParseTestCase(new ParseTestCase('copy selected text'));
+  // Would produce an UNDO_TEXT_EDIT macro if Japanese was supported.
+  await this.runParseTestCase(new ParseTestCase('もとどおりにする'));
+  await this.setPref(Dictation.DICTATION_LOCALE_PREF, 'en-US');
+  await this.waitForPumpkinParseStrategy_();
+  await this.runParseTestCase(
+      new ParseTestCase('copy selected text', 'COPY_SELECTED_TEXT'));
+});

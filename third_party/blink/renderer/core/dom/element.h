@@ -66,6 +66,7 @@ class Vector2dF;
 namespace blink {
 
 class AccessibleNode;
+class AriaNotificationOptions;
 class Attr;
 class Attribute;
 class ContainerQueryData;
@@ -433,6 +434,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   AccessibleNode* ExistingAccessibleNode() const;
   AccessibleNode* accessibleNode();
+
+  void ariaNotify(const String announcement, const AriaNotificationOptions*);
 
   void DidMoveToNewDocument(Document&) override;
 
@@ -1632,7 +1635,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // in the parent, but virtually all existing content uses universal rules
   // like *::selection. To improve runtime and keep copy-on-write inheritance,
   // avoid recalc if neither parent nor child matched any non-universal rules.
-  bool CanSkipRecalcForHighlightPseudos(const ComputedStyle& new_style) const;
+  bool TryToSkipHighlightPseudos(const ComputedStyle* old_style,
+                                 ComputedStyle& new_style) const;
 
   Member<ElementData> element_data_;
 };

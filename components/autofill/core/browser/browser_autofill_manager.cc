@@ -208,6 +208,22 @@ void LogLanguageMetrics(const translate::LanguageState* language_state) {
   }
 }
 
+AutofillMetrics::AutocompleteState AutocompleteStateForSubmittedField(
+    const AutofillField& field) {
+  // An unparsable autocomplete attribute is treated like kNone.
+  auto autocomplete_state = AutofillMetrics::AutocompleteState::kNone;
+  if (ShouldIgnoreAutocompleteAttribute(field.autocomplete_attribute)) {
+    autocomplete_state = AutofillMetrics::AutocompleteState::kIgnored;
+  } else if (field.parsed_autocomplete) {
+    autocomplete_state =
+        field.parsed_autocomplete->field_type != HtmlFieldType::kUnrecognized
+            ? AutofillMetrics::AutocompleteState::kValid
+            : AutofillMetrics::AutocompleteState::kGarbage;
+  }
+
+  return autocomplete_state;
+}
+
 void LogAutocompletePredictionCollisionTypeMetrics(
     const FormStructure& form_structure) {
   for (size_t i = 0; i < form_structure.field_count(); i++) {
@@ -224,16 +240,7 @@ void LogAutocompletePredictionCollisionTypeMetrics(
       prediction_state = AutofillMetrics::PredictionState::kServer;
     }
 
-    // An unparsable autocomplete attribute is treated like kNone.
-    auto autocomplete_state = AutofillMetrics::AutocompleteState::kNone;
-    if (ShouldIgnoreAutocompleteAttribute(field->autocomplete_attribute)) {
-      autocomplete_state = AutofillMetrics::AutocompleteState::kOff;
-    } else if (field->parsed_autocomplete) {
-      autocomplete_state =
-          field->parsed_autocomplete->field_type != HtmlFieldType::kUnrecognized
-              ? AutofillMetrics::AutocompleteState::kValid
-              : AutofillMetrics::AutocompleteState::kGarbage;
-    }
+    auto autocomplete_state = AutocompleteStateForSubmittedField(*field);
 
     AutofillMetrics::LogAutocompletePredictionCollisionState(
         prediction_state, autocomplete_state);
@@ -242,6 +249,12 @@ void LogAutocompletePredictionCollisionTypeMetrics(
                                                                heuristic_type);
     }
   }
+}
+
+void LogContextMenuImpressionsForSubmittedField(const AutofillField& field) {
+  auto autocomplete_state = AutocompleteStateForSubmittedField(field);
+  AutofillMetrics::LogContextMenuImpressions(field.Type().GetStorableType(),
+                                             autocomplete_state);
 }
 
 // Finds the first field in |form_structure| with |field.value|=|value|.
@@ -774,6 +787,11 @@ void BrowserAutofillManager::OnFormSubmittedImpl(const FormData& form,
                    ->value_not_autofilled_over_existing_value_hash() ==
               base::FastHash(base::UTF16ToUTF8(sanitized_submitted_value)));
     }
+
+    // The context menu was shown in this field, log the metrics by
+    // autocomplete type, form type and autofill type prediction of the field.
+    if (submitted_form->field(i)->was_context_menu_shown())
+      LogContextMenuImpressionsForSubmittedField(*submitted_form->field(i));
   }
   single_field_form_fill_router_->OnWillSubmitForm(
       form_for_autocomplete, submitted_form.get(),
@@ -1638,12 +1656,6 @@ void BrowserAutofillManager::MaybeTriggerRefillForExpirationDate(
     const FormData& form,
     const FormFieldData& field,
     const std::u16string& old_value) {
-  // TODO(crbug.com/1314360): Remove these lines once launched.
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillRefillModifiedCreditCardExpirationDates)) {
-    return;
-  }
-
   // We currently support a single case of refilling credit card expiration
   // dates: If we filled the expiration date in a format "05/2023" and the
   // website turned it into "05 / 20" (i.e. it broke the year by cutting the
@@ -1905,6 +1917,21 @@ void BrowserAutofillManager::Reset() {
   fast_checkout_delegate_->Reset();
   touch_to_fill_delegate_->Reset();
   filling_context_.clear();
+}
+
+void BrowserAutofillManager::OnContextMenuShownInField(
+    const FormGlobalId& form_global_id,
+    const FieldGlobalId& field_global_id) {
+  FormStructure* form = FindCachedFormByRendererId(form_global_id);
+  if (!form)
+    return;
+  auto field =
+      base::ranges::find_if(*form, [&field_global_id](const auto& field) {
+        return field->global_id() == field_global_id;
+      });
+
+  if (field != form->end())
+    (*field)->set_was_context_menu_shown(true);
 }
 
 bool BrowserAutofillManager::RefreshDataModels() {

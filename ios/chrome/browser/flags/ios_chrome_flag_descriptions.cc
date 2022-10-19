@@ -21,12 +21,6 @@ const char kAppStoreRatingDescription[] =
     "When enabled, App Store Rating promo will be presented to eligible "
     "users.";
 
-const char kAppStoreRatingIgnoreEligibilityCheckTestName[] =
-    "Overrides App Store rating trigger requirements.";
-const char kAppStoreRatingIgnoreEligibilityCheckTestDescription[] =
-    "Overrides the app store rating trigger requirements to show the prompt"
-    "on the next startup. Used for testing.";
-
 const char kAutofillBrandingIOSName[] = "Autofill Branding on iOS";
 const char kAutofillBrandingIOSDescription[] =
     "Adds the Chrome logo in the form input suggestions bar. Full color by "
@@ -172,7 +166,8 @@ extern const char kEnableExpKitCalendarTextClassifierDescription[] =
 extern const char kMapsExperienceKitName[] = "Experience Kit Maps";
 extern const char kMapsExperienceKitDescription[] =
     "When enabled, long pressing on an address will trigger Experience Kit Maps"
-    "location and directions handling";
+    "location and directions handling. Requires "
+    "#enable-long-press-surrounding-text to be enabled";
 
 extern const char kLongPressSurroundingTextName[] =
     "Enable Long Press Surrounding Text";
@@ -189,13 +184,6 @@ const char kCrashpadIOSName[] = "Use Crashpad for crash collection.";
 const char kCrashpadIOSDescription[] =
     "When enabled use Crashpad to generate crash reports crash collection. "
     "When disabled use Breakpad. This flag takes two restarts to take effect";
-
-#if BUILDFLAG(DCHECK_IS_CONFIGURABLE)
-const char kDcheckIsFatalName[] = "DCHECKs are fatal";
-const char kDcheckIsFatalDescription[] =
-    "By default Chrome will evaluate in this build, but only log failures, "
-    "rather than crashing. If enabled, DCHECKs will crash the calling process.";
-#endif  // BUILDFLAG(DCHECK_IS_CONFIGURABLE)
 
 const char kDefaultBrowserFullscreenPromoExperimentName[] =
     "Default Browser Fullscreen modal experiment";
@@ -320,6 +308,12 @@ const char kPasswordsGroupingDescription[] =
 const char kEnableOpenInDownloadName[] = "Enable Open In download";
 const char kEnableOpenInDownloadDescription[] =
     "Enable new download for Open In menu (iOS 14.5+).";
+
+const char kEnablePasswordsAccountStorageName[] =
+    "Enable the account data storage for passwords";
+const char kEnablePasswordsAccountStorageDescription[] =
+    "Enables storing passwords in a second, Gaia-account-scoped storage for "
+    "signed-in but not syncing users";
 
 const char kEnableRefineDataSourceReloadReportingName[] =
     "Enable Refine Data Source Reload Reporting";

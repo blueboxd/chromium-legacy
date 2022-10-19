@@ -129,7 +129,9 @@ _CONFIG = [
             'base::WritableSharedMemoryMapping',
             'base::as_bytes',
             'base::bit_cast',
+            'base::expected',
             'base::make_span',
+            'base::unexpected',
             'base::ranges::.+',
             'base::sequence_manager::TaskTimeObserver',
             'base::span',
@@ -734,6 +736,11 @@ _CONFIG = [
     },
     {
         'paths':
+        ['third_party/blink/renderer/bindings/core/v8/serialization/'],
+        'allowed': ['base::BufferIterator'],
+    },
+    {
+        'paths':
         ['third_party/blink/renderer/bindings/core/v8/script_streamer.cc'],
         'allowed': [
             # For the script streaming to be able to block when reading from a
@@ -942,6 +949,14 @@ _CONFIG = [
         'allowed': [
             # Used by WebPackageRequestMatcher in //third_party/blink/common.
             'net::HttpRequestHeaders',
+        ],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/loader/web_bundle/script_web_bundle.cc'
+        ],
+        'allowed': [
+            'web_package::ScriptWebBundleOriginType',
         ],
     },
     {

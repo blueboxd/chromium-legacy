@@ -224,7 +224,6 @@
 #include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/permissions/bluetooth_delegate_impl.h"
 #include "components/permissions/permission_context_base.h"
-#include "components/permissions/quota_permission_context_impl.h"
 #include "components/policy/content/policy_blocklist_navigation_throttle.h"
 #include "components/policy/content/policy_blocklist_service.h"
 #include "components/policy/core/common/management/management_service.h"
@@ -664,7 +663,6 @@ using blink::web_pref::WebPreferences;
 using content::BrowserThread;
 using content::BrowserURLHandler;
 using content::ChildProcessSecurityPolicy;
-using content::QuotaPermissionContext;
 using content::RenderFrameHost;
 using content::SiteInstance;
 using content::WebContents;
@@ -3214,11 +3212,6 @@ bool ChromeContentBrowserClient::ShouldUseGmsCoreGeolocationProvider() {
 }
 #endif
 
-scoped_refptr<content::QuotaPermissionContext>
-ChromeContentBrowserClient::CreateQuotaPermissionContext() {
-  return new permissions::QuotaPermissionContextImpl();
-}
-
 content::GeneratedCodeCacheSettings
 ChromeContentBrowserClient::GetGeneratedCodeCacheSettings(
     content::BrowserContext* context) {
@@ -4269,6 +4262,9 @@ std::wstring ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
 #endif
     case sandbox::mojom::Sandbox::kPrintCompositor:
     case sandbox::mojom::Sandbox::kAudio:
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+    case sandbox::mojom::Sandbox::kScreenAI:
+#endif
     case sandbox::mojom::Sandbox::kSpeechRecognition:
     case sandbox::mojom::Sandbox::kPdfConversion:
     case sandbox::mojom::Sandbox::kService:
@@ -4354,6 +4350,9 @@ bool ChromeContentBrowserClient::PreSpawnChild(
     case sandbox::mojom::Sandbox::kPrintBackend:
 #endif
     case sandbox::mojom::Sandbox::kPrintCompositor:
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+    case sandbox::mojom::Sandbox::kScreenAI:
+#endif
     case sandbox::mojom::Sandbox::kAudio:
     case sandbox::mojom::Sandbox::kSpeechRecognition:
     case sandbox::mojom::Sandbox::kPdfConversion:
@@ -6384,32 +6383,8 @@ ChromeContentBrowserClient::GetBrowsingTopicsForJsApi(
   if (!browsing_topics_service)
     return {};
 
-  auto topics = browsing_topics_service->GetBrowsingTopicsForJsApi(
+  return browsing_topics_service->GetBrowsingTopicsForJsApi(
       context_origin, main_frame, observe);
-
-  // Compare the provided topics to the real (i.e. non random) topics available
-  // for the site, this allows filtering out of the randomly generated topics
-  // for passing to the Page Specific Content Settings.
-  auto real_topics = browsing_topics_service->GetTopicsForSiteForDisplay(
-      main_frame->GetLastCommittedOrigin());
-
-  // |topics| and |real_topics| will contain only a handful of entries,
-  // and |topics| order must be preserved. A simple loop is thus appropriate.
-  for (const auto& topic : topics) {
-    int taxonomy_version = 0;
-    base::StringToInt(topic->taxonomy_version, &taxonomy_version);
-    DCHECK(taxonomy_version);
-
-    privacy_sandbox::CanonicalTopic canonical_topic(
-        browsing_topics::Topic(topic->topic), taxonomy_version);
-    if (base::Contains(real_topics, canonical_topic)) {
-      content_settings::PageSpecificContentSettings::TopicAccessed(
-          main_frame, context_origin, /*blocked_by_policy=*/false,
-          canonical_topic);
-    }
-  }
-
-  return topics;
 }
 
 bool ChromeContentBrowserClient::IsBluetoothScanningBlocked(
@@ -6707,8 +6682,8 @@ bool ChromeContentBrowserClient::SetupEmbedderSandboxParameters(
     CHECK(client->SetParameter(sandbox::policy::kParamSodaLanguagePackPath,
                                soda_language_pack_path.value()));
     return true;
-  } else if (sandbox_type == sandbox::mojom::Sandbox::kScreenAI) {
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  } else if (sandbox_type == sandbox::mojom::Sandbox::kScreenAI) {
     // ScreenAI service needs read access to ScreenAI component path, so that it
     // would be able to find the latest downloaded version, and load its binary
     // and all enclosed model files.

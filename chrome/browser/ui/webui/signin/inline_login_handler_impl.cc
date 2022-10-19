@@ -32,6 +32,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
@@ -778,8 +779,8 @@ void InlineLoginHandlerImpl::HandleLoginError(const SigninUIError& error) {
   if (!error.IsOk()) {
     Browser* browser = GetDesktopBrowser();
     Profile* profile = Profile::FromWebUI(web_ui());
-    LoginUIServiceFactory::GetForProfile(profile)->DisplayLoginResult(browser,
-                                                                      error);
+    LoginUIServiceFactory::GetForProfile(profile)->DisplayLoginResult(
+        browser, error, HasFromProfilePickerURLParameter(current_url));
   }
 }
 

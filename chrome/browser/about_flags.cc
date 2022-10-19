@@ -105,6 +105,7 @@
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/heavy_ad_intervention/heavy_ad_features.h"
 #include "components/history/core/browser/features.h"
+#include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/features.h"
 #include "components/history_clusters/core/on_device_clustering_features.h"
 #include "components/invalidation/impl/invalidation_switches.h"
@@ -1701,6 +1702,15 @@ const FeatureEntry::FeatureParam kNtpChromeCartModuleRBDAndCouponDiscount[] = {
     {"partner-merchant-pattern",
      "(electronicexpress.com|zazzle.com|wish.com|homesquare.com)"},
     {ntp_features::kNtpChromeCartModuleCouponParam, "true"}};
+const FeatureEntry::FeatureParam kNtpChromeCartModuleCodeBasedRBD[] = {
+    {ntp_features::kNtpChromeCartModuleHeuristicsImprovementParam, "true"},
+    {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam, "true"},
+    {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountUseUtmParam,
+     "true"},
+    {"partner-merchant-pattern",
+     "(electronicexpress.com|zazzle.com|wish.com|homesquare.com)"},
+    {ntp_features::kNtpChromeCartModuleCouponParam, "true"},
+    {commerce::kCodeBasedRuleDiscountParam, "true"}};
 const FeatureEntry::FeatureVariation kNtpChromeCartModuleVariations[] = {
     {"- Fake Data And Discount", kNtpChromeCartModuleFakeData,
      std::size(kNtpChromeCartModuleFakeData), nullptr},
@@ -1710,6 +1720,8 @@ const FeatureEntry::FeatureVariation kNtpChromeCartModuleVariations[] = {
      std::size(kNtpChromeCartModuleHeuristicsImprovement), nullptr},
     {"- RBD and Coupons", kNtpChromeCartModuleRBDAndCouponDiscount,
      std::size(kNtpChromeCartModuleRBDAndCouponDiscount), nullptr},
+    {"- Code-based RBD and Coupons", kNtpChromeCartModuleCodeBasedRBD,
+     std::size(kNtpChromeCartModuleCodeBasedRBD), nullptr},
 };
 
 // The following are consent v2 variations in the Chrome Cart module.
@@ -3623,7 +3635,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webrtc-allow-input-volume-adjustment",
      flag_descriptions::kWebRtcAllowInputVolumeAdjustmentName,
      flag_descriptions::kWebRtcAllowInputVolumeAdjustmentDescription,
-     kOsDesktop,
+     kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(features::kWebRtcAllowInputVolumeAdjustment)},
     {"enable-webrtc-hide-local-ips-with-mdns",
      flag_descriptions::kWebrtcHideLocalIpsWithMdnsName,
@@ -4419,10 +4431,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAssistantIntentTranslateInfoName,
      flag_descriptions::kAssistantIntentTranslateInfoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAssistantIntentTranslateInfo)},
-    {"share-button-in-top-toolbar",
-     flag_descriptions::kShareButtonInTopToolbarName,
-     flag_descriptions::kShareButtonInTopToolbarDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kShareButtonInTopToolbar)},
     {"chrome-share-long-screenshot",
      flag_descriptions::kChromeShareLongScreenshotName,
      flag_descriptions::kChromeShareLongScreenshotDescription, kOsAndroid,
@@ -4645,11 +4653,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsSubAppsDescription,
      kOsWin | kOsLinux | kOsLacros | kOsMac | kOsCrOS | kOsFuchsia,
      FEATURE_VALUE_TYPE(blink::features::kDesktopPWAsSubApps)},
-    {"enable-desktop-pwas-window-controls-overlay",
-     flag_descriptions::kDesktopPWAsWindowControlsOverlayName,
-     flag_descriptions::kDesktopPWAsWindowControlsOverlayDescription,
-     kOsWin | kOsLinux | kOsLacros | kOsMac | kOsCrOS | kOsFuchsia,
-     FEATURE_VALUE_TYPE(features::kWebAppWindowControlsOverlay)},
     {"enable-desktop-pwas-borderless",
      flag_descriptions::kDesktopPWAsBorderlessName,
      flag_descriptions::kDesktopPWAsBorderlessDescription,
@@ -5864,6 +5867,13 @@ const FeatureEntry kFeatureEntries[] = {
          kJourneysOnDeviceClusteringKeywordFilteringVariations,
          "HistoryJourneysKeywordFiltering")},
 
+    {"history-journeys-show-all-clusters",
+     flag_descriptions::kJourneysShowAllClustersName,
+     flag_descriptions::kJourneysShowAllClustersDescription,
+     kOsDesktop | kOsAndroid,
+     SINGLE_VALUE_TYPE(history_clusters::switches::
+                           kShouldShowAllClustersOnProminentUiSurfaces)},
+
     {"page-content-annotations", flag_descriptions::kPageContentAnnotationsName,
      flag_descriptions::kPageContentAnnotationsDescription,
      kOsDesktop | kOsAndroid,
@@ -6846,9 +6856,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceStartupSigninPromoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(switches::kForceStartupSigninPromo)},
 
-    {"gaia-id-in-amf", flag_descriptions::kGaiaIdInAMFName,
-     flag_descriptions::kGaiaIdInAMFDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(switches::kGaiaIdInAMF)},
+    {"gaia-id-in-amf",
+     flag_descriptions::kGaiaIdCacheInAccountManagerFacadeName,
+     flag_descriptions::kGaiaIdCacheInAccountManagerFacadeDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(switches::kGaiaIdCacheInAccountManagerFacade)},
 
     {"tangible-sync", flag_descriptions::kTangibleSyncName,
      flag_descriptions::kTangibleSyncDescription, kOsAndroid,
@@ -7409,9 +7421,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"exo-gamepad-vibration", flag_descriptions::kExoGamepadVibrationName,
      flag_descriptions::kExoGamepadVibrationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kGamepadVibration)},
-    {"exo-lock-notification", flag_descriptions::kExoLockNotificationName,
-     flag_descriptions::kExoLockNotificationDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kExoLockNotification)},
     {"exo-ordinal-motion", flag_descriptions::kExoOrdinalMotionName,
      flag_descriptions::kExoOrdinalMotionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kExoOrdinalMotion)},
@@ -9205,11 +9214,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableFakeKeyboardHeuristicDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ui::kEnableFakeKeyboardHeuristic)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-    {"initial-navigation-entry", flag_descriptions::kInitialNavigationEntryName,
-     flag_descriptions::kInitialNavigationEntryDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kInitialNavigationEntry)},
-
 #if !BUILDFLAG(IS_ANDROID)
     {"enable-isolated-sandboxed-iframes",
      flag_descriptions::kIsolatedSandboxedIframesName,
@@ -9737,13 +9741,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(arc::kEnableArcNearbyShareFuseBox)},
 #endif
 
-#if BUILDFLAG(IS_ANDROID)
-    {"android-permissions-cache",
-     flag_descriptions::kAndroidPermissionsCacheName,
-     flag_descriptions::kAndroidPermissionsCacheDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(::features::kAndroidPermissionsCache)},
-#endif
-
     {"autofill-enable-card-art-image",
      flag_descriptions::kAutofillEnableCardArtImageName,
      flag_descriptions::kAutofillEnableCardArtImageDescription, kOsAll,
@@ -9809,6 +9806,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseNAT64ForIPv4LiteralName,
      flag_descriptions::kUseNAT64ForIPv4LiteralDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kUseNAT64ForIPv4Literal)},
+
+#if BUILDFLAG(IS_ANDROID)
+    {"enable-passwords-account-storage",
+     flag_descriptions::kEnablePasswordsAccountStorageName,
+     flag_descriptions::kEnablePasswordsAccountStorageDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kEnablePasswordsAccountStorage)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

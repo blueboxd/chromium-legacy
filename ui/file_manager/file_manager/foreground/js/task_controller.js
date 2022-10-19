@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import {assert, assertInstanceof, assertNotReached} from 'chrome://resources/js/assert.js';
-import {Command} from './ui/command.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {startIOTask} from '../../common/js/api.js';
@@ -13,6 +12,7 @@ import {strf, util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {Crostini} from '../../externs/background/crostini.js';
 import {ProgressCenter} from '../../externs/background/progress_center.js';
+import {FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
 
 import {DirectoryModel} from './directory_model.js';
@@ -21,9 +21,18 @@ import {FileTasks} from './file_tasks.js';
 import {FileTransferController} from './file_transfer_controller.js';
 import {MetadataModel} from './metadata/metadata_model.js';
 import {MetadataUpdateController} from './metadata_update_controller.js';
-import {NamingController} from './naming_controller.js';
 import {TaskHistory} from './task_history.js';
+import {Command} from './ui/command.js';
 import {FileManagerUI} from './ui/file_manager_ui.js';
+
+/**
+ * Type of the object stashed in the Map extractTasks_.
+ * @typedef {{
+ *   entries: !Array<Entry>,
+ *   params: !chrome.fileManagerPrivate.IOTaskParams,
+ * }}
+ */
+let ExtractingTasks;
 
 export class TaskController {
   /**
@@ -34,14 +43,12 @@ export class TaskController {
    * @param {!DirectoryModel} directoryModel
    * @param {!FileSelectionHandler} selectionHandler
    * @param {!MetadataUpdateController} metadataUpdateController
-   * @param {!NamingController} namingController
    * @param {!Crostini} crostini
    * @param {!ProgressCenter} progressCenter
    */
   constructor(
       dialogType, volumeManager, ui, metadataModel, directoryModel,
-      selectionHandler, metadataUpdateController, namingController, crostini,
-      progressCenter) {
+      selectionHandler, metadataUpdateController, crostini, progressCenter) {
     /**
      * @private {DialogType}
      * @const
@@ -87,12 +94,6 @@ export class TaskController {
      * @private
      */
     this.metadataUpdateController_ = metadataUpdateController;
-
-    /**
-     * @private {!NamingController}
-     * @const
-     */
-    this.namingController_ = namingController;
 
     /**
      * @type {!Crostini}
@@ -154,9 +155,12 @@ export class TaskController {
 
     /**
      * Map used to track extract IOTasks in progress.
-     * @private @const {Map}
+     * @private @const {!Map<number, ExtractingTasks>}
      */
     this.extractTasks_ = new Map();
+
+    chrome.fileManagerPrivate.onIOTaskProgressStatus.addListener(
+        this.onIOTaskProgressStatus_.bind(this));
 
     /**
      * Selected entries from the last time onSelectionChanged_ was called.
@@ -408,7 +412,7 @@ export class TaskController {
       const tasks = await this.getFileTasks();
       // Update the DOM.
       tasks.display(this.ui_.taskMenuButton);
-      const openTaskItems = tasks.getOpenTaskItems();
+      const openTaskItems = tasks.getTaskItems();
       const policyDefaultHandlerStatus = tasks.getPolicyDefaultHandlerStatus();
       this.updateContextMenuTaskItems_(
           {tasks: openTaskItems, policyDefaultHandlerStatus});
@@ -446,8 +450,7 @@ export class TaskController {
           .create(
               this.volumeManager_, this.metadataModel_, this.directoryModel_,
               this.ui_, this.fileTransferController_, selection.entries,
-              assert(selection.mimeTypes), this.taskHistory_,
-              this.namingController_, this.crostini_, this.progressCenter_)
+              this.taskHistory_, this.crostini_, this.progressCenter_)
           .then(tasks => {
             if (this.selectionHandler_.selection !== selection) {
               if (util.isSameEntries(this.tasksEntries_, selection.entries)) {
@@ -534,9 +537,8 @@ export class TaskController {
     return this.metadataModel_.get([entry], ['contentMimeType']).then(props => {
       return FileTasks.create(
           this.volumeManager_, this.metadataModel_, this.directoryModel_,
-          this.ui_, this.fileTransferController_, [entry],
-          [props[0].contentMimeType || null], this.taskHistory_,
-          this.namingController_, this.crostini_, this.progressCenter_);
+          this.ui_, this.fileTransferController_, [entry], this.taskHistory_,
+          this.crostini_, this.progressCenter_);
     });
   }
 
@@ -548,32 +550,71 @@ export class TaskController {
       tasks.executeDefault();
     });
   }
-
-  /**
-   * Stores the task ID and parameters for an extract archive task.
-   */
-  storeExtractTaskDetails(taskId, selectionEntries, parameters) {
-    this.extractTasks_.set(
-        taskId, {'entries': selectionEntries, 'params': parameters});
-  }
-
   /**
    * Removes information about an extract archive task.
+   * @param {number} taskId
+   * @private
    */
-  deleteExtractTaskDetails(taskId) {
+  deleteExtractTaskDetails_(taskId) {
     this.extractTasks_.delete(taskId);
   }
 
   /**
-   * Starts extraction for a single entry and stores the task details.
+   * @param {!chrome.fileManagerPrivate.ProgressStatus} event
    * @private
    */
-  async startExtractTask_(entry, params) {
-    let taskId;
+  onIOTaskProgressStatus_(event) {
+    const taskId = event.taskId;
+    if (!taskId) {
+      console.warn('IOTask ProgressStatus without taskId');
+      return;
+    }
+
+    // TaskController only manages IOTasks related to zip extract that were
+    // started in this window.
+    if (!(this.extractTasks_.has(taskId) &&
+          event.type === chrome.fileManagerPrivate.IOTaskType.EXTRACT)) {
+      return;
+    }
+
+    switch (event.state) {
+      case chrome.fileManagerPrivate.IOTaskState.SUCCESS:
+      case chrome.fileManagerPrivate.IOTaskState.CANCELLED:
+      case chrome.fileManagerPrivate.IOTaskState.ERROR:
+        this.deleteExtractTaskDetails_(taskId);
+        break;
+      case chrome.fileManagerPrivate.IOTaskState.NEED_PASSWORD:
+        this.handleMissingPassword_(taskId);
+        break;
+    }
+  }
+
+  /**
+   * Starts the Zip extract Here IO Task.
+   * @param {!Array<!Entry|FilesAppEntry>} entries
+   * @param {!DirectoryEntry|!FilesAppDirEntry} destination
+   * @return {!Promise<number>} resolved with taskId.
+   */
+  async startExtractIOTask(entries, destination) {
+    const params = {
+      destinationFolder: /** @type {!DirectoryEntry} */ (destination),
+    };
+    return this.startExtractTask_(entries, params);
+  }
+
+  /**
+   * Starts extraction for a single entry and stores the task details.
+   * @param {!Array<!Entry|FilesAppEntry>} entries
+   * @param {!chrome.fileManagerPrivate.IOTaskParams} params
+   * @return {!Promise<number>} resolved with taskId.
+   * @private
+   */
+  async startExtractTask_(entries, params) {
     try {
-      taskId = await startIOTask(
-          chrome.fileManagerPrivate.IOTaskType.EXTRACT, [entry], params);
-      this.storeExtractTaskDetails(taskId, [entry], params);
+      const taskId = await startIOTask(
+          chrome.fileManagerPrivate.IOTaskType.EXTRACT, entries, params);
+      this.extractTasks_.set(taskId, {entries, params});
+      return taskId;
     } catch (e) {
       console.warn('Error getting extract taskID', e);
     }
@@ -603,8 +644,10 @@ export class TaskController {
    * If an extract operation has finished due to missing password,
    * see if we have the operation stored and if so, pop up a password
    * dialog and try to restart another IO operation for it.
+   * @param {number} taskId
+   * @private
    */
-  handleMissingPassword(taskId) {
+  handleMissingPassword_(taskId) {
     const existingOperation = this.extractTasks_.get(taskId);
     if (existingOperation) {
       // If we have multiple entries (from a multi-select extract) then
@@ -618,11 +661,11 @@ export class TaskController {
             existingOperation['entries'][0], params);
       } else {
         for (const entry of selectionEntries) {
-          this.startExtractTask_(entry, params);
+          this.startExtractTask_([entry], params);
         }
       }
     }
     // Remove the failed operation reference since it's finished.
-    this.deleteExtractTaskDetails(taskId);
+    this.deleteExtractTaskDetails_(taskId);
   }
 }

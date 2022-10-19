@@ -134,7 +134,14 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   TakePrivateAggregationRequests() {
     return std::move(private_aggregation_requests_);
   }
+
+  // Retrieves the ad beacon map. May only be called once, since it takes
+  // ownership of the stored ad beacon map.
   ReportingMetadata TakeAdBeaconMap() { return std::move(ad_beacon_map_); }
+
+  // Retrieves any reporting URLs returned by ReportWin() and ReportResult()
+  // methods. May only be called after the reporter has completed. May only be
+  // called once, since it takes ownership of stored reporting URLs.
   std::vector<GURL> TakeReportUrls() { return std::move(report_urls_); }
 
  private:
@@ -191,7 +198,6 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
 
   // Invokes `callback_`.
   void OnReportingComplete(
-      bool success,
       const std::vector<std::string>& errors = std::vector<std::string>());
 
   // Retrieves the SellerWinningBidInfo of the auction the bidder was

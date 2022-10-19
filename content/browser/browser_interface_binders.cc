@@ -29,6 +29,8 @@
 #include "content/browser/eye_dropper_chooser_impl.h"
 #include "content/browser/handwriting/handwriting_recognition_service_factory.h"
 #include "content/browser/image_capture/image_capture_impl.h"
+#include "content/browser/indexed_db/indexed_db_internals.mojom.h"
+#include "content/browser/indexed_db/indexed_db_internals_ui.h"
 #include "content/browser/interest_group/ad_auction_service_impl.h"
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
 #include "content/browser/loader/content_security_notifier.h"
@@ -106,6 +108,7 @@
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/buckets/bucket_manager_host.mojom.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
@@ -281,8 +284,7 @@ void BindQuotaManagerHost(
     RenderFrameHostImpl* host,
     mojo::PendingReceiver<blink::mojom::QuotaManagerHost> receiver) {
   host->GetStoragePartition()->GetQuotaContext()->BindQuotaManagerHost(
-      host->GetProcess()->GetID(), host->GetRoutingID(), host->storage_key(),
-      std::move(receiver));
+      host->storage_key(), std::move(receiver));
 }
 
 void BindNativeIOHost(
@@ -634,6 +636,12 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
 
   map->Add<blink::mojom::CodeCacheHost>(base::BindRepeating(
       &RenderFrameHostImpl::CreateCodeCacheHost, base::Unretained(host)));
+
+  if (base::FeatureList::IsEnabled(net::features::kSupportPartitionedBlobUrl)) {
+    map->Add<blink::mojom::BlobURLStore>(
+        base::BindRepeating(&RenderFrameHostImpl::BindBlobUrlStoreReceiver,
+                            base::Unretained(host)));
+  }
 
   if (base::FeatureList::IsEnabled(blink::features::kComputePressure)) {
     map->Add<blink::mojom::PressureService>(base::BindRepeating(
@@ -1050,6 +1058,8 @@ void PopulateBinderMapWithContext(
       AggregationServiceInternalsUI>(map);
   RegisterWebUIControllerInterfaceBinder<attribution_internals::mojom::Handler,
                                          AttributionInternalsUI>(map);
+  RegisterWebUIControllerInterfaceBinder<storage::mojom::IdbInternalsHandler,
+                                         IndexedDBInternalsUI>(map);
   RegisterWebUIControllerInterfaceBinder<mojom::PrerenderInternalsHandler,
                                          PrerenderInternalsUI>(map);
   RegisterWebUIControllerInterfaceBinder<::mojom::ProcessInternalsHandler,
@@ -1149,6 +1159,11 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
   map->Add<blink::mojom::BroadcastChannelProvider>(
       base::BindRepeating(&DedicatedWorkerHost::CreateBroadcastChannelProvider,
                           base::Unretained(host)));
+  if (base::FeatureList::IsEnabled(net::features::kSupportPartitionedBlobUrl)) {
+    map->Add<blink::mojom::BlobURLStore>(
+        base::BindRepeating(&DedicatedWorkerHost::CreateBlobUrlStoreProvider,
+                            base::Unretained(host)));
+  }
   map->Add<blink::mojom::ReportingServiceProxy>(base::BindRepeating(
       &CreateReportingServiceProxyForDedicatedWorker, base::Unretained(host)));
 #if !BUILDFLAG(IS_ANDROID)
@@ -1249,6 +1264,10 @@ void PopulateSharedWorkerBinders(SharedWorkerHost* host, mojo::BinderMap* map) {
   map->Add<blink::mojom::BroadcastChannelProvider>(
       base::BindRepeating(&SharedWorkerHost::CreateBroadcastChannelProvider,
                           base::Unretained(host)));
+  if (base::FeatureList::IsEnabled(net::features::kSupportPartitionedBlobUrl)) {
+    map->Add<blink::mojom::BlobURLStore>(base::BindRepeating(
+        &SharedWorkerHost::CreateBlobUrlStoreProvider, base::Unretained(host)));
+  }
   map->Add<blink::mojom::ReportingServiceProxy>(base::BindRepeating(
       &CreateReportingServiceProxyForSharedWorker, base::Unretained(host)));
   map->Add<blink::mojom::BucketManagerHost>(base::BindRepeating(
@@ -1339,6 +1358,11 @@ void PopulateServiceWorkerBinders(ServiceWorkerHost* host,
   map->Add<blink::mojom::BroadcastChannelProvider>(
       base::BindRepeating(&ServiceWorkerHost::CreateBroadcastChannelProvider,
                           base::Unretained(host)));
+  if (base::FeatureList::IsEnabled(net::features::kSupportPartitionedBlobUrl)) {
+    map->Add<blink::mojom::BlobURLStore>(
+        base::BindRepeating(&ServiceWorkerHost::CreateBlobUrlStoreProvider,
+                            base::Unretained(host)));
+  }
   map->Add<blink::mojom::ReportingServiceProxy>(base::BindRepeating(
       &CreateReportingServiceProxyForServiceWorker, base::Unretained(host)));
 #if !BUILDFLAG(IS_ANDROID)

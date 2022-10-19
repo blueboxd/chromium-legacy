@@ -159,6 +159,9 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_COUNTRY_FROM_LOCAL_NAME,
                     "Chrome needs to map country names to country codes. If enabled, the lookup "
                             + "considers all locales that are registered for a country."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_MIN3_FIELD_TYPES_FOR_LOCAL_HEURISTICS,
+                    "Require at least 3 distinct field types for local heuristics to return "
+                            + "classifications."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_DEPENDENT_LOCALITY_PARSING,
                     "Enables parsing dependent locality fields (e.g. Bairros in Brazil)."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_RANKING_FORMULA,
@@ -177,9 +180,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_PARSE_MERCHANT_PROMO_CODE_FIELDS,
                     "When enabled, Autofill will attempt to find merchant promo/coupon/gift code "
                             + "fields when parsing forms."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_FILL_CREDIT_CARD_AS_PER_FORMAT_STRING,
-                    "When enabled, Autofill tries to infer the credit card expiry date format "
-                            + "from the label and placeholder."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_CONSIDER_PLACEHOLDER_FOR_PARSING,
                     "When enabled, Autofill local heuristics consider the placeholder attribute "
                             + "for determining field types."),
@@ -378,6 +378,10 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.WEB_RTC_METRONOME,
                     "Inject a metronome into webrtc to allow task coalescing, "
                             + " including synchronized decoding."),
+            Flag.baseFeature(BlinkFeatures.FAST_PATH_PAINT_PROPERTY_UPDATES,
+                    "If enabled, some paint property updates (e.g., transform "
+                            + "changes) will be applied directly instead of "
+                            + "using the property tree builder."),
             Flag.baseFeature(BlinkFeatures.THREADED_BODY_LOADER,
                     "If enabled, reads and decodes navigation body data off the main thread."),
             Flag.baseFeature("PreconnectOnRedirect"),

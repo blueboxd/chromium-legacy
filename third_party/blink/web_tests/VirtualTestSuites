@@ -813,6 +813,7 @@
       "external/wpt/webstorage/localstorage-about-blank-3P-iframe-opens-3P-window.partitioned.tentative.html",
       "fast/filesystem",
       "external/wpt/html/browsers/windows/post-message",
+      "http/tests/inspector-protocol/storage/dom-storage-set-items-by-storage-key.js",
       "http/tests/storage/partitioned-storage"
     ],
     "args": [ "--enable-features=ThirdPartyStoragePartitioning" ]
@@ -1331,5 +1332,13 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/custom-elements/scoped-registry"],
     "args": ["--disable-blink-features=ScopedCustomElementRegistry"]
+  },
+  {
+    "prefix": "abort-signal-remove",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/eyedropper"
+    ],
+    "args": ["--disable-features=AbortSignalHandleBasedRemoval"]
   }
 ]

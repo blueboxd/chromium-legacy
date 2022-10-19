@@ -217,6 +217,7 @@ WebAppCommandScheduler& WebAppProvider::scheduler() {
 }
 
 void WebAppProvider::Shutdown() {
+  command_scheduler_->Shutdown();
   command_manager_->Shutdown();
   ui_manager_->Shutdown();
   externally_managed_app_manager_->Shutdown();
@@ -365,7 +366,8 @@ void WebAppProvider::OnSyncBridgeReady() {
 
 void WebAppProvider::CheckIsConnected() const {
   DCHECK(connected_) << "Attempted to access Web App subsystem while "
-                        "WebAppProvider is not connected.";
+                        "WebAppProvider is not connected. You may need to wait "
+                        "for on_registry_ready().";
 }
 
 void WebAppProvider::DoMigrateProfilePrefs(Profile* profile) {

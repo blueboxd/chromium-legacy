@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/style/style_initial_data.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/transforms/scale_transform_operation.h"
@@ -457,7 +458,9 @@ TEST_F(ComputedStyleTest, BorderStyle) {
   } while (false)
 
 TEST_F(ComputedStyleTest, AnimationFlags) {
-  Persistent<Document> document = Document::CreateForTest();
+  ScopedNullExecutionContext execution_context;
+  Persistent<Document> document =
+      Document::CreateForTest(execution_context.GetExecutionContext());
   TEST_ANIMATION_FLAG(HasCurrentTransformAnimation, kNonInherited);
   TEST_ANIMATION_FLAG(HasCurrentScaleAnimation, kNonInherited);
   TEST_ANIMATION_FLAG(HasCurrentRotateAnimation, kNonInherited);
@@ -818,11 +821,13 @@ TEST_F(ComputedStyleTest, InitialVariableNames) {
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
 
+  ScopedNullExecutionContext execution_context;
   PropertyRegistry* registry = MakeGarbageCollected<PropertyRegistry>();
   registry->RegisterProperty("--x", *CreateLengthRegistration("--x", 1));
   registry->RegisterProperty("--y", *CreateLengthRegistration("--y", 2));
-  style->SetInitialData(
-      StyleInitialData::Create(*Document::CreateForTest(), *registry));
+  style->SetInitialData(StyleInitialData::Create(
+      *Document::CreateForTest(execution_context.GetExecutionContext()),
+      *registry));
 
   EXPECT_EQ(2u, style->GetVariableNames().size());
   EXPECT_TRUE(style->GetVariableNames().Contains("--x"));
@@ -881,11 +886,13 @@ TEST_F(ComputedStyleTest, InitialAndInheritedAndNonInheritedVariableNames) {
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
 
+  ScopedNullExecutionContext execution_context;
   PropertyRegistry* registry = MakeGarbageCollected<PropertyRegistry>();
   registry->RegisterProperty("--b", *CreateLengthRegistration("--b", 1));
   registry->RegisterProperty("--e", *CreateLengthRegistration("--e", 2));
-  style->SetInitialData(
-      StyleInitialData::Create(*Document::CreateForTest(), *registry));
+  style->SetInitialData(StyleInitialData::Create(
+      *Document::CreateForTest(execution_context.GetExecutionContext()),
+      *registry));
 
   const bool inherited = true;
   style->SetVariableData("--a", CreateVariableData("foo"), inherited);
@@ -942,11 +949,13 @@ TEST_F(ComputedStyleTest, GetVariableNamesWithInitialData_Invalidation) {
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
 
+  ScopedNullExecutionContext execution_context;
   {
     PropertyRegistry* registry = MakeGarbageCollected<PropertyRegistry>();
     registry->RegisterProperty("--x", *CreateLengthRegistration("--x", 1));
-    style->SetInitialData(
-        StyleInitialData::Create(*Document::CreateForTest(), *registry));
+    style->SetInitialData(StyleInitialData::Create(
+        *Document::CreateForTest(execution_context.GetExecutionContext()),
+        *registry));
   }
   EXPECT_EQ(style->GetVariableNames().size(), 1u);
   EXPECT_TRUE(style->GetVariableNames().Contains("--x"));
@@ -956,8 +965,9 @@ TEST_F(ComputedStyleTest, GetVariableNamesWithInitialData_Invalidation) {
     PropertyRegistry* registry = MakeGarbageCollected<PropertyRegistry>();
     registry->RegisterProperty("--y", *CreateLengthRegistration("--y", 2));
     registry->RegisterProperty("--z", *CreateLengthRegistration("--z", 3));
-    style->SetInitialData(
-        StyleInitialData::Create(*Document::CreateForTest(), *registry));
+    style->SetInitialData(StyleInitialData::Create(
+        *Document::CreateForTest(execution_context.GetExecutionContext()),
+        *registry));
   }
   EXPECT_EQ(style->GetVariableNames().size(), 2u);
   EXPECT_TRUE(style->GetVariableNames().Contains("--y"));
@@ -1007,6 +1017,169 @@ TEST_F(ComputedStyleTest, BorderWidthZoom) {
       EXPECT_TRUE(numeric_value->IsPx()) << prop_name;
       EXPECT_EQ(test.expected_px, numeric_value->DoubleValue()) << prop_name;
     }
+  }
+}
+
+TEST_F(ComputedStyleTest, BorderWidthConversion) {
+  // Tests that Border, Outline and Column Rule Widths
+  // are converted as expected.
+
+  ScopedSnapBorderWidthsBeforeLayoutForTest
+      enableSnapBorderWidthsBeforeLayoutForTest(true);
+
+  const struct {
+    CSSValue* css_value;
+    double expected_px;
+    STACK_ALLOCATED();
+  } tests[] = {
+      {CSSIdentifierValue::Create(CSSValueID::kThin), 1.0},
+      {CSSIdentifierValue::Create(CSSValueID::kMedium), 3.0},
+      {CSSIdentifierValue::Create(CSSValueID::kThick), 5.0},
+      {CSSNumericLiteralValue::Create(0.0,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       0.0},
+      {CSSNumericLiteralValue::Create(0.1,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       1.0},
+      {CSSNumericLiteralValue::Create(0.5,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       1.0},
+      {CSSNumericLiteralValue::Create(0.9,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       1.0},
+      {CSSNumericLiteralValue::Create(1.0,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       1.0},
+      {CSSNumericLiteralValue::Create(3.0,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       3.0},
+      {CSSNumericLiteralValue::Create(3.3,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       3.0},
+      {CSSNumericLiteralValue::Create(3.5,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       3.0},
+      {CSSNumericLiteralValue::Create(3.9,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       3.0},
+      {CSSNumericLiteralValue::Create(3.999,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       3.0},
+  };
+
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      std::make_unique<DummyPageHolder>(gfx::Size(0, 0), nullptr);
+  Document& document = dummy_page_holder->GetDocument();
+  scoped_refptr<const ComputedStyle> initial =
+      document.GetStyleResolver().InitialStyleForElement();
+
+  StyleResolverState state(document, *document.documentElement(),
+                           nullptr /* StyleRecalcContext */,
+                           StyleRequest(initial.get()));
+
+  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
+  style->SetBorderTopStyle(EBorderStyle::kSolid);
+  style->SetOutlineStyle(EBorderStyle::kSolid);
+  style->SetColumnRuleStyle(EBorderStyle::kSolid);
+  state.SetStyle(style);
+
+  for (const auto& test : tests) {
+    for (const auto* property :
+         {&GetCSSPropertyBorderTopWidth(), &GetCSSPropertyOutlineWidth(),
+          &GetCSSPropertyColumnRuleWidth()}) {
+      const Longhand& longhand = To<Longhand>(*property);
+
+      AtomicString prop_name = longhand.GetCSSPropertyName().ToAtomicString();
+
+      longhand.ApplyValue(state, *test.css_value);
+
+      auto* computed_value = longhand.CSSValueFromComputedStyleInternal(
+          *style, nullptr /* layout_object */, false /* allow_visited_style */);
+
+      ASSERT_NE(computed_value, nullptr) << prop_name;
+
+      auto* numeric_value = DynamicTo<CSSNumericLiteralValue>(computed_value);
+      ASSERT_NE(numeric_value, nullptr) << prop_name;
+
+      EXPECT_TRUE(numeric_value->IsPx()) << prop_name;
+      EXPECT_DOUBLE_EQ(test.expected_px, numeric_value->DoubleValue())
+          << prop_name;
+    }
+  }
+}
+
+TEST_F(ComputedStyleTest, BorderWidthConversionWithZoom) {
+  // Tests that Border Widths
+  // are converted as expected when Zoom is applied.
+
+  ScopedSnapBorderWidthsBeforeLayoutForTest
+      enableSnapBorderWidthsBeforeLayoutForTest(true);
+
+  float zoom = 2.0f;
+
+  const struct {
+    CSSValue* css_value;
+    double expected_px;
+    STACK_ALLOCATED();
+  } tests[] = {
+      {CSSIdentifierValue::Create(CSSValueID::kThin), 2.0},
+      {CSSIdentifierValue::Create(CSSValueID::kMedium), 6.0},
+      {CSSIdentifierValue::Create(CSSValueID::kThick), 10.0},
+      {CSSNumericLiteralValue::Create(0.0,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       0.0},
+      {CSSNumericLiteralValue::Create(0.1,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       1.0},
+      {CSSNumericLiteralValue::Create(0.5,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       1.0},
+      {CSSNumericLiteralValue::Create(0.9,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       1.0},
+      {CSSNumericLiteralValue::Create(1.0,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       2.0},
+      {CSSNumericLiteralValue::Create(1.5,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       3.0},
+      {CSSNumericLiteralValue::Create(3.0,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       6.0},
+      {CSSNumericLiteralValue::Create(3.3,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       6.0},
+      {CSSNumericLiteralValue::Create(3.5,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       7.0},
+      {CSSNumericLiteralValue::Create(3.9,
+                                      CSSPrimitiveValue::UnitType::kPixels),
+       7.0},
+  };
+
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      std::make_unique<DummyPageHolder>(gfx::Size(0, 0), nullptr);
+  Document& document = dummy_page_holder->GetDocument();
+  scoped_refptr<const ComputedStyle> initial =
+      document.GetStyleResolver().InitialStyleForElement();
+
+  StyleResolverState state(document, *document.documentElement(),
+                           nullptr /* StyleRecalcContext */,
+                           StyleRequest(initial.get()));
+
+  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
+  style->SetEffectiveZoom(zoom);
+  style->SetBorderTopStyle(EBorderStyle::kSolid);
+  state.SetStyle(style);
+
+  for (const auto& test : tests) {
+    const Longhand& longhand = To<Longhand>(GetCSSPropertyBorderTopWidth());
+
+    longhand.ApplyValue(state, *test.css_value);
+
+    auto width = style->BorderTopWidth();
+
+    EXPECT_DOUBLE_EQ(test.expected_px, width.ToDouble());
   }
 }
 
@@ -1211,7 +1384,9 @@ TEST_F(ComputedStyleTest, ApplyInitialAnimationNameAndTransitionProperty) {
   }
 
 TEST_F(ComputedStyleTest, SvgStrokeStyleShouldCompareValue) {
-  Persistent<Document> document = Document::CreateForTest();
+  ScopedNullExecutionContext execution_context;
+  Persistent<Document> document =
+      Document::CreateForTest(execution_context.GetExecutionContext());
   TEST_STYLE_VALUE_NO_DIFF(StrokeOpacity);
   TEST_STYLE_VALUE_NO_DIFF(StrokeMiterLimit);
   TEST_STYLE_VALUE_NO_DIFF(StrokeWidth);
@@ -1223,7 +1398,9 @@ TEST_F(ComputedStyleTest, SvgStrokeStyleShouldCompareValue) {
 }
 
 TEST_F(ComputedStyleTest, SvgMiscStyleShouldCompareValue) {
-  Persistent<Document> document = Document::CreateForTest();
+  ScopedNullExecutionContext execution_context;
+  Persistent<Document> document =
+      Document::CreateForTest(execution_context.GetExecutionContext());
   TEST_STYLE_VALUE_NO_DIFF(FloodColor);
   TEST_STYLE_VALUE_NO_DIFF(FloodOpacity);
   TEST_STYLE_VALUE_NO_DIFF(LightingColor);

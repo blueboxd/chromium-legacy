@@ -21,7 +21,6 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/web_data_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
@@ -53,38 +52,6 @@ using password_manager::PasswordStoreInterface;
 using password_manager::UnsyncedCredentialsDeletionNotifier;
 
 namespace {
-
-void SyncEnabledOrDisabled(Profile* profile) {
-  // Update all form managers. Incognito tabs originated from this profile
-  // can also fill passwords, so they should be included.
-#if BUILDFLAG(IS_ANDROID)
-  for (TabModel* tab_model : TabModelList::models()) {
-    for (int index = 0; index < tab_model->GetTabCount(); index++) {
-      content::WebContents* web_contents = tab_model->GetWebContentsAt(index);
-      ChromePasswordManagerClient::FromWebContents(web_contents)
-          ->UpdateFormManagers();
-    }
-  }
-#else
-  for (Browser* browser : *BrowserList::GetInstance()) {
-    if (browser->profile()->GetOriginalProfile() !=
-        profile->GetOriginalProfile()) {
-      continue;
-    }
-    TabStripModel* tabs = browser->tab_strip_model();
-    for (int index = 0; index < tabs->count(); index++) {
-      content::WebContents* web_contents = tabs->GetWebContentsAt(index);
-      ChromePasswordManagerClient::FromWebContents(web_contents)
-          ->UpdateFormManagers();
-    }
-  }
-#endif  // BUILDFLAG(IS_ANDROID)
-
-  password_manager::PasswordReuseManager* reuse_manager =
-      PasswordReuseManagerFactory::GetForProfile(profile);
-  if (reuse_manager)
-    reuse_manager->AccountStoreStateChanged();
-}
 
 #if !BUILDFLAG(IS_ANDROID)
 class UnsyncedCredentialsDeletionNotifierImpl
@@ -159,9 +126,7 @@ AccountPasswordStoreFactory* AccountPasswordStoreFactory::GetInstance() {
 AccountPasswordStoreFactory::AccountPasswordStoreFactory()
     : RefcountedBrowserContextKeyedServiceFactory(
           "AccountPasswordStore",
-          BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(WebDataServiceFactory::GetInstance());
-}
+          BrowserContextDependencyManager::GetInstance()) {}
 
 AccountPasswordStoreFactory::~AccountPasswordStoreFactory() = default;
 
@@ -190,14 +155,7 @@ AccountPasswordStoreFactory::BuildServiceInstanceFor(
                   profile)));
 #endif
 
-  if (!ps->Init(profile->GetPrefs(),
-                /*affiliated_match_helper=*/nullptr,
-                base::BindRepeating(&SyncEnabledOrDisabled, profile))) {
-    // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
-    // UI.
-    LOG(WARNING) << "Could not initialize password store.";
-    return nullptr;
-  }
+  ps->Init(profile->GetPrefs(), /*affiliated_match_helper=*/nullptr);
 
   auto network_context_getter = base::BindRepeating(
       [](Profile* profile) -> network::mojom::NetworkContext* {

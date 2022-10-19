@@ -15,6 +15,7 @@
 #include "base/test/test_future.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
+#include "chrome/browser/first_party_sets/scoped_mock_first_party_sets_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/component_updater/mock_component_updater_service.h"
@@ -47,7 +48,6 @@ class FirstPartySetsComponentInstallerTest : public ::testing::Test {
   }
 
   void SetUp() override {
-    content::FirstPartySetsHandler::GetInstance()->ResetForTesting();
     FirstPartySetsComponentInstallerPolicy::ResetForTesting();
   }
 
@@ -59,6 +59,8 @@ class FirstPartySetsComponentInstallerTest : public ::testing::Test {
 
   base::ScopedTempDir component_install_dir_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  first_party_sets::ScopedMockFirstPartySetsHandler
+      mock_first_party_sets_handler_;
 };
 
 class FirstPartySetsComponentInstallerFeatureEnabledTest

@@ -56,6 +56,7 @@
     'chromium': {
       'android-archive-dbg': 'android_without_codecs_debug_bot_reclient',
       'android-archive-rel': 'android_without_codecs_release_bot_minimal_symbols_reclient',
+      'android-arm64-archive-rel': 'android_without_codecs_release_bot_minimal_symbols_reclient_arm64',
       'android-official': 'android_official_optimize_reclient',
       'fuchsia-official': 'fuchsia_official_optimize_goma',
       'lacros-arm-archive-rel': 'chromeos_arm-generic_lacros_rel_reclient',
@@ -109,6 +110,7 @@
       'android-cronet-x86-dbg': 'android_cronet_debug_static_bot_x86_reclient',
       'android-cronet-x86-rel': 'android_cronet_release_bot_minimal_symbols_x86_reclient',
       'android-nougat-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
+      'android-nougat-x86-rel-inverse-fyi': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
       # TODO(crbug/1182468) Remove android coverage bots after coverage is
       # running on CQ.
       'android-pie-arm64-coverage-experimental-rel': 'android_release_bot_arm64_webview_monochrome_expectations_reclient',
@@ -405,7 +407,6 @@
       'ios-fieldtrial-rel': 'ios_simulator_debug_static_bot_xctest_arm64',
       'ios-m1-simulator': 'ios_simulator_debug_static_bot_xctest_arm64',
       'ios-m1-simulator-cronet': 'ios_cronet_xctest_arm64',
-      'ios-reclient': 'ios_simulator_debug_static_bot_xctest_reclient',
       'ios-simulator-code-coverage': 'clang_code_coverage_ios_xctest_reclient',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot_xctest',
       'ios-simulator-cronet': 'ios_cronet_xctest_reclient',
@@ -1123,8 +1124,6 @@
     },
 
     'tryserver.chromium.fuchsia': {
-      # TODO(crbug.com/1294938): Remove this bot after the transition.
-      'fuchsia-arm64-cast': 'release_trybot_fuchsia_arm64_cast_legacy',
       'fuchsia-arm64-cast-receiver-rel': 'release_trybot_fuchsia_arm64_cast_receiver',
       'fuchsia-arm64-chrome-rel': 'release_trybot_fuchsia_arm64',
       'fuchsia-arm64-rel': 'release_trybot_fuchsia_arm64',
@@ -1133,16 +1132,10 @@
       'fuchsia-deterministic-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-arm64-dbg': 'debug_bot_fuchsia_arm64',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
-      # TODO(crbug.com/1294938): Remove this bot after the transition.
-      'fuchsia-x64-cast': 'release_trybot_fuchsia_cast_receiver',
       'fuchsia-x64-cast-receiver-rel': 'release_trybot_fuchsia_cast_receiver',
       'fuchsia-x64-chrome-rel': 'release_trybot_fuchsia_cfv2_script_chrome',
       'fuchsia-x64-rel': 'release_trybot_fuchsia',
       'fuchsia-x64-workstation': 'release_trybot_fuchsia_workstation',
-      # TODO(crbug.com/1294938): Remove this bot after the transition.
-      'fuchsia_arm64': 'release_trybot_fuchsia_arm64',
-      # TODO(crbug.com/1294938): Remove this bot after the transition.
-      'fuchsia_x64': 'release_trybot_fuchsia',
     },
 
     'tryserver.chromium.linux': {
@@ -1824,6 +1817,10 @@
 
     'android_without_codecs_release_bot_minimal_symbols_reclient': [
       'android_without_codecs', 'release_bot_reclient', 'minimal_symbols', 'strip_debug_info',
+    ],
+
+    'android_without_codecs_release_bot_minimal_symbols_reclient_arm64': [
+      'android_without_codecs', 'release_bot_reclient', 'minimal_symbols', 'strip_debug_info', 'arm64'
     ],
 
     'android_without_codecs_release_trybot': [
@@ -3588,11 +3585,6 @@
       'release_trybot', 'fuchsia', 'arm64', 'arm64_host',
     ],
 
-    # TODO(crbug.com/1294938): Remove when removing the legacy bot.
-    'release_trybot_fuchsia_arm64_cast_legacy': [
-      'release_trybot', 'fuchsia', 'arm64', 'cast_receiver_size_optimized',
-    ],
-
     'release_trybot_fuchsia_arm64_cast_receiver': [
       'release_trybot', 'fuchsia', 'arm64', 'arm64_host', 'cast_receiver_size_optimized',
     ],
@@ -3837,7 +3829,7 @@
     },
 
     'backuprefptr': {
-      'gn_args': 'use_allocator="partition" use_backup_ref_ptr=true enable_backup_ref_ptr_slow_checks=true enable_backup_ref_ptr_support = true put_ref_count_in_previous_slot = true',
+      'gn_args': 'use_allocator="partition" enable_backup_ref_ptr_support=true put_ref_count_in_previous_slot=true enable_backup_ref_ptr_slow_checks=true',
     },
 
     'betty-arc-r': {

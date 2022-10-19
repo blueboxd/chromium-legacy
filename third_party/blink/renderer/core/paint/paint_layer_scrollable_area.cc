@@ -238,7 +238,6 @@ void PaintLayerScrollableArea::DisposeImpl() {
     sequencer->DidDisposeScrollableArea(*this);
 
   RunScrollCompleteCallbacks();
-  InvalidateScrollTimeline();
 
   layer_ = nullptr;
 }
@@ -479,7 +478,6 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   // The ScrollOffsetTranslation paint property depends on the scroll offset.
   // (see: PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation).
   GetLayoutBox()->SetNeedsPaintPropertyUpdatePreservingCachedRects();
-  InvalidateScrollTimeline();
 
   if (scroll_type == mojom::blink::ScrollType::kUser ||
       scroll_type == mojom::blink::ScrollType::kCompositor) {
@@ -646,7 +644,6 @@ gfx::Vector2d PaintLayerScrollableArea::MaximumScrollOffsetInt() const {
 }
 
 void PaintLayerScrollableArea::VisibleSizeChanged() {
-  InvalidateScrollTimeline();
   ShowNonMacOverlayScrollbars();
 }
 
@@ -728,7 +725,6 @@ void PaintLayerScrollableArea::ContentsResized() {
   // Need to update the bounds of the scroll property.
   GetLayoutBox()->SetNeedsPaintPropertyUpdate();
   Layer()->SetNeedsCompositingInputsUpdate();
-  InvalidateScrollTimeline();
 }
 
 gfx::Point PaintLayerScrollableArea::LastKnownMousePosition() const {
@@ -1916,7 +1912,7 @@ void PaintLayerScrollableArea::PositionOverflowControls() {
 
   if (scroll_corner_) {
     LayoutRect rect(ScrollCornerRect());
-    scroll_corner_->SetFrameRect(rect);
+    scroll_corner_->SetOverriddenFrameRect(rect);
     // TODO(crbug.com/1020913): This should be part of PaintPropertyTreeBuilder
     // when we support subpixel layout of overflow controls.
     scroll_corner_->GetMutableForPainting().FirstFragment().SetPaintOffset(
@@ -1925,7 +1921,7 @@ void PaintLayerScrollableArea::PositionOverflowControls() {
 
   if (resizer_) {
     LayoutRect rect(ResizerCornerRect(kResizerForPointer));
-    resizer_->SetFrameRect(rect);
+    resizer_->SetOverriddenFrameRect(rect);
     // TODO(crbug.com/1020913): This should be part of PaintPropertyTreeBuilder
     // when we support subpixel layout of overflow controls.
     resizer_->GetMutableForPainting().FirstFragment().SetPaintOffset(

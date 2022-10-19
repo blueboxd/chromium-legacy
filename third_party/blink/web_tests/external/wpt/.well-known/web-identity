@@ -13,7 +13,7 @@ def main(request, response):
   return """
 {{
   "provider_urls": [
-    "https://{0}/credential-management/support/fedcm.json"
+    "https://{0}/credential-management/support/fedcm/manifest.py"
   ]
 }}
 """.format(host)

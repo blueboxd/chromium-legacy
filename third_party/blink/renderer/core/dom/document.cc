@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_aria_notification_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_creation_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_registration_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_observable_array_css_style_sheet.h"
@@ -677,12 +678,13 @@ Document* Document::Create(Document& document) {
   Document* new_document = MakeGarbageCollected<Document>(
       DocumentInit::Create()
           .WithExecutionContext(document.GetExecutionContext())
+          .WithAgent(document.GetAgent())
           .WithURL(BlankURL()));
   new_document->SetContextFeatures(document.GetContextFeatures());
   return new_document;
 }
 
-Document* Document::CreateForTest(ExecutionContext* execution_context) {
+Document* Document::CreateForTest(ExecutionContext& execution_context) {
   return MakeGarbageCollected<Document>(
       DocumentInit::Create().ForTest(execution_context));
 }
@@ -703,7 +705,7 @@ Document::Document(const DocumentInit& initializer,
       pending_sheet_layout_(kNoLayoutWithPendingSheets),
       dom_window_(initializer.GetWindow()),
       execution_context_(initializer.GetExecutionContext()),
-      agent_(execution_context_ ? execution_context_->GetAgent() : nullptr),
+      agent_(initializer.GetAgent()),
       context_features_(ContextFeatures::DefaultSwitch()),
       http_refresh_scheduler_(MakeGarbageCollected<HttpRefreshScheduler>(this)),
       well_formed_(false),
@@ -816,6 +818,7 @@ Document::Document(const DocumentInit& initializer,
               ? MakeGarbageCollected<RenderBlockingResourceManager>(*this)
               : nullptr),
       data_(MakeGarbageCollected<DocumentData>(GetExecutionContext())) {
+  DCHECK(agent_);
   if (base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution))
     script_runner_delayer_->Activate();
 
@@ -839,6 +842,11 @@ Document::Document(const DocumentInit& initializer,
                             nullptr /* back_forward_cache_loader_helper */));
   }
   DCHECK(fetcher_);
+
+  // Since CSSFontSelector requires Document::fetcher_ and StyleEngine owns
+  // CSSFontSelector, need to initialize |style_engine_| after initializing
+  // |fetcher_|.
+  style_engine_ = MakeGarbageCollected<StyleEngine>(*this);
 
   root_scroller_controller_ =
       MakeGarbageCollected<RootScrollerController>(*this);
@@ -872,11 +880,6 @@ Document::Document(const DocumentInit& initializer,
   InstanceCounters::IncrementCounter(InstanceCounters::kDocumentCounter);
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kInactive);
-
-  // Since CSSFontSelector requires Document::fetcher_ and StyleEngine owns
-  // CSSFontSelector, need to initialize |style_engine_| after initializing
-  // |fetcher_|.
-  style_engine_ = MakeGarbageCollected<StyleEngine>(*this);
 
   UpdateThemeColorCache();
 
@@ -4300,8 +4303,10 @@ void Document::UpdateBaseURL() {
   if (elem_sheet_) {
     // Element sheet is silly. It never contains anything.
     DCHECK(!elem_sheet_->Contents()->RuleCount());
-    elem_sheet_ = CSSStyleSheet::CreateInline(*this, base_url_);
+    elem_sheet_ = nullptr;
   }
+
+  GetStyleEngine().BaseURLChanged();
 
   if (!EqualIgnoringFragmentIdentifier(old_base_url, base_url_)) {
     // Base URL change changes any relative visited links.
@@ -4792,6 +4797,7 @@ void Document::UnobserveForIntrinsicSize(Element* element) {
 Document* Document::CloneDocumentWithoutChildren() const {
   DocumentInit init = DocumentInit::Create()
                           .WithExecutionContext(execution_context_.Get())
+                          .WithAgent(GetAgent())
                           .WithURL(Url());
   if (IsA<XMLDocument>(this)) {
     if (IsXHTMLDocument())
@@ -6545,6 +6551,17 @@ void Document::TrustTokenQueryAnswererConnectionError() {
   data_->pending_trust_token_query_resolvers_.clear();
 }
 
+void Document::ariaNotify(const String announcement,
+                          const AriaNotificationOptions* options) {
+  DCHECK(RuntimeEnabledFeatures::ConfirmationOfActionEnabled());
+
+  AXObjectCache* cache = ExistingAXObjectCache();
+  if (!cache)
+    return;
+
+  cache->AddAriaNotification(this, announcement, options);
+}
+
 static bool IsValidNameNonASCII(const LChar* characters, unsigned length) {
   if (!IsValidNameStart(characters[0]))
     return false;
@@ -6911,8 +6928,8 @@ ExecutionContext* Document::GetExecutionContext() const {
   return execution_context_.Get();
 }
 
-Agent* Document::GetAgent() const {
-  return agent_.Get();
+Agent& Document::GetAgent() const {
+  return *agent_;
 }
 
 Attr* Document::createAttribute(const AtomicString& name,
@@ -7979,11 +7996,13 @@ Document& Document::EnsureTemplateDocument() {
     template_document_ = MakeGarbageCollected<HTMLDocument>(
         DocumentInit::Create()
             .WithExecutionContext(execution_context_.Get())
+            .WithAgent(GetAgent())
             .WithURL(BlankURL()));
   } else {
     template_document_ = MakeGarbageCollected<Document>(
         DocumentInit::Create()
             .WithExecutionContext(execution_context_.Get())
+            .WithAgent(GetAgent())
             .WithURL(BlankURL()));
   }
 

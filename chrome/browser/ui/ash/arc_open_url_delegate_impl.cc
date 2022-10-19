@@ -55,6 +55,7 @@
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/filename_util.h"
 #include "net/base/url_util.h"
@@ -298,7 +299,8 @@ void ArcOpenUrlDelegateImpl::OpenUrlFromArc(const GURL& url) {
   // TODO(crbug.com/1374575): Check if other externalfile:// urls can use the
   // same logic. If so, move this code into CrosapiNewWindowDelegate::OpenUrl()
   // which is only for Lacros.
-  if (crosapi::browser_util::IsLacrosPrimaryBrowser()) {
+  if (crosapi::browser_util::IsLacrosPrimaryBrowser() &&
+      url_to_open.SchemeIs(content::kExternalFileScheme)) {
     Profile* profile = ash::ProfileHelper::Get()->GetProfileByUser(
         user_manager::UserManager::Get()->GetPrimaryUser());
     // `profile` may be null if sign-in has happened but the profile isn't

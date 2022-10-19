@@ -65,7 +65,7 @@ _disallowed_ppapi_deps = [
   "//ppapi/thunk/*",
 ]
 
-# Although `enable_basic_printing` is true on Fuchsia, no code should be linked.
+# Although `enable_printing` is true on Fuchsia, no code should be linked.
 # "//printing:metafile" is used by //third_party/blink/renderer/core and
 # uses "//printing/common/*".
 # "//printing/mojom/*" is allowed because Blink public APIs use its types.
@@ -149,6 +149,7 @@ component("web_engine_core") {
     ":web_engine_export_from_implementation",
     "//base",
     "//base:base_static",
+    "//build:chromecast_buildflags",
     "//components/cast_streaming/renderer",
     "//components/cdm/renderer",
     "//components/client_hints/browser:in_memory",
@@ -209,6 +210,7 @@ component("web_engine_core") {
     "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_inspect_cpp",
+    "//third_party/widevine/cdm:buildflags",
     "//third_party/widevine/cdm:headers",
     "//ui/accessibility",
     "//ui/aura",

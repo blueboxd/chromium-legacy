@@ -204,7 +204,7 @@ TEST(XFormTest, Equality) {
 
 // This test is to make it easier to understand the order of operations.
 TEST(XFormTest, PrePostOperations) {
-  auto m1 = Transform::AffineForTesting(1, 2, 3, 4, 5, 6);
+  auto m1 = Transform::Affine(1, 2, 3, 4, 5, 6);
   auto m2 = m1;
   m1.Translate(10, 20);
   m2.PreConcat(Transform::MakeTranslation(10, 20));
@@ -298,7 +298,7 @@ TEST(XFormTest, ConcatRotate) {
     Point3F p1 = xform.MapPoint(Point3F(value.x1, value.y1, 0));
     Point3F p2(value.x2, value.y2, 0);
     if (value.degrees == value.degrees) {
-      EXPECT_TRUE(PointsAreNearlyEqual(p1, p2));
+      EXPECT_POINT3F_NEAR(p1, p2, 0.0001f);
     }
   }
 }
@@ -1415,35 +1415,45 @@ TEST(XFormTest, verifyCopyConstructor) {
   EXPECT_ROW4_EQ(13.0f, 17.0f, 21.0f, 25.0f, B);
 }
 
-TEST(XFormTest, verifyConstructorFor16Elements) {
+TEST(XFormTest, RowMajor) {
   auto transform =
-      Transform::RowMajor(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0,
-                          11.0, 12.0, 13.0, 14.0, 15.0, 16.0);
+      Transform::RowMajor(2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0,
+                          12.0, 13.0, 14.0, 15.0, 16.0, 17.0);
 
-  EXPECT_ROW1_EQ(1.0f, 2.0f, 3.0f, 4.0f, transform);
-  EXPECT_ROW2_EQ(5.0f, 6.0f, 7.0f, 8.0f, transform);
-  EXPECT_ROW3_EQ(9.0f, 10.0f, 11.0f, 12.0f, transform);
-  EXPECT_ROW4_EQ(13.0f, 14.0f, 15.0f, 16.0f, transform);
+  EXPECT_ROW1_EQ(2.0f, 3.0f, 4.0f, 5.0f, transform);
+  EXPECT_ROW2_EQ(6.0f, 7.0f, 8.0f, 9.0f, transform);
+  EXPECT_ROW3_EQ(10.0f, 11.0f, 12.0f, 13.0f, transform);
+  EXPECT_ROW4_EQ(14.0f, 15.0f, 16.0f, 17.0f, transform);
 }
 
-TEST(XFormTest, verifyConstructorFor2dElements) {
-  Transform transform =
-      Transform::AffineForTesting(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
+TEST(XFormTest, ColMajor) {
+  auto transform =
+      Transform::ColMajor(2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0,
+                          12.0, 13.0, 14.0, 15.0, 16.0, 17.0);
 
-  EXPECT_ROW1_EQ(1.0f, 2.0f, 0.0f, 5.0f, transform);
-  EXPECT_ROW2_EQ(3.0f, 4.0f, 0.0f, 6.0f, transform);
-  EXPECT_ROW3_EQ(0.0f, 0.0f, 1.0f, 0.0f, transform);
-  EXPECT_ROW4_EQ(0.0f, 0.0f, 0.0f, 1.0f, transform);
+  EXPECT_ROW1_EQ(2.0, 6.0, 10.0, 14.0, transform);
+  EXPECT_ROW2_EQ(3.0, 7.0, 11.0, 15.0, transform);
+  EXPECT_ROW3_EQ(4.0, 8.0, 12.0, 16.0, transform);
+  EXPECT_ROW4_EQ(5.0, 9.0, 13.0, 17.0, transform);
+}
+
+TEST(XFormTest, Affine) {
+  auto transform = Transform::Affine(2.0, 3.0, 4.0, 5.0, 6.0, 7.0);
+
+  EXPECT_ROW1_EQ(2.0, 4.0, 0.0, 6.0, transform);
+  EXPECT_ROW2_EQ(3.0, 5.0, 0.0, 7.0, transform);
+  EXPECT_ROW3_EQ(0.0, 0.0, 1.0, 0.0, transform);
+  EXPECT_ROW4_EQ(0.0, 0.0, 0.0, 1.0, transform);
 }
 
 TEST(XFormTest, ColMajorF) {
-  float data[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+  float data[] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
   auto transform = Transform::ColMajorF(data);
 
-  EXPECT_ROW1_EQ(1.0f, 5.0f, 9.0f, 13.0f, transform);
-  EXPECT_ROW2_EQ(2.0f, 6.0f, 10.0f, 14.0f, transform);
-  EXPECT_ROW3_EQ(3.0f, 7.0f, 11.0f, 15.0f, transform);
-  EXPECT_ROW4_EQ(4.0f, 8.0f, 12.0f, 16.0f, transform);
+  EXPECT_ROW1_EQ(2.0, 6.0, 10.0, 14.0, transform);
+  EXPECT_ROW2_EQ(3.0, 7.0, 11.0, 15.0, transform);
+  EXPECT_ROW3_EQ(4.0, 8.0, 12.0, 16.0, transform);
+  EXPECT_ROW4_EQ(5.0, 9.0, 13.0, 17.0, transform);
 
   float data1[16];
   transform.GetColMajorF(data1);
@@ -2064,7 +2074,7 @@ TEST(XFormTest, verifyIsInvertible) {
   A.ApplyPerspectiveDepth(1.0);
   EXPECT_TRUE(A.IsInvertible());
 
-  // A "pure" perspective matrix derived by similar triangles, with m44() set
+  // A "pure" perspective matrix derived by similar triangles, with rc(3, 3) set
   // to zero (i.e. camera positioned at the origin), is not invertible.
   A.MakeIdentity();
   A.ApplyPerspectiveDepth(1.0);
@@ -2076,15 +2086,21 @@ TEST(XFormTest, verifyIsInvertible) {
   A.MakeIdentity();
   A.ApplyPerspectiveDepth(1.0);
   A.set_rc(3, 3, 0.f);
-  A.Scale3d(6.0, 7.0, 8.0);
-  A.RotateAboutXAxis(10.0);
-  A.RotateAboutYAxis(20.0);
-  A.RotateAboutZAxis(30.0);
-  A.Translate3d(6.0, 7.0, 8.0);
-#if !defined(ARCH_CPU_ARM_FAMILY)
-  // TODO(enne): Make this pass on ARM, https://crbug.com/662558
   EXPECT_FALSE(A.IsInvertible());
-#endif
+  A.Scale3d(6.0, 7.0, 8.0);
+  EXPECT_FALSE(A.IsInvertible());
+  A.RotateAboutXAxis(10.0);
+  EXPECT_FALSE(A.IsInvertible());
+  A.RotateAboutYAxis(20.0);
+  EXPECT_FALSE(A.IsInvertible());
+  A.RotateAboutZAxis(30.0);
+  EXPECT_FALSE(A.IsInvertible());
+  A.Translate3d(6.0, 7.0, 8.0);
+  if (A.IsInvertible()) {
+    // Due to some computation errors, now A may become invertible with a tiny
+    // determinant.
+    EXPECT_NEAR(A.Determinant(), 0.0, 1e-12);
+  }
 
   // A degenerate matrix of all zeros is not invertible.
   A.MakeIdentity();
@@ -2343,13 +2359,15 @@ TEST(XFormTest, verifyIsApproximatelyIdentityOrTranslation) {
 }
 
 TEST(XFormTest, verifyIsScaleOrTranslation) {
-  Transform A;
+  EXPECT_TRUE(Transform().IsScaleOrTranslation());
+  EXPECT_TRUE(Transform::MakeScale(2, 3).IsScaleOrTranslation());
+  EXPECT_TRUE(Transform::MakeTranslation(4, 5).IsScaleOrTranslation());
+  EXPECT_TRUE((Transform::MakeTranslation(4, 5) * Transform::MakeScale(2, 3))
+                  .IsScaleOrTranslation());
 
+  Transform A;
   InitializeTestMatrix(&A);
   EXPECT_FALSE(A.IsScaleOrTranslation());
-
-  A.MakeIdentity();
-  EXPECT_TRUE(A.IsScaleOrTranslation());
 
   // Modifying any non-scale or non-translation components should cause
   // IsScaleOrTranslation() to return false. (0, 0), (1, 1), (2, 2), (0, 3),
@@ -2358,6 +2376,7 @@ TEST(XFormTest, verifyIsScaleOrTranslation) {
 
   // Note carefully - expecting true here.
   A.MakeIdentity();
+  EXPECT_TRUE(A.IsScaleOrTranslation());
   A.set_rc(0, 0, 2.f);
   EXPECT_TRUE(A.IsScaleOrTranslation());
 
@@ -2429,17 +2448,18 @@ TEST(XFormTest, verifyIsScaleOrTranslation) {
 
 TEST(XFormTest, Scale) {
   Transform t;
-  EXPECT_TRUE(t.IsScale());
   EXPECT_TRUE(t.IsScale2d());
   EXPECT_EQ(Vector2dF(1, 1), t.To2dScale());
 
   t.Scale(2.5f, 3.75f);
-  EXPECT_TRUE(t.IsScale());
+  EXPECT_TRUE(t.IsScale2d());
+  EXPECT_EQ(Vector2dF(2.5f, 3.75f), t.To2dScale());
+
+  t.EnsureFullMatrixForTesting();
   EXPECT_TRUE(t.IsScale2d());
   EXPECT_EQ(Vector2dF(2.5f, 3.75f), t.To2dScale());
 
   t.Scale3d(3, 4, 5);
-  EXPECT_TRUE(t.IsScale());
   EXPECT_FALSE(t.IsScale2d());
   EXPECT_EQ(Vector2dF(7.5f, 15.f), t.To2dScale());
 
@@ -2447,9 +2467,7 @@ TEST(XFormTest, Scale) {
     for (int col = 0; col < 4; col++) {
       t.MakeIdentity();
       t.set_rc(row, col, 100);
-      bool is_scale = row == col && (row == 0 || row == 1 || row == 2);
       bool is_scale_2d = row == col && (row == 0 || row == 1);
-      EXPECT_EQ(is_scale, t.IsScale()) << " row=" << row << " col=" << col;
       EXPECT_EQ(is_scale_2d, t.IsScale2d()) << " row=" << row << " col=" << col;
     }
   }

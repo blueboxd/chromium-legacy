@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/pdf/pdf_frame_util.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -2494,8 +2496,10 @@ class PdfOcrContextMenuBrowserTest : public PdfPluginContextMenuBrowserTest,
       scoped_feature_list_.InitAndDisableFeature(features::kPdfOcr);
     accessibility_state_utils::OverrideIsScreenReaderEnabledForTesting(
         IsScreenReaderEnabled());
-    screen_ai::ScreenAIInstallState::GetInstance()->SetComponentReadyForTesting(
-        IsComponentReady());
+    screen_ai::ScreenAIInstallState::GetInstance()
+        ->set_component_ready_for_testing(
+            IsComponentReady() ? base::FilePath(FILE_PATH_LITERAL("tmp"))
+                               : base::FilePath());
   }
 
   PdfOcrContextMenuBrowserTest(const PdfOcrContextMenuBrowserTest&) = delete;

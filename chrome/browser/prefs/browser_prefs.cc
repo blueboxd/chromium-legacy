@@ -144,6 +144,7 @@
 #include "components/services/storage/public/cpp/storage_prefs.h"
 #include "components/sessions/core/session_id_generator.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
@@ -173,7 +174,6 @@
 #include "chrome/browser/apps/platform_apps/shortcut_manager.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
-#include "chrome/browser/extensions/api/cryptotoken_private/cryptotoken_private_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/preinstalled_apps.h"
@@ -199,7 +199,7 @@
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
 #include "chrome/browser/extensions/api/shared_storage/shared_storage_private_api.h"
 #include "chrome/browser/ui/ash/projector/projector_app_client_impl.h"
-#include "chrome/browser/ui/webui/chromeos/edu_coexistence/edu_coexistence_login_handler_chromeos.h"
+#include "chrome/browser/ui/webui/ash/edu_coexistence/edu_coexistence_login_handler.h"
 #include "chrome/browser/ui/webui/signin/ash/inline_login_handler_chromeos.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -330,6 +330,7 @@
 #include "chrome/browser/ash/cryptauth/client_app_metadata_provider_service.h"
 #include "chrome/browser/ash/cryptauth/cryptauth_device_id_provider_impl.h"
 #include "chrome/browser/ash/customization/customization_document.h"
+#include "chrome/browser/ash/file_manager/file_manager_pref_names.h"
 #include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_system_provider/registry.h"
 #include "chrome/browser/ash/first_run/first_run.h"
@@ -1324,7 +1325,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ExtensionWebUI::RegisterProfilePrefs(registry);
   RegisterAnimationPolicyPrefs(registry);
-  extensions::api::CryptotokenRegisterProfilePrefs(registry);
   extensions::ActivityLog::RegisterProfilePrefs(registry);
   extensions::AudioAPI::RegisterUserPrefs(registry);
   extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
@@ -1491,7 +1491,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ash::ScreenTimeController::RegisterProfilePrefs(registry);
   ash::EduCoexistenceConsentInvalidationController::RegisterProfilePrefs(
       registry);
-  chromeos::EduCoexistenceLoginHandler::RegisterProfilePrefs(registry);
+  ash::EduCoexistenceLoginHandler::RegisterProfilePrefs(registry);
   ash::SigninErrorNotifier::RegisterPrefs(registry);
   ash::ServicesCustomizationDocument::RegisterProfilePrefs(registry);
   ash::settings::OSSettingsUI::RegisterProfilePrefs(registry);
@@ -1518,6 +1518,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   policy::RebootNotificationsScheduler::RegisterProfilePrefs(registry);
   ash::KioskAppManager::RegisterProfilePrefs(registry);
   file_manager::file_tasks::RegisterProfilePrefs(registry);
+  file_manager::prefs::RegisterProfilePrefs(registry);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -1989,6 +1990,23 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 09/2022.
   profile_prefs->ClearPref(kFirstPartySetsEnabled);
+
+  // Added 10/2022
+#if BUILDFLAG(IS_ANDROID)
+  feed::MigrateObsoleteProfilePrefsOct_2022(profile_prefs);
+#endif  // BUILDFLAG(IS_ANDROID)
+
+  // Once this migration is complete, the tracked preference
+  // `kGoogleServicesLastAccountIdDeprecated` can be removed.
+  if (profile_prefs->HasPrefPath(
+          prefs::kGoogleServicesLastAccountIdDeprecated)) {
+    std::string account_id =
+        profile_prefs->GetString(prefs::kGoogleServicesLastAccountIdDeprecated);
+    profile_prefs->ClearPref(prefs::kGoogleServicesLastAccountIdDeprecated);
+    bool is_email = account_id.find('@') != std::string::npos;
+    if (!is_email && !account_id.empty())
+      profile_prefs->SetString(prefs::kGoogleServicesLastGaiaId, account_id);
+  }
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

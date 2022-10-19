@@ -9,6 +9,9 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
+@class PriceNotificationsImageContainerView;
+@class PriceNotificationsPriceChipView;
+
 // A table view item used to represent a `PriceNotificationsListItem`.
 @interface PriceNotificationsTableViewItem : TableViewItem
 
@@ -35,6 +38,12 @@
 @property(nonatomic, strong) UILabel* titleLabel;
 // The host URL associated with this cell.
 @property(nonatomic, strong) UILabel* URLLabel;
+// The custom UIView that displays the item's current and previous prices.
+@property(nonatomic, strong)
+    PriceNotificationsPriceChipView* priceNotificationsChip;
+// The imageview that is displayed on the leading edge of the cell.
+@property(nonatomic, strong)
+    PriceNotificationsImageContainerView* priceNotificationsImageContainerView;
 // The status of whether the user is tracking the item.
 @property(nonatomic, assign) BOOL tracking;
 // The button that starts the price tracking process.

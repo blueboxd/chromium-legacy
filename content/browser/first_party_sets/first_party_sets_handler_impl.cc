@@ -102,6 +102,13 @@ FirstPartySetsHandler::ValidateEnterprisePolicy(
   return {absl::nullopt, parsed_or_error.value().second};
 }
 
+// static
+FirstPartySetsHandlerImpl FirstPartySetsHandlerImpl::CreateForTesting(
+    bool enabled,
+    bool embedder_will_provide_public_sets) {
+  return FirstPartySetsHandlerImpl(enabled, embedder_will_provide_public_sets);
+}
+
 void FirstPartySetsHandlerImpl::GetContextConfigForPolicy(
     const base::Value::Dict* policy,
     base::OnceCallback<void(net::FirstPartySetsContextConfig)> callback) {
@@ -201,25 +208,6 @@ void FirstPartySetsHandlerImpl::SetPublicFirstPartySets(
   // TODO(crbug.com/1219656): Use this value to compute sets diff.
   version_ = version;
   sets_loader_->SetComponentSets(std::move(sets_file));
-}
-
-void FirstPartySetsHandlerImpl::ResetForTesting() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  initialized_ = false;
-  enabled_ = GetContentClient()->browser()->IsFirstPartySetsEnabled();
-  embedder_will_provide_public_sets_ =
-      GetContentClient()->browser()->WillProvidePublicFirstPartySets();
-
-  // Initializes the `sets_loader_` member with a callback to SetCompleteSets
-  // and the result of content::GetFirstPartySetsOverrides.
-  sets_loader_ = std::make_unique<FirstPartySetsLoader>(
-      base::BindOnce(&FirstPartySetsHandlerImpl::SetCompleteSets,
-                     // base::Unretained(this) is safe here because
-                     // this is a static singleton.
-                     base::Unretained(this)));
-  on_sets_ready_callbacks_.clear();
-  global_sets_ = absl::nullopt;
-  db_helper_.Reset();
 }
 
 void FirstPartySetsHandlerImpl::GetPersistedGlobalSetsForTesting(

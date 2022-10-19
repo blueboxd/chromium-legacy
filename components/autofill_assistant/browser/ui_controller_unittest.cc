@@ -55,6 +55,7 @@ using ::testing::IsEmpty;
 using ::testing::NiceMock;
 using ::testing::Not;
 using ::testing::NotNull;
+using ::testing::Pointee;
 using ::testing::Property;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -725,6 +726,18 @@ TEST_F(UiControllerTest, EnableTts) {
   EXPECT_TRUE(ui_controller_->GetTtsButtonVisible());
 }
 
+TEST_F(UiControllerTest, DisableScrollbarFading) {
+  EXPECT_FALSE(ui_controller_->GetDisableScrollbarFading());
+  EXPECT_CALL(mock_observer_, OnDisableScrollbarFadingChanged(true));
+  ui_controller_->OnStart(
+      TriggerContext(std::make_unique<ScriptParameters>(
+                         base::flat_map<std::string, std::string>{
+                             {"DISABLE_SCROLLBAR_FADING", "true"}}),
+                     TriggerContext::Options()));
+
+  EXPECT_TRUE(ui_controller_->GetDisableScrollbarFading());
+}
+
 TEST_F(UiControllerTest, DoNotEnableTtsWhenAccessibilityEnabled) {
   EXPECT_CALL(mock_client_, IsSpokenFeedbackAccessibilityServiceEnabled())
       .WillOnce(Return(true));
@@ -972,6 +985,40 @@ TEST_F(UiControllerTest, OnQrCodeScanFinished) {
       ClientStatus(ACTION_APPLIED),
       SimpleValue(std::string("QR_CODE_SCAN_RESULT"),
                   /* is_client_side_only= */ true));
+}
+
+TEST_F(UiControllerTest, SetLegalDisclaimer) {
+  base::MockCallback<base::OnceCallback<void(int)>>
+      legal_disclaimer_link_callback;
+  auto legal_disclaimer = std::make_unique<LegalDisclaimerProto>();
+  legal_disclaimer->set_legal_disclaimer_message(
+      "Legal disclaimer message with <link3>Links</link3>");
+
+  EXPECT_CALL(mock_observer_,
+              OnLegalDisclaimerChanged(Pointee(Property(
+                  &LegalDisclaimerProto::legal_disclaimer_message,
+                  "Legal disclaimer message with <link3>Links</link3>"))));
+  ui_controller_->SetLegalDisclaimer(std::move(legal_disclaimer),
+                                     legal_disclaimer_link_callback.Get());
+
+  EXPECT_CALL(mock_observer_, OnLegalDisclaimerChanged(nullptr));
+  ui_controller_->SetLegalDisclaimer(nullptr, base::DoNothing());
+}
+
+TEST_F(UiControllerTest, OnLegalDisclaimerLinkClicked) {
+  base::MockCallback<base::OnceCallback<void(int)>>
+      legal_disclaimer_link_callback;
+  EXPECT_CALL(legal_disclaimer_link_callback, Run(2)).Times(1);
+
+  auto legal_disclaimer = std::make_unique<LegalDisclaimerProto>();
+  legal_disclaimer->set_legal_disclaimer_message(
+      "Legal disclaimer message with <link2>Links</link2>");
+  ui_controller_->SetLegalDisclaimer(std::move(legal_disclaimer),
+                                     legal_disclaimer_link_callback.Get());
+
+  ui_controller_->OnLegalDisclaimerLinkClicked(2);
+  // Test that calling this again does nothing or does not crash.
+  ui_controller_->OnLegalDisclaimerLinkClicked(2);
 }
 
 TEST_F(UiControllerTest, SetGenericUi) {

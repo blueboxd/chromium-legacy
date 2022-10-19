@@ -124,6 +124,7 @@ namespace blink {
 class Agent;
 class AnchorElementInteractionTracker;
 class AnimationClock;
+class AriaNotificationOptions;
 class AXContext;
 class AXObjectCache;
 class Attr;
@@ -352,7 +353,7 @@ class CORE_EXPORT Document : public ContainerNode,
   ~Document() override;
 
   // Constructs a Document instance without a subclass for testing.
-  static Document* CreateForTest(ExecutionContext* execution_context = nullptr);
+  static Document* CreateForTest(ExecutionContext& execution_context);
 
   static Range* CreateRangeAdjustedToTreeScope(const TreeScope&,
                                                const Position&);
@@ -1224,6 +1225,8 @@ class CORE_EXPORT Document : public ContainerNode,
                                     const String& issuer,
                                     ExceptionState&);
 
+  void ariaNotify(const String announcement, const AriaNotificationOptions*);
+
   // The following implements the rule from HTML 4 for what valid names are.
   // To get this right for all the XML cases, we probably have to improve this
   // or move it and make it sensitive to the type of document.
@@ -1295,8 +1298,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // See `execution_context_` for details.
   ExecutionContext* GetExecutionContext() const final;
 
-  // Return the agent. Can only be null in unit tests.
-  Agent* GetAgent() const;
+  // Return the agent.
+  Agent& GetAgent() const;
 
   ScriptRunner* GetScriptRunner() { return script_runner_.Get(); }
   const base::ElapsedTimer& GetStartTime() const { return start_time_; }
@@ -2171,8 +2174,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // in unit tests).
   Member<ExecutionContext> execution_context_;
 
-  // Documents should always have an agent except those created with
-  // DocumentInit::ForTest.
+  // Documents should always have an agent.
   Member<Agent> agent_;
 
   Member<ResourceFetcher> fetcher_;

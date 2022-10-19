@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -253,14 +253,17 @@ export class TestFileSystemProvider {
     this.setHandlerEnabled('onCloseFileRequested', true);
     this.setHandlerEnabled('onConfigureRequested', true);
     this.setHandlerEnabled('onCopyEntryRequested', true);
+    this.setHandlerEnabled('onCreateDirectoryRequested', true);
     this.setHandlerEnabled('onCreateFileRequested', true);
     this.setHandlerEnabled('onDeleteEntryRequested', true);
     this.setHandlerEnabled('onGetMetadataRequested', true);
+    this.setHandlerEnabled('onMountRequested', true);
     this.setHandlerEnabled('onMoveEntryRequested', true);
     this.setHandlerEnabled('onOpenFileRequested', true);
     this.setHandlerEnabled('onReadDirectoryRequested', true);
     this.setHandlerEnabled('onReadFileRequested', true);
     this.setHandlerEnabled('onRemoveWatcherRequested', true);
+    this.setHandlerEnabled('onUnmountRequested', true);
     this.setHandlerEnabled('onWriteFileRequested', true);
   }
 
@@ -273,7 +276,7 @@ export class TestFileSystemProvider {
   setHandlerEnabled(handlerName, enabled) {
     if (!(handlerName in this)) {
       throw new Error(
-        `${this.constructor.name} does not implement ${handlerName}`);
+          `${this.constructor.name} does not implement ${handlerName}`);
     }
     if (!(handlerName in this.handlers)) {
       this.handlers[handlerName] = this[handlerName].bind(this);
@@ -587,6 +590,57 @@ export class TestFileSystemProvider {
   }
 
   /**
+   * FSP: implementation of creating a directory within the same file system.
+   *
+   * @param {!chrome.fileSystemProvider.CreateDirectoryRequestedOptions} options
+   *  Options.
+   * @param {function()} onSuccess Success callback
+   * @param {function(chrome.fileSystemProvider.ProviderError)} onError Error
+   *  callback with an error code.
+   */
+  onCreateDirectoryRequested(options, onSuccess, onError) {
+    if (options.fileSystemId !== this.fileSystemId) {
+      onError(chrome.fileSystemProvider.ProviderError.SECURITY);
+      return;
+    }
+
+    if (options.directoryPath === '/' || options.recursive) {
+      onError(chrome.fileSystemProvider.ProviderError.INVALID_OPERATION);
+      return;
+    }
+
+    if (this.findEntryByPath(options.directoryPath)) {
+      onError(chrome.fileSystemProvider.ProviderError.EXISTS);
+      return;
+    }
+
+    // Check new directory path is valid.
+    const dirPathSplit = splitPath(options.directoryPath);
+    const parentDir = this.findEntryByPath(dirPathSplit.dirPath);
+    const dirName = dirPathSplit.fileName;
+    if (!parentDir) {
+      onError(chrome.fileSystemProvider.ProviderError.NOT_FOUND);
+      return;
+    }
+    if (!parentDir.metadata.isDirectory) {
+      onError(chrome.fileSystemProvider.ProviderError.NOT_A_DIRECTORY);
+      return;
+    }
+
+    // Add new directory.
+    const emptyDirMetadata = {
+      isDirectory: true,
+      name: dirName,
+      modificationTime: new Date(2014, 4, 28, 10, 39, 15),
+    }
+
+    const entry = new Entry(dirName, emptyDirMetadata, null, null);
+    parentDir.children[dirName] = entry;
+
+    onSuccess();
+  }
+
+  /**
    * FSP: implementation for the file create request event.
    *
    * @param {!chrome.fileSystemProvider.CreateFileRequestedOptions} options
@@ -877,12 +931,49 @@ export class TestFileSystemProvider {
       return;
     }
 
+    const error = this.testConfig['onRemoveWatcherRequestedError'];
+    if (error) {
+      onError(error);
+      return;
+    }
+
     if (!this.findEntryByPath(options.entryPath)) {
       onSuccess();
       return;
     }
 
     onError(chrome.fileSystemProvider.ProviderError.NOT_FOUND);
+  };
+
+  /**
+   * FSP: requests to mount this filesystem.
+   *
+   * @param {function()} onSuccess Success callback.
+   * @param {function(chrome.fileSystemProvider.ProviderError)} onError Error
+   *     callback.
+   */
+  onMountRequested(onSuccess, onError) {
+    // This handler does not take the options arguments.
+    this.recordEvent('onMountRequested', {});
+    onSuccess();
+  };
+
+  /**
+   * FSP: requests to unmount this filesystem.
+   *
+   * @param {!chrome.fileSystemProvider.UnmountRequestedOptions} options
+   * @param {function()} onSuccess Success callback.
+   * @param {function(chrome.fileSystemProvider.ProviderError)} onError Error
+   *     callback.
+   */
+  onUnmountRequested(options, onSuccess, onError) {
+    this.recordEvent('onUnmountRequested', options);
+    const error = this.testConfig['onUnmountRequestedError'];
+    if (error) {
+      onError(error);
+    } else {
+      onSuccess();
+    }
   };
 
   /**

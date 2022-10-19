@@ -218,13 +218,6 @@ group("gn_all") {
     ]
   }
 
-  if (is_android) {
-    deps += [
-      "//weblayer/browser/android/javatests:browserfragment_support_instrumentation_test_apk",
-      "//weblayer/browser/java:weblayer_junit_tests",
-    ]
-  }
-
   if (!is_ios && !is_android) {
     deps += [
       "//components/cronet:cronet_tests",
@@ -272,7 +265,7 @@ group("gn_all") {
 
   deps += root_extra_deps
 
-  if (enable_basic_printing) {
+  if (enable_printing) {
     deps += [ "//printing:printing_unittests" ]
   }
 
@@ -1085,6 +1078,7 @@ if (!is_ios) {
       deps = [
         "//chrome/test/chromedriver:chromedriver",
         "//chrome/test/chromedriver:chromedriver_unittests",
+        "//chrome/test/chromedriver:generate_chromedriver_license",
       ]
     }
   }

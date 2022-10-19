@@ -201,6 +201,7 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "net/base/features.h"
 #include "net/base/schemeful_site.h"
 #include "net/net_buildflags.h"
 #include "services/device/public/mojom/screen_orientation.mojom.h"
@@ -216,6 +217,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "storage/browser/blob/blob_url_store_impl.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
@@ -1147,7 +1149,7 @@ bool IsWindowManagementGranted(RenderFrameHost* host) {
   DCHECK(permission_controller);
 
   return permission_controller->GetPermissionStatusForCurrentDocument(
-             blink::PermissionType::WINDOW_PLACEMENT, host) ==
+             blink::PermissionType::WINDOW_MANAGEMENT, host) ==
          blink::mojom::PermissionStatus::GRANTED;
 }
 
@@ -5491,12 +5493,12 @@ void RenderFrameHostImpl::TakeFocus(bool reverse) {
 void RenderFrameHostImpl::UpdateTargetURL(
     const GURL& url,
     blink::mojom::LocalMainFrameHost::UpdateTargetURLCallback callback) {
-  // Prerendering pages should not reach this code since the renderer only calls
-  // this when the mouse over the URL or keyboard focuses the URL.
-  if (lifecycle_state_ == LifecycleStateImpl::kPrerendering) {
-    mojo::ReportBadMessage("Unexpected UpdateTargetURL from renderer");
+  // An inactive document should ignore to update the target url.
+  if (!IsActive()) {
+    std::move(callback).Run();
     return;
   }
+
   delegate_->UpdateTargetURL(this, url);
   std::move(callback).Run();
 }
@@ -9432,6 +9434,26 @@ void RenderFrameHostImpl::CreateBroadcastChannelProvider(
       std::move(receiver));
 }
 
+void RenderFrameHostImpl::BindBlobUrlStoreAssociatedReceiver(
+    mojo::PendingAssociatedReceiver<blink::mojom::BlobURLStore> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* storage_partition_impl =
+      static_cast<StoragePartitionImpl*>(GetStoragePartition());
+
+  storage_partition_impl->GetBlobUrlRegistry()->AddReceiver(
+      storage_key(), std::move(receiver));
+}
+
+void RenderFrameHostImpl::BindBlobUrlStoreReceiver(
+    mojo::PendingReceiver<blink::mojom::BlobURLStore> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* storage_partition_impl =
+      static_cast<StoragePartitionImpl*>(GetStoragePartition());
+
+  storage_partition_impl->GetBlobUrlRegistry()->AddReceiver(
+      storage_key(), std::move(receiver));
+}
+
 void RenderFrameHostImpl::SetUpMojoConnection() {
   CHECK(!associated_registry_);
 
@@ -9599,6 +9621,13 @@ void RenderFrameHostImpl::SetUpMojoConnection() {
   associated_registry_->AddInterface<blink::mojom::BroadcastChannelProvider>(
       base::BindRepeating(&RenderFrameHostImpl::CreateBroadcastChannelProvider,
                           base::Unretained(this)));
+
+  if (base::FeatureList::IsEnabled(net::features::kSupportPartitionedBlobUrl)) {
+    associated_registry_->AddInterface<blink::mojom::BlobURLStore>(
+        base::BindRepeating(
+            &RenderFrameHostImpl::BindBlobUrlStoreAssociatedReceiver,
+            base::Unretained(this)));
+  }
 
   // Allow embedders to register their binders.
   GetContentClient()
@@ -12576,8 +12605,8 @@ void RenderFrameHostImpl::DidCommitNavigation(
   ScopedCommitStateResetter commit_state_resetter(this);
   RenderProcessHost* process = GetProcess();
 
-  TRACE_EVENT2("navigation", "RenderFrameHostImpl::DidCommitProvisionalLoad",
-               "rfh", this, "params", params);
+  TRACE_EVENT("navigation", "RenderFrameHostImpl::DidCommitProvisionalLoad",
+              ChromeTrackEvent::kRenderFrameHost, this, "params", params);
 
   // If we're waiting for a cross-site beforeunload completion callback from
   // this renderer and we receive a Navigate message from the main frame, then

@@ -653,6 +653,9 @@ static_library("extensions") {
     "permissions_updater.h",
     "policy_handlers.cc",
     "policy_handlers.h",
+    "pref_mapping.cc",
+    "pref_mapping.h",
+    "pref_transformer_interface.h",
     "proxy_overridden_bubble_delegate.cc",
     "proxy_overridden_bubble_delegate.h",
     "safe_browsing_verdict_handler.cc",
@@ -1322,7 +1325,7 @@ static_library("extensions") {
     ]
   }
 
-  if (enable_basic_printing && (is_win || is_mac || is_linux || is_chromeos)) {
+  if (enable_printing && (is_win || is_mac || is_linux || is_chromeos)) {
     # TODO(crbug.com/1213762)  Replace this with more accurate dependency
     # once //chrome/browser/printing build is able to be cleanly targeted.
     deps += [ "//chrome/services/printing/public/mojom" ]

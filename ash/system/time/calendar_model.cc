@@ -233,9 +233,14 @@ void CalendarModel::OnEventsFetched(
   if (error != google_apis::HTTP_SUCCESS) {
     // Request is no longer outstanding, so it can be destroyed.
     pending_fetches_.erase(start_of_month);
+    // Notify observers that we had an error with the events fetched.
+    // Right now the `kError` status isn't handled in any way so we just emit
+    // `kNever` to stop the loading animation displaying.
     // TODO(https://crbug.com/1298187): Possibly respond further based on the
-    // specific error code, retry in some cases, etc. Or notify observers e.g.
-    // observer.OnEventsFetched(kError, start_of_month, events);
+    // specific error code, retry in some cases, etc.
+    for (auto& observer : observers_)
+      observer.OnEventsFetched(kNever, start_of_month, events);
+
     return;
   }
 
@@ -289,8 +294,13 @@ void CalendarModel::OnEventFetchFailedInternalError(
     CalendarEventFetchInternalErrorCode error) {
   // Request is no longer outstanding, so it can be destroyed.
   pending_fetches_.erase(start_of_month);
+  // Notify observers of timeout fetching events for given `start_of_month`.
+  // Right now timeouts aren't handled in any way so we just emit `onTimeout` to
+  // stop the loading animation displaying.
   // TODO(https://crbug.com/1298187): May need to respond further based on the
   // specific error code, retry in some cases, etc.
+  for (auto& observer : observers_)
+    observer.OnTimeout(start_of_month);
 }
 
 bool CalendarModel::ShouldInsertEvent(const CalendarEvent* event) const {
@@ -313,6 +323,32 @@ void CalendarModel::InsertMultiDayEvent(
     const google_apis::calendar::CalendarEvent* event,
     const base::Time start_of_month) {
   DCHECK(event);
+
+  if (event->all_day_event()) {
+    auto current_day_utc = calendar_utils::GetMaxTime(
+                               start_of_month, event->start_time().date_time())
+                               .UTCMidnight();
+    base::Time start_of_next_month =
+        calendar_utils::GetStartOfNextMonthUTC(current_day_utc);
+    // Don't go into the next month.
+    auto last_day_utc = calendar_utils::GetMinTime(
+                            start_of_next_month, event->end_time().date_time())
+                            .UTCMidnight();
+
+    // In the Calendar API, the end `base::Time` of an "all day" event will be
+    // the following day at midnight. For example for a single "all day" event
+    // on 1st October, the start `base::Time` will be 2022-10-01 00:00:00.000
+    // UTC and the end `base::Time` will be 2022-10-02 00:00:00.000 UTC, so we
+    // iterate until the day before the `last_day_utc` to ensure we don't show
+    // the all day event incorrectly going on to the next day. As we are going
+    // to always show these events by day rather than time, we don't care about
+    // timezone here.
+    while (current_day_utc < last_day_utc) {
+      InsertEventInMonth(event, start_of_month, current_day_utc);
+      current_day_utc = calendar_utils::GetNextDayMidnight(current_day_utc);
+    }
+    return;
+  }
 
   base::Time start_time_midnight = GetStartTimeMidnightAdjusted(event);
   base::Time end_time_midnight = GetEndTimeMidnightAdjusted(event);

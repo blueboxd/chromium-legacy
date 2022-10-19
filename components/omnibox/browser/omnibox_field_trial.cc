@@ -610,6 +610,12 @@ bool OmniboxFieldTrial::IsOnDeviceHeadSuggestEnabledForAnyMode() {
          IsOnDeviceHeadSuggestEnabledForNonIncognito();
 }
 
+bool OmniboxFieldTrial::IsOnDeviceTailSuggestEnabled() {
+  // Tail model will only be enabled when head provider is also enabled.
+  return base::FeatureList::IsEnabled(omnibox::kOnDeviceTailModel) &&
+         IsOnDeviceHeadSuggestEnabledForAnyMode();
+}
+
 std::string OmniboxFieldTrial::OnDeviceHeadModelLocaleConstraint(
     bool is_incognito) {
   const base::Feature* feature =
@@ -745,13 +751,14 @@ const base::FeatureParam<bool>
         &omnibox::kPreserveDefault,
         "AutocompleteStabilityPreserveDefaultForAsyncUpdates",
         true);
+const base::FeatureParam<bool>
+    kAutocompleteStabilityPreventDefaultPreviousMatches(
+        &omnibox::kPreserveDefault,
+        "AutocompleteStabilityPreventDefaultPreviousMatches",
+        false);
 const base::FeatureParam<bool> kAutocompleteStabilityDontCopyDoneProviders(
     &omnibox::kAutocompleteStability,
     "AutocompleteStabilityDontCopyDoneProviders",
-    false);
-const base::FeatureParam<bool> kPreventDefaultPreviousMatches(
-    &omnibox::kAutocompleteStability,
-    "AutocompleteStabilityPreventDefaultPreviousMatches",
     false);
 const base::FeatureParam<bool> kAutocompleteStabilityAsyncProvidersFirst(
     &omnibox::kAutocompleteStability,

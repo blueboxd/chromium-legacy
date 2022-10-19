@@ -179,24 +179,6 @@ void SetColorVolumeMetadata(
   }
 }
 
-void SetContentLightLevelInfo(
-    const absl::optional<gfx::HDRMetadata>& hdr_metadata,
-    NSMutableDictionary<NSString*, id>* extensions) {
-  SetDictionaryValue(
-      extensions, kCMFormatDescriptionExtension_ContentLightLevelInfo,
-      base::mac::CFToNSCast(gfx::GenerateContentLightLevelInfo(hdr_metadata)));
-}
-
-void SetColorVolumeMetadata(
-    const absl::optional<gfx::HDRMetadata>& hdr_metadata,
-    NSMutableDictionary<NSString*, id>* extensions) {
-  SetDictionaryValue(
-      extensions, kCMFormatDescriptionExtension_MasteringDisplayColorVolume,
-      base::mac::CFToNSCast(
-          gfx::GenerateMasteringDisplayColorVolume(hdr_metadata)));
->>>>>>> origin/main
-}
-
 void SetVp9CodecConfigurationBox(
     media::VideoCodecProfile codec_profile,
     const media::VideoColorSpace& color_space,

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/profile_picker.h"
 
-#include <algorithm>
 #include <string>
 
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -78,6 +78,12 @@ ProfilePicker::Params ProfilePicker::Params::ForBackgroundManager(
   return params;
 }
 
+// static
+ProfilePicker::Params ProfilePicker::Params::ForFirstRun(
+    const base::FilePath& profile_path) {
+  return ProfilePicker::Params(EntryPoint::kFirstRun, profile_path);
+}
+
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 // static
 ProfilePicker::Params ProfilePicker::Params::ForLacrosSelectAvailableAccount(
@@ -129,7 +135,7 @@ bool ProfilePicker::Params::CanReusePickerWindow(const Params& other) const {
   // points.
   base::flat_set<EntryPoint> exclusive_entry_points = {
       EntryPoint::kLacrosPrimaryProfileFirstRun,
-      EntryPoint::kLacrosSelectAvailableAccount};
+      EntryPoint::kLacrosSelectAvailableAccount, EntryPoint::kFirstRun};
   if (entry_point_ != other.entry_point_ &&
       (exclusive_entry_points.contains(entry_point_) ||
        exclusive_entry_points.contains(other.entry_point_))) {
@@ -185,12 +191,11 @@ bool ProfilePicker::ShouldShowAtLaunch() {
 
   std::vector<ProfileAttributesEntry*> profile_attributes =
       profile_manager->GetProfileAttributesStorage().GetAllProfilesAttributes();
-  int number_of_active_profiles =
-      std::count_if(profile_attributes.begin(), profile_attributes.end(),
-                    [](ProfileAttributesEntry* entry) {
-                      return (base::Time::Now() - entry->GetActiveTime() <
-                              kActiveTimeThreshold);
-                    });
+  int number_of_active_profiles = base::ranges::count_if(
+      profile_attributes, [](ProfileAttributesEntry* entry) {
+        return (base::Time::Now() - entry->GetActiveTime() <
+                kActiveTimeThreshold);
+      });
   // Don't show the profile picker at launch if the user has less than two
   // active profiles. However, if the user has already seen the profile picker
   // before, respect user's preference.

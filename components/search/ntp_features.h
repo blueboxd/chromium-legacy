@@ -22,6 +22,7 @@ namespace ntp_features {
 
 BASE_DECLARE_FEATURE(kConfirmSuggestionRemovals);
 BASE_DECLARE_FEATURE(kCacheOneGoogleBar);
+BASE_DECLARE_FEATURE(kCustomizeChromeColorExtraction);
 BASE_DECLARE_FEATURE(kCustomizeChromeSidePanel);
 BASE_DECLARE_FEATURE(kCwsScrimRemoval);
 BASE_DECLARE_FEATURE(kDismissPromos);
@@ -37,6 +38,7 @@ BASE_DECLARE_FEATURE(kNtpDriveModule);
 BASE_DECLARE_FEATURE(kNtpDummyModules);
 #endif
 BASE_DECLARE_FEATURE(kNtpComprehensiveTheming);
+BASE_DECLARE_FEATURE(kNtpComprehensiveThemeRealbox);
 BASE_DECLARE_FEATURE(kNtpLogo);
 BASE_DECLARE_FEATURE(kNtpMiddleSlotPromo);
 BASE_DECLARE_FEATURE(kNtpMiddleSlotPromoDismissal);
@@ -60,6 +62,16 @@ BASE_DECLARE_FEATURE(kNtpRemoveScrim);
 BASE_DECLARE_FEATURE(kNtpSafeBrowsingModule);
 BASE_DECLARE_FEATURE(kNtpShortcuts);
 BASE_DECLARE_FEATURE(kNtpHandleMostVisitedNavigationExplicitly);
+
+// Parameter for controlling the luminosity difference for NTP elements on light
+// backgrounds.
+extern const base::FeatureParam<double>
+    kNtpElementLuminosityChangeForLightBackgroundParam;
+
+// Parameter for controlling the luminosity difference for NTP elements on dark
+// backgrounds.
+extern const base::FeatureParam<double>
+    kNtpElementLuminosityChangeForDarkBackgroundParam;
 
 // Parameter for the CSS selector for the button elements on the OGB.
 extern const base::FeatureParam<std::string> kNtpOgbButtonSelectorParam;

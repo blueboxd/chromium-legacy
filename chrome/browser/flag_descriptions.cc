@@ -98,6 +98,11 @@ const char kClipboardUnsanitizedContentDescription[] =
     "Allows reading/writing unsanitized content from/to the clipboard. "
     "Currently, it is only applicable to HTML format. See crbug.com/1268679.";
 
+const char kChromeRootStoreEnabledName[] = "Chrome Root Store";
+const char kChromeRootStoreEnabledDescription[] =
+    "Enable use of Chrome Root Store over platform roots. "
+    "On some platforms this may also enable Chrome Cert Verifier.";
+
 const char kConditionalTabStripAndroidName[] = "Conditional Tab Strip";
 const char kConditionalTabStripAndroidDescription[] =
     "Allows users to access conditional tab strip.";
@@ -107,6 +112,12 @@ const char kContentLanguagesInLanguagePickerName[] =
 const char kContentLanguagesInLanguagePickerDescription[] =
     "Enables bringing user's content languages that are translatable to the "
     "top of the list with all languages shown in the translate menu";
+
+const char kCustomizeChromeColorExtractionName[] =
+    "Customize Chrome Color Extraction";
+const char kCustomizeChromeColorExtractionDescription[] =
+    "Enables setting theme color based on background image color when "
+    "background image is changed in New Tab Page Customize Chrome.";
 
 const char kCustomizeChromeSidePanelName[] = "Customize Chrome Side Panel";
 const char KCustomizeChromeSidePanelDescription[] =
@@ -4307,6 +4318,10 @@ const char kNtpCacheOneGoogleBarDescription[] =
 const char kNtpChromeCartModuleName[] = "NTP Chrome Cart Module";
 const char kNtpChromeCartModuleDescription[] =
     "Shows the chrome cart module on the New Tab Page.";
+
+const char kNtpComprehensiveThemingName[] = "NTP Comprehensive Theming";
+const char kNtpComprehensiveThemingDescription[] =
+    "Applies theme based colors across various NTP elements";
 
 const char kNtpDesktopLensName[] = "NTP Desktop Lens Entrypoint";
 const char kNtpDesktopLensDescription[] =

@@ -6064,6 +6064,11 @@ const FeatureEntry kFeatureEntries[] = {
                                     kNtpChromeCartModuleVariations,
                                     "DesktopNtpModules")},
 
+    {"ntp-comprehensive-theming",
+     flag_descriptions::kNtpComprehensiveThemingName,
+     flag_descriptions::kNtpComprehensiveThemingDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpComprehensiveTheming)},
+
     {"ntp-drive-module", flag_descriptions::kNtpDriveModuleName,
      flag_descriptions::kNtpDriveModuleDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpDriveModule,
@@ -8941,6 +8946,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCustomizeChromeSidePanelName,
      flag_descriptions::KCustomizeChromeSidePanelDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kCustomizeChromeSidePanel)},
+
+    {"customize-chrome-color-extraction",
+     flag_descriptions::kCustomizeChromeColorExtractionName,
+     flag_descriptions::kCustomizeChromeColorExtractionDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kCustomizeChromeColorExtraction)},
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -9814,6 +9824,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnablePasswordsAccountStorage)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+    {"chrome-root-store-enabled",
+     flag_descriptions::kChromeRootStoreEnabledName,
+     flag_descriptions::kChromeRootStoreEnabledDescription, kOsWin | kOsMac,
+     FEATURE_VALUE_TYPE(net::features::kChromeRootStoreUsed)},
+#endif  // BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -676,13 +676,11 @@ base::Value FilterOperationsToList(const cc::FilterOperations& filters) {
   return list;
 }
 
-bool FilterOperationsFromList(const base::Value& list,
+bool FilterOperationsFromList(const base::Value::List& list,
                               cc::FilterOperations* filters) {
   DCHECK(filters);
-  if (!list.is_list())
-    return false;
   cc::FilterOperations data;
-  for (const auto& entry : list.GetList()) {
+  for (const auto& entry : list) {
     cc::FilterOperation filter;
     if (!FilterOperationFromDict(entry, &filter))
       return false;
@@ -1118,11 +1116,8 @@ struct DrawQuadCommon {
 };
 
 absl::optional<DrawQuadCommon> GetDrawQuadCommonFromDict(
-    const base::Value& dict_value,
+    const base::Value::Dict& dict,
     const SharedQuadStateList& shared_quad_state_list) {
-  if (!dict_value.is_dict())
-    return absl::nullopt;
-  const base::Value::Dict& dict = dict_value.GetDict();
   const std::string* material = dict.FindString("material");
   const base::Value::Dict* rect = dict.FindDict("rect");
   const base::Value::Dict* visible_rect = dict.FindDict("visible_rect");
@@ -1377,16 +1372,13 @@ base::Value QuadListToList(const QuadList& quad_list,
 }
 
 bool CompositorRenderPassDrawQuadFromDict(
-    const base::Value& dict_value,
+    const base::Value::Dict& dict,
     const DrawQuadCommon& common,
     CompositorRenderPassDrawQuad* draw_quad) {
   DCHECK(draw_quad);
-  if (!dict_value.is_dict())
-    return false;
   if (common.resources.count > 1u)
     return false;
 
-  const base::Value::Dict& dict = dict_value.GetDict();
   const std::string* render_pass_id = dict.FindString("render_pass_id");
   const base::Value::Dict* mask_uv_rect = dict.FindDict("mask_uv_rect");
   const base::Value::Dict* mask_texture_size =
@@ -1435,19 +1427,17 @@ bool CompositorRenderPassDrawQuadFromDict(
   return true;
 }
 
-bool SolidColorDrawQuadFromDict(const base::Value& dict,
+bool SolidColorDrawQuadFromDict(const base::Value::Dict& dict,
                                 const DrawQuadCommon& common,
                                 SolidColorDrawQuad* draw_quad) {
   DCHECK(draw_quad);
-  if (!dict.is_dict())
-    return false;
   absl::optional<bool> force_anti_aliasing_off =
-      dict.FindBoolKey("force_anti_aliasing_off");
+      dict.FindBool("force_anti_aliasing_off");
   if (!force_anti_aliasing_off)
     return false;
 
   SkColor4f t_color;
-  if (!ColorFromDict(dict.GetDict(), "color", &t_color))
+  if (!ColorFromDict(dict, "color", &t_color))
     return false;
 
   draw_quad->SetAll(common.shared_quad_state, common.rect, common.visible_rect,
@@ -1456,14 +1446,11 @@ bool SolidColorDrawQuadFromDict(const base::Value& dict,
   return true;
 }
 
-bool SurfaceDrawQuadFromDict(const base::Value& dict_value,
+bool SurfaceDrawQuadFromDict(const base::Value::Dict& dict,
                              const DrawQuadCommon& common,
                              SurfaceDrawQuad* draw_quad) {
   DCHECK(draw_quad);
-  if (!dict_value.is_dict())
-    return false;
 
-  const base::Value::Dict& dict = dict_value.GetDict();
   const base::Value::Dict* surface_range_dict = dict.FindDict("surface_range");
   if (!surface_range_dict)
     return false;
@@ -1488,16 +1475,13 @@ bool SurfaceDrawQuadFromDict(const base::Value& dict_value,
   return true;
 }
 
-bool TextureDrawQuadFromDict(const base::Value& dict_value,
+bool TextureDrawQuadFromDict(const base::Value::Dict& dict,
                              const DrawQuadCommon& common,
                              TextureDrawQuad* draw_quad) {
   DCHECK(draw_quad);
-  if (!dict_value.is_dict())
-    return false;
   if (common.resources.count != 1u)
     return false;
 
-  const base::Value::Dict& dict = dict_value.GetDict();
   absl::optional<bool> premultiplied_alpha =
       dict.FindBool("premultiplied_alpha");
   const base::Value::Dict* uv_top_left = dict.FindDict("uv_top_left");
@@ -1554,17 +1538,15 @@ bool TextureDrawQuadFromDict(const base::Value& dict_value,
   return true;
 }
 
-bool TileDrawQuadFromDict(const base::Value& dict,
+bool TileDrawQuadFromDict(const base::Value::Dict& dict,
                           const DrawQuadCommon& common,
                           TileDrawQuad* draw_quad) {
   DCHECK(draw_quad);
-  if (!dict.is_dict())
-    return false;
   if (common.resources.count != 1u)
     return false;
 
   absl::optional<ContentDrawQuadCommon> content_common =
-      GetContentDrawQuadCommonFromDict(dict.GetDict());
+      GetContentDrawQuadCommonFromDict(dict);
   if (!content_common)
     return false;
 
@@ -1580,15 +1562,12 @@ bool TileDrawQuadFromDict(const base::Value& dict,
   return true;
 }
 
-bool YUVVideoDrawQuadFromDict(const base::Value& dict_value,
+bool YUVVideoDrawQuadFromDict(const base::Value::Dict& dict,
                               const DrawQuadCommon& common,
                               YUVVideoDrawQuad* draw_quad) {
   DCHECK(draw_quad);
-  if (!dict_value.is_dict())
-    return false;
   if (common.resources.count < 3u || common.resources.count > 4u)
     return false;
-  const base::Value::Dict& dict = dict_value.GetDict();
   const base::Value::Dict* ya_tex_coord_rect =
       dict.FindDict("ya_tex_coord_rect");
   const base::Value::Dict* uv_tex_coord_rect =
@@ -1667,15 +1646,13 @@ bool YUVVideoDrawQuadFromDict(const base::Value& dict_value,
   return true;
 }
 
-bool VideoHoleDrawQuadFromDict(const base::Value& dict,
+bool VideoHoleDrawQuadFromDict(const base::Value::Dict& dict,
                                const DrawQuadCommon& common,
                                VideoHoleDrawQuad* draw_quad) {
   DCHECK(draw_quad);
-  if (!dict.is_dict())
-    return false;
 
   absl::optional<bool> overlay_plane_id_empty =
-      dict.FindBoolKey("overlay_plane_id.empty");
+      dict.FindBool("overlay_plane_id.empty");
   if (!overlay_plane_id_empty)
     return false;
 
@@ -1684,7 +1661,7 @@ bool VideoHoleDrawQuadFromDict(const base::Value& dict,
   if (!overlay_plane_id_empty.value()) {
     absl::optional<base::UnguessableToken> deserialized_overlay_plane_id =
         base::ValueToUnguessableToken(
-            dict.FindKey("overlay_plane_id.unguessable_token"));
+            dict.Find("overlay_plane_id.unguessable_token"));
     if (!deserialized_overlay_plane_id) {
       return false;
     }
@@ -1702,26 +1679,26 @@ bool VideoHoleDrawQuadFromDict(const base::Value& dict,
 #define GET_QUAD_FROM_DICT(NAME, TYPE)                             \
   case DrawQuad::Material::NAME: {                                 \
     TYPE* quad = quads.AllocateAndConstruct<TYPE>();               \
-    if (!TYPE##FromDict(list.GetList()[ii], common.value(), quad)) \
+    if (!list[ii].is_dict())                                       \
+      return false;                                                \
+    if (!TYPE##FromDict(list[ii].GetDict(), common.value(), quad)) \
       return false;                                                \
   } break;
-bool QuadListFromList(const base::Value& list,
+bool QuadListFromList(const base::Value::List& list,
                       QuadList* quad_list,
                       const SharedQuadStateList& shared_quad_state_list) {
   DCHECK(quad_list);
-  if (!list.is_list())
-    return false;
-  size_t size = list.GetList().size();
+  size_t size = list.size();
   if (size == 0) {
     quad_list->clear();
     return true;
   }
   QuadList quads(size);
   for (size_t ii = 0; ii < size; ++ii) {
-    if (!list.GetList()[ii].is_dict())
+    if (!list[ii].is_dict())
       return false;
     absl::optional<DrawQuadCommon> common =
-        GetDrawQuadCommonFromDict(list.GetList()[ii], shared_quad_state_list);
+        GetDrawQuadCommonFromDict(list[ii].GetDict(), shared_quad_state_list);
     if (!common)
       return false;
     switch (common->material) {
@@ -1875,19 +1852,17 @@ base::Value SharedQuadStateListToList(
   return list;
 }
 
-bool SharedQuadStateListFromList(const base::Value& list,
+bool SharedQuadStateListFromList(const base::Value::List& list,
                                  SharedQuadStateList* shared_quad_state_list) {
   DCHECK(shared_quad_state_list);
-  if (!list.is_list())
-    return false;
-  size_t size = list.GetList().size();
+  size_t size = list.size();
   SharedQuadStateList states(alignof(SharedQuadState), sizeof(SharedQuadState),
                              size);
   for (size_t ii = 0; ii < size; ++ii) {
-    if (!list.GetList()[ii].is_dict())
+    if (!list[ii].is_dict())
       return false;
     SharedQuadState* sqs = states.AllocateAndConstruct<SharedQuadState>();
-    if (!SharedQuadStateFromDict(list.GetList()[ii].GetDict(), sqs))
+    if (!SharedQuadStateFromDict(list[ii].GetDict(), sqs))
       return false;
   }
   shared_quad_state_list->swap(states);
@@ -2087,7 +2062,7 @@ std::unique_ptr<CompositorRenderPass> CompositorRenderPassFromDict(
   }
 
   if (ProcessRenderPassField(kRenderPassFilters)) {
-    const base::Value* filters = dict_value.FindListKey("filters");
+    const base::Value::List* filters = dict.FindList("filters");
     if (!filters)
       return nullptr;
     if (!FilterOperationsFromList(*filters, &(pass->filters)))
@@ -2095,8 +2070,8 @@ std::unique_ptr<CompositorRenderPass> CompositorRenderPassFromDict(
   }
 
   if (ProcessRenderPassField(kRenderPassBackdropFilters)) {
-    const base::Value* backdrop_filters =
-        dict_value.FindListKey("backdrop_filters");
+    const base::Value::List* backdrop_filters =
+        dict.FindList("backdrop_filters");
     if (!backdrop_filters)
       return nullptr;
     if (!FilterOperationsFromList(*backdrop_filters,
@@ -2174,8 +2149,8 @@ std::unique_ptr<CompositorRenderPass> CompositorRenderPassFromDict(
 
   // shared_quad_state_list has to be processed before quad_list.
   if (ProcessRenderPassField(kRenderPassSharedQuadStateList)) {
-    const base::Value* shared_quad_state_list =
-        dict_value.FindListKey("shared_quad_state_list");
+    const base::Value::List* shared_quad_state_list =
+        dict.FindList("shared_quad_state_list");
     if (!shared_quad_state_list)
       return nullptr;
     if (!SharedQuadStateListFromList(*shared_quad_state_list,
@@ -2185,7 +2160,7 @@ std::unique_ptr<CompositorRenderPass> CompositorRenderPassFromDict(
   }
 
   if (ProcessRenderPassField(kRenderPassQuadList)) {
-    const base::Value* quad_list = dict_value.FindListKey("quad_list");
+    const base::Value::List* quad_list = dict.FindList("quad_list");
     if (!quad_list)
       return nullptr;
     if (!QuadListFromList(*quad_list, &(pass->quad_list),

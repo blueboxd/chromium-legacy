@@ -206,6 +206,26 @@ crbug.com/1354678 compositing/reflections/nested-reflection-transformed2.html [ 
 crbug.com/1354678 fast/css/transformed-mask.html [ Failure Pass ]
 crbug.com/1354678 paint/invalidation/reflection/reflection-with-rotation.html [ Failure Pass ]
 
+crbug.com/1376647 [ Linux ] compositing/masks/mask-with-added-filters.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] compositing/overflow/border-radius-above-composited-subframe.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] compositing/overflow/border-radius-composited-subframe.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] compositing/overflow/mask-with-filter.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] css3/filters/backdrop-filter-basic-blur.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] css3/filters/backdrop-filter-boundary.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] css3/filters/backdrop-filter-edge-clipping-2.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] css3/filters/backdrop-filter-edge-pixels.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] css3/filters/effect-brightness-clamping-hw.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] css3/filters/filter-repaint-child-layers.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] css3/filters/filter-repaint-composited-fallback-crash.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] css3/filters/filter-repaint-composited-fallback.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] virtual/scalefactor200/css3/filters/effect-all-on-background-hw.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] virtual/scalefactor200/css3/filters/effect-blur-hw.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] virtual/scalefactor200/css3/filters/effect-combined-hw.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] virtual/scalefactor200/css3/filters/effect-reference-colorspace-hw.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] virtual/scalefactor200/css3/filters/effect-reference-hw.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] virtual/scalefactor200/css3/filters/effect-reference-ordering-hw.html [ Failure Pass ]
+crbug.com/1376647 [ Linux ] virtual/scalefactor200/css3/filters/effect-reference-subregion-hw.html [ Failure Pass ]
+
 # --- END Skia roll test suppresions
 
 
@@ -605,11 +625,13 @@ crbug.com/968791 [ Mac ] virtual/scalefactor200/css3/filters/effect-blur-hw.html
 crbug.com/968791 virtual/scalefactor200/css3/filters/filterRegions.html [ Failure ]
 
 # These appear to be actually incorrect at device_scale_factor 2.0:
-crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/external/wpt/css/filter-effects/effect-reference-feimage-001.html [ Failure ]
-crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/external/wpt/css/filter-effects/effect-reference-feimage-002.html [ Failure ]
-crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/external/wpt/css/filter-effects/effect-reference-feimage-003.html [ Failure ]
-crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/effect-reference-feimage-004.html [ Failure ]
-crbug.com/968791 [ Debug Mac11 ] virtual/scalefactor200/external/wpt/css/filter-effects/filters-test-brightness-003.html [ Failure ]
+crbug.com/1051044 virtual/scalefactor200/external/wpt/css/filter-effects/effect-reference-feimage-001.html [ Failure ]
+crbug.com/1051044 virtual/scalefactor200/external/wpt/css/filter-effects/effect-reference-feimage-002.html [ Failure ]
+crbug.com/1051044 virtual/scalefactor200/external/wpt/css/filter-effects/effect-reference-feimage-003.html [ Failure ]
+crbug.com/1051044 virtual/scalefactor200/external/wpt/css/filter-effects/effect-reference-feimage-004.html [ Failure ]
+crbug.com/1051044 [ Debug Mac11 ] virtual/scalefactor200/external/wpt/css/filter-effects/filters-test-brightness-003.html [ Failure ]
+crbug.com/1362405 css3/filters/effect-reference-hidpi.html [ Failure Pass ]
+crbug.com/1362405 css3/filters/effect-reference-hidpi-hw.html [ Failure Pass ]
 
 crbug.com/916825 external/wpt/css/filter-effects/filter-subregion-01.html [ Failure ]
 
@@ -892,9 +914,6 @@ crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation
 crbug.com/997202 external/wpt/density-size-correction/density-corrected-image-svg-aspect-ratio.html [ Failure ]
 
 crbug.com/1159433 external/wpt/css/css-images/image-orientation/image-orientation-exif-png.html [ Failure ]
-
-# Ref results are wrong on the background and list case, not sure on border result
-crbug.com/1076121 external/wpt/css/css-images/image-orientation/image-orientation-border-image.html [ Failure ]
 
 # object-fit is not applied for <object>/<embed>.
 crbug.com/693834 external/wpt/css/css-images/object-fit-contain-svg-001e.html [ Failure ]
@@ -2011,7 +2030,7 @@ crbug.com/891944 external/wpt/css/css-scrollbars/transparent-on-root.html [ Fail
 crbug.com/891944 [ Mac ] external/wpt/css/css-scrollbars/scrollbar-width-paint-001.html [ Failure ]
 
 # css-nesting
-crbug.com/1095675 external/wpt/css/selectors/nesting.html [ Failure ]
+crbug.com/1095675 external/wpt/css/css-nesting/conditional-properties.html [ Failure ]
 
 # Failures on specific Mac bots
 crbug.com/1319399 [ Mac11 ] external/wpt/css/selectors/focus-visible-025.html [ Failure ]
@@ -5197,6 +5216,7 @@ crbug.com/1088007 virtual/gpu/fast/canvas/OffscreenCanvasClearRectPartial.html [
 
 # Sheriff 2020-06-03
 crbug.com/1007228 [ Mac ] external/wpt/fullscreen/api/element-request-fullscreen-and-move-to-iframe-manual.html [ Failure Pass ]
+crbug.com/1349215 [ Debug Linux ] external/wpt/fullscreen/api/document-fullscreen-enabled-cross-origin.sub.html [ Skip ]
 crbug.com/1349215 [ Mac11 ] external/wpt/fullscreen/api/document-fullscreen-enabled-cross-origin.sub.html [ Timeout ]
 crbug.com/1349215 [ Mac10.15 ] external/wpt/fullscreen/api/document-fullscreen-enabled-cross-origin.sub.html [ Timeout ]
 
@@ -7212,7 +7232,6 @@ crbug.com/1159586 virtual/post-message-different-partition-same-origin-blocked/e
 
 # Sheriff 2022-10-03
 crbug.com/1368767 wpt_internal/webmidi/requestmidiaccess-basic.https.html [ Failure Pass ]
-crbug.com/1362405 css3/filters/effect-reference-hidpi.html [ Skip ]
 
 # These tests are optional and not reliably supported in Chrome.
 crbug.com/1370307 external/wpt/encoding-detection/ar-ISO-8859-6-late.tentative.html [ Failure Pass ]
@@ -7714,3 +7733,6 @@ crbug.com/1347831 http/tests/devtools/indexeddb/database-structure.js [ Skip ]
 crbug.com/1347831 http/tests/devtools/indexeddb/database-version-number.js [ Skip ]
 crbug.com/1347831 http/tests/devtools/indexeddb/track-valid-origin.js [ Skip ]
 crbug.com/1347831 http/tests/devtools/indexeddb/upgrade-events.js [ Skip ]
+
+# Sheriff 2022-10-19
+crbug.com/1376568 virtual/threaded-preload-scanner/external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/077.html [ Skip ]

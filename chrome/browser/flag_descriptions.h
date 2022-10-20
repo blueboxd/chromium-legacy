@@ -80,11 +80,17 @@ extern const char kBrokerFileOperationsOnDiskCacheInNetworkServiceDescription[];
 
 extern const char kCOLRV1FontsDescription[];
 
+extern const char kChromeRootStoreEnabledName[];
+extern const char kChromeRootStoreEnabledDescription[];
+
 extern const char kClipboardUnsanitizedContentName[];
 extern const char kClipboardUnsanitizedContentDescription[];
 
 extern const char kContentLanguagesInLanguagePickerName[];
 extern const char kContentLanguagesInLanguagePickerDescription[];
+
+extern const char kCustomizeChromeColorExtractionName[];
+extern const char kCustomizeChromeColorExtractionDescription[];
 
 extern const char kCustomizeChromeSidePanelName[];
 extern const char KCustomizeChromeSidePanelDescription[];
@@ -2446,6 +2452,9 @@ extern const char kNtpCacheOneGoogleBarDescription[];
 
 extern const char kNtpChromeCartModuleName[];
 extern const char kNtpChromeCartModuleDescription[];
+
+extern const char kNtpComprehensiveThemingName[];
+extern const char kNtpComprehensiveThemingDescription[];
 
 extern const char kNtpDesktopLensName[];
 extern const char kNtpDesktopLensDescription[];

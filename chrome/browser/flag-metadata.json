@@ -691,7 +691,7 @@
   {
     "name": "block-insecure-private-network-requests",
     "owners": [ "titouan", "chrome-security-owp-team@google.com" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 110
   },
   {
     "name": "block-migrated-default-chrome-app-sync",
@@ -929,6 +929,11 @@
     "name": "chrome-labs",
     "owners": ["elainechien", "robliao"],
     "expiry_milestone": 112
+  },
+  {
+    "name": "chrome-root-store-enabled",
+    "owners": ["hchao", "mattm", "davidben", "chrome-trusty-transport-core@google.com"],
+    "expiry_milestone": 115
   },
   {
     "name": "chrome-share-long-screenshot",
@@ -1228,6 +1233,11 @@
   {
     "name": "cups-ipp-printing-backend",
     "owners": [ "awscreen", "//printing/OWNERS" ],
+    "expiry_milestone": 112
+  },
+  {
+    "name": "customize-chrome-color-extraction",
+    "owners": [ "rtatum@google.com", "tiborg" ],
     "expiry_milestone": 112
   },
   {
@@ -2108,7 +2118,7 @@
   {
     "name": "enable-desktop-pwas-elided-extensions-menu",
     "owners": [ "cmp@chromium.org", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 130
   },
   {
     "name": "enable-desktop-pwas-launch-handler",
@@ -3381,7 +3391,7 @@
   {
     "name": "enable-webrtc-pipewire-capturer",
     "owners": [ "tomas.popela@gmail.com", "grulja@gmail.com", "mfoltz@google.com", "alcooper@chromium.org" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 120
   },
   {
     "name": "enable-webrtc-remote-event-log",
@@ -4750,7 +4760,7 @@
   {
     "name": "new-overflow-menu",
     "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 105
+    "expiry_milestone": 111
   },
   {
     "name": "new-overflow-menu-alternate-iph",
@@ -4825,6 +4835,11 @@
     "name": "ntp-chrome-cart-module",
     "owners": [ "wychen", "tiborg", "yuezhanggg" ],
     "expiry_milestone": 112
+  },
+  {
+    "name": "ntp-comprehensive-theming",
+    "owners": [ "romanarora", "tiborg", "tluk" ],
+    "expiry_milestone": 113
   },
   {
     "name": "ntp-desktop-lens",
@@ -5628,17 +5643,17 @@
   {
     "name": "private-network-access-preflight-short-timeout",
     "owners": [ "lyf", "chrome-security-owp-team@google.com" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 113
   },
   {
     "name": "private-network-access-respect-preflight-results",
     "owners": [ "titouan", "chrome-security-owp-team@google.com" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 113
   },
   {
     "name": "private-network-access-send-preflights",
     "owners": [ "titouan", "chrome-security-owp-team@google.com" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 113
   },
   {
     "name": "productivity-launcher",
@@ -7069,17 +7084,17 @@
   {
     "name": "webpage-alternative-text-zoom",
     "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 105
+    "expiry_milestone": 111
   },
   {
     "name": "webpage-default-zoom-from-dynamic-type",
     "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 105
+    "expiry_milestone": 111
   },
   {
     "name": "webpage-text-zoom-ipad",
     "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 111
   },
   {
     "name": "webui-tab-strip",

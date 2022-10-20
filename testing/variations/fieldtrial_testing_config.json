@@ -3811,6 +3811,26 @@
             ]
         }
     ],
+    "DesktopPartialTranslate": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "DesktopPartialTranslateTextSelectionMaxCharacters": "500"
+                    },
+                    "enable_features": [
+                        "DesktopPartialTranslate"
+                    ]
+                }
+            ]
+        }
+    ],
     "DesktopReadingListAddFromDialog": [
         {
             "platforms": [
@@ -8615,6 +8635,31 @@
                         "PrivacySandboxAdsAPIs",
                         "PrivacySandboxSettings3",
                         "SharedStorageAPI"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ProcessHtmlDataImmediately": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "AllChunks",
+                    "params": {
+                        "first": "true",
+                        "rest": "true"
+                    },
+                    "enable_features": [
+                        "ProcessHtmlDataImmediately"
                     ]
                 }
             ]

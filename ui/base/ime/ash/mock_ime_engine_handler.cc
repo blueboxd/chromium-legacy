@@ -23,19 +23,19 @@ MockIMEEngineHandler::MockIMEEngineHandler()
 
 MockIMEEngineHandler::~MockIMEEngineHandler() = default;
 
-void MockIMEEngineHandler::FocusIn(const InputContext& input_context) {
+void MockIMEEngineHandler::Focus(const InputContext& input_context) {
   last_text_input_context_ = input_context;
   if (last_text_input_context_.type != ui::TEXT_INPUT_TYPE_NONE)
     ++focus_in_call_count_;
 }
 
-void MockIMEEngineHandler::OnTouch(ui::EventPointerType pointerType) {}
-
-void MockIMEEngineHandler::FocusOut() {
+void MockIMEEngineHandler::Blur() {
   if (last_text_input_context_.type != ui::TEXT_INPUT_TYPE_NONE)
     ++focus_out_call_count_;
   last_text_input_context_.type = ui::TEXT_INPUT_TYPE_NONE;
 }
+
+void MockIMEEngineHandler::OnTouch(ui::EventPointerType pointerType) {}
 
 void MockIMEEngineHandler::Enable(const std::string& component_id) {
 }
@@ -70,6 +70,9 @@ void MockIMEEngineHandler::PropertyActivate(const std::string& property_name) {
 }
 
 void MockIMEEngineHandler::CandidateClicked(uint32_t index) {}
+
+void MockIMEEngineHandler::AssistiveWindowChanged(
+    const ash::ime::AssistiveWindow& window) {}
 
 void MockIMEEngineHandler::SetSurroundingText(const std::u16string& text,
                                               uint32_t cursor_pos,

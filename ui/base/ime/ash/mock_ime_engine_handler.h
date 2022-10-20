@@ -14,6 +14,9 @@
 #include "ui/events/event.h"
 
 namespace ash {
+namespace ime {
+struct AssistiveWindow;
+}  // namespace ime
 
 class COMPONENT_EXPORT(UI_BASE_IME_ASH) MockIMEEngineHandler
     : public ui::TextInputMethod {
@@ -22,9 +25,9 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) MockIMEEngineHandler
   ~MockIMEEngineHandler() override;
 
   // ui::TextInputMethod:
-  void FocusIn(const InputContext& input_context) override;
+  void Focus(const InputContext& input_context) override;
+  void Blur() override;
   void OnTouch(ui::EventPointerType pointerType) override;
-  void FocusOut() override;
   void Enable(const std::string& component_id) override;
   void Disable() override;
   void Reset() override;
@@ -35,6 +38,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) MockIMEEngineHandler
   ui::VirtualKeyboardController* GetVirtualKeyboardController() const override;
   void PropertyActivate(const std::string& property_name) override;
   void CandidateClicked(uint32_t index) override;
+  void AssistiveWindowChanged(const ash::ime::AssistiveWindow& window) override;
   void SetSurroundingText(const std::u16string& text,
                           uint32_t cursor_pos,
                           uint32_t anchor_pos,

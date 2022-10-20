@@ -13,12 +13,12 @@ MockInputMethodEngine::MockInputMethodEngine() = default;
 
 MockInputMethodEngine::~MockInputMethodEngine() = default;
 
-void MockInputMethodEngine::FocusIn(
+void MockInputMethodEngine::Focus(
     const TextInputMethod::InputContext& input_context) {}
 
 void MockInputMethodEngine::OnTouch(ui::EventPointerType pointerType) {}
 
-void MockInputMethodEngine::FocusOut() {}
+void MockInputMethodEngine::Blur() {}
 
 void MockInputMethodEngine::Enable(const std::string& component_id) {
   active_component_id_ = component_id;
@@ -53,6 +53,9 @@ void MockInputMethodEngine::PropertyActivate(const std::string& property_name) {
 }
 
 void MockInputMethodEngine::CandidateClicked(uint32_t index) {}
+
+void MockInputMethodEngine::AssistiveWindowChanged(
+    const ash::ime::AssistiveWindow& window) {}
 
 void MockInputMethodEngine::SetMirroringEnabled(bool mirroring_enabled) {}
 

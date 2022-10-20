@@ -44,6 +44,10 @@ struct SuggestionDetails;
 }  // namespace ui
 
 namespace ash {
+namespace ime {
+struct AssistiveWindow;
+}  // namespace ime
+
 namespace input_method {
 
 struct AssistiveWindowProperties;
@@ -225,8 +229,8 @@ class InputMethodEngine : virtual public ui::TextInputMethod,
   }
 
   // ui::TextInputMethod overrides.
-  void FocusIn(const ui::TextInputMethod::InputContext& input_context) override;
-  void FocusOut() override;
+  void Focus(const ui::TextInputMethod::InputContext& input_context) override;
+  void Blur() override;
   void OnTouch(ui::EventPointerType pointerType) override;
   void Enable(const std::string& component_id) override;
   void Disable() override;
@@ -243,6 +247,7 @@ class InputMethodEngine : virtual public ui::TextInputMethod,
   void CandidateClicked(uint32_t index) override;
   void AssistiveWindowButtonClicked(
       const ui::ime::AssistiveWindowButton& button) override;
+  void AssistiveWindowChanged(const ash::ime::AssistiveWindow& window) override;
   void SetMirroringEnabled(bool mirroring_enabled) override;
   void SetCastingEnabled(bool casting_enabled) override;
   ui::VirtualKeyboardController* GetVirtualKeyboardController() const override;

@@ -177,8 +177,6 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/services/multidevice_setup/multidevice_setup_service.h"
-#include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "ash/webui/camera_app_ui/camera_app_ui.h"
 #include "ash/webui/camera_app_ui/url_constants.h"
 #include "ash/webui/color_internals/color_internals_ui.h"
 #include "ash/webui/color_internals/url_constants.h"
@@ -239,7 +237,6 @@
 #include "chrome/browser/ash/scanning/scan_service.h"
 #include "chrome/browser/ash/scanning/scan_service_factory.h"
 #include "chrome/browser/ash/shimless_rma/chrome_shimless_rma_delegate.h"
-#include "chrome/browser/ash/web_applications/camera_app/chrome_camera_app_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/chrome_file_manager_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/media_app/chrome_media_app_ui_delegate.h"
@@ -270,6 +267,7 @@
 #include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui.h"
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_credentials_dialog.h"
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_share_dialog.h"
+#include "chrome/browser/ui/webui/ash/sys_internals/sys_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/certificate_manager_dialog_ui.h"
@@ -285,11 +283,11 @@
 #include "chrome/browser/ui/webui/chromeos/set_time_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_trace_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_ui.h"
-#include "chrome/browser/ui/webui/chromeos/sys_internals/sys_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/vm/vm_ui.h"
 #include "chrome/browser/ui/webui/nearby_internals/nearby_internals_ui.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share_dialog_ui.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_ui.h"
+#include "chromeos/ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"  // nogncheck
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"  // nogncheck
 #include "content/public/common/content_switches.h"
@@ -1095,16 +1093,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUISmbShareHost)
     return &NewWebUI<ash::smb_dialog::SmbShareDialogUI>;
   if (url.host_piece() == chrome::kChromeUISysInternalsHost)
-    return &NewWebUI<SysInternalsUI>;
+    return &NewWebUI<ash::SysInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIAssistantOptInHost)
     return &NewWebUI<chromeos::AssistantOptInUI>;
-  if (url.host_piece() == ash::kChromeUICameraAppHost) {
-    auto* swa_manager = ash::SystemWebAppManager::Get(profile);
-    if (swa_manager &&
-        swa_manager->IsAppEnabled(ash::SystemWebAppType::CAMERA)) {
-      return &NewComponentUI<ash::CameraAppUI, ChromeCameraAppUIDelegate>;
-    }
-  }
   if (url.host_piece() == chrome::kChromeUINearbyInternalsHost)
     return &NewWebUI<NearbyInternalsUI>;
   if (arc::IsArcAllowedForProfile(profile)) {

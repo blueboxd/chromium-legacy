@@ -1985,21 +1985,20 @@ error::Error WebGPUDecoderImpl::HandleSetWebGPUExecutionContextToken(
     const volatile void* cmd_data) {
   const volatile webgpu::cmds::SetWebGPUExecutionContextToken& c = *static_cast<
       const volatile webgpu::cmds::SetWebGPUExecutionContextToken*>(cmd_data);
-  uint32_t type(c.type);
+  blink::WebGPUExecutionContextToken::Tag type{c.type};
   uint64_t high = uint64_t(c.high_high) << 32 | uint64_t(c.high_low);
   uint64_t low = uint64_t(c.low_high) << 32 | uint64_t(c.low_low);
   base::UnguessableToken unguessable_token =
       base::UnguessableToken::Deserialize(high, low);
   blink::WebGPUExecutionContextToken execution_context_token;
   switch (type) {
-    case blink::WebGPUExecutionContextToken::Base::template TypeIndex<
-        blink::DocumentToken>::kValue: {
+    case blink::WebGPUExecutionContextToken::IndexOf<blink::DocumentToken>(): {
       execution_context_token = blink::WebGPUExecutionContextToken(
           blink::DocumentToken(unguessable_token));
       break;
     }
-    case blink::WebGPUExecutionContextToken::Base::template TypeIndex<
-        blink::DedicatedWorkerToken>::kValue: {
+    case blink::WebGPUExecutionContextToken::IndexOf<
+        blink::DedicatedWorkerToken>(): {
       execution_context_token = blink::WebGPUExecutionContextToken(
           blink::DedicatedWorkerToken(unguessable_token));
       break;

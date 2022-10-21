@@ -481,14 +481,15 @@ PageLifecycleStateManagerTestDelegate::
     manager_->SetDelegateForTesting(nullptr);
 }
 
-void PageLifecycleStateManagerTestDelegate::WaitForInBackForwardCacheAck() {
+bool PageLifecycleStateManagerTestDelegate::WaitForInBackForwardCacheAck() {
   DCHECK(manager_);
   if (manager_->last_acknowledged_state().is_in_back_forward_cache) {
-    return;
+    return true;
   }
   base::RunLoop loop;
   store_in_back_forward_cache_ack_received_ = loop.QuitClosure();
   loop.Run();
+  return manager_->last_acknowledged_state().is_in_back_forward_cache;
 }
 
 void PageLifecycleStateManagerTestDelegate::OnStoreInBackForwardCacheSent(
@@ -673,12 +674,10 @@ IN_PROC_BROWSER_TEST_F(HighCacheSizeBackForwardCacheBrowserTest,
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImplWrapper rfh_a(current_frame_host());
-  RenderFrameDeletedObserver delete_observer(rfh_a.get());
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   RenderFrameHostImplWrapper rfh_b(current_frame_host());
-  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b.get());
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 3) Navigate to C, which has a beforeunload handler that never finishes.

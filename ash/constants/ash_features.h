@@ -5,7 +5,6 @@
 #ifndef ASH_CONSTANTS_ASH_FEATURES_H_
 #define ASH_CONSTANTS_ASH_FEATURES_H_
 
-#include "ash/constants/ambient_animation_theme.h"
 #include "base/component_export.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
@@ -54,14 +53,11 @@ extern const base::FeatureParam<bool> kAmbientModeRssPhotosEnabled;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::FeatureParam<bool> kAmbientModeStreetArtAlbumEnabled;
 COMPONENT_EXPORT(ASH_CONSTANTS)
-BASE_DECLARE_FEATURE(kAmbientModeAnimationFeature);
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::FeatureParam<AmbientAnimationTheme>
-    kAmbientModeAnimationThemeParam;
-COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kAmbientModeDevUseProdFeature);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kAmbientModePhotoPreviewFeature);
+COMPONENT_EXPORT(ASH_CONSTANTS)
+BASE_DECLARE_FEATURE(kAmbientModeThrottleAnimation);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kApnRevamp);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kArcAdbSideloadingFeature);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kArcFuseBoxFileSharing);
@@ -142,8 +138,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kCrosNextWMP);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kCrosPrivacyHub);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kCrosPrivacyHubV0);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kCrosPrivacyHubV2);
-COMPONENT_EXPORT(ASH_CONSTANTS)
-BASE_DECLARE_FEATURE(kCrossDeviceAttestationCertificateGeneration);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kCrostiniBullseyeUpgrade);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kDesksCloseAll);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kDesksTemplates);
@@ -617,10 +611,10 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAdaptiveChargingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAdaptiveChargingForTestingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAdjustSplitViewForVKEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAllowAmbientEQEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeAnimationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeDevUseProdEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModePhotoPreviewEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeThrottleAnimationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsApnRevampEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAppNotificationsPageEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsArcFuseBoxFileSharingEnabled();
@@ -653,8 +647,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCrosPrivacyHubV0Enabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCrosPrivacyHubV2Enabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCrosPrivacyHubV1Enabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCrosNextWMPEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS)
-bool IsCrossDeviceAttestationCertificateGenerationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCryptohomeRecoveryFlowEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCryptohomeRecoveryFlowUIEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCryptohomeRecoverySetupEnabled();

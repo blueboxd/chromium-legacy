@@ -287,38 +287,54 @@ TEST(AttributionRegistrationParsingTest, ParseSourceRegistration) {
       {
           "required_fields_only",
           R"json({"destination":"https://d.example"})json",
-          StorableSource(CommonSourceInfo(
-              /*source_event_id=*/0, source_origin, destination_origin,
-              reporting_origin, source_time, default_expiry_time, source_type,
-              /*priority=*/0, AttributionFilterData(),
-              /*debug_key=*/absl::nullopt, AttributionAggregationKeys())),
+          StorableSource(
+              CommonSourceInfo(
+                  /*source_event_id=*/0, source_origin, destination_origin,
+                  reporting_origin, source_time, default_expiry_time,
+                  source_type,
+                  /*priority=*/0, AttributionFilterData(),
+                  /*debug_key=*/absl::nullopt, AttributionAggregationKeys()),
+              /*is_within_fenced_frame=*/false,
+              /*debug_reporting=*/false),
       },
       {
           "source_event_id_valid",
           R"json({"source_event_id":"1","destination":"https://d.example"})json",
-          StorableSource(CommonSourceInfo(
-              /*source_event_id=*/1, source_origin, destination_origin,
-              reporting_origin, source_time, default_expiry_time, source_type,
-              /*priority=*/0, AttributionFilterData(),
-              /*debug_key=*/absl::nullopt, AttributionAggregationKeys())),
+          StorableSource(
+              CommonSourceInfo(
+                  /*source_event_id=*/1, source_origin, destination_origin,
+                  reporting_origin, source_time, default_expiry_time,
+                  source_type,
+                  /*priority=*/0, AttributionFilterData(),
+                  /*debug_key=*/absl::nullopt, AttributionAggregationKeys()),
+              /*is_within_fenced_frame=*/false,
+              /*debug_reporting=*/false),
       },
       {
           "source_event_id_wrong_type",
           R"json({"source_event_id":1,"destination":"https://d.example"})json",
-          StorableSource(CommonSourceInfo(
-              /*source_event_id=*/0, source_origin, destination_origin,
-              reporting_origin, source_time, default_expiry_time, source_type,
-              /*priority=*/0, AttributionFilterData(),
-              /*debug_key=*/absl::nullopt, AttributionAggregationKeys())),
+          StorableSource(
+              CommonSourceInfo(
+                  /*source_event_id=*/0, source_origin, destination_origin,
+                  reporting_origin, source_time, default_expiry_time,
+                  source_type,
+                  /*priority=*/0, AttributionFilterData(),
+                  /*debug_key=*/absl::nullopt, AttributionAggregationKeys()),
+              /*is_within_fenced_frame=*/false,
+              /*debug_reporting=*/false),
       },
       {
           "source_event_id_invalid_defaults_to_0",
           R"json({"source_event_id":"-1","destination":"https://d.example"})json",
-          StorableSource(CommonSourceInfo(
-              /*source_event_id=*/0, source_origin, destination_origin,
-              reporting_origin, source_time, default_expiry_time, source_type,
-              /*priority=*/0, AttributionFilterData(),
-              /*debug_key=*/absl::nullopt, AttributionAggregationKeys())),
+          StorableSource(
+              CommonSourceInfo(
+                  /*source_event_id=*/0, source_origin, destination_origin,
+                  reporting_origin, source_time, default_expiry_time,
+                  source_type,
+                  /*priority=*/0, AttributionFilterData(),
+                  /*debug_key=*/absl::nullopt, AttributionAggregationKeys()),
+              /*is_within_fenced_frame=*/false,
+              /*debug_reporting=*/false),
       },
       {
           "destination_missing",
@@ -338,104 +354,146 @@ TEST(AttributionRegistrationParsingTest, ParseSourceRegistration) {
       {
           "priority_valid",
           R"json({"priority":"-5","destination":"https://d.example"})json",
-          StorableSource(CommonSourceInfo(
-              /*source_event_id=*/0, source_origin, destination_origin,
-              reporting_origin, source_time, default_expiry_time, source_type,
-              /*priority=*/-5, AttributionFilterData(),
-              /*debug_key=*/absl::nullopt, AttributionAggregationKeys())),
+          StorableSource(
+              CommonSourceInfo(
+                  /*source_event_id=*/0, source_origin, destination_origin,
+                  reporting_origin, source_time, default_expiry_time,
+                  source_type,
+                  /*priority=*/-5, AttributionFilterData(),
+                  /*debug_key=*/absl::nullopt, AttributionAggregationKeys()),
+              /*is_within_fenced_frame=*/false,
+              /*debug_reporting=*/false),
       },
       {
           "priority_wrong_type_defaults_to_0",
           R"json({"priority":-5,"destination":"https://d.example"})json",
-          StorableSource(CommonSourceInfo(
-              /*source_event_id=*/0, source_origin, destination_origin,
-              reporting_origin, source_time, default_expiry_time, source_type,
-              /*priority=*/0, AttributionFilterData(),
-              /*debug_key=*/absl::nullopt, AttributionAggregationKeys())),
+          StorableSource(
+              CommonSourceInfo(
+                  /*source_event_id=*/0, source_origin, destination_origin,
+                  reporting_origin, source_time, default_expiry_time,
+                  source_type,
+                  /*priority=*/0, AttributionFilterData(),
+                  /*debug_key=*/absl::nullopt, AttributionAggregationKeys()),
+              /*is_within_fenced_frame=*/false,
+              /*debug_reporting=*/false),
       },
       {
           "priority_invalid_defaults_to_0",
           R"json({"priority":"abc","destination":"https://d.example"})json",
-          StorableSource(CommonSourceInfo(
-              /*source_event_id=*/0, source_origin, destination_origin,
-              reporting_origin, source_time, default_expiry_time, source_type,
-              /*priority=*/0, AttributionFilterData(),
-              /*debug_key=*/absl::nullopt, AttributionAggregationKeys())),
+          StorableSource(
+              CommonSourceInfo(
+                  /*source_event_id=*/0, source_origin, destination_origin,
+                  reporting_origin, source_time, default_expiry_time,
+                  source_type,
+                  /*priority=*/0, AttributionFilterData(),
+                  /*debug_key=*/absl::nullopt, AttributionAggregationKeys()),
+              /*is_within_fenced_frame=*/false,
+              /*debug_reporting=*/false),
       },
       {
           "expiry_valid",
           R"json({"expiry":"172801","destination":"https://d.example"})json",
-          StorableSource(CommonSourceInfo(
-              /*source_event_id=*/0, source_origin, destination_origin,
-              reporting_origin, source_time,
-              /*expiry_time=*/source_time + base::Seconds(172801), source_type,
-              /*priority=*/0, AttributionFilterData(),
-              /*debug_key=*/absl::nullopt, AttributionAggregationKeys())),
+          StorableSource(
+              CommonSourceInfo(
+                  /*source_event_id=*/0, source_origin, destination_origin,
+                  reporting_origin, source_time,
+                  /*expiry_time=*/source_time + base::Seconds(172801),
+                  source_type,
+                  /*priority=*/0, AttributionFilterData(),
+                  /*debug_key=*/absl::nullopt, AttributionAggregationKeys()),
+              /*is_within_fenced_frame=*/false,
+              /*debug_reporting=*/false),
       },
       {
           "expiry_wrong_type",
           R"json({"expiry":172800,"destination":"https://d.example"})json",
-          StorableSource(CommonSourceInfo(
-              /*source_event_id=*/0, source_origin, destination_origin,
-              reporting_origin, source_time, default_expiry_time, source_type,
-              /*priority=*/0, AttributionFilterData(),
-              /*debug_key=*/absl::nullopt, AttributionAggregationKeys())),
+          StorableSource(
+              CommonSourceInfo(
+                  /*source_event_id=*/0, source_origin, destination_origin,
+                  reporting_origin, source_time, default_expiry_time,
+                  source_type,
+                  /*priority=*/0, AttributionFilterData(),
+                  /*debug_key=*/absl::nullopt, AttributionAggregationKeys()),
+              /*is_within_fenced_frame=*/false,
+              /*debug_reporting=*/false),
       },
       {
           "expiry_invalid",
           R"json({"expiry":"abc","destination":"https://d.example"})json",
-          StorableSource(CommonSourceInfo(
-              /*source_event_id=*/0, source_origin, destination_origin,
-              reporting_origin, source_time, default_expiry_time, source_type,
-              /*priority=*/0, AttributionFilterData(),
-              /*debug_key=*/absl::nullopt, AttributionAggregationKeys())),
+          StorableSource(
+              CommonSourceInfo(
+                  /*source_event_id=*/0, source_origin, destination_origin,
+                  reporting_origin, source_time, default_expiry_time,
+                  source_type,
+                  /*priority=*/0, AttributionFilterData(),
+                  /*debug_key=*/absl::nullopt, AttributionAggregationKeys()),
+              /*is_within_fenced_frame=*/false,
+              /*debug_reporting=*/false),
       },
       {
           "expiry_below_min",
           R"json({"expiry":"86399","destination":"https://d.example"})json",
-          StorableSource(CommonSourceInfo(
-              /*source_event_id=*/0, source_origin, destination_origin,
-              reporting_origin, source_time,
-              /*expiry_time=*/source_time + base::Days(1), source_type,
-              /*priority=*/0, AttributionFilterData(),
-              /*debug_key=*/absl::nullopt, AttributionAggregationKeys())),
+          StorableSource(
+              CommonSourceInfo(
+                  /*source_event_id=*/0, source_origin, destination_origin,
+                  reporting_origin, source_time,
+                  /*expiry_time=*/source_time + base::Days(1), source_type,
+                  /*priority=*/0, AttributionFilterData(),
+                  /*debug_key=*/absl::nullopt, AttributionAggregationKeys()),
+              /*is_within_fenced_frame=*/false,
+              /*debug_reporting=*/false),
       },
       {
           "debug_key_valid",
           R"json({"debug_key":"5","destination":"https://d.example"})json",
           StorableSource(CommonSourceInfo(
-              /*source_event_id=*/0, source_origin, destination_origin,
-              reporting_origin, source_time, default_expiry_time, source_type,
-              /*priority=*/0, AttributionFilterData(),
-              /*debug_key=*/5, AttributionAggregationKeys())),
+                             /*source_event_id=*/0, source_origin,
+                             destination_origin, reporting_origin, source_time,
+                             default_expiry_time, source_type,
+                             /*priority=*/0, AttributionFilterData(),
+                             /*debug_key=*/5, AttributionAggregationKeys()),
+                         /*is_within_fenced_frame=*/false,
+                         /*debug_reporting=*/false),
       },
       {
           "debug_key_invalid",
           R"json({"debug_key":"-5","destination":"https://d.example"})json",
-          StorableSource(CommonSourceInfo(
-              /*source_event_id=*/0, source_origin, destination_origin,
-              reporting_origin, source_time, default_expiry_time, source_type,
-              /*priority=*/0, AttributionFilterData(),
-              /*debug_key=*/absl::nullopt, AttributionAggregationKeys())),
+          StorableSource(
+              CommonSourceInfo(
+                  /*source_event_id=*/0, source_origin, destination_origin,
+                  reporting_origin, source_time, default_expiry_time,
+                  source_type,
+                  /*priority=*/0, AttributionFilterData(),
+                  /*debug_key=*/absl::nullopt, AttributionAggregationKeys()),
+              /*is_within_fenced_frame=*/false,
+              /*debug_reporting=*/false),
       },
       {
           "debug_key_wrong_type",
           R"json({"debug_key":5,"destination":"https://d.example"})json",
-          StorableSource(CommonSourceInfo(
-              /*source_event_id=*/0, source_origin, destination_origin,
-              reporting_origin, source_time, default_expiry_time, source_type,
-              /*priority=*/0, AttributionFilterData(),
-              /*debug_key=*/absl::nullopt, AttributionAggregationKeys())),
+          StorableSource(
+              CommonSourceInfo(
+                  /*source_event_id=*/0, source_origin, destination_origin,
+                  reporting_origin, source_time, default_expiry_time,
+                  source_type,
+                  /*priority=*/0, AttributionFilterData(),
+                  /*debug_key=*/absl::nullopt, AttributionAggregationKeys()),
+              /*is_within_fenced_frame=*/false,
+              /*debug_reporting=*/false),
       },
       {
           "filter_data_valid",
           R"json({"filter_data":{"a":["b"]},"destination":"https://d.example"})json",
-          StorableSource(CommonSourceInfo(
-              /*source_event_id=*/0, source_origin, destination_origin,
-              reporting_origin, source_time, default_expiry_time, source_type,
-              /*priority=*/0,
-              AttributionFilterData::CreateForTesting({{"a", {"b"}}}),
-              /*debug_key=*/absl::nullopt, AttributionAggregationKeys())),
+          StorableSource(
+              CommonSourceInfo(
+                  /*source_event_id=*/0, source_origin, destination_origin,
+                  reporting_origin, source_time, default_expiry_time,
+                  source_type,
+                  /*priority=*/0,
+                  AttributionFilterData::CreateForTesting({{"a", {"b"}}}),
+                  /*debug_key=*/absl::nullopt, AttributionAggregationKeys()),
+              /*is_within_fenced_frame=*/false,
+              /*debug_reporting=*/false),
       },
       {
           "filter_data_wrong_type",
@@ -446,17 +504,46 @@ TEST(AttributionRegistrationParsingTest, ParseSourceRegistration) {
           "aggregation_keys_valid",
           R"json({"aggregation_keys":{"a":"0x1"},"destination":"https://d.example"})json",
           StorableSource(CommonSourceInfo(
-              /*source_event_id=*/0, source_origin, destination_origin,
-              reporting_origin, source_time, default_expiry_time, source_type,
-              /*priority=*/0, AttributionFilterData(),
-              /*debug_key=*/absl::nullopt,
-              *AttributionAggregationKeys::FromKeys(
-                  {{"a", absl::MakeUint128(0, 1)}}))),
+                             /*source_event_id=*/0, source_origin,
+                             destination_origin, reporting_origin, source_time,
+                             default_expiry_time, source_type,
+                             /*priority=*/0, AttributionFilterData(),
+                             /*debug_key=*/absl::nullopt,
+                             *AttributionAggregationKeys::FromKeys(
+                                 {{"a", absl::MakeUint128(0, 1)}})),
+                         /*is_within_fenced_frame=*/false,
+                         /*debug_reporting=*/false),
       },
       {
           "aggregation_keys_wrong_type",
           R"json({"aggregation_keys":5,"destination":"https://d.example"})json",
           base::unexpected(SourceRegistrationError::kAggregationKeysWrongType),
+      },
+      {
+          "debug_reporting_valid",
+          R"json({"debug_reporting":true,"destination":"https://d.example"})json",
+          StorableSource(
+              CommonSourceInfo(
+                  /*source_event_id=*/0, source_origin, destination_origin,
+                  reporting_origin, source_time, default_expiry_time,
+                  source_type,
+                  /*priority=*/0, AttributionFilterData(),
+                  /*debug_key=*/absl::nullopt, AttributionAggregationKeys()),
+              /*is_within_fenced_frame=*/false,
+              /*debug_reporting=*/true),
+      },
+      {
+          "debug_reporting_wrong_type",
+          R"json({"debug_reporting":"true","destination":"https://d.example"})json",
+          StorableSource(
+              CommonSourceInfo(
+                  /*source_event_id=*/0, source_origin, destination_origin,
+                  reporting_origin, source_time, default_expiry_time,
+                  source_type,
+                  /*priority=*/0, AttributionFilterData(),
+                  /*debug_key=*/absl::nullopt, AttributionAggregationKeys()),
+              /*is_within_fenced_frame=*/false,
+              /*debug_reporting=*/false),
       },
   };
 
@@ -464,10 +551,10 @@ TEST(AttributionRegistrationParsingTest, ParseSourceRegistration) {
     base::Value value = base::test::ParseJson(test_case.json);
     ASSERT_TRUE(value.is_dict()) << test_case.desc;
 
-    EXPECT_EQ(
-        test_case.expected,
-        ParseSourceRegistration(std::move(*value.GetIfDict()), source_time,
-                                reporting_origin, source_origin, source_type))
+    EXPECT_EQ(test_case.expected,
+              ParseSourceRegistration(
+                  std::move(*value.GetIfDict()), source_time, reporting_origin,
+                  source_origin, source_type, /*is_within_fenced_frame=*/false))
         << test_case.desc;
   }
 }

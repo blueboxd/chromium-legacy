@@ -1986,6 +1986,7 @@ crbug.com/1207788 external/wpt/css/css-will-change/will-change-stacking-context-
 
 # lab color space not yet implemented
 # color() function not implemented
+crbug.com/1068610 external/wpt/css/css-color/parsing/color-computed-color-mix-function.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/lch-005.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/lch-009.html [ Failure ]
 crbug.com/1068610 external/wpt/css/css-color/lch-010.html [ Failure ]
@@ -7006,7 +7007,7 @@ crbug.com/1204176 [ Linux ] fast/scrolling/overflow-scrollability.html [ Failure
 
 # Sheriff 2022-07-15
 crbug.com/1344652 [ Mac ] external/wpt/webmessaging/with-ports/020.html [ Failure Pass ]
-crbug.com/1344771 virtual/force-defer-script/external/wpt/html/semantics/scripting-1/the-script-element/defer-script/document-write.html [ Failure Pass ]
+crbug.com/1344771 virtual/force-defer-script/external/wpt/html/semantics/scripting-1/the-script-element/defer-script/document-write.html [ Skip ]
 
 # Sheriff 2022-07-18
 crbug.com/1345192 accessibility/aria-combo-box-with-delay-add.html [ Skip ]
@@ -7275,16 +7276,16 @@ crbug.com/1371949 [ Mac12 ] virtual/low-priority-script-loading/http/tests/devto
 crbug.com/1371949 [ Mac11 ] virtual/low-priority-script-loading/http/tests/devtools/network/resource-priority.js [ Failure Pass ]
 crbug.com/1370857 [ Debug Linux ] fast/block/float/float-avoidance.html [ Crash Failure ]
 crbug.com/1360944 [ Win ] virtual/attribution-reporting-debug-mode/wpt_internal/attribution-reporting/event-level-trigger-filter-data.sub.https.html?include=not_filters [ Skip ]
+crbug.com/1377104 [ Debug Linux ] external/wpt/longtask-timing/longtask-in-externalscript.html [ Failure ]
+crbug.com/1371157 [ Debug Linux ] external/wpt/accessibility/crashtests/delayed-ignored-change.html [ Timeout ]
+crbug.com/1371125 [ Mac10.14 ] external/wpt/webxr/ar-module/xrSession_interactionMode.https.html [ Timeout ]
+crbug.com/1377004 [ Mac10.14 ] external/wpt/video-rvfc/request-video-frame-callback-webrtc.https.html [ Timeout ]
 
 # Sheriff 2022-10-07
 crbug.com/1372556 [ Linux ] external/wpt/css/css-text/text-transform/text-transform-capitalize-* [ Failure Pass ]
 
 crbug.com/1370050 http/tests/devtools/debugger/stop-on-debugger-from-detached-iframe.js [ Skip ]
 crbug.com/1370050 http/tests/devtools/sources/debugger-ui/debugger-save-to-temp-var.js [ Skip ]
-
-# Temporarily disable tests till frontend part of this CL lands
-crbug.com/1349331 http/tests/devtools/storage-panel-dom-storage-update.js [ Skip ]
-crbug.com/1349331 http/tests/devtools/storage-panel-dom-storage.js [ Skip ]
 
 crbug.com/1279220 [ Win ] virtual/percent-based-scrolling/fast/scrolling/scrollbars/touch-scrolling-on-root-scrollbar.html [ Pass Timeout ]
 crbug.com/1279220 [ Linux ] fast/scrolling/non-composited-scroller-in-position-fixed-scroller.html [ Failure Pass ]
@@ -7716,8 +7717,6 @@ crbug.com/1362106 [ Win ] virtual/media-foundation-for-clear-dcomp/media/W3C/vid
 crbug.com/1362106 [ Win ] virtual/media-foundation-for-clear-dcomp/media/W3C/video/readyState/readyState_during_loadeddata.html [ Skip ]
 crbug.com/1362106 [ Win ] virtual/media-foundation-for-clear-dcomp/media/W3C/video/readyState/readyState_during_playing.html [ Skip ]
 
-crbug.com/1375928 external/wpt/webrtc-stats/supported-stats.html [ Failure Pass ]
-
 # Sheriff 2022-10-19
 crbug.com/1376307 [ Fuchsia ] tables/mozilla_expected_failures/bugs/bug1055-2.html [ Failure ]
 
@@ -7733,5 +7732,12 @@ crbug.com/1347831 http/tests/devtools/indexeddb/database-version-number.js [ Ski
 crbug.com/1347831 http/tests/devtools/indexeddb/track-valid-origin.js [ Skip ]
 crbug.com/1347831 http/tests/devtools/indexeddb/upgrade-events.js [ Skip ]
 
-# Sheriff 2022-10-19
-crbug.com/1376568 virtual/threaded-preload-scanner/external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/077.html [ Skip ]
+# Disabled to land devtools-frontend change:
+crbug.com/1376854 http/tests/devtools/elements/accessibility/autocomplete-attribute.js [ Skip ]
+crbug.com/1376854 http/tests/devtools/elements/styles-3/style-autocomplete.js [ Skip ]
+
+# Sheriff 2022-10-20
+crbug.com/1376822 [ Win11 ] external/wpt/html/rendering/replaced-elements/attributes-for-embedded-content-and-images/video-intrinsic-width-height.html [ Failure ]
+crbug.com/1376495 http/tests/devtools/runtime/evaluate-timeout.js [ Failure Pass ]
+crbug.com/1376845 external/wpt/mediacapture-insertable-streams/MediaStreamTrackProcessor-backpressure.https.html [ Failure Pass ]
+crbug.com/1377082 [ Linux ] http/tests/lazyload/attribute.html [ Skip ]

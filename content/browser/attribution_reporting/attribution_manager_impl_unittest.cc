@@ -30,6 +30,7 @@
 #include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
 #include "content/browser/attribution_reporting/attribution_cookie_checker.h"
+#include "content/browser/attribution_reporting/attribution_debug_report.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
@@ -137,10 +138,18 @@ class MockReportSender : public AttributionReportSender {
     callbacks_.emplace_back(std::move(report), std::move(callback));
   }
 
+  void SendReport(AttributionDebugReport report) override {
+    verbose_debug_calls_.push_back(std::move(report));
+  }
+
   const std::vector<AttributionReport>& calls() const { return calls_; }
 
   const std::vector<AttributionReport>& debug_calls() const {
     return debug_calls_;
+  }
+
+  const std::vector<AttributionDebugReport>& verbose_debug_calls() const {
+    return verbose_debug_calls_;
   }
 
   void RunCallback(size_t index, SendResult::Status status) {
@@ -153,6 +162,7 @@ class MockReportSender : public AttributionReportSender {
     calls_.clear();
     debug_calls_.clear();
     callbacks_.clear();
+    verbose_debug_calls_.clear();
   }
 
   void RunCallbacksAndReset(
@@ -175,6 +185,7 @@ class MockReportSender : public AttributionReportSender {
   std::vector<AttributionReport> calls_;
   std::vector<AttributionReport> debug_calls_;
   std::vector<std::pair<AttributionReport, ReportSentCallback>> callbacks_;
+  std::vector<AttributionDebugReport> verbose_debug_calls_;
 };
 
 class MockCookieChecker : public AttributionCookieChecker {
@@ -1036,7 +1047,7 @@ TEST_F(AttributionManagerImplTest, HandleTrigger_RecordsMetric) {
   attribution_manager_->HandleTrigger(DefaultTrigger());
   EXPECT_THAT(StoredReports(), IsEmpty());
   histograms.ExpectUniqueSample(
-      "Conversions.CreateReportStatus3",
+      "Conversions.CreateReportStatus4",
       AttributionTrigger::EventLevelResult::kNoMatchingImpressions, 1);
   histograms.ExpectUniqueSample(
       "Conversions.AggregatableReport.CreateReportStatus2",
@@ -2028,6 +2039,63 @@ TEST_F(AttributionManagerImplTest, TooManyEventsInQueue) {
   for (size_t i = 0; i < kMaxPendingEvents; i++) {
     EXPECT_THAT(sources[i], SourceDebugKeyIs(i));
   }
+}
+
+class AttributionManagerImplDebugReportTest
+    : public AttributionManagerImplTest {
+ protected:
+  void ConfigureStorageDelegate(
+      ConfigurableStorageDelegate& delegate) const override {
+    delegate.set_max_destinations_per_source_site_reporting_origin(1);
+  }
+};
+
+TEST_F(AttributionManagerImplDebugReportTest, VerboseDebugReport_ReportSent) {
+  attribution_manager_->HandleSource(SourceBuilder().Build());
+
+  const auto destination_origin = url::Origin::Create(GURL("https://d.test"));
+
+  // Failed without debug reporting.
+  attribution_manager_->HandleSource(
+      SourceBuilder().SetDestinationOrigin(destination_origin).Build());
+
+  // Source registered outside a fenced frame failed with debug reporting.
+  attribution_manager_->HandleSource(
+      SourceBuilder()
+          .SetDestinationOrigin(destination_origin)
+          .SetDebugReporting(true)
+          .Build());
+
+  // Source registered within a fenced frame failed with debug reporting.
+  attribution_manager_->HandleSource(
+      SourceBuilder()
+          .SetDestinationOrigin(destination_origin)
+          .SetIsWithinFencedFrame(true)
+          .SetDebugReporting(true)
+          .Build());
+
+  EXPECT_THAT(StoredSources(), SizeIs(1));
+
+  task_environment_.RunUntilIdle();
+
+  EXPECT_THAT(report_sender_->verbose_debug_calls(), SizeIs(2));
+
+  base::Value::List report_body_1 =
+      report_sender_->verbose_debug_calls().front().ReportBody();
+  ASSERT_EQ(report_body_1.size(), 1u);
+  ASSERT_TRUE(report_body_1.front().is_dict());
+  const base::Value::Dict* report_data_1 =
+      report_body_1.front().GetDict().FindDict("body");
+  ASSERT_TRUE(report_data_1);
+  EXPECT_TRUE(report_data_1->Find("source_site"));
+
+  base::Value::List report_body_2 =
+      report_sender_->verbose_debug_calls().back().ReportBody();
+  ASSERT_EQ(report_body_2.size(), 1u);
+  const base::Value::Dict* report_data_2 =
+      report_body_2.front().GetDict().FindDict("body");
+  ASSERT_TRUE(report_data_2);
+  EXPECT_FALSE(report_data_2->Find("source_site"));
 }
 
 }  // namespace content

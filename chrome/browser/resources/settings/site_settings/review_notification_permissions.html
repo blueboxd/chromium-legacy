@@ -42,6 +42,10 @@
     padding-inline-end: 0;
   }
 
+  #tooltip {
+    --paper-tooltip-min-width: max-content;
+  }
+
   iron-icon[icon='settings:notifications-none'] {
     background-color: var(--google-blue-50);
     fill: var(--google-blue-600);
@@ -101,6 +105,10 @@
     animation-name: removed-animation;
     min-height: 0;
   }
+
+  #blockAllButton {
+    margin-inline-start: auto;
+  }
 </style>
 <template is="dom-if" if="[[!shouldShowCompletionInfo_]]">
   <div id="review-header" class="header-with-icon">
@@ -120,46 +128,45 @@
       <div class="cr-row">
         <site-favicon url="[[item.origin]]"></site-favicon>
         <div id="displayName_[[index]]" class="display-name cr-padded-text">
-          <div class="site-representation">
-            <span class="url-directionality">[[getDisplayName_(item)]]</span>
-          </div>
+          <div class="site-representation">[[item.origin]]</div>
           <div class="second-line secondary">[[item.notificationInfoString]]
           </div>
         </div>
         <cr-icon-button iron-icon="cr20:block" id="block"
             on-click="onBlockNotificationPermissionClick_"
-            aria-label="[[getAriaLabelText_(
-                actionsEnum_.BLOCK, lastOrigin_)]]"
+            aria-label$="[[getBlockAriaLabelForOrigin(item.origin)]]"
             focus-row-control focus-type="show-detail"
             on-pointerenter="onShowTooltip_" actionable></cr-icon-button>
         <cr-icon-button id="actionMenuButton" class="icon-more-vert"
             on-click="onShowActionMenuClick_"
-            aria-label="[[getMoreActionsAriaLabelText_(lastOrigin_)]]"
+            aria-label$="[[getMoreActionsAriaLabel_(item.origin]]"
             title="$i18n{moreActions}" focus-row-control focus-type="menu">
         </cr-icon-button>
       </div>
     </template>
   </iron-collapse>
-  <paper-tooltip id="tooltip" fit-to-visible-bounds manual-mode position="top">
+  <paper-tooltip id="tooltip" fit-to-visible-bounds manual-mode position="top"
+      offset="3">
     $i18n{safetyCheckNotificationPermissionReviewDontAllowLabel}
   </paper-tooltip>
   <cr-action-menu role-description="$i18n{menu}">
     <button class="dropdown-item" id="ignore" on-click="onIgnoreClick_"
-        aria-label="[[getAriaLabelText_(
-            actionsEnum_.IGNORE, lastOrigin_)]]">
+        aria-label$="[[getIgnoreAriaLabelForOrigins(lastOrigins_)]]">
       $i18n{safetyCheckNotificationPermissionReviewIgnoreLabel}
     </button>
     <button class="dropdown-item" id="reset" on-click="onResetClick_"
-        aria-label="[[getAriaLabelText_(
-            actionsEnum_.RESET, lastOrigin_)]]">
+        aria-label$="[[getResetAriaLabelForOrigins(lastOrigins_)]]">
       $i18n{safetyCheckNotificationPermissionReviewResetLabel}
     </button>
   </cr-action-menu>
+  <div class="cr-row first">
+    <cr-button id="blockAllButton" on-click="onBlockAllClick_">
+      $i18n{safetyCheckNotificationPermissionReviewBlockAllLabel}
+    </cr-button>
+  </div>
 </template>
 <cr-toast id="undoToast" duration="5000">
-  <div id="undoNotification">
-    [[getUndoNotificationText_(lastUserAction_, lastOrigin_)]]
-  </div>
+  <div id="undoNotification">[[toastText_]]</div>
   <cr-button aria-label="$i18n{undoDescription}" on-click="onUndoButtonClick_">
     $i18n{safetyCheckNotificationPermissionReviewUndo}
   </cr-button>

@@ -148,11 +148,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "ambient-mode-animation",
-    "owners": [ "esum", "assistive-eng@google.com" ],
-    "expiry_milestone": 103
-  },
-  {
     "name": "android-force-app-language-prompt",
     "owners": [ "perrier", "chrome-language@google.com" ],
     "expiry_milestone": 109
@@ -576,7 +571,7 @@
   {
     "name": "autofill-keyboard-accessory-view",
     "owners": [ "fhorschig@chromium.org" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 111
   },
   {
     "name": "autofill-parse-iban-fields",
@@ -1764,7 +1759,7 @@
   {
     "name": "enable-autofill-manual-fallback",
     "owners": [ "fhorschig@chromium.org" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 111
   },
   {
     "name": "enable-autofill-refresh-style",
@@ -2973,7 +2968,7 @@
   {
     "name": "enable-save-session-tabs-in-separate-files",
     "owners": [ "olivierrobin", "sdefresne", "bling-flags@google.com" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 118
   },
   {
     "name": "enable-seamless-refresh-rate-switching",
@@ -4842,6 +4837,11 @@
     "expiry_milestone": 112
   },
   {
+    "name": "ntp-comprehensive-theme-realbox",
+    "owners": [ "romanarora", "tiborg", "tluk" ],
+    "expiry_milestone": 113
+  },
+  {
     "name": "ntp-comprehensive-theming",
     "owners": [ "romanarora", "tiborg", "tluk" ],
     "expiry_milestone": 113
@@ -4977,11 +4977,6 @@
     "name": "omnibox-adaptive-suggestions-count",
     "owners": [ "ender", "stkhapugin", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 110
-  },
-  {
-    "name": "omnibox-aggregate-shortcuts",
-    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 105
   },
   {
     "name": "omnibox-assistant-voice-search",
@@ -5148,6 +5143,11 @@
     "expiry_milestone": 120
   },
   {
+    "name": "omnibox-on-device-tail-suggestions",
+    "owners": [ "cechen@google.com", "suggest-2g@google.com" ],
+    "expiry_milestone": 120
+  },
+  {
     "name": "omnibox-on-focus-suggestions-contextual-web",
     "owners": [ "ender", "stkhapugin", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 110
@@ -5306,6 +5306,11 @@
     "name": "optimization-guide-debug-logs",
     "owners": [ "rajendrant", "robertogden", "chrome-intelligence-core@google.com" ],
     "expiry_milestone": 110
+  },
+  {
+    "name": "optimization-guide-install-wide-model-store",
+    "owners": [ "rajendrant", "sophiechang", "chrome-intelligence-core@google.com" ],
+    "expiry_milestone": 113
   },
   {
     "name": "optimization-guide-model-downloading",
@@ -5469,6 +5474,11 @@
     "name": "partitioned-cookies-bypass-origin-trial",
     "owners": [ "dylancutler" ],
     "expiry_milestone": 110
+  },
+  {
+    "name": "password-change-account-store-users",
+    "owners": [ "brunobraga@google.com", "jkeitel@google.com", "chrome-duplex@google.com" ],
+    "expiry_milestone": 118
   },
   {
     "name": "password-change-in-settings",
@@ -5832,7 +5842,7 @@
   {
     "name": "recover-from-never-save-android",
     "owners": [ "ioanap", "fhorschig" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 111
   },
   {
     "name": "reduce-accept-language",
@@ -6129,12 +6139,12 @@
   {
     "name": "sharing-desktop-screenshots",
     "owners": ["skare", "jeffreycohen", "chrome-with-friends-robots@google.com" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 111
   },
   {
     "name": "sharing-desktop-screenshots-edit",
     "owners": ["skare", "jeffreycohen", "chrome-with-friends-robots@google.com" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 111
   },
   {
     "name": "sharing-desktop-share-preview",
@@ -6439,26 +6449,6 @@
     "expiry_milestone": 109
   },
   {
-    "name": "sync-android-promos-with-alternative-title",
-    "owners": ["mmrashad@google.com", "chrome-sync-dev@google.com"],
-    "expiry_milestone": 107
-  },
-  {
-    "name": "sync-android-promos-with-illustration",
-    "owners": ["mmrashad@google.com", "chrome-sync-dev@google.com"],
-    "expiry_milestone": 107
-  },
-  {
-    "name": "sync-android-promos-with-single-button",
-    "owners": ["mmrashad@google.com", "chrome-sync-dev@google.com"],
-    "expiry_milestone": 107
-  },
-  {
-    "name": "sync-android-promos-with-title",
-    "owners": ["mmrashad@google.com", "chrome-sync-dev@google.com"],
-    "expiry_milestone": 107
-  },
-  {
     "name": "sync-chromeos-explicit-passphrase-sharing",
     "owners": ["mmoskvitin@google.com", "chrome-sync-dev@google.com"],
     "expiry_milestone": 111
@@ -6598,6 +6588,11 @@
     "name": "third-party-storage-partitioning",
     "owners": [ "miketaylr", "eliason" ],
     "expiry_milestone": 112
+  },
+  {
+    "name": "throttle-ambient-animations",
+    "owners": [ "esum", "assistive-eng@google.com" ],
+    "expiry_milestone": 114
   },
   {
     "name": "tint-composited-content",

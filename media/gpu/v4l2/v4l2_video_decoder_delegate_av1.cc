@@ -46,8 +46,10 @@ namespace {
 
 // Section 5.5. Sequence header OBU syntax in the AV1 spec.
 // https://aomediacodec.github.io/av1-spec
-void FillSequenceParams(v4l2_ctrl_av1_sequence& v4l2_seq_params,
-                        const libgav1::ObuSequenceHeader& seq_header) {
+struct v4l2_ctrl_av1_sequence FillSequenceParams(
+    const libgav1::ObuSequenceHeader& seq_header) {
+  struct v4l2_ctrl_av1_sequence v4l2_seq_params = {};
+
   if (seq_header.still_picture)
     v4l2_seq_params.flags |= V4L2_AV1_SEQUENCE_FLAG_STILL_PICTURE;
 
@@ -113,6 +115,8 @@ void FillSequenceParams(v4l2_ctrl_av1_sequence& v4l2_seq_params,
   v4l2_seq_params.bit_depth = seq_header.color_config.bitdepth;
   v4l2_seq_params.max_frame_width_minus_1 = seq_header.max_frame_width - 1;
   v4l2_seq_params.max_frame_height_minus_1 = seq_header.max_frame_height - 1;
+
+  return v4l2_seq_params;
 }
 
 // Section 5.9.11. Loop filter params syntax.
@@ -399,37 +403,12 @@ void FillLoopRestorationParams(v4l2_av1_loop_restoration& v4l2_lr,
       v4l2_lr.loop_restoration_size[0] >> v4l2_lr.lr_uv_shift;
 }
 
-V4L2VideoDecoderDelegateAV1::V4L2VideoDecoderDelegateAV1(
-    V4L2DecodeSurfaceHandler* surface_handler,
-    V4L2Device* device)
-    : surface_handler_(surface_handler), device_(device) {
-  VLOGF(1);
-  DCHECK(surface_handler_);
-  DCHECK(device_);
-}
-
-V4L2VideoDecoderDelegateAV1::~V4L2VideoDecoderDelegateAV1() = default;
-
-scoped_refptr<AV1Picture> V4L2VideoDecoderDelegateAV1::CreateAV1Picture(
-    bool apply_grain) {
-  scoped_refptr<V4L2DecodeSurface> dec_surface =
-      surface_handler_->CreateSurface();
-  if (!dec_surface)
-    return nullptr;
-
-  return new V4L2AV1Picture(std::move(dec_surface));
-}
-
-DecodeStatus V4L2VideoDecoderDelegateAV1::SubmitDecode(
-    const AV1Picture& pic,
+// 5.9.2. Uncompressed header syntax
+struct v4l2_ctrl_av1_frame SetupFrameParams(
     const libgav1::ObuSequenceHeader& sequence_header,
-    const AV1ReferenceFrameVector& ref_frames,
-    const libgav1::Vector<libgav1::TileBuffer>& tile_buffers,
-    base::span<const uint8_t> data) {
-  struct v4l2_ctrl_av1_sequence v4l2_seq_params = {};
-  FillSequenceParams(v4l2_seq_params, sequence_header);
-
-  const libgav1::ObuFrameHeader& frame_header = pic.frame_header;
+    const libgav1::ObuFrameHeader& frame_header,
+    const AV1ReferenceFrameVector& ref_frames) {
+  struct v4l2_ctrl_av1_frame v4l2_frame_params = {};
 
   struct v4l2_av1_loop_filter v4l2_lf = {};
   FillLoopFilterParams(v4l2_lf, frame_header.loop_filter);
@@ -455,7 +434,6 @@ DecodeStatus V4L2VideoDecoderDelegateAV1::SubmitDecode(
   struct v4l2_av1_tile_info v4l2_ti = {};
   FillTileInfo(v4l2_ti, frame_header.tile_info);
 
-  struct v4l2_ctrl_av1_frame v4l2_frame_params = {};
   if (frame_header.show_frame)
     v4l2_frame_params.flags |= V4L2_AV1_FRAME_FLAG_SHOW_FRAME;
   if (frame_header.showable_frame)
@@ -632,7 +610,90 @@ DecodeStatus V4L2VideoDecoderDelegateAV1::SubmitDecode(
   v4l2_frame_params.skip_mode_frame[1] =
       base::checked_cast<__u8>(frame_header.skip_mode_frame[1]);
 
-  NOTIMPLEMENTED();
+  return v4l2_frame_params;
+}
+
+V4L2VideoDecoderDelegateAV1::V4L2VideoDecoderDelegateAV1(
+    V4L2DecodeSurfaceHandler* surface_handler,
+    V4L2Device* device)
+    : surface_handler_(surface_handler), device_(device) {
+  VLOGF(1);
+  DCHECK(surface_handler_);
+  DCHECK(device_);
+}
+
+V4L2VideoDecoderDelegateAV1::~V4L2VideoDecoderDelegateAV1() = default;
+
+scoped_refptr<AV1Picture> V4L2VideoDecoderDelegateAV1::CreateAV1Picture(
+    bool apply_grain) {
+  scoped_refptr<V4L2DecodeSurface> dec_surface =
+      surface_handler_->CreateSurface();
+  if (!dec_surface)
+    return nullptr;
+
+  return new V4L2AV1Picture(std::move(dec_surface));
+}
+
+DecodeStatus V4L2VideoDecoderDelegateAV1::SubmitDecode(
+    const AV1Picture& pic,
+    const libgav1::ObuSequenceHeader& sequence_header,
+    const AV1ReferenceFrameVector& ref_frames,
+    const libgav1::Vector<libgav1::TileBuffer>& tile_buffers,
+    base::span<const uint8_t> stream) {
+  // TODO(stevecho): Remove initialization for |v4l2_seq_params| and
+  // |v4l2_frame_params| once they are actually being used
+  // (as they are assigned right away)
+  struct v4l2_ctrl_av1_sequence v4l2_seq_params = {};
+  v4l2_seq_params = FillSequenceParams(sequence_header);
+
+  struct v4l2_ctrl_av1_frame v4l2_frame_params = {};
+  v4l2_frame_params =
+      SetupFrameParams(sequence_header, pic.frame_header, ref_frames);
+
+  struct v4l2_ext_control ext_ctrl_array[] = {
+      {.id = V4L2_CID_STATELESS_AV1_SEQUENCE,
+       .size = sizeof(v4l2_seq_params),
+       .ptr = &v4l2_seq_params},
+      {.id = V4L2_CID_STATELESS_AV1_FRAME,
+       .size = sizeof(v4l2_frame_params),
+       .ptr = &v4l2_frame_params},
+  };
+
+  // TODO(b/254274375): Add V4L2_CID_STATELESS_AV1_TILE_GROUP_ENTRY
+  // control id setup
+
+  struct v4l2_ext_controls ext_ctrls = {
+      .count = base::checked_cast<__u32>(std::size(ext_ctrl_array)),
+      .controls = ext_ctrl_array};
+
+  const auto* v4l2_pic = static_cast<const V4L2AV1Picture*>(&pic);
+  v4l2_pic->dec_surface()->PrepareSetCtrls(&ext_ctrls);
+  if (device_->Ioctl(VIDIOC_S_EXT_CTRLS, &ext_ctrls) != 0) {
+    VPLOGF(1) << "ioctl() failed: VIDIOC_S_EXT_CTRLS";
+    return DecodeStatus::kFail;
+  }
+
+  std::vector<scoped_refptr<V4L2DecodeSurface>> ref_surfaces;
+  for (size_t i = 0; i < libgav1::kNumReferenceFrameTypes; i++) {
+    if (ref_frames[i]) {
+      const auto* v4l2_ref_pic =
+          static_cast<const V4L2AV1Picture*>(ref_frames[i].get());
+
+      ref_surfaces.emplace_back(std::move(v4l2_ref_pic->dec_surface()));
+    }
+  }
+  v4l2_pic->dec_surface()->SetReferenceSurfaces(std::move(ref_surfaces));
+
+  // Copies the frame data into the V4L2 buffer.
+  if (!surface_handler_->SubmitSlice(v4l2_pic->dec_surface().get(),
+                                     stream.data(), stream.size())) {
+    return DecodeStatus::kFail;
+  }
+
+  // Queues the buffers to the kernel driver.
+  DVLOGF(4) << "Submitting decode for surface: "
+            << v4l2_pic->dec_surface()->ToString();
+  surface_handler_->DecodeSurface(v4l2_pic->dec_surface());
 
   return DecodeStatus::kFail;
 }

@@ -1020,6 +1020,12 @@ BrowserView::~BrowserView() {
   side_panel_button_highlighter_.reset();
   side_panel_visibility_controller_.reset();
 
+// Delete lens side panel controller before deleting the child views.
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  if (lens_side_panel_controller_)
+    lens_side_panel_controller_.reset();
+#endif
+
   // Child views maintain PrefMember attributes that point to
   // OffTheRecordProfile's PrefService which gets deleted by ~Browser.
   RemoveAllChildViews();
@@ -4330,13 +4336,6 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   // asynchronous transition so we synchronously invoke the function.
   FullscreenStateChanged();
 #endif
-
-  if (fullscreen && !chrome::IsRunningInAppMode()) {
-    UpdateExclusiveAccessExitBubbleContent(
-        url, bubble_type, ExclusiveAccessBubbleHideCallback(),
-        /*notify_download=*/false,
-        /*force_update=*/display_id != display::kInvalidDisplayId);
-  }
 
   // Undo our anti-jankiness hacks and force a re-layout.
   in_process_fullscreen_ = false;

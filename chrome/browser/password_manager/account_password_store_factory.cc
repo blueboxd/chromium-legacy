@@ -65,7 +65,7 @@ class UnsyncedCredentialsDeletionNotifierImpl
   base::WeakPtr<UnsyncedCredentialsDeletionNotifier> GetWeakPtr() override;
 
  private:
-  const raw_ptr<Profile> profile_;
+  const raw_ptr<Profile, DanglingUntriaged> profile_;
   base::WeakPtrFactory<UnsyncedCredentialsDeletionNotifier> weak_ptr_factory_{
       this};
 };
@@ -126,7 +126,9 @@ AccountPasswordStoreFactory* AccountPasswordStoreFactory::GetInstance() {
 AccountPasswordStoreFactory::AccountPasswordStoreFactory()
     : RefcountedBrowserContextKeyedServiceFactory(
           "AccountPasswordStore",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(CredentialsCleanerRunnerFactory::GetInstance());
+}
 
 AccountPasswordStoreFactory::~AccountPasswordStoreFactory() = default;
 

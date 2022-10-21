@@ -18,12 +18,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/repeating_test_future.h"
+#include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/skia_util.h"
@@ -32,7 +35,8 @@ namespace ash {
 
 class ClipboardHistoryTest : public AshTestBase {
  public:
-  ClipboardHistoryTest() = default;
+  ClipboardHistoryTest()
+      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ClipboardHistoryTest(const ClipboardHistoryTest&) = delete;
   ClipboardHistoryTest& operator=(const ClipboardHistoryTest&) = delete;
   ~ClipboardHistoryTest() override = default;
@@ -463,7 +467,8 @@ TEST_F(ClipboardHistoryTest, DuplicateBitmapEncodingPreserved) {
   data_to_duplicate.SetPngDataAfterEncoding(png);
   EXPECT_TRUE(data_to_duplicate.maybe_png());
 
-  // Write first image to clipboard again.
+  // Write first image to clipboard again after some time passes.
+  task_environment()->FastForwardBy(base::Seconds(1));
   {
     ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
     scw.WriteImage(test_bitmap_1);
@@ -517,44 +522,123 @@ TEST_F(ClipboardHistoryTest, DisplayFormatForPlainHTML) {
             clipboard_history_util::CalculateDisplayFormat(data));
 }
 
-// Tests that Ash.ClipboardHistory.ControlToVDelay is only recorded if
-// ui::VKEY_V is pressed with only ui::VKEY_CONTROL pressed.
-TEST_F(ClipboardHistoryTest, RecordControlV) {
+// Tests that exactly one Ash.ClipboardHistory.ControlToVDelayV2 histogram entry
+// is recorded every time Ctrl is pressed as part of a Ctrl+V paste sequence and
+// that exactly one Ash.ClipboardHistory.ControlVHeldTime histogram entry is
+// recorded every time V is pressed as part of a Ctrl+V paste sequence.
+TEST_F(ClipboardHistoryTest, RecordControlVMetrics) {
   base::HistogramTester histogram_tester;
-  auto* event_generator = GetEventGenerator();
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlToVDelayV2",
+                                    0u);
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlVHeldTime",
+                                    0u);
 
-  // Press Ctrl + V, a histogram should be emitted.
+  auto* const event_generator = GetEventGenerator();
+
+  // Press Ctrl+V and end the paste by releasing V. One entry should be recorded
+  // for each histogram.
   event_generator->PressKey(ui::VKEY_CONTROL, ui::EF_NONE);
   PressAndReleaseKey(ui::VKEY_V, ui::EF_CONTROL_DOWN);
 
-  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlToVDelay", 1u);
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlToVDelayV2",
+                                    1u);
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlVHeldTime",
+                                    1u);
 
-  // Press and release V again, no additional histograms should be emitted.
-  PressAndReleaseKey(ui::VKEY_V, ui::EF_CONTROL_DOWN);
+  // Press V again, injecting an extra press to simulate a keyboard auto-repeat
+  // from holding V down. Neither of these V presses is the first in the paste
+  // sequence, so no entry should be recorded for the ControlToVDelayV2
+  // histogram.
+  event_generator->PressKey(ui::VKEY_V, ui::EF_CONTROL_DOWN);
+  event_generator->PressKey(ui::VKEY_V, ui::EF_CONTROL_DOWN | ui::EF_IS_REPEAT);
 
-  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlToVDelay", 1u);
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlToVDelayV2",
+                                    1u);
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlVHeldTime",
+                                    1u);
 
-  // Release Control to return to no keys pressed.
+  // Release Ctrl to end the paste sequence. An entry should be recorded for the
+  // ControlVHeldTime histogram.
   event_generator->ReleaseKey(ui::VKEY_CONTROL, ui::EF_NONE);
-  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlToVDelay", 1u);
 
-  // Hold shift while pressing ctrl + V, no histogram should be recorded.
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlToVDelayV2",
+                                    1u);
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlVHeldTime",
+                                    2u);
+
+  // Release V so that no more keys are pressed. No entry should be recorded for
+  // the ControlVHeldTime histogram, because the paste sequence already ended.
+  event_generator->ReleaseKey(ui::VKEY_V, ui::EF_NONE);
+
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlToVDelayV2",
+                                    1u);
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlVHeldTime",
+                                    2u);
+
+  // Press Ctrl+V and end the paste by pressing a key other than Ctrl or V. One
+  // entry should be recorded for each histogram.
+  event_generator->PressKey(ui::VKEY_CONTROL, ui::EF_NONE);
+  event_generator->PressKey(ui::VKEY_V, ui::EF_CONTROL_DOWN);
+  PressAndReleaseKey(ui::VKEY_X, ui::EF_CONTROL_DOWN);
+
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlToVDelayV2",
+                                    2u);
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlVHeldTime",
+                                    3u);
+
+  // Release V and Ctrl so that no more keys are pressed. No histogram entries
+  // should be recorded.
+  event_generator->ReleaseKey(ui::VKEY_V, ui::EF_CONTROL_DOWN);
+  event_generator->ReleaseKey(ui::VKEY_CONTROL, ui::EF_NONE);
+
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlToVDelayV2",
+                                    2u);
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlVHeldTime",
+                                    3u);
+
+  // Hold Shift while pressing and releasing Ctrl+V. No histogram entries should
+  // be recorded.
   event_generator->PressKey(ui::VKEY_SHIFT, ui::EF_NONE);
   event_generator->PressKey(ui::VKEY_CONTROL, ui::EF_SHIFT_DOWN);
   PressAndReleaseKey(ui::VKEY_V, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
-
   event_generator->ReleaseKey(ui::VKEY_CONTROL, ui::EF_SHIFT_DOWN);
   event_generator->ReleaseKey(ui::VKEY_SHIFT, ui::EF_NONE);
 
-  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlToVDelay", 1u);
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlToVDelayV2",
+                                    2u);
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlVHeldTime",
+                                    3u);
 
-  // Press Ctrl, then press and release a random key, then press V. A histogram
-  // should be recorded.
+  // Press Ctrl, then press and release a key other than V, then press and
+  // release V. One entry should be recorded for each histogram.
   event_generator->PressKey(ui::VKEY_CONTROL, ui::EF_NONE);
   PressAndReleaseKey(ui::VKEY_X, ui::EF_CONTROL_DOWN);
-  PressAndReleaseKey(ui::VKEY_V, ui::EF_CONTROL_DOWN);
 
-  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlToVDelay", 2u);
+  // Allow some time between the arbitrary key press and the V key press, during
+  // which time Ctrl is pressed again.
+  task_environment()->FastForwardBy(base::Milliseconds(100));
+  event_generator->PressKey(ui::VKEY_CONTROL, ui::EF_IS_REPEAT);
+  task_environment()->FastForwardBy(base::Milliseconds(100));
+
+  PressAndReleaseKey(ui::VKEY_V, ui::EF_CONTROL_DOWN);
+  event_generator->ReleaseKey(ui::VKEY_CONTROL, ui::EF_NONE);
+
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlToVDelayV2",
+                                    3u);
+  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ControlVHeldTime",
+                                    4u);
+
+  // The ControlToVDelayV2 histogram should have one recorded sample of 200ms
+  // from the last Ctrl+V; the other recorded samples should all be 0ms. 200ms
+  // comes from the delay between the last paste sequence's first Ctrl press and
+  // its first V press (the sequence's second Ctrl press between the 100ms
+  // pauses should not affect metrics).
+  histogram_tester.ExpectTimeBucketCount(
+      "Ash.ClipboardHistory.ControlToVDelayV2", base::Milliseconds(0), 2);
+  histogram_tester.ExpectTimeBucketCount(
+      "Ash.ClipboardHistory.ControlToVDelayV2", base::Milliseconds(100), 0);
+  histogram_tester.ExpectTimeBucketCount(
+      "Ash.ClipboardHistory.ControlToVDelayV2", base::Milliseconds(200), 1);
 }
 
 }  // namespace ash

@@ -10,6 +10,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// Common (and short) key modifier flags.
+extern UIKeyModifierFlags KeyModifierNone;
+extern UIKeyModifierFlags KeyModifierCommand;
+extern UIKeyModifierFlags KeyModifierControl;
+extern UIKeyModifierFlags KeyModifierAltCommand;
+extern UIKeyModifierFlags KeyModifierShiftCommand;
+extern UIKeyModifierFlags KeyModifierShiftAltCommand;
+extern UIKeyModifierFlags KeyModifierControlShift;
+
+// DEPRECATED - Do not use in new code. Use action selectors and the responder
+// chain.
 // Protocol UIResponder subclasses can implement to intercept key commands.
 // The implementer must be in the responder chain and be the first to respond to
 // this method to be called.
@@ -21,16 +32,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+// DEPRECATED - Do not use in new code. Use action selectors and the responder
+// chain.
 // UIApplication is always the last responder. By making it implement the
 // ChromeKeyCommandHandler protocol, it catches by default all key commands
 // and calls their cr_action.
-@interface UIApplication (ChromeKeyCommandHandler)<ChromeKeyCommandHandler>
+@interface UIApplication (ChromeKeyCommandHandler) <ChromeKeyCommandHandler>
 @end
 
+// DEPRECATED - Do not use in new code. Use action selectors and the responder
+// chain.
 typedef void (^UIKeyCommandAction)(void);
-
-// Addition to the set of predefined modifier flags.
-extern UIKeyModifierFlags Cr_UIKeyModifierNone;
 
 // Defines a set of one-liner factory methods taking a key command block.
 // That way, responders willing to declare and respond to key commands can do it
@@ -42,11 +54,11 @@ extern UIKeyModifierFlags Cr_UIKeyModifierNone;
 //   __weak AccountsTableViewController* weakSelf = self;
 //   return @[
 //     [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
-//                           modifierFlags:Cr_UIKeyModifierNone
+//                           modifierFlags:KeyModifierNone
 //                                   title:@"Exit"
 //                                  action:^{ [[Bar sharedInstance] exit]; }],
 //     [UIKeyCommand cr_keyCommandWithInput:@"t"
-//                            modifierFlags:UIKeyModifierCommand
+//                            modifierFlags:KeyModifierCommand
 //                                    title:@"New Tab"
 //                                   action:^{
 //       Foo* strongSelf = weakSelf;
@@ -74,11 +86,16 @@ extern UIKeyModifierFlags Cr_UIKeyModifierNone;
 // can't be subclassed as of iOS 9 beta 4. http://crbug.com/510970
 @interface UIKeyCommand (Chrome)
 
+// DEPRECATED - Do not use in new code. Use action selectors and the responder
+// chain.
 // Block to call when the key command is fired.
 @property(nonatomic, copy, setter=cr_setAction:) UIKeyCommandAction cr_action;
+
 // Returns a symbolic description of the key command. For example: ⇧⌘T.
 @property(nonatomic, readonly) NSString* cr_symbolicDescription;
 
+// DEPRECATED - Do not use in new code. Use action selectors and the responder
+// chain.
 // Returns a key command to return in -[UIResponder keyCommands] or to pass to
 // -[UIViewController addKeyCommand:].
 + (instancetype)cr_keyCommandWithInput:(NSString*)input

@@ -2099,21 +2099,6 @@
             ]
         }
     ],
-    "CWPCollectsETM": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "CWPCollectsETM"
-                    ]
-                }
-            ]
-        }
-    ],
     "CacheCodeOnIdle": [
         {
             "platforms": [
@@ -3427,21 +3412,6 @@
             ]
         }
     ],
-    "CrostiniLxd4Rollout": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_V2",
-                    "enable_features": [
-                        "CrostiniUseLxd4"
-                    ]
-                }
-            ]
-        }
-    ],
     "CursiveStylusPreinstall": [
         {
             "platforms": [
@@ -4671,6 +4641,36 @@
             ]
         }
     ],
+    "FenderScriptScheduling": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "LowPriLoading_20220927",
+                    "params": {
+                        "low_pri_async_loading_cross_site_only": "true",
+                        "low_pri_async_loading_feature_limit": "5s",
+                        "low_pri_async_loading_main_frame_only": "true"
+                    },
+                    "enable_features": [
+                        "LowPriorityScriptLoading"
+                    ],
+                    "disable_features": [
+                        "DOMContentLoadedWaitForAsyncScript",
+                        "DelayAsyncScriptExecution",
+                        "LowPriorityAsyncScriptExecution"
+                    ]
+                }
+            ]
+        }
+    ],
     "FillingAcrossAffiliatedWebsites": [
         {
             "platforms": [
@@ -5536,6 +5536,22 @@
             ]
         }
     ],
+    "IOSFeedAttentionLog": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20221020",
+                    "enable_features": [
+                        "EnableCheckVisibilityOnAttentionLogStart",
+                        "EnableRefineDataSourceReloadReporting"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSFeedSyncPromo": [
         {
             "platforms": [
@@ -5929,6 +5945,27 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ImageControllerWaitOnlyForRunningTask"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ImageLoadingPrioritizationFix": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ImageLoadingPrioritizationFix"
                     ]
                 }
             ]
@@ -7854,24 +7891,6 @@
             ]
         }
     ],
-    "PartialCustomTabs3rdPartyPolicy": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "default_policy": "use-denylist"
-                    },
-                    "enable_features": [
-                        "CCTResizableForThirdParties"
-                    ]
-                }
-            ]
-        }
-    ],
     "PartitionAllocBackupRefPtr": [
         {
             "platforms": [
@@ -9341,6 +9360,25 @@
             ]
         }
     ],
+    "SafeBrowsingRealTimeUrlLookupForEnterpriseAllowlistBypass": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20220929",
+                    "enable_features": [
+                        "SafeBrowsingRealTimeUrlLookupForEnterpriseAllowlistBypass"
+                    ]
+                }
+            ]
+        }
+    ],
     "SafeBrowsingSevenZipEvaluationEnabled": [
         {
             "platforms": [
@@ -10253,6 +10291,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SuppressToolbarCaptures"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SyncAndroidLimitNTPPromoImpressions": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled5",
+                    "params": {
+                        "SyncAndroidNTPPromoMaxImpressions": "5"
+                    },
+                    "enable_features": [
+                        "SyncAndroidLimitNTPPromoImpressions"
                     ]
                 }
             ]

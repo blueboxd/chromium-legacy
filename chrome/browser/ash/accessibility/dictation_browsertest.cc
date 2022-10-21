@@ -495,6 +495,13 @@ class DictationTestBase
         /*script=*/script);
   }
 
+  std::string GetClipboardText() {
+    std::u16string text;
+    ui::Clipboard::GetForCurrentThread()->ReadText(
+        ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &text);
+    return base::UTF16ToUTF8(text);
+  }
+
  private:
   SpeechRecognitionTestHelper test_helper_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -978,13 +985,6 @@ class DictationCommandsTest : public DictationTest {
     DictationTest::TearDownOnMainThread();
   }
 
-  std::string GetClipboardText() {
-    std::u16string text;
-    ui::Clipboard::GetForCurrentThread()->ReadText(
-        ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &text);
-    return base::UTF16ToUTF8(text);
-  }
-
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -1197,6 +1197,57 @@ IN_PROC_BROWSER_TEST_P(DictationCommandsTest, NavStartTextMultiLineString) {
   SendFinalResultAndWaitForCaretBoundsChanged("move to the start");
   std::string expected = "the weather outside " + text;
   SendFinalResultAndWaitForTextAreaValue("the weather outside", expected);
+}
+
+IN_PROC_BROWSER_TEST_P(DictationCommandsTest, NavEndTextSimple) {
+  SendFinalResultAndWaitForTextAreaValue("The weather outside is", "The weather outside is");
+  SendFinalResultAndWaitForCaretBoundsChanged("move to the start");
+  SendFinalResultAndWaitForCaretBoundsChanged("move to the end");
+  std::string expected = "The weather outside is good";
+  SendFinalResultAndWaitForTextAreaValue("good", expected);
+}
+
+IN_PROC_BROWSER_TEST_P(DictationCommandsTest, NavEndTextMultiLineString) {
+  std::string text = "The weather outside is\n";
+  SendFinalResultAndWaitForTextAreaValue(text, text);
+  SendFinalResultAndWaitForCaretBoundsChanged("move to the start");
+  SendFinalResultAndWaitForCaretBoundsChanged("move to the end");
+  std::string expected = text + "good";
+  SendFinalResultAndWaitForTextAreaValue("good", expected);
+}
+
+IN_PROC_BROWSER_TEST_P(DictationCommandsTest, SelectPrevWordSimple) {
+  SendFinalResultAndWaitForTextAreaValue("The weather today is bad",
+                                         "The weather today is bad");
+  SendFinalResultAndWaitForSelectionChanged("highlight the previous word");
+  std::string expected = "The weather today is nice";
+  SendFinalResultAndWaitForTextAreaValue("nice", expected);
+}
+
+IN_PROC_BROWSER_TEST_P(DictationCommandsTest, SelectPrevWordNewLine) {
+  std::string text = "The weather today is bad\n";
+  SendFinalResultAndWaitForTextAreaValue(text, text);
+  SendFinalResultAndWait("highlight the previous word");
+  std::string expected = "The weather today is badnice";
+  SendFinalResultAndWaitForTextAreaValue("nice", expected);
+}
+
+IN_PROC_BROWSER_TEST_P(DictationCommandsTest, SelectNextWordSimple) {
+  SendFinalResultAndWaitForTextAreaValue("The weather today is bad",
+                                         "The weather today is bad");
+  SendFinalResultAndWaitForCaretBoundsChanged("move to the previous word");
+  SendFinalResultAndWaitForSelectionChanged("highlight the next word");
+  std::string expected = "The weather today is nice";
+  SendFinalResultAndWaitForTextAreaValue("nice", expected);
+}
+
+IN_PROC_BROWSER_TEST_P(DictationCommandsTest, SelectNextWordNewLine) {
+  std::string text = "The weather today is\n";
+  SendFinalResultAndWaitForTextAreaValue(text, text);
+  SendFinalResultAndWait("move to the previous character");
+  SendFinalResultAndWait("highlight the next word");
+  std::string expected = "The weather today isnice";
+  SendFinalResultAndWaitForTextAreaValue("nice", expected);
 }
 
 IN_PROC_BROWSER_TEST_P(DictationCommandsTest, DeletePrevSentSimple) {
@@ -1677,6 +1728,9 @@ class DictationPumpkinTest : public DictationTest {
   void SetUpOnMainThread() override {
     // Set the path to the Pumpkin test files. For more details, see the
     // `pumpkin_test_files` rule in the accessibility_common BUILD file.
+    // Must be done before DictationTest::SetUpOnMainThread because the parent
+    // class method will start up the extension and immediately request a
+    // Pumpkin installation.
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath gen_root_dir;
     ASSERT_TRUE(
@@ -1687,6 +1741,20 @@ class DictationPumpkinTest : public DictationTest {
     AccessibilityManager::Get()->SetDlcPathForTest(pumpkin_test_file_path);
 
     DictationTest::SetUpOnMainThread();
+
+    // Dictation will request a Pumpkin install when it starts up. Wait for
+    // the install to succeed. Must be done after
+    // DictationTest::SetUpOnMainThread because the steps here assume that the
+    // extension is active.
+    WaitForPumpkinTaggerReady();
+    ToggleDictationWithKeystroke();
+    WaitForRecognitionStarted();
+  }
+
+  void TearDownOnMainThread() override {
+    ToggleDictationWithKeystroke();
+    WaitForRecognitionStopped();
+    DictationTest::TearDownOnMainThread();
   }
 
   void WaitForPumpkinTaggerReady() {
@@ -1727,17 +1795,56 @@ INSTANTIATE_TEST_SUITE_P(
 #define MAYBE_Input Input
 #endif
 IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, MAYBE_Input) {
-  // Dictation will request a Pumpkin install when it starts up. Wait for
-  // the install to succeed.
-  WaitForPumpkinTaggerReady();
-  ToggleDictationWithKeystroke();
-  WaitForRecognitionStarted();
   SendFinalResultAndWaitForTextAreaValue("dictate hello", "Hello");
-  ToggleDictationWithKeystroke();
-  WaitForRecognitionStopped();
 }
 
-// TODO(crbug.com/1264544): Test looking at gn args has pumpkin and does
-// repeats.
+IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, DeletePrevCharacter) {
+  SendFinalResultAndWaitForTextAreaValue("Testing", "Testing");
+  SendFinalResultAndWaitForTextAreaValue("Delete three characters", "Test");
+  SendFinalResultAndWaitForTextAreaValue("backspace", "Tes");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, NavByCharacter) {
+  SendFinalResultAndWaitForTextAreaValue("Testing", "Testing");
+  SendFinalResultAndWaitForCaretBoundsChanged("left three characters");
+  SendFinalResultAndWaitForTextAreaValue("!", "Test!ing");
+  SendFinalResultAndWaitForCaretBoundsChanged("right two characters");
+  SendFinalResultAndWaitForTextAreaValue("@", "Test!in@g");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, NavByLine) {
+  std::string text = "Line1\nLine2\nLine3\nLine4";
+  SendFinalResultAndWaitForTextAreaValue(text, text);
+  SendFinalResultAndWaitForCaretBoundsChanged("Up two lines");
+  std::string expected = "Line1\nLine2 insertion\nLine3\nLine4";
+  SendFinalResultAndWaitForTextAreaValue("insertion", expected);
+  SendFinalResultAndWaitForCaretBoundsChanged("down two lines");
+  expected = "Line1\nLine2 insertion\nLine3\nLine4 second insertion";
+  SendFinalResultAndWaitForTextAreaValue("second insertion", expected);
+}
+
+IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, CutCopyPasteSelectAll) {
+  SendFinalResultAndWaitForTextAreaValue("Star", "Star");
+  SendFinalResultAndWaitForSelectionChanged("Select everything");
+  SendFinalResultAndWaitForClipboardChanged("Copy selected text");
+  EXPECT_EQ("Star", GetClipboardText());
+  SendFinalResultAndWaitForSelectionChanged("unselect selection");
+  SendFinalResultAndWaitForTextAreaValue("paste copied text", "StarStar");
+  SendFinalResultAndWaitForSelectionChanged("highlight everything");
+  SendFinalResultAndWaitForClipboardChanged("cut highlighted text");
+  EXPECT_EQ("StarStar", GetClipboardText());
+  WaitForTextAreaValue("");
+  SendFinalResultAndWaitForTextAreaValue("paste the copied text", "StarStar");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, UndoAndRedo) {
+  SendFinalResultAndWaitForTextAreaValue("The constellation",
+                                         "The constellation");
+  SendFinalResultAndWaitForTextAreaValue("myra", "The constellation myra");
+  SendFinalResultAndWaitForTextAreaValue("take that back", "The constellation");
+  SendFinalResultAndWaitForTextAreaValue("Lyra", "The constellation lyra");
+  SendFinalResultAndWaitForTextAreaValue("undo that", "The constellation");
+  SendFinalResultAndWaitForTextAreaValue("redo that", "The constellation lyra");
+}
 
 }  // namespace ash

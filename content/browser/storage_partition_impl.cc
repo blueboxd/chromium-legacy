@@ -79,7 +79,7 @@
 #include "content/browser/network_context_client_base_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_app_context_impl.h"
-#include "content/browser/preloading/prerender/prerender_host_registry.h"
+#include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/private_aggregation/private_aggregation_manager.h"
 #include "content/browser/private_aggregation/private_aggregation_manager_impl.h"
 #include "content/browser/push_messaging/push_messaging_context.h"
@@ -646,7 +646,7 @@ void CallCancelRequest(
 // tree, using `final_status` as the cancellation reason. Returns true if
 // cancelled.
 bool CancelIfPrerendering(NavigationOrDocumentHandle* navigation_or_document,
-                          PrerenderHost::FinalStatus final_status) {
+                          PrerenderFinalStatus final_status) {
   FrameTreeNode* frame_tree_node = nullptr;
   // `navigation_or_document` can be null for `kServiceWorkerContext`.
   if (!navigation_or_document)
@@ -1872,7 +1872,7 @@ void StoragePartitionImpl::OnAuthRequired(
   // because the embedder may show UI for auth requests, and it's unsuitable for
   // a hidden page.
   if (CancelIfPrerendering(context.navigation_or_document(),
-                           PrerenderHost::FinalStatus::kLoginAuthRequested)) {
+                           PrerenderFinalStatus::kLoginAuthRequested)) {
     return;
   }
 
@@ -1890,7 +1890,7 @@ void StoragePartitionImpl::OnAuthRequired(
     process_id = network::mojom::kInvalidProcessId;
 
     // `navigation_or_document_` can be null when `context` is created with
-    // an invalid render frame host after a page is destroyed.
+    // an invalid RenderFrameHost after a page is destroyed.
     // It is currently possible for the ServiceWorker case above to use
     // kRenderFrameHostContext for the auth request, after the RenderFrameHost
     // has been deleted. Treating this as an invalid process ID will cancel the
@@ -1956,7 +1956,7 @@ void StoragePartitionImpl::OnCertificateRequested(
   // because the embedder may show a dialog and ask users to select client
   // certificates, and it's unsuitable for a hidden page.
   if (CancelIfPrerendering(context.navigation_or_document(),
-                           PrerenderHost::FinalStatus::kClientCertRequested)) {
+                           PrerenderFinalStatus::kClientCertRequested)) {
     CallCancelRequest(std::move(cert_responder));
     return;
   }
@@ -1979,7 +1979,7 @@ void StoragePartitionImpl::OnSSLCertificateError(
   // prerendering page, because prerendering pages are invisible and browser
   // cannot show errors on invisible pages.
   if (CancelIfPrerendering(context.navigation_or_document(),
-                           PrerenderHost::FinalStatus::kSslCertificateError)) {
+                           PrerenderFinalStatus::kSslCertificateError)) {
     std::move(response).Run(net_error);
     return;
   }
@@ -2304,20 +2304,9 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
       &QuotaManagedDataDeletionHelper::DecrementTaskCountOnIO,
       base::Unretained(this));
 
-  if (quota_storage_remove_mask_ & QUOTA_MANAGED_STORAGE_MASK_PERSISTENT) {
-    IncrementTaskCountOnIO();
-    // Ask the QuotaManager for all buckets with persistent quota modified
-    // within the user-specified timeframe, and deal with the resulting set in
-    // ClearBucketsOnIOThread().
-    quota_manager->GetBucketsModifiedBetween(
-        blink::mojom::StorageType::kPersistent, begin, end,
-        base::BindOnce(&QuotaManagedDataDeletionHelper::ClearBucketsOnIOThread,
-                       base::Unretained(this), base::RetainedRef(quota_manager),
-                       special_storage_policy, storage_key_matcher,
-                       perform_storage_cleanup, decrement_callback));
-  }
-
-  // Do the same for temporary quota.
+  // Ask the QuotaManager for all buckets with temporary quota modified
+  // within the user-specified timeframe, and deal with the resulting set in
+  // ClearBucketsOnIOThread().
   if (quota_storage_remove_mask_ & QUOTA_MANAGED_STORAGE_MASK_TEMPORARY) {
     IncrementTaskCountOnIO();
     quota_manager->GetBucketsModifiedBetween(

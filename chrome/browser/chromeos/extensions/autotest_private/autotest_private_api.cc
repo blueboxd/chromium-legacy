@@ -3351,6 +3351,22 @@ class AssistantInteractionHelper
 
   void OnInteractionFinished(
       AssistantInteractionResolution resolution) override {
+    // If you send an Assistant text query while another query is already
+    // running, OnInteractionFinished can be called for it. We have to subscribe
+    // assistant interactions before sending a text query as it can trigger
+    // OnInteractionStarted.
+    //
+    // e.g.
+    // 1. autotestPrivate.sendAssistantTextQuery("your query", ...).
+    // 2. AutoTestPrivate starts listening Assistant interactions.
+    // 3. AutoTestPrivate sends the text query to Assistant.
+    // 4. Assistant cancels the on-going query. -> OnInteractionFinished
+    // 5. Assistant starts the new query. -> OnInteractionStarted
+    if (!interaction_in_progress_) {
+      DVLOG(1) << "Ignoring an uninterested OnInteractionFinished call";
+      return;
+    }
+
     interaction_in_progress_ = false;
 
     CHECK(on_interaction_finished_callback_)
@@ -5050,6 +5066,7 @@ ExtensionFunction::ResponseAction AutotestPrivateGetDesksInfoFunction::Run() {
   base::Value::Dict result;
   result.Set("activeDeskIndex", desks_info.active_desk_index);
   result.Set("numDesks", desks_info.num_desks);
+  result.Set("isAnimating", desks_info.is_animating);
   return RespondNow(WithArguments(std::move(result)));
 }
 

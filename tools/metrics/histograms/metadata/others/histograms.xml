@@ -3656,6 +3656,22 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Conversions.CreateReportStatus3"
     enum="ConversionStorageCreateReportStatus" expires_after="M117">
+  <obsolete>
+    Replaced with Conversions.CreateReportStatus4 due to enum value change,
+    10/2022.
+  </obsolete>
+  <owner>apaseltiner@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Measures how often event-level triggers are stored successfully or rejected
+    and why. Recorded once for each conversion event processed by the
+    attribution storage layer.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.CreateReportStatus4"
+    enum="ConversionStorageCreateReportStatus" expires_after="M117">
   <owner>apaseltiner@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
   <owner>measurement-api-dev+metrics@google.com</owner>
@@ -10634,17 +10650,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Process.Sandbox.CreateAlternateDesktopResultCode"
-    enum="LaunchErrorCodes" expires_after="2023-04-09">
-  <owner>ajgo@chromium.org</owner>
-  <owner>src/sandbox/policy/win/OWNERS</owner>
-  <summary>
-    The sandbox result or error returned after calling CreateAlternateDesktop()
-    during browser initialization on Windows. This will be logged at most once
-    per browser session. Only logged if the sandbox is enabled.
-  </summary>
-</histogram>
-
 <histogram name="Process.Sandbox.Launch.Error" enum="WinGetLastError"
     expires_after="never">
 <!-- expires-never: metric needed for diagnosing sandbox issues. -->
@@ -11139,9 +11144,9 @@ chromium-metrics-reviews@google.com.
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
-    The amount of time between the render frame host StartProvisionalLoad event
-    and the render frame DocumentOnLoadCompleted event for the Read Later WebUI
-    page.
+    The amount of time between the RenderFrameHost StartProvisionalLoad event
+    and the RenderFrameHost DocumentOnLoadCompleted event for the Read Later
+    WebUI page.
   </summary>
 </histogram>
 
@@ -11150,7 +11155,7 @@ chromium-metrics-reviews@google.com.
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
-    The amount of time between the render frame host StartProvisionalLoad and
+    The amount of time between the RenderFrameHost StartProvisionalLoad and
     DidFinishDocumentLoad events for the Read Later WebUI page.
   </summary>
 </histogram>
@@ -14552,7 +14557,7 @@ should be kept until we use this API.  -->
   </summary>
 </histogram>
 
-<histogram name="UnifiedConsent.MakeSearchesAndBrowsingBetter.OnStartup"
+<histogram name="UnifiedConsent.MakeSearchesAndBrowsingBetter.OnProfileLoad"
     enum="BooleanEnabled" expires_after="never">
 <!-- expires-never: Core metric for monitoring user settings for making searches and browsing better. -->
 
@@ -14560,7 +14565,27 @@ should be kept until we use this API.  -->
   <owner>droger@chromium.org</owner>
   <summary>
     State of the user settings for making searches and browsing better, recorded
-    at startup.
+    each time a regular profile is loaded (this histogram is not recoded for
+    system profiles, guest profiles, off-the-record profiles or irregular
+    ChromeOS profiles).
+  </summary>
+</histogram>
+
+<histogram name="UnifiedConsent.MakeSearchesAndBrowsingBetter.OnStartup"
+    enum="BooleanEnabled" expires_after="M111">
+  <obsolete>
+    Deprecated as of 2023/01 in favor of
+    UnifiedConsent.MakeSearchesAndBrowsingBetter.OnProfileLoad as histogram
+    UnifiedConsent.MakeSearchesAndBrowsingBetter.OnStartup was also recorded for
+    all profiles, including system, guest and other irregular ChromeOS profiles.
+  </obsolete>
+  <owner>msarda@chromium.org</owner>
+  <owner>droger@chromium.org</owner>
+  <summary>
+    State of the user settings for making searches and browsing better, recorded
+    each time a profile was loaded. Note: Starting with CL
+    https://crrev.com/c/3913924 (M109), this histogram was no longer recorded
+    for System, Guest and other irregular profiles on desktop and ChromeOS.
   </summary>
 </histogram>
 
@@ -15722,11 +15747,11 @@ regressions. -->
   <owner>tluk@chromium.org</owner>
   <owner>romanarora@chromium.org</owner>
   <summary>
-    The amount of time between the render frame host StartProvisionalLoad event
-    and the render frame DocumentOnLoadCompleted event for the WebUI tab strip
-    page. This happens once when a browser window with WebUI tab strip enabled
-    is created. WebUITabStrip.LoadDocumentTime should be smaller or equal to
-    WebUITabStrip.LoadCoimpletedTime.
+    The amount of time between the RenderFrameHost StartProvisionalLoad event
+    and the RenderFrameHost DocumentOnLoadCompleted event for the WebUI tab
+    strip page. This happens once when a browser window with WebUI tab strip
+    enabled is created. WebUITabStrip.LoadDocumentTime should be smaller or
+    equal to WebUITabStrip.LoadCoimpletedTime.
   </summary>
 </histogram>
 
@@ -15736,7 +15761,7 @@ regressions. -->
   <owner>tluk@chromium.org</owner>
   <owner>romanarora@chromium.org</owner>
   <summary>
-    The amount of time between the render frame host StartProvisionalLoad and
+    The amount of time between the RenderFrameHost StartProvisionalLoad and
     DidFinishDocumentLoad events for the WebUI tab strip page. This happens once
     when a browser window with WebUI tab strip enabled is created.
     WebUITabStrip.LoadDocumentTime should be smaller or equal to

@@ -76,6 +76,7 @@
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/permissions/permission_util.h"
 #include "content/browser/portal/portal.h"
+#include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/preloading/prerender/prerender_host_registry.h"
 #include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/cross_process_frame_connector.h"
@@ -922,9 +923,10 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
           std::make_unique<MediaWebContentsObserver>(this)),
       is_overlay_content_(false),
       showing_context_menu_(false),
-      prerender_host_registry_(blink::features::IsPrerender2Enabled()
-                                   ? std::make_unique<PrerenderHostRegistry>()
-                                   : nullptr),
+      prerender_host_registry_(
+          blink::features::IsPrerender2Enabled()
+              ? std::make_unique<PrerenderHostRegistry>(*this)
+              : nullptr),
       audible_power_mode_voter_(
           power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
               "PowerModeVoter.Audible")) {
@@ -1839,7 +1841,7 @@ void WebContentsImpl::SetUserAgentOverride(
       // page may not allow another navigation including a reload, depending
       // on conditions.
       frame_tree->GetMainFrame()->CancelPrerendering(
-          PrerenderHost::FinalStatus::kUaChangeRequiresReload);
+          PrerenderFinalStatus::kUaChangeRequiresReload);
     } else {
       frame_tree->controller().Reload(ReloadType::BYPASSING_CACHE, true);
     }
@@ -2994,8 +2996,7 @@ void WebContentsImpl::Stop() {
   ForEachFrameTree(base::BindRepeating(
       [](FrameTree* frame_tree) { frame_tree->StopLoading(); }));
   if (blink::features::IsPrerender2Enabled()) {
-    GetPrerenderHostRegistry()->CancelAllHosts(
-        PrerenderHost::FinalStatus::kStop);
+    GetPrerenderHostRegistry()->CancelAllHosts(PrerenderFinalStatus::kStop);
   }
   observers_.NotifyObservers(&WebContentsObserver::NavigationStopped);
 }
@@ -9526,9 +9527,8 @@ bool WebContentsImpl::IsPrerender2Disabled() {
   return prerender2_disabled_ || !GetDelegate()->IsPrerender2Supported(*this);
 }
 
-bool WebContentsImpl::CancelPrerendering(
-    FrameTreeNode* frame_tree_node,
-    PrerenderHost::FinalStatus final_status) {
+bool WebContentsImpl::CancelPrerendering(FrameTreeNode* frame_tree_node,
+                                         PrerenderFinalStatus final_status) {
   if (!blink::features::IsPrerender2Enabled())
     return false;
 

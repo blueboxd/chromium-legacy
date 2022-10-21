@@ -106,8 +106,7 @@ WorkletGlobalScope::WorkletGlobalScope(
           creation_params->parent_context_token->GetAs<LocalFrameToken>()),
       parent_cross_origin_isolated_capability_(
           creation_params->parent_cross_origin_isolated_capability),
-      parent_isolated_application_capability_(
-          creation_params->parent_isolated_application_capability) {
+      parent_is_isolated_context_(creation_params->parent_is_isolated_context) {
   DCHECK((thread_type_ == ThreadType::kMainThread && frame_) ||
          (thread_type_ == ThreadType::kOffMainThread && worker_thread_));
 
@@ -142,6 +141,8 @@ WorkletGlobalScope::WorkletGlobalScope(
         std::make_unique<CodeCacheHost>(mojo::Remote<mojom::CodeCacheHost>(
             std::move(creation_params->code_cache_host_interface)));
   }
+
+  blob_url_store_pending_remote_ = std::move(creation_params->blob_url_store);
 }
 
 WorkletGlobalScope::~WorkletGlobalScope() = default;
@@ -309,8 +310,8 @@ bool WorkletGlobalScope::CrossOriginIsolatedCapability() const {
   return parent_cross_origin_isolated_capability_;
 }
 
-bool WorkletGlobalScope::IsolatedApplicationCapability() const {
-  return parent_isolated_application_capability_;
+bool WorkletGlobalScope::IsIsolatedContext() const {
+  return parent_is_isolated_context_;
 }
 
 ukm::UkmRecorder* WorkletGlobalScope::UkmRecorder() {
@@ -327,6 +328,12 @@ ukm::UkmRecorder* WorkletGlobalScope::UkmRecorder() {
 
 ukm::SourceId WorkletGlobalScope::UkmSourceID() const {
   return ukm::kInvalidSourceId;
+}
+
+mojo::PendingRemote<mojom::blink::BlobURLStore>
+WorkletGlobalScope::TakeBlobUrlStorePendingRemote() {
+  DCHECK(blob_url_store_pending_remote_.is_valid());
+  return std::move(blob_url_store_pending_remote_);
 }
 
 void WorkletGlobalScope::Trace(Visitor* visitor) const {

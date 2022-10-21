@@ -5662,10 +5662,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxSiteSearchStarterPackName,
      flag_descriptions::kOmniboxSiteSearchStarterPackDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kSiteSearchStarterPack)},
-    {"omnibox-aggregate-shortcuts",
-     flag_descriptions::kOmniboxAggregateShortcutsName,
-     flag_descriptions::kOmniboxAggregateShortcutsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kAggregateShortcuts)},
     {"omnibox-shortcut-expanding",
      flag_descriptions::kOmniboxShortcutExpandingName,
      flag_descriptions::kOmniboxShortcutExpandingDescription, kOsDesktop,
@@ -5689,6 +5685,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoDescription,
      kOsWin, FEATURE_VALUE_TYPE(omnibox::kOnDeviceHeadProviderIncognito)},
 #endif  // BUILDFLAG(IS_WIN)
+
+    {"omnibox-on-device-tail-suggestions",
+     flag_descriptions::kOmniboxOnDeviceTailSuggestionsName,
+     flag_descriptions::kOmniboxOnDeviceTailSuggestionsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kOnDeviceTailModel)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"scheduler-configuration", flag_descriptions::kSchedulerConfigurationName,
@@ -5806,6 +5807,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOptimizationGuideDebugLogsName,
      flag_descriptions::kOptimizationGuideDebugLogsDescription, kOsAll,
      SINGLE_VALUE_TYPE(optimization_guide::switches::kDebugLoggingEnabled)},
+
+    {"optimization-guide-install-wide-model-store",
+     flag_descriptions::kOptimizationGuideInstallWideModelStoreName,
+     flag_descriptions::kOptimizationGuideInstallWideModelStoreDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(optimization_guide::features::
+                            kOptimizationGuideInstallWideModelStore)},
 
     {"organic-repeatable-queries",
      flag_descriptions::kOrganicRepeatableQueriesName,
@@ -6067,6 +6075,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpChromeCartModule,
                                     kNtpChromeCartModuleVariations,
                                     "DesktopNtpModules")},
+
+    {"ntp-comprehensive-theme-realbox",
+     flag_descriptions::kNtpComprehensiveThemeRealboxName,
+     flag_descriptions::kNtpComprehensiveThemeRealboxDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpComprehensiveThemeRealbox)},
 
     {"ntp-comprehensive-theming",
      flag_descriptions::kNtpComprehensiveThemingName,
@@ -7627,7 +7640,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPasswordScriptsFetchingName,
      flag_descriptions::kPasswordScriptsFetchingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordScriptsFetching)},
-#endif  // BUILDFLAG(IS_ANDROID)
+#else
+    {"password-change-account-store-users",
+     flag_descriptions::kPasswordChangeAccountStoreUsersName,
+     flag_descriptions::kPasswordChangeAccountStoreUsersDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kPasswordChangeAccountStoreUsers)},
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
     {"page-info-cookies-subpage",
@@ -8082,37 +8101,6 @@ const FeatureEntry kFeatureEntries[] = {
          syncer::kSyncAndroidLimitNTPPromoImpressions,
          kSyncAndroidLimitNTPPromoImpressionsVariations,
          "SyncAndroidLimitNTPPromoImpressions")},
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
-    {"sync-android-promos-with-alternative-title",
-     flag_descriptions::kSyncAndroidPromosWithAlternativeTitleName,
-     flag_descriptions::kSyncAndroidPromosWithAlternativeTitleDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(syncer::kSyncAndroidPromosWithAlternativeTitle)},
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
-    {"sync-android-promos-with-illustration",
-     flag_descriptions::kSyncAndroidPromosWithIllustrationName,
-     flag_descriptions::kSyncAndroidPromosWithIllustrationDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(syncer::kSyncAndroidPromosWithIllustration)},
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
-    {"sync-android-promos-with-single-button",
-     flag_descriptions::kSyncAndroidPromosWithSingleButtonName,
-     flag_descriptions::kSyncAndroidPromosWithSingleButtonDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(syncer::kSyncAndroidPromosWithSingleButton)},
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
-    {"sync-android-promos-with-title",
-     flag_descriptions::kSyncAndroidPromosWithTitleName,
-     flag_descriptions::kSyncAndroidPromosWithTitleDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(syncer::kSyncAndroidPromosWithTitle)},
 #endif
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
@@ -9337,6 +9325,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"always-enable-hdcp", flag_descriptions::kAlwaysEnableHdcpName,
      flag_descriptions::kAlwaysEnableHdcpDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kAlwaysEnableHdcpChoices)},
+    {"throttle-ambient-animations",
+     flag_descriptions::kAmbientModeThrottleAnimationName,
+     flag_descriptions::kAmbientModeThrottleAnimationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kAmbientModeThrottleAnimation)},
     {"enable-desks-close-all", flag_descriptions::kDesksCloseAllName,
      flag_descriptions::kDesksCloseAllDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDesksCloseAll)},

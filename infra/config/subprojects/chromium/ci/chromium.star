@@ -160,8 +160,7 @@ ci.builder(
             ],
         },
     },
-    tree_closing = False,  # Set this to true when builder is finalized?
-    sheriff_rotations = args.ignore_default(None),
+    tree_closing = True,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
@@ -271,8 +270,6 @@ ci.builder(
         ),
     ),
     cores = 32,
-    goma_backend = goma.backend.RBE_PROD,
-    reclient_instance = None,
     properties = {
         # The format of these properties is defined at archive/properties.proto
         "$build/archive": {
@@ -285,6 +282,7 @@ ci.builder(
         },
     },
     tree_closing = True,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(

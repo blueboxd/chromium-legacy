@@ -514,7 +514,9 @@ AttributionStorage::StoreSourceResult AttributionStorageSql::StoreSource(
       break;
     case RateLimitResult::kNotAllowed:
       return StoreSourceResult(
-          StorableSource::Result::kInsufficientUniqueDestinationCapacity);
+          StorableSource::Result::kInsufficientUniqueDestinationCapacity,
+          /*min_fake_report_time=*/absl::nullopt,
+          delegate_->GetMaxDestinationsPerSourceSiteReportingOrigin());
     case RateLimitResult::kError:
       return StoreSourceResult(StorableSource::Result::kInternalError);
   }
@@ -1017,7 +1019,7 @@ EventLevelResult AttributionStorageSql::MaybeCreateEventLevelReport(
     absl::optional<uint64_t>& dedup_key) {
   if (attribution_info.source.active_state() ==
       StoredSource::ActiveState::kReachedEventLevelAttributionLimit) {
-    return EventLevelResult::kNoMatchingImpressions;
+    return EventLevelResult::kExcessiveReports;
   }
 
   if (!top_level_filters_match)
@@ -1118,7 +1120,11 @@ EventLevelResult AttributionStorageSql::MaybeStoreEventLevelReport(
     if (!transaction.Commit())
       return EventLevelResult::kInternalError;
 
-    return EventLevelResult::kPriorityTooLow;
+    return maybe_replace_lower_priority_report_result ==
+                   MaybeReplaceLowerPriorityEventLevelReportResult::
+                       kDropNewReport
+               ? EventLevelResult::kPriorityTooLow
+               : EventLevelResult::kExcessiveReports;
   }
 
   const AttributionInfo& attribution_info = report.attribution_info();

@@ -17,7 +17,7 @@ scoped_refptr<HostContentSettingsMap> CreateSettingsMap(
   HostContentSettingsMap::RegisterProfilePrefs(prefs->registry());
   return base::MakeRefCounted<HostContentSettingsMap>(
       prefs, false /* is_off_the_record */, false /* store_last_modified */,
-      false /* restore_session */);
+      false /* restore_session */, false /* should_record_metrics */);
 }
 
 }  // namespace
@@ -48,6 +48,12 @@ bool TestPermissionsClient::IsSubresourceFilterActivated(
     content::BrowserContext* browser_context,
     const GURL& url) {
   return false;
+}
+
+OriginKeyedPermissionActionService*
+TestPermissionsClient::GetOriginKeyedPermissionActionService(
+    content::BrowserContext* browser_context) {
+  return &origin_keyed_permission_action_service_;
 }
 
 PermissionActionsHistory* TestPermissionsClient::GetPermissionActionsHistory(

@@ -144,8 +144,8 @@ def try_builder(
 
     experiments = experiments or {}
 
-    # TODO(crbug.com/1346781): Enable everywhere.
-    experiments.setdefault("chromium_swarming.expose_merge_script_failures", 20)
+    # TODO(crbug.com/1346781): Remove when the experiment is the default.
+    experiments.setdefault("chromium_swarming.expose_merge_script_failures", 100)
 
     # TODO(crbug.com/1314194): Enable weetbix everywhere. Remove once chromium
     # recipe is updated to use this by default.

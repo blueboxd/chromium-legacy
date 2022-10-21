@@ -112,26 +112,6 @@ constexpr base::FeatureParam<bool> kAmbientModeRssPhotosEnabled{
 constexpr base::FeatureParam<bool> kAmbientModeStreetArtAlbumEnabled{
     &kAmbientModeFeature, "StreetArtAlbumEnabled", false};
 
-// The "slideshow" theme is intentionally omitted here. For that, the developer
-// can just disable |kAmbientModeAnimationFeature| entirely.
-const base::FeatureParam<AmbientAnimationTheme>::Option
-    kAmbientModeAnimationThemeOptions[] = {
-        {AmbientAnimationTheme::kFeelTheBreeze, "feel_the_breeze"},
-        {AmbientAnimationTheme::kFloatOnBy, "float_on_by"}};
-
-// When |kAmbientModeAnimationFeature| is enabled, specifies which animation
-// theme to load. If |kAmbientModeAnimationFeature| is disabled, this is
-// unused.
-const base::FeatureParam<AmbientAnimationTheme> kAmbientModeAnimationThemeParam{
-    &kAmbientModeAnimationFeature, "animation_theme",
-    AmbientAnimationTheme::kFeelTheBreeze, &kAmbientModeAnimationThemeOptions};
-
-// Controls whether to launch the animated screensaver (as opposed to the
-// existing photo slideshow) when entering ambient mode.
-BASE_FEATURE(kAmbientModeAnimationFeature,
-             "ChromeOSAmbientModeAnimation",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Controls whether to allow Dev channel to use Prod server feature.
 BASE_FEATURE(kAmbientModeDevUseProdFeature,
              "ChromeOSAmbientModeDevChannelUseProdServer",
@@ -141,6 +121,13 @@ BASE_FEATURE(kAmbientModeDevUseProdFeature,
 BASE_FEATURE(kAmbientModePhotoPreviewFeature,
              "ChromeOSAmbientModePhotoPreview",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Controls whether to throttle the frame rate of Lottie animations in ambient
+// mode. The slower frame rate may lead to power consumption savings, but also
+// may decrease the animation's smoothness if not done properly.
+BASE_FEATURE(kAmbientModeThrottleAnimation,
+             "ChromeOSAmbientModeThrottleAnimation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kApnRevamp, "ApnRevamp", base::FEATURE_DISABLED_BY_DEFAULT);
 
@@ -434,12 +421,6 @@ BASE_FEATURE(kCrosPrivacyHubV2,
              "CrosPrivacyHubV2",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables generation of attestation certificates used by Cross Device features,
-// including Eche and Phone Hub.
-BASE_FEATURE(kCrossDeviceAttestationCertificateGeneration,
-             "CrossDeviceAttestationCertificateGeneration",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If enabled, replaces the `DeskMiniView` legacy desk close button and behavior
 // with a button to close desk and windows and a button to combine desks (the
 // legacy behavior).
@@ -488,7 +469,7 @@ BASE_FEATURE(kCrostiniResetLxdDb,
 // Do we use the default LXD version or try LXD 4?
 BASE_FEATURE(kCrostiniUseLxd4,
              "CrostiniUseLxd4",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables experimental UI creating and managing multiple Crostini containers.
 BASE_FEATURE(kCrostiniMultiContainer,
@@ -1786,13 +1767,12 @@ BASE_FEATURE(kShelfAutoHideSeparation,
 
 // Enables the "V1" focus ordering of shelf items. Once the drag handle has
 // accessibility focus the focus ordering is as follows:
-//   1. If the drag handle is pressed: the hotseat gets focus before and after
-//      the drag handle, but once the hotseat has focus that focus cannot
-//      naturally return to the drag handle (i.e. the hotseat's previous focus
-//      becomes the shelf navigation area and its next focus becomes the status
-//      area).
-//   2. If the drag handle is not pressed: the shelf navigation area gets the
-//      previous focus, and the status area gets the next focus.
+//   1. If the hotseat is extended: the hotseat gets focus before and after the
+//      drag handle, but once the hotseat has focus that focus cannot naturally
+//      return to the drag handle (i.e. the hotseat's previous focus becomes the
+//      shelf navigation area and its next focus becomes the status area).
+//   2. If the hotseat is hidden: the shelf navigation area gets the previous
+//      focus, and the status area gets the next focus.
 // Note that the drag handle is never included in the natural focus order, i.e.
 // the navigation area's next focus and the status area's previous focus is
 // always the hotseat (even if the hotseat is currently hidden). In other words,
@@ -2236,10 +2216,6 @@ bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
 }
 
-bool IsAmbientModeAnimationEnabled() {
-  return base::FeatureList::IsEnabled(kAmbientModeAnimationFeature);
-}
-
 bool IsAmbientModeDevUseProdEnabled() {
   return base::FeatureList::IsEnabled(kAmbientModeDevUseProdFeature);
 }
@@ -2250,6 +2226,10 @@ bool IsAmbientModeEnabled() {
 
 bool IsAmbientModePhotoPreviewEnabled() {
   return base::FeatureList::IsEnabled(kAmbientModePhotoPreviewFeature);
+}
+
+bool IsAmbientModeThrottleAnimationEnabled() {
+  return base::FeatureList::IsEnabled(kAmbientModeThrottleAnimation);
 }
 
 bool IsApnRevampEnabled() {
@@ -2345,11 +2325,6 @@ bool IsClipboardHistoryNudgeSessionResetEnabled() {
 
 bool IsClipboardHistoryReorderEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryReorder);
-}
-
-bool IsCrossDeviceAttestationCertificateGenerationEnabled() {
-  return base::FeatureList::IsEnabled(
-      kCrossDeviceAttestationCertificateGeneration);
 }
 
 bool IsDesksCloseAllEnabled() {

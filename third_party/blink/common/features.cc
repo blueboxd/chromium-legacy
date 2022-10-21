@@ -97,6 +97,12 @@ BASE_FEATURE(kBackForwardCacheDedicatedWorker,
              "BackForwardCacheDedicatedWorker",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Allows pages with keepalive requests to stay eligible for the back/forward
+// cache.
+BASE_FEATURE(kBackForwardCacheWithKeepaliveRequest,
+             "BackForwardCacheWithKeepaliveRequest",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable intervention for download that was initiated from or occurred in an ad
 // frame without user activation.
 BASE_FEATURE(kBlockingDownloadsInAdFrameWithoutUserActivation,
@@ -1469,6 +1475,10 @@ BASE_FEATURE(kSelectiveInOrderScriptTarget,
 const base::FeatureParam<std::string> kSelectiveInOrderScriptAllowList{
     &kSelectiveInOrderScriptTarget, "allow_list", ""};
 
+BASE_FEATURE(kImageLoadingPrioritizationFix,
+             "ImageLoadingPrioritizationFix",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kAllowSourceSwitchOnPausedVideoMediaStream,
              "AllowSourceSwitchOnPausedVideoMediaStream",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1664,6 +1674,10 @@ BASE_FEATURE(kSSVTrailerEnforceExposureAssertion,
 BASE_FEATURE(kAbortSignalHandleBasedRemoval,
              "AbortSignalHandleBasedRemoval",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kForceHighPerformanceGPUForWebGL,
+             "ForceHighPerformanceGPUForWebGL",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features
 }  // namespace blink

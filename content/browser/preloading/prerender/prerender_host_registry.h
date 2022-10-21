@@ -15,9 +15,12 @@
 #include "base/observer_list_types.h"
 #include "base/types/pass_key.h"
 #include "content/browser/preloading/prerender/prerender_attributes.h"
+#include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/preloading/prerender/prerender_host.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/visibility.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "url/gurl.h"
@@ -41,12 +44,12 @@ class RenderFrameHostImpl;
 //   activation start by ReserveHostToActivate(), activate it by
 //   ActivateReservedHost(), and notify the registry of completion of the
 //   activation by OnActivationFinished().
-class CONTENT_EXPORT PrerenderHostRegistry {
+class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
  public:
   using PassKey = base::PassKey<PrerenderHostRegistry>;
 
-  PrerenderHostRegistry();
-  ~PrerenderHostRegistry();
+  explicit PrerenderHostRegistry(WebContents&);
+  ~PrerenderHostRegistry() override;
 
   PrerenderHostRegistry(const PrerenderHostRegistry&) = delete;
   PrerenderHostRegistry& operator=(const PrerenderHostRegistry&) = delete;
@@ -86,16 +89,15 @@ class CONTENT_EXPORT PrerenderHostRegistry {
   // destroyed so that prerendered pages can cancel themselves without concern
   // for self destruction.
   // Returns true if a cancelation has occurred.
-  bool CancelHost(int frame_tree_node_id,
-                  PrerenderHost::FinalStatus final_status);
+  bool CancelHost(int frame_tree_node_id, PrerenderFinalStatus final_status);
 
   // Cancels the existing hosts specified in the vector with the same final
   // status.
   void CancelHosts(const std::vector<int>& frame_tree_node_ids,
-                   PrerenderHost::FinalStatus final_status);
+                   PrerenderFinalStatus final_status);
 
   // Applies CancelHost for all existing PrerenderHost.
-  void CancelAllHosts(PrerenderHost::FinalStatus final_status);
+  void CancelAllHosts(PrerenderFinalStatus final_status);
 
   // For activators. Finds the host to activate for a navigation for the given
   // NavigationRequest. Returns the root frame tree node id of the prerendered
@@ -135,10 +137,6 @@ class CONTENT_EXPORT PrerenderHostRegistry {
   // `frame_tree_node_id` should be the id returned by ReserveHostToActivate().
   void OnActivationFinished(int frame_tree_node_id);
 
-  // Called from PrerenderHost::DidFinishNavigation. This is called only for the
-  // main frame navigation, not for iframe navigations, in a prerendered page.
-  void OnPrerenderNavigationFinished(int frame_tree_node_id);
-
   // Returns the non-reserved host with the given id. Returns nullptr if the id
   // does not match any non-reserved host.
   PrerenderHost* FindNonReservedHostById(int frame_tree_node_id);
@@ -174,11 +172,19 @@ class CONTENT_EXPORT PrerenderHostRegistry {
       base::RepeatingCallback<void(PrerenderHost&)> callback);
 
  private:
+  // WebContentsObserver implementation:
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
+  void OnVisibilityChanged(Visibility visibility) override;
+  void ResourceLoadComplete(
+      RenderFrameHost* render_frame_host,
+      const GlobalRequestID& request_id,
+      const blink::mojom::ResourceLoadInfo& resource_load_info) override;
+
   int FindHostToActivateInternal(NavigationRequest& navigation_request);
 
   void ScheduleToDeleteAbandonedHost(
       std::unique_ptr<PrerenderHost> prerender_host,
-      PrerenderHost::FinalStatus final_status);
+      PrerenderFinalStatus final_status);
   void DeleteAbandonedHosts();
 
   void NotifyTrigger(const GURL& url);
@@ -229,6 +235,10 @@ class CONTENT_EXPORT PrerenderHostRegistry {
       prerender_host_by_frame_tree_node_id_;
 
   // Hosts that are reserved for activation.
+  // TODO(crbug.com/1375942): Change this flat map into a single unique pointer
+  // to a reserved PrerenderHost because now the activation sequence
+  // synchronously proceeds so we don't have a chance to have multiple reserved
+  // hosts at the same time.
   base::flat_map<int, std::unique_ptr<PrerenderHost>>
       reserved_prerender_host_by_frame_tree_node_id_;
 

@@ -198,6 +198,10 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
 
   bool IsReportAllowed(const AttributionReport&) const;
 
+  void MaybeSendVerboseDebugReport(
+      StorableSource source,
+      AttributionStorage::StoreSourceResult result);
+
   // Never null.
   const raw_ptr<StoragePartitionImpl> storage_partition_;
 

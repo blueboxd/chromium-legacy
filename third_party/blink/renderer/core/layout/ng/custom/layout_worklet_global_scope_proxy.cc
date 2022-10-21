@@ -42,9 +42,9 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
   const String user_agent =
       RuntimeEnabledFeatures::SendFullUserAgentAfterReductionEnabled(window)
           ? frame_client->FullUserAgent()
-          : RuntimeEnabledFeatures::UserAgentReductionEnabled(window)
-                ? frame_client->ReducedUserAgent()
-                : frame_client->UserAgent();
+      : RuntimeEnabledFeatures::UserAgentReductionEnabled(window)
+          ? frame_client->ReducedUserAgent()
+          : frame_client->UserAgent();
 
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       window->Url(), mojom::blink::ScriptType::kModule, global_scope_name,
@@ -61,11 +61,10 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
       mojom::blink::V8CacheOptions::kDefault, module_responses_map,
       mojo::NullRemote() /* browser_interface_broker */,
       mojo::NullRemote() /* code_cache_host_interface */,
-      BeginFrameProviderParams(), nullptr /* parent_permissions_policy */,
-      window->GetAgentClusterID(), ukm::kInvalidSourceId,
-      window->GetExecutionContextToken(),
-      window->CrossOriginIsolatedCapability(),
-      window->IsolatedApplicationCapability());
+      mojo::NullRemote() /* blob_url_store */, BeginFrameProviderParams(),
+      nullptr /* parent_permissions_policy */, window->GetAgentClusterID(),
+      ukm::kInvalidSourceId, window->GetExecutionContextToken(),
+      window->CrossOriginIsolatedCapability(), window->IsIsolatedContext());
   global_scope_ = LayoutWorkletGlobalScope::Create(
       frame, std::move(creation_params), *reporting_proxy_,
       pending_layout_registry);

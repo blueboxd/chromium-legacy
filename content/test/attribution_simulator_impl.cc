@@ -36,6 +36,7 @@
 #include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
 #include "content/browser/attribution_reporting/attribution_cookie_checker.h"
 #include "content/browser/attribution_reporting/attribution_cookie_checker_impl.h"
+#include "content/browser/attribution_reporting/attribution_debug_report.h"
 #include "content/browser/attribution_reporting/attribution_default_random_generator.h"
 #include "content/browser/attribution_reporting/attribution_insecure_random_generator.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
@@ -250,6 +251,11 @@ class SentReportAccumulator : public AttributionReportSender {
                                            /*http_response_code=*/200));
   }
 
+  void SendReport(AttributionDebugReport report) override {
+    // TODO(crbug.com/1371970): Consider supporting debug reports in the
+    // simulator.
+  }
+
   base::Value::List& event_level_reports_;
   base::Value::List& debug_event_level_reports_;
   base::Value::List& aggregatable_reports_;
@@ -412,6 +418,7 @@ class AttributionEventHandler : public AttributionObserver {
       case AttributionTrigger::EventLevelResult::kNoMatchingSourceFilterData:
       case AttributionTrigger::EventLevelResult::kProhibitedByBrowserPolicy:
       case AttributionTrigger::EventLevelResult::kNoMatchingConfigurations:
+      case AttributionTrigger::EventLevelResult::kExcessiveReports:
         event_level_reason << result.event_level_status();
         break;
     }

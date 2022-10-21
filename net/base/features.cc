@@ -157,6 +157,15 @@ BASE_FEATURE(kPostQuantumCECPQ2SomeDomains,
 const base::FeatureParam<std::string>
     kPostQuantumCECPQ2Prefix(&kPostQuantumCECPQ2SomeDomains, "prefix", "a");
 
+// This is feature-gated, but enabled, to act as a kill switch, in case there
+// are unforeseen consequences to fully removing TLS 1.0/1.1.
+//
+// TODO(https://crbug.com/1376584): Remove this feature and all TLS 1.0/1.1
+// support code.
+BASE_FEATURE(kSSLMinVersionAtLeastTLS12,
+             "SSLMinVersionAtLeastTLS12",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kNetUnusedIdleSocketTimeout,
              "NetUnusedIdleSocketTimeout",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -345,11 +354,9 @@ BASE_FEATURE(kThirdPartyStoragePartitioning,
 // Whether to use the new code paths needed to support partitioning Blob URLs.
 // This exists as a kill-switch in case an issue is identified with the Blob
 // URL implementation that causes breakage.
-// TODO(https://crbug.com/1261328): Once the renderer portion is implemented,
-// we will make this feature enabled by default.
 BASE_FEATURE(kSupportPartitionedBlobUrl,
              "SupportPartitionedBlobUrl",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAlpsParsing, "AlpsParsing", base::FEATURE_ENABLED_BY_DEFAULT);
 

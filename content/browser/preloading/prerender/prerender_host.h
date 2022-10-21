@@ -13,13 +13,15 @@
 #include "base/types/pass_key.h"
 #include "content/browser/preloading/preloading_attempt_impl.h"
 #include "content/browser/preloading/prerender/prerender_attributes.h"
+#include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/browser/renderer_host/stored_page.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/preloading_data.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/visibility.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
@@ -54,69 +56,13 @@ class WebContentsImpl;
 // process via SpeculationHostImpl or will directly be created for
 // browser-initiated prerendering (this code path is not implemented yet). This
 // is owned by PrerenderHostRegistry.
-class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
+class CONTENT_EXPORT PrerenderHost {
  public:
   // The time to allow prerendering kept alive in the background. PrerenderHost
   // will be terminated with kTimeoutBackgrounded when the timer exceeds this.
   // The value was determined to align with the default value of BFCache's
   // eviction timer.
   static constexpr base::TimeDelta kTimeToLiveInBackground = base::Seconds(180);
-
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class FinalStatus {
-    kActivated = 0,
-    kDestroyed = 1,
-    kLowEndDevice = 2,
-    kCrossOriginRedirect = 3,
-    kCrossOriginNavigation = 4,
-    kInvalidSchemeRedirect = 5,
-    kInvalidSchemeNavigation = 6,
-    kInProgressNavigation = 7,
-    // kNavigationRequestFailure = 8,  // No longer used.
-    kNavigationRequestBlockedByCsp = 9,
-    kMainFrameNavigation = 10,
-    kMojoBinderPolicy = 11,
-    // kPlugin = 12,  // No longer used.
-    kRendererProcessCrashed = 13,
-    kRendererProcessKilled = 14,
-    kDownload = 15,
-    kTriggerDestroyed = 16,
-    kNavigationNotCommitted = 17,
-    kNavigationBadHttpStatus = 18,
-    kClientCertRequested = 19,
-    kNavigationRequestNetworkError = 20,
-    kMaxNumOfRunningPrerendersExceeded = 21,
-    kCancelAllHostsForTesting = 22,
-    kDidFailLoad = 23,
-    kStop = 24,
-    kSslCertificateError = 25,
-    kLoginAuthRequested = 26,
-    kUaChangeRequiresReload = 27,
-    kBlockedByClient = 28,
-    kAudioOutputDeviceRequested = 29,
-    kMixedContent = 30,
-    kTriggerBackgrounded = 31,
-    // Break down into kEmbedderTriggeredAndSameOriginRedirected and
-    // kEmbedderTriggeredAndCrossOriginRedirected for investigation.
-    // kEmbedderTriggeredAndRedirected = 32,
-    // Deprecate since same origin redirection is allowed considering that the
-    // initial prerender origin is a safe site.
-    // kEmbedderTriggeredAndSameOriginRedirected = 33,
-    kEmbedderTriggeredAndCrossOriginRedirected = 34,
-    // Deprecated. This has the same meaning as kTriggerDestroyed because the
-    // metric's name includes trigger type.
-    // kEmbedderTriggeredAndDestroyed = 35,
-    kMemoryLimitExceeded = 36,
-    kFailToGetMemoryUsage = 37,
-    kDataSaverEnabled = 38,
-    kHasEffectiveUrl = 39,
-    kActivatedBeforeStarted = 40,
-    kInactivePageRestriction = 41,
-    kStartFailed = 42,
-    kTimeoutBackgrounded = 43,
-    kMaxValue = kTimeoutBackgrounded,
-  };
 
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused. This enum corresponds to
@@ -158,7 +104,7 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
 
     // Called from the PrerenderHost's destructor. The observer should drop any
     // reference to the host.
-    virtual void OnHostDestroyed(PrerenderHost::FinalStatus status) {}
+    virtual void OnHostDestroyed(PrerenderFinalStatus status) {}
   };
 
   // Returns the PrerenderHost that the given `frame_tree_node` is in, if it is
@@ -172,7 +118,7 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   PrerenderHost(const PrerenderAttributes& attributes,
                 WebContents& web_contents,
                 base::WeakPtr<PreloadingAttempt> attempt);
-  ~PrerenderHost() override;
+  ~PrerenderHost();
 
   PrerenderHost(const PrerenderHost&) = delete;
   PrerenderHost& operator=(const PrerenderHost&) = delete;
@@ -182,13 +128,15 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   // Returns false if prerendering hasn't been started.
   bool StartPrerendering();
 
-  // WebContentsObserver implementation:
-  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
-  void OnVisibilityChanged(Visibility visibility) override;
-  void ResourceLoadComplete(
-      RenderFrameHost* render_frame_host,
-      const GlobalRequestID& request_id,
-      const blink::mojom::ResourceLoadInfo& resource_load_info) override;
+  // Called from PrerenderHostRegistry::DidFinishNavigation(). If the navigation
+  // request is for the main frame and doesn't have an error, then the host will
+  // be ready for activation.
+  void DidFinishNavigation(NavigationHandle* navigation_handle);
+
+  // Called from PrerenderHostRegistry::OnVisibilityChanged(). Updates the timer
+  // for prerendering timeout in the background. When the page gets hidden then
+  // the timer starts, and when the page gets visible then the timer stops.
+  void UpdateTimeoutTimer(Visibility visibility);
 
   // Activates the prerendered page and returns StoredPage containing the page.
   // This must be called after this host gets ready for activation.
@@ -214,7 +162,7 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   // Tells the reason of the destruction of this host. PrerenderHostRegistry
   // uses this before abandoning the host.
   void RecordFinalStatus(base::PassKey<PrerenderHostRegistry>,
-                         FinalStatus status);
+                         PrerenderFinalStatus status);
 
   enum class LoadingOutcome {
     kLoadingCompleted,
@@ -277,7 +225,7 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
 
   bool is_ready_for_activation() const { return is_ready_for_activation_; }
 
-  const absl::optional<FinalStatus>& final_status() const {
+  const absl::optional<PrerenderFinalStatus>& final_status() const {
     return final_status_;
   }
 
@@ -293,21 +241,21 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   // that starts prerendering and `prerendered_ukm_id` represents the
   // prerendered page. `prerendered_ukm_id` is valid after the page is
   // activated.
-  void RecordFinalStatus(FinalStatus status,
+  void RecordFinalStatus(PrerenderFinalStatus status,
                          ukm::SourceId initiator_ukm_id,
                          ukm::SourceId prerendered_ukm_id);
 
   void CreatePageHolder(WebContentsImpl& web_contents);
 
   // Asks the registry to cancel prerendering.
-  void Cancel(FinalStatus status);
+  void Cancel(PrerenderFinalStatus status);
 
   // Sets the PreloadingTriggeringOutcome, PreloadingEligibility,
   // PreloadingFailureReason for PreloadingAttempt associated with this
   // PrerenderHost.
   void SetTriggeringOutcome(PreloadingTriggeringOutcome outcome);
   void SetEligibility(PreloadingEligibility eligibility);
-  void SetFailureReason(FinalStatus status);
+  void SetFailureReason(PrerenderFinalStatus status);
 
   ActivationNavigationParamsMatch
   AreBeginNavigationParamsCompatibleWithNavigation(
@@ -328,7 +276,7 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
   // this is also used for the ID of this PrerenderHost.
   int frame_tree_node_id_ = RenderFrameHost::kNoFrameTreeNodeId;
 
-  absl::optional<FinalStatus> final_status_;
+  absl::optional<PrerenderFinalStatus> final_status_;
 
   std::unique_ptr<PrerenderPageHolder> page_holder_;
 
@@ -351,6 +299,9 @@ class CONTENT_EXPORT PrerenderHost : public WebContentsObserver {
       client_hints_type_;
 
   // Starts running the timer when prerendering gets hidden.
+  // TODO(crbug.com/1375979): Move this timer from PrerenderHost to
+  // PrerenderHostRegistry as all the PrerenderHosts in a tab have the same
+  // timeout restriction.
   base::OneShotTimer timeout_timer_;
   // Only used for tests. This task runner is used for precise injection in
   // tests and for timing control.

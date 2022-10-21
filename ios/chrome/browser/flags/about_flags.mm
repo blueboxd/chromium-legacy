@@ -541,11 +541,12 @@ const FeatureEntry::FeatureVariation kDmTokenDeletionVariation[] = {
      nullptr}};
 
 const FeatureEntry::FeatureParam kOpenInDownloadInShareButton[] = {
-    {kOpenInDownloadInShareButtonParam, kOpenInDownloadParameterName}};
+    {kOpenInDownloadParameterName, kOpenInDownloadInShareButtonParam}};
 const FeatureEntry::FeatureParam kOpenInDownloadWithWKDownload[] = {
-    {kOpenInDownloadWithWKDownloadParam, kOpenInDownloadParameterName}};
+    {kOpenInDownloadParameterName, kOpenInDownloadWithWKDownloadParam}};
 const FeatureEntry::FeatureParam kOpenInDownloadWithV2[] = {
-    {kOpenInDownloadWithV2Param, kOpenInDownloadParameterName}};
+    {kOpenInDownloadParameterName, kOpenInDownloadWithV2Param}};
+
 const FeatureEntry::FeatureVariation kOpenInDownloadVariations[] = {
     {"With legacy download", kOpenInDownloadInShareButton,
      std::size(kOpenInDownloadInShareButton), nullptr},
@@ -566,6 +567,12 @@ const FeatureEntry::FeatureParam kIOSNewPostRestoreExperienceMinimal[] = {
 const FeatureEntry::FeatureVariation kIOSNewPostRestoreExperienceVariations[] =
     {{"minimal", kIOSNewPostRestoreExperienceMinimal,
       std::size(kIOSNewPostRestoreExperienceMinimal), nullptr}};
+
+const FeatureEntry::FeatureParam kEnableExperienceKitMapsWithSrp[] = {
+    {kExperienceKitMapsVariationName, kEnableExperienceKitMapsVariationSrp}};
+const FeatureEntry::FeatureVariation kEnableExperienceKitMapsVariations[] = {
+    {"with search result page", kEnableExperienceKitMapsWithSrp,
+     std::size(kEnableExperienceKitMapsWithSrp), nullptr}};
 
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
@@ -1077,7 +1084,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableExpKitCalendarTextClassifier)},
     {"experience-kit-maps", flag_descriptions::kMapsExperienceKitName,
      flag_descriptions::kMapsExperienceKitDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kMapsExperienceKit)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kMapsExperienceKit,
+                                    kEnableExperienceKitMapsVariations,
+                                    "IOSExperienceKitMaps")},
     {"enable-long-press-surrounding-text",
      flag_descriptions::kLongPressSurroundingTextName,
      flag_descriptions::kLongPressSurroundingTextDescription, flags_ui::kOsIos,
@@ -1171,6 +1180,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxZeroSuggestInMemoryCachingDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(omnibox::kZeroSuggestInMemoryCaching)},
+    {"omnibox-on-device-tail-suggestions",
+     flag_descriptions::kOmniboxOnDeviceTailSuggestionsName,
+     flag_descriptions::kOmniboxOnDeviceTailSuggestionsDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(omnibox::kOnDeviceTailModel)},
     {"enable-user-policy", flag_descriptions::kEnableUserPolicyName,
      flag_descriptions::kEnableUserPolicyDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(policy::kUserPolicy)},

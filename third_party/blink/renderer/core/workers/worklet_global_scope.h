@@ -8,6 +8,7 @@
 #include <memory>
 #include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -67,7 +68,7 @@ class CORE_EXPORT WorkletGlobalScope
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) final;
   FrameOrWorkerScheduler* GetScheduler() final;
   bool CrossOriginIsolatedCapability() const final;
-  bool IsolatedApplicationCapability() const final;
+  bool IsIsolatedContext() const final;
   ukm::UkmRecorder* UkmRecorder() final;
   ukm::SourceId UkmSourceID() const final;
 
@@ -77,6 +78,12 @@ class CORE_EXPORT WorkletGlobalScope
   const base::UnguessableToken& GetDevToolsToken() const override;
   bool IsInitialized() const final { return true; }
   CodeCacheHost* GetCodeCacheHost() override;
+
+  // Returns `blob_url_store_pending_remote_` for use when instantiating the
+  // PublicURLManager in threaded worklet contexts. This method should only be
+  // called once. See `blob_url_store_pending_remote_` for more details.
+  mojo::PendingRemote<mojom::blink::BlobURLStore>
+  TakeBlobUrlStorePendingRemote();
 
   virtual LocalFrame* GetFrame() const;
 
@@ -203,12 +210,19 @@ class CORE_EXPORT WorkletGlobalScope
   // like Direct Sockets if they're made available in Worklets.
   //
   // TODO(crbug.com/1206150): We need a spec for this capability.
-  const bool parent_isolated_application_capability_;
+  const bool parent_is_isolated_context_;
 
   // This is the interface that handles generated code cache
   // requests both to fetch code cache when loading resources
   // and to store generated code cache to disk.
   std::unique_ptr<CodeCacheHost> code_cache_host_;
+
+  // A PendingRemote for use in threaded worklets that gets created from the
+  // parent frame's BrowserInterfaceBroker and used when instantiating the
+  // worklet's PublicURLManager. This remote is used for Blob URL related
+  // functionality such as registering, revoking, and navigating to Blob URLs.
+  mojo::PendingRemote<mojom::blink::BlobURLStore>
+      blob_url_store_pending_remote_;
 };
 
 template <>

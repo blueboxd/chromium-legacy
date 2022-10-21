@@ -43,12 +43,16 @@ void RecordCheckUrlTimeout(bool timed_out) {
 
 void RecordLocalMatchResult(
     AsyncMatch match_result,
-    network::mojom::RequestDestination request_destination) {
+    network::mojom::RequestDestination request_destination,
+    std::string url_lookup_service_metric_suffix) {
   base::UmaHistogramEnumeration(kMatchResultHistogramName, match_result);
   bool is_mainframe =
       request_destination == network::mojom::RequestDestination::kDocument;
-  std::string suffix = is_mainframe ? ".Mainframe" : ".NonMainframe";
-  base::UmaHistogramEnumeration(kMatchResultHistogramName + suffix,
+  std::string frame_suffix = is_mainframe ? ".Mainframe" : ".NonMainframe";
+  base::UmaHistogramEnumeration(kMatchResultHistogramName + frame_suffix,
+                                match_result);
+  base::UmaHistogramEnumeration(kMatchResultHistogramName + frame_suffix +
+                                    url_lookup_service_metric_suffix,
                                 match_result);
 }
 
@@ -71,45 +75,52 @@ operator=(Notifier&& other) = default;
 void SafeBrowsingUrlCheckerImpl::Notifier::OnStartSlowCheck() {
   if (callback_) {
     std::move(callback_).Run(slow_check_notifier_.BindNewPipeAndPassReceiver(),
-                             false, false);
+                             false, false, false);
     return;
   }
 
   DCHECK(native_callback_);
-  std::move(native_callback_).Run(&native_slow_check_notifier_, false, false);
+  std::move(native_callback_)
+      .Run(&native_slow_check_notifier_, false, false, false);
 }
 
 void SafeBrowsingUrlCheckerImpl::Notifier::OnCompleteCheck(
     bool proceed,
-    bool showed_interstitial) {
+    bool showed_interstitial,
+    bool did_check_allowlist) {
   if (callback_) {
-    std::move(callback_).Run(mojo::NullReceiver(), proceed,
-                             showed_interstitial);
+    std::move(callback_).Run(mojo::NullReceiver(), proceed, showed_interstitial,
+                             did_check_allowlist);
     return;
   }
 
   if (native_callback_) {
-    std::move(native_callback_).Run(nullptr, proceed, showed_interstitial);
+    std::move(native_callback_)
+        .Run(nullptr, proceed, showed_interstitial, did_check_allowlist);
     return;
   }
 
   if (slow_check_notifier_) {
-    slow_check_notifier_->OnCompleteCheck(proceed, showed_interstitial);
+    slow_check_notifier_->OnCompleteCheck(proceed, showed_interstitial,
+                                          did_check_allowlist);
     slow_check_notifier_.reset();
     return;
   }
 
-  std::move(native_slow_check_notifier_).Run(proceed, showed_interstitial);
+  std::move(native_slow_check_notifier_)
+      .Run(proceed, showed_interstitial, did_check_allowlist);
 }
 
 SafeBrowsingUrlCheckerImpl::UrlInfo::UrlInfo(const GURL& in_url,
                                              const std::string& in_method,
                                              Notifier in_notifier,
-                                             bool in_is_cached_safe_url)
+                                             bool in_is_cached_safe_url,
+                                             bool did_check_allowlist)
     : url(in_url),
       method(in_method),
       notifier(std::move(in_notifier)),
-      is_cached_safe_url(in_is_cached_safe_url) {}
+      is_cached_safe_url(in_is_cached_safe_url),
+      did_check_allowlist(did_check_allowlist) {}
 
 SafeBrowsingUrlCheckerImpl::UrlInfo::UrlInfo(UrlInfo&& other) = default;
 
@@ -129,6 +140,7 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
     bool can_rt_check_subresource_url,
     bool can_check_db,
     bool can_check_high_confidence_allowlist,
+    std::string url_lookup_service_metric_suffix,
     GURL last_committed_url,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui,
@@ -147,6 +159,7 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
       can_rt_check_subresource_url_(can_rt_check_subresource_url),
       can_check_db_(can_check_db),
       can_check_high_confidence_allowlist_(can_check_high_confidence_allowlist),
+      url_lookup_service_metric_suffix_(url_lookup_service_metric_suffix),
       last_committed_url_(last_committed_url),
       ui_task_runner_(ui_task_runner),
       url_lookup_service_on_ui_(url_lookup_service_on_ui),
@@ -190,9 +203,7 @@ SafeBrowsingUrlCheckerImpl::~SafeBrowsingUrlCheckerImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (state_ == STATE_CHECKING_URL) {
-    if (can_check_db_) {
-      database_manager_->CancelCheck(this);
-    }
+    CancelCheckIfRelevant();
     const GURL& url = urls_[next_index_].url;
     TRACE_EVENT_NESTABLE_ASYNC_END1("safe_browsing", "CheckUrl",
                                     TRACE_ID_LOCAL(this), "url", url.spec());
@@ -249,6 +260,7 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
     const GURL& url,
     SBThreatType threat_type,
     const ThreatMetadata& metadata) {
+  is_async_database_manager_check_in_progress_ = false;
   OnUrlResult(url, threat_type, metadata, /*is_from_real_time_check=*/false);
 }
 
@@ -342,9 +354,7 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
 }
 
 void SafeBrowsingUrlCheckerImpl::OnTimeout() {
-  if (can_check_db_) {
-    database_manager_->CancelCheck(this);
-  }
+  CancelCheckIfRelevant();
 
   // Any pending callbacks on this URL check should be skipped.
   weak_factory_.InvalidateWeakPtrs();
@@ -361,7 +371,8 @@ void SafeBrowsingUrlCheckerImpl::CheckUrlImpl(const GURL& url,
 
   DVLOG(1) << "SafeBrowsingUrlCheckerImpl checks URL: " << url;
   urls_.emplace_back(url, method, std::move(notifier),
-                     /*safe_from_real_time_cache=*/false);
+                     /*safe_from_real_time_cache=*/false,
+                     /*did_check_allowlist=*/false);
 
   ProcessUrls();
 }
@@ -435,11 +446,14 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
       UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.RequestDestinations.Checked",
                                 request_destination_);
       safe_synchronously = false;
-      AsyncMatch match =
-          (can_check_db_ && can_check_high_confidence_allowlist_)
-              ? database_manager_->CheckUrlForHighConfidenceAllowlist(url, this)
-              : AsyncMatch::NO_MATCH;
-      RecordLocalMatchResult(match, request_destination_);
+      bool check_allowlist =
+          can_check_db_ && can_check_high_confidence_allowlist_;
+      AsyncMatch match = (check_allowlist)
+                             ? CallCheckUrlForHighConfidenceAllowlist(url)
+                             : AsyncMatch::NO_MATCH;
+      urls_[next_index_].did_check_allowlist = check_allowlist;
+      RecordLocalMatchResult(match, request_destination_,
+                             url_lookup_service_metric_suffix_);
       switch (match) {
         case AsyncMatch::ASYNC:
           // Hash-prefix matched. A call to
@@ -469,11 +483,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
           break;
       }
     } else {
-      safe_synchronously =
-          can_check_db_
-              ? database_manager_->CheckBrowseUrl(
-                    url, url_checker_delegate_->GetThreatTypes(), this)
-              : true;
+      safe_synchronously = can_check_db_ ? CallCheckBrowseUrl(url) : true;
     }
 
     if (safe_synchronously) {
@@ -556,7 +566,9 @@ bool SafeBrowsingUrlCheckerImpl::RunNextCallback(bool proceed,
   DCHECK_LT(next_index_, urls_.size());
 
   auto weak_self = weak_factory_.GetWeakPtr();
-  urls_[next_index_++].notifier.OnCompleteCheck(proceed, showed_interstitial);
+  urls_[next_index_].notifier.OnCompleteCheck(
+      proceed, showed_interstitial, urls_[next_index_].did_check_allowlist);
+  next_index_++;
   return !!weak_self;
 }
 
@@ -569,6 +581,7 @@ void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
        can_rt_check_subresource_url_);
   DCHECK(is_expected_request_destination);
 
+  is_async_database_manager_check_in_progress_ = false;
   const GURL& url = urls_[next_index_].url;
   if (did_match_allowlist) {
     ui_task_runner_->PostTask(
@@ -659,9 +672,7 @@ void SafeBrowsingUrlCheckerImpl::StartLookupOnUIThread(
 
 void SafeBrowsingUrlCheckerImpl::PerformHashBasedCheck(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!can_check_db_ ||
-      database_manager_->CheckBrowseUrl(
-          url, url_checker_delegate_->GetThreatTypes(), this)) {
+  if (!can_check_db_ || CallCheckBrowseUrl(url)) {
     // No match found in the local database. Safe to call |OnUrlResult| here
     // directly.
     OnUrlResult(url, SB_THREAT_TYPE_SAFE, ThreatMetadata(),
@@ -753,6 +764,34 @@ void SafeBrowsingUrlCheckerImpl::LogRTLookupResponse(
         FROM_HERE, base::BindOnce(&WebUIDelegate::AddToRTLookupResponses,
                                   base::Unretained(webui_delegate_),
                                   url_web_ui_token_, response));
+  }
+}
+
+bool SafeBrowsingUrlCheckerImpl::CallCheckBrowseUrl(const GURL& url) {
+  bool is_safe_synchronously = database_manager_->CheckBrowseUrl(
+      url, url_checker_delegate_->GetThreatTypes(), this);
+  if (!is_safe_synchronously) {
+    is_async_database_manager_check_in_progress_ = true;
+  }
+  return is_safe_synchronously;
+}
+
+AsyncMatch SafeBrowsingUrlCheckerImpl::CallCheckUrlForHighConfidenceAllowlist(
+    const GURL& url) {
+  AsyncMatch result =
+      database_manager_->CheckUrlForHighConfidenceAllowlist(url, this);
+  if (result == AsyncMatch::ASYNC) {
+    // It is unexpected that the high confidence allowlist would return async.
+    // However, until the CheckUrlForHighConfidenceAllowlist code is refactored
+    // to make that case impossible, we still handle it.
+    is_async_database_manager_check_in_progress_ = true;
+  }
+  return result;
+}
+
+void SafeBrowsingUrlCheckerImpl::CancelCheckIfRelevant() {
+  if (is_async_database_manager_check_in_progress_) {
+    database_manager_->CancelCheck(this);
   }
 }
 

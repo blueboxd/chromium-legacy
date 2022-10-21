@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_APP_SHIM_REGISTRY_MAC_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_APP_SHIM_REGISTRY_MAC_H_
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -55,15 +56,52 @@ class AppShimRegistry {
   bool OnAppUninstalledForProfile(const std::string& app_id,
                                   const base::FilePath& profile);
 
-  // Called when an app quits, providing a list of the profiles that were
-  // in use at the time of quitting.
-  void OnAppQuit(const std::string& app_id,
-                 std::set<base::FilePath> active_profiles);
+  // Called to save a list of the profiles that were last in use for an app.
+  // This is called for example when an app quits, providing the profiles that
+  // were in use at that time.
+  void SaveLastActiveProfilesForApp(const std::string& app_id,
+                                    std::set<base::FilePath> active_profiles);
 
   // Return all apps installed for the specified profile. Used to delete apps
   // when a profile is removed.
   std::set<std::string> GetInstalledAppsForProfile(
       const base::FilePath& profile) const;
+
+  // Called when the file and/or protocol handlers for an app are updated in a
+  // specific profile. Used to calculate the union of all handlers for a app
+  // when updating the app shim.
+  void SaveFileHandlersForAppAndProfile(
+      const std::string& app_id,
+      const base::FilePath& profile,
+      std::set<std::string> file_handler_extensions,
+      std::set<std::string> file_handler_mime_types);
+  void SaveProtocolHandlersForAppAndProfile(
+      const std::string& app_id,
+      const base::FilePath& profile,
+      std::set<std::string> protocol_handlers);
+
+  struct HandlerInfo {
+    HandlerInfo();
+    ~HandlerInfo();
+    HandlerInfo(HandlerInfo&&);
+    HandlerInfo(const HandlerInfo&);
+    HandlerInfo& operator=(HandlerInfo&&);
+    HandlerInfo& operator=(const HandlerInfo&);
+
+    bool IsEmpty() const {
+      return file_handler_extensions.empty() &&
+             file_handler_mime_types.empty() && protocol_handlers.empty();
+    }
+
+    std::set<std::string> file_handler_extensions;
+    std::set<std::string> file_handler_mime_types;
+    std::set<std::string> protocol_handlers;
+  };
+
+  // Returns all the file and protocol handlers for the given app, keyed by
+  // profile path.
+  std::map<base::FilePath, HandlerInfo> GetHandlersForApp(
+      const std::string& app_id);
 
   // Helper functions for testing.
   void SetPrefServiceAndUserDataDirForTesting(
@@ -94,7 +132,8 @@ class AppShimRegistry {
   // |app_id|.
   void SetAppInfo(const std::string& app_id,
                   const std::set<base::FilePath>* installed_profiles,
-                  const std::set<base::FilePath>* last_active_profiles);
+                  const std::set<base::FilePath>* last_active_profiles,
+                  const std::map<base::FilePath, HandlerInfo>* handlers);
 
   raw_ptr<PrefService> override_pref_service_ = nullptr;
   base::FilePath override_user_data_dir_;

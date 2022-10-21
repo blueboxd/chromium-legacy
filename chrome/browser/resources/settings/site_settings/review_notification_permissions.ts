@@ -75,13 +75,16 @@ export class SettingsReviewNotificationPermissionsElement extends
         value: true,
       },
 
-      /* The last origin that the user interacted with. */
-      lastOrigin_: String,
+      /* The last action taken by the user: block, reset or ignore. */
+      lastUserAction_: {
+        type: Actions,
+        observer: 'updateUndoNotificationText_',
+      },
 
-      /* Action type for use in bindings. */
-      actionsEnum_: {
-        type: Object,
-        value: Actions,
+      /* The last origins that the user interacted with. */
+      lastOrigins_: {
+        type: Array,
+        observer: 'updateUndoNotificationText_',
       },
 
       /**
@@ -95,6 +98,12 @@ export class SettingsReviewNotificationPermissionsElement extends
 
       /* The string for the primary header label. */
       headerString_: String,
+
+      /**
+       * The text that will be shown in the toast element upon clicking one of
+       * the actions.
+       */
+      toastText_: String,
     };
   }
 
@@ -103,11 +112,12 @@ export class SettingsReviewNotificationPermissionsElement extends
   private shouldShowCompletionInfo_: boolean;
   private browserProxy_: SiteSettingsPrefsBrowserProxy =
       SiteSettingsPrefsBrowserProxyImpl.getInstance();
-  private lastOrigin_: string;
+  private lastOrigins_: string[] = [];
   private lastUserAction_: Actions|null;
   private headerString_: string;
   private sitesLoaded_: boolean = false;
   private modelUpdateDelayMsForTesting_: number|null = null;
+  private toastText_: string|null;
 
   override async connectedCallback() {
     super.connectedCallback();
@@ -121,18 +131,9 @@ export class SettingsReviewNotificationPermissionsElement extends
     this.sitesLoaded_ = true;
   }
 
-  /**
-   * @return a user-friendly name for the primary pattern that is granted with
-   *     notification permission.
-   */
-  private getDisplayName_(notificationPermission: NotificationPermission):
-      string {
-    return this.toUrl(notificationPermission.origin)!.host;
-  }
-
   /* Show action menu when clicked to three dot menu. */
   private onShowActionMenuClick_(e: DomRepeatEvent<NotificationPermission>) {
-    this.lastOrigin_ = e.model.item.origin;
+    this.lastOrigins_ = [e.model.item.origin];
     const actionMenu = this.shadowRoot!.querySelector('cr-action-menu');
     assert(actionMenu);
     actionMenu.showAt(e.target as HTMLElement);
@@ -142,13 +143,13 @@ export class SettingsReviewNotificationPermissionsElement extends
       event: DomRepeatEvent<NotificationPermission>) {
     event.stopPropagation();
     const item = event.model.item;
+    this.lastOrigins_ = [item.origin];
     this.lastUserAction_ = Actions.BLOCK;
-    this.lastOrigin_ = item.origin;
     this.showUndoToast_();
-    this.hideItem_(this.lastOrigin_);
+    this.hideItem_(this.lastOrigins_[0]);
     setTimeout(
-        this.browserProxy_.blockNotificationPermissionForOrigin.bind(
-            this.browserProxy_, this.lastOrigin_),
+        this.browserProxy_.blockNotificationPermissionForOrigins.bind(
+            this.browserProxy_, this.lastOrigins_),
         this.getModelUpdateDelayMs_());
   }
 
@@ -157,10 +158,10 @@ export class SettingsReviewNotificationPermissionsElement extends
     this.lastUserAction_ = Actions.IGNORE;
     this.showUndoToast_();
     this.shadowRoot!.querySelector('cr-action-menu')!.close();
-    this.hideItem_(this.lastOrigin_);
+    this.hideItem_(this.lastOrigins_[0]);
     setTimeout(
-        this.browserProxy_.ignoreNotificationPermissionForOrigin.bind(
-            this.browserProxy_, this.lastOrigin_),
+        this.browserProxy_.ignoreNotificationPermissionForOrigins.bind(
+            this.browserProxy_, this.lastOrigins_),
         this.getModelUpdateDelayMs_());
   }
 
@@ -169,11 +170,21 @@ export class SettingsReviewNotificationPermissionsElement extends
     this.lastUserAction_ = Actions.RESET;
     this.showUndoToast_();
     this.shadowRoot!.querySelector('cr-action-menu')!.close();
-    this.hideItem_(this.lastOrigin_);
+    this.hideItem_(this.lastOrigins_[0]);
     setTimeout(
-        this.browserProxy_.resetNotificationPermissionForOrigin.bind(
-            this.browserProxy_, this.lastOrigin_),
+        this.browserProxy_.resetNotificationPermissionForOrigins.bind(
+            this.browserProxy_, this.lastOrigins_),
         this.getModelUpdateDelayMs_());
+  }
+
+  private onBlockAllClick_(e: Event) {
+    e.stopPropagation();
+    // To be able to undo the block-all action, we need to keep track of all
+    // origins that were blocked.
+    this.lastOrigins_ = this.sites_!.map(site => site.origin);
+    this.browserProxy_.blockNotificationPermissionForOrigins(this.lastOrigins_);
+    this.lastUserAction_ = Actions.BLOCK;
+    this.showUndoToast_();
   }
 
   /* Repopulate the list when notification permission list is updated. */
@@ -211,23 +222,33 @@ export class SettingsReviewNotificationPermissionsElement extends
     tooltip.show();
   }
 
-  private getUndoNotificationText_(): string {
-    if (!this.lastUserAction_ || !this.lastOrigin_) {
-      return '';
+  private async updateUndoNotificationText_(): Promise<void> {
+    if (!this.lastUserAction_ || this.lastOrigins_.length === 0) {
+      return;
     }
     switch (this.lastUserAction_) {
       case Actions.BLOCK:
-        return this.i18n(
-            'safetyCheckNotificationPermissionReviewBlockedToastLabel',
-            this.lastOrigin_);
+        if (this.lastOrigins_!.length === 1) {
+          this.toastText_ = this.i18n(
+              'safetyCheckNotificationPermissionReviewBlockedToastLabel',
+              this.lastOrigins_[0]);
+        } else {
+          this.toastText_ =
+              await PluralStringProxyImpl.getInstance().getPluralString(
+                  'safetyCheckNotificationPermissionReviewBlockAllToastLabel',
+                  this.lastOrigins_.length);
+        }
+        break;
       case Actions.IGNORE:
-        return this.i18n(
+        this.toastText_ = this.i18n(
             'safetyCheckNotificationPermissionReviewIgnoredToastLabel',
-            this.lastOrigin_);
+            this.lastOrigins_[0]);
+        break;
       case Actions.RESET:
-        return this.i18n(
+        this.toastText_ = this.i18n(
             'safetyCheckNotificationPermissionReviewResetToastLabel',
-            this.lastOrigin_);
+            this.lastOrigins_[0]);
+        break;
       default:
         assertNotReached();
     }
@@ -248,41 +269,41 @@ export class SettingsReviewNotificationPermissionsElement extends
       // undoing them only requires allowing notification permissions again.
       case Actions.BLOCK:
       case Actions.RESET:
-        this.browserProxy_.allowNotificationPermissionForOrigin(
-            this.lastOrigin_);
+        this.browserProxy_.allowNotificationPermissionForOrigins(
+            this.lastOrigins_);
+        this.lastOrigins_ = [];
         break;
       case Actions.IGNORE:
-        this.browserProxy_.undoIgnoreNotificationPermissionForOrigin(
-            this.lastOrigin_);
+        this.browserProxy_.undoIgnoreNotificationPermissionForOrigins(
+            this.lastOrigins_);
+        this.lastOrigins_ = [];
         break;
+      default:
+        assertNotReached();
     }
     this.$.undoToast.hide();
   }
 
-  private getAriaLabelText_(): string {
-    if (!this.lastUserAction_ || !this.lastOrigin_) {
-      return '';
+  private getBlockAriaLabelForOrigin(origin: string): string {
+    return this.i18n(
+        'safetyCheckNotificationPermissionReviewDontAllowAriaLabel', origin);
+  }
+
+  private getIgnoreAriaLabelForOrigins(origins: string[]): string|null {
+    // A label is only needed when the action menu is shown for a single origin.
+    if (origins.length !== 1) {
+      return null;
     }
-    switch (this.lastUserAction_) {
-      case Actions.BLOCK: {
-        return this.i18n(
-            'safetyCheckNotificationPermissionReviewDontAllowAriaLabel',
-            this.lastOrigin_);
-      }
-      case Actions.IGNORE: {
-        return this.i18n(
-            'safetyCheckNotificationPermissionReviewIgnoreAriaLabel',
-            this.lastOrigin_);
-      }
-      case Actions.RESET: {
-        return this.i18n(
-            'safetyCheckNotificationPermissionReviewResetAriaLabel',
-            this.lastOrigin_);
-      }
-      default: {
-        assertNotReached();
-      }
+    return this.i18n(
+        'safetyCheckNotificationPermissionReviewIgnoreAriaLabel', origins[0]);
+  }
+
+  private getResetAriaLabelForOrigins(origins: string[]): string|null {
+    if (origins.length !== 1) {
+      return null;
     }
+    return this.i18n(
+        'safetyCheckNotificationPermissionReviewResetAriaLabel', origins[0]);
   }
 
   private hideItem_(origin?: string) {
@@ -312,13 +333,9 @@ export class SettingsReviewNotificationPermissionsElement extends
             this.sites_!.length);
   }
 
-  private getMoreActionsAriaLabelText_(): string {
-    if (!this.lastOrigin_) {
-      return '';
-    }
+  private getMoreActionsAriaLabel_(origin: string): string {
     return this.i18n(
-        'safetyCheckNotificationPermissionReviewMoreActionsAriaLabel',
-        this.lastOrigin_);
+        'safetyCheckNotificationPermissionReviewMoreActionsAriaLabel', origin);
   }
 
   /** Show info that review is completed when there are no permissions left. */

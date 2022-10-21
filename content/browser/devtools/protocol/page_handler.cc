@@ -21,6 +21,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/back_forward_cache/disabled_reason_id.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -30,6 +31,7 @@
 #include "content/browser/devtools/protocol/emulation_handler.h"
 #include "content/browser/devtools/protocol/handler_helpers.h"
 #include "content/browser/manifest/manifest_manager_host.h"
+#include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
 #include "content/browser/renderer_host/back_forward_cache_disable.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
@@ -93,23 +95,27 @@ using BitmapEncoder =
 
 bool EncodeBitmapAsPngSlow(const SkBitmap& bitmap,
                            std::vector<uint8_t>& output) {
+  TRACE_EVENT0("devtools", "EncodeBitmapAsPngSlow");
   return gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &output);
 }
 
 bool EncodeBitmapAsPngFast(const SkBitmap& bitmap,
                            std::vector<uint8_t>& output) {
+  TRACE_EVENT0("devtools", "EncodeBitmapAsPngFast");
   return gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, false, &output);
 }
 
 bool EncodeBitmapAsJpeg(int quality,
                         const SkBitmap& bitmap,
                         std::vector<uint8_t>& output) {
+  TRACE_EVENT0("devtools", "EncodeBitmapAsJpeg");
   return gfx::JPEGCodec::Encode(bitmap, quality, &output);
 }
 
 bool EncodeBitmapAsWebp(int quality,
                         const SkBitmap& bitmap,
                         std::vector<uint8_t>& output) {
+  TRACE_EVENT0("devtools", "EncodeBitmapAsWebp");
   return gfx::WebpCodec::Encode(bitmap, quality, &output);
 }
 
@@ -1468,86 +1474,86 @@ Page::BackForwardCacheNotRestoredReason NotRestoredReasonToProtocol(
 }
 
 Page::PrerenderFinalStatus PrerenderFinalStatusToProtocol(
-    PrerenderHost::FinalStatus feature) {
+    PrerenderFinalStatus feature) {
   switch (feature) {
-    case PrerenderHost::FinalStatus::kActivated:
+    case PrerenderFinalStatus::kActivated:
       return Page::PrerenderFinalStatusEnum::Activated;
-    case PrerenderHost::FinalStatus::kAudioOutputDeviceRequested:
+    case PrerenderFinalStatus::kAudioOutputDeviceRequested:
       return Page::PrerenderFinalStatusEnum::AudioOutputDeviceRequested;
-    case PrerenderHost::FinalStatus::kBlockedByClient:
+    case PrerenderFinalStatus::kBlockedByClient:
       return Page::PrerenderFinalStatusEnum::BlockedByClient;
-    case PrerenderHost::FinalStatus::kCancelAllHostsForTesting:
+    case PrerenderFinalStatus::kCancelAllHostsForTesting:
       return Page::PrerenderFinalStatusEnum::CancelAllHostsForTesting;
-    case PrerenderHost::FinalStatus::kClientCertRequested:
+    case PrerenderFinalStatus::kClientCertRequested:
       return Page::PrerenderFinalStatusEnum::ClientCertRequested;
-    case PrerenderHost::FinalStatus::kCrossOriginNavigation:
+    case PrerenderFinalStatus::kCrossOriginNavigation:
       return Page::PrerenderFinalStatusEnum::CrossOriginNavigation;
-    case PrerenderHost::FinalStatus::kCrossOriginRedirect:
+    case PrerenderFinalStatus::kCrossOriginRedirect:
       return Page::PrerenderFinalStatusEnum::CrossOriginRedirect;
-    case PrerenderHost::FinalStatus::kDataSaverEnabled:
+    case PrerenderFinalStatus::kDataSaverEnabled:
       return Page::PrerenderFinalStatusEnum::DataSaverEnabled;
-    case PrerenderHost::FinalStatus::kDestroyed:
+    case PrerenderFinalStatus::kDestroyed:
       return Page::PrerenderFinalStatusEnum::Destroyed;
-    case PrerenderHost::FinalStatus::kDidFailLoad:
+    case PrerenderFinalStatus::kDidFailLoad:
       return Page::PrerenderFinalStatusEnum::DidFailLoad;
-    case PrerenderHost::FinalStatus::kDownload:
+    case PrerenderFinalStatus::kDownload:
       return Page::PrerenderFinalStatusEnum::Download;
-    case PrerenderHost::FinalStatus::kEmbedderTriggeredAndCrossOriginRedirected:
+    case PrerenderFinalStatus::kEmbedderTriggeredAndCrossOriginRedirected:
       return Page::PrerenderFinalStatusEnum::
           EmbedderTriggeredAndCrossOriginRedirected;
-    case PrerenderHost::FinalStatus::kFailToGetMemoryUsage:
+    case PrerenderFinalStatus::kFailToGetMemoryUsage:
       return Page::PrerenderFinalStatusEnum::FailToGetMemoryUsage;
-    case PrerenderHost::FinalStatus::kInProgressNavigation:
+    case PrerenderFinalStatus::kInProgressNavigation:
       return Page::PrerenderFinalStatusEnum::InProgressNavigation;
-    case PrerenderHost::FinalStatus::kInvalidSchemeNavigation:
+    case PrerenderFinalStatus::kInvalidSchemeNavigation:
       return Page::PrerenderFinalStatusEnum::InvalidSchemeNavigation;
-    case PrerenderHost::FinalStatus::kInvalidSchemeRedirect:
+    case PrerenderFinalStatus::kInvalidSchemeRedirect:
       return Page::PrerenderFinalStatusEnum::InvalidSchemeRedirect;
-    case PrerenderHost::FinalStatus::kLoginAuthRequested:
+    case PrerenderFinalStatus::kLoginAuthRequested:
       return Page::PrerenderFinalStatusEnum::LoginAuthRequested;
-    case PrerenderHost::FinalStatus::kLowEndDevice:
+    case PrerenderFinalStatus::kLowEndDevice:
       return Page::PrerenderFinalStatusEnum::LowEndDevice;
-    case PrerenderHost::FinalStatus::kMainFrameNavigation:
+    case PrerenderFinalStatus::kMainFrameNavigation:
       return Page::PrerenderFinalStatusEnum::MainFrameNavigation;
-    case PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded:
+    case PrerenderFinalStatus::kMaxNumOfRunningPrerendersExceeded:
       return Page::PrerenderFinalStatusEnum::MaxNumOfRunningPrerendersExceeded;
-    case PrerenderHost::FinalStatus::kMemoryLimitExceeded:
+    case PrerenderFinalStatus::kMemoryLimitExceeded:
       return Page::PrerenderFinalStatusEnum::MemoryLimitExceeded;
-    case PrerenderHost::FinalStatus::kMixedContent:
+    case PrerenderFinalStatus::kMixedContent:
       return Page::PrerenderFinalStatusEnum::MixedContent;
-    case PrerenderHost::FinalStatus::kMojoBinderPolicy:
+    case PrerenderFinalStatus::kMojoBinderPolicy:
       return Page::PrerenderFinalStatusEnum::MojoBinderPolicy;
-    case PrerenderHost::FinalStatus::kNavigationBadHttpStatus:
+    case PrerenderFinalStatus::kNavigationBadHttpStatus:
       return Page::PrerenderFinalStatusEnum::NavigationBadHttpStatus;
-    case PrerenderHost::FinalStatus::kNavigationNotCommitted:
+    case PrerenderFinalStatus::kNavigationNotCommitted:
       return Page::PrerenderFinalStatusEnum::NavigationNotCommitted;
-    case PrerenderHost::FinalStatus::kNavigationRequestBlockedByCsp:
+    case PrerenderFinalStatus::kNavigationRequestBlockedByCsp:
       return Page::PrerenderFinalStatusEnum::NavigationRequestBlockedByCsp;
-    case PrerenderHost::FinalStatus::kNavigationRequestNetworkError:
+    case PrerenderFinalStatus::kNavigationRequestNetworkError:
       return Page::PrerenderFinalStatusEnum::NavigationRequestNetworkError;
-    case PrerenderHost::FinalStatus::kRendererProcessCrashed:
+    case PrerenderFinalStatus::kRendererProcessCrashed:
       return Page::PrerenderFinalStatusEnum::RendererProcessCrashed;
-    case PrerenderHost::FinalStatus::kRendererProcessKilled:
+    case PrerenderFinalStatus::kRendererProcessKilled:
       return Page::PrerenderFinalStatusEnum::RendererProcessKilled;
-    case PrerenderHost::FinalStatus::kSslCertificateError:
+    case PrerenderFinalStatus::kSslCertificateError:
       return Page::PrerenderFinalStatusEnum::SslCertificateError;
-    case PrerenderHost::FinalStatus::kStop:
+    case PrerenderFinalStatus::kStop:
       return Page::PrerenderFinalStatusEnum::Stop;
-    case PrerenderHost::FinalStatus::kTriggerBackgrounded:
+    case PrerenderFinalStatus::kTriggerBackgrounded:
       return Page::PrerenderFinalStatusEnum::TriggerBackgrounded;
-    case PrerenderHost::FinalStatus::kTriggerDestroyed:
+    case PrerenderFinalStatus::kTriggerDestroyed:
       return Page::PrerenderFinalStatusEnum::TriggerDestroyed;
-    case PrerenderHost::FinalStatus::kUaChangeRequiresReload:
+    case PrerenderFinalStatus::kUaChangeRequiresReload:
       return Page::PrerenderFinalStatusEnum::UaChangeRequiresReload;
-    case PrerenderHost::FinalStatus::kHasEffectiveUrl:
+    case PrerenderFinalStatus::kHasEffectiveUrl:
       return Page::PrerenderFinalStatusEnum::HasEffectiveUrl;
-    case PrerenderHost::FinalStatus::kActivatedBeforeStarted:
+    case PrerenderFinalStatus::kActivatedBeforeStarted:
       return Page::PrerenderFinalStatusEnum::ActivatedBeforeStarted;
-    case PrerenderHost::FinalStatus::kInactivePageRestriction:
+    case PrerenderFinalStatus::kInactivePageRestriction:
       return Page::PrerenderFinalStatusEnum::InactivePageRestriction;
-    case PrerenderHost::FinalStatus::kStartFailed:
+    case PrerenderFinalStatus::kStartFailed:
       return Page::PrerenderFinalStatusEnum::StartFailed;
-    case PrerenderHost::FinalStatus::kTimeoutBackgrounded:
+    case PrerenderFinalStatus::kTimeoutBackgrounded:
       return Page::PrerenderFinalStatusEnum::TimeoutBackgrounded;
   }
 }
@@ -1659,6 +1665,8 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
       return Page::BackForwardCacheNotRestoredReasonEnum::InjectedJavascript;
     case WebSchedulerTrackedFeature::kInjectedStyleSheet:
       return Page::BackForwardCacheNotRestoredReasonEnum::InjectedStyleSheet;
+    case WebSchedulerTrackedFeature::kKeepaliveRequest:
+      return Page::BackForwardCacheNotRestoredReasonEnum::KeepaliveRequest;
     case WebSchedulerTrackedFeature::kDummy:
       // This is a test only reason and should never be called.
       NOTREACHED();
@@ -1870,6 +1878,7 @@ Page::BackForwardCacheNotRestoredReasonType MapBlocklistedFeatureToType(
     case WebSchedulerTrackedFeature::kWebSocket:
     case WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet:
     case WebSchedulerTrackedFeature::kSpeechSynthesis:
+    case WebSchedulerTrackedFeature::kKeepaliveRequest:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::SupportPending;
     case WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore:
     case WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoCache:
@@ -2021,12 +2030,12 @@ void PageHandler::DidActivatePrerender(const NavigationRequest& nav_request) {
 
 void PageHandler::DidCancelPrerender(const GURL& prerendering_url,
                                      const std::string& initiating_frame_id,
-                                     PrerenderHost::FinalStatus status,
+                                     PrerenderFinalStatus status,
                                      const std::string& disallowed_api_method) {
   has_dispatched_stored_prerender_activation_ = false;
   if (!enabled_)
     return;
-  DCHECK_NE(status, PrerenderHost::FinalStatus::kActivated);
+  DCHECK_NE(status, PrerenderFinalStatus::kActivated);
   Maybe<std::string> opt_disallowed_api_method =
       disallowed_api_method.empty() ? Maybe<std::string>()
                                     : Maybe<std::string>(disallowed_api_method);

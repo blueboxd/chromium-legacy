@@ -39,6 +39,7 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<
     kAutomaticLazyFrameLoadingToEmbedLoadingStrategyParam;
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kBackForwardCacheDedicatedWorker);
 
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kBackForwardCacheWithKeepaliveRequest);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kBlockingDownloadsInAdFrameWithoutUserActivation);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kConversionMeasurement);
@@ -696,6 +697,10 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSelectiveInOrderScriptTarget);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
     kSelectiveInOrderScriptAllowList;
 
+// If enabled, a fix for image loading prioritization based on visibility is
+// applied. See https://crbug.com/1369823.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kImageLoadingPrioritizationFix);
+
 // If enabled, allows MediaStreamVideoSource objects to be restarted by a
 // successful source switch. Normally, switching the source would only allowed
 // on streams that are in started state. However, changing the source also first
@@ -911,6 +916,10 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSSVTrailerEnforceExposureAssertion);
 
 // Kill switch for AbortSignal algorithm handle-based removal.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAbortSignalHandleBasedRemoval);
+
+// Forces the attribute powerPreference to be set to "high-performance" for
+// WebGL contexts.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kForceHighPerformanceGPUForWebGL);
 
 }  // namespace features
 }  // namespace blink

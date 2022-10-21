@@ -3,11 +3,17 @@
 // found in the LICENSE file.
 
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/web_app_file_handler_manager.h"
+#include "chrome/browser/web_applications/os_integration/web_app_protocol_handler_manager.h"
+#include "chrome/browser/web_applications/os_integration/web_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
@@ -30,6 +36,20 @@ class UpdateFileHandlerCommandTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
     provider_ = FakeWebAppProvider::Get(profile());
+
+    auto file_handler_manager =
+        std::make_unique<WebAppFileHandlerManager>(profile());
+    auto protocol_handler_manager =
+        std::make_unique<WebAppProtocolHandlerManager>(profile());
+    auto shortcut_manager = std::make_unique<WebAppShortcutManager>(
+        profile(), /*icon_manager=*/nullptr, file_handler_manager.get(),
+        protocol_handler_manager.get());
+    auto os_integration_manager = std::make_unique<OsIntegrationManager>(
+        profile(), std::move(shortcut_manager), std::move(file_handler_manager),
+        std::move(protocol_handler_manager), /*url_handler_manager=*/nullptr);
+
+    provider_->SetOsIntegrationManager(std::move(os_integration_manager));
+
     test::AwaitStartWebAppProviderAndSubsystems(profile());
   }
 
@@ -50,6 +70,7 @@ class UpdateFileHandlerCommandTest : public WebAppTest {
  private:
   raw_ptr<FakeWebAppProvider> provider_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  ScopedTestingLocalState local_state_{TestingBrowserProcess::GetGlobal()};
 };
 
 TEST_F(UpdateFileHandlerCommandTest, UserChoiceAllowPersisted) {

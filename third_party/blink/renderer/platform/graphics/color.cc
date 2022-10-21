@@ -28,6 +28,7 @@
 #include "base/notreached.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/renderer/platform/geometry/blend.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -127,93 +128,6 @@ RGBA32 MakeRGBA32FromFloats(float r, float g, float b, float a) {
          ColorFloatToRGBAByte(g) << 8 | ColorFloatToRGBAByte(b);
 }
 
-constexpr RGBA32 MakeRGBA(int r, int g, int b, int a) {
-  return ClampTo(a, 0, 255) << 24 | ClampTo(r, 0, 255) << 16 |
-         ClampTo(g, 0, 255) << 8 | ClampTo(b, 0, 255);
-}
-
-constexpr double CalcHue(double temp1, double temp2, double hue_val) {
-  if (hue_val < 0.0)
-    hue_val += 6.0;
-  else if (hue_val >= 6.0)
-    hue_val -= 6.0;
-  if (hue_val < 1.0)
-    return temp1 + (temp2 - temp1) * hue_val;
-  if (hue_val < 3.0)
-    return temp2;
-  if (hue_val < 4.0)
-    return temp1 + (temp2 - temp1) * (4.0 - hue_val);
-  return temp1;
-}
-
-// Explanation of this algorithm can be found in the CSS Color 4 Module
-// specification at https://drafts.csswg.org/css-color-4/#hsl-to-rgb with
-// further explanation available at http://en.wikipedia.org/wiki/HSL_color_space
-
-// Hue is in the range of 0.0 to 6.0, the remainder are in the range 0.0 to 1.0.
-// Out parameters r, g, and b are also returned in range 0.0 to 1.0.
-constexpr void HSLToRGB(double hue,
-                        double saturation,
-                        double lightness,
-                        double& r,
-                        double& g,
-                        double& b) {
-  if (!saturation) {
-    r = g = b = lightness;
-  } else {
-    double temp2 = lightness <= 0.5
-                       ? lightness * (1.0 + saturation)
-                       : lightness + saturation - lightness * saturation;
-    double temp1 = 2.0 * lightness - temp2;
-
-    r = CalcHue(temp1, temp2, hue + 2.0);
-    g = CalcHue(temp1, temp2, hue);
-    b = CalcHue(temp1, temp2, hue - 2.0);
-  }
-}
-
-// Hue is in the range of 0 to 6.0, the remainder are in the range 0 to 1.0
-constexpr RGBA32 MakeRGBAFromHSLA(double hue,
-                                  double saturation,
-                                  double lightness,
-                                  double alpha) {
-  const double scale_factor = 255.0;
-  double r = 0, g = 0, b = 0;
-  HSLToRGB(hue, saturation, lightness, r, g, b);
-
-  return MakeRGBA(static_cast<int>(round(r * scale_factor)),
-                  static_cast<int>(round(g * scale_factor)),
-                  static_cast<int>(round(b * scale_factor)),
-                  static_cast<int>(round(alpha * scale_factor)));
-}
-
-// Hue is in the range of 0 to 6.0, the remainder are in the range 0 to 1.0
-constexpr RGBA32 MakeRGBAFromHWBA(double hue,
-                                  double white,
-                                  double black,
-                                  double alpha) {
-  const double scale_factor = 255.0;
-
-  if (white + black >= 1.0) {
-    int gray = static_cast<int>(round(white / (white + black) * scale_factor));
-    return MakeRGBA(gray, gray, gray,
-                    static_cast<int>(round(alpha * scale_factor)));
-  }
-
-  // Leverage HSL to RGB conversion to find HWB to RGB, see
-  // https://drafts.csswg.org/css-color-4/#hwb-to-rgb
-  double r = 0, g = 0, b = 0;
-  HSLToRGB(hue, 1.0, 0.5, r, g, b);
-  r += white - (white + black) * r;
-  g += white - (white + black) * g;
-  b += white - (white + black) * b;
-
-  return MakeRGBA(static_cast<int>(round(r * scale_factor)),
-                  static_cast<int>(round(g * scale_factor)),
-                  static_cast<int>(round(b * scale_factor)),
-                  static_cast<int>(round(alpha * scale_factor)));
-}
-
 constexpr int RedChannel(RGBA32 color) {
   return (color >> 16) & 0xFF;
 }
@@ -250,12 +164,12 @@ Color::Color(int r, int g, int b, int a) {
 
 // static
 Color Color::FromHSLA(double h, double s, double l, double a) {
-  return Color(MakeRGBAFromHSLA(h, s, l, a));
+  return Color(gfx::HSLToSkColor4f(h, s, l, a));
 }
 
 // static
 Color Color::FromHWBA(double h, double w, double b, double a) {
-  return Color(MakeRGBAFromHWBA(h, w, b, a));
+  return Color(gfx::HWBToSkColor4f(h, w, b, a));
 }
 
 // static
@@ -348,6 +262,75 @@ Color Color::FromOKLCH(absl::optional<float> L,
   result.param2_ = hue.value_or(0.f);
   result.alpha_ = ClampTo(alpha.value_or(1.f), 0.f, 1.f);
   return result;
+}
+
+// static
+Color Color::FromColorMix(Color::ColorInterpolationSpace interpolation_space,
+                          absl::optional<HueInterpolationMethod> hue_method,
+                          Color color1,
+                          Color color2,
+                          float percentage,
+                          float alpha_multiplier) {
+  // todo(1092638) : Support other color spaces, and conversions to the given
+  // color space.
+  if (interpolation_space != ColorInterpolationSpace::kSRGB) {
+    NOTIMPLEMENTED();
+    return Color();
+  }
+
+  color1.ConvertToColorInterpolationSpace(interpolation_space);
+  color2.ConvertToColorInterpolationSpace(interpolation_space);
+
+  float alpha1 = color1.PremultiplyColor();
+  float alpha2 = color2.PremultiplyColor();
+
+  Color result = FromColorFunction(
+      ColorFunctionSpace::kSRGB,
+      blink::Blend(color2.param0_, color1.param0_, percentage),
+      blink::Blend(color2.param1_, color1.param1_, percentage),
+      blink::Blend(color2.param2_, color1.param2_, percentage),
+      blink::Blend(alpha2, alpha1, percentage));
+
+  result.UnpremultiplyColor();
+
+  result.alpha_ *= alpha_multiplier;
+
+  return result;
+}
+
+void Color::ConvertToColorInterpolationSpace(
+    Color::ColorInterpolationSpace interpolation_space) {
+  if (interpolation_space == ColorInterpolationSpace::kSRGB) {
+    if (serialization_type_ == SerializationType::kColor &&
+        color_function_space_ == ColorFunctionSpace::kSRGB)
+      return;
+    SkColor4f sRGB_color = toSkColor4f();
+    serialization_type_ = SerializationType::kColor;
+    color_function_space_ = ColorFunctionSpace::kSRGB;
+    param0_ = sRGB_color.fR;
+    param1_ = sRGB_color.fG;
+    param2_ = sRGB_color.fB;
+  } else {
+    NOTIMPLEMENTED();
+  }
+}
+
+float Color::PremultiplyColor() {
+  float alpha = alpha_;
+  param0_ = param0_ * alpha_;
+  param1_ = param1_ * alpha_;
+  param2_ = param2_ * alpha_;
+  alpha_ = 1.0f;
+  return alpha;
+}
+
+void Color::UnpremultiplyColor() {
+  if (alpha_ == 0.0f)
+    return;
+
+  param0_ = param0_ / alpha_;
+  param1_ = param1_ / alpha_;
+  param2_ = param2_ / alpha_;
 }
 
 // static
@@ -819,27 +802,6 @@ Color::ColorInterpolationSpace Color::GetColorInterpolationSpace() const {
     return ColorInterpolationSpace::kSRGB;
 
   return ColorInterpolationSpace::kOKLab;
-}
-
-void Color::MultiplyAlpha(float alpha_multiplier) {
-  alpha_ *= alpha_multiplier;
-}
-
-Color Color::InterpolateColors(
-    const Color& color1,
-    const Color& color2,
-    float mix_amount,
-    Color::ColorInterpolationSpace color_interpolation_space,
-    Color::HueInterpolationMethod hue_interpolation_method) {
-  // TODO(crbug.com/1362022): Can only do this if the color_interpolation_space
-  // matches.
-  if (mix_amount == 0.0f)
-    return color2;
-  if (mix_amount == 1.0f)
-    return color1;
-
-  // TODO(crbug.com/1362022): We need to actually interpolate colors.
-  return Color::kDarkGray;
 }
 
 String Color::ColorInterpolationSpaceToString(

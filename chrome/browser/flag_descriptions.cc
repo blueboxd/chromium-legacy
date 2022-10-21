@@ -1923,11 +1923,6 @@ const char kOmniboxAdaptiveSuggestionsCountDescription[] =
     "flag to adjust the limit of offered suggestions. The number of shown "
     "suggestions will be no less than the platform default limit.";
 
-const char kOmniboxAggregateShortcutsName[] = "Omnibox Aggregate Shortcuts";
-const char kOmniboxAggregateShortcutsDescription[] =
-    "When enabled, duplicate shortcuts matching the user input will be given "
-    "an aggregate score; when disabled, they'll be scored independently";
-
 const char kOmniboxAssistantVoiceSearchName[] =
     "Omnibox Assistant Voice Search";
 const char kOmniboxAssistantVoiceSearchDescription[] =
@@ -2062,6 +2057,11 @@ const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[] =
     "device model for incognito. Turn off this feature if you have other "
     "apps running which affects local file access (e.g. anti-virus software) "
     "and are experiencing searchbox typing lags.";
+const char kOmniboxOnDeviceTailSuggestionsName[] =
+    "Omnibox on device tail suggestions";
+const char kOmniboxOnDeviceTailSuggestionsDescription[] =
+    "Google tail non personalized search suggestions provided by a compact on "
+    "device model.";
 
 const char kOmniboxRichAutocompletionPromisingName[] =
     "Omnibox Rich Autocompletion Promising Combinations";
@@ -2171,6 +2171,12 @@ const char kOptimizationGuideDebugLogsName[] =
 const char kOptimizationGuideDebugLogsDescription[] =
     "Enables the optimization guide to log and save debug messages that can be "
     "shown in the internals page.";
+
+const char kOptimizationGuideInstallWideModelStoreName[] =
+    "Enables the new optimization guide install-wide model store";
+const char kOptimizationGuideInstallWideModelStoreDescription[] =
+    "Enables the new model store that is per Chrome installation and can "
+    "share models across user profiles.";
 
 const char kOptimizationGuidePushNotificationName[] =
     "Enable optimization guide push notifications";
@@ -2300,6 +2306,11 @@ const char kPasswordDomainCapabilitiesFetchingDescription[] =
 const char kPasswordScriptsFetchingName[] = "Fetch password scripts";
 const char kPasswordScriptsFetchingDescription[] =
     "Fetches scripts for password change flows.";
+
+const char kPasswordChangeAccountStoreUsersName[] =
+    "Password change for account store users";
+const char kPasswordChangeAccountStoreUsersDescription[] =
+    "Enables automated password change for credentials in the account store.";
 
 const char kPasswordStrengthIndicatorName[] = "Password strength indicator";
 const char kPasswordStrengthIndicatorDescription[] =
@@ -4092,26 +4103,6 @@ const char kSyncAndroidLimitNTPPromoImpressionsName[] =
 const char kSyncAndroidLimitNTPPromoImpressionsDescription[] =
     "Suppress the NTP sync promo after a specific number of impressions.";
 
-const char kSyncAndroidPromosWithAlternativeTitleName[] =
-    "Enable the sync promos with alternative titles on Android";
-const char kSyncAndroidPromosWithAlternativeTitleDescription[] =
-    "Replace sync promos titles with alternative titles.";
-
-const char kSyncAndroidPromosWithIllustrationName[] =
-    "Enable the illustration sync promos on Android";
-const char kSyncAndroidPromosWithIllustrationDescription[] =
-    "Adds illustration to sync promos.";
-
-const char kSyncAndroidPromosWithSingleButtonName[] =
-    "Enable the single button sync promos on Android";
-const char kSyncAndroidPromosWithSingleButtonDescription[] =
-    "Hides the \"Choose another account\" button on sync promos.";
-
-const char kSyncAndroidPromosWithTitleName[] =
-    "Enable the title sync promos on Android";
-const char kSyncAndroidPromosWithTitleDescription[] =
-    "Adds a title above the description on sync promos.";
-
 const char kTabGroupsForTabletsName[] = "Tab groups on tablets";
 const char kTabGroupsForTabletsDescription[] = "Enable tab groups on tablets.";
 
@@ -4318,6 +4309,11 @@ const char kNtpCacheOneGoogleBarDescription[] =
 const char kNtpChromeCartModuleName[] = "NTP Chrome Cart Module";
 const char kNtpChromeCartModuleDescription[] =
     "Shows the chrome cart module on the New Tab Page.";
+
+const char kNtpComprehensiveThemeRealboxName[] =
+    "NTP Comprehensive Theme Realbox";
+const char kNtpComprehensiveThemeRealboxDescription[] =
+    "Applies theme based colors to the NTP Realbox element";
 
 const char kNtpComprehensiveThemingName[] = "NTP Comprehensive Theming";
 const char kNtpComprehensiveThemingDescription[] =
@@ -4716,6 +4712,16 @@ const char kAlwaysEnableHdcpDescription[] =
 const char kAlwaysEnableHdcpDefault[] = "Default";
 const char kAlwaysEnableHdcpType0[] = "Type 0";
 const char kAlwaysEnableHdcpType1[] = "Type 1";
+
+const char kAmbientModeThrottleAnimationName[] =
+    "Throttle the frame rate of Lottie animations in ambient mode";
+const char kAmbientModeThrottleAnimationDescription[] =
+    "The throttled frame rate and when to throttle are embedded within the "
+    "Lottie animation file itself. It is chosen by the motion designer and "
+    "varies depending on how much motion there is in the animation. This is "
+    "done in the hopes of improving power consumption while maintaining the "
+    "same user-visible smoothness. This flag applies to all ambient Lottie "
+    "animations that have throttling specified in the file.";
 
 const char kApnRevampName[] = "APN Revamp";
 const char kApnRevampDescription[] =
@@ -5922,18 +5928,18 @@ const char kShelfFocusOrderV1Name[] =
     "Enable \"V1\" focus ordering of shelf items.";
 const char kShelfFocusOrderV1Description[] =
     "Enables the \"V1\" focus ordering of shelf items. Once the drag handle "
-    "has accessibility focus the focus ordering is as follows: (1) If the drag "
-    "handle is pressed: the hotseat gets focus before and after the drag "
+    "has accessibility focus the focus ordering is as follows: (1) If the "
+    "hotseat is extended: the hotseat gets focus before and after the drag "
     "handle, but once the hotseat has focus that focus cannot naturally return "
     "to the drag handle (i.e. the hotseat's previous focus becomes the shelf "
     "navigation area and its next focus becomes the status area); (2) If the "
-    "drag handle is not pressed: the shelf navigation area gets the previous "
-    "focus, and the status area gets the next focus. Note that, in all cases, "
-    "the drag handle is never included in the natural focus order, i.e. the "
-    "navigation area's next focus and the status area's previous focus is "
-    "always the hotseat (even if the hotseat is currently hidden). In other "
-    "words, this change simply allows the focus to more easily move to other "
-    "parts of the shelf when the drag handle is forcibly focused.";
+    "hotseat is hidden: the shelf navigation area gets the previous focus, and "
+    "the status area gets the next focus. Note that, in all cases, the drag "
+    "handle is never included in the natural focus order, i.e. the navigation "
+    "area's next focus and the status area's previous focus is always the "
+    "hotseat (even if the hotseat is currently hidden). In other words, this "
+    "change simply allows the focus to more easily move to other parts of the "
+    "shelf when the drag handle is forcibly focused.";
 
 const char kShimlessRMAFlowName[] = "Enable shimless RMA flow";
 const char kShimlessRMAFlowDescription[] = "Enable shimless RMA flow";

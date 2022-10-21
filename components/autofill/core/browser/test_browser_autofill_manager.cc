@@ -182,7 +182,7 @@ int TestBrowserAutofillManager::GetPackedCreditCardID(int credit_card_id) {
   std::string credit_card_guid =
       base::StringPrintf("00000000-0000-0000-0000-%012d", credit_card_id);
 
-  return suggestion_generator()->MakeFrontendId(
+  return suggestion_generator_for_test()->MakeFrontendId(
       Suggestion::BackendId(credit_card_guid), Suggestion::BackendId());
 }
 
@@ -274,8 +274,11 @@ void TestBrowserAutofillManager::SetCallParentUploadFormData(bool value) {
   call_parent_upload_form_data_ = value;
 }
 
-std::string TestBrowserAutofillManager::GetAddressFormFlowId() {
-  return address_form_interactions_flow_id_for_test()->AsLowercaseString();
+int TestBrowserAutofillManager::MakeFrontendId(
+    const MakeFrontendIdParams& params) {
+  return suggestion_generator_for_test()->MakeFrontendId(
+      Suggestion::BackendId(params.credit_card_id),
+      Suggestion::BackendId(params.profile_id));
 }
 
 }  // namespace autofill

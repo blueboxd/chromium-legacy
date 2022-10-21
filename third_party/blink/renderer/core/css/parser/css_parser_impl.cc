@@ -1379,7 +1379,11 @@ static bool MayContainNestedRules(const String& text,
 
   // Strip away the outer {} pair (the { would always give us a false positive).
   DCHECK_EQ(text[offset], '{');
-  DCHECK_EQ(text[offset + length - 1], '}');
+  if (text[offset + length - 1] != '}') {
+    // EOF within the block, so just be on the safe side
+    // and use the normal (non-lazy) code path.
+    return true;
+  }
   ++offset;
   length -= 2;
 
@@ -1393,6 +1397,14 @@ StyleRule* CSSParserImpl::ConsumeStyleRule(CSSParserTokenStream& stream,
   if (parent_rule_for_nesting == nullptr) {
     DCHECK_EQ(0u, arena_.size());
   }
+  auto func_clear_arena = [&](HeapVector<CSSSelector>* arena) {
+    if (parent_rule_for_nesting == nullptr) {
+      arena->resize(0);  // See class comment on CSSSelectorParser.
+    }
+  };
+  std::unique_ptr<HeapVector<CSSSelector>, decltype(func_clear_arena)>
+      scope_guard(&arena_, std::move(func_clear_arena));
+
   if (observer_)
     observer_->StartRuleHeader(StyleRule::kStyle, stream.LookAheadOffset());
 
@@ -1414,7 +1426,6 @@ StyleRule* CSSParserImpl::ConsumeStyleRule(CSSParserTokenStream& stream,
 
   if (stream.AtEnd()) {
     // Parse error, EOF instead of qualified rule block.
-    arena_.resize(0);
     return nullptr;
   }
 
@@ -1423,9 +1434,6 @@ StyleRule* CSSParserImpl::ConsumeStyleRule(CSSParserTokenStream& stream,
 
   if (selector_vector.empty()) {
     // Parse error, invalid selector list.
-    if (parent_rule_for_nesting == nullptr) {
-      arena_.resize(0);
-    }
     return nullptr;
   }
 
@@ -1450,20 +1458,11 @@ StyleRule* CSSParserImpl::ConsumeStyleRule(CSSParserTokenStream& stream,
       return ConsumeStyleRuleContents(std::move(selector_vector), block_stream);
     }
 
-    StyleRule* style_rule = StyleRule::Create(
-        selector_vector, MakeGarbageCollected<CSSLazyPropertyParserImpl>(
-                             block_start_offset, lazy_state_));
-    if (parent_rule_for_nesting == nullptr) {
-      arena_.resize(0);  // See class comment on CSSSelectorParser.
-    }
-    return style_rule;
+    return StyleRule::Create(selector_vector,
+                             MakeGarbageCollected<CSSLazyPropertyParserImpl>(
+                                 block_start_offset, lazy_state_));
   }
-  StyleRule* style_rule =
-      ConsumeStyleRuleContents(std::move(selector_vector), stream);
-  if (parent_rule_for_nesting == nullptr) {
-    arena_.resize(0);  // See class comment on CSSSelectorParser.
-  }
-  return style_rule;
+  return ConsumeStyleRuleContents(std::move(selector_vector), stream);
 }
 
 StyleRule* CSSParserImpl::ConsumeStyleRuleContents(

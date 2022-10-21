@@ -130,9 +130,12 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
 
   void SetCallParentUploadFormData(bool value);
 
-  using BrowserAutofillManager::pending_form_data;
+  struct MakeFrontendIdParams {
+    std::string credit_card_id;
+    std::string profile_id;
+  };
 
-  std::string GetAddressFormFlowId();
+  int MakeFrontendId(const MakeFrontendIdParams& params);
 
  private:
   raw_ptr<TestAutofillClient> client_;

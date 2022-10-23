@@ -118,7 +118,7 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
-#include "third_party/blink/renderer/core/document_transition/document_transition_supplement.h"
+#include "third_party/blink/renderer/core/document_transition/document_transition_utils.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/beforeunload_event_listener.h"
 #include "third_party/blink/renderer/core/dom/cdata_section.h"
@@ -4877,7 +4877,7 @@ void Document::LayoutViewportWasResized() {
     if (GetFrame()->IsMainFrame() && !Printing())
       probe::DidResizeMainFrame(GetFrame());
   }
-  if (!HasStaticViewportUnits())
+  if (!HasViewportUnits())
     return;
   GetStyleResolver().SetResizedForViewportUnits();
   GetStyleEngine().MarkViewportUnitDirty(ViewportUnitFlag::kStatic);
@@ -7665,7 +7665,12 @@ HTMLDialogElement* Document::ActiveModalDialog() const {
   return nullptr;
 }
 
-Element* Document::TopmostPopupAutoOrHint() const {
+void Document::SetPopupHintShowing(HTMLElement* element) {
+  DCHECK(!element || element->HasPopupAttribute());
+  popup_hint_showing_ = element;
+}
+
+HTMLElement* Document::TopmostPopupAutoOrHint() const {
   if (PopupHintShowing())
     return PopupHintShowing();
   if (PopupStack().empty())
@@ -7673,7 +7678,7 @@ Element* Document::TopmostPopupAutoOrHint() const {
   return PopupStack().back();
 }
 
-void Document::SetPopUpPointerdownTarget(const Element* pop_up) {
+void Document::SetPopUpPointerdownTarget(const HTMLElement* pop_up) {
   DCHECK(
       RuntimeEnabledFeatures::HTMLPopupAttributeEnabled(GetExecutionContext()));
   DCHECK(!pop_up || pop_up->HasPopupAttribute());
@@ -8854,10 +8859,8 @@ bool Document::DeferredCompositorCommitIsAllowed() const {
   // Don't defer commits if a transition is in progress. It requires commits to
   // send directives to the compositor and uses a separate mechanism to pause
   // all rendering when needed.
-  auto* supplement = DocumentTransitionSupplement::FromIfExists(*this);
-  if (supplement && !supplement->GetTransition()->IsIdle())
+  if (DocumentTransitionUtils::GetActiveTransition(*this))
     return false;
-
   return deferred_compositor_commit_is_allowed_;
 }
 

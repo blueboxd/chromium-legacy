@@ -56,7 +56,7 @@
   {
     "name": "adaptive-button-in-top-toolbar-customization",
     "owners": [ "shaktisahu", "chrome-segmentation-platform@google.com" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 112
   },
   {
     "name": "adaptive-charging",
@@ -1538,16 +1538,16 @@
   },
   {
     "name": "download-bubble",
-    "owners": [ "bhatiarohit", "chrome-counter-abuse-alerts@google.com"],
-    "expiry_milestone": 108
+    "owners": [ "drubery", "chrome-counter-abuse-alerts@google.com"],
+    "expiry_milestone": 111
   },
   {
     "name": "download-bubble-v2",
     "owners": [
-      "bhatiarohit",
+      "drubery",
       "chrome-counter-abuse-alerts@google.com"
     ],
-    "expiry_milestone": 108
+    "expiry_milestone": 111
   },
   {
     "name": "download-later",
@@ -1612,7 +1612,7 @@
   {
     "name": "eche-swa-debug-mode",
     "owners": [ "dhnishi" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 110
   },
   {
     "name": "eche-swa-disable-stun-server",
@@ -1622,12 +1622,12 @@
   {
     "name": "eche-swa-measure-latency",
     "owners": [ "paulzchen@google.com", "guanrulee@google.com" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 110
   },
   {
     "name": "eche-swa-send-start-signaling",
     "owners": [ "dhnishi", "mavishsu@google.com" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 110
   },
   {
     "name": "edit-context",
@@ -2618,7 +2618,7 @@
   {
     "name": "enable-local-web-approvals",
     "owners": [ "agawronska@chromium.org", "courtneywong@chromium.org", "danan@chromium.org" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 110
   },
   {
     "name": "enable-lock-screen-notification",
@@ -3300,7 +3300,7 @@
   {
     "name": "enable-web-filter-interstitial-refresh",
     "owners": [ "agawronska@chromium.org", "courtneywong@chromium.org", "danan@chromium.org" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 110
   },
   {
     "name": "enable-web-hid-on-extension-service-worker",
@@ -4651,7 +4651,7 @@
   {
     "name": "metrickit-non-crash-reports",
     "owners": [ "olivierrobin", "justincohen", "bling-flags@google.com" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 130
   },
   {
     "name": "metrics-settings-android",

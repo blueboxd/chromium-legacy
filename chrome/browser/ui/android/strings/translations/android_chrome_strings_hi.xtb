@@ -343,7 +343,7 @@
 <translation id="2886836735871983413">वेब को ब्राउज़ करने पर, यहां साइटों की एक सूची दिखेगी</translation>
 <translation id="2888126860611144412">Chrome के बारे में</translation>
 <translation id="2891154217021530873">पेज को लोड करना रोकें</translation>
-<translation id="2893180576842394309">खोज और दूसरी Google सेवाओं को मनमुताबिक बनाने के लिए, Google आपके इतिहास का इस्तेमाल कर सकता है</translation>
+<translation id="2893180576842394309">Search और अन्य Google सेवाओं को आपके हिसाब से बनाने के लिए, Google आपका ब्राउज़िंग इतिहास इस्तेमाल कर सकता है.</translation>
 <translation id="2900528713135656174">इवेंट बनाएं</translation>
 <translation id="2901411048554510387"><ph name="WEBSITE_TITLE" /> के लिए सुझाव दिखाए जा रहे हैं</translation>
 <translation id="2904414404539560095">टैब शेयर करने वाले डिवाइस की सूची पूरी खुली हुई है.</translation>
@@ -886,7 +886,7 @@
 <translation id="5859968346865909126">आप सेटिंग में जाकर, इसे चालू या बंद कर सकते हैं</translation>
 <translation id="5860033963881614850">बंद</translation>
 <translation id="5860491529813859533">चालू करें</translation>
-<translation id="5862731021271217234">अपने दूसरे डिवाइस से अपने टैब पाने के लिए, 'सिंक करें' को चालू करें</translation>
+<translation id="5862731021271217234">अपने दूसरे डिवाइसों से टैब पाने के लिए, सिंक करने की सुविधा चालू करें</translation>
 <translation id="5864419784173784555">दूसरे डाउनलोड का इंतज़ार किया जा रहा है…</translation>
 <translation id="5865733239029070421">Google को इस्तेमाल के आंकड़े और खराबी रिपोर्ट अपने आप भेजती है</translation>
 <translation id="5869522115854928033">सेव किए गए पासवर्ड</translation>
@@ -1103,7 +1103,7 @@
 <translation id="6891726759199484455">अपना पासवर्ड कॉपी करने के लिए अनलॉक करें</translation>
 <translation id="6896758677409633944">कॉपी बनाएं</translation>
 <translation id="6900532703269623216">बेहतर सुरक्षा मोड</translation>
-<translation id="6903907808598579934">समन्वयन चालू करें</translation>
+<translation id="6903907808598579934">सिंक करना चालू करें</translation>
 <translation id="6908998565271542516">किसी वेबसाइट को अनुमति देने या न देने का विकल्प पूरी स्क्रीन में खुला है</translation>
 <translation id="6909589135458168665">पेजों को पहले से लोड करना</translation>
 <translation id="6942665639005891494">सेटिंग मेन्यू विकल्प का इस्तेमाल करके डिफ़ॉल्ट डाउनलोड स्थान किसी भी समय बदलें</translation>
@@ -1341,9 +1341,9 @@
 <translation id="813082847718468539">साइट जानकारी देखें</translation>
 <translation id="8153351135626613369">कुछ वेबसाइटों पर Assistant आपकी मदद कर सकती है. जब आप इनमें से किसी वेबसाइट पर जाएंगे, तब Assistant अपने-आप स्क्रीन पर दिखेगी</translation>
 <translation id="8156139159503939589">आप किन भाषाओं में पढ़ सकते हैं?</translation>
-<translation id="8168435359814927499">सामग्री</translation>
+<translation id="8168435359814927499">कॉन्टेंट</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> फ़ाइलें बची हैं</translation>
-<translation id="8189750580333936930">निजता सैंडबॉक्स</translation>
+<translation id="8189750580333936930">प्राइवसी सैंडबॉक्स</translation>
 <translation id="8190358571722158785">1 दिन शेष</translation>
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />आपके डिवाइस<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">फिर से शुरू करें</translation>
@@ -1542,7 +1542,7 @@
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">कॉल नहीं कर पा रहे</translation>
 <translation id="9212845824145208577">इससे नीचे नहीं जा सकते. पेज पर नीचे से शुरुआत करके देखें.</translation>
-<translation id="9219103736887031265">Images</translation>
+<translation id="9219103736887031265">इमेज</translation>
 <translation id="9219582468404818260">वेब को बेहतर बनाने में हमारी मदद करें</translation>
 <translation id="92381315203627188">जब कोई साइट अपने पेज पर, लिंक को निजी तौर पर पहले से लोड करने के लिए कहती है, तो Chrome, Google के सर्वर की मदद से पेजों को एन्क्रिप्ट करके पहले से लोड कर देता है. इसके लिए, Chrome कुकी का इस्तेमाल नहीं करता है. इससे, पहले से लोड की गई साइट से आपकी पहचान को छिपाया जा सकता है.</translation>
 <translation id="926205370408745186">'डिजिटल वेलबीइंग' से अपनी Chrome गतिविधि हटाएं</translation>

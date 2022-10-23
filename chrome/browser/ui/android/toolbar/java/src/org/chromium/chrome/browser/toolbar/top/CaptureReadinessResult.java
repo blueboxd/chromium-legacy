@@ -48,6 +48,8 @@ public class CaptureReadinessResult {
             TopToolbarBlockCaptureReason.STATUS_ICON_ANIMATION_IN_PROGRESS,
             TopToolbarBlockCaptureReason.SCROLL_ABLATION,
             TopToolbarBlockCaptureReason.BROWSER_CONTROLS_LOCKED,
+            TopToolbarBlockCaptureReason.TAB_SWITCHER_MODE,
+            TopToolbarBlockCaptureReason.COMPOSITOR_IN_MOTION,
             TopToolbarBlockCaptureReason.NUM_ENTRIES})
     @Retention(RetentionPolicy.SOURCE)
     public @interface TopToolbarBlockCaptureReason {
@@ -61,9 +63,10 @@ public class CaptureReadinessResult {
         int STATUS_ICON_ANIMATION_IN_PROGRESS = 7;
         int SCROLL_ABLATION = 8;
         int BROWSER_CONTROLS_LOCKED = 9;
-        // TODO(https://crbug.com/1324678): SCROLL_IN_PROGRESS.
+        int TAB_SWITCHER_MODE = 10;
+        int COMPOSITOR_IN_MOTION = 11;
         // TODO(https://crbug.com/1324678): NATIVE_PAGE.
-        int NUM_ENTRIES = 10;
+        int NUM_ENTRIES = 11;
     }
 
     public static CaptureReadinessResult readyForced() {

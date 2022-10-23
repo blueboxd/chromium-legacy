@@ -27,8 +27,7 @@ suite('SettingsToggleButton', () => {
       type: chrome.settingsPrivate.PrefType.BOOLEAN,
       value: true,
     };
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     testElement = document.createElement('settings-toggle-button');
     testElement.set('pref', pref);
     document.body.appendChild(testElement);
@@ -289,6 +288,34 @@ suite('SettingsToggleButton', () => {
     assertEquals(crToggle!.getAttribute('aria-label'), testAriaLabel);
   });
 
+  test('sub label with action link should have proper role', () => {
+    testElement.subLabelWithLink = `<a is="action-link"></a>`;
+    flush();
+
+    const subLabelTextWithLink =
+        testElement.shadowRoot!.querySelector<HTMLElement>(
+            '#sub-label-text-with-link');
+    assertTrue(!!subLabelTextWithLink);
+
+    const actionLink = subLabelTextWithLink!.querySelector('a');
+    assertTrue(!!actionLink);
+    assertEquals(actionLink.getAttribute('role'), 'link');
+  });
+
+  test('sub label should be able to have aria-label', () => {
+    testElement.subLabelWithLink = `<a aria-label="Label"></a>`;
+    flush();
+
+    const subLabelTextWithLink =
+        testElement.shadowRoot!.querySelector<HTMLElement>(
+            '#sub-label-text-with-link');
+    assertTrue(!!subLabelTextWithLink);
+
+    const actionLink = subLabelTextWithLink.querySelector('a');
+    assertTrue(!!actionLink);
+    assertEquals(actionLink.getAttribute('aria-label'), 'Label');
+  });
+
   // <if expr="chromeos_ash">
   test('click on sub label link should not toggle the button', () => {
     let subLabelTextWithLink =
@@ -300,13 +327,13 @@ suite('SettingsToggleButton', () => {
     subLabelTextWithLink =
         testElement.shadowRoot!.querySelector('#sub-label-text-with-link');
     assertTrue(!!subLabelTextWithLink);
-    const link = subLabelTextWithLink!.querySelector('a');
+    const link = subLabelTextWithLink.querySelector('a');
     assertTrue(!!link);
 
     assertTrue(testElement.checked);
     flush();
 
-    link!.click();
+    link.click();
     assertTrue(testElement.checked);
   });
 
@@ -327,23 +354,6 @@ suite('SettingsToggleButton', () => {
 
     subLabelTextWithLink!.click();
     assertFalse(testElement.checked);
-  });
-
-  test('sub label with action link should have proper role', () => {
-    let subLabelTextWithLink =
-        testElement.shadowRoot!.querySelector<HTMLElement>(
-            '#sub-label-text-with-link');
-    testElement.set('subLabelWithLink', `<a is="action-link"></a>`);
-    flush();
-
-    subLabelTextWithLink = testElement.shadowRoot!.querySelector<HTMLElement>(
-        '#sub-label-text-with-link');
-    assertTrue(!!subLabelTextWithLink);
-    flush();
-
-    const actionLink = subLabelTextWithLink!.querySelector('a');
-    assertTrue(!!actionLink);
-    assertEquals(actionLink.getAttribute('role'), 'link');
   });
   // </if>
 });

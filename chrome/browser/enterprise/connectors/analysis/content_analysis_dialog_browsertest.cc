@@ -252,7 +252,7 @@ class ContentAnalysisDialogBehaviorBrowserTest
   base::TimeDelta response_delay() const { return std::get<2>(GetParam()); }
 
  private:
-  raw_ptr<ContentAnalysisDialog> dialog_;
+  raw_ptr<ContentAnalysisDialog, DanglingUntriaged> dialog_;
 
   base::TimeTicks ctor_called_timestamp_;
   base::TimeTicks first_shown_timestamp_;
@@ -869,7 +869,7 @@ class ContentAnalysisDialogPlainTests : public InProcessBrowserTest {
   int times_discard_called_ = 0;
 
  private:
-  raw_ptr<ContentAnalysisDialog> dialog_;
+  raw_ptr<ContentAnalysisDialog, DanglingUntriaged> dialog_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 

@@ -13,12 +13,19 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
+class TestStorage : public DIPSStorage {
+ public:
+  void WriteForTesting(GURL url, const StateValue& state) {
+    Write(DIPSState(this, GetSiteForDIPS(url), state));
+  }
+};
+
 class DIPSStorageTest : public testing::Test {
  public:
   DIPSStorageTest() = default;
 
  protected:
-  DIPSStorage storage_;
+  TestStorage storage_;
 
  private:
   // Test setup.
@@ -64,8 +71,8 @@ TEST(DIPSUtilsTest, GetSiteForDIPS) {
 TEST_F(DIPSStorageTest, NewURL) {
   DIPSState state = storage_.Read(GURL("http://example.com/"));
   EXPECT_FALSE(state.was_loaded());
-  EXPECT_FALSE(state.first_site_storage_time().has_value());
-  EXPECT_FALSE(state.first_user_interaction_time().has_value());
+  EXPECT_FALSE(state.site_storage_times().first.has_value());
+  EXPECT_FALSE(state.user_interaction_times().first.has_value());
 }
 
 TEST_F(DIPSStorageTest, SetValues) {
@@ -81,14 +88,14 @@ TEST_F(DIPSStorageTest, SetValues) {
     // Before flushing `state`, reads for the same URL won't include its
     // changes.
     DIPSState state2 = storage_.Read(url);
-    EXPECT_FALSE(state2.first_site_storage_time().has_value());
-    EXPECT_FALSE(state2.first_user_interaction_time().has_value());
+    EXPECT_FALSE(state2.site_storage_times().first.has_value());
+    EXPECT_FALSE(state2.user_interaction_times().first.has_value());
   }
 
   DIPSState state = storage_.Read(url);
   EXPECT_TRUE(state.was_loaded());
-  EXPECT_EQ(state.first_site_storage_time(), absl::make_optional(time1));
-  EXPECT_EQ(state.first_user_interaction_time(), absl::make_optional(time2));
+  EXPECT_EQ(state.site_storage_times().first, absl::make_optional(time1));
+  EXPECT_EQ(state.user_interaction_times().first, absl::make_optional(time2));
 }
 
 TEST_F(DIPSStorageTest, SameSiteSameState) {
@@ -102,8 +109,8 @@ TEST_F(DIPSStorageTest, SameSiteSameState) {
 
   DIPSState state = storage_.Read(url2);
   // State was recorded for url1, but can be read for url2.
-  EXPECT_EQ(time, state.first_site_storage_time());
-  EXPECT_FALSE(state.first_user_interaction_time().has_value());
+  EXPECT_EQ(time, state.site_storage_times().first);
+  EXPECT_FALSE(state.user_interaction_times().first.has_value());
 }
 
 TEST_F(DIPSStorageTest, DifferentSiteDifferentState) {
@@ -116,10 +123,157 @@ TEST_F(DIPSStorageTest, DifferentSiteDifferentState) {
   storage_.Read(url2).update_site_storage_time(time2);
 
   // Verify that url1 and url2 have independent state:
-  EXPECT_EQ(storage_.Read(url1).first_site_storage_time(),
+  EXPECT_EQ(storage_.Read(url1).site_storage_times().first,
             absl::make_optional(time1));
-  EXPECT_EQ(storage_.Read(url2).first_site_storage_time(),
+  EXPECT_EQ(storage_.Read(url2).site_storage_times().first,
             absl::make_optional(time2));
+}
+
+TEST_F(DIPSStorageTest, RemoveByTimeWithNullRangeEndTime) {
+  GURL url1("https://example1.com");
+  GURL url2("https://example2.com");
+  base::Time delete_begin = base::Time::FromDoubleT(2);
+  base::Time delete_end = base::Time();
+
+  storage_.WriteForTesting(
+      url1, {{base::Time::FromDoubleT(1), base::Time::FromDoubleT(3)},
+             {base::Time::FromDoubleT(5), base::Time::FromDoubleT(8)}});
+  storage_.WriteForTesting(
+      url2, {{absl::nullopt, absl::nullopt},
+             {base::Time::FromDoubleT(3), base::Time::FromDoubleT(5)}});
+  storage_.RemoveEvents(delete_begin, delete_end,
+                        base::RepeatingCallback<bool(const GURL&)>(),
+                        DIPSEventRemovalType::kAll);
+
+  DIPSState state1 = storage_.Read(url1);
+  EXPECT_EQ(state1.site_storage_times().first,
+            absl::make_optional(base::Time::FromDoubleT(1)));  // no change
+  EXPECT_EQ(state1.site_storage_times().last,
+            absl::make_optional(delete_begin));  // adjusted
+  EXPECT_EQ(state1.user_interaction_times().first,
+            absl::nullopt);  // removed
+  EXPECT_EQ(state1.user_interaction_times().last,
+            absl::nullopt);  // removed
+
+  DIPSState state2 = storage_.Read(url2);
+  EXPECT_FALSE(state2.was_loaded());  // removed
+}
+
+TEST_F(DIPSStorageTest, RemoveByTimeAdjustsOverlappingTimes) {
+  GURL url1("https://example1.com");
+  GURL url2("https://example2.com");
+  base::Time delete_begin = base::Time::FromDoubleT(2);
+  base::Time delete_end = base::Time::FromDoubleT(6);
+
+  storage_.WriteForTesting(
+      url1, {{base::Time::FromDoubleT(1), base::Time::FromDoubleT(3)},
+             {base::Time::FromDoubleT(5), base::Time::FromDoubleT(8)}});
+  storage_.WriteForTesting(
+      url2, {{absl::nullopt, absl::nullopt},
+             {base::Time::FromDoubleT(3), base::Time::FromDoubleT(5)}});
+  storage_.RemoveEvents(delete_begin, delete_end,
+                        base::RepeatingCallback<bool(const GURL&)>(),
+                        DIPSEventRemovalType::kAll);
+
+  DIPSState state1 = storage_.Read(url1);
+  EXPECT_EQ(state1.site_storage_times().first,
+            absl::make_optional(base::Time::FromDoubleT(1)));  // no change
+  EXPECT_EQ(state1.site_storage_times().last,
+            absl::make_optional(delete_begin));  // adjusted
+  EXPECT_EQ(state1.user_interaction_times().first,
+            absl::make_optional(delete_end));  // adjusted
+  EXPECT_EQ(state1.user_interaction_times().last,
+            absl::make_optional(base::Time::FromDoubleT(8)));  // no change
+
+  DIPSState state2 = storage_.Read(url2);
+  EXPECT_FALSE(state2.was_loaded());  // removed
+}
+
+TEST_F(DIPSStorageTest, RemoveByTimeDoesNotAffectTouchingWindowEndpoints) {
+  GURL url1("https://example1.com");
+  GURL url2("https://example2.com");
+  base::Time delete_begin = base::Time::FromDoubleT(3);
+  base::Time delete_end = base::Time::FromDoubleT(5);
+
+  storage_.WriteForTesting(
+      url1, {{base::Time::FromDoubleT(1), base::Time::FromDoubleT(3)},
+             {base::Time::FromDoubleT(5), base::Time::FromDoubleT(8)}});
+  storage_.RemoveEvents(delete_begin, delete_end,
+                        base::RepeatingCallback<bool(const GURL&)>(),
+                        DIPSEventRemovalType::kAll);
+
+  DIPSState state = storage_.Read(url1);
+  EXPECT_EQ(state.site_storage_times().first,
+            absl::make_optional(base::Time::FromDoubleT(1)));  // no change
+  EXPECT_EQ(state.site_storage_times().last,
+            absl::make_optional(base::Time::FromDoubleT(3)));  // no change
+  EXPECT_EQ(state.user_interaction_times().first,
+            absl::make_optional(base::Time::FromDoubleT(5)));  // no change
+  EXPECT_EQ(state.user_interaction_times().last,
+            absl::make_optional(base::Time::FromDoubleT(8)));  // no change
+}
+
+TEST_F(DIPSStorageTest, RemoveByTimeStorageOnly) {
+  GURL url1("https://example1.com");
+  GURL url2("https://example2.com");
+  base::Time delete_begin = base::Time::FromDoubleT(2);
+  base::Time delete_end = base::Time::FromDoubleT(6);
+
+  storage_.WriteForTesting(
+      url1, {{base::Time::FromDoubleT(1), base::Time::FromDoubleT(3)},
+             {base::Time::FromDoubleT(5), base::Time::FromDoubleT(8)}});
+  storage_.WriteForTesting(
+      url2, {{absl::nullopt, absl::nullopt},
+             {base::Time::FromDoubleT(3), base::Time::FromDoubleT(5)}});
+  storage_.RemoveEvents(delete_begin, delete_end,
+                        base::RepeatingCallback<bool(const GURL&)>(),
+                        DIPSEventRemovalType::kStorage);
+
+  DIPSState state1 = storage_.Read(url1);
+  EXPECT_EQ(state1.site_storage_times().first,
+            absl::make_optional(base::Time::FromDoubleT(1)));  // no change
+  EXPECT_EQ(state1.site_storage_times().last,
+            absl::make_optional(delete_begin));  // adjusted
+  EXPECT_EQ(state1.user_interaction_times().first,
+            absl::make_optional(base::Time::FromDoubleT(5)));  // no change
+  EXPECT_EQ(state1.user_interaction_times().last,
+            absl::make_optional(base::Time::FromDoubleT(8)));  // no change
+
+  DIPSState state2 = storage_.Read(url2);
+  EXPECT_EQ(state2.user_interaction_times().first,
+            absl::make_optional(base::Time::FromDoubleT(3)));  // no change
+  EXPECT_EQ(state2.user_interaction_times().last,
+            absl::make_optional(base::Time::FromDoubleT(5)));  // no change
+}
+
+TEST_F(DIPSStorageTest, RemoveByTimeInteractionOnly) {
+  GURL url1("https://example1.com");
+  GURL url2("https://example2.com");
+  base::Time delete_begin = base::Time::FromDoubleT(2);
+  base::Time delete_end = base::Time::FromDoubleT(6);
+
+  storage_.WriteForTesting(
+      url1, {{base::Time::FromDoubleT(1), base::Time::FromDoubleT(3)},
+             {base::Time::FromDoubleT(5), base::Time::FromDoubleT(8)}});
+  storage_.WriteForTesting(
+      url2, {{absl::nullopt, absl::nullopt},
+             {base::Time::FromDoubleT(3), base::Time::FromDoubleT(5)}});
+  storage_.RemoveEvents(delete_begin, delete_end,
+                        base::RepeatingCallback<bool(const GURL&)>(),
+                        DIPSEventRemovalType::kInteraction);
+
+  DIPSState state1 = storage_.Read(url1);
+  EXPECT_EQ(state1.site_storage_times().first,
+            absl::make_optional(base::Time::FromDoubleT(1)));  // no change
+  EXPECT_EQ(state1.site_storage_times().last,
+            absl::make_optional(base::Time::FromDoubleT(3)));  // no change
+  EXPECT_EQ(state1.user_interaction_times().first,
+            absl::make_optional(delete_end));  // adjusted
+  EXPECT_EQ(state1.user_interaction_times().last,
+            absl::make_optional(base::Time::FromDoubleT(8)));  // no change
+
+  DIPSState state2 = storage_.Read(url2);
+  EXPECT_FALSE(state2.was_loaded());  // removed
 }
 
 scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {

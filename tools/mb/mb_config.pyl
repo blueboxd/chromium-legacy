@@ -1231,7 +1231,6 @@
       'gpu-fyi-try-mac-intel-dbg': 'gpu_fyi_tests_debug_trybot',
       'gpu-fyi-try-mac-intel-exp': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-mac-intel-rel': 'gpu_fyi_tests_release_trybot',
-      'gpu-fyi-try-mac-nvidia-retina-dbg': 'gpu_fyi_tests_debug_trybot',
       'gpu-fyi-try-mac-nvidia-retina-exp': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-mac-nvidia-retina-rel': 'gpu_fyi_tests_release_trybot',
       'gpu-try-mac-amd-retina-dbg': 'gpu_tests_debug_bot',
@@ -1261,6 +1260,7 @@
       'mac-osxbeta-rel': 'gpu_tests_debug_trybot',
       'mac-perfetto-rel': 'perfetto_release_trybot',
       'mac-rel': 'gpu_tests_release_trybot_no_symbols_mac_code_coverage',
+      'mac-rel-inverse-fyi': 'gpu_tests_release_trybot_no_symbols_mac_code_coverage',
       'mac11-arm64-rel': 'mac_arm64_gpu_tests_release_trybot_no_symbols',
       'mac12-arm64-rel': 'mac_arm64_gpu_tests_release_trybot_no_symbols',
       'mac12-tests': 'release_trybot',
@@ -1355,6 +1355,7 @@
       'win10_chromium_inverse_fieldtrials_x64_fyi_rel_ng': 'gpu_tests_release_trybot_resource_allowlisting_invert_fieldtrials',
       'win10_chromium_x64_dbg_ng': 'gpu_tests_debug_bot',
       'win10_chromium_x64_rel_ng': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage',
+      'win10_chromium_x64_rel_ng-inverse-fyi': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage',
       'win10_chromium_x64_rel_ng_exp': 'release_trybot',
       'win11-x64-fyi-rel': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage',
       'win7-rel': 'gpu_tests_release_trybot_x86_resource_allowlisting',
@@ -3825,7 +3826,7 @@
     },
 
     'backuprefptr': {
-      'gn_args': 'use_allocator="partition" use_partition_alloc_as_malloc=true enable_backup_ref_ptr_support=true put_ref_count_in_previous_slot=true enable_backup_ref_ptr_slow_checks=true',
+      'gn_args': 'use_partition_alloc_as_malloc=true enable_backup_ref_ptr_support=true put_ref_count_in_previous_slot=true enable_backup_ref_ptr_slow_checks=true',
     },
 
     'betty-arc-r': {
@@ -4486,7 +4487,7 @@
     # https://crbug.com/dawn/1200: Used to disable partition alloc while we
     # investigate a crash in the mac AMD shader compiler.
     'padisabled': {
-      'gn_args': 'use_allocator="none" use_partition_alloc_as_malloc=false',
+      'gn_args': 'use_partition_alloc_as_malloc=false',
     },
 
     # Used to pass the list of files to instrument for coverage to the compile

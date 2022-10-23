@@ -118,6 +118,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     private final OnResizedCallback mOnResizedCallback;
     private final AnimatorListener mSpinnerFadeoutAnimatorListener;
     private final int mCachedHandleHeight;
+    private final boolean mInteractWithBackground;
     private final boolean mIsFixedHeight;
     private final @Px int mUnclampedInitialHeight;
     private final FullscreenManager mFullscreenManager;
@@ -160,10 +161,8 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     private View mToolbarCoordinator;
     private int mToolbarColor;
     private Runnable mPositionUpdater;
+    private Runnable mSoftKeyboardRunnable;
     private boolean mStopShowingSpinner;
-
-    // Window attributes backed up for HTML fullscreen mode.
-    private WindowManager.LayoutParams mPreFullscreenAttrs;
 
     // Runnable finishing the activity after the exit animation. Non-null when PCCT is closing.
     @Nullable
@@ -209,7 +208,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     public PartialCustomTabHeightStrategy(Activity activity, @Px int initialHeight,
             Integer navigationBarColor, Integer navigationBarDividerColor, boolean isFixedHeight,
             OnResizedCallback onResizedCallback, ActivityLifecycleDispatcher lifecycleDispatcher,
-            FullscreenManager fullscreenManager, boolean isTablet) {
+            FullscreenManager fullscreenManager, boolean isTablet, boolean interactWithBackground) {
         mWindowAboveNavbar = ChromeFeatureList.sCctResizableWindowAboveNavbar.isEnabled();
         mAlwaysShowNavbarButtons = mWindowAboveNavbar
                 && ChromeFeatureList.sCctResizableAlwaysShowNavBarButtons.isEnabled();
@@ -217,6 +216,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         mDisplayHeight = getDisplayHeight();
         mUnclampedInitialHeight = initialHeight;
         mIsFixedHeight = isFixedHeight;
+        mInteractWithBackground = interactWithBackground;
         mOnResizedCallback = onResizedCallback;
         mFullscreenManager = fullscreenManager;
 
@@ -293,10 +293,15 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         mPositionUpdater.run();
     }
 
-    public void onShowSoftInput() {
-        if (isFullHeight() || mStatus != HeightStatus.INITIAL_HEIGHT) return;
+    public void onShowSoftInput(Runnable softKeyboardRunnable) {
+        // Expands to full height to avoid the tab being hidden by the soft keyboard.
+        // Necessary only if we're at the initial height status.
+        if (isFullHeight() || mStatus != HeightStatus.INITIAL_HEIGHT) {
+            softKeyboardRunnable.run();
+            return;
+        }
+        mSoftKeyboardRunnable = softKeyboardRunnable;
 
-        // Expands to full height.
         int start = mActivity.getWindow().getAttributes().y;
         int end = getFullyExpandedYWithAdjustment();
         mAnimator.setIntValues(start, end);
@@ -492,8 +497,14 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
 
     private void initializeHeight() {
         Window window = mActivity.getWindow();
-        window.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
-        window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        if (canInteractWithBackground()) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+            window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+            window.setDimAmount(0.6f);
+        }
 
         mNavbarHeight = getNavbarHeight();
 
@@ -622,6 +633,10 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         return mIsFixedHeight;
     }
 
+    private boolean canInteractWithBackground() {
+        return mInteractWithBackground;
+    }
+
     private void updateWindowPos(@Px int y) {
         // Do not allow the Window to go above the minimum threshold capped by the status
         // bar and (optionally) the 90%-height adjustment.
@@ -708,27 +723,36 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         hideSpinnerView();
         if (mWindowAboveNavbar) {
             showNavbarButtons(true);
-            new Handler().postDelayed(() -> {
+            if (mAlwaysShowNavbarButtons) {
+                finishResizing();
+            } else {
                 // Give a small delay in restoring the window to avoid the flashing artifact
                 // at the navigation bar area.
-                Window window = mActivity.getWindow();
-                window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-                positionAtHeight(mDisplayHeight - window.getAttributes().y);
-                maybeInvokeResizeCallback();
-                mStatus = mTargetStatus;
-                if (mFinishRunnable != null) {
-                    Runnable oldFinishRunnable = mFinishRunnable;
-                    mFinishRunnable = null;
-                    handleCloseAnimation(oldFinishRunnable);
-                    return;
-                }
-            }, NAVBAR_BUTTON_RESTORE_DELAY_MS);
+                new Handler().postDelayed(this::finishResizing, NAVBAR_BUTTON_RESTORE_DELAY_MS);
 
-            // Temporarily disables user input until the window is restored.
-            mTargetStatus = mStatus;
-            mStatus = HeightStatus.TRANSITION;
+                // Temporarily disables user input until the window is restored.
+                mTargetStatus = mStatus;
+                mStatus = HeightStatus.TRANSITION;
+            }
         } else {
             updateNavbarVisibility(true);
+        }
+        if (mSoftKeyboardRunnable != null) {
+            mSoftKeyboardRunnable.run();
+            mSoftKeyboardRunnable = null;
+        }
+    }
+
+    private void finishResizing() {
+        Window window = mActivity.getWindow();
+        window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        positionAtHeight(mDisplayHeight - window.getAttributes().y);
+        maybeInvokeResizeCallback();
+        mStatus = mTargetStatus;
+        if (mFinishRunnable != null) {
+            Runnable oldFinishRunnable = mFinishRunnable;
+            mFinishRunnable = null;
+            handleCloseAnimation(oldFinishRunnable);
         }
     }
 
@@ -1093,10 +1117,9 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     @Override
     public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
         // TODO(jinsukkim): Handle fullscreen in non-'window-above-navbar' version as well.
-        if (mPreFullscreenAttrs != null || !mWindowAboveNavbar) return;
-        mPreFullscreenAttrs = mActivity.getWindow().getAttributes();
+        if (!mWindowAboveNavbar) return;
         WindowManager.LayoutParams attrs = new WindowManager.LayoutParams();
-        attrs.copyFrom(mPreFullscreenAttrs);
+        attrs.copyFrom(mActivity.getWindow().getAttributes());
         attrs.x = 0;
         attrs.y = 0;
         attrs.height = MATCH_PARENT;
@@ -1107,10 +1130,9 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
 
     @Override
     public void onExitFullscreen(Tab tab) {
-        if (mPreFullscreenAttrs == null || !mWindowAboveNavbar) return;
-        mActivity.getWindow().setAttributes(mPreFullscreenAttrs);
-        mPreFullscreenAttrs = null;
+        if (!mWindowAboveNavbar) return;
         setTopMargins(mShadowOffset, getHandleHeight() + mShadowOffset);
+        initializeHeight();
     }
 
     @Override

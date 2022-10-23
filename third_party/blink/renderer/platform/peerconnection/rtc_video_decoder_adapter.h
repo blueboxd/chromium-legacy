@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/decoder_status.h"
@@ -124,17 +125,15 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   // Called on the worker thread.
   RTCVideoDecoderAdapter(media::GpuVideoAcceleratorFactories* gpu_factories,
                          const media::VideoDecoderConfig& config);
+  void DecrementCounterOnMediaThread(base::WaitableEvent* event);
 
   bool InitializeSync(const media::VideoDecoderConfig& config);
   void InitializeOnMediaThread(const media::VideoDecoderConfig& config,
                                CrossThreadOnceFunction<void(bool)> init_cb,
                                base::TimeTicks start_time,
-                               std::string* decoder_name);
+                               media::VideoDecoderType* decoder_type);
   absl::optional<RTCVideoDecoderFallbackReason>
   FallbackOrRegisterConcurrentInstanceOnce(media::VideoCodec codec);
-  absl::optional<RTCVideoDecoderFallbackReason> NeedSoftwareFallback(
-      media::VideoCodec codec,
-      const media::DecoderBuffer& buffer) const;
   absl::variant<DecodeResult, RTCVideoDecoderFallbackReason> EnqueueBuffer(
       scoped_refptr<media::DecoderBuffer> buffer);
   void DecodeOnMediaThread();
@@ -166,12 +165,13 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   absl::optional<base::TimeTicks> start_time_
       GUARDED_BY_CONTEXT(media_sequence_checker_);
 
-  // Decoding thread members.
-  // Has anything been sent to Decode() yet?
-  bool have_started_decoding_ = false;
+  media::VideoDecoderType decoder_type_ GUARDED_BY_CONTEXT(
+      decoding_sequence_checker_){media::VideoDecoderType::kUnknown};
 
   // Shared members.
   base::Lock lock_;
+  // Has anything been sent to Decode() yet?
+  bool have_started_decoding_ GUARDED_BY(lock_){false};
   int32_t consecutive_error_count_ = 0;
   Status status_ GUARDED_BY(lock_){Status::kNeedKeyFrame};
   webrtc::DecodedImageCallback* decode_complete_callback_ = nullptr;
@@ -192,6 +192,7 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   SEQUENCE_CHECKER(media_sequence_checker_);
   SEQUENCE_CHECKER(decoding_sequence_checker_);
 
+  // They are bound to |media_task_runner_|.
   base::WeakPtr<RTCVideoDecoderAdapter> weak_this_;
   base::WeakPtrFactory<RTCVideoDecoderAdapter> weak_this_factory_{this};
 };

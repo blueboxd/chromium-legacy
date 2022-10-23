@@ -202,6 +202,7 @@
 <translation id="2771816809568414714">ચીઝ</translation>
 <translation id="2781645665747935084">બેલ્જિયન</translation>
 <translation id="2782104745158847185">Linux ઍપ્લિકેશન ઇન્સ્ટૉલ કરવામાં ભૂલ</translation>
+<translation id="2802583107108007218">આ પ્રતિબંધો વિશે વધુ જાણો</translation>
 <translation id="2803375539583399270">PIN દાખલ કરો</translation>
 <translation id="2820957248982571256">સ્કૅન કરી રહ્યાં છીએ…</translation>
 <translation id="2830077785865012357">ચાઇનીઝ ઝુયિન</translation>
@@ -455,7 +456,6 @@
 <translation id="4900532980794411603">Parallels ડેસ્કટૉપ સાથે શેર કરો</translation>
 <translation id="4902546322522096650"><ph name="NETWORK_COUNT" />માંથી નેટવર્ક <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, સિગ્નલની સશક્તતા <ph name="SIGNAL_STRENGTH" />%, કનેક્ટ કરો</translation>
 <translation id="4906580650526544301"><ph name="NETWORK_INDEX" />માંથી <ph name="NETWORK_COUNT" /> નેટવર્ક, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, સિગ્નલની સશક્તતા <ph name="SIGNAL_STRENGTH" />%, ફોનની બૅટરી <ph name="BATTERY_STATUS" />%, વિગતો</translation>
-<translation id="4929673617759421391">ઍડમિનિસ્ટ્રેટર પૉલિસી અનુસાર આ ફાઇલ પેસ્ટ કરવાનું બ્લૉક કરેલું છે</translation>
 <translation id="4935975195727477204">સૂર્યમુખીનું ફૂલ</translation>
 <translation id="4943368462779413526">ફૂટબૉલ</translation>
 <translation id="4961158930123534723">Parallels ડેસ્કટૉપ સાથે 1 ફોલ્ડર શેર થયું</translation>
@@ -919,6 +919,7 @@
 <translation id="8656768832129462377">તપાસ કરશો નહીં</translation>
 <translation id="8688591111840995413">ખોટો પાસવર્ડ</translation>
 <translation id="8698464937041809063">Google રેખાંકન</translation>
+<translation id="8698877009525468705">આ ફાઇલ ગોપનીય છે અને ઍડમિનિસ્ટ્રેટરની પૉલિસી અનુસાર પ્રતિબંધોને આધીન છે.</translation>
 <translation id="8712637175834984815">સમજાઈ ગયું</translation>
 <translation id="8713112442029511308">માલ્ટીઝ</translation>
 <translation id="8714406895390098252">સાયકલ</translation>
@@ -973,7 +974,6 @@
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9189836632794948435">કઝાક</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> આઇટમ મેળવી છે.</translation>
-<translation id="9210751050717126865">ઍડમિનિસ્ટ્રેટર પૉલિસી અનુસાર <ph name="COUNT" /> ફાઇલ પેસ્ટ કરવાનું બ્લૉક કરેલું છે</translation>
 <translation id="9213073329713032541">ઇન્સ્ટૉલેશન સફળતાપૂર્વક શરૂ થયું.</translation>
 <translation id="9219103736887031265">છબીઓ</translation>
 <translation id="9219908252191632183">ચંદ્ર</translation>

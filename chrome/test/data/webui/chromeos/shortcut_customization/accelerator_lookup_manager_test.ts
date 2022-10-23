@@ -66,13 +66,13 @@ suite('acceleratorLookupManagerTest', function() {
   test('AcceleratorLookupDefaultFake', () => {
     // TODO(jimmyxgong): Remove this test once real data is ready.
     getProvider().setFakeAcceleratorConfig(fakeAcceleratorConfig);
-    return getProvider().getAllAcceleratorConfig().then((result) => {
-      assertDeepEquals(fakeAcceleratorConfig, result);
+    return getProvider().getAccelerators().then((result) => {
+      assertDeepEquals(fakeAcceleratorConfig, result.config);
 
-      getManager().setAcceleratorLookup(result);
+      getManager().setAcceleratorLookup(result.config);
 
-      for (const [source, accelMap] of fakeAcceleratorConfig) {
-        for (const [action, accelInfos] of accelMap) {
+      for (const [source, accelMap] of Object.entries(fakeAcceleratorConfig)) {
+        for (const [action, accelInfos] of Object.entries(accelMap)) {
           const actualAccels = getManager().getAccelerators(source, action);
           assertDeepEquals(accelInfos, actualAccels);
         }
@@ -97,15 +97,15 @@ suite('acceleratorLookupManagerTest', function() {
 
   test('ReplaceBasicAccelerator', () => {
     getProvider().setFakeAcceleratorConfig(fakeAcceleratorConfig);
-    return getProvider().getAllAcceleratorConfig().then((result) => {
-      assertDeepEquals(fakeAcceleratorConfig, result);
+    return getProvider().getAccelerators().then((result) => {
+      assertDeepEquals(fakeAcceleratorConfig, result.config);
 
-      getManager().setAcceleratorLookup(result);
+      getManager().setAcceleratorLookup(result.config);
 
       // Get Snap Window Right accelerator.
       const expectedAction = 1;
-      const ashMap = fakeAcceleratorConfig.get(AcceleratorSource.ASH);
-      const snapWindowRightAccels = ashMap!.get(expectedAction);
+      const ashMap = fakeAcceleratorConfig[AcceleratorSource.ASH];
+      const snapWindowRightAccels = ashMap![expectedAction];
       assertTrue(!!snapWindowRightAccels);
       // Modifier.Alt + key::221 (']')
       const oldAccel = snapWindowRightAccels[0]!.accelerator;
@@ -165,24 +165,22 @@ suite('acceleratorLookupManagerTest', function() {
 
   test('ReplacePreexistingAccelerator', () => {
     getProvider().setFakeAcceleratorConfig(fakeAcceleratorConfig);
-    return getProvider().getAllAcceleratorConfig().then((result) => {
-      assertDeepEquals(fakeAcceleratorConfig, result);
+    return getProvider().getAccelerators().then((result) => {
+      assertDeepEquals(fakeAcceleratorConfig, result.config);
 
-      getManager().setAcceleratorLookup(result);
+      getManager().setAcceleratorLookup(result.config);
 
       // Get Snap Window Right accelerator, the action that will be overridden.
       const snapWindowRightAction = 1;
-      const ashMap = fakeAcceleratorConfig!.get(AcceleratorSource.ASH) as
-          Map<number, AcceleratorInfo[]>;
-      const snapWindowRightAccels =
-          ashMap!.get(snapWindowRightAction) as AcceleratorInfo[];
+      const ashMap = fakeAcceleratorConfig![AcceleratorSource.ASH];
+      const snapWindowRightAccels = ashMap![snapWindowRightAction];
       // Modifier.Alt + key::221 (']')
-      const overridenAccel = snapWindowRightAccels[0]!.accelerator;
+      const overridenAccel = snapWindowRightAccels![0]!.accelerator;
 
       // Replace New Desk shortcut with Alt+']'.
       const newDeskAction = 2;
-      const oldNewDeskAccels = ashMap!.get(newDeskAction) as AcceleratorInfo[];
-      const oldNewDeskAccel = oldNewDeskAccels[0]!.accelerator;
+      const oldNewDeskAccels = ashMap![newDeskAction];
+      const oldNewDeskAccel = oldNewDeskAccels![0]!.accelerator;
 
       replaceAndVerify(
           AcceleratorSource.ASH, newDeskAction, oldNewDeskAccel,
@@ -208,10 +206,10 @@ suite('acceleratorLookupManagerTest', function() {
 
   test('AddBasicAccelerator', () => {
     getProvider().setFakeAcceleratorConfig(fakeAcceleratorConfig);
-    return getProvider().getAllAcceleratorConfig().then((result) => {
-      assertDeepEquals(fakeAcceleratorConfig, result);
+    return getProvider().getAccelerators().then((result) => {
+      assertDeepEquals(fakeAcceleratorConfig, result.config);
 
-      getManager().setAcceleratorLookup(result);
+      getManager().setAcceleratorLookup(result.config);
 
       // Get Snap Window Right accelerator from kAsh[1]!.
       const expectedAction = 1;
@@ -242,17 +240,16 @@ suite('acceleratorLookupManagerTest', function() {
 
   test('AddExistingAccelerator', () => {
     getProvider().setFakeAcceleratorConfig(fakeAcceleratorConfig);
-    return getProvider().getAllAcceleratorConfig().then((result) => {
-      assertDeepEquals(fakeAcceleratorConfig, result);
+    return getProvider().getAccelerators().then((result) => {
+      assertDeepEquals(fakeAcceleratorConfig, result.config);
 
-      getManager().setAcceleratorLookup(result);
+      getManager().setAcceleratorLookup(result.config);
 
       // Get Snap Window Right accelerator, the action that will be overridden.
       const snapWindowRightAction = 1;
-      const ashMap = fakeAcceleratorConfig!.get(AcceleratorSource.ASH) as
-          Map<number, AcceleratorInfo[]>;
+      const ashMap = fakeAcceleratorConfig[AcceleratorSource.ASH];
       const snapWindowRightAccels =
-          ashMap!.get(snapWindowRightAction) as AcceleratorInfo[];
+          ashMap![snapWindowRightAction] as AcceleratorInfo[];
       // Modifier.Alt + key::221 (']')
       const overridenAccel = snapWindowRightAccels[0]!.accelerator;
 
@@ -281,10 +278,10 @@ suite('acceleratorLookupManagerTest', function() {
 
   test('RemoveDefaultAccelerator', () => {
     getProvider().setFakeAcceleratorConfig(fakeAcceleratorConfig);
-    return getProvider().getAllAcceleratorConfig().then((result) => {
-      assertDeepEquals(fakeAcceleratorConfig, result);
+    return getProvider().getAccelerators().then((result) => {
+      assertDeepEquals(fakeAcceleratorConfig, result.config);
 
-      getManager().setAcceleratorLookup(result);
+      getManager().setAcceleratorLookup(result.config);
 
       // Get Snap Window Right accelerator from kAsh[1].
       const expectedAction = 1;
@@ -313,10 +310,10 @@ suite('acceleratorLookupManagerTest', function() {
 
   test('AddAndRemoveAccelerator', () => {
     getProvider().setFakeAcceleratorConfig(fakeAcceleratorConfig);
-    return getProvider().getAllAcceleratorConfig().then((result) => {
-      assertDeepEquals(fakeAcceleratorConfig, result);
+    return getProvider().getAccelerators().then((result) => {
+      assertDeepEquals(fakeAcceleratorConfig, result.config);
 
-      getManager().setAcceleratorLookup(result);
+      getManager().setAcceleratorLookup(result.config);
 
       // Get Snap Window Right accelerator from kAsh[1]!.
       const expectedAction = 1;

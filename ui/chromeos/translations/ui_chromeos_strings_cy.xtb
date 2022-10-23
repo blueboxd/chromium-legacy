@@ -202,6 +202,7 @@
 <translation id="2771816809568414714">Caws</translation>
 <translation id="2781645665747935084">Belgaidd</translation>
 <translation id="2782104745158847185">Bu gwall wrth osod yr ap Linux</translation>
+<translation id="2802583107108007218">Dysgu rhagor am y cyfyngiadau hyn</translation>
 <translation id="2803375539583399270">Rhowch y PIN</translation>
 <translation id="2820957248982571256">Wrthi'n sganio...</translation>
 <translation id="2830077785865012357">Zhuyin Tseinëeg</translation>
@@ -455,7 +456,6 @@
 <translation id="4900532980794411603">Rhannu gyda Parallels Desktop</translation>
 <translation id="4902546322522096650">Rhwydwaith <ph name="NETWORK_INDEX" /> o <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Cryfder Signal <ph name="SIGNAL_STRENGTH" />%, Cysylltu</translation>
 <translation id="4906580650526544301">Rhwydwaith <ph name="NETWORK_INDEX" /> o <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, Cryfder Signal <ph name="SIGNAL_STRENGTH" />%, Batri'r Ffôn <ph name="BATTERY_STATUS" />%, Manylion</translation>
-<translation id="4929673617759421391">Mae gludo'r ffeil hon wedi'i rwystro gan bolisi gweinyddwr</translation>
 <translation id="4935975195727477204">Blodyn Gasania</translation>
 <translation id="4943368462779413526">Pêl-droed</translation>
 <translation id="4961158930123534723">Rhennir 1 ffolder â Parallels Desktop</translation>
@@ -920,6 +920,7 @@
 <translation id="8656768832129462377">Peidio â gwirio</translation>
 <translation id="8688591111840995413">Cyfrinair gwael</translation>
 <translation id="8698464937041809063">Llun Google</translation>
+<translation id="8698877009525468705">Mae'r ffeil hon yn gyfrinachol ac yn amodol ar gyfyngiadau gan bolisi gweinyddwr.</translation>
 <translation id="8712637175834984815">Iawn</translation>
 <translation id="8713112442029511308">Malteg</translation>
 <translation id="8714406895390098252">Beic</translation>
@@ -974,7 +975,6 @@
 <translation id="9183302530794969518">Dogfennau Google</translation>
 <translation id="9189836632794948435">Kazaceg</translation>
 <translation id="9200427192836333033">Echdynnwyd <ph name="NUMBER_OF_ITEMS" /> eitem.</translation>
-<translation id="9210751050717126865">Mae gludo <ph name="COUNT" /> ffeil wedi'i rwystro gan bolisi gweinyddwr</translation>
 <translation id="9213073329713032541">Wedi dechrau gosod yn llwyddiannus.</translation>
 <translation id="9219103736887031265">Lluniau</translation>
 <translation id="9219908252191632183">Lleuadol</translation>

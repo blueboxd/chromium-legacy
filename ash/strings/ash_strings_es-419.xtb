@@ -92,6 +92,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="1407069428457324124">Tema oscuro</translation>
 <translation id="1410568680128842168"><ph name="DATE_CELL_TOOL_TIP" />. Utiliza las teclas de flecha para navegar por las fechas.</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, app instalada</translation>
+<translation id="1415846719612499304">Mostrar la lista de redes. <ph name="STATE_TEXT" />.</translation>
 <translation id="1419738280318246476">Desbloquea el dispositivo para llevar a cabo una acción con las notificaciones</translation>
 <translation id="1420408895951708260">Activar o desactivar la Luz nocturna. <ph name="STATE_TEXT" /></translation>
 <translation id="1420732223884894666">Ve las fotos y el contenido multimedia recientes del teléfono en tu <ph name="DEVICE_TYPE" /></translation>
@@ -252,6 +253,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="2322173485024759474">Volver letra por letra</translation>
 <translation id="2339073806695260576">Presiona el botón de la pluma stylus en la biblioteca para tomar notas y capturas de pantalla, y usar el puntero láser o la lupa.</translation>
 <translation id="2341729377289034582">Se bloqueó en posición vertical</translation>
+<translation id="2345226652884463045">Presiona Intro o la tecla de búsqueda + la barra espaciadora para seleccionar el texto que deseas editar.</translation>
 <translation id="2350794187831162545">La voz en <ph name="LANGUAGE" /> se procesa de manera local y funciona sin conexión. Para cambiar tu idioma de Dictado, ve a Configuración &gt; Accesibilidad.</translation>
 <translation id="2352467521400612932">Configuración de la pluma stylus</translation>
 <translation id="2354174487190027830">Activación de <ph name="NAME" /></translation>
@@ -308,6 +310,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="2678852583403169292">Menú de Seleccionar para pronunciar</translation>
 <translation id="2689613560355655046">Escritorio 8</translation>
 <translation id="2695305337569143674">web</translation>
+<translation id="2697697418792422688">Mostrar la configuración del teclado. Se seleccionó <ph name="KEYBOARD_NAME" />.</translation>
 <translation id="2700493154570097719">Establecer el teclado</translation>
 <translation id="2704781753052663061">Unirse a otras redes Wi-Fi</translation>
 <translation id="2705001408393684014">Activa o desactiva el micrófono. <ph name="STATE_TEXT" /></translation>
@@ -433,6 +436,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="3413817803639110246">No hay nada para ver</translation>
 <translation id="3428447136709161042">Desconectar de <ph name="NETWORK_NAME" /></translation>
 <translation id="3430396595145920809">Para volver, desliza el dedo desde la derecha</translation>
+<translation id="3431517721463707585">Escritorio 14</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="343571671045587506">Editar recordatorio</translation>
 <translation id="3435967511775410570">Se reconoció la huella dactilar</translation>
@@ -674,6 +678,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4731797938093519117">Acceso parental</translation>
 <translation id="4733161265940833579"><ph name="BATTERY_PERCENTAGE" />% (izquierdo)</translation>
 <translation id="4734965478015604180">Horizontal</translation>
+<translation id="4735944890391795473">Escritorio 12</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4740516757091333363">¿Deseas borrar el escritorio guardado?</translation>
 <translation id="4752784485658729358">Se permiten únicamente 6 escritorios guardados. Para guardar un escritorio nuevo, deberás quitar uno.</translation>
@@ -694,6 +699,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4860284199500934869">Comprueba la conexión de red para descargar <ph name="FILENAME" /></translation>
 <translation id="486056901304535126">Se intentará completar la descarga más tarde. La enunciación se enviará a Google para su procesamiento hasta que se complete la descarga.</translation>
 <translation id="4864369630010738180">Accediendo</translation>
+<translation id="4864648187878336334">Escritorio 15</translation>
 <translation id="4868492592575313542">activada</translation>
 <translation id="4872237917498892622">Alt+tecla de búsqueda o Mayús</translation>
 <translation id="4881695831933465202">Abrir</translation>
@@ -721,6 +727,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
         <ph name="NOTIFICATION_1" />,
         <ph name="NOTIFICATION_2" />,
         <ph name="NUM_OTHER_NOTIFICATION" /></translation>
+<translation id="4987738733603015246">Escritorio 16</translation>
 <translation id="5003993274120026347">Oración siguiente</translation>
 <translation id="5016558321564993266">Activar o desactivar el marcador. <ph name="STATE_TEXT" /></translation>
 <translation id="5030687792513154421">Se acabó el tiempo</translation>
@@ -737,6 +744,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5098537242461068432">Se reabrieron el escritorio y las ventanas</translation>
 <translation id="5104236669533825617">No se puede crear la presentación en pantalla</translation>
 <translation id="5107522548814527560">Web</translation>
+<translation id="5111318697104479778"><ph name="DESC" />, <ph name="STRENGTH" /></translation>
 <translation id="5117590920725113268">Mostrar el mes siguiente</translation>
 <translation id="5136175204352732067">Se conectó otro teclado</translation>
 <translation id="5147567197700016471">Desbloqueada</translation>
@@ -778,6 +786,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5327248766486351172">Nombre</translation>
 <translation id="5329548388331921293">Conectando…</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (puerto lateral izquierdo trasero)</translation>
+<translation id="533282197239610265">Mostrar dispositivos de transmisión</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (derecho)</translation>
 <translation id="5352250171825660495">El Tema oscuro está activado</translation>
 <translation id="5356963482258194581">Cambia entre los temas oscuro y claro. Haz clic con el botón derecho en el escritorio y elige Estilo y fondo de pantalla.</translation>
@@ -809,10 +818,12 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="553675580533261935">Salir de la sesión</translation>
 <translation id="5537725057119320332">Transmitir</translation>
 <translation id="554893713779400387">Activar o desactivar el dictado</translation>
+<translation id="5558091555391176027">Activar o desactivar la alta visibilidad de Compartir con Nearby</translation>
 <translation id="5560420195677022218">Mira las apps del teléfono en tu <ph name="DEVICE_TYPE" /></translation>
 <translation id="556042886152191864">Botón</translation>
 <translation id="5571066253365925590">Bluetooth activado</translation>
 <translation id="557563299383177668">Párrafo siguiente</translation>
+<translation id="5577082622442191756">Activar o desactivar Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="5577281275355252094">Verifica que la conexión Bluetooth esté habilitada en tu teléfono para poder usar Phone Hub.</translation>
 <translation id="5580000943347215299">Biblioteca</translation>
 <translation id="558849140439112033">Arrastra el cursor para seleccionar un área que quieras capturar</translation>
@@ -824,6 +835,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5648021990716966815">Conector para micrófono</translation>
 <translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" /> requiere tu atención.</translation>
+<translation id="5662075790140998213">Escritorio 10</translation>
 <translation id="5662709761327382534">Grabar con el micrófono: <ph name="CURRENT_STATE" />; presiona Intro para cambiar el estado a <ph name="NEW_STATE" /></translation>
 <translation id="5669267381087807207">Activando</translation>
 <translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" después de sincronizar tu configuración</translation>
@@ -881,6 +893,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="595202126637698455">Seguimiento de rendimiento habilitado</translation>
 <translation id="5955304353782037793">apl</translation>
 <translation id="5958529069007801266">Usuario supervisado</translation>
+<translation id="5965524703725988602">Activar o desactivar el Tema oscuro. <ph name="STATE_TEXT" />.</translation>
 <translation id="5976112937189445008">Presiona intro para grabar la ventana</translation>
 <translation id="5977415296283489383">Auriculares</translation>
 <translation id="5978382165065462689">Se está compartiendo el control de la pantalla mediante la Asistencia remota.</translation>
@@ -1024,6 +1037,8 @@ Nueva instalación</translation>
 <translation id="6753390234084146956">pestañas</translation>
 <translation id="6757237461819837179">No se está reproduciendo nada</translation>
 <translation id="6777216307882431711">Se están cargando los dispositivos USB-C conectados</translation>
+<translation id="6781002679438061620">Escritorio 9</translation>
+<translation id="6782182743534150858">Escritorio 13</translation>
 <translation id="6786750046913594791">Cerrar carpeta</translation>
 <translation id="6787595647772650851">Restablecer la última sesión</translation>
 <translation id="6790428901817661496">Reproducir</translation>
@@ -1085,6 +1100,7 @@ Nueva instalación</translation>
 <translation id="7098053464892629930">Descarga la app de <ph name="NAME" /> en Google Play para ver todas las funciones disponibles</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (puerto izquierdo en la parte posterior)</translation>
 <translation id="7106330611027933926">Mostrar barra de escritorio</translation>
+<translation id="7116969082764510092">Escritorio 11</translation>
 <translation id="7118268675952955085">captura de pantalla</translation>
 <translation id="7126996685418858413">Se abrió la semana pasada</translation>
 <translation id="7130207228079676353">MUY PROBABLES</translation>
@@ -1124,6 +1140,7 @@ Nueva instalación</translation>
 <translation id="7378889811480108604">El modo de Ahorro de batería está desactivado</translation>
 <translation id="7382680553121047388">Sí</translation>
 <translation id="7384028040782072252">Haz clic con el botón derecho en cualquier lugar para reorganizar las apps</translation>
+<translation id="7386767620098596324">Activar o desactivar la conexión de red. <ph name="STATE_TEXT" />.</translation>
 <translation id="7392563512730092880">Puedes configurarlo más tarde en la Configuración cuando lo desees.</translation>
 <translation id="7405710164030118432">Para desbloquear el dispositivo, ingresa el código de acceso parental de Family Link</translation>
 <translation id="7406608787870898861">Completa la configuración de la red móvil</translation>
@@ -1182,6 +1199,7 @@ Nueva instalación</translation>
 <translation id="7662283695561029522">Presiona para configurar</translation>
 <translation id="7670953955701272011">Abrir esta fecha en el Calendario de Google</translation>
 <translation id="7671610481353807627">Las apps están ordenadas por color</translation>
+<translation id="7672095158465655885">Conectado con <ph name="NAME" />, <ph name="SUBTEXT" /></translation>
 <translation id="7684531502177797067">Se estableció la entrada de cámara como <ph name="CAMERA_NAME" />.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7714767791242455379">Agregar una nueva red móvil</translation>
@@ -1263,6 +1281,7 @@ Nueva instalación</translation>
 <translation id="8142441511840089262">Doble clic</translation>
 <translation id="8142699993796781067">Red privada</translation>
 <translation id="8144760705599030999">Guarda tu <ph name="NAME" /> en <ph name="EMAIL" /> para permitir la vinculación rápida con tus otros dispositivos</translation>
+<translation id="8149413265954228307">Mostrar la configuración de Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Presiona Ctrl + W para cerrar.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />; autocompletar</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" />: El administrador controla esta configuración.</translation>
@@ -1323,6 +1342,7 @@ Nueva instalación</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> tiene <ph name="FEATURE_NAME" /> <ph name="FEATURE_STATE" />.</translation>
 <translation id="8477270416194247200">Presiona Alt y la tecla de búsqueda o mayúscula para cancelarlo.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> no admite la resolución <ph name="SPECIFIED_RESOLUTION" />. Se cambió la resolución a <ph name="FALLBACK_RESOLUTION" />. Para mantener este cambio, haz clic en Confirmar. En <ph name="TIMEOUT_SECONDS" />, se restablecerá la configuración anterior.</translation>
+<translation id="8496402167048257517">Mostrar la configuración de Compartir con Nearby</translation>
 <translation id="85123341071060231">El Bluetooth de la Chromebook está desactivado. Para desbloquear la Chromebook, ingresa la contraseña.</translation>
 <translation id="8513108775083588393">Giro autom.</translation>
 <translation id="851458219935658693">Está seleccionado el botón que muestra las ventanas del escritorio actual</translation>
@@ -1464,5 +1484,6 @@ Nueva instalación</translation>
 <translation id="974545358917229949">Mostrando <ph name="RESULT_COUNT" /> resultados para <ph name="QUERY" /></translation>
 <translation id="98515147261107953">Horizontal</translation>
 <translation id="990277280839877440">Se cerró la ventana <ph name="WINDOW_TITILE" />.</translation>
+<translation id="994354411665877646"><ph name="NETWORK_NAME" />, <ph name="SUBTEXT" /></translation>
 <translation id="996204416024568215">Obtén las funciones y mejoras de seguridad más recientes. Las actualizaciones se realizan en segundo plano.</translation>
 </translationbundle>

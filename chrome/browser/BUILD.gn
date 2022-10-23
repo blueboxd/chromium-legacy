@@ -94,7 +94,6 @@ buildflag_header("buildflags") {
   header = "buildflags.h"
   flags = [
     "USE_MINIKIN_HYPHENATION=$use_minikin_hyphenation",
-    "ENABLE_CHROMIUM_UPDATER=$enable_chromium_updater",
     "USE_THIN_LTO=$use_thin_lto",
   ]
 
@@ -514,6 +513,10 @@ static_library("browser") {
     "enterprise/browser_management/browser_management_status_provider.h",
     "enterprise/browser_management/management_service_factory.cc",
     "enterprise/browser_management/management_service_factory.h",
+    "enterprise/connectors/interstitials/enterprise_warn_controller_client.cc",
+    "enterprise/connectors/interstitials/enterprise_warn_controller_client.h",
+    "enterprise/connectors/interstitials/enterprise_warn_page.cc",
+    "enterprise/connectors/interstitials/enterprise_warn_page.h",
     "enterprise/reporting/prefs.cc",
     "enterprise/reporting/prefs.h",
     "enterprise/reporting/profile_report_generator_delegate_base.cc",
@@ -2951,8 +2954,6 @@ static_library("browser") {
       "bookmarks/android/bookmark_bridge.h",
       "browser_process_platform_part_android.cc",
       "browser_process_platform_part_android.h",
-      "chrome_browser_field_trials_mobile.cc",
-      "chrome_browser_field_trials_mobile.h",
       "chrome_browser_main_android.cc",
       "chrome_browser_main_android.h",
       "commerce/android/shopping_service_factory_android.cc",
@@ -2973,6 +2974,7 @@ static_library("browser") {
       "content_settings/request_desktop_site_web_contents_observer_android.h",
       "crash_upload_list/crash_upload_list_android.cc",
       "crash_upload_list/crash_upload_list_android.h",
+      "creator/android/creator_api_bridge.cc",
       "device_reauth/android/biometric_authenticator_android.cc",
       "device_reauth/android/biometric_authenticator_android.h",
       "device_reauth/android/biometric_authenticator_bridge.h",
@@ -3350,6 +3352,7 @@ static_library("browser") {
       "//chrome/browser/consent_auditor/android:jni_headers",
       "//chrome/browser/content_creation/notes/internal/android:jni_headers",
       "//chrome/browser/content_creation/reactions/internal/android:jni_headers",
+      "//chrome/browser/creator/android:jni_headers",
       "//chrome/browser/device_reauth/android:jni_headers",
       "//chrome/browser/download/internal/android",
       "//chrome/browser/endpoint_fetcher:jni_headers",
@@ -3430,6 +3433,7 @@ static_library("browser") {
       "//components/content_creation/reactions/core:features",
       "//components/content_settings/android",
       "//components/crash/android:crash_android",
+      "//components/creator",
       "//components/device_reauth",
       "//components/embedder_support/android:context_menu",
       "//components/embedder_support/android:simple_factory_key",
@@ -4512,6 +4516,7 @@ static_library("browser") {
       "//chrome/browser/ui/webui/side_panel/bookmarks:mojo_bindings",
       "//chrome/browser/ui/webui/side_panel/customize_chrome:mojo_bindings",
       "//chrome/browser/ui/webui/side_panel/reading_list:mojo_bindings",
+      "//chrome/browser/ui/webui/side_panel/user_notes:mojo_bindings",
       "//chrome/browser/ui/webui/tab_search:mojo_bindings",
       "//chrome/browser/ui/webui/tab_strip:mojo_bindings",
       "//chrome/browser/web_applications",
@@ -5169,7 +5174,6 @@ static_library("browser") {
       "//ash/services/device_sync/public/cpp:prefs",
       "//ash/services/device_sync/public/cpp:prefs",
       "//ash/services/device_sync/public/mojom",
-      "//ash/services/multidevice_setup",
       "//ash/services/secure_channel/public/mojom",
       "//ash/webui/camera_app_ui",
       "//ash/webui/camera_app_ui:mojo_bindings",
@@ -5300,6 +5304,7 @@ static_library("browser") {
       "//chromeos/ash/services/cros_healthd/public/cpp",
       "//chromeos/ash/services/cros_healthd/public/mojom",
       "//chromeos/ash/services/hotspot_config/public/mojom",
+      "//chromeos/ash/services/multidevice_setup",
       "//chromeos/ash/services/multidevice_setup/public/cpp",
       "//chromeos/ash/services/multidevice_setup/public/cpp:first_run_field_trial",
       "//chromeos/ash/services/multidevice_setup/public/cpp:prefs",
@@ -6233,6 +6238,8 @@ static_library("browser") {
       "mac/initial_prefs.mm",
       "mac/install_from_dmg.h",
       "mac/install_from_dmg.mm",
+      "mac/install_updater.h",
+      "mac/install_updater.mm",
       "mac/key_window_notifier.cc",
       "mac/key_window_notifier.h",
       "mac/mac_startup_profiler.cc",
@@ -6321,13 +6328,6 @@ static_library("browser") {
       "UserNotifications.framework",  # macOS 10.14
     ]
     public_deps += [ "//chrome/browser/mac:keystone_glue" ]
-
-    if (enable_chromium_updater) {
-      sources += [
-        "mac/install_updater.h",
-        "mac/install_updater.mm",
-      ]
-    }
   }
 
   if (is_win || is_linux || is_android || is_chromeos) {
@@ -6617,13 +6617,10 @@ static_library("browser") {
     ]
 
     deps += [
+      "//chrome/browser/updater:browser_updater_client",
       "//chrome/common/notifications",
       "//chrome/updater:browser_sources",
     ]
-
-    if (enable_chromium_updater) {
-      deps += [ "//chrome/browser/updater:browser_updater_client" ]
-    }
   } else {
     # On other platforms, use the generic implementation.
     sources += [ "hang_monitor/hang_crash_dump.cc" ]

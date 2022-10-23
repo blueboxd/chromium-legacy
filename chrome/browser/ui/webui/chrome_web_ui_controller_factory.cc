@@ -161,6 +161,7 @@
 #include "chrome/browser/ui/webui/side_panel/history_clusters/history_clusters_side_panel_ui.h"
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_ui.h"
 #include "chrome/browser/ui/webui/side_panel/reading_list/reading_list_ui.h"
+#include "chrome/browser/ui/webui/side_panel/user_notes/user_notes_side_panel_ui.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/browser/ui/webui/support_tool/support_tool_ui.h"
 #include "chrome/browser/ui/webui/sync_file_system_internals/sync_file_system_internals_ui.h"
@@ -176,7 +177,6 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/services/multidevice_setup/multidevice_setup_service.h"
 #include "ash/webui/camera_app_ui/url_constants.h"
 #include "ash/webui/color_internals/color_internals_ui.h"
 #include "ash/webui/color_internals/url_constants.h"
@@ -287,6 +287,7 @@
 #include "chrome/browser/ui/webui/nearby_internals/nearby_internals_ui.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share_dialog_ui.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_ui.h"
+#include "chromeos/ash/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"  // nogncheck
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"  // nogncheck
@@ -897,6 +898,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     if (url.host_piece() == chrome::kChromeUIHistoryClustersSidePanelHost)
       return &NewWebUI<HistoryClustersSidePanelUI>;
   }
+  if (url.host_piece() == chrome::kChromeUIUserNotesSidePanelHost)
+    return &NewWebUI<UserNotesSidePanelUI>;
   if (features::IsReadAnythingEnabled()) {
     if (url.host_piece() == chrome::kChromeUIReadAnythingSidePanelHost)
       return &NewWebUI<ReadAnythingUI>;

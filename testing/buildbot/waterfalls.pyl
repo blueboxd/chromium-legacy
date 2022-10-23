@@ -553,18 +553,11 @@
           'gtest_tests': 'webview_bot_all_gtests',
         },
         'mixins': [
-          'has_native_resultdb_integration'
+          'has_native_resultdb_integration',
+          'nougat',
+          'bullhead',
         ],
         'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'NRD90M',
-              'device_os_flavor': 'google',
-              'device_os_type': 'userdebug',
-              'device_type': 'bullhead',
-              'os': 'Android',
-            },
-          ],
           'expiration': 10800,
         },
         'os_type': 'android',
@@ -1576,11 +1569,10 @@
         ],
       },
       'ToTAndroid': {
-        # TODO(crbug/1255748): Move to Pie/Pixel2.
         'mixins': [
           'has_native_resultdb_integration',
-          'marshmallow',
-          'bullhead',
+          'pie_fleet',
+          'walleye',
         ],
         'additional_compile_targets': [
           'all',
@@ -4604,17 +4596,6 @@
           'gpu_telemetry_tests': 'gpu_fyi_mac_debug_telemetry_tests',
         },
       },
-      'Mac FYI Retina Debug (NVIDIA)': {
-        'os_type': 'mac',
-        'browser_config': 'debug',
-        'mixins': [
-          'mac_retina_nvidia_gpu_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_fyi_mac_debug_gtests',
-          'gpu_telemetry_tests': 'gpu_common_linux_and_mac_telemetry_tests',
-        },
-      },
       'Mac FYI Retina Release (AMD)': {
         'os_type': 'mac',
         'browser_config': 'release',
@@ -5544,7 +5525,7 @@
           'rust_build_tests',
           'rust_autocxx_tests',
         ],
-        'mixins': [ 'marshmallow' ],
+        'mixins': [ 'pie_fleet' ],
         'test_suites': {
           'gtest_tests': 'rust_gtests',
           # Currently `can_build_rust_unit_tests` is false on Android (because

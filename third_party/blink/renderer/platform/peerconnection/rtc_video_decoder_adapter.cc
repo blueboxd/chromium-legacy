@@ -162,13 +162,39 @@ scoped_refptr<media::DecoderBuffer> ConvertToDecoderBuffer(
                            webrtc::VideoFrameType::kVideoFrameKey);
   return buffer;
 }
+
+absl::optional<RTCVideoDecoderFallbackReason> NeedSoftwareFallback(
+    const media::VideoCodec codec,
+    const media::DecoderBuffer& buffer,
+    const media::VideoDecoderType decoder_type) {
+  // Fall back to software decoding if there's no support for VP9 spatial
+  // layers. See https://crbug.com/webrtc/9304.
+  const bool is_spatial_layer_buffer = buffer.side_data_size() > 0;
+  if (codec == media::VideoCodec::kVP9 && is_spatial_layer_buffer &&
+      !RTCVideoDecoderAdapter::Vp9HwSupportForSpatialLayers()) {
+    // D3D11 supports decoding the VP9 kSVC stream, but DXVA not. Currently just
+    // a reasonably temporary measure. Once the DXVA supports decoding VP9 kSVC
+    // stream, the boolean |need_fallback_to_software| should be removed, and if
+    // the OS is windows but not win7, we will return true in
+    // 'Vp9HwSupportForSpatialLayers' instead of false.
+#if BUILDFLAG(IS_WIN)
+    if (decoder_type == media::VideoDecoderType::kD3D11 &&
+        base::FeatureList::IsEnabled(media::kD3D11Vp9kSVCHWDecoding)) {
+      return absl::nullopt;
+    }
+#endif
+    return RTCVideoDecoderFallbackReason::kSpatialLayers;
+  }
+
+  return absl::nullopt;
+}
 }  // namespace
 
 void RTCVideoDecoderAdapter::InitializeOnMediaThread(
     const media::VideoDecoderConfig& config,
     CrossThreadOnceFunction<void(bool)> init_cb,
     base::TimeTicks start_time,
-    std::string* decoder_name) {
+    media::VideoDecoderType* decoder_type) {
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(media_sequence_checker_);
 
@@ -194,14 +220,14 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
       config, /*low_delay=*/false,
       /*cdm_context=*/nullptr,
       base::BindOnce(
-          [](base::OnceCallback<void(bool)> cb, std::string* decoder_name,
+          [](base::OnceCallback<void(bool)> cb,
+             media::VideoDecoderType* decoder_type,
              media::VideoDecoder* video_decoder, media::DecoderStatus status) {
-            *decoder_name =
-                media::GetDecoderName(video_decoder->GetDecoderType());
+            *decoder_type = video_decoder->GetDecoderType();
             std::move(cb).Run(status.is_ok());
           },
           ConvertToBaseOnceCallback(std::move(init_cb)),
-          CrossThreadUnretained(decoder_name),
+          CrossThreadUnretained(decoder_type),
           CrossThreadUnretained(video_decoder_.get())),
       output_cb, base::DoNothing());
 }
@@ -211,13 +237,13 @@ RTCVideoDecoderAdapter::FallbackOrRegisterConcurrentInstanceOnce(
     media::VideoCodec codec) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoding_sequence_checker_);
 
+  base::AutoLock auto_lock(lock_);
   // If this is the first decode, then increment the count of working decoders.
   if (!have_started_decoding_) {
     have_started_decoding_ = true;
     GetDecoderCounter()->IncrementCount();
   }
 
-  base::AutoLock auto_lock(lock_);
   // Don't allow hardware decode for small videos if there are too many
   // decoder instances.  This includes the case where our resolution drops while
   // too many decoders exist.
@@ -235,40 +261,11 @@ RTCVideoDecoderAdapter::FallbackOrRegisterConcurrentInstanceOnce(
   return absl::nullopt;
 }
 
-absl::optional<RTCVideoDecoderFallbackReason>
-RTCVideoDecoderAdapter::NeedSoftwareFallback(
-    const media::VideoCodec codec,
-    const media::DecoderBuffer& buffer) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoding_sequence_checker_);
-  // Fall back to software decoding if there's no support for VP9 spatial
-  // layers. See https://crbug.com/webrtc/9304.
-  const bool is_spatial_layer_buffer = buffer.side_data_size() > 0;
-  if (codec == media::VideoCodec::kVP9 && is_spatial_layer_buffer &&
-      !Vp9HwSupportForSpatialLayers()) {
-    // D3D11 supports decoding the VP9 kSVC stream, but DXVA not. Currently just
-    // a reasonably temporary measure. Once the DXVA supports decoding VP9 kSVC
-    // stream, the boolean |need_fallback_to_software| should be removed, and if
-    // the OS is windows but not win7, we will return true in
-    // 'Vp9HwSupportForSpatialLayers' instead of false.
-#if BUILDFLAG(IS_WIN)
-    if (video_decoder_->GetDecoderType() == media::VideoDecoderType::kD3D11 &&
-        base::FeatureList::IsEnabled(media::kD3D11Vp9kSVCHWDecoding)) {
-      return absl::nullopt;
-    }
-#endif
-    return RTCVideoDecoderFallbackReason::kSpatialLayers;
-  }
-
-  return absl::nullopt;
-}
-
 absl::variant<RTCVideoDecoderAdapter::DecodeResult,
               RTCVideoDecoderFallbackReason>
 RTCVideoDecoderAdapter::EnqueueBuffer(
     scoped_refptr<media::DecoderBuffer> buffer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoding_sequence_checker_);
-  if (auto fallback_reason = NeedSoftwareFallback(config_.codec(), *buffer))
-    return *fallback_reason;
   if (auto fallback_reason =
           FallbackOrRegisterConcurrentInstanceOnce(config_.codec())) {
     return *fallback_reason;
@@ -469,10 +466,8 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
     if (rtc_video_decoder_adapter->InitializeSync(config)) {
       return rtc_video_decoder_adapter;
     }
-    // Initialization failed - post delete task and try next supported
-    // implementation, if any.
-    gpu_factories->GetTaskRunner()->DeleteSoon(
-        FROM_HERE, std::move(rtc_video_decoder_adapter));
+
+    rtc_video_decoder_adapter.reset();
   }
 
   // To mirror what RTCVideoDecoderStreamAdapter does a little more closely,
@@ -489,7 +484,6 @@ RTCVideoDecoderAdapter::RTCVideoDecoderAdapter(
       gpu_factories_(gpu_factories),
       config_(config) {
   DVLOG(1) << __func__;
-  DETACH_FROM_SEQUENCE(decoding_sequence_checker_);
   DETACH_FROM_SEQUENCE(media_sequence_checker_);
   decoder_info_.implementation_name = "ExternalDecoder (Unknown)";
   decoder_info_.is_hardware_accelerated = true;
@@ -499,19 +493,44 @@ RTCVideoDecoderAdapter::RTCVideoDecoderAdapter(
 
 RTCVideoDecoderAdapter::~RTCVideoDecoderAdapter() {
   DVLOG(1) << __func__;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoding_sequence_checker_);
+
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
+  base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::MANUAL,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
+  PostCrossThreadTask(
+      *media_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(
+          &RTCVideoDecoderAdapter::DecrementCounterOnMediaThread,
+          CrossThreadUnretained(this), CrossThreadUnretained(&waiter)));
+  waiter.Wait();
+}
+
+void RTCVideoDecoderAdapter::DecrementCounterOnMediaThread(
+    base::WaitableEvent* event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(media_sequence_checker_);
-  if (have_started_decoding_)
-    GetDecoderCounter()->DecrementCount();
+
+  weak_this_factory_.InvalidateWeakPtrs();
+  {
+    base::AutoLock auto_lock(lock_);
+    if (have_started_decoding_)
+      GetDecoderCounter()->DecrementCount();
+  }
+
+  video_decoder_.reset();
+  media_log_.reset();
+
+  event->Signal();
 }
 
 bool RTCVideoDecoderAdapter::InitializeSync(
     const media::VideoDecoderConfig& config) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoding_sequence_checker_);
   TRACE_EVENT0("webrtc", "RTCVideoDecoderAdapter::InitializeSync");
   DVLOG(3) << __func__;
   // This function is called on a decoder thread.
   DCHECK(!media_task_runner_->RunsTasksInCurrentSequence());
   auto start_time = base::TimeTicks::Now();
-  std::string decoder_name;
 
   base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   bool result = false;
@@ -525,7 +544,7 @@ bool RTCVideoDecoderAdapter::InitializeSync(
           CrossThreadBindOnce(&RTCVideoDecoderAdapter::InitializeOnMediaThread,
                               CrossThreadUnretained(this), config,
                               std::move(init_cb), start_time,
-                              CrossThreadUnretained(&decoder_name)))) {
+                              CrossThreadUnretained(&decoder_type_)))) {
     // TODO(crbug.com/1076817) Remove if a root cause is found.
     if (!waiter.TimedWait(base::Seconds(10))) {
       RecordInitializationLatency(base::TimeTicks::Now() - start_time);
@@ -535,7 +554,8 @@ bool RTCVideoDecoderAdapter::InitializeSync(
     RecordInitializationLatency(base::TimeTicks::Now() - start_time);
   }
 
-  decoder_info_.implementation_name = "ExternalDecoder (" + decoder_name + ")";
+  decoder_info_.implementation_name =
+      "ExternalDecoder (" + media::GetDecoderName(decoder_type_) + ")";
   return result;
 }
 
@@ -586,7 +606,6 @@ RTCVideoDecoderAdapter::DecodeInternal(const webrtc::EncodedImage& input_image,
                                        int64_t render_time_ms) {
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoding_sequence_checker_);
-
   if (missing_frames) {
     DVLOG(2) << "Missing frames";
     // We probably can't handle broken frames. Request a key frame.
@@ -602,7 +621,13 @@ RTCVideoDecoderAdapter::DecodeInternal(const webrtc::EncodedImage& input_image,
       return DecodeResult::kErrorRequestKeyFrame;
   }
 
-  auto enqueue_res = EnqueueBuffer(ConvertToDecoderBuffer(input_image));
+  auto buffer = ConvertToDecoderBuffer(input_image);
+  if (auto fallback_reason =
+          NeedSoftwareFallback(config_.codec(), *buffer, decoder_type_)) {
+    return *fallback_reason;
+  }
+
+  auto enqueue_res = EnqueueBuffer(std::move(buffer));
   const auto* ret = absl::get_if<DecodeResult>(&enqueue_res);
   if (ret && *ret == DecodeResult::kOk) {
     PostCrossThreadTask(
@@ -669,12 +694,10 @@ bool RTCVideoDecoderAdapter::ReinitializeSync(
   auto init_cb =
       CrossThreadBindOnce(&FinishWait, CrossThreadUnretained(&waiter),
                           CrossThreadUnretained(&result));
-  std::string decoder_name;
   WTF::CrossThreadOnceClosure flush_success_cb = CrossThreadBindOnce(
       &RTCVideoDecoderAdapter::InitializeOnMediaThread, weak_this_, config,
       std::move(init_cb),
-      /*start_time=*/base::TimeTicks(),
-      /*decoder_name=*/CrossThreadUnretained(&decoder_name));
+      /*start_time=*/base::TimeTicks(), CrossThreadUnretained(&decoder_type_));
   WTF::CrossThreadOnceClosure flush_fail_cb =
       CrossThreadBindOnce(&FinishWait, CrossThreadUnretained(&waiter),
                           CrossThreadUnretained(&result), false);

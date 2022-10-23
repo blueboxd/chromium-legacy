@@ -2367,6 +2367,7 @@ absl::optional<AnimationTimeDelta> Animation::TimeToEffectChange() {
              : (content_->TimeToReverseEffectChange() / -playback_rate_);
 }
 
+// https://www.w3.org/TR/web-animations-1/#canceling-an-animation-section
 void Animation::cancel() {
   AnimationTimeDelta current_time_before_cancel =
       CurrentTimeInternal().value_or(AnimationTimeDelta());
@@ -2399,7 +2400,7 @@ void Animation::cancel() {
   start_time_ = absl::nullopt;
 
   // Apply changes synchronously.
-  SetCompositorPending(/*effect_changed=*/false);
+  CancelAnimationOnCompositor();
   SetOutdated();
 
   // Force dispatch of canceled event.
@@ -2562,6 +2563,11 @@ void Animation::InvalidateEffectTargetStyle() {
                                 StyleChangeReasonForTracing::Create(
                                     style_change_reason::kScrollTimeline));
   }
+}
+
+void Animation::InvalidateNormalizedTiming() {
+  if (effect())
+    effect()->InvalidateNormalizedTiming();
 }
 
 void Animation::ResolvePromiseMaybeAsync(AnimationPromise* promise) {

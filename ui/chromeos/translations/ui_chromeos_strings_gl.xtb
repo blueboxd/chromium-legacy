@@ -202,6 +202,7 @@
 <translation id="2771816809568414714">Queixo</translation>
 <translation id="2781645665747935084">Belga</translation>
 <translation id="2782104745158847185">Produciuse un erro ao instalar a aplicación Linux</translation>
+<translation id="2802583107108007218">Máis información sobre estas restricións</translation>
 <translation id="2803375539583399270">Introduce o PIN</translation>
 <translation id="2820957248982571256">Buscando…</translation>
 <translation id="2830077785865012357">Chinés (zhuyin)</translation>
@@ -455,7 +456,6 @@
 <translation id="4900532980794411603">Compartir con Parallels Desktop</translation>
 <translation id="4902546322522096650">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, conectar</translation>
 <translation id="4906580650526544301">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, batería do teléfono ao <ph name="BATTERY_STATUS" /> %, detalles</translation>
-<translation id="4929673617759421391">A política do administrador bloqueou a función de pegar este ficheiro</translation>
 <translation id="4935975195727477204">Flor de gazania</translation>
 <translation id="4943368462779413526">Fútbol</translation>
 <translation id="4961158930123534723">Compartiuse 1 cartafol con Parallels Desktop</translation>
@@ -920,6 +920,7 @@
 <translation id="8656768832129462377">Non comprobar</translation>
 <translation id="8688591111840995413">Contrasinal incorrecto</translation>
 <translation id="8698464937041809063">Debuxo de Google</translation>
+<translation id="8698877009525468705">Este ficheiro é confidencial e está suxeito ás restricións da política do administrador.</translation>
 <translation id="8712637175834984815">De acordo</translation>
 <translation id="8713112442029511308">Maltés</translation>
 <translation id="8714406895390098252">Bicicleta</translation>
@@ -974,7 +975,6 @@
 <translation id="9183302530794969518">Documentos de Google</translation>
 <translation id="9189836632794948435">Kazako</translation>
 <translation id="9200427192836333033">Extraéronse <ph name="NUMBER_OF_ITEMS" /> elementos.</translation>
-<translation id="9210751050717126865">A política do administrador bloqueou a función de pegar <ph name="COUNT" /> ficheiros</translation>
 <translation id="9213073329713032541">Iniciouse correctamente a instalación.</translation>
 <translation id="9219103736887031265">Imaxes</translation>
 <translation id="9219908252191632183">Paisaxe lunar</translation>

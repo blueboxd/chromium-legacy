@@ -202,6 +202,7 @@
 <translation id="2771816809568414714">Ser</translation>
 <translation id="2781645665747935084">belgijska klawiatura</translation>
 <translation id="2782104745158847185">Błąd podczas instalowania aplikacji na Linuksa</translation>
+<translation id="2802583107108007218">Więcej informacji o tych ograniczeniach</translation>
 <translation id="2803375539583399270">Wpisz kod PIN</translation>
 <translation id="2820957248982571256">Skanuję…</translation>
 <translation id="2830077785865012357">Chiński zhuyin</translation>
@@ -455,7 +456,6 @@
 <translation id="4900532980794411603">Udostępnij aplikacji Parallels Desktop</translation>
 <translation id="4902546322522096650">Sieć <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" />%, połącz</translation>
 <translation id="4906580650526544301">Sieć <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" />%, bateria telefonu: <ph name="BATTERY_STATUS" />%, szczegóły</translation>
-<translation id="4929673617759421391">Wklejanie tego pliku jest zablokowane przez zasady administratora</translation>
 <translation id="4935975195727477204">Kwiat gazanii</translation>
 <translation id="4943368462779413526">Piłka futbolowa</translation>
 <translation id="4961158930123534723">Udostępniono 1 folder aplikacji Parallels Desktop</translation>
@@ -921,6 +921,7 @@
 <translation id="8656768832129462377">Nie sprawdzaj</translation>
 <translation id="8688591111840995413">Nieprawidłowe hasło</translation>
 <translation id="8698464937041809063">Rysunek Google</translation>
+<translation id="8698877009525468705">Ten plik jest poufny i podlega zasadom administratora.</translation>
 <translation id="8712637175834984815">Rozumiem</translation>
 <translation id="8713112442029511308">Maltański</translation>
 <translation id="8714406895390098252">Rower</translation>
@@ -975,7 +976,6 @@
 <translation id="9183302530794969518">Dokumenty Google</translation>
 <translation id="9189836632794948435">Kazachski</translation>
 <translation id="9200427192836333033">Wyodrębnione elementy: <ph name="NUMBER_OF_ITEMS" />.</translation>
-<translation id="9210751050717126865">Wklejanie <ph name="COUNT" /> plików jest zablokowane przez zasady administratora</translation>
 <translation id="9213073329713032541">Instalacja rozpoczęła się.</translation>
 <translation id="9219103736887031265">Grafika</translation>
 <translation id="9219908252191632183">Księżycowy</translation>

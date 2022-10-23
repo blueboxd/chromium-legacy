@@ -506,6 +506,16 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   <summary>Whether the back-forward navigation was served from cache.</summary>
 </histogram>
 
+<histogram name="Navigation.BlobUrl" enum="Boolean" expires_after="M111">
+  <owner>jkokatsu@google.com</owner>
+  <owner>chrome-security-owp-team@google.com</owner>
+  <summary>
+    Record if navigation has occured to Blob URL, to better understand the usage
+    of Blob URL in active document (i.e. both main frame and iframes). This
+    record is taken in Navigator::DidNavigate.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.BrowserMappedUrnUuidInIframeOrFencedFrame"
     enum="NavigationBrowserMappedUrnUuidInIframeOrFencedFrame"
     expires_after="2023-03-01">
@@ -1312,6 +1322,11 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 <histogram
     name="Navigation.RendererInitiatedCancellation.DeferStartToCancellationWindowEnd"
     units="ms" expires_after="2022-10-21">
+  <obsolete>
+    Obsolete after 2022-10-21. All cancellation window ends within 10000ms. See
+    UMA result:
+    https://docs.google.com/document/d/1VNmvEVuaiNH3ypt6YfrYPsJJp8okCTYjooekarOiWN8/edit#heading=h.tlh3g7tofz2
+  </obsolete>
   <owner>rakina@chromium.org</owner>
   <owner>dcheng@chromium.org</owner>
   <summary>
@@ -1688,7 +1703,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="Prerender.Experimental.CrossOriginRedirectionDomain{PrerenderTriggerType}"
-    enum="PrerenderCrossOriginRedirectionDomain" expires_after="2022-10-27">
+    enum="PrerenderCrossOriginRedirectionDomain" expires_after="2023-01-31">
   <owner>lingqi@chromium.org</owner>
   <owner>nhiroki@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
@@ -1706,7 +1721,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 <histogram
     name="Prerender.Experimental.CrossOriginRedirectionProtocolChange{PrerenderTriggerType}"
     enum="PrerenderCrossOriginRedirectionProtocolChange"
-    expires_after="2022-10-27">
+    expires_after="2023-01-31">
   <owner>lingqi@chromium.org</owner>
   <owner>nhiroki@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
@@ -1801,7 +1816,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="Prerender.Experimental.PrerenderCrossOriginRedirectionMismatch{PrerenderTriggerType}"
-    enum="PrerenderCrossOriginRedirectionMismatch" expires_after="2022-10-27">
+    enum="PrerenderCrossOriginRedirectionMismatch" expires_after="2023-01-31">
   <owner>lingqi@chromium.org</owner>
   <owner>nhiroki@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>

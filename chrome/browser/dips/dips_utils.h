@@ -53,6 +53,27 @@ base::StringPiece GetHistogramSuffix(DIPSCookieMode mode);
 const char* DIPSCookieModeToString(DIPSCookieMode mode);
 std::ostream& operator<<(std::ostream& os, DIPSCookieMode mode);
 
+// DIPSEventRemovalType:
+// NOTE: We use this type as a bitfield don't change the values.
+enum class DIPSEventRemovalType {
+  kNone = 0,
+  kInteraction = 1,
+  kStorage = 2,
+  kAll = 3
+};
+
+constexpr DIPSEventRemovalType operator|(DIPSEventRemovalType lhs,
+                                         DIPSEventRemovalType rhs) {
+  return static_cast<DIPSEventRemovalType>(static_cast<int>(lhs) |
+                                           static_cast<int>(rhs));
+}
+
+constexpr DIPSEventRemovalType operator&(DIPSEventRemovalType lhs,
+                                         DIPSEventRemovalType rhs) {
+  return static_cast<DIPSEventRemovalType>(static_cast<int>(lhs) &
+                                           static_cast<int>(rhs));
+}
+
 // DIPSRedirectType:
 enum class DIPSRedirectType { kClient, kServer };
 
@@ -73,11 +94,15 @@ inline bool operator==(const TimestampRange& lhs, const TimestampRange& rhs) {
 struct StateValue {
   TimestampRange site_storage_times;
   TimestampRange user_interaction_times;
+  TimestampRange stateful_bounce_times;
+  TimestampRange stateless_bounce_times;
 };
 
 inline bool operator==(const StateValue& lhs, const StateValue& rhs) {
-  return std::tie(lhs.site_storage_times, lhs.user_interaction_times) ==
-         std::tie(rhs.site_storage_times, rhs.user_interaction_times);
+  return std::tie(lhs.site_storage_times, lhs.user_interaction_times,
+                  lhs.stateful_bounce_times, lhs.stateless_bounce_times) ==
+         std::tie(rhs.site_storage_times, rhs.user_interaction_times,
+                  rhs.stateful_bounce_times, rhs.stateless_bounce_times);
 }
 
 // Return the number of seconds in `td`, clamped to [0, 10].

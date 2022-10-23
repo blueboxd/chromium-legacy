@@ -87,8 +87,7 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
     browserProxy.setNotificationPermissionReview(mockData);
     SiteSettingsPrefsBrowserProxyImpl.setInstance(browserProxy);
 
-    document.body.innerHTML =
-        window.trustedTypes!.emptyHTML as unknown as string;
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     testElement = document.createElement('review-notification-permissions');
     document.body.appendChild(testElement);
 
@@ -274,7 +273,7 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
 
     await assertUndo('allowNotificationPermissionForOrigins', 0);
     webUIListenerCallback(
-        'notification-permission-review-list-changed', mockData);
+        'notification-permission-review-list-maybe-changed', mockData);
     assertAnimation([false, false]);
   });
 
@@ -294,7 +293,7 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
 
     await assertUndo('undoIgnoreNotificationPermissionForOrigins', 0);
     webUIListenerCallback(
-        'notification-permission-review-list-changed', mockData);
+        'notification-permission-review-list-maybe-changed', mockData);
     assertAnimation([false, false]);
   });
 
@@ -314,7 +313,7 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
 
     await assertUndo('allowNotificationPermissionForOrigins', 0);
     webUIListenerCallback(
-        'notification-permission-review-list-changed', mockData);
+        'notification-permission-review-list-maybe-changed', mockData);
     assertAnimation([false, false]);
   });
 
@@ -352,10 +351,11 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
     await browserProxy.whenCalled('getNotificationPermissionReview');
     flush();
 
-    webUIListenerCallback('notification-permission-review-list-changed', [{
-                            origin: origin1,
-                            notificationInfoString: detail1,
-                          }]);
+    webUIListenerCallback(
+        'notification-permission-review-list-maybe-changed', [{
+          origin: origin1,
+          notificationInfoString: detail1,
+        }]);
     await flushTasks();
 
     const entries = getEntries();
@@ -385,7 +385,8 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
 
     // Through reviewing permissions the permission list is empty and only the
     // completion info is visible.
-    webUIListenerCallback('notification-permission-review-list-changed', []);
+    webUIListenerCallback(
+        'notification-permission-review-list-maybe-changed', []);
     await flushTasks();
     assertFalse(isChildVisible(testElement, '#review-header'));
     assertFalse(isChildVisible(testElement, '.notification-permissions-list'));
@@ -394,7 +395,7 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
     // The element returns to showing the list of permissions when new items are
     // added while the completion state is visible.
     webUIListenerCallback(
-        'notification-permission-review-list-changed', mockData);
+        'notification-permission-review-list-maybe-changed', mockData);
     await flushTasks();
     assertTrue(isChildVisible(testElement, '#review-header'));
     assertTrue(isChildVisible(testElement, '.notification-permissions-list'));
@@ -454,10 +455,11 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
     //     headerElement.textContent!.trim());
 
     // Check header string for singular case.
-    webUIListenerCallback('notification-permission-review-list-changed', [{
-                            origin: origin1,
-                            notificationInfoString: detail1,
-                          }]);
+    webUIListenerCallback(
+        'notification-permission-review-list-maybe-changed', [{
+          origin: origin1,
+          notificationInfoString: detail1,
+        }]);
     await flushTasks();
 
     entries = getEntries();

@@ -341,8 +341,10 @@ BASE_FEATURE(kCalendarModelDebugMode,
              "CalendarModelDebugMode",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enable or disable calendar V2.
-BASE_FEATURE(kCalendarV2, "CalendarV2", base::FEATURE_DISABLED_BY_DEFAULT);
+// Enable or disable calendar jelly.
+BASE_FEATURE(kCalendarJelly,
+             "CalendarJelly",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables to allow using document scanning feature via DLC in the camera app.
 BASE_FEATURE(kCameraAppDocScanDlc,
@@ -1836,7 +1838,7 @@ BASE_FEATURE(kShowPlayInDemoMode,
 // Enables the shutdown confirmation bubble from the login shelf view.
 BASE_FEATURE(kShutdownConfirmationBubble,
              "ShutdownConfirmationBubble",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables enterprise policy control for SIM PIN Lock.
 BASE_FEATURE(kSimLockPolicy, "SimLockPolicy", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -2303,8 +2305,8 @@ bool IsCalendarModelDebugModeEnabled() {
   return base::FeatureList::IsEnabled(kCalendarModelDebugMode);
 }
 
-bool IsCalendarV2Enabled() {
-  return base::FeatureList::IsEnabled(kCalendarV2);
+bool IsCalendarJellyEnabled() {
+  return base::FeatureList::IsEnabled(kCalendarJelly);
 }
 
 bool IsCaptivePortalUI2022Enabled() {

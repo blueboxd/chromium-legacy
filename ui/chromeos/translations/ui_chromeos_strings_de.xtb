@@ -202,6 +202,7 @@
 <translation id="2771816809568414714">Käse</translation>
 <translation id="2781645665747935084">Belgisch</translation>
 <translation id="2782104745158847185">Fehler beim Installieren der Linux-Anwendung</translation>
+<translation id="2802583107108007218">Weitere Informationen zu diesen Einschränkungen</translation>
 <translation id="2803375539583399270">PIN eingeben</translation>
 <translation id="2820957248982571256">Wird gescannt...</translation>
 <translation id="2830077785865012357">Chinesisch (Zhuyin)</translation>
@@ -455,7 +456,6 @@
 <translation id="4900532980794411603">Für Parallels Desktop freigeben</translation>
 <translation id="4902546322522096650">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Signalstärke bei <ph name="SIGNAL_STRENGTH" /> %, Verbinden</translation>
 <translation id="4906580650526544301">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, Signalstärke bei <ph name="SIGNAL_STRENGTH" /> %, Smartphone-Akku bei <ph name="BATTERY_STATUS" /> %, Details</translation>
-<translation id="4929673617759421391">Die Administratorrichtlinie blockiert das Einfügen dieser Datei</translation>
 <translation id="4935975195727477204">Mittagsgoldblume</translation>
 <translation id="4943368462779413526">American Football</translation>
 <translation id="4961158930123534723">1 Ordner für Parallels Desktop freigegeben</translation>
@@ -921,6 +921,7 @@
 <translation id="8656768832129462377">Nicht überprüfen</translation>
 <translation id="8688591111840995413">Passwort ungültig</translation>
 <translation id="8698464937041809063">Google-Zeichnung</translation>
+<translation id="8698877009525468705">Diese Datei ist vertraulich und unterliegt den Einschränkungen durch die Administratorrichtlinie.</translation>
 <translation id="8712637175834984815">Alles klar</translation>
 <translation id="8713112442029511308">Maltesisch</translation>
 <translation id="8714406895390098252">Fahrrad</translation>
@@ -975,7 +976,6 @@
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9189836632794948435">Kasachisch</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> Elemente extrahiert.</translation>
-<translation id="9210751050717126865">Die Administratorrichtlinie blockiert das Einfügen von <ph name="COUNT" /> Dateien</translation>
 <translation id="9213073329713032541">Die Installation wurde gestartet.</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="9219908252191632183">Mondlandschaft</translation>

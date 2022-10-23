@@ -76,8 +76,9 @@ export interface AcceleratorInfo {
  * level identifying the source of the shortcuts, and second level the integer
  * id for the action with the leaf value being a list of Accelerator Info.
  */
-export type AcceleratorConfig =
-    Map<AcceleratorSource, Map<number, AcceleratorInfo[]>>;
+export type AcceleratorConfig = {
+  [source in AcceleratorSource]?: {[actionId: number]: AcceleratorInfo[]}
+};
 
 /** Enumeration of layout styles.*/
 export enum LayoutStyle {
@@ -115,9 +116,9 @@ export type LayoutInfoList = LayoutInfo[];
  * TODO(zentaro): Replace with a real mojo type when implemented.
  */
 export interface ShortcutProviderInterface {
-  getAllAcceleratorConfig(): Promise<AcceleratorConfig>;
+  getAccelerators(): Promise<{config: AcceleratorConfig}>;
   getLayoutInfo(): Promise<LayoutInfoList>;
-  isMutable(source: AcceleratorSource): Promise<boolean>;
+  isMutable(source: AcceleratorSource): Promise<{isMutable: boolean}>;
   removeAccelerator(
       source: AcceleratorSource, action: number,
       accelerator: AcceleratorKeys): Promise<AcceleratorConfigResult>;

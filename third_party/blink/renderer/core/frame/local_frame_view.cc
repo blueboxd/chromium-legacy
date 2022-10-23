@@ -64,7 +64,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
-#include "third_party/blink/renderer/core/document_transition/document_transition_supplement.h"
+#include "third_party/blink/renderer/core/document_transition/document_transition_utils.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -1041,6 +1041,7 @@ void LocalFrameView::RunPostLifecycleSteps() {
   base::AutoReset<bool> in_post_lifecycle_steps(&in_post_lifecycle_steps_,
                                                 true);
   AllowThrottlingScope allow_throttling(*this);
+  RunAccessibilitySteps();
   RunIntersectionObserverSteps();
   if (mobile_friendliness_checker_)
     mobile_friendliness_checker_->MaybeRecompute();
@@ -2253,7 +2254,6 @@ bool LocalFrameView::UpdateLifecyclePhases(
 
   // Only the following target states are supported.
   DCHECK(target_state == DocumentLifecycle::kLayoutClean ||
-         target_state == DocumentLifecycle::kAccessibilityClean ||
          target_state == DocumentLifecycle::kCompositingInputsClean ||
          target_state == DocumentLifecycle::kPrePaintClean ||
          target_state == DocumentLifecycle::kPaintClean);
@@ -2371,6 +2371,20 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
         unthrottled_frame_views.push_back(&frame_view);
       });
 
+  // TODO(vmpstr): Figure out what to do with frames.
+  // This may change due to https://github.com/w3c/csswg-drafts/issues/7874
+  absl::optional<DisplayLockDocumentState::ScopedForceActivatableDisplayLocks>
+      forced_activatable_locks_scope;
+  if (auto* transition = DocumentTransitionUtils::GetActiveTransition(
+          *frame_->GetDocument())) {
+    if (transition->NeedsUpToDateTags()) {
+      forced_activatable_locks_scope.emplace(
+          frame_->GetDocument()
+              ->GetDisplayLockDocumentState()
+              .GetScopedForceActivatableLocks());
+    }
+  }
+
   while (true) {
     for (LocalFrameView* frame_view : unthrottled_frame_views) {
       // RunResizeObserverSteps may run arbitrary script, which can cause a
@@ -2419,13 +2433,6 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
 #if DCHECK_IS_ON()
       DisallowLayoutInvalidationScope disallow_layout_invalidation(this);
 #endif
-
-      DCHECK_GE(target_state, DocumentLifecycle::kAccessibilityClean);
-      run_more_lifecycle_phases = RunAccessibilityLifecyclePhase(target_state);
-      DCHECK(ShouldThrottleRendering() || !ExistingAXObjectCache() ||
-             Lifecycle().GetState() == DocumentLifecycle::kAccessibilityClean);
-      if (!run_more_lifecycle_phases)
-        return;
 
       DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT_WITH_CATEGORIES(
           TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "SetLayerTreeId",
@@ -2487,6 +2494,19 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
     // shared elements to UA created elements. This may dirty style/layout
     // requiring another lifecycle update.
     needs_to_repeat_lifecycle = RunDocumentTransitionSteps(target_state);
+
+#if DCHECK_IS_ON()
+    // We shouldn't need up to date tags after running document transition
+    // steps. The only way we should run into a situation where we need up to
+    // date tags is outside of the lifecycle, and the value should be cleared in
+    // document transition steps.
+    if (auto* transition = DocumentTransitionUtils::GetActiveTransition(
+            *frame_->GetDocument())) {
+      DCHECK(!transition->NeedsUpToDateTags());
+    }
+#endif
+
+    forced_activatable_locks_scope.reset();
     if (!needs_to_repeat_lifecycle)
       break;
   }
@@ -2549,12 +2569,12 @@ bool LocalFrameView::RunDocumentTransitionSteps(
   if (target_state != DocumentLifecycle::kPaintClean)
     return false;
 
-  auto* document_transition_supplement =
-      DocumentTransitionSupplement::FromIfExists(*frame_->GetDocument());
-  if (!document_transition_supplement)
+  auto* transition =
+      DocumentTransitionUtils::GetActiveTransition(*frame_->GetDocument());
+  if (!transition)
     return false;
 
-  document_transition_supplement->GetTransition()->RunPostPrePaintSteps();
+  transition->RunDocumentTransitionStepsDuringMainFrame();
   return Lifecycle().GetState() < DocumentLifecycle::kPrePaintClean;
 }
 
@@ -2822,10 +2842,8 @@ void LocalFrameView::RunPaintLifecyclePhase(PaintBenchmarkMode benchmark_mode) {
     GetPage()->Animator().ReportFrameAnimations(GetCompositorAnimationHost());
 }
 
-bool LocalFrameView::RunAccessibilityLifecyclePhase(
-    DocumentLifecycle::LifecycleState target_state) {
-  TRACE_EVENT0("blink,benchmark",
-               "LocalFrameView::RunAccessibilityLifecyclePhase");
+void LocalFrameView::RunAccessibilitySteps() {
+  TRACE_EVENT0("blink,benchmark", "LocalFrameView::RunAccessibilitySteps");
 
   SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
                            LocalFrameUkmAggregator::kAccessibility);
@@ -2836,14 +2854,10 @@ bool LocalFrameView::RunAccessibilityLifecyclePhase(
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     if (AXObjectCache* cache = frame_view.ExistingAXObjectCache()) {
-      frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInAccessibility);
       cache->ProcessDeferredAccessibilityEvents(
           *frame_view.GetFrame().GetDocument());
-      frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kAccessibilityClean);
     }
   });
-
-  return target_state > DocumentLifecycle::kAccessibilityClean;
 }
 
 void LocalFrameView::EnqueueScrollAnchoringAdjustment(
@@ -3119,25 +3133,20 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
 void LocalFrameView::AppendDocumentTransitionRequests(
     WTF::Vector<std::unique_ptr<DocumentTransitionRequest>>& requests) {
   DCHECK(frame_ && frame_->GetDocument());
-  auto* document_transition_supplement =
-      DocumentTransitionSupplement::FromIfExists(*frame_->GetDocument());
-  if (!document_transition_supplement)
-    return;
-  auto* document_transition = document_transition_supplement->GetTransition();
-  auto pending_request = document_transition->TakePendingRequest();
-  if (pending_request)
+  auto pending_requests =
+      DocumentTransitionUtils::GetPendingRequests(*frame_->GetDocument());
+  for (auto& pending_request : pending_requests)
     requests.push_back(std::move(pending_request));
 }
 
 void LocalFrameView::VerifySharedElementsForDocumentTransition() {
   DCHECK(frame_ && frame_->GetDocument());
-  auto* document_transition_supplement =
-      DocumentTransitionSupplement::FromIfExists(*frame_->GetDocument());
-  if (!document_transition_supplement)
+  auto* transition =
+      DocumentTransitionUtils::GetActiveTransition(*frame_->GetDocument());
+  if (!transition)
     return;
 
-  auto* document_transition = document_transition_supplement->GetTransition();
-  document_transition->VerifySharedElements();
+  transition->VerifySharedElements();
 }
 
 std::unique_ptr<JSONObject> LocalFrameView::CompositedLayersAsJSON(

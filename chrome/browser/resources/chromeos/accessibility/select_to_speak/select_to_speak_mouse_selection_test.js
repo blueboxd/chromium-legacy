@@ -304,7 +304,7 @@ AX_TEST_F(
     });
 
 AX_TEST_F('SelectToSpeakMouseSelectionTest', 'SystemUI', async function() {
-  this.runWithLoadedDesktop(desktop => {
+  this.runWithLoadedDesktop(async desktop => {
     // Select STS tray and system tray to ensure STS tray is spoken.
     // We can test against the STS tray text because we own it, the
     // rest of the system tray may change.
@@ -326,8 +326,7 @@ AX_TEST_F('SelectToSpeakMouseSelectionTest', 'SystemUI', async function() {
       assertTrue(this.mockTts.currentlySpeaking());
       // Sometimes we get "Select-to-speak button" and sometimes
       // "Select-to-speak". Either is acceptable.
-      utterance.replace(/button/, '');
-      this.assertEqualsCollapseWhitespace(utterance, 'Select-to-speak');
+      this.assertEqualsCollapseWhitespace(utterance.replace(/button/, ''), 'Select-to-speak');
     })]);
 
     focusRingsCallback = this.newCallback((focusRings) => {

@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -88,6 +88,12 @@ DIPSState DIPSStorage::ReadSite(std::string site) {
   absl::optional<StateValue> state = db_->Read(site);
 
   if (state.has_value()) {
+    // We should not have entries in the DB without any timestamps.
+    DCHECK(state->site_storage_times.first.has_value() ||
+           state->site_storage_times.last.has_value() ||
+           state->user_interaction_times.first.has_value() ||
+           state->user_interaction_times.last.has_value());
+
     return DIPSState(this, std::move(site), state.value());
   }
   return DIPSState(this, std::move(site));
@@ -95,10 +101,26 @@ DIPSState DIPSStorage::ReadSite(std::string site) {
 
 void DIPSStorage::Write(const DIPSState& state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  db_->Write(state.site(), state.first_site_storage_time(),
-             state.last_site_storage_time(),
-             state.first_user_interaction_time(),
-             state.last_user_interaction_time());
+  db_->Write(state.site(), state.site_storage_times(),
+             state.user_interaction_times(), state.stateful_bounce_times(),
+             state.stateless_bounce_times());
+}
+
+void DIPSStorage::RemoveEvents(base::Time delete_begin,
+                               base::Time delete_end,
+                               const UrlPredicate& predicate,
+                               const DIPSEventRemovalType type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(delete_end.is_null() || delete_begin <= delete_end);
+
+  if (delete_end.is_null())
+    delete_end = base::Time::Max();
+
+  // Currently, only time-based deletions are supported.
+  if (!predicate.is_null())
+    return;
+
+  db_->RemoveEventsByTime(delete_begin, delete_end, type);
 }
 
 // DIPSTabHelper Function Impls ------------------------------------------------
@@ -110,11 +132,11 @@ void DIPSStorage::RecordStorage(const GURL& url,
   DCHECK(db_);
 
   DIPSState state = Read(url);
-  if (!state.first_site_storage_time().has_value() &&
-      state.last_user_interaction_time().has_value()) {
+  if (!state.site_storage_times().first.has_value() &&
+      state.user_interaction_times().last.has_value()) {
     // First storage, but previous interaction.
-    UmaHistogramTimeToStorage(time - state.last_user_interaction_time().value(),
-                              mode);
+    UmaHistogramTimeToStorage(
+        time - state.user_interaction_times().last.value(), mode);
   }
 
   state.update_site_storage_time(time);
@@ -127,12 +149,12 @@ void DIPSStorage::RecordInteraction(const GURL& url,
   DCHECK(db_);
 
   DIPSState state = Read(url);
-  if (!state.first_user_interaction_time().has_value() &&
-      state.first_site_storage_time().has_value()) {
+  if (!state.user_interaction_times().first.has_value() &&
+      state.site_storage_times().first.has_value()) {
     // Site previously wrote to storage. Record metric for the time delay
     // between first storage and interaction.
     UmaHistogramTimeToInteraction(
-        time - state.first_site_storage_time().value(), mode);
+        time - state.site_storage_times().first.value(), mode);
   }
 
   state.update_user_interaction_time(time);
@@ -151,13 +173,13 @@ void DIPSStorage::PrepopulateChunk(PrepopulateArgs args) {
       std::min(args.sites.size() - args.offset, g_prepopulate_chunk_size);
   for (size_t i = 0; i < chunk_size; i++) {
     DIPSState state = ReadSite(args.sites[args.offset + i]);
-    if (state.first_user_interaction_time()) {
+    if (state.user_interaction_times().first) {
       continue;
     }
 
     state.update_user_interaction_time(args.time);
 
-    if (!state.first_site_storage_time()) {
+    if (!state.site_storage_times().first) {
       // If we set a fake interaction time but no storage time, then when
       // storage does happen we'll report an incorrect
       // TimeFromInteractionToStorage metric. So set the storage time too.

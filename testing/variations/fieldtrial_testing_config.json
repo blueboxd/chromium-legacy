@@ -1015,13 +1015,12 @@
             ]
         }
     ],
-    "AutofillConsiderVariationCountryCodeForPhoneNumbers": [
+    "AutofillComplementCountryEarly": [
         {
             "platforms": [
                 "android",
                 "chromeos",
                 "chromeos_lacros",
-                "fuchsia",
                 "ios",
                 "linux",
                 "mac",
@@ -1031,7 +1030,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "AutofillConsiderVariationCountryCodeForPhoneNumbers"
+                        "AutofillComplementCountryEarly"
                     ]
                 }
             ]
@@ -8189,6 +8188,31 @@
                     "name": "Enabled",
                     "enable_features": [
                         "Path2DPaintCache"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PendingBeaconAPI": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "windows",
+                "mac",
+                "linux",
+                "fuchsia",
+                "chromeos",
+                "chromeos_lacros"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledOnlyForOriginTrial",
+                    "params": {
+                        "requires_origin_trial": "true"
+                    },
+                    "enable_features": [
+                        "PendingBeaconAPI"
                     ]
                 }
             ]

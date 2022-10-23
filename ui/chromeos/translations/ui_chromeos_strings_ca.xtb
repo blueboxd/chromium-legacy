@@ -202,6 +202,7 @@
 <translation id="2771816809568414714">Formatge</translation>
 <translation id="2781645665747935084">Belga</translation>
 <translation id="2782104745158847185">S'ha produït un error en instal·lar l'aplicació per a Linux</translation>
+<translation id="2802583107108007218">Més informació sobre aquestes restriccions</translation>
 <translation id="2803375539583399270">Introdueix el PIN</translation>
 <translation id="2820957248982571256">S'està cercant...</translation>
 <translation id="2830077785865012357">Xinès (zhuyin)</translation>
@@ -455,7 +456,6 @@
 <translation id="4900532980794411603">Comparteix amb Parallels Desktop</translation>
 <translation id="4902546322522096650">Xarxa <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="SIGNAL_STRENGTH" />% d'intensitat del senyal, connecta</translation>
 <translation id="4906580650526544301">Xarxa <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" />% d'intensitat del senyal, <ph name="BATTERY_STATUS" />% de bateria al telèfon, detalls</translation>
-<translation id="4929673617759421391">La política de l'administrador ha bloquejat l'opció d'enganxar aquest fitxer</translation>
 <translation id="4935975195727477204">Flor de gazània</translation>
 <translation id="4943368462779413526">Pilota de futbol americà</translation>
 <translation id="4961158930123534723">S'ha compartit 1 carpeta amb Parallels Desktop</translation>
@@ -921,6 +921,7 @@
 <translation id="8656768832129462377">No comprovis</translation>
 <translation id="8688591111840995413">Contrasenya incorrecta</translation>
 <translation id="8698464937041809063">Dibuix de Google</translation>
+<translation id="8698877009525468705">Aquest fitxer és confidencial i està subjecte a restriccions en funció de la política de l'administrador.</translation>
 <translation id="8712637175834984815">Entesos</translation>
 <translation id="8713112442029511308">Maltès</translation>
 <translation id="8714406895390098252">Bicicleta</translation>
@@ -975,7 +976,6 @@
 <translation id="9183302530794969518">Documents de Google</translation>
 <translation id="9189836632794948435">Kazakh</translation>
 <translation id="9200427192836333033">S'han extret <ph name="NUMBER_OF_ITEMS" /> elements.</translation>
-<translation id="9210751050717126865">La política de l'administrador ha bloquejat l'opció d'enganxar <ph name="COUNT" /> fitxers</translation>
 <translation id="9213073329713032541">La instal·lació s'ha iniciat.</translation>
 <translation id="9219103736887031265">Imatges</translation>
 <translation id="9219908252191632183">Paisatge lunar</translation>

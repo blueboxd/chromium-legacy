@@ -1937,7 +1937,6 @@ if (!is_android) {
       "../browser/net/system_network_context_manager_browsertest.cc",
       "../browser/net/trust_token_usecounter_browsertest.cc",
       "../browser/net/websocket_browsertest.cc",
-      "../browser/new_tab_page/new_tab_page_browsertest.cc",
       "../browser/new_tab_page/new_tab_page_util_browsertest.cc",
       "../browser/no_best_effort_tasks_browsertest.cc",
       "../browser/no_best_effort_tasks_during_startup_browsertest.cc",
@@ -3369,7 +3368,7 @@ if (!is_android) {
         "../browser/ui/views/external_protocol_dialog_browsertest.cc",
         "../browser/ui/views/file_system_access/file_system_access_browsertest.cc",
         "../browser/ui/views/file_system_access/file_system_access_dangerous_file_dialog_browsertest.cc",
-        "../browser/ui/views/file_system_access/file_system_access_permission_view_browsertest.cc",
+        "../browser/ui/views/file_system_access/file_system_access_permission_dialog_browsertest.cc",
         "../browser/ui/views/file_system_access/file_system_access_restricted_directory_dialog_browsertest.cc",
         "../browser/ui/views/file_system_access/file_system_access_usage_bubble_view_browsertest.cc",
         "../browser/ui/views/folder_upload_confirmation_view_browsertest.cc",
@@ -6263,6 +6262,7 @@ test("unit_tests") {
       "../browser/ui/cocoa/touchbar/credit_card_autofill_touch_bar_controller_unittest.mm",
       "../browser/ui/cocoa/window_size_autosaver_unittest.mm",
       "../browser/ui/content_settings/content_setting_media_image_model_unittest.mm",
+      "../browser/updater/browser_updater_client_mac_unittest.mm",
       "../browser/upgrade_detector/directory_monitor_unittest.cc",
       "../utility/importer/safari_importer_unittest.mm",
     ]
@@ -6273,6 +6273,7 @@ test("unit_tests") {
       "//chrome/app_shim",
       "//chrome/browser/apps/app_shim",
       "//chrome/browser/renderer_host:history_swiper",
+      "//chrome/browser/updater:browser_updater_client",
       "//chrome/common/notifications",
       "//chrome/common/safe_browsing:archive_analyzer_results",
       "//chrome/common/safe_browsing:disk_image_type_sniffer_mac",
@@ -6299,14 +6300,6 @@ test("unit_tests") {
       "//chrome/tools/convert_dict:lib",
       "//third_party/hunspell",
     ]
-  }
-
-  if (enable_chromium_updater) {
-    deps += [ "//chrome/browser/updater:browser_updater_client" ]
-
-    if (is_mac) {
-      sources += [ "../browser/updater/browser_updater_client_mac_unittest.mm" ]
-    }
   }
 
   if (enable_paint_preview) {
@@ -6907,6 +6900,7 @@ test("unit_tests") {
       "../browser/ui/views/autofill_assistant/password_change/password_change_run_progress_unittest.cc",
       "../browser/ui/views/autofill_assistant/password_change/password_change_run_view_unittest.cc",
       "../browser/ui/views/file_system_access/file_system_access_dangerous_file_dialog_unittest.cc",
+      "../browser/ui/views/file_system_access/file_system_access_permission_dialog_unittest.cc",
       "../browser/ui/views/file_system_access/file_system_access_restricted_directory_dialog_unittest.cc",
       "../browser/ui/views/file_system_access/file_system_access_ui_helpers_unittest.cc",
       "../browser/ui/views/passwords/move_to_account_store_bubble_view_unittest.cc",
@@ -7403,6 +7397,7 @@ test("unit_tests") {
       "../browser/ui/app_list/search/omnibox/omnibox_provider_unittest.cc",
       "../browser/ui/app_list/search/omnibox/omnibox_result_unittest.cc",
       "../browser/ui/app_list/search/omnibox/open_tab_result_unittest.cc",
+      "../browser/ui/app_list/search/os_settings_provider_unittest.cc",
       "../browser/ui/app_list/search/ranking/answer_ranker_unittest.cc",
       "../browser/ui/app_list/search/ranking/best_match_ranker_unittest.cc",
       "../browser/ui/app_list/search/ranking/filtering_ranker_unittest.cc",
@@ -9149,6 +9144,8 @@ if (!is_android) {
       "interaction/interaction_test_util_browser.h",
       "interaction/interaction_test_util_mouse.cc",
       "interaction/interaction_test_util_mouse.h",
+      "interaction/interactive_browser_test.cc",
+      "interaction/interactive_browser_test.h",
       "interaction/tracked_element_webcontents.cc",
       "interaction/tracked_element_webcontents.h",
       "interaction/webcontents_interaction_test_util.cc",
@@ -9450,6 +9447,7 @@ if (!is_android) {
       "../browser/media/webrtc/webrtc_interactive_uitest.cc",
       "../browser/media/webrtc/webrtc_mediadevices_interactive_uitest.cc",
       "../browser/mouse_events_interactive_uitest.cc",
+      "../browser/new_tab_page/new_tab_page_interactive_uitest.cc",
       "../browser/notifications/platform_notification_service_interactive_uitest.cc",
       "../browser/password_manager/password_generation_interactive_uitest.cc",
       "../browser/password_manager/password_manager_interactive_test_base.cc",
@@ -9599,6 +9597,7 @@ if (!is_android) {
       "//components/renderer_context_menu",
       "//components/resources",
       "//components/saved_tab_groups:core",
+      "//components/search",
       "//components/security_interstitials/content:security_interstitial_page",
       "//components/shared_highlighting/core/common",
       "//components/site_engagement/content",
@@ -9783,6 +9782,7 @@ if (!is_android) {
         "interaction/interaction_test_util_browser_interactive_uitest.cc",
         "interaction/interaction_test_util_interactive_uitest.cc",
         "interaction/interaction_test_util_mouse_interactive_uitest.cc",
+        "interaction/interactive_browser_test_interactive_uitest.cc",
         "interaction/webcontents_interaction_test_util_interactive_uitest.cc",
       ]
       deps += [
@@ -11166,6 +11166,7 @@ if (is_chromeos_ash) {
     sources = [
       "../browser/ash/crosapi/test/crosapi_test_base.cc",
       "../browser/ash/crosapi/test/crosapi_test_base.h",
+      "../browser/ash/crosapi/test/file_manager_ash_crosapitest.cc",
       "../browser/ash/crosapi/test/network_change_ash_crosapitest.cc",
     ]
     deps = [
@@ -11191,7 +11192,7 @@ if (is_chromeos_ash) {
     use_xvfb = use_xvfb_in_this_config
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
-    sources = [ "../browser/ash/crosapi/test/file_manager_ash_browsertest.cc" ]
+    sources = []
     deps = [
       ":browser_tests_runner",
       ":test_support_ui",

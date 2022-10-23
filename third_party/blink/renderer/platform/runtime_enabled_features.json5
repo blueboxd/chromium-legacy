@@ -173,6 +173,31 @@
       valid_values: ["enabled_or_overridden", "overridden"],
       default: "enabled_or_overridden",
     },
+
+    browser_process_read_access: {
+      default: false,
+      value_type: "bool",
+    },
+    browser_process_read_write_access: {
+      default: false,
+      value_type: "bool",
+    },
+    override_from_pref: {
+      valid_keys: [
+        // Chrome Prefs name (string) from which we will conditionally override
+        // the runtime feature value.
+        "name",
+        // If the preference equals the provided integral, string, or boolean
+        // value, the feature will be force enabled.
+        "force_enable_val",
+        // If the preference equals the provided integral, string, or
+        // boolean value, the feature will be force disabled.
+        "force_disable_val",
+        // Short-hand boolean flag. If true, will always override
+        // the feature. The specified Chrome Pref must be boolean.
+        "override_from_boolean_val",
+      ],
+    }
   },
 
   data: [
@@ -819,7 +844,7 @@
     },
     {
       name: "CSSPositionStickyStaticScrollPosition",
-      status: "experimental",
+      status: "test",
     },
     {
       // Match input elements which have been autofilled by user agent.
@@ -1214,6 +1239,16 @@
       // effect.
       origin_trial_feature_name: "PrivacySandboxAdsAPIs",
       origin_trial_allows_third_party: true,
+      public: true,
+    },
+    {
+      name: "FencedFramesInnerConfig",
+      // The `innerConfig` IDL attribute on the <fencedframe> element.
+      origin_trial_feature_name: "PrivacySandboxAdsAPIs",
+      origin_trial_allows_third_party: true,
+      base_feature: "FencedFramesInnerConfig",
+      base_feature_status: "disabled",
+      copied_from_base_feature_if: "overridden",
       public: true,
     },
     {
@@ -2613,6 +2648,11 @@
     {
       name: "TextFragmentTapOpensContextMenu",
       status: {"Android": "stable"},
+    },
+    {
+      name: "ThirdPartyStoragePartitioning",
+      status: "experimental",
+      browser_process_read_write_access: true,
     },
     {
       // Forces same-process display:none cross-origin iframes to be throttled

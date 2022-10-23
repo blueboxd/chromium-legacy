@@ -159,8 +159,7 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
     if (!rtc_video_decoder_adapter_)
       return;
 
-    media_thread_.task_runner()->DeleteSoon(
-        FROM_HERE, std::move(rtc_video_decoder_adapter_));
+    rtc_video_decoder_adapter_.reset();
     media_thread_.FlushForTesting();
   }
 
@@ -482,8 +481,7 @@ TEST_F(RTCVideoDecoderAdapterTest, DecoderCountIsIncrementedByDecode) {
 
   // Make sure that it goes back to zero.
   EXPECT_EQ(RTCVideoDecoderAdapter::GetCurrentDecoderCountForTesting(), 1);
-  media_thread_.task_runner()->DeleteSoon(
-      FROM_HERE, std::move(rtc_video_decoder_adapter_));
+  rtc_video_decoder_adapter_.reset();
   media_thread_.FlushForTesting();
   EXPECT_EQ(RTCVideoDecoderAdapter::GetCurrentDecoderCountForTesting(), 0);
 }
@@ -521,8 +519,7 @@ TEST_F(RTCVideoDecoderAdapterTest, FallsBackForLowResolution) {
     RTCVideoDecoderAdapter::DecrementCurrentDecoderCountForTesting();
 
   // Deleting the decoder should not decrement the count.
-  media_thread_.task_runner()->DeleteSoon(
-      FROM_HERE, std::move(rtc_video_decoder_adapter_));
+  rtc_video_decoder_adapter_.reset();
   media_thread_.FlushForTesting();
   EXPECT_EQ(RTCVideoDecoderAdapter::GetCurrentDecoderCountForTesting(), 0);
 }
@@ -580,9 +577,9 @@ TEST_F(RTCVideoDecoderAdapterTest, DecodesImageWithSingleSpatialLayer) {
 
 #if BUILDFLAG(IS_WIN)
 TEST_F(RTCVideoDecoderAdapterTest, UseD3D11ToDecodeVP9kSVCStream) {
+  video_decoder_->SetDecoderType(media::VideoDecoderType::kD3D11);
   ASSERT_TRUE(BasicSetup());
   SetSpatialIndex(2);
-  video_decoder_->SetDecoderType(media::VideoDecoderType::kD3D11);
   EXPECT_CALL(*video_decoder_, Decode_(_, _))
       .WillOnce(
           base::test::RunOnceCallback<1>(media::DecoderStatus::Codes::kOk));

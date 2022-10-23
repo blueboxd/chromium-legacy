@@ -202,6 +202,7 @@
 <translation id="2771816809568414714">ਪਨੀਰ</translation>
 <translation id="2781645665747935084">ਬੈਲਜ਼ੀਅਨ</translation>
 <translation id="2782104745158847185">Linux ਐਪਲੀਕੇਸ਼ਨ ਨੂੰ ਸਥਾਪਤ ਕਰਨ ਵਿੱਚ ਗੜਬੜ ਹੋ ਗਈ</translation>
+<translation id="2802583107108007218">ਇਨ੍ਹਾਂ ਪ੍ਰਤਿਬੰਧਾਂ ਬਾਰੇ ਹੋਰ ਜਾਣੋ</translation>
 <translation id="2803375539583399270">PIN ਦਾਖਲ ਕਰੋ</translation>
 <translation id="2820957248982571256">ਸਕੈਨ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...</translation>
 <translation id="2830077785865012357">ਚੀਨੀ ਜ਼ੂਯਿਨ</translation>
@@ -455,7 +456,6 @@
 <translation id="4900532980794411603">Parallels Desktop ਨਾਲ ਸਾਂਝਾ ਕਰੋ</translation>
 <translation id="4902546322522096650">ਨੈੱਟਵਰਕ <ph name="NETWORK_COUNT" /> ਵਿੱਚੋਂ <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, ਸਿਗਨਲ ਦੀ ਤੀਬਰਤਾ <ph name="SIGNAL_STRENGTH" />%, ਕਨੈਕਟ</translation>
 <translation id="4906580650526544301">ਨੈੱਟਵਰਕ <ph name="NETWORK_COUNT" /> ਵਿੱਚੋਂ <ph name="NETWORK_INDEX" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, ਸਿਗਨਲ ਦੀ ਤੀਬਰਤਾ <ph name="SIGNAL_STRENGTH" />%, ਫ਼ੋਨ ਦੀ ਬੈਟਰੀ <ph name="BATTERY_STATUS" />%, ਵੇਰਵੇ</translation>
-<translation id="4929673617759421391">ਪ੍ਰਸ਼ਾਸਕ ਨੀਤੀ ਵੱਲੋਂ ਇਸ ਫ਼ਾਈਲ ਨੂੰ ਪੇਸਟ ਕਰਨ ਦੀ ਸੁਵਿਧਾ ਨੂੰ ਬਲਾਕ ਕੀਤਾ ਗਿਆ ਹੈ</translation>
 <translation id="4935975195727477204">ਗੈਨਜ਼ਾਨੀਆ ਫਲਾਵਰ</translation>
 <translation id="4943368462779413526">ਫੁੱਟਬਾਲ</translation>
 <translation id="4961158930123534723">1 ਫੋਲਡਰ Parallels Desktop ਨਾਲ ਸਾਂਝਾ ਕੀਤਾ ਗਿਆ</translation>
@@ -920,6 +920,7 @@
 <translation id="8656768832129462377">ਜਾਂਚ ਨਾ ਕਰੋ</translation>
 <translation id="8688591111840995413">ਖਰਾਬ ਪਾਸਵਰਡ</translation>
 <translation id="8698464937041809063">Google ਡਰਾਇੰਗ</translation>
+<translation id="8698877009525468705">ਇਹ ਫ਼ਾਈਲ ਗੁਪਤ ਹੈ ਅਤੇ ਪ੍ਰਸ਼ਾਸਕ ਨੀਤੀ ਵੱਲੋਂ ਲਾਗੂ ਹੋਣ ਵਾਲੇ ਪ੍ਰਤਿਬੰਧਾਂ ਦੇ ਅਧੀਨ ਹੈ।</translation>
 <translation id="8712637175834984815">ਸਮਝ ਲਿਆ</translation>
 <translation id="8713112442029511308">ਮਾਲਟਾਈ</translation>
 <translation id="8714406895390098252">ਸਾਈਕਲ</translation>
@@ -974,7 +975,6 @@
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9189836632794948435">ਕਜ਼ਾਖ</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> ਆਈਟਮਾਂ ਨੂੰ ਐਕਸਟ੍ਰੈਕਟ ਕੀਤਾ ਗਿਆ।</translation>
-<translation id="9210751050717126865">ਪ੍ਰਸ਼ਾਸਕ ਨੀਤੀ ਵੱਲੋਂ <ph name="COUNT" /> ਫ਼ਾਈਲਾਂ ਨੂੰ ਪੇਸਟ ਕਰਨ ਦੀ ਸੁਵਿਧਾ ਨੂੰ ਬਲਾਕ ਕੀਤਾ ਗਿਆ ਹੈ</translation>
 <translation id="9213073329713032541">ਸਥਾਪਨਾ ਸਫਲਤਾਪੂਰਵਕ ਸ਼ੁਰੂ ਹੋਈ।</translation>
 <translation id="9219103736887031265">ਚਿੱਤਰ</translation>
 <translation id="9219908252191632183">ਚੰਨ ਦਾ ਦ੍ਰਿਸ਼</translation>

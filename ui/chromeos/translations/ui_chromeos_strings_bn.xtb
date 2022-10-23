@@ -202,6 +202,7 @@
 <translation id="2771816809568414714">চিজ</translation>
 <translation id="2781645665747935084">বেলজিয়ান</translation>
 <translation id="2782104745158847185">Linux অ্যাপ ইনস্টল করার সময় সমস্যা</translation>
+<translation id="2802583107108007218">এই সীমাবদ্ধতার বিষয়ে আরও জানুন</translation>
 <translation id="2803375539583399270">পিন নম্বর দিন</translation>
 <translation id="2820957248982571256">স্ক্যান করা হচ্ছে…</translation>
 <translation id="2830077785865012357">চিনা ঝুইন</translation>
@@ -455,7 +456,6 @@
 <translation id="4900532980794411603">Parallels Desktop-এর সাথে শেয়ার করুন</translation>
 <translation id="4902546322522096650"><ph name="NETWORK_COUNT" />টির মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, সিগন্যাল: <ph name="SIGNAL_STRENGTH" />%, কানেক্ট করুন</translation>
 <translation id="4906580650526544301"><ph name="NETWORK_COUNT" />টির মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" /> সিগন্যাল ক্ষমতা <ph name="SIGNAL_STRENGTH" />%, ফোনের ব্যাটারি <ph name="BATTERY_STATUS" />%, বিবরণ</translation>
-<translation id="4929673617759421391">অ্যাডমিনিস্ট্রেটরের সেট করা নীতি অনুযায়ী এই ফাইল পেস্ট করার সুবিধা ব্লক করা হয়েছে</translation>
 <translation id="4935975195727477204">গাজানিয়া ফুল</translation>
 <translation id="4943368462779413526">ফুটবল</translation>
 <translation id="4961158930123534723">১টি ফোল্ডার Parallels Desktop-এর সাথে শেয়ার করা হয়েছে</translation>
@@ -920,6 +920,7 @@
 <translation id="8656768832129462377">চেক করবেন না</translation>
 <translation id="8688591111840995413">খারাপ পাসওয়ার্ড</translation>
 <translation id="8698464937041809063">Google অঙ্কন</translation>
+<translation id="8698877009525468705">এই ফাইলটি গোপনীয় এবং অ্যাডমিনিস্ট্রেটর নীতির মাধ্যমে প্রযোজ্য বিধিনিষেধ পালন করেই এটি শেয়ার করা হয়।</translation>
 <translation id="8712637175834984815">বুঝেছি</translation>
 <translation id="8713112442029511308">মল্টিজ</translation>
 <translation id="8714406895390098252">সাইকেল</translation>
@@ -974,7 +975,6 @@
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9189836632794948435">কাজাখ</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" />টি আইটেম এক্সট্যাক্ট করা হয়েছে।</translation>
-<translation id="9210751050717126865">অ্যাডমিনিস্ট্রেটরের সেট করা নীতি অনুযায়ী <ph name="COUNT" />টি ফাইল পেস্ট করার সুবিধা ব্লক করা হয়েছে</translation>
 <translation id="9213073329713032541">ইনস্টলেশন চালু হয়েছে।</translation>
 <translation id="9219103736887031265">Images</translation>
 <translation id="9219908252191632183">লুনার</translation>

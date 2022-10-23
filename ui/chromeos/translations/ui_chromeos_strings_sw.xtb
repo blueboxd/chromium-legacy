@@ -202,6 +202,7 @@
 <translation id="2771816809568414714">Jibini</translation>
 <translation id="2781645665747935084">Kibelgiji</translation>
 <translation id="2782104745158847185">Hitilafu imetokea wakati wa kusakinisha programu ya Linux</translation>
+<translation id="2802583107108007218">Pata maelezo zaidi kuhusu vizuizi hivi</translation>
 <translation id="2803375539583399270">Weka PIN</translation>
 <translation id="2820957248982571256">Inatafuta...</translation>
 <translation id="2830077785865012357">Zhuyin ya Kichina</translation>
@@ -455,7 +456,6 @@
 <translation id="4900532980794411603">Shiriki na Parallels Desktop</translation>
 <translation id="4902546322522096650">Mtandao wa <ph name="NETWORK_INDEX" /> kati ya <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" />%, Unganisha</translation>
 <translation id="4906580650526544301">Mtandao wa <ph name="NETWORK_INDEX" /> kati ya <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" />%, Betri ya Simu <ph name="BATTERY_STATUS" />%, Maelezo</translation>
-<translation id="4929673617759421391">Sera ya msimamizi inazuia kubandika faili hii</translation>
 <translation id="4935975195727477204">Ua la Gazania</translation>
 <translation id="4943368462779413526">Kandanda</translation>
 <translation id="4961158930123534723">Umeshiriki folda moja na Parallels Desktop</translation>
@@ -921,6 +921,7 @@
 <translation id="8656768832129462377">Usikague</translation>
 <translation id="8688591111840995413">Nenosiri lisilo sahihi</translation>
 <translation id="8698464937041809063">Mchoro wa Google</translation>
+<translation id="8698877009525468705">Faili hii ni ya siri na inazingatia vizuizi vya sera ya msimamizi.</translation>
 <translation id="8712637175834984815">Nimeelewa</translation>
 <translation id="8713112442029511308">Kimalta</translation>
 <translation id="8714406895390098252">Baiskeli</translation>
@@ -975,7 +976,6 @@
 <translation id="9183302530794969518">Hati za Google</translation>
 <translation id="9189836632794948435">Kikazaki</translation>
 <translation id="9200427192836333033">Vipengee <ph name="NUMBER_OF_ITEMS" /> vimetolewa.</translation>
-<translation id="9210751050717126865">Sera ya msimamizi inazuia kubandika faili <ph name="COUNT" /></translation>
 <translation id="9213073329713032541">Imeanza kusakinisha.</translation>
 <translation id="9219103736887031265">Picha</translation>
 <translation id="9219908252191632183">Mandhari ya mwezi mwandamo</translation>

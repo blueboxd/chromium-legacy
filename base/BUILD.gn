@@ -52,9 +52,6 @@ declare_args() {
   # file name) is saved.
   enable_location_source = true
 
-  # Whether or not the FROM_HERE macro uses base::Location::Current().
-  from_here_uses_location_builtins = true
-
   # Unsafe developer build. Has developer-friendly features that may weaken or
   # disable security measures like sandboxing or ASLR.
   # IMPORTANT: Unsafe developer builds should never be distributed to end users.
@@ -1608,7 +1605,7 @@ mixed_component("base") {
       ]
     }
 
-    if (use_allocator == "none") {
+    if (!use_partition_alloc_as_malloc) {
       if (is_android) {
         sources += [ "allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_linker_wrapped_symbols.cc" ]
       }
@@ -2512,7 +2509,7 @@ mixed_component("base") {
       ]
     }
 
-    if (use_allocator == "partition") {
+    if (use_partition_alloc_as_malloc) {
       sources += [
         "trace_event/address_space_dump_provider.cc",
         "trace_event/address_space_dump_provider.h",
@@ -2545,6 +2542,7 @@ buildflag_header("cfi_buildflags") {
   flags = [
     # TODO(pcc): remove CFI_CAST_CHECK, see https://crbug.com/626794.
     "CFI_CAST_CHECK=$is_cfi && $use_cfi_cast",
+    "CFI_DIAG=$is_cfi && $use_cfi_diag",
     "CFI_ICALL_CHECK=$is_cfi && $use_cfi_icall",
     "CFI_ENFORCEMENT_TRAP=$is_cfi && !$use_cfi_diag",
     "CFI_ENFORCEMENT_DIAGNOSTIC=$is_cfi && $use_cfi_diag && !$use_cfi_recover",
@@ -2562,7 +2560,6 @@ buildflag_header("debugging_buildflags") {
   flags = [
     "DCHECK_IS_CONFIGURABLE=$dcheck_is_configurable",
     "ENABLE_LOCATION_SOURCE=$enable_location_source",
-    "FROM_HERE_USES_LOCATION_BUILTINS=$from_here_uses_location_builtins",
     "ENABLE_PROFILING=$enable_profiling",
     "CAN_UNWIND_WITH_FRAME_POINTERS=$can_unwind_with_frame_pointers",
     "UNSAFE_DEVELOPER_BUILD=$is_unsafe_developer_build",
@@ -4731,6 +4728,11 @@ if (is_mac) {
     seed_corpus = "$target_gen_dir/base_mach_port_rendezvous_corpus"
     seed_corpus_deps = [ ":base_mach_port_rendezvous_convert_corpus" ]
   }
+}
+
+fuzzer_test("escape_fuzzer") {
+  sources = [ "strings/escape_fuzzer.cc" ]
+  deps = [ "//base" ]
 }
 
 fuzzer_test("string_number_conversions_fuzzer") {

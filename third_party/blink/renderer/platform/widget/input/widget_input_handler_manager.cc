@@ -426,9 +426,7 @@ void WidgetInputHandlerManager::GenerateScrollBeginAndSendToMainThread(
 }
 
 void WidgetInputHandlerManager::SetAllowedTouchAction(
-    cc::TouchAction touch_action,
-    uint32_t unique_touch_event_id,
-    InputHandlerProxy::EventDisposition event_disposition) {
+    cc::TouchAction touch_action) {
   compositor_allowed_touch_action_ = touch_action;
 }
 
@@ -1117,7 +1115,6 @@ void WidgetInputHandlerManager::UpdateBrowserControlsState(
     bool animate) {
   DCHECK(InputThreadTaskRunner()->BelongsToCurrentThread());
   DCHECK(input_handler_proxy_);
-  DCHECK(!widget_->is_embedded());
   input_handler_proxy_->UpdateBrowserControlsState(constraints, current,
                                                    animate);
 }

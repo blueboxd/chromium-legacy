@@ -1545,14 +1545,12 @@ class CORE_EXPORT Document : public ContainerNode,
 
   HTMLDialogElement* ActiveModalDialog() const;
 
-  HTMLElement* PopupHintShowing() const { return popup_hint_showing_; }
-  void SetPopupHintShowing(HTMLElement* element);
   HeapVector<Member<HTMLElement>>& PopupStack() { return popup_stack_; }
   const HeapVector<Member<HTMLElement>>& PopupStack() const {
     return popup_stack_;
   }
   bool PopupAutoShowing() const { return !popup_stack_.empty(); }
-  HTMLElement* TopmostPopupAutoOrHint() const;
+  HTMLElement* TopmostPopUp() const;
   HeapHashSet<Member<HTMLElement>>& PopupsWaitingToHide() {
     return popups_waiting_to_hide_;
   }
@@ -1768,7 +1766,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsAccessibilityEnabled() const { return !ax_contexts_.empty(); }
 
   void DispatchHandleLoadStart();
-  void DispatchHandleLoadOrLayoutComplete();
+  void DispatchHandleLoadComplete();
 
   bool HaveRenderBlockingStylesheetsLoaded() const;
   bool HaveRenderBlockingResourcesLoaded() const;
@@ -1936,6 +1934,8 @@ class CORE_EXPORT Document : public ContainerNode,
   unsigned GetIgnoreDestructiveWriteModuleScriptCount() {
     return ignore_destructive_write_module_script_count_;
   }
+
+  void ResetAgent(Agent& agent);
 
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
@@ -2398,8 +2398,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // The stack of currently-displayed `popup=auto` elements. Elements in the
   // stack go from earliest (bottom-most) to latest (top-most).
   HeapVector<Member<HTMLElement>> popup_stack_;
-  // The `popup=hint` that is currently showing, if any.
-  Member<HTMLElement> popup_hint_showing_;
   // The pop-up (if any) that received the most recent pointerdown event.
   Member<const HTMLElement> pop_up_pointerdown_target_;
   // A set of popups for which hidePopUp() has been called, but animations are

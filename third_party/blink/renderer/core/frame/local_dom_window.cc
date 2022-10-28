@@ -42,6 +42,7 @@
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_picture_in_picture_window_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
@@ -246,6 +247,21 @@ void LocalDOMWindow::Initialize() {
 void LocalDOMWindow::ResetWindowAgent(WindowAgent* agent) {
   GetAgent()->DetachContext(this);
   ResetAgent(agent);
+  if (document_)
+    document_->ResetAgent(*agent);
+
+  // This is only called on Android WebView, we need to reassign the microtask
+  // queue if there already is one for the associated context. There shouldn't
+  // be any other worlds with Android WebView so using the MainWorld is fine.
+  auto* microtask_queue = agent->event_loop()->microtask_queue();
+  if (microtask_queue) {
+    v8::HandleScope handle_scope(GetIsolate());
+    v8::Local<v8::Context> main_world_context =
+        ToV8ContextMaybeEmpty(GetFrame(), DOMWrapperWorld::MainWorld());
+    if (!main_world_context.IsEmpty())
+      main_world_context->SetMicrotaskQueue(microtask_queue);
+  }
+
   GetAgent()->AttachContext(this);
 }
 
@@ -540,8 +556,11 @@ scoped_refptr<base::SingleThreadTaskRunner> LocalDOMWindow::GetTaskRunner(
   // In most cases, the ExecutionContext will get us to a relevant Frame. In
   // some cases, though, there isn't a good candidate (most commonly when either
   // the passed-in document or the ExecutionContext used to be attached to a
-  // Frame but has since been detached).
-  return Thread::Current()->GetDeprecatedTaskRunner();
+  // Frame but has since been detached) so we will use the default task runner
+  // of the AgentGroupScheduler that created this window.
+  return To<WindowAgent>(GetAgent())
+      ->GetAgentGroupScheduler()
+      .DefaultTaskRunner();
 }
 
 void LocalDOMWindow::ReportPermissionsPolicyViolation(

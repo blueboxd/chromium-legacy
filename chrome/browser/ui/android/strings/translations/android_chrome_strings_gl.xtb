@@ -235,7 +235,6 @@ Cando eliminas o teu historial de navegación (completo ou dun sitio en concreto
 <translation id="2276231040576210443">Sempre podes escoller na <ph name="BEGIN_LINK1" />configuración<ph name="END_LINK1" /> o contido que queres sincronizar. Google pode personalizar a Busca e outros servizos en función do teu historial.</translation>
 <translation id="2276696007612801991">Inicia sesión na túa Conta de Google para comprobar os teus contrasinais</translation>
 <translation id="2278052315791335171">Ao eliminar este contrasinal non se eliminará a túa conta de <ph name="SITE" /></translation>
-<translation id="2279146068164892489">Queres abrir a aplicación para <ph name="APPNAME" />?</translation>
 <translation id="2286841657746966508">Enderezo de facturación</translation>
 <translation id="228704530595896923">Lista de opcións para compartir.</translation>
 <translation id="230115972905494466">Non se atoparon dispositivos compatibles</translation>
@@ -947,7 +946,6 @@ As probas de Privacy Sandbox aínda se atopan nunha fase de desenvolvemento acti
 <translation id="6192907950379606605">Obter descricións de imaxes</translation>
 <translation id="6193448654517602979">Selecciona pestanas</translation>
 <translation id="6196315980958524839">Os contrasinais gárdanse no xestor de contrasinais de Google neste dispositivo</translation>
-<translation id="620197886010707372">Queres abrir a aplicación para <ph name="APPNAME" /> con Google Play?</translation>
 <translation id="6202812185118613467">Inicia sesión de novo para comezar coa sincronización</translation>
 <translation id="6210748933810148297">Non es <ph name="EMAIL" />?</translation>
 <translation id="6211386937064921208">Mostrando unha vista previa desta páxina</translation>
@@ -1377,6 +1375,7 @@ Os tokens de confianza melloran a privacidade na Web e non se poden usar para de
 <translation id="8387617938027387193">Verifica que es ti</translation>
 <translation id="8393700583063109961">Enviar mensaxe</translation>
 <translation id="8394720698884623075">Comproba enderezos URL cunha lista de sitios non seguros almacenada en Chrome</translation>
+<translation id="8402673309244746971">Ir a Seguindo</translation>
 <translation id="8410695015584479363">Facer seguimento de prezos</translation>
 <translation id="8413126021676339697">Mostrar historial completo</translation>
 <translation id="8414396119627470038">Inicia sesión en <ph name="SITE_ETLD_PLUS_ONE" /> con <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>

@@ -443,16 +443,6 @@ void StandaloneBrowserExtensionApps::StopApp(const std::string& app_id) {
   controller_->StopApp(app_id);
 }
 
-void StandaloneBrowserExtensionApps::Uninstall(
-    const std::string& app_id,
-    apps::mojom::UninstallSource uninstall_source,
-    bool clear_site_data,
-    bool report_abuse) {
-  Uninstall(app_id,
-            ConvertMojomUninstallSourceToUninstallSource(uninstall_source),
-            clear_site_data, report_abuse);
-}
-
 void StandaloneBrowserExtensionApps::SetWindowMode(
     const std::string& app_id,
     apps::mojom::WindowMode window_mode) {
@@ -524,8 +514,7 @@ void StandaloneBrowserExtensionApps::RegisterAppController(
 
 void StandaloneBrowserExtensionApps::OnCapabilityAccesses(
     std::vector<CapabilityAccessPtr> deltas) {
-  // TODO(https://crbug.com/1225848): Implement.
-  NOTIMPLEMENTED();
+  proxy()->OnCapabilityAccesses(std::move(deltas));
 }
 
 void StandaloneBrowserExtensionApps::LoggedInStateChanged() {

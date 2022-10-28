@@ -220,7 +220,6 @@
 <translation id="2107914222138020205">तपाईंको USB-C केबल Thunderbolt मा जोड्न मिल्दैन। डिभाइस राम्ररी नचल्न सक्छ।</translation>
 <translation id="2108303511227308752">Alt + Backspace किबोर्ड सर्टकट परिवर्तन गरिएको छ। Delete की प्रयोग गर्न <ph name="LAUNCHER_KEY_NAME" /> की + Backspace थिच्नुहोस्।</translation>
 <translation id="211328683600082144">माइक्रोफोन अन गर्नुहोस्</translation>
-<translation id="2123115117533398272">ChromeOS ले अन्वेषण गर्न सकिने नयाँ सामग्रीसम्बन्धी सुझावहरू देखाउँछ। तपाईंले प्रयोगसम्बन्धी डेटा सेयर गर्ने सहमति जनाउनुभएको छ भने मात्र सामग्री सिफारिस गर्ने सुविधाको गुणस्तर सुधार्ने प्रयोजनका लागि तथ्याङ्क पठाउँछ। <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="2126242104232412123">नयाँ डेस्क</translation>
 <translation id="2132302418721800944">फुल स्क्रिनको भिडियो रेकर्ड गर्नुहोस्</translation>
 <translation id="2135456203358955318">डक गरिएको म्याग्निफायर</translation>
@@ -288,7 +287,6 @@
 <translation id="2542089167727451762">आफ्नो प्रोफाइल छविमा ट्याप गर्नुहोस्</translation>
 <translation id="255671100581129685">Google सहायक सार्वजनिक सत्रमा उपलब्ध छैन।</translation>
 <translation id="256712445991462162">डक गरिएको म्याग्निफायर</translation>
-<translation id="2570734079541893434">सेटिङ व्यवस्थापन गर्नुहोस्</translation>
 <translation id="2573588302192866788"><ph name="NAME" /> कनेक्ट गर्न सकिएन</translation>
 <translation id="2575685495496069081">एकभन्दा बढी साइन इन गर्ने सुविधा असक्षम पारिएको छ</translation>
 <translation id="2582112259361606227">अद्यावधिक गर्न पुनः सुरु गर्नुहोस्</translation>
@@ -309,6 +307,7 @@
 <translation id="2673968385134502798">गेमहरू</translation>
 <translation id="2678852583403169292">'सेलेक्ट टु स्पिक' सुविधाको मेनु</translation>
 <translation id="2689613560355655046">डेस्क ८</translation>
+<translation id="2695132445805301912">किबोर्डको सर्टकट र क्लिकको सङ्ख्या देखाइयोस्</translation>
 <translation id="2695305337569143674">वेब</translation>
 <translation id="2697697418792422688">किबोर्डका सेटिङ देखाउनुहोस् <ph name="KEYBOARD_NAME" /> चयन गरिएको छ।</translation>
 <translation id="2700493154570097719">आफ्नो किबोर्ड सेट गर्नुहोस्‌</translation>
@@ -1126,6 +1125,7 @@
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7313193732017069507">क्यामेरा एक्स्पान्ड गर्नुहोस्</translation>
 <translation id="731589979057211264">सेल्फ पार्टी अन छ।</translation>
+<translation id="7340731148882810149">स्वतः क्लिक गर्ने सुविधाको मेनु</translation>
 <translation id="7346909386216857016">ठिक छ, बुझेँ</translation>
 <translation id="7348093485538360975">अन्-स्क्रिन कुञ्जीपाटी</translation>
 <translation id="735745346212279324">VPN को जडान विच्छेद भयो</translation>
@@ -1303,6 +1303,7 @@
 <translation id="826107067893790409"><ph name="USER_EMAIL_ADDRESS" /> का लागि अनलक गर्न Enter थिच्नुहोस्</translation>
 <translation id="8261506727792406068">मेट्नुहोस्</translation>
 <translation id="8270450402312105425">{0,plural, =1{एक घन्टाभित्र यो डिभाइसमा अघिल्लो संस्करण रिस्टोर गर्नुहोस्}other{# घन्टाभित्र यो डिभाइसमा अघिल्लो संस्करण रिस्टोर गर्नुहोस्}}</translation>
+<translation id="8277261673056602147">स्क्रिनमा देखाइएको टेक्स्ट हाइलाइट गर्नुहोस्</translation>
 <translation id="8284362522226889623">अघिल्लो डेस्कमा जान टचप्याडमा चारवटा औँलाले बायाँतिर स्वाइप गर्नुहोस्</translation>
 <translation id="828708037801473432">अफ</translation>
 <translation id="8297006494302853456">कमजोर</translation>

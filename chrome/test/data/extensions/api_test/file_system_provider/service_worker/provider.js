@@ -1,48 +1,7 @@
 // Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-/**
- * A blocking queue to allow the remote test interact with the FSP
- * implementation asynchronously.
- */
-class Queue {
-  constructor() {
-    /** @type {!Array<!Object>} */
-    this.items = [];
-    /** @type {!Array<function(!Object)>} */
-    this.readers = [];
-  }
-
-  /**
-   * Pushes an item into the queue and unblocks the first waiting reader if
-   * there are any. This method returns immediately and will never block.
-   *
-   * @param {!Object} item
-   */
-  push(item) {
-    if (this.readers.length > 0) {
-      this.readers.shift()(item);
-      return;
-    }
-    this.items.push(item);
-  }
-
-  /**
-   * Pops the first item from the queue. If the queue is empty, will wait until
-   * an item is available.
-   *
-   * @returns {!Object}
-   */
-  async pop() {
-    if (this.items.length > 0) {
-      return this.items.shift();
-    }
-    return new Promise(resolve => {
-      this.readers.push(resolve);
-    });
-  }
-};
+import {promisifyWithLastError, Queue} from '/_test_resources/api_test/file_system_provider/service_worker/helpers.js';
 
 /**
  * Splits the path into dir name and base name, e.g. '/a/b/c' -> '/a/b', 'c'.
@@ -128,6 +87,14 @@ export class TestFileSystemProvider {
      * @private {!Entry}
      */
     this.root = Entry.dir('', new Date(2014, 4, 28, 10, 39, 15), [
+      // Directory with actions.
+      Entry.dir(
+          TestFileSystemProvider.DIR_WITH_ACTIONS,
+          new Date(2014, 1, 25, 7, 36, 12), []),
+      // Directory with no actions.
+      Entry.dir(
+          TestFileSystemProvider.DIR_WITH_NO_ACTIONS,
+          new Date(2014, 1, 25, 7, 36, 12), []),
       // Read error
       Entry.file(
           TestFileSystemProvider.FILE_FAIL, new Date(2014, 1, 25, 7, 36, 12),
@@ -216,7 +183,8 @@ export class TestFileSystemProvider {
     this.maxOpenedFiles = 0;
 
     /**
-     * A queue of recorded event per event name.
+     * A queue of recorded event per event name. Allows the remote test to read
+     * the events happening in the FSP implementation asynchronously.
      *
      * @private {!Object<string, !Queue>}
      */
@@ -257,6 +225,7 @@ export class TestFileSystemProvider {
     this.setHandlerEnabled('onCreateFileRequested', true);
     this.setHandlerEnabled('onDeleteEntryRequested', true);
     this.setHandlerEnabled('onExecuteActionRequested', true);
+    this.setHandlerEnabled('onGetActionsRequested', true);
     this.setHandlerEnabled('onGetMetadataRequested', true);
     this.setHandlerEnabled('onMountRequested', true);
     this.setHandlerEnabled('onMoveEntryRequested', true);
@@ -264,6 +233,7 @@ export class TestFileSystemProvider {
     this.setHandlerEnabled('onReadDirectoryRequested', true);
     this.setHandlerEnabled('onReadFileRequested', true);
     this.setHandlerEnabled('onRemoveWatcherRequested', true);
+    this.setHandlerEnabled('onTruncateRequested', true);
     this.setHandlerEnabled('onUnmountRequested', true);
     this.setHandlerEnabled('onWriteFileRequested', true);
   }
@@ -291,25 +261,31 @@ export class TestFileSystemProvider {
     }
   }
 
-  setUpCommandListener(serviceWorker) {
-    serviceWorker.onmessage = (e) => {
-      const {requestId, commandId, args} = e.data;
-      e.waitUntil((
-          /** @suppress {checkTypes} */
-          async () => {
-            const result = {requestId};
-            try {
-              if (commandId in this) {
-                result.response = await this[commandId](...args);
-              } else {
-                result.error = `unhandled: ${commandId}`;
-              }
-            } catch (error) {
-              result.error = error.toString();
-            }
-            e.source.postMessage(result);
-          })());
+  setUpCommandListener() {
+    const listener = (msg, sender, sendResponse) => {
+      const {commandId, args} = msg;
+      this.handleCommand(commandId, ...args).then(sendResponse);
+      return true;  // Indicate that we want to respond asynchronously.
     };
+    // Listen to both events to handle messages sent both from the same or from
+    // a different extension.
+    chrome.runtime.onMessageExternal.addListener(listener);
+    chrome.runtime.onMessage.addListener(listener);
+  }
+
+  /** @suppress {checkTypes} */
+  async handleCommand(commandId, ...args) {
+    const result = {};
+    try {
+      if (commandId in this) {
+        result.response = await this[commandId](...args);
+      } else {
+        result.error = `unhandled: ${commandId}`;
+      }
+    } catch (error) {
+      result.error = error.toString();
+    }
+    return result;
   }
 
   /**
@@ -350,6 +326,53 @@ export class TestFileSystemProvider {
   }
 
   /**
+   * Called by the test. Causes a change notification to be sent for an entry.
+   *
+   * @param {string} entryPath
+   * @param {boolean} recursive
+   * @param {string} tag
+   */
+  async triggerNotify(entryPath, recursive, tag) {
+    return promisifyWithLastError(chrome.fileSystemProvider.notify, {
+      fileSystemId: this.fileSystemId,
+      observedPath: entryPath,
+      recursive,
+      changeType: 'CHANGED',
+      tag,
+    });
+  }
+
+  /**
+   * Opens a tab from the extension hosting this provider.
+   *
+   * @param {string} url
+   * @returns {!Promise<number>}
+   */
+  async openTab(url) {
+    const tab = await promisifyWithLastError(chrome.tabs.create, {url});
+    return tab.id;
+  }
+
+  /**
+   * Closes a tab previously opened with |openTab|.
+   *
+   * @param {number} tabId
+   */
+  async closeTab(tabId) {
+    await chrome.tabs.remove(tabId);
+  }
+
+  /**
+   * Opens a window from the extension hosting this provider.
+   *
+   * @param {string} url
+   * @returns {!Promise<number>}
+   */
+  async openWindow(url) {
+    return await promisifyWithLastError(chrome.windows.create, {url});
+  }
+
+  /**
    * Called by the test. Gets the least recent event recorded for a given event
    * name. Will block until there is at least one in the queue.
    *
@@ -370,7 +393,7 @@ export class TestFileSystemProvider {
    * @returns {number}
    */
   getEventCount(eventName) {
-    return this.getEventQueue(eventName).items.length;
+    return this.getEventQueue(eventName).size();
   }
 
   /**
@@ -541,6 +564,12 @@ export class TestFileSystemProvider {
    */
   onConfigureRequested(options, onSuccess, onError) {
     this.recordEvent('onConfigureRequested', options);
+    const delay = this.testConfig['onConfigureRequestedDelayMs'];
+    if (delay) {
+      // Simulates a delayed configuration success.
+      setTimeout(onSuccess, delay);
+      return;
+    }
     const error = this.testConfig['onConfigureRequestedError'];
     if (error) {
       onError(error);
@@ -693,6 +722,37 @@ export class TestFileSystemProvider {
     } else {
       onError(chrome.fileSystemProvider.ProviderError.NOT_FOUND);
     }
+  }
+
+  /**
+   * FSP: implementation for returning a list of actions for the requested
+   * entry.
+   *
+   * @param {chrome.fileSystemProvider.GetActionsRequestedOptions} options
+   *     Options.
+   * @param {function(Array<Object>)} onSuccess Success callback with a list of
+   *     actions.
+   * @param {function(string)} onError Error callback with an error code.
+   */
+  onGetActionsRequested(options, onSuccess, onError) {
+    if (options.fileSystemId !== this.fileSystemId) {
+      onError(chrome.fileSystemProvider.ProviderError.SECURITY);
+      return;
+    }
+
+    if (options.entryPaths.indexOf(
+            '/' + TestFileSystemProvider.DIR_WITH_NO_ACTIONS) !== -1) {
+      onSuccess([]);
+      return;
+    }
+
+    if (options.entryPaths.indexOf(
+            '/' + TestFileSystemProvider.DIR_WITH_ACTIONS) !== -1) {
+      onSuccess(TestFileSystemProvider.ACTIONS);
+      return;
+    }
+
+    onError(chrome.fileSystemProvider.ProviderError.NOT_FOUND);
   }
 
   /**
@@ -978,6 +1038,37 @@ export class TestFileSystemProvider {
   };
 
   /**
+   * FSP: implementation for truncating a file to the specified length.
+   *
+   * @param {!chrome.fileSystemProvider.TruncateRequestedOptions} options
+   *     Options.
+   * @param {function()} onSuccess Success callback.
+   * @param {function(string)} onError Error callback.
+   */
+  onTruncateRequested(options, onSuccess, onError) {
+    if (options.fileSystemId !== this.fileSystemId) {
+      onError(chrome.fileSystemProvider.ProviderError.SECURITY);
+      return;
+    }
+
+    let entry = this.findEntryByPath(options.filePath);
+    if (!entry) {
+      onError(chrome.fileSystemProvider.ProviderError.NOT_FOUND);
+      return;
+    }
+
+    // Truncating beyond the end of the file.
+    if (options.length > entry.metadata.size) {
+      onError(chrome.fileSystemProvider.ProviderError.INVALID_OPERATION);
+      return;
+    }
+
+    entry.metadata.size = options.length;
+    onSuccess();
+  }
+
+
+  /**
    * FSP: requests to mount this filesystem.
    *
    * @param {function()} onSuccess Success callback.
@@ -1116,6 +1207,18 @@ export class TestFileSystemProvider {
     onSuccess();
   }
 };
+
+/**
+ * @type {string}
+ * @const
+ */
+TestFileSystemProvider.DIR_WITH_ACTIONS = 'actions';
+
+/**
+ * @type {string}
+ * @const
+ */
+TestFileSystemProvider.DIR_WITH_NO_ACTIONS = 'no-actions';
 
 /**
  * @type {string}
@@ -1264,11 +1367,18 @@ TestFileSystemProvider.VALID_THUMBNAIL =
  */
 TestFileSystemProvider.ACTION_ID = 'test-action-id';
 
+/**
+ * @type {Array<Object>}
+ * @const
+ */
+TestFileSystemProvider.ACTIONS = Object.freeze(
+    [{id: 'SHARE'}, {id: 'SomeCustomAction', title: 'Do something custom'}]);
+
 // Service worker entry point.
 export function serviceWorkerMain(serviceWorker) {
   const provider =
       new TestFileSystemProvider(TestFileSystemProvider.FILESYSTEM_ID);
 
   provider.setUpProviderListeners();
-  provider.setUpCommandListener(serviceWorker);
+  provider.setUpCommandListener();
 }

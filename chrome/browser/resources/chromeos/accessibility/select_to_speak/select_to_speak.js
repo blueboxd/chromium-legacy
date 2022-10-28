@@ -29,9 +29,6 @@ const SelectToSpeakState = chrome.accessibilityPrivate.SelectToSpeakState;
 const GSUITE_APP_REGEXP =
     /^https:\/\/docs\.(?:sandbox\.)?google\.com\/(?:(?:presentation)|(?:document)|(?:spreadsheets)|(?:drawings)){1}\//;
 
-// Settings key for system speech rate setting.
-const SPEECH_RATE_KEY = 'settings.tts.speech_rate';
-
 /**
  * Determines if a node is in one of the known Google GSuite apps that needs
  * special case treatment for speaking selected text. Not all Google GSuite
@@ -172,9 +169,6 @@ export class SelectToSpeak {
      */
     this.supportsNavigationPanel_ = true;
 
-    /** @private {number} Default speech rate set in system settings. */
-    this.systemSpeechRate_ = 1.0;
-
     /** @private {!TtsManager} */
     this.ttsManager_ = new TtsManager();
 
@@ -223,12 +217,23 @@ export class SelectToSpeak {
           this.enhancedVoicesFlag_ = result;
         });
 
-    chrome.settingsPrivate.getPref(SPEECH_RATE_KEY, pref => {
-      if (!pref) {
-        return;
-      }
-      this.systemSpeechRate_ = /** @type {number} */ (pref.value);
-    });
+    const contextMenuOptionFeature =
+        chrome.accessibilityPrivate.AccessibilityFeature
+            .SELECT_TO_SPEAK_CONTEXT_MENU_OPTION;
+    chrome.accessibilityPrivate.isFeatureEnabled(
+        contextMenuOptionFeature, enabled => {
+          if (enabled) {
+            chrome.contextMenus.create({
+              title: chrome.i18n.getMessage(
+                  'select_to_speak_listen_context_menu_option_text'),
+              contexts: ['selection'],
+              onclick: () => {
+                chrome.automation.getFocus(
+                    focusedNode => this.requestSpeakSelectedText_(focusedNode));
+              },
+            });
+          }
+        });
   }
 
   /**
@@ -266,7 +271,7 @@ export class SelectToSpeak {
 
   /**
    * Called in response to our hit test after the mouse is released,
-   * when the user is in a mode where select-to-speak is capturing
+   * when the user is in a mode where Select-to-speak is capturing
    * mouse events (for example holding down Search).
    * @param {!AutomationEvent} evt The automation event.
    * @private
@@ -326,18 +331,41 @@ export class SelectToSpeak {
    * @private
    */
   requestSpeakSelectedText_(focusedNode) {
-    // If nothing is selected, return early.
-    if (!focusedNode || !focusedNode.root ||
-        !focusedNode.root.selectionStartObject ||
-        !focusedNode.root.selectionEndObject) {
+    // If nothing is selected, return early. Check if the focused node has
+    // textSelStart and textSelEnd. For native UI like the omnibox, the root
+    // might not have a selectionStartObject and selectionEndObject. Therefore
+    // we must check textSelStart and textSelEnd on the focused node.
+    if (!focusedNode || !focusedNode.root) {
+      this.onNullSelection_();
+      return;
+    }
+    const hasSelectionObjects = focusedNode.root.selectionStartObject &&
+        focusedNode.root.selectionEndObject;
+    const hasTextSelection = focusedNode.textSelStart !== undefined &&
+        focusedNode.textSelEnd !== undefined;
+    if (!hasSelectionObjects && !hasTextSelection) {
       this.onNullSelection_();
       return;
     }
 
-    const startObject = focusedNode.root.selectionStartObject;
-    const startOffset = focusedNode.root.selectionStartOffset || 0;
-    const endObject = focusedNode.root.selectionEndObject;
-    const endOffset = focusedNode.root.selectionEndOffset || 0;
+    let startObject;
+    let startOffset;
+    let endObject;
+    let endOffset;
+    // Use selectionStartObject/selectionEndObject if available. Otherwise,
+    // use textSelStart/textSelEnd to get the selection offset.
+    if (hasSelectionObjects) {
+      startObject = focusedNode.root.selectionStartObject;
+      startOffset = focusedNode.root.selectionStartOffset || 0;
+      endObject = focusedNode.root.selectionEndObject;
+      endOffset = focusedNode.root.selectionEndOffset || 0;
+    } else if (hasTextSelection) {
+      startObject = focusedNode;
+      startOffset = focusedNode.textSelStart || 0;
+      endObject = focusedNode;
+      endOffset = focusedNode.textSelEnd || 0;
+    }
+
     if (startObject === endObject && startOffset === endOffset) {
       this.onNullSelection_();
       return;
@@ -406,7 +434,13 @@ export class SelectToSpeak {
       firstPosition, lastPosition, userRequested, focusedNode) {
     const nodes = [];
     let selectedNode = firstPosition.node;
-    if (selectedNode.name && firstPosition.offset < selectedNode.name.length &&
+
+    // Certain nodes such as omnibox store text value in the value property,
+    // instead of the name property. The getNodeName method in ParagraphUtils
+    // does handle this case properly, so use this static method to get text
+    // from either `name' or `value' of the node.
+    const nodeName = ParagraphUtils.getNodeName(selectedNode);
+    if (nodeName && firstPosition.offset < nodeName.length &&
         !NodeUtils.shouldIgnoreNode(
             selectedNode, /* include offscreen */ true) &&
         !NodeUtils.isNotSelectable(selectedNode)) {
@@ -775,8 +809,6 @@ export class SelectToSpeak {
     });
     this.inputHandler_.setUpEventListeners();
 
-    chrome.settingsPrivate.onPrefsChanged.addListener(
-        prefs => this.onPrefsChanged_(prefs));
     // Initialize the state to SelectToSpeakState.INACTIVE.
     chrome.accessibilityPrivate.setSelectToSpeakState(this.state_);
   }
@@ -868,18 +900,6 @@ export class SelectToSpeak {
       this.pause_().then(() => {
         this.resume_();
       });
-    }
-  }
-
-  /**
-   * Handles system preferences change.
-   * @param {!Array<!Object>} prefs
-   * @private
-   */
-  onPrefsChanged_(prefs) {
-    const ratePref = prefs.find(pref => pref.key === SPEECH_RATE_KEY);
-    if (ratePref) {
-      this.systemSpeechRate_ = ratePref.value;
     }
   }
 
@@ -1063,16 +1083,24 @@ export class SelectToSpeak {
           isFirstNodeGroup && startCharIndex !== undefined;
       const firstNodeHasInlineText =
           nodeGroup.nodes.length > 0 && nodeGroup.nodes[0].hasInlineText;
-      if (shouldApplyStartOffset && firstNodeHasInlineText) {
-        // We assume that the start offset will only be applied to the first
-        // node in the first NodeGroup. The |startCharIndex| needs to be
-        // adjusted. The first node of the NodeGroup may not be at the beginning
-        // of the parent of the NodeGroup. (e.g., an inlineText in its
-        // staticText parent). Thus, we need to adjust the start index.
-        const startIndexInNodeParent =
-            ParagraphUtils.getStartCharIndexInParent(nodes[0]);
-        const startIndexInNodeGroup = startCharIndex + startIndexInNodeParent +
-            nodeGroup.nodes[0].startChar;
+      if (shouldApplyStartOffset) {
+        let startIndexInNodeGroup;
+        if (firstNodeHasInlineText) {
+          // We assume that the start offset will only be applied to the first
+          // node in the first NodeGroup. The |startCharIndex| needs to be
+          // adjusted. The first node of the NodeGroup may not be at the
+          // beginning of the parent of the NodeGroup. (e.g., an inlineText in
+          // its staticText parent). Thus, we need to adjust the start index.
+          const startIndexInNodeParent =
+              ParagraphUtils.getStartCharIndexInParent(nodes[0]);
+          startIndexInNodeGroup = startCharIndex + startIndexInNodeParent +
+              nodeGroup.nodes[0].startChar;
+        } else {
+          // Text field such as omnibox doesn't have inline text, but text in
+          // the value property. In case the user selects some text within, we
+          // need to adjust |startCharIndex| accordingly.
+          startIndexInNodeGroup = startCharIndex + nodeGroup.nodes[0].startChar;
+        }
         this.applyOffset(
             nodeGroup, startIndexInNodeGroup, true /* isStartOffset */);
       }
@@ -1084,14 +1112,23 @@ export class SelectToSpeak {
           isLastNodeGroup && endCharIndex !== undefined;
       const lastNodeHasInlineText = nodeGroup.nodes.length > 0 &&
           nodeGroup.nodes[nodeGroup.nodes.length - 1].hasInlineText;
-      if (shouldApplyEndOffset && lastNodeHasInlineText) {
-        // We assume that the end offset will only be applied to the last node
-        // in the last NodeGroup. Similarly, |endCharIndex| needs to be
-        // adjusted.
-        const startIndexInNodeParent =
-            ParagraphUtils.getStartCharIndexInParent(nodes[i]);
-        const endIndexInNodeGroup = endCharIndex + startIndexInNodeParent +
-            nodeGroup.nodes[nodeGroup.nodes.length - 1].startChar;
+      if (shouldApplyEndOffset) {
+        let endIndexInNodeGroup;
+        if (lastNodeHasInlineText) {
+          // We assume that the end offset will only be applied to the last
+          // node in the last NodeGroup. Similarly, |endCharIndex| needs to be
+          // adjusted.
+          const startIndexInNodeParent =
+              ParagraphUtils.getStartCharIndexInParent(nodes[i]);
+          endIndexInNodeGroup = endCharIndex + startIndexInNodeParent +
+              nodeGroup.nodes[nodeGroup.nodes.length - 1].startChar;
+        } else {
+          // Text field such as omnibox doesn't have inline text, but text in
+          // the value property. In case the user selects some text within, we
+          // need to adjust |endCharIndex| accordingly.
+          endIndexInNodeGroup = endCharIndex +
+              nodeGroup.nodes[nodeGroup.nodes.length - 1].startChar;
+        }
         this.applyOffset(
             nodeGroup, endIndexInNodeGroup, false /* isStartOffset */);
       }
@@ -1676,8 +1713,8 @@ export class SelectToSpeak {
    * @private
    */
   getSpeechRate_() {
-    // Multiply default system rate with user-selected multiplier.
-    const rate = this.systemSpeechRate_ * this.speechRateMultiplier_;
+    // Multiply default speech rate with user-selected multiplier.
+    const rate = this.prefsManager_.speechRate() * this.speechRateMultiplier_;
     // Then round to the nearest tenth (ex. 1.799999 becomes 1.8).
     return Math.round(rate * 10) / 10;
   }

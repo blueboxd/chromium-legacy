@@ -469,7 +469,7 @@ StyleSelfAlignmentData ComputedStyle::ResolvedAlignSelf(
     const ComputedStyle* parent_style) const {
   // We will return the behaviour of 'normal' value if needed, which is specific
   // of each layout model.
-  if (!parent_style || AlignSelfPosition() != ItemPosition::kAuto)
+  if (!parent_style || AlignSelf().GetPosition() != ItemPosition::kAuto)
     return ResolvedSelfAlignment(AlignSelf(), normal_value_behaviour);
 
   // The 'auto' keyword computes to the parent's align-items computed value.
@@ -488,7 +488,7 @@ StyleSelfAlignmentData ComputedStyle::ResolvedJustifySelf(
     const ComputedStyle* parent_style) const {
   // We will return the behaviour of 'normal' value if needed, which is specific
   // of each layout model.
-  if (!parent_style || JustifySelfPosition() != ItemPosition::kAuto)
+  if (!parent_style || JustifySelf().GetPosition() != ItemPosition::kAuto)
     return ResolvedSelfAlignment(JustifySelf(), normal_value_behaviour);
 
   // The auto keyword computes to the parent's justify-items computed value.
@@ -1443,12 +1443,13 @@ void ComputedStyle::ApplyTransform(
   if (apply_transform_origin ||
       // We need to calculate originX and originY for applying motion path.
       apply_motion_path == kIncludeMotionPath) {
-    origin_x = FloatValueForLength(TransformOriginX(), box_size.width()) +
+    origin_x = FloatValueForLength(GetTransformOrigin().X(), box_size.width()) +
                bounding_box.x();
-    origin_y = FloatValueForLength(TransformOriginY(), box_size.height()) +
-               bounding_box.y();
+    origin_y =
+        FloatValueForLength(GetTransformOrigin().Y(), box_size.height()) +
+        bounding_box.y();
     if (apply_transform_origin) {
-      origin_z = TransformOriginZ();
+      origin_z = GetTransformOrigin().Z();
       result.Translate3d(origin_x, origin_y, origin_z);
     }
   }
@@ -2418,25 +2419,6 @@ void ComputedStyle::RestoreParentTextDecorations(
   }
 }
 
-void ComputedStyle::ClearMultiCol() {
-  SetColumnGap(ComputedStyleInitialValues::InitialColumnGap());
-  SetColumnWidthInternal(ComputedStyleInitialValues::InitialColumnWidth());
-  SetColumnRuleStyle(ComputedStyleInitialValues::InitialColumnRuleStyle());
-  SetColumnRuleWidthInternal(
-      LayoutUnit(ComputedStyleInitialValues::InitialColumnRuleWidth()));
-  SetColumnRuleColorInternal(
-      ComputedStyleInitialValues::InitialColumnRuleColor());
-  SetInternalVisitedColumnRuleColorInternal(
-      ComputedStyleInitialValues::InitialInternalVisitedColumnRuleColor());
-  SetColumnCountInternal(ComputedStyleInitialValues::InitialColumnCount());
-  SetHasAutoColumnCountInternal(
-      ComputedStyleInitialValues::InitialHasAutoColumnCount());
-  SetHasAutoColumnWidthInternal(
-      ComputedStyleInitialValues::InitialHasAutoColumnWidth());
-  ResetColumnFill();
-  ResetColumnSpan();
-}
-
 StyleColor ComputedStyle::DecorationColorIncludingFallback(
     bool visited_link) const {
   StyleColor style_color = visited_link ? InternalVisitedTextDecorationColor()
@@ -2511,11 +2493,6 @@ bool ComputedStyle::ShouldForceColor(const StyleColor& unforced_color) const {
   return InForcedColorsMode() &&
          ForcedColorAdjust() == EForcedColorAdjust::kAuto &&
          !unforced_color.IsSystemColorIncludingDeprecated();
-}
-
-bool ComputedStyle::ShouldPreserveParentColor() const {
-  return InForcedColorsMode() &&
-         ForcedColorAdjust() == EForcedColorAdjust::kPreserveParentColor;
 }
 
 void ComputedStyle::SetMarginStart(const Length& margin) {

@@ -12,10 +12,10 @@
 #include "base/timer/timer.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/trusted_vault/trusted_vault_connection.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace sync_pb {
 class LocalTrustedVaultDegradedRecoverabilityState;
+enum DegradedRecoverabilityValue : int;
 }  // namespace sync_pb
 
 namespace syncer {
@@ -50,12 +50,14 @@ class TrustedVaultDegradedRecoverabilityHandler {
   ~TrustedVaultDegradedRecoverabilityHandler();
 
   void HintDegradedRecoverabilityChanged();
+  // TODO(crbug.com/1247990): The accessibility of the following three functions
+  // should be changed to be private.
   void StartLongIntervalRefreshing();
   void StartShortIntervalRefreshing();
   void RefreshImmediately();
+  void Start();
 
  private:
-  void Start();
   void Refresh();
   void OnRecoverabilityIsDegradedDownloaded(
       TrustedVaultRecoverabilityStatus status);
@@ -69,7 +71,7 @@ class TrustedVaultDegradedRecoverabilityHandler {
   // `current_refresh_period_` delay has elapsed.
   base::OneShotTimer next_refresh_timer_;
   base::TimeDelta current_refresh_period_;
-  bool is_recoverability_degraded_;
+  sync_pb::DegradedRecoverabilityValue degraded_recoverability_value_;
   // The last time Refresh has executed, it's initially null until the first
   // Refresh() execution.
   base::TimeTicks last_refresh_time_;

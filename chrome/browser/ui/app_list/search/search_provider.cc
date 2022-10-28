@@ -26,29 +26,11 @@ void SearchProvider::Add(std::unique_ptr<ChromeSearchResult> result) {
 // interface.
 
 void SearchProvider::SwapResults(Results* new_results) {
-  if (app_list_features::IsCategoricalSearchEnabled()) {
-    Results results;
-    results.swap(*new_results);
-    if (search_controller_)
-      search_controller_->SetResults(this, std::move(results));
-    FireResultChanged();
-  } else {
-    results_.swap(*new_results);
-    FireResultChanged();
-  }
-}
-
-void SearchProvider::ClearResults() {
-  if (!app_list_features::IsCategoricalSearchEnabled()) {
-    results_.clear();
-    FireResultChanged();
-  }
-}
-
-void SearchProvider::ClearResultsSilently() {
-  if (!app_list_features::IsCategoricalSearchEnabled()) {
-    results_.clear();
-  }
+  Results results;
+  results.swap(*new_results);
+  if (search_controller_)
+    search_controller_->SetResults(this, std::move(results));
+  FireResultChanged();
 }
 
 void SearchProvider::FireResultChanged() {
@@ -56,10 +38,6 @@ void SearchProvider::FireResultChanged() {
     return;
 
   result_changed_callback_.Run();
-}
-
-bool SearchProvider::ShouldBlockZeroState() const {
-  return false;
 }
 
 }  // namespace app_list

@@ -72,6 +72,7 @@
 <translation id="1567064801249837505">Mga Album</translation>
 <translation id="1572585716423026576">Itakda bilang wallpaper</translation>
 <translation id="1578784163189013834">Pumili ng background ng screen saver</translation>
+<translation id="160633243685262989">Larawan ng Preview</translation>
 <translation id="1615335640928990664">Paggamit ng data simula noong <ph name="FRIENDLY_DATE" /></translation>
 <translation id="1621067168122174824">Patakbuhin ang pagsusuri sa Pag-charge</translation>
 <translation id="1639239467298939599">Naglo-load</translation>
@@ -672,6 +673,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="7535791657097741517">I-on ang maliwanag na tema</translation>
 <translation id="7550715992156305117">Mga Diagnostic na Routine</translation>
 <translation id="7551123448725492271">Audio device ang device.</translation>
+<translation id="7559239713112547082">I-preview ang Screenshot</translation>
 <translation id="7561454561030345039">Pinapamahalaan ng iyong administrator ang pagkilos na ito.</translation>
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7570674786725311828">USB na touchscreen</translation>
@@ -790,7 +792,6 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">Wallpaper</translation>
 <translation id="8834539327799336565">Kasalukuyang nakakonekta</translation>
-<translation id="8841375032071747811">Button na Bumalik</translation>
 <translation id="8845001906332463065">Humingi ng tulong</translation>
 <translation id="8855781559874488009">Hindi makakonekta sa pamamagitan ng firewall sa mga HTTP na website</translation>
 <translation id="885701979325669005">Storage</translation>

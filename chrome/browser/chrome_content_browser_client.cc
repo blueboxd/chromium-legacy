@@ -1493,8 +1493,7 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       policy::policy_prefs::kIsolatedAppsDeveloperModeAllowed, true);
 
-  // TODO(crbug.com/1277431): Disable it by default in M109.
-  registry->RegisterBooleanPref(policy::policy_prefs::kEventPathEnabled, true);
+  registry->RegisterBooleanPref(policy::policy_prefs::kEventPathEnabled, false);
 
   registry->RegisterBooleanPref(
       prefs::kStrictMimetypeCheckForWorkerScriptsEnabled, true);
@@ -2131,7 +2130,7 @@ size_t ChromeContentBrowserClient::GetProcessCountToIgnoreForLimit() {
 }
 
 absl::optional<blink::ParsedPermissionsPolicy>
-ChromeContentBrowserClient::GetPermissionsPolicyForIsolatedApp(
+ChromeContentBrowserClient::GetPermissionsPolicyForIsolatedWebApp(
     content::BrowserContext* browser_context,
     const url::Origin& app_origin) {
 #if !BUILDFLAG(IS_ANDROID)
@@ -2294,11 +2293,6 @@ bool ChromeContentBrowserClient::ShouldUrlUseApplicationIsolationLevel(
     content::BrowserContext* browser_context,
     const GURL& url) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (url.SchemeIs(extensions::kExtensionScheme)) {
-    return !!extensions::ExtensionRegistry::Get(browser_context)
-                 ->enabled_extensions()
-                 .GetExtensionOrAppByURL(url);
-  }
   if (content::SiteIsolationPolicy::IsApplicationIsolationLevelEnabled()) {
     // TODO(crbug.com/1363756): Remove the GetStorageIsolationKey call.
     Profile* profile = Profile::FromBrowserContext(browser_context);
@@ -2310,7 +2304,21 @@ bool ChromeContentBrowserClient::ShouldUrlUseApplicationIsolationLevel(
   return false;
 }
 
-bool ChromeContentBrowserClient::IsIsolatedAppsDeveloperModeAllowed(
+bool ChromeContentBrowserClient::IsIsolatedContextAllowedForUrl(
+    content::BrowserContext* browser_context,
+    const GURL& lock_url) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Allow restricted context APIs in Chrome Apps.
+  auto* extension = extensions::ExtensionRegistry::Get(browser_context)
+                        ->enabled_extensions()
+                        .GetExtensionOrAppByURL(lock_url);
+  return extension && extension->is_platform_app();
+#else
+  return false;
+#endif
+}
+
+bool ChromeContentBrowserClient::IsIsolatedWebAppsDeveloperModeAllowed(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   return profile &&
@@ -2596,13 +2604,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
             prefs->GetBoolean(policy::policy_prefs::kEventPathEnabled)
                 ? blink::switches::kEventPathPolicy_ForceEnable
                 : blink::switches::kEventPathPolicy_ForceDisable);
-      } else if (chrome::GetChannel() < version_info::Channel::BETA) {
-        // When its Enterprise Policy is unspecified, disable Event.path by
-        // default on Canary and Dev to help the deprecation and removal.
-        // See crbug.com/1277431 for more details.
-        command_line->AppendSwitchASCII(
-            blink::switches::kEventPathPolicy,
-            blink::switches::kEventPathPolicy_ForceDisable);
       }
 
       // The IntensiveWakeUpThrottling feature is typically managed via a
@@ -3785,6 +3786,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
       web_prefs->force_dark_mode_enabled =
           delegate->IsForceDarkWebContentEnabled();
+
+      web_prefs->modal_context_menu = delegate->IsModalContextMenu();
     }
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -6378,11 +6381,13 @@ void ChromeContentBrowserClient::AugmentNavigationDownloadPolicy(
   }
 }
 
-std::vector<blink::mojom::EpochTopicPtr>
-ChromeContentBrowserClient::GetBrowsingTopicsForJsApi(
+bool ChromeContentBrowserClient::HandleTopicsWebApi(
     const url::Origin& context_origin,
     content::RenderFrameHost* main_frame,
-    bool observe) {
+    browsing_topics::ApiCallerSource caller_source,
+    bool get_topics,
+    bool observe,
+    std::vector<blink::mojom::EpochTopicPtr>& topics) {
   browsing_topics::BrowsingTopicsService* browsing_topics_service =
       browsing_topics::BrowsingTopicsServiceFactory::GetForProfile(
           Profile::FromBrowserContext(
@@ -6392,8 +6397,8 @@ ChromeContentBrowserClient::GetBrowsingTopicsForJsApi(
   if (!browsing_topics_service)
     return {};
 
-  return browsing_topics_service->GetBrowsingTopicsForJsApi(
-      context_origin, main_frame, observe);
+  return browsing_topics_service->HandleTopicsWebApi(
+      context_origin, main_frame, caller_source, get_topics, observe, topics);
 }
 
 bool ChromeContentBrowserClient::IsBluetoothScanningBlocked(
@@ -6457,7 +6462,7 @@ bool ChromeContentBrowserClient::IsClipboardPasteAllowed(
 
   // Paste requires either (1) user activation, ...
   if (WebContents::FromRenderFrameHost(render_frame_host)
-          ->HasRecentInteractiveInputEvent()) {
+          ->HasRecentInteraction()) {
     return true;
   }
 
@@ -6704,8 +6709,6 @@ bool ChromeContentBrowserClient::SetupEmbedderSandboxParameters(
 
     CHECK(client->SetParameter(sandbox::policy::kParamScreenAiComponentPath,
                                screen_ai_component_dir.value()));
-    CHECK(client->SetBooleanParameter(sandbox::policy::kParamScreenAiDebugMode,
-                                      features::IsScreenAIDebugModeEnabled()));
 
     return true;
 #endif

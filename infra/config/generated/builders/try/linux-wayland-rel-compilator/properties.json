@@ -23,8 +23,7 @@
               },
               "legacy_gclient_config": {
                 "apply_configs": [
-                  "use_clang_coverage",
-                  "enable_reclient"
+                  "use_clang_coverage"
                 ],
                 "config": "chromium"
               }
@@ -50,8 +49,7 @@
               },
               "legacy_gclient_config": {
                 "apply_configs": [
-                  "use_clang_coverage",
-                  "enable_reclient"
+                  "use_clang_coverage"
                 ],
                 "config": "chromium"
               },
@@ -87,8 +85,7 @@
     "enable_ats": true,
     "jobs": 150,
     "rpc_extra_params": "?prod",
-    "server_host": "goma.chromium.org",
-    "use_luci_auth": true
+    "server_host": "goma.chromium.org"
   },
   "$build/reclient": {
     "instance": "rbe-chromium-untrusted",

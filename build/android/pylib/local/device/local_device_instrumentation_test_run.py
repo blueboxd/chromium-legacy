@@ -647,9 +647,7 @@ class LocalDeviceInstrumentationTestRun(
             batch_name += '|cmd_line_remove:' + ','.join(
                 sorted(annotations['CommandLineFlags$Remove']['value']))
 
-        if not batch_name in batched_tests:
-          batched_tests[batch_name] = []
-        batched_tests[batch_name].append(test)
+        batched_tests.setdefault(batch_name, []).append(test)
       else:
         other_tests.append(test)
 
@@ -993,7 +991,7 @@ class LocalDeviceInstrumentationTestRun(
 
     # Handle failures by:
     #   - optionally taking a screenshot
-    #   - logging the raw output at INFO level
+    #   - logging the raw output at ERROR level
     #   - clearing the application state while persisting permissions
     if any(r.GetType() not in (base_test_result.ResultType.PASS,
                                base_test_result.ResultType.SKIP)
@@ -1001,9 +999,9 @@ class LocalDeviceInstrumentationTestRun(
       self._SaveScreenshot(device, screenshot_device_file, test_display_name,
                            results, 'post_test_screenshot')
 
-      logging.info('detected failure in %s. raw output:', test_display_name)
+      logging.error('detected failure in %s. raw output:', test_display_name)
       for l in output:
-        logging.info('  %s', l)
+        logging.error('  %s', l)
       if not self._env.skip_clear_data:
         if self._test_instance.package_info:
           permissions = (self._test_instance.apk_under_test.GetPermissions()

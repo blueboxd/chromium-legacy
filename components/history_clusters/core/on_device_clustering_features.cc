@@ -26,10 +26,6 @@ BASE_FEATURE(kUseEngagementScoreCache,
              "JourneysUseEngagementScoreCache",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSplitClusteringTasksToSmallerBatches,
-             "JourneysSplitClusteringTasksToSmallerBatches",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kOnDeviceClusteringBlocklists,
              "JourneysOnDeviceClusteringBlocklist",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -40,6 +36,10 @@ BASE_FEATURE(kOnDeviceClusteringKeywordFiltering,
 
 BASE_FEATURE(kOnDeviceClusteringCategoryFiltering,
              "JourneysCategoryFiltering",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kOnDeviceClusteringVisitRanking,
+             "JourneysOnDeviceClusteringVisitRanking",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

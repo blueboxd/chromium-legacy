@@ -22,7 +22,6 @@ V4L2DecodeSurface::V4L2DecodeSurface(V4L2WritableBufferRef input_buffer,
     : input_buffer_(std::move(input_buffer)),
       output_buffer_(std::move(output_buffer)),
       video_frame_(std::move(frame)),
-      input_record_(input_buffer_.BufferId()),
       output_record_(output_buffer_.BufferId()),
       decoded_(false) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -94,7 +93,8 @@ std::string V4L2DecodeSurface::ToString() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::string out;
-  base::StringAppendF(&out, "Buffer %d -> %d. ", input_record_, output_record_);
+  base::StringAppendF(&out, "Buffer %zu -> %d. ", input_buffer_.BufferId(),
+                      output_record_);
   base::StringAppendF(&out, "Reference surfaces:");
   for (const auto& ref : reference_surfaces_) {
     DCHECK_NE(ref->output_record(), output_record_);
@@ -102,47 +102,6 @@ std::string V4L2DecodeSurface::ToString() const {
   }
   return out;
 }
-
-// ConfigStore is ChromeOS-specific legacy stuff
-#if BUILDFLAG(IS_CHROMEOS)
-void V4L2ConfigStoreDecodeSurface::PrepareSetCtrls(
-    struct v4l2_ext_controls* ctrls) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(ctrls, nullptr);
-  DCHECK_GT(config_store_, 0u);
-
-  ctrls->config_store = config_store_;
-}
-
-uint64_t V4L2ConfigStoreDecodeSurface::GetReferenceID() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Control store uses the output buffer ID as reference.
-  return output_record();
-}
-
-bool V4L2ConfigStoreDecodeSurface::Submit() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_GT(config_store_, 0u);
-
-  input_buffer().SetConfigStore(config_store_);
-
-  if (!std::move(input_buffer()).QueueMMap()) {
-    return false;
-  }
-
-  switch (output_buffer().Memory()) {
-    case V4L2_MEMORY_MMAP:
-      return std::move(output_buffer()).QueueMMap();
-    case V4L2_MEMORY_DMABUF:
-      return std::move(output_buffer()).QueueDMABuf(video_frame());
-    default:
-      NOTREACHED() << "We should only use MMAP or DMABUF.";
-  }
-
-  return false;
-}
-#endif
 
 void V4L2RequestDecodeSurface::PrepareSetCtrls(
     struct v4l2_ext_controls* ctrls) const {

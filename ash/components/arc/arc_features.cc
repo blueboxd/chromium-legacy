@@ -6,6 +6,12 @@
 
 namespace arc {
 
+// Controls whether to always start ARC automatically, or wait for the user's
+// action to start it later in an on-demand manner.
+BASE_FEATURE(kArcOnDemandFeature,
+             "ArcOnDemand",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls ACTION_BOOT_COMPLETED broadcast for third party applications on ARC.
 // When disabled, third party apps will not receive this broadcast.
 BASE_FEATURE(kBootCompletedBroadcastFeature,
@@ -80,6 +86,11 @@ BASE_FEATURE(kEnableVirtioBlkForData,
 // Controls whether to pop up ghost window for ARC app before fixup finishes.
 BASE_FEATURE(kFixupWindowFeature,
              "ArcFixupWindowFeature",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether new UI style for ARC ghost window.
+BASE_FEATURE(kGhostWindowNewStyle,
+             "ArcGhostWindowNewStyle",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Used for overriding config params for the virtio-blk feature above.

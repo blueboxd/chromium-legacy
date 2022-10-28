@@ -83,23 +83,6 @@ class CORE_EXPORT NGExclusionSpaceInternal final {
         .AllLayoutOpportunities(offset, available_inline_size);
   }
 
-  LayoutUnit ClearanceOffset(EFloat float_type, EClear clear_type) const {
-    return std::max(ClearanceOffset(clear_type),
-                    InitialLetterClearanceOffset(float_type));
-  }
-
-  LayoutUnit InitialLetterClearanceOffset(EFloat float_type) const {
-    if (float_type == EFloat::kLeft)
-      return initial_letter_left_clear_offset_;
-    DCHECK_EQ(float_type, EFloat::kRight);
-    return initial_letter_right_clear_offset_;
-  }
-
-  LayoutUnit InitialLetterClearanceOffset() const {
-    return std::max(initial_letter_left_clear_offset_,
-                    initial_letter_right_clear_offset_);
-  }
-
   LayoutUnit ClearanceOffset(EClear clear_type) const {
     switch (clear_type) {
       case EClear::kNone:
@@ -114,6 +97,30 @@ class CORE_EXPORT NGExclusionSpaceInternal final {
         NOTREACHED();
         return LayoutUnit::Min();
     }
+  }
+
+  LayoutUnit InitialLetterClearanceOffset(EClear clear_type) const {
+    switch (clear_type) {
+      case EClear::kNone:
+        return LayoutUnit::Min();
+      case EClear::kLeft:
+        return initial_letter_left_clear_offset_;
+      case EClear::kRight:
+        return initial_letter_right_clear_offset_;
+      case EClear::kBoth:
+        return std::max(initial_letter_left_clear_offset_,
+                        initial_letter_right_clear_offset_);
+      default:
+        NOTREACHED();
+        return LayoutUnit::Min();
+    }
+  }
+
+  LayoutUnit InitialLetterClearanceOffset(EFloat float_type) const {
+    if (float_type == EFloat::kLeft)
+      return initial_letter_left_clear_offset_;
+    DCHECK_EQ(float_type, EFloat::kRight);
+    return initial_letter_right_clear_offset_;
   }
 
   void SetHasBreakBeforeFloat(EFloat type) {
@@ -144,7 +151,7 @@ class CORE_EXPORT NGExclusionSpaceInternal final {
     }
   }
 
-  bool NeedsClearancePastFragmentainer(EClear type) {
+  bool NeedsClearancePastFragmentainer(EClear type) const {
     bool needs_clearance = false;
     switch (type) {
       default:
@@ -173,6 +180,10 @@ class CORE_EXPORT NGExclusionSpaceInternal final {
     if (has_break_before_left_float_ || has_break_before_right_float_)
       return true;
     return NeedsClearancePastFragmentainer(type);
+  }
+
+  bool HasFragmentainerBreak() const {
+    return NeedsClearancePastFragmentainer(EClear::kBoth);
   }
 
   LayoutUnit LastFloatBlockStart() const { return last_float_block_start_; }
@@ -579,6 +590,10 @@ class CORE_EXPORT NGExclusionSpace {
     return exclusion_space_ && exclusion_space_->NeedsBreakBeforeFloat(type);
   }
 
+  bool HasFragmentainerBreak() const {
+    return exclusion_space_ && exclusion_space_->HasFragmentainerBreak();
+  }
+
   // Returns a layout opportunity, within the BFC.
   // The area to search for layout opportunities is defined by the given offset,
   // and |available_inline_size|. The layout opportunity must be greater than
@@ -612,17 +627,16 @@ class CORE_EXPORT NGExclusionSpace {
                                                     available_inline_size);
   }
 
-  // Returns the clearance offset based on the provided {@code clear_type}.
-  LayoutUnit ClearanceOffset(EFloat float_type, EClear clear_type) const {
-    if (!exclusion_space_)
-      return LayoutUnit::Min();
-    return exclusion_space_->ClearanceOffset(float_type, clear_type);
-  }
-
   LayoutUnit ClearanceOffset(EClear clear_type) const {
     if (!exclusion_space_)
       return LayoutUnit::Min();
     return exclusion_space_->ClearanceOffset(clear_type);
+  }
+
+  LayoutUnit InitialLetterClearanceOffset(EClear clear_type) const {
+    if (!exclusion_space_)
+      return LayoutUnit::Min();
+    return exclusion_space_->InitialLetterClearanceOffset(clear_type);
   }
 
   // Returns the initial letter clearance offset based on the provided
@@ -631,13 +645,6 @@ class CORE_EXPORT NGExclusionSpace {
     if (!exclusion_space_)
       return LayoutUnit::Min();
     return exclusion_space_->InitialLetterClearanceOffset(float_type);
-  }
-
-  // Returns the initial letter clearance offset based on the provided
-  LayoutUnit InitialLetterClearanceOffset() const {
-    if (!exclusion_space_)
-      return LayoutUnit::Min();
-    return exclusion_space_->InitialLetterClearanceOffset();
   }
 
   // Returns the block start offset of the last float added.

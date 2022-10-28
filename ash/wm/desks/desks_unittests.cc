@@ -38,6 +38,7 @@
 #include "ash/style/close_button.h"
 #include "ash/style/color_util.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_util.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_action_context_menu.h"
 #include "ash/wm/desks/desk_action_view.h"
@@ -235,19 +236,6 @@ BackdropController* GetDeskBackdropController(const Desk* desk,
   return layout_manager->backdrop_controller();
 }
 
-// Returns true if |win1| is stacked (not directly) below |win2|.
-bool IsStackedBelow(aura::Window* win1, aura::Window* win2) {
-  DCHECK_NE(win1, win2);
-  DCHECK_EQ(win1->parent(), win2->parent());
-
-  const auto& children = win1->parent()->children();
-  auto win1_iter = base::ranges::find(children, win1);
-  auto win2_iter = base::ranges::find(children, win2);
-  DCHECK(win1_iter != children.end());
-  DCHECK(win2_iter != children.end());
-  return win1_iter < win2_iter;
-}
-
 // Simulate pressing on a desk preview.
 void LongTapOnDeskPreview(const DeskMiniView* desk_mini_view,
                           ui::test::EventGenerator* event_generator) {
@@ -300,12 +288,10 @@ class TestObserver : public DesksController::Observer {
     base::Erase(desks_, desk);
     EXPECT_TRUE(DesksController::Get()->AreDesksBeingModified());
   }
-  void OnDeskReordered(int old_index, int new_index) override {}
   void OnDeskActivationChanged(const Desk* activated,
                                const Desk* deactivated) override {
     EXPECT_TRUE(DesksController::Get()->AreDesksBeingModified());
   }
-  void OnDeskSwitchAnimationLaunching() override {}
   void OnDeskSwitchAnimationFinished() override {
     EXPECT_FALSE(DesksController::Get()->AreDesksBeingModified());
   }
@@ -556,7 +542,7 @@ TEST_P(DesksTest, DesksBarViewDeskCreation) {
   EXPECT_FALSE(desks_bar_view->IsZeroState());
 
   auto* new_desk_button =
-      desks_bar_view->expanded_state_new_desk_button()->inner_button();
+      desks_bar_view->expanded_state_new_desk_button()->GetInnerButton();
   EXPECT_TRUE(new_desk_button->GetEnabled());
 
   auto* scroll_right_button = DesksTestApi::GetDesksBarRightScrollButton();
@@ -613,7 +599,7 @@ TEST_P(DesksTest, DesksBarViewDeskCreation) {
   DCHECK(desks_bar_view);
   EXPECT_EQ(controller->desks().size(), desks_bar_view->mini_views().size());
   EXPECT_TRUE(desks_bar_view->expanded_state_new_desk_button()
-                  ->inner_button()
+                  ->GetInnerButton()
                   ->GetEnabled());
 }
 
@@ -728,7 +714,7 @@ TEST_P(DesksTest, GestureTapOnNewDeskButton) {
   ClickOnView(desks_bar_view->zero_state_default_desk_button(),
               event_generator);
   auto* new_desk_button =
-      desks_bar_view->expanded_state_new_desk_button()->inner_button();
+      desks_bar_view->expanded_state_new_desk_button()->GetInnerButton();
   EXPECT_TRUE(new_desk_button->GetEnabled());
 
   auto* scroll_right_button = DesksTestApi::GetDesksBarRightScrollButton();
@@ -1945,7 +1931,7 @@ TEST_P(DesksTest, NewDeskButtonStateAndColor) {
   const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   const auto* new_desk_button =
-      desks_bar_view->expanded_state_new_desk_button()->inner_button();
+      desks_bar_view->expanded_state_new_desk_button()->GetInnerButton();
   auto* scroll_right_button = DesksTestApi::GetDesksBarRightScrollButton();
 
   // Tests that with one or two desks, the new desk button has an enabled state
@@ -2452,7 +2438,7 @@ TEST_P(DesksEditableNamesTest, EventsThatCommitChanges) {
 
   // Creating a new desk commits the changes.
   auto* new_desk_button =
-      desks_bar_view()->expanded_state_new_desk_button()->inner_button();
+      desks_bar_view()->expanded_state_new_desk_button()->GetInnerButton();
   auto* event_generator = GetEventGenerator();
   ClickOnView(new_desk_button, event_generator);
   ASSERT_EQ(3u, controller()->desks().size());
@@ -4706,7 +4692,7 @@ TEST_P(DesksTest, NameNudges) {
   EXPECT_EQ(1u, desks_bar_view->mini_views().size());
 
   auto* new_desk_button =
-      desks_bar_view->expanded_state_new_desk_button()->inner_button();
+      desks_bar_view->expanded_state_new_desk_button()->GetInnerButton();
   EXPECT_TRUE(new_desk_button->GetEnabled());
 
   // As desks are added, we will scroll the desks bar to keep the "new desk"
@@ -4853,7 +4839,7 @@ TEST_P(DesksTest, ScrollableDesks) {
   EXPECT_EQ(1u, desks_bar_view->mini_views().size());
 
   auto* new_desk_button =
-      desks_bar_view->expanded_state_new_desk_button()->inner_button();
+      desks_bar_view->expanded_state_new_desk_button()->GetInnerButton();
 
   // Set the scroll delta large enough to make sure the desks bar can be
   // scrolled to the end each time.
@@ -5538,7 +5524,7 @@ TEST_P(DesksTest, NewDeskButton) {
   ClickOnView(desks_bar_view->zero_state_default_desk_button(),
               event_generator);
   auto* new_desk_button =
-      desks_bar_view->expanded_state_new_desk_button()->inner_button();
+      desks_bar_view->expanded_state_new_desk_button()->GetInnerButton();
   EXPECT_TRUE(new_desk_button->GetVisible());
   EXPECT_TRUE(new_desk_button->GetEnabled());
 
@@ -8312,7 +8298,7 @@ TEST_P(DesksCloseAllTest, CanAddLastDeskWhileUndoToastIsBeingDisplayed) {
   // The new desk button should be enabled at this point.
   auto* new_desk_button = GetPrimaryRootDesksBarView()
                               ->expanded_state_new_desk_button()
-                              ->inner_button();
+                              ->GetInnerButton();
   ASSERT_TRUE(new_desk_button->GetEnabled());
 
   // Scroll all the way to the right to ensure that the new button is visible.

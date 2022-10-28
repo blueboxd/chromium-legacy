@@ -31,7 +31,7 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
-#include "components/omnibox/browser/match_compare.h"
+#include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -67,39 +67,40 @@ class DestinationURLEqualsURL {
 // matches to process.
 struct ShortcutMatch {
   ShortcutMatch(int relevance,
+                int aggregate_number_of_hits,
                 const GURL& stripped_destination_url,
                 const ShortcutsDatabase::Shortcut* shortcut)
       : relevance(relevance),
+        aggregate_number_of_hits(aggregate_number_of_hits),
         stripped_destination_url(stripped_destination_url),
         shortcut(shortcut),
         contents(shortcut->match_core.contents),
-        type(shortcut->match_core.type) {}
+        type(shortcut->match_core.type) {
+    DCHECK_GE(aggregate_number_of_hits, shortcut->number_of_hits);
+  }
 
   int relevance;
-  // To satisfy |CompareWithDemoteByType<>::operator()|.
-  size_t subrelevance = 0;
+  // The sum of `number_of_hits` of all deduped shortcuts.
+  int aggregate_number_of_hits;
   GURL stripped_destination_url;
   raw_ptr<const ShortcutsDatabase::Shortcut> shortcut;
   std::u16string contents;
   AutocompleteMatch::Type type;
-
-  AutocompleteMatch::Type GetDemotionType() const { return type; }
 };
 
 // Helpers for extracting aggregated factors from a vector of shortcuts.
 const ShortcutsDatabase::Shortcut* ShortestShortcutText(
     std::vector<const ShortcutsDatabase::Shortcut*> shortcuts) {
-  return *base::ranges::min_element(
-      shortcuts, [](auto len1, auto len2) { return len1 < len2; },
-      [](const auto* shortcut) { return shortcut->text.length(); });
+  return *base::ranges::min_element(shortcuts, {}, [](const auto* shortcut) {
+    return shortcut->text.length();
+  });
 }
 
 const ShortcutsDatabase::Shortcut* MostRecentShortcut(
     std::vector<const ShortcutsDatabase::Shortcut*> shortcuts) {
-  return *base::ranges::max_element(
-      shortcuts,
-      [](const auto& time1, const auto& time2) { return time1 < time2; },
-      [](const auto* shortcut) { return shortcut->last_access_time; });
+  return *base::ranges::max_element(shortcuts, {}, [](const auto* shortcut) {
+    return shortcut->last_access_time;
+  });
 }
 
 int SumNumberOfHits(std::vector<const ShortcutsDatabase::Shortcut*> shortcuts) {
@@ -111,15 +112,12 @@ int SumNumberOfHits(std::vector<const ShortcutsDatabase::Shortcut*> shortcuts) {
 
 const ShortcutsDatabase::Shortcut* ShortestShortcutContent(
     std::vector<const ShortcutsDatabase::Shortcut*> shortcuts) {
-  return *base::ranges::min_element(
-      shortcuts, [](auto len1, auto len2) { return len1 < len2; },
-      [](const auto* shortcut) {
-        return shortcut->match_core.contents.length();
-      });
+  return *base::ranges::min_element(shortcuts, {}, [](const auto* shortcut) {
+    return shortcut->match_core.contents.length();
+  });
 }
 
-// Helper for `CalculateScore()` and `CalculateAggregateScore()` to score
-// shortcuts based on their individual or aggregate factors.
+// Helper for `CalculateAggregateScore()` to score shortcuts.
 int CalculateScoreFromFactors(size_t typed_length,
                               size_t shortcut_text_length,
                               const base::Time& last_access_time,
@@ -131,44 +129,34 @@ int CalculateScoreFromFactors(size_t typed_length,
   // Due to appending 3 chars when updating shortcuts, and expanding the last
   // word when updating or creating shortcuts, the shortcut text can be longer
   // than the user's previous inputs (see
-  // `ShortcutsBackend::AddOrUpdateShortcut()`). As an approximation, ignore the
-  // 10 chars in the shortcut text, though this can overestimate or
-  // underestimate the actual previous inputs. Shortcuts are often deduped with
-  // higher scoring history suggestions anyway.
+  // `ShortcutsBackend::AddOrUpdateShortcut()`). As an approximation, ignore 3
+  // or 10 chars in the shortcut text. Shortcuts are often deduped with higher
+  // scoring history suggestions anyway.
   const size_t adjustment =
       OmniboxFieldTrial::IsShortcutExpandingEnabled() ? 10 : 3;
   const size_t adjusted_text_length =
       std::max(shortcut_text_length, typed_length + adjustment) - adjustment;
-  const double typed_fraction =
-      static_cast<double>(typed_length) / adjusted_text_length;
-
   // Using the square root of the typed fraction boosts the base score rapidly
   // as characters are typed, compared with simply using the typed fraction
   // directly. This makes sense since the first characters typed are much more
   // important for determining how likely it is a user wants a particular
   // shortcut than are the remaining continued characters.
-  const double base_score = max_relevance * sqrt(typed_fraction);
+  const double typed_fraction =
+      sqrt(static_cast<double>(typed_length) / adjusted_text_length);
 
-  // Then we decay this by half each week.
-  const double kLn2 = 0.6931471805599453;
-  base::TimeDelta time_passed = base::Time::Now() - last_access_time;
-  // Clamp to 0 in case time jumps backwards (e.g. due to DST).
-  double decay_exponent = std::max(0.0, kLn2 * time_passed / base::Days(7));
+  // Decay score by half each week. Clamp to 0 in case time jumps backwards
+  // (e.g. due to DST).
+  const double halftime_numerator =
+      std::max((base::Time::Now() - last_access_time) / base::Days(7), 0.);
+  // Reduce the decay factor for more used shortcuts. Once used, decay at full
+  // speed; otherwise, decay `n` times slower, where n increases by 0.2 for each
+  // additional hit, up to a maximum of 5.
+  const double halftime_denominator = std::min(.8 + number_of_hits * .2, 5.);
+  const double halftime_decay =
+      pow(.5, halftime_numerator / halftime_denominator);
 
-  // We modulate the decay factor based on how many times the shortcut has been
-  // used. Newly created shortcuts decay at full speed; otherwise, decaying by
-  // half takes |n| times as much time, where n increases by
-  // (1.0 / each 5 additional hits), up to a maximum of 5x as long.
-  const double kMaxDecaySpeedDivisor = 5.0;
-  const double kNumUsesPerDecaySpeedDivisorIncrement = 5.0;
-  const double decay_divisor =
-      std::min(kMaxDecaySpeedDivisor,
-               (number_of_hits + kNumUsesPerDecaySpeedDivisorIncrement - 1) /
-                   kNumUsesPerDecaySpeedDivisorIncrement);
-
-  return base::ClampRound(base_score / exp(decay_exponent / decay_divisor));
+  return base::ClampRound(typed_fraction * halftime_decay * max_relevance);
 }
-
 }  // namespace
 
 const int ShortcutsProvider::kShortcutsProviderDefaultMaxRelevance = 1199;
@@ -277,9 +265,10 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
     shortcuts_by_url[stripped_destination_url].push_back(&shortcut);
   }
 
-  for (auto const& it : shortcuts_by_url) {
-    int relevance =
-        CalculateAggregateScore(term_string, it.second, max_relevance);
+  for (const auto& [url, shortcuts] : shortcuts_by_url) {
+    auto [relevance, number_of_hits] =
+        CalculateAggregateScore(term_string, shortcuts, max_relevance);
+
     // Don't return shortcuts with zero relevance.
     if (relevance) {
       // Pick the shortcut with the shortest content. Picking the shortest
@@ -287,16 +276,31 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
       // text changes as the user types their input for shortcut texts that
       // are prefixes of each other.
       const ShortcutsDatabase::Shortcut* shortcut =
-          ShortestShortcutContent(it.second);
-
+          ShortestShortcutContent(shortcuts);
+      ShortcutMatch shortcut_match = {relevance, number_of_hits, url, shortcut};
       if (shortcut->match_core.type ==
           AutocompleteMatch::Type::HISTORY_CLUSTER) {
-        history_cluster_shortcut_matches.emplace_back(relevance, it.first,
-                                                      shortcut);
+        history_cluster_shortcut_matches.push_back(shortcut_match);
       } else {
-        shortcut_matches.emplace_back(relevance, it.first, shortcut);
+        shortcut_matches.push_back(shortcut_match);
       }
     }
+  }
+
+  static const bool boost_enabled =
+      base::FeatureList::IsEnabled(omnibox::kShortcutBoost);
+  if (!shortcut_matches.empty() && boost_enabled) {
+    // Promote the shortcut with most hits to compete for the default slot.
+    // Won't necessarily be the highest scoring shortcut, as scoring also
+    // depends on visit times and input length. Therefore, has to be done before
+    // the partial sort before to ensure the match isn't erased. The match may
+    // be not-allowed-to-be-default, in which case, it'll be competing for top
+    // slot in the URL grouped suggestions.
+    base::ranges::max_element(shortcut_matches, {},
+                              [](const auto& shortcut_match) {
+                                return shortcut_match.aggregate_number_of_hits;
+                              })
+        ->relevance = HistoryURLProvider::kScoreForBestInlineableResult + 1;
   }
 
   // Find best matches.
@@ -495,7 +499,7 @@ ShortcutsBackend::ShortcutMap::const_iterator ShortcutsProvider::FindFirstMatch(
              : backend->shortcuts_map().end();
 }
 
-int ShortcutsProvider::CalculateAggregateScore(
+std::pair<int, int> ShortcutsProvider::CalculateAggregateScore(
     const std::u16string& terms,
     const std::vector<const ShortcutsDatabase::Shortcut*>& shortcuts,
     int max_relevance) {
@@ -505,7 +509,8 @@ int ShortcutsProvider::CalculateAggregateScore(
   const base::Time& last_access_time =
       MostRecentShortcut(shortcuts)->last_access_time;
   const int number_of_hits = SumNumberOfHits(shortcuts);
-  return CalculateScoreFromFactors(terms.length(), shortest_text_length,
-                                   last_access_time, number_of_hits,
-                                   max_relevance);
+  const int relevance = CalculateScoreFromFactors(
+      terms.length(), shortest_text_length, last_access_time, number_of_hits,
+      max_relevance);
+  return {relevance, number_of_hits};
 }

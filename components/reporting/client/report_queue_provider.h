@@ -103,7 +103,6 @@ class ReportQueueProvider {
   using ReportQueueConfiguredCallback = base::OnceCallback<void(
       StatusOr<std::unique_ptr<ReportQueueConfiguration>>)>;
 
-  explicit ReportQueueProvider(StorageModuleCreateCallback storage_create_cb);
   ReportQueueProvider(const ReportQueueProvider& other) = delete;
   ReportQueueProvider& operator=(const ReportQueueProvider& other) = delete;
   virtual ~ReportQueueProvider();
@@ -131,55 +130,20 @@ class ReportQueueProvider {
   static bool IsEncryptedReportingPipelineEnabled();
 
   // Accessors.
+  base::WeakPtr<ReportQueueProvider> GetWeakPtr();
   scoped_refptr<StorageModuleInterface> storage() const;
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner() const;
 
   // Storage module creator (can be substituted for testing purposes).
   StorageModuleCreateCallback storage_create_cb_;
 
+ protected:
+  ReportQueueProvider(StorageModuleCreateCallback storage_create_cb,
+                      scoped_refptr<base::SequencedTaskRunner> seq_task_runner);
+
  private:
   // Holds the creation request for a ReportQueue.
   class CreateReportQueueRequest;
-
-  // Holds the provider creation state that owns all members guarded by
-  // sequencing. They are separated from `ReportQueueProvider` proper, because
-  // the respective class instance must be deleted on the seq task runner, and
-  // `ReportQueueProvider` instance owners cannot guarantee that.
-  class ProviderState {
-   public:
-    explicit ProviderState(ReportQueueProvider* provider);
-    ~ProviderState();
-
-    // Produce weak pointer to `ReportQueueProvider` (not just `ProviderState`!)
-    base::WeakPtr<ReportQueueProvider> GetWeakPtr();
-
-    // Manipulate requests queue.
-    size_t CountRequests() const;
-    void PushRequest(std::unique_ptr<CreateReportQueueRequest> request);
-    std::unique_ptr<CreateReportQueueRequest> PopRequest();  // null if empty.
-
-    // Get and set Storage.
-    scoped_refptr<StorageModuleInterface> storage() const;
-    void set_storage(scoped_refptr<StorageModuleInterface> storage);
-
-   private:
-    SEQUENCE_CHECKER(sequence_checker_);
-
-    // Queue for storing creation requests while the provider is
-    // initializing.
-    std::queue<std::unique_ptr<CreateReportQueueRequest>> create_request_queue_
-        GUARDED_BY_CONTEXT(sequence_checker_);
-
-    // Storage module associated with the provider. It serves all queues created
-    // by it. `storage_` is null initially and when it becomes non-null, the
-    // provider is ready to create actual queues (speculative queues can be
-    // created before that as well).
-    scoped_refptr<StorageModuleInterface> storage_
-        GUARDED_BY_CONTEXT(sequence_checker_);
-
-    // Weak pointer factory.
-    base::WeakPtrFactory<ReportQueueProvider> weak_ptr_factory_;
-  };
 
   // Finalizes provider, if the initialization process succeeded.
   // May to be overridden by subclass to make more updates to the provider.
@@ -209,11 +173,23 @@ class ReportQueueProvider {
       StatusOr<scoped_refptr<StorageModuleInterface>> storage_result);
 
   // Task runner used for guarding the provider elements.
-  // Respective SEQUENCE_CHECKER belongs to `state_` below.
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
-  // Holds the state of provider, to be destructed on `sequenced_task_runner_`.
-  const std::unique_ptr<ProviderState, base::OnTaskRunnerDeleter> state_;
+  // Queue for storing creation requests while the provider is
+  // initializing.
+  std::queue<std::unique_ptr<CreateReportQueueRequest>> create_request_queue_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // Storage module associated with the provider. It serves all queues created
+  // by it. `storage_` is null initially and when it becomes non-null, the
+  // provider is ready to create actual queues (speculative queues can be
+  // created before that as well).
+  scoped_refptr<StorageModuleInterface> storage_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // Weak pointer factory.
+  base::WeakPtrFactory<ReportQueueProvider> weak_ptr_factory_{this};
 };
 
 }  // namespace reporting

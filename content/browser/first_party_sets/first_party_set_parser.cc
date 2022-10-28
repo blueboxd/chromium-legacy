@@ -212,7 +212,6 @@ base::expected<Aliases, ParseError> ParseCctlds(
 absl::optional<ParseError> ParseSubset(
     const base::Value::Dict& set_declaration,
     const net::SchemefulSite& primary,
-    bool exempt_from_limits,
     const SubsetDescriptor& descriptor,
     const base::flat_set<net::SchemefulSite>& other_sets_sites,
     bool emit_errors,
@@ -231,13 +230,13 @@ absl::optional<ParseError> ParseSubset(
         ParseSiteAndValidate(item, set_entries, other_sets_sites, emit_errors);
     if (!site_or_error.has_value())
       return ParseError(site_or_error.error(), {descriptor.field_name, index});
-    if (exempt_from_limits || !descriptor.size_limit.has_value() ||
+    if (!descriptor.size_limit.has_value() ||
         static_cast<int>(index) < descriptor.size_limit.value()) {
       set_entries.emplace_back(
           site_or_error.value(),
           net::FirstPartySetEntry(
               primary, descriptor.site_type,
-              !exempt_from_limits && descriptor.size_limit.has_value()
+              descriptor.size_limit.has_value()
                   ? absl::make_optional(
                         net::FirstPartySetEntry::SiteIndex(index))
                   : absl::nullopt));
@@ -303,8 +302,11 @@ base::expected<SetsAndAliases, ParseError> ParseSet(
            SubsetDescriptor{
                .field_name = kFirstPartySetAssociatedSitesField,
               .site_type = net::SiteType::kAssociated,
-              .size_limit = absl::make_optional(
-                  features::kFirstPartySetsMaxAssociatedSites.Get()),
+              .size_limit =
+                   exempt_from_limits
+                       ? absl::nullopt
+                       : absl::make_optional(
+                             features::kFirstPartySetsMaxAssociatedSites.Get()),
            },
            {
                .field_name = kFirstPartySetServiceSitesField,
@@ -313,8 +315,8 @@ base::expected<SetsAndAliases, ParseError> ParseSet(
            },
        }) {
     if (absl::optional<ParseError> error =
-            ParseSubset(set_declaration, primary, exempt_from_limits,
-                        descriptor, elements, emit_errors, set_entries);
+            ParseSubset(set_declaration, primary, descriptor, elements,
+                        emit_errors, set_entries);
         error.has_value()) {
       return base::unexpected(error.value());
     }

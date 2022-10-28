@@ -5,6 +5,7 @@
 #import <UIKit/UIKit.h>
 
 #import "base/test/ios/wait_util.h"
+#import "base/time/time.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
@@ -37,7 +38,7 @@ using chrome_test_util::SignOutAccountsButton;
 namespace {
 
 // Constant for timeout while waiting for asynchronous sync operations.
-const NSTimeInterval kSyncOperationTimeout = 10.0;
+constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
 }
 
 // Integration tests using the Account Settings screen.
@@ -238,7 +239,9 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 
 // Tests that selecting sign-out and clear data from a non-managed user account
 // clears the user's synced data.
-- (void)testSignOutAndClearDataFromNonManagedAccountClearsData {
+// TODO(crbug.com/1377798): fails on iPhone SE because the screen is too small
+// to present both the prompt to select and account and the background view.
+- (void)DISABLED_testSignOutAndClearDataFromNonManagedAccountClearsData {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
 
   // Sign In `fakeIdentity`.
@@ -262,7 +265,9 @@ const NSTimeInterval kSyncOperationTimeout = 10.0;
 }
 
 // Tests that signing out from a managed user account clears the user's data.
-- (void)testsSignOutFromManagedAccount {
+// TODO(crbug.com/1377800): fails on iPhone SE because the screen is too small
+// to present both the prompt to select and account and the background view.
+- (void)DISABLED_testsSignOutFromManagedAccount {
   // Sign In `fakeManagedIdentity`.
   [SigninEarlGreyUI
       signinWithFakeIdentity:[FakeSystemIdentity fakeManagedIdentity]];

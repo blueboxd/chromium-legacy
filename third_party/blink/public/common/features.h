@@ -267,8 +267,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLowLatencyCanvas2dImageChromium);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebviewAccelerateSmallCanvases);
 
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCanvas2dStaysGPUOnReadback);
-
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDiscardCodeCacheAfterFirstUse);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCacheCodeOnIdle);
@@ -859,9 +857,35 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDocumentEventNodePathCaching);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kDocumentMaxEventNodePathCachedEntries;
 
-// Whether same-origin different-partition post messages are currently blocked.
+// Whether first-party to third-party different-bucket same-origin post messages
+// are blocked.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
-    kPostMessageDifferentPartitionSameOriginBlocked);
+    kPostMessageFirstPartyToThirdPartyDifferentBucketSameOriginBlocked);
+
+// Whether first-party to third-party different-bucket same-origin post messages
+// are blocked when storage partitioning is enabled.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kPostMessageFirstPartyToThirdPartyDifferentBucketSameOriginBlockedIfStorageIsPartitioned);
+
+// Whether third-party to first-party different-bucket same-origin post messages
+// are blocked.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kPostMessageThirdPartyToFirstPartyDifferentBucketSameOriginBlocked);
+
+// Whether third-party to first-party different-bucket same-origin post messages
+// are blocked when storage partitioning is enabled.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kPostMessageThirdPartyToFirstPartyDifferentBucketSameOriginBlockedIfStorageIsPartitioned);
+
+// Whether third-party to third-party different-bucket same-origin post messages
+// are blocked.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kPostMessageThirdPartyToThirdPartyDifferentBucketSameOriginBlocked);
+
+// Whether third-party to third-party different-bucket same-origin post messages
+// are blocked when storage partitioning is enabled.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kPostMessageThirdPartyToThirdPartyDifferentBucketSameOriginBlockedIfStorageIsPartitioned);
 
 // Combine WebRTC Network and Worker threads. More info at crbug.com/1373439.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcCombinedNetworkAndWorkerThread);
@@ -921,6 +945,13 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAbortSignalHandleBasedRemoval);
 // Forces the attribute powerPreference to be set to "high-performance" for
 // WebGL contexts.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kForceHighPerformanceGPUForWebGL);
+
+// Process device and display capture requests on different queues.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSplitUserMediaQueues);
+
+// Use TextCodecCJK for encoding/decoding CJK except for Big5.
+// If the flag is disabled TextCodecICU would be used instead.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kTextCodecCJKEnabled);
 
 }  // namespace features
 }  // namespace blink

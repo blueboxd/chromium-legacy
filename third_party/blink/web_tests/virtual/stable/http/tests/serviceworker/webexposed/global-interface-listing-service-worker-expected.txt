@@ -414,7 +414,6 @@ interface Event
     getter currentTarget
     getter defaultPrevented
     getter eventPhase
-    getter path
     getter returnValue
     getter srcElement
     getter target
@@ -1075,6 +1074,7 @@ interface PerformanceResourceTiming : PerformanceEntry
     getter requestStart
     getter responseEnd
     getter responseStart
+    getter responseStatus
     getter secureConnectionStart
     getter serverTiming
     getter transferSize

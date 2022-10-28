@@ -59,7 +59,6 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_popup_view.h"
-#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
 #include "ui/views/test/views_test_utils.h"
 
@@ -117,10 +116,6 @@ void ShowAppListNow(AppListViewState state) {
 void DismissAppListNow() {
   Shell::Get()->app_list_controller()->fullscreen_presenter()->Dismiss(
       base::TimeTicks::Now());
-}
-
-aura::Window* GetAppListViewNativeWindow() {
-  return GetAppListView()->GetWidget()->GetNativeView();
 }
 
 void EnableTabletMode() {
@@ -321,47 +316,6 @@ TEST_F(AppListControllerImplTest, VirtualKeyboardNotShownWhenUserStartsTyping) {
   EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
 }
 
-// Verifies that in tablet mode, the AppListView has correct bounds when the
-// virtual keyboard is dismissed (see https://crbug.com/944133).
-TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
-  // This isn't relevant with ProductivityLauncher, which uses separate widgets
-  // in clamshell versus tablet mode. See bug above. Also, the clamshell
-  // launcher closes when transitioning into tablet mode. This test can be
-  // deleted when ProductivityLauncher is the default.
-  if (features::IsProductivityLauncherEnabled())
-    return;
-
-  Shell::Get()->keyboard_controller()->SetEnableFlag(
-      keyboard::KeyboardEnableFlag::kShelfEnabled);
-
-  // Show the AppListView and click on the search box with mouse so the
-  // VirtualKeyboard is shown. Wait until the virtual keyboard shows.
-  ShowAppListNow(AppListViewState::kFullscreenAllApps);
-  GetSearchBoxView()->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
-
-  // Turn on the tablet mode. The virtual keyboard should still show.
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  EXPECT_TRUE(IsTabletMode());
-  EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
-
-  // Close the virtual keyboard. Wait until it is hidden.
-  Shell::Get()->keyboard_controller()->HideKeyboard(HideReason::kUser);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
-
-  // Check the following things:
-  // (1) AppListView's state is FULLSCREEN_SEARCH
-  // (2) AppListView's bounds are the same as the preferred bounds for
-  // the FULLSCREEN_SEARCH state.
-  EXPECT_EQ(AppListViewState::kFullscreenSearch,
-            GetAppListView()->app_list_state());
-  EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
-                AppListViewState::kFullscreenSearch),
-            GetAppListViewNativeWindow()->bounds());
-}
-
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_CloseNotificationWithAppListShown \
   DISABLED_CloseNotificationWithAppListShown
@@ -432,10 +386,10 @@ TEST_F(AppListControllerImplTest,
   auto* widget = views::Widget::GetWidgetForNativeView(window1.get());
   std::unique_ptr<views::Textfield> text_field =
       std::make_unique<views::Textfield>();
-  // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
-  // able to submit accessibility checks, but this focusable View needs to
-  // add a name so that the screen reader knows what to announce.
-  text_field->SetProperty(views::kSkipAccessibilityPaintChecks, true);
+
+  // Focusable views need an accessible name to pass the accessibility paint
+  // checks.
+  text_field->SetAccessibleName(u"Name");
 
   // Note that the bounds of |text_field| cannot be too small. Otherwise, it
   // may not receive the gesture event.
@@ -479,14 +433,9 @@ TEST_F(AppListControllerImplTest,
 // closed.
 TEST_F(AppListControllerImplTest,
        CloseAppListShownFromOverviewAfterTabletExit) {
-  // This test is not relevant for ProductivityLauncher because it uses separate
-  // widgets in clamshell and tablet mode. This test can be deleted when
-  // ProductivityLauncher is the default.
-  if (features::IsProductivityLauncherEnabled())
-    return;
-
   auto* shell = Shell::Get();
   auto* tablet_mode_controller = shell->tablet_mode_controller();
+  auto* controller = Shell::Get()->app_list_controller();
   // Move to tablet mode and back.
   tablet_mode_controller->SetEnabledForTest(true);
   tablet_mode_controller->SetEnabledForTest(false);
@@ -499,19 +448,14 @@ TEST_F(AppListControllerImplTest,
   PressHomeButton();
 
   EXPECT_FALSE(shell->overview_controller()->InOverviewSession());
-  EXPECT_EQ(AppListViewState::kFullscreenAllApps,
-            GetAppListView()->app_list_state());
-  GetAppListTestHelper()->CheckVisibility(true);
-  ASSERT_TRUE(GetAppListView()->GetWidget());
-  EXPECT_TRUE(GetAppListView()->GetWidget()->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(controller->bubble_presenter_for_test()->IsShowing());
+  EXPECT_TRUE(controller->IsVisible());
 
   // Pressing home button again should close the app list.
   PressHomeButton();
 
-  EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());
-  GetAppListTestHelper()->CheckVisibility(false);
-  ASSERT_TRUE(GetAppListView()->GetWidget());
-  EXPECT_FALSE(GetAppListView()->GetWidget()->GetNativeWindow()->IsVisible());
+  EXPECT_FALSE(controller->bubble_presenter_for_test()->IsShowing());
+  EXPECT_FALSE(controller->IsVisible());
 }
 
 // Tests that swapping out an AppListModel (simulating a profile swap with
@@ -691,34 +635,6 @@ TEST_F(AppListControllerImplTest, DragItemFromAppsGridView) {
   // spite that drag is canceled.
   EXPECT_TRUE(shelf_icon_view->GetVisible());
   EXPECT_EQ(1.0f, shelf_icon_view->layer()->opacity());
-}
-
-// Verifies that apps grid and hotseat bounds do not overlap when switching from
-// side shelf app list to tablet mode.
-TEST_F(AppListControllerImplTest, NoOverlapWithHotseatOnSwitchFromSideShelf) {
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
-  Shelf* const shelf = GetPrimaryShelf();
-  shelf->SetAlignment(ShelfAlignment::kRight);
-  ShowAppListNow(AppListViewState::kFullscreenAllApps);
-  ASSERT_EQ(AppListViewState::kFullscreenAllApps,
-            GetAppListView()->app_list_state());
-
-  gfx::Rect apps_grid_view_bounds = GetAppsGridView()->GetBoundsInScreen();
-  EXPECT_FALSE(apps_grid_view_bounds.Intersects(
-      shelf->shelf_widget()->GetWindowBoundsInScreen()));
-  EXPECT_FALSE(apps_grid_view_bounds.Intersects(
-      shelf->hotseat_widget()->GetWindowBoundsInScreen()));
-
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-
-  EXPECT_EQ(AppListViewState::kFullscreenAllApps,
-            GetAppListView()->app_list_state());
-
-  apps_grid_view_bounds = GetAppsGridView()->GetBoundsInScreen();
-  EXPECT_FALSE(apps_grid_view_bounds.Intersects(
-      shelf->shelf_widget()->GetWindowBoundsInScreen()));
-  EXPECT_FALSE(apps_grid_view_bounds.Intersects(
-      shelf->hotseat_widget()->GetWindowBoundsInScreen()));
 }
 
 TEST_F(AppListControllerImplTest, OnlyMinimizeCycleListWindows) {

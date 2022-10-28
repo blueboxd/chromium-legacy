@@ -163,6 +163,8 @@ class MockDemuxer : public Demuxer {
 
   // Demuxer implementation.
   std::string GetDisplayName() const override;
+  DemuxerType GetDemuxerType() const override;
+
   void Initialize(DemuxerHost* host, PipelineStatusCallback cb) override {
     OnInitialize(host, cb);
   }
@@ -345,6 +347,7 @@ class MockVideoEncoder : public VideoEncoder {
               (override));
 
   MOCK_METHOD(void, Flush, (VideoEncoder::EncoderStatusCB done_cb), (override));
+  MOCK_METHOD(void, DisablePostedCallbacks, (), (override));
 
   // A function for mocking destructor calls
   MOCK_METHOD(void, Dtor, ());

@@ -42,7 +42,6 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
-#include "chrome/browser/web_applications/manifest_update_task.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
@@ -285,7 +284,7 @@ class UpdateCheckResultAwaiter {
 
 void WaitForUpdatePendingCallback(const GURL& url) {
   base::RunLoop run_loop;
-  ManifestUpdateTask::SetUpdatePendingCallbackForTesting(
+  ManifestUpdateManager::SetUpdatePendingCallbackForTesting(
       base::BindLambdaForTesting([&](const GURL& update_url) {
         if (url == update_url)
           run_loop.Quit();
@@ -1214,7 +1213,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
 }
 
 // TODO(crbug.com/1342625): Test is flaky.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
 #define MAYBE_CheckDoesFindIconUrlChangeForDefaultApps \
   DISABLED_CheckDoesFindIconUrlChangeForDefaultApps
 #else
@@ -4632,10 +4631,15 @@ std::string GenerateColoredIconList(int installability_icon,
   return "\n    [\n" + icon_list + "    ]\n  ";
 }
 
-// Disabled due to test flakiness: https://crbug.com/1341954
+// Disabled due to test flakiness: https://crbug.com/1341617
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#define MAYBE_CheckCombinations DISABLED_CheckCombinations
+#else
+#define MAYBE_CheckCombinations CheckCombinations
+#endif
 IN_PROC_BROWSER_TEST_P(
     ManifestUpdateManagerBrowserTest_AppIdentityParameterized,
-    CheckCombinations) {
+    MAYBE_CheckCombinations) {
   constexpr char kManifestTemplate[] = R"(
     {
       "name": "$1",
@@ -4646,7 +4650,7 @@ IN_PROC_BROWSER_TEST_P(
     }
   )";
 
-  ManifestUpdateTask::BypassWindowCloseWaitingForTesting() = true;
+  ManifestUpdateManager::BypassWindowCloseWaitingForTesting() = true;
 
   testing::TestParamInfo<
       std::tuple<AppIdTestParam, AppIdTestParam, AppIdTestParam>>
@@ -4981,6 +4985,8 @@ IN_PROC_BROWSER_TEST_P(
 
   EXPECT_EQ(ExpectTitleUpdate() ? "Different app name" : "Test app name",
             GetProvider().registrar().GetAppShortName(app_id));
+
+  ManifestUpdateManager::BypassWindowCloseWaitingForTesting() = false;
 }
 
 INSTANTIATE_TEST_SUITE_P(

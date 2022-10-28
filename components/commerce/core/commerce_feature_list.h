@@ -92,6 +92,10 @@ constexpr base::FeatureParam<base::TimeDelta>
         "shopping-list-bookmark-update-interval",
         base::Hours(6));
 
+// Shopping list revert page action icon on failure.
+extern const char kRevertIconOnFailureParam[];
+extern const base::FeatureParam<bool> kRevertIconOnFailure;
+
 // Feature parameters for ChromeCart on Desktop.
 
 // Whether to use OptimizationGuide to optimize renderer signal collection.
@@ -310,9 +314,6 @@ bool IsFakeDataEnabled();
 bool isContextualConsentEnabled();
 // Check if the shopping list feature is allowed for enterprise.
 bool IsShoppingListAllowedForEnterprise(PrefService* prefs);
-// Check if the shopping list is enabled. This only checks the feature flag and
-// whether the feature is allowed by enterprise policy.
-bool IsShoppingListEnabled(PrefService* prefs);
 
 #if !BUILDFLAG(IS_ANDROID)
 // Get the time delay between discount fetches.

@@ -25,6 +25,7 @@
 #include "chromeos/ash/components/dbus/arc/arc_sensor_service_client.h"
 #include "chromeos/ash/components/dbus/attestation/attestation_client.h"
 #include "chromeos/ash/components/dbus/audio/cras_audio_client.h"
+#include "chromeos/ash/components/dbus/audio/floss_media_client.h"
 #include "chromeos/ash/components/dbus/authpolicy/authpolicy_client.h"
 #include "chromeos/ash/components/dbus/biod/biod_client.h"
 #include "chromeos/ash/components/dbus/cdm_factory_daemon/cdm_factory_daemon_client.h"
@@ -40,7 +41,6 @@
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/ash/components/dbus/easy_unlock/easy_unlock_client.h"
 #include "chromeos/ash/components/dbus/federated/federated_client.h"
-#include "chromeos/ash/components/dbus/fusebox/fusebox_reverse_client.h"
 #include "chromeos/ash/components/dbus/fwupd/fwupd_client.h"
 #include "chromeos/ash/components/dbus/gnubby/gnubby_client.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_clients.h"
@@ -88,6 +88,7 @@
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/dbus/u2f/u2f_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#include "device/bluetooth/floss/floss_dbus_client.h"
 #include "device/bluetooth/floss/floss_dbus_manager.h"
 #include "device/bluetooth/floss/floss_features.h"
 
@@ -163,7 +164,6 @@ void InitializeDBus() {
   InitializeDBusClient<chromeos::DlpClient>(bus);
   InitializeDBusClient<EasyUnlockClient>(bus);
   InitializeDBusClient<FederatedClient>(bus);
-  InitializeDBusClient<FuseBoxReverseClient>(bus);
   InitializeDBusClient<FwupdClient>(bus);
   InitializeDBusClient<GnubbyClient>(bus);
   hermes_clients::Initialize(bus);
@@ -215,6 +215,18 @@ void InitializeFeatureListDependentDBus() {
   dbus::Bus* bus = DBusThreadManager::Get()->GetSystemBus();
   if (floss::features::IsFlossEnabled()) {
     InitializeDBusClient<floss::FlossDBusManager>(bus);
+    if (bus) {
+      int active_adapter =
+          floss::FlossDBusManager::Get()->HasActiveAdapter()
+              ? floss::FlossDBusManager::Get()->GetActiveAdapter()
+              : 0;
+
+      FlossMediaClient::Initialize(
+          bus, dbus::ObjectPath(base::StringPrintf(floss::kMediaObjectFormat,
+                                                   active_adapter)));
+    } else {
+      FlossMediaClient::InitializeFake();
+    }
   } else {
     InitializeDBusClient<bluez::BluezDBusManager>(bus);
   }
@@ -251,6 +263,7 @@ void ShutdownDBus() {
   }
 #endif
   if (floss::features::IsFlossEnabled()) {
+    FlossMediaClient::Shutdown();
     floss::FlossDBusManager::Shutdown();
   } else {
     bluez::BluezDBusManager::Shutdown();
@@ -299,7 +312,6 @@ void ShutdownDBus() {
   hermes_clients::Shutdown();
   GnubbyClient::Shutdown();
   FwupdClient::Shutdown();
-  FuseBoxReverseClient::Shutdown();
   FederatedClient::Shutdown();
   EasyUnlockClient::Shutdown();
   DlcserviceClient::Shutdown();

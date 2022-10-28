@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_H_
 
+#include <tuple>
 #include "base/gtest_prod_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -51,6 +52,65 @@ class PLATFORM_EXPORT Color {
   DISALLOW_NEW();
 
  public:
+  // This enum represent the color space of the color itself. This is also used
+  // for serialization purposes and for initialization. Don't change the order
+  // of this enum, as how it's ordered helps performance (the compiler can
+  // decide that the first few elements are for ColorFunctionSpace and the last
+  // few elements are for RGB-like serialization.)
+  enum class ColorSpace : uint8_t {
+    // All these are to be serialized with the color() syntax of a given
+    // predefined color space. The
+    // values of `params0_`, `params1_`, and `params2_` are red, green, and blue
+    // values in the color space specified by `color_space_`.
+    kSRGB,
+    kSRGBLinear,
+    kDisplayP3,
+    kA98RGB,
+    kProPhotoRGB,
+    kRec2020,
+    kXYZD50,
+    kXYZD65,
+    // Serializes to lab(). The value of `param0_` is lightness and is
+    // guaranteed to be non-negative. The value of `param1_` and `param2_` are
+    // the a-axis and b-axis values and are unbounded.
+    kLab,
+    // Serializes to oklab(). Parameter meanings are the same as for kLab.
+    kOklab,
+    // Serializes to lch(). The value of `param0_` is lightness and is
+    // guaranteed to be non-negative. The value of `param1_` is chroma and is
+    // also guaranteed to be non-negative. The value of `param2_` is hue, and
+    // is unbounded.
+    kLch,
+    // Serializes to oklch(). Parameter meanings are the same as for kLCH.
+    kOklch,
+    // All these below are to be serialized to rgb() or rgba().
+    // The values of `params0_`, `params1_`, and `params2_` are red, green, and
+    // blue sRGB values, and are guaranteed to be present and in the [0, 1]
+    // interval.
+    kRGBLegacy,
+    // The values of `params0_`, `params1_`, and `params2_` are Hue, Saturation,
+    // and Ligthness. These can be none. Hue is a namber in the range from 0.0
+    // to 6.0, and the rest are in the rance from 0.0 to 1.0.
+    // interval.
+    kHSL,
+    // The values of `params0_`, `params1_`, and `params2_` are Hue, White,
+    // and Black. These can be none. Hue is a namber in the range from 0.0
+    // to 6.0, and the rest are in the rance from 0.0 to 1.0.
+    // interval.
+    kHWB,
+  };
+
+  static bool IsColorFunction(ColorSpace color_space) {
+    return color_space == ColorSpace::kSRGB ||
+           color_space == ColorSpace::kSRGBLinear ||
+           color_space == ColorSpace::kDisplayP3 ||
+           color_space == ColorSpace::kA98RGB ||
+           color_space == ColorSpace::kProPhotoRGB ||
+           color_space == ColorSpace::kRec2020 ||
+           color_space == ColorSpace::kXYZD50 ||
+           color_space == ColorSpace::kXYZD65;
+  }
+
   // The default constructor creates a transparent color.
   constexpr Color()
       : param0_is_none_(0),
@@ -89,17 +149,7 @@ class PLATFORM_EXPORT Color {
   // color spaces and xyz spaces. Parameters that are none should be specified
   // as absl::nullopt. The value for `alpha` will be clamped to the [0, 1]
   // interval.
-  enum class ColorFunctionSpace : uint8_t {
-    kSRGB,
-    kSRGBLinear,
-    kDisplayP3,
-    kA98RGB,
-    kProPhotoRGB,
-    kRec2020,
-    kXYZD50,
-    kXYZD65,
-  };
-  static Color FromColorFunction(ColorFunctionSpace space,
+  static Color FromColorFunction(ColorSpace space,
                                  absl::optional<float> red_or_x,
                                  absl::optional<float> green_or_y,
                                  absl::optional<float> blue_or_z,
@@ -113,7 +163,7 @@ class PLATFORM_EXPORT Color {
                        absl::optional<float> a,
                        absl::optional<float> b,
                        absl::optional<float> alpha);
-  static Color FromOKLab(absl::optional<float> L,
+  static Color FromOklab(absl::optional<float> L,
                          absl::optional<float> a,
                          absl::optional<float> b,
                          absl::optional<float> alpha);
@@ -122,11 +172,11 @@ class PLATFORM_EXPORT Color {
   // none should be specified as absl::nullopt. The value for `L` and `chroma`
   // will be clamped to be non-negative. The value for `alpha` will be clamped
   // to the [0, 1] interval.
-  static Color FromLCH(absl::optional<float> L,
+  static Color FromLch(absl::optional<float> L,
                        absl::optional<float> chroma,
                        absl::optional<float> hue,
                        absl::optional<float> alpha);
-  static Color FromOKLCH(absl::optional<float> L,
+  static Color FromOklch(absl::optional<float> L,
                          absl::optional<float> chroma,
                          absl::optional<float> hue,
                          absl::optional<float> alpha);
@@ -138,10 +188,10 @@ class PLATFORM_EXPORT Color {
     kSRGBLinear,
     // Perceptually uniform
     kLab,
-    kOKLab,
+    kOklab,
     // Maximizing chroma
-    kLCH,
-    kOKLCH,
+    kLch,
+    kOklch,
     // Legacy fallback
     kSRGB,
     // Polar spaces
@@ -193,7 +243,7 @@ class PLATFORM_EXPORT Color {
   bool SetNamedColor(const String&);
 
   // Return true if the color is not opaque.
-  bool HasAlpha() const;
+  bool HasAlpha() const { return Alpha() < 255; }
 
   // Access the color as though it were created using rgba syntax. This will
   // clamp all colors to an 8-bit sRGB representation. All callers of these
@@ -202,7 +252,10 @@ class PLATFORM_EXPORT Color {
   int Red() const;
   int Green() const;
   int Blue() const;
-  int Alpha() const;
+
+  // No colorspace conversions affect alpha.
+  int Alpha() const { return static_cast<int>(lrintf(alpha_ * 255.0f)); }
+
   RGBA32 Rgb() const;
   void GetRGBA(float& r, float& g, float& b, float& a) const;
   void GetRGBA(double& r, double& g, double& b, double& a) const;
@@ -240,8 +293,7 @@ class PLATFORM_EXPORT Color {
   static const Color kTransparent;
 
   inline bool operator==(const Color& other) const {
-    return serialization_type_ == other.serialization_type_ &&
-           color_function_space_ == other.color_function_space_ &&
+    return color_space_ == other.color_space_ &&
            param0_is_none_ == other.param0_is_none_ &&
            param1_is_none_ == other.param1_is_none_ &&
            param2_is_none_ == other.param2_is_none_ &&
@@ -258,10 +310,13 @@ class PLATFORM_EXPORT Color {
   // and color-mix functions.
   static String ColorInterpolationSpaceToString(
       Color::ColorInterpolationSpace color_space,
-      Color::HueInterpolationMethod hue_interpolation_method);
+      Color::HueInterpolationMethod hue_interpolation_method =
+          Color::HueInterpolationMethod::kShorter);
 
   FRIEND_TEST_ALL_PREFIXES(BlinkColor, Premultiply);
   FRIEND_TEST_ALL_PREFIXES(BlinkColor, Unpremultiply);
+  FRIEND_TEST_ALL_PREFIXES(BlinkColor, toSkColor4fValidation);
+  FRIEND_TEST_ALL_PREFIXES(BlinkColor, ExportAsXYZD50Floats);
 
  private:
   constexpr explicit Color(RGBA32 color)
@@ -287,42 +342,17 @@ class PLATFORM_EXPORT Color {
   }
   void GetHueMaxMin(double&, double&, double&) const;
 
+  std::tuple<float, float, float> ExportAsXYZD50Floats() const;
   void ConvertToColorInterpolationSpace(
       ColorInterpolationSpace interpolation_space);
+
+  // For testing purposes and for serializer.
+  static String ColorSpaceToString(Color::ColorSpace color_space);
 
   float PremultiplyColor();
   void UnpremultiplyColor();
 
-  // The way that this color will be serialized. The value of
-  // `serialization_type` determines the interpretation of `params_`.
-  enum class SerializationType : uint8_t {
-    // Serializes to rgb() or rgba(). The values of `params0_`, `params1_`, and
-    // `params2_` are red, green, and blue sRGB values, and are guaranteed to be
-    // present and in the [0, 1] interval.
-    kRGB,
-    // Serialize to the color() syntax of a given predefined color space. The
-    // values of `params0_`, `params1_`, and `params2_` are red, green, and blue
-    // values in the color space specified by `color_function_space_`.
-    kColor,
-    // Serializes to lab(). The value of `param0_` is lightness and is
-    // guaranteed to be non-negative. The value of `param1_` and `param2_` are
-    // the a-axis and b-axis values and are unbounded.
-    kLab,
-    // Serializes to oklab(). Parameter meanings are the same as for kLab.
-    kOKLab,
-    // Serializes to lch(). The value of `param0_` is lightness and is
-    // guaranteed to be non-negative. The value of `param1_` is chroma and is
-    // also guaranteed to be non-negative. The value of `param2_` is hue, and
-    // is unbounded.
-    kLCH,
-    // Serializes to oklch(). Parameter meanings are the same as for kLCH.
-    kOKLCH,
-  };
-  SerializationType serialization_type_ = SerializationType::kRGB;
-
-  // The color space for serialization type kColor. For all other serialization
-  // types this is not used, and must be set to kSRGB.
-  ColorFunctionSpace color_function_space_ = ColorFunctionSpace::kSRGB;
+  ColorSpace color_space_ = ColorSpace::kRGBLegacy;
 
   // Whether or not color parameters were specified as none (this only affects
   // interpolation behavior, the parameter values area always valid).

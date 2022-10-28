@@ -125,7 +125,8 @@ ts_library("build_ts") {
   composite = true
 
   extra_deps = [
-    ":copy_definition",
+    ":copy_definitions_to_gen",
+    ":copy_definitions_to_proprocess",
     ":copy_fmp",
     ":copy_ts",
     ":generate_definitions",
@@ -135,17 +136,32 @@ ts_library("build_ts") {
     "//ash/webui/common/resources:generate_definitions",
   ]
 
-  deps = [ "//ui/webui/resources:library" ]
+  deps = [
+    "//third_party/material_web_components:library",
+    "//ui/webui/resources:library",
+  ]
+
+  path_mappings = [
+    "tslib|" + rebase_path(
+            "//third_party/material_web_components/components-chromium/node_modules/tslib/tslib.d.ts",
+            target_gen_dir),
+    "chrome://resources/mwc/*|" + rebase_path(
+            "//third_party/material_web_components/components-chromium/node_modules/*",
+            target_gen_dir),
+  ]
 
   in_files = static_js_files + generated_js_files + ts_files +
              ts_generated_templates + image_loader_static_js_files
 
-  definitions = [
-    "$preprocess_folder/file_manager/externs/file_manager_private.js",
-    "$target_gen_dir/file_manager/definitions/file_error.d.ts",
-    "$target_gen_dir/file_manager/definitions/file_manager.d.ts",
-    "$target_gen_dir/file_manager/externs/volume_manager.d.ts",
-  ]
+  definitions =
+      [ "$preprocess_folder/file_manager/externs/file_manager_private.js" ]
+  foreach(_file, generate_definitions_js_files) {
+    definitions +=
+        [ "$target_gen_dir/" + string_replace(_file, ".js", ".d.ts") ]
+  }
+  foreach(_file, checked_in_dts_files) {
+    definitions += [ "$preprocess_folder/$_file" ]
+  }
 }
 
 ts_library("test_build_ts") {
@@ -163,16 +179,20 @@ ts_library("test_build_ts") {
                     target_gen_dir),
   ]
 
-  definitions = [
-    "$preprocess_folder/file_manager/externs/file_manager_private.js",
-    "$target_gen_dir/file_manager/definitions/file_error.d.ts",
-    "$target_gen_dir/file_manager/definitions/file_manager.d.ts",
-    "$target_gen_dir/file_manager/externs/volume_manager.d.ts",
-  ]
+  definitions =
+      [ "$preprocess_folder/file_manager/externs/file_manager_private.js" ]
+  foreach(_file, generate_definitions_js_files) {
+    definitions +=
+        [ "$target_gen_dir/" + string_replace(_file, ".js", ".d.ts") ]
+  }
+  foreach(_file, checked_in_dts_files) {
+    definitions += [ "$preprocess_folder/$_file" ]
+  }
 
   deps = [ ":build_ts" ]
   extra_deps = [
-    ":copy_definition",
+    ":copy_definitions_to_gen",
+    ":copy_definitions_to_proprocess",
     ":copy_fmp",
     ":copy_ts",
     ":generate_definitions",
@@ -185,24 +205,20 @@ ts_definitions("generate_definitions") {
 
   deps = [ "//ui/webui/resources:library" ]
 
-  js_files = [
-    "file_manager/common/js/volume_manager_types.js",
-    "file_manager/externs/entry_location.js",
-    "file_manager/externs/files_app_entry_interfaces.js",
-    "file_manager/externs/volume_info.js",
-    "file_manager/externs/volume_info_list.js",
-    "file_manager/externs/volume_manager.js",
-  ]
+  js_files = generate_definitions_js_files
 }
 
 # Copy definition files to GEN folder, so they can import relatively the
 # generated definitions.
-copy("copy_definition") {
-  sources = [
-    "file_manager/definitions/file_error.d.ts",
-    "file_manager/definitions/file_manager.d.ts",
-  ]
+copy("copy_definitions_to_gen") {
+  sources = checked_in_dts_files
   outputs = [ "$target_gen_dir/{{source_target_relative}}" ]
+}
+
+# Copy definition files to $preprocess_folder so TSC can find them.
+copy("copy_definitions_to_proprocess") {
+  sources = checked_in_dts_files
+  outputs = [ "$preprocess_folder/{{source_target_relative}}" ]
 }
 
 copy("copy_ts") {
@@ -221,6 +237,8 @@ js_library("js_from_ts") {
     sources += [ "$target_gen_dir/tsc/" + string_replace(_t, ".ts", ".js") ]
   }
   extra_deps = [ ":build_ts" ]
+  externs_list =
+      [ "//ui/file_manager/file_manager/externs/app_window_common.js" ]
 }
 
 grd_prefix = "file_manager_gen"

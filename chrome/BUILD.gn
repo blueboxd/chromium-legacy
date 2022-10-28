@@ -1625,10 +1625,6 @@ if (is_android) {
     ]
   }
 
-  java_cpp_enum("instant_apps_reasons_enum_javagen") {
-    sources = [ "browser/android/instantapps/instant_apps_settings.cc" ]
-  }
-
   java_cpp_enum("supervised_user_url_filter_enum_javagen") {
     sources = [ "browser/supervised_user/supervised_user_url_filter.h" ]
   }
@@ -1856,17 +1852,10 @@ if (is_chromeos_lacros && is_official_build) {
       ":strip_chrome_crashpad_handler",
       ":strip_libegl_so",
       ":strip_libglesv2_so",
+      ":strip_nacl_helper",
     ]
-    if (target_cpu == "x64") {
-      deps += [ ":strip_nacl_helper" ]
-    } else if (target_cpu == "arm") {
-      deps += [
-        ":strip_nacl_helper",
-        ":strip_nacl_helper_bootstrap",
-      ]
-    } else {
-      assert(target_cpu == "arm64")
-      #TODO(crbug.com/1365963): Add nacl.
+    if (target_cpu == "arm" || target_cpu == "arm64") {
+      deps += [ ":strip_nacl_helper_bootstrap" ]
     }
   }
 
@@ -1895,20 +1884,22 @@ if (is_chromeos_lacros && is_official_build) {
     stripped_binary_output = "$root_out_dir/libGLESv2.so.stripped"
     deps = [ "//third_party/angle:libGLESv2" ]
   }
-  if (target_cpu != "arm64") {
-    strip_binary("strip_nacl_helper") {
-      binary_input = "$root_out_dir/nacl_helper"
-      symbol_output = "$root_out_dir/nacl_helper.debug"
-      stripped_binary_output = "$root_out_dir/nacl_helper.stripped"
-      deps = [ "//components/nacl/loader:nacl_helper" ]
-    }
+  strip_binary("strip_nacl_helper") {
+    binary_input = "$root_out_dir/nacl_helper"
+    symbol_output = "$root_out_dir/nacl_helper.debug"
+    stripped_binary_output = "$root_out_dir/nacl_helper.stripped"
+    deps = [ "//components/nacl/loader:nacl_helper" ]
   }
-  if (target_cpu == "arm") {
+  if (target_cpu == "arm" || target_cpu == "arm64") {
     strip_binary("strip_nacl_helper_bootstrap") {
       binary_input = "$root_out_dir/nacl_helper_bootstrap"
       symbol_output = "$root_out_dir/nacl_helper_bootstrap.debug"
       stripped_binary_output = "$root_out_dir/nacl_helper_bootstrap.stripped"
-      deps = [ "//native_client/src/trusted/service_runtime/linux:bootstrap" ]
+      if (target_cpu == "arm") {
+        deps = [ "//native_client/src/trusted/service_runtime/linux:bootstrap" ]
+      } else {
+        deps = [ "//components/nacl/loader:nacl_helper_bootstrap" ]
+      }
     }
   }
 }

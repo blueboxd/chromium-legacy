@@ -206,8 +206,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool MayReuseHost(content::RenderProcessHost* process_host) override;
   size_t GetProcessCountToIgnoreForLimit() override;
   absl::optional<blink::ParsedPermissionsPolicy>
-  GetPermissionsPolicyForIsolatedApp(content::BrowserContext* browser_context,
-                                     const url::Origin& app_origin) override;
+  GetPermissionsPolicyForIsolatedWebApp(
+      content::BrowserContext* browser_context,
+      const url::Origin& app_origin) override;
   bool ShouldTryToUseExistingProcessHost(
       content::BrowserContext* browser_context,
       const GURL& url) override;
@@ -234,7 +235,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldUrlUseApplicationIsolationLevel(
       content::BrowserContext* browser_context,
       const GURL& url) override;
-  bool IsIsolatedAppsDeveloperModeAllowed(
+  bool IsIsolatedContextAllowedForUrl(content::BrowserContext* browser_context,
+                                      const GURL& lock_url) override;
+  bool IsIsolatedWebAppsDeveloperModeAllowed(
       content::BrowserContext* context) override;
   bool IsGetDisplayMediaSetSelectAllScreensAllowed(
       content::BrowserContext* context,
@@ -703,10 +706,13 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool user_gesture,
       blink::NavigationDownloadPolicy* download_policy) override;
 
-  std::vector<blink::mojom::EpochTopicPtr> GetBrowsingTopicsForJsApi(
+  bool HandleTopicsWebApi(
       const url::Origin& context_origin,
       content::RenderFrameHost* main_frame,
-      bool observe) override;
+      browsing_topics::ApiCallerSource caller_source,
+      bool get_topics,
+      bool observe,
+      std::vector<blink::mojom::EpochTopicPtr>& topics) override;
 
   bool IsBluetoothScanningBlocked(content::BrowserContext* browser_context,
                                   const url::Origin& requesting_origin,

@@ -18,6 +18,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/discardable_memory_allocator.h"
@@ -40,6 +41,7 @@
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_local.h"
@@ -245,6 +247,12 @@ static_assert(
         base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) ==
         v8::MemoryPressureLevel::kCritical,
     "critical level not align");
+
+// Feature to migrate the Media thread to a SequencedTaskRunner backed from
+// the base::ThreadPool. Does not currently work on Fuchsia due to FIDL
+// requiring thread affinity.
+BASE_DECLARE_FEATURE(kUseThreadPoolForMediaTaskRunner){
+    "UseThreadPoolForMediaTaskRunner", base::FEATURE_DISABLED_BY_DEFAULT};
 
 void AddCrashKey(v8::CrashKeyId id, const std::string& value) {
   using base::debug::AllocateCrashKeyString;
@@ -712,9 +720,9 @@ RenderThreadImpl::~RenderThreadImpl() {
   g_main_task_runner.Get() = nullptr;
 
   // Need to make sure this reference is removed on the correct task runner;
-  if (video_frame_compositor_task_runner_ &&
+  if (video_frame_compositor_thread_ &&
       video_frame_compositor_context_provider_) {
-    video_frame_compositor_task_runner_->ReleaseSoon(
+    video_frame_compositor_thread_->task_runner()->ReleaseSoon(
         FROM_HERE, std::move(video_frame_compositor_context_provider_));
   }
 }
@@ -841,17 +849,18 @@ void RenderThreadImpl::InitializeCompositorThread() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 RenderThreadImpl::CreateVideoFrameCompositorTaskRunner() {
-  if (!video_frame_compositor_task_runner_) {
+  if (!video_frame_compositor_thread_) {
     // All of Chromium's GPU code must know which thread it's running on, and
     // be the same thread on which the rendering context was initialized. This
     // is why this must be a SingleThreadTaskRunner instead of a
     // SequencedTaskRunner.
-    video_frame_compositor_task_runner_ =
-        base::ThreadPool::CreateSingleThreadTaskRunner(
-            {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+    video_frame_compositor_thread_ =
+        std::make_unique<base::Thread>("VideoFrameCompositor");
+    video_frame_compositor_thread_->StartWithOptions(
+        base::Thread::Options(base::ThreadType::kCompositing));
   }
 
-  return video_frame_compositor_task_runner_;
+  return video_frame_compositor_thread_->task_runner();
 }
 
 void RenderThreadImpl::InitializeWebKit(mojo::BinderMap* binders) {
@@ -892,6 +901,11 @@ void RenderThreadImpl::InitializeWebKit(mojo::BinderMap* binders) {
   if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden()) {
     // If we do not track widget visibility, then assume conservatively that
     // the isolate is in background. This reduces memory usage.
+    isolate->IsolateInBackgroundNotification();
+  }
+
+  if (base::FeatureList::IsEnabled(
+          features::kLowerV8MemoryLimitForNonMainRenderers)) {
     isolate->IsolateInBackgroundNotification();
   }
 
@@ -1089,7 +1103,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
 scoped_refptr<viz::RasterContextProvider>
 RenderThreadImpl::GetVideoFrameCompositorContextProvider(
     scoped_refptr<viz::RasterContextProvider> unwanted_context_provider) {
-  DCHECK(video_frame_compositor_task_runner_);
+  DCHECK(video_frame_compositor_thread_);
   if (video_frame_compositor_context_provider_ &&
       video_frame_compositor_context_provider_ != unwanted_context_provider) {
     return video_frame_compositor_context_provider_;
@@ -1097,7 +1111,7 @@ RenderThreadImpl::GetVideoFrameCompositorContextProvider(
 
   // Need to make sure these references are removed on the correct task runner;
   if (video_frame_compositor_context_provider_) {
-    video_frame_compositor_task_runner_->ReleaseSoon(
+    video_frame_compositor_thread_->task_runner()->ReleaseSoon(
         FROM_HERE, std::move(video_frame_compositor_context_provider_));
   }
 
@@ -1585,6 +1599,13 @@ void RenderThreadImpl::OnMemoryPressure(
 scoped_refptr<base::SequencedTaskRunner>
 RenderThreadImpl::GetMediaSequencedTaskRunner() {
   DCHECK(main_thread_runner()->BelongsToCurrentThread());
+  if (base::FeatureList::IsEnabled(kUseThreadPoolForMediaTaskRunner)) {
+    if (!media_task_runner_) {
+      media_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+          base::TaskTraits{base::TaskPriority::USER_VISIBLE, base::MayBlock()});
+    }
+    return media_task_runner_;
+  }
   if (!media_thread_) {
     media_thread_ = std::make_unique<base::Thread>("Media");
 #if BUILDFLAG(IS_FUCHSIA)
@@ -1658,11 +1679,7 @@ bool RenderThreadImpl::RendererIsHidden() const {
 }
 
 void RenderThreadImpl::OnRendererHidden() {
-  if (!base::FeatureList::IsEnabled(
-          features::kLowerV8MemoryLimitForNonMainRenderers) ||
-      MainFrameCounter::has_main_frame()) {
-    blink::MainThreadIsolate()->IsolateInBackgroundNotification();
-  }
+  blink::MainThreadIsolate()->IsolateInBackgroundNotification();
   // TODO(rmcilroy): Remove IdleHandler and replace it with an IdleTask
   // scheduled by the RendererScheduler - http://crbug.com/469210.
   if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
@@ -1671,7 +1688,11 @@ void RenderThreadImpl::OnRendererHidden() {
 }
 
 void RenderThreadImpl::OnRendererVisible() {
-  blink::MainThreadIsolate()->IsolateInForegroundNotification();
+  if (!base::FeatureList::IsEnabled(
+          features::kLowerV8MemoryLimitForNonMainRenderers) ||
+      MainFrameCounter::has_main_frame()) {
+    blink::MainThreadIsolate()->IsolateInForegroundNotification();
+  }
   if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     return;
   main_thread_scheduler_->SetRendererHidden(false);

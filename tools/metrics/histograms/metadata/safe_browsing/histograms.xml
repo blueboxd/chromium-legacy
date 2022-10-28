@@ -22,6 +22,20 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<variants name="CloudOrLocalDeepScan">
+  <variant name="" summary="cloud"/>
+  <variant name="Local" summary="local"/>
+</variants>
+
+<variants name="EnterpriseConnector">
+  <variant name="Download"/>
+  <variant name="DragAndDrop"/>
+  <variant name="FileTransfer"/>
+  <variant name="Paste"/>
+  <variant name="Print"/>
+  <variant name="Upload"/>
+</variants>
+
 <variants name="MetricsCollectorBypassEventType">
   <variant name="CsdInterstitialBypass"
       summary="client-side detection interstitial bypass"/>
@@ -126,7 +140,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.AndroidTelemetry.ApkDownload.IsMimeTypeApk"
-    enum="BooleanIsMimeTypeApk" expires_after="2023-02-19">
+    enum="BooleanIsMimeTypeApk" expires_after="2023-04-23">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -174,7 +188,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.BrowserThrottle.TotalDelay" units="ms"
-    expires_after="2023-02-19">
+    expires_after="2023-04-23">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -186,7 +200,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="SafeBrowsing.BrowserThrottle.TotalDelay2.EnterpriseFullURLLookup{AllowlistCheckStatus}"
+    name="SafeBrowsing.BrowserThrottle.TotalDelay2.EnterpriseFullUrlLookup{AllowlistCheckStatus}"
     units="ms" expires_after="2023-01-12">
   <owner>xinghuilu@chromium.org</owner>
   <owner>bhatiarohit@google.com</owner>
@@ -220,6 +234,8 @@ chromium-metrics-reviews@google.com.
     <variant name=".ConsumerFullUrlLookup" summary="consumer real time"/>
     <variant name=".EnterpriseFullUrlLookup" summary="enterprise real time"/>
     <variant name=".HashBasedCheck" summary="hash-based"/>
+    <variant name=".NoneFullUrlLookup"
+        summary="neither consumer nor enterprise"/>
   </token>
 </histogram>
 
@@ -235,7 +251,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.CheckUrl.Timeout" enum="BooleanTimedOut"
-    expires_after="2023-02-19">
+    expires_after="2023-04-23">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -245,7 +261,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.ClientSafeBrowsingReport.HasThreatDetailsForTab"
-    enum="BooleanAvailable" expires_after="2023-02-19">
+    enum="BooleanAvailable" expires_after="2023-04-23">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -358,653 +374,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SafeBrowsing.DeepScan.Download.BytesPerSeconds" units="bytes"
-    expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the bytes/sec from the size of a download request divided by
-    the duration of a successful deep scanning upload request. It is logged once
-    for each successful binary upload.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Download.Duration" units="ms"
-    expires_after="2023-02-19">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user download request. It is
-    logged once for each binary upload.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Download.FailedToGetToken.Duration"
-    units="ms" expires_after="2023-04-16">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user download request with a
-    FailedToGetToken result. It is logged once for each binary upload with that
-    result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Download.FailedToGetVerdict.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user download request with a
-    non-successful scan verdict. It is logged once for each binary upload with
-    that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Download.FileEncrypted.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>rogerta@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user download request with a
-    FileEncrypted result. It is logged once for each binary upload with that
-    result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Download.FileTooLarge.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user download request with a
-    FileTooLarge result. It is logged once for each binary upload with that
-    result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Download.Success.Duration" units="ms"
-    expires_after="2023-03-19">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user download request with a
-    Success result. It is logged once for each binary upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Download.Timeout.Duration" units="ms"
-    expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    SB.This records the deep scanning duration of a user download request with a
-    Timeout result. It is logged once for each binary upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Download.TooManyRequests.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user download request with a
-    TooManyRequests result. It is logged once for each binary upload with that
-    result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Download.Unknown.Duration" units="ms"
-    expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user download request with an
-    Unknown result. It is logged once for each binary upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Download.UnsupportedFileType.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user download request with a
-    UnsupportedFileType result. It is logged once for each binary upload with
-    that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.DragAndDrop.BytesPerSeconds"
-    units="bytes" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the bytes/sec from the size of an upload request caused by a
-    &quot;drag and drop&quot; from the user divided by the duration of a
-    successful deep scanning upload request. It is logged once for each
-    successful binary upload.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.DragAndDrop.CancelledByUser.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the duration from the time the binary is uploaded for deep
-    scanning of a &quot;drag and drop&quot; until the time the user decides to
-    cancel the upload. It is logged once for each binary upload when the user
-    bypasses the verdict.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.DragAndDrop.Duration" units="ms"
-    expires_after="2023-04-09">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user &quot;drag and drop&quot;
-    request. It is logged once for each binary upload.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.DragAndDrop.FailedToGetToken.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user &quot;drag and drop&quot;
-    request with a FailedToGetToken result. It is logged once for each binary
-    upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.DragAndDrop.FailedToGetVerdict.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user &quot;drag and drop&quot;
-    request with a non-successful scan verdict. It is logged once for each
-    binary upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.DragAndDrop.FileEncrypted.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>rogerta@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user &quot;drag and drop&quot;
-    request with a FileEncrypted result. It is logged once for each binary
-    upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.DragAndDrop.FileTooLarge.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user &quot;drag and drop&quot;
-    request with a FileTooLarge result. It is logged once for each binary upload
-    with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.DragAndDrop.Success.Duration" units="ms"
-    expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user &quot;drag and drop&quot;
-    request with a Success result. It is logged once for each binary upload with
-    that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.DragAndDrop.Timeout.Duration" units="ms"
-    expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    SB.This records the deep scanning duration of a user &quot;drag and
-    drop&quot; request with a Timeout result. It is logged once for each binary
-    upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.DragAndDrop.TooManyRequests.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user &quot;drag and drop&quot;
-    request with a TooManyRequests result. It is logged once for each binary
-    upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.DragAndDrop.Unknown.Duration" units="ms"
-    expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user &quot;drag and drop&quot;
-    request with an Unknown result. It is logged once for each binary upload
-    with that result.
-  </summary>
-</histogram>
-
-<histogram
-    name="SafeBrowsing.DeepScan.DragAndDrop.UnsupportedFileType.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user &quot;drag and drop&quot;
-    request with a UnsupportedFileType result. It is logged once for each binary
-    upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.FileTransfer.BytesPerSeconds"
-    units="bytes" expires_after="2023-06-28">
-  <owner>sseckler@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the bytes/sec from the size of a file transfer request divided
-    by the duration of a successful deep scanning upload request. It is logged
-    once for each successful binary upload.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.FileTransfer{Result}.Duration"
-    units="ms" expires_after="2023-06-28">
-  <owner>sseckler@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user file transfer request with
-    {Result} result. It is logged once for each binary upload with that result.
-  </summary>
-  <token key="Result">
-    <variant name="" summary="any"/>
-    <variant name=".CancelledByUser" summary="a CancelledByUser"/>
-    <variant name=".FailedToGetToken" summary="a FailedToGetToken"/>
-    <variant name=".FailedToGetVerdict" summary="a FailedToGetVerdict"/>
-    <variant name=".FileEncrypted" summary="a FileEncrypted"/>
-    <variant name=".FileTooLarge" summary="a FileTooLarge"/>
-    <variant name=".Success" summary="a Success"/>
-    <variant name=".Timeout" summary="a Timeout"/>
-    <variant name=".TooManyRequests" summary="a TooManyRequests"/>
-    <variant name=".Unknown" summary="an Unknown"/>
-    <variant name=".UnsupportedFileType" summary="an UnsupportedFileType"/>
-  </token>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Paste.BytesPerSeconds" units="bytes"
-    expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the bytes/sec from the size of a user paste request divided by
-    the duration of a successful deep scanning upload request. It is logged once
-    for each successful binary upload.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Paste.CancelledByUser.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the duration from the time the binary is uploaded for deep
-    scanning of a paste until the time the user decides to cancel the upload. It
-    is logged once for each binary upload when the user bypasses the verdict.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Paste.Duration" units="ms"
-    expires_after="2023-04-09">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user paste request. It is
-    logged once for each binary upload.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Paste.FailedToGetToken.Duration"
-    units="ms" expires_after="2023-04-09">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user paste request with a
-    FailedToGetToken result. It is logged once for each binary upload with that
-    result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Paste.FailedToGetVerdict.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user paste request with a
-    non-successful scan verdict. It is logged once for each binary upload with
-    that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Paste.FileTooLarge.Duration" units="ms"
-    expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user paste request with a
-    FileTooLarge result. It is logged once for each binary upload with that
-    result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Paste.Success.Duration" units="ms"
-    expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user paste request with a
-    Success result. It is logged once for each binary upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Paste.Timeout.Duration" units="ms"
-    expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user paste request with a
-    Timeout result. It is logged once for each binary upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Paste.TooManyRequests.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user paste request with a
-    TooManyRequests result. It is logged once for each binary upload with that
-    result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Paste.Unknown.Duration" units="ms"
-    expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user paste request with an
-    Unknown result. It is logged once for each binary upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Paste.UnsupportedFileType.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user paste request with a
-    UnsupportedFileType result. It is logged once for each binary upload with
-    that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Print.BytesPerSeconds" units="bytes"
-    expires_after="2023-06-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the bytes/sec from the size of a user print request divided by
-    the duration of a successful deep scanning upload request. It is logged once
-    for each successful binary upload.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Print.CancelledByUser.Duration"
-    units="ms" expires_after="2023-06-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the duration from the time the binary is uploaded for deep
-    scanning of a print until the time the user decides to cancel the upload. It
-    is logged once for each binary upload when the user bypasses the verdict.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Print.Duration" units="ms"
-    expires_after="2023-06-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user print request. It is
-    logged once for each binary upload.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Print.FailedToGetToken.Duration"
-    units="ms" expires_after="2023-06-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user print request with a
-    FailedToGetToken result. It is logged once for each binary upload with that
-    result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Print.FailedToGetVerdict.Duration"
-    units="ms" expires_after="2023-06-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user print request with a
-    non-successful scan verdict. It is logged once for each binary upload with
-    that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Print.FileTooLarge.Duration" units="ms"
-    expires_after="2023-06-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user print request with a
-    FileTooLarge result. It is logged once for each binary upload with that
-    result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Print.Success.Duration" units="ms"
-    expires_after="2023-02-12">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user print request with a
-    Success result. It is logged once for each binary upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Print.Timeout.Duration" units="ms"
-    expires_after="2023-06-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user print request with a
-    Timeout result. It is logged once for each binary upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Print.TooManyRequests.Duration"
-    units="ms" expires_after="2023-06-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user print request with a
-    TooManyRequests result. It is logged once for each binary upload with that
-    result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Print.Unknown.Duration" units="ms"
-    expires_after="2023-06-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user print request with an
-    Unknown result. It is logged once for each binary upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Print.UnsupportedFileType.Duration"
-    units="ms" expires_after="2023-06-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user paste request with a
-    UnsupportedFileType result. It is logged once for each binary upload with
-    that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Upload.BytesPerSeconds" units="bytes"
-    expires_after="2023-04-09">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the bytes/sec from the size of an upload request divided by the
-    duration of a successful deep scanning upload request. It is logged once for
-    each successful binary upload.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Upload.CancelledByUser.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the duration from the time the binary is uploaded for deep
-    scanning of an upload until the time the user decides to cancel the upload.
-    It is logged once for each binary upload when the user bypasses the verdict.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Upload.Duration" units="ms"
-    expires_after="2023-03-05">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user upload request. It is
-    logged once for each binary upload.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Upload.FailedToGetToken.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user upload request with a
-    FailedToGetToken result. It is logged once for each binary upload with that
-    result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Upload.FailedToGetVerdict.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user upload request with a
-    non-successful scan verdict. It is logged once for each binary upload with
-    that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Upload.FileEncrypted.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>rogerta@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user upload request with a
-    FileEncrypted result. It is logged once for each binary upload with that
-    result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Upload.FileTooLarge.Duration" units="ms"
-    expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user upload request with a
-    FileTooLarge result. It is logged once for each binary upload with that
-    result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Upload.Success.Duration" units="ms"
-    expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user upload request with a
-    Success result. It is logged once for each binary upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Upload.Timeout.Duration" units="ms"
-    expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    SB.This records the deep scanning duration of a user upload request with a
-    Timeout result. It is logged once for each binary upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Upload.TooManyRequests.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user upload request with a
-    TooManyRequests result. It is logged once for each binary upload with that
-    result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Upload.Unknown.Duration" units="ms"
-    expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user upload request with an
-    Unknown result. It is logged once for each binary upload with that result.
-  </summary>
-</histogram>
-
-<histogram name="SafeBrowsing.DeepScan.Upload.UnsupportedFileType.Duration"
-    units="ms" expires_after="2023-02-01">
-  <owner>domfc@chromium.org</owner>
-  <owner>webprotect-team@google.com</owner>
-  <summary>
-    This records the deep scanning duration of a user upload request with a
-    UnsupportedFileType result. It is logged once for each binary upload with
-    that result.
-  </summary>
-</histogram>
-
 <histogram name="SafeBrowsing.DelayedWarnings.Event"
     enum="SafeBrowsingDelayedWarningEvent" expires_after="2021-08-22">
   <obsolete>
@@ -1076,7 +445,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.EsbDisabled.LastBypassEventType"
-    enum="SBMetricsCollectorEventType" expires_after="2023-02-19">
+    enum="SBMetricsCollectorEventType" expires_after="2023-04-23">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1165,7 +534,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.ExtensionPersister.CacheSize" units="files"
-    expires_after="2023-02-19">
+    expires_after="2023-04-23">
   <owner>psarouthakis@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1176,7 +545,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.ExtensionPersister.PersistedFileSize"
-    units="bytes" expires_after="2023-02-19">
+    units="bytes" expires_after="2023-04-23">
   <owner>psarouthakis@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1302,7 +671,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.FileTypeUpdate.DynamicUpdateResult"
-    enum="SBFileTypeUpdateResult" expires_after="2023-02-19">
+    enum="SBFileTypeUpdateResult" expires_after="2023-04-23">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1330,7 +699,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.FileTypeUpdate.ResourceBundleResult"
-    enum="SBFileTypeUpdateResult" expires_after="2023-02-19">
+    enum="SBFileTypeUpdateResult" expires_after="2023-04-23">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1343,7 +712,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.FileTypeUpdate.ResourceBundleVersion"
-    units="FileTypePolicies Version" expires_after="2023-02-19">
+    units="FileTypePolicies Version" expires_after="2023-04-23">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1362,6 +731,39 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records whether a Safe Browsing cookie exists at startup or when a new
     profile is created.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.LocalBinaryUploadRequest.DlpResult"
+    enum="BooleanSuccess" expires_after="2023-10-20">
+  <owner>rogerta@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    This records whether local DLP scanning succeeded or not. It is logged once
+    for each binary upload with DLP scanning enabled (file download or upload
+    with the appropriate enterprise policies enabled).
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.LocalBinaryUploadRequest.Duration" units="ms"
+    expires_after="2023-10-20">
+  <owner>rogerta@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    This records the duration of each binary upload request. It is logged once
+    for each binary upload (file download or upload with the appropriate
+    enterprise policies enabled).
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.LocalBinaryUploadRequest.Result"
+    enum="BooleanSuccess" expires_after="2023-10-20">
+  <owner>rogerta@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    This records whether DLP scanning succeeded or not. It is logged once for
+    each binary upload with DLP scanning enabled (file download or upload with
+    the appropriate enterprise policies enabled).
   </summary>
 </histogram>
 
@@ -1414,7 +816,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.NavigationObserver.MissingInitiatorRenderFrameHostPortal"
-    enum="BooleanExists" expires_after="2023-02-12">
+    enum="BooleanExists" expires_after="2023-04-23">
   <owner>vollick@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>Logs the number of times we have a missing initiator RFH.</summary>
@@ -1879,7 +1281,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.LocalMatch.Result"
-    enum="SafeBrowsingAllowlistAsyncMatch" expires_after="2023-04-02">
+    enum="SafeBrowsingAllowlistAsyncMatch" expires_after="2023-04-23">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1908,7 +1310,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.Network.Result"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-02-19">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-04-23">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1935,7 +1337,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.Network.Time" units="ms"
-    expires_after="2023-02-19">
+    expires_after="2023-04-23">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1968,7 +1370,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.Request.UserPopulation"
-    enum="SafeBrowsingUserPopulation" expires_after="2023-02-19">
+    enum="SafeBrowsingUserPopulation" expires_after="2023-04-23">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2062,7 +1464,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.TailoredSecurity.ConsentedDesktopDialogDisabledOutcome"
-    enum="SafeBrowsingTailoredSecurityOutcome" expires_after="2023-02-12">
+    enum="SafeBrowsingTailoredSecurityOutcome" expires_after="2023-04-23">
   <owner>jacastro@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -2193,7 +1595,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.TailoredSecurityUnconsentedPromotionNotificationOutcome"
-    enum="SafeBrowsingTailoredSecurityOutcome" expires_after="2023-02-17">
+    enum="SafeBrowsingTailoredSecurityOutcome" expires_after="2023-04-23">
   <owner>bhatiarohit@google.com</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2230,7 +1632,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.Triggers.AdSampler.Action"
-    enum="AdSamplerTriggerAction" expires_after="2023-02-19">
+    enum="AdSamplerTriggerAction" expires_after="2023-04-23">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2251,7 +1653,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.V4Database.Size" units="KB"
-    expires_after="2023-04-16">
+    expires_after="2023-04-23">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2342,7 +1744,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.V4GetHash.Network.Time" units="ms"
-    expires_after="2023-02-19">
+    expires_after="2023-04-23">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2366,7 +1768,7 @@ Safe Browsing lookup mechanism is working as expected -->
 </histogram>
 
 <histogram name="SafeBrowsing.V4GetHash.Result"
-    enum="SafeBrowsingV4OperationResult" expires_after="2023-02-19">
+    enum="SafeBrowsingV4OperationResult" expires_after="2023-04-23">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2534,7 +1936,7 @@ and applied correctly. -->
 </histogram>
 
 <histogram name="SafeBrowsing.V4ProcessPartialUpdate.RemovalsHashesCount"
-    units="entries" expires_after="2023-02-12">
+    units="entries" expires_after="2023-04-23">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2731,6 +2133,50 @@ failing to fetch the updates which puts users' security at risk. -->
   </summary>
 </histogram>
 
+<histogram
+    name="SafeBrowsing.{CloudOrLocal}DeepScan.{Connector}.BytesPerSeconds"
+    units="bytes" expires_after="2023-10-20">
+  <owner>rogerta@chromium.org</owner>
+  <owner>webprotect-team@google.com</owner>
+  <summary>
+    This records the bytes/sec from the size of a {CloudOrLocal} {Connector}
+    request divided by the duration of a successful deep scanning upload
+    request. It is logged once for each successful binary upload.
+  </summary>
+  <token key="CloudOrLocal" variants="CloudOrLocalDeepScan"/>
+  <token key="Connector" variants="EnterpriseConnector"/>
+</histogram>
+
+<histogram
+    name="SafeBrowsing.{CloudOrLocal}DeepScan.{Connector}{Result}.Duration"
+    units="ms" expires_after="2023-10-20">
+  <owner>domfc@chromium.org</owner>
+  <owner>drubery@chromium.org</owner>
+  <owner>rogerta@chromium.org</owner>
+  <owner>sseckler@chromium.org</owner>
+  <owner>webprotect-team@google.com</owner>
+  <summary>
+    This records the {CloudOrLocal} deep scanning duration of a user {Connector}
+    request with {Result} result. It is logged once for each binary upload with
+    that result.
+  </summary>
+  <token key="CloudOrLocal" variants="CloudOrLocalDeepScan"/>
+  <token key="Connector" variants="EnterpriseConnector"/>
+  <token key="Result">
+    <variant name="" summary="any"/>
+    <variant name=".CancelledByUser" summary="a CancelledByUser"/>
+    <variant name=".FailedToGetToken" summary="a FailedToGetToken"/>
+    <variant name=".FailedToGetVerdict" summary="a FailedToGetVerdict"/>
+    <variant name=".FileEncrypted" summary="a FileEncrypted"/>
+    <variant name=".FileTooLarge" summary="a FileTooLarge"/>
+    <variant name=".Success" summary="a Success"/>
+    <variant name=".Timeout" summary="a Timeout"/>
+    <variant name=".TooManyRequests" summary="a TooManyRequests"/>
+    <variant name=".Unknown" summary="an Unknown"/>
+    <variant name=".UnsupportedFileType" summary="an UnsupportedFileType"/>
+  </token>
+</histogram>
+
 <histogram name="SafeBrowsing.{Process}Throttle.IntervalBetweenStartAndProcess"
     units="ms" expires_after="2023-10-13">
   <owner>xinghuilu@chromium.org</owner>
@@ -2760,7 +2206,7 @@ failing to fetch the updates which puts users' security at risk. -->
 </histogram>
 
 <histogram name="SafeBrowsingBinaryUploadRequest.Duration" units="ms"
-    expires_after="2023-02-19">
+    expires_after="2023-04-23">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2771,7 +2217,7 @@ failing to fetch the updates which puts users' security at risk. -->
 </histogram>
 
 <histogram name="SafeBrowsingBinaryUploadRequest.MalwareResult"
-    enum="BooleanSuccess" expires_after="2023-02-19">
+    enum="BooleanSuccess" expires_after="2023-04-23">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2782,7 +2228,7 @@ failing to fetch the updates which puts users' security at risk. -->
 </histogram>
 
 <histogram name="SafeBrowsingBinaryUploadRequest.Result"
-    enum="SafeBrowsingBinaryUploadResult" expires_after="2023-02-19">
+    enum="SafeBrowsingBinaryUploadResult" expires_after="2023-04-23">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>

@@ -277,6 +277,10 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest, EmptyDBPath) {
 
 TEST_F(FirstPartySetsHandlerImplEnabledTest,
        ClearSiteDataOnChangedSetsForContext_FeatureNotEnabled) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeatureWithParameters(
+      features::kFirstPartySets,
+      {{features::kFirstPartySetsClearSiteDataOnChangedSets.name, "false"}});
   base::HistogramTester histogram;
   net::SchemefulSite foo(GURL("https://foo.test"));
   net::SchemefulSite associated(GURL("https://associatedsite.test"));
@@ -361,7 +365,11 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
     histogram.ExpectUniqueSample(
         kFirstPartySetsClearSiteDataOutcomeHistogram,
         FirstPartySetsHandlerImpl::ClearSiteDataOutcomeType::kSuccess, 1);
+
+    // Make sure the database is closed properly before being opened again.
+    handler.SynchronouslyResetDBHelperForTesting();
   }
+
   // Verify FPS transition clearing is working for non-empty sites-to-clear
   // list.
   {

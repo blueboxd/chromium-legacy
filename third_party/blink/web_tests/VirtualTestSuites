@@ -655,6 +655,13 @@
              "--force-device-scale-factor=2"]
   },
   {
+    "prefix": "fluent-non-overlay-scrollbar-dark-mode",
+    "platforms": ["Win"],
+    "bases": ["fast/forms/color-scheme/scrollbar"],
+    "args": ["--enable-features=FluentScrollbar",
+             "--blink-settings=preferredColorScheme=0"]
+  },
+  {
     "prefix": "text-antialias",
     "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
     "bases": [],
@@ -822,10 +829,22 @@
     "args": [ "--enable-features=ThirdPartyStoragePartitioning" ]
   },
   {
-    "prefix": "post-message-different-partition-same-origin-blocked",
+    "prefix": "post-message-first-party-to-third-party-different-bucket-same-origin-blocked",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/html/browsers/windows/post-message"],
-    "args": ["--enable-features=PostMessageDifferentPartitionSameOriginBlocked"]
+    "args": ["--enable-features=PostMessageFirstPartyToThirdPartyDifferentBucketSameOriginBlocked"]
+  },
+  {
+    "prefix": "post-message-third-party-to-first-party-different-bucket-same-origin-blocked",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/html/browsers/windows/post-message"],
+    "args": ["--enable-features=PostMessageThirdPartyToFirstPartyDifferentBucketSameOriginBlocked"]
+  },
+  {
+    "prefix": "post-message-third-party-to-third-party-different-bucket-same-origin-blocked",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/html/browsers/windows/post-message"],
+    "args": ["--enable-features=PostMessageThirdPartyToThirdPartyDifferentBucketSameOriginBlocked"]
   },
   {
     "prefix": "threaded-composited-iframes",
@@ -1053,7 +1072,9 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "wpt_internal/shared_storage",
-      "external/wpt/shared-storage"
+      "external/wpt/shared-storage",
+      "http/tests/inspector-protocol/storage/shared-storage.js",
+      "http/tests/inspector-protocol/storage/shared-storage-tracking-disabled.js"
     ],
     "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride"]
   },
@@ -1062,7 +1083,9 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "wpt_internal/shared_storage",
-      "external/wpt/shared-storage"
+      "external/wpt/shared-storage",
+      "http/tests/inspector-protocol/storage/shared-storage.js",
+      "http/tests/inspector-protocol/storage/shared-storage-tracking-disabled.js"
     ],
     "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/shadow_dom,PrivacySandboxAdsAPIsOverride"]
   },
@@ -1083,7 +1106,7 @@
       "http/tests/inspector-protocol/fenced-frame",
       "external/wpt/html/anonymous-iframe"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,Prerender2,NoncedPartitionedCookies"]
+    "args": ["--enable-features=FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,NoncedPartitionedCookies"]
   },
   {
     "prefix": "fenced-frame-shadow-dom",
@@ -1093,7 +1116,7 @@
       "wpt_internal/fenced_frame",
       "external/wpt/html/anonymous-iframe"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,Prerender2,NoncedPartitionedCookies", "--force-renderer-accessibility"]
+    "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,NoncedPartitionedCookies", "--force-renderer-accessibility"]
   },
   {
     "prefix": "disable-custom-element-default-style",

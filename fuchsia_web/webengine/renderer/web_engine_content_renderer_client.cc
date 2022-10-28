@@ -9,21 +9,17 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "build/chromecast_buildflags.h"
-#include "components/cast_streaming/renderer/public/resource_provider.h"
-#include "components/cast_streaming/renderer/public/resource_provider_factory.h"
 #include "components/cdm/renderer/widevine_key_system_info.h"
 #include "components/media_control/renderer/media_playback_options.h"
 #include "components/memory_pressure/multi_source_memory_pressure_monitor.h"
 #include "components/on_load_script_injector/renderer/on_load_script_injector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
-#include "fuchsia_web/webengine/common/cast_streaming.h"
 #include "fuchsia_web/webengine/features.h"
 #include "fuchsia_web/webengine/renderer/web_engine_media_renderer_factory.h"
 #include "fuchsia_web/webengine/renderer/web_engine_url_loader_throttle_provider.h"
 #include "fuchsia_web/webengine/switches.h"
 #include "media/base/content_decryption_module.h"
-#include "media/base/demuxer.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
@@ -35,6 +31,12 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/widevine/cdm/buildflags.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
+
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
+#include "components/cast_streaming/renderer/public/resource_provider.h"  // nogncheck
+#include "components/cast_streaming/renderer/public/resource_provider_factory.h"  // nogncheck
+#include "fuchsia_web/webengine/common/cast_streaming.h"  // nogncheck
+#endif
 
 namespace {
 
@@ -175,7 +177,7 @@ void WebEngineContentRendererClient::RenderFrameCreated(
 std::unique_ptr<blink::URLLoaderThrottleProvider>
 WebEngineContentRendererClient::CreateURLLoaderThrottleProvider(
     blink::URLLoaderThrottleProviderType type) {
-  // TODO(crbug.com/976975): Add support for service workers.
+  // TODO(crbug.com/1378791): Add support for workers.
   if (type == blink::URLLoaderThrottleProviderType::kWorker)
     return nullptr;
 
@@ -184,7 +186,7 @@ WebEngineContentRendererClient::CreateURLLoaderThrottleProvider(
 
 void WebEngineContentRendererClient::GetSupportedKeySystems(
     media::GetSupportedKeySystemsCB cb) {
-  media::KeySystemInfoVector key_systems;
+  media::KeySystemInfos key_systems;
   media::SupportedCodecs supported_video_codecs = 0;
   constexpr uint8_t kUnknownCodecLevel = 0;
   if (IsSupportedHardwareVideoCodec(media::VideoType{
@@ -310,6 +312,7 @@ bool WebEngineContentRendererClient::RunClosureWhenInForeground(
   return playback_options->RunWhenInForeground(std::move(closure));
 }
 
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
 std::unique_ptr<cast_streaming::ResourceProvider>
 WebEngineContentRendererClient::CreateCastStreamingResourceProvider() {
   if (!IsCastStreamingEnabled()) {
@@ -318,3 +321,4 @@ WebEngineContentRendererClient::CreateCastStreamingResourceProvider() {
 
   return cast_streaming::CreateResourceProvider();
 }
+#endif

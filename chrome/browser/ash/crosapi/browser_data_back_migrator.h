@@ -31,13 +31,21 @@ class BrowserDataBackMigrator {
 
   using BackMigrationFinishedCallback =
       base::OnceCallback<void(BrowserDataBackMigrator::Result)>;
+  using BackMigrationProgressCallback = base::RepeatingCallback<void(int)>;
 
   explicit BrowserDataBackMigrator(const base::FilePath& ash_profile_dir);
   BrowserDataBackMigrator(const BrowserDataBackMigrator&) = delete;
   BrowserDataBackMigrator& operator=(const BrowserDataBackMigrator&) = delete;
   ~BrowserDataBackMigrator();
 
-  void Migrate(BackMigrationFinishedCallback finished_callback);
+  // Migrate performs the Lacros -> Ash migration.
+  // progress_callback is called repeatedly with the current progress.
+  // finished_callback is called when migration completes successfully or with
+  // an error.
+
+  // Migrate can only be called once.
+  void Migrate(BackMigrationProgressCallback progress_callback,
+               BackMigrationFinishedCallback finished_callback);
 
   // IsBackMigrationEnabled determines if the feature is enabled.
   // It checks the following in order:
@@ -66,9 +74,32 @@ class BrowserDataBackMigrator {
   enum class TaskStatus {
     kSucceeded = 0,
     kPreMigrationCleanUpDeleteTmpDirFailed = 1,
-    kDeleteTmpDirDeleteFailed = 2,
-    kDeleteLacrosDirDeleteFailed = 3,
+    kMergeSplitItemsCreateTmpDirFailed = 2,
+    kMergeSplitItemsCopyExtensionsFailed = 3,
+    kMergeSplitItemsCopyExtensionStorageFailed = 4,
+    kMergeSplitItemsCreateDirFailed = 5,
+    kMergeSplitItemsMergeIndexedDBFailed = 6,
+    kMergeSplitItemsMergePrefsFailed = 7,
+    kMergeSplitItemsMergeLocalStorageLevelDBFailed = 8,
+    kMergeSplitItemsMergeStateStoreLevelDBFailed = 9,
+    kMergeSplitItemsMergeSyncDataFailed = 10,
+    kDeleteAshItemsDeleteExtensionsFailed = 11,
+    kDeleteTmpDirDeleteFailed = 12,
+    kDeleteLacrosDirDeleteFailed = 13,
     kMaxValue = kDeleteLacrosDirDeleteFailed,
+  };
+
+  enum class MigrationStep {
+    kStart = 0,
+    kPreMigrationCleanUp = 1,
+    kMergeSplitItems = 2,
+    kMoveLacrosItemsBackToAsh = 3,
+    kDeleteAshItems = 4,
+    kMoveMergedItemsBackToAsh = 5,
+    kDeleteLacrosDir = 6,
+    kDeleteTmpDir = 7,
+    kDone = 8,
+    kMaxValue = kDone,
   };
 
   struct TaskResult {
@@ -78,6 +109,12 @@ class BrowserDataBackMigrator {
     absl::optional<int> posix_errno;
   };
 
+  bool running_ = false;
+  BackMigrationProgressCallback progress_callback_;
+  BackMigrationFinishedCallback finished_callback_;
+
+  void SetProgress(MigrationStep step);
+
   // Creates `kTmpDir` and deletes its contents if it already exists. Deletes
   // ash and lacros `ItemType::kDeletable` items to free up extra space but this
   // does not affect `PreMigrationCleanUpResult::success`.
@@ -86,48 +123,102 @@ class BrowserDataBackMigrator {
       const base::FilePath& lacros_profile_dir);
 
   // Called as a reply to `PreMigrationCleanUp()`.
-  void OnPreMigrationCleanUp(BackMigrationFinishedCallback finished_callback,
-                             TaskResult result);
+  void OnPreMigrationCleanUp(TaskResult result);
 
   // Merges items that were split between Ash and Lacros and puts them into
   // the temporary directory created in `PreMigrationCleanUp()`.
   static TaskResult MergeSplitItems(const base::FilePath& ash_profile_dir);
 
   // Called as a reply to `MergeSplitItems()`.
-  void OnMergeSplitItems(BackMigrationFinishedCallback finished_callback,
-                         TaskResult result);
+  void OnMergeSplitItems(TaskResult result);
+
+  // Deletes Ash items that will be overwritten by either Lacros items or items
+  // merged in `MergeSplitItems()`. This prevents conflicts during the calls to
+  // `MoveLacrosItemsBackToAsh()` and `MoveMergedItemsBackToAsh()`.
+  static TaskResult DeleteAshItems(const base::FilePath& ash_profile_dir);
+
+  // Called as a reply to `DeleteAshItems()`.
+  void OnDeleteAshItems(TaskResult result);
 
   // Moves Lacros-only items back into the Ash profile directory.
   static TaskResult MoveLacrosItemsBackToAsh(
       const base::FilePath& ash_profile_dir);
 
   // Called as a reply to `MoveLacrosItemsBackToAsh()`.
-  void OnMoveLacrosItemsBackToAsh(
-      BackMigrationFinishedCallback finished_callback,
-      TaskResult result);
+  void OnMoveLacrosItemsBackToAsh(TaskResult result);
 
   // Moves the temporary directory into the Ash profile directory.
   static TaskResult MoveMergedItemsBackToAsh(
       const base::FilePath& ash_profile_dir);
 
   // Called as a reply to `MoveMergedItemsBackToAsh()`.
-  void OnMoveMergedItemsBackToAsh(
-      BackMigrationFinishedCallback finished_callback,
-      TaskResult result);
+  void OnMoveMergedItemsBackToAsh(TaskResult result);
 
   // Deletes the Lacros profile directory.
   static TaskResult DeleteLacrosDir(const base::FilePath& ash_profile_dir);
 
   // Called as a reply to `DeleteLacrosDir()`.
-  void OnDeleteLacrosDir(BackMigrationFinishedCallback finished_callback,
-                         TaskResult result);
+  void OnDeleteLacrosDir(TaskResult result);
 
   // Deletes the temporary directory and completes the backward migration.
   static TaskResult DeleteTmpDir(const base::FilePath& ash_profile_dir);
 
   // Called as a reply to `DeleteTmpDir()`.
-  void OnDeleteTmpDir(BackMigrationFinishedCallback finished_callback,
-                      TaskResult result);
+  void OnDeleteTmpDir(TaskResult result);
+
+  // For `target_dir` copy subdirectories belonging to extensions that are in
+  // both Chromes from `lacros_profile_dir` to `tmp_user_dir`.
+  static bool MergeCommonExtensionsDataFiles(
+      const base::FilePath& ash_profile_dir,
+      const base::FilePath& lacros_profile_dir,
+      const base::FilePath& tmp_user_dir,
+      const std::string& target_dir);
+
+  // For `target_dir` delete the subdirectories belonging to extensions from
+  // `ash_profile_dir` so that there are no conflicts when `tmp_user_dir` is
+  // moved to `ash_profile_dir`.
+  static bool RemoveAshCommonExtensionsDataFiles(
+      const base::FilePath& ash_profile_dir,
+      const std::string& target_dir);
+
+  // Merge IndexedDB objects for extensions that are both in Ash and Lacros.
+  // If both exists, delete Ash version and move Lacros version to its place.
+  // If only Ash exists, do not delete it.
+  // If only Lacros exists, move to the expected Ash location.
+  // If neither exists, do nothing.
+  static bool MergeCommonIndexedDB(const base::FilePath& ash_indexed_db_dir,
+                                   const base::FilePath& lacros_indexed_db_dir,
+                                   const char* extension_id);
+
+  // Merge Preferences.
+  static bool MergePreferences(const base::FilePath& ash_pref_path,
+                               const base::FilePath& lacros_pref_path,
+                               const base::FilePath& tmp_pref_path);
+
+  // Decides whether preferences for the given `extension_id` should be migrated
+  // back from Lacros to Ash.
+  static bool IsLacrosOnlyExtension(const base::StringPiece extension_id);
+
+  // Copy the LevelDB database from Lacros to the temporary directory to be used
+  // as basis for the merge.
+  static bool CopyLevelDBBase(const base::FilePath& lacros_leveldb_dir,
+                              const base::FilePath& tmp_leveldb_dir);
+
+  // Overwrite some parts of the LevelDB database copied from Lacros with keys
+  // and values from Ash.
+  static bool MergeLevelDB(
+      const base::FilePath& ash_db_path,
+      const base::FilePath& tmp_db_path,
+      const browser_data_migrator_util::LevelDBType leveldb_type);
+
+  // Create the Sync Data LevelDB that will be used bu Ash upon backward
+  // migration. If only Ash or only Lacros Sync database exists, copy that file
+  // directly to the temporary directory. If both databases exist, then perform
+  // a full merge by opening both databases, getting the corresponding sync data
+  // from each and merging the results into the temporary directory database.
+  static bool MergeSyncDataLevelDB(const base::FilePath& ash_db_path,
+                                   const base::FilePath& lacros_db_path,
+                                   const base::FilePath& tmp_db_path);
 
   // Transforms `TaskResult` to `Result`, which is then returned to the caller.
   static Result ToResult(TaskResult result);

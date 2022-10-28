@@ -25,6 +25,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "media/base/cdm_config.h"
+#include "media/base/data_source.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/media_observer.h"
 #include "media/base/media_tracks.h"
@@ -75,7 +76,6 @@ class LearningTaskController;
 namespace media {
 class CdmContextRef;
 class ChunkDemuxer;
-class DataSource;
 class Demuxer;
 class MediaLog;
 class MemoryDumpProviderProxy;
@@ -355,7 +355,7 @@ class PLATFORM_EXPORT WebMediaPlayerImpl
   void OnBeforePipelineResume();
   void OnPipelineResumed();
   void OnPipelineSeeked(bool time_updated);
-  void OnDemuxerOpened();
+  void OnChunkDemuxerOpened();
 
   // media::Pipeline::Client overrides.
   void OnError(media::PipelineStatus status) override;
@@ -665,6 +665,11 @@ class PLATFORM_EXPORT WebMediaPlayerImpl
   // Report UMAs when this object instance is destroyed.
   void ReportSessionUMAs() const;
 
+#if BUILDFLAG(ENABLE_FFMPEG)
+  // Helper methods for creating demuxers to encapsulate build flags.
+  std::unique_ptr<media::Demuxer> CreateFFmpegDemuxer();
+#endif
+
   WebLocalFrame* const frame_;
 
   WebMediaPlayer::NetworkState network_state_ =
@@ -675,7 +680,7 @@ class PLATFORM_EXPORT WebMediaPlayerImpl
       WebMediaPlayer::kReadyStateHaveNothing;
 
   // Preload state for when |data_source_| is created after setPreload().
-  MultiBufferDataSource::Preload preload_ = MultiBufferDataSource::METADATA;
+  media::DataSource::Preload preload_ = media::DataSource::METADATA;
 
   // Poster state (for UMA reporting).
   bool has_poster_ = false;

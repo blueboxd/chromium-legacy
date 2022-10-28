@@ -53,7 +53,6 @@
 #import "ios/chrome/browser/crash_report/crash_helper.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/flags/about_flags.h"
-#import "ios/chrome/browser/ios_thread_profiler.h"
 #import "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
 #import "ios/chrome/browser/metrics/ios_expired_histograms_array.h"
 #import "ios/chrome/browser/open_from_clipboard/create_clipboard_recent_content.h"
@@ -65,6 +64,7 @@
 #import "ios/chrome/browser/signin/signin_util.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/translate/translate_service_ios.h"
+#import "ios/chrome/browser/web/ios_thread_profiler.h"
 #import "ios/chrome/common/channel_info.h"
 #import "ios/components/security_interstitials/safe_browsing/safe_browsing_service.h"
 #import "ios/web/public/thread/web_task_traits.h"
@@ -191,7 +191,9 @@ void IOSChromeMainParts::PreCreateThreads() {
   CHECK(base::PathService::Get(ios::FILE_LOCAL_STATE, &local_state_path));
   application_context_.reset(new ApplicationContextImpl(
       local_state_task_runner.get(), parsed_command_line_,
-      l10n_util::GetLocaleOverride()));
+      l10n_util::GetLocaleOverride(),
+      base::SysNSStringToUTF8(
+          [[NSLocale currentLocale] objectForKey:NSLocaleCountryCode])));
   DCHECK_EQ(application_context_.get(), GetApplicationContext());
 
   // Check the first run state early; this must be done before IO is disallowed

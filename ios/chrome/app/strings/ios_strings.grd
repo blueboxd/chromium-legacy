@@ -997,7 +997,7 @@ See your search engine’s instructions for deleting your search history, if app
         Tap <ph name="BEGIN_BOLD">BEGIN_BOLD</ph>Default Browser App<ph name="END_BOLD">END_BOLD</ph>
       </message>
       <message name="IDS_IOS_FIRST_RUN_DEFAULT_BROWSER_SCREEN_SECONDARY_ACTION" desc="The secondary action string on the default browser screen presented to the user on First Run [iOS only]">
-        No, Thanks
+        No Thanks
       </message>
       <message name="IDS_IOS_FIRST_RUN_SCREEN_READ_MORE" desc="The label on the primary button of some screens in the first run experience if the content requires scrolling to the end [iOS only]">
         More
@@ -1267,26 +1267,47 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_KEYBOARD_ACCESSORY_VIEW_VOICE_SEARCH" desc="Accessibility label for a button that starts a Voice Search [iOS only]">
         Voice Search
       </message>
-      <message name="IDS_IOS_KEYBOARD_BOOKMARK_THIS_PAGE" desc="In Title Case: Title of the keyboard shortcut that bookmarks the current page. [Length: 20 em] [iOS only]">
-        Bookmark This Page...
+      <message name="IDS_IOS_KEYBOARD_NEW_WINDOW" desc="The title of the keyboard shortcut to open a new window." meaning="Used as a command title in the iPad command menu.">
+        New Window
       </message>
-      <message name="IDS_IOS_KEYBOARD_HISTORY_BACK" desc="Title of the keyboard shortcut to go back in the history menu. [Length: 20 em] [iOS only]">
+      <message name="IDS_IOS_KEYBOARD_ADD_TO_BOOKMARKS" desc="In Title Case: Title of the keyboard shortcut that bookmarks the current page." meaning="Used as a command title in the iPad command menu.">
+        Add to Bookmarks
+      </message>
+      <message name="IDS_IOS_KEYBOARD_SHOW_BOOKMARKS" desc="In Title Case: Title of the keyboard shortcut that shows the list of bookmarks." meaning="Used as a command title in the iPad command menu.">
+        Show Bookmarks
+      </message>
+      <message name="IDS_IOS_KEYBOARD_HISTORY_BACK" desc="Title of the keyboard shortcut to go back in the history menu." meaning="Used as a command title in the iPad command menu.">
         Back
       </message>
-      <message name="IDS_IOS_KEYBOARD_HISTORY_FORWARD" desc="Title of the keyboard shortcut to go forward in the history menu. [Length: 20 em] [iOS only]">
+      <message name="IDS_IOS_KEYBOARD_HISTORY_FORWARD" desc="Title of the keyboard shortcut to go forward in the history menu." meaning="Used as a command title in the iPad command menu.">
         Forward
       </message>
-      <message name="IDS_IOS_KEYBOARD_OPEN_LOCATION" desc="Title of the keyboard shortcut to open a location (puts cursor in the URL bar). [Length: 20 em] [iOS only]">
-        Open Location...
+      <message name="IDS_IOS_KEYBOARD_OPEN_LOCATION" desc="Title of the keyboard shortcut to open a location (puts cursor in the URL bar)." meaning="Used as a command title in the iPad command menu.">
+        Open Location…
       </message>
-      <message name="IDS_IOS_KEYBOARD_REOPEN_CLOSED_TAB" desc="Title of the keyboard shortcut to reopen a recently closed tab. [Length: 20 em] [iOS only]">
-        Reopen Closed Tab
+      <message name="IDS_IOS_KEYBOARD_REOPEN_CLOSED_TAB" desc="Title of the keyboard shortcut to reopen a recently closed tab." meaning="Used as a command title in the iPad command menu.">
+        Reopen Last Closed Tab
       </message>
-      <message name="IDS_IOS_KEYBOARD_NEXT_TAB" desc="Title of the keyboard shortcut to switch to the next tab in the tab strip. [Length: 20 em] [iOS only]">
-        Next Tab
+      <message name="IDS_IOS_KEYBOARD_NEXT_TAB" desc="Title of the keyboard shortcut to switch to the next tab in the tab strip." meaning="Used as a command title in the iPad command menu.">
+        Go to Next Tab
       </message>
-      <message name="IDS_IOS_KEYBOARD_PREVIOUS_TAB" desc="Title of the keyboard shortcut to switch to the previous tab in the tab strip. [Length: 20 em] [iOS only]">
-        Previous Tab
+      <message name="IDS_IOS_KEYBOARD_PREVIOUS_TAB" desc="Title of the keyboard shortcut to switch to the previous tab in the tab strip." meaning="Used as a command title in the iPad command menu.">
+        Go to Previous Tab
+      </message>
+      <message name="IDS_IOS_KEYBOARD_SHOW_HISTORY" desc="Title of the keyboard shortcut to show the History." meaning="Used as a command title in the iPad command menu.">
+        Show History
+      </message>
+      <message name="IDS_IOS_KEYBOARD_REPORT_AN_ISSUE" desc="The title of the keyboard shortcut to open the form to report an issue." meaning="Used as a command title in the iPad command menu.">
+        Report an Issue…
+      </message>
+      <message name="IDS_IOS_KEYBOARD_ADD_TO_READING_LIST" desc="Title of the keyboard shortcut to add the current URL to the Reading List." meaning="Used as a command title in the iPad command menu.">
+        Add to Reading List
+      </message>
+      <message name="IDS_IOS_KEYBOARD_GO_TO_TAB_GRID" desc="The title of the keyboard shortcut to open the form to report an issue." meaning="Used as a command title in the iPad command menu.">
+        Go to Tab Grid
+      </message>
+      <message name="IDS_IOS_KEYBOARD_CLEAR_BROWSING_DATA" desc="Title of the keyboard shortcut to clear the browsing data." meaning="Used as a command title in the iPad command menu.">
+        Clear Browsing Data…
       </message>
       <message name="IDS_IOS_LONG_PRESS_TOOLBAR_IPH_PROMOTION_TEXT" desc="Text for the LongPress Toolbar Tip in-product help promotion, explaining that the user can long press on the toolbar's button to display more options. [iOS only]">
         Touch &amp; hold for more tab options
@@ -3468,10 +3489,10 @@ New Search
         Share Chrome
       </message>
       <message name="IDS_IOS_OVERFLOW_MENU_SHARE_CHROME_TITLE" desc="The title displayed along with the app store link to Chrome, when sharing the chrome app" meaning="[In Title case] [iOS only] [Length: Unlimited]">
-        Chrome for iOS
+        Chrome for Mobile
       </message>
       <message name="IDS_IOS_OVERFLOW_MENU_SHARE_CHROME_DESC" desc="The description displayed along with the app store link to Chrome, when sharing the chrome app" meaning="[In Title case] [iOS only] [Length: Unlimited]">
-        Get Chrome for iOS
+        Download Chrome here.
       </message>
       <message name="IDS_IOS_TOOLS_MENU_RELOAD" desc="The title of the button in the menu allowing the user to reload the page.">
         Reload
@@ -3518,6 +3539,9 @@ New Search
       <message name="IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_ACTION" desc="The button text for the action to translate the page. [iOS only]">
         Translate
       </message>
+      <message name="IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_TRY_AGAIN_ACTION" desc="The button text for the action to try again the translation after failure. [iOS only]">
+        Try Again
+      </message>
       <message name="IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_UNDO_ACTION" desc="The button text for the action to undo the translation. [iOS only]">
         Show Original
       </message>
@@ -3532,6 +3556,9 @@ New Search
       </message>
       <message name="IDS_IOS_TRANSLATE_INFOBAR_BEFORE_TRANSLATE_BANNER_TITLE" desc="The text for the title of the Translate Message Banner asking the user to translate the page [iOS only]">
         Translate Page?
+      </message>
+      <message name="IDS_IOS_TRANSLATE_INFOBAR_ON_ERROR_BANNER_TITLE" desc="The text for the title of the Translate Message Banner in case of an error [iOS only]">
+        Translation Failed
       </message>
       <message name="IDS_IOS_TRANSLATE_INFOBAR_MODAL_SOURCE_LANGUAGE_FIELD_NAME" desc="The text field name for the source language in the Translate Infobar modal. [iOS only]">
         From

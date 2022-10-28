@@ -15,6 +15,8 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.stringContainsInOrder;
 
 import android.app.Activity;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
@@ -23,6 +25,9 @@ import androidx.test.filters.SmallTest;
 
 import com.google.common.collect.ImmutableList;
 
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -30,15 +35,21 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.FeatureList;
+import org.chromium.base.test.params.ParameterAnnotations;
+import org.chromium.base.test.params.ParameterSet;
+import org.chromium.base.test.params.ParameterizedRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Tests of {@link ChromeBasePreference}.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(ParameterizedRunner.class)
+@Batch(Batch.PER_CLASS)
 public class ChromeBasePreferenceTest {
     @ClassRule
     public static final DisableAnimationsTestRule disableAnimationsRule =
@@ -54,8 +65,20 @@ public class ChromeBasePreferenceTest {
     private PreferenceFragmentCompat mPreferenceFragment;
     private PreferenceScreen mPreferenceScreen;
 
+    private boolean mEnableHighlightManagedPrefDisclaimerAndroid;
+
+    public ChromeBasePreferenceTest(boolean enableHighlightManagedPrefDisclaimerAndroid) {
+        mEnableHighlightManagedPrefDisclaimerAndroid = enableHighlightManagedPrefDisclaimerAndroid;
+    }
+
     @Before
     public void setUp() {
+        FeatureList.TestValues testValuesOverride = new FeatureList.TestValues();
+        testValuesOverride.addFeatureFlagOverride(
+                SettingsFeatureList.HIGHLIGHT_MANAGED_PREF_DISCLAIMER_ANDROID,
+                mEnableHighlightManagedPrefDisclaimerAndroid);
+        FeatureList.setTestValues(testValuesOverride);
+
         mSettingsRule.launchPreference(PlaceholderSettingsForTest.class);
         mActivity = mSettingsRule.getActivity();
         mPreferenceFragment = mSettingsRule.getPreferenceFragment();
@@ -89,9 +112,16 @@ public class ChromeBasePreferenceTest {
         Assert.assertFalse(preference.isEnabled());
 
         getTitleView().check(matches(allOf(withText(TITLE), isDisplayed())));
-        getSummaryView().check(
-                matches(allOf(withText(R.string.managed_by_your_organization), isDisplayed())));
-        getIconView().check(matches(isDisplayed()));
+        if (mEnableHighlightManagedPrefDisclaimerAndroid) {
+            getManagedDisclaimerView().check(
+                    matches(allOf(withText(R.string.managed_by_your_organization),
+                            hasDrawableStart(), isDisplayed())));
+            getIconView().check(matches(not(isDisplayed())));
+        } else {
+            getSummaryView().check(
+                    matches(allOf(withText(R.string.managed_by_your_organization), isDisplayed())));
+            getIconView().check(matches(isDisplayed()));
+        }
     }
 
     @Test
@@ -103,15 +133,22 @@ public class ChromeBasePreferenceTest {
         preference.setManagedPreferenceDelegate(ManagedPreferencesUtilsTest.POLICY_DELEGATE);
         mPreferenceScreen.addPreference(preference);
 
-        List<String> expectedSummaryContains = ImmutableList.of(
-                SUMMARY, mActivity.getString(R.string.managed_by_your_organization));
-
         Assert.assertFalse(preference.isEnabled());
 
         getTitleView().check(matches(allOf(withText(TITLE), isDisplayed())));
-        getSummaryView().check(matches(
-                allOf(withText(stringContainsInOrder(expectedSummaryContains)), isDisplayed())));
-        getIconView().check(matches(isDisplayed()));
+        if (mEnableHighlightManagedPrefDisclaimerAndroid) {
+            getSummaryView().check(matches(allOf(withText(SUMMARY), isDisplayed())));
+            getManagedDisclaimerView().check(
+                    matches(allOf(withText(R.string.managed_by_your_organization),
+                            hasDrawableStart(), isDisplayed())));
+            getIconView().check(matches(not(isDisplayed())));
+        } else {
+            List<String> expectedSummaryContains = ImmutableList.of(
+                    SUMMARY, mActivity.getString(R.string.managed_by_your_organization));
+            getSummaryView().check(matches(allOf(
+                    withText(stringContainsInOrder(expectedSummaryContains)), isDisplayed())));
+            getIconView().check(matches(isDisplayed()));
+        }
     }
 
     @Test
@@ -156,7 +193,30 @@ public class ChromeBasePreferenceTest {
         return onView(withId(android.R.id.summary));
     }
 
+    private ViewInteraction getManagedDisclaimerView() {
+        return onView(withId(R.id.managed_disclaimer_text));
+    }
+
     private ViewInteraction getIconView() {
         return onView(withId(android.R.id.icon));
     }
+
+    private static Matcher<View> hasDrawableStart() {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            protected boolean matchesSafely(View view) {
+                return ((TextView) view).getCompoundDrawablesRelative()[0] != null;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("Expected TextView to define android:drawableStart");
+            }
+        };
+    }
+
+    @ParameterAnnotations.ClassParameter
+    private static List<ParameterSet> sClassParams = Arrays.asList(
+            new ParameterSet().value(true).name("EnableHighlightManagedPrefDisclaimerAndroid"),
+            new ParameterSet().value(false).name("DisableHighlightManagedPrefDisclaimerAndroid"));
 }

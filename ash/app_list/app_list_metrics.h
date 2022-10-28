@@ -234,17 +234,12 @@ struct AppLaunchedMetricParams {
   absl::optional<base::TimeTicks> launcher_show_timestamp;
 };
 
-void AppListRecordPageSwitcherSourceByEventType(ui::EventType type,
-                                                bool is_tablet_mode);
+void AppListRecordPageSwitcherSourceByEventType(ui::EventType type);
 
-void RecordPageSwitcherSource(AppListPageSwitcherSource source,
-                              bool is_tablet_mode);
+void RecordPageSwitcherSource(AppListPageSwitcherSource source);
 
 void RecordZeroStateSearchResultUserActionHistogram(
     ZeroStateSearchResultUserActionType action);
-
-void RecordZeroStateSearchResultRemovalHistogram(
-    SearchResultRemovalConfirmation removal_decision);
 
 void RecordSearchResultRemovalDialogDecision(
     SearchResultRemovalConfirmation removal_decision);
@@ -258,11 +253,6 @@ void RecordPeriodicAppListMetrics();
 ASH_EXPORT void RecordSearchResultOpenSource(const SearchResult* result,
                                              AppListViewState state,
                                              bool is_tablet_mode);
-
-ASH_EXPORT void RecordSearchLaunchIndexAndQueryLength(
-    SearchResultLaunchLocation launch_location,
-    int query_length,
-    int suggestion_index);
 
 ASH_EXPORT void RecordAppListAppLaunched(AppListLaunchedFrom launched_from,
                                          AppListViewState app_list_state,

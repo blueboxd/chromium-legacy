@@ -92,7 +92,11 @@ DIPSState DIPSStorage::ReadSite(std::string site) {
     DCHECK(state->site_storage_times.first.has_value() ||
            state->site_storage_times.last.has_value() ||
            state->user_interaction_times.first.has_value() ||
-           state->user_interaction_times.last.has_value());
+           state->user_interaction_times.last.has_value() ||
+           state->stateful_bounce_times.first.has_value() ||
+           state->stateful_bounce_times.last.has_value() ||
+           state->stateless_bounce_times.first.has_value() ||
+           state->stateless_bounce_times.last.has_value());
 
     return DIPSState(this, std::move(site), state.value());
   }
@@ -158,6 +162,42 @@ void DIPSStorage::RecordInteraction(const GURL& url,
   }
 
   state.update_user_interaction_time(time);
+}
+
+void DIPSStorage::RecordStatefulBounce(const GURL& url, base::Time time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(db_);
+  Read(url).update_stateful_bounce_time(time);
+}
+
+void DIPSStorage::RecordStatelessBounce(const GURL& url, base::Time time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(db_);
+  Read(url).update_stateless_bounce_time(time);
+}
+
+std::vector<std::string> DIPSStorage::GetSitesThatBounced(
+    base::Time range_start,
+    base::Time last_interaction) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(db_);
+  return db_->GetSitesThatBounced(range_start, last_interaction);
+}
+
+std::vector<std::string> DIPSStorage::GetSitesThatBouncedWithState(
+    base::Time range_start,
+    base::Time last_interaction) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(db_);
+  return db_->GetSitesThatBouncedWithState(range_start, last_interaction);
+}
+
+std::vector<std::string> DIPSStorage::GetSitesThatUsedStorage(
+    base::Time range_start,
+    base::Time last_interaction) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(db_);
+  return db_->GetSitesThatUsedStorage(range_start, last_interaction);
 }
 
 /* static */

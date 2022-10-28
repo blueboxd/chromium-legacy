@@ -209,6 +209,38 @@ const CSSValue* AnimationDelay::InitialValue() const {
   return value;
 }
 
+const CSSValue* AnimationDelayStart::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+  return css_parsing_utils::ConsumeCommaSeparatedList(
+      css_parsing_utils::ConsumeAnimationDelay, range, context);
+}
+
+const CSSValue* AnimationDelayStart::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValueForAnimationDelayStart(style.Animations());
+}
+
+const CSSValue* AnimationDelayEnd::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+  return css_parsing_utils::ConsumeCommaSeparatedList(
+      css_parsing_utils::ConsumeAnimationDelay, range, context);
+}
+
+const CSSValue* AnimationDelayEnd::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValueForAnimationDelayEnd(style.Animations());
+}
+
 const CSSValue* AnimationDirection::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
@@ -754,12 +786,14 @@ const CSSValue* BaselineShift::CSSValueFromComputedStyleInternal(
 }
 
 void BaselineShift::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetBaselineShiftType(state.ParentStyle()->BaselineShiftType());
-  state.Style()->SetBaselineShift(state.ParentStyle()->BaselineShift());
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetBaselineShiftType(state.ParentStyle()->BaselineShiftType());
+  builder.SetBaselineShift(state.ParentStyle()->BaselineShift());
 }
 
 void BaselineShift::ApplyValue(StyleResolverState& state,
                                const CSSValue& value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     EBaselineShiftType baseline_shift_type = EBaselineShiftType::kLength;
     switch (identifier_value->GetValueID()) {
@@ -775,11 +809,11 @@ void BaselineShift::ApplyValue(StyleResolverState& state,
       default:
         NOTREACHED();
     }
-    state.Style()->SetBaselineShiftType(baseline_shift_type);
-    state.Style()->SetBaselineShift(Length::Fixed());
+    builder.SetBaselineShiftType(baseline_shift_type);
+    builder.SetBaselineShift(Length::Fixed());
   } else {
-    state.Style()->SetBaselineShiftType(EBaselineShiftType::kLength);
-    state.Style()->SetBaselineShift(StyleBuilderConverter::ConvertLength(
+    builder.SetBaselineShiftType(EBaselineShiftType::kLength);
+    builder.SetBaselineShift(StyleBuilderConverter::ConvertLength(
         state, To<CSSPrimitiveValue>(value)));
   }
 }
@@ -1449,20 +1483,6 @@ const CSSValue* CaretColor::CSSValueFromComputedStyleInternal(
                                                     CSSValuePhase::kUsedValue);
 }
 
-void CaretColor::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetCaretColor(StyleAutoColor::AutoColor());
-}
-
-void CaretColor::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetCaretColor(state.ParentStyle()->CaretColor());
-}
-
-void CaretColor::ApplyValue(StyleResolverState& state,
-                            const CSSValue& value) const {
-  state.Style()->SetCaretColor(
-      StyleBuilderConverter::ConvertStyleAutoColor(state, value));
-}
-
 const CSSValue* Clear::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
@@ -1599,45 +1619,45 @@ const CSSValue* Color::CSSValueFromComputedStyleInternal(
 }
 
 void Color::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetColor(state.Style()->InitialColorForColorScheme());
-  state.Style()->SetColorIsInherited(false);
-  state.Style()->SetColorIsCurrentColor(false);
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetColor(builder.InitialColorForColorScheme());
+  builder.SetColorIsInherited(false);
+  builder.SetColorIsCurrentColor(false);
 }
 
 void Color::ApplyInherit(StyleResolverState& state) const {
-  ComputedStyle* style = state.Style();
-  if (style->ShouldPreserveParentColor()) {
-    style->SetColor(StyleColor(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  if (builder.ShouldPreserveParentColor()) {
+    builder.SetColor(StyleColor(
         state.ParentStyle()->VisitedDependentColor(GetCSSPropertyColor())));
   } else {
-    style->SetColor(state.ParentStyle()->GetColor());
+    builder.SetColor(state.ParentStyle()->GetColor());
   }
-  style->SetColorIsInherited(true);
-  state.Style()->SetColorIsCurrentColor(
-      state.ParentStyle()->ColorIsCurrentColor());
+  builder.SetColorIsInherited(true);
+  builder.SetColorIsCurrentColor(state.ParentStyle()->ColorIsCurrentColor());
 }
 
 void Color::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
   // As per the spec, 'color: currentColor' is treated as 'color: inherit'
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value &&
       identifier_value->GetValueID() == CSSValueID::kCurrentcolor) {
     ApplyInherit(state);
-    state.Style()->SetColorIsCurrentColor(true);
+    builder.SetColorIsCurrentColor(true);
     if (state.UsesHighlightPseudoInheritance() &&
         state.OriginatingElementStyle())
-      state.Style()->SetColor(state.OriginatingElementStyle()->GetColor());
+      builder.SetColor(state.OriginatingElementStyle()->GetColor());
     return;
   }
   if (value.IsInitialColorValue()) {
     DCHECK_EQ(state.GetElement(), state.GetDocument().documentElement());
-    state.Style()->SetColor(state.Style()->InitialColorForColorScheme());
+    builder.SetColor(builder.InitialColorForColorScheme());
   } else {
-    state.Style()->SetColor(
-        StyleBuilderConverter::ConvertStyleColor(state, value));
+    builder.SetColor(StyleBuilderConverter::ConvertStyleColor(state, value));
   }
-  state.Style()->SetColorIsInherited(false);
-  state.Style()->SetColorIsCurrentColor(false);
+  builder.SetColorIsInherited(false);
+  builder.SetColorIsCurrentColor(false);
 }
 
 const CSSValue* ColorInterpolation::CSSValueFromComputedStyleInternal(
@@ -1736,7 +1756,7 @@ void ApplyColorSchemeValue(StyleResolverState& state,
     flags = document.GetStyleEngine().GetPageColorSchemes();
   }
 
-  state.StyleRef().SetColorScheme(std::move(color_schemes));
+  state.StyleBuilder().SetColorScheme(std::move(color_schemes));
 
   state.StyleRef().SetUsedColorScheme(
       flags, document.GetStyleEngine().GetPreferredColorScheme(),
@@ -1759,9 +1779,10 @@ void ColorScheme::ApplyInitial(StyleResolverState& state) const {
 }
 
 void ColorScheme::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetColorScheme(state.ParentStyle()->ColorScheme());
-  state.Style()->SetDarkColorScheme(state.ParentStyle()->DarkColorScheme());
-  state.Style()->SetColorSchemeForced(state.ParentStyle()->ColorSchemeForced());
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetColorScheme(state.ParentStyle()->ColorScheme());
+  builder.SetDarkColorScheme(state.ParentStyle()->DarkColorScheme());
+  builder.SetColorSchemeForced(state.ParentStyle()->ColorSchemeForced());
 }
 
 void ColorScheme::ApplyValue(StyleResolverState& state,
@@ -3257,46 +3278,46 @@ const CSSValue* ForcedColorAdjust::CSSValueFromComputedStyleInternal(
 }
 
 void InternalVisitedColor::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetInternalVisitedColor(
-      state.Style()->InitialColorForColorScheme());
-  state.Style()->SetInternalVisitedColorIsCurrentColor(false);
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetInternalVisitedColor(builder.InitialColorForColorScheme());
+  builder.SetInternalVisitedColorIsCurrentColor(false);
 }
 
 void InternalVisitedColor::ApplyInherit(StyleResolverState& state) const {
-  ComputedStyle* style = state.Style();
-  if (style->ShouldPreserveParentColor()) {
-    style->SetInternalVisitedColor(StyleColor(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  if (builder.ShouldPreserveParentColor()) {
+    builder.SetInternalVisitedColor(StyleColor(
         state.ParentStyle()->VisitedDependentColor(GetCSSPropertyColor())));
   } else {
-    style->SetInternalVisitedColor(state.ParentStyle()->GetColor());
+    builder.SetInternalVisitedColor(state.ParentStyle()->GetColor());
   }
-  state.Style()->SetInternalVisitedColorIsCurrentColor(
+  builder.SetInternalVisitedColorIsCurrentColor(
       state.ParentStyle()->InternalVisitedColorIsCurrentColor());
 }
 
 void InternalVisitedColor::ApplyValue(StyleResolverState& state,
                                       const CSSValue& value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value &&
       identifier_value->GetValueID() == CSSValueID::kCurrentcolor) {
     ApplyInherit(state);
-    state.Style()->SetInternalVisitedColorIsCurrentColor(true);
+    builder.SetInternalVisitedColorIsCurrentColor(true);
     if (state.UsesHighlightPseudoInheritance() &&
         state.OriginatingElementStyle()) {
-      state.Style()->SetInternalVisitedColor(
+      builder.SetInternalVisitedColor(
           state.OriginatingElementStyle()->InternalVisitedColor());
     }
     return;
   }
   if (value.IsInitialColorValue()) {
     DCHECK_EQ(state.GetElement(), state.GetDocument().documentElement());
-    state.Style()->SetInternalVisitedColor(
-        state.Style()->InitialColorForColorScheme());
+    builder.SetInternalVisitedColor(builder.InitialColorForColorScheme());
   } else {
-    state.Style()->SetInternalVisitedColor(
+    builder.SetInternalVisitedColor(
         StyleBuilderConverter::ConvertStyleColor(state, value, true));
   }
-  state.Style()->SetInternalVisitedColorIsCurrentColor(false);
+  builder.SetInternalVisitedColorIsCurrentColor(false);
 }
 
 const blink::Color InternalVisitedColor::ColorIncludingFallback(
@@ -4246,13 +4267,13 @@ const CSSValue* InternalForcedBorderColor::ParseSingleValue(
 }
 
 void InternalForcedColor::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetInternalForcedColor(
+  state.StyleBuilder().SetInternalForcedColor(
       ComputedStyleInitialValues::InitialInternalForcedColor());
 }
 
 void InternalForcedColor::ApplyInherit(StyleResolverState& state) const {
-  auto color = state.ParentStyle()->InternalForcedColor();
-  state.Style()->SetInternalForcedColor(color);
+  state.StyleBuilder().SetInternalForcedColor(
+      state.ParentStyle()->InternalForcedColor());
 }
 
 void InternalForcedColor::ApplyValue(StyleResolverState& state,
@@ -4263,13 +4284,14 @@ void InternalForcedColor::ApplyValue(StyleResolverState& state,
     ApplyInherit(state);
     return;
   }
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   if (value.IsInitialColorValue()) {
     DCHECK_EQ(state.GetElement(), state.GetDocument().documentElement());
-    state.Style()->SetInternalForcedColor(
+    builder.SetInternalForcedColor(
         ComputedStyleInitialValues::InitialInternalForcedColor());
     return;
   }
-  state.Style()->SetInternalForcedColor(
+  builder.SetInternalForcedColor(
       StyleBuilderConverter::ConvertStyleColor(state, value));
 }
 
@@ -4330,13 +4352,13 @@ const CSSValue* InternalForcedOutlineColor::ParseSingleValue(
 }
 
 void InternalForcedVisitedColor::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetInternalForcedVisitedColor(
+  state.StyleBuilder().SetInternalForcedVisitedColor(
       ComputedStyleInitialValues::InitialInternalForcedVisitedColor());
 }
 
 void InternalForcedVisitedColor::ApplyInherit(StyleResolverState& state) const {
   auto color = state.ParentStyle()->InternalForcedVisitedColor();
-  state.Style()->SetInternalForcedVisitedColor(color);
+  state.StyleBuilder().SetInternalForcedVisitedColor(color);
 }
 
 void InternalForcedVisitedColor::ApplyValue(StyleResolverState& state,
@@ -4347,13 +4369,14 @@ void InternalForcedVisitedColor::ApplyValue(StyleResolverState& state,
     ApplyInherit(state);
     return;
   }
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   if (value.IsInitialColorValue()) {
     DCHECK_EQ(state.GetElement(), state.GetDocument().documentElement());
-    state.Style()->SetInternalForcedVisitedColor(
+    builder.SetInternalForcedVisitedColor(
         ComputedStyleInitialValues::InitialInternalForcedVisitedColor());
     return;
   }
-  state.Style()->SetInternalForcedVisitedColor(
+  builder.SetInternalForcedVisitedColor(
       StyleBuilderConverter::ConvertStyleColor(state, value, true));
 }
 
@@ -5283,20 +5306,6 @@ const CSSValue* AccentColor::CSSValueFromComputedStyleInternal(
       style, style.AccentColor(), CSSValuePhase::kComputedValue);
 }
 
-void AccentColor::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetAccentColor(StyleAutoColor::AutoColor());
-}
-
-void AccentColor::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetAccentColor(state.ParentStyle()->AccentColor());
-}
-
-void AccentColor::ApplyValue(StyleResolverState& state,
-                             const CSSValue& value) const {
-  state.Style()->SetAccentColor(
-      StyleBuilderConverter::ConvertStyleAutoColor(state, value));
-}
-
 const blink::Color OutlineColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style,
@@ -5353,23 +5362,25 @@ const CSSValue* OutlineStyle::CSSValueFromComputedStyleInternal(
 }
 
 void OutlineStyle::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetOutlineStyleIsAuto(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetOutlineStyleIsAuto(
       ComputedStyleInitialValues::InitialOutlineStyleIsAuto());
-  state.Style()->SetOutlineStyle(EBorderStyle::kNone);
+  builder.SetOutlineStyle(EBorderStyle::kNone);
 }
 
 void OutlineStyle::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetOutlineStyleIsAuto(
-      state.ParentStyle()->OutlineStyleIsAuto());
-  state.Style()->SetOutlineStyle(state.ParentStyle()->OutlineStyle());
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetOutlineStyleIsAuto(state.ParentStyle()->OutlineStyleIsAuto());
+  builder.SetOutlineStyle(state.ParentStyle()->OutlineStyle());
 }
 
 void OutlineStyle::ApplyValue(StyleResolverState& state,
                               const CSSValue& value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   const auto& identifier_value = To<CSSIdentifierValue>(value);
-  state.Style()->SetOutlineStyleIsAuto(
+  builder.SetOutlineStyleIsAuto(
       static_cast<bool>(identifier_value.ConvertTo<OutlineIsAuto>()));
-  state.Style()->SetOutlineStyle(identifier_value.ConvertTo<EBorderStyle>());
+  builder.SetOutlineStyle(identifier_value.ConvertTo<EBorderStyle>());
 }
 
 const CSSValue* OutlineWidth::ParseSingleValue(
@@ -5488,28 +5499,31 @@ const CSSValue* OverflowX::CSSValueFromComputedStyleInternal(
 }
 
 void OverflowX::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetOverflowX(ComputedStyleInitialValues::InitialOverflowX());
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetOverflowX(ComputedStyleInitialValues::InitialOverflowX());
 
-  DCHECK_EQ(state.Style()->OverflowX(), EOverflow::kVisible);
-  state.Style()->SetHasExplicitOverflowXVisible();
+  DCHECK_EQ(builder.OverflowX(), EOverflow::kVisible);
+  builder.SetHasExplicitOverflowXVisible();
 }
 
 void OverflowX::ApplyInherit(StyleResolverState& state) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   auto parent_value = state.ParentStyle()->OverflowX();
-  state.Style()->SetOverflowX(parent_value);
+  builder.SetOverflowX(parent_value);
 
   if (parent_value == EOverflow::kVisible)
-    state.Style()->SetHasExplicitOverflowXVisible();
+    builder.SetHasExplicitOverflowXVisible();
 }
 
 void OverflowX::ApplyValue(StyleResolverState& state,
                            const CSSValue& value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   auto converted_value =
       To<CSSIdentifierValue>(value).ConvertTo<blink::EOverflow>();
-  state.Style()->SetOverflowX(converted_value);
+  builder.SetOverflowX(converted_value);
 
   if (converted_value == EOverflow::kVisible)
-    state.Style()->SetHasExplicitOverflowXVisible();
+    builder.SetHasExplicitOverflowXVisible();
 }
 
 const CSSValue* OverflowY::CSSValueFromComputedStyleInternal(
@@ -5520,28 +5534,31 @@ const CSSValue* OverflowY::CSSValueFromComputedStyleInternal(
 }
 
 void OverflowY::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetOverflowY(ComputedStyleInitialValues::InitialOverflowY());
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetOverflowY(ComputedStyleInitialValues::InitialOverflowY());
 
-  DCHECK_EQ(state.Style()->OverflowY(), EOverflow::kVisible);
-  state.Style()->SetHasExplicitOverflowYVisible();
+  DCHECK_EQ(builder.OverflowY(), EOverflow::kVisible);
+  builder.SetHasExplicitOverflowYVisible();
 }
 
 void OverflowY::ApplyInherit(StyleResolverState& state) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   auto parent_value = state.ParentStyle()->OverflowY();
-  state.Style()->SetOverflowY(parent_value);
+  builder.SetOverflowY(parent_value);
 
   if (parent_value == EOverflow::kVisible)
-    state.Style()->SetHasExplicitOverflowYVisible();
+    builder.SetHasExplicitOverflowYVisible();
 }
 
 void OverflowY::ApplyValue(StyleResolverState& state,
                            const CSSValue& value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   auto converted_value =
       To<CSSIdentifierValue>(value).ConvertTo<blink::EOverflow>();
-  state.Style()->SetOverflowY(converted_value);
+  builder.SetOverflowY(converted_value);
 
   if (converted_value == EOverflow::kVisible)
-    state.Style()->SetHasExplicitOverflowYVisible();
+    builder.SetHasExplicitOverflowYVisible();
 }
 
 const CSSValue* OverscrollBehaviorX::CSSValueFromComputedStyleInternal(
@@ -5905,18 +5922,18 @@ const CSSValue* PerspectiveOrigin::CSSValueFromComputedStyleInternal(
 
     return MakeGarbageCollected<CSSValuePair>(
         ZoomAdjustedPixelValue(
-            MinimumValueForLength(style.PerspectiveOriginX(), box.Width()),
+            MinimumValueForLength(style.PerspectiveOrigin().X(), box.Width()),
             style),
         ZoomAdjustedPixelValue(
-            MinimumValueForLength(style.PerspectiveOriginY(), box.Height()),
+            MinimumValueForLength(style.PerspectiveOrigin().Y(), box.Height()),
             style),
         CSSValuePair::kKeepIdenticalValues);
   } else {
     return MakeGarbageCollected<CSSValuePair>(
         ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-            style.PerspectiveOriginX(), style),
+            style.PerspectiveOrigin().X(), style),
         ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-            style.PerspectiveOriginY(), style),
+            style.PerspectiveOrigin().Y(), style),
         CSSValuePair::kKeepIdenticalValues);
   }
 }
@@ -7589,18 +7606,22 @@ const CSSValue* TransformOrigin::CSSValueFromComputedStyleInternal(
     gfx::RectF reference_box = ComputedStyleUtils::ReferenceBoxForTransform(
         *layout_object, ComputedStyleUtils::kDontUsePixelSnappedBox);
     gfx::PointF resolved_origin(
-        FloatValueForLength(style.TransformOriginX(), reference_box.width()),
-        FloatValueForLength(style.TransformOriginY(), reference_box.height()));
+        FloatValueForLength(style.GetTransformOrigin().X(),
+                            reference_box.width()),
+        FloatValueForLength(style.GetTransformOrigin().Y(),
+                            reference_box.height()));
     list->Append(*ZoomAdjustedPixelValue(resolved_origin.x(), style));
     list->Append(*ZoomAdjustedPixelValue(resolved_origin.y(), style));
   } else {
     list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-        style.TransformOriginX(), style));
+        style.GetTransformOrigin().X(), style));
     list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-        style.TransformOriginY(), style));
+        style.GetTransformOrigin().Y(), style));
   }
-  if (style.TransformOriginZ() != 0)
-    list->Append(*ZoomAdjustedPixelValue(style.TransformOriginZ(), style));
+  if (style.GetTransformOrigin().Z() != 0) {
+    list->Append(
+        *ZoomAdjustedPixelValue(style.GetTransformOrigin().Z(), style));
+  }
   return list;
 }
 
@@ -8506,6 +8527,11 @@ const CSSValue* WebkitPerspectiveOriginX::ParseSingleValue(
       range, context);
 }
 
+void WebkitPerspectiveOriginX::ApplyInherit(StyleResolverState& state) const {
+  state.StyleBuilder().SetPerspectiveOriginX(
+      state.ParentStyle()->PerspectiveOrigin().X());
+}
+
 const CSSValue* WebkitPerspectiveOriginY::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -8513,6 +8539,11 @@ const CSSValue* WebkitPerspectiveOriginY::ParseSingleValue(
   return css_parsing_utils::ConsumePositionLonghand<CSSValueID::kTop,
                                                     CSSValueID::kBottom>(
       range, context);
+}
+
+void WebkitPerspectiveOriginY::ApplyInherit(StyleResolverState& state) const {
+  state.StyleBuilder().SetPerspectiveOriginY(
+      state.ParentStyle()->PerspectiveOrigin().Y());
 }
 
 const CSSValue* WebkitPrintColorAdjust::CSSValueFromComputedStyleInternal(
@@ -9112,6 +9143,11 @@ const CSSValue* WebkitTransformOriginX::ParseSingleValue(
       range, context);
 }
 
+void WebkitTransformOriginX::ApplyInherit(StyleResolverState& state) const {
+  state.StyleBuilder().SetTransformOriginX(
+      state.ParentStyle()->GetTransformOrigin().X());
+}
+
 const CSSValue* ToggleVisibility::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -9155,12 +9191,22 @@ const CSSValue* WebkitTransformOriginY::ParseSingleValue(
       range, context);
 }
 
+void WebkitTransformOriginY::ApplyInherit(StyleResolverState& state) const {
+  state.StyleBuilder().SetTransformOriginY(
+      state.ParentStyle()->GetTransformOrigin().Y());
+}
+
 const CSSValue* WebkitTransformOriginZ::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return css_parsing_utils::ConsumeLength(range, context,
                                           CSSPrimitiveValue::ValueRange::kAll);
+}
+
+void WebkitTransformOriginZ::ApplyInherit(StyleResolverState& state) const {
+  state.StyleBuilder().SetTransformOriginZ(
+      state.ParentStyle()->GetTransformOrigin().Z());
 }
 
 const CSSValue* WebkitUserDrag::CSSValueFromComputedStyleInternal(

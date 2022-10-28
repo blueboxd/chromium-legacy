@@ -220,7 +220,6 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2107914222138020205">Kablloja jote USB-C nuk mbështet Thunderbolt. Cilësia e funksionimit të pajisjes mund të jetë e kufizuar.</translation>
 <translation id="2108303511227308752">Shkurtorja për Alt + Backspace është ndryshuar. Për të përdorur tastin Delete, shtyp tastin <ph name="LAUNCHER_KEY_NAME" /> key + Backspace.</translation>
 <translation id="211328683600082144">NDIZ MIKROFONIN</translation>
-<translation id="2123115117533398272">ChromeOS shfaq sugjerime për përmbajtje të reja për të eksploruar. Dërgon statistika për të përmirësuar cilësinë vetëm nëse ke zgjedhur të ndash të dhënat e përdorimit. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="2126242104232412123">Tavolinë e re</translation>
 <translation id="2132302418721800944">Regjistro ekranin e plotë</translation>
 <translation id="2135456203358955318">Zmadhuesi i stacionuar</translation>
@@ -288,7 +287,6 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2542089167727451762">Trokit imazhin e profilit tënd</translation>
 <translation id="255671100581129685">"Asistenti i Google" nuk ofrohet në një sesion publik.</translation>
 <translation id="256712445991462162">zmadhuesi i stacionuar</translation>
-<translation id="2570734079541893434">Menaxho cilësimet</translation>
 <translation id="2573588302192866788"><ph name="NAME" /> nuk mund të lidhej</translation>
 <translation id="2575685495496069081">Identifikimi i shumëfishtë është çaktivizuar.</translation>
 <translation id="2582112259361606227">Rinise për të kryer përditësimin</translation>
@@ -309,6 +307,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2673968385134502798">Lojëra</translation>
 <translation id="2678852583403169292">Menyja e "Zgjidh që të thuhet"</translation>
 <translation id="2689613560355655046">Tavolina e punës 8</translation>
+<translation id="2695132445805301912">Shfaq tastet dhe klikimet</translation>
 <translation id="2695305337569143674">uebi</translation>
 <translation id="2697697418792422688">Shfaq cilësimet e tastierës. Është zgjedhur <ph name="KEYBOARD_NAME" />.</translation>
 <translation id="2700493154570097719">Vendos tastierën</translation>
@@ -1126,6 +1125,7 @@ Instalim i ri</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7313193732017069507">Zgjero kamerën</translation>
 <translation id="731589979057211264">"Grupi i rafteve" është aktiv.</translation>
+<translation id="7340731148882810149">Menyja e klikimeve automatike</translation>
 <translation id="7346909386216857016">Në rregull, kuptova</translation>
 <translation id="7348093485538360975">Tastiera në ekran</translation>
 <translation id="735745346212279324">Rrjeti VPN u shkëput</translation>
@@ -1303,6 +1303,7 @@ Instalim i ri</translation>
 <translation id="826107067893790409">Shtyp "Enter" për ta shkyçur për <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Fshi</translation>
 <translation id="8270450402312105425">{0,plural, =1{Kalo pajisjen në versionin e mëparshëm brenda një ore}other{Kalo pajisjen në versionin e mëparshëm brenda # orësh}}</translation>
+<translation id="8277261673056602147">Thekso tekstin në ekranin tënd</translation>
 <translation id="8284362522226889623">Rrëshqit shpejt majtas me katër gishta për të kaluar te tavolina e mëparshme e punës</translation>
 <translation id="828708037801473432">Joaktiv</translation>
 <translation id="8297006494302853456">I dobët</translation>

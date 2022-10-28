@@ -86,6 +86,8 @@ WebAppProvider* WebAppProvider::GetForTest(Profile* profile) {
   CHECK_IS_TEST();
 
   WebAppProvider* provider = GetForLocalAppsUnchecked(profile);
+  if (!provider)
+    return nullptr;
 
   if (provider->on_registry_ready().is_signaled())
     return provider;
@@ -313,7 +315,8 @@ void WebAppProvider::ConnectSubsystems() {
   manifest_update_manager_->SetSubsystems(
       install_manager_.get(), registrar_.get(), icon_manager_.get(),
       ui_manager_.get(), install_finalizer_.get(),
-      os_integration_manager_.get(), sync_bridge_.get());
+      os_integration_manager_.get(), sync_bridge_.get(),
+      command_scheduler_.get());
   externally_managed_app_manager_->SetSubsystems(
       registrar_.get(), ui_manager_.get(), install_finalizer_.get(),
       command_manager_.get(), sync_bridge_.get());
@@ -329,7 +332,6 @@ void WebAppProvider::ConnectSubsystems() {
   os_integration_manager_->SetSubsystems(sync_bridge_.get(), registrar_.get(),
                                          ui_manager_.get(),
                                          icon_manager_.get());
-
   command_manager_->SetSubsystems(install_manager_.get());
   connected_ = true;
 }

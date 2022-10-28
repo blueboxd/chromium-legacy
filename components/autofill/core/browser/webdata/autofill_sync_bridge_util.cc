@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/pickle.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -74,7 +75,7 @@ const char* CardNetworkFromWalletCardType(
   }
 }
 
-// Creates an AutofillProfile from the specified |card| specifics.
+// Creates a CreditCard from the specified `card` specifics.
 CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
   CreditCard result(CreditCard::MASKED_SERVER_CARD, card.id());
   result.SetNumber(base::UTF8ToUTF16(card.last_four()));
@@ -92,6 +93,9 @@ CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
       break;
     case sync_pb::CardIssuer::GOOGLE:
       issuer = CreditCard::GOOGLE;
+      break;
+    case sync_pb::CardIssuer::EXTERNAL_ISSUER:
+      issuer = CreditCard::EXTERNAL_ISSUER;
       break;
   }
   result.set_card_issuer(issuer);
@@ -270,6 +274,9 @@ void SetAutofillWalletSpecificsFromServerCard(
       break;
     case CreditCard::GOOGLE:
       issuer = sync_pb::CardIssuer::GOOGLE;
+      break;
+    case CreditCard::EXTERNAL_ISSUER:
+      issuer = sync_pb::CardIssuer::EXTERNAL_ISSUER;
       break;
   }
   wallet_card->mutable_card_issuer()->set_issuer(issuer);
@@ -619,8 +626,7 @@ bool AreAnyItemsDifferent(const std::vector<std::unique_ptr<Item>>& old_data,
   auto compare_equal = [](const Item* lhs, const Item* rhs) {
     return lhs->Compare(*rhs) == 0;
   };
-  return !std::equal(old_ptrs.begin(), old_ptrs.end(), new_ptrs.begin(),
-                     compare_equal);
+  return !base::ranges::equal(old_ptrs, new_ptrs, compare_equal);
 }
 
 template bool AreAnyItemsDifferent<>(

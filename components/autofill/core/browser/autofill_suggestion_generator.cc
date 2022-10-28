@@ -119,6 +119,7 @@ AutofillSuggestionGenerator::GetSuggestionsForCreditCards(
     const std::string& app_locale,
     bool* should_display_gpay_logo,
     bool* with_offer) {
+  DCHECK(type.group() == FieldTypeGroup::kCreditCard);
   std::vector<Suggestion> suggestions;
 
   std::map<std::string, AutofillOfferData*> card_linked_offers_map =
@@ -354,6 +355,59 @@ void AutofillSuggestionGenerator::SplitFrontendId(
   *profile_backend_id = InternalIdToBackendId(profile_int_id);
 }
 
+bool AutofillSuggestionGenerator::ShouldShowVirtualCardOption(
+    const CreditCard* candidate_card) const {
+  switch (candidate_card->record_type()) {
+    case CreditCard::MASKED_SERVER_CARD:
+      return candidate_card->virtual_card_enrollment_state() ==
+             CreditCard::ENROLLED;
+    case CreditCard::LOCAL_CARD: {
+      const CreditCard* server_duplicate =
+          GetServerCardForLocalCard(candidate_card);
+      return server_duplicate &&
+             server_duplicate->virtual_card_enrollment_state() ==
+                 CreditCard::ENROLLED;
+    }
+    case CreditCard::FULL_SERVER_CARD:
+      return false;
+    case CreditCard::VIRTUAL_CARD:
+      // Should not happen since virtual card is not persisted.
+      NOTREACHED();
+      return false;
+  }
+}
+
+const CreditCard* AutofillSuggestionGenerator::GetServerCardForLocalCard(
+    const CreditCard* local_card) const {
+  DCHECK(local_card);
+  if (local_card->record_type() != CreditCard::LOCAL_CARD)
+    return nullptr;
+
+  std::vector<CreditCard*> server_cards =
+      personal_data_->GetServerCreditCards();
+  auto it = base::ranges::find_if(
+      server_cards.begin(), server_cards.end(),
+      [&](const CreditCard* server_card) {
+        return local_card->IsLocalDuplicateOfServerCard(*server_card);
+      });
+
+  if (it != server_cards.end())
+    return *it;
+
+  return nullptr;
+}
+
+InternalId AutofillSuggestionGenerator::BackendIdToInternalIdForTesting(
+    const Suggestion::BackendId& backend_id) {
+  return BackendIdToInternalId(backend_id);
+}
+
+Suggestion::BackendId
+AutofillSuggestionGenerator::InternalIdToBackendIdForTesting(
+    InternalId internal_id) {
+  return InternalIdToBackendId(internal_id);
+}
+
 // TODO(crbug.com/1346331): Separate logic for desktop, Android dropdown, and
 // Keyboard Accessory.
 Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
@@ -363,6 +417,8 @@ Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
     bool virtual_card_option,
     const std::string& app_locale,
     bool card_linked_offer_available) const {
+  DCHECK(type.group() == FieldTypeGroup::kCreditCard);
+
   // The kAutofillKeyboardAccessory feature is only available on Android. So for
   // other platforms, we'd always use the obfuscation_length of 4.
   int obfuscation_length =
@@ -415,15 +471,17 @@ Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
   if (!card_label.empty())
     suggestion.labels = {{Suggestion::Text(std::move(card_label))}};
 
+  SetCardArtURL(suggestion, credit_card, virtual_card_option);
+
   // For virtual cards, make some adjustments for the suggestion contents.
   if (virtual_card_option) {
     // We don't show card linked offers for virtual card options.
-    AdjustSuggestionContentForVirtualCard(&suggestion, credit_card, type);
+    AdjustVirtualCardSuggestionContent(suggestion, credit_card, type);
   } else if (card_linked_offer_available) {
     // If Keyboard Accessory is not enabled (i.e. Desktop or Clank dropdown),
     // populate an offer label.
     if (!base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)) {
-      suggestion.labels.emplace_back(
+      suggestion.labels.push_back(
           std::vector<Suggestion::Text>{Suggestion::Text(
               l10n_util::GetStringUTF16(IDS_AUTOFILL_OFFERS_CASHBACK))});
 
@@ -442,53 +500,13 @@ Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
   return suggestion;
 }
 
-bool AutofillSuggestionGenerator::ShouldShowVirtualCardOption(
-    const CreditCard* candidate_card) const {
-  switch (candidate_card->record_type()) {
-    case CreditCard::MASKED_SERVER_CARD:
-      return candidate_card->virtual_card_enrollment_state() ==
-             CreditCard::ENROLLED;
-    case CreditCard::LOCAL_CARD: {
-      const CreditCard* server_duplicate =
-          GetServerCardForLocalCard(candidate_card);
-      return server_duplicate &&
-             server_duplicate->virtual_card_enrollment_state() ==
-                 CreditCard::ENROLLED;
-    }
-    case CreditCard::FULL_SERVER_CARD:
-      return false;
-    case CreditCard::VIRTUAL_CARD:
-      // Should not happen since virtual card is not persisted.
-      NOTREACHED();
-      return false;
-  }
-}
-
-const CreditCard* AutofillSuggestionGenerator::GetServerCardForLocalCard(
-    const CreditCard* local_card) const {
-  DCHECK(local_card);
-  if (local_card->record_type() != CreditCard::LOCAL_CARD)
-    return nullptr;
-
-  std::vector<CreditCard*> server_cards =
-      personal_data_->GetServerCreditCards();
-  auto it = base::ranges::find_if(
-      server_cards.begin(), server_cards.end(),
-      [&](const CreditCard* server_card) {
-        return local_card->IsLocalDuplicateOfServerCard(*server_card);
-      });
-
-  if (it != server_cards.end())
-    return *it;
-
-  return nullptr;
-}
-
 std::u16string AutofillSuggestionGenerator::GetCardLabel(
     const CreditCard& credit_card,
     const AutofillType& type,
     const std::string& app_locale,
     int obfuscation_length) const {
+  DCHECK(type.group() == FieldTypeGroup::kCreditCard);
+
   // If the focused field is a card number field.
   if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
@@ -533,50 +551,74 @@ std::u16string AutofillSuggestionGenerator::GetCardLabel(
 #endif
 }
 
-void AutofillSuggestionGenerator::AdjustSuggestionContentForVirtualCard(
-    Suggestion* suggestion,
+void AutofillSuggestionGenerator::AdjustVirtualCardSuggestionContent(
+    Suggestion& suggestion,
     const CreditCard& credit_card,
     const AutofillType& type) const {
-  GURL card_art_url_for_virtual_card_option;
-  if (credit_card.record_type() == CreditCard::MASKED_SERVER_CARD) {
-    card_art_url_for_virtual_card_option = credit_card.card_art_url();
-  } else if (credit_card.record_type() == CreditCard::LOCAL_CARD) {
+  if (credit_card.record_type() == CreditCard::LOCAL_CARD) {
     const CreditCard* server_duplicate_card =
         GetServerCardForLocalCard(&credit_card);
     DCHECK(server_duplicate_card);
-    card_art_url_for_virtual_card_option =
-        server_duplicate_card->card_art_url();
-    suggestion->payload = Suggestion::BackendId(server_duplicate_card->guid());
+    suggestion.payload = Suggestion::BackendId(server_duplicate_card->guid());
   }
 
-  suggestion->frontend_id = POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY;
-  suggestion->feature_for_iph =
+  suggestion.frontend_id = POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY;
+  suggestion.feature_for_iph =
       feature_engagement::kIPHAutofillVirtualCardSuggestionFeature.name;
 
   // TODO(crbug.com/1344629): Update "Virtual card" label for other fields.
   // For virtual cards, prefix "Virtual card" label to field suggestions. For
   // card number field in a dropdown, show the "Virtual card" label below the
   // card number for Metadata experiment.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableVirtualCardMetadata) &&
-      type.GetStorableType() == CREDIT_CARD_NUMBER &&
-      !base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)) {
-    suggestion->labels = {{Suggestion::Text(l10n_util::GetStringUTF16(
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillEnableVirtualCardMetadata) ||
+      base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)) {
+    suggestion.minor_text.value = suggestion.main_text.value;
+    suggestion.main_text.value = l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE);
+  } else if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
+    // If the focused field is a credit card number field, reset all labels and
+    // populate only the virtual card text.
+    suggestion.labels = {{Suggestion::Text(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE))}};
   } else {
-    suggestion->minor_text.value = suggestion->main_text.value;
-    suggestion->main_text.value = l10n_util::GetStringUTF16(
-        IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE);
+    // Otherwise, add the virtual card text after the original label, so it
+    // will be shown on the third line.
+    suggestion.labels.push_back(std::vector<Suggestion::Text>{
+        Suggestion::Text(l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE))});
+  }
+}
+
+void AutofillSuggestionGenerator::SetCardArtURL(
+    Suggestion& suggestion,
+    const CreditCard& credit_card,
+    bool virtual_card_option) const {
+  if (!virtual_card_option &&
+      !base::FeatureList::IsEnabled(features::kAutofillEnableCardArtImage)) {
+    return;
   }
 
+  GURL card_art_url;
+  if (credit_card.record_type() == CreditCard::MASKED_SERVER_CARD) {
+    card_art_url = credit_card.card_art_url();
+  } else if (credit_card.record_type() == CreditCard::LOCAL_CARD) {
+    const CreditCard* server_duplicate_card =
+        GetServerCardForLocalCard(&credit_card);
+    if (server_duplicate_card)
+      card_art_url = server_duplicate_card->card_art_url();
+  }
+
+  if (card_art_url.is_empty() || !card_art_url.is_valid())
+    return;
+
 #if BUILDFLAG(IS_ANDROID)
-  suggestion->custom_icon_url = card_art_url_for_virtual_card_option;
+  suggestion.custom_icon_url = card_art_url;
 #else
-  gfx::Image* image = personal_data_->GetCreditCardArtImageForUrl(
-      card_art_url_for_virtual_card_option);
+  gfx::Image* image = personal_data_->GetCreditCardArtImageForUrl(card_art_url);
   if (image)
-    suggestion->custom_icon = *image;
-#endif  // BUILDFLAG(IS_ANDROID)
+    suggestion.custom_icon = *image;
+#endif
 }
 
 InternalId AutofillSuggestionGenerator::BackendIdToInternalId(

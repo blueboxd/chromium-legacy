@@ -146,6 +146,13 @@ class CrxInstaller : public SandboxedUnpackerClient, public ProfileObserver {
   void InitializeCreationFlagsForUpdate(const Extension* extension,
                                         const int initial_flags);
 
+  // Adds a callback that will be run once the installation finishes
+  // (successfully or not).
+  // The added callbacks will be run in the order in which they were added
+  // (FIFO).
+  // Virtual for testing.
+  virtual void AddInstallerCallback(InstallerResultCallback callback);
+
   int creation_flags() const { return creation_flags_; }
   void set_creation_flags(int val) { creation_flags_ = val; }
 
@@ -236,9 +243,6 @@ class CrxInstaller : public SandboxedUnpackerClient, public ProfileObserver {
     set_install_flag(kInstallFlagBypassedSafeBrowsingFriction, val);
   }
 
-  // Virtual for testing.
-  virtual void set_installer_callback(InstallerResultCallback callback);
-
   // Callback to be invoked when the crx file has passed the expectations check
   // after unpack success and the ownership of the crx file lies with the
   // installer. The callback is passed the ownership of the crx file.
@@ -255,10 +259,16 @@ class CrxInstaller : public SandboxedUnpackerClient, public ProfileObserver {
   // invalid if this isn't an update.
   const base::Version& current_version() const { return current_version_; }
 
+ protected:
+  // Run all callbacks received in AddInstallerCallback with the given error.
+  // Protected so that FakeCrxInstaller can expose it.
+  void RunInstallerCallbacks(const absl::optional<CrxInstallError>& error);
+
  private:
   friend class ::ExtensionServiceTest;
   friend class BookmarkAppInstallFinalizerTest;
   friend class ExtensionUpdaterTest;
+  friend class FakeCrxInstaller;
   friend class MockCrxInstaller;
 
   CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
@@ -541,7 +551,7 @@ class CrxInstaller : public SandboxedUnpackerClient, public ProfileObserver {
   std::unique_ptr<PreloadCheckGroup> check_group_;
 
   // Invoked when the install is completed.
-  InstallerResultCallback installer_callback_;
+  std::vector<InstallerResultCallback> installer_callbacks_;
 
   // Invoked when the expectations from CRXFileInfo match with the crx file
   // after unpack success.

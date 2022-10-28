@@ -217,6 +217,15 @@ bool IsAccessibilitySelectToSpeakPrefsMigrationEnabled() {
       ::features::kAccessibilitySelectToSpeakPrefsMigration);
 }
 
+BASE_FEATURE(kAccessibilitySelectToSpeakContextMenuOption,
+             "AccessibilitySelectToSpeakContextMenuOption",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsAccessibilitySelectToSpeakContextMenuOptionEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kAccessibilitySelectToSpeakContextMenuOption);
+}
+
 BASE_FEATURE(kAccessibilitySelectToSpeakHoverTextImprovements,
              "AccessibilitySelectToSpeakHoverTextImprovements",
              base::FEATURE_DISABLED_BY_DEFAULT);

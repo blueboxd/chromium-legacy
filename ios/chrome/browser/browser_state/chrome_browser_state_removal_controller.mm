@@ -18,12 +18,12 @@
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/browser_state_info_cache.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
-#import "ios/chrome/browser/chrome_constants.h"
+#import "ios/chrome/browser/browser_state/constants.h"
 #import "ios/chrome/browser/paths/paths_internal.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
+#import "ios/chrome/browser/signin/system_identity.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

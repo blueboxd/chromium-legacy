@@ -14,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
@@ -159,8 +160,9 @@ TestDiskInfo kTestDisks[] = {{"file_path1",
                               "exfat",
                               ""}};
 
+const char kLocalMountPointName[] = "local";
+
 void AddLocalFileSystem(Profile* profile, base::FilePath root) {
-  const char kLocalMountPointName[] = "local";
   const char kTestFileContent[] = "The five boxing wizards jumped quickly";
 
   {
@@ -241,17 +243,17 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
          ash::CrosDisksClient::GetRemovableDiskMountPoint()
              .AppendASCII("mount_path1")
              .AsUTF8Unsafe(),
-         ash::MountType::kDevice, ash::MountError::kNone, 0},
+         ash::MountType::kDevice, ash::MountError::kSuccess, 0},
         {"device_path2",
          ash::CrosDisksClient::GetRemovableDiskMountPoint()
              .AppendASCII("mount_path2")
              .AsUTF8Unsafe(),
-         ash::MountType::kDevice, ash::MountError::kNone, 1},
+         ash::MountType::kDevice, ash::MountError::kSuccess, 1},
         {"device_path3",
          ash::CrosDisksClient::GetRemovableDiskMountPoint()
              .AppendASCII("mount_path3")
              .AsUTF8Unsafe(),
-         ash::MountType::kDevice, ash::MountError::kNone, 2},
+         ash::MountType::kDevice, ash::MountError::kSuccess, 2},
         {// Set source path inside another mounted volume.
          ash::CrosDisksClient::GetRemovableDiskMountPoint()
              .AppendASCII("mount_path3/archive.zip")
@@ -259,7 +261,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
          ash::CrosDisksClient::GetArchiveMountPoint()
              .AppendASCII("archive_mount_path")
              .AsUTF8Unsafe(),
-         ash::MountType::kArchive, ash::MountError::kNone, -1}};
+         ash::MountType::kArchive, ash::MountError::kSuccess, -1}};
 
     for (const auto& mp : kTestMountPoints) {
       mount_points_.insert(
@@ -322,9 +324,9 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
         source_path, "/media/fuse/" + mount_label,
         ash::MountType::kNetworkStorage};
     disk_mount_manager_mock_->NotifyMountEvent(
-        DiskMountManager::MountEvent::MOUNTING, ash::MountError::kNone,
+        DiskMountManager::MountEvent::MOUNTING, ash::MountError::kSuccess,
         mount_point_info);
-    std::move(callback).Run(ash::MountError::kNone, mount_point_info);
+    std::move(callback).Run(ash::MountError::kSuccess, mount_point_info);
   }
 
   void ExpectCrostiniMount() {
@@ -389,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
             EXPECT_EQ("mount_path1", name.value());
             ++events[0];
             EXPECT_EQ(1, events[0]);
-            std::move(callback).Run(ash::MountError::kNone);
+            std::move(callback).Run(ash::MountError::kSuccess);
           }))
       .WillOnce(testing::Invoke(
           [&events](const std::string& path,
@@ -413,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
             EXPECT_EQ("archive_mount_path", name.value());
             ++events[2];
             EXPECT_EQ(1, events[2]);
-            std::move(callback).Run(ash::MountError::kNone);
+            std::move(callback).Run(ash::MountError::kSuccess);
           }))
       .WillOnce(testing::Invoke(
           [&events](const std::string& path,
@@ -611,10 +613,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
   }
   guest_os::GuestOsSharePath* guest_os_share_path =
       guest_os::GuestOsSharePath::GetForProfile(browser()->profile());
-  guest_os_share_path->RegisterPersistedPath(crostini::kCrostiniDefaultVmName,
-                                             shared1);
-  guest_os_share_path->RegisterPersistedPath(crostini::kCrostiniDefaultVmName,
-                                             shared2);
+  guest_os_share_path->RegisterPersistedPaths(crostini::kCrostiniDefaultVmName,
+                                              {shared1});
+  guest_os_share_path->RegisterPersistedPaths(crostini::kCrostiniDefaultVmName,
+                                              {shared2});
 
   ASSERT_TRUE(RunExtensionTest("file_browser/crostini_test", {},
                                {.load_as_component = true}));
@@ -744,8 +746,9 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiDlpTest, DlpBlockCopy) {
 
   AddLocalFileSystem(browser()->profile(), temp_dir_.GetPath());
 
+  const char kTestFileName[] = "dlp_test_file.txt";
   const base::FilePath test_file_path =
-      temp_dir_.GetPath().Append("dlp_test_file.txt");
+      temp_dir_.GetPath().Append(kTestFileName);
 
   {
     base::ScopedAllowBlockingForTesting allow_io;
@@ -755,6 +758,15 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiDlpTest, DlpBlockCopy) {
 
     ASSERT_TRUE(base::CreateDirectory(drive_path_.GetPath().Append("subdir")));
   }
+
+  auto* file_system_context =
+      file_manager::util::GetFileManagerFileSystemContext(browser()->profile());
+  file_system_context->external_backend()->GrantFileAccessToOrigin(
+      url::Origin::Create(
+          GURL("chrome-extension://"
+               "pkplfbidichfdicaijlchgnapepdginl/")),  // Testing
+                                                       // extension
+      base::FilePath(base::StrCat({kLocalMountPointName, "/", kTestFileName})));
 
   storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       "drivefs-delayed_mount_2", storage::kFileSystemTypeDriveFs,
@@ -769,6 +781,11 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiDlpTest, DlpBlockCopy) {
   check_files_response.add_files_paths(test_file_path.value());
   chromeos::DlpClient::Get()->GetTestInterface()->SetCheckFilesTransferResponse(
       std::move(check_files_response));
+
+  EXPECT_CALL(*mock_rules_manager_, IsFilesPolicyEnabled)
+      .Times(testing::AnyNumber());
+  EXPECT_CALL(*mock_rules_manager_, GetDlpFilesController)
+      .Times(testing::AnyNumber());
 
   EXPECT_TRUE(RunExtensionTest("file_browser/dlp_block", {},
                                {.load_as_component = true}));

@@ -8,7 +8,7 @@
 #import "components/omnibox/common/omnibox_features.h"
 #import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/elements/fade_truncating_label.h"
-#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_icon_view.h"
@@ -554,11 +554,11 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
         configurationWithPointSize:kTrailingButtonPointSizeVariation2
                             weight:UIImageSymbolWeightMedium];
 
-    trailingButtonImage = self.suggestion.isTabMatch
-                              ? DefaultSymbolWithConfiguration(
-                                    @"arrow.right.circle", configuration)
-                              : DefaultSymbolWithConfiguration(
-                                    @"arrow.up.backward", configuration);
+    trailingButtonImage =
+        self.suggestion.isTabMatch
+            ? DefaultSymbolWithConfiguration(kNavigateToTabSymbol,
+                                             configuration)
+            : DefaultSymbolWithConfiguration(kRefineQuerySymbol, configuration);
     trailingButtonImage =
         trailingButtonImage.imageFlippedForRightToLeftLayoutDirection;
   } else {

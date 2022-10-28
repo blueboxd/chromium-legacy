@@ -3151,90 +3151,6 @@ should be able to be added at any place in this file.
   <description>User navigated to the native Android history page.</description>
 </action>
 
-<action name="Android.InstantApps.BannerDismissed">
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    Infobar banner for an instant app has been dismissed by the user.
-  </description>
-</action>
-
-<action name="Android.InstantApps.BannerDismissedAppIsDefault">
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    Infobar banner shown when opening the instant app is default has been
-    dismissed. Infobar is shown for a default app when the user arrives on the
-    page via intra-site navigation.
-  </description>
-</action>
-
-<action name="Android.InstantApps.BannerOpen">
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    User clicked &quot;Open App&quot; button on the instant apps infobar.
-  </description>
-</action>
-
-<action name="Android.InstantApps.BannerOpenAppIsDefault">
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    User clicked &quot;Open App&quot; button on an instant apps banner that was
-    shown when opening the app was default, signaling that they were using the
-    mobile web first, and decided to switch over to the instant app.
-  </description>
-</action>
-
-<action name="Android.InstantApps.BannerShown" not_user_triggered="true">
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    Infobar advertising an instant app has been displayed.
-  </description>
-</action>
-
-<action name="Android.InstantApps.BannerShownAppIsDefault"
-    not_user_triggered="true">
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    Infobar for an instant app has been displayed when opening the app is
-    default. Infobar is shown for a default app when the user arrives on the
-    page via intra-site navigation.
-  </description>
-</action>
-
-<action name="Android.InstantApps.InstantAppsEligiblePageLoaded"
-    not_user_triggered="true">
-  <obsolete>Deleted as of June 8, 2018</obsolete>
-  <owner>mariakhomenko@chromium.org</owner>
-  <description>
-    A page finished loading in Chrome that could have been loaded in an Instant
-    App.
-  </description>
-</action>
-
-<action name="Android.InstantApps.LaunchedByDefault" not_user_triggered="true">
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    An instant app was launched without any user prompting during a navigation
-    within Chrome. This happens when the user has previously chosen to use the
-    Instant App by opening it through the infobar UI.
-  </description>
-</action>
-
-<action name="Android.InstantApps.LaunchedFromWebsiteSettingsPopup">
-  <owner>tedchoc@chromium.org</owner>
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    An instant app was launched from the page info popup.
-  </description>
-</action>
-
-<action name="Android.InstantApps.OpenInstantAppButtonShown">
-  <owner>thildebr@chromium.org</owner>
-  <description>
-    Recorded when the user opened PageInfo dialog and saw a button to launch an
-    Instant App there.
-  </description>
-</action>
-
 <action name="Android.LauncherShortcut.NewIncognitoTab">
   <owner>twellington@chromium.org</owner>
   <description>
@@ -3446,6 +3362,15 @@ should be able to be added at any place in this file.
   <obsolete>Unused as of 08/2017</obsolete>
   <owner>jamescook@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="ApplicationShortcut.LensPressedFromHomeScreenWidget">
+  <owner>schechter@google.com</owner>
+  <owner>hujasonx@google.com</owner>
+  <description>
+    User tapped the Lens icon in the quick actions home screen widget for Chrome
+    for iOS.
+  </description>
 </action>
 
 <action name="ApplicationShortcut.NewIncognitoSearchPressed">
@@ -11636,6 +11561,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOSPrivacySafeBrowsingSettingsCloseWithSwipe">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when Privacy Safe Browsing Settings UI was dismissed using swipe
+    down gesture. iOS only.
+  </description>
+</action>
+
 <action name="IOSReadingListCloseWithSwipe">
   <owner>rohitrao@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
@@ -11649,6 +11583,24 @@ should be able to be added at any place in this file.
   <owner>sczs@chromium.org</owner>
   <description>
     Recorded when a user closes Recent Tabs using swipe down gesture. iOS-only.
+  </description>
+</action>
+
+<action name="IOSSafeBrowsingEnhancedProtectionSettingsCloseWithSwipe">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when Safe Browsing Enhanced Protection Settings UI was dismissed
+    using swipe down gesture. iOS only.
+  </description>
+</action>
+
+<action name="IOSSafeBrowsingStandardProtectionSettingsCloseWithSwipe">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when Safe Browsing Standard Protection Settings UI was dismissed
+    using swipe down gesture. iOS only.
   </description>
 </action>
 
@@ -17243,6 +17195,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Mobile.Omnibox.iOS.PastedValidURL">
+  <owner>nicolasmacbeth@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    User tapped the 'paste' iOS/iPadOS button into the Omnibox and the resulting
+    text in the Omnibox is a valid URL. iOS and iPadOS only.
+  </description>
+</action>
+
 <action name="Mobile.OmniboxContextMenu.SearchCopiedImage">
   <owner>rkgibson@google.com</owner>
   <owner>stkhapugin@google.com</owner>
@@ -19378,6 +19339,23 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobilePrivacySafeBrowsingSettingsBack">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when user goes back from Privacy Safe Browsing Settings UI to root
+    Settings screen. iOS only.
+  </description>
+</action>
+
+<action name="MobilePrivacySafeBrowsingSettingsClose">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when Privacy Safe Browsing Settings UI was dismissed. iOS only.
+  </description>
+</action>
+
 <action name="MobilePrivacySettingsBack">
   <owner>msramek@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
@@ -19675,6 +19653,42 @@ should be able to be added at any place in this file.
   <description>
     The user pressed the Send Feedback button on a tab that is displaying the
     sad view.
+  </description>
+</action>
+
+<action name="MobileSafeBrowsingEnhancedProtectionSettingsBack">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when user goes back from Safe Browsing Enhanced Protection Settings
+    UI to root Settings screen. iOS only.
+  </description>
+</action>
+
+<action name="MobileSafeBrowsingEnhancedProtectionSettingsClose">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when Safe Browsing Enhanced Protection Settings UI was dismissed.
+    iOS only.
+  </description>
+</action>
+
+<action name="MobileSafeBrowsingStandardProtectionSettingsBack">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when user goes back from Safe Browsing Standard Protection Settings
+    UI to root Settings screen. iOS only.
+  </description>
+</action>
+
+<action name="MobileSafeBrowsingStandardProtectionSettingsClose">
+  <owner>joemerramos@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <description>
+    Reported when Safe Browsing Standard Protection Settings UI was dismissed.
+    iOS only.
   </description>
 </action>
 
@@ -31349,8 +31363,14 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_BrightnessChanged" not_user_triggered="true">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Replaced with Ash.QuickSettings.Slider.{SliderBehavior} on 10/2022.
+  </obsolete>
+  <owner>jamescook@chromium.org</owner>
+  <description>
+    Recorded when the screen brightness changes, for any reason (including both
+    UI actions and non-UI actions).
+  </description>
 </action>
 
 <action name="StatusArea_CapsLock_Detailed">
@@ -31429,6 +31449,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Display_Default_Selected">
+  <obsolete>Deprecated 10/2022. No longer needed.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user selects the display row in the system
@@ -31440,6 +31461,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Display_Default_ShowSettings">
+  <obsolete>Deprecated 10/2022. No longer needed.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the display settings are opened as a result of
@@ -31448,6 +31470,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Display_Notification_Created">
+  <obsolete>Deprecated 10/2022. No longer needed.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times a new display notification is added to the
@@ -31456,6 +31479,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Display_Notification_Selected">
+  <obsolete>Deprecated 10/2022. No longer needed.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user selects the display notification. This
@@ -31468,6 +31492,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Display_Notification_Show_Settings">
+  <obsolete>Deprecated 10/2022. No longer needed.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the display settings are opened as a result of
@@ -31765,6 +31790,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_ScreenCapture_Default_Stop">
+  <obsolete>Deprecated 10/2022. No longer needed.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user stops screen capturing via the screen
@@ -31773,6 +31799,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_ScreenCapture_Notification_Stop">
+  <obsolete>Deprecated 10/2022. No longer needed.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user stops screen capturing via the Screen
@@ -31801,6 +31828,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_SMS_Detailed">
+  <obsolete>
+    Not recorded as of 10/2022. It's unclear when the recording code was
+    deleted.
+  </obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user has opened the &quot;SMS messages &quot;
@@ -31809,6 +31840,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_SMS_Detailed_DismissMsg">
+  <obsolete>
+    Not recorded as of 10/2022. It's unclear when the recording code was
+    deleted.
+  </obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user has dismissed an SMS message from the
@@ -31817,6 +31852,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_SMS_Notification_DismissMsg">
+  <obsolete>
+    Not recorded as of 10/2022. It's unclear when the recording code was
+    deleted.
+  </obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user has dismissed an SMS message
@@ -31876,6 +31915,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Tracing_Default_Selected">
+  <obsolete>Deprecated 10/2022. No longer needed.</obsolete>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user selects the tracing row in the system
@@ -35424,6 +35464,12 @@ should be able to be added at any place in this file.
       label="Users opened TabSelectionEditorV2 from the Tab Dialog."/>
   <suffix name="OpenFromGrid"
       label="Users opened TabSelectionEditorV2 from the Tab Switcher."/>
+  <suffix name="OpenLongPressInDialog"
+      label="Users enacted a longpress action from the Tab Dialog to enter
+             TabSelectionEditorV2."/>
+  <suffix name="OpenLongPressInGrid"
+      label="Users enacted a longpress action from the Tab Switcher to enter
+             TabSelectionEditorV2."/>
   <suffix name="SelectAll"
       label="Users tapped on the select all button in TabSelectionEditorV2."/>
   <suffix name="SharedTabAsTextList"

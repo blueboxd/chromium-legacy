@@ -128,12 +128,11 @@ scoped_refptr<const ComputedStyle> BuildInitialStyleForImg(
   // This matches the img {} declarations in html.css to avoid copy-on-write
   // when only UA styles apply for these properties. See crbug.com/1369454
   // for details.
-  auto initial_style_for_img = ComputedStyle::Clone(*initial_style);
-  initial_style_for_img->SetOverflowX(EOverflow::kClip);
-  initial_style_for_img->SetOverflowY(EOverflow::kClip);
-  initial_style_for_img->SetOverflowClipMargin(
-      StyleOverflowClipMargin::CreateContent());
-  return initial_style_for_img;
+  ComputedStyleBuilder builder(*initial_style);
+  builder.SetOverflowX(EOverflow::kClip);
+  builder.SetOverflowY(EOverflow::kClip);
+  builder.SetOverflowClipMargin(StyleOverflowClipMargin::CreateContent());
+  return builder.TakeStyle();
 }
 
 bool ShouldStoreOldStyle(const StyleRecalcContext& style_recalc_context,
@@ -855,22 +854,23 @@ void StyleResolver::MatchAllRules(StyleResolverState& state,
 }
 
 scoped_refptr<ComputedStyle> StyleResolver::StyleForViewport() {
-  scoped_refptr<ComputedStyle> viewport_style = InitialStyleForElement();
+  ComputedStyleBuilder builder = InitialStyleBuilderForElement();
 
-  viewport_style->SetZIndex(0);
-  viewport_style->SetIsStackingContextWithoutContainment(true);
-  viewport_style->SetDisplay(EDisplay::kBlock);
-  viewport_style->SetPosition(EPosition::kAbsolute);
+  builder.SetZIndex(0);
+  builder.SetIsStackingContextWithoutContainment(true);
+  builder.SetDisplay(EDisplay::kBlock);
+  builder.SetPosition(EPosition::kAbsolute);
 
   // Document::InheritHtmlAndBodyElementStyles will set the final overflow
   // style values, but they should initially be auto to avoid premature
   // scrollbar removal in PaintLayerScrollableArea::UpdateAfterStyleChange.
-  viewport_style->SetOverflowX(EOverflow::kAuto);
-  viewport_style->SetOverflowY(EOverflow::kAuto);
+  builder.SetOverflowX(EOverflow::kAuto);
+  builder.SetOverflowY(EOverflow::kAuto);
 
-  GetDocument().GetStyleEngine().ApplyVisionDeficiencyStyle(viewport_style);
+  GetDocument().GetStyleEngine().ApplyVisionDeficiencyStyle(
+      builder.MutableInternalStyle());
 
-  return viewport_style;
+  return builder.TakeStyle();
 }
 
 static StyleBaseData* GetBaseData(const StyleResolverState& state) {
@@ -1076,15 +1076,19 @@ void StyleResolver::InitStyleAndApplyInheritance(
   state.Style()->SetStyleType(style_request.pseudo_id);
   state.Style()->SetPseudoArgument(style_request.pseudo_argument);
 
-  // For highlight inheritance, propagate link visitedness and forced-colors
-  // status from the originating element, even if we have no parent highlight
-  // ComputedStyle we can inherit from.
+  // For highlight inheritance, propagate link visitedness, forced-colors
+  // status, and font properties (for font- or glyph-relative offsets in
+  // ‘text-shadow’) from the originating element, even if we have no parent
+  // highlight ComputedStyle we can inherit from.
   if (UsesHighlightPseudoInheritance(style_request.pseudo_id)) {
     state.Style()->SetInsideLink(state.ElementLinkState());
     state.Style()->SetInForcedColorsMode(
         style_request.originating_element_style->InForcedColorsMode());
-    state.Style()->SetForcedColorAdjust(
+    state.StyleBuilder().SetForcedColorAdjust(
         style_request.originating_element_style->ForcedColorAdjust());
+    state.Style()->SetFont(style_request.originating_element_style->GetFont());
+    state.Style()->SetLineHeight(
+        style_request.originating_element_style->LineHeight());
   }
 
   if (!style_request.IsPseudoStyleRequest() && element.IsLink()) {
@@ -1543,6 +1547,11 @@ scoped_refptr<ComputedStyle> StyleResolver::CreateComputedStyle() const {
   return ComputedStyle::Clone(*initial_style_);
 }
 
+ComputedStyleBuilder StyleResolver::CreateComputedStyleBuilder() const {
+  DCHECK(initial_style_);
+  return ComputedStyleBuilder(*initial_style_);
+}
+
 float StyleResolver::InitialZoom() const {
   const Document& document = GetDocument();
   if (const LocalFrame* frame = document.GetFrame())
@@ -1550,17 +1559,18 @@ float StyleResolver::InitialZoom() const {
   return 1;
 }
 
-scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement() const {
+ComputedStyleBuilder StyleResolver::InitialStyleBuilderForElement() const {
   StyleEngine& engine = GetDocument().GetStyleEngine();
 
-  scoped_refptr<ComputedStyle> initial_style = CreateComputedStyle();
+  ComputedStyleBuilder builder = CreateComputedStyleBuilder();
+  ComputedStyle* initial_style = builder.MutableInternalStyle();
 
-  initial_style->SetRtlOrdering(
-      GetDocument().VisuallyOrdered() ? EOrder::kVisual : EOrder::kLogical);
-  initial_style->SetZoom(InitialZoom());
-  initial_style->SetEffectiveZoom(initial_style->Zoom());
-  initial_style->SetInForcedColorsMode(GetDocument().InForcedColorsMode());
-  initial_style->SetTapHighlightColor(
+  builder.SetRtlOrdering(GetDocument().VisuallyOrdered() ? EOrder::kVisual
+                                                         : EOrder::kLogical);
+  builder.SetZoom(InitialZoom());
+  initial_style->SetEffectiveZoom(InitialZoom());
+  builder.SetInForcedColorsMode(GetDocument().InForcedColorsMode());
+  builder.SetTapHighlightColor(
       ComputedStyleInitialValues::InitialTapHighlightColor());
 
   initial_style->SetUsedColorScheme(engine.GetPageColorSchemes(),
@@ -1583,7 +1593,7 @@ scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement() const {
   if (initial_data)
     initial_style->SetInitialData(std::move(initial_data));
 
-  return initial_style;
+  return builder;
 }
 
 scoped_refptr<const ComputedStyle> StyleResolver::StyleForText(
@@ -2234,17 +2244,17 @@ bool StyleResolver::IsForcedColorsModeEnabled() const {
   return GetDocument().InForcedColorsMode();
 }
 
-scoped_refptr<ComputedStyle> StyleResolver::CreateAnonymousStyleWithDisplay(
+ComputedStyleBuilder StyleResolver::CreateAnonymousStyleBuilderWithDisplay(
     const ComputedStyle& parent_style,
     EDisplay display) {
-  scoped_refptr<ComputedStyle> new_style = CreateComputedStyle();
-  new_style->InheritFrom(parent_style);
-  new_style->SetUnicodeBidi(parent_style.GetUnicodeBidi());
-  new_style->SetDisplay(display);
-  return new_style;
+  ComputedStyleBuilder builder(*initial_style_);
+  builder.MutableInternalStyle()->InheritFrom(parent_style);
+  builder.SetUnicodeBidi(parent_style.GetUnicodeBidi());
+  builder.SetDisplay(display);
+  return builder;
 }
 
-scoped_refptr<ComputedStyle>
+scoped_refptr<const ComputedStyle>
 StyleResolver::CreateInheritedDisplayContentsStyleIfNeeded(
     const ComputedStyle& parent_style,
     const ComputedStyle& layout_parent_style) {
@@ -2256,10 +2266,10 @@ StyleResolver::CreateInheritedDisplayContentsStyleIfNeeded(
 #define PROPAGATE_FROM(source, getter, setter, initial) \
   PROPAGATE_VALUE(source ? source->getter() : initial, getter, setter);
 
-#define PROPAGATE_VALUE(value, getter, setter)     \
-  if ((new_viewport_style->getter()) != (value)) { \
-    new_viewport_style->setter(value);             \
-    changed = true;                                \
+#define PROPAGATE_VALUE(value, getter, setter)            \
+  if ((new_viewport_style_builder.getter()) != (value)) { \
+    new_viewport_style_builder.setter(value);             \
+    changed = true;                                       \
   }
 
 namespace {
@@ -2267,7 +2277,7 @@ namespace {
 bool PropagateScrollSnapStyleToViewport(
     Document& document,
     const ComputedStyle* document_element_style,
-    ComputedStyle* new_viewport_style) {
+    ComputedStyleBuilder& new_viewport_style_builder) {
   bool changed = false;
   // We only propagate the properties related to snap container since viewport
   // defining element cannot be a snap area.
@@ -2330,8 +2340,9 @@ void StyleResolver::PropagateStyleToViewport() {
 
   const ComputedStyle& viewport_style =
       GetDocument().GetLayoutView()->StyleRef();
-  scoped_refptr<ComputedStyle> new_viewport_style =
-      ComputedStyle::Clone(viewport_style);
+  ComputedStyleBuilder new_viewport_style_builder(viewport_style);
+  ComputedStyle* new_viewport_style =
+      new_viewport_style_builder.MutableInternalStyle();
   bool changed = false;
   bool update_scrollbar_style = false;
 
@@ -2385,7 +2396,8 @@ void StyleResolver::PropagateStyleToViewport() {
         viewport_style.BackgroundLayers() != background_layers ||
         viewport_style.ImageRendering() != image_rendering) {
       changed = true;
-      new_viewport_style->SetBackgroundColor(StyleColor(background_color));
+      new_viewport_style_builder.SetBackgroundColor(
+          StyleColor(background_color));
       new_viewport_style->AccessBackgroundLayers() = background_layers;
       new_viewport_style->SetImageRendering(image_rendering);
     }
@@ -2486,7 +2498,7 @@ void StyleResolver::PropagateStyleToViewport() {
 
   // Misc
   {
-    PROPAGATE_FROM(document_element_style, GetEffectiveTouchAction,
+    PROPAGATE_FROM(document_element_style, EffectiveTouchAction,
                    SetEffectiveTouchAction, TouchAction::kAuto);
     PROPAGATE_FROM(document_element_style, GetScrollBehavior, SetScrollBehavior,
                    mojom::blink::ScrollBehavior::kAuto);
@@ -2501,14 +2513,16 @@ void StyleResolver::PropagateStyleToViewport() {
   }
 
   changed |= PropagateScrollSnapStyleToViewport(
-      GetDocument(), document_element_style, new_viewport_style.get());
+      GetDocument(), document_element_style, new_viewport_style_builder);
 
   if (changed) {
     new_viewport_style->UpdateFontOrientation();
     FontBuilder(&GetDocument()).CreateInitialFont(*new_viewport_style);
   }
-  if (changed || update_scrollbar_style)
-    GetDocument().GetLayoutView()->SetStyle(new_viewport_style);
+  if (changed || update_scrollbar_style) {
+    GetDocument().GetLayoutView()->SetStyle(
+        new_viewport_style_builder.TakeStyle());
+  }
 }
 #undef PROPAGATE_VALUE
 #undef PROPAGATE_FROM

@@ -1617,7 +1617,7 @@ static bool ParseLABOrOKLABParameters(CSSParserTokenRange& range,
   absl::optional<double> alpha = ConsumeAlphaWithLeadingSlash(args, context);
 
   if (function_id == CSSValueID::kOklab)
-    result = Color::FromOKLab(lightness, ab[0], ab[1], alpha);
+    result = Color::FromOklab(lightness, ab[0], ab[1], alpha);
   else
     result = Color::FromLab(lightness, ab[0], ab[1], alpha);
   return args.AtEnd();
@@ -1662,9 +1662,9 @@ static bool ParseLCHOrOKLCHParameters(CSSParserTokenRange& range,
   absl::optional<double> alpha = ConsumeAlphaWithLeadingSlash(args, context);
 
   if (function_id == CSSValueID::kOklch)
-    result = Color::FromOKLCH(lightness, chroma, hue, alpha);
+    result = Color::FromOklch(lightness, chroma, hue, alpha);
   else
-    result = Color::FromLCH(lightness, chroma, hue, alpha);
+    result = Color::FromLch(lightness, chroma, hue, alpha);
   return args.AtEnd();
 }
 
@@ -1690,11 +1690,11 @@ static bool ConsumeColorInterpolationSpace(
   else if (ConsumeIdent<CSSValueID::kLab>(args))
     read_color_space = Color::ColorInterpolationSpace::kLab;
   else if (ConsumeIdent<CSSValueID::kOklab>(args))
-    read_color_space = Color::ColorInterpolationSpace::kOKLab;
+    read_color_space = Color::ColorInterpolationSpace::kOklab;
   else if (ConsumeIdent<CSSValueID::kLch>(args))
-    read_color_space = Color::ColorInterpolationSpace::kLCH;
+    read_color_space = Color::ColorInterpolationSpace::kLch;
   else if (ConsumeIdent<CSSValueID::kOklch>(args))
-    read_color_space = Color::ColorInterpolationSpace::kOKLCH;
+    read_color_space = Color::ColorInterpolationSpace::kOklch;
   else if (ConsumeIdent<CSSValueID::kSRGB>(args))
     read_color_space = Color::ColorInterpolationSpace::kSRGB;
   else if (ConsumeIdent<CSSValueID::kHsl>(args))
@@ -1707,8 +1707,8 @@ static bool ConsumeColorInterpolationSpace(
     absl::optional<Color::HueInterpolationMethod> read_hue;
     if (color_space == Color::ColorInterpolationSpace::kHSL ||
         color_space == Color::ColorInterpolationSpace::kHWB ||
-        color_space == Color::ColorInterpolationSpace::kLCH ||
-        color_space == Color::ColorInterpolationSpace::kOKLCH) {
+        color_space == Color::ColorInterpolationSpace::kLch ||
+        color_space == Color::ColorInterpolationSpace::kOklch) {
       if (ConsumeIdent<CSSValueID::kShorter>(args))
         read_hue = Color::HueInterpolationMethod::kShorter;
       else if (ConsumeIdent<CSSValueID::kLonger>(args))
@@ -1794,32 +1794,32 @@ static bool ParseColorFunctionParameters(CSSParserTokenRange& range,
   CSSParserTokenRange args = ConsumeFunction(range);
   // First argument is the colorspace
   CSSValueID colorspace_id_ = args.ConsumeIncludingWhitespace().Id();
-  Color::ColorFunctionSpace colorspace;
+  Color::ColorSpace colorspace;
   switch (colorspace_id_) {
     case CSSValueID::kSRGB:
-      colorspace = Color::ColorFunctionSpace::kSRGB;
+      colorspace = Color::ColorSpace::kSRGB;
       break;
     case CSSValueID::kRec2020:
-      colorspace = Color::ColorFunctionSpace::kRec2020;
+      colorspace = Color::ColorSpace::kRec2020;
       break;
     case CSSValueID::kSRGBLinear:
-      colorspace = Color::ColorFunctionSpace::kSRGBLinear;
+      colorspace = Color::ColorSpace::kSRGBLinear;
       break;
     case CSSValueID::kDisplayP3:
-      colorspace = Color::ColorFunctionSpace::kDisplayP3;
+      colorspace = Color::ColorSpace::kDisplayP3;
       break;
     case CSSValueID::kA98Rgb:
-      colorspace = Color::ColorFunctionSpace::kA98RGB;
+      colorspace = Color::ColorSpace::kA98RGB;
       break;
     case CSSValueID::kProphotoRgb:
-      colorspace = Color::ColorFunctionSpace::kProPhotoRGB;
+      colorspace = Color::ColorSpace::kProPhotoRGB;
       break;
     case CSSValueID::kXyzD50:
-      colorspace = Color::ColorFunctionSpace::kXYZD50;
+      colorspace = Color::ColorSpace::kXYZD50;
       break;
     case CSSValueID::kXyz:
     case CSSValueID::kXyzD65:
-      colorspace = Color::ColorFunctionSpace::kXYZD65;
+      colorspace = Color::ColorSpace::kXYZD65;
       break;
     default:
       return false;
@@ -3674,6 +3674,28 @@ CSSValue* ConsumeAnimationTimingFunction(CSSParserTokenRange& range,
   if (function == CSSValueID::kCubicBezier)
     return ConsumeCubicBezier(range, context);
   return nullptr;
+}
+
+CSSValue* ConsumeAnimationDelay(CSSParserTokenRange& range,
+                                const CSSParserContext& context) {
+  DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+  if (CSSPrimitiveValue* time =
+          ConsumeTime(range, context, CSSPrimitiveValue::ValueRange::kAll)) {
+    return time;
+  }
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  CSSValue* range_name =
+      ConsumeIdent<CSSValueID::kContain, CSSValueID::kCover, CSSValueID::kEnter,
+                   CSSValueID::kExit>(range);
+  if (!range_name)
+    return nullptr;
+  list->Append(*range_name);
+  CSSValue* percentage =
+      ConsumePercent(range, context, CSSPrimitiveValue::ValueRange::kAll);
+  if (!percentage)
+    return nullptr;
+  list->Append(*percentage);
+  return list;
 }
 
 bool ConsumeAnimationShorthand(

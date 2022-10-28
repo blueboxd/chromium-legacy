@@ -196,10 +196,6 @@ class AppServiceProxyLacros : public KeyedService,
 
   // Sets |permission| for the app identified by |app_id|.
   void SetPermission(const std::string& app_id, PermissionPtr permission);
-  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
-  // interface.
-  void SetPermission(const std::string& app_id,
-                     apps::mojom::PermissionPtr permission);
 
   // Uninstalls an app for the given |app_id|. If |parent_window| is specified,
   // the uninstall dialog will be created as a modal dialog anchored at
@@ -207,20 +203,11 @@ class AppServiceProxyLacros : public KeyedService,
   void Uninstall(const std::string& app_id,
                  UninstallSource uninstall_source,
                  gfx::NativeWindow parent_window);
-  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
-  // interface.
-  void Uninstall(const std::string& app_id,
-                 apps::mojom::UninstallSource uninstall_source,
-                 gfx::NativeWindow parent_window);
 
   // Uninstalls an app for the given |app_id| without prompting the user to
   // confirm.
   void UninstallSilently(const std::string& app_id,
                          UninstallSource uninstall_source);
-  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
-  // interface.
-  void UninstallSilently(const std::string& app_id,
-                         apps::mojom::UninstallSource uninstall_source);
 
   // Stops the current running app for the given |app_id|.
   void StopApp(const std::string& app_id);
@@ -295,6 +282,10 @@ class AppServiceProxyLacros : public KeyedService,
 
   void SetCrosapiAppServiceProxyForTesting(
       crosapi::mojom::AppServiceProxy* proxy);
+
+  void SetWebsiteMetricsServiceForTesting(
+      std::unique_ptr<apps::WebsiteMetricsServiceLacros>
+          website_metrics_service);
 
   base::WeakPtr<AppServiceProxyLacros> GetWeakPtr();
 

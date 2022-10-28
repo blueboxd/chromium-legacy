@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">Desfés</translation>
 <translation id="2084108471225856927">Configuració del dispositiu</translation>
 <translation id="2084809735218147718">Signe de gràcies</translation>
-<translation id="2085470240340828803">El nom de fitxer "<ph name="FILENAME" />" ja existeix. Què voleu fer?</translation>
 <translation id="2088690981887365033">Xarxa VPN</translation>
 <translation id="2122305276694332719">La connexió automàtica a una xarxa amagada permet que altres usuaris puguin veure el teu dispositiu i algunes opcions de configuració de la xarxa. Per tant, no és recomanable.</translation>
 <translation id="2125607626296734455">Khmer</translation>
@@ -533,6 +532,7 @@
 <translation id="5428105026674456456">Espanyol</translation>
 <translation id="5438282218546237410">No hi ha cap resultat per a <ph name="SEARCH_TERM" />.</translation>
 <translation id="5449551289610225147">La contrasenya no és vàlida</translation>
+<translation id="5459064203055649751">Ja existeix un fitxer anomenat <ph name="FILENAME" />. Vols substituir-lo pel que estàs movent?</translation>
 <translation id="5463231940765244860">Introdueix</translation>
 <translation id="5469868506864199649">Italià</translation>
 <translation id="5473333559083690127">Torna a introduir el PIN nou</translation>
@@ -653,6 +653,7 @@
 <translation id="6495925982925244349">Xarxa <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" />% d'intensitat del senyal, gestionada per l'administrador, detalls</translation>
 <translation id="649877868557234318">S'està extraient <ph name="FILE_NAME" /> a la carpeta <ph name="FOLDER_NAME" /></translation>
 <translation id="6499681088828539489">No permetis els servidors intermediaris per a xarxes compartides</translation>
+<translation id="6503285896705205014">La política de l'administrador ha bloquejat l'opció de copiar <ph name="COUNT" /> fitxers</translation>
 <translation id="6509122719576673235">Noruec</translation>
 <translation id="6528513914570774834">Permet que els altres usuaris d'aquest dispositiu facin servir aquesta xarxa</translation>
 <translation id="653019979737152879">S'està sincronitzant <ph name="FILE_NAME" />...</translation>
@@ -755,6 +756,7 @@
 <translation id="7357762654218998920">Aquest tipus de fitxer no és compatible. <ph name="BEGIN_LINK_HELP" />Obtén més informació<ph name="END_LINK_HELP" /> sobre com pots obrir fitxers a Chrome OS.</translation>
 <translation id="7359359531237882347">S'estan copiant <ph name="NUMBER_OF_ITEMS" /> elements...</translation>
 <translation id="7375951387215729722">La llista de fitxers es mostra per <ph name="COLUMN_NAME" /> en ordre descendent.</translation>
+<translation id="7377161162143020057">La política de l'administrador ha bloquejat l'opció de copiar aquest fitxer</translation>
 <translation id="7402503521691663770">Dispositius ChromeOS Flex</translation>
 <translation id="7408870451288633753">Txec</translation>
 <translation id="7417453074306512035">Teclat etíop</translation>

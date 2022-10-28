@@ -179,8 +179,7 @@
               },
               "legacy_gclient_config": {
                 "apply_configs": [
-                  "android",
-                  "enable_reclient"
+                  "android"
                 ],
                 "config": "chromium"
               }
@@ -385,10 +384,6 @@
         },
         {
           "builder": "android-pie-arm64-dbg",
-          "group": "tryserver.chromium.android"
-        },
-        {
-          "builder": "android-webview-marshmallow-arm64-dbg",
           "group": "tryserver.chromium.android"
         },
         {

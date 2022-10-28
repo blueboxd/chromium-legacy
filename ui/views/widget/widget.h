@@ -215,8 +215,14 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
       // destroyed.
       NATIVE_WIDGET_OWNS_WIDGET,
       // Used when the Widget is owned by someone other than the NativeWidget,
-      // e.g. a scoped_ptr in tests.
-      WIDGET_OWNS_NATIVE_WIDGET
+      // e.g. a scoped_ptr in tests. Production use is discouraged because the
+      // Widget API might become unsafe after the platform window is closed.
+      WIDGET_OWNS_NATIVE_WIDGET,
+      // NOT READY FOR PRODUCTION USE.
+      // This is intended to be a safe replacement for
+      // WIDGET_OWNS_NATIVE_WIDGET.
+      // The NativeWidget will be closed along with the platform window.
+      CLIENT_OWNS_WIDGET
     };
 
     enum class ShadowType {
@@ -586,7 +592,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   const Widget* GetPrimaryWindowWidget() const;
 
   // Gets/Sets the WidgetDelegate.
-  WidgetDelegate* widget_delegate() const { return widget_delegate_; }
+  WidgetDelegate* widget_delegate() const { return widget_delegate_.get(); }
 
   // Sets the specified view as the contents of this Widget. There can only
   // be one contents view child of this Widget's RootView. This view is sized to
@@ -1188,6 +1194,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   friend class TextfieldTest;
   friend class ViewAuraTest;
   friend class ui_devtools::PageAgentViews;
+  // TODO (kylixrd): Remove this after Widget no longer can "own" the
+  // WidgetDelegate.
+  friend class WidgetDelegate;
   friend void DisableActivationChangeHandlingForTests();
 
   // Sets/gets the type of disabling widget activation change handling.
@@ -1240,9 +1249,18 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   base::ObserverList<WidgetRemovalsObserver>::Unchecked removals_observers_;
 
-  // Non-owned pointer to the Widget's delegate. If a NULL delegate is supplied
+  // Weak pointer to the Widget's delegate. If a NULL delegate is supplied
   // to Init() a default WidgetDelegate is created.
-  raw_ptr<WidgetDelegate> widget_delegate_ = nullptr;
+  base::WeakPtr<WidgetDelegate> widget_delegate_;
+
+  // TODO(kylixrd): Rename this once the transition requiring the client to own
+  // the delegate is finished.
+  // [Owned Widget delegate if the DefaultWidgetDelegate is used. This
+  // ties the lifetime of the default delegate to the Widget.]
+  //
+  // This will "own" the delegate when WidgetDelegate::owned_by_widget() is
+  // true.
+  std::unique_ptr<WidgetDelegate> owned_widget_delegate_;
 
   // The parent of this widget. This is the widget that associates with
   // the |params.parent| supplied to Init(). If no parent is given or the native

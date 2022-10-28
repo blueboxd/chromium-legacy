@@ -21,7 +21,7 @@ import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {FocusRowMixin} from 'chrome://resources/js/focus_row_mixin.js';
 import {IronCollapseElement} from 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
-import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
 import {routes} from '../route.js';
@@ -139,6 +139,7 @@ export class SiteEntryElement extends SiteEntryElementBase {
     return [
       'updateFpsMembershipLabel_(siteGroup.fpsNumMembers, siteGroup.fpsOwner)',
       'updatePolicyPref_(siteGroup.fpsEnterpriseManaged)',
+      'updateFocus_(siteGroup.fpsOwner)',
     ];
   }
 
@@ -373,6 +374,22 @@ export class SiteEntryElement extends SiteEntryElementBase {
         });
   }
 
+  private updateFocus_() {
+    // TODO(crbug.com/1378720): Re-focusing a changed entry (such as when an
+    // entry is removed from list) happens before the entry elements have been
+    // updated (e.g. different buttons shown / hidden). This causes the
+    // focusRowMixin to incorrectly identify an element which is about to be
+    // hidden / removed as a valid focus target.
+    const isCurrentlyFocused = this.isFocused;
+    afterNextRender(this, () => {
+      if (isCurrentlyFocused) {
+        (this.isFpsMember_() ?
+             this.$$<CrIconButtonElement>('#fpsOverflowMenuButton') :
+             this.$$<CrIconButtonElement>('#removeSiteButton'))!.focus();
+      }
+    });
+  }
+
   /**
    * Array binding for the |originUsages_| array for use in the HTML.
    * @param change The change record for the array.
@@ -482,6 +499,12 @@ export class SiteEntryElement extends SiteEntryElementBase {
    */
   private getClassForIndex_(index: number): string {
     return index > 0 ? 'hr' : '';
+  }
+
+  private getSubpageLabel_(target: string): string {
+    return this.i18n(
+        'siteSettingsSiteDetailsSubpageAccessibilityLabel',
+        this.originRepresentation(target));
   }
 
   private getRemoveOriginButtonTitle_(origin: string): string {

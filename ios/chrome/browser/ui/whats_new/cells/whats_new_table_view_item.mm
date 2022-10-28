@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/whats_new/cells/whats_new_table_view_item.h"
 
 #import "base/check.h"
-#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -42,6 +42,9 @@ const CGFloat kIconSize = 50;
 - (void)configureCell:(WhatsNewTableViewCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
+
+  self.accessibilityTraits |= UIAccessibilityTraitButton;
+
   cell.textLabel.text = self.title;
   cell.detailTextLabel.text = self.detailText;
   cell.iconView.image = self.iconImage;

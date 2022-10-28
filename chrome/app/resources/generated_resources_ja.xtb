@@ -1505,6 +1505,7 @@
 <translation id="2352810082280059586">ロック画面のメモは<ph name="LOCK_SCREEN_APP_NAME" />に自動的に保存されます。最新のメモはロック画面に表示されます。</translation>
 <translation id="2353297238722298836">カメラとマイクを使用できます</translation>
 <translation id="2355314311311231464">アカウントの詳細を取得できなかったため、プロピジョニングに失敗しました。もう一度お試しください。エラーコード: <ph name="ERROR_CODE" />。</translation>
+<translation id="2355477091455974894">省エネツールのオプション</translation>
 <translation id="2355604387869345912">インスタント テザリングをオンにする</translation>
 <translation id="2356070529366658676">確認する</translation>
 <translation id="2357330829548294574"><ph name="USER_NAME" /> を削除</translation>
@@ -2050,7 +2051,6 @@
 <translation id="285241945869362924">音声と動画の字幕を自動的に作成します。音声と字幕がデバイスの外部に送信されることはありません。</translation>
 <translation id="2856776373509145513">新しいコンテナの作成</translation>
 <translation id="2858138569776157458">上位のサイト</translation>
-<translation id="2859383038987078242">Chrome OS 診断テストを実行する。</translation>
 <translation id="2861301611394761800">システムの更新が完了しました。システムを再起動してください。</translation>
 <translation id="2861941300086904918">ネイティブ クライアント セキュリティ マネージャ</translation>
 <translation id="2862815659905780618">Linux 開発環境を削除</translation>
@@ -2430,6 +2430,7 @@
 <translation id="3241680850019875542">パッケージ化する拡張機能のルート ディレクトリを選択します。拡張機能を更新するには、再使用する秘密鍵ファイルも選択してください。</translation>
 <translation id="3242289508736283383">「kiosk_only」マニフェスト属性が指定されているアプリは、Chrome OS キオスクモードでインストールする必要があります。</translation>
 <translation id="3242665648857227438">このプロフィールは Chrome OS のプロキシ設定を使用します。</translation>
+<translation id="3243017971870859287">ChromeOS Flex デバイスとコンポーネントのシリアル番号を読み取る</translation>
 <translation id="3244294424315804309">音声のミュートを続行する</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - ネットワーク エラー</translation>
 <translation id="3248902735035392926">安全性に問題がないか、<ph name="BEGIN_LINK" />拡張機能を確認<ph name="END_LINK" />しましょう</translation>
@@ -2486,6 +2487,7 @@
 <translation id="3297105622164376095">サードパーティのログイン メッセージの表示を許可するサイト</translation>
 <translation id="3297536526040732495">ログイン時には、このデータを一時的に Google アカウントにリンクして、すべての Google アプリを安全に利用できるように保護します</translation>
 <translation id="329838636886466101">修復</translation>
+<translation id="3298438307450647315">ChromeOS のデバイス情報とデバイスデータを読み取る</translation>
 <translation id="3298789223962368867">入力された URL が無効です。</translation>
 <translation id="32991397311664836">デバイス:</translation>
 <translation id="33022249435934718">GDI ハンドル</translation>
@@ -2592,6 +2594,7 @@
 <translation id="3402255108239926910">アバターを選択</translation>
 <translation id="3402585168444815892">デモモードでの登録</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />、<ph name="TIME_LEFT" /></translation>
+<translation id="3403071741485135898">ChromeOS Flex のデバイス情報とデバイスデータを読み取る</translation>
 <translation id="3404065873681873169">このサイト用に保存されているパスワードはありません</translation>
 <translation id="3405664148539009465">フォントをカスタマイズ</translation>
 <translation id="3405763860805964263">...</translation>
@@ -3995,6 +3998,7 @@
 <translation id="4726710355753484204">拡大するには、Ctrl+Alt+明るさを上げるキーを使用します。
 縮小するには、Ctrl+Alt+明るさを下げるキーを使用します。</translation>
 <translation id="4726710629007580002">この拡張機能をインストールしようとしたときに、次の警告がありました。</translation>
+<translation id="472738079453283624">商品</translation>
 <translation id="4727847987444062305">管理対象のゲスト セッション</translation>
 <translation id="4728558894243024398">プラットフォーム</translation>
 <translation id="4728570203948182358">有害なソフトウェアの確認は、<ph name="BEGIN_LINK" />管理者<ph name="END_LINK" />によって無効にされています</translation>
@@ -4136,6 +4140,7 @@
 <translation id="486635084936119914">ダウンロード後に特定の種類のファイルを自動的に開きます</translation>
 <translation id="4868281708609571334">Google アシスタントに <ph name="SUPERVISED_USER_NAME" /> さんの声を認識させる</translation>
 <translation id="4868284252360267853">このダイアログは現在フォーカスされていません。このダイアログをフォーカスするには command+shift+option+a キーを押してください。</translation>
+<translation id="4869170227080975044">ChromeOS のネットワーク情報を読み取る</translation>
 <translation id="4870724079713069532">エクスプローラーからこのアプリまたは他のアプリで、サポートされているファイルを開いて編集できます。デフォルトでこのアプリを使用して開くファイルを管理するには、<ph name="BEGIN_LINK" />Windows の設定<ph name="END_LINK" />に移動してください。</translation>
 <translation id="4870758487381879312">設定情報を取得するには管理者から提供されたパスワードを入力してください</translation>
 <translation id="4870995365819149457">サポートされているリンクの一部は、引き続き <ph name="APP_NAME" />、<ph name="APP_NAME_2" />、<ph name="APP_NAME_3" />、その他 1 件のアプリで開かれます。</translation>
@@ -4258,6 +4263,7 @@
 <translation id="4973325300212422370">{NUM_TABS,plural, =1{サイトをミュート}other{サイトをミュート}}</translation>
 <translation id="497403230787583386">セキュリティ チェックが完了しました。ドキュメントが印刷されます。</translation>
 <translation id="4975543297921324897">等幅フォント</translation>
+<translation id="4975771730019223894">アプリのバッジ</translation>
 <translation id="4977882548591990850"><ph name="CHARACTER_COUNT" /> / <ph name="CHARACTER_LIMIT" /></translation>
 <translation id="4977942889532008999">アクセスの確認</translation>
 <translation id="4980805016576257426">この拡張機能には不正なソフトウェアが含まれています。</translation>
@@ -4728,7 +4734,6 @@
 <translation id="5452976525201205853"><ph name="LANGUAGE" />（オフラインで利用可能）</translation>
 <translation id="5454166040603940656">- <ph name="PROVIDER" /></translation>
 <translation id="545484289444831485">他の検索結果を表示</translation>
-<translation id="5455603387986949153">ChromeOS Flex デバイスとコンポーネントのシリアル番号を読み取る。</translation>
 <translation id="5457113250005438886">無効</translation>
 <translation id="5457459357461771897">パソコンからの写真、音楽、その他のメディアの読み取りと削除</translation>
 <translation id="5458214261780477893">Dvorak</translation>
@@ -4862,6 +4867,7 @@
 <translation id="5571066253365925590">Bluetooth オン</translation>
 <translation id="5571092938913434726">グローバル メディア コントロール</translation>
 <translation id="5571832155627049070">プロファイルのカスタマイズ</translation>
+<translation id="5572252023412311448"><ph name="SITE_GROUP" /> のサイトの詳細を表示</translation>
 <translation id="5572648434713976849">より関連性の高い候補がアドレスバーに表示されます</translation>
 <translation id="5572851009514199876">このサイトへのアクセス権があるかどうかを Chrome で確認できるように、Chrome を起動してログインしてください。</translation>
 <translation id="557506220935336383">他のサイトに対する拡張機能の権限を確認する</translation>
@@ -5621,6 +5627,7 @@
 <translation id="6295855836753816081">保存しています...</translation>
 <translation id="629730747756840877">アカウント</translation>
 <translation id="6298962879096096191">Google Play を使用して Android アプリをインストールします</translation>
+<translation id="6300125580697461004">省エネツールに関するフィードバックを送信する</translation>
 <translation id="6300177430812514606">データの送受信の完了を許可しないサイト</translation>
 <translation id="630065524203833229">終了(&amp;X)</translation>
 <translation id="6300718114348072351"><ph name="PRINTER_NAME" /> を自動的に設定できませんでした。プリンタの詳細設定を指定してください。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
@@ -5820,6 +5827,7 @@
 <translation id="6494327278868541139">保護強化機能の詳細を表示</translation>
 <translation id="6494445798847293442">認証局ではありません</translation>
 <translation id="6497457470714179223">{NUM_FILES,plural, =0{このデータにはデリケートなコンテンツまたは危険なコンテンツが含まれています}=1{このファイルにはデリケートなコンテンツまたは危険なコンテンツが含まれています}other{これらのファイルにはデリケートなコンテンツまたは危険なコンテンツが含まれています}}</translation>
+<translation id="6497548114956205206">省エネツールの詳細</translation>
 <translation id="6497784818439587832">画面上の項目のサイズを変えるには、表示サイズを変更します</translation>
 <translation id="6497789971060331894">マウスの逆スクロール</translation>
 <translation id="6498249116389603658">選択したすべての言語(&amp;A)</translation>
@@ -6041,6 +6049,7 @@
 <translation id="6703212423117969852">しばらくしてから Chrome でもう一度お試しください。</translation>
 <translation id="6703254819490889819">バックアップを復元</translation>
 <translation id="6706210727756204531">範囲</translation>
+<translation id="6707122714992751648">ChromeOS 診断テストを実行する</translation>
 <translation id="6707389671160270963">SSL クライアント証明書</translation>
 <translation id="6709002550153567782">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" />、他 1 個のタブ}other{<ph name="PAGE_TITLE" />、他 # 個のタブ}}</translation>
 <translation id="6709133671862442373">ニュース</translation>
@@ -6218,6 +6227,7 @@
 <translation id="6857725247182211756"><ph name="SECONDS" /> 秒</translation>
 <translation id="6860097299815761905">プロキシの設定...</translation>
 <translation id="6860427144121307915">タブで開く</translation>
+<translation id="6861179941841598556"><ph name="PROFILE_NAME" /> に対するその他の操作</translation>
 <translation id="6863496016067551393">すべての拡張機能を許可するサイト</translation>
 <translation id="686366188661646310">パスワードを削除しますか？</translation>
 <translation id="6865313869410766144">自動入力フォームのデータ</translation>
@@ -6307,6 +6317,7 @@
         <ph name="BREAK" />
         <ph name="BREAK" />
         カードメニューから設定を管理することや、[Chrome をカスタマイズ] でその他のオプションを見ることができます。</translation>
+<translation id="6949089178006131285">ChromeOS Flex のネットワーク情報を読み取る</translation>
 <translation id="6949434160682548041">パスワード（任意）</translation>
 <translation id="6950627417367801484">アプリを復元</translation>
 <translation id="6952242901357037157"><ph name="BEGIN_LINK" />Google アカウント<ph name="END_LINK" />に保存したパスワードもここに表示できます</translation>
@@ -6863,6 +6874,7 @@
 <translation id="7495778526395737099">パスワードを忘れた場合</translation>
 <translation id="7497981768003291373">最近記録された WebRTC テキストログはありません。</translation>
 <translation id="7501957181231305652">または</translation>
+<translation id="7502220299952823578">常にアクティブにするサイトのリストに追加</translation>
 <translation id="7503191893372251637">Netscape 証明書タイプ</translation>
 <translation id="7503985202154027481">このサイトへのアクセスの記録がセキュリティ キーに保存されます。</translation>
 <translation id="750509436279396091">ダウンロード フォルダを開く</translation>
@@ -6898,7 +6910,6 @@
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> から応答がありません。終了するには [強制終了] を選択してください。</translation>
 <translation id="7535730537657706072">シークレット モードでの閲覧履歴をデバイスから消去するには、すべてのシークレット タブを閉じます</translation>
 <translation id="7537451260744431038">サイトは、Cookie を使用してブラウジングの利便性を改善できません（ログイン状態の維持、ショッピング カートの中身の保存などが行えません）</translation>
-<translation id="7538932151125743389">Chrome OS デバイスとコンポーネントのシリアル番号を読み取ります。</translation>
 <translation id="7540972813190816353">更新の確認中にエラーが発生しました: <ph name="ERROR" /></translation>
 <translation id="7541076351905098232"><ph name="MANAGER" /> がこのデバイスを以前のバージョンに戻しました。重要なファイルを保存してから、再起動してください。デバイス上のデータはすべて削除されます。</translation>
 <translation id="7541773865713908457"><ph name="APP_NAME" /> アプリで <ph name="ACTION_NAME" /></translation>
@@ -7103,7 +7114,6 @@
 <translation id="7718490543420739837">画面キーボード、音声入力、スイッチ アクセスなど</translation>
 <translation id="7719367874908701697">ページのズーム</translation>
 <translation id="7719588063158526969">デバイス名が長すぎます</translation>
-<translation id="7720216670798402294">Chrome OS のデバイス情報とデバイスデータを読み取ります。</translation>
 <translation id="7721179060400456005">ウィンドウを複数のディスプレイで表示できるようにする</translation>
 <translation id="7721237513035801311"><ph name="SWITCH" />（<ph name="DEVICE_TYPE" />）</translation>
 <translation id="7721258531237831532">組織がプロフィールの作成を求めています</translation>
@@ -7163,7 +7173,6 @@
 <translation id="7768784765476638775">選択して読み上げ</translation>
 <translation id="7769748505895274502">最近閉じたタブを折りたたむ</translation>
 <translation id="7770072242481632881">サイドパネル セレクタ</translation>
-<translation id="7770406201819593386">ChromeOS Flex 診断テストを実行する。</translation>
 <translation id="7770450735129978837">右マウスクリック</translation>
 <translation id="7770612696274572992">他のデバイスから画像がコピーされました</translation>
 <translation id="7771452384635174008">レイアウト</translation>
@@ -7368,6 +7377,7 @@
 <translation id="7955177647836564772">Smart Lock がオンになっていて、スマートフォンのロックが解除されている場合、パスワードや PIN を入力する必要はありません</translation>
 <translation id="7956373551960864128">保存されているプリンタ</translation>
 <translation id="7957074856830851026">シリアル番号やアセット ID などのデバイス情報を読み取る</translation>
+<translation id="7957186326898555886">メモリセーバーに関するフィードバックを送信する</translation>
 <translation id="7959074893852789871">ファイルに含まれる複数の証明書のうち、一部をインポートできませんでした:</translation>
 <translation id="7959665254555683862">新しいシークレット タブ(&amp;T)</translation>
 <translation id="7961015016161918242">使用しない</translation>
@@ -7784,6 +7794,7 @@
 <translation id="8340547030807793004"><ph name="DEVICE" /> に対するその他の操作</translation>
 <translation id="8341557223534936723">{NUM_SITES,plural, =1{最近、通知を多数受け取った <ph name="BEGIN_BOLD" />1 件のサイト<ph name="END_BOLD" />を確認する}other{最近、通知を多数受け取った <ph name="BEGIN_BOLD" />{NUM_SITES} 件のサイト<ph name="END_BOLD" />を確認する}}</translation>
 <translation id="8342221978608739536">試していない</translation>
+<translation id="8342399870062010251">メモリセーバーの詳細</translation>
 <translation id="8342861492835240085">コレクションを選択</translation>
 <translation id="8345848587667658367">スマートフォンの最近の写真、メディア、通知、アプリを表示できるようになりました</translation>
 <translation id="8347227221149377169">印刷ジョブ</translation>
@@ -7909,6 +7920,7 @@
 <translation id="8463001014623882202">認証に失敗しました</translation>
 <translation id="846374874681391779">ダウンロード バー</translation>
 <translation id="8463955938112983119"><ph name="PLUGIN_NAME" /> が無効になっています。</translation>
+<translation id="846399539692727039">ChromeOS Flex 診断テストを実行する</translation>
 <translation id="8464132254133862871">このユーザー アカウントはサービスを利用できません。</translation>
 <translation id="8465252176946159372">無効です</translation>
 <translation id="8465444703385715657"><ph name="PLUGIN_NAME" /> が実行の許可を求めています</translation>
@@ -7992,6 +8004,7 @@
 <translation id="8549316893834449916">Chromebook には Google アカウント（Gmail、ドライブ、YouTube などで使用しているのと同じアカウント）を使用してログインします。</translation>
 <translation id="8551388862522347954">ライセンス</translation>
 <translation id="8551588720239073785">日時の設定</translation>
+<translation id="8552102814346875916">常にアクティブにするサイトのリストに保存</translation>
 <translation id="8553342806078037065">他のユーザーを管理</translation>
 <translation id="8554899698005018844">言語設定なし</translation>
 <translation id="855604308879080518">この Chromebook で Android アプリから USB デバイスへのアクセスを許可します。USB デバイスを接続するたびに許可するよう要求されます。一部の Android アプリでは、他の権限も許可するよう要求される場合があります。</translation>
@@ -8053,6 +8066,7 @@
 <translation id="8624315169751085215">クリップボードにコピー</translation>
 <translation id="8624354461147303341">割引情報を取得</translation>
 <translation id="8624944202475729958"><ph name="PROFILE_NAME" />: <ph name="ERROR_DESCRIPTION" /></translation>
+<translation id="8625124982056504555">ChromeOS デバイスとコンポーネントのシリアル番号を読み取る</translation>
 <translation id="862542460444371744">拡張機能(&amp;E)</translation>
 <translation id="8625663000550647058">マイクの使用を許可しないサイト</translation>
 <translation id="8625916342247441948">サイトに HID デバイスへの接続を許可しない</translation>
@@ -8243,7 +8257,6 @@
 <translation id="8783834180813871000">Bluetooth のペア設定コードを入力してから、Return キーまたは Enter キーを押してください。</translation>
 <translation id="8784626084144195648">ビニング平均</translation>
 <translation id="8785622406424941542">タッチペン</translation>
-<translation id="8785680469435073309">ChromeOS Flex のネットワーク情報を読み取ります。</translation>
 <translation id="8786824282808281903">このアイコンが表示されているときは、お子様は本人確認や購入の承認に指紋認証を使用できます。</translation>
 <translation id="8787575090331305835">{NUM_TABS,plural, =1{名前のないグループ - 1 個のタブ}other{名前のないグループ - # 個のタブ}}</translation>
 <translation id="8791534160414513928">閲覧トラフィックと一緒に「トラッキング拒否」リクエストを送信する</translation>
@@ -8632,7 +8645,6 @@
 <translation id="9148058034647219655">終了</translation>
 <translation id="9148126808321036104">もう一度ログインする</translation>
 <translation id="9148963623915467028">このサイトでは位置情報へのアクセスが許可されています。</translation>
-<translation id="9149240486450525363">ChromeOS のネットワーク情報を読み取ります。</translation>
 <translation id="9149866541089851383">編集...</translation>
 <translation id="9150045010208374699">カメラを使用する</translation>
 <translation id="9150079578948279438">プロファイルを削除できませんでした。もう一度お試しいただくか、ご利用の携帯通信会社のテクニカル サポートにお問い合わせください。</translation>
@@ -8664,7 +8676,6 @@
 <translation id="9174401638287877180">使用状況データや診断データを送信します。診断データやデバイスとアプリの使用状況データを Google に自動送信して、お子様向けの Android 機能の向上にご協力ください。この情報を使ってお子様個人が特定されることはありません。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。お子様の [その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータはお子様の Google アカウントに保存されます。</translation>
 <translation id="9176476835295860688">使用状況データや診断データを送信します。このデバイスは現在、診断データやデバイスとアプリの使用状況データを Google に自動送信するように設定されています。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。この<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />は所有者によって管理されています。[その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータは Google アカウントに保存されます。<ph name="BEGIN_LINK2" />詳細<ph name="END_LINK2" /></translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> - Bluetooth デバイスに接続されています</translation>
-<translation id="9177949831069307748">ChromeOS Flex のデバイス情報とデバイスデータを読み取る。</translation>
 <translation id="9178061802301856367">ログインデータの削除</translation>
 <translation id="9179524979050048593">ログイン画面のユーザー名</translation>
 <translation id="9180281769944411366">この処理には数分かかることがあります。Linux コンテナを起動します。</translation>

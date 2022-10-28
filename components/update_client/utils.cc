@@ -18,10 +18,12 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/path_service.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/system/sys_info.h"
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
 #include "components/update_client/component.h"
@@ -33,7 +35,17 @@
 #include "crypto/sha2.h"
 #include "url/gurl.h"
 
+#if BUILDFLAG(IS_WIN)
+#include <shlobj.h>
+
+#include "base/win/windows_version.h"
+#endif  // BUILDFLAG(IS_WIN)
+
 namespace update_client {
+
+const char kArchAmd64[] = "x86_64";
+const char kArchIntel[] = "x86";
+const char kArchArm64[] = "arm64";
 
 bool HasDiffUpdate(const Component& component) {
   return !component.crx_diffurls().empty();
@@ -156,6 +168,34 @@ base::Value ReadManifest(const base::FilePath& unpack_path) {
   if (!root)
     return base::Value();
   return base::Value::FromUniquePtrValue(std::move(root));
+}
+
+bool CreateSecureTempDirectory(const base::FilePath::StringType& prefix,
+                               base::FilePath* temp_dir) {
+  DCHECK(temp_dir);
+
+#if BUILDFLAG(IS_WIN)
+  const int path_key =
+      ::IsUserAnAdmin() ? int{base::DIR_PROGRAM_FILES} : int{base::DIR_TEMP};
+#else   // BUILDFLAG(IS_WIN)
+  const int path_key = base::DIR_TEMP;
+#endif  // BUILDFLAG(IS_WIN)
+
+  base::FilePath parent_dir;
+  return base::PathService::Get(path_key, &parent_dir)
+             ? base::CreateTemporaryDirInDir(parent_dir, prefix, temp_dir)
+             : false;
+}
+
+std::string GetArchitecture() {
+#if BUILDFLAG(IS_WIN)
+  const base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
+  return (os_info->IsWowX86OnARM64() || os_info->IsWowAMD64OnARM64())
+             ? kArchArm64
+             : base::SysInfo().OperatingSystemArchitecture();
+#else   // BUILDFLAG(IS_WIN)
+  return base::SysInfo().OperatingSystemArchitecture();
+#endif  // BUILDFLAG(IS_WIN)
 }
 
 }  // namespace update_client

@@ -188,7 +188,7 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
     base::Milliseconds(300);
 
 // URL to share when user selects "Share Chrome"
-const char kChromeAppStoreUrl[] = "https://apps.apple.com/app/id535886823";
+const char kChromeAppStoreUrl[] = "https://google.com/chrome/go-mobile";
 
 // Enum for toolbar to present.
 enum class ToolbarKind {
@@ -1417,6 +1417,10 @@ enum class ToolbarKind {
   self.whatsNewCoordinator = nil;
 }
 
+- (void)showWhatsNewIPH {
+  [_bubblePresenter presentWhatsNewBottomToolbarBubble];
+}
+
 #pragma mark - DefaultPromoCommands
 
 - (void)showTailoredPromoStaySafe {
@@ -1590,6 +1594,7 @@ enum class ToolbarKind {
 
 - (void)showWhatsNewPromo {
   [self showWhatsNew];
+  self.whatsNewCoordinator.shouldShowBubblePromoOnDismiss = YES;
 }
 
 #pragma mark - PageInfoCommands

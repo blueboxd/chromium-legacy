@@ -167,6 +167,15 @@
       },
     },
   },
+  'bf_cache_content_browsertests': {
+    'modifications': {
+      'android-bfcache-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.content_browsertests.filter',
+        ],
+      }
+    }
+  },
   'blink_platform_unittests': {
     'modifications': {
       # TODO(crbug.com/1303439): Remove this filter
@@ -1001,7 +1010,7 @@
         'swarming': {
           # This is for slow test execution that often becomes a critical path of
           # swarming jobs. crbug.com/868114
-          'shards': 15,
+          'shards': 55,
           'quickrun_shards': 40,
         }
       },
@@ -1338,6 +1347,7 @@
       'android-pie-arm64-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64_rel.chrome_public_test_apk.filter', # https://crbug.com/1010211
+          '--use-persistent-shell',
         ],
         'ci_only': True, # https://crbug.com/1233700
       },
@@ -1818,6 +1828,24 @@
         'args': [
           '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
         ],
+      },
+    },
+  },
+  # TODO(crbug/1239300): Remove when experiment is done.
+  'content_browsertests_persistent_shell': {
+    'modifications': {
+      'android-nougat-x86-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.content_browsertests.filter',
+        ],
+        'swarming': {
+          'shards': 25,
+          'dimension_sets': [
+            {
+              'machine_type': 'e2-standard-8', # copying android-nougat-x86-rel
+            },
+          ],
+        },
       },
     },
   },
@@ -2473,6 +2501,7 @@
       },
       'Win10 Tests x64': {
         'swarming': {
+          'shards': 9,
           'quickrun_shards': 8,
         },
       },
@@ -3308,11 +3337,6 @@
         ],
       },
     },
-  },
-  'system_webview_shell_layout_test_apk': {
-    'remove_from': [
-      'android-nougat-x86-rel', # crbug.com/1343548
-    ],
   },
   'system_webview_wpt': {
     'modifications': {

@@ -591,13 +591,7 @@ config("compiler") {
         cflags_cc += [ "-fno-trigraphs" ]
       }
     } else if (is_clang) {
-      if (is_chromeos_lacros) {
-        # TODO(crbug.com/1376742): LaCrOS currently triggers a strange DCHECK
-        # failure in C++20 mode. Switch to C++20 when this is resolved.
-        cflags_cc += [ "-std=${standard_prefix}++17" ]
-      } else {
-        cflags_cc += [ "-std=${standard_prefix}++20" ]
-      }
+      cflags_cc += [ "-std=${standard_prefix}++20" ]
     } else {
       # The gcc bots are currently using GCC 9, which is not new enough to
       # support "c++20"/"gnu++20".
@@ -676,10 +670,14 @@ config("compiler") {
       # of "all" which means number of hardware threads) is faster.
       ldflags += [ "-Wl,--thinlto-jobs=all" ]
       if (is_apple) {
+        _object_path_suffix = ""
+        if (is_ios) {
+          _object_path_suffix = ",persist"
+        }
         ldflags += [
           "-Wl,-cache_path_lto," +
               rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-          "-Wcrl,object_path_lto",
+          "-Wcrl,object_path_lto" + _object_path_suffix,
         ]
       } else {
         ldflags +=
@@ -2384,9 +2382,6 @@ config("symbols") {
       # It is skipped in tsan and asan because enabling it causes some
       # formatting changes in the output which would require fixing bunches
       # of expectation regexps.
-      #
-      # It is skipped when generating bitcode is enabled as -gdwars-aranges
-      # is incompatible with -fembed-bitcode/-fembed-bitcode-marker.
       cflags += [ "-gdwarf-aranges" ]
     }
 

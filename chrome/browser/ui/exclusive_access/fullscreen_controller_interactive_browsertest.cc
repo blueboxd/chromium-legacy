@@ -438,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 
 // Tests mouse lock then fullscreen.
 // TODO(crbug.com/1318638): Re-enable this test
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_MouseLockThenFullscreen DISABLED_MouseLockThenFullscreen
 #else
 #define MAYBE_MouseLockThenFullscreen MouseLockThenFullscreen
@@ -883,7 +883,7 @@ class MultiScreenFullscreenControllerInteractiveTest
     auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
     EXPECT_EQ(false, EvalJs(tab, await_activation_expiry_script,
                             content::EXECUTE_SCRIPT_NO_USER_GESTURE));
-    EXPECT_FALSE(tab->HasRecentInteractiveInputEvent());
+    EXPECT_FALSE(tab->HasRecentInteraction());
   }
 
  private:

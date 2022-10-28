@@ -417,7 +417,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.CrosAlwaysShowA11yMenu" enum="BooleanEnabled"
-    expires_after="2023-02-19">
+    expires_after="2023-04-23">
   <owner>dtseng@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -566,6 +566,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     When Dictation was toggled on, records whether on-device speech recognition
     was used. If on-device recognition was not used, network speech was used.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.CrosDictation.UsedPumpkin" enum="BooleanUsage"
+    expires_after="2023-10-24">
+  <owner>akihiroota@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records whether Pumpkin was used to parse a command. If Pumpkin was not
+    used, then regex parsing was used. This histogram is recorded each time
+    Dictation parses a command.
   </summary>
 </histogram>
 
@@ -1161,13 +1172,19 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Accessibility.LiveCaption" enum="BooleanEnabled"
     expires_after="2023-06-13">
+  <obsolete>
+    Replaced in M-109 with the histogram Accessibility.LiveCaption2, which is
+    similar but not logged for unnecessary profiles such as system profiles and
+    unusual ChromeOS profiles (sign-in profile, etc.)
+  </obsolete>
   <owner>katie@chromium.org</owner>
   <owner>abigailbklein@google.com</owner>
   <owner>evliu@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
-    Whether the Live Caption feature is enabled. This is logged once, 45 seconds
-    after startup.
+    Whether the Live Caption feature is enabled. This is logged once when the
+    Live Caption controller is initialized on platforms that support Live
+    Caption.
   </summary>
 </histogram>
 
@@ -1267,6 +1284,12 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Accessibility.LiveCaption.FeatureEnabled"
     enum="BooleanEnabled" expires_after="2023-06-13">
+  <obsolete>
+    Replaced in M-109 with the histogram
+    Accessibility.LiveCaption.FeatureEnabled2, which is similar but not logged
+    for unnecessary profiles such as system profiles and unusual ChromeOS
+    profiles (sign-in profile, etc.)
+  </obsolete>
   <owner>katie@chromium.org</owner>
   <owner>abigailbklein@google.com</owner>
   <owner>evliu@google.com</owner>
@@ -1274,6 +1297,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     Whether the Live Caption feature flag is enabled. This is logged once at the
     time of component registration.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.LiveCaption.FeatureEnabled2"
+    enum="BooleanEnabled" expires_after="2023-06-13">
+  <owner>katie@chromium.org</owner>
+  <owner>abigailbklein@google.com</owner>
+  <owner>evliu@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Whether the Live Caption feature flag is enabled. This is logged once when
+    the Live Caption controller is initialized.
   </summary>
 </histogram>
 
@@ -1349,6 +1384,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Accessibility.LiveCaption2" enum="BooleanEnabled"
+    expires_after="2023-06-13">
+  <owner>katie@chromium.org</owner>
+  <owner>abigailbklein@google.com</owner>
+  <owner>evliu@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Whether the Live Caption feature is enabled. This is logged once when the
+    Live Caption controller is initialized on platforms that support Live
+    Caption.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.Mac.ScreenReader{AccessibilityEveryReport}"
     enum="BooleanEnabled" expires_after="never">
 <!-- expires-never: usage drives a11y prioritization in browser and content. -->
@@ -1379,7 +1427,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.ModeFlag" enum="AccessibilityModeFlagEnum"
-    expires_after="2023-02-19">
+    expires_after="2023-04-23">
   <owner>aleventhal@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -1486,7 +1534,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.Performance.Tree.Unserialize" units="ms"
-    expires_after="2023-02-19">
+    expires_after="2023-04-23">
   <owner>aleventhal@chromium.org</owner>
   <owner>janewman@microsoft.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -1788,7 +1836,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DomDistiller.InfoBarUsage" enum="BooleanUsage"
-    expires_after="2023-02-19">
+    expires_after="2023-04-23">
   <owner>mdjones@chromium.org</owner>
   <summary>
     &quot;Used&quot; is recorded when the user clicks the infobar to enter

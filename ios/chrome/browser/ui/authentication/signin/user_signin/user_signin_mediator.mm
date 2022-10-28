@@ -11,13 +11,12 @@
 #import "base/strings/sys_string_conversions.h"
 #import "components/consent_auditor/consent_auditor.h"
 #import "components/unified_consent/unified_consent_service.h"
-#import "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/system_identity.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -91,7 +90,7 @@
   __weak UserSigninMediator* weakSelf = self;
   BOOL settingsLinkWasTapped =
       [self.delegate userSigninMediatorGetSettingsLinkWasTapped];
-  ProceduralBlockWithBool completion = ^(BOOL success) {
+  auto completion = ^(BOOL success) {
     if (settingsLinkWasTapped) {
       [weakSelf
           onAccountSigninCompletionForAdvancedSettingsWithSuccess:success];

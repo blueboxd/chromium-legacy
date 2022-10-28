@@ -16,6 +16,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/demuxer.h"
 #include "media/base/media_tracks.h"
 #include "media/base/mime_util.h"
 #include "media/base/stream_parser_buffer.h"
@@ -25,7 +26,6 @@
 #include "media/filters/frame_processor.h"
 #include "media/filters/source_buffer_stream.h"
 #include "media/filters/stream_parser_factory.h"
-
 
 namespace {
 
@@ -441,15 +441,10 @@ ChunkDemuxer::ChunkDemuxer(
     base::RepeatingClosure progress_cb,
     EncryptedMediaInitDataCB encrypted_media_init_data_cb,
     MediaLog* media_log)
-    : state_(WAITING_FOR_INIT),
-      cancel_next_seek_(false),
-      host_(nullptr),
-      open_cb_(std::move(open_cb)),
+    : open_cb_(std::move(open_cb)),
       progress_cb_(std::move(progress_cb)),
       encrypted_media_init_data_cb_(std::move(encrypted_media_init_data_cb)),
-      media_log_(media_log),
-      duration_(kNoTimestamp),
-      user_specified_duration_(-1) {
+      media_log_(media_log) {
   DCHECK(open_cb_);
   DCHECK(encrypted_media_init_data_cb_);
   MEDIA_LOG(INFO, media_log_) << GetDisplayName();
@@ -457,6 +452,10 @@ ChunkDemuxer::ChunkDemuxer(
 
 std::string ChunkDemuxer::GetDisplayName() const {
   return "ChunkDemuxer";
+}
+
+DemuxerType ChunkDemuxer::GetDemuxerType() const {
+  return DemuxerType::kChunkDemuxer;
 }
 
 void ChunkDemuxer::Initialize(DemuxerHost* host,
@@ -919,6 +918,17 @@ bool ChunkDemuxer::AppendData(const std::string& id,
 
   Ranges<base::TimeDelta> ranges;
 
+  if (length == 0u) {
+    // We don't DCHECK that |state_| != ENDED here, since |state_| is protected
+    // by |lock_|. However, transition into ENDED can happen only on
+    // MarkEndOfStream called by the MediaSource object on parse failure or on
+    // app calling endOfStream(). In case that contract is violated for
+    // nonzero-length appends, we still DCHECK within the lock, below.
+    return true;
+  }
+
+  DCHECK(data);
+
   {
     base::AutoLock auto_lock(lock_);
     DCHECK_NE(state_, ENDED);
@@ -926,11 +936,6 @@ bool ChunkDemuxer::AppendData(const std::string& id,
     // Capture if any of the SourceBuffers are waiting for data before we start
     // parsing.
     bool old_waiting_for_data = IsSeekWaitingForData_Locked();
-
-    if (length == 0u)
-      return true;
-
-    DCHECK(data);
 
     switch (state_) {
       case INITIALIZING:

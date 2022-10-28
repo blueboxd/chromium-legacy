@@ -574,6 +574,19 @@ const FeatureEntry::FeatureVariation kEnableExperienceKitMapsVariations[] = {
     {"with search result page", kEnableExperienceKitMapsWithSrp,
      std::size(kEnableExperienceKitMapsWithSrp), nullptr}};
 
+const FeatureEntry::FeatureParam kFollowingFeedSortTypeGroupedByPublisher[] = {
+    {kFollowingFeedDefaultSortTypeGroupedByPublisher, "true"},
+    {kFollowingFeedDefaultSortTypeSortByLatest, "false"}};
+const FeatureEntry::FeatureParam kFollowingFeedSortTypeSortByLatest[] = {
+    {kFollowingFeedDefaultSortTypeGroupedByPublisher, "false"},
+    {kFollowingFeedDefaultSortTypeSortByLatest, "true"}};
+
+const FeatureEntry::FeatureVariation kFollowingFeedDefaultSortTypeVariations[] =
+    {{"Grouped by Publisher", kFollowingFeedSortTypeGroupedByPublisher,
+      std::size(kFollowingFeedSortTypeGroupedByPublisher), nullptr},
+     {"Sort by Latest", kFollowingFeedSortTypeSortByLatest,
+      std::size(kFollowingFeedSortTypeSortByLatest), nullptr}};
+
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
 // . ENABLE_DISABLE_VALUE: entry is either enabled, disabled, or uses the
@@ -1175,6 +1188,16 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxZeroSuggestPrefetchingName,
      flag_descriptions::kOmniboxZeroSuggestPrefetchingDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(omnibox::kZeroSuggestPrefetching)},
+    {"omnibox-zero-suggest-prefetching-on-srp",
+     flag_descriptions::kOmniboxZeroSuggestPrefetchingOnSRPName,
+     flag_descriptions::kOmniboxZeroSuggestPrefetchingOnSRPDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox::kZeroSuggestPrefetchingOnSRP)},
+    {"omnibox-zero-suggest-prefetching-on-web",
+     flag_descriptions::kOmniboxZeroSuggestPrefetchingOnWebName,
+     flag_descriptions::kOmniboxZeroSuggestPrefetchingOnWebDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox::kZeroSuggestPrefetchingOnWeb)},
     {"omnibox-zero-suggest-in-memory-caching",
      flag_descriptions::kOmniboxZeroSuggestInMemoryCachingName,
      flag_descriptions::kOmniboxZeroSuggestInMemoryCachingDescription,
@@ -1286,6 +1309,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnablePasswordsAccountStorage)},
+    {"enable-default-following-feed-sort-type",
+     flag_descriptions::kFollowingFeedDefaultSortTypeName,
+     flag_descriptions::kFollowingFeedDefaultSortTypeDescription,
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kFollowingFeedDefaultSortType,
+                                    kFollowingFeedDefaultSortTypeVariations,
+                                    "FollowingFeedDefaultSortType")},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

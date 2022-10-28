@@ -26,6 +26,7 @@
 <translation id="1161762950103988776">Μετάβαση</translation>
 <translation id="1164857107703583584">Οι εντολές μετάβασης μπορούν να χρησιμοποιηθούν για την αποτελεσματική πλοήγηση σε μια ιστοσελίδα.</translation>
 <translation id="1175914831232945926">Ψηφία</translation>
+<translation id="1181003590763099524">μετακίνηση στην αρχή</translation>
 <translation id="1188858454923323853">συμπληρωματικό</translation>
 <translation id="1189258430971676908">Περιοχή εξάσκησης: αναπτυσσόμενες λίστες</translation>
 <translation id="1195238899008218998">Επίλογος</translation>
@@ -327,6 +328,7 @@
 <translation id="309749186376891736">Μετακίνηση δείκτη ποντικιού</translation>
 <translation id="3103579948980282461">Μεσαίο βιολετί κόκκινο</translation>
 <translation id="3104705064753753826">παράθυρο διαλόγου ειδοποιήσεων</translation>
+<translation id="3105857328626674463">επισήμανση της προηγούμενης λέξης</translation>
 <translation id="3109724472072898302">Συμπτυγμένο</translation>
 <translation id="311015743332597320">Σύρετε με τέσσερα δάχτυλα προς τα δεξιά.</translation>
 <translation id="3112457281078985179">Για ενεργοποίηση ή απενεργοποίηση του ChromeVox, χρησιμοποιήστε τον συνδυασμό Control+Alt+Z.</translation>
@@ -355,6 +357,7 @@
 <translation id="3241052487511142956">Προηγούμενος σύνδεσμος που έχετε επισκεφτεί</translation>
 <translation id="3241638166094654466">Κελιά σε κάθε γραμμή:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3247621388192105674">μετακίνηση στο τέλος</translation>
 <translation id="3260949043575829030">Προηγούμενο παρόμοιο στοιχείο</translation>
 <translation id="3270069636408109001">Δεν υπάρχει επόμενος πίνακας.</translation>
 <translation id="3273791280096244679">Αποθήκευση ετικέτας</translation>
@@ -381,6 +384,7 @@
 <translation id="3389259863310851658">Προηγούμενο πεδίο φόρμας</translation>
 <translation id="3393605254399152980">Σύρετε ένα δάκτυλο για να ακούσετε τι αγγίζετε</translation>
 <translation id="3406283310380167331">Εμφάνιση λίστας φορμών</translation>
+<translation id="3407726812456125464">Ακρόαση επιλεγμένου κειμένου</translation>
 <translation id="3414400929511680526">Ωχρό μπλε</translation>
 <translation id="3418936350470374046">Δεν υπάρχει κελί παρακάτω.</translation>
 <translation id="3419269701801640163">επικόλληση</translation>
@@ -947,6 +951,7 @@
 <translation id="743783356331413498">Παράδειγμα</translation>
 <translation id="7439060726180460871">Κατάλογος</translation>
 <translation id="744163271241493234">κωδικός πρόσβασης</translation>
+<translation id="7443479558101073378">επισήμανση της επόμενης λέξης</translation>
 <translation id="7465123027577412805">Χρήση φυσικής φωνής;</translation>
 <translation id="7491962110804786152">καρτέλα</translation>
 <translation id="7492497529767769458">Μεταβείτε στην επόμενη ενότητα. Στα παραδείγματα περιλαμβάνονται η Περιοχή κατάστασης και η Εφαρμογή εκκίνησης.</translation>

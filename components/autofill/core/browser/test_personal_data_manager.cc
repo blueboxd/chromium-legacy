@@ -99,6 +99,13 @@ void TestPersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
   NotifyPersonalDataObserver();
 }
 
+std::string TestPersonalDataManager::AddIBAN(const IBAN& iban) {
+  std::unique_ptr<IBAN> local_iban = std::make_unique<IBAN>(iban);
+  local_ibans_.push_back(std::move(local_iban));
+  NotifyPersonalDataObserver();
+  return iban.guid();
+}
+
 void TestPersonalDataManager::DeleteLocalCreditCards(
     const std::vector<CreditCard>& cards) {
   for (const auto& card : cards)
@@ -362,6 +369,12 @@ void TestPersonalDataManager::AddAutofillOfferData(
   std::unique_ptr<AutofillOfferData> data =
       std::make_unique<AutofillOfferData>(offer_data);
   autofill_offer_data_.emplace_back(std::move(data));
+  NotifyPersonalDataObserver();
+}
+
+void TestPersonalDataManager::AddCardArtImage(const GURL& url,
+                                              const gfx::Image& image) {
+  credit_card_art_images_[url] = std::make_unique<gfx::Image>(image);
   NotifyPersonalDataObserver();
 }
 

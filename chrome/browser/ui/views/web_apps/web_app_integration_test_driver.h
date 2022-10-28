@@ -76,6 +76,8 @@ enum class Color { kRed, kGreen };
 
 enum class ProfileClient { kClient2, kClient1 };
 
+enum class ProfileName { kDefault, kProfile2 };
+
 enum class UserDisplayPreference { kStandalone, kBrowser };
 
 enum class IsShown { kShown, kNotShown };
@@ -102,6 +104,12 @@ enum class FilesOptions {
   kOnePngFile,
   kMultiplePngFiles,
   kAllTextAndPngFiles
+};
+
+enum class UpdateDialogResponse {
+  kAcceptUpdate,
+  kCancelDialogAndUninstall,
+  kSkipUpdate
 };
 
 // These structs are used to store the current state of the world before & after
@@ -191,7 +199,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
     virtual void CloseBrowserSynchronously(Browser* browser) = 0;
     virtual void AddBlankTabAndShow(Browser* browser) = 0;
     virtual const net::EmbeddedTestServer* EmbeddedTestServer() const = 0;
-    virtual std::vector<Profile*> GetAllProfiles() = 0;
+    virtual Profile* GetDefaultProfile() = 0;
 
     // Functionality specific to web app integration test type (e.g. sync or
     // non-sync tests).
@@ -199,6 +207,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
     virtual void SyncTurnOff() = 0;
     virtual void SyncTurnOn() = 0;
     virtual void AwaitWebAppQuiescence() = 0;
+    virtual Profile* GetProfileClient(ProfileClient client) = 0;
   };
 
   explicit WebAppIntegrationTestDriver(TestDelegate* delegate);
@@ -215,12 +224,14 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   // Actions are defined in chrome/test/webapps/data/actions.md
 
   // State change actions:
-  void AcceptAppIdUpdateDialog();
+  void HandleAppIdentityUpdateDialogResponse(UpdateDialogResponse response);
   void AwaitManifestUpdate(Site site_mode);
   void CloseCustomToolbar();
   void ClosePwa();
   void DisableRunOnOsLogin(Site site);
   void EnableRunOnOsLogin(Site site);
+  void DisableFileHandling(Site site);
+  void EnableFileHandling(Site site);
   void DisableWindowControlsOverlay(Site site);
   void EnableWindowControlsOverlay(Site site);
   void CreateShortcut(Site site, WindowOptions window_options);
@@ -252,8 +263,10 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void NavigateBrowser(Site site);
   void NavigatePwa(Site app, Site to);
   void NavigateNotfoundUrl();
-  void ManifestUpdateIcon(Site site);
-  void ManifestUpdateTitle(Site site, Title title);
+  void ManifestUpdateIcon(Site site, UpdateDialogResponse response);
+  void ManifestUpdateTitle(Site site,
+                           Title title,
+                           UpdateDialogResponse response);
   void ManifestUpdateDisplay(Site site, Display display);
   void ManifestUpdateScopeTo(Site app, Site scope);
   void OpenInChrome();
@@ -261,6 +274,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void SetOpenInWindow(Site site);
   void SwitchIncognitoProfile();
   void SwitchProfileClients(ProfileClient client);
+  void SwitchActiveProfile(ProfileName profile_name);
   void SyncTurnOff();
   void SyncTurnOn();
   void UninstallFromList(Site site);
@@ -326,6 +340,8 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   // Must be called at the end of every state check action function.
   void AfterStateCheckAction();
 
+  void AwaitManifestSystemIdle();
+
   AppId GetAppIdBySiteMode(Site site);
   GURL GetUrlForSite(Site site);
   absl::optional<AppState> GetAppBySiteMode(StateSnapshot* state_snapshot,
@@ -364,6 +380,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
                                 const AppId& id);
 
   bool IsFileHandledBySite(Site site, std::string file_extension);
+  void SetFileHandlingEnabled(Site site, bool enabled);
 
   void SetRunOnOsLoginMode(Site site, apps::RunOnOsLoginMode login_mode);
 
@@ -376,12 +393,9 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   std::vector<base::FilePath> GetTestFilePaths(FilesOptions file_options);
 
   Browser* browser();
-  Profile* profile() {
-    if (!active_profile_) {
-      active_profile_ = delegate_->GetAllProfiles()[0];
-    }
-    return active_profile_;
-  }
+  Profile* profile();
+  std::vector<Profile*> GetAllProfiles();
+
   Browser* app_browser() { return app_browser_; }
   WebAppProvider* provider() { return WebAppProvider::GetForTest(profile()); }
   PageActionIconView* pwa_install_view();
@@ -420,6 +434,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
       nullptr;
 
   bool in_tear_down_ = false;
+  bool is_performing_manifest_update_ = false;
 
   std::unique_ptr<views::NamedWidgetShownWaiter> app_id_update_dialog_waiter_;
   base::ScopedObservation<web_app::WebAppInstallManager,
@@ -428,7 +443,8 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
       override_registration_;
 
-  std::unique_ptr<net::EmbeddedTestServer> isolated_app_test_server_ = nullptr;
+  std::unique_ptr<net::EmbeddedTestServer> isolated_web_app_test_server_ =
+      nullptr;
   std::unique_ptr<base::RunLoop> window_controls_overlay_callback_for_testing_ =
       nullptr;
 
@@ -457,13 +473,13 @@ class WebAppIntegrationTest : public InProcessBrowserTest,
   void CloseBrowserSynchronously(Browser* browser) override;
   void AddBlankTabAndShow(Browser* browser) override;
   const net::EmbeddedTestServer* EmbeddedTestServer() const override;
-
-  std::vector<Profile*> GetAllProfiles() override;
+  Profile* GetDefaultProfile() override;
 
   bool IsSyncTest() override;
   void SyncTurnOff() override;
   void SyncTurnOn() override;
   void AwaitWebAppQuiescence() override;
+  Profile* GetProfileClient(ProfileClient client) override;
 
  protected:
   WebAppIntegrationTestDriver helper_;

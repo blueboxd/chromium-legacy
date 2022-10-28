@@ -472,6 +472,10 @@
       status: "stable",
     },
     {
+      name: "CaptureController",
+      status: {"Android": "", "default": "experimental"},
+    },
+    {
       name: "CaptureHandle",
       depends_on: ["GetDisplayMedia"],
       status: {"Android": "", "default": "stable"},
@@ -612,7 +616,7 @@
     },
     {
       // Allows positioning a positioned element relative to another one.
-      // https://tabatkins.github.io/specs/css-anchor-position/
+      // https://drafts.csswg.org/css-anchor-1/
       name: "CSSAnchorPositioning",
       status: "experimental",
     },
@@ -732,7 +736,8 @@
     {
       // crbug.com/924069
       name: "CSSHyphenateLimitChars",
-      status: "test",
+      status: "stable",
+      base_feature: "CSSHyphenateLimitChars",
     },
     {
       name: "CSSIcUnit",
@@ -1145,10 +1150,8 @@
     },
     {
       // Non-standard API Event.path. Should be replaced by Event.composedPath.
-      // TODO(1277431): This flag should be eventually disabled.
       name: "EventPath",
       public: true,
-      status: "stable",
       base_feature: "EventPath",
     },
     {
@@ -1531,6 +1534,11 @@
       name: "LangAttributeAwareSvgText",
       base_feature: "LangAttributeAwareSvgText",
       status: "stable",
+    },
+    {
+      name: "LayoutMediaNGContainer",
+      // This feature doesn't work in the legacy layout.
+      depends_on: ["LayoutNGPrinting"],
     },
     {
       // LayoutNG has been enabled in M76, but we still keep this flag for
@@ -2268,8 +2276,12 @@
       name: "RenderPriorityAttribute"
     },
     {
-      name: "ResourceTimingResponseStatus",
+      name: "ResourceTimingContentType",
       status: "experimental",
+    },
+    {
+      name: "ResourceTimingResponseStatus",
+      status: "stable",
     },
     {
       name: "RestrictGamepadAccess",
@@ -2426,6 +2438,7 @@
     },
     {
       name: "SendMouseEventsDisabledFormControls",
+      base_feature: "SendMouseEventsDisabledFormControls",
       status: "experimental",
     },
     {
@@ -2520,8 +2533,11 @@
     // was enabled.
     {
       name: "SpeculationRules",
-      implied_by: ["SpeculationRulesPrefetchProxy", "SpeculationRulesPrefetchWithSubresources", "Prerender2"],
+      implied_by: ["SpeculationRulesPrefetchProxy", "SpeculationRulesPrefetchWithSubresources", "Prerender2", "SpeculationRulesDocumentRules"],
       origin_trial_feature_name: "SpeculationRules__DONOTUSE",
+    },
+    {
+      name: "SpeculationRulesDocumentRules",
     },
     {
       name: "SpeculationRulesFetchFromHeader"
@@ -2937,11 +2953,6 @@
       name: "WebAssemblyCSP",
       status: "stable",
     },
-    {
-      name: "WebAssemblyExceptions",
-      origin_trial_feature_name: "WebAssemblyExceptions",
-      status: "test",
-    },
     // WebAuth is disabled on Android versions prior to N (7.0) due to lack of
     // supporting APIs, see runtime_features.cc.
     {
@@ -3009,6 +3020,10 @@
     {
       name: "WebCodecsDequeueEvent",
       status: "stable",
+    },
+    {
+      name: "WebCryptoCurve25519",
+      status: "experimental",
     },
     {
       name: "WebGLColorManagement",

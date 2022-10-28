@@ -212,6 +212,24 @@ _BANNED_JAVA_FUNCTIONS : Sequence[BanRule] = (
       ),
       False,
     ),
+    BanRule(
+      r'/(?<!\bsuper\.)(?<!\bIntent )\bregisterReceiver\(',
+      (
+       'Do not call android.content.Context.registerReceiver (or an override) '
+       'directly. Use one of the wrapper methods defined in '
+       'org.chromium.base.ContextUtils, such as '
+       'registerProtectedBroadcastReceiver, '
+       'registerExportedBroadcastReceiver, or '
+       'registerNonExportedBroadcastReceiver. See their documentation for '
+       'which one to use.',
+      ),
+      True,
+      excluded_paths=(
+          r'Test[^a-z]',
+          r'^third_party/',
+          'base/android/java/src/org/chromium/base/ContextUtils.java',
+      ),
+    ),
 )
 
 _BANNED_OBJC_FUNCTIONS : Sequence[BanRule] = (
@@ -1448,7 +1466,8 @@ _KNOWN_ROBOTS = set(
                     'wpt-autoroller', 'chrome-weblayer-builder',
                     'lacros-version-skew-roller', 'skylab-test-cros-roller',
                     'infra-try-recipes-tester', 'lacros-tracking-roller',
-                    'lacros-sdk-version-roller')
+                    'lacros-sdk-version-roller', 'chrome-automated-expectation',
+                    'chromium-automated-expectation')
   ) | set('%s@skia-public.iam.gserviceaccount.com' % s
           for s in ('chromium-autoroll', 'chromium-release-autoroll')
   ) | set('%s@skia-corp.google.com.iam.gserviceaccount.com' % s
@@ -4484,6 +4503,36 @@ def CheckWATCHLISTS(input_api, output_api):
 
     return []
 
+def CheckGnRebasePath(input_api, output_api):
+    """Checks that target_gen_dir is not used wtih "//" in rebase_path().
+
+    Developers should use root_build_dir instead of "//" when using target_gen_dir because
+    Chromium is sometimes built outside of the source tree.
+    """
+
+    def gn_files(f):
+        return input_api.FilterSourceFile(f, files_to_check=(r'.+\.gn', ))
+
+    rebase_path_regex = input_api.re.compile(r'rebase_path\(("\$target_gen_dir"|target_gen_dir), ("/"|"//")\)')
+    problems = []
+    for f in input_api.AffectedSourceFiles(gn_files):
+        for line_num, line in f.ChangedContents():
+            if rebase_path_regex.search(line):
+                problems.append(
+                    'Absolute path in rebase_path() in %s:%d' %
+                    (f.LocalPath(), line_num))
+
+    if problems:
+        return [
+            output_api.PresubmitPromptWarning(
+                'Using an absolute path in rebase_path()',
+                items=sorted(problems),
+                long_text=(
+                    'rebase_path() should use root_build_dir instead of "/" ',
+                    'since builds can be initiated from outside of the source ',
+                    'root.'))
+        ]
+    return []
 
 def CheckGnGlobForward(input_api, output_api):
     """Checks that forward_variables_from(invoker, "*") follows best practices.
@@ -4516,7 +4565,6 @@ def CheckGnGlobForward(input_api, output_api):
                     '#Using-forward_variables_from'))
         ]
     return []
-
 
 def CheckNewHeaderWithoutGnChangeOnUpload(input_api, output_api):
     """Checks that newly added header files have corresponding GN changes.

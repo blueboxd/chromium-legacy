@@ -9,8 +9,7 @@
 #import "base/notreached.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/infobar_banner_overlay_responses.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/translate_infobar_banner_overlay_request_config.h"
-#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
-#import "ios/chrome/browser/ui/icons/infobar_icon.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_consumer.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_overlay_mediator+consumer_support.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_mediator+subclassing.h"
@@ -65,7 +64,7 @@ NSString* const kTranslateImageName = @"infobar_translate_icon";
 
   UIImage* iconImage = UseSymbols()
                            ? CustomSymbolTemplateWithPointSize(
-                                 kTranslateSymbol, kSymbolImagePointSize)
+                                 kTranslateSymbol, kInfobarSymbolPointSize)
                            : [UIImage imageNamed:kTranslateImageName];
   [self.consumer setIconImage:iconImage];
   [self.consumer setPresentsModal:YES];
@@ -83,9 +82,12 @@ NSString* const kTranslateImageName = @"infobar_translate_icon";
     case translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE:
       return l10n_util::GetNSString(
           IDS_IOS_TRANSLATE_INFOBAR_AFTER_TRANSLATE_BANNER_TITLE);
+    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
+      return l10n_util::GetNSString(
+          IDS_IOS_TRANSLATE_INFOBAR_ON_ERROR_BANNER_TITLE);
     case translate::TranslateStep::TRANSLATE_STEP_TRANSLATING:
     case translate::TranslateStep::TRANSLATE_STEP_NEVER_TRANSLATE:
-    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
+
       NOTREACHED() << "Should not be presenting Banner in this TranslateStep";
       return nil;
   }
@@ -108,9 +110,12 @@ NSString* const kTranslateImageName = @"infobar_translate_icon";
     case translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE:
       return l10n_util::GetNSString(
           IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_UNDO_ACTION);
+    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
+      return l10n_util::GetNSString(
+          IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_TRY_AGAIN_ACTION);
     case translate::TranslateStep::TRANSLATE_STEP_TRANSLATING:
     case translate::TranslateStep::TRANSLATE_STEP_NEVER_TRANSLATE:
-    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
+
       NOTREACHED() << "Translate infobar should not be presenting anything in "
                       "this state.";
       return nil;

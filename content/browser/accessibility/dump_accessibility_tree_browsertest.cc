@@ -28,10 +28,6 @@
 #include "content/shell/browser/shell.h"
 #include "ui/accessibility/platform/inspect/ax_api_type.h"
 
-#if BUILDFLAG(IS_MAC)
-#include "base/mac/mac_util.h"
-#endif
-
 // TODO(aboxhall): Create expectations on Android for these
 #if BUILDFLAG(IS_ANDROID)
 #define MAYBE(x) DISABLED_##x
@@ -1858,8 +1854,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-plaintext-with-role.html"));
 }
 
+// TODO(crbug.com/1379137): This test is failing on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_AccessibilityContenteditableOnDisallowedElement \
+  DISABLED_AccessibilityContenteditableOnDisallowedElement
+#else
+#define MAYBE_AccessibilityContenteditableOnDisallowedElement \
+  AccessibilityContenteditableOnDisallowedElement
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityContenteditableOnDisallowedElement) {
+                       MAYBE_AccessibilityContenteditableOnDisallowedElement) {
   RunHtmlTest(FILE_PATH_LITERAL("contenteditable-on-disallowed-element.html"));
 }
 
@@ -2306,17 +2310,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputDate) {
 }
 
 // TODO: date and time controls drop their children, including the popup button,
-// on Android
-#if BUILDFLAG(IS_ANDROID)
-#define MAYBE_AccessibilityInputDateWithPopupOpen \
-  DISABLED_AccessibilityInputDateWithPopupOpen
-#else
-#define MAYBE_AccessibilityInputDateWithPopupOpen \
-  AccessibilityInputDateWithPopupOpen
-#endif
-
+// on Android.
+// TODO(https://crbug.com/1378498): Flaky on every platform.
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       MAYBE_AccessibilityInputDateWithPopupOpen) {
+                       DISABLED_AccessibilityInputDateWithPopupOpen) {
   RunHtmlTest(FILE_PATH_LITERAL("input-date-with-popup-open.html"));
 }
 
@@ -3281,8 +3278,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityVideoTextOnly) {
   RunHtmlTest(FILE_PATH_LITERAL("video-text-only.html"));
 }
 
+// TODO(https://crbug.com/1377779): This test is failing on Android.
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_AccessibilityNodeChangedCrashInEditableText \
+  DISABLED_AccessibilityNodeChangedCrashInEditableText
+#else
+#define MAYBE_AccessibilityNodeChangedCrashInEditableText \
+  AccessibilityNodeChangedCrashInEditableText
+#endif  // BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityNodeChangedCrashInEditableText) {
+                       MAYBE_AccessibilityNodeChangedCrashInEditableText) {
   RunHtmlTest(FILE_PATH_LITERAL("node-changed-crash-in-editable-text.html"));
 }
 

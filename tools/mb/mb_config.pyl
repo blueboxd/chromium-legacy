@@ -98,7 +98,7 @@
       'android-10-arm64-rel': 'android_release_bot_minimal_symbols_arm64_fastbuild_webview_trichrome_reclient',
       'android-11-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_trichrome_reclient',
       'android-12-x64-rel': 'android_release_bot_minimal_symbols_x64_fastbuild_webview_trichrome_reclient',
-      'android-arm64-proguard-rel': 'android_release_bot_minimal_symbols_arm64_webview_google',
+      'android-arm64-proguard-rel': 'android_release_bot_minimal_symbols_arm64_webview_google_reclient',
       'android-bfcache-rel': 'android_release_bot_minimal_symbols_x64_fastbuild_webview_trichrome_reclient',
       'android-binary-size-generator': 'android_binary_size_reclient',
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon_reclient',
@@ -110,7 +110,6 @@
       'android-cronet-x86-dbg': 'android_cronet_debug_static_bot_x86_reclient',
       'android-cronet-x86-rel': 'android_cronet_release_bot_minimal_symbols_x86_reclient',
       'android-nougat-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
-      'android-nougat-x86-rel-inverse-fyi': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
       # TODO(crbug/1182468) Remove android coverage bots after coverage is
       # running on CQ.
       'android-pie-arm64-coverage-experimental-rel': 'android_release_bot_arm64_webview_monochrome_expectations_reclient',
@@ -154,7 +153,7 @@
       'chromeos-amd64-generic-rel': 'chromeos_amd64-generic-vm_use_fake_dbus_clients_reclient',
       'chromeos-arm-generic-dbg': 'chromeos_arm-generic_dbg_reclient',
       'chromeos-arm-generic-rel': 'chromeos_arm-generic_reclient',
-      'chromeos-arm64-generic-rel': 'chromeos_arm64-generic_dchecks',
+      'chromeos-arm64-generic-rel': 'chromeos_arm64-generic_dchecks_reclient',
       'chromeos-jacuzzi-rel': 'chromeos_jacuzzi_dchecks_reclient',
       'chromeos-kevin-rel': 'chromeos_kevin_dchecks_reclient',
       'chromeos-octopus-rel': 'chromeos_octopus_dchecks_reclient',
@@ -162,7 +161,7 @@
       'lacros-amd64-generic-rel': 'chromeos_amd64-generic_lacros_rel_reclient',
       'lacros-arm-generic-rel': 'chromeos_arm-generic_lacros_rel_reclient',
       'lacros-arm64-generic-rel': 'chromeos_arm64-generic_lacros_rel_reclient',
-      'linux-ash-chromium-generator-rel': 'chromeos_with_codecs_release_bot',
+      'linux-ash-chromium-generator-rel': 'chromeos_with_codecs_release_bot_reclient',
       'linux-cfm-rel': 'linux_cfm_release_bot_reclient',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot_reclient',
       'linux-chromeos-rel': 'chromeos_with_codecs_with_lacros_release_bot',
@@ -260,21 +259,21 @@
     },
 
     'chromium.fuchsia': {
-      'Deterministic Fuchsia (dbg)': 'debug_bot_fuchsia',
-      'fuchsia-arm64-cast-receiver-rel': 'release_bot_fuchsia_arm64_cast_receiver',
-      'fuchsia-arm64-rel': 'release_bot_fuchsia_arm64',
-      'fuchsia-x64-cast-receiver-rel': 'release_bot_fuchsia_cast_receiver',
+      'Deterministic Fuchsia (dbg)': 'debug_bot_fuchsia_reclient',
+      'fuchsia-arm64-cast-receiver-rel': 'release_bot_fuchsia_arm64_cast_receiver_reclient',
+      'fuchsia-arm64-rel': 'release_bot_fuchsia_arm64_reclient',
+      'fuchsia-x64-cast-receiver-rel': 'release_bot_fuchsia_cast_receiver_reclient',
       'fuchsia-x64-dbg': 'debug_bot_fuchsia_compile_only_reclient',
-      'fuchsia-x64-rel': 'release_bot_fuchsia',
+      'fuchsia-x64-rel': 'release_bot_fuchsia_reclient',
     },
 
     'chromium.fuchsia.fyi': {
-      'fuchsia-arm64-chrome-rel': 'release_bot_fuchsia_arm64',
-      'fuchsia-fyi-arm64-dbg': 'debug_bot_fuchsia_arm64',
-      'fuchsia-fyi-x64-asan': 'asan_lsan_bot_fuchsia',
-      'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
-      'fuchsia-x64-chrome-rel': 'release_bot_fuchsia_cfv2_script_chrome',
-      'fuchsia-x64-workstation': 'release_bot_fuchsia_workstation',
+      'fuchsia-arm64-chrome-rel': 'release_bot_fuchsia_arm64_reclient',
+      'fuchsia-fyi-arm64-dbg': 'debug_bot_fuchsia_arm64_reclient',
+      'fuchsia-fyi-x64-asan': 'asan_lsan_bot_fuchsia_reclient',
+      'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia_reclient',
+      'fuchsia-x64-chrome-rel': 'release_bot_fuchsia_cfv2_script_chrome_reclient',
+      'fuchsia-x64-workstation': 'release_bot_fuchsia_workstation_reclient',
     },
 
     'chromium.fuzz': {
@@ -399,9 +398,9 @@
       # TODO(crbug.com/1235218): remove after the migration.
       'chromeos-amd64-generic-rel (reclient compare)': 'chromeos_amd64-generic-vm_use_fake_dbus_clients_reclient',
       'chromeos-amd64-generic-rel (reclient)': 'chromeos_amd64-generic-vm_use_fake_dbus_clients_reclient',
-      'fuchsia-code-coverage': 'fuchsia_clang_code_coverage',
+      'fuchsia-code-coverage': 'fuchsia_clang_code_coverage_reclient',
       'fuchsia-fyi-arm64-cfv2-script': 'release_bot_fuchsia_cfv2_script_arm64',
-      'fuchsia-fyi-cfv2-script': 'release_bot_fuchsia_cfv2_script',
+      'fuchsia-fyi-cfv2-script': 'release_bot_fuchsia_cfv2_script_reclient',
       'ios-fieldtrial-rel': 'ios_simulator_debug_static_bot_xctest_arm64',
       'ios-m1-simulator': 'ios_simulator_debug_static_bot_xctest_arm64',
       'ios-m1-simulator-cronet': 'ios_cronet_xctest_arm64',
@@ -433,7 +432,7 @@
       'linux-chromeos-code-coverage': 'chromeos_with_codecs_release_bot_coverage_reclient',
       'linux-code-coverage': 'clang_code_coverage',
       'linux-example-builder': 'release_bot_reclient',
-      'linux-fieldtrial-rel': 'release_bot_minimal_symbols',
+      'linux-fieldtrial-rel': 'release_bot_minimal_symbols_reclient',
       'linux-headless-shell-rel': 'headless_shell_release_bot_reclient',
       'linux-js-code-coverage': 'clang_code_coverage_with_js_coverage',
       'linux-lacros-builder-fyi-rel': 'lacros_on_linux_release_bot_reclient',
@@ -443,7 +442,7 @@
       'linux-lacros-dbg-fyi': 'lacros_on_linux_debug_bot_reclient',
       'linux-lacros-dbg-tests-fyi': 'lacros_on_linux_debug_bot',
       'linux-lacros-tester-fyi-rel': 'lacros_on_linux_release_bot',
-      'linux-lacros-tester-rel-reviver': 'lacros_on_linux_release_bot',
+      'linux-lacros-tester-rel-reviver': 'lacros_on_linux_release_bot_reclient',
       'linux-lacros-version-skew-fyi': 'lacros_on_linux_release_not_build_ash_bot_reclient',
       'linux-perfetto-rel': 'perfetto_release_bot_reclient',
       'linux-rel-no-external-ip': 'gpu_tests_release_bot_do_typecheck_reclient',
@@ -826,9 +825,9 @@
       'chromeos-amd64-generic-lacros-internal-rel': 'chromeos_amd64-generic_lacros_rel',
       'chromeos-arm-generic-cfi-thin-lto-chrome-reclient': 'chromeos_arm-generic_cfi_thin_lto_official_reclient',
       'lacros-arm-generic-chrome-fyi-reclient': 'chromeos_arm-generic_lacros_official_skylab_reclient',
-      'linux-autofill-captured-sites-rel': 'release_bot',
-      'linux-finch-smoke-chrome': 'official_goma',
-      'linux-password-manager-captured-sites-rel': 'release_bot',
+      'linux-autofill-captured-sites-rel': 'release_bot_reclient',
+      'linux-finch-smoke-chrome': 'official_reclient',
+      'linux-password-manager-captured-sites-rel': 'release_bot_reclient',
       'lorenz-graph-dbg': 'android_debug_static_external_bot',
       'mac-arm64-finch-smoke-chrome': 'official_goma_mac_arm',
       'mac-autofill-captured-sites-rel': 'release_bot',
@@ -993,6 +992,7 @@
       'android-fieldtrial-rel': 'android_release_trybot_minimal_symbols_x86_fastbuild_disable_proguard_chrome_google',
       'android-inverse-fieldtrials-pie-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_webview_google_invert_fieldtrials',
       'android-nougat-x86-rel': 'android_release_trybot_x86_fastbuild_webview_monochrome',
+      'android-nougat-x86-rel-inverse-fyi': 'android_release_trybot_x86_fastbuild_webview_monochrome',
       'android-nougat-x86-rel-reclient': 'android_release_trybot_x86_fastbuild_webview_monochrome_reclient',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
       'android-oreo-arm64-dbg': 'android_debug_trybot_arm64',
@@ -1012,7 +1012,6 @@
       'android-weblayer-pie-x86-rel-tests': 'android_release_trybot_minimal_symbols_x86_fastbuild_disable_proguard_webview_monochrome',
       'android-webview-10-x86-rel-tests': 'android_release_trybot_x86_fastbuild_webview_trichrome',
       'android-webview-12-x64-dbg': 'android_debug_trybot_x64_webview_trichrome_webview_shell',
-      'android-webview-marshmallow-arm64-dbg': 'android_release_trybot_arm64_webview_google',
       'android-webview-nougat-arm64-dbg': 'android_release_trybot_arm64_webview_monochrome',
       'android-webview-oreo-arm64-dbg': 'android_release_trybot_arm64_webview_monochrome',
       'android-webview-pie-arm64-dbg': 'android_release_trybot_arm64_webview_monochrome',
@@ -1356,6 +1355,7 @@
       'win10_chromium_x64_dbg_ng': 'gpu_tests_debug_bot',
       'win10_chromium_x64_rel_ng': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage',
       'win10_chromium_x64_rel_ng-inverse-fyi': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage',
+      'win10_chromium_x64_rel_ng-reclient': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage_reclient',
       'win10_chromium_x64_rel_ng_exp': 'release_trybot',
       'win11-x64-fyi-rel': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage',
       'win7-rel': 'gpu_tests_release_trybot_x86_resource_allowlisting',
@@ -1643,11 +1643,6 @@
       'strip_debug_info',
     ],
 
-    'android_release_bot_minimal_symbols_arm64_webview_google': [
-      'android', 'release_bot', 'minimal_symbols', 'arm64',
-      'strip_debug_info', 'webview_google',
-    ],
-
     'android_release_bot_minimal_symbols_arm64_webview_google_reclient': [
       'android', 'release_bot_reclient', 'minimal_symbols', 'arm64',
       'strip_debug_info', 'webview_google',
@@ -1706,11 +1701,6 @@
     'android_release_trybot_arm64_fastbuild_webview_trichrome': [
       'android', 'release_trybot', 'arm64', 'strip_debug_info',
       'android_fastbuild', 'webview_trichrome',
-    ],
-
-    'android_release_trybot_arm64_webview_google': [
-      'android', 'release_trybot', 'arm64', 'strip_debug_info',
-      'webview_google',
     ],
 
     'android_release_trybot_arm64_webview_monochrome': [
@@ -1900,8 +1890,8 @@
       'clang', 'asan', 'fuzzer', 'v8_heap', 'release_bot_reclient',
     ],
 
-    'asan_lsan_bot_fuchsia': [
-      'asan', 'lsan', 'release_bot', 'fuchsia',
+    'asan_lsan_bot_fuchsia_reclient': [
+      'asan', 'lsan', 'release_bot_reclient', 'fuchsia',
     ],
 
     'asan_lsan_chromeos_release_bot_dcheck_always_on': [
@@ -2016,6 +2006,7 @@
 
     'chromeos_amd64-generic-vm_use_fake_dbus_clients_reclient': [
       'chromeos_amd64-generic-vm_reclient', 'use_fake_dbus_clients',
+      'also_build_lacros_chrome_for_architecture_amd64',
     ],
 
     'chromeos_amd64-generic_asan_reclient': [
@@ -2024,10 +2015,12 @@
 
     'chromeos_amd64-generic_cfi_thin_lto': [
       'chromeos_amd64-generic', 'cfi_full', 'thin_lto',
+      'also_build_lacros_chrome_for_architecture_amd64',
     ],
 
     'chromeos_amd64-generic_cfi_thin_lto_reclient': [
       'chromeos_amd64-generic_reclient', 'cfi_full', 'thin_lto',
+      'also_build_lacros_chrome_for_architecture_amd64',
     ],
 
     'chromeos_amd64-generic_dbg': [
@@ -2078,30 +2071,34 @@
     ],
 
     'chromeos_amd64-generic_use_fake_dbus_clients':[
-      'chromeos_amd64-generic', 'use_fake_dbus_clients',
+      'chromeos_amd64-generic', 'use_fake_dbus_clients', 'also_build_lacros_chrome_for_architecture_amd64',
     ],
 
     'chromeos_amd64-generic_use_fake_dbus_clients_goma':[
-      'chromeos_amd64-generic_goma', 'use_fake_dbus_clients',
+      'chromeos_amd64-generic_goma', 'use_fake_dbus_clients', 'also_build_lacros_chrome_for_architecture_amd64',
     ],
 
     'chromeos_amd64-generic_use_fake_dbus_clients_vm_optimized': [
-      'chromeos_amd64-generic-vm', 'use_fake_dbus_clients',
+      'chromeos_amd64-generic-vm', 'use_fake_dbus_clients', 'also_build_lacros_chrome_for_architecture_amd64',
     ],
 
     'chromeos_amd64-generic_use_fake_dbus_clients_vm_optimized_dchecks': [
-      'chromeos_amd64-generic-vm', 'use_fake_dbus_clients', 'dcheck_always_on', 'also_build_lacros_chrome_for_architecture_amd64'
+      'chromeos_amd64-generic-vm', 'use_fake_dbus_clients', 'dcheck_always_on',
+      'also_build_lacros_chrome_for_architecture_amd64',
     ],
 
     'chromeos_arm-generic_cfi_thin_lto_official': [
       'chromeos_device', 'arm-generic', 'cfi_full', 'thin_lto', 'official', 'full_symbols',
     ],
+
     'chromeos_arm-generic_cfi_thin_lto_official_reclient': [
       'chromeos_device_reclient', 'arm-generic', 'cfi_full', 'thin_lto', 'official', 'full_symbols',
+      'also_build_lacros_chrome_for_architecture_arm',
     ],
 
     'chromeos_arm-generic_dbg': [
       'chromeos_device', 'arm-generic', 'debug',
+      'also_build_lacros_chrome_for_architecture_arm',
     ],
 
     'chromeos_arm-generic_dbg_reclient': [
@@ -2143,6 +2140,10 @@
       'chromeos_device', 'arm64-generic', 'dcheck_always_on',
     ],
 
+    'chromeos_arm64-generic_dchecks_reclient': [
+      'chromeos_device_reclient', 'arm64-generic', 'dcheck_always_on',
+    ],
+
     'chromeos_arm64-generic_lacros_official': [
       'chromeos_arm64-generic-crostoolchain', 'lacros', 'official', 'minimal_symbols', 'cfi', 'thin_lto',
     ],
@@ -2169,15 +2170,18 @@
 
     'chromeos_betty-arc-r_include_unwind_tables_official_use_fake_dbus_clients': [
       'chromeos_device', 'betty-arc-r', 'include_unwind_tables', 'official', 'use_fake_dbus_clients',
+      'also_build_lacros_chrome_for_architecture_amd64',
     ],
 
     'chromeos_betty-pi-arc_cfi_thin_lto_official': [
       'chromeos_device', 'betty-pi-arc', 'cfi_full', 'thin_lto', 'official', 'minimal_symbols',
+      'also_build_lacros_chrome_for_architecture_amd64',
     ],
 
     'chromeos_betty-pi-arc_dchecks': [
       'chromeos_device', 'betty-pi-arc', 'include_unwind_tables', 'official',
       'use_fake_dbus_clients', 'dcheck_always_on',
+      'also_build_lacros_chrome_for_architecture_amd64',
     ],
 
     'chromeos_eve-arc-r_include_unwind_tables_official': [
@@ -2202,14 +2206,15 @@
       # TODO(crbug.com/1275785): Enable DCHECKs on jacuzzi bots when the
       # display-orientation DCHECK failures are resolved.
       # 'dcheck_always_on',
+      'also_build_lacros_chrome_for_architecture_arm',
     ],
 
     'chromeos_kevin_dchecks': [
-      'chromeos_kevin', 'dcheck_always_on',
+      'chromeos_kevin', 'dcheck_always_on', 'also_build_lacros_chrome_for_architecture_arm',
     ],
 
     'chromeos_kevin_dchecks_reclient': [
-      'chromeos_kevin_reclient', 'dcheck_always_on',
+      'chromeos_kevin_reclient', 'dcheck_always_on', 'also_build_lacros_chrome_for_architecture_arm',
     ],
 
     'chromeos_kevin_include_unwind_tables_official': [
@@ -2218,6 +2223,7 @@
 
     'chromeos_kevin_include_unwind_tables_official_dchecks': [
       'chromeos_kevin', 'include_unwind_tables', 'official', 'dcheck_always_on',
+      'also_build_lacros_chrome_for_architecture_arm',
     ],
 
     'chromeos_msan_release_bot': [
@@ -2238,10 +2244,12 @@
 
     'chromeos_octopus_include_unwind_tables_official_dchecks': [
       'chromeos_device', 'octopus', 'include_unwind_tables', 'official', 'dcheck_always_on',
+      'also_build_lacros_chrome_for_architecture_amd64',
     ],
 
     'chromeos_reven_include_unwind_tables_official_dchecks': [
       'chromeos_device', 'reven', 'include_unwind_tables', 'official', 'dcheck_always_on',
+      'also_build_lacros_chrome_for_architecture_amd64',
     ],
 
     'chromeos_trogdor64_include_unwind_tables_official_dchecks_skylab': [
@@ -2487,12 +2495,20 @@
       'debug_bot', 'fuchsia', 'arm64', 'arm64_host',
     ],
 
+    'debug_bot_fuchsia_arm64_reclient': [
+      'debug_bot_reclient', 'fuchsia', 'arm64', 'arm64_host',
+    ],
+
     'debug_bot_fuchsia_compile_only': [
       'debug_bot', 'fuchsia', 'compile_only',
     ],
 
     'debug_bot_fuchsia_compile_only_reclient': [
       'debug_bot_reclient', 'fuchsia', 'compile_only',
+    ],
+
+    'debug_bot_fuchsia_reclient': [
+      'debug_bot_reclient', 'fuchsia',
     ],
 
     'debug_bot_local_build': [
@@ -2527,8 +2543,8 @@
       'debug_bot_reclient', 'x86',
     ],
 
-    'fuchsia_clang_code_coverage': [
-      'clang', 'fuchsia', 'fuchsia_code_coverage', 'no_symbols', 'release_bot',
+    'fuchsia_clang_code_coverage_reclient': [
+      'clang', 'fuchsia', 'fuchsia_code_coverage', 'no_symbols', 'release_bot_reclient',
       'use_clang_coverage'
     ],
 
@@ -3341,6 +3357,9 @@
     'official_optimize_reclient': [
       'official_optimize_reclient',
     ],
+    'official_reclient': [
+       'official', 'reclient',
+    ],
 
     'perfetto_release_bot_reclient': [
       'perfetto', 'release_bot_reclient',
@@ -3421,36 +3440,36 @@
       'release_bot_reclient', 'extended_tracing',
     ],
 
-    'release_bot_fuchsia': [
-      'release_bot', 'fuchsia',
+    'release_bot_fuchsia_arm64_cast_receiver_reclient': [
+      'release_bot_reclient', 'fuchsia', 'arm64', 'arm64_host', 'cast_receiver_size_optimized',
     ],
 
-    'release_bot_fuchsia_arm64': [
-      'release_bot', 'fuchsia', 'arm64', 'arm64_host',
+    'release_bot_fuchsia_arm64_reclient': [
+      'release_bot_reclient', 'fuchsia', 'arm64', 'arm64_host',
     ],
 
-    'release_bot_fuchsia_arm64_cast_receiver': [
-      'release_bot', 'fuchsia', 'arm64', 'arm64_host', 'cast_receiver_size_optimized',
-    ],
-
-    'release_bot_fuchsia_cast_receiver': [
-      'release_bot', 'fuchsia', 'cast_receiver_size_optimized',
-    ],
-
-    'release_bot_fuchsia_cfv2_script': [
-      'release_bot', 'fuchsia', 'fuchsia_cfv2_script',
+    'release_bot_fuchsia_cast_receiver_reclient': [
+      'release_bot_reclient', 'fuchsia', 'cast_receiver_size_optimized',
     ],
 
     'release_bot_fuchsia_cfv2_script_arm64': [
       'release_bot', 'fuchsia', 'arm64', 'arm64_host', 'fuchsia_cfv2_script',
     ],
 
-    'release_bot_fuchsia_cfv2_script_chrome': [
-      'release_bot', 'fuchsia',  'fuchsia_cfv2_script', 'fuchsia_chrome',
+    'release_bot_fuchsia_cfv2_script_chrome_reclient': [
+      'release_bot_reclient', 'fuchsia',  'fuchsia_cfv2_script', 'fuchsia_chrome',
     ],
 
-    'release_bot_fuchsia_workstation': [
-      'release_bot', 'fuchsia', 'fuchsia_include_workstation_image',
+    'release_bot_fuchsia_cfv2_script_reclient': [
+      'release_bot_reclient', 'fuchsia', 'fuchsia_cfv2_script',
+    ],
+
+    'release_bot_fuchsia_reclient': [
+      'release_bot_reclient', 'fuchsia',
+    ],
+
+    'release_bot_fuchsia_workstation_reclient': [
+      'release_bot_reclient', 'fuchsia', 'fuchsia_include_workstation_image',
       'fuchsia_chrome'
     ],
 
@@ -3731,6 +3750,10 @@
 
     'also_build_lacros_chrome_for_architecture_amd64': {
       'gn_args': 'also_build_lacros_chrome_for_architecture="amd64"',
+    },
+
+    'also_build_lacros_chrome_for_architecture_arm': {
+      'gn_args': 'also_build_lacros_chrome_for_architecture="arm"',
     },
 
     'amd64-generic': {

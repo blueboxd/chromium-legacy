@@ -469,6 +469,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kIsolatedAppsDeveloperModeAllowed,
     policy_prefs::kIsolatedAppsDeveloperModeAllowed,
     base::Value::Type::BOOLEAN },
+  { key::kLensDesktopNTPSearchEnabled,
+    prefs::kLensDesktopNTPSearchEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kLensRegionSearchEnabled,
     prefs::kLensRegionSearchEnabled,
     base::Value::Type::BOOLEAN },
@@ -1005,6 +1008,13 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDeviceLoginScreenKeyboardFocusHighlightEnabled,
     nullptr,
     base::Value::Type::BOOLEAN },
+  // Note that this pref exists in both user PrefStore and local_state
+  // PrefStore, and it is intended that the device policy is mapped to
+  // both. See the comment at the definition of
+  // ash::prefs::kPersonalizationKeyboardBacklightColor for details.
+  { key::kDeviceKeyboardBacklightColor,
+    ash::prefs::kPersonalizationKeyboardBacklightColor,
+    base::Value::Type::INTEGER },
   { key::kRebootAfterUpdate,
     prefs::kRebootAfterUpdate,
     base::Value::Type::BOOLEAN },
@@ -2072,7 +2082,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kIsolatedWebAppInstallForceList,
       prefs::kIsolatedWebAppInstallForceList, chrome_schema,
-      SCHEMA_ALLOW_UNKNOWN_WITHOUT_WARNING,
+      SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
 #if defined(USE_CUPS)

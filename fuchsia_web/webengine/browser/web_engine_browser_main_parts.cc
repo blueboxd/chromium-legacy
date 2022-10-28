@@ -30,8 +30,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "components/fuchsia_component_support/inspect.h"
-#include "components/fuchsia_legacymetrics/legacymetrics_client.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/histogram_fetcher.h"
@@ -45,7 +45,6 @@
 #include "fuchsia_web/webengine/browser/web_engine_browser_context.h"
 #include "fuchsia_web/webengine/browser/web_engine_devtools_controller.h"
 #include "fuchsia_web/webengine/browser/web_engine_memory_inspector.h"
-#include "fuchsia_web/webengine/common/cast_streaming.h"
 #include "fuchsia_web/webengine/switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/fuchsia/cdm/service/fuchsia_cdm_manager.h"
@@ -60,11 +59,20 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
 
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
+#include "components/fuchsia_legacymetrics/legacymetrics_client.h"  // nogncheck
+#include "fuchsia_web/webengine/common/cast_streaming.h"  // nogncheck
+#endif
+
 namespace {
 
-base::NoDestructor<fidl::InterfaceRequest<fuchsia::web::Context>>
-    g_test_request;
+fidl::InterfaceRequest<fuchsia::web::Context>& GetTestRequest() {
+  static base::NoDestructor<fidl::InterfaceRequest<fuchsia::web::Context>>
+      request;
+  return *request;
+}
 
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
 constexpr base::TimeDelta kMetricsReportingInterval = base::Minutes(1);
 
 constexpr base::TimeDelta kChildProcessHistogramFetchTimeout =
@@ -80,6 +88,7 @@ void FetchHistogramsFromChildProcesses(
                      std::vector<fuchsia::legacymetrics::Event>()),
       kChildProcessHistogramFetchTimeout);
 }
+#endif
 
 template <typename KeySystemInterface>
 fidl::InterfaceHandle<fuchsia::media::drm::KeySystem> ConnectToKeySystem() {
@@ -216,6 +225,7 @@ int WebEngineBrowserMainParts::PreMainMessageLoopRun() {
   devtools_controller_ =
       WebEngineDevToolsController::CreateFromCommandLine(*command_line);
 
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
   if (command_line->HasSwitch(switches::kUseLegacyMetricsService)) {
     legacy_metrics_client_ =
         std::make_unique<fuchsia_legacymetrics::LegacyMetricsClient>();
@@ -227,6 +237,7 @@ int WebEngineBrowserMainParts::PreMainMessageLoopRun() {
 
     legacy_metrics_client_->Start(kMetricsReportingInterval);
   }
+#endif
 
   // Configure SysInfo to report total/free space under "/data" based on the
   // requested soft-quota, if any. This only affects persistent instances.
@@ -288,8 +299,9 @@ int WebEngineBrowserMainParts::PreMainMessageLoopRun() {
 
   // TODO(crbug.com/1163073): Update tests to make a service connection to the
   // Context and remove this workaround.
-  if (*g_test_request)
-    HandleContextRequest(std::move(*g_test_request));
+  fidl::InterfaceRequest<fuchsia::web::Context>& request = GetTestRequest();
+  if (request)
+    HandleContextRequest(std::move(request));
 
   return content::RESULT_CODE_NORMAL_EXIT;
 }
@@ -310,7 +322,9 @@ void WebEngineBrowserMainParts::PostMainMessageLoopRun() {
   // These resources must be freed while a MessageLoop is still available, so
   // that they may post cleanup tasks during teardown.
   // NOTE: Objects are destroyed in the reverse order of their creation.
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
   legacy_metrics_client_.reset();
+#endif
   intl_profile_watcher_.reset();
 
   base::ImportantFileWriterCleaner::GetInstance().Stop();
@@ -319,7 +333,7 @@ void WebEngineBrowserMainParts::PostMainMessageLoopRun() {
 // static
 void WebEngineBrowserMainParts::SetContextRequestForTest(
     fidl::InterfaceRequest<fuchsia::web::Context> request) {
-  *g_test_request.get() = std::move(request);
+  GetTestRequest() = std::move(request);
 }
 
 ContextImpl* WebEngineBrowserMainParts::context_for_test() const {
@@ -363,10 +377,12 @@ void WebEngineBrowserMainParts::HandleContextRequest(
       component_inspector_->root().CreateChild(inspect_node_name),
       devtools_controller_.get());
 
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
   // If this web instance should allow CastStreaming then enable it in this
   // ContextImpl. CastStreaming will not be available in FrameHost contexts.
   if (IsCastStreamingEnabled())
     context_impl->SetCastStreamingEnabled();
+#endif
 
   // Create the fuchsia.web.Context implementation using the BrowserContext and
   // configure it to terminate the process when the client goes away.

@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_view.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_anchor_query_map.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_disable_side_effects_scope.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
@@ -98,7 +99,8 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
     : container_builder_(container_builder),
       is_absolute_container_(is_absolute_container),
       is_fixed_container_(is_fixed_container),
-      has_block_fragmentation_(container_space.HasBlockFragmentation()) {
+      has_block_fragmentation_(
+          InvolvedInBlockFragmentation(*container_builder)) {
   // TODO(almaher): Should we early return here in the case of block
   // fragmentation? If not, what should |allow_first_tier_oof_cache_| be set to
   // in this case?
@@ -754,6 +756,10 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
     HeapVector<NGLogicalOutOfFlowPositionedNode>* candidates,
     const LayoutBox* only_layout,
     HeapHashSet<Member<const LayoutObject>>* placed_objects) {
+  const WritingModeConverter conainer_converter(
+      container_builder_->GetWritingDirection(), container_builder_->Size());
+  const NGFragmentItemsBuilder::ItemWithOffsetList* items = nullptr;
+  absl::optional<NGLogicalAnchorQueryMap> anchor_queries;
   while (candidates->size() > 0) {
     if (!has_block_fragmentation_ ||
         container_builder_->IsInitialColumnBalancingPass())
@@ -785,9 +791,27 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
             continue;
           }
         }
+
+        // If the containing block is inline, it may have a different anchor
+        // query than |container_builder_|. Compute the anchor query for it.
+        const bool needs_anchor_queries =
+            candidate.inline_container.container &&
+            container_builder_->AnchorQuery();
+        if (needs_anchor_queries && !anchor_queries) {
+          if (NGFragmentItemsBuilder* items_builder =
+                  container_builder_->ItemsBuilder()) {
+            items = &items_builder->Items(conainer_converter.OuterSize());
+          }
+          anchor_queries.emplace(*container_builder_->Node().GetLayoutBox(),
+                                 container_builder_->Children(), items,
+                                 conainer_converter);
+        }
+
         NodeInfo node_info = SetupNodeInfo(candidate);
-        NodeToLayout node_to_layout = {node_info,
-                                       CalculateOffset(node_info, only_layout)};
+        NodeToLayout node_to_layout = {
+            node_info,
+            CalculateOffset(node_info, only_layout, /* is_first_run */ false,
+                            needs_anchor_queries ? &*anchor_queries : nullptr)};
         const NGLayoutResult* result =
             LayoutOOFNode(node_to_layout, only_layout);
         container_builder_->AddResult(
@@ -797,6 +821,11 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
         if (container_builder_->IsInitialColumnBalancingPass()) {
           container_builder_->PropagateTallestUnbreakableBlockSize(
               result->TallestUnbreakableBlockSize());
+        }
+        if (needs_anchor_queries) {
+          DCHECK(anchor_queries);
+          if (result->PhysicalFragment().HasAnchorQueryToPropagate())
+            anchor_queries->SetChildren(container_builder_->Children(), items);
         }
         placed_objects->insert(layout_box);
       } else {

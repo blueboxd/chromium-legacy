@@ -17579,7 +17579,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
         ],
         "merge": {
           "args": [
@@ -17595,19 +17595,23 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-18.04"
+              "device_os": null,
+              "device_type": null,
+              "machine_type": "e2-standard-8",
+              "os": "Ubuntu-18.04",
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
             {
-              "name": "generic_android28",
-              "path": ".android_emulator/generic_android28"
+              "name": "generic_android31",
+              "path": ".android_emulator/generic_android31"
             }
           ],
           "optional_dimensions": {
             "60": [
               {
-                "caches": "generic_android28"
+                "caches": "generic_android31"
               }
             ]
           },
@@ -17631,7 +17635,7 @@
           "--gtest_filter=ChromeTracingDelegateBrowserTest.*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
         ],
         "merge": {
           "args": [
@@ -17647,19 +17651,23 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-18.04"
+              "device_os": null,
+              "device_type": null,
+              "machine_type": "e2-standard-8",
+              "os": "Ubuntu-18.04",
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
             {
-              "name": "generic_android28",
-              "path": ".android_emulator/generic_android28"
+              "name": "generic_android31",
+              "path": ".android_emulator/generic_android31"
             }
           ],
           "optional_dimensions": {
             "60": [
               {
-                "caches": "generic_android28"
+                "caches": "generic_android31"
               }
             ]
           },
@@ -17682,7 +17690,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
         ],
         "merge": {
           "args": [
@@ -17698,19 +17706,23 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-18.04"
+              "device_os": null,
+              "device_type": null,
+              "machine_type": "e2-standard-8",
+              "os": "Ubuntu-18.04",
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
             {
-              "name": "generic_android28",
-              "path": ".android_emulator/generic_android28"
+              "name": "generic_android31",
+              "path": ".android_emulator/generic_android31"
             }
           ],
           "optional_dimensions": {
             "60": [
               {
-                "caches": "generic_android28"
+                "caches": "generic_android31"
               }
             ]
           },
@@ -17734,7 +17746,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
         ],
         "merge": {
           "args": [
@@ -17750,19 +17762,23 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-18.04"
+              "device_os": null,
+              "device_type": null,
+              "machine_type": "e2-standard-8",
+              "os": "Ubuntu-18.04",
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
             {
-              "name": "generic_android28",
-              "path": ".android_emulator/generic_android28"
+              "name": "generic_android31",
+              "path": ".android_emulator/generic_android31"
             }
           ],
           "optional_dimensions": {
             "60": [
               {
-                "caches": "generic_android28"
+                "caches": "generic_android31"
               }
             ]
           },
@@ -17785,7 +17801,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
         ],
         "merge": {
           "args": [
@@ -17801,19 +17817,23 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-18.04"
+              "device_os": null,
+              "device_type": null,
+              "machine_type": "e2-standard-8",
+              "os": "Ubuntu-18.04",
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
             {
-              "name": "generic_android28",
-              "path": ".android_emulator/generic_android28"
+              "name": "generic_android31",
+              "path": ".android_emulator/generic_android31"
             }
           ],
           "optional_dimensions": {
             "60": [
               {
-                "caches": "generic_android28"
+                "caches": "generic_android31"
               }
             ]
           },
@@ -20975,8 +20995,7 @@
       },
       {
         "args": [
-          "--",
-          "--ozone-platform=headless",
+          "--test-arg=--ozone-platform=headless",
           "--ram-size-mb=16384",
           "--code-coverage",
           "--code-coverage-dir=${ISOLATED_OUTDIR}"
@@ -21375,8 +21394,7 @@
       },
       {
         "args": [
-          "--",
-          "--vmodule=test_navigation_listener=1",
+          "--test-arg=--vmodule=test_navigation_listener=1",
           "--ram-size-mb=16384",
           "--code-coverage",
           "--code-coverage-dir=${ISOLATED_OUTDIR}"
@@ -21400,8 +21418,7 @@
       },
       {
         "args": [
-          "--",
-          "--vmodule=test_navigation_listener=1",
+          "--test-arg=--vmodule=test_navigation_listener=1",
           "--ram-size-mb=16384",
           "--code-coverage",
           "--code-coverage-dir=${ISOLATED_OUTDIR}"
@@ -22415,8 +22432,7 @@
       },
       {
         "args": [
-          "--",
-          "--ozone-platform=headless"
+          "--test-arg=--ozone-platform=headless"
         ],
         "merge": {
           "args": [],
@@ -22757,8 +22773,7 @@
       },
       {
         "args": [
-          "--",
-          "--vmodule=test_navigation_listener=1"
+          "--test-arg=--vmodule=test_navigation_listener=1"
         ],
         "merge": {
           "args": [],
@@ -22780,8 +22795,7 @@
       },
       {
         "args": [
-          "--",
-          "--vmodule=test_navigation_listener=1"
+          "--test-arg=--vmodule=test_navigation_listener=1"
         ],
         "merge": {
           "args": [],
@@ -23700,8 +23714,7 @@
       },
       {
         "args": [
-          "--",
-          "--ozone-platform=headless"
+          "--test-arg=--ozone-platform=headless"
         ],
         "merge": {
           "args": [],
@@ -24025,8 +24038,7 @@
       },
       {
         "args": [
-          "--",
-          "--vmodule=test_navigation_listener=1"
+          "--test-arg=--vmodule=test_navigation_listener=1"
         ],
         "merge": {
           "args": [],
@@ -24047,8 +24059,7 @@
       },
       {
         "args": [
-          "--",
-          "--vmodule=test_navigation_listener=1"
+          "--test-arg=--vmodule=test_navigation_listener=1"
         ],
         "merge": {
           "args": [],
@@ -46032,7 +46043,6 @@
       {
         "args": [
           "--child-processes=8",
-          "--no-restart-on-new-group",
           "--product=chrome_ios",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
@@ -89326,9 +89336,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5375.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5385.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 109.0.5375.0",
+        "description": "Run with ash-chrome version 109.0.5385.0",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -89340,8 +89350,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v109.0.5375.0",
-              "revision": "version:109.0.5375.0"
+              "location": "lacros_version_skew_tests_v109.0.5385.0",
+              "revision": "version:109.0.5385.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -89462,9 +89472,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5375.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5385.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 109.0.5375.0",
+        "description": "Run with ash-chrome version 109.0.5385.0",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -89476,8 +89486,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v109.0.5375.0",
-              "revision": "version:109.0.5375.0"
+              "location": "lacros_version_skew_tests_v109.0.5385.0",
+              "revision": "version:109.0.5385.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -89588,9 +89598,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5375.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5385.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 109.0.5375.0",
+        "description": "Run with ash-chrome version 109.0.5385.0",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -89602,8 +89612,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v109.0.5375.0",
-              "revision": "version:109.0.5375.0"
+              "location": "lacros_version_skew_tests_v109.0.5385.0",
+              "revision": "version:109.0.5385.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -90943,9 +90953,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5375.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5385.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 109.0.5375.0",
+        "description": "Run with ash-chrome version 109.0.5385.0",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -90956,8 +90966,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v109.0.5375.0",
-              "revision": "version:109.0.5375.0"
+              "location": "lacros_version_skew_tests_v109.0.5385.0",
+              "revision": "version:109.0.5385.0"
             }
           ],
           "dimension_sets": [
@@ -91109,9 +91119,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5375.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5385.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 109.0.5375.0",
+        "description": "Run with ash-chrome version 109.0.5385.0",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -91122,8 +91132,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v109.0.5375.0",
-              "revision": "version:109.0.5375.0"
+              "location": "lacros_version_skew_tests_v109.0.5385.0",
+              "revision": "version:109.0.5385.0"
             }
           ],
           "dimension_sets": [
@@ -91260,9 +91270,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5375.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5385.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 109.0.5375.0",
+        "description": "Run with ash-chrome version 109.0.5385.0",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -91273,8 +91283,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v109.0.5375.0",
-              "revision": "version:109.0.5375.0"
+              "location": "lacros_version_skew_tests_v109.0.5385.0",
+              "revision": "version:109.0.5385.0"
             }
           ],
           "dimension_sets": [
@@ -92795,9 +92805,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5375.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5385.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 109.0.5375.0",
+        "description": "Run with ash-chrome version 109.0.5385.0",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -92808,8 +92818,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v109.0.5375.0",
-              "revision": "version:109.0.5375.0"
+              "location": "lacros_version_skew_tests_v109.0.5385.0",
+              "revision": "version:109.0.5385.0"
             }
           ],
           "dimension_sets": [
@@ -92961,9 +92971,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5375.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5385.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 109.0.5375.0",
+        "description": "Run with ash-chrome version 109.0.5385.0",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -92974,8 +92984,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v109.0.5375.0",
-              "revision": "version:109.0.5375.0"
+              "location": "lacros_version_skew_tests_v109.0.5385.0",
+              "revision": "version:109.0.5385.0"
             }
           ],
           "dimension_sets": [
@@ -93112,9 +93122,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5375.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5385.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 109.0.5375.0",
+        "description": "Run with ash-chrome version 109.0.5385.0",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -93125,8 +93135,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v109.0.5375.0",
-              "revision": "version:109.0.5375.0"
+              "location": "lacros_version_skew_tests_v109.0.5385.0",
+              "revision": "version:109.0.5385.0"
             }
           ],
           "dimension_sets": [
@@ -93924,9 +93934,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5375.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5385.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 109.0.5375.0",
+        "description": "Run with ash-chrome version 109.0.5385.0",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -93937,8 +93947,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v109.0.5375.0",
-              "revision": "version:109.0.5375.0"
+              "location": "lacros_version_skew_tests_v109.0.5385.0",
+              "revision": "version:109.0.5385.0"
             }
           ],
           "dimension_sets": [
@@ -96525,7 +96535,6 @@
       {
         "args": [
           "--child-processes=8",
-          "--no-restart-on-new-group",
           "--log-wptreport",
           "--xvfb"
         ],
@@ -96561,9 +96570,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "--no-wpt-internal",
           "--child-processes=8",
-          "--no-restart-on-new-group",
           "--log-wptreport"
         ],
         "experiment_percentage": 100,
@@ -109900,7 +109907,6 @@
       {
         "args": [
           "--child-processes=8",
-          "--no-restart-on-new-group",
           "--log-wptreport",
           "--xvfb",
           "--target",

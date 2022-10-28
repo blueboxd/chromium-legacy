@@ -490,11 +490,11 @@ void RecordFileSystemProviderMountMetrics(const Volume& volume) {
 file_manager_private::MountCompletedStatus MountErrorToMountCompletedStatus(
     ash::MountError error) {
   switch (error) {
-    case ash::MountError::kNone:
+    case ash::MountError::kSuccess:
       return file_manager_private::MOUNT_COMPLETED_STATUS_SUCCESS;
-    case ash::MountError::kUnknown:
+    case ash::MountError::kUnknownError:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_UNKNOWN;
-    case ash::MountError::kInternal:
+    case ash::MountError::kInternalError:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_INTERNAL;
     case ash::MountError::kInvalidArgument:
       return file_manager_private::
@@ -1193,13 +1193,10 @@ void EventRouter::PopulateCrostiniEvent(
   event.entries.emplace_back(std::move(entry));
 }
 
-void EventRouter::OnShare(const std::string& vm_name,
-                          const base::FilePath& path,
-                          bool persist) {
-  if (persist) {
-    SendCrostiniEvent(file_manager_private::CROSTINI_EVENT_TYPE_SHARE, vm_name,
-                      path);
-  }
+void EventRouter::OnPersistedPathRegistered(const std::string& vm_name,
+                                            const base::FilePath& path) {
+  SendCrostiniEvent(file_manager_private::CROSTINI_EVENT_TYPE_SHARE, vm_name,
+                    path);
 }
 
 void EventRouter::OnUnshare(const std::string& vm_name,

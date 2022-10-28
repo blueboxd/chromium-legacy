@@ -36,9 +36,9 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface.h"
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
-#endif  // defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_OZONE)
 
 namespace {
 base::TimeTicks g_last_reshape_failure = base::TimeTicks();
@@ -90,10 +90,7 @@ class SkiaOutputDeviceBufferQueue::OverlayData {
 #if BUILDFLAG(IS_MAC)
     if (!scoped_read_access_)
       return false;
-    auto* gl_image = scoped_read_access_->gl_image();
-    if (!gl_image)
-      return false;
-    return gl_image->IsInUseByWindowServer();
+    return scoped_read_access_->IsInUseByWindowServer();
 #else
     return false;
 #endif
@@ -145,7 +142,7 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
       presenter_(std::move(presenter)),
       context_state_(deps->GetSharedContextState()),
       representation_factory_(representation_factory) {
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   capabilities_.needs_background_image = ui::OzonePlatform::GetInstance()
                                              ->GetPlatformRuntimeProperties()
                                              .needs_background_image;
@@ -153,15 +150,17 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
       ui::OzonePlatform::GetInstance()
           ->GetPlatformRuntimeProperties()
           .supports_non_backed_solid_color_buffers;
-#endif  // defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_OZONE)
 
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.preserve_buffer_content = true;
   capabilities_.only_invalidates_damage_rect = false;
   capabilities_.number_of_buffers = 3;
 
+  capabilities_.renderer_allocates_images =
+      ::features::ShouldRendererAllocateImages();
+
 #if BUILDFLAG(IS_ANDROID)
-  capabilities_.renderer_allocates_images = true;
   if (::features::IncreaseBufferCountForHighFrameRate()) {
     capabilities_.number_of_buffers = 5;
   }
@@ -335,7 +334,7 @@ SkiaOutputDeviceBufferQueue::GetOrCreateOverlayData(const gpu::Mailbox& mailbox,
     return nullptr;
   }
 
-#if defined(USE_OZONE)
+#if defined(USE_OZONE) || BUILDFLAG(IS_MAC)
   const bool needs_gl_image = false;
 #else
   const bool needs_gl_image = true;
@@ -383,7 +382,7 @@ void SkiaOutputDeviceBufferQueue::ScheduleOverlays(
 
   for (const auto& overlay : overlays) {
     auto mailbox = overlay.mailbox;
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
     if (overlay.is_solid_color) {
       DCHECK(overlay.color.has_value());
       DCHECK(capabilities_.supports_non_backed_solid_color_overlays);
@@ -576,7 +575,7 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
 
   std::vector<gpu::Mailbox> released_overlays;
   auto on_overlay_release =
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
       [&released_overlays](const OverlayData& overlay) {
         // Right now, only macOS needs to return maliboxes of released
         // overlays, so SkiaRenderer can unlock resources for them.

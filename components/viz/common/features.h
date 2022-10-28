@@ -54,7 +54,7 @@ VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kMacCAOverlayQuad);
 VIZ_COMMON_EXPORT extern const base::FeatureParam<int> kMacCAOverlayQuadMaxNum;
 #endif
 
-#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kCanSkipRenderPassOverlay);
 #endif
 
@@ -63,6 +63,7 @@ VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kAllowUndamagedNonrootRenderPassToSkip);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kAggressiveFrameCulling);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kEagerSurfaceGarbageCollection);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kOverrideThrottledFrameRateParams);
+VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kRendererAllocatesImages);
 
 VIZ_COMMON_EXPORT extern const char kDraw1Point12Ms[];
 VIZ_COMMON_EXPORT extern const char kDraw2Points6Ms[];
@@ -102,6 +103,7 @@ VIZ_COMMON_EXPORT absl::optional<double> IsDynamicSchedulerEnabledForClients();
 VIZ_COMMON_EXPORT int MaxOverlaysConsidered();
 VIZ_COMMON_EXPORT bool ShouldVideoDetectorIgnoreNonVideoFrames();
 VIZ_COMMON_EXPORT bool ShouldOverrideThrottledFrameRateParams();
+VIZ_COMMON_EXPORT bool ShouldRendererAllocateImages();
 
 }  // namespace features
 

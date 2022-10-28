@@ -9,7 +9,9 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/system/sys_info.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -60,6 +62,13 @@ bool DeviceHasEnoughMemoryForPrerender() {
       kDefaultMemoryThresholdMb);
 
   return base::SysInfo::AmountOfPhysicalMemoryMB() > memory_threshold_mb;
+}
+
+PreloadingFailureReason ToPreloadingFailureReason(PrerenderFinalStatus status) {
+  return static_cast<PreloadingFailureReason>(
+      static_cast<int>(status) +
+      static_cast<int>(
+          PreloadingFailureReason::kPreloadingFailureReasonCommonEnd));
 }
 
 }  // namespace
@@ -148,28 +157,27 @@ int PrerenderHostRegistry::CreateAndStartHost(
     // browser (not by a renderer using Speculation Rules API). In that case,
     // skip the  same-site and same-origin check.
     if (!attributes.IsBrowserInitiated()) {
-      if (blink::features::
-              IsSameSiteCrossOriginForSpeculationRulesPrerender2Enabled()) {
-        if (!prerender_navigation_utils::IsSameSite(
-                attributes.prerendering_url,
-                attributes.initiator_origin.value())) {
-          RecordPrerenderFinalStatus(
-              PrerenderFinalStatus::kCrossOriginNavigation, attributes,
-              ukm::kInvalidSourceId);
-          if (attempt)
-            attempt->SetEligibility(PreloadingEligibility::kCrossOrigin);
-          return RenderFrameHost::kNoFrameTreeNodeId;
-        }
-      } else {
-        if (!attributes.initiator_origin.value().IsSameOriginWith(
-                attributes.prerendering_url)) {
-          RecordPrerenderFinalStatus(
-              PrerenderFinalStatus::kCrossOriginNavigation, attributes,
-              ukm::kInvalidSourceId);
-          if (attempt)
-            attempt->SetEligibility(PreloadingEligibility::kCrossOrigin);
-          return RenderFrameHost::kNoFrameTreeNodeId;
-        }
+      if (!prerender_navigation_utils::IsSameSite(
+              attributes.prerendering_url,
+              attributes.initiator_origin.value())) {
+        RecordPrerenderFinalStatus(PrerenderFinalStatus::kCrossSiteNavigation,
+                                   attributes, ukm::kInvalidSourceId);
+
+        if (attempt)
+          attempt->SetEligibility(PreloadingEligibility::kCrossOrigin);
+        return RenderFrameHost::kNoFrameTreeNodeId;
+      } else if (
+          !blink::features::
+              IsSameSiteCrossOriginForSpeculationRulesPrerender2Enabled() &&
+          !attributes.initiator_origin.value().IsSameOriginWith(
+              attributes.prerendering_url)) {
+        RecordPrerenderFinalStatus(
+            PrerenderFinalStatus::kSameSiteCrossOriginNavigation, attributes,
+            ukm::kInvalidSourceId);
+
+        if (attempt)
+          attempt->SetEligibility(PreloadingEligibility::kCrossOrigin);
+        return RenderFrameHost::kNoFrameTreeNodeId;
       }
     }
 
@@ -221,7 +229,9 @@ int PrerenderHostRegistry::CreateAndStartHost(
         // experiment groups for analysis. To prevent this we set
         // TriggeringOutcome to kFailure and look into the failure reason to
         // learn more.
-        attempt->SetTriggeringOutcome(PreloadingTriggeringOutcome::kFailure);
+        attempt->SetFailureReason(
+            ToPreloadingFailureReason(
+                PrerenderFinalStatus::kMaxNumOfRunningPrerendersExceeded));
       }
       RecordPrerenderFinalStatus(
           PrerenderFinalStatus::kMaxNumOfRunningPrerendersExceeded, attributes,
@@ -358,11 +368,10 @@ void PrerenderHostRegistry::CancelHosts(
   TRACE_EVENT1("navigation", "PrerenderHostRegistry::CancelHosts",
                "frame_tree_node_ids", frame_tree_node_ids);
 
-  for (int host_id : frame_tree_node_ids) {
-    // Cancel must not be requested during activation.
-    CHECK(!base::Contains(reserved_prerender_host_by_frame_tree_node_id_,
-                          host_id));
+  // Cancel must not be requested during activation.
+  CHECK(!reserved_prerender_host_);
 
+  for (int host_id : frame_tree_node_ids) {
     // Look up the id in the non-reserved host map.
     auto iter = prerender_host_by_frame_tree_node_id_.find(host_id);
     if (iter == prerender_host_by_frame_tree_node_id_.end())
@@ -394,8 +403,7 @@ bool PrerenderHostRegistry::CancelHost(int frame_tree_node_id,
                "frame_tree_node_id", frame_tree_node_id);
 
   // Cancel must not be requested during activation.
-  CHECK(!base::Contains(reserved_prerender_host_by_frame_tree_node_id_,
-                        frame_tree_node_id));
+  CHECK(!reserved_prerender_host_);
 
   // Look up the id in the non-reserved host map, remove it from the map, and
   // record the cancellation reason.
@@ -422,8 +430,8 @@ bool PrerenderHostRegistry::CancelHost(int frame_tree_node_id,
 }
 
 void PrerenderHostRegistry::CancelAllHosts(PrerenderFinalStatus final_status) {
-  // Should not have an activating host. See comments in CancelHost.
-  CHECK(reserved_prerender_host_by_frame_tree_node_id_.empty());
+  // Cancel must not be requested during activation.
+  CHECK(!reserved_prerender_host_);
 
   auto prerender_host_map = std::move(prerender_host_by_frame_tree_node_id_);
   for (auto& iter : prerender_host_map) {
@@ -476,31 +484,30 @@ int PrerenderHostRegistry::ReserveHostToActivate(
   DCHECK_EQ(host_id, host->frame_tree_node_id());
 
   // Reserve the host for activation.
-  auto result = reserved_prerender_host_by_frame_tree_node_id_.emplace(
-      host_id, std::move(host));
-  DCHECK(result.second);
+  DCHECK(!reserved_prerender_host_);
+  reserved_prerender_host_ = std::move(host);
 
   return host_id;
 }
 
 RenderFrameHostImpl* PrerenderHostRegistry::GetRenderFrameHostForReservedHost(
     int frame_tree_node_id) {
-  auto iter =
-      reserved_prerender_host_by_frame_tree_node_id_.find(frame_tree_node_id);
-  if (iter == reserved_prerender_host_by_frame_tree_node_id_.end()) {
+  if (!reserved_prerender_host_)
     return nullptr;
-  }
-  return iter->second->GetPrerenderedMainFrameHost();
+
+  DCHECK_EQ(frame_tree_node_id, reserved_prerender_host_->frame_tree_node_id());
+
+  return reserved_prerender_host_->GetPrerenderedMainFrameHost();
 }
 
 std::unique_ptr<StoredPage> PrerenderHostRegistry::ActivateReservedHost(
     int frame_tree_node_id,
     NavigationRequest& navigation_request) {
-  auto iter =
-      reserved_prerender_host_by_frame_tree_node_id_.find(frame_tree_node_id);
-  CHECK(iter != reserved_prerender_host_by_frame_tree_node_id_.end());
-  std::unique_ptr<PrerenderHost> prerender_host = std::move(iter->second);
-  reserved_prerender_host_by_frame_tree_node_id_.erase(iter);
+  CHECK(reserved_prerender_host_);
+  CHECK_EQ(frame_tree_node_id, reserved_prerender_host_->frame_tree_node_id());
+
+  std::unique_ptr<PrerenderHost> prerender_host =
+      std::move(reserved_prerender_host_);
   return prerender_host->Activate(navigation_request);
 }
 
@@ -508,7 +515,12 @@ void PrerenderHostRegistry::OnActivationFinished(int frame_tree_node_id) {
   // OnActivationFinished() should not be called for non-reserved hosts.
   DCHECK(!base::Contains(prerender_host_by_frame_tree_node_id_,
                          frame_tree_node_id));
-  reserved_prerender_host_by_frame_tree_node_id_.erase(frame_tree_node_id);
+
+  if (!reserved_prerender_host_)
+    return;
+
+  DCHECK_EQ(frame_tree_node_id, reserved_prerender_host_->frame_tree_node_id());
+  reserved_prerender_host_.reset();
 }
 
 PrerenderHost* PrerenderHostRegistry::FindNonReservedHostById(
@@ -521,11 +533,13 @@ PrerenderHost* PrerenderHostRegistry::FindNonReservedHostById(
 
 PrerenderHost* PrerenderHostRegistry::FindReservedHostById(
     int frame_tree_node_id) {
-  auto iter =
-      reserved_prerender_host_by_frame_tree_node_id_.find(frame_tree_node_id);
-  if (iter == reserved_prerender_host_by_frame_tree_node_id_.end())
+  if (!reserved_prerender_host_)
     return nullptr;
-  return iter->second.get();
+
+  if (frame_tree_node_id != reserved_prerender_host_->frame_tree_node_id())
+    return nullptr;
+
+  return reserved_prerender_host_.get();
 }
 
 std::vector<FrameTree*> PrerenderHostRegistry::GetPrerenderFrameTrees() {
@@ -533,9 +547,9 @@ std::vector<FrameTree*> PrerenderHostRegistry::GetPrerenderFrameTrees() {
   for (auto& i : prerender_host_by_frame_tree_node_id_) {
     result.push_back(&i.second->GetPrerenderFrameTree());
   }
-  for (auto& i : reserved_prerender_host_by_frame_tree_node_id_) {
-    result.push_back(&i.second->GetPrerenderFrameTree());
-  }
+  if (reserved_prerender_host_)
+    result.push_back(&reserved_prerender_host_->GetPrerenderFrameTree());
+
   return result;
 }
 
@@ -549,8 +563,8 @@ PrerenderHost* PrerenderHostRegistry::FindHostByUrlForTesting(
 }
 
 void PrerenderHostRegistry::CancelAllHostsForTesting() {
-  DCHECK(reserved_prerender_host_by_frame_tree_node_id_.empty())
-      << "It is not possible to cancel reserved hosts, so they must not exist "
+  DCHECK(!reserved_prerender_host_)
+      << "It is not possible to cancel a reserved host, so they must not exist "
          "when trying to cancel all hosts";
 
   for (auto& iter : prerender_host_by_frame_tree_node_id_) {
@@ -575,9 +589,8 @@ void PrerenderHostRegistry::ForEachPrerenderHost(
     callback.Run(*iter.second);
   }
 
-  for (auto& iter : reserved_prerender_host_by_frame_tree_node_id_) {
-    callback.Run(*iter.second);
-  }
+  if (reserved_prerender_host_)
+    callback.Run(*reserved_prerender_host_);
 }
 
 void PrerenderHostRegistry::DidFinishNavigation(
@@ -607,8 +620,27 @@ void PrerenderHostRegistry::DidFinishNavigation(
 
 void PrerenderHostRegistry::OnVisibilityChanged(Visibility visibility) {
   if (base::FeatureList::IsEnabled(blink::features::kPrerender2InBackground)) {
-    for (auto& iter : prerender_host_by_frame_tree_node_id_) {
-      iter.second->UpdateTimeoutTimer(visibility);
+    // Update the timer for prerendering timeout in the background.
+    switch (visibility) {
+      case Visibility::HIDDEN:
+        // Keep a prerendered page alive in the background when its visibility
+        // state changes to HIDDEN if the feature is enabled.
+        DCHECK(!timeout_timer_.IsRunning());
+
+        timeout_timer_.SetTaskRunner(GetTimerTaskRunner());
+        // Cancel PrerenderHost in the background when it exceeds a certain
+        // amount of time defined in `kTimeToLiveInBackground`.
+        timeout_timer_.Start(
+            FROM_HERE, kTimeToLiveInBackground,
+            base::BindOnce(&PrerenderHostRegistry::CancelAllHosts,
+                           base::Unretained(this),
+                           PrerenderFinalStatus::kTimeoutBackgrounded));
+        break;
+      case Visibility::OCCLUDED:
+      case Visibility::VISIBLE:
+        // Stop the timer when a prerendered page gets visible to users.
+        timeout_timer_.Stop();
+        break;
     }
 
     if (!base::FeatureList::IsEnabled(
@@ -708,6 +740,12 @@ int PrerenderHostRegistry::FindHostToActivateInternal(
   // should not activate the prerendered page.
   if (!host->AreInitialPrerenderNavigationParamsCompatibleWithNavigation(
           navigation_request)) {
+    // TODO(https://crbug.com/1328365): Report a detailed reason to devtools.
+    // Currently users have to check
+    // Prerender.Experimental.ActivationNavigationParamsMatch.
+    // TODO(lingqi): We'd better cancel all hosts.
+    CancelHost(host->frame_tree_node_id(),
+               PrerenderFinalStatus::kActivationNavigationParameterMismatch);
     return RenderFrameHost::kNoFrameTreeNodeId;
   }
 
@@ -836,6 +874,17 @@ void PrerenderHostRegistry::DidReceiveMemoryDump(
           base::SysInfo::AmountOfPhysicalMemory()) {
     CancelHost(frame_tree_node_id, PrerenderFinalStatus::kMemoryLimitExceeded);
   }
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+PrerenderHostRegistry::GetTimerTaskRunner() {
+  return timer_task_runner_for_testing_ ? timer_task_runner_for_testing_
+                                        : base::ThreadTaskRunnerHandle::Get();
+}
+
+void PrerenderHostRegistry::SetTaskRunnerForTesting(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  timer_task_runner_for_testing_ = std::move(task_runner);
 }
 
 }  // namespace content

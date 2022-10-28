@@ -85,6 +85,17 @@ const std::vector<SearchConcept>& GetAppNotificationsSearchConcepts() {
   return *tags;
 }
 
+const std::vector<SearchConcept>& GetAppBadgingSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags(
+      {{IDS_OS_SETTINGS_TAG_APP_BADGING,
+        mojom::kAppNotificationsSubpagePath,
+        mojom::SearchResultIcon::kAppsGrid,
+        mojom::SearchResultDefaultRank::kLow,
+        mojom::SearchResultType::kSetting,
+        {.setting = mojom::Setting::kAppBadgingOnOff}}});
+  return *tags;
+}
+
 const std::vector<SearchConcept>& GetTurnOffAppNotificationSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags(
       {{IDS_OS_SETTINGS_TAG_DO_NOT_DISTURB_TURN_OFF,
@@ -404,6 +415,7 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_APP_NOTIFICATIONS_SUBLABEL_TEXT},
       {"appNotificationsDoNotDisturbDescription",
        IDS_SETTINGS_APP_NOTIFICATIONS_DND_ENABLED_SUBLABEL_TEXT},
+      {"appBadgingToggleLabel", IDS_SETTINGS_APP_BADGING_TOGGLE_LABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -428,6 +440,9 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "showOsSettingsAppNotificationsRow",
       base::FeatureList::IsEnabled(features::kOsSettingsAppNotificationsPage));
+  html_source->AddBoolean(
+      "showOsSettingsAppBadgingToggle",
+      base::FeatureList::IsEnabled(features::kOsSettingsAppBadgingToggle));
   html_source->AddBoolean("showArcvmManageUsb", arc::IsArcVmEnabled());
 
   html_source->AddBoolean(
@@ -499,6 +514,9 @@ void AppsSection::RegisterHierarchy(HierarchyGenerator* generator) const {
 
   generator->RegisterNestedSetting(mojom::Setting::kDoNotDisturbOnOff,
                                    mojom::Subpage::kAppNotifications);
+  generator->RegisterNestedSetting(mojom::Setting::kAppBadgingOnOff,
+                                   mojom::Subpage::kAppNotifications);
+
   // Note: The subpage name in the UI is updated dynamically based on the app
   // being shown, but we use a generic "App details" string here.
   generator->RegisterNestedSubpage(
@@ -650,8 +668,12 @@ void AppsSection::OnQuietModeChanged(bool in_quiet_mode) {
   updater.RemoveSearchTags(GetTurnOnAppNotificationSearchConcepts());
   updater.RemoveSearchTags(GetTurnOffAppNotificationSearchConcepts());
   updater.RemoveSearchTags(GetAppNotificationsSearchConcepts());
+  updater.RemoveSearchTags(GetAppBadgingSearchConcepts());
 
   updater.AddSearchTags(GetAppNotificationsSearchConcepts());
+  if (features::IsOsSettingsAppBadgingToggleEnabled()) {
+    updater.AddSearchTags(GetAppBadgingSearchConcepts());
+  }
 
   if (!MessageCenterAsh::Get()->IsQuietMode()) {
     updater.AddSearchTags(GetTurnOnAppNotificationSearchConcepts());

@@ -124,7 +124,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="Commerce.Heuristics.CartExtractionScriptSource"
-    enum="CommerceHeuristicsDataSource" expires_after="2023-02-19">
+    enum="CommerceHeuristicsDataSource" expires_after="2023-04-23">
   <owner>yuezhanggg@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -137,7 +137,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="Commerce.Heuristics.CheckoutURLGeneralPatternSource"
-    enum="CommerceHeuristicsDataSource" expires_after="2023-02-19">
+    enum="CommerceHeuristicsDataSource" expires_after="2023-04-23">
   <owner>yuezhanggg@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -165,7 +165,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="Commerce.Heuristics.PartnerMerchantPatternSource"
-    enum="CommerceHeuristicsDataSource" expires_after="2023-02-19">
+    enum="CommerceHeuristicsDataSource" expires_after="2023-04-23">
   <owner>yuezhanggg@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -195,7 +195,7 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
 </histogram>
 
 <histogram name="Commerce.Heuristics.SkipProductPatternSource"
-    enum="CommerceHeuristicsDataSource" expires_after="2023-02-19">
+    enum="CommerceHeuristicsDataSource" expires_after="2023-04-23">
   <owner>yuezhanggg@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -427,6 +427,18 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
     recorded daily (once every 24 hours) or the next time the browser starts if
     more than 24 hours have passed since last recorded. This metric is
     implemented for all platforms.
+  </summary>
+</histogram>
+
+<histogram name="Commerce.PriceTracking.SidePanelImageLoad"
+    enum="BooleanSuccess" expires_after="2023-10-01">
+  <owner>yuezhanggg@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.org</owner>
+  <summary>
+    Records every time we try to load an image in the price tracking side panel
+    UI. This histogram logs 'Success' when loading was successful and 'Failure'
+    when there was an error.
   </summary>
 </histogram>
 

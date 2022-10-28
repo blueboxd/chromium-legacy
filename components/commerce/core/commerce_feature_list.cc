@@ -248,6 +248,11 @@ const char kCodeBasedRuleDiscountParam[] = "code-based-rbd";
 const base::FeatureParam<bool> kCodeBasedRuleDiscount{
     &ntp_features::kNtpChromeCartModule, kCodeBasedRuleDiscountParam, false};
 
+const char kRevertIconOnFailureParam[] =
+    "shopping-list-revert-page-action-icon-on-failure";
+const base::FeatureParam<bool> kRevertIconOnFailure{
+    &kShoppingList, kRevertIconOnFailureParam, false};
+
 bool IsPartnerMerchant(const GURL& url) {
   return commerce::IsCouponDiscountPartnerMerchant(url) ||
          IsRuleDiscountPartnerMerchant(url);
@@ -295,11 +300,6 @@ bool IsShoppingListAllowedForEnterprise(PrefService* prefs) {
 
   // Default to true if there is no value set.
   return !pref || pref->GetBool();
-}
-
-bool IsShoppingListEnabled(PrefService* prefs) {
-  return base::FeatureList::IsEnabled(kShoppingList) &&
-         IsShoppingListAllowedForEnterprise(prefs);
 }
 
 #if !BUILDFLAG(IS_ANDROID)

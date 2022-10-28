@@ -18,6 +18,7 @@
 #import "components/password_manager/core/browser/password_manager_constants.h"
 #import "components/password_manager/core/browser/password_manager_metrics_util.h"
 #import "components/password_manager/core/browser/password_ui_utils.h"
+#import "components/password_manager/core/browser/ui/affiliated_group.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/browser/ui/password_check_referrer.h"
 #import "components/password_manager/core/common/password_manager_features.h"
@@ -35,7 +36,7 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
 #import "ios/chrome/browser/ui/elements/home_waiting_view.h"
-#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
@@ -344,6 +345,10 @@ NSInteger kTrailingSymbolSize = 18;
   // `OnDeviceEncryptionStateNotShown` because nothing is currently shown.
   _onDeviceEncryptionStateInModel = OnDeviceEncryptionStateNotShown;
   return self;
+}
+
+- (void)dealloc {
+  DCHECK(!_accountManagerServiceObserver.get());
 }
 
 - (void)setReauthenticationModule:
@@ -755,10 +760,12 @@ NSInteger kTrailingSymbolSize = 18;
 
 - (void)reportDismissalUserAction {
   base::RecordAction(base::UserMetricsAction("MobilePasswordsSettingsClose"));
+  _accountManagerServiceObserver.reset();
 }
 
 - (void)reportBackUserAction {
   base::RecordAction(base::UserMetricsAction("MobilePasswordsSettingsBack"));
+  _accountManagerServiceObserver.reset();
 }
 
 - (void)settingsWillBeDismissed {
@@ -1199,6 +1206,24 @@ NSInteger kTrailingSymbolSize = 18;
       [self setEditing:NO animated:YES];
     }
   }
+}
+
+- (void)setAffiliatedGroups:
+            (const std::vector<password_manager::AffiliatedGroup>&)
+                affiliatedGroups
+               blockedSites:
+                   (const std::vector<password_manager::CredentialUIEntry>&)
+                       blockedSites {
+  // TODO(crbug.com/1358974): Use affiliated groups for to display the UI.
+  // Currently converting back to the old logic here so the Password Manager
+  // still works.
+  std::vector<password_manager::CredentialUIEntry> passwords;
+  for (const auto& affiliatedGroup : affiliatedGroups) {
+    for (const auto& credentialGroup : affiliatedGroup.GetCredentialGroups()) {
+      passwords.push_back(std::move(credentialGroup));
+    }
+  }
+  [self setPasswords:std::move(passwords) blockedSites:blockedSites];
 }
 
 - (void)updatePasswordsInOtherAppsDetailedText {
@@ -2240,7 +2265,7 @@ NSInteger kTrailingSymbolSize = 18;
                                IDS_IOS_SETTINGS_EXPORT_PASSWORDS_SET_UP_SCREENLOCK_CONTENT)
                 preferredStyle:UIAlertControllerStyleAlert];
 
-  ProceduralBlockWithURL blockOpenURL = BlockToOpenURL(self, self.dispatcher);
+  void (^blockOpenURL)(const GURL&) = BlockToOpenURL(self, self.dispatcher);
   UIAlertAction* learnAction = [UIAlertAction
       actionWithTitle:l10n_util::GetNSString(
                           IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_LEARN_HOW)
@@ -2390,6 +2415,7 @@ NSInteger kTrailingSymbolSize = 18;
     (UIPresentationController*)presentationController {
   base::RecordAction(
       base::UserMetricsAction("IOSPasswordsSettingsCloseWithSwipe"));
+  _accountManagerServiceObserver.reset();
 }
 
 @end

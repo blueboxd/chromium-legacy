@@ -3029,7 +3029,8 @@
       'android-perfetto-rel': {
         'additional_compile_targets': [ 'chrome' ],
         'mixins': [
-          'pie-x86-emulator',
+          '12-x64-emulator',
+          'emulator-8-cores',
           'linux-bionic',
           'x86-64',
         ],
@@ -5302,6 +5303,9 @@
         'test_suites': {
           'gtest_tests': 'linux_lacros_gtests',
         },
+        'args': [
+          '--test-launcher-print-test-stdio=always',
+        ],
       },
       'linux-ubsan-vptr': {
         'mixins': [
@@ -6020,7 +6024,7 @@
       'WebRTC Chromium Android Builder': {},
       'WebRTC Chromium Android Tester': {
         'os_type': 'android',
-        'mixins': ['bullhead', 'marshmallow'],
+        'mixins': ['walleye', 'pie_fleet'],
         'test_suites': {
           'gtest_tests': 'webrtc_android_tests_with_baremetal_tests',
         },

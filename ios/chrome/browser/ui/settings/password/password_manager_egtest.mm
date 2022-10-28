@@ -461,6 +461,8 @@ id<GREYMatcher> EditDoneButton() {
   [OptedInTrustedVaultText() assertWithMatcher:grey_nil()];
   [OptInTrustedVaultLink() assertWithMatcher:grey_nil()];
   [SetUpTrustedVaultLink() assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Check that a user which is not logged in any account do not get
@@ -473,6 +475,8 @@ id<GREYMatcher> EditDoneButton() {
   [OptedInTrustedVaultText() assertWithMatcher:grey_nil()];
   [OptInTrustedVaultLink() assertWithMatcher:grey_nil()];
   [SetUpTrustedVaultLink() assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Verifies the UI elements are accessible on the Passwords page.
@@ -1420,6 +1424,12 @@ id<GREYMatcher> EditDoneButton() {
                                    IDS_IOS_EXPORT_PASSWORDS)]
       assertWithMatcher:grey_not(grey_accessibilityTrait(
                             UIAccessibilityTraitNotEnabled))];
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(SettingsDoneButton(),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Test that when user types text in search field, passwords and blocked
@@ -1511,6 +1521,8 @@ id<GREYMatcher> EditDoneButton() {
       assertWithMatcher:grey_nil()];
   [GetInteractionForPasswordEntry(@"exclude2.com")
       assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Test that user can't search passwords while in edit mode.
@@ -1523,6 +1535,10 @@ id<GREYMatcher> EditDoneButton() {
   // Verify search bar is disabled.
   [[EarlGrey selectElementWithMatcher:SearchTextField()]
       assertWithMatcher:grey_not(grey_userInteractionEnabled())];
+  [[EarlGrey selectElementWithMatcher:EditDoneButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Test that the user can edit a password that is part of search results.
@@ -1568,6 +1584,8 @@ id<GREYMatcher> EditDoneButton() {
       assertWithMatcher:grey_notNil()];
   [GetInteractionForPasswordEntry(@"example12.com, user2")
       assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Checks that attempts to edit a password provide appropriate feedback.
@@ -1824,10 +1842,15 @@ id<GREYMatcher> EditDoneButton() {
   // Verify that the dialog didn't show up after tapping the Add button.
   [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
       assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:EditDoneButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Tests the add password flow.
-- (void)testAddNewPasswordCredential {
+// (crbug.com/1377079#c6) Flaky, please re-enable once fixed.
+- (void)DISABLED_testAddNewPasswordCredential {
   OpenPasswordManager();
 
   // Press "Add".
@@ -1873,7 +1896,8 @@ id<GREYMatcher> EditDoneButton() {
 // Tests that when a new credential is saved or an existing one is updated via
 // the add credential flow, the VC auto scrolls to the newly created or the
 // updated entry.
-- (void)testAutoScroll {
+// (crbug.com/1377079#c6) Flaky, please re-enable once fixed.
+- (void)DISABLED_testAutoScroll {
   for (int i = 0; i < 20; i++) {
     NSString* username = [NSString stringWithFormat:@"username %d", i];
     NSString* password = [NSString stringWithFormat:@"password %d", i];
@@ -1978,7 +2002,8 @@ id<GREYMatcher> EditDoneButton() {
 // Tests that the duplicate credential section alert is shown when the user adds
 // a credential that has the same website as that of an existing credential
 // (does not contain username).
-- (void)testDuplicatedCredentialWithNoUsername {
+// (crbug.com/1377079#c6) Flaky, please re-enable once fixed.
+- (void)DISABLED_testDuplicatedCredentialWithNoUsername {
   OpenPasswordManager();
 
   [[EarlGrey selectElementWithMatcher:AddPasswordButton()]
@@ -2134,6 +2159,10 @@ id<GREYMatcher> EditDoneButton() {
       assertWithMatcher:grey_sufficientlyVisible()];
   [GetInteractionForPasswordDetailItem(HidePasswordButton())
       performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Tests that the favicons for the password managers metrics are logged
@@ -2143,7 +2172,7 @@ id<GREYMatcher> EditDoneButton() {
   // Sign-in and synced user.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
-  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:5.0];
+  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:base::Seconds(5)];
 
   // Add passwords for the user.
   SaveExamplePasswordForms();
@@ -2218,6 +2247,10 @@ id<GREYMatcher> EditDoneButton() {
   if (error) {
     GREYFail([error description]);
   }
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Tests that the favicons for the password managers metrics are logged

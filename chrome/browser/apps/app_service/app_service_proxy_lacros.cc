@@ -311,12 +311,6 @@ void AppServiceProxyLacros::SetPermission(const std::string& app_id,
   NOTIMPLEMENTED();
 }
 
-void AppServiceProxyLacros::SetPermission(
-    const std::string& app_id,
-    apps::mojom::PermissionPtr permission) {
-  NOTIMPLEMENTED();
-}
-
 void AppServiceProxyLacros::Uninstall(const std::string& app_id,
                                       UninstallSource uninstall_source,
                                       gfx::NativeWindow parent_window) {
@@ -328,15 +322,6 @@ void AppServiceProxyLacros::Uninstall(const std::string& app_id,
   } else {
     NOTIMPLEMENTED();
   }
-}
-
-void AppServiceProxyLacros::Uninstall(
-    const std::string& app_id,
-    apps::mojom::UninstallSource uninstall_source,
-    gfx::NativeWindow parent_window) {
-  Uninstall(app_id,
-            ConvertMojomUninstallSourceToUninstallSource(uninstall_source),
-            parent_window);
 }
 
 void AppServiceProxyLacros::UninstallSilently(
@@ -357,13 +342,6 @@ void AppServiceProxyLacros::UninstallSilently(
 
   remote_crosapi_app_service_proxy_->UninstallSilently(app_id,
                                                        uninstall_source);
-}
-
-void AppServiceProxyLacros::UninstallSilently(
-    const std::string& app_id,
-    apps::mojom::UninstallSource uninstall_source) {
-  UninstallSilently(
-      app_id, ConvertMojomUninstallSourceToUninstallSource(uninstall_source));
 }
 
 void AppServiceProxyLacros::StopApp(const std::string& app_id) {
@@ -542,6 +520,12 @@ void AppServiceProxyLacros::SetCrosapiAppServiceProxyForTesting(
       crosapi::mojom::AppServiceProxy::Version_;
 }
 
+void AppServiceProxyLacros::SetWebsiteMetricsServiceForTesting(
+    std::unique_ptr<apps::WebsiteMetricsServiceLacros>
+        website_metrics_service) {
+  metrics_service_ = std::move(website_metrics_service);
+}
+
 base::WeakPtr<AppServiceProxyLacros> AppServiceProxyLacros::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
@@ -635,7 +619,7 @@ void AppServiceProxyLacros::Initialize() {
                               std::make_unique<apps::AppIconSource>(profile_));
 
   if (!profile_->AsTestingProfile()) {
-    metrics_service_ = std::make_unique<WebsiteMetricsServiceLacros>();
+    metrics_service_ = std::make_unique<WebsiteMetricsServiceLacros>(profile_);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&AppServiceProxyLacros::InitWebsiteMetrics,
                                   weak_ptr_factory_.GetWeakPtr()));
@@ -667,6 +651,8 @@ void AppServiceProxyLacros::Initialize() {
 }
 
 void AppServiceProxyLacros::Shutdown() {
+  metrics_service_.reset();
+
   if (lacros_web_apps_controller_) {
     lacros_web_apps_controller_->Shutdown();
   }

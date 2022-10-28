@@ -471,7 +471,7 @@ void ExtensionService::Init() {
   bool load_saved_extensions = true;
   bool load_command_line_extensions = extensions_enabled_;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!ash::ProfileHelper::IsRegularProfile(profile_)) {
+  if (!ash::ProfileHelper::IsUserProfile(profile_)) {
     load_saved_extensions = false;
     load_command_line_extensions = false;
   }
@@ -1922,7 +1922,7 @@ bool ExtensionService::OnExternalExtensionFileFound(
 
   // no client (silent install)
   scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(this));
-  installer->set_installer_callback(
+  installer->AddInstallerCallback(
       base::BindOnce(&ExtensionService::InstallationFromExternalFileFinished,
                      AsWeakPtr(), info.extension_id));
   installer->set_install_source(info.crx_location);

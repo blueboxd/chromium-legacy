@@ -213,7 +213,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
                                     ExceptionState& exception_state) {
   if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(
-        DOMExceptionCode::kAbortError,
+        DOMExceptionCode::kInvalidStateError,
         "Internal error: window frame is missing (the navigator may be "
         "detached).");
     return ScriptPromise();
@@ -236,7 +236,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
 #if !BUILDFLAG(IS_ANDROID)
   if (!clients_.empty()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "A earlier share had not yet completed.");
+                                      "An earlier share has not yet completed.");
     return ScriptPromise();
   }
 #endif

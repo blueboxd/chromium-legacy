@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "base/ranges/algorithm.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/lacros/cert/cert_db_initializer_factory.h"
 #include "chrome/browser/net/nss_service.h"
@@ -47,8 +48,7 @@ void IsCertInNSSDatabaseOnIOThreadWithCertList(
     net::ScopedCERTCertificateList certs) {
   for (const net::ScopedCERTCertificate& cert : certs) {
     auto cert_der = base::make_span(cert->derCert.data, cert->derCert.len);
-    if (std::equal(cert_der.begin(), cert_der.end(),
-                   expected_cert_der.begin())) {
+    if (base::ranges::equal(cert_der, expected_cert_der)) {
       *out_cert_found = true;
       break;
     }
@@ -186,11 +186,10 @@ IN_PROC_BROWSER_TEST_F(KeystoreServiceLacrosBrowserTest, WrongFormattingUser) {
 
 // Tests that get certificates works.
 IN_PROC_BROWSER_TEST_F(KeystoreServiceLacrosBrowserTest, GetCertificatesEmpty) {
-  crosapi::mojom::DEPRECATED_GetCertificatesResultPtr result;
+  crosapi::mojom::GetCertificatesResultPtr result;
   crosapi::mojom::KeystoreServiceAsyncWaiter async_waiter(
       keystore_service_remote().get());
-  async_waiter.DEPRECATED_GetCertificates(crosapi::mojom::KeystoreType::kUser,
-                                          &result);
+  async_waiter.GetCertificates(crosapi::mojom::KeystoreType::kUser, &result);
   ASSERT_TRUE(result->is_certificates());
   EXPECT_EQ(0u, result->get_certificates().size());
 }
@@ -264,9 +263,14 @@ IN_PROC_BROWSER_TEST_F(KeystoreServiceLacrosBrowserTest, CertificateBadFormat) {
   dummy_certificate.push_back(15);
   crosapi::mojom::KeystoreServiceAsyncWaiter async_waiter(
       keystore_service_remote().get());
-  async_waiter.DEPRECATED_AddCertificate(crosapi::mojom::KeystoreType::kUser,
-                                         std::move(dummy_certificate), &result);
-  EXPECT_EQ(result, expected_error);
+  bool is_result_error = false;
+  crosapi::mojom::KeystoreError result_error_code;
+  async_waiter.AddCertificate(crosapi::mojom::KeystoreType::kUser,
+                              std::move(dummy_certificate), &is_result_error,
+                              &result_error_code);
+  ASSERT_TRUE(is_result_error) << "Error: " << result_error_code;
+  EXPECT_EQ(result_error_code,
+            crosapi::mojom::KeystoreError::kCertificateInvalid);
 
   result = "";
   async_waiter.DEPRECATED_RemoveCertificate(crosapi::mojom::KeystoreType::kUser,

@@ -12,8 +12,10 @@
 
 #include "base/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/device_reauth/biometric_authenticator.h"
@@ -32,17 +34,16 @@ using testing::Return;
 
 class MockSystemAuthenticator : public AuthenticatorWinInterface {
  public:
-  MOCK_METHOD(bool,
+  MOCK_METHOD(void,
               AuthenticateUser,
-              (const std::u16string& message),
+              (const std::u16string& message,
+               base::OnceCallback<void(bool)> callback),
               (override));
   MOCK_METHOD(void,
               CheckIfBiometricsAvailable,
               (AvailabilityCallback callback),
               (override));
 };
-
-}  // namespace
 
 class BiometricAuthenticatorWinTest : public testing::Test {
  public:
@@ -69,6 +70,15 @@ class BiometricAuthenticatorWinTest : public testing::Test {
         password_manager::prefs::kIsBiometricAvailable, available);
   }
 
+  void ExpectAuthenticationAndSetResult(bool result) {
+    EXPECT_CALL(system_authenticator(), AuthenticateUser)
+        .WillOnce(testing::WithArg<1>([result](auto callback) {
+          base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+              FROM_HERE,
+              base::BindOnce(std::move(callback), /*auth_succeeded=*/result));
+        }));
+  }
+
  private:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
@@ -84,8 +94,7 @@ class BiometricAuthenticatorWinTest : public testing::Test {
 // kAuthValidityPeriod, no reauthentication is needed.
 TEST_F(BiometricAuthenticatorWinTest,
        NoReauthenticationIfLessThanAuthValidityPeriod) {
-  EXPECT_CALL(system_authenticator(), AuthenticateUser)
-      .WillOnce(Return(/*auth_succeeded=*/true));
+  ExpectAuthenticationAndSetResult(true);
   authenticator()->AuthenticateWithMessage(
       BiometricAuthRequester::kPasswordsInSettings,
       /*message=*/u"Chrome is trying to show passwords.", base::DoNothing());
@@ -95,7 +104,7 @@ TEST_F(BiometricAuthenticatorWinTest,
   task_environment().FastForwardBy(
       PasswordAccessAuthenticator::kAuthValidityPeriod / 2);
 
-  EXPECT_CALL(system_authenticator(), AuthenticateUser(_)).Times(0);
+  EXPECT_CALL(system_authenticator(), AuthenticateUser).Times(0);
   base::MockCallback<BiometricAuthenticator::AuthenticateCallback>
       result_callback;
   EXPECT_CALL(result_callback, Run(/*auth_succeeded=*/true));
@@ -111,8 +120,7 @@ TEST_F(BiometricAuthenticatorWinTest,
 // kAuthValidityPeriod reauthentication is needed.
 TEST_F(BiometricAuthenticatorWinTest, ReauthenticationIfMoreThan60Seconds) {
   // Simulate a previous successful authentication
-  EXPECT_CALL(system_authenticator(), AuthenticateUser)
-      .WillOnce(Return(/*auth_succeeded=*/true));
+  ExpectAuthenticationAndSetResult(true);
   authenticator()->AuthenticateWithMessage(
       BiometricAuthRequester::kPasswordsInSettings,
       /*message=*/u"Chrome is trying to show passwords.", base::DoNothing());
@@ -121,8 +129,7 @@ TEST_F(BiometricAuthenticatorWinTest, ReauthenticationIfMoreThan60Seconds) {
       PasswordAccessAuthenticator::kAuthValidityPeriod * 2);
 
   // The next call to `Authenticate()` should re-trigger an authentication.
-  EXPECT_CALL(system_authenticator(), AuthenticateUser(_))
-      .WillOnce(Return(/*auth_succeeded=*/false));
+  ExpectAuthenticationAndSetResult(false);
   base::MockCallback<BiometricAuthenticator::AuthenticateCallback>
       result_callback;
   EXPECT_CALL(result_callback, Run(/*auth_succeeded=*/false));
@@ -137,15 +144,14 @@ TEST_F(BiometricAuthenticatorWinTest, ReauthenticationIfMoreThan60Seconds) {
 // If previous authentication failed, kAuthValidityPeriod isn't started and
 // reauthentication will be needed.
 TEST_F(BiometricAuthenticatorWinTest, ReauthenticationIfPreviousFailed) {
-  EXPECT_CALL(system_authenticator(), AuthenticateUser)
-      .WillOnce(Return(/*auth_succeeded=*/false));
+  ExpectAuthenticationAndSetResult(false);
   authenticator()->AuthenticateWithMessage(
       BiometricAuthRequester::kPasswordsInSettings,
       /*message=*/u"Chrome is trying to show passwords.", base::DoNothing());
+  task_environment().RunUntilIdle();
 
   // The next call to `Authenticate()` should re-trigger an authentication.
-  EXPECT_CALL(system_authenticator(), AuthenticateUser(_))
-      .WillOnce(Return(true));
+  ExpectAuthenticationAndSetResult(true);
   base::MockCallback<BiometricAuthenticator::AuthenticateCallback>
       result_callback;
   EXPECT_CALL(result_callback, Run(/*auth_succeeded=*/true));
@@ -169,18 +175,74 @@ TEST_F(BiometricAuthenticatorWinTest, CanAuthenticate) {
 }
 
 // Verifies that the caching mechanism for BiometricsAvailable works.
-TEST_F(BiometricAuthenticatorWinTest, SavingBiometricsAvailability) {
-  EXPECT_CALL(system_authenticator(), CheckIfBiometricsAvailable)
-      .WillOnce(testing::WithArg<0>(
-          [](auto callback) { std::move(callback).Run(true); }));
-  authenticator()->CacheIfBiometricsAvailable();
-  EXPECT_TRUE(authenticator()->CanAuthenticate(
-      BiometricAuthRequester::kPasswordsInSettings));
+struct TestCase {
+  const char* description;
+  BiometricAuthenticationStatusWin availability;
+  bool expected_result;
+  int expected_bucket;
+};
 
+class BiometricAuthenticatorWinTestAvailability
+    : public BiometricAuthenticatorWinTest,
+      public testing::WithParamInterface<TestCase> {};
+
+TEST_P(BiometricAuthenticatorWinTestAvailability, AvailabilityCheck) {
+  base::HistogramTester histogram_tester;
+  TestCase test_case = GetParam();
+  SCOPED_TRACE(test_case.description);
   EXPECT_CALL(system_authenticator(), CheckIfBiometricsAvailable)
-      .WillOnce(testing::WithArg<0>(
-          [](auto callback) { std::move(callback).Run(false); }));
+      .WillOnce(testing::WithArg<0>([&test_case](auto callback) {
+        std::move(callback).Run(test_case.availability);
+      }));
   authenticator()->CacheIfBiometricsAvailable();
-  EXPECT_FALSE(authenticator()->CanAuthenticate(
-      BiometricAuthRequester::kPasswordsInSettings));
+
+  EXPECT_EQ(test_case.expected_result,
+            authenticator()->CanAuthenticate(
+                BiometricAuthRequester::kPasswordsInSettings));
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.BiometricAvailabilityWin", test_case.expected_bucket, 1);
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    BiometricAuthenticatorWinTestAvailability,
+    ::testing::Values(
+        TestCase{
+            .description = "kUnknown",
+            .availability = BiometricAuthenticationStatusWin::kUnknown,
+            .expected_result = false,
+            .expected_bucket = 0,
+        },
+        TestCase{
+            .description = "kAvailable",
+            .availability = BiometricAuthenticationStatusWin::kAvailable,
+            .expected_result = true,
+            .expected_bucket = 1,
+        },
+        TestCase{
+            .description = "kDeviceBusy",
+            .availability = BiometricAuthenticationStatusWin::kDeviceBusy,
+            .expected_result = false,
+            .expected_bucket = 2,
+        },
+        TestCase{
+            .description = "kDisabledByPolicy",
+            .availability = BiometricAuthenticationStatusWin::kDisabledByPolicy,
+            .expected_result = false,
+            .expected_bucket = 3,
+        },
+        TestCase{
+            .description = "kDeviceNotPresent",
+            .availability = BiometricAuthenticationStatusWin::kDeviceNotPresent,
+            .expected_result = false,
+            .expected_bucket = 4,
+        },
+        TestCase{
+            .description = "kNotConfiguredForUser",
+            .availability =
+                BiometricAuthenticationStatusWin::kNotConfiguredForUser,
+            .expected_result = false,
+            .expected_bucket = 5,
+        }));
+
+}  // namespace

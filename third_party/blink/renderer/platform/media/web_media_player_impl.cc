@@ -1208,16 +1208,16 @@ bool WebMediaPlayerImpl::SetSinkId(
   return true;
 }
 
-STATIC_ASSERT_ENUM(WebMediaPlayer::kPreloadNone, MultiBufferDataSource::NONE);
+STATIC_ASSERT_ENUM(WebMediaPlayer::kPreloadNone, media::DataSource::NONE);
 STATIC_ASSERT_ENUM(WebMediaPlayer::kPreloadMetaData,
-                   MultiBufferDataSource::METADATA);
-STATIC_ASSERT_ENUM(WebMediaPlayer::kPreloadAuto, MultiBufferDataSource::AUTO);
+                   media::DataSource::METADATA);
+STATIC_ASSERT_ENUM(WebMediaPlayer::kPreloadAuto, media::DataSource::AUTO);
 
 void WebMediaPlayerImpl::SetPreload(WebMediaPlayer::Preload preload) {
   DVLOG(1) << __func__ << "(" << preload << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  preload_ = static_cast<MultiBufferDataSource::Preload>(preload);
+  preload_ = static_cast<media::DataSource::Preload>(preload);
   if (mb_data_source_)
     mb_data_source_->SetPreload(preload_);
 }
@@ -1849,9 +1849,11 @@ void WebMediaPlayerImpl::OnPipelineResumed() {
   UpdateBackgroundVideoOptimizationState();
 }
 
-void WebMediaPlayerImpl::OnDemuxerOpened() {
+void WebMediaPlayerImpl::OnChunkDemuxerOpened() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  client_->MediaSourceOpened(new WebMediaSourceImpl(chunk_demuxer_));
+  CHECK_EQ(demuxer_->GetDemuxerType(), media::DemuxerType::kChunkDemuxer);
+  client_->MediaSourceOpened(new WebMediaSourceImpl(
+      static_cast<media::ChunkDemuxer*>(demuxer_.get())));
 }
 
 void WebMediaPlayerImpl::OnMemoryPressure(
@@ -2767,9 +2769,9 @@ void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
   }
 
   // No point in preloading data as we'll probably just throw it away anyways.
-  if (IsStreaming() && preload_ > MultiBufferDataSource::METADATA &&
+  if (IsStreaming() && preload_ > media::DataSource::METADATA &&
       mb_data_source_) {
-    mb_data_source_->SetPreload(MultiBufferDataSource::METADATA);
+    mb_data_source_->SetPreload(media::DataSource::METADATA);
   }
 
   StartPipeline();
@@ -2912,12 +2914,20 @@ std::unique_ptr<media::Renderer> WebMediaPlayerImpl::CreateRenderer(
       client_->TargetColorSpace());
 }
 
+#if BUILDFLAG(ENABLE_FFMPEG)
+std::unique_ptr<Demuxer> WebMediaPlayerImpl::CreateFFmpegDemuxer() {
+  return std::make_unique<media::FFmpegDemuxer>(
+      media_task_runner_, data_source_.get(),
+      media::BindToCurrentLoop(base::BindRepeating(
+          &WebMediaPlayerImpl::OnEncryptedMediaInitData, weak_this_)),
+      media::BindToCurrentLoop(base::BindRepeating(
+          &WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated, weak_this_)),
+      media_log_.get(), IsLocalFile(loaded_url_));
+}
+#endif
+
 void WebMediaPlayerImpl::StartPipeline() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb =
-      media::BindToCurrentLoop(base::BindRepeating(
-          &WebMediaPlayerImpl::OnEncryptedMediaInitData, weak_this_));
 
   vfc_task_runner_->PostTask(
       FROM_HERE,
@@ -2958,15 +2968,8 @@ void WebMediaPlayerImpl::StartPipeline() {
   } else if (load_type_ != kLoadTypeMediaSource) {
     DCHECK(!chunk_demuxer_);
     DCHECK(data_source_);
-
 #if BUILDFLAG(ENABLE_FFMPEG)
-    Demuxer::MediaTracksUpdatedCB media_tracks_updated_cb =
-        media::BindToCurrentLoop(base::BindRepeating(
-            &WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated, weak_this_));
-
-    SetDemuxer(std::make_unique<media::FFmpegDemuxer>(
-        media_task_runner_, data_source_.get(), encrypted_media_init_data_cb,
-        media_tracks_updated_cb, media_log_.get(), IsLocalFile(loaded_url_)));
+    SetDemuxer(CreateFFmpegDemuxer());
 #else
     OnError(media::DEMUXER_ERROR_COULD_NOT_OPEN);
     return;
@@ -2975,9 +2978,13 @@ void WebMediaPlayerImpl::StartPipeline() {
     DCHECK(!chunk_demuxer_);
     DCHECK(!data_source_);
 
+    Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb =
+        media::BindToCurrentLoop(base::BindRepeating(
+            &WebMediaPlayerImpl::OnEncryptedMediaInitData, weak_this_));
+
     chunk_demuxer_ = new media::ChunkDemuxer(
-        media::BindToCurrentLoop(
-            base::BindOnce(&WebMediaPlayerImpl::OnDemuxerOpened, weak_this_)),
+        media::BindToCurrentLoop(base::BindOnce(
+            &WebMediaPlayerImpl::OnChunkDemuxerOpened, weak_this_)),
         media::BindToCurrentLoop(
             base::BindRepeating(&WebMediaPlayerImpl::OnProgress, weak_this_)),
         encrypted_media_init_data_cb, media_log_.get());
@@ -2996,7 +3003,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 
   // If possible attempt to avoid decoder spool up until playback starts.
   auto start_type = media::Pipeline::StartType::kNormal;
-  if (!chunk_demuxer_ && preload_ == MultiBufferDataSource::METADATA &&
+  if (!chunk_demuxer_ && preload_ == media::DataSource::METADATA &&
       !client_->CouldPlayIfEnoughData() && !IsStreaming()) {
     start_type =
         (has_poster_ ||
@@ -4090,8 +4097,22 @@ void WebMediaPlayerImpl::ReportSessionUMAs() const {
 }
 
 bool WebMediaPlayerImpl::PassedTimingAllowOriginCheck() const {
+  // If there is a MultiBuffer associated with this player, then defer to it.
+  // This will return false if any HTTP response so far has failed the TAO
+  // check.
   if (mb_data_source_)
     return mb_data_source_->PassedTimingAllowOriginCheck();
+  // If there is no MultiBuffer, then there are no HTTP responses, and so this
+  // can safely return true. Specifically for the MSE case, the app itself
+  // sources the ArrayBuffer[Views], possibly not even from HTTP responses. Any
+  // TAO checks which are present to prevent deduction of the resource content
+  // can be assumed to have passed, as the content is already readable by the
+  // app. TAO checks which would be used to determine other network timing
+  // info, such as DNS lookup time, are not relevant as the media data is far
+  // removed from the network itself at this point, and so that info cannot be
+  // revealed via the MediaSource or WebMediaPlayer that's using MSE.
+  // TODO(1266991): Ensure that this returns the correct value for HLS media,
+  // based on the TAO checks performed on those resources.
   return true;
 }
 

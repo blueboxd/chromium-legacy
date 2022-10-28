@@ -559,6 +559,57 @@ TEST_F(WindowFloatTest, FloatWindowWorkAreaConsiderations) {
             docked_magnifier_controller->GetMagnifierHeightForTesting());
 }
 
+// Test that floated window are not blocking keyboard events when it's on an
+// inactive desk.
+TEST_F(WindowFloatTest, FloatWindowShouldNotBlockKeyboardEvents) {
+  auto* desks_controller = DesksController::Get();
+  // Float `window_1` at `desk_1`.
+  auto* desk_1 = desks_controller->desks()[0].get();
+  std::unique_ptr<aura::Window> window_1(CreateFloatedWindow());
+  // Verify `window_1` belongs to `desk_1`.
+  auto* float_controller = Shell::Get()->float_controller();
+  ASSERT_EQ(float_controller->FindDeskOfFloatedWindow(window_1.get()), desk_1);
+  NewDesk();
+  auto* desk_2 = desks_controller->desks()[1].get();
+  // Move to `desk_2`.
+  ActivateDesk(desk_2);
+  // Going into overview mode from keyboard shortcut.
+  auto* overview_controller = Shell::Get()->overview_controller();
+  ASSERT_FALSE(overview_controller->InOverviewSession());
+  PressAndReleaseKey(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE);
+  // Verify we are in overview mode.
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  // Repeat.
+  PressAndReleaseKey(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE);
+  ASSERT_FALSE(overview_controller->InOverviewSession());
+  PressAndReleaseKey(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE);
+  // Verify we are in overview mode.
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+}
+
+// Test that activate a floated window on an inactive desk will activate that
+// desk.
+TEST_F(WindowFloatTest, FloatWindowActivationActivatesBelongingDesk) {
+  auto* desks_controller = DesksController::Get();
+  // Float `window_1` at `desk_1`.
+  auto* desk_1 = desks_controller->desks()[0].get();
+  std::unique_ptr<aura::Window> window_1(CreateFloatedWindow());
+  // Verify `window_1` belongs to `desk_1`.
+  auto* float_controller = Shell::Get()->float_controller();
+  ASSERT_EQ(float_controller->FindDeskOfFloatedWindow(window_1.get()), desk_1);
+  NewDesk();
+  auto* desk_2 = desks_controller->desks()[1].get();
+  // Move to `desk_2`.
+  ActivateDesk(desk_2);
+  DeskSwitchAnimationWaiter waiter;
+  // Activate `window_1` that belongs to `desk_1`.
+  wm::ActivateWindow(window_1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(window_1.get()));
+  waiter.Wait();
+  // Verify `desk_1` is now activated.
+  EXPECT_TRUE(desk_1->is_active());
+}
+
 class TabletWindowFloatTest : public WindowFloatTest {
  public:
   TabletWindowFloatTest() = default;
@@ -970,14 +1021,35 @@ TEST_F(TabletWindowFloatTest, UntuckWindowOnExitTabletMode) {
   // Fling to tuck the window in the bottom right.
   auto* float_controller = Shell::Get()->float_controller();
   FlingWindow(window.get(), /*left=*/false, /*up=*/false);
+  EXPECT_TRUE(WindowState::Get(window.get())->IsFloated());
   ASSERT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
 
   // Tests that after we exit tablet mode, the window is untucked and fully
   // visible, but is still floated.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
-  EXPECT_TRUE(WindowState::Get(window.get())->IsFloated());
+  EXPECT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
   EXPECT_TRUE(screen_util::GetDisplayBoundsInParent(window.get())
                   .Contains(window->bounds()));
+  EXPECT_TRUE(WindowState::Get(window.get())->IsFloated());
+}
+
+TEST_F(TabletWindowFloatTest, UntuckWindowOnActivation) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+
+  // Fling to tuck the window in the bottom right.
+  auto* float_controller = Shell::Get()->float_controller();
+  FlingWindow(window.get(), /*left=*/false, /*up=*/false);
+  EXPECT_TRUE(WindowState::Get(window.get())->IsFloated());
+  ASSERT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
+
+  // Tests that after we activate the window, ihe window is untucked and fully
+  // visible, but is still floated.
+  wm::ActivateWindow(window.get());
+  EXPECT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
+  EXPECT_TRUE(screen_util::GetDisplayBoundsInParent(window.get())
+                  .Contains(window->bounds()));
+  EXPECT_TRUE(WindowState::Get(window.get())->IsFloated());
 }
 
 // Tests the functionality of tucking a window in tablet mode.

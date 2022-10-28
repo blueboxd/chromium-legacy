@@ -26,6 +26,7 @@
 <translation id="1161762950103988776">Үсрэх</translation>
 <translation id="1164857107703583584">Үсрэх тушаалыг веб хуудсаар үр дүнтэйгээр шилжихэд ашиглах боломжтой.</translation>
 <translation id="1175914831232945926">Цифр</translation>
+<translation id="1181003590763099524">эхлэл рүү зөөх</translation>
 <translation id="1188858454923323853">нэмэлт</translation>
 <translation id="1189258430971676908">Дадлагын хэсэг: Эвхмэл жагсаалт</translation>
 <translation id="1195238899008218998">Төгсгөлийн үг</translation>
@@ -326,6 +327,7 @@
 <translation id="309749186376891736">Курсорыг зөөх</translation>
 <translation id="3103579948980282461">Нил ягаан туяатай тод ягаан</translation>
 <translation id="3104705064753753826">alrt dlg</translation>
+<translation id="3105857328626674463">өмнөх үгийг тодруулах</translation>
 <translation id="3109724472072898302">Задарсан</translation>
 <translation id="311015743332597320">Дөрвөн хуруугаараа баруун тийш шудрах</translation>
 <translation id="3112457281078985179">ChromeVox-г асаах/унтраахын тулд Control+Alt+Z-г ашиглана уу.</translation>
@@ -354,6 +356,7 @@
 <translation id="3241052487511142956">Өмнө нь зочилсон холбоос</translation>
 <translation id="3241638166094654466">Шугам бүрийн нүд:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3247621388192105674">төгсгөл рүү зөөх</translation>
 <translation id="3260949043575829030">Өмнөх ижил төстэй зүйл</translation>
 <translation id="3270069636408109001">Дараагийн хүснэгт алга байна</translation>
 <translation id="3273791280096244679">Шошго хадгалах</translation>
@@ -380,6 +383,7 @@
 <translation id="3389259863310851658">Өмнөх бөглөх талбар</translation>
 <translation id="3393605254399152980">Хүрч буй зүйлээ сонсохын тулд нэг хуруугаа чирнэ үү</translation>
 <translation id="3406283310380167331">Хэлбэрүүдийн жагсаалтыг харуул</translation>
+<translation id="3407726812456125464">Сонгосон текстийг сонсох</translation>
 <translation id="3414400929511680526">Бага зэргийн цэнхэр туяатай цагаан</translation>
 <translation id="3418936350470374046">Доор нүд алга байна</translation>
 <translation id="3419269701801640163">буулгах</translation>
@@ -946,6 +950,7 @@
 <translation id="743783356331413498">Жишээ</translation>
 <translation id="7439060726180460871">Хадгалалтын файлын сан</translation>
 <translation id="744163271241493234">pwded</translation>
+<translation id="7443479558101073378">дараагийн үгийг тодруулах</translation>
 <translation id="7465123027577412805">Төрөлхийн дуу хоолой ашиглах уу?</translation>
 <translation id="7491962110804786152">цонх</translation>
 <translation id="7492497529767769458">Дараагийн хэсэгт шилжих. Жишээнд Статусын мэдээллийн хэсэг болон Эхлүүлэгч багтана.</translation>

@@ -1486,10 +1486,6 @@ Page::PrerenderFinalStatus PrerenderFinalStatusToProtocol(
       return Page::PrerenderFinalStatusEnum::CancelAllHostsForTesting;
     case PrerenderFinalStatus::kClientCertRequested:
       return Page::PrerenderFinalStatusEnum::ClientCertRequested;
-    case PrerenderFinalStatus::kCrossOriginNavigation:
-      return Page::PrerenderFinalStatusEnum::CrossOriginNavigation;
-    case PrerenderFinalStatus::kCrossOriginRedirect:
-      return Page::PrerenderFinalStatusEnum::CrossOriginRedirect;
     case PrerenderFinalStatus::kDataSaverEnabled:
       return Page::PrerenderFinalStatusEnum::DataSaverEnabled;
     case PrerenderFinalStatus::kDestroyed:
@@ -1555,6 +1551,23 @@ Page::PrerenderFinalStatus PrerenderFinalStatusToProtocol(
       return Page::PrerenderFinalStatusEnum::StartFailed;
     case PrerenderFinalStatus::kTimeoutBackgrounded:
       return Page::PrerenderFinalStatusEnum::TimeoutBackgrounded;
+    case PrerenderFinalStatus::kCrossSiteRedirect:
+      return Page::PrerenderFinalStatusEnum::CrossSiteRedirect;
+    case PrerenderFinalStatus::kCrossSiteNavigation:
+      return Page::PrerenderFinalStatusEnum::CrossSiteNavigation;
+    case PrerenderFinalStatus::kSameSiteCrossOriginRedirect:
+      return Page::PrerenderFinalStatusEnum::SameSiteCrossOriginRedirect;
+    case PrerenderFinalStatus::kSameSiteCrossOriginNavigation:
+      return Page::PrerenderFinalStatusEnum::SameSiteCrossOriginNavigation;
+    case PrerenderFinalStatus::kSameSiteCrossOriginRedirectNotOptIn:
+      return Page::PrerenderFinalStatusEnum::
+          SameSiteCrossOriginRedirectNotOptIn;
+    case PrerenderFinalStatus::kSameSiteCrossOriginNavigationNotOptIn:
+      return Page::PrerenderFinalStatusEnum::
+          SameSiteCrossOriginNavigationNotOptIn;
+    case PrerenderFinalStatus::kActivationNavigationParameterMismatch:
+      return Page::PrerenderFinalStatusEnum::
+          ActivationNavigationParameterMismatch;
   }
 }
 
@@ -1819,13 +1832,13 @@ Page::BackForwardCacheNotRestoredReasonType MapNotRestoredReasonToType(
     case Reason::kBrowsingInstanceNotSwapped:
     case Reason::kBackForwardCacheDisabledForDelegate:
     case Reason::kServiceWorkerUnregistration:
-    case Reason::kCacheControlNoStore:
-    case Reason::kCacheControlNoStoreCookieModified:
-    case Reason::kCacheControlNoStoreHTTPOnlyCookieModified:
     case Reason::kNoResponseHead:
     case Reason::kErrorDocument:
     case Reason::kFencedFramesEmbedder:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::Circumstantial;
+    case Reason::kCacheControlNoStore:
+    case Reason::kCacheControlNoStoreCookieModified:
+    case Reason::kCacheControlNoStoreHTTPOnlyCookieModified:
     case Reason::kUnloadHandlerExistsInMainFrame:
     case Reason::kUnloadHandlerExistsInSubFrame:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::PageSupportNeeded;

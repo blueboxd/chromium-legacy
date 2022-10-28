@@ -349,8 +349,14 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // token for this fragment nevertheless, so that we re-enter, descend and
   // resume at the broken children in the next fragmentainer.
   bool HasChildBreakInside() const {
-    if (!child_break_tokens_.empty())
-      return true;
+    if (!child_break_tokens_.empty()) {
+      for (const NGBreakToken* child_token : child_break_tokens_) {
+        const auto* block_child_token =
+            DynamicTo<NGBlockBreakToken>(child_token);
+        if (!block_child_token || !block_child_token->IsRepeated())
+          return true;
+      }
+    }
     // Inline nodes produce a "finished" trailing break token even if we don't
     // need to block-fragment.
     if (last_inline_break_token_)
@@ -366,11 +372,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool HasInflowChildBreakInside() const {
     return has_inflow_child_break_inside_;
   }
-
-  // Return true if we need to break before or inside any floated child. Floats
-  // are encapsulated by their container if the container establishes a new
-  // block formatting context.
-  bool HasFloatBreakInside() const { return has_float_break_inside_; }
 
   // Report space shortage, i.e. how much more space would have been sufficient
   // to prevent some piece of content from breaking. This information may be
@@ -661,6 +662,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   }
 
   // The |NGFragmentItemsBuilder| for the inline formatting context of this box.
+  bool HasItems() const final { return items_builder_; }
   NGFragmentItemsBuilder* ItemsBuilder() { return items_builder_; }
   void SetItemsBuilder(NGFragmentItemsBuilder* builder) {
     items_builder_ = builder;
@@ -761,7 +763,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool is_first_for_node_ = true;
   bool did_break_self_ = false;
   bool has_inflow_child_break_inside_ = false;
-  bool has_float_break_inside_ = false;
   bool has_forced_break_ = false;
   bool is_new_fc_ = false;
   bool has_seen_all_children_ = false;

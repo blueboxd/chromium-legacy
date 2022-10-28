@@ -321,7 +321,10 @@ void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosPhotos(
             profile_);
   }
   google_photos_photos_fetcher_->AddRequestAndStartIfNecessary(
-      item_id, album_id, resume_token, /*shuffle=*/false, std::move(callback));
+      item_id, album_id, resume_token, /*shuffle=*/false,
+      base::BindOnce(
+          &PersonalizationAppWallpaperProviderImpl::OnFetchGooglePhotosPhotos,
+          weak_ptr_factory_.GetWeakPtr(), album_id, std::move(callback)));
 }
 
 void PersonalizationAppWallpaperProviderImpl::GetDefaultImageThumbnail(
@@ -597,33 +600,58 @@ void PersonalizationAppWallpaperProviderImpl::SelectGooglePhotosPhoto(
 }
 
 void PersonalizationAppWallpaperProviderImpl::SelectGooglePhotosAlbum(
-    const std::string& id,
-    SelectGooglePhotosAlbumCallback callback) {
+    const std::string& album_id,
+    SetDailyRefreshCallback callback) {
   if (!is_google_photos_enterprise_enabled_) {
-    std::move(callback).Run(false);
+    std::move(callback).Run(mojom::SetDailyRefreshResponse::New(
+        /*success=*/false, /*force_refresh=*/false));
     LOG(WARNING) << "Rejected attempt to set Google Photos wallpaper while "
                  << "disabled via enterprise setting.";
     return;
   }
 
-  if (pending_select_google_photos_album_callback_)
-    std::move(pending_select_google_photos_album_callback_).Run(false);
-  pending_select_google_photos_album_callback_ = std::move(callback);
+  if (pending_set_daily_refresh_callback_) {
+    std::move(pending_set_daily_refresh_callback_)
+        .Run(mojom::SetDailyRefreshResponse::New(/*success=*/false,
+                                                 /*force_refresh=*/false));
+  }
+  pending_set_daily_refresh_callback_ = std::move(callback);
   WallpaperControllerClientImpl* client = WallpaperControllerClientImpl::Get();
   DCHECK(client);
 
   client->RecordWallpaperSourceUMA(ash::WallpaperType::kDailyGooglePhotos);
 
-  client->SetGooglePhotosWallpaper(
-      ash::GooglePhotosWallpaperParams(
-          GetAccountId(profile_), id,
-          /*daily_refresh=*/true,
-          ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
-          /*preview_mode=*/false,
-          /*dedup_key=*/absl::nullopt),
-      base::BindOnce(
-          &PersonalizationAppWallpaperProviderImpl::OnGooglePhotosAlbumSelected,
-          backend_weak_ptr_factory_.GetWeakPtr()));
+  bool force_refresh = true;
+  if (album_id.empty()) {
+    // Empty |album_id| means disabling daily refresh.
+    force_refresh = false;
+  } else {
+    // Only force refresh if the album does not contain the current wallpaper
+    // image.
+    const auto& it = album_id_dedup_key_map_.find(album_id);
+    absl::optional<ash::WallpaperInfo> info =
+        client->GetActiveUserWallpaperInfo();
+    if (info.has_value() && info->dedup_key.has_value()) {
+      force_refresh =
+          it == album_id_dedup_key_map_.end() ||
+          it->second.find(info->dedup_key.value()) == it->second.end();
+    }
+  }
+  DVLOG(1) << __func__ << " force_refresh=" << force_refresh;
+
+  auto* controller = WallpaperController::Get();
+  controller->SetGooglePhotosDailyRefreshAlbumId(GetAccountId(profile_),
+                                                 album_id);
+
+  if (force_refresh) {
+    controller->UpdateDailyRefreshWallpaper(base::BindOnce(
+        &PersonalizationAppWallpaperProviderImpl::OnDailyRefreshWallpaperForced,
+        backend_weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+  std::move(pending_set_daily_refresh_callback_)
+      .Run(mojom::SetDailyRefreshResponse::New(
+          /*success=*/true, /*force_refresh=*/false));
 }
 
 void PersonalizationAppWallpaperProviderImpl::
@@ -641,9 +669,52 @@ void PersonalizationAppWallpaperProviderImpl::SetCurrentWallpaperLayout(
 }
 
 void PersonalizationAppWallpaperProviderImpl::SetDailyRefreshCollectionId(
-    const std::string& collection_id) {
-  WallpaperController::Get()->SetDailyRefreshCollectionId(
-      GetAccountId(profile_), collection_id);
+    const std::string& collection_id,
+    SetDailyRefreshCallback callback) {
+  if (pending_set_daily_refresh_callback_) {
+    std::move(pending_set_daily_refresh_callback_)
+        .Run(mojom::SetDailyRefreshResponse::New(/*success=*/false,
+                                                 /*force_refresh=*/false));
+  }
+  pending_set_daily_refresh_callback_ = std::move(callback);
+
+  auto* controller = WallpaperController::Get();
+  controller->SetDailyRefreshCollectionId(GetAccountId(profile_),
+                                          collection_id);
+
+  absl::optional<ash::WallpaperInfo> info =
+      controller->GetActiveUserWallpaperInfo();
+  DCHECK(info);
+  if (info->type != WallpaperType::kDaily) {
+    // Daily refresh is disabled.
+    std::move(pending_set_daily_refresh_callback_)
+        .Run(mojom::SetDailyRefreshResponse::New(
+            /*success=*/true, /*force_refresh=*/false));
+    return;
+  }
+
+  bool force_refresh = !info->asset_id.has_value();
+  if (info->asset_id.has_value()) {
+    const auto& it = image_asset_id_map_.find(info->asset_id.value());
+
+    // Only force refresh if the current wallpaper image does not belong to
+    // this collection.
+    force_refresh = it == image_asset_id_map_.end() ||
+                    it->second.collection_id != collection_id;
+  }
+  DVLOG(1) << __func__ << " info=" << info.value()
+           << " collection_id=" << collection_id
+           << " force_refresh=" << force_refresh;
+  if (force_refresh) {
+    controller->UpdateDailyRefreshWallpaper(base::BindOnce(
+        &PersonalizationAppWallpaperProviderImpl::OnDailyRefreshWallpaperForced,
+        weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  std::move(pending_set_daily_refresh_callback_)
+      .Run(mojom::SetDailyRefreshResponse::New(
+          /*success=*/true, /*force_refresh=*/false));
 }
 
 void PersonalizationAppWallpaperProviderImpl::GetDailyRefreshCollectionId(
@@ -764,6 +835,31 @@ void PersonalizationAppWallpaperProviderImpl::OnFetchGooglePhotosEnabled(
   std::move(callback).Run(state);
 }
 
+void PersonalizationAppWallpaperProviderImpl::OnFetchGooglePhotosPhotos(
+    absl::optional<std::string> album_id,
+    FetchGooglePhotosPhotosCallback callback,
+    mojo::StructPtr<mojom::FetchGooglePhotosPhotosResponse> response) {
+  if (!album_id || !response || response.is_null()) {
+    // Skip processing |album_id_dedup_key_map_| if there is no info on album or
+    // response is invalid.
+    std::move(callback).Run(std::move(response));
+    return;
+  }
+
+  // Process |album_id_dedup_key_map_|.
+  auto& photos = response->photos;
+  if (photos.has_value()) {
+    auto& photos_val = photos.value();
+    std::set<std::string> dedup_keys;
+    for (auto& photo : photos_val) {
+      if (photo->dedup_key.has_value())
+        dedup_keys.insert(photo->dedup_key.value());
+    }
+    album_id_dedup_key_map_.insert({album_id.value(), std::move(dedup_keys)});
+  }
+  std::move(callback).Run(std::move(response));
+}
+
 void PersonalizationAppWallpaperProviderImpl::OnGetDefaultImage(
     GetDefaultImageThumbnailCallback callback,
     const gfx::ImageSkia& image) {
@@ -809,12 +905,6 @@ void PersonalizationAppWallpaperProviderImpl::OnGooglePhotosWallpaperSelected(
   std::move(pending_select_google_photos_photo_callback_).Run(success);
 }
 
-void PersonalizationAppWallpaperProviderImpl::OnGooglePhotosAlbumSelected(
-    bool success) {
-  DCHECK(pending_select_google_photos_album_callback_);
-  std::move(pending_select_google_photos_album_callback_).Run(success);
-}
-
 void PersonalizationAppWallpaperProviderImpl::OnLocalImageSelected(
     bool success) {
   DCHECK(pending_select_local_image_callback_);
@@ -825,6 +915,14 @@ void PersonalizationAppWallpaperProviderImpl::OnDailyRefreshWallpaperUpdated(
     bool success) {
   DCHECK(pending_update_daily_refresh_wallpaper_callback_);
   std::move(pending_update_daily_refresh_wallpaper_callback_).Run(success);
+}
+
+void PersonalizationAppWallpaperProviderImpl::OnDailyRefreshWallpaperForced(
+    bool success) {
+  DCHECK(pending_set_daily_refresh_callback_);
+  std::move(pending_set_daily_refresh_callback_)
+      .Run(
+          mojom::SetDailyRefreshResponse::New(success, /*force_refresh=*/true));
 }
 
 void PersonalizationAppWallpaperProviderImpl::FindAttribution(

@@ -294,6 +294,34 @@ double CSSToStyleMap::MapAnimationDelay(const CSSValue& value) {
   return To<CSSPrimitiveValue>(value).ComputeSeconds();
 }
 
+namespace {
+
+Timing::Delay MapAnimationTimingDelay(const CSSValue& value) {
+  if (const auto* primitive = DynamicTo<CSSPrimitiveValue>(value))
+    return Timing::Delay(AnimationTimeDelta(primitive->ComputeSeconds()));
+  const auto& list = To<CSSValueList>(value);
+  DCHECK_EQ(list.length(), 2u);
+  const auto& range_name = To<CSSIdentifierValue>(list.Item(0));
+  const auto& percentage = To<CSSPrimitiveValue>(list.Item(1));
+  DCHECK(percentage.IsPercentage());
+  return Timing::Delay(range_name.ConvertTo<Timing::TimelineNamedPhase>(),
+                       percentage.GetValue<double>() / 100.0);
+}
+
+}  // namespace
+
+Timing::Delay CSSToStyleMap::MapAnimationDelayStart(const CSSValue& value) {
+  if (value.IsInitialValue())
+    return CSSAnimationData::InitialDelayStart();
+  return MapAnimationTimingDelay(value);
+}
+
+Timing::Delay CSSToStyleMap::MapAnimationDelayEnd(const CSSValue& value) {
+  if (value.IsInitialValue())
+    return CSSAnimationData::InitialDelayEnd();
+  return MapAnimationTimingDelay(value);
+}
+
 Timing::PlaybackDirection CSSToStyleMap::MapAnimationDirection(
     const CSSValue& value) {
   if (value.IsInitialValue())
@@ -517,25 +545,30 @@ void CSSToStyleMap::MapNinePieceImage(StyleResolverState& state,
   }
 
   if (property == CSSPropertyID::kWebkitBorderImage) {
+    ComputedStyleBuilder& builder = state.StyleBuilder();
     // We have to preserve the legacy behavior of -webkit-border-image and make
     // the border slices also set the border widths. We don't need to worry
     // about percentages, since we don't even support those on real borders yet.
     if (image.BorderSlices().Top().IsLength() &&
-        image.BorderSlices().Top().length().IsFixed())
-      state.Style()->SetBorderTopWidth(
-          image.BorderSlices().Top().length().Value());
+        image.BorderSlices().Top().length().IsFixed()) {
+      builder.SetBorderTopWidth(
+          LayoutUnit(image.BorderSlices().Top().length().Pixels()));
+    }
     if (image.BorderSlices().Right().IsLength() &&
-        image.BorderSlices().Right().length().IsFixed())
-      state.Style()->SetBorderRightWidth(
-          image.BorderSlices().Right().length().Value());
+        image.BorderSlices().Right().length().IsFixed()) {
+      builder.SetBorderRightWidth(
+          LayoutUnit(image.BorderSlices().Right().length().Pixels()));
+    }
     if (image.BorderSlices().Bottom().IsLength() &&
-        image.BorderSlices().Bottom().length().IsFixed())
-      state.Style()->SetBorderBottomWidth(
-          image.BorderSlices().Bottom().length().Value());
+        image.BorderSlices().Bottom().length().IsFixed()) {
+      builder.SetBorderBottomWidth(
+          LayoutUnit(image.BorderSlices().Bottom().length().Pixels()));
+    }
     if (image.BorderSlices().Left().IsLength() &&
-        image.BorderSlices().Left().length().IsFixed())
-      state.Style()->SetBorderLeftWidth(
-          image.BorderSlices().Left().length().Value());
+        image.BorderSlices().Left().length().IsFixed()) {
+      builder.SetBorderLeftWidth(
+          LayoutUnit(image.BorderSlices().Left().length().Pixels()));
+    }
   }
 }
 

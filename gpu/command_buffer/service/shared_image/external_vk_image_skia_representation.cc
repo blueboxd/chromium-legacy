@@ -31,7 +31,8 @@ ExternalVkImageSkiaImageRepresentation::
       backing_impl()->promise_texture().get());
 }
 
-sk_sp<SkSurface> ExternalVkImageSkiaImageRepresentation::BeginWriteAccess(
+std::vector<sk_sp<SkSurface>>
+ExternalVkImageSkiaImageRepresentation::BeginWriteAccess(
     int final_msaa_count,
     const SkSurfaceProps& surface_props,
     std::vector<GrBackendSemaphore>* begin_semaphores,
@@ -40,19 +41,19 @@ sk_sp<SkSurface> ExternalVkImageSkiaImageRepresentation::BeginWriteAccess(
   auto* gr_context = backing_impl()->context_state()->gr_context();
   if (gr_context->abandoned()) {
     LOG(ERROR) << "GrContext is abandonded.";
-    return nullptr;
+    return {};
   }
 
   if (access_mode_ != kNone) {
     LOG(DFATAL) << "Previous access hasn't ended yet. mode=" << access_mode_;
-    return nullptr;
+    return {};
   }
 
   auto promise_texture =
       BeginAccess(false /* readonly */, begin_semaphores, end_semaphores);
   if (!promise_texture) {
     LOG(ERROR) << "BeginAccess failed";
-    return nullptr;
+    return {};
   }
 
   auto surface = backing_impl()->context_state()->GetCachedSkSurface(
@@ -72,7 +73,7 @@ sk_sp<SkSurface> ExternalVkImageSkiaImageRepresentation::BeginWriteAccess(
       LOG(ERROR) << "MakeFromBackendTexture() failed.";
       backing_impl()->context_state()->EraseCachedSkSurface(
           promise_texture.get());
-      return nullptr;
+      return {};
     }
     surface_msaa_count_ = final_msaa_count;
     backing_impl()->context_state()->CacheSkSurface(promise_texture.get(),
@@ -92,24 +93,25 @@ sk_sp<SkSurface> ExternalVkImageSkiaImageRepresentation::BeginWriteAccess(
         VK_IMAGE_LAYOUT_UNDEFINED, VK_QUEUE_FAMILY_EXTERNAL);
   }
 
-  return surface;
+  write_surface_ = surface;
+  return {surface};
 }
 
-sk_sp<SkPromiseImageTexture>
+std::vector<sk_sp<SkPromiseImageTexture>>
 ExternalVkImageSkiaImageRepresentation::BeginWriteAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
     std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
   if (access_mode_ != kNone) {
     LOG(DFATAL) << "Previous access hasn't ended yet. mode=" << access_mode_;
-    return nullptr;
+    return {};
   }
 
   auto promise_texture =
       BeginAccess(false /* readonly */, begin_semaphores, end_semaphores);
   if (!promise_texture) {
     LOG(ERROR) << "BeginAccess failed";
-    return nullptr;
+    return {};
   }
 
   access_mode_ = kWrite;
@@ -122,18 +124,17 @@ ExternalVkImageSkiaImageRepresentation::BeginWriteAccess(
         VK_IMAGE_LAYOUT_UNDEFINED, VK_QUEUE_FAMILY_EXTERNAL);
   }
 
-  return promise_texture;
+  return {promise_texture};
 }
 
-void ExternalVkImageSkiaImageRepresentation::EndWriteAccess(
-    sk_sp<SkSurface> surface) {
+void ExternalVkImageSkiaImageRepresentation::EndWriteAccess() {
   if (access_mode_ != kWrite) {
     LOG(DFATAL) << "BeginWriteAccess is not called mode=" << access_mode_;
     return;
   }
-  if (surface) {
-    surface->getCanvas()->restoreToCount(1);
-    surface = nullptr;
+  if (write_surface_) {
+    write_surface_->getCanvas()->restoreToCount(1);
+    write_surface_.reset();
     DCHECK(backing_impl()->context_state()->CachedSkSurfaceIsUnique(
         backing_impl()->promise_texture().get()));
   }
@@ -141,21 +142,21 @@ void ExternalVkImageSkiaImageRepresentation::EndWriteAccess(
   access_mode_ = kNone;
 }
 
-sk_sp<SkPromiseImageTexture>
+std::vector<sk_sp<SkPromiseImageTexture>>
 ExternalVkImageSkiaImageRepresentation::BeginReadAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
     std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
   if (access_mode_ != kNone) {
     LOG(DFATAL) << "Previous access is not finished. mode=" << access_mode_;
-    return nullptr;
+    return {};
   }
 
   auto promise_texture =
       BeginAccess(true /* readonly */, begin_semaphores, end_semaphores);
   if (!promise_texture) {
     LOG(ERROR) << "BeginAccess failed";
-    return nullptr;
+    return {};
   }
 
   // If Vulkan/GL/Dawn share the same memory backing, we need set |end_state|
@@ -167,7 +168,7 @@ ExternalVkImageSkiaImageRepresentation::BeginReadAccess(
   }
 
   access_mode_ = kRead;
-  return promise_texture;
+  return {promise_texture};
 }
 
 void ExternalVkImageSkiaImageRepresentation::EndReadAccess() {

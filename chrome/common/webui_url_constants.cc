@@ -402,6 +402,7 @@ const char kOsUICreditsURL[] = "os://credits";
 const char kOsUIDeviceLogURL[] = "os://device-log";
 const char kOsUIDriveInternalsURL[] = "os://drive-internals";
 const char kOsUIEmojiPickerURL[] = "os://emoji-picker";
+const char kOsUIExtensionsInternalsURL[] = "os://extensions-internals";
 const char kOsUIGpuURL[] = "os://gpu";
 const char kOsUIHistogramsURL[] = "os://histograms";
 const char kOsUIInvalidationsURL[] = "os://invalidations";
@@ -625,6 +626,7 @@ const char kChromeUICastFeedbackHost[] = "cast-feedback";
 
 #if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const char kChromeUILensURL[] = "chrome://lens/";
+const char kChromeUILensUntrustedURL[] = "chrome-untrusted://lens/";
 const char kChromeUILensHost[] = "lens";
 #endif
 

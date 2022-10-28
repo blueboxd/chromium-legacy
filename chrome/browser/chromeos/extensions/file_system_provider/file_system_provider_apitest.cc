@@ -409,6 +409,13 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, ExecuteAction) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, GetActions) {
+  ASSERT_TRUE(RunExtensionTest(
+      "file_system_provider/service_worker/get_actions",
+      {.extension_url = "test.html"}, {.load_as_component = true}))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, GetAll) {
   ASSERT_TRUE(RunExtensionTest("file_system_provider/service_worker/get_all",
                                {.extension_url = "test.html"},
@@ -423,6 +430,18 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, GetMetadata) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, MimeType) {
+  // Install a Chrome app that handles our custom MIME type.
+  LoadExtension(test_data_dir_.AppendASCII(
+                    "file_system_provider/service_worker/mime_type/app"),
+                {.allow_in_incognito = true});
+
+  ASSERT_TRUE(RunExtensionTest("file_system_provider/service_worker/mime_type",
+                               {.extension_url = "test.html"},
+                               {.load_as_component = true}))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, Mount) {
   ASSERT_TRUE(RunExtensionTest("file_system_provider/service_worker/mount",
                                {.extension_url = "test.html"},
@@ -432,6 +451,13 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, Mount) {
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, MoveEntry) {
   ASSERT_TRUE(RunExtensionTest("file_system_provider/service_worker/move_entry",
+                               {.extension_url = "test.html"},
+                               {.load_as_component = true}))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, Notify) {
+  ASSERT_TRUE(RunExtensionTest("file_system_provider/service_worker/notify",
                                {.extension_url = "test.html"},
                                {.load_as_component = true}))
       << message_;
@@ -465,10 +491,28 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, Thumbnail) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, Truncate) {
+  ASSERT_TRUE(RunExtensionTest("file_system_provider/service_worker/truncate",
+                               {.extension_url = "test.html"},
+                               {.load_as_component = true}))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest, Unmount) {
   ASSERT_TRUE(RunExtensionTest("file_system_provider/service_worker/unmount",
                                {.extension_url = "test.html"},
                                {.load_as_component = true}))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemProviderServiceWorkerApiTest,
+                       Unresponsive_Extension) {
+  AbortOnUnresponsivePerformer performer(browser()->profile());
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "file_system_provider/service_worker/unresponsive_extension/provider")));
+  ASSERT_TRUE(RunExtensionTest(
+      "file_system_provider/service_worker/unresponsive_extension",
+      {.extension_url = "test.html"}, {.load_as_component = true}))
       << message_;
 }
 

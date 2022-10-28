@@ -110,7 +110,6 @@ ci.builder(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
             apply_configs = [
-                "enable_reclient",
             ],
         ),
         chromium_config = builder_config.chromium_config(
@@ -190,8 +189,6 @@ ci.builder(
         ),
     ],
     os = os.LINUX_DEFAULT,
-    goma_backend = goma.backend.RBE_PROD,
-    reclient_instance = None,
 )
 
 ci.builder(
@@ -437,8 +434,6 @@ ci.builder(
     # To avoid peak hours, we run it from 8PM TO 4AM PST. It is
     # 3 AM to 11 AM UTC.
     schedule = "0 3,5,7,9 * * *",
-    goma_backend = goma.backend.RBE_PROD,
-    reclient_instance = None,
 )
 
 ci.builder(
@@ -531,8 +526,6 @@ ci.builder(
         category = "linux",
     ),
     os = os.LINUX_DEFAULT,
-    goma_backend = goma.backend.RBE_PROD,
-    reclient_instance = None,
 )
 
 ci.builder(
@@ -570,7 +563,6 @@ ci.builder(
             config = "chromium",
             apply_configs = [
                 "android",
-                "enable_reclient",
             ],
         ),
         chromium_config = builder_config.chromium_config(
@@ -854,6 +846,7 @@ ci.builder(
         category = "backuprefptr|mac",
         short_name = "64rel",
     ),
+    cores = None,
     notifies = ["chrome-memory-safety"],
     os = os.MAC_ANY,
     builder_spec = builder_config.builder_spec(
@@ -1384,7 +1377,6 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
             config = "chromium",
             apply_configs = [
                 "android",
-                "enable_reclient",
                 "chromium_no_telemetry_dependencies",
             ],
         ),
@@ -1428,7 +1420,6 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         gclient_config = builder_config.gclient_config(
             config = "chromium",
             apply_configs = [
-                "enable_reclient",
                 "chromium_no_telemetry_dependencies",
             ],
         ),
@@ -1467,7 +1458,6 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         gclient_config = builder_config.gclient_config(
             config = "chromium",
             apply_configs = [
-                "enable_reclient",
                 "chromium_no_telemetry_dependencies",
             ],
         ),
@@ -1575,7 +1565,7 @@ ci.builder(
         ),
         gclient_config = builder_config.gclient_config(
             config = "chromium",
-            apply_configs = ["use_clang_coverage", "enable_reclient", "reclient_test"],
+            apply_configs = ["use_clang_coverage", "reclient_test"],
         ),
     ),
     console_view_entry = consoles.console_view_entry(
@@ -1791,8 +1781,6 @@ fyi_coverage_builder(
     use_clang_coverage = True,
     schedule = "triggered",
     triggered_by = [],
-    goma_backend = goma.backend.RBE_PROD,
-    reclient_instance = None,
 )
 
 fyi_coverage_builder(

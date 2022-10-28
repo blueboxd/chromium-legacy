@@ -235,7 +235,6 @@
 <translation id="2276231040576210443">Դուք ցանկացած ժամանակ կարող եք անցնել <ph name="BEGIN_LINK1" />կարգավորումներ<ph name="END_LINK1" /> և ընտրել, թե ինչն եք ուզում համաժամացնել։ Google-ը կարող է ձեր պատմության հիման վրա անհատականացնել Որոնումը և այլ ծառայությունները։</translation>
 <translation id="2276696007612801991">Մտեք Google հաշիվ՝ ձեր գաղտնաբառերը ստուգելու համար</translation>
 <translation id="2278052315791335171">Եթե հեռացնեք այս գաղտնաբառը, ձեր հաշիվը չի ջնջվի <ph name="SITE" /> կայքից։</translation>
-<translation id="2279146068164892489">Բացե՞լ <ph name="APPNAME" /> հավելվածը</translation>
 <translation id="2286841657746966508">Վճարային հասցե</translation>
 <translation id="228704530595896923">Կիսվելու տարբերակների ցանկը։</translation>
 <translation id="230115972905494466">Համատեղելի սարքեր չեն գտնվել</translation>
@@ -947,7 +946,6 @@ Privacy Sandbox տեխնոլոգիան դեռևս մշակման փուլում 
 <translation id="6192907950379606605">Ստանալ նկարագրություններ</translation>
 <translation id="6193448654517602979">Ընտրեք ներդիրներ</translation>
 <translation id="6196315980958524839">Գաղտնաբառերը պահվում են այս սարքի Google Գաղտնաբառերի կառավարիչում</translation>
-<translation id="620197886010707372">Բացե՞լ <ph name="APPNAME" /> հավելվածը Google Play-ի միջոցով</translation>
 <translation id="6202812185118613467">Նորից մուտք գործեք՝ համաժամացումը սկսելու համար</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> հաշիվը ձե՞րը չէ</translation>
 <translation id="6211386937064921208">Էջի նախադիտում</translation>
@@ -1377,6 +1375,7 @@ Privacy Sandbox տեխնոլոգիան դեռևս մշակման փուլում 
 <translation id="8387617938027387193">Հաստատեք ձեր ինքնությունը</translation>
 <translation id="8393700583063109961">Ուղարկել հաղորդագրություն</translation>
 <translation id="8394720698884623075">Ստուգում է URL-ները Chrome-ում պահված վտանգավոր կայքերի ցանկի միջոցով։</translation>
+<translation id="8402673309244746971">Անցնել «Հետևում եք» բաժին</translation>
 <translation id="8410695015584479363">Հետևել գներին</translation>
 <translation id="8413126021676339697">Ցույց տալ ամբողջ պատմությունը</translation>
 <translation id="8414396119627470038">Մուտք գործեք <ph name="SITE_ETLD_PLUS_ONE" /> կայք <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> ընկերության տվյալներով</translation>

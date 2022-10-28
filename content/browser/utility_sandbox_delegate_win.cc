@@ -63,6 +63,18 @@ bool AudioPreSpawnTarget(sandbox::TargetConfig* config) {
                                  sandbox::USER_RESTRICTED_NON_ADMIN);
   if (result != sandbox::SBOX_ALL_OK)
     return false;
+
+  if (base::FeatureList::IsEnabled(
+          sandbox::policy::features::kChromePipeLockdown)) {
+    // The Audio Service process uses a base::SyncSocket for transmitting audio
+    // data.
+    result = config->AddRule(sandbox::SubSystem::kNamedPipes,
+                             sandbox::Semantics::kNamedPipesAllowAny,
+                             L"\\\\.\\pipe\\chrome.sync.*");
+    if (result != sandbox::SBOX_ALL_OK)
+      return false;
+  }
+
   config->SetDesktop(sandbox::Desktop::kAlternateWinstation);
 
   return true;
@@ -211,16 +223,17 @@ bool ScreenAIPreSpawnTarget(sandbox::TargetConfig* config,
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
-  // TODO(https://crbug.com/1278249): [LAUNCH BLOCKER] Remove this path and
-  // instead open files and send handles to the binary.
-  base::FilePath library_path = screen_ai::GetLatestComponentBinaryPath();
-  if (library_path.empty())
+  base::FilePath library_binary_path =
+      screen_ai::GetLatestComponentBinaryPath();
+  if (library_binary_path.empty())
     return false;
-  base::FilePath required_path =
-      library_path.DirName().Append(FILE_PATH_LITERAL("*.*"));
+  DCHECK_EQ(library_binary_path.Extension(), FILE_PATH_LITERAL(".dll"));
+
+  // TODO(https://crbug.com/1278249): Preload the binary instead of giving
+  // read permission to the sandbox.
   result = config->AddRule(sandbox::SubSystem::kFiles,
                            sandbox::Semantics::kFilesAllowReadonly,
-                           required_path.value().c_str());
+                           library_binary_path.value().c_str());
   return result == sandbox::SBOX_ALL_OK;
 }
 

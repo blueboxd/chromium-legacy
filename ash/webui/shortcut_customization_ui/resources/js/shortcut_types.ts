@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as AcceleratorInfoTypes from '../mojom-webui/ash/public/mojom/accelerator_info.mojom-webui.js';
+
 /**
  * @fileoverview
  * Type aliases for the mojo API.
@@ -21,29 +23,21 @@ export enum Modifier {
   COMMAND = 1 << 4,
 }
 
+/**
+ * In TypeScript, an enum is both a value and type,
+ * so we have to export each one separately.
+ */
 /** Enumeration of accelerator sources. */
-export enum AcceleratorSource {
-  ASH,
-  EVENT_REWRITER,
-  BROWSER,
-  ANDROID,
-}
+export type AcceleratorSource = AcceleratorInfoTypes.AcceleratorSource;
+export const AcceleratorSource = AcceleratorInfoTypes.AcceleratorSource;
 
 /** Enumeration of accelerator types. */
-export enum AcceleratorType {
-  DEFAULT,
-  USER_DEFINED,
-  DEPRECATED,
-  DEVELOPER,
-  DEBUG,
-}
+export type AcceleratorType = AcceleratorInfoTypes.AcceleratorType;
+export const AcceleratorType = AcceleratorInfoTypes.AcceleratorType;
 
 /** Enumeration of accelerator states. */
-export enum AcceleratorState {
-  ENABLED,
-  DISABLED_BY_CONFLICT,
-  DISABLED_BY_USER,
-}
+export type AcceleratorState = AcceleratorInfoTypes.AcceleratorState;
+export const AcceleratorState = AcceleratorInfoTypes.AcceleratorState;
 
 /**
  * Enumeration of accelerator config results from adding/replacing/removing an
@@ -58,14 +52,14 @@ export enum AcceleratorConfigResult {
   DUPLICATE,
 }
 
-export interface AcceleratorKeys {
+export interface Accelerator {
   modifiers: number;
   key: number;
   keyDisplay: string;
 }
 
 export interface AcceleratorInfo {
-  accelerator: AcceleratorKeys;
+  accelerator: Accelerator;
   type: AcceleratorType;
   state: AcceleratorState;
   locked: boolean;
@@ -121,12 +115,11 @@ export interface ShortcutProviderInterface {
   isMutable(source: AcceleratorSource): Promise<{isMutable: boolean}>;
   removeAccelerator(
       source: AcceleratorSource, action: number,
-      accelerator: AcceleratorKeys): Promise<AcceleratorConfigResult>;
+      accelerator: Accelerator): Promise<AcceleratorConfigResult>;
   replaceAccelerator(
-      source: AcceleratorSource, action: number,
-      oldAccelerator: AcceleratorKeys,
-      newAccelerator: AcceleratorKeys): Promise<AcceleratorConfigResult>;
+      source: AcceleratorSource, action: number, oldAccelerator: Accelerator,
+      newAccelerator: Accelerator): Promise<AcceleratorConfigResult>;
   addUserAccelerator(
       source: AcceleratorSource, action: number,
-      accelerator: AcceleratorKeys): Promise<AcceleratorConfigResult>;
+      accelerator: Accelerator): Promise<AcceleratorConfigResult>;
 }

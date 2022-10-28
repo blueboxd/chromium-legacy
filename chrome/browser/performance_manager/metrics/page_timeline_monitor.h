@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/graph_registered.h"
 #include "components/performance_manager/public/graph/page_node.h"
 
 namespace performance_manager::metrics {
@@ -20,7 +21,8 @@ class PageTimelineMonitorUnitTest;
 // Periodically reports tab state via UKM, to enable analysis of usage patterns
 // over time.
 class PageTimelineMonitor : public PageNode::ObserverDefaultImpl,
-                            public GraphOwned {
+                            public GraphOwned,
+                            public GraphRegisteredImpl<PageTimelineMonitor> {
  public:
   // Keep in sync with PageState in enums.xml
   enum class PageState {
@@ -56,6 +58,8 @@ class PageTimelineMonitor : public PageNode::ObserverDefaultImpl,
   void OnTitleUpdated(const PageNode* page_node) override;
   void OnFaviconUpdated(const PageNode* page_node) override;
 
+  void SetBatterySaverEnabled(bool enabled);
+
  private:
   friend PageTimelineMonitorUnitTest;
   FRIEND_TEST_ALL_PREFIXES(PageTimelineMonitorUnitTest,
@@ -64,12 +68,13 @@ class PageTimelineMonitor : public PageNode::ObserverDefaultImpl,
                            TestUpdateTitleInBackground);
   FRIEND_TEST_ALL_PREFIXES(PageTimelineMonitorUnitTest,
                            TestUpdateLifecycleState);
+  FRIEND_TEST_ALL_PREFIXES(PageTimelineMonitorUnitTest,
+                           TestUpdatePageNodeBeforeTypeChange);
 
   struct PageNodeInfo {
     base::TimeTicks time_of_creation;
-    bool currently_visible{true};
-    PageNode::LifecycleState current_lifecycle{
-        PageNode::LifecycleState::kRunning};
+    bool currently_visible;
+    PageNode::LifecycleState current_lifecycle;
     base::TimeTicks time_of_most_recent_state_change;
     bool updated_title_or_favicon_in_background{false};
     base::TimeTicks time_of_last_foreground_millisecond_update;
@@ -77,8 +82,11 @@ class PageTimelineMonitor : public PageNode::ObserverDefaultImpl,
 
     PageTimelineMonitor::PageState GetPageState();
 
-    explicit PageNodeInfo(base::TimeTicks time_of_creation)
+    explicit PageNodeInfo(base::TimeTicks time_of_creation,
+                          const PageNode* page_node)
         : time_of_creation(time_of_creation),
+          currently_visible(page_node->IsVisible()),
+          current_lifecycle(page_node->GetLifecycleState()),
           time_of_most_recent_state_change(base::TimeTicks::Now()),
           time_of_last_foreground_millisecond_update(
               time_of_most_recent_state_change) {}
@@ -106,6 +114,8 @@ class PageTimelineMonitor : public PageNode::ObserverDefaultImpl,
   // Function which is called to determine whether a PageTimelineState slice
   // should be collected. Overridden in tests.
   base::RepeatingCallback<bool()> should_collect_slice_callback_;
+
+  bool battery_saver_enabled_ = false;
 
   // WeakPtrFactory for the RepeatingTimer to call a method on this object.
   base::WeakPtrFactory<PageTimelineMonitor> weak_factory_{this};

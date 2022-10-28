@@ -1038,16 +1038,16 @@ void RenderViewContextMenu::InitMenu() {
     AppendPrintItem();
   }
 
+  // Partial Translate is not supported on ChromeOS.
+#if !BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(translate::kDesktopPartialTranslate) &&
       content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_PARTIAL_TRANSLATE)) {
-    ChromeTranslateClient* chrome_translate_client =
-        ChromeTranslateClient::FromWebContents(embedder_web_contents_);
-    if (chrome_translate_client &&
-        chrome_translate_client->IsTranslatableURL(params_.page_url)) {
+    if (CanTranslate(/*menu_logging=*/false)) {
       AppendPartialTranslateItem();
     }
   }
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
   // Spell check and writing direction options are not currently supported by
   // pepper plugins.
@@ -1819,13 +1819,7 @@ void RenderViewContextMenu::AppendPageItems() {
   if (has_sharing_menu_items)
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 
-  ChromeTranslateClient* chrome_translate_client =
-      ChromeTranslateClient::FromWebContents(embedder_web_contents_);
-  const bool canTranslate =
-      chrome_translate_client &&
-      chrome_translate_client->GetTranslateManager()->CanManuallyTranslate(
-          true);
-  if (canTranslate) {
+  if (CanTranslate(/*menu_logging=*/true)) {
     menu_model_.AddItem(
         IDC_CONTENT_CONTEXT_TRANSLATE,
         l10n_util::GetStringFUTF16(
@@ -3922,4 +3916,12 @@ Browser* RenderViewContextMenu::GetBrowser() const {
 void RenderViewContextMenu::OnLinkToTextMenuCompleted() {
   observers_.RemoveObserver(link_to_text_menu_observer_.get());
   link_to_text_menu_observer_.reset();
+}
+
+bool RenderViewContextMenu::CanTranslate(bool menu_logging) {
+  ChromeTranslateClient* chrome_translate_client =
+      ChromeTranslateClient::FromWebContents(embedder_web_contents_);
+  return chrome_translate_client &&
+         chrome_translate_client->GetTranslateManager()->CanManuallyTranslate(
+             menu_logging);
 }

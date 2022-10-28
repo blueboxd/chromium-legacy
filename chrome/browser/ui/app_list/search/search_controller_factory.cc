@@ -22,6 +22,7 @@
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
+#include "chrome/browser/ui/app_list/search/app_zero_state_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_provider.h"
 #include "chrome/browser/ui/app_list/search/assistant_text_search_provider.h"
@@ -87,13 +88,8 @@ std::unique_ptr<SearchController> CreateSearchController(
   // check can be removed and replaced by just creating a
   // SearchControllerImplNew.
   std::unique_ptr<SearchController> controller;
-  if (app_list_features::IsCategoricalSearchEnabled()) {
-    controller = std::make_unique<SearchControllerImplNew>(
-        model_updater, list_controller, notifier, profile);
-  } else {
-    controller = std::make_unique<SearchControllerImpl>(
-        model_updater, list_controller, notifier, profile);
-  }
+  controller = std::make_unique<SearchControllerImplNew>(
+      model_updater, list_controller, notifier, profile);
 
   // Set up rankers for search results.
   controller->InitializeRankers();
@@ -104,10 +100,12 @@ std::unique_ptr<SearchController> CreateSearchController(
       ash::SharedAppListConfig::instance().max_search_result_list_items());
 
   // Add search providers.
+  controller->AddProvider(apps_group_id,
+                          std::make_unique<AppSearchProvider>(
+                              controller->GetAppSearchDataSource()));
   controller->AddProvider(
-      apps_group_id, std::make_unique<AppSearchProvider>(
-                         profile, list_controller,
-                         base::DefaultClock::GetInstance(), model_updater));
+      apps_group_id, std::make_unique<AppZeroStateProvider>(
+                         controller->GetAppSearchDataSource(), model_updater));
 
   if (crosapi::browser_util::IsLacrosEnabled()) {
     controller->AddProvider(
@@ -177,11 +175,8 @@ std::unique_ptr<SearchController> CreateSearchController(
     controller->AddProvider(
         os_settings_search_group_id,
         std::make_unique<OsSettingsProvider>(
-            profile,
-            os_settings_manager ? os_settings_manager->search_handler()
-                                : nullptr,
-            os_settings_manager ? os_settings_manager->hierarchy() : nullptr,
-            app_service_proxy));
+            profile, os_settings_manager->search_handler(),
+            os_settings_manager->hierarchy(), app_service_proxy));
   }
 
   if (ash::features::IsProductivityLauncherEnabled() &&

@@ -1212,6 +1212,10 @@ interface CanvasRenderingContext2D
     setter textBaseline
     setter textRendering
     setter wordSpacing
+interface CaptureController
+    attribute @@toStringTag
+    method constructor
+    method setFocusBehavior
 interface ChannelMergerNode : AudioNode
     attribute @@toStringTag
     method constructor
@@ -2594,7 +2598,6 @@ interface Event
     getter currentTarget
     getter defaultPrevented
     getter eventPhase
-    getter path
     getter returnValue
     getter srcElement
     getter target
@@ -6611,6 +6614,7 @@ interface PerformanceResourceTiming : PerformanceEntry
     attribute @@toStringTag
     getter connectEnd
     getter connectStart
+    getter contentType
     getter decodedBodySize
     getter deliveryType
     getter domainLookupEnd

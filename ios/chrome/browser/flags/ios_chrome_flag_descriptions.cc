@@ -378,6 +378,11 @@ const char kFillingAcrossAffiliatedWebsitesDescription[] =
     "Enables filling password on a website when there is saved "
     "password on affiliated website.";
 
+const char kFollowingFeedDefaultSortTypeName[] =
+    "Following feed default sort type.";
+const char kFollowingFeedDefaultSortTypeDescription[] =
+    "Sets the default sort type for Following feed content.";
+
 const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
 const char kForceStartupSigninPromoDescription[] =
     "When enabled, the startup sign-in promo is always displayed when starting "
@@ -601,6 +606,18 @@ const char kOmniboxZeroSuggestPrefetchingName[] =
 const char kOmniboxZeroSuggestPrefetchingDescription[] =
     "Enables prefetching of the zero prefix suggestions for eligible users "
     "on the New Tab page.";
+
+const char kOmniboxZeroSuggestPrefetchingOnSRPName[] =
+    "Omnibox Zero Prefix Suggestion Prefetching on SRP";
+const char kOmniboxZeroSuggestPrefetchingOnSRPDescription[] =
+    "Enables prefetching of the zero prefix suggestions for eligible users "
+    "on the Search Results page.";
+
+const char kOmniboxZeroSuggestPrefetchingOnWebName[] =
+    "Omnibox Zero Prefix Suggestion Prefetching on the Web";
+const char kOmniboxZeroSuggestPrefetchingOnWebDescription[] =
+    "Enables prefetching of the zero prefix suggestions for eligible users "
+    "on the Web (i.e. non-NTP and non-SRP URLs).";
 
 const char kOmniboxZeroSuggestInMemoryCachingName[] =
     "Omnibox Zero Prefix Suggestion in-memory caching";

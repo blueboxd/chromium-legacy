@@ -378,6 +378,10 @@ void MultiDeviceSection::AddLoadTimeData(
       {"multidevicePageTitle", IDS_SETTINGS_MULTIDEVICE},
       {"multideviceSetupButton", IDS_SETTINGS_MULTIDEVICE_SETUP_BUTTON},
       {"multideviceVerifyButton", IDS_SETTINGS_MULTIDEVICE_VERIFY_BUTTON},
+      {"multideviceSetupButtonA11yLabel",
+       IDS_SETTINGS_MULTIDEVICE_SETUP_BUTTON_A11Y_LABEL},
+      {"multideviceVerifyButtonA11yLabel",
+       IDS_SETTINGS_MULTIDEVICE_VERIFY_BUTTON_A11Y_LABEL},
       {"multideviceSetupItemHeading",
        IDS_SETTINGS_MULTIDEVICE_SETUP_ITEM_HEADING},
       {"multideviceEnabled", IDS_SETTINGS_MULTIDEVICE_ENABLED},
@@ -815,6 +819,10 @@ bool MultiDeviceSection::IsFeatureSupported(Feature feature) {
 }
 
 void MultiDeviceSection::RefreshNearbyBackgroundScanningShareSearchConcepts() {
+  if (!NearbySharingServiceFactory::IsNearbyShareSupportedForBrowserContext(
+          profile())) {
+    return;
+  }
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
   NearbySharingService* nearby_sharing_service =
       NearbySharingServiceFactory::GetForBrowserContext(profile());
@@ -842,6 +850,10 @@ void MultiDeviceSection::RefreshNearbyBackgroundScanningShareSearchConcepts() {
 }
 
 void MultiDeviceSection::OnEnabledChanged(bool enabled) {
+  if (!NearbySharingServiceFactory::IsNearbyShareSupportedForBrowserContext(
+          profile())) {
+    return;
+  }
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
   if (enabled) {
     updater.RemoveSearchTags(GetNearbyShareOffSearchConcepts());

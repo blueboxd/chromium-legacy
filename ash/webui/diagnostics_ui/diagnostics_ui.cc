@@ -42,7 +42,7 @@
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/chromeos/strings/network_element_localized_strings_provider.h"
+#include "ui/chromeos/strings/network/network_element_localized_strings_provider.h"
 #include "ui/resources/grit/webui_generated_resources.h"
 
 namespace ash {
@@ -60,7 +60,7 @@ diagnostics::metrics::NavigationView GetInitialView(const GURL url) {
   }
 
   // Note: Valid query strings map to strings in the GetUrlForPage located in
-  // chrome/browser/ui/webui/chromeos/diagnostics_dialog.cc.
+  // chrome/browser/ui/webui/ash/diagnostics_dialog.cc.
   const std::string& original_query = url.query();  // must outlive |query|.
   const base::StringPiece& query =
       base::TrimString(original_query, " \t", base::TRIM_ALL);

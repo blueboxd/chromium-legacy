@@ -12,9 +12,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/ash/fusebox/fusebox.pb.h"
 #include "chrome/browser/ash/fusebox/fusebox_moniker.h"
 #include "chrome/browser/ash/fusebox/fusebox_staging.pb.h"
-#include "chromeos/ash/components/dbus/fusebox/fusebox.pb.h"
 #include "storage/browser/file_system/async_file_util.h"
 #include "storage/browser/file_system/file_system_context.h"
 
@@ -101,19 +101,6 @@ class Server {
             int64_t offset,
             int32_t length,
             ReadCallback callback);
-
-  // Deprecated: use ReadDir2 instead.
-  //
-  // ReadDir lists the directory's children. The results may be sent back over
-  // multiple RPC messages, each with the same client-chosen cookie value.
-  using ReadDirCallback =
-      base::RepeatingCallback<void(uint64_t cookie,
-                                   int32_t posix_error_code,
-                                   fusebox::DirEntryListProto dir_entry_list,
-                                   bool has_more)>;
-  void ReadDir(std::string fs_url_as_string,
-               uint64_t cookie,
-               ReadDirCallback callback);
 
   // ReadDir2 lists the directory's children. The results will be sent back in
   // the responses of one or more request-response RPC pairs. The first request

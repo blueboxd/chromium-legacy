@@ -263,7 +263,6 @@ public abstract class ChromeFeatureList {
             "CCTResizableAlwaysShowNavBarButtons";
     public static final String CCT_RESIZABLE_FOR_FIRST_PARTIES = "CCTResizableForFirstParties";
     public static final String CCT_RESIZABLE_FOR_THIRD_PARTIES = "CCTResizableForThirdParties";
-    public static final String CCT_RESIZABLE_WINDOW_ABOVE_NAVBAR = "CCTResizableWindowAboveNavbar";
     public static final String CCT_RESOURCE_PREFETCH = "CCTResourcePrefetch";
     public static final String CCT_RETAINING_STATE = "CCTRetainingState";
     public static final String CCT_REPORT_PARALLEL_REQUEST_STATUS =
@@ -314,12 +313,6 @@ public abstract class ChromeFeatureList {
             "ContextualSearchSuppressShortView";
     public static final String CONTEXTUAL_SEARCH_THIN_WEB_VIEW_IMPLEMENTATION =
             "ContextualSearchThinWebViewImplementation";
-    public static final String CONTEXTUAL_TRIGGERS_SELECTION_HANDLES =
-            "ContextualTriggersSelectionHandles";
-    public static final String CONTEXTUAL_TRIGGERS_SELECTION_MENU =
-            "ContextualTriggersSelectionMenu";
-    public static final String CONTEXTUAL_TRIGGERS_SELECTION_SIZE =
-            "ContextualTriggersSelectionSize";
     public static final String CORMORANT = "Cormorant";
     public static final String SYNC_ANDROID_LIMIT_NTP_PROMO_IMPRESSIONS =
             "SyncAndroidLimitNTPPromoImpressions";
@@ -348,8 +341,6 @@ public abstract class ChromeFeatureList {
     public static final String DOWNLOAD_OFFLINE_CONTENT_PROVIDER =
             "UseDownloadOfflineContentProvider";
     public static final String EARLY_LIBRARY_LOAD = "EarlyLibraryLoad";
-    public static final String ELIDE_PRIORITIZATION_OF_PRE_NATIVE_BOOTSTRAP_TASKS =
-            "ElidePrioritizationOfPreNativeBootstrapTasks";
     public static final String ENABLE_AUTOMATIC_SNOOZE = "EnableAutomaticSnooze";
     public static final String ENABLE_FAMILY_INFO_FEEDBACK = "EnableFamilyInfoFeedback";
     public static final String ENABLE_PASSWORDS_ACCOUNT_STORAGE = "EnablePasswordsAccountStorage";
@@ -372,6 +363,7 @@ public abstract class ChromeFeatureList {
     public static final String FIXED_UMA_SESSION_RESUME_ORDER = "FixedUmaSessionResumeOrder";
     public static final String FOCUS_OMNIBOX_IN_INCOGNITO_TAB_INTENTS =
             "FocusOmniboxInIncognitoTabIntents";
+    public static final String FOLDABLE_JANK_FIX = "FoldableJankFix";
     public static final String FORCE_APP_LANGUAGE_PROMPT = "ForceAppLanguagePrompt";
     public static final String FORCE_WEB_CONTENTS_DARK_MODE = "WebContentsForceDark";
     public static final String FORCE_DISABLE_EXTENDED_SYNC_PROMOS =
@@ -416,7 +408,6 @@ public abstract class ChromeFeatureList {
             "MessagesForAndroidChromeSurvey";
     public static final String MESSAGES_FOR_ANDROID_INFRASTRUCTURE =
             "MessagesForAndroidInfrastructure";
-    public static final String MESSAGES_FOR_ANDROID_INSTANT_APPS = "MessagesForAndroidInstantApps";
     public static final String MESSAGES_FOR_ANDROID_PERMISSION_UPDATE =
             "MessagesForAndroidPermissionUpdate";
     public static final String MESSAGES_FOR_ANDROID_READER_MODE = "MessagesForAndroidReaderMode";
@@ -673,8 +664,6 @@ public abstract class ChromeFeatureList {
             new CachedFlag(CCT_RESIZABLE_FOR_FIRST_PARTIES, true);
     public static final CachedFlag sCctResizableForThirdParties =
             new CachedFlag(CCT_RESIZABLE_FOR_THIRD_PARTIES, false);
-    public static final CachedFlag sCctResizableWindowAboveNavbar =
-            new CachedFlag(CCT_RESIZABLE_WINDOW_ABOVE_NAVBAR, true);
     public static final CachedFlag sCctToolbarCustomizations =
             new CachedFlag(CCT_TOOLBAR_CUSTOMIZATIONS, true);
     public static final CachedFlag sCloseTabSuggestions =
@@ -685,7 +674,7 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sConditionalTabStripAndroid =
             new CachedFlag(CONDITIONAL_TAB_STRIP_ANDROID, false);
     public static final CachedFlag sCreateSafebrowsingOnStartup =
-            new CachedFlag(CREATE_SAFEBROWSING_ON_STARTUP, false);
+            new CachedFlag(CREATE_SAFEBROWSING_ON_STARTUP, true);
     public static final CachedFlag sCriticalPersistedTabData =
             new CachedFlag(CRITICAL_PERSISTED_TAB_DATA, false);
     public static final CachedFlag sDiscardOccludedBitmaps =
@@ -694,11 +683,10 @@ public abstract class ChromeFeatureList {
             new CachedFlag(DOWNLOADS_AUTO_RESUMPTION_NATIVE, true);
     public static final CachedFlag sEarlyLibraryLoad = new CachedFlag(EARLY_LIBRARY_LOAD, true);
     public static final CachedFlag sElasticOverscroll = new CachedFlag(ELASTIC_OVERSCROLL, true);
-    public static final CachedFlag sElidePrioritizationOfPreNativeBootstrapTasks =
-            new CachedFlag(ELIDE_PRIORITIZATION_OF_PRE_NATIVE_BOOTSTRAP_TASKS, true);
     public static final CachedFlag sExperimentsForAgsa = new CachedFlag(EXPERIMENTS_FOR_AGSA, true);
     public static final CachedFlag sFeedLoadingPlaceholder =
             new CachedFlag(FEED_LOADING_PLACEHOLDER, false);
+    public static final CachedFlag sFoldableJankFix = new CachedFlag(FOLDABLE_JANK_FIX, true);
     public static final CachedFlag sGridTabSwitcherForTablets =
             new CachedFlag(GRID_TAB_SWITCHER_FOR_TABLETS, true);
     public static final CachedFlag sImmersiveUiMode = new CachedFlag(IMMERSIVE_UI_MODE, false);

@@ -5,6 +5,93 @@
 /**
  * @fileoverview Contains the rules for output based on type information.
  */
+import {OutputEventType} from './output_types.js';
+
+/**
+ * @typedef {{
+ *   event: string,
+ *   role: string,
+ *   navigation: (string|undefined),
+ *   output: (string|undefined)}}
+ */
+export let OutputRuleSpecifier;
+
+export class OutputRule {
+  /** @param {string} event */
+  constructor(event) {
+    /** @private {!OutputEventType} */
+    this.event_ = this.getEvent_(event);
+    /** @private {string|undefined} */
+    this.role_;
+    /** @private {string|undefined} */
+    this.navigation_;
+    /** @private {string|undefined} */
+    this.output_;
+  }
+
+  /**
+   * @param {string} event
+   * @return {!OutputEventType}
+   * @private
+   */
+  getEvent_(event) {
+    if (Object.values(OutputEventType).includes(event)) {
+      return /** @type {!OutputEventType} */ (event);
+    }
+    return OutputEventType.NAVIGATE;
+  }
+
+  /** @return {!OutputRuleSpecifier} */
+  get specifier() {
+    if (this.event_ === undefined || this.role_ === undefined) {
+      throw new Error(
+          'Cannot have a completed rule without both an event and a role.');
+    }
+    return /** @type {!OutputRuleSpecifier} */ ({
+      event: this.event_,
+      role: this.role_,
+      navigation: this.navigation_,
+      output: this.output_,
+    });
+  }
+
+  // The following setter functions are a temporary measure.
+  // TODO(anastasi): move the logic for determining the below properties into
+  // this class.
+
+  /** @param {string|undefined} role */
+  set role(role) {
+    this.role_ = role;
+  }
+  /** @param {string|undefined} navigation */
+  set navigation(navigation) {
+    this.navigation_ = navigation;
+  }
+  /** @param {string|undefined} output */
+  set output(output) {
+    this.output_ = output;
+  }
+
+  /** @return {!OutputEventType} */
+  get event() {
+    return this.event_;
+  }
+  /** @return {string} */
+  get role() {
+    if (!this.role_) {
+      throw new Error('Cannot get the value of role before it has been set');
+    }
+    return this.role_;
+  }
+  /** @return {string|undefined} */
+  get navigation() {
+    return this.navigation_;
+  }
+  /** @return {string|undefined} */
+  get output() {
+    return this.output_;
+  }
+}
 
 /**
  * Rules specifying format of AutomationNodes for output.
@@ -19,7 +106,7 @@
  * leaf range. endOf: The rule applied for each ancestor diff of a range and its
  * next leaf range.
  */
-export const OUTPUT_RULES = {
+OutputRule.RULES = {
   navigate: {
     'default': {
       speak: `$name $node(activeDescendant) $value $state $restriction $role

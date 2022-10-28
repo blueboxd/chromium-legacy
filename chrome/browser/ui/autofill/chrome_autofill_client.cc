@@ -65,6 +65,8 @@
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_internals/log_message.h"
+#include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -117,6 +119,7 @@
 #include "components/autofill/core/browser/payments/autofill_save_card_infobar_mobile.h"
 #include "components/autofill/core/browser/ui/payments/card_expiration_date_fix_flow_view.h"
 #include "components/autofill/core/browser/ui/payments/card_name_fix_flow_view.h"
+#include "components/autofill/core/common/logging/log_macros.h"
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar.h"
 #include "components/messages/android/messages_feature.h"
@@ -139,9 +142,6 @@
 #endif  // BUILDFLAG(IS_ANDROID)
 
 namespace autofill {
-
-using AutoselectFirstSuggestion =
-    AutofillClient::PopupOpenArgs::AutoselectFirstSuggestion;
 
 ChromeAutofillClient::~ChromeAutofillClient() {
   // NOTE: It is too late to clean up the autofill popup; that cleanup process
@@ -707,9 +707,18 @@ void ChromeAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {
 
 bool ChromeAutofillClient::IsFastCheckoutSupported() {
 #if BUILDFLAG(IS_ANDROID)
-  if (!base::FeatureList::IsEnabled(::features::kFastCheckout) ||
-      !base::FeatureList::IsEnabled(
+  if (!base::FeatureList::IsEnabled(::features::kFastCheckout)) {
+    LOG_AF(log_manager_.get())
+        << LoggingScope::kFastCheckout << LogMessage::kFastCheckout
+        << "not triggered because FastCheckout flag is disabled.";
+    return false;
+  }
+
+  if (!base::FeatureList::IsEnabled(
           autofill_assistant::features::kAutofillAssistant)) {
+    LOG_AF(log_manager_.get())
+        << LoggingScope::kFastCheckout << LogMessage::kFastCheckout
+        << "not triggered because AutofillAssistant flag is disabled.";
     return false;
   }
 
@@ -717,17 +726,32 @@ bool ChromeAutofillClient::IsFastCheckoutSupported() {
   // been done to allow for consequent hash dances during consent-less flows.
   if (!GetPrefs()->GetBoolean(
           unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled)) {
+    LOG_AF(log_manager_.get())
+        << LoggingScope::kFastCheckout << LogMessage::kFastCheckout
+        << "not triggered because the client is not MSBB.";
     return false;
   }
 
-  if (!GetPersonalDataManager()->IsAutofillProfileEnabled() ||
-      !GetPersonalDataManager()->IsAutofillCreditCardEnabled()) {
+  if (!GetPersonalDataManager()->IsAutofillProfileEnabled()) {
+    LOG_AF(log_manager_.get())
+        << LoggingScope::kFastCheckout << autofill::LogMessage::kFastCheckout
+        << "not triggered because Autofill profile is disabled.";
+    return false;
+  }
+
+  if (!GetPersonalDataManager()->IsAutofillCreditCardEnabled()) {
+    LOG_AF(log_manager_.get())
+        << LoggingScope::kFastCheckout << LogMessage::kFastCheckout
+        << "if disabled, not triggered Autofill credit card is disabled.";
     return false;
   }
 
   // Not supported on CCTs.
   auto* tab_android = TabAndroid::FromWebContents(web_contents());
   if (tab_android && tab_android->IsCustomTab()) {
+    LOG_AF(log_manager_.get())
+        << LoggingScope::kFastCheckout << LogMessage::kFastCheckout
+        << "not triggered because the tab is CCT.";
     return false;
   }
 
@@ -737,6 +761,10 @@ bool ChromeAutofillClient::IsFastCheckoutSupported() {
   if (!::features::kFastCheckoutConsentlessExecutionParam.Get() &&
       !GetPrefs()->GetBoolean(
           autofill_assistant::prefs::kAutofillAssistantEnabled)) {
+    LOG_AF(log_manager_.get())
+        << LoggingScope::kFastCheckout << LogMessage::kFastCheckout
+        << "not triggered because the client does not support consent-less "
+           "execution and the Autofill assistant settings flag is disabled.";
     return false;
   }
 
@@ -759,10 +787,20 @@ bool ChromeAutofillClient::IsFastCheckoutTriggerForm(
   // TODO(crbug.com/1356498): Stop calculating the signature once the form
   // signature has been moved to `form_data`.
   // Check browser form's signature and renderer form's signature.
-  return fetcher->IsTriggerFormSupported(form.main_frame_origin,
-                                         CalculateFormSignature(form)) ||
-         fetcher->IsTriggerFormSupported(form.main_frame_origin,
-                                         field.host_form_signature);
+  FormSignature form_signature = CalculateFormSignature(form);
+  bool is_trigger_form =
+      fetcher->IsTriggerFormSupported(form.main_frame_origin, form_signature) ||
+      fetcher->IsTriggerFormSupported(form.main_frame_origin,
+                                      field.host_form_signature);
+  if (!is_trigger_form) {
+    LOG_AF(log_manager_.get())
+        << LoggingScope::kFastCheckout << LogMessage::kFastCheckout
+        << "not triggered because there is no Fast Checkout support for form "
+           "signatures {"
+        << form_signature.value() << ", " << field.host_form_signature.value()
+        << "} on origin " << form.main_frame_origin.Serialize() << ".";
+  }
+  return is_trigger_form;
 #else
   NOTREACHED();
   return false;
@@ -778,7 +816,18 @@ bool ChromeAutofillClient::FastCheckoutScriptSupportsConsentlessExecution(
   if (!fetcher) {
     return false;
   }
-  return fetcher->SupportsConsentlessExecution(origin);
+
+  bool script_supports_consentless_execution =
+      fetcher->SupportsConsentlessExecution(origin);
+
+  LOG_AF(log_manager_.get())
+      << LoggingScope::kFastCheckout << LogMessage::kFastCheckout
+      << "script for origin " << origin.Serialize()
+      << (script_supports_consentless_execution ? " supports "
+                                                : " does not support ")
+      << "consent-less execution.";
+
+  return script_supports_consentless_execution;
 #else
   NOTREACHED();
   return false;
@@ -787,7 +836,18 @@ bool ChromeAutofillClient::FastCheckoutScriptSupportsConsentlessExecution(
 
 bool ChromeAutofillClient::FastCheckoutClientSupportsConsentlessExecution() {
 #if BUILDFLAG(IS_ANDROID)
-  return ::features::kFastCheckoutConsentlessExecutionParam.Get();
+
+  bool client_supports_consentless_execution =
+      ::features::kFastCheckoutConsentlessExecutionParam.Get();
+
+  LOG_AF(log_manager_.get())
+      << LoggingScope::kFastCheckout << LogMessage::kFastCheckout
+      << "the client"
+      << (client_supports_consentless_execution ? " supports "
+                                                : " does not support ")
+      << "consent-less execution.";
+
+  return client_supports_consentless_execution;
 #else
   NOTREACHED();
   return false;
@@ -798,12 +858,19 @@ bool ChromeAutofillClient::ShowFastCheckout(
     base::WeakPtr<FastCheckoutDelegate> delegate) {
 #if BUILDFLAG(IS_ANDROID)
   if (delegate->IsShowingFastCheckoutUI()) {
+    LOG_AF(log_manager_.get())
+        << LoggingScope::kFastCheckout << LogMessage::kFastCheckout
+        << "not triggered because Fast Checkout UI is already showing.";
     return false;
   }
 
   // Don't show Fast Checkout surface while Autofill Assistant's UI is shown.
-  if (IsAutofillAssistantShowing())
+  if (IsAutofillAssistantShowing()) {
+    LOG_AF(log_manager_.get())
+        << LoggingScope::kFastCheckout << LogMessage::kFastCheckout
+        << "not triggered because Autofill Assistant UI is already showing.";
     return false;
+  }
 
   const GURL& url = web_contents()->GetLastCommittedURL();
   return FastCheckoutClient::GetOrCreateForWebContents(web_contents())
@@ -885,7 +952,7 @@ void ChromeAutofillClient::ShowAutofillPopup(
       open_args.text_direction);
 
   popup_controller_->Show(open_args.suggestions,
-                          open_args.autoselect_first_suggestion.value(),
+                          open_args.autoselect_first_suggestion,
                           open_args.popup_type);
 
   // When testing, try to keep popup open when the reason to hide is from an
@@ -950,7 +1017,7 @@ void ChromeAutofillClient::UpdatePopup(
   }
 
   // Calling show will reuse the existing view automatically
-  popup_controller_->Show(suggestions, /*autoselect_first_suggestion=*/false,
+  popup_controller_->Show(suggestions, AutoselectFirstSuggestion(false),
                           popup_type);
 }
 

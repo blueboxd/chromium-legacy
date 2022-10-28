@@ -4,8 +4,11 @@
 
 #include "chrome/browser/platform_keys/extension_key_permissions_service.h"
 
+#include <stdint.h>
+
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"
@@ -34,8 +37,7 @@
 #include "chrome/browser/ash/crosapi/keystore_service_factory_ash.h"
 #endif  // #if BUILDFLAG(IS_CHROMEOS_ASH)
 
-namespace chromeos {
-namespace platform_keys {
+namespace chromeos::platform_keys {
 
 namespace {
 const char kStateStoreSPKI[] = "SPKI";
@@ -43,11 +45,6 @@ const char kStateStoreSignOnce[] = "signOnce";
 const char kStateStoreSignUnlimited[] = "signUnlimited";
 
 const char kPolicyAllowCorporateKeyUsage[] = "allowCorporateKeyUsage";
-
-// TODO(miersh): minimize the use of this function.
-std::vector<uint8_t> StrToBlob(const std::string& str) {
-  return std::vector<uint8_t>(str.begin(), str.end());
-}
 
 bool ContainsTag(uint64_t tags, crosapi::mojom::KeyTag value) {
   return tags & static_cast<uint64_t>(value);
@@ -172,17 +169,15 @@ ExtensionKeyPermissionsService::GetStateStoreEntry(
       return &entry;
   }
 
-  state_store_entries_.push_back(KeyEntry(public_key_spki_der_b64));
+  state_store_entries_.emplace_back(public_key_spki_der_b64);
   return &state_store_entries_.back();
 }
 
 void ExtensionKeyPermissionsService::CanUseKeyForSigning(
-    const std::string& public_key_spki_der,
+    const std::vector<uint8_t>& public_key_spki_der,
     CanUseKeyForSigningCallback callback) {
-  std::string public_key_spki_der_b64;
-  base::Base64Encode(public_key_spki_der, &public_key_spki_der_b64);
-
-  KeyEntry* matching_entry = GetStateStoreEntry(public_key_spki_der_b64);
+  KeyEntry* matching_entry =
+      GetStateStoreEntry(base::Base64Encode(public_key_spki_der));
 
   // In any case, we allow the generating extension to use the generated key a
   // single time for signing arbitrary data. The reason is, that the extension
@@ -200,8 +195,7 @@ void ExtensionKeyPermissionsService::CanUseKeyForSigning(
       &ExtensionKeyPermissionsService::CanUseKeyForSigningWithFlags,
       weak_factory_.GetWeakPtr(), std::move(callback),
       matching_entry->sign_unlimited);
-  keystore_service_->GetKeyTags(StrToBlob(public_key_spki_der),
-                                std::move(bound_callback));
+  keystore_service_->GetKeyTags(public_key_spki_der, std::move(bound_callback));
 }
 
 void ExtensionKeyPermissionsService::CanUseKeyForSigningWithFlags(
@@ -228,12 +222,10 @@ void ExtensionKeyPermissionsService::CanUseKeyForSigningWithFlags(
 }
 
 void ExtensionKeyPermissionsService::SetKeyUsedForSigning(
-    const std::string& public_key_spki_der,
+    const std::vector<uint8_t>& public_key_spki_der,
     SetKeyUsedForSigningCallback callback) {
-  std::string public_key_spki_der_b64;
-  base::Base64Encode(public_key_spki_der, &public_key_spki_der_b64);
-
-  KeyEntry* matching_entry = GetStateStoreEntry(public_key_spki_der_b64);
+  KeyEntry* matching_entry =
+      GetStateStoreEntry(base::Base64Encode(public_key_spki_der));
   matching_entry->sign_once = false;
   WriteToStateStore();
 
@@ -243,12 +235,10 @@ void ExtensionKeyPermissionsService::SetKeyUsedForSigning(
 }
 
 void ExtensionKeyPermissionsService::RegisterKeyForCorporateUsage(
-    const std::string& public_key_spki_der,
+    const std::vector<uint8_t>& public_key_spki_der,
     RegisterKeyForCorporateUsageCallback callback) {
-  std::string public_key_spki_der_b64;
-  base::Base64Encode(public_key_spki_der, &public_key_spki_der_b64);
-
-  KeyEntry* matching_entry = GetStateStoreEntry(public_key_spki_der_b64);
+  KeyEntry* matching_entry =
+      GetStateStoreEntry(base::Base64Encode(public_key_spki_der));
 
   if (matching_entry->sign_once) {
     VLOG(1) << "Key is already allowed for signing, skipping.";
@@ -262,16 +252,16 @@ void ExtensionKeyPermissionsService::RegisterKeyForCorporateUsage(
   WriteToStateStore();
 
   keystore_service_->AddKeyTags(
-      StrToBlob(public_key_spki_der),
+      public_key_spki_der,
       static_cast<uint64_t>(crosapi::mojom::KeyTag::kCorporate),
       std::move(callback));
 }
 
 void ExtensionKeyPermissionsService::SetUserGrantedPermission(
-    const std::string& public_key_spki_der,
+    const std::vector<uint8_t>& public_key_spki_der,
     SetUserGrantedPermissionCallback callback) {
   keystore_service_->CanUserGrantPermissionForKey(
-      StrToBlob(public_key_spki_der),
+      public_key_spki_der,
       base::BindOnce(
           &ExtensionKeyPermissionsService::SetUserGrantedPermissionWithFlag,
           weak_factory_.GetWeakPtr(), public_key_spki_der,
@@ -279,7 +269,7 @@ void ExtensionKeyPermissionsService::SetUserGrantedPermission(
 }
 
 void ExtensionKeyPermissionsService::SetUserGrantedPermissionWithFlag(
-    const std::string& public_key_spki_der,
+    const std::vector<uint8_t>& public_key_spki_der,
     SetUserGrantedPermissionCallback callback,
     bool can_user_grant_permission) {
   if (!can_user_grant_permission) {
@@ -289,9 +279,8 @@ void ExtensionKeyPermissionsService::SetUserGrantedPermissionWithFlag(
     return;
   }
 
-  std::string public_key_spki_der_b64;
-  base::Base64Encode(public_key_spki_der, &public_key_spki_der_b64);
-  KeyEntry* matching_entry = GetStateStoreEntry(public_key_spki_der_b64);
+  KeyEntry* matching_entry =
+      GetStateStoreEntry(base::Base64Encode(public_key_spki_der));
 
   if (matching_entry->sign_unlimited) {
     VLOG(1) << "Key is already allowed for signing, skipping.";
@@ -395,5 +384,4 @@ ExtensionKeyPermissionsService::GetCorporateKeyUsageAllowedAppIds(
   return permissions;
 }
 
-}  // namespace platform_keys
-}  // namespace chromeos
+}  // namespace chromeos::platform_keys

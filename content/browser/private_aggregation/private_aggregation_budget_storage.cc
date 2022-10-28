@@ -138,6 +138,24 @@ void PrivateAggregationBudgetStorage::Shutdown() {
 
   // Guard against `Shutdown()` being called multiple times.
   if (db_) {
+    // Schedules `budgets_table_` tasks on the DB sequence for all pending
+    // updates. Since they are scheduled before the `DeleteSoon()` commands, the
+    // tasks will be able to complete before `budgets_table_` gets destroyed.
+    budgets_data_.FlushDataToDisk();
+
+    // The following protects `table_manager_` from holding a dangling pointer
+    // to `db_`. This is possible in the case that the
+    // PrivateAggregationBudgeter is deleted before `this` is finished
+    // initializing. In that case, we can delete the `db_` before the
+    // `table_manager_` is deleted.
+    // TODO(alexmt,csharrison): Consider refactoring the ownership here.
+    db_task_runner_->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(&sqlite_proto::ProtoTableManager::WillShutdown,
+                       base::Unretained(table_manager_.get())),
+        base::BindOnce([](sqlite_proto::ProtoTableManager*) {},
+                       base::RetainedRef(table_manager_)));
+
     // `budgets_table_` must be deleted on the database sequence.
     db_task_runner_->DeleteSoon(FROM_HERE, budgets_table_.release());
 

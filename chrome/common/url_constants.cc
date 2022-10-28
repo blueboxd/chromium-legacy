@@ -480,7 +480,10 @@ const char kChromeCleanerLearnMoreURL[] =
 
 const char kWindowsXPVistaDeprecationURL[] =
     "https://chrome.blogspot.com/2015/11/updates-to-chrome-platform-support.html";
-#endif
+
+const char kWindows78DeprecationURL[] =
+    "https://support.google.com/chrome/?p=unsupported_windows";
+#endif  // BUILDFLAG(IS_WIN)
 
 const char kChromeSyncLearnMoreURL[] =
     "https://support.google.com/chrome/answer/165139";
@@ -501,10 +504,8 @@ const char kChromeAppsDeprecationLearnMoreURL[] =
 #endif
 
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
-// TODO(b/1339340): add help center link when help center link is created.
 const char kChromeRootStoreSettingsHelpCenterURL[] =
-    "https://chromium.googlesource.com/chromium/src/+/main/net/data/ssl/"
-    "chrome_root_store/root_store.md";
+    "https://support.google.com/chrome?p=root_store";
 #endif
 
 }  // namespace chrome

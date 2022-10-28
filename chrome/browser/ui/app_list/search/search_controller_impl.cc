@@ -16,10 +16,12 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/search/app_search_data_source.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/common/string_util.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
@@ -41,9 +43,12 @@ SearchControllerImpl::SearchControllerImpl(
       mixer_(std::make_unique<Mixer>(model_updater, this)),
       metrics_observer_(
           std::make_unique<SearchMetricsManager>(profile, notifier)),
+      app_search_data_source_(std::make_unique<AppSearchDataSource>(
+          profile,
+          list_controller,
+          base::DefaultClock::GetInstance())),
       list_controller_(list_controller),
       notifier_(notifier) {
-  DCHECK(!app_list_features::IsCategoricalSearchEnabled());
   if (notifier_)
     notifier_->AddObserver(this);
 }
@@ -118,6 +123,10 @@ void SearchControllerImpl::InvokeResultAction(
   result->InvokeAction(action);
 }
 
+AppSearchDataSource* SearchControllerImpl::GetAppSearchDataSource() {
+  return app_search_data_source_.get();
+}
+
 size_t SearchControllerImpl::AddGroup(size_t max_results) {
   return mixer_->AddGroup(max_results);
 }
@@ -133,13 +142,26 @@ void SearchControllerImpl::AddProvider(
   providers_.emplace_back(std::move(provider));
 }
 
+size_t SearchControllerImpl::ReplaceProvidersForResultTypeForTest(
+    ash::AppListSearchResultType result_type,
+    std::unique_ptr<SearchProvider> provider) {
+  NOTIMPLEMENTED();
+  return 0u;
+}
+
 void SearchControllerImpl::SetResults(const SearchProvider* provider,
                                       Results results) {
+  // TODO(crbug.com/1199206): Clean up this function as
+  // IsCategoricalSearchEnabled is true as productivity launcher is enabled by
+  // default now.
   // Should only be called when IsCategoricalSearchEnabled is true.
   NOTREACHED();
 }
 
 void SearchControllerImpl::Publish() {
+  // TODO(crbug.com/1199206): Clean up this function as
+  // IsCategoricalSearchEnabled is true as productivity launcher is enabled by
+  // default now.
   // Should only be called when IsCategoricalSearchEnabled is true.
   NOTREACHED();
 }

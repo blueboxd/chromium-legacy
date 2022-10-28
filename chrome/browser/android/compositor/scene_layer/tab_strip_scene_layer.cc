@@ -49,7 +49,12 @@ TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env,
     scrollable_strip_layer_->AddChild(new_tab_button_);
   }
 
-  tab_strip_layer_->SetBackgroundColor(SkColors::kBlack);
+  // Using kLtGray as a temporary background color for TabStripRedesign
+  if (!base::FeatureList::IsEnabled(chrome::android::kTabStripRedesign)) {
+    tab_strip_layer_->SetBackgroundColor(SkColors::kBlack);
+  } else {
+    tab_strip_layer_->SetBackgroundColor(SkColors::kLtGray);
+  }
   tab_strip_layer_->SetIsDrawable(true);
   tab_strip_layer_->AddChild(scrollable_strip_layer_);
 
@@ -200,6 +205,7 @@ void TabStripSceneLayer::UpdateModelSelectorButton(
     jfloat height,
     jboolean incognito,
     jboolean visible,
+    jfloat button_alpha,
     const JavaParamRef<jobject>& jresource_manager) {
   ui::ResourceManager* resource_manager =
       ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
@@ -213,6 +219,7 @@ void TabStripSceneLayer::UpdateModelSelectorButton(
       gfx::PointF(x + left_offset, y + top_offset));
   model_selector_button_->SetBounds(button_resource->size());
   model_selector_button_->SetHideLayerAndSubtree(!visible);
+  model_selector_button_->SetOpacity(button_alpha);
 }
 
 void TabStripSceneLayer::UpdateTabStripLeftFade(
@@ -316,6 +323,7 @@ void TabStripSceneLayer::PutStripTabLayer(
     jboolean is_loading,
     jfloat spinner_rotation,
     jfloat brightness,
+    jfloat opacity,
     const JavaParamRef<jobject>& jlayer_title_cache,
     const JavaParamRef<jobject>& jresource_manager) {
   LayerTitleCache* layer_title_cache =
@@ -336,7 +344,7 @@ void TabStripSceneLayer::PutStripTabLayer(
                        tab_handle_outline_resource, foreground, close_pressed,
                        toolbar_width, x, y, width, height, content_offset_x,
                        close_button_alpha, is_loading, spinner_rotation,
-                       brightness);
+                       brightness, opacity);
 }
 
 scoped_refptr<TabHandleLayer> TabStripSceneLayer::GetNextLayer(

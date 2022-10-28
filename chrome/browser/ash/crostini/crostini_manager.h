@@ -213,6 +213,9 @@ class CrostiniManager : public KeyedService,
   // Returns true if the /dev/kvm directory is present.
   static bool IsDevKvmPresent();
 
+  // Returns true if concierge allows termina VM to be launched.
+  static bool IsVmLaunchAllowed();
+
   // Upgrades cros-termina component if the current version is not
   // compatible. This is a no-op if chromeos::features::kCrostiniUseDlc is
   // enabled.
@@ -571,7 +574,7 @@ class CrostiniManager : public KeyedService,
 
   void UpdateVmState(std::string vm_name, VmState vm_state);
   bool IsVmRunning(std::string vm_name);
-  // Returns null if VM is not running.
+  // Returns absl::nullopt if VM is not running.
   absl::optional<VmInfo> GetVmInfo(std::string vm_name);
   void AddRunningVmForTesting(std::string vm_name);
   void AddStoppingVmForTesting(std::string vm_name);
@@ -671,7 +674,9 @@ class CrostiniManager : public KeyedService,
   // Callback for ConciergeClient::TremplinStartedSignal. Called after the
   // Tremplin service starts. Updates running containers list and then calls the
   // |callback| with true, indicating success.
-  void OnStartTremplin(std::string vm_name, BoolCallback callback);
+  void OnStartTremplin(std::string vm_name,
+                       uint32_t seneschal_server_handle,
+                       BoolCallback callback);
 
   // Callback for ConciergeClient::StopVm. Called after the Concierge
   // service method finishes.
@@ -797,6 +802,16 @@ class CrostiniManager : public KeyedService,
   // check for /dev/kvm.
   static void CheckPaths();
 
+  // Helper for CrostiniManager::MaybeUpdateCrostini. Checks that concierge is
+  // available.
+  void CheckConciergeAvailable();
+
+  // Helper for CrostiniManager::MaybeUpdateCrostini. Checks that concierge will
+  // allow the termina VM to be launched.
+  void CheckVmLaunchAllowed(bool service_is_available);
+  void OnCheckVmLaunchAllowed(
+      absl::optional<vm_tools::concierge::GetVmLaunchAllowedResponse> response);
+
   // Helper for CrostiniManager::MaybeUpdateCrostini. Separated because the
   // checking component registration code may block.
   void MaybeUpdateCrostiniAfterChecks();
@@ -844,6 +859,7 @@ class CrostiniManager : public KeyedService,
   bool skip_restart_for_testing_ = false;
 
   static bool is_dev_kvm_present_;
+  static bool is_vm_launch_allowed_;
 
   // |is_unclean_startup_| is true when we detect Concierge still running at
   // session startup time, and the last session ended in a crash.

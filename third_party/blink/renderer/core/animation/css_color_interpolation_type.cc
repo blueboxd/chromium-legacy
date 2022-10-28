@@ -326,12 +326,12 @@ void CSSColorInterpolationType::ApplyStandardPropertyValue(
   const auto& color_pair = To<InterpolableList>(interpolable_value);
   DCHECK_EQ(color_pair.length(), kInterpolableColorPairIndexCount);
   ColorPropertyFunctions::SetUnvisitedColor(
-      CssProperty(), *state.Style(),
+      CssProperty(), state.StyleBuilder(),
       ResolveInterpolableColor(
           *color_pair.Get(kUnvisited), state, false,
           CssProperty().PropertyID() == CSSPropertyID::kTextDecorationColor));
   ColorPropertyFunctions::SetVisitedColor(
-      CssProperty(), *state.Style(),
+      CssProperty(), state.StyleBuilder(),
       ResolveInterpolableColor(
           *color_pair.Get(kVisited), state, true,
           CssProperty().PropertyID() == CSSPropertyID::kTextDecorationColor));

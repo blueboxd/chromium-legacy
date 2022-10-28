@@ -220,7 +220,6 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="2107914222138020205">USB-C-snúran styður ekki Thunderbolt. Afköst tækisins kunna að vera takmörkuð.</translation>
 <translation id="2108303511227308752">Flýtilyklinum „Alt + bakklykill“ hefur verið breytt. Ýttu á <ph name="LAUNCHER_KEY_NAME" />-lykilinn + bakklykilinn til að nota Delete-lykilinn.</translation>
 <translation id="211328683600082144">KVEIKJA Á HLJÓÐNEMA</translation>
-<translation id="2123115117533398272">ChromeOS birtir tillögur að nýju efni sem hægt er að skoða. Sendir aðeins tölfræðiupplýsingar sem eru notaðar til að auka gæði ef þú hefur valið að deila notkunarupplýsingum. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="2126242104232412123">Nýtt svæði</translation>
 <translation id="2132302418721800944">Taka upp á öllum skjánum</translation>
 <translation id="2135456203358955318">Stækkunargler í föstum glugga</translation>
@@ -288,7 +287,6 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="2542089167727451762">Ýttu á prófílmyndina þína</translation>
 <translation id="255671100581129685">Google hjálparinn er ekki í boði í opinberri lotu.</translation>
 <translation id="256712445991462162">stækkunargler í föstum glugga</translation>
-<translation id="2570734079541893434">Stjórna stillingum</translation>
 <translation id="2573588302192866788">Ekki tókst að tengjast <ph name="NAME" /></translation>
 <translation id="2575685495496069081">Lokað er á margar innskráningar</translation>
 <translation id="2582112259361606227">Endurræstu til að uppfæra</translation>
@@ -309,6 +307,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="2673968385134502798">Leikir</translation>
 <translation id="2678852583403169292">Valmynd textaupplesturs</translation>
 <translation id="2689613560355655046">Skrifborð 8</translation>
+<translation id="2695132445805301912">Sýna lykla og smelli</translation>
 <translation id="2695305337569143674">vefur</translation>
 <translation id="2697697418792422688">Sýna lyklaborðsstillingar. <ph name="KEYBOARD_NAME" /> er valið.</translation>
 <translation id="2700493154570097719">Veldu lyklaborð</translation>
@@ -1126,6 +1125,7 @@ Ný uppsetning</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7313193732017069507">Stækka myndavél</translation>
 <translation id="731589979057211264">Kveikt er á Shelf Party.</translation>
+<translation id="7340731148882810149">Valmynd sjálfvirkra smella</translation>
 <translation id="7346909386216857016">Ég skil</translation>
 <translation id="7348093485538360975">Skjályklaborð</translation>
 <translation id="735745346212279324">VPN ótengt</translation>
@@ -1303,6 +1303,7 @@ Ný uppsetning</translation>
 <translation id="826107067893790409">Ýttu á Enter til að opna fyrir <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Eyða</translation>
 <translation id="8270450402312105425">{0,plural, =1{Færa verður tækið í fyrri útgáfu innan klukkustundar}one{Færa verður tækið í fyrri útgáfu innan # klukkustundar}other{Færa verður tækið í fyrri útgáfu innan # klukkustunda}}</translation>
+<translation id="8277261673056602147">Yfirstrika texta á skjánum</translation>
 <translation id="8284362522226889623">Strjúktu til vinstri með fjórum fingrum til að skipta yfir í fyrra skrifborð.</translation>
 <translation id="828708037801473432">Slökkt</translation>
 <translation id="8297006494302853456">Veikt</translation>

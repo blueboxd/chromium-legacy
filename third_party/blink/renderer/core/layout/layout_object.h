@@ -3237,7 +3237,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // Called before setting style for existing/new anonymous child. Override to
   // set custom styles for the child. For new anonymous child, |child| is null.
   virtual void UpdateAnonymousChildStyle(const LayoutObject* child,
-                                         ComputedStyle& style) const {
+                                         ComputedStyleBuilder&) const {
     NOT_DESTROYED();
   }
 
@@ -3270,7 +3270,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     if (InsideBlockingTouchEventHandler())
       return TouchAction::kNone;
-    return StyleRef().GetEffectiveTouchAction();
+    return StyleRef().EffectiveTouchAction();
   }
   bool HasEffectiveAllowedTouchAction() const {
     NOT_DESTROYED();

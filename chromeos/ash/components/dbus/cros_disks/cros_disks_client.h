@@ -63,9 +63,9 @@ std::ostream& operator<<(std::ostream& out, DeviceType type);
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class MountError {
-  kNone = 0,
-  kUnknown = 1,
-  kInternal = 2,
+  kSuccess = 0,
+  kUnknownError = 1,
+  kInternalError = 2,
   kInvalidArgument = 3,
   kInvalidPath = 4,
   kPathAlreadyMounted = 5,
@@ -93,9 +93,9 @@ std::ostream& operator<<(std::ostream& out, MountError error);
 
 // Rename error reported by cros-disks.
 enum class RenameError {
-  kNone,
-  kUnknown,
-  kInternal,
+  kSuccess,
+  kUnknownError,
+  kInternalError,
   kInvalidDevicePath,
   kDeviceBeingRenamed,
   kUnsupportedFilesystem,
@@ -115,9 +115,9 @@ std::ostream& operator<<(std::ostream& out, RenameError error);
 // numeric values should never be reused.
 // See enum CrosDisksClientFormatError in tools/metrics/histograms/enums.xml.
 enum class FormatError {
-  kNone = 0,
-  kUnknown = 1,
-  kInternal = 2,
+  kSuccess = 0,
+  kUnknownError = 1,
+  kInternalError = 2,
   kInvalidDevicePath = 3,
   kDeviceBeingFormatted = 4,
   kUnsupportedFilesystem = 5,
@@ -136,9 +136,9 @@ std::ostream& operator<<(std::ostream& out, FormatError error);
 
 // Partition error reported by cros-disks.
 enum class PartitionError {
-  kNone = 0,
-  kUnknown = 1,
-  kInternal = 2,
+  kSuccess = 0,
+  kUnknownError = 1,
+  kInternalError = 2,
   kInvalidDevicePath = 3,
   kDeviceBeingPartitioned = 4,
   kProgramNotFound = 5,
@@ -303,7 +303,7 @@ struct COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS) MountPoint {
   // Type of mount.
   MountType mount_type = MountType::kInvalid;
   // Condition of mount.
-  MountError mount_error = MountError::kNone;
+  MountError mount_error = MountError::kSuccess;
   // Progress percent between 0 and 100 when mount_error is kInProgress.
   int progress_percent = 0;
   // Read-only file system?
@@ -319,7 +319,7 @@ struct COMPONENT_EXPORT(ASH_DBUS_CROS_DISKS) MountPoint {
   MountPoint(base::StringPiece source_path,
              base::StringPiece mount_path,
              MountType mount_type = MountType::kInvalid,
-             MountError mount_error = MountError::kNone,
+             MountError mount_error = MountError::kSuccess,
              int progress_percent = 0,
              bool read_only = false);
 };

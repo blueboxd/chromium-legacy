@@ -9,13 +9,10 @@
 #include "ash/shell.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/wm/desks/templates/saved_desk_icon_container.h"
-#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
@@ -51,6 +48,9 @@ constexpr int kDefaultIconSize = 22;
 // The size of the background the icon sits inside of.
 constexpr int kIconViewSize = 28;
 
+constexpr size_t kDefaultIconSortingKey = SIZE_MAX - 1;
+constexpr size_t kOverflowIconSortingKey = SIZE_MAX;
+
 // Return the formatted string for `count`. If `count` is <=99, the string will
 // be "+<count>". If `count` is >99, the string will be "+99". If `show_plus` is
 // false, the string will be just the count.
@@ -77,9 +77,11 @@ SavedDeskIconView::SavedDeskIconView(
     const std::string& app_title,
     int count,
     bool show_plus,
-    base::OnceCallback<void()> on_icon_loaded)
+    size_t sorting_key,
+    base::OnceCallback<void(views::View*)> on_icon_loaded)
     : icon_identifier_(icon_identifier),
       count_(count),
+      sorting_key_(sorting_key),
       on_icon_loaded_(std::move(on_icon_loaded)) {
   if (visible_count() || is_overflow_icon()) {
     SetBackground(views::CreateThemedRoundedRectBackground(
@@ -91,16 +93,15 @@ SavedDeskIconView::SavedDeskIconView(
 }
 
 SavedDeskIconView::SavedDeskIconView(int count, bool show_plus)
-    : SavedDeskIconView(nullptr, "", "", count, show_plus, {}) {}
+    : SavedDeskIconView(nullptr,
+                        "",
+                        "",
+                        count,
+                        show_plus,
+                        kOverflowIconSortingKey,
+                        {}) {}
 
 SavedDeskIconView::~SavedDeskIconView() = default;
-
-void SavedDeskIconView::UpdateCount(int count) {
-  DCHECK(is_overflow_icon());
-  DCHECK(count_label_);
-  count_ = count;
-  count_label_->SetText(GetCountString(visible_count(), /*show_plus=*/true));
-}
 
 gfx::Size SavedDeskIconView::CalculatePreferredSize() const {
   int width = (icon_view_ ? kIconViewSize : 0);
@@ -142,6 +143,21 @@ void SavedDeskIconView::OnThemeChanged() {
   // The default icon is theme dependent, so it needs to be reloaded.
   if (is_showing_default_icon_)
     LoadDefaultIcon();
+}
+
+size_t SavedDeskIconView::GetSortingKey() const {
+  if (is_overflow_icon())
+    return kOverflowIconSortingKey;
+  if (is_showing_default_icon_)
+    return kDefaultIconSortingKey;
+  return sorting_key_;
+}
+
+void SavedDeskIconView::UpdateCount(int count) {
+  DCHECK(is_overflow_icon());
+  DCHECK(count_label_);
+  count_ = count;
+  count_label_->SetText(GetCountString(visible_count(), /*show_plus=*/true));
 }
 
 void SavedDeskIconView::CreateChildViews(
@@ -223,7 +239,7 @@ void SavedDeskIconView::OnIconLoaded(const gfx::ImageSkia& icon) {
 
   // Notify the icon container to update the icon order and visibility.
   if (parent() && on_icon_loaded_)
-    std::move(on_icon_loaded_).Run();
+    std::move(on_icon_loaded_).Run(this);
 }
 
 void SavedDeskIconView::LoadDefaultIcon() {

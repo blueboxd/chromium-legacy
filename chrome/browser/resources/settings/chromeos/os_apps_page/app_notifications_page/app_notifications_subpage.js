@@ -13,8 +13,10 @@ import '/app-management/image.mojom-lite.js';
 import '/app-management/safe_base_name.mojom-lite.js';
 import '/app-management/types.mojom-lite.js';
 import '/os_apps_page/app_notification_handler.mojom-lite.js';
+import '../../../controls/settings_toggle_button.js';
 
 import {assert} from 'chrome://resources/js/assert.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../../mojom-webui/setting.mojom-webui.js';
@@ -56,6 +58,14 @@ export class AppNotificationsSubpage extends AppNotificationsSubpageBase {
   static get properties() {
     return {
       /**
+       * Preferences state.
+       */
+      prefs: {
+        type: Object,
+        notify: true,
+      },
+
+      /**
        * Reflects the Do Not Disturb property.
        * @private
        */
@@ -64,6 +74,16 @@ export class AppNotificationsSubpage extends AppNotificationsSubpageBase {
         value: false,
         notify: true,
         reflectToAttribute: true,
+      },
+
+      /**
+       * A virtual pref to reflect the Do Not Disturb state.
+       * @type {chrome.settingsPrivate.PrefObject}
+       * @private
+       */
+      virtualDndPref_: {
+        type: Object,
+        computed: 'getVirtualDndPref_(isDndEnabled_)',
       },
 
       /**
@@ -76,6 +96,17 @@ export class AppNotificationsSubpage extends AppNotificationsSubpageBase {
       },
 
       /**
+       * Whether the App Badging toggle is visible.
+       * @type {boolean}
+       */
+      showAppBadgingToggle_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('showOsSettingsAppBadgingToggle');
+        },
+      },
+
+      /**
        * Used by DeepLinkingBehavior to focus this page's deep links.
        * @type {!Set<!Setting>}
        */
@@ -83,6 +114,7 @@ export class AppNotificationsSubpage extends AppNotificationsSubpageBase {
         type: Object,
         value: () => new Set([
           Setting.kDoNotDisturbOnOff,
+          Setting.kAppBadgingOnOff,
         ]),
       },
     };
@@ -186,12 +218,15 @@ export class AppNotificationsSubpage extends AppNotificationsSubpageBase {
   }
 
   /**
-   * @param {!Event} event
+   * @return {!chrome.settingsPrivate.PrefObject}
    * @private
    */
-  onEnableTap_(event) {
-    this.setQuietMode_();
-    event.stopPropagation();
+  getVirtualDndPref_() {
+    return {
+      key: '',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: this.isDndEnabled_,
+    };
   }
 
   /**
@@ -205,6 +240,5 @@ export class AppNotificationsSubpage extends AppNotificationsSubpageBase {
     return first.title.localeCompare(second.title);
   }
 }
-
 
 customElements.define(AppNotificationsSubpage.is, AppNotificationsSubpage);

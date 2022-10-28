@@ -31,13 +31,11 @@ base::Value PerformPolicyRoundtrip(const base::Value& expected,
   EXPECT_TRUE(policy_dt != nullptr);
 
   sync_pb::WorkspaceDeskSpecifics proto_desk =
-      bridge->ToSyncProto(policy_dt.get());
+      desk_template_conversion::ToSyncProto(policy_dt.get(), cache);
 
   // Convert back to original format.
-  std::unique_ptr<ash::DeskTemplate> got_dt =
-      DeskSyncBridge::FromSyncProto(proto_desk);
-  return desk_template_conversion::SerializeDeskTemplateAsPolicy(got_dt.get(),
-                                                                 cache);
+  return desk_template_conversion::SerializeDeskTemplateAsPolicy(
+      desk_template_conversion::FromSyncProto(proto_desk).get(), cache);
 }
 
 }  // namespace
@@ -80,8 +78,8 @@ class DeskTemplateSemanticsTest : public testing::TestWithParam<std::string> {
 };
 
 TEST_P(DeskTemplateSemanticsTest, PolicyTemplateSemanticallyEquivalentToProto) {
-  base::StringPiece raw_json = base::StringPiece(GetParam());
-  auto expected_json = base::JSONReader::ReadAndReturnValueWithError(raw_json);
+  auto expected_json = base::JSONReader::ReadAndReturnValueWithError(
+      base::StringPiece(GetParam()));
 
   EXPECT_TRUE(expected_json.has_value());
   EXPECT_TRUE(expected_json->is_dict());

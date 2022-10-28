@@ -250,6 +250,8 @@
 #include "ash/webui/scanning/mojom/scanning.mojom.h"
 #include "ash/webui/scanning/scanning_ui.h"
 #include "ash/webui/shimless_rma/shimless_rma.h"
+#include "ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom.h"
+#include "ash/webui/shortcut_customization_ui/shortcut_customization_app_ui.h"
 #include "ash/webui/system_extensions_internals_ui/mojom/system_extensions_internals_ui.mojom.h"
 #include "ash/webui/system_extensions_internals_ui/system_extensions_internals_ui.h"
 #include "chrome/browser/apps/digital_goods/digital_goods_factory_impl.h"
@@ -260,6 +262,7 @@
 #include "chrome/browser/ui/webui/ash/add_supervision/add_supervision_ui.h"
 #include "chrome/browser/ui/webui/ash/audio/audio.mojom.h"
 #include "chrome/browser/ui/webui/ash/audio/audio_ui.h"
+#include "chrome/browser/ui/webui/ash/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload.mojom.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_ui.h"
 #include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer.mojom.h"
@@ -269,20 +272,19 @@
 #include "chrome/browser/ui/webui/ash/emoji/emoji_picker.mojom.h"
 #include "chrome/browser/ui/webui/ash/emoji/emoji_ui.h"
 #include "chrome/browser/ui/webui/ash/in_session_password_change/lock_screen_network_ui.h"
+#include "chrome/browser/ui/webui/ash/internet_config_dialog.h"
+#include "chrome/browser/ui/webui/ash/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/ash/launcher_internals/launcher_internals.mojom.h"
 #include "chrome/browser/ui/webui/ash/launcher_internals/launcher_internals_ui.h"
+#include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/ash/manage_mirrorsync/manage_mirrorsync.mojom.h"
 #include "chrome/browser/ui/webui/ash/manage_mirrorsync/manage_mirrorsync_ui.h"
 #include "chrome/browser/ui/webui/ash/multidevice_setup/multidevice_setup_dialog.h"
 #include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui.h"
 #include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui.mojom.h"
-#include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/ash/vm/vm.mojom.h"
+#include "chrome/browser/ui/webui/ash/vm/vm_ui.h"
 #include "chrome/browser/ui/webui/chromeos/network_ui.h"
-#include "chrome/browser/ui/webui/chromeos/vm/vm.mojom.h"
-#include "chrome/browser/ui/webui/chromeos/vm/vm_ui.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share.mojom.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share_dialog_ui.h"
 #include "chrome/browser/ui/webui/nearby_share/public/mojom/nearby_share_settings.mojom.h"  // nogncheck crbug.com/1125897
@@ -1124,7 +1126,7 @@ void PopulateChromeWebUIFrameBinders(
 #if BUILDFLAG(PLATFORM_CFM)
       ash::cfm::NetworkSettingsDialogUi,
 #endif  // BUILDFLAG(PLATFORM_CFM)
-      chromeos::InternetConfigDialogUI, chromeos::InternetDetailDialogUI,
+      ash::InternetConfigDialogUI, ash::InternetDetailDialogUI,
       chromeos::NetworkUI, chromeos::OobeUI, ash::settings::OSSettingsUI,
       ash::LockScreenNetworkUI, ash::ShimlessRMADialogUI>(map);
 
@@ -1194,8 +1196,8 @@ void PopulateChromeWebUIFrameBinders(
       ash::diagnostics::mojom::SystemRoutineController,
       ash::DiagnosticsDialogUI>(map);
 
-  RegisterWebUIControllerInterfaceBinder<
-      chromeos::vm::mojom::VmDiagnosticsProvider, chromeos::VmUI>(map);
+  RegisterWebUIControllerInterfaceBinder<ash::vm::mojom::VmDiagnosticsProvider,
+                                         ash::VmUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<ash::scanning::mojom::ScanService,
                                          ash::ScanningUI>(map);
@@ -1218,6 +1220,12 @@ void PopulateChromeWebUIFrameBinders(
     RegisterWebUIControllerInterfaceBinder<
         ash::shimless_rma::mojom::ShimlessRmaService, ash::ShimlessRMADialogUI>(
         map);
+  }
+
+  if (base::FeatureList::IsEnabled(features::kShortcutCustomizationApp)) {
+    RegisterWebUIControllerInterfaceBinder<
+        ash::shortcut_customization::mojom::AcceleratorConfigurationProvider,
+        ash::ShortcutCustomizationAppUI>(map);
   }
 
   RegisterWebUIControllerInterfaceBinder<
@@ -1249,7 +1257,7 @@ void PopulateChromeWebUIFrameBinders(
 
   RegisterWebUIControllerInterfaceBinder<
       ash::bluetooth_config::mojom::CrosBluetoothConfig,
-      chromeos::BluetoothPairingDialogUI, ash::settings::OSSettingsUI>(map);
+      ash::BluetoothPairingDialogUI, ash::settings::OSSettingsUI>(map);
 
   if (ash::features::IsAudioSettingsPageEnabled()) {
     RegisterWebUIControllerInterfaceBinder<

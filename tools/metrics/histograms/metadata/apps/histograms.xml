@@ -308,7 +308,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.AppListSortDiscoveryDurationAfterActivation"
-    units="ms" expires_after="2023-02-19">
+    units="ms" expires_after="2023-04-23">
   <owner>andrewxu@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
   <summary>
@@ -340,7 +340,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Apps.AppList.CardifiedStateAnimation.AnimationSmoothness{EnterOrExitCardifiedState}"
-    units="%" expires_after="2022-12-02">
+    units="%" expires_after="2023-10-25">
   <owner>anasalazar@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
   <summary>
@@ -608,7 +608,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.ItemSuggestCache.Status"
-    enum="ItemSuggestCacheStatus" expires_after="2023-02-19">
+    enum="ItemSuggestCacheStatus" expires_after="2023-04-23">
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
@@ -1219,17 +1219,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Apps.AppList.ZeroStateSearchResultRemovalDecision"
-    enum="AppListResultRemovalConfirmation" expires_after="2022-10-04">
-  <owner>jennyz@chromium.org</owner>
-  <owner>newcomer@chromium.org</owner>
-  <summary>
-    The decision of the user whether to remove a zero state search result. This
-    is gathered per click of a remove or cancel button of a search result
-    removal confirmation dialog.
-  </summary>
-</histogram>
-
 <histogram name="Apps.AppList.ZeroStateSearchResultUserActionType"
     enum="AppListZeroStateSearchResultUserActionType"
     expires_after="2022-05-01">
@@ -1353,7 +1342,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListCreationTime" units="ms"
-    expires_after="2023-02-19">
+    expires_after="2023-04-23">
   <owner>tbarzic@chromium.org</owner>
   <owner>mmourgos@chromium.org</owner>
   <summary>
@@ -1396,7 +1385,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Apps.AppListFolderNameLength" units="characters"
-    expires_after="2023-02-19">
+    expires_after="2023-04-23">
 <!-- Name completed by histogram_suffixes
      name="TabletOrClamshellMode" -->
 
@@ -1486,8 +1475,6 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Apps.AppListPageSwitcherSource"
     enum="AppListPageSwitcherSource" expires_after="2023-03-26">
-<!-- Name completed by histogram_suffixes name="TabletOrClamshellMode" -->
-
   <owner>tbarzic@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <owner>mmourgos@chromium.org</owner>
@@ -1608,7 +1595,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListSearchQueryLengthV2{TabletOrClamshell}"
-    units="characters" expires_after="2022-12-01">
+    units="characters" expires_after="2023-10-01">
   <owner>yulunwu@chromium.org</owner>
   <owner>calamity@chromium.org</owner>
   <summary>
@@ -2482,7 +2469,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Apps.NumberOfPages" units="page(s)" expires_after="2023-02-19">
+<histogram name="Apps.NumberOfPages" units="page(s)" expires_after="2023-04-23">
   <owner>mmourgos@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
@@ -2578,7 +2565,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.RestoreArcAppsResult" enum="RestoreResult"
-    expires_after="2022-12-01">
+    expires_after="2023-10-24">
   <owner>nancylingwang@chromium.org</owner>
   <owner>sstan@chromium.org</owner>
   <summary>
@@ -2588,7 +2575,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.RestoreArcAppStates" enum="ArcRestoreState"
-    expires_after="2022-12-04">
+    expires_after="2023-10-24">
   <owner>nancylingwang@chromium.org</owner>
   <owner>sstan@chromium.org</owner>
   <summary>
@@ -2609,7 +2596,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.RestoreBrowserResult" enum="RestoreTabResult"
-    expires_after="2022-12-04">
+    expires_after="2023-10-24">
   <owner>nancylingwang@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -2749,7 +2736,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.SessionRestoreExitResult" enum="SessionRestoreExitResult"
-    expires_after="2022-12-04">
+    expires_after="2023-10-24">
   <owner>nancylingwang@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -2759,7 +2746,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.SessionRestoreWindowCount"
-    enum="SessionRestoreWindowCount" expires_after="2022-12-04">
+    enum="SessionRestoreWindowCount" expires_after="2023-10-24">
   <owner>nancylingwang@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>

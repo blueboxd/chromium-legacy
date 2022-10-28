@@ -37,6 +37,7 @@
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_remover.h"
 #include "chrome/browser/ash/crostini/crostini_reporting_util.h"
+#include "chrome/browser/ash/crostini/crostini_simple_types.h"
 #include "chrome/browser/ash/crostini/crostini_sshfs.h"
 #include "chrome/browser/ash/crostini/crostini_terminal_provider.h"
 #include "chrome/browser/ash/crostini/crostini_types.mojom-shared.h"
@@ -791,6 +792,7 @@ void CrostiniManager::CrostiniRestarter::OnWaylandServerCreated(
 
 void CrostiniManager::CrostiniRestarter::StartTerminaVmFinished(bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  VLOG(2) << "StartTerminaVmFinished for " << container_id_;
   for (auto& observer : observer_list_) {
     observer.OnVmStarted(success);
   }
@@ -798,7 +800,8 @@ void CrostiniManager::CrostiniRestarter::StartTerminaVmFinished(bool success) {
     return;
   }
   EmitMetricIfInIncorrectState(mojom::InstallerState::kStartTerminaVm);
-  if (!success) {
+  auto vm_info = crostini_manager_->GetVmInfo(container_id_.vm_name);
+  if (!success || !vm_info.has_value()) {
     FinishRestart(CrostiniResult::VM_START_FAILED);
     return;
   }
@@ -826,8 +829,8 @@ void CrostiniManager::CrostiniRestarter::StartTerminaVmFinished(bool success) {
   // TODO(timloh): This should probably share paths from all requests. Requests
   // added too late will also miss this.
   guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePaths(
-      container_id_.vm_name, requests_[0].options.share_paths,
-      /*persist=*/false,
+      container_id_.vm_name, vm_info->info.seneschal_server_handle(),
+      requests_[0].options.share_paths,
       base::BindOnce(&CrostiniRestarter::SharePathsFinished,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -835,6 +838,7 @@ void CrostiniManager::CrostiniRestarter::StartTerminaVmFinished(bool success) {
 void CrostiniManager::CrostiniRestarter::SharePathsFinished(
     bool success,
     const std::string& failure_reason) {
+  VLOG(2) << "SharePathsFinished for " << container_id_;
   if (!success) {
     LOG(WARNING) << "Failed to share paths: " << failure_reason;
   }
@@ -923,6 +927,8 @@ void CrostiniManager::CrostiniRestarter::SetUpLxdContainerUserFinished(
 }
 
 void CrostiniManager::CrostiniRestarter::FinishRestart(CrostiniResult result) {
+  VLOG(2) << "Finishing restart with result: " << CrostiniResultString(result)
+          << " for " << container_id_;
   EmitTimeInStageHistogram(base::TimeTicks::Now() - stage_start_, stage_);
 
   base::OnceClosure closure;
@@ -993,9 +999,10 @@ void CrostiniManager::CrostiniRestarter::LogRestarterResult(
   }
 }
 
-// Unit tests need this initialized to true. In Browser tests and real life,
-// it is updated via MaybeUpdateCrostini.
+// Unit tests need these to be initialized to sensible values. In Browser tests
+// and real life, they are updated via MaybeUpdateCrostini.
 bool CrostiniManager::is_dev_kvm_present_ = true;
+bool CrostiniManager::is_vm_launch_allowed_ = true;
 
 void CrostiniManager::UpdateVmState(std::string vm_name, VmState vm_state) {
   auto vm_info = running_vms_.find(vm_name);
@@ -1023,6 +1030,9 @@ absl::optional<VmInfo> CrostiniManager::GetVmInfo(std::string vm_name) {
 }
 
 void CrostiniManager::AddRunningVmForTesting(std::string vm_name) {
+  guest_os::GuestOsSessionTracker::GetForProfile(profile_)
+      ->AddGuestForTesting(  // IN-TEST
+          guest_os::GuestId{guest_os::VmType::TERMINA, vm_name, "unused"});
   running_vms_[std::move(vm_name)] = VmInfo{VmState::STARTED};
 }
 
@@ -1299,13 +1309,18 @@ bool CrostiniManager::IsDevKvmPresent() {
   return is_dev_kvm_present_;
 }
 
+// static
+bool CrostiniManager::IsVmLaunchAllowed() {
+  return is_vm_launch_allowed_;
+}
+
 void CrostiniManager::MaybeUpdateCrostini() {
   // This is a new user session, perhaps using an old CrostiniManager.
   container_upgrade_prompt_shown_.clear();
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&CrostiniManager::CheckPaths),
-      base::BindOnce(&CrostiniManager::MaybeUpdateCrostiniAfterChecks,
+      base::BindOnce(&CrostiniManager::CheckConciergeAvailable,
                      weak_ptr_factory_.GetWeakPtr()));
 
   // Probe Concierge - if it's still running after an unclean shutdown, a
@@ -1332,6 +1347,45 @@ void CrostiniManager::MaybeUpdateCrostini() {
 // static
 void CrostiniManager::CheckPaths() {
   is_dev_kvm_present_ = base::PathExists(base::FilePath("/dev/kvm"));
+}
+
+void CrostiniManager::CheckConciergeAvailable() {
+  GetConciergeClient()->WaitForServiceToBeAvailable(base::BindOnce(
+      &CrostiniManager::CheckVmLaunchAllowed, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrostiniManager::CheckVmLaunchAllowed(bool service_is_available) {
+  if (service_is_available) {
+    vm_tools::concierge::GetVmLaunchAllowedRequest request;
+    request.set_run_as_untrusted(false);
+    request.set_is_trusted_image(true);
+    request.set_has_custom_kernel_params(false);
+    GetConciergeClient()->GetVmLaunchAllowed(
+        std::move(request),
+        base::BindOnce(&CrostiniManager::OnCheckVmLaunchAllowed,
+                       weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  LOG(ERROR)
+      << "Couldn't contact concierge to check if untrusted VMs are allowed";
+  MaybeUpdateCrostiniAfterChecks();
+}
+
+void CrostiniManager::OnCheckVmLaunchAllowed(
+    absl::optional<vm_tools::concierge::GetVmLaunchAllowedResponse> response) {
+  // is_vm_launch_allowed_ should be set before CrostiniFeatures is used,
+  // otherwise a (possibly incorrect) default value is read.
+  if (!response) {
+    // Didn't get a reply - assume that VM launch is allowed.
+    LOG(ERROR) << "Failed to determine if VM launch is allowed";
+  } else {
+    is_vm_launch_allowed_ = response->allowed();
+    LOG_IF(WARNING, !is_vm_launch_allowed_)
+        << "VM launch not allowed: " << response->reason();
+  }
+
+  MaybeUpdateCrostiniAfterChecks();
 }
 
 void CrostiniManager::MaybeUpdateCrostiniAfterChecks() {
@@ -2538,6 +2592,8 @@ void CrostiniManager::OnStartTerminaVm(
   DCHECK_EQ(response->status(), vm_tools::concierge::VM_STATUS_STARTING);
   bool wait_for_tremplin = running_vms_.find(vm_name) == running_vms_.end();
 
+  uint32_t seneschal_server_handle =
+      response->vm_info().seneschal_server_handle();
   running_vms_[vm_name] =
       VmInfo{VmState::STARTING, std::move(response->vm_info())};
   // If we thought a container was running for this VM, we're wrong. This can
@@ -2549,13 +2605,14 @@ void CrostiniManager::OnStartTerminaVm(
     tremplin_started_callbacks_.emplace(
         vm_name, base::BindOnce(&CrostiniManager::OnStartTremplin,
                                 weak_ptr_factory_.GetWeakPtr(), vm_name,
-                                std::move(callback)));
+                                seneschal_server_handle, std::move(callback)));
   } else {
-    OnStartTremplin(vm_name, std::move(callback));
+    OnStartTremplin(vm_name, seneschal_server_handle, std::move(callback));
   }
 }
 
 void CrostiniManager::OnStartTremplin(std::string vm_name,
+                                      uint32_t seneschal_server_handle,
                                       BoolCallback callback) {
   // Record the running vm.
   VLOG(1) << "Received TremplinStartedSignal, VM: " << owner_id_ << ", "
@@ -2569,8 +2626,8 @@ void CrostiniManager::OnStartTremplin(std::string vm_name,
 
   // Share fonts directory with the VM but don't persist as a shared path.
   guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePath(
-      vm_name, base::FilePath(file_manager::util::kSystemFontsPath),
-      /*persist=*/false, base::DoNothing());
+      vm_name, seneschal_server_handle,
+      base::FilePath(file_manager::util::kSystemFontsPath), base::DoNothing());
 
   // Run the original callback.
   std::move(callback).Run(/*success=*/true);

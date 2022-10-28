@@ -594,7 +594,6 @@ class ComputedStyle : public ComputedStyleBase,
       return LayoutUnit(0);
     return BorderTopWidthInternal();
   }
-  void SetBorderTopWidth(float v) { SetBorderTopWidthInternal(LayoutUnit(v)); }
 
   // border-bottom-width
   LayoutUnit BorderBottomWidth() const {
@@ -602,9 +601,6 @@ class ComputedStyle : public ComputedStyleBase,
         BorderBottomStyle() == EBorderStyle::kHidden)
       return LayoutUnit(0);
     return BorderBottomWidthInternal();
-  }
-  void SetBorderBottomWidth(float v) {
-    SetBorderBottomWidthInternal(LayoutUnit(v));
   }
 
   // border-left-width
@@ -614,9 +610,6 @@ class ComputedStyle : public ComputedStyleBase,
       return LayoutUnit(0);
     return BorderLeftWidthInternal();
   }
-  void SetBorderLeftWidth(float v) {
-    SetBorderLeftWidthInternal(LayoutUnit(v));
-  }
 
   // border-right-width
   LayoutUnit BorderRightWidth() const {
@@ -624,9 +617,6 @@ class ComputedStyle : public ComputedStyleBase,
         BorderRightStyle() == EBorderStyle::kHidden)
       return LayoutUnit(0);
     return BorderRightWidthInternal();
-  }
-  void SetBorderRightWidth(float v) {
-    SetBorderRightWidthInternal(LayoutUnit(v));
   }
 
   // box-shadow (aka -webkit-box-shadow)
@@ -658,36 +648,12 @@ class ComputedStyle : public ComputedStyleBase,
     SetClipInternal(ComputedStyleInitialValues::InitialClip());
   }
 
-  // Column properties.
-  // column-count (aka -webkit-column-count)
-  void SetColumnCount(uint16_t c) {
-    SetHasAutoColumnCountInternal(false);
-    SetColumnCountInternal(ClampTo<uint16_t>(c, 1));
-  }
-  void SetHasAutoColumnCount() {
-    SetHasAutoColumnCountInternal(true);
-    SetColumnCountInternal(ComputedStyleInitialValues::InitialColumnCount());
-  }
-
-  // column-rule-width (aka -webkit-column-rule-width)
+  // column-rule-width
   uint16_t ColumnRuleWidth() const {
     if (ColumnRuleStyle() == EBorderStyle::kNone ||
         ColumnRuleStyle() == EBorderStyle::kHidden)
       return 0;
     return ColumnRuleWidthInternal().ToUnsigned();
-  }
-  void SetColumnRuleWidth(uint16_t w) {
-    SetColumnRuleWidthInternal(LayoutUnit(w));
-  }
-
-  // column-width (aka -webkit-column-width)
-  void SetColumnWidth(float f) {
-    SetHasAutoColumnWidthInternal(false);
-    SetColumnWidthInternal(f);
-  }
-  void SetHasAutoColumnWidth() {
-    SetHasAutoColumnWidthInternal(true);
-    SetColumnWidthInternal(0);
   }
 
   // content
@@ -696,12 +662,6 @@ class ComputedStyle : public ComputedStyleBase,
 
   // -webkit-line-clamp
   bool HasLineClamp() const { return LineClamp() > 0; }
-
-  // -webkit-box-ordinal-group
-  void SetBoxOrdinalGroup(unsigned og) {
-    SetBoxOrdinalGroupInternal(
-        std::min(std::numeric_limits<unsigned>::max() - 1, og));
-  }
 
   // opacity (aka -webkit-opacity)
   void SetOpacity(float f) {
@@ -754,7 +714,6 @@ class ComputedStyle : public ComputedStyleBase,
       return LayoutUnit();
     return OutlineWidthInternal();
   }
-  void SetOutlineWidth(float v) { SetOutlineWidthInternal(LayoutUnit(v)); }
 
   // For history and compatibility reasons, we draw outline:auto (for focus
   // rings) and normal style outline differently.
@@ -764,40 +723,6 @@ class ComputedStyle : public ComputedStyleBase,
     return OutlineStyleIsAuto()
                ? NGOutlineType::kIncludeBlockVisualOverflow
                : NGOutlineType::kDontIncludeBlockVisualOverflow;
-  }
-
-  // -webkit-perspective-origin-x
-  const Length& PerspectiveOriginX() const { return PerspectiveOrigin().X(); }
-  void SetPerspectiveOriginX(const Length& v) {
-    SetPerspectiveOrigin(LengthPoint(v, PerspectiveOriginY()));
-  }
-
-  // -webkit-perspective-origin-y
-  const Length& PerspectiveOriginY() const { return PerspectiveOrigin().Y(); }
-  void SetPerspectiveOriginY(const Length& v) {
-    SetPerspectiveOrigin(LengthPoint(PerspectiveOriginX(), v));
-  }
-
-  // Transform properties.
-  // -webkit-transform-origin-x
-  const Length& TransformOriginX() const { return GetTransformOrigin().X(); }
-  void SetTransformOriginX(const Length& v) {
-    SetTransformOrigin(
-        TransformOrigin(v, TransformOriginY(), TransformOriginZ()));
-  }
-
-  // -webkit-transform-origin-y
-  const Length& TransformOriginY() const { return GetTransformOrigin().Y(); }
-  void SetTransformOriginY(const Length& v) {
-    SetTransformOrigin(
-        TransformOrigin(TransformOriginX(), v, TransformOriginZ()));
-  }
-
-  // -webkit-transform-origin-z
-  float TransformOriginZ() const { return GetTransformOrigin().Z(); }
-  void SetTransformOriginZ(float f) {
-    SetTransformOrigin(
-        TransformOrigin(TransformOriginX(), TransformOriginY(), f));
   }
 
   // Scroll properties.
@@ -861,14 +786,6 @@ class ComputedStyle : public ComputedStyleBase,
     return base::ValuesEquivalent(ShapeOutside(), other.ShapeOutside());
   }
 
-  // touch-action
-  TouchAction GetEffectiveTouchAction() const {
-    return EffectiveTouchActionInternal();
-  }
-  void SetEffectiveTouchAction(TouchAction t) {
-    return SetEffectiveTouchActionInternal(t);
-  }
-
   // vertical-align
   EVerticalAlign VerticalAlign() const {
     return static_cast<EVerticalAlign>(VerticalAlignInternal());
@@ -881,15 +798,6 @@ class ComputedStyle : public ComputedStyleBase,
     SetVerticalAlignLengthInternal(length);
   }
 
-  // z-index
-  void SetZIndex(int v) {
-    SetHasAutoZIndexInternal(false);
-    SetZIndexInternal(v);
-  }
-  void SetHasAutoZIndex() {
-    SetHasAutoZIndexInternal(true);
-    SetZIndexInternal(0);
-  }
   // This returns the z-index if it applies (i.e. positioned element or grid or
   // flex children), and 0 otherwise. Note that for most situations,
   // `EffectiveZIndex()` is what the code should use to determine how to stack
@@ -1071,9 +979,6 @@ class ComputedStyle : public ComputedStyleBase,
   // orphans
   void SetOrphans(int16_t o) { SetOrphansInternal(ClampTo<int16_t>(o, 1)); }
 
-  // widows
-  void SetWidows(int16_t w) { SetWidowsInternal(ClampTo<int16_t>(w, 1)); }
-
   // fill helpers
   bool HasFill() const { return !FillPaint().IsNone(); }
   bool IsFillColorCurrentColor() const {
@@ -1193,7 +1098,6 @@ class ComputedStyle : public ComputedStyleBase,
   CORE_EXPORT void SetTextAutosizingMultiplier(float);
 
   // Column utility functions.
-  void ClearMultiCol();
   bool SpecifiesColumns() const {
     return !HasAutoColumnCount() || !HasAutoColumnWidth();
   }
@@ -1297,104 +1201,6 @@ class ComputedStyle : public ComputedStyleBase,
     return (GridAutoFlowInternal() &
             static_cast<int>(kInternalAutoFlowAlgorithmDense)) ==
            kInternalAutoFlowAlgorithmDense;
-  }
-
-  // align-content utility functions.
-  ContentPosition AlignContentPosition() const {
-    return AlignContent().GetPosition();
-  }
-  ContentDistributionType AlignContentDistribution() const {
-    return AlignContent().Distribution();
-  }
-  OverflowAlignment AlignContentOverflowAlignment() const {
-    return AlignContent().Overflow();
-  }
-  void SetAlignContentPosition(ContentPosition position) {
-    MutableAlignContentInternal().SetPosition(position);
-  }
-  void SetAlignContentDistribution(ContentDistributionType distribution) {
-    MutableAlignContentInternal().SetDistribution(distribution);
-  }
-  void SetAlignContentOverflow(OverflowAlignment overflow) {
-    MutableAlignContentInternal().SetOverflow(overflow);
-  }
-
-  // justify-content utility functions.
-  ContentPosition JustifyContentPosition() const {
-    return JustifyContent().GetPosition();
-  }
-  ContentDistributionType JustifyContentDistribution() const {
-    return JustifyContent().Distribution();
-  }
-  OverflowAlignment JustifyContentOverflowAlignment() const {
-    return JustifyContent().Overflow();
-  }
-  void SetJustifyContentPosition(ContentPosition position) {
-    MutableJustifyContentInternal().SetPosition(position);
-  }
-  void SetJustifyContentDistribution(ContentDistributionType distribution) {
-    MutableJustifyContentInternal().SetDistribution(distribution);
-  }
-  void SetJustifyContentOverflow(OverflowAlignment overflow) {
-    MutableJustifyContentInternal().SetOverflow(overflow);
-  }
-
-  // align-items utility functions.
-  ItemPosition AlignItemsPosition() const { return AlignItems().GetPosition(); }
-  OverflowAlignment AlignItemsOverflowAlignment() const {
-    return AlignItems().Overflow();
-  }
-  void SetAlignItemsPosition(ItemPosition position) {
-    MutableAlignItemsInternal().SetPosition(position);
-  }
-  void SetAlignItemsOverflow(OverflowAlignment overflow) {
-    MutableAlignItemsInternal().SetOverflow(overflow);
-  }
-
-  // justify-items utility functions.
-  ItemPosition JustifyItemsPosition() const {
-    return JustifyItems().GetPosition();
-  }
-  OverflowAlignment JustifyItemsOverflowAlignment() const {
-    return JustifyItems().Overflow();
-  }
-  ItemPositionType JustifyItemsPositionType() const {
-    return JustifyItems().PositionType();
-  }
-  void SetJustifyItemsPosition(ItemPosition position) {
-    MutableJustifyItemsInternal().SetPosition(position);
-  }
-  void SetJustifyItemsOverflow(OverflowAlignment overflow) {
-    MutableJustifyItemsInternal().SetOverflow(overflow);
-  }
-  void SetJustifyItemsPositionType(ItemPositionType position_type) {
-    MutableJustifyItemsInternal().SetPositionType(position_type);
-  }
-
-  // align-self utility functions.
-  ItemPosition AlignSelfPosition() const { return AlignSelf().GetPosition(); }
-  OverflowAlignment AlignSelfOverflowAlignment() const {
-    return AlignSelf().Overflow();
-  }
-  void SetAlignSelfPosition(ItemPosition position) {
-    MutableAlignSelfInternal().SetPosition(position);
-  }
-  void SetAlignSelfOverflow(OverflowAlignment overflow) {
-    MutableAlignSelfInternal().SetOverflow(overflow);
-  }
-
-  // justify-self utility functions.
-  ItemPosition JustifySelfPosition() const {
-    return JustifySelf().GetPosition();
-  }
-  OverflowAlignment JustifySelfOverflowAlignment() const {
-    return JustifySelf().Overflow();
-  }
-  void SetJustifySelfPosition(ItemPosition position) {
-    MutableJustifySelfInternal().SetPosition(position);
-  }
-  void SetJustifySelfOverflow(OverflowAlignment overflow) {
-    MutableJustifySelfInternal().SetOverflow(overflow);
   }
 
   // Writing mode utility functions.
@@ -1856,50 +1662,6 @@ class ComputedStyle : public ComputedStyleBase,
   CORE_EXPORT void AdjustDiffForBackgroundVisuallyEqual(
       const ComputedStyle& o,
       StyleDifference& diff) const;
-
-  void ResetBorder() {
-    ResetBorderImage();
-    ResetBorderTop();
-    ResetBorderRight();
-    ResetBorderBottom();
-    ResetBorderLeft();
-    ResetBorderTopLeftRadius();
-    ResetBorderTopRightRadius();
-    ResetBorderBottomLeftRadius();
-    ResetBorderBottomRightRadius();
-  }
-
-  void ResetBorderTop() {
-    SetBorderTopStyle(EBorderStyle::kNone);
-    SetBorderTopWidth(3);
-    SetBorderTopColorInternal(StyleColor::CurrentColor());
-  }
-  void ResetBorderRight() {
-    SetBorderRightStyle(EBorderStyle::kNone);
-    SetBorderRightWidth(3);
-    SetBorderRightColorInternal(StyleColor::CurrentColor());
-  }
-  void ResetBorderBottom() {
-    SetBorderBottomStyle(EBorderStyle::kNone);
-    SetBorderBottomWidth(3);
-    SetBorderBottomColorInternal(StyleColor::CurrentColor());
-  }
-  void ResetBorderLeft() {
-    SetBorderLeftStyle(EBorderStyle::kNone);
-    SetBorderLeftWidth(3);
-    SetBorderLeftColorInternal(StyleColor::CurrentColor());
-  }
-
-  void SetBorderRadius(const LengthSize& s) {
-    SetBorderTopLeftRadius(s);
-    SetBorderTopRightRadius(s);
-    SetBorderBottomLeftRadius(s);
-    SetBorderBottomRightRadius(s);
-  }
-  void SetBorderRadius(const gfx::Size& s) {
-    SetBorderRadius(
-        LengthSize(Length::Fixed(s.width()), Length::Fixed(s.height())));
-  }
 
   bool CanRenderBorderImage() const;
 
@@ -2749,14 +2511,6 @@ class ComputedStyle : public ComputedStyleBase,
       mojom::blink::PreferredColorScheme preferred_color_scheme,
       bool force_dark);
 
-  StyleColor InitialColorForColorScheme() const {
-    // TODO(crbug.com/1046753, crbug.com/929098): The initial value of the color
-    // property should be canvastext, but since we do not yet ship color-scheme
-    // aware system colors, we use this method instead. This should be replaced
-    // by default_value:"canvastext" in css_properties.json5.
-    return StyleColor(DarkColorScheme() ? Color::kWhite : Color::kBlack);
-  }
-
   bool GeneratesMarkerImage() const {
     return Display() == EDisplay::kListItem && ListStyleImage() &&
            !ListStyleImage()->ErrorOccurred();
@@ -2793,13 +2547,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool HasViewportUnits() const { return ViewportUnitFlags(); }
 
-  void SetHasExplicitOverflowXVisible() {
-    SetHasExplicitOverflowXVisibleInternal(true);
-  }
-  void SetHasExplicitOverflowYVisible() {
-    SetHasExplicitOverflowYVisibleInternal(true);
-  }
-
  private:
   EClear Clear() const { return ClearInternal(); }
   EFloat Floating() const { return FloatingInternal(); }
@@ -2819,47 +2566,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool IsSizeContainer() const {
     return (ContainerType() & kContainerTypeSize) == kContainerTypeSize;
-  }
-
-  void SetInternalVisitedColor(const StyleColor& v) {
-    SetInternalVisitedColorInternal(v);
-  }
-  void SetInternalVisitedBackgroundColor(const StyleColor& v) {
-    SetInternalVisitedBackgroundColorInternal(v);
-  }
-  void SetInternalVisitedBorderLeftColor(const StyleColor& v) {
-    SetInternalVisitedBorderLeftColorInternal(v);
-  }
-  void SetInternalVisitedBorderRightColor(const StyleColor& v) {
-    SetInternalVisitedBorderRightColorInternal(v);
-  }
-  void SetInternalVisitedBorderBottomColor(const StyleColor& v) {
-    SetInternalVisitedBorderBottomColorInternal(v);
-  }
-  void SetInternalVisitedBorderTopColor(const StyleColor& v) {
-    SetInternalVisitedBorderTopColorInternal(v);
-  }
-  void SetInternalVisitedOutlineColor(const StyleColor& v) {
-    SetInternalVisitedOutlineColorInternal(v);
-  }
-  void SetInternalVisitedColumnRuleColor(const StyleColor& v) {
-    SetInternalVisitedColumnRuleColorInternal(v);
-  }
-  void SetInternalVisitedTextDecorationColor(const StyleColor& v) {
-    SetInternalVisitedTextDecorationColorInternal(v);
-  }
-  void SetInternalVisitedTextEmphasisColor(const StyleColor& color) {
-    SetInternalVisitedTextEmphasisColorInternal(color);
-  }
-  void SetInternalVisitedTextFillColor(const StyleColor& color) {
-    SetInternalVisitedTextFillColorInternal(color);
-  }
-  void SetInternalVisitedTextStrokeColor(const StyleColor& color) {
-    SetInternalVisitedTextStrokeColorInternal(color);
-  }
-
-  void SetInternalForcedVisitedColor(const StyleColor& v) {
-    SetInternalForcedVisitedColorInternal(v);
   }
 
   static bool IsDisplayBlockContainer(EDisplay display) {
@@ -3142,7 +2848,6 @@ class ComputedStyle : public ComputedStyleBase,
       const ComputedStyle& new_style);
 
   bool ShouldForceColor(const StyleColor& unforced_color) const;
-  bool ShouldPreserveParentColor() const;
 
   void ClearBackgroundImage();
 
@@ -3231,6 +2936,10 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   explicit ComputedStyleBuilder(const ComputedStyle& style) {
     SetStyle(ComputedStyle::Clone(style));
   }
+  ComputedStyleBuilder(const ComputedStyleBuilder& builder) = delete;
+  ComputedStyleBuilder(ComputedStyleBuilder&&) = default;
+  ComputedStyleBuilder& operator=(const ComputedStyleBuilder&) = delete;
+  ComputedStyleBuilder& operator=(ComputedStyleBuilder&&) = default;
 
   // TODO(crbug.com/1377295): Eventually remove these functions.
   ComputedStyle* MutableInternalStyle() const { return style_.get(); }
@@ -3238,7 +2947,88 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
 
   scoped_refptr<ComputedStyle> TakeStyle() { return std::move(style_); }
 
+  // column-count
+  void SetColumnCount(uint16_t c) {
+    SetHasAutoColumnCountInternal(false);
+    SetColumnCountInternal(ClampTo<uint16_t>(c, 1));
+  }
+  void SetHasAutoColumnCount() {
+    SetHasAutoColumnCountInternal(true);
+    SetColumnCountInternal(ComputedStyleInitialValues::InitialColumnCount());
+  }
+
+  // column-rule-width
+  void SetColumnRuleWidth(uint16_t w) {
+    SetColumnRuleWidthInternal(LayoutUnit(w));
+  }
+
+  // column-width
+  void SetColumnWidth(float f) {
+    SetHasAutoColumnWidthInternal(false);
+    SetColumnWidthInternal(f);
+  }
+  void SetHasAutoColumnWidth() {
+    SetHasAutoColumnWidthInternal(true);
+    SetColumnWidthInternal(0);
+  }
+
+  // perspective-origin
+  void SetPerspectiveOriginX(const Length& v) {
+    SetPerspectiveOrigin(LengthPoint(v, PerspectiveOrigin().Y()));
+  }
+  void SetPerspectiveOriginY(const Length& v) {
+    SetPerspectiveOrigin(LengthPoint(PerspectiveOrigin().X(), v));
+  }
+
+  // transform-origin
+  void SetTransformOriginX(const Length& v) {
+    SetTransformOrigin(
+        TransformOrigin(v, GetTransformOrigin().Y(), GetTransformOrigin().Z()));
+  }
+  void SetTransformOriginY(const Length& v) {
+    SetTransformOrigin(
+        TransformOrigin(GetTransformOrigin().X(), v, GetTransformOrigin().Z()));
+  }
+  void SetTransformOriginZ(float f) {
+    SetTransformOrigin(
+        TransformOrigin(GetTransformOrigin().X(), GetTransformOrigin().Y(), f));
+  }
+
+  // -webkit-box-ordinal-group
+  void SetBoxOrdinalGroup(unsigned ordinal_group) {
+    SetBoxOrdinalGroupInternal(
+        std::min(std::numeric_limits<unsigned>::max() - 1, ordinal_group));
+  }
+
+  // widows
+  void SetWidows(int16_t w) { SetWidowsInternal(ClampTo<int16_t>(w, 1)); }
+
+  // z-index
+  void SetZIndex(int v) {
+    SetHasAutoZIndexInternal(false);
+    SetZIndexInternal(v);
+  }
+  void SetHasAutoZIndex() {
+    SetHasAutoZIndexInternal(true);
+    SetZIndexInternal(0);
+  }
+
+  bool ShouldPreserveParentColor() const {
+    return InForcedColorsMode() &&
+           ForcedColorAdjust() == EForcedColorAdjust::kPreserveParentColor;
+  }
+
+  StyleColor InitialColorForColorScheme() const {
+    // TODO(crbug.com/1046753, crbug.com/929098): The initial value of the color
+    // property should be canvastext, but since we do not yet ship color-scheme
+    // aware system colors, we use this method instead. This should be replaced
+    // by default_value:"canvastext" in css_properties.json5.
+    return StyleColor(DarkColorScheme() ? Color::kWhite : Color::kBlack);
+  }
+
  private:
+  friend class ColorPropertyFunctions;
+  friend class StyleAdjuster;
   friend class StyleResolverState;
 
   ComputedStyleBuilder() = default;

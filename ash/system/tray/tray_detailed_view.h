@@ -24,13 +24,13 @@ class ImageView;
 class Label;
 class ProgressBar;
 class ScrollView;
+class Separator;
 }  // namespace views
 
 namespace ash {
 
 class DetailedViewDelegate;
 class HoverHighlightView;
-class ScrollBorder;
 class TriView;
 
 class ASH_EXPORT TrayDetailedView : public views::View,
@@ -69,39 +69,31 @@ class ASH_EXPORT TrayDetailedView : public views::View,
   // any other view between the list and the footer row at the bottom.
   void CreateScrollableList();
 
-  // Adds a targetable row to |scroll_content_| containing |icon| and |text|.
-  HoverHighlightView* AddScrollListItem(const gfx::VectorIcon& icon,
+  // Adds a targetable row to `container` containing `icon` and `text`.
+  // Pre-QsRevamp the `container` should be scroll_content().
+  // Post-QsRevamp the `container` may be a RoundedContainer.
+  HoverHighlightView* AddScrollListItem(views::View* container,
+                                        const gfx::VectorIcon& icon,
                                         const std::u16string& text);
 
-  // Add a child view to the scroll list.
-  void AddScrollListChild(std::unique_ptr<views::View> child);
-
-  // Adds a targetable row to |scroll_content_| containing |icon|, |text|, and a
-  // checkbox. |checked| determines whether the checkbox is checked or not.
-  // |enterprise_managed| determines whether or not there will be an enterprise
+  // Adds a targetable row to `container` containing `icon`, `text`, and a
+  // checkbox. `checked` determines whether the checkbox is checked or not.
+  // `enterprise_managed` determines whether or not there will be an enterprise
   // managed icon for that item.
+  // Pre-QsRevamp the `container` should be scroll_content().
+  // Post-QsRevamp the `container` may be a RoundedContainer.
   HoverHighlightView* AddScrollListCheckableItem(
+      views::View* container,
       const gfx::VectorIcon& icon,
       const std::u16string& text,
       bool checked,
       bool enterprise_managed = false);
 
-  // Adds a targetable row to |scroll_content_| containing |text| and a
-  // checkbox. |checked| determines whether the checkbox is checked or not.
-  // |enterprise_managed| determines whether or not there will be an enterprise
-  // managed icon for that item.
-  HoverHighlightView* AddScrollListCheckableItem(
-      const std::u16string& text,
-      bool checked,
-      bool enterprise_managed = false);
-
-  // Adds a sticky sub header to |scroll_content_| containing |icon| and a text
-  // represented by |text_id| resource id.
-  TriView* AddScrollListSubHeader(const gfx::VectorIcon& icon, int text_id);
-
-  // Adds a sticky sub header to |scroll_content_| containing a text represented
-  // by |text_id| resource id.
-  TriView* AddScrollListSubHeader(int text_id);
+  // Adds a sticky sub header to `container` containing `icon` and a text
+  // represented by `text_id` resource id.
+  TriView* AddScrollListSubHeader(views::View* container,
+                                  const gfx::VectorIcon& icon,
+                                  int text_id);
 
   // Removes (and destroys) all child views.
   void Reset();
@@ -140,6 +132,13 @@ class ASH_EXPORT TrayDetailedView : public views::View,
   // Overridden to handle clicks on subclass-specific views.
   virtual void HandleViewClicked(views::View* view);
 
+  // Returns the TriView used for the title row. A label with `string_id` is
+  // added to the CENTER view.
+  std::unique_ptr<TriView> CreateTitleTriView(int string_id);
+
+  // Returns the separator used between the title row and the contents.
+  std::unique_ptr<views::Separator> CreateTitleSeparator();
+
   // Creates and adds subclass-specific buttons to the title row.
   virtual void CreateExtraTitleRowButtons();
 
@@ -152,17 +151,25 @@ class ASH_EXPORT TrayDetailedView : public views::View,
   views::View* scroll_content_ = nullptr;
   views::ProgressBar* progress_bar_ = nullptr;
 
-  ScrollBorder* scroll_border_ = nullptr;  // Weak reference
-
-  // The container view for the top-most title row in material design.
+  // The container view for the top-most title row. Owned by views hierarchy.
   TriView* tri_view_ = nullptr;
 
-  // The back button that appears in the material design title row. Not owned.
+  // The back button that appears in the title row. Owned by views hierarchy.
   views::Button* back_button_ = nullptr;
 
+  // The label in the title row. Owned by views hierarchy.
+  views::Label* title_label_ = nullptr;
+
+  // Owned by views hierarchy.
   views::Label* sub_header_label_ = nullptr;
   views::ImageView* sub_header_image_view_ = nullptr;
+
+  // Owned by vector icon cache.
   const gfx::VectorIcon* sub_header_icon_ = nullptr;
+
+  // The separator under the title row. Not all views have a separator. Owned by
+  // views hierarchy.
+  views::Separator* title_separator_ = nullptr;
 
   // Gets modified to false in the constructor of the view if it doesn't have a
   // separator.

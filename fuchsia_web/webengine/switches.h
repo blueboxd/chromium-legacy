@@ -5,6 +5,8 @@
 #ifndef FUCHSIA_WEB_WEBENGINE_SWITCHES_H_
 #define FUCHSIA_WEB_WEBENGINE_SWITCHES_H_
 
+#include "build/chromecast_buildflags.h"
+
 // Switches used by the ContextProviderImpl to configure each Context process.
 namespace switches {
 
@@ -28,7 +30,8 @@ extern const char kEnableRemoteDebugMode[];
 // Specifies a custom UserAgent product & version to use.
 extern const char kUserAgentProductAndVersion[];
 
-// By default, an https page cannot run JavaScript, CSS or resources from http
+#if BUILDFLAG(ENABLE_CAST_RECEIVER)
+// By default, an HTTPS page cannot run JavaScript, CSS or resources from HTTP
 // URLs. This provides an override to get the old insecure behavior.
 // TODO(crbug.com/1023514): Remove this switch when it is no longer
 // necessary.
@@ -37,6 +40,7 @@ extern const char kAllowRunningInsecureContent[];
 // Enables use of the fuchsia.legacymetrics.MetricsRecorder service for
 // telemetry.
 extern const char kUseLegacyMetricsService[];
+#endif
 
 // Specifies a comma-separated list of HTTP headers to exempt from CORS checks.
 extern const char kCorsExemptHeaders[];

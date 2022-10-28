@@ -24,11 +24,11 @@ export const fakeSubCategories: Map<number, string> = new Map([
 ]);
 
 export const fakeAcceleratorConfig: AcceleratorConfig = {
-  [AcceleratorSource.ASH]: {
+  [AcceleratorSource.kAsh]: {
     // Snap Window Left
     [0]: [{
-      type: AcceleratorType.DEFAULT,
-      state: AcceleratorState.ENABLED,
+      type: AcceleratorType.kDefault,
+      state: AcceleratorState.kEnabled,
       locked: true,
       accelerator: {
         modifiers: Modifier.ALT,
@@ -38,8 +38,8 @@ export const fakeAcceleratorConfig: AcceleratorConfig = {
     }],
     // Snap Window Right
     [1]: [{
-      type: AcceleratorType.DEFAULT,
-      state: AcceleratorState.ENABLED,
+      type: AcceleratorType.kDefault,
+      state: AcceleratorState.kEnabled,
       locked: false,
       accelerator: {
         modifiers: Modifier.ALT,
@@ -49,8 +49,8 @@ export const fakeAcceleratorConfig: AcceleratorConfig = {
     }],
     // New Desk
     [2]: [{
-      type: AcceleratorType.DEFAULT,
-      state: AcceleratorState.ENABLED,
+      type: AcceleratorType.kDefault,
+      state: AcceleratorState.kEnabled,
       locked: false,
       accelerator: {
         modifiers: Modifier.COMMAND | Modifier.SHIFT,
@@ -60,8 +60,8 @@ export const fakeAcceleratorConfig: AcceleratorConfig = {
     }],
     // Remove Desk
     [3]: [{
-      type: AcceleratorType.DEFAULT,
-      state: AcceleratorState.ENABLED,
+      type: AcceleratorType.kDefault,
+      state: AcceleratorState.kEnabled,
       locked: false,
       accelerator: {
         modifiers: Modifier.COMMAND | Modifier.SHIFT,
@@ -70,11 +70,11 @@ export const fakeAcceleratorConfig: AcceleratorConfig = {
       },
     }],
   },
-  [AcceleratorSource.BROWSER]: {
+  [AcceleratorSource.kBrowser]: {
     // New Tab
     [1001]: [{
-      type: AcceleratorType.DEFAULT,
-      state: AcceleratorState.ENABLED,
+      type: AcceleratorType.kDefault,
+      state: AcceleratorState.kEnabled,
       locked: true,
       accelerator: {
         modifiers: Modifier.CONTROL,
@@ -91,7 +91,7 @@ export const fakeLayoutInfo: LayoutInfoList = [
     sub_category: 0,  // Window Management.
     description: 0,   // Snap Window Left.
     layout_style: LayoutStyle.DEFAULT,
-    source: AcceleratorSource.ASH,
+    source: AcceleratorSource.kAsh,
     action: 0,
   },
   {
@@ -99,7 +99,7 @@ export const fakeLayoutInfo: LayoutInfoList = [
     sub_category: 0,  // Window Management.
     description: 1,   // Snap Window Right.
     layout_style: LayoutStyle.DEFAULT,
-    source: AcceleratorSource.ASH,
+    source: AcceleratorSource.kAsh,
     action: 1,
   },
   {
@@ -107,7 +107,7 @@ export const fakeLayoutInfo: LayoutInfoList = [
     sub_category: 1,  // Virtual Desks.
     description: 2,   // Create Desk.
     layout_style: LayoutStyle.DEFAULT,
-    source: AcceleratorSource.ASH,
+    source: AcceleratorSource.kAsh,
     action: 2,
   },
   {
@@ -115,7 +115,7 @@ export const fakeLayoutInfo: LayoutInfoList = [
     sub_category: 1,  // Virtual Desks.
     description: 3,   // Remove Desk.
     layout_style: LayoutStyle.DEFAULT,
-    source: AcceleratorSource.ASH,
+    source: AcceleratorSource.kAsh,
     action: 3,
   },
   {
@@ -123,7 +123,7 @@ export const fakeLayoutInfo: LayoutInfoList = [
     sub_category: 2,    // Tabs.
     description: 1001,  // New tab.
     layout_style: LayoutStyle.DEFAULT,
-    source: AcceleratorSource.BROWSER,
+    source: AcceleratorSource.kBrowser,
     action: 1001,
   },
 ];

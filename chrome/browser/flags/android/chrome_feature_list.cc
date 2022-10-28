@@ -204,7 +204,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizableAlwaysShowNavBarButtons,
     &kCCTResizableForFirstParties,
     &kCCTResizableForThirdParties,
-    &kCCTResizableWindowAboveNavbar,
     &kCCTRetainingState,
     &kCCTResourcePrefetch,
     &kCCTShowAboutBlankUrl,
@@ -232,9 +231,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kContextualSearchForceCaption,
     &kContextualSearchSuppressShortView,
     &kContextualSearchThinWebViewImplementation,
-    &kContextualTriggersSelectionHandles,
-    &kContextualTriggersSelectionMenu,
-    &kContextualTriggersSelectionSize,
     &kDirectActions,
     &kDisableCompositedProgressBar,
     &kDownloadFileProvider,
@@ -246,6 +242,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kExploreSites,
     &kFixedUmaSessionResumeOrder,
     &kFocusOmniboxInIncognitoTabIntents,
+    &kFoldableJankFix,
     &kGridTabSwitcherForTablets,
     &kHandleMediaIntents,
     &kImmersiveUiMode,
@@ -355,7 +352,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &language::kTranslateIntent,
     &messages::kMessagesForAndroidChromeSurvey,
     &messages::kMessagesForAndroidInfrastructure,
-    &messages::kMessagesForAndroidInstantApps,
     &messages::kMessagesForAndroidReaderMode,
     &messages::kMessagesForAndroidReduceLayoutChanges,
     &messages::kMessagesForAndroidSaveCard,
@@ -620,10 +616,6 @@ BASE_FEATURE(kCCTResizableForThirdParties,
              "CCTResizableForThirdParties",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kCCTResizableWindowAboveNavbar,
-             "CCTResizableWindowAboveNavbar",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kCCTResourcePrefetch,
              "CCTResourcePrefetch",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -732,18 +724,6 @@ BASE_FEATURE(kContextualSearchThinWebViewImplementation,
              "ContextualSearchThinWebViewImplementation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kContextualTriggersSelectionHandles,
-             "ContextualTriggersSelectionHandles",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kContextualTriggersSelectionMenu,
-             "ContextualTriggersSelectionMenu",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kContextualTriggersSelectionSize,
-             "ContextualTriggersSelectionSize",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kDirectActions, "DirectActions", base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDisableCompositedProgressBar,
@@ -779,6 +759,10 @@ BASE_FEATURE(kExperimentsForAgsa,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExploreSites, "ExploreSites", base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kFoldableJankFix,
+             "FoldableJankFix",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kGridTabSwitcherForTablets,
              "GridTabSwitcherForTablets",
@@ -904,7 +888,7 @@ BASE_FEATURE(kReengagementNotification,
 
 BASE_FEATURE(kRelatedSearches,
              "RelatedSearches",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRelatedSearchesAlternateUx,
              "RelatedSearchesAlternateUx",
@@ -912,7 +896,7 @@ BASE_FEATURE(kRelatedSearchesAlternateUx,
 
 BASE_FEATURE(kRelatedSearchesInBar,
              "RelatedSearchesInBar",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRelatedSearchesSimplifiedUx,
              "RelatedSearchesSimplifiedUx",
@@ -920,7 +904,7 @@ BASE_FEATURE(kRelatedSearchesSimplifiedUx,
 
 BASE_FEATURE(kRelatedSearchesUi,
              "RelatedSearchesUi",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRequestDesktopSiteDefaults,
              "RequestDesktopSiteDefaults",

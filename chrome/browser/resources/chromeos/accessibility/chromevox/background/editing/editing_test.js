@@ -1662,9 +1662,11 @@ AX_TEST_F('ChromeVoxEditingTest', 'MoveByCharSuggestions', async function() {
   await mockFeedback.replay();
 });
 
-AX_TEST_F('ChromeVoxEditingTest', 'MoveByWordSuggestions', async function() {
-  const mockFeedback = this.createMockFeedback();
-  const site = `
+// TODO(accessibility): flaky; https://crbug.com/1342870.
+AX_TEST_F(
+    'ChromeVoxEditingTest', 'DISABLED_MoveByWordSuggestions', async function() {
+      const mockFeedback = this.createMockFeedback();
+      const site = `
     <div contenteditable="true" role="textbox">
       <p>Start</p>
       <span>I </span>
@@ -1674,29 +1676,29 @@ AX_TEST_F('ChromeVoxEditingTest', 'MoveByWordSuggestions', async function() {
       <p>End</p>
     </div>
   `;
-  const root = await this.runWithLoadedTree(site);
-  await this.focusFirstTextField(root);
+      const root = await this.runWithLoadedTree(site);
+      await this.focusFirstTextField(root);
 
-  mockFeedback.call(this.press(KeyCode.DOWN))
-      .expectSpeech('I ')
-      // Move forward through line.
-      .call(this.press(KeyCode.RIGHT, {ctrl: true}))
-      .expectSpeech('I')
-      .call(this.press(KeyCode.RIGHT, {ctrl: true}))
-      .expectSpeech('Suggest', 'Username', 'Insert', 'was', 'Insert end')
-      .call(this.press(KeyCode.RIGHT, {ctrl: true}))
-      .expectSpeech('Delete', 'am', 'Delete end', 'Suggest end')
-      // Move backward through line.
-      .call(this.press(KeyCode.LEFT, {ctrl: true}))
-      .expectSpeech('Delete', 'am', 'Delete end', 'Suggest end')
-      .call(this.press(KeyCode.LEFT, {ctrl: true}))
-      .expectSpeech('Suggest', 'Username', 'Insert', 'was')
-      .call(this.press(KeyCode.LEFT, {ctrl: true}))
-      .expectSpeech('I')
-      .call(this.press(KeyCode.DOWN))
-      .expectSpeech('End');
-  await mockFeedback.replay();
-});
+      mockFeedback.call(this.press(KeyCode.DOWN))
+          .expectSpeech('I ')
+          // Move forward through line.
+          .call(this.press(KeyCode.RIGHT, {ctrl: true}))
+          .expectSpeech('I')
+          .call(this.press(KeyCode.RIGHT, {ctrl: true}))
+          .expectSpeech('Suggest', 'Username', 'Insert', 'was', 'Insert end')
+          .call(this.press(KeyCode.RIGHT, {ctrl: true}))
+          .expectSpeech('Delete', 'am', 'Delete end', 'Suggest end')
+          // Move backward through line.
+          .call(this.press(KeyCode.LEFT, {ctrl: true}))
+          .expectSpeech('Delete', 'am', 'Delete end', 'Suggest end')
+          .call(this.press(KeyCode.LEFT, {ctrl: true}))
+          .expectSpeech('Suggest', 'Username', 'Insert', 'was')
+          .call(this.press(KeyCode.LEFT, {ctrl: true}))
+          .expectSpeech('I')
+          .call(this.press(KeyCode.DOWN))
+          .expectSpeech('End');
+      await mockFeedback.replay();
+    });
 
 AX_TEST_F(
     'ChromeVoxEditingTest', 'MoveByWordSuggestionsNoIntents', async function() {
@@ -2460,3 +2462,28 @@ AX_TEST_F(
 
       await mockFeedback.replay();
     });
+
+AX_TEST_F('ChromeVoxEditingTest', 'SelectAcrossSoftLineWraps', async function() {
+  const mockFeedback = this.createMockFeedback();
+  const site = `
+    <p>start</p>
+    <div role=textbox contenteditable>Copy this message into any text field. Move to the top, then select with shift+down arrow. Notice that text selection reads from the beginning of the very long line when pressing shift+down arrow. This continues to happen until encountering a line break
+like this one.
+    </div>
+  `;
+  const root = await this.runWithLoadedTree(site);
+  await this.focusFirstTextField(root);
+
+  const textField = root.find({role: RoleType.TEXT_FIELD});
+  mockFeedback.expectSpeech('Text area')
+      .call(this.press(KeyCode.DOWN, {shift: true}))
+      .expectSpeech(
+          'Copy this message into any text field. Move to the top, then select with shift+down arrow. Notice that text selection reads from the beginning of the very long line when ',
+          'selected')
+      .call(this.press(KeyCode.DOWN, {shift: true}))
+      .expectSpeech(
+          'pressing shift+down arrow. This continues to happen until encountering a line breaklike this one.',
+          'selected');
+
+  await mockFeedback.replay();
+});

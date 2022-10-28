@@ -718,6 +718,8 @@ void VideoEncodeAcceleratorAdapter::BitstreamBufferReady(
     result.temporal_id = metadata.vp8.value().temporal_idx;
   else if (metadata.av1.has_value())
     result.temporal_id = metadata.av1.value().temporal_idx;
+  else if (metadata.h265.has_value())
+    result.temporal_id = metadata.h265.value().temporal_idx;
 
   DCHECK_EQ(buffer_id, 0);
   // There is always one output buffer.
@@ -868,7 +870,13 @@ void VideoEncodeAcceleratorAdapter::NotifyError(
 }
 
 void VideoEncodeAcceleratorAdapter::NotifyEncoderInfoChange(
-    const VideoEncoderInfo& info) {}
+    const VideoEncoderInfo& info) {
+  // TODO(crbug.com/1378157): More VideoEncoderInfo can be fetched from VEA
+  // beneath. Here the accurate encoder name is updated to MediaLog. So things
+  // like media tab in Developer tools can show the actual encoder name.
+  media_log_->SetProperty<media::MediaLogProperty::kVideoEncoderName>(
+      info.implementation_name);
+}
 
 void VideoEncodeAcceleratorAdapter::InitCompleted(EncoderStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(accelerator_sequence_checker_);
@@ -981,8 +989,7 @@ VideoEncodeAcceleratorAdapter::PrepareCpuFrame(
 
   shared_frame->BackWithSharedMemory(handle->region());
   shared_frame->AddDestructionObserver(
-      base::BindOnce([](std::unique_ptr<ReadOnlyRegionPool::Handle> handle) {},
-                     std::move(handle)));
+      base::DoNothingWithBoundArgs(std::move(handle)));
   return shared_frame;
 }
 

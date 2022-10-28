@@ -220,7 +220,6 @@
 <translation id="2107914222138020205">আপনার USB-C কেবল Thunderbolt-এ কাজ করে না। ডিভাইসের পারফর্ম্যান্স সীমিত হতে পারে।</translation>
 <translation id="2108303511227308752">Alt + Backspace কীবোর্ড শর্ককার্ট পরিবর্তন করা হয়েছে। Delete কী ব্যবহার করতে, <ph name="LAUNCHER_KEY_NAME" /> + Backspace কী প্রেস করুন।</translation>
 <translation id="211328683600082144">মাইক্রোফোন চালু করুন</translation>
-<translation id="2123115117533398272">ChromeOS নতুন কন্টেন্ট দেখার সাজেশন দেয়। আপনি ব্যবহারের ডেটা শেয়ার করার বিকল্প বেছে নিলে তবেই এটি সাজেশন আরও উন্নত করার উদ্দেশ্যে পরিসংখ্যান পাঠায়। <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="2126242104232412123">নতুন ডেস্ক</translation>
 <translation id="2132302418721800944">ফুল স্ক্রিন রেকর্ড করুন</translation>
 <translation id="2135456203358955318">ডক করা ম্যাগনিফায়ার</translation>
@@ -288,7 +287,6 @@
 <translation id="2542089167727451762">আপনার প্রোফাইল ছবিতে ট্যাপ করুন</translation>
 <translation id="255671100581129685">সর্বজনীন সেশনে Google অ্যাসিস্ট্যান্ট উপলভ্য নয়।</translation>
 <translation id="256712445991462162">ডক করা ম্যাগনিফায়ার</translation>
-<translation id="2570734079541893434">সেটিংস ম্যানেজ করুন</translation>
 <translation id="2573588302192866788"><ph name="NAME" />-এ কানেক্ট করা যায়নি</translation>
 <translation id="2575685495496069081">একাধিক সাইন-ইন বিকল্প বন্ধ করা হয়েছে</translation>
 <translation id="2582112259361606227">আপডেট করার জন্য রিস্টার্ট করুন</translation>
@@ -309,6 +307,7 @@
 <translation id="2673968385134502798">গেম</translation>
 <translation id="2678852583403169292">"বাছুন ও শুনুন" মেনু</translation>
 <translation id="2689613560355655046">ডেস্ক ৮</translation>
+<translation id="2695132445805301912">কী এবং ক্লিক দেখান</translation>
 <translation id="2695305337569143674">ওয়েব</translation>
 <translation id="2697697418792422688">কীবোর্ড সেটিংস দেখান। <ph name="KEYBOARD_NAME" /> বেছে নেওয়া হয়েছে।</translation>
 <translation id="2700493154570097719">আপনার কীবোর্ড সেট করুন</translation>
@@ -1126,6 +1125,7 @@
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7313193732017069507">ক্যামেরা সামনে আনুন</translation>
 <translation id="731589979057211264">শেল্ফ পার্টি চালু আছে।</translation>
+<translation id="7340731148882810149">অটোমেটিক ক্লিক মেনু</translation>
 <translation id="7346909386216857016">ঠিক আছে, বুঝেছি</translation>
 <translation id="7348093485538360975">অন-স্ক্রীণ কীবোর্ড</translation>
 <translation id="735745346212279324">VPN ডিসকানেক্ট করা হয়েছে</translation>
@@ -1303,6 +1303,7 @@
 <translation id="826107067893790409"><ph name="USER_EMAIL_ADDRESS" /> আনলক করতে এন্টার বোতামে প্রেস করুন</translation>
 <translation id="8261506727792406068">মুছুন</translation>
 <translation id="8270450402312105425">{0,plural, =1{১ ঘণ্টার মধ্যে ডিভাইসটি আগের ভার্সনে ফিরিয়ে নিয়ে যান}one{# ঘণ্টার মধ্যে ডিভাইসটি আগের ভার্সনে ফিরিয়ে নিয়ে যান}other{# ঘণ্টার মধ্যে ডিভাইসটি আগের ভার্সনে ফিরিয়ে নিয়ে যান}}</translation>
+<translation id="8277261673056602147">আপনার স্ক্রিনে টেক্সট হাইলাইট করুন</translation>
 <translation id="8284362522226889623">পূর্ববর্তী ডেস্কে সুইচ করতে, চার আঙুল ব্যবহার করে বাঁদিকে সোয়াইপ করুন</translation>
 <translation id="828708037801473432">বন্ধ করা আছে</translation>
 <translation id="8297006494302853456">দুর্বল</translation>

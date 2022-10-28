@@ -320,6 +320,7 @@
       'bf_cache_chrome_public_test_apk': {
         'args': [
           '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.chrome_public_test_apk.filter'
         ],
         'swarming': {
           'shards': 20,
@@ -332,6 +333,7 @@
       'bf_cache_chrome_public_unit_test_apk': {
         'args': [
           '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.chrome_public_unit_test_apk.filter'
         ],
         'mixins': [
           'skia_gold_test',
@@ -341,6 +343,7 @@
       'bf_cache_content_shell_test_apk': {
         'args': [
           '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.content_shell_test_apk.filter'
         ],
         'swarming': {
           'shards': 5,
@@ -496,7 +499,18 @@
         'mixins': [
           'skia_gold_test',
         ],
-      }
+      },
+      'content_browsertests_persistent_shell': {
+        'args': [
+          '--use-persistent-shell',
+        ],
+        'ci_only': True,
+        'test': 'content_browsertests',
+        'experiment_percentage': 100,
+        'swarming': {
+          'shards': 20,
+        },     
+      },
     },
 
     'chrome_public_tests': {
@@ -522,6 +536,7 @@
     'chrome_public_wpt': {
       'chrome_public_wpt': {
         'args': [
+          '--no-wpt-internal',
           '--log-wptreport',
         ],
         'swarming': {
@@ -2132,8 +2147,7 @@
       'browser_tests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.browser_tests.filter',
-          '--',
-          '--test-launcher-timeout=60000',
+          '--test-arg=--test-launcher-timeout=60000',
         ],
         'swarming': {
           'shards': 40,
@@ -2142,10 +2156,9 @@
       # TODO(crbug.com/1371630): Move to one of the fuchsia_common_gtests* sets.
       'content_browsertests': {
         'args': [
-          '--',
-          '--disable-gpu',
-          '--headless',
-          '--ozone-platform=headless',
+          '--test-arg=--disable-gpu',
+          '--test-arg=--headless',
+          '--test-arg=--ozone-platform=headless',
         ],
         'swarming': {
           'shards': 8,
@@ -2223,8 +2236,7 @@
       },
       'ozone_gl_unittests': {
         'args': [
-          '--',
-          '--ozone-platform=headless',
+          '--test-arg=--ozone-platform=headless',
         ],
       },
       'ozone_unittests': {},
@@ -5007,14 +5019,12 @@
       'web_engine_browsertests': {},
       'web_engine_integration_tests': {
         'args': [
-          '--',
-          '--vmodule=test_navigation_listener=1',
+          '--test-arg=--vmodule=test_navigation_listener=1',
         ],
       },
       'web_engine_integration_tests_cfv1': {
         'args': [
-          '--',
-          '--vmodule=test_navigation_listener=1',
+          '--test-arg=--vmodule=test_navigation_listener=1',
         ],
       },
       'web_engine_unittests': {},
@@ -5331,9 +5341,7 @@
     'wpt_web_tests': {
       'wpt_tests_suite': {
         'args': [
-          '--no-wpt-internal',
           '--child-processes=8',
-          '--no-restart-on-new-group',
           '--log-wptreport',
         ],
         'merge': {
@@ -5355,7 +5363,6 @@
       'wpt_tests_suite': {
         'args': [
           '--child-processes=8',
-          '--no-restart-on-new-group',
           '--log-wptreport',
           '--xvfb'
         ],
@@ -5423,7 +5430,6 @@
       'wpt_tests_suite': {
         'args': [
           '--child-processes=8',
-          '--no-restart-on-new-group',
           '--product=chrome_ios'
         ],
         'merge': {
@@ -7079,10 +7085,6 @@
     'lacros_skylab_tests_amd64_generic': {
       'lacros_skylab_tests': {
         'variants': [
-          'CROS_ATLAS_RELEASE_LKGM',
-          'CROS_ATLAS_RELEASE_DEV',
-          'CROS_ATLAS_RELEASE_BETA',
-          'CROS_ATLAS_RELEASE_STABLE',
           'CROS_EVE_RELEASE_LKGM',
           'CROS_EVE_RELEASE_DEV',
           'CROS_EVE_RELEASE_BETA',

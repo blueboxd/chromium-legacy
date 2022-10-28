@@ -19,7 +19,7 @@
 #include "chrome/browser/ash/login/help_app_launcher.h"
 #include "chrome/browser/ash/login/screens/error_screen.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
-#include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "net/cookies/canonical_cookie.h"
 
@@ -85,8 +85,7 @@ class EnrollmentScreenHandler
   void Unbind() override;
   void ShowSigninScreen() override;
   void ShowSkipConfirmationDialog() override;
-  void ShowUserError(UserErrorType error_type,
-                     const std::string& email) override;
+  void ShowUserError(const std::string& email) override;
   void ShowEnrollmentDuringTrialNotAllowedError() override;
   void ShowActiveDirectoryScreen(const std::string& domain_join_config,
                                  const std::string& machine_name,

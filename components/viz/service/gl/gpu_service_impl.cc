@@ -101,6 +101,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "components/viz/common/overlay_state/win/overlay_state_service.h"
+#include "gpu/command_buffer/service/shared_image/d3d_image_backing_factory.h"
 #include "media/base/win/mf_feature_checks.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gl/dcomp_surface_registry.h"
@@ -513,6 +514,11 @@ void GpuServiceImpl::UpdateGPUInfo() {
         image_decode_accelerator_worker_->GetSupportedProfiles();
   }
 
+#if BUILDFLAG(IS_WIN)
+  gpu_info_.shared_image_d3d =
+      gpu::D3DImageBackingFactory::IsD3DSharedImageSupported(gpu_preferences_);
+#endif
+
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
   gpu_info_.initialization_time = base::TimeTicks::Now() - start_time_;
@@ -573,13 +579,13 @@ void GpuServiceImpl::InitializeWithHost(
     bool thread_safe_manager = display_context_on_another_thread;
     // Raw draw needs to access shared image backing on the compositor thread.
     thread_safe_manager |= features::IsUsingRawDraw();
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
     thread_safe_manager |= features::ShouldUseRealBuffersForPageFlipTest();
 #endif
     owned_shared_image_manager_ = std::make_unique<gpu::SharedImageManager>(
         thread_safe_manager, display_context_on_another_thread);
     shared_image_manager = owned_shared_image_manager_.get();
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   } else {
     // With this feature enabled, we don't expect to receive an external
     // SharedImageManager.

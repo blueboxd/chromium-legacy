@@ -4,9 +4,12 @@
 
 #include "ash/wm/desks/desks_textfield.h"
 
+#include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/style_util.h"
 #include "ash/wm/overview/overview_constants.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -25,6 +28,27 @@ namespace {
 constexpr int kDesksTextfieldBorderRadius = 4;
 
 constexpr int kDesksTextfieldMinHeight = 16;
+
+#if DCHECK_IS_ON()
+bool IsDesksBarOrSavedDeskLibraryWidget(const views::Widget* widget) {
+  if (!widget)
+    return false;
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  if (!overview_controller->InOverviewSession())
+    return false;
+
+  auto* session = overview_controller->overview_session();
+  for (const auto& grid : session->grid_list()) {
+    if (widget == grid->saved_desk_library_widget() ||
+        widget == grid->desks_widget()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+#endif  // DCHECK_IS_ON()
 
 }  // namespace
 
@@ -50,12 +74,17 @@ DesksTextfield::~DesksTextfield() = default;
 // static
 constexpr size_t DesksTextfield::kMaxLength;
 
-void DesksTextfield::UpdateViewAppearance() {
-  background()->SetNativeControlColor(GetBackgroundColor());
-  // Paint the whole view to update the background. The `SchedulePaint` in
-  // `UpdateFocusRingState` will only repaint the focus ring.
-  SchedulePaint();
-  UpdateFocusRingState();
+// static
+void DesksTextfield::CommitChanges(views::Widget* widget) {
+#if DCHECK_IS_ON()
+  DCHECK(IsDesksBarOrSavedDeskLibraryWidget(widget));
+#endif  // DCHECK_IS_ON()
+
+  auto* focus_manager = widget->GetFocusManager();
+  focus_manager->ClearFocus();
+  // Avoid having the focus restored to the same view when the parent view is
+  // refocused.
+  focus_manager->SetStoredFocusView(nullptr);
 }
 
 gfx::Size DesksTextfield::CalculatePreferredSize() const {
@@ -126,11 +155,13 @@ ui::Cursor DesksTextfield::GetCursor(const ui::MouseEvent& event) {
 void DesksTextfield::OnFocus() {
   GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
   views::Textfield::OnFocus();
+  UpdateViewAppearance();
 }
 
 void DesksTextfield::OnBlur() {
   GetRenderText()->SetElideBehavior(gfx::ELIDE_TAIL);
   views::Textfield::OnBlur();
+  UpdateViewAppearance();
 
   // Avoid having the focus restored to the same DeskNameView when the desk bar
   // widget is refocused. Use a post task to avoid calling
@@ -181,6 +212,14 @@ void DesksTextfield::UpdateFocusRingState() {
   views::FocusRing* focus_ring = views::FocusRing::Get(this);
   DCHECK(focus_ring);
   focus_ring->SchedulePaint();
+}
+
+void DesksTextfield::UpdateViewAppearance() {
+  background()->SetNativeControlColor(GetBackgroundColor());
+  // Paint the whole view to update the background. The `SchedulePaint` in
+  // `UpdateFocusRingState` will only repaint the focus ring.
+  SchedulePaint();
+  UpdateFocusRingState();
 }
 
 SkColor DesksTextfield::GetBackgroundColor() const {

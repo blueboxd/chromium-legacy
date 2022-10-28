@@ -90,8 +90,6 @@ source_set("audio") {
     "audio_manager_base.h",
     "audio_opus_encoder.cc",
     "audio_opus_encoder.h",
-    "audio_output_delegate.cc",
-    "audio_output_delegate.h",
     "audio_output_device.cc",
     "audio_output_device.h",
     "audio_output_device_thread_callback.cc",
@@ -211,13 +209,6 @@ source_set("audio") {
       "win/waveout_output_win.cc",
       "win/waveout_output_win.h",
     ]
-
-    if (enable_platform_dts_audio) {
-      sources += [
-        "win/audio_edid_scan_win.cc",
-        "win/audio_edid_scan_win.h",
-      ]
-    }
 
     deps += [ "//media/base/win:media_foundation_util" ]
 

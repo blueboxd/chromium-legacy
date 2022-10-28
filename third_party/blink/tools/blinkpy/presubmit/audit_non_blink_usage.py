@@ -510,6 +510,7 @@ _CONFIG = [
             # Document transitions
             'cc::DocumentTransitionRequest',
             'cc::DocumentTransitionContentLayer',
+            'viz::NavigationID'
             'viz::SharedElementResourceId',
 
             # base/types/strong_alias.h
@@ -1408,6 +1409,7 @@ _CONFIG = [
         ],
         'allowed': [
             'base::ClampMul',
+            'base::DoNothingWithBoundArgs',
             'base::PlatformThreadRef',
             'base::WrapRefCounted',
             'cc::kNumYUVPlanes',
@@ -1831,6 +1833,14 @@ _CONFIG = [
         'allowed': [
             # Used for injecting a mock.
             'base::NoDestructor',
+        ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/browsing_topics/browsing_topics_document_supplement.cc',
+        ],
+        'allowed': [
+            'browsing_topics::ApiAccessFailureReason',
         ]
     },
 ]

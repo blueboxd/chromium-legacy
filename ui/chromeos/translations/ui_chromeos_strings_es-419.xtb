@@ -124,7 +124,6 @@
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="2084108471225856927">Configuración del dispositivo</translation>
 <translation id="2084809735218147718">Persona agradeciendo</translation>
-<translation id="2085470240340828803">Ya existe un archivo llamado "<ph name="FILENAME" />". ¿Qué acción quieres realizar?</translation>
 <translation id="2088690981887365033">Red VPN</translation>
 <translation id="2122305276694332719">Si permites que tu dispositivo se conecte a una red oculta de forma automática, otras personas podrán ver tu dispositivo y algunas opciones de configuración de red, lo cual no es recomendable.</translation>
 <translation id="2125607626296734455">Jemer</translation>
@@ -653,6 +652,7 @@
 <translation id="6495925982925244349">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />%, administrada por tu administrador, detalles</translation>
 <translation id="649877868557234318">Extrayendo <ph name="FILE_NAME" /> en <ph name="FOLDER_NAME" /></translation>
 <translation id="6499681088828539489">Deshabilitar proxies para redes compartidas</translation>
+<translation id="6503285896705205014">La política del administrador no permite copiar <ph name="COUNT" /> archivos</translation>
 <translation id="6509122719576673235">Noruego</translation>
 <translation id="6528513914570774834">Permitir que otros usuarios de este dispositivo usen esta red</translation>
 <translation id="653019979737152879">Sincronizando <ph name="FILE_NAME" />…</translation>
@@ -755,6 +755,7 @@
 <translation id="7357762654218998920">Este tipo de archivo no es compatible. <ph name="BEGIN_LINK_HELP" />Obtén más información<ph name="END_LINK_HELP" /> para abrir archivos en Chrome OS.</translation>
 <translation id="7359359531237882347">Copiando <ph name="NUMBER_OF_ITEMS" /> elementos…</translation>
 <translation id="7375951387215729722">La lista de archivos se organiza por <ph name="COLUMN_NAME" /> en orden descendente.</translation>
+<translation id="7377161162143020057">La política del administrador no permite copiar este archivo</translation>
 <translation id="7402503521691663770">Dispositivos Chrome OS Flex</translation>
 <translation id="7408870451288633753">Checo</translation>
 <translation id="7417453074306512035">Teclado etíope</translation>

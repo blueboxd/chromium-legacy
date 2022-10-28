@@ -252,6 +252,7 @@ extern const char kLanguageEnabledImesSyncable[];
 extern const char kLanguageImeMenuActivated[];
 extern const char kLanguageInputMethodSpecificSettings[];
 extern const char kLanguageShouldMergeInputMethods[];
+extern const char kHindiInscriptLayoutEnabled[];
 
 extern const char kLabsAdvancedFilesystemEnabled[];
 extern const char kLabsMediaplayerEnabled[];
@@ -1250,6 +1251,7 @@ extern const char kLastWhatsNewVersion[];
 #if !BUILDFLAG(IS_ANDROID)
 extern const char kLensRegionSearchEnabled[];
 extern const char kSidePanelHorizontalAlignment[];
+extern const char kLensDesktopNTPSearchEnabled[];
 #endif
 
 extern const char kPrivacyGuideViewed[];
@@ -1266,7 +1268,6 @@ extern const char kSCTAuditingHashdanceReportCount[];
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kConsumerAutoUpdateToggle[];
-extern const char kHindiInscriptLayoutEnabled[];
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)

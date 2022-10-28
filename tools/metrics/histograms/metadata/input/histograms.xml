@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="InputMethod.ActiveCount" units="units"
-    expires_after="2023-02-19">
+    expires_after="2023-04-23">
   <owner>myy@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -417,6 +417,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="InputMethod.Assistive.MultiWord.ImplicitAcceptance"
+    enum="IMEAssistiveMultiWordSuggestionType" expires_after="2023-03-05">
+  <owner>curtismcmullan@google.com</owner>
+  <owner>essential-inputs-team@google.com</owner>
+  <summary>
+    This metric is recorded when a user implicitly accepts a multi word
+    suggestion that is shown to them. Implicit acceptance here means the user
+    has fully typed the suggestion shown to them, without explicitly accepting
+    the suggestion through the ui shown.
+  </summary>
+</histogram>
+
 <histogram name="InputMethod.Assistive.MultiWord.InputState"
     enum="IMEAssistiveTextInputState" expires_after="2023-04-16">
   <owner>curtismcmullan@google.com</owner>
@@ -625,7 +637,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.Category" enum="InputMethodCategory"
-    expires_after="2023-02-19">
+    expires_after="2023-04-23">
   <owner>shend@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -786,7 +798,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.ID2" enum="InputMethodID2"
-    expires_after="2023-02-22">
+    expires_after="2023-04-23">
   <owner>tranbaoduy@chromium.org</owner>
   <owner>shuchen@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
@@ -945,7 +957,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.PhysicalKeyboard.Korean.Action"
-    enum="KoreanAction" expires_after="2023-02-19">
+    enum="KoreanAction" expires_after="2023-04-23">
   <owner>shend@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>

@@ -371,6 +371,7 @@ static void AdjustStyleForFirstLetter(ComputedStyle& style) {
 }
 
 static void AdjustStyleForMarker(ComputedStyle& style,
+                                 ComputedStyleBuilder& builder,
                                  const ComputedStyle& parent_style,
                                  const Element& parent_element) {
   if (style.StyleType() != kPseudoIdMarker)
@@ -403,6 +404,7 @@ static void AdjustStyleForMarker(ComputedStyle& style,
 }
 
 static void AdjustStyleForHTMLElement(ComputedStyle& style,
+                                      ComputedStyleBuilder& builder,
                                       HTMLElement& element) {
   // <div> and <span> are the most common elements on the web, we skip all the
   // work for them.
@@ -494,19 +496,19 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
 
   if (IsA<HTMLMarqueeElement>(element)) {
     // For now, <marquee> requires an overflow clip to work properly.
-    style.SetOverflowX(EOverflow::kHidden);
-    style.SetOverflowY(EOverflow::kHidden);
+    builder.SetOverflowX(EOverflow::kHidden);
+    builder.SetOverflowY(EOverflow::kHidden);
     return;
   }
 
   if (IsA<HTMLTextAreaElement>(element)) {
     // Textarea considers overflow visible as auto.
-    style.SetOverflowX(style.OverflowX() == EOverflow::kVisible
-                           ? EOverflow::kAuto
-                           : style.OverflowX());
-    style.SetOverflowY(style.OverflowY() == EOverflow::kVisible
-                           ? EOverflow::kAuto
-                           : style.OverflowY());
+    builder.SetOverflowX(style.OverflowX() == EOverflow::kVisible
+                             ? EOverflow::kAuto
+                             : style.OverflowX());
+    builder.SetOverflowY(style.OverflowY() == EOverflow::kVisible
+                             ? EOverflow::kAuto
+                             : style.OverflowY());
     if (style.Display() == EDisplay::kContents)
       style.SetDisplay(EDisplay::kNone);
     return;
@@ -543,49 +545,51 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
   }
 }
 
-void StyleAdjuster::AdjustOverflow(ComputedStyle& style, Element* element) {
-  DCHECK(style.OverflowX() != EOverflow::kVisible ||
-         style.OverflowY() != EOverflow::kVisible);
+void StyleAdjuster::AdjustOverflow(ComputedStyle& style,
+                                   ComputedStyleBuilder& builder,
+                                   Element* element) {
+  DCHECK(builder.OverflowX() != EOverflow::kVisible ||
+         builder.OverflowY() != EOverflow::kVisible);
 
   bool overflow_is_clip_or_visible =
-      IsOverflowClipOrVisible(style.OverflowY()) &&
-      IsOverflowClipOrVisible(style.OverflowX());
+      IsOverflowClipOrVisible(builder.OverflowY()) &&
+      IsOverflowClipOrVisible(builder.OverflowX());
   if (!overflow_is_clip_or_visible && style.IsDisplayTableBox()) {
     // Tables only support overflow:hidden and overflow:visible and ignore
     // anything else, see https://drafts.csswg.org/css2/visufx.html#overflow. As
     // a table is not a block container box the rules for resolving conflicting
     // x and y values in CSS Overflow Module Level 3 do not apply. Arguably
     // overflow-x and overflow-y aren't allowed on tables but all UAs allow it.
-    if (style.OverflowX() != EOverflow::kHidden)
-      style.SetOverflowX(EOverflow::kVisible);
-    if (style.OverflowY() != EOverflow::kHidden)
-      style.SetOverflowY(EOverflow::kVisible);
+    if (builder.OverflowX() != EOverflow::kHidden)
+      builder.SetOverflowX(EOverflow::kVisible);
+    if (builder.OverflowY() != EOverflow::kHidden)
+      builder.SetOverflowY(EOverflow::kVisible);
     // If we are left with conflicting overflow values for the x and y axes on a
     // table then resolve both to OverflowVisible. This is interoperable
     // behaviour but is not specced anywhere.
-    if (style.OverflowX() == EOverflow::kVisible)
-      style.SetOverflowY(EOverflow::kVisible);
-    else if (style.OverflowY() == EOverflow::kVisible)
-      style.SetOverflowX(EOverflow::kVisible);
-  } else if (!IsOverflowClipOrVisible(style.OverflowY())) {
+    if (builder.OverflowX() == EOverflow::kVisible)
+      builder.SetOverflowY(EOverflow::kVisible);
+    else if (builder.OverflowY() == EOverflow::kVisible)
+      builder.SetOverflowX(EOverflow::kVisible);
+  } else if (!IsOverflowClipOrVisible(builder.OverflowY())) {
     // Values of 'clip' and 'visible' can only be used with 'clip' and
     // 'visible.' If they aren't, 'clip' and 'visible' is reset.
-    if (style.OverflowX() == EOverflow::kVisible)
-      style.SetOverflowX(EOverflow::kAuto);
-    else if (style.OverflowX() == EOverflow::kClip)
-      style.SetOverflowX(EOverflow::kHidden);
-  } else if (!IsOverflowClipOrVisible(style.OverflowX())) {
+    if (builder.OverflowX() == EOverflow::kVisible)
+      builder.SetOverflowX(EOverflow::kAuto);
+    else if (builder.OverflowX() == EOverflow::kClip)
+      builder.SetOverflowX(EOverflow::kHidden);
+  } else if (!IsOverflowClipOrVisible(builder.OverflowX())) {
     // Values of 'clip' and 'visible' can only be used with 'clip' and
     // 'visible.' If they aren't, 'clip' and 'visible' is reset.
-    if (style.OverflowY() == EOverflow::kVisible)
-      style.SetOverflowY(EOverflow::kAuto);
-    else if (style.OverflowY() == EOverflow::kClip)
-      style.SetOverflowY(EOverflow::kHidden);
+    if (builder.OverflowY() == EOverflow::kVisible)
+      builder.SetOverflowY(EOverflow::kAuto);
+    else if (builder.OverflowY() == EOverflow::kClip)
+      builder.SetOverflowY(EOverflow::kHidden);
   }
 
   if (element && !element->IsPseudoElement() &&
-      (style.OverflowX() == EOverflow::kClip ||
-       style.OverflowY() == EOverflow::kClip)) {
+      (builder.OverflowX() == EOverflow::kClip ||
+       builder.OverflowY() == EOverflow::kClip)) {
     UseCounter::Count(element->GetDocument(),
                       WebFeature::kOverflowClipAlongEitherAxis);
   }
@@ -665,7 +669,7 @@ void StyleAdjuster::AdjustEffectiveTouchAction(
     const ComputedStyle& parent_style,
     Element* element,
     bool is_svg_root) {
-  TouchAction inherited_action = parent_style.GetEffectiveTouchAction();
+  TouchAction inherited_action = parent_style.EffectiveTouchAction();
 
   bool is_replaced_canvas = element && IsA<HTMLCanvasElement>(element) &&
                             element->GetExecutionContext() &&
@@ -752,7 +756,7 @@ void StyleAdjuster::AdjustEffectiveTouchAction(
     Frame* content_frame = frame_owner->ContentFrame();
     if (content_frame) {
       content_frame->SetInheritedEffectiveTouchAction(
-          style.GetEffectiveTouchAction());
+          style.EffectiveTouchAction());
     }
   }
 }
@@ -783,18 +787,41 @@ static void AdjustStyleForInert(ComputedStyle& style, Element* element) {
   }
 }
 
-void StyleAdjuster::AdjustForForcedColorsMode(ComputedStyle& style) {
+void StyleAdjuster::AdjustForForcedColorsMode(ComputedStyle& style,
+                                              ComputedStyleBuilder& builder) {
   if (!style.InForcedColorsMode() ||
       style.ForcedColorAdjust() != EForcedColorAdjust::kAuto)
     return;
 
   style.SetTextShadow(ComputedStyleInitialValues::InitialTextShadow());
   style.SetBoxShadow(ComputedStyleInitialValues::InitialBoxShadow());
-  style.SetColorScheme({"light", "dark"});
+  builder.SetColorScheme({"light", "dark"});
   if (style.ShouldForceColor(style.AccentColor()))
-    style.SetAccentColor(ComputedStyleInitialValues::InitialAccentColor());
+    builder.SetAccentColor(ComputedStyleInitialValues::InitialAccentColor());
   if (!style.HasUrlBackgroundImage())
     style.ClearBackgroundImage();
+}
+
+void StyleAdjuster::AdjustForSVGTextElement(ComputedStyleBuilder& builder) {
+  builder.SetColumnGap(ComputedStyleInitialValues::InitialColumnGap());
+  builder.SetColumnWidthInternal(
+      ComputedStyleInitialValues::InitialColumnWidth());
+  builder.SetColumnRuleStyle(
+      ComputedStyleInitialValues::InitialColumnRuleStyle());
+  builder.SetColumnRuleWidthInternal(
+      LayoutUnit(ComputedStyleInitialValues::InitialColumnRuleWidth()));
+  builder.SetColumnRuleColor(
+      ComputedStyleInitialValues::InitialColumnRuleColor());
+  builder.SetInternalVisitedColumnRuleColor(
+      ComputedStyleInitialValues::InitialInternalVisitedColumnRuleColor());
+  builder.SetColumnCountInternal(
+      ComputedStyleInitialValues::InitialColumnCount());
+  builder.SetHasAutoColumnCountInternal(
+      ComputedStyleInitialValues::InitialHasAutoColumnCount());
+  builder.SetHasAutoColumnWidthInternal(
+      ComputedStyleInitialValues::InitialHasAutoColumnWidth());
+  builder.ResetColumnFill();
+  builder.ResetColumnSpan();
 }
 
 void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
@@ -802,13 +829,14 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   DCHECK(state.LayoutParentStyle());
   DCHECK(state.ParentStyle());
   ComputedStyle& style = state.StyleRef();
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   const ComputedStyle& parent_style = *state.ParentStyle();
   const ComputedStyle& layout_parent_style = *state.LayoutParentStyle();
 
   auto* html_element = DynamicTo<HTMLElement>(element);
   if (html_element && (style.Display() != EDisplay::kNone ||
                        element->LayoutObjectIsNeeded(style))) {
-    AdjustStyleForHTMLElement(style, *html_element);
+    AdjustStyleForHTMLElement(style, builder, *html_element);
   }
 
   auto* svg_element = DynamicTo<SVGElement>(element);
@@ -861,7 +889,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // We don't adjust the first letter style earlier because we may change the
     // display setting in AdjustStyleForHTMLElement() above.
     AdjustStyleForFirstLetter(style);
-    AdjustStyleForMarker(style, parent_style, state.GetElement());
+    AdjustStyleForMarker(style, builder, parent_style, state.GetElement());
 
     AdjustStyleForDisplay(style, layout_parent_style, element,
                           element ? &element->GetDocument() : nullptr);
@@ -893,9 +921,11 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     style.SetIsStackingContextWithoutContainment(true);
   }
 
-  if (style.OverflowX() != EOverflow::kVisible ||
-      style.OverflowY() != EOverflow::kVisible)
-    AdjustOverflow(style, element ? element : state.GetPseudoElement());
+  if (builder.OverflowX() != EOverflow::kVisible ||
+      builder.OverflowY() != EOverflow::kVisible) {
+    AdjustOverflow(style, builder,
+                   element ? element : state.GetPseudoElement());
+  }
 
   // Highlight pseudos propagate decorations with inheritance only.
   if (StopPropagateTextDecorations(style, element) || state.IsForHighlight())
@@ -910,9 +940,11 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       state.OriginatingElementStyle()) {
     const ComputedStyle* originating_style = state.OriginatingElementStyle();
     if (style.ColorIsCurrentColor())
-      style.SetColor(originating_style->GetColor());
-    if (style.InternalVisitedColorIsCurrentColor())
-      style.SetInternalVisitedColor(originating_style->InternalVisitedColor());
+      builder.SetColor(originating_style->GetColor());
+    if (style.InternalVisitedColorIsCurrentColor()) {
+      builder.SetInternalVisitedColor(
+          originating_style->InternalVisitedColor());
+    }
   }
 
   if (style.Display() != EDisplay::kContents) {
@@ -928,10 +960,10 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
 
   // A subset of CSS properties should be forced at computed value time:
   // https://drafts.csswg.org/css-color-adjust-1/#forced-colors-properties.
-  AdjustForForcedColorsMode(style);
+  AdjustForForcedColorsMode(style, builder);
 
   // Let the theme also have a crack at adjusting the style.
-  LayoutTheme::GetTheme().AdjustStyle(element, style);
+  LayoutTheme::GetTheme().AdjustStyle(element, style, builder);
 
   AdjustStyleForInert(style, element);
 
@@ -967,7 +999,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
 
     // Columns don't apply to svg text elements.
     if (IsA<SVGTextElement>(*element))
-      style.ClearMultiCol();
+      AdjustForSVGTextElement(builder);
 
     // Copy DominantBaseline to CssDominantBaseline without 'no-change',
     // 'reset-size', and 'use-script'.
@@ -1009,9 +1041,9 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   // If the inherited value of justify-items includes the 'legacy'
   // keyword (plus 'left', 'right' or 'center'), 'legacy' computes to
   // the the inherited value.  Otherwise, 'auto' computes to 'normal'.
-  if (parent_style.JustifyItemsPositionType() == ItemPositionType::kLegacy &&
-      style.JustifyItemsPosition() == ItemPosition::kLegacy) {
-    style.SetJustifyItems(parent_style.JustifyItems());
+  if (parent_style.JustifyItems().PositionType() == ItemPositionType::kLegacy &&
+      style.JustifyItems().GetPosition() == ItemPosition::kLegacy) {
+    builder.SetJustifyItems(parent_style.JustifyItems());
   }
 
   AdjustEffectiveTouchAction(style, parent_style, element, is_svg_root);
@@ -1038,7 +1070,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       // change, but LayoutBlockFlow::ShouldTruncateOverflowingText() should
       // instead return false when text is being edited inside that block.
       // https://crbug.com/814954
-      style.SetTextOverflow(text_control->ValueForTextOverflow());
+      builder.SetTextOverflow(text_control->ValueForTextOverflow());
     }
   }
 

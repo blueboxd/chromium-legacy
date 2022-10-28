@@ -14,12 +14,12 @@
 #include "ash/public/mojom/accelerator_keys.mojom.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_suite.h"
 #include "ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom.h"
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "chromeos/ash/components/test/ash_test_suite.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -159,11 +159,11 @@ TEST_F(AcceleratorConfigurationProviderTest, AshIsMutable) {
 
 TEST_F(AcceleratorConfigurationProviderTest, AshAcceleratorsUpdated) {
   const AcceleratorData test_data[] = {
-      {/**trigger_on_press=*/true, ui::VKEY_TAB, ui::EF_ALT_DOWN,
+      {/*trigger_on_press=*/true, ui::VKEY_TAB, ui::EF_ALT_DOWN,
        CYCLE_FORWARD_MRU},
-      {/**trigger_on_press=*/true, ui::VKEY_TAB,
+      {/*trigger_on_press=*/true, ui::VKEY_TAB,
        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, CYCLE_BACKWARD_MRU},
-      {/**trigger_on_press=*/true, ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN,
+      {/*trigger_on_press=*/true, ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN,
        SHOW_TASK_MANAGER},
   };
   Shell::Get()->ash_accelerator_configuration()->Initialize(test_data);
@@ -172,11 +172,11 @@ TEST_F(AcceleratorConfigurationProviderTest, AshAcceleratorsUpdated) {
 
   // Initialize with a new set of accelerators.
   const AcceleratorData updated_test_data[] = {
-      {/**trigger_on_press=*/true, ui::VKEY_ZOOM, ui::EF_CONTROL_DOWN,
+      {/*trigger_on_press=*/true, ui::VKEY_ZOOM, ui::EF_CONTROL_DOWN,
        TOGGLE_MIRROR_MODE},
-      {/**trigger_on_press=*/true, ui::VKEY_ZOOM, ui::EF_ALT_DOWN,
+      {/*trigger_on_press=*/true, ui::VKEY_ZOOM, ui::EF_ALT_DOWN,
        SWAP_PRIMARY_DISPLAY},
-      {/**trigger_on_press=*/true, ui::VKEY_MEDIA_LAUNCH_APP1,
+      {/*trigger_on_press=*/true, ui::VKEY_MEDIA_LAUNCH_APP1,
        ui::EF_CONTROL_DOWN, TAKE_SCREENSHOT},
   };
   Shell::Get()->ash_accelerator_configuration()->Initialize(updated_test_data);
@@ -186,11 +186,11 @@ TEST_F(AcceleratorConfigurationProviderTest, AshAcceleratorsUpdated) {
 
 TEST_F(AcceleratorConfigurationProviderTest, GetAcceleratorConfigAsh) {
   const AcceleratorData test_data[] = {
-      {/**trigger_on_press=*/true, ui::VKEY_TAB, ui::EF_ALT_DOWN,
+      {/*trigger_on_press=*/true, ui::VKEY_TAB, ui::EF_ALT_DOWN,
        CYCLE_FORWARD_MRU},
-      {/**trigger_on_press=*/true, ui::VKEY_TAB,
+      {/*trigger_on_press=*/true, ui::VKEY_TAB,
        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, CYCLE_BACKWARD_MRU},
-      {/**trigger_on_press=*/true, ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN,
+      {/*trigger_on_press=*/true, ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN,
        SHOW_TASK_MANAGER},
   };
   Shell::Get()->ash_accelerator_configuration()->Initialize(test_data);

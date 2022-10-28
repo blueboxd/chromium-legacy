@@ -124,6 +124,11 @@ PrefetchDocumentManager* PrefetchContainer::GetPrefetchDocumentManager() const {
   return prefetch_document_manager_.get();
 }
 
+void PrefetchContainer::OnEligibilityCheckComplete(bool is_eligible) {
+  is_eligible_ = is_eligible;
+  prefetch_document_manager_->OnEligibilityCheckComplete(is_eligible);
+}
+
 void PrefetchContainer::RegisterCookieListener(
     network::mojom::CookieManager* cookie_manager) {
   cookie_listener_ =
@@ -183,6 +188,16 @@ void PrefetchContainer::OnIsolatedCookieCopyComplete() {
 
   if (on_cookie_copy_complete_callback_)
     std::move(on_cookie_copy_complete_callback_).Run();
+}
+
+void PrefetchContainer::OnInterceptorCheckCookieCopy() {
+  if (!cookie_copy_start_time_)
+    return;
+
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "PrefetchProxy.AfterClick.Mainframe.CookieCopyStartToInterceptorCheck",
+      base::TimeTicks::Now() - cookie_copy_start_time_.value(),
+      base::TimeDelta(), base::Seconds(5), 50);
 }
 
 void PrefetchContainer::SetOnCookieCopyCompleteCallback(

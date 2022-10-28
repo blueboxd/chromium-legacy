@@ -693,12 +693,6 @@ BASE_FEATURE(kWebviewAccelerateSmallCanvases,
              "WebviewAccelerateSmallCanvases",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Let accelerated canvases remain accelerated after readback
-// (crbug.com/1288118)
-BASE_FEATURE(kCanvas2dStaysGPUOnReadback,
-             "Canvas2dStaysGPUOnReadback",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // When enabled, frees up CachedMetadata after consumption by script resources
 // and modules. Needed for the experiment in http://crbug.com/1045052.
 BASE_FEATURE(kDiscardCodeCacheAfterFirstUse,
@@ -1592,7 +1586,7 @@ BASE_FEATURE(kWebRtcMetronome,
 
 BASE_FEATURE(kSyncAccessHandleAllSyncSurface,
              "SyncAccessHandleAllSyncSurface",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kNoCentralWebCacheLimitControl,
              "NoCentralWebCacheLimitControl",
@@ -1639,9 +1633,38 @@ bool IsNewBaseUrlInheritanceBehaviorEnabled() {
 const base::FeatureParam<int> kDocumentMaxEventNodePathCachedEntries{
     &kDocumentEventNodePathCaching, "max-cache-entries", 10};
 
-BASE_FEATURE(kPostMessageDifferentPartitionSameOriginBlocked,
-             "PostMessageDifferentPartitionSameOriginBlocked",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(
+    kPostMessageFirstPartyToThirdPartyDifferentBucketSameOriginBlocked,
+    "PostMessageFirstPartyToThirdPartyDifferentBucketSameOriginBlocked",
+    base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(
+    kPostMessageFirstPartyToThirdPartyDifferentBucketSameOriginBlockedIfStorageIsPartitioned,
+    "PostMessageFirstPartyToThirdPartyDifferentBucketSameOriginBlockedIfStorage"
+    "IsPartitioned",
+    base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(
+    kPostMessageThirdPartyToFirstPartyDifferentBucketSameOriginBlocked,
+    "PostMessageThirdPartyToFirstPartyDifferentBucketSameOriginBlocked",
+    base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(
+    kPostMessageThirdPartyToFirstPartyDifferentBucketSameOriginBlockedIfStorageIsPartitioned,
+    "PostMessageThirdPartyToFirstPartyDifferentBucketSameOriginBlockedIfStorage"
+    "IsPartitioned",
+    base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(
+    kPostMessageThirdPartyToThirdPartyDifferentBucketSameOriginBlocked,
+    "PostMessageThirdPartyToThirdPartyDifferentBucketSameOriginBlocked",
+    base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(
+    kPostMessageThirdPartyToThirdPartyDifferentBucketSameOriginBlockedIfStorageIsPartitioned,
+    "PostMessageThirdPartyToThirdPartyDifferentBucketSameOriginBlockedIfStorage"
+    "IsPartitioned",
+    base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kWebRtcCombinedNetworkAndWorkerThread,
              "WebRtcCombinedNetworkAndWorkerThread",
@@ -1684,6 +1707,14 @@ BASE_FEATURE(kAbortSignalHandleBasedRemoval,
 BASE_FEATURE(kForceHighPerformanceGPUForWebGL,
              "ForceHighPerformanceGPUForWebGL",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSplitUserMediaQueues,
+             "SplitUserMediaQueues",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kTextCodecCJKEnabled,
+             "TextCodecCJKEnabled",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features
 }  // namespace blink

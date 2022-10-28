@@ -10,6 +10,8 @@ import {assert} from 'chrome://resources/js/assert_ts.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {CanvasDrawingProvider} from './drawing_provider.js';
+import {InputDataProviderInterface, TabletModeObserverReceiver} from './input_data_provider.mojom-webui.js';
+import {getInputDataProvider} from './mojo_interface_provider.js';
 import {getTemplate} from './touchscreen_tester.html.js';
 
 // To ensure the tester works when the user rotates their screen, we
@@ -57,6 +59,14 @@ export class TouchscreenTesterElement extends TouchscreenTesterElementBase {
   // of the touch point.
   private touches: Map<number, Point> = new Map<number, Point>();
 
+  // Indicates if the laptop is in tablet mode.
+  private isTabletMode: boolean = false;
+
+  private receiver_: TabletModeObserverReceiver|null = null;
+
+  private inputDataProvider: InputDataProviderInterface =
+      getInputDataProvider();
+
   /**
    * For testing only.
    */
@@ -71,6 +81,14 @@ export class TouchscreenTesterElement extends TouchscreenTesterElementBase {
     return this.touches;
   }
 
+  /**
+   *
+   * For testing only.
+   */
+  getIsTabletMode(): boolean {
+    return this.isTabletMode;
+  }
+
   getDialog(dialogId: string): CrDialogElement {
     const dialog = this.shadowRoot!.getElementById(dialogId);
     assert(dialog);
@@ -81,11 +99,17 @@ export class TouchscreenTesterElement extends TouchscreenTesterElementBase {
    * Shows the tester's dialog.
    */
   async showTester(): Promise<void> {
+    this.receiver_ = new TabletModeObserverReceiver(this);
+    const {isTabletMode} = await this.inputDataProvider.observeTabletMode(
+        this.receiver_.$.bindNewPipeAndPassRemote());
+    this.isTabletMode = isTabletMode;
+
     const introDialog = this.getDialog(DialogType.INTRO);
     await introDialog.requestFullscreen();
     introDialog.showModal();
 
     this.closeDialogWhenExitFullscreen();
+    this.exitTesterWhenVolumeUpButtonPressed();
   }
 
   /**
@@ -100,6 +124,21 @@ export class TouchscreenTesterElement extends TouchscreenTesterElementBase {
       if (!document.fullscreenElement) {
         this.getDialog(DialogType.INTRO).close();
         this.getDialog(DialogType.CANVAS).close();
+        if (this.receiver_) {
+          this.receiver_.$.close();
+        }
+      }
+    });
+  }
+
+  /**
+   * When in tablet mode, pressing volume up button will exit the tester.
+   */
+  private exitTesterWhenVolumeUpButtonPressed(): void {
+    window.addEventListener('keydown', (e: Event) => {
+      if ((e as KeyboardEvent).key === 'AudioVolumeUp' && this.isTabletMode) {
+        // Exit fullscreen will trigger closing the tester.
+        document.exitFullscreen();
       }
     });
   }
@@ -213,6 +252,15 @@ export class TouchscreenTesterElement extends TouchscreenTesterElementBase {
     this.drawingProvider.drawTrailMark(touchPt.x, touchPt.y);
     // This touch has ended. Remove it from the touches object.
     this.touches.delete(touchId);
+  }
+
+  /**
+   * Implements TabletModeObserver.OnTabletModeChanged.
+   * @param isTabletMode Is current display on tablet mode.
+   */
+  onTabletModeChanged(isTabletMode: boolean) {
+    this.isTabletMode = isTabletMode;
+    // TODO(wenyu): Show exit instruction toaster.
   }
 }
 

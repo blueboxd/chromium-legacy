@@ -48,8 +48,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
-#import "ios/chrome/browser/ui/icons/action_icon.h"
-#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_menu_provider.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
@@ -1479,6 +1478,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
     if (self.searchTerms.length) {
       base::RecordAction(base::UserMetricsAction(
           "MobileRecentTabManagerTabFromOtherDeviceOpenedSearchResult"));
+      self.searchTerms = @"";
     }
     new_tab_page_uma::RecordAction(
         self.browserState, self.webStateList->GetActiveWebState(),

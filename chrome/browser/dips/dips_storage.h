@@ -40,11 +40,32 @@ class DIPSStorage {
   void RecordStorage(const GURL& url, base::Time time, DIPSCookieMode mode);
   // Record that the user interacted on |url|.
   void RecordInteraction(const GURL& url, base::Time time, DIPSCookieMode mode);
+  // Record that |url| redirected the user while also writing to storage.
+  void RecordStatefulBounce(const GURL& url, base::Time time);
+  // Record that |url| redirected the user without writing to storage.
+  void RecordStatelessBounce(const GURL& url, base::Time time);
+
+  // Storage querying Methods
+  // -----------------------------------------------------------
+  // Returns all sites that did a bounce after |range_start| with their last
+  // user interaction occurring before |last_interaction|.
+  std::vector<std::string> GetSitesThatBounced(
+      base::Time range_start,
+      base::Time last_interaction) const;
+
+  // Returns all sites that did a stateful bounce after |range_start| with their
+  // last user interaction occurring before |last_interaction|.
+  std::vector<std::string> GetSitesThatBouncedWithState(
+      base::Time range_start,
+      base::Time last_interaction) const;
+
+  // Returns all sites which use storage after |range_start| with their last
+  // user interaction occurring before |last_interaction|.
+  std::vector<std::string> GetSitesThatUsedStorage(
+      base::Time range_start,
+      base::Time last_interaction) const;
 
   // Utility Methods -----------------------------------------------------------
-
-  // Empty method intended for testing use only.
-  void DoNothing() {}
 
   static size_t SetPrepopulateChunkSizeForTesting(size_t size);
 

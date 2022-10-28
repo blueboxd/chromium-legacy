@@ -33,6 +33,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_features.h"
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
@@ -75,9 +76,11 @@
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -270,14 +273,14 @@ base::flat_map<Site, SiteConfig> g_site_configs = {
       .wco_not_enabled_title = u"Site A Bar",
       .icon_color = SK_ColorGREEN}},
     {Site::kIsolated,
-     {// This file actually lives in /webapps_integration/isolated_app/. We
+     {// This file actually lives in /webapps_integration/isolated_web_app/. We
       // serve this directory as root in a special test server to allow the
-      // isolated app to live at the root scope.
+      // Isolated Web App to live at the root scope.
       .relative_url = "/basic.html",
       // same note for this file
       .relative_manifest_id = "basic.html",
-      .app_name = "Isolated App",
-      .wco_not_enabled_title = u"Isolated App",
+      .app_name = "Isolated Web App",
+      .wco_not_enabled_title = u"Isolated Web App",
       .icon_color = SK_ColorGREEN}},
     {Site::kFileHandler,
      {.relative_url = "/webapps_integration/file_handler/basic.html",
@@ -786,10 +789,11 @@ WebAppIntegrationTestDriver::WebAppIntegrationTestDriver(TestDelegate* delegate)
 WebAppIntegrationTestDriver::~WebAppIntegrationTestDriver() = default;
 
 void WebAppIntegrationTestDriver::SetUp() {
-  isolated_app_test_server_ = std::make_unique<net::EmbeddedTestServer>();
-  isolated_app_test_server_->AddDefaultHandlers(base::FilePath(
-      FILE_PATH_LITERAL("chrome/test/data/webapps_integration/isolated_app/")));
-  CHECK(isolated_app_test_server_->Start());
+  isolated_web_app_test_server_ = std::make_unique<net::EmbeddedTestServer>();
+  isolated_web_app_test_server_->AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL(
+          "chrome/test/data/webapps_integration/isolated_web_app/")));
+  CHECK(isolated_web_app_test_server_->Start());
 
   webapps::TestAppBannerManagerDesktop::SetUp();
 }
@@ -818,8 +822,10 @@ void WebAppIntegrationTestDriver::TearDownOnMainThread() {
   observation_.Reset();
   if (delegate_->IsSyncTest())
     SyncTurnOff();
-  for (auto* profile : delegate_->GetAllProfiles()) {
+  for (auto* profile : GetAllProfiles()) {
     auto* provider = GetProviderForProfile(profile);
+    if (!provider)
+      continue;
     std::vector<AppId> app_ids = provider->registrar().GetAppIds();
     for (auto& app_id : app_ids) {
       LOG(INFO) << "TearDownOnMainThread: Uninstalling " << app_id << ".";
@@ -864,8 +870,8 @@ void WebAppIntegrationTestDriver::TearDownOnMainThread() {
     ASSERT_TRUE(override_registration_->shortcut_override->desktop.Delete());
 #endif
 
-  if (isolated_app_test_server_->Started()) {
-    CHECK(isolated_app_test_server_->ShutdownAndWaitUntilComplete());
+  if (isolated_web_app_test_server_->Started()) {
+    CHECK(isolated_web_app_test_server_->ShutdownAndWaitUntilComplete());
   }
   LOG(INFO)
       << "TearDownOnMainThread: Destroying shortcut override and waiting.";
@@ -875,7 +881,7 @@ void WebAppIntegrationTestDriver::TearDownOnMainThread() {
 
   // Print debug information if there was a failure.
   if (testing::Test::HasFailure()) {
-    for (auto* profile : delegate_->GetAllProfiles()) {
+    for (auto* profile : GetAllProfiles()) {
       base::RunLoop debug_info_loop;
       WebAppInternalsSource::BuildWebAppInternalsJson(
           profile, base::BindLambdaForTesting([&](base::Value debug_info) {
@@ -889,15 +895,25 @@ void WebAppIntegrationTestDriver::TearDownOnMainThread() {
   }
 }
 
-void WebAppIntegrationTestDriver::AcceptAppIdUpdateDialog() {
-  if (!BeforeStateChangeAction(__FUNCTION__))
-    return;
-
+// TODO(crbug.com/1378267): Figure out a way to handle the kUninstall logic and
+// close both the manifest update dialog as well as the uninstall dialog to
+// prevent the app_id_update_dialog_waiter_ from hanging.
+void WebAppIntegrationTestDriver::HandleAppIdentityUpdateDialogResponse(
+    UpdateDialogResponse response) {
   views::Widget* widget = app_id_update_dialog_waiter_->WaitIfNeededAndGet();
   ASSERT_TRUE(widget != nullptr);
-  views::test::AcceptDialog(widget);
-
-  AfterStateChangeAction();
+  switch (response) {
+    case UpdateDialogResponse::kAcceptUpdate:
+      views::test::AcceptDialog(widget);
+      break;
+    case UpdateDialogResponse::kCancelDialogAndUninstall:
+      views::test::CancelDialog(widget);
+      break;
+    // The app identity update dialog cannot be used to skip an update.
+    case UpdateDialogResponse::kSkipUpdate:
+      NOTREACHED() << "Cannot skip an update from the app identity dialog";
+      break;
+  }
 }
 
 void WebAppIntegrationTestDriver::AwaitManifestUpdate(Site site) {
@@ -963,6 +979,20 @@ void WebAppIntegrationTestDriver::EnableRunOnOsLogin(Site site) {
   if (!BeforeStateChangeAction(__FUNCTION__))
     return;
   SetRunOnOsLoginMode(site, apps::RunOnOsLoginMode::kWindowed);
+  AfterStateChangeAction();
+}
+
+void WebAppIntegrationTestDriver::DisableFileHandling(Site site) {
+  if (!BeforeStateChangeAction(__FUNCTION__))
+    return;
+  SetFileHandlingEnabled(site, false);
+  AfterStateChangeAction();
+}
+
+void WebAppIntegrationTestDriver::EnableFileHandling(Site site) {
+  if (!BeforeStateChangeAction(__FUNCTION__))
+    return;
+  SetFileHandlingEnabled(site, true);
   AfterStateChangeAction();
 }
 
@@ -1577,7 +1607,9 @@ void WebAppIntegrationTestDriver::NavigateNotfoundUrl() {
   AfterStateChangeAction();
 }
 
-void WebAppIntegrationTestDriver::ManifestUpdateIcon(Site site) {
+void WebAppIntegrationTestDriver::ManifestUpdateIcon(
+    Site site,
+    UpdateDialogResponse response) {
   if (!BeforeStateChangeAction(__FUNCTION__))
     return;
   ASSERT_EQ(Site::kStandalone, site)
@@ -1600,10 +1632,14 @@ void WebAppIntegrationTestDriver::ManifestUpdateIcon(Site site) {
                                        kLauncherIconSize)}));
 
   ForceUpdateManifestContents(site, url);
+  HandleAppIdentityUpdateDialogResponse(response);
   AfterStateChangeAction();
 }
 
-void WebAppIntegrationTestDriver::ManifestUpdateTitle(Site site, Title title) {
+void WebAppIntegrationTestDriver::ManifestUpdateTitle(
+    Site site,
+    Title title,
+    UpdateDialogResponse response) {
   if (!BeforeStateChangeAction(__FUNCTION__))
     return;
   ASSERT_EQ(Site::kStandalone, site)
@@ -1620,6 +1656,7 @@ void WebAppIntegrationTestDriver::ManifestUpdateTitle(Site site, Title title) {
   GURL url = GetTestServerForSiteMode(site).GetURL(
       base::StrCat({relative_url_path, "?manifest=manifest_title.json"}));
   ForceUpdateManifestContents(site, url);
+  HandleAppIdentityUpdateDialogResponse(response);
   AfterStateChangeAction();
 }
 
@@ -1720,19 +1757,39 @@ void WebAppIntegrationTestDriver::SwitchIncognitoProfile() {
 void WebAppIntegrationTestDriver::SwitchProfileClients(ProfileClient client) {
   if (!BeforeStateChangeAction(__FUNCTION__))
     return;
-  std::vector<Profile*> profiles = delegate_->GetAllProfiles();
-  ASSERT_EQ(2U, profiles.size())
-      << "Cannot switch profile clients if delegate only supports one profile";
   DCHECK(active_profile_);
-  switch (client) {
-    case ProfileClient::kClient1:
-      active_profile_ = profiles[0];
+  active_profile_ = delegate_->GetProfileClient(client);
+  DCHECK(active_profile_)
+      << "Cannot switch profile clients if delegate only supports one profile";
+  delegate_->AwaitWebAppQuiescence();
+  AfterStateChangeAction();
+}
+
+void WebAppIntegrationTestDriver::SwitchActiveProfile(
+    ProfileName profile_name) {
+  if (!BeforeStateChangeAction(__FUNCTION__))
+    return;
+  const char* profile_name_str = nullptr;
+  switch (profile_name) {
+    case ProfileName::kDefault:
+      profile_name_str = "Default";
       break;
-    case ProfileClient::kClient2:
-      active_profile_ = profiles[1];
+    case ProfileName::kProfile2:
+      profile_name_str = "Profile2";
       break;
   }
-  delegate_->AwaitWebAppQuiescence();
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::FilePath user_data_dir;
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::FilePath profile_path = user_data_dir.AppendASCII(profile_name_str);
+  active_profile_ =
+      g_browser_process->profile_manager()->GetProfile(profile_path);
+  // Make sure the profile has at least one browser by creating one if one
+  // doesn't exist already.
+  if (!chrome::FindTabbedBrowser(active_profile_,
+                                 /*match_original_profiles=*/false)) {
+    delegate_->CreateBrowser(active_profile_);
+  }
   AfterStateChangeAction();
 }
 
@@ -2574,8 +2631,8 @@ void WebAppIntegrationTestDriver::OnWebAppManifestUpdated(
     const AppId& app_id,
     base::StringPiece old_name) {
   LOG(INFO) << "Manifest update received for " << app_id << ".";
-  DCHECK_EQ(1ul, delegate_->GetAllProfiles().size())
-      << "Manifest update waiting only supported on single profile tests.";
+  DCHECK(!delegate_->IsSyncTest())
+      << "Manifest update waiting only supported on non-sync tests.";
 
   previous_manifest_updates_.insert(app_id);
   if (waiting_for_update_id_ == app_id) {
@@ -2614,10 +2671,12 @@ bool WebAppIntegrationTestDriver::BeforeStateChangeAction(
 void WebAppIntegrationTestDriver::AfterStateChangeAction() {
   DCHECK(executing_action_level_ > 0);
   --executing_action_level_;
-  provider()->command_manager().AwaitAllCommandsCompleteForTesting();
 #if BUILDFLAG(IS_MAC)
-  for (auto* profile : delegate_->GetAllProfiles()) {
-    std::vector<AppId> app_ids = provider()->registrar().GetAppIds();
+  for (auto* profile : GetAllProfiles()) {
+    auto* provider = GetProviderForProfile(profile);
+    if (!provider)
+      continue;
+    std::vector<AppId> app_ids = provider->registrar().GetAppIds();
     for (auto& app_id : app_ids) {
       auto* app_shim_manager = apps::AppShimManager::Get();
       AppShimHost* app_shim_host = app_shim_manager->FindHost(profile, app_id);
@@ -2632,6 +2691,8 @@ void WebAppIntegrationTestDriver::AfterStateChangeAction() {
   if (delegate_->IsSyncTest())
     delegate_->AwaitWebAppQuiescence();
   FlushShortcutTasks();
+  provider()->command_manager().AwaitAllCommandsCompleteForTesting();
+  AwaitManifestSystemIdle();
   after_state_change_action_state_ = ConstructStateSnapshot();
 }
 
@@ -2652,6 +2713,42 @@ void WebAppIntegrationTestDriver::AfterStateCheckAction() {
   if (!after_state_change_action_state_)
     return;
   DCHECK_EQ(*after_state_change_action_state_, *ConstructStateSnapshot());
+}
+
+void WebAppIntegrationTestDriver::AwaitManifestSystemIdle() {
+  if (!is_performing_manifest_update_)
+    return;
+
+  // Wait till pending manifest update processes have finished loading the page
+  // to start the manifest update.
+  ManifestUpdateManager& manifest_update_manager =
+      provider()->manifest_update_manager();
+  WebAppCommandManager& command_manager = provider()->command_manager();
+  // TODO(crbug.com/1376155): Figure out a better way of streamlining
+  //  the waiting instead of doing it separately for manifest updates
+  //  and commands. This fails WebAppIntegrationTestDriver::CloseCustomToolbar()
+  //  because DidFinishLoad() is not triggered for a backwards navigation, thus
+  //  a manifest update is triggered but is stuck.
+  while (manifest_update_manager.HasUpdatesPendingLoadFinishForTesting()) {
+    base::RunLoop loop_for_load_finish;
+    manifest_update_manager.SetLoadFinishedCallbackForTesting(
+        loop_for_load_finish.QuitClosure());
+    loop_for_load_finish.Run();
+  }
+  // Wait till all manifest update data fetch commands have completed.
+  command_manager.AwaitAllCommandsCompleteForTesting();
+
+  // If there are any apps that have no app windows, then wait for the
+  // ui_manager to post the task and schedule the manifest update finalize
+  // command.
+  for (const AppId& app_id :
+       manifest_update_manager.GetAppsPendingWindowsClosingForTesting()) {
+    if (provider()->ui_manager().GetNumWindowsForApp(app_id) == 0) {
+      base::RunLoop().RunUntilIdle();
+    }
+  }
+  // Wait till all manifest update finalize commands have completed (if any).
+  command_manager.AwaitAllCommandsCompleteForTesting();
 }
 
 AppId WebAppIntegrationTestDriver::GetAppIdBySiteMode(Site site) {
@@ -2694,7 +2791,7 @@ WebAppProvider* WebAppIntegrationTestDriver::GetProviderForProfile(
 std::unique_ptr<StateSnapshot>
 WebAppIntegrationTestDriver::ConstructStateSnapshot() {
   base::flat_map<Profile*, ProfileState> profile_state_map;
-  for (Profile* profile : delegate_->GetAllProfiles()) {
+  for (Profile* profile : GetAllProfiles()) {
     base::flat_map<Browser*, BrowserState> browser_state;
     auto* browser_list = BrowserList::GetInstance();
     for (Browser* browser : *browser_list) {
@@ -2732,35 +2829,39 @@ WebAppIntegrationTestDriver::ConstructStateSnapshot() {
                                 launch_icon_shown));
     }
 
-    WebAppRegistrar& registrar = GetProviderForProfile(profile)->registrar();
-    auto app_ids = registrar.GetAppIds();
+    WebAppProvider* provider = GetProviderForProfile(profile);
     base::flat_map<AppId, AppState> app_state;
-    for (const auto& app_id : app_ids) {
-      std::string manifest_launcher_icon_filename;
-      std::vector<apps::IconInfo> icon_infos =
-          provider()->registrar().GetAppIconInfos(app_id);
-      for (const auto& info : icon_infos) {
-        int icon_size = info.square_size_px.value_or(-1);
-        if (icon_size == kLauncherIconSize) {
-          manifest_launcher_icon_filename = info.url.ExtractFileName();
+    if (provider) {
+      WebAppRegistrar& registrar = provider->registrar();
+      auto app_ids = registrar.GetAppIds();
+      for (const auto& app_id : app_ids) {
+        std::string manifest_launcher_icon_filename;
+        std::vector<apps::IconInfo> icon_infos =
+            registrar.GetAppIconInfos(app_id);
+        for (const auto& info : icon_infos) {
+          int icon_size = info.square_size_px.value_or(-1);
+          if (icon_size == kLauncherIconSize) {
+            manifest_launcher_icon_filename = info.url.ExtractFileName();
+          }
         }
-      }
-      auto state = AppState(
-          app_id, registrar.GetAppShortName(app_id),
-          registrar.GetAppScope(app_id),
-          ConvertOsLoginMode(registrar.GetAppRunOnOsLoginMode(app_id).value),
-          registrar.GetAppEffectiveDisplayMode(app_id),
-          registrar.GetAppUserDisplayMode(app_id),
-          manifest_launcher_icon_filename, registrar.IsLocallyInstalled(app_id),
-          IsShortcutAndIconCreated(profile, registrar.GetAppShortName(app_id),
-                                   app_id),
-          registrar.IsIsolated(app_id));
+        auto state = AppState(
+            app_id, registrar.GetAppShortName(app_id),
+            registrar.GetAppScope(app_id),
+            ConvertOsLoginMode(registrar.GetAppRunOnOsLoginMode(app_id).value),
+            registrar.GetAppEffectiveDisplayMode(app_id),
+            registrar.GetAppUserDisplayMode(app_id),
+            manifest_launcher_icon_filename,
+            registrar.IsLocallyInstalled(app_id),
+            IsShortcutAndIconCreated(profile, registrar.GetAppShortName(app_id),
+                                     app_id),
+            registrar.IsIsolated(app_id));
 #if !BUILDFLAG(IS_CHROMEOS)
       if (registrar.IsLocallyInstalled(app_id)) {
         CheckAppSettingsAppState(profile->GetOriginalProfile(), state);
       }
 #endif
       app_state.emplace(app_id, state);
+      }
     }
 
     profile_state_map.emplace(
@@ -2920,9 +3021,10 @@ void WebAppIntegrationTestDriver::ForceUpdateManifestContents(
   // installed, otherwise the throttle is tripped.
   ASSERT_FALSE(provider()->manifest_update_manager().IsUpdateConsumed(app_id));
   ASSERT_FALSE(
-      provider()->manifest_update_manager().IsUpdateTaskPending(app_id));
+      provider()->manifest_update_manager().IsUpdateCommandPending(app_id));
   NavigateTabbedBrowserToSite(app_url_with_manifest_param,
                               NavigationMode::kCurrentTab);
+  is_performing_manifest_update_ = true;
 }
 
 void WebAppIntegrationTestDriver::MaybeNavigateTabbedBrowserInScope(Site site) {
@@ -3070,12 +3172,31 @@ bool WebAppIntegrationTestDriver::IsFileHandledBySite(
   for (const LinuxFileRegistration& command :
        override_registration_->shortcut_override->linux_file_registration) {
     if (base::Contains(command.xdg_command, app_id) &&
-        base::Contains(command.file_contents, file_extension)) {
-      is_file_handled = base::Contains(command.xdg_command, "install");
+        base::Contains(command.xdg_command,
+                       profile()->GetPath().BaseName().value())) {
+      if (base::StartsWith(command.xdg_command, "xdg-mime install")) {
+        is_file_handled = base::Contains(command.file_contents,
+                                         "\"*." + file_extension + "\"");
+      } else {
+        DCHECK(base::StartsWith(command.xdg_command, "xdg-mime uninstall"))
+            << command.xdg_command;
+        is_file_handled = false;
+      }
     }
   }
 #endif
   return is_file_handled;
+}
+
+void WebAppIntegrationTestDriver::SetFileHandlingEnabled(Site site,
+                                                         bool enabled) {
+#if !BUILDFLAG(IS_CHROMEOS)
+  AppId app_id = GetAppIdBySiteMode(site);
+  ASSERT_TRUE(provider()->registrar().GetAppById(app_id))
+      << "No app installed for site: " << static_cast<int>(site);
+  auto app_management_page_handler = CreateAppManagementPageHandler(profile());
+  app_management_page_handler.SetFileHandlingEnabled(app_id, enabled);
+#endif
 }
 
 void WebAppIntegrationTestDriver::SetRunOnOsLoginMode(
@@ -3111,6 +3232,24 @@ Browser* WebAppIntegrationTestDriver::browser() {
   return browser;
 }
 
+Profile* WebAppIntegrationTestDriver::profile() {
+  if (!active_profile_)
+    active_profile_ = delegate_->GetDefaultProfile();
+  return active_profile_;
+}
+
+std::vector<Profile*> WebAppIntegrationTestDriver::GetAllProfiles() {
+  std::vector<Profile*> profiles =
+      g_browser_process->profile_manager()->GetLoadedProfiles();
+  size_t profile_count = profiles.size();
+  for (size_t i = 0; i < profile_count; ++i) {
+    std::vector<Profile*> otr_profiles =
+        profiles[i]->GetAllOffTheRecordProfiles();
+    profiles.insert(profiles.end(), otr_profiles.begin(), otr_profiles.end());
+  }
+  return profiles;
+}
+
 PageActionIconView* WebAppIntegrationTestDriver::pwa_install_view() {
   PageActionIconView* pwa_install_view =
       BrowserView::GetBrowserViewForBrowser(browser())
@@ -3132,7 +3271,7 @@ PageActionIconView* WebAppIntegrationTestDriver::intent_picker_view() {
 const net::EmbeddedTestServer&
 WebAppIntegrationTestDriver::GetTestServerForSiteMode(Site site) const {
   if (site == Site::kIsolated) {
-    return *isolated_app_test_server_;
+    return *isolated_web_app_test_server_;
   }
 
   return *delegate_->EmbeddedTestServer();
@@ -3193,11 +3332,8 @@ const net::EmbeddedTestServer* WebAppIntegrationTest::EmbeddedTestServer()
   return embedded_test_server();
 }
 
-std::vector<Profile*> WebAppIntegrationTest::GetAllProfiles() {
-  std::vector<Profile*> profiles =
-      browser()->profile()->GetAllOffTheRecordProfiles();
-  profiles.insert(profiles.begin(), browser()->profile());
-  return profiles;
+Profile* WebAppIntegrationTest::GetDefaultProfile() {
+  return browser()->profile();
 }
 
 bool WebAppIntegrationTest::IsSyncTest() {
@@ -3212,6 +3348,10 @@ void WebAppIntegrationTest::SyncTurnOn() {
 }
 void WebAppIntegrationTest::AwaitWebAppQuiescence() {
   NOTREACHED();
+}
+Profile* WebAppIntegrationTest::GetProfileClient(ProfileClient client) {
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace web_app::integration_tests

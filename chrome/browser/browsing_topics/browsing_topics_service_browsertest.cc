@@ -61,17 +61,11 @@ constexpr int64_t kModelVersion = 2;
 constexpr size_t kPaddedTopTopicsStartIndex = 5;
 constexpr Topic kExpectedTopic1 = Topic(1);
 constexpr Topic kExpectedTopic2 = Topic(10);
-constexpr char kExpectedResultOrder1[] =
+constexpr char kExpectedApiResult[] =
     "[{\"configVersion\":\"chrome.1\",\"modelVersion\":\"2\","
     "\"taxonomyVersion\":\"1\",\"topic\":1,\"version\":\"chrome.1:1:2\"};{"
     "\"configVersion\":\"chrome.1\",\"modelVersion\":\"2\","
     "\"taxonomyVersion\":\"1\",\"topic\":10,\"version\":\"chrome.1:1:2\"};]";
-
-constexpr char kExpectedResultOrder2[] =
-    "[{\"configVersion\":\"chrome.1\",\"modelVersion\":\"2\","
-    "\"taxonomyVersion\":\"1\",\"topic\":10,\"version\":\"chrome.1:1:2\"};{"
-    "\"configVersion\":\"chrome.1\",\"modelVersion\":\"2\","
-    "\"taxonomyVersion\":\"1\",\"topic\":1,\"version\":\"chrome.1:1:2\"};]";
 
 EpochTopics CreateTestEpochTopics(
     const std::vector<std::pair<Topic, std::set<HashedDomain>>>& topics,
@@ -618,69 +612,35 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest, ApiResultUkm) {
   InvokeTopicsAPI(web_contents());
 
   auto entries = ukm_recorder_->GetEntriesByName(
-      ukm::builders::BrowsingTopics_DocumentBrowsingTopicsApiResult::
+      ukm::builders::BrowsingTopics_DocumentBrowsingTopicsApiResult2::
           kEntryName);
   EXPECT_EQ(1u, entries.size());
 
   ukm_recorder_->ExpectEntrySourceHasUrl(entries.back(), main_frame_url);
 
-  const int64_t* topic0_metric = ukm_recorder_->GetEntryMetric(
-      entries.back(),
-      ukm::builders::BrowsingTopics_DocumentBrowsingTopicsApiResult::
-          kReturnedTopic0Name);
-  const int64_t* topic1_metric = ukm_recorder_->GetEntryMetric(
-      entries.back(),
-      ukm::builders::BrowsingTopics_DocumentBrowsingTopicsApiResult::
-          kReturnedTopic1Name);
+  std::vector<ApiResultUkmMetrics> metrics_entries =
+      ReadApiResultUkmMetrics(*ukm_recorder_);
 
-  EXPECT_TRUE(topic0_metric);
-  EXPECT_TRUE(topic1_metric);
+  EXPECT_EQ(1u, metrics_entries.size());
 
-  EXPECT_TRUE((*topic0_metric == kExpectedTopic1.value() &&
-               *topic1_metric == kExpectedTopic2.value()) ||
-              (*topic0_metric == kExpectedTopic2.value() &&
-               *topic1_metric == kExpectedTopic1.value()));
+  EXPECT_FALSE(metrics_entries[0].failure_reason);
 
-  ukm_recorder_->ExpectEntryMetric(
-      entries.back(),
-      ukm::builders::BrowsingTopics_DocumentBrowsingTopicsApiResult::
-          kReturnedTopic0IsTrueTopTopicName,
-      true);
-  ukm_recorder_->ExpectEntryMetric(
-      entries.back(),
-      ukm::builders::BrowsingTopics_DocumentBrowsingTopicsApiResult::
-          kReturnedTopic0ModelVersionName,
-      2);
-  ukm_recorder_->ExpectEntryMetric(
-      entries.back(),
-      ukm::builders::BrowsingTopics_DocumentBrowsingTopicsApiResult::
-          kReturnedTopic0TaxonomyVersionName,
-      1);
+  EXPECT_TRUE(metrics_entries[0].topic0.IsValid());
+  EXPECT_TRUE(metrics_entries[0].topic0.is_true_topic());
+  EXPECT_FALSE(metrics_entries[0].topic0.should_be_filtered());
+  EXPECT_EQ(metrics_entries[0].topic0.taxonomy_version(), 1);
+  EXPECT_EQ(metrics_entries[0].topic0.model_version(), 2);
 
-  ukm_recorder_->ExpectEntryMetric(
-      entries.back(),
-      ukm::builders::BrowsingTopics_DocumentBrowsingTopicsApiResult::
-          kReturnedTopic1IsTrueTopTopicName,
-      true);
-  ukm_recorder_->ExpectEntryMetric(
-      entries.back(),
-      ukm::builders::BrowsingTopics_DocumentBrowsingTopicsApiResult::
-          kReturnedTopic1ModelVersionName,
-      2);
-  ukm_recorder_->ExpectEntryMetric(
-      entries.back(),
-      ukm::builders::BrowsingTopics_DocumentBrowsingTopicsApiResult::
-          kReturnedTopic1TaxonomyVersionName,
-      1);
+  EXPECT_TRUE(metrics_entries[0].topic1.IsValid());
+  EXPECT_TRUE(metrics_entries[0].topic1.is_true_topic());
+  EXPECT_FALSE(metrics_entries[0].topic1.should_be_filtered());
+  EXPECT_EQ(metrics_entries[0].topic1.taxonomy_version(), 1);
+  EXPECT_EQ(metrics_entries[0].topic1.model_version(), 2);
 
-  EXPECT_FALSE(ukm_recorder_->GetEntryMetric(
-      entries.back(),
-      ukm::builders::BrowsingTopics_DocumentBrowsingTopicsApiResult::
-          kReturnedTopic2Name));
-  EXPECT_FALSE(ukm_recorder_->GetEntryMetric(
-      entries.back(),
-      ukm::builders::BrowsingTopics_DocumentBrowsingTopicsApiResult::
-          kEmptyReasonName));
+  EXPECT_FALSE(metrics_entries[0].topic2.IsValid());
+
+  EXPECT_EQ(metrics_entries[0].topic0.topic(), kExpectedTopic1);
+  EXPECT_EQ(metrics_entries[0].topic1.topic(), kExpectedTopic2);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest, PageLoadUkm) {
@@ -748,8 +708,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
 
   std::string result = InvokeTopicsAPI(web_contents());
 
-  EXPECT_TRUE(result == kExpectedResultOrder1 ||
-              result == kExpectedResultOrder2);
+  EXPECT_EQ(result, kExpectedApiResult);
 
   // Ensure access has been reported to the Page Specific Content Settings.
   auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
@@ -780,8 +739,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
   std::string result = InvokeTopicsAPI(
       content::ChildFrameAt(web_contents()->GetPrimaryMainFrame(), 0));
 
-  EXPECT_TRUE(result == kExpectedResultOrder1 ||
-              result == kExpectedResultOrder2);
+  EXPECT_EQ(result, kExpectedApiResult);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
@@ -868,10 +826,29 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_frame_url));
 
+  base::RunLoop ukm_loop;
+  ukm_recorder_->SetOnAddEntryCallback(
+      ukm::builders::BrowsingTopics_DocumentBrowsingTopicsApiResult2::
+          kEntryName,
+      ukm_loop.QuitClosure());
+
   EXPECT_EQ(
       "The \"browsing-topics\" Permissions Policy denied the use of "
       "document.browsingTopics().",
       InvokeTopicsAPI(web_contents()));
+
+  ukm_loop.Run();
+
+  std::vector<ApiResultUkmMetrics> metrics_entries =
+      ReadApiResultUkmMetrics(*ukm_recorder_);
+
+  EXPECT_EQ(1u, metrics_entries.size());
+
+  EXPECT_EQ(metrics_entries[0].failure_reason,
+            ApiAccessFailureReason::kInvalidRequestingContext);
+  EXPECT_FALSE(metrics_entries[0].topic0.IsValid());
+  EXPECT_FALSE(metrics_entries[0].topic1.IsValid());
+  EXPECT_FALSE(metrics_entries[0].topic2.IsValid());
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -904,8 +881,7 @@ IN_PROC_BROWSER_TEST_F(
                                            subframe_url));
 
   std::string result = InvokeTopicsAPI(web_contents());
-  EXPECT_TRUE(result == kExpectedResultOrder1 ||
-              result == kExpectedResultOrder2);
+  EXPECT_EQ(result, kExpectedApiResult);
 
   EXPECT_EQ(
       "The \"browsing-topics\" Permissions Policy denied the use of "
@@ -929,8 +905,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_frame_url));
 
   std::string result = InvokeTopicsAPI(web_contents());
-  EXPECT_TRUE(result == kExpectedResultOrder1 ||
-              result == kExpectedResultOrder2);
+  EXPECT_EQ(result, kExpectedApiResult);
 
   GURL subframe_url =
       https_server_.GetURL("c.test", "/browsing_topics/empty_page.html");
@@ -1053,8 +1028,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
 
   std::string result = InvokeTopicsAPI(web_contents());
 
-  EXPECT_TRUE(result == kExpectedResultOrder1 ||
-              result == kExpectedResultOrder2);
+  EXPECT_EQ(result, kExpectedApiResult);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest, TopicsAPINotAllowedInPortal) {
@@ -1096,8 +1070,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest, TopicsAPINotAllowedInPortal) {
 
   std::string result = InvokeTopicsAPI(web_contents());
 
-  EXPECT_TRUE(result == kExpectedResultOrder1 ||
-              result == kExpectedResultOrder2);
+  EXPECT_EQ(result, kExpectedApiResult);
 }
 
 // Regression test for crbug/1339735.

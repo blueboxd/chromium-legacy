@@ -10,13 +10,13 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "components/update_client/update_client.h"
 
 class GURL;
 
 namespace base {
-class FilePath;
 class Value;
 }
 
@@ -24,6 +24,10 @@ namespace update_client {
 
 class Component;
 struct CrxComponent;
+
+extern const char kArchAmd64[];
+extern const char kArchIntel[];
+extern const char kArchArm64[];
 
 // Defines a name-value pair that represents an installer attribute.
 // Installer attributes are component-specific metadata, which may be serialized
@@ -86,6 +90,19 @@ CrxInstaller::Result ToInstallerResult(const T& error, int extended_error = 0) {
           static_cast<int>(error),
       extended_error);
 }
+
+// Creates a unique temporary directory. For Windows, the directory is created
+// under %ProgramFiles% if the caller is admin, so it is secure.
+bool CreateSecureTempDirectory(const base::FilePath::StringType& prefix,
+                               base::FilePath* temp_dir);
+
+// Returns a string representation of the processor architecture. Uses
+// `base::win::OSInfo::IsWowX86OnARM64` and
+// `base::win::OSInfo::IsWowAMD64OnARM64` if available on Windows (more
+// accurate).
+// If not, or not Windows, falls back to
+// `base::SysInfo().OperatingSystemArchitecture`.
+std::string GetArchitecture();
 
 }  // namespace update_client
 

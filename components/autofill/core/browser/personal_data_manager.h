@@ -14,6 +14,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
@@ -175,6 +176,14 @@ class PersonalDataManager : public KeyedService,
   std::string OnAcceptedLocalCreditCardSave(
       const CreditCard& imported_credit_card);
 
+  // Returns the GUID of `imported_iban` if it is successfully added or updated,
+  // or an empty string otherwise.
+  // Called when the user accepts the prompt to save the IBAN locally.
+  // The function will sets the GUID of `imported_iban` to the one that matches
+  // it in `local_ibans_` so that UpdateIBAN() will be able to update the
+  // specific IBAN.
+  std::string OnAcceptedLocalIBANSave(IBAN& imported_iban);
+
   // Triggered when the user accepts saving a UPI ID. Stores the |upi_id| to
   // the database.
   virtual void AddUpiId(const std::string& upi_id);
@@ -188,7 +197,7 @@ class PersonalDataManager : public KeyedService,
   // Updates |profile| which already exists in the web database.
   virtual void UpdateProfile(const AutofillProfile& profile);
 
-  // Removes the profile or credit card represented by |guid|.
+  // Removes the profile, credit card or IBAN identified by `guid`.
   virtual void RemoveByGUID(const std::string& guid);
 
   // Returns the profile with the specified |guid|, or nullptr if there is no
@@ -201,12 +210,21 @@ class PersonalDataManager : public KeyedService,
       const std::string& guid,
       const std::vector<AutofillProfile*>& profiles);
 
-  // Adds |iban| to the web database as a local Iban.
-  virtual void AddIBAN(const IBAN& iban);
+  // Adds `iban` to the web database as a local IBAN. Returns the guid of
+  // `iban` if the add is successful, or an empty string otherwise.
+  // Below conditions should be met before adding `iban` to the database:
+  // 1) IBAN saving must be enabled.
+  // 2) `is_off_the_record_` is false.
+  // 3) No IBAN exists in `local_ibans_` which has the same guid as`iban`.
+  // 4) Local database is available.
+  virtual std::string AddIBAN(const IBAN& iban);
 
-  // Updates |iban| which already exists in the web database. This
-  // can only be used on local ibans.
-  virtual void UpdateIBAN(const IBAN& iban);
+  // Updates `iban` which already exists in the web database. This can only
+  // be used on local ibans. Returns the guid of `iban` if the update is
+  // successful, or an empty string otherwise.
+  // This method assumes an IBAN exists; if not, it will be handled gracefully
+  // by webdata backend.
+  virtual std::string UpdateIBAN(const IBAN& iban);
 
   // Adds |credit_card| to the web database as a local card.
   virtual void AddCreditCard(const CreditCard& credit_card);
@@ -245,11 +263,9 @@ class PersonalDataManager : public KeyedService,
   // Sets a server credit card for test.
   void AddServerCreditCardForTest(std::unique_ptr<CreditCard> credit_card);
 
-#if defined(UNIT_TEST)
   void AddIBANForTest(std::unique_ptr<IBAN> iban) {
     local_ibans_.push_back(std::move(iban));
   }
-#endif
 
   // Returns whether server credit cards are stored in account (i.e. ephemeral)
   // storage.
@@ -316,7 +332,9 @@ class PersonalDataManager : public KeyedService,
   std::vector<const AutofillOfferData*>
   GetActiveAutofillPromoCodeOffersForOrigin(GURL origin) const;
 
-  // Returns the customized credit card art image for the |card_art_url|.
+  // Returns the customized credit card art image for the |card_art_url|. If no
+  // image has been cached, an asynchronous request will be sent to fetch the
+  // image and this function will return nullptr.
   virtual gfx::Image* GetCreditCardArtImageForUrl(
       const GURL& card_art_url) const;
 
@@ -508,6 +526,9 @@ class PersonalDataManager : public KeyedService,
   bool auto_accept_address_imports_for_testing() {
     return auto_accept_address_imports_for_testing_;
   }
+  void set_is_off_the_record_for_testing(bool is_off_the_record) {
+    is_off_the_record_ = is_off_the_record;
+  }
 
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
@@ -645,8 +666,8 @@ class PersonalDataManager : public KeyedService,
   // this class and must outlive |this|.
   void SetPrefService(PrefService* pref_service);
 
-  // Asks AutofillImageFetcher to fetch images.
-  virtual void FetchImagesForUrls(const std::vector<GURL>& updated_urls) const;
+  // Asks AutofillImageFetcher to fetch images. Virtual for testing.
+  virtual void FetchImagesForURLs(base::span<const GURL> updated_urls) const;
 
   // Decides which database type to use for server and local cards.
   std::unique_ptr<PersonalDatabaseHelper> database_helper_;
@@ -714,6 +735,10 @@ class PersonalDataManager : public KeyedService,
   virtual std::string SaveImportedCreditCard(
       const CreditCard& imported_credit_card);
 
+  // Saves `imported_iban` to the WebDB if it exists. Returns the guid of
+  // the new or updated IBAN, or an empty string if no IBAN was saved.
+  std::string SaveImportedIBAN(IBAN& imported_iban);
+
   // Finds the country code that occurs most frequently among all profiles.
   // Prefers verified profiles over unverified ones.
   std::string MostCommonCountryCodeFromProfiles() const;
@@ -771,7 +796,7 @@ class PersonalDataManager : public KeyedService,
   // Triggered when all the card art image fetches have been completed,
   // regardless of whether all of them succeeded.
   void OnCardArtImagesFetched(
-      std::vector<std::unique_ptr<CreditCardArtImage>> art_images);
+      const std::vector<std::unique_ptr<CreditCardArtImage>>& art_images);
 
   // Look at the next profile change for profile with guid = |guid|, and handle
   // it.

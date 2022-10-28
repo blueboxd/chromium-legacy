@@ -3088,12 +3088,17 @@ void RenderProcessHostImpl::NotifyRendererOfLockedStateUpdate() {
       process_lock.GetWebExposedIsolationInfo().is_isolated());
 
   bool isolated_apps_developer_mode_allowed =
-      GetContentClient()->browser()->IsIsolatedAppsDeveloperModeAllowed(
+      GetContentClient()->browser()->IsIsolatedWebAppsDeveloperModeAllowed(
           GetBrowserContext());
 
+  bool is_isolated_context_allowed_by_embedder =
+      GetContentClient()->browser()->IsIsolatedContextAllowedForUrl(
+          GetBrowserContext(), process_lock.lock_url());
+
   GetRendererInterface()->SetIsIsolatedContext(
-      isolated_apps_developer_mode_allowed &&
-      process_lock.GetWebExposedIsolationInfo().is_isolated_application());
+      (isolated_apps_developer_mode_allowed &&
+       process_lock.GetWebExposedIsolationInfo().is_isolated_application()) ||
+      is_isolated_context_allowed_by_embedder);
 
   if (!process_lock.IsASiteOrOrigin())
     return;

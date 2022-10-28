@@ -276,6 +276,7 @@
 #include "chrome/browser/ui/webui/whats_new/whats_new_ui.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "components/live_caption/live_caption_controller.h"
+#include "components/live_caption/live_translate_controller.h"
 #include "components/ntp_tiles/custom_links_manager_impl.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -460,6 +461,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/apps/app_service/metrics/website_metrics_service_lacros.h"
 #include "chrome/browser/lacros/account_manager/account_cache.h"
 #include "chrome/browser/lacros/app_mode/kiosk_session_service_lacros.h"
 #include "chrome/browser/lacros/lacros_prefs.h"
@@ -1392,6 +1394,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);
   BrowserFeaturePromoSnoozeService::RegisterProfilePrefs(registry);
   captions::LiveCaptionController::RegisterProfilePrefs(registry);
+  captions::LiveTranslateController::RegisterProfilePrefs(registry);
   ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(registry);
   DeviceServiceImpl::RegisterProfilePrefs(registry);
   DevToolsWindow::RegisterProfilePrefs(registry);
@@ -1526,6 +1529,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   chromeos::ProxyConfigServiceLacros::RegisterProfilePrefs(registry);
   lacros_prefs::RegisterExtensionControlledAshPrefs(registry);
   KioskSessionServiceLacros::RegisterProfilePrefs(registry);
+  apps::WebsiteMetricsServiceLacros::RegisterProfilePrefs(registry);
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -1566,6 +1570,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       webauthn::pref_names::kRemoteProxiedRequestsAllowed, false);
+  registry->RegisterBooleanPref(prefs::kLensDesktopNTPSearchEnabled, true);
 
   // When in RTL mode, the side panel should default to the left of the screen.
   // Otherwise, the side panel should default to the right side of the screen.

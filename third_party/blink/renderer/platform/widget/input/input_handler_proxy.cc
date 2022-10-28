@@ -272,7 +272,7 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
   input_handler_->NotifyInputEvent();
 
   int64_t trace_id = event->latency_info().trace_id();
-  TRACE_EVENT("input,benchmark", "LatencyInfo.Flow",
+  TRACE_EVENT("input,benchmark,latencyInfo", "LatencyInfo.Flow",
               [trace_id](perfetto::EventContext ctx) {
                 ChromeLatencyInfo* info =
                     ctx.event()->set_chrome_latency_info();
@@ -1310,8 +1310,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
     cc::InputHandlerPointerResult pointer_result = HandlePointerDown(
         event_with_callback, touch_event.touches[0].PositionInWidget());
     if (pointer_result.type == cc::PointerResultType::kScrollbarScroll) {
-      client_->SetAllowedTouchAction(
-          allowed_touch_action, touch_event.unique_touch_event_id, DID_HANDLE);
+      client_->SetAllowedTouchAction(allowed_touch_action);
       return DID_HANDLE;
     }
   }
@@ -1348,8 +1347,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
   TRACE_EVENT_INSTANT2(
       "input", "Allowed TouchAction", TRACE_EVENT_SCOPE_THREAD, "TouchAction",
       cc::TouchActionToString(allowed_touch_action), "disposition", result);
-  client_->SetAllowedTouchAction(allowed_touch_action,
-                                 touch_event.unique_touch_event_id, result);
+  client_->SetAllowedTouchAction(allowed_touch_action);
 
   return result;
 }
@@ -1381,8 +1379,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchMove(
     TRACE_EVENT_INSTANT2(
         "input", "Allowed TouchAction", TRACE_EVENT_SCOPE_THREAD, "TouchAction",
         cc::TouchActionToString(allowed_touch_action), "disposition", result);
-    client_->SetAllowedTouchAction(allowed_touch_action,
-                                   touch_event.unique_touch_event_id, result);
+    client_->SetAllowedTouchAction(allowed_touch_action);
     return result;
   }
   return touch_result_.value();

@@ -323,6 +323,11 @@ extern const char kFeedBackgroundRefreshDescription[];
 extern const char kFillingAcrossAffiliatedWebsitesName[];
 extern const char kFillingAcrossAffiliatedWebsitesDescription[];
 
+// Title and description for the flag to set the default Following feed sort
+// type.
+extern const char kFollowingFeedDefaultSortTypeName[];
+extern const char kFollowingFeedDefaultSortTypeDescription[];
+
 // Title and description for the flag to trigger the startup sign-in promo.
 extern const char kForceStartupSigninPromoName[];
 extern const char kForceStartupSigninPromoDescription[];
@@ -542,6 +547,15 @@ extern const char kOmniboxLocalHistoryZeroSuggestBeyondNTPDescription[];
 // Title and description for the zero-suggest prefetching on the New Tab Page.
 extern const char kOmniboxZeroSuggestPrefetchingName[];
 extern const char kOmniboxZeroSuggestPrefetchingDescription[];
+
+// Title and description for the zero-suggest prefetching on the Search Results
+// Page.
+extern const char kOmniboxZeroSuggestPrefetchingOnSRPName[];
+extern const char kOmniboxZeroSuggestPrefetchingOnSRPDescription[];
+
+// Title and description for the zero-suggest prefetching on any Web Page.
+extern const char kOmniboxZeroSuggestPrefetchingOnWebName[];
+extern const char kOmniboxZeroSuggestPrefetchingOnWebDescription[];
 
 // Title and description for the use of in-memory zero-suggest caching.
 extern const char kOmniboxZeroSuggestInMemoryCachingName[];

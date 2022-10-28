@@ -120,8 +120,11 @@ bool IsShelfBackgroundTypeWithRoundedCorners(
 class FullscreenLauncherAnimationObserver
     : public ui::ImplicitAnimationObserver {
  public:
+  // Invoked with `true` if animation was aborted.
+  using AnimationCompleteCallback = base::OnceCallback<void(bool)>;
+
   explicit FullscreenLauncherAnimationObserver(
-      base::OnceClosure complete_callback)
+      AnimationCompleteCallback complete_callback)
       : complete_callback_(std::move(complete_callback)) {}
   FullscreenLauncherAnimationObserver(
       const FullscreenLauncherAnimationObserver& other) = delete;
@@ -133,12 +136,17 @@ class FullscreenLauncherAnimationObserver
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override {
-    std::move(complete_callback_).Run();
+    const bool aborted =
+        WasAnimationAbortedForProperty(
+            ui::LayerAnimationElement::AnimatableProperty::TRANSFORM) ||
+        WasAnimationAbortedForProperty(
+            ui::LayerAnimationElement::AnimatableProperty::OPACITY);
+    std::move(complete_callback_).Run(aborted);
     delete this;
   }
 
  private:
-  base::OnceClosure complete_callback_;
+  AnimationCompleteCallback complete_callback_;
 };
 
 void UpdateTabletModeTransitionAnimationSettings(
@@ -223,7 +231,6 @@ void AppListPresenterImpl::Show(AppListViewState preferred_state,
   showing_app_list_ = true;
 
   is_target_visibility_show_ = true;
-  OnVisibilityWillChange(GetTargetVisibility(), display_id);
   RequestPresentationTime(display_id, event_time_stamp);
 
   if (!view_) {
@@ -233,6 +240,7 @@ void AppListPresenterImpl::Show(AppListViewState preferred_state,
     view_->GetWidget()->GetNativeWindow()->TrackOcclusionState();
   }
 
+  OnVisibilityWillChange(GetTargetVisibility(), display_id);
   controller_->UpdateLauncherContainer(display_id);
 
   // App list needs to know the new shelf layout in order to calculate its
@@ -301,10 +309,16 @@ void AppListPresenterImpl::Show(AppListViewState preferred_state,
           gfx::GetScaleTransform(gfx::Rect(layer->size()).CenterPoint(),
                                  kFullscreenLauncherFadeAnimationScale));
     }
+    FullscreenLauncherAnimationObserver::AnimationCompleteCallback
+        animation_complete_callback = base::BindOnce(
+            &AppListPresenterImpl::OnTabletToClamshellTransitionAnimationDone,
+            weak_ptr_factory_.GetWeakPtr(), /*target_visibility=*/true);
+    auto* animation_observer = new FullscreenLauncherAnimationObserver(
+        std::move(animation_complete_callback));
     UpdateScaleAndOpacityForHomeLauncher(
         1.0f, 1.0f, absl::nullopt,
         base::BindRepeating(&UpdateTabletModeTransitionAnimationSettings,
-                            nullptr));
+                            animation_observer));
   }
 
   SnapAppListBoundsToDisplayEdge();
@@ -384,9 +398,10 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
 
   if (!view_->GetWidget()->GetNativeWindow()->is_destroying()) {
     if (app_list_features::IsAnimateScaleOnTabletModeTransitionEnabled()) {
-      base::OnceClosure animation_complete_callback = base::BindOnce(
-          &AppListPresenterImpl::OnTabletToClamshellTransitionAnimationDone,
-          weak_ptr_factory_.GetWeakPtr());
+      FullscreenLauncherAnimationObserver::AnimationCompleteCallback
+          animation_complete_callback = base::BindOnce(
+              &AppListPresenterImpl::OnTabletToClamshellTransitionAnimationDone,
+              weak_ptr_factory_.GetWeakPtr(), /*target_visibility=*/false);
       auto* animation_observer = new FullscreenLauncherAnimationObserver(
           std::move(animation_complete_callback));
       // Aborts show animation (if it's running, noop otherwise). This helps to
@@ -787,13 +802,23 @@ void AppListPresenterImpl::OnAppListReorderAnimationDone() {
   SetViewIgnoredForAccessibility(view_->search_box_view(), false);
 }
 
-void AppListPresenterImpl::OnTabletToClamshellTransitionAnimationDone() {
+void AppListPresenterImpl::OnTabletToClamshellTransitionAnimationDone(
+    bool target_visibility,
+    bool aborted) {
   if (!view_)
     return;
 
   auto* window = view_->GetWidget()->GetNativeWindow();
-  if (!window->is_destroying() && window->layer()->GetTargetOpacity() == 0.0f)
-    window->Hide();
+
+  if (!aborted) {
+    if (target_visibility)
+      view_->Layout();
+    else if (!target_visibility && !window->is_destroying())
+      window->Hide();
+  }
+
+  controller_->OnStateTransitionAnimationCompleted(view_->app_list_state(),
+                                                   aborted);
 }
 
 }  // namespace ash

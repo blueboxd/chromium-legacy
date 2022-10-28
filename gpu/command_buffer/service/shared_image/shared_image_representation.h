@@ -29,6 +29,10 @@
 #include "ui/gl/dcomp_surface_proxy.h"
 #endif
 
+#if BUILDFLAG(IS_MAC)
+#include "ui/gfx/mac/io_surface.h"
+#endif
+
 #if BUILDFLAG(IS_ANDROID)
 extern "C" typedef struct AHardwareBuffer AHardwareBuffer;
 #endif
@@ -270,37 +274,59 @@ class GPU_GLES2_EXPORT SkiaImageRepresentation
    public:
     ScopedWriteAccess(base::PassKey<SkiaImageRepresentation> pass_key,
                       SkiaImageRepresentation* representation,
-                      sk_sp<SkSurface> surface,
+                      std::vector<sk_sp<SkSurface>> surfaces,
                       std::unique_ptr<GrBackendSurfaceMutableState> end_state);
-    ScopedWriteAccess(base::PassKey<SkiaImageRepresentation> pass_key,
-                      SkiaImageRepresentation* representation,
-                      sk_sp<SkPromiseImageTexture> promise_image_texture,
-                      std::unique_ptr<GrBackendSurfaceMutableState> end_state);
+    ScopedWriteAccess(
+        base::PassKey<SkiaImageRepresentation> pass_key,
+        SkiaImageRepresentation* representation,
+        std::vector<sk_sp<SkPromiseImageTexture>> promise_image_textures,
+        std::unique_ptr<GrBackendSurfaceMutableState> end_state);
     ~ScopedWriteAccess();
 
-    SkSurface* surface() const { return surface_.get(); }
-    SkPromiseImageTexture* promise_image_texture() const {
-      return promise_image_texture_.get();
+    // NOTE: All references to the returned SkSurface(s) must be destroyed
+    // before ScopedWriteAccess is destroyed.
+    SkSurface* surface() const {
+      DCHECK(representation()->format().is_single_plane());
+      return surface(0);
     }
+    SkSurface* surface(int plane_index) const {
+      return surfaces_[plane_index].get();
+    }
+
+    SkPromiseImageTexture* promise_image_texture() const {
+      DCHECK(representation()->format().is_single_plane());
+      return promise_image_texture(0);
+    }
+    SkPromiseImageTexture* promise_image_texture(int plane_index) const {
+      return promise_image_textures_[plane_index].get();
+    }
+
     [[nodiscard]] std::unique_ptr<GrBackendSurfaceMutableState> TakeEndState();
 
    private:
-    sk_sp<SkSurface> surface_;
-    sk_sp<SkPromiseImageTexture> promise_image_texture_;
+    // A vector of surfaces and promise textures corresponding to the number of
+    // planes in SharedImageFormat.
+    std::vector<sk_sp<SkSurface>> surfaces_;
+    std::vector<sk_sp<SkPromiseImageTexture>> promise_image_textures_;
     std::unique_ptr<GrBackendSurfaceMutableState> end_state_;
   };
 
   class GPU_GLES2_EXPORT ScopedReadAccess
       : public ScopedAccessBase<SkiaImageRepresentation> {
    public:
-    ScopedReadAccess(base::PassKey<SkiaImageRepresentation> pass_key,
-                     SkiaImageRepresentation* representation,
-                     sk_sp<SkPromiseImageTexture> promise_image_texture,
-                     std::unique_ptr<GrBackendSurfaceMutableState> end_state);
+    ScopedReadAccess(
+        base::PassKey<SkiaImageRepresentation> pass_key,
+        SkiaImageRepresentation* representation,
+        std::vector<sk_sp<SkPromiseImageTexture>> promise_image_textures,
+        std::unique_ptr<GrBackendSurfaceMutableState> end_state);
     ~ScopedReadAccess();
 
     SkPromiseImageTexture* promise_image_texture() const {
-      return promise_image_texture_.get();
+      DCHECK(representation()->format().is_single_plane());
+      return promise_image_texture(0);
+    }
+    SkPromiseImageTexture* promise_image_texture(int plane_index) const {
+      return promise_image_textures_[plane_index].get();
     }
     sk_sp<SkImage> CreateSkImage(
         GrDirectContext* context,
@@ -309,7 +335,9 @@ class GPU_GLES2_EXPORT SkiaImageRepresentation
     [[nodiscard]] std::unique_ptr<GrBackendSurfaceMutableState> TakeEndState();
 
    private:
-    sk_sp<SkPromiseImageTexture> promise_image_texture_;
+    // A vector of promise textures corresponding to the number of planes in
+    // SharedImageFormat.
+    std::vector<sk_sp<SkPromiseImageTexture>> promise_image_textures_;
     std::unique_ptr<GrBackendSurfaceMutableState> end_state_;
   };
 
@@ -355,18 +383,18 @@ class GPU_GLES2_EXPORT SkiaImageRepresentation
   // calling EndWriteAccess().
   // The backing can assign end_state, and the caller must reset backing's state
   // to the end_state before calling EndWriteAccess().
-  virtual sk_sp<SkSurface> BeginWriteAccess(
+  // Returns an empty vector on failure.
+  virtual std::vector<sk_sp<SkSurface>> BeginWriteAccess(
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state);
-  virtual sk_sp<SkPromiseImageTexture> BeginWriteAccess(
+  virtual std::vector<sk_sp<SkPromiseImageTexture>> BeginWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) = 0;
-  // TODO(jochin): Ensure each implementation accounts for null a SkSurface.
-  virtual void EndWriteAccess(sk_sp<SkSurface> surface) = 0;
+  virtual void EndWriteAccess() = 0;
 
   // Begin the read access. The implementations should insert semaphores into
   // begin_semaphores vector which client will wait on before reading the
@@ -378,7 +406,8 @@ class GPU_GLES2_EXPORT SkiaImageRepresentation
   // calling EndReadAccess().
   // The backing can assign end_state, and the caller must reset backing's state
   // to the end_state before calling EndReadAccess().
-  virtual sk_sp<SkPromiseImageTexture> BeginReadAccess(
+  // Returns an empty vector on failure.
+  virtual std::vector<sk_sp<SkPromiseImageTexture>> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state);
@@ -459,6 +488,13 @@ class GPU_GLES2_EXPORT OverlayImageRepresentation
     scoped_refptr<gl::DCOMPSurfaceProxy> GetDCOMPSurfaceProxy() {
       return representation()->GetDCOMPSurfaceProxy();
     }
+#elif BUILDFLAG(IS_MAC)
+    gfx::ScopedIOSurface GetIOSurface() const {
+      return representation()->GetIOSurface();
+    }
+    bool IsInUseByWindowServer() const {
+      return representation()->IsInUseByWindowServer();
+    }
 #endif
 
     gfx::GpuFenceHandle TakeAcquireFence() { return std::move(acquire_fence_); }
@@ -500,6 +536,11 @@ class GPU_GLES2_EXPORT OverlayImageRepresentation
   scoped_refptr<gfx::NativePixmap> GetNativePixmap();
 #elif BUILDFLAG(IS_WIN)
   virtual scoped_refptr<gl::DCOMPSurfaceProxy> GetDCOMPSurfaceProxy();
+#elif BUILDFLAG(IS_MAC)
+  virtual gfx::ScopedIOSurface GetIOSurface() const;
+  // Return true if the macOS WindowServer is currently using the underlying
+  // storage for the image.
+  virtual bool IsInUseByWindowServer() const;
 #endif
 
   // TODO(penghuang): Refactor it to not depend on GL.

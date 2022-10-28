@@ -262,7 +262,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   // profile is the sign-in or lock screen app profile, which don't correspond
   // to a user session.
   skip_session_extensions = !chromeos::LoginState::Get()->IsUserLoggedIn() ||
-                            !ash::ProfileHelper::IsRegularProfile(profile_);
+                            !ash::ProfileHelper::IsUserProfile(profile_);
   if (chrome::IsRunningInForcedAppMode()) {
     extension_service_->component_loader()->
         AddDefaultComponentExtensionsForKioskMode(skip_session_extensions);
@@ -455,7 +455,7 @@ void ExtensionSystemImpl::InstallUpdate(
 
   scoped_refptr<CrxInstaller> installer = CrxInstaller::CreateSilent(service);
   installer->set_delete_source(true);
-  installer->set_installer_callback(std::move(install_update_callback));
+  installer->AddInstallerCallback(std::move(install_update_callback));
   installer->set_install_immediately(install_immediately);
   installer->UpdateExtensionFromUnpackedCrx(extension_id, public_key,
                                             unpacked_dir);

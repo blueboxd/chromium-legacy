@@ -88,7 +88,6 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sCctResizableAlwaysShowNavBarButtons);
                 add(ChromeFeatureList.sCctResizableForFirstParties);
                 add(ChromeFeatureList.sCctResizableForThirdParties);
-                add(ChromeFeatureList.sCctResizableWindowAboveNavbar);
                 add(ChromeFeatureList.sCctToolbarCustomizations);
                 add(ChromeFeatureList.sCloseTabSuggestions);
                 add(ChromeFeatureList.sCommandLineOnNonRooted);
@@ -102,8 +101,8 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sDownloadsAutoResumptionNative);
                 add(ChromeFeatureList.sEarlyLibraryLoad);
                 add(ChromeFeatureList.sElasticOverscroll);
-                add(ChromeFeatureList.sElidePrioritizationOfPreNativeBootstrapTasks);
                 add(ChromeFeatureList.sFeedLoadingPlaceholder);
+                add(ChromeFeatureList.sFoldableJankFix);
                 add(ChromeFeatureList.sGridTabSwitcherForTablets);
                 add(ChromeFeatureList.sImmersiveUiMode);
                 add(ChromeFeatureList.sIncognitoReauthenticationForAndroid);
@@ -166,6 +165,8 @@ public class ChromeCachedFlags {
                         add(CustomTabIntentDataProvider.DENYLIST_ENTRIES);
                         add(CustomTabIntentDataProvider.ALLOWLIST_ENTRIES);
                         add(StartSurfaceConfiguration.IS_DOODLE_SUPPORTED);
+                        add(StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS);
+                        add(StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_USE_MODEL);
                         add(StartSurfaceConfiguration.NUM_DAYS_KEEP_SHOW_START_AT_STARTUP);
                         add(StartSurfaceConfiguration.NUM_DAYS_USER_CLICK_BELOW_THRESHOLD);
                         add(StartSurfaceConfiguration.SHOW_TABS_IN_MRU_ORDER);
@@ -199,6 +200,7 @@ public class ChromeCachedFlags {
                         add(TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO);
                         add(TabUiFeatureUtilities.GRID_TAB_SWITCHER_FOR_TABLETS_POLISH);
                         add(TabUiFeatureUtilities.TAB_STRIP_TAB_WIDTH);
+                        add(TabUiFeatureUtilities.ENABLE_TAB_SELECTION_EDITOR_V2_LONGPRESS_ENTRY);
                         add(TabUiFeatureUtilities.ENABLE_TAB_SELECTION_EDITOR_V2_SHARE);
                         add(TabUiFeatureUtilities.TAB_STRIP_REDESIGN_ENABLE_FOLIO);
                         add(TabUiFeatureUtilities.TAB_STRIP_REDESIGN_ENABLE_DETACHED);

@@ -5,7 +5,7 @@
 
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "goma", "os")
+load("//lib/builders.star", "goma", "os", "reclient")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 
@@ -217,6 +217,9 @@ try_.orchestrator_builder(
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     main_list_view = "try",
+    tryjob = try_.job(
+        experiment_percentage = 100,
+    ),
     experiments = {
         "remove_src_checkout_experiment": 100,
         "chromium_rts.inverted_rts": 100,
@@ -232,6 +235,44 @@ try_.compilator_builder(
     main_list_view = "try",
     # TODO (crbug.com/1245171): Revert when root issue is fixed
     grace_period = 4 * time.minute,
+)
+
+try_.orchestrator_builder(
+    name = "win10_chromium_x64_rel_ng-reclient",
+    builderless = True,
+    check_for_flakiness = True,
+    compilator = "win10_chromium_x64_rel_ng-reclient-compilator",
+    mirrors = [
+        "ci/Win x64 Builder",
+        "ci/Win10 Tests x64",
+        "ci/GPU Win x64 Builder",
+        "ci/Win10 x64 Release (NVIDIA)",
+    ],
+    description_html = "Experimental shadow builder to test reclient migration. <br/>The bot is shadowing <a href=\"https://ci.chromium.org/p/chromium/builders/try/win10_chromium_x64_rel_ng\">win10_chromium_x64_rel_ng</a>.",
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+        is_compile_only = True,
+    ),
+    use_clang_coverage = True,
+    coverage_test_types = ["unit", "overall"],
+    tryjob = try_.job(
+        experiment_percentage = 3,
+    ),
+    experiments = {
+        "remove_src_checkout_experiment": 100,
+    },
+)
+
+try_.compilator_builder(
+    name = "win10_chromium_x64_rel_ng-reclient-compilator",
+    builderless = True,
+    check_for_flakiness = True,
+    # TODO (crbug.com/1245171): Revert when root issue is fixed
+    grace_period = 4 * time.minute,
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -253,9 +294,9 @@ try_.builder(
     main_list_view = "try",
     ssd = True,
     tryjob = try_.job(
-        location_regexp = [
-            ".+/[+]/sandbox/win/.+",
-            ".+/[+]/sandbox/policy/win/.+",
+        location_filters = [
+            "sandbox/win/.+",
+            "sandbox/policy/win/.+",
         ],
     ),
 )
@@ -299,31 +340,31 @@ try_.gpu.optional_tests_builder(
     main_list_view = "try",
     os = os.WINDOWS_DEFAULT,
     tryjob = try_.job(
-        location_regexp = [
-            ".+/[+]/chrome/browser/vr/.+",
-            ".+/[+]/content/browser/xr/.+",
-            ".+/[+]/content/test/gpu/.+",
-            ".+/[+]/device/vr/.+",
-            ".+/[+]/gpu/.+",
-            ".+/[+]/media/audio/.+",
-            ".+/[+]/media/base/.+",
-            ".+/[+]/media/capture/.+",
-            ".+/[+]/media/filters/.+",
-            ".+/[+]/media/gpu/.+",
-            ".+/[+]/media/mojo/.+",
-            ".+/[+]/media/renderers/.+",
-            ".+/[+]/media/video/.+",
-            ".+/[+]/testing/buildbot/tryserver.chromium.win.json",
-            ".+/[+]/testing/trigger_scripts/.+",
-            ".+/[+]/third_party/blink/renderer/modules/vr/.+",
-            ".+/[+]/third_party/blink/renderer/modules/mediastream/.+",
-            ".+/[+]/third_party/blink/renderer/modules/webcodecs/.+",
-            ".+/[+]/third_party/blink/renderer/modules/webgl/.+",
-            ".+/[+]/third_party/blink/renderer/modules/xr/.+",
-            ".+/[+]/third_party/blink/renderer/platform/graphics/gpu/.+",
-            ".+/[+]/tools/clang/scripts/update.py",
-            ".+/[+]/tools/mb/mb_config_expectations/tryserver.chromium.win.json",
-            ".+/[+]/ui/gl/.+",
+        location_filters = [
+            "chrome/browser/vr/.+",
+            "content/browser/xr/.+",
+            "content/test/gpu/.+",
+            "device/vr/.+",
+            "gpu/.+",
+            "media/audio/.+",
+            "media/base/.+",
+            "media/capture/.+",
+            "media/filters/.+",
+            "media/gpu/.+",
+            "media/mojo/.+",
+            "media/renderers/.+",
+            "media/video/.+",
+            "testing/buildbot/tryserver.chromium.win.json",
+            "testing/trigger_scripts/.+",
+            "third_party/blink/renderer/modules/vr/.+",
+            "third_party/blink/renderer/modules/mediastream/.+",
+            "third_party/blink/renderer/modules/webcodecs/.+",
+            "third_party/blink/renderer/modules/webgl/.+",
+            "third_party/blink/renderer/modules/xr/.+",
+            "third_party/blink/renderer/platform/graphics/gpu/.+",
+            "tools/clang/scripts/update.py",
+            "tools/mb/mb_config_expectations/tryserver.chromium.win.json",
+            "ui/gl/.+",
         ],
     ),
 )

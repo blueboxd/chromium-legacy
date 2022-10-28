@@ -13,6 +13,8 @@
 #import "ios/chrome/browser/ui/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
+#import "ios/chrome/browser/ui/keyboard/features.h"
+#import "ios/chrome/browser/ui/keyboard/key_command_actions.h"
 #import "ios/chrome/browser/ui/main/layout_guide_util.h"
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
@@ -23,6 +25,7 @@
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/grit/ios_strings.h"
+#import "ios/public/provider/chrome/browser/user_feedback/user_feedback_sender.h"
 #import "ios/web/public/web_state.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
@@ -30,7 +33,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface KeyCommandsProvider ()
+@interface KeyCommandsProvider () <KeyCommandActions>
 
 // The current browser object.
 @property(nonatomic, assign) Browser* browser;
@@ -83,23 +86,46 @@
 }
 
 - (NSArray<UIKeyCommand*>*)keyCommands {
+  if (IsKeyboardShortcutsMenuEnabled()) {
+    // Return the key commands that are not already present in the menu (see
+    // i/c/b/ui/keyboard/menu_builder.h).
+    return @[
+      UIKeyCommand.cr_openNewRegularTab,
+      UIKeyCommand.cr_showNextTab_2,
+      UIKeyCommand.cr_showPreviousTab_2,
+      UIKeyCommand.cr_showNextTab_3,
+      UIKeyCommand.cr_showPreviousTab_3,
+      UIKeyCommand.cr_close,
+      UIKeyCommand.cr_goBack_2,
+      UIKeyCommand.cr_goForward_2,
+      UIKeyCommand.cr_showDownloadsFolder_2,
+      UIKeyCommand.cr_showTab1,
+      UIKeyCommand.cr_showTab2,
+      UIKeyCommand.cr_showTab3,
+      UIKeyCommand.cr_showTab4,
+      UIKeyCommand.cr_showTab5,
+      UIKeyCommand.cr_showTab6,
+      UIKeyCommand.cr_showTab7,
+      UIKeyCommand.cr_reportAnIssue_2,
+    ];
+  } else {
+    return [self noKeyboardShortcutsMenuKeyCommands];
+  }
+}
+
+// Returns the set of key commands supported when the KeyboardShortcutsMenu
+// feature is not enabled.
+- (NSArray<UIKeyCommand*>*)noKeyboardShortcutsMenuKeyCommands {
+  DCHECK(!IsKeyboardShortcutsMenuEnabled());
+
   NSMutableArray<UIKeyCommand*>* keyCommands = [NSMutableArray array];
 
   // List the commands that always appear in the HUD. They appear in the HUD
   // since they have titles.
   [keyCommands addObjectsFromArray:@[
-    [UIKeyCommand cr_commandWithInput:@"t"
-                        modifierFlags:KeyModifierCommand
-                               action:@selector(keyCommand_openNewTab)
-                              titleID:IDS_IOS_TOOLS_MENU_NEW_TAB],
-    [UIKeyCommand cr_commandWithInput:@"n"
-                        modifierFlags:KeyModifierShiftCommand
-                               action:@selector(keyCommand_openNewIncognitoTab)
-                              titleID:IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB],
-    [UIKeyCommand cr_commandWithInput:@"t"
-                        modifierFlags:KeyModifierShiftCommand
-                               action:@selector(keyCommand_reopenClosedTab)
-                              titleID:IDS_IOS_KEYBOARD_REOPEN_CLOSED_TAB],
+    UIKeyCommand.cr_openNewTab,
+    UIKeyCommand.cr_openNewIncognitoTab,
+    UIKeyCommand.cr_reopenLastClosedTab,
   ]];
 
   // List the commands that only appear when there is at least a tab. When they
@@ -108,225 +134,70 @@
   if (hasTabs) {
     if (self.findInPageAvailable) {
       [keyCommands addObjectsFromArray:@[
-        [UIKeyCommand cr_commandWithInput:@"f"
-                            modifierFlags:KeyModifierCommand
-                                   action:@selector(keyCommand_openFindInPage)
-                                  titleID:IDS_IOS_TOOLS_MENU_FIND_IN_PAGE],
-        [UIKeyCommand
-            keyCommandWithInput:@"g"
-                  modifierFlags:KeyModifierCommand
-                         action:@selector(keyCommand_findNextStringInPage)],
-        [UIKeyCommand
-            keyCommandWithInput:@"g"
-                  modifierFlags:KeyModifierShiftCommand
-                         action:@selector(keyCommand_findPreviousStringInPage)],
+        UIKeyCommand.cr_openFindInPage,
+        UIKeyCommand.cr_findNextStringInPage,
+        UIKeyCommand.cr_findPreviousStringInPage,
       ]];
     }
 
     [keyCommands addObjectsFromArray:@[
-      [UIKeyCommand cr_commandWithInput:@"l"
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_focusOmnibox)
-                                titleID:IDS_IOS_KEYBOARD_OPEN_LOCATION],
-      [UIKeyCommand cr_commandWithInput:@"w"
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_closeTab)
-                                titleID:IDS_IOS_TOOLS_MENU_CLOSE_TAB],
-    ]];
-
-    // iOS 15+ supports -[UIKeyCommand allowsAutomaticMirroring], which is true
-    // by default. It handles flipping the direction of arrows and braces
-    // inputs.
-    NSString* arrowNext;
-    NSString* arrowPrevious;
-    NSString* braceNext;
-    NSString* bracePrevious;
-    if (@available(iOS 15.0, *)) {
-      arrowNext = UIKeyInputRightArrow;
-      arrowPrevious = UIKeyInputLeftArrow;
-      braceNext = @"}";
-      bracePrevious = @"{";
-    } else {
-      if (UseRTLLayout()) {
-        arrowNext = UIKeyInputLeftArrow;
-        arrowPrevious = UIKeyInputRightArrow;
-        braceNext = @"{";
-        bracePrevious = @"}";
-      } else {
-        arrowNext = UIKeyInputRightArrow;
-        arrowPrevious = UIKeyInputLeftArrow;
-        braceNext = @"}";
-        bracePrevious = @"{";
-      }
-    }
-    [keyCommands addObjectsFromArray:@[
-      [UIKeyCommand cr_commandWithInput:arrowNext
-                          modifierFlags:KeyModifierAltCommand
-                                 action:@selector(keyCommand_showNextTab)
-                                titleID:IDS_IOS_KEYBOARD_NEXT_TAB],
-      [UIKeyCommand cr_commandWithInput:arrowPrevious
-                          modifierFlags:KeyModifierAltCommand
-                                 action:@selector(keyCommand_showPreviousTab)
-                                titleID:IDS_IOS_KEYBOARD_PREVIOUS_TAB],
-      [UIKeyCommand keyCommandWithInput:braceNext
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_showNextTab)],
-      [UIKeyCommand keyCommandWithInput:bracePrevious
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_showPreviousTab)],
-      // TODO(crbug.com/1278594): Doesn't work on iOS 15+.
-      [UIKeyCommand keyCommandWithInput:@"\t"
-                          modifierFlags:KeyModifierControl
-                                 action:@selector(keyCommand_showNextTab)],
-      [UIKeyCommand keyCommandWithInput:@"\t"
-                          modifierFlags:KeyModifierControlShift
-                                 action:@selector(keyCommand_showPreviousTab)],
-    ]];
-
-    [keyCommands addObjectsFromArray:@[
-      [UIKeyCommand cr_commandWithInput:@"d"
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_bookmarkThisPage)
-                                titleID:IDS_IOS_KEYBOARD_BOOKMARK_THIS_PAGE],
-      [UIKeyCommand cr_commandWithInput:@"r"
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_reload)
-                                titleID:IDS_IOS_ACCNAME_RELOAD],
-    ]];
-
-    // iOS 15+ supports -[UIKeyCommand allowsAutomaticMirroring], which is true
-    // by default. It handles flipping the direction of brackets.
-    NSString* bracketBack;
-    NSString* bracketForward;
-    if (@available(iOS 15.0, *)) {
-      bracketBack = @"[";
-      bracketForward = @"]";
-    } else {
-      if (UseRTLLayout()) {
-        bracketBack = @"]";
-        bracketForward = @"[";
-      } else {
-        bracketBack = @"[";
-        bracketForward = @"]";
-      }
-    }
-    [keyCommands addObjectsFromArray:@[
-      [UIKeyCommand cr_commandWithInput:bracketBack
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_goBack)
-                                titleID:IDS_IOS_KEYBOARD_HISTORY_BACK],
-      [UIKeyCommand cr_commandWithInput:bracketForward
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_goForward)
-                                titleID:IDS_IOS_KEYBOARD_HISTORY_FORWARD],
+      UIKeyCommand.cr_focusOmnibox,
+      UIKeyCommand.cr_closeTab,
+      UIKeyCommand.cr_showNextTab,
+      UIKeyCommand.cr_showPreviousTab,
+      UIKeyCommand.cr_showNextTab_2,
+      UIKeyCommand.cr_showPreviousTab_2,
+      UIKeyCommand.cr_showNextTab_3,
+      UIKeyCommand.cr_showPreviousTab_3,
+      UIKeyCommand.cr_showBookmarks,
+      UIKeyCommand.cr_addToBookmarks,
+      UIKeyCommand.cr_reload,
+      UIKeyCommand.cr_goBack,
+      UIKeyCommand.cr_goForward,
     ]];
 
     // Since cmd+left and cmd+right are valid system shortcuts when editing
     // text, register those only if text is not being edited.
     if (!self.editingText) {
-      // iOS 15+ supports -[UIKeyCommand allowsAutomaticMirroring], which is
-      // true by default. It handles flipping the direction of arrows.
-      NSString* arrowBack;
-      NSString* arrowForward;
-      if (@available(iOS 15.0, *)) {
-        arrowBack = UIKeyInputLeftArrow;
-        arrowForward = UIKeyInputRightArrow;
-      } else {
-        if (UseRTLLayout()) {
-          arrowBack = UIKeyInputRightArrow;
-          arrowForward = UIKeyInputLeftArrow;
-        } else {
-          arrowBack = UIKeyInputLeftArrow;
-          arrowForward = UIKeyInputRightArrow;
-        }
-      }
       [keyCommands addObjectsFromArray:@[
-        [UIKeyCommand keyCommandWithInput:arrowBack
-                            modifierFlags:KeyModifierCommand
-                                   action:@selector(keyCommand_goBack)],
-        [UIKeyCommand keyCommandWithInput:arrowForward
-                            modifierFlags:KeyModifierCommand
-                                   action:@selector(keyCommand_goForward)],
+        UIKeyCommand.cr_goBack_2,
+        UIKeyCommand.cr_goForward_2,
       ]];
     }
 
     [keyCommands addObjectsFromArray:@[
-      [UIKeyCommand cr_commandWithInput:@"y"
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_showHistory)
-                                titleID:IDS_HISTORY_SHOW_HISTORY],
-      [UIKeyCommand
-          cr_commandWithInput:@"."
-                modifierFlags:KeyModifierShiftCommand
-                       action:@selector(keyCommand_startVoiceSearch)
-                      titleID:IDS_IOS_VOICE_SEARCH_KEYBOARD_DISCOVERY_TITLE],
+      UIKeyCommand.cr_showHistory,
+      UIKeyCommand.cr_startVoiceSearch,
     ]];
   }
 
   if (self.canDismissModals) {
-    [keyCommands addObjectsFromArray:@[
-      [UIKeyCommand
-          keyCommandWithInput:UIKeyInputEscape
-                modifierFlags:KeyModifierNone
-                       action:@selector(keyCommand_dismissModalDialogs)],
-    ]];
+    [keyCommands addObject:UIKeyCommand.cr_close];
   }
 
   // List the commands that don't appear in the HUD but are always present.
   [keyCommands addObjectsFromArray:@[
-    [UIKeyCommand keyCommandWithInput:@"n"
-                        modifierFlags:KeyModifierCommand
-                               action:@selector(keyCommand_openNewTab)],
-    [UIKeyCommand keyCommandWithInput:@","
-                        modifierFlags:KeyModifierCommand
-                               action:@selector(keyCommand_showSettings)],
+    UIKeyCommand.cr_openNewRegularTab,
+    UIKeyCommand.cr_showSettings,
   ]];
 
   // List the commands that don't appear in the HUD and only appear when there
   // is at least a tab.
   if (hasTabs) {
     [keyCommands addObjectsFromArray:@[
-      [UIKeyCommand keyCommandWithInput:@"."
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_stop)],
-      [UIKeyCommand keyCommandWithInput:@"?"
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_showHelpPage)],
-      [UIKeyCommand
-          keyCommandWithInput:@"l"
-                modifierFlags:KeyModifierAltCommand
-                       action:@selector(keyCommand_showDownloadsFolder)],
-      [UIKeyCommand
-          keyCommandWithInput:@"j"
-                modifierFlags:KeyModifierShiftCommand
-                       action:@selector(keyCommand_showDownloadsFolder)],
-      [UIKeyCommand keyCommandWithInput:@"1"
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_showTab0)],
-      [UIKeyCommand keyCommandWithInput:@"2"
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_showTab1)],
-      [UIKeyCommand keyCommandWithInput:@"3"
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_showTab2)],
-      [UIKeyCommand keyCommandWithInput:@"4"
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_showTab3)],
-      [UIKeyCommand keyCommandWithInput:@"5"
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_showTab4)],
-      [UIKeyCommand keyCommandWithInput:@"6"
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_showTab5)],
-      [UIKeyCommand keyCommandWithInput:@"7"
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_showTab6)],
-      [UIKeyCommand keyCommandWithInput:@"8"
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_showTab7)],
-      [UIKeyCommand keyCommandWithInput:@"9"
-                          modifierFlags:KeyModifierCommand
-                                 action:@selector(keyCommand_showLastTab)],
+      UIKeyCommand.cr_stop,
+      UIKeyCommand.cr_showHelp,
+      UIKeyCommand.cr_showDownloadsFolder,
+      UIKeyCommand.cr_showDownloadsFolder_2,
+      UIKeyCommand.cr_showTab0,
+      UIKeyCommand.cr_showTab1,
+      UIKeyCommand.cr_showTab2,
+      UIKeyCommand.cr_showTab3,
+      UIKeyCommand.cr_showTab4,
+      UIKeyCommand.cr_showTab5,
+      UIKeyCommand.cr_showTab6,
+      UIKeyCommand.cr_showTab7,
+      UIKeyCommand.cr_showLastTab,
     ]];
   }
 
@@ -336,19 +207,26 @@
 #pragma mark - Key Command Actions
 
 - (void)keyCommand_openNewTab {
-  OpenNewTabCommand* newTabCommand = [OpenNewTabCommand command];
-  newTabCommand.shouldFocusOmnibox = YES;
-  [_dispatcher openURLInNewTab:newTabCommand];
+  if (self.browser->GetBrowserState()->IsOffTheRecord()) {
+    [self openNewIncognitoTab];
+  } else {
+    [self openNewRegularTab];
+  }
+}
+
+- (void)keyCommand_openNewRegularTab {
+  [self openNewRegularTab];
 }
 
 - (void)keyCommand_openNewIncognitoTab {
-  OpenNewTabCommand* newIncognitoTabCommand =
-      [OpenNewTabCommand incognitoTabCommand];
-  newIncognitoTabCommand.shouldFocusOmnibox = YES;
-  [_dispatcher openURLInNewTab:newIncognitoTabCommand];
+  [self openNewIncognitoTab];
 }
 
-- (void)keyCommand_reopenClosedTab {
+- (void)keyCommand_openNewWindow {
+  // TODO(crbug.com/1378943): Implement this action.
+}
+
+- (void)keyCommand_reopenLastClosedTab {
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
   sessions::TabRestoreService* const tabRestoreService =
       IOSChromeTabRestoreServiceFactory::GetForBrowserState(browserState);
@@ -423,7 +301,11 @@
   }
 }
 
-- (void)keyCommand_bookmarkThisPage {
+- (void)keyCommand_showBookmarks {
+  [_browserCoordinatorCommandsHandler showBookmarksManager];
+}
+
+- (void)keyCommand_addToBookmarks {
   web::WebState* currentWebState =
       _browser->GetWebStateList()->GetActiveWebState();
   if (!currentWebState) {
@@ -460,7 +342,7 @@
   [_dispatcher startVoiceSearch];
 }
 
-- (void)keyCommand_dismissModalDialogs {
+- (void)keyCommand_close {
   [_dispatcher dismissModalDialogs];
 }
 
@@ -472,7 +354,7 @@
   self.navigationAgent->StopLoading();
 }
 
-- (void)keyCommand_showHelpPage {
+- (void)keyCommand_showHelp {
   [_browserCoordinatorCommandsHandler showHelpPage];
 }
 
@@ -516,6 +398,24 @@
   [self showTabAtIndex:self.tabsCount - 1];
 }
 
+- (void)keyCommand_reportAnIssue {
+  [_dispatcher
+      showReportAnIssueFromViewController:_viewController
+                                   sender:UserFeedbackSender::KeyCommand];
+}
+
+- (void)keyCommand_addToReadingList {
+  // TODO(crbug.com/1378944): Implement this action.
+}
+
+- (void)keyCommand_goToTabGrid {
+  // TODO(crbug.com/1378942): Implement this action.
+}
+
+- (void)keyCommand_clearBrowsingData {
+  // TODO(crbug.com/1378945): Implement this action.
+}
+
 #pragma mark - Private
 
 - (WebNavigationBrowserAgent*)navigationAgent {
@@ -542,6 +442,19 @@
   return [firstResponder isKindOfClass:[UITextField class]] ||
          [firstResponder isKindOfClass:[UITextView class]] ||
          [[KeyboardObserverHelper sharedKeyboardObserver] isKeyboardVisible];
+}
+
+- (void)openNewRegularTab {
+  OpenNewTabCommand* newTabCommand = [OpenNewTabCommand command];
+  newTabCommand.shouldFocusOmnibox = YES;
+  [_dispatcher openURLInNewTab:newTabCommand];
+}
+
+- (void)openNewIncognitoTab {
+  OpenNewTabCommand* newIncognitoTabCommand =
+      [OpenNewTabCommand incognitoTabCommand];
+  newIncognitoTabCommand.shouldFocusOmnibox = YES;
+  [_dispatcher openURLInNewTab:newIncognitoTabCommand];
 }
 
 - (void)showTabAtIndex:(NSUInteger)index {

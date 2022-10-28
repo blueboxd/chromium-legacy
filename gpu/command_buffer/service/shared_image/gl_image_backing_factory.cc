@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/shared_image/gl_image_backing_factory.h"
+#include "gpu/command_buffer/service/shared_image/iosurface_image_backing_factory.h"
 
 #include <list>
 #include <utility>
@@ -14,7 +14,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/image_factory.h"
-#include "gpu/command_buffer/service/shared_image/gl_image_backing.h"
+#include "gpu/command_buffer/service/shared_image/iosurface_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
 #include "gpu/config/gpu_preferences.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -34,9 +34,9 @@ using InitializeGLTextureParams =
 }  // anonymous namespace
 
 ///////////////////////////////////////////////////////////////////////////////
-// GLImageBackingFactory
+// IOSurfaceImageBackingFactory
 
-GLImageBackingFactory::GLImageBackingFactory(
+IOSurfaceImageBackingFactory::IOSurfaceImageBackingFactory(
     const GpuPreferences& gpu_preferences,
     const GpuDriverBugWorkarounds& workarounds,
     const gles2::FeatureInfo* feature_info,
@@ -89,9 +89,10 @@ GLImageBackingFactory::GLImageBackingFactory(
   }
 }
 
-GLImageBackingFactory::~GLImageBackingFactory() = default;
+IOSurfaceImageBackingFactory::~IOSurfaceImageBackingFactory() = default;
 
-std::unique_ptr<SharedImageBacking> GLImageBackingFactory::CreateSharedImage(
+std::unique_ptr<SharedImageBacking>
+IOSurfaceImageBackingFactory::CreateSharedImage(
     const Mailbox& mailbox,
     viz::SharedImageFormat format,
     SurfaceHandle surface_handle,
@@ -107,7 +108,8 @@ std::unique_ptr<SharedImageBacking> GLImageBackingFactory::CreateSharedImage(
                                    usage, base::span<const uint8_t>());
 }
 
-std::unique_ptr<SharedImageBacking> GLImageBackingFactory::CreateSharedImage(
+std::unique_ptr<SharedImageBacking>
+IOSurfaceImageBackingFactory::CreateSharedImage(
     const Mailbox& mailbox,
     viz::SharedImageFormat format,
     const gfx::Size& size,
@@ -121,7 +123,8 @@ std::unique_ptr<SharedImageBacking> GLImageBackingFactory::CreateSharedImage(
                                    usage, pixel_data);
 }
 
-std::unique_ptr<SharedImageBacking> GLImageBackingFactory::CreateSharedImage(
+std::unique_ptr<SharedImageBacking>
+IOSurfaceImageBackingFactory::CreateSharedImage(
     const Mailbox& mailbox,
     int client_id,
     gfx::GpuMemoryBufferHandle handle,
@@ -171,17 +174,13 @@ std::unique_ptr<SharedImageBacking> GLImageBackingFactory::CreateSharedImage(
   // always bindable.
 #if DCHECK_IS_ON()
   bool texture_2d_support = false;
-#if BUILDFLAG(IS_MAC)
   // If the PlatformSpecificTextureTarget on Mac is GL_TEXTURE_2D, this is
   // supported.
   texture_2d_support =
       (gpu::GetPlatformSpecificTextureTarget() == GL_TEXTURE_2D);
-#endif  // BUILDFLAG(IS_MAC)
   DCHECK(target != GL_TEXTURE_2D || texture_2d_support ||
          image->ShouldBindOrCopy() == gl::GLImage::BIND);
 #endif  // DCHECK_IS_ON()
-  if (usage & SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX)
-    image->DisableInUseByWindowServer();
 
   const viz::ResourceFormat plane_format =
       viz::GetResourceFormat(GetPlaneBufferFormat(plane, buffer_format));
@@ -203,12 +202,13 @@ std::unique_ptr<SharedImageBacking> GLImageBackingFactory::CreateSharedImage(
       for_framebuffer_attachment && texture_usage_angle_;
 
   auto si_format = viz::SharedImageFormat::SinglePlane(plane_format);
-  return std::make_unique<GLImageBacking>(
+  DCHECK(use_passthrough_);
+  return std::make_unique<IOSurfaceImageBacking>(
       image, mailbox, si_format, plane_size, color_space, surface_origin,
-      alpha_type, usage, params, use_passthrough_);
+      alpha_type, usage, params);
 }
 
-scoped_refptr<gl::GLImage> GLImageBackingFactory::MakeGLImage(
+scoped_refptr<gl::GLImage> IOSurfaceImageBackingFactory::MakeGLImage(
     int client_id,
     gfx::GpuMemoryBufferHandle handle,
     gfx::BufferFormat format,
@@ -224,13 +224,14 @@ scoped_refptr<gl::GLImage> GLImageBackingFactory::MakeGLImage(
       surface_handle);
 }
 
-bool GLImageBackingFactory::IsSupported(uint32_t usage,
-                                        viz::SharedImageFormat format,
-                                        const gfx::Size& size,
-                                        bool thread_safe,
-                                        gfx::GpuMemoryBufferType gmb_type,
-                                        GrContextType gr_context_type,
-                                        base::span<const uint8_t> pixel_data) {
+bool IOSurfaceImageBackingFactory::IsSupported(
+    uint32_t usage,
+    viz::SharedImageFormat format,
+    const gfx::Size& size,
+    bool thread_safe,
+    gfx::GpuMemoryBufferType gmb_type,
+    GrContextType gr_context_type,
+    base::span<const uint8_t> pixel_data) {
   if (!pixel_data.empty() && gr_context_type != GrContextType::kGL) {
     return false;
   }
@@ -244,46 +245,30 @@ bool GLImageBackingFactory::IsSupported(uint32_t usage,
   if (usage & SHARED_IMAGE_USAGE_CPU_UPLOAD) {
     return false;
   }
-#if BUILDFLAG(IS_MAC)
   // On macOS, there is no separate interop factory. Any GpuMemoryBuffer-backed
   // image can be used with both OpenGL and Metal
 
   // In certain modes on Mac, Angle needs the image to be released when ending a
   // write. To avoid that release resulting in the GLES2 command decoders
   // needing to perform on-demand binding, we disallow concurrent read/write in
-  // these modes. See GLImageBacking::GLTextureImageRepresentationEndAccess()
-  // for further details.
+  // these modes. See
+  // IOSurfaceImageBacking::GLTextureImageRepresentationEndAccess() for further
+  // details.
   // TODO(https://anglebug.com/7626): Adjust the Metal-related conditions here
   // if/as they are adjusted in
-  // GLImageBacking::GLTextureImageRepresentationEndAccess().
-  if (use_passthrough_ &&
-      (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader ||
-       gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal)) {
+  // IOSurfaceImageBacking::GLTextureImageRepresentationEndAccess().
+  if (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader ||
+      gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal) {
     if (usage & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE) {
       return false;
     }
   }
 
   return true;
-#else
-  // Doesn't support contexts other than GL for OOPR Canvas
-  if (gr_context_type != GrContextType::kGL &&
-      ((usage & SHARED_IMAGE_USAGE_DISPLAY_READ) ||
-       (usage & SHARED_IMAGE_USAGE_DISPLAY_WRITE) ||
-       (usage & SHARED_IMAGE_USAGE_RASTER))) {
-    return false;
-  }
-  if ((usage & SHARED_IMAGE_USAGE_WEBGPU) ||
-      (usage & SHARED_IMAGE_USAGE_VIDEO_DECODE)) {
-    // return false if it needs interop factory
-    return false;
-  }
-  return true;
-#endif
 }
 
 std::unique_ptr<SharedImageBacking>
-GLImageBackingFactory::CreateSharedImageInternal(
+IOSurfaceImageBackingFactory::CreateSharedImageInternal(
     const Mailbox& mailbox,
     viz::SharedImageFormat format,
     SurfaceHandle surface_handle,
@@ -348,8 +333,6 @@ GLImageBackingFactory::CreateSharedImageInternal(
   level_info_internal_format = image->GetInternalFormat();
   if (color_space.IsValid())
     image->SetColorSpace(color_space);
-  if (usage & SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX)
-    image->DisableInUseByWindowServer();
 
   InitializeGLTextureParams params;
   params.target = target;
@@ -362,9 +345,10 @@ GLImageBackingFactory::CreateSharedImageInternal(
       for_framebuffer_attachment && texture_usage_angle_;
 
   DCHECK(!format_info.swizzle);
-  auto result = std::make_unique<GLImageBacking>(
+  DCHECK(use_passthrough_);
+  auto result = std::make_unique<IOSurfaceImageBacking>(
       image, mailbox, format, size, color_space, surface_origin, alpha_type,
-      usage, params, use_passthrough_);
+      usage, params);
   if (!pixel_data.empty()) {
     gl::ScopedProgressReporter scoped_progress_reporter(progress_reporter_);
     result->InitializePixels(format_info.adjusted_format, format_info.gl_type,

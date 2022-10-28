@@ -26,6 +26,7 @@
 <translation id="1161762950103988776">Преминаване</translation>
 <translation id="1164857107703583584">Командите за преминаване могат да се използват за ефективно придвижване в уеб страниците.</translation>
 <translation id="1175914831232945926">Цифри</translation>
+<translation id="1181003590763099524">преместване в началото</translation>
 <translation id="1188858454923323853">допълнение</translation>
 <translation id="1189258430971676908">Област за упражнения: падащи списъци</translation>
 <translation id="1195238899008218998">Послеслов</translation>
@@ -326,6 +327,7 @@
 <translation id="309749186376891736">Преместване на курсора</translation>
 <translation id="3103579948980282461">среднонаситено виолетово-червено</translation>
 <translation id="3104705064753753826">диалогов прозорец за сигнал</translation>
+<translation id="3105857328626674463">открояване на предишната дума</translation>
 <translation id="3109724472072898302">Свито</translation>
 <translation id="311015743332597320">Прекарайте четири пръста надясно</translation>
 <translation id="3112457281078985179">За да включите или изключите ChromeVox, използвайте Control + Alt + Z.</translation>
@@ -354,6 +356,7 @@
 <translation id="3241052487511142956">Предишна посетена връзка</translation>
 <translation id="3241638166094654466">Клетки във всеки ред:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
+<translation id="3247621388192105674">преместване в края</translation>
 <translation id="3260949043575829030">Предишен подобен елемент</translation>
 <translation id="3270069636408109001">Няма следваща таблица</translation>
 <translation id="3273791280096244679">Запазване на етикета</translation>
@@ -946,6 +949,7 @@
 <translation id="743783356331413498">Пример</translation>
 <translation id="7439060726180460871">Директория</translation>
 <translation id="744163271241493234">pwded</translation>
+<translation id="7443479558101073378">открояване на следващата дума</translation>
 <translation id="7465123027577412805">Да се използва ли естествен глас?</translation>
 <translation id="7491962110804786152">раздел</translation>
 <translation id="7492497529767769458">Преминаване към следващата секция, например областта за състоянието и стартовия панел.</translation>

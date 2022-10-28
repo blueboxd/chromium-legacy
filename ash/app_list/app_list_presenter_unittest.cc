@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
 #include <memory>
 #include <string>
 
@@ -43,6 +42,7 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/app_list/app_list_color_provider.h"
+#include "ash/public/cpp/app_list/app_list_controller_observer.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
@@ -73,6 +73,7 @@
 #include "ash/wm/workspace_controller_test_api.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/aura_constants.h"
@@ -174,13 +175,37 @@ void SanityCheckSearchResultsAnchoredDialogBounds(
 // Returns the search box view from either the clamshell bubble or the tablet
 // mode fullscreen launcher.
 SearchBoxView* GetSearchBoxViewFromHelper(AppListTestHelper* helper) {
-  if (features::IsProductivityLauncherEnabled() &&
-      !Shell::Get()->IsInTabletMode()) {
+  if (!Shell::Get()->IsInTabletMode()) {
     DCHECK(Shell::Get()->app_list_controller()->IsVisible());
     return helper->GetBubbleSearchBoxView();
   }
   return helper->GetSearchBoxView();
 }
+
+// Test observer to verify that `AppListView` / its presenter do not call
+// `OnVisibilityChanged(false)` during **aborted** hide animation.
+class TestAppListControllerObserver : public AppListControllerObserver {
+ public:
+  TestAppListControllerObserver() = default;
+  TestAppListControllerObserver(const TestAppListControllerObserver&) = delete;
+  TestAppListControllerObserver& operator=(
+      const TestAppListControllerObserver&) = delete;
+  ~TestAppListControllerObserver() override {
+    Shell::Get()->app_list_controller()->RemoveObserver(this);
+  }
+
+  void OnAppListVisibilityChanged(bool shown, int64_t display_id) override {
+    if (!shown)
+      ++visibility_changed_to_hidden_times_;
+  }
+
+  int visibility_changed_to_hidden_times() const {
+    return visibility_changed_to_hidden_times_;
+  }
+
+ private:
+  int visibility_changed_to_hidden_times_ = 0;
+};
 
 }  // namespace
 
@@ -207,8 +232,6 @@ class AppListPresenterTest : public AshTestBase,
   void EnsureLauncherWithVisibleAppsGrid() {
     auto* helper = GetAppListTestHelper();
     helper->ShowAndRunLoop(GetPrimaryDisplayId());
-    if (!features::IsProductivityLauncherEnabled())
-      helper->GetAppListView()->SetState(AppListViewState::kFullscreenAllApps);
     helper->WaitUntilIdle();
   }
 
@@ -253,10 +276,7 @@ class AppListPresenterTest : public AshTestBase,
   }
 
   AppsGridView* apps_grid_view() {
-    if (features::IsProductivityLauncherEnabled())
-      return GetAppListTestHelper()->GetScrollableAppsGridView();
-
-    return GetAppListTestHelper()->GetRootPagedAppsGridView();
+    return GetAppListTestHelper()->GetScrollableAppsGridView();
   }
 
   SearchResultBaseView* GetSearchResultListViewItemAt(int index) {
@@ -1141,7 +1161,7 @@ TEST_P(AppListBubbleAndTabletTest,
   const gfx::Rect original_item_3_bounds =
       apps_grid_view_->GetItemViewAt(3)->GetBoundsInScreen();
 
-  // Move the folder item to the last position in the model.
+  // Move the folder item to the first position in the model.
   app_list_test_model_->RequestPositionUpdate(
       folder_id,
       app_list_test_model_->top_level_item_list()
@@ -2359,7 +2379,7 @@ TEST_F(PopulatedAppListTest,
 
   // After the drag is released, the item bounds should animate to their final
   // bounds.
-  EXPECT_TRUE(apps_grid_view_->IsAnimationRunningForTest());
+  EXPECT_TRUE(apps_grid_view_->IsItemAnimationRunning());
   for (int i = 0; i < kItemCount; ++i) {
     views::View* item_view = apps_grid_view_->view_model()->view_at(i);
     EXPECT_TRUE(item_view->layer()) << "at " << i;
@@ -2458,10 +2478,10 @@ TEST_F(PopulatedAppListTest,
   event_generator->MoveTouchBy(0, 10);
   EXPECT_TRUE(apps_grid_view_->FirePageFlipTimerForTest());
   // Move the pointer away from the grid horizontally for it to get out ouf apps
-  // grid drag buffer, so the release results in a canceled drag - for
-  // productivity launcher, the grid is spread out vertically so there is no
-  // area under the grid that's: in page flip area, outside of apps grid drag
-  // buffer, and outside of shelf bounds.
+  // grid drag buffer, so the release results in a canceled drag
+  // The grid is spread out vertically so there is no area under the grid
+  // that's: in page flip area, outside of apps grid drag buffer, and outside of
+  // shelf bounds.
   event_generator->MoveTouchBy(0, 270);
   event_generator->ReleaseTouch();
 
@@ -3359,12 +3379,7 @@ TEST_F(AppListPresenterTest, TapAppListThenShelfHidesAutoHiddenShelf) {
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 }
 
-TEST_P(AppListPresenterTest, ClickingShelfArrowDoesNotHideAppList) {
-  // Parameterize by ProductivityLauncher.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(features::kProductivityLauncher,
-                                    GetParam());
-
+TEST_F(AppListPresenterTest, ClickingShelfArrowDoesNotHideAppList) {
   // Add enough shelf items for the shelf to enter overflow.
   Shelf* const shelf = GetPrimaryShelf();
   ScrollableShelfView* const scrollable_shelf_view =
@@ -3572,6 +3587,31 @@ TEST_F(AppListPresenterHomeLauncherTest, ShowAppListForTabletMode) {
   // Turns off tablet mode.
   EnableTabletMode(false);
   GetAppListTestHelper()->CheckVisibility(false);
+}
+
+TEST_F(AppListPresenterHomeLauncherTest,
+       RunZeroStateSearchWhenShownOnTabletModeTransition) {
+  EXPECT_EQ(0, GetTestAppListClient()->start_zero_state_search_count());
+  GetAppListTestHelper()->CheckVisibility(false);
+
+  EnableTabletMode(true);
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_EQ(1, GetTestAppListClient()->start_zero_state_search_count());
+}
+
+TEST_F(AppListPresenterHomeLauncherTest,
+       RunZeroStateSearchWhenShownAfterMinimizingWindows) {
+  EXPECT_EQ(0, GetTestAppListClient()->start_zero_state_search_count());
+  GetAppListTestHelper()->CheckVisibility(false);
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+
+  EnableTabletMode(true);
+  GetAppListTestHelper()->CheckVisibility(false);
+  EXPECT_EQ(0, GetTestAppListClient()->start_zero_state_search_count());
+
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_EQ(1, GetTestAppListClient()->start_zero_state_search_count());
 }
 
 // Tests that the app list window's parent is changed after entering tablet
@@ -3827,7 +3867,7 @@ TEST_F(AppListPresenterHomeLauncherTest, GoingHomeMinimizesAllWindows) {
   // Tests that the window ordering remains the same as before we minimize.
   auto new_order =
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
-  EXPECT_TRUE(std::equal(ordering.begin(), ordering.end(), new_order.begin()));
+  EXPECT_TRUE(base::ranges::equal(ordering, new_order));
 }
 
 // Tests that going home will end split view mode.
@@ -4303,5 +4343,41 @@ TEST_F(AppListPresenterWithScaleAnimationOnTabletModeTransitionTest,
   EXPECT_EQ(layer->transform(), initial_transform);
   EXPECT_EQ(layer->GetTargetTransform(), no_transform);
 }
+
+class AppListPresenterAnimationMigrationTest
+    : public AshTestBase,
+      public testing::WithParamInterface<bool> {
+ public:
+  AppListPresenterAnimationMigrationTest() {
+    scoped_feature_list_.InitWithFeatureState(
+        app_list_features::kAnimateScaleOnTabletModeTransition, GetParam());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_P(AppListPresenterAnimationMigrationTest,
+       AbortedHideAnimationDoesNotChangeVisibility) {
+  // Configure test observer.
+  auto visibility_observer = std::make_unique<TestAppListControllerObserver>();
+  auto* const app_list_controller = Shell::Get()->app_list_controller();
+  app_list_controller->AddObserver(visibility_observer.get());
+
+  // Switch to tablet mode and set normal animation duration.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  EXPECT_EQ(visibility_observer->visibility_changed_to_hidden_times(), 0);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_EQ(visibility_observer->visibility_changed_to_hidden_times(), 0);
+}
+
+// Runs tests for `kAnimateScaleOnTabletModeTransition` enabled and disabled.
+INSTANTIATE_TEST_SUITE_P(All,
+                         AppListPresenterAnimationMigrationTest,
+                         testing::Bool());
 
 }  // namespace ash

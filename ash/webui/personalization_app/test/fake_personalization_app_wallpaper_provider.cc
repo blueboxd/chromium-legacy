@@ -139,7 +139,8 @@ void FakePersonalizationAppWallpaperProvider::SelectGooglePhotosPhoto(
 void FakePersonalizationAppWallpaperProvider::SelectGooglePhotosAlbum(
     const std::string& id,
     SelectGooglePhotosAlbumCallback callback) {
-  std::move(callback).Run(/*success=*/true);
+  std::move(callback).Run(mojom::SetDailyRefreshResponse::New(
+      /*success=*/false, /*force_refresh=*/false));
 }
 
 void FakePersonalizationAppWallpaperProvider::
@@ -162,7 +163,8 @@ void FakePersonalizationAppWallpaperProvider::SetCurrentWallpaperLayout(
 }
 
 void FakePersonalizationAppWallpaperProvider::SetDailyRefreshCollectionId(
-    const std::string& collection_id) {
+    const std::string& collection_id,
+    SetDailyRefreshCollectionIdCallback callback) {
   return;
 }
 

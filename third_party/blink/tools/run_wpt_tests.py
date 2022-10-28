@@ -151,8 +151,29 @@ class WPTAdapter(wpt_common.BaseWptScriptAdapter):
             '--binary-arg=--force-fieldtrial-params='
             'DownloadServiceStudy.Enabled:start_up_delay_ms/0',
             '--run-info=%s' % self._tmp_dir,
-            '--run-by-dir=0',
         ])
+        if self.options.use_upstream_wpt:
+            # when running with upstream, the goal is to get wpt report that can
+            # be uploaded to wpt.fyi. We do not really cares if tests failed or
+            # not. Add '--no-fail-on-unexpected' so that the overall result is
+            # success. Add '--no-restart-on-unexpected' to speed up the test. On
+            # Android side, we are always running with one emulator or worker,
+            # so do not add '--run-by-dir=0'
+            rest_args.extend([
+                '--no-fail-on-unexpected',
+                '--no-restart-on-unexpected',
+            ])
+        else:
+            # By default, wpt will treat unexpected passes as errors, so we
+            # disable that to be consistent with Chromium CI. Add
+            # '--run-by-dir=0' so that tests can be more evenly distributed
+            # among workers.
+            rest_args.extend([
+                '--no-fail-on-unexpected-pass',
+                '--no-restart-on-new-group',
+                '--run-by-dir=0',
+            ])
+
         rest_args.extend(self.product.wpt_args)
 
         if self.options.headless:
@@ -233,6 +254,14 @@ class WPTAdapter(wpt_common.BaseWptScriptAdapter):
 
     def do_post_test_run_tasks(self):
         self.process_and_upload_results()
+        if self.options.show_results_in_browser:
+            self.show_results_in_browser()
+
+    def show_results_in_browser(self):
+        results_file = self.fs.join(self.fs.dirname(self.wpt_output),
+                                    self.layout_test_results_subdir,
+                                    'results.html')
+        self.port.show_results_html_file(results_file)
 
     def clean_up_after_test_run(self):
         super().clean_up_after_test_run()
@@ -295,6 +324,12 @@ class WPTAdapter(wpt_common.BaseWptScriptAdapter):
                             default=True,
                             help=('Use this tag to not run wptrunner in'
                                   'headless mode'))
+        # TODO(crbug.com/1377834) show results in browser in future.
+        # currently this flag is no-op
+        parser.add_argument('--show-results-in-browser',
+                            action='store_true',
+                            help='adding this tag will show results in'
+                            'the browser')
 
     def add_binary_arguments(self, parser):
         group = parser.add_argument_group(

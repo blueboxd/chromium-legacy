@@ -47,7 +47,6 @@ source_set("app") {
 
   deps = [
     "//base",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/url:constants",
     "//net",
@@ -87,10 +86,11 @@ source_set("unit_tests") {
     "//ios/chrome/app/application_delegate:tab_opening",
     "//ios/chrome/app/application_delegate:test_support",
     "//ios/chrome/app/application_delegate:url_opener_params",
-    "//ios/chrome/browser",
+    "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/metrics:metrics",
     "//ios/chrome/browser/prefs:browser_prefs",
+    "//ios/chrome/browser/prefs:pref_names",
     "//ios/chrome/browser/promos_manager:constants",
     "//ios/chrome/browser/promos_manager:promos_manager",
     "//ios/chrome/browser/promos_manager:test_support",
@@ -235,6 +235,7 @@ source_set("variations_app_state_agent") {
     "variations_app_state_agent.mm",
   ]
   deps = [
+    ":launch_screen_ui",
     "//base",
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/app/application_delegate:observing_app_state_agent",
@@ -255,10 +256,24 @@ source_set("enterprise_app_agent") {
     "//ios/chrome/app:tests_hook",
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
-    "//ios/chrome/browser",
+    "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/policy",
+    "//ios/chrome/browser/ui/first_run:constants",
     "//ios/chrome/browser/ui/first_run:utils",
     "//ios/chrome/browser/ui/main:scene_state_header",
+  ]
+}
+
+source_set("launch_screen_ui") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "launch_screen_view_controller.h",
+    "launch_screen_view_controller.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/ui/first_run:constants",
+    "//ios/chrome/common/ui/colors",
   ]
 }
 
@@ -269,6 +284,7 @@ source_set("enterprise_app_agent_ui") {
     "enterprise_loading_screen_view_controller.mm",
   ]
   deps = [
+    ":launch_screen_ui",
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/first_run:constants",
@@ -289,7 +305,6 @@ source_set("first_run_app_state_agent") {
     "//ios/chrome/app:blocking_scene_commands",
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/browsing_data",
     "//ios/chrome/browser/geolocation",
     "//ios/chrome/browser/policy",
@@ -416,8 +431,8 @@ source_set("app_internal") {
     "//ios/chrome/app/startup",
     "//ios/chrome/app/startup:startup_basic",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/accessibility",
+    "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:browser_state_impl",
@@ -445,6 +460,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/omaha",
     "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/paths",
     "//ios/chrome/browser/push_notification:push_notification_service",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/screenshot",
@@ -462,6 +478,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/ui/download",
     "//ios/chrome/browser/ui/first_run",
     "//ios/chrome/browser/ui/first_run:utils",
+    "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/keyboard:features",
     "//ios/chrome/browser/ui/main",
     "//ios/chrome/browser/ui/main:scene",

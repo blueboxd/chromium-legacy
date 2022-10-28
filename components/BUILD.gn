@@ -113,6 +113,7 @@ test("components_unittests") {
     "//base",
     "//components/apdu:unit_tests",
     "//components/assist_ranker:unit_tests",
+    "//components/attribution_reporting:unit_tests",
     "//components/autofill/core/browser:unit_tests",
     "//components/autofill/core/common:unit_tests",
     "//components/base32:unit_tests",
@@ -346,6 +347,7 @@ test("components_unittests") {
       "//components/continuous_search/browser:unit_tests",
       "//components/continuous_search/common:unit_tests",
       "//components/custom_handlers:unit_tests",
+      "//components/devtools/simple_devtools_protocol_client:unit_tests",
       "//components/digital_asset_links:unit_tests",
       "//components/discardable_memory/client:unit_tests",
       "//components/discardable_memory/common:unit_tests",
@@ -474,7 +476,6 @@ test("components_unittests") {
     deps += [
       "//base:base_java_unittest_support",
       "//components/android_autofill/browser:unit_tests",
-      "//components/autofill_assistant/browser/android:unit_tests",
       "//components/browser_ui/sms/android:unit_tests",
       "//components/cdm/browser:unit_tests",
       "//components/component_updater/android:embedded_component_loader_java",
@@ -677,6 +678,11 @@ test("components_unittests") {
       "//components/user_notes/browser:unit_tests",
       "//components/user_notes/storage:unit_tests",
     ]
+  }
+
+  # Only supported on cast-enabled platforms.
+  if (enable_cast_receiver) {
+    deps += [ "//components/cast_receiver:unit_tests" ]
   }
 
   # On LaCrOS, tests use ash - chrome as a window manager, thus the dependency.

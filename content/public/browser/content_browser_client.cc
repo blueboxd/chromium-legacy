@@ -248,7 +248,7 @@ size_t ContentBrowserClient::GetProcessCountToIgnoreForLimit() {
 }
 
 absl::optional<blink::ParsedPermissionsPolicy>
-ContentBrowserClient::GetPermissionsPolicyForIsolatedApp(
+ContentBrowserClient::GetPermissionsPolicyForIsolatedWebApp(
     content::BrowserContext* browser_context,
     const url::Origin& app_origin) {
   return blink::ParsedPermissionsPolicy();
@@ -328,7 +328,13 @@ bool ContentBrowserClient::ShouldUrlUseApplicationIsolationLevel(
   return false;
 }
 
-bool ContentBrowserClient::IsIsolatedAppsDeveloperModeAllowed(
+bool ContentBrowserClient::IsIsolatedContextAllowedForUrl(
+    BrowserContext* browser_context,
+    const GURL& lock_url) {
+  return false;
+}
+
+bool ContentBrowserClient::IsIsolatedWebAppsDeveloperModeAllowed(
     BrowserContext* context) {
   return true;
 }
@@ -1210,12 +1216,14 @@ void ContentBrowserClient::AugmentNavigationDownloadPolicy(
     bool user_gesture,
     blink::NavigationDownloadPolicy* download_policy) {}
 
-std::vector<blink::mojom::EpochTopicPtr>
-ContentBrowserClient::GetBrowsingTopicsForJsApi(
+bool ContentBrowserClient::HandleTopicsWebApi(
     const url::Origin& context_origin,
-    RenderFrameHost* main_frame,
-    bool observe) {
-  return {};
+    content::RenderFrameHost* main_frame,
+    browsing_topics::ApiCallerSource caller_source,
+    bool get_topics,
+    bool observe,
+    std::vector<blink::mojom::EpochTopicPtr>& topics) {
+  return false;
 }
 
 bool ContentBrowserClient::IsBluetoothScanningBlocked(

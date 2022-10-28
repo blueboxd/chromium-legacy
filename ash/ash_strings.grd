@@ -3537,6 +3537,9 @@ Connect your device to power.
       <message name="IDS_ASH_LOGIN_DISPLAY_PASSWORD_BUTTON_ACCESSIBLE_NAME_SHOW" desc="Text to be spoken when the focus is set to the display password button (in Show state) on login screen.">
         Show password
       </message>
+      <message name="IDS_ASH_LOGIN_CAPS_LOCK_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the Caps Lock button on login screen.">
+        Caps Lock is on
+      </message>
       <message name="IDS_ASH_LOGIN_DISPLAY_PASSWORD_BUTTON_ACCESSIBLE_NAME_HIDE" desc="Text to be spoken when the focus is set to the display password button (in Hide state) on login screen.">
         Hide password
       </message>
@@ -5422,12 +5425,6 @@ New install
       </message>
       <message name="IDS_APP_LIST_LEARN_MORE" desc="Text of Learn more links.">
         Learn more
-      </message>
-      <message name="IDS_APP_LIST_MANAGE_SETTINGS" desc="Text of Manage settings links.">
-        Manage settings
-      </message>
-      <message name="IDS_APP_LIST_SUGGESTED_CONTENT_INFO" desc="Text shown in launcher to notify users about Suggested Content. Suggested Content includes app search recommendations and website recommendations which can show up in places such as launcher search and suggestion chips.">
-          ChromeOS shows suggestions for new content to explore. Sends statistics to improve quality only if you’ve chosen to share usage data. <ph name="MANAGE_SETTINGS">$1<ex>Manage settings</ex></ph>
       </message>
       <message name="IDS_APP_ACCESSIBILITY_APP_WITH_STAR_RATING_ARC" desc="Accessibility text for a Play Store app with star rating.">
         <ph name="APP_NAME_TYPE">$1<ex>Snapchat, Playstore App</ex></ph>, Star rating <ph name="RATING_SCORE">$2<ex>5.0</ex></ph>

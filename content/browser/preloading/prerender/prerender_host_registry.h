@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "base/timer/timer.h"
 #include "base/types/pass_key.h"
 #include "content/browser/preloading/prerender/prerender_attributes.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
@@ -46,6 +47,12 @@ class RenderFrameHostImpl;
 //   activation by OnActivationFinished().
 class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
  public:
+  // The time to allow prerendering kept alive in the background. All the hosts
+  // that this PrerenderHostRegistry holds will be terminated with
+  // kTimeoutBackgrounded when the timer exceeds this. The value was determined
+  // to align with the default value of BFCache's eviction timer.
+  static constexpr base::TimeDelta kTimeToLiveInBackground = base::Seconds(180);
+
   using PassKey = base::PassKey<PrerenderHostRegistry>;
 
   explicit PrerenderHostRegistry(WebContents&);
@@ -152,9 +159,7 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
   // the URL doesn't match any non-reserved host.
   PrerenderHost* FindHostByUrlForTesting(const GURL& prerendering_url);
 
-  // Cancels all hosts. Since reserved hosts can't be canceled, this will
-  // DCHECK when `reserved_prerender_host_by_frame_tree_node_id_` is not empty.
-  // This will cancel all hosts in `prerender_host_by_frame_tree_node_id_`.
+  // Cancels all hosts.
   void CancelAllHostsForTesting();
 
   // Gets the trigger type from the reserved PrerenderHost.
@@ -170,6 +175,11 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
   // this registry.
   void ForEachPrerenderHost(
       base::RepeatingCallback<void(PrerenderHost&)> callback);
+
+  // Only used for tests.
+  base::OneShotTimer* GetTimerForTesting() { return &timeout_timer_; }
+  void SetTaskRunnerForTesting(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
  private:
   // WebContentsObserver implementation:
@@ -211,6 +221,8 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
       bool success,
       std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump);
 
+  scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner();
+
   // Holds the frame_tree_node_id of running PrerenderHost. Reset to
   // RenderFrameHost::kNoFrameTreeNodeId when there's no running PrerenderHost.
   // Tracks only the host id of speculation rules triggers and ignores requests
@@ -234,13 +246,8 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
   base::flat_map<int, std::unique_ptr<PrerenderHost>>
       prerender_host_by_frame_tree_node_id_;
 
-  // Hosts that are reserved for activation.
-  // TODO(crbug.com/1375942): Change this flat map into a single unique pointer
-  // to a reserved PrerenderHost because now the activation sequence
-  // synchronously proceeds so we don't have a chance to have multiple reserved
-  // hosts at the same time.
-  base::flat_map<int, std::unique_ptr<PrerenderHost>>
-      reserved_prerender_host_by_frame_tree_node_id_;
+  // The host that is reserved for activation.
+  std::unique_ptr<PrerenderHost> reserved_prerender_host_;
 
   // Hosts that are scheduled to be deleted asynchronously.
   // Design note: PrerenderHostRegistry should explicitly manage the hosts to be
@@ -249,6 +256,12 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
   // could let the hosts and their FrameTrees outlive WebContentsImpl (the owner
   // of the registry) and results in UAF.
   std::vector<std::unique_ptr<PrerenderHost>> to_be_deleted_hosts_;
+
+  // Starts running the timer when prerendering gets hidden.
+  base::OneShotTimer timeout_timer_;
+  // Only used for tests. This task runner is used for precise injection in
+  // tests and for timing control.
+  scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_for_testing_;
 
   base::ObserverList<Observer> observers_;
 

@@ -68,11 +68,8 @@ AppListView* GetAppListView() {
 // An app list should be either a bubble app list or a fullscreen app list.
 // Returns true if a bubble app list should be used under the current mode.
 bool ShouldUseBubbleAppList() {
-  // A bubble app list should be used only when:
-  // (1) It is in clamshell mode; and
-  // (2) The productivity launcher flag is enabled.
-  return !Shell::Get()->IsInTabletMode() &&
-         features::IsProductivityLauncherEnabled();
+  // A bubble app list should be used only when it is in clamshell mode
+  return !Shell::Get()->IsInTabletMode();
 }
 
 // Creates a RunLoop that waits until the context menu of app list item is
@@ -360,7 +357,6 @@ void AppListTestApi::ShowBubbleAppListAndWait() {
 }
 
 void AppListTestApi::WaitForBubbleWindow(bool wait_for_opening_animation) {
-  DCHECK(features::IsProductivityLauncherEnabled());
   DCHECK(!Shell::Get()->IsInTabletMode());
 
   // Wait for the window only when the app list window does not exist.
@@ -400,15 +396,7 @@ void AppListTestApi::WaitForAppListShowAnimation(bool is_bubble_window) {
   if (!is_bubble_window)
     return;
 
-  DCHECK(features::IsProductivityLauncherEnabled());
   DCHECK(!Shell::Get()->IsInTabletMode());
-
-  // Wait for the tablet->clamshell animation if needed.
-  AppListView* const app_list_view = GetAppListView();
-  if (app_list_view) {
-    ui::LayerAnimationStoppedWaiter().Wait(
-        app_list_view->GetWidget()->GetNativeView()->layer());
-  }
 
   ScrollableAppsGridView* scrollable_apps_grid_view =
       static_cast<ScrollableAppsGridView*>(GetTopLevelAppsGridView());
@@ -472,6 +460,9 @@ std::string AppListTestApi::CreateFolderWithApps(
   // Only create a folder if there are two or more apps.
   DCHECK_GE(apps.size(), 2u);
 
+  // Skip all item move animations during folder creation.
+  ScopedItemMoveAnimationDisabler disabler(GetTopLevelAppsGridView());
+
   AppListModel* model = GetAppListModel();
   // Create a folder using the first two apps, and add the others to the
   // folder iteratively.
@@ -479,9 +470,6 @@ std::string AppListTestApi::CreateFolderWithApps(
   // Return early if MergeItems failed.
   if (folder_id.empty())
     return "";
-
-  // Skip item move animations.
-  ScopedItemMoveAnimationDisabler disabler(GetTopLevelAppsGridView());
 
   for (size_t i = 2; i < apps.size(); ++i)
     model->MergeItems(folder_id, apps[i]);
@@ -792,6 +780,10 @@ void AppListTestApi::ClickOnCloseButtonAndWaitForToastAnimation(
   // Wait until the toast fade out animation ends.
   ui::LayerAnimationStoppedWaiter animation_waiter;
   animation_waiter.Wait(toast_container->toast_view()->layer());
+}
+
+ui::Layer* AppListTestApi::GetAppListViewLayer() {
+  return GetAppListView()->GetWidget()->GetNativeView()->layer();
 }
 
 void AppListTestApi::RegisterReorderAnimationDoneCallback(

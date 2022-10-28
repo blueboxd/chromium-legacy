@@ -8774,11 +8774,40 @@
     "can_be_recommended": true,
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "policy_pinned_launcher_apps": {
+            "default_value": []
+          }
+        }
+      },
+      {
         "policies": {
           "PinnedLauncherApps": []
         },
         "prefs": {
           "policy_pinned_launcher_apps": {}
+        }
+      },
+      {
+        "policies": {
+          "PinnedLauncherApps": [
+            "abcdefghijklmnopabcdefghijklmnop",
+            "com.google.android.pm",
+            "https://google.com",
+            "camera",
+            "unknown_id_should_be_filtered"
+          ]
+        },
+        "prefs": {
+          "policy_pinned_launcher_apps" : {
+            "value": [
+              { "id": "abcdefghijklmnopabcdefghijklmnop" },
+              { "id": "com.google.android.pm" },
+              { "id": "https://google.com" },
+              { "id": "camera" }
+            ]
+          }
         }
       }
     ]
@@ -17114,6 +17143,30 @@
       }
     ]
   },
+  "LensDesktopNTPSearchEnabled": {
+    "os": ["win", "linux", "mac", "chromeos_ash", "chromeos_lacros", "fuchsia"],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": { "LensDesktopNTPSearchEnabled": true },
+        "prefs": {
+          "policy.lens_desktop_ntp_search_enabled": {
+            "location": "user_profile",
+            "value": true
+          }
+        }
+      },
+      {
+        "note": "Check default values (no policies set)",
+        "policies": { },
+        "prefs": {
+          "policy.lens_desktop_ntp_search_enabled": {
+            "location": "user_profile",
+            "default_value": true
+          }
+        }
+      }
+    ]
+  },
   "LensCameraAssistedSearchEnabled": {
     "os": [
       "android"
@@ -19749,7 +19802,7 @@
         "policies": {},
         "prefs": {
           "policy.event_path_enabled": {
-            "default_value": true
+            "default_value": false
           }
         }
       }
@@ -20159,6 +20212,15 @@
           }, {
             "policy_id": "pnomlkjighijklmnopabcdefghijklff",
             "file_extensions": ["docx", "pdf"]
+          }, {
+            "policy_id": "com.android.google.pm",
+            "file_extensions": ["arc", "arcpp"]
+          }, {
+            "policy_id": "projector",
+            "file_extensions": ["proj"]
+          }, {
+            "policy_id": "unknown_id_should_be_filtered",
+            "file_extensions": ["filtered"]
           }]
         },
         "prefs": {
@@ -20166,7 +20228,10 @@
             "value": {
               ".maps": "https://google.com/maps",
               ".docx": "pnomlkjighijklmnopabcdefghijklff",
-              ".pdf": "pnomlkjighijklmnopabcdefghijklff"
+              ".pdf": "pnomlkjighijklmnopabcdefghijklff",
+              ".arc": "com.android.google.pm",
+              ".arcpp": "com.android.google.pm",
+              ".proj": "projector"
             }
           }
         }
@@ -20213,7 +20278,6 @@
         "policies": {},
         "prefs": {
           "settings.input.hindi_inscript_layout_enabled": {
-            "location": "local_state",
             "default_value": false
           }
         }
@@ -20224,7 +20288,6 @@
         },
         "prefs": {
           "settings.input.hindi_inscript_layout_enabled": {
-            "location": "local_state",
             "value": false
           }
         }
@@ -20235,8 +20298,58 @@
         },
         "prefs": {
           "settings.input.hindi_inscript_layout_enabled": {
-            "location": "local_state",
             "value": true
+          }
+        }
+      }
+    ]
+  },
+  "DeviceKeyboardBacklightColor": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "ash.personalization.keyboard_backlight_color": {
+            "location": "local_state",
+            "default_value": 0,
+            "check_for_recommended": true
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "ash.personalization.keyboard_backlight_color": {
+            "location": "user_profile",
+            "default_value": 0,
+            "check_for_recommended": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceKeyboardBacklightColor": 1
+        },
+        "prefs": {
+          "ash.personalization.keyboard_backlight_color": {
+            "location": "local_state",
+            "value": 1,
+            "check_for_recommended": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceKeyboardBacklightColor": 1
+        },
+        "prefs": {
+          "ash.personalization.keyboard_backlight_color": {
+            "location": "user_profile",
+            "value": 1,
+            "check_for_recommended": true
           }
         }
       }

@@ -292,12 +292,6 @@ void WebApps::LaunchAppWithIntent(const std::string& app_id,
           std::move(callback)));
 }
 
-void WebApps::SetPermission(const std::string& app_id,
-                            apps::mojom::PermissionPtr permission) {
-  publisher_helper().SetPermission(
-      app_id, apps::ConvertMojomPermissionToPermission(permission));
-}
-
 void WebApps::OpenNativeSettings(const std::string& app_id) {
   publisher_helper().OpenNativeSettings(app_id);
 }
@@ -448,16 +442,6 @@ void WebApps::StartPublishingWebApps(
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-void WebApps::Uninstall(const std::string& app_id,
-                        apps::mojom::UninstallSource uninstall_source,
-                        bool clear_site_data,
-                        bool report_abuse) {
-  Uninstall(
-      app_id,
-      apps::ConvertMojomUninstallSourceToUninstallSource(uninstall_source),
-      clear_site_data, report_abuse);
-}
-
 void WebApps::PauseApp(const std::string& app_id) {
   publisher_helper().PauseApp(app_id);
 }

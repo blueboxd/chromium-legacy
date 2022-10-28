@@ -45,11 +45,6 @@ class SearchProvider {
   // Returns the main result type created by this provider.
   virtual ash::AppListSearchResultType ResultType() const = 0;
 
-  // Returns true if this provider should prevent zero-state results from being
-  // published until it has returned. If this is true, a provider should only
-  // return results once per call to StartZeroState.
-  virtual bool ShouldBlockZeroState() const;
-
   void set_controller(SearchController* controller) {
     search_controller_ = controller;
   }
@@ -68,16 +63,6 @@ class SearchProvider {
   // This is useful when multiple results will be added, and the notification is
   // desired to be done only once when all results are added.
   void SwapResults(Results* new_results);
-
-  // Clear results and call the |result_changed_callback_|. This is a no-op if
-  // categorical search is enabled, since clearing results is handled by the
-  // search controller.
-  void ClearResults();
-
-  // Clear the results without calling the |result_changed_callback_|. this is a
-  // no-op if categorical search is enabled, since clearing results is handled
-  // by the search controller.
-  void ClearResultsSilently();
 
  private:
   void FireResultChanged();

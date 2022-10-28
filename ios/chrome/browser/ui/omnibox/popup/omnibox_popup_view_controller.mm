@@ -53,13 +53,17 @@ const CGFloat kVisibleSuggestionThreshold = 0.6;
 const CGFloat kMinTileFaviconSize = 32.0f;
 // Maximum size of the fetched favicon for tiles.
 const CGFloat kMaxTileFaviconSize = 48.0f;
+
+// Bottom padding for table view headers, variation 2.
+const CGFloat kHeaderPaddingBottomVariation2 = 10.0f;
+// Leading, trailing, and top padding for table view headers, variation 2.
+const CGFloat kHeaderPaddingVariation2 = 2.0f;
 }  // namespace
 
 @interface OmniboxPopupViewController () <UITableViewDataSource,
                                           UITableViewDelegate,
                                           OmniboxPopupCarouselCellDelegate,
-                                          OmniboxPopupRowCellDelegate,
-                                          KeyboardObserverHelperConsumer>
+                                          OmniboxPopupRowCellDelegate>
 
 // Index path of currently highlighted row. The rows can be highlighted by
 // tapping and holding on them or by using arrow keys on a hardware keyboard.
@@ -128,10 +132,6 @@ const CGFloat kMaxTileFaviconSize = 48.0f;
                             name:UIKeyboardDidShowNotification
                           object:nil];
     }
-    // Listen to keyboard observer to detect `KeyboardState` changes in order to
-    // update the estimated number of visible suggestions.
-    [KeyboardObserverHelper.sharedKeyboardObserver addConsumer:self];
-
     // Listen to keyboard frame change event to detect keyboard frame changes
     // (ex: when changing input method) to update the estimated number of
     // visible suggestions.
@@ -236,6 +236,10 @@ const CGFloat kMaxTileFaviconSize = 48.0f;
 
   [self.tableView registerClass:[OmniboxPopupRowCell class]
          forCellReuseIdentifier:OmniboxPopupRowCellReuseIdentifier];
+  [self.tableView registerClass:[UITableViewHeaderFooterView class]
+      forHeaderFooterViewReuseIdentifier:NSStringFromClass(
+                                             [UITableViewHeaderFooterView
+                                                 class])];
   self.shouldUpdateVisibleSuggestionCount = YES;
 
   if (@available(iOS 15.0, *)) {
@@ -363,35 +367,7 @@ const CGFloat kMaxTileFaviconSize = 48.0f;
   }
 }
 
-#pragma mark - OmniboxPopupRowCellDelegate
-
-- (void)trailingButtonTappedForCell:(OmniboxPopupRowCell*)cell {
-  NSIndexPath* indexPath = [self.tableView indexPathForCell:cell];
-  id<AutocompleteSuggestion> suggestion =
-      [self suggestionAtIndexPath:indexPath];
-  DCHECK(suggestion);
-  [self.delegate autocompleteResultConsumer:self
-           didTapTrailingButtonOnSuggestion:suggestion
-                                      inRow:indexPath.row];
-}
-
-#pragma mark - OmniboxReturnDelegate
-
-- (void)omniboxReturnPressed:(id)sender {
-  if (self.highlightedIndexPath) {
-    id<AutocompleteSuggestion> suggestion =
-        [self suggestionAtIndexPath:self.highlightedIndexPath];
-    if (suggestion) {
-      [self.delegate autocompleteResultConsumer:self
-                            didSelectSuggestion:suggestion
-                                          inRow:self.highlightedIndexPath.row];
-      return;
-    }
-  }
-  [self.acceptReturnDelegate omniboxReturnPressed:sender];
-}
-
-#pragma mark - OmniboxSuggestionCommands
+#pragma mark OmniboxKeyboardDelegate Private
 
 - (void)highlightPreviousSuggestion {
   NSIndexPath* path = self.highlightedIndexPath;
@@ -477,8 +453,6 @@ const CGFloat kMaxTileFaviconSize = 48.0f;
   self.highlightedIndexPath = path;
 }
 
-#pragma mark OmniboxSuggestionCommands Private
-
 - (void)highlightRowAtIndexPath:(NSIndexPath*)indexPath {
   UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
   [cell setHighlighted:YES animated:NO];
@@ -494,6 +468,34 @@ const CGFloat kMaxTileFaviconSize = 48.0f;
       [self suggestionAtIndexPath:self.highlightedIndexPath];
   DCHECK(suggestion);
   [self.matchPreviewDelegate setPreviewSuggestion:suggestion isFirstUpdate:NO];
+}
+
+#pragma mark - OmniboxPopupRowCellDelegate
+
+- (void)trailingButtonTappedForCell:(OmniboxPopupRowCell*)cell {
+  NSIndexPath* indexPath = [self.tableView indexPathForCell:cell];
+  id<AutocompleteSuggestion> suggestion =
+      [self suggestionAtIndexPath:indexPath];
+  DCHECK(suggestion);
+  [self.delegate autocompleteResultConsumer:self
+           didTapTrailingButtonOnSuggestion:suggestion
+                                      inRow:indexPath.row];
+}
+
+#pragma mark - OmniboxReturnDelegate
+
+- (void)omniboxReturnPressed:(id)sender {
+  if (self.highlightedIndexPath) {
+    id<AutocompleteSuggestion> suggestion =
+        [self suggestionAtIndexPath:self.highlightedIndexPath];
+    if (suggestion) {
+      [self.delegate autocompleteResultConsumer:self
+                            didSelectSuggestion:suggestion
+                                          inRow:self.highlightedIndexPath.row];
+      return;
+    }
+  }
+  [self.acceptReturnDelegate omniboxReturnPressed:sender];
 }
 
 #pragma mark - Table view delegate
@@ -545,7 +547,8 @@ const CGFloat kMaxTileFaviconSize = 48.0f;
       !base::FeatureList::IsEnabled(omnibox::kMostVisitedTiles)) {
     return FLT_MIN;
   }
-  return self.currentResult[section].title ? 29.0f : FLT_MIN;
+  return self.currentResult[section].title ? UITableViewAutomaticDimension
+                                           : FLT_MIN;
 }
 
 - (CGFloat)tableView:(UITableView*)tableView
@@ -575,6 +578,10 @@ const CGFloat kMaxTileFaviconSize = 48.0f;
     return [[UIView alloc] init];
   }
 
+  if (base::FeatureList::IsEnabled(omnibox::kMostVisitedTiles)) {
+    return nil;
+  }
+
   UIView* footer = [[UIView alloc] init];
   footer.backgroundColor = tableView.backgroundColor;
   UIView* hairline = [[UIView alloc]
@@ -587,11 +594,6 @@ const CGFloat kMaxTileFaviconSize = 48.0f;
   hairline.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 
   return footer;
-}
-
-- (UIView*)tableView:(UITableView*)tableView
-    viewForHeaderInSection:(NSInteger)section {
-  return nil;
 }
 
 #pragma mark - Table view data source
@@ -650,9 +652,31 @@ const CGFloat kMaxTileFaviconSize = 48.0f;
   return UITableViewAutomaticDimension;
 }
 
-- (NSString*)tableView:(UITableView*)tableView
-    titleForHeaderInSection:(NSInteger)section {
-  return self.currentResult[section].title;
+- (UIView*)tableView:(UITableView*)tableView
+    viewForHeaderInSection:(NSInteger)section {
+  NSString* title = self.currentResult[section].title;
+  if (!title) {
+    return nil;
+  }
+
+  UITableViewHeaderFooterView* header =
+      [tableView dequeueReusableHeaderFooterViewWithIdentifier:
+                     NSStringFromClass([UITableViewHeaderFooterView class])];
+
+  UIListContentConfiguration* contentConfiguration =
+      header.defaultContentConfiguration;
+
+  contentConfiguration.text = title;
+  contentConfiguration.textProperties.font =
+      [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
+  contentConfiguration.textProperties.transform =
+      UIListContentTextTransformUppercase;
+  contentConfiguration.directionalLayoutMargins = NSDirectionalEdgeInsetsMake(
+      kHeaderPaddingVariation2, kHeaderPaddingVariation2,
+      kHeaderPaddingBottomVariation2, kHeaderPaddingVariation2);
+
+  header.contentConfiguration = contentConfiguration;
+  return header;
 }
 
 // Customize the appearance of table view cells.
@@ -709,13 +733,13 @@ const CGFloat kMaxTileFaviconSize = 48.0f;
 // Adjust the inset on the table view to prevent keyboard from overlapping the
 // text.
 - (void)updateContentInsetForKeyboard {
-  UIScreen* currentScreen = self.tableView.window.screen;
+  UIWindow* currentWindow = self.tableView.window;
   CGRect absoluteRect =
       [self.tableView convertRect:self.tableView.bounds
-                toCoordinateSpace:currentScreen.coordinateSpace];
-  CGFloat screenHeight = currentScreen.bounds.size.height;
-  CGFloat bottomInset = screenHeight - self.tableView.contentSize.height -
-                        _keyboardHeight - absoluteRect.origin.y -
+                toCoordinateSpace:currentWindow.coordinateSpace];
+  CGFloat windowHeight = CGRectGetHeight(currentWindow.bounds);
+  CGFloat bottomInset = windowHeight - self.tableView.contentSize.height -
+                        self.keyboardHeight - absoluteRect.origin.y -
                         self.bottomPadding - self.topPadding;
   bottomInset = MAX(self.bottomPadding, -bottomInset);
   self.tableView.contentInset =
@@ -781,27 +805,19 @@ const CGFloat kMaxTileFaviconSize = 48.0f;
 #pragma mark - Keyboard events
 
 - (void)keyboardDidShow:(NSNotification*)notification {
-  NSDictionary* keyboardInfo = [notification userInfo];
-  NSValue* keyboardFrameValue =
-      [keyboardInfo valueForKey:UIKeyboardFrameEndUserInfoKey];
   self.keyboardHeight =
-      KeyboardObserverHelper.keyboardScreen == self.view.window.screen
-          ? CurrentKeyboardHeight(keyboardFrameValue)
-          : 0;
+      [KeyboardObserverHelper keyboardHeightInWindow:self.tableView.window];
   if (self.tableView.contentSize.height > 0)
     [self updateContentInsetForKeyboard];
 }
 
 - (void)keyboardDidChangeFrame:(NSNotification*)notification {
-  if (KeyboardObserverHelper.sharedKeyboardObserver.visibleKeyboardHeight > 0) {
+  CGFloat keyboardHeight =
+      [KeyboardObserverHelper keyboardHeightInWindow:self.tableView.window];
+  if (self.keyboardHeight != keyboardHeight) {
+    self.keyboardHeight = keyboardHeight;
     self.shouldUpdateVisibleSuggestionCount = YES;
   }
-}
-
-#pragma mark - KeyboardObserverHelperConsumer
-
-- (void)keyboardWillChangeToState:(KeyboardState)keyboardState {
-  self.shouldUpdateVisibleSuggestionCount = YES;
 }
 
 #pragma mark - Content size events
@@ -839,18 +855,14 @@ const CGFloat kMaxTileFaviconSize = 48.0f;
 }
 
 - (void)updateVisibleSuggestionCount {
-  CGFloat keyboardHeight =
-      [[KeyboardObserverHelper sharedKeyboardObserver] visibleKeyboardHeight];
-  UIScreen* currentScreen = self.tableView.window.screen;
-  CGRect tableViewFrameInCurrentScreenCoordinateSpace =
+  CGRect tableViewFrameInCurrentWindowCoordinateSpace =
       [self.tableView convertRect:self.tableView.bounds
-                toCoordinateSpace:currentScreen.coordinateSpace];
+                toCoordinateSpace:self.tableView.window.coordinateSpace];
   // Computes the visible area between the omnibox and the keyboard.
   CGFloat visibleTableViewHeight =
-      CurrentScreenHeight() -
-      tableViewFrameInCurrentScreenCoordinateSpace.origin.y - keyboardHeight -
-      self.tableView.contentInset.top;
-
+      CGRectGetHeight(self.tableView.window.bounds) -
+      tableViewFrameInCurrentWindowCoordinateSpace.origin.y -
+      self.keyboardHeight - self.tableView.contentInset.top;
   // Use font size to estimate the size of a omnibox search suggestion.
   CGFloat fontSizeHeight = [@"T" sizeWithAttributes:@{
                              NSFontAttributeName : [UIFont

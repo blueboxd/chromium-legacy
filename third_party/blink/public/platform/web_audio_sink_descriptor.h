@@ -22,7 +22,7 @@ class WebAudioSinkDescriptor {
     kAudible,
     // A sink type that is driven by a fake audio device. (e.g. worker thread)
     kSilent,
-    kLastValue
+    kLastValue = kSilent
   };
 
   // For an "audible" sink with a user-selected identifier. The empty string
@@ -37,6 +37,10 @@ class WebAudioSinkDescriptor {
   WebString SinkId() const {
     DCHECK_EQ(type_, kAudible);
     return sink_id_;
+  }
+
+  bool operator==(const WebAudioSinkDescriptor& rhs) const {
+    return this->Type() == rhs.Type() && this->SinkId() == rhs.SinkId();
   }
 
  private:

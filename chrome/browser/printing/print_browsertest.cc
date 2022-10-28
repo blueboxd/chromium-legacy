@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/printing/print_error_dialog.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_view_manager.h"
@@ -621,7 +622,7 @@ class TestPrintViewManager : public PrintViewManager {
     print_now_result_ = PrintViewManager::PrintNow(rfh);
     return *print_now_result_;
   }
-  void ShowInvalidPrinterSettingsError() override {}
+  void ShowInvalidPrinterSettingsError() override { ShowPrintErrorDialog(); }
   bool CreateNewPrintJob(std::unique_ptr<PrinterQuery> query) override {
     if (!PrintViewManager::CreateNewPrintJob(std::move(query)))
       return false;
@@ -918,9 +919,22 @@ class PrintBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
+    // Safe to use `base::Unretained(this)` since this testing class
+    // necessarily must outlive all interactions from the tests which will
+    // run through the printing stack using derivatives of
+    // `PrintViewManagerBase` and `PrintPreviewHandler`, which can trigger
+    // this callback.
+    SetShowPrintErrorDialogForTest(base::BindRepeating(
+        &PrintBrowserTest::ShowPrintErrorDialog, base::Unretained(this)));
+
     host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  void TearDownOnMainThread() override {
+    SetShowPrintErrorDialogForTest(base::NullCallback());
+    InProcessBrowserTest::TearDownOnMainThread();
   }
 
   void TearDown() override {
@@ -1030,6 +1044,10 @@ class PrintBrowserTest : public InProcessBrowserTest {
 
   uint32_t rendered_page_count() const { return rendered_page_count_; }
 
+  uint32_t error_dialog_shown_count() const {
+    return error_dialog_shown_count_;
+  }
+
  protected:
   TestPrintBackend* test_print_backend() { return test_print_backend_.get(); }
 
@@ -1056,6 +1074,12 @@ class PrintBrowserTest : public InProcessBrowserTest {
                 base::Unretained(GetFrameContent(render_frame_host))));
   }
 
+  void ShowPrintErrorDialog() {
+    ++error_dialog_shown_count_;
+    CheckForQuit();
+  }
+
+  uint32_t error_dialog_shown_count_ = 0;
   uint32_t rendered_page_count_ = 0;
   unsigned int num_expected_messages_;
   unsigned int num_received_messages_;
@@ -2470,11 +2494,6 @@ class TestPrintJobWorkerOop : public PrintJobWorkerOop {
 #endif
     OnDidRenderPrintedDocumentCallback did_render_printed_document_callback;
     OnDidDocumentDoneCallback did_document_done_callback;
-
-    // The exception to the callback steps is `did_show_error_dialog`.  For
-    // `did_show_error_dialog` there is only the need to propagate the
-    // notification that it happened, no other calls will be needed.
-    OnDidShowErrorDialog did_show_error_dialog;
   };
 
   TestPrintJobWorkerOop(content::GlobalRenderFrameHostId rfh_id,
@@ -2546,12 +2565,6 @@ class TestPrintJobWorkerOop : public PrintJobWorkerOop {
     callbacks_->did_document_done_callback.Run(result);
   }
 
-  void ShowErrorDialog() override {
-    // Do not show real error dialog, it blocks the UI thread.
-    DVLOG(1) << "Test: notify user of print error";
-    callbacks_->did_show_error_dialog.Run();
-  }
-
   raw_ptr<PrintCallbacks> callbacks_;
 };
 #endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
@@ -2610,10 +2623,6 @@ class SystemAccessProcessPrintBrowserTestBase : public PrintBrowserTest,
       test_print_job_worker_oop_callbacks_.did_document_done_callback =
           base::BindRepeating(
               &SystemAccessProcessPrintBrowserTestBase::OnDidDocumentDone,
-              base::Unretained(this));
-      test_print_job_worker_oop_callbacks_.did_show_error_dialog =
-          base::BindRepeating(
-              &SystemAccessProcessPrintBrowserTestBase::OnDidShowErrorDialog,
               base::Unretained(this));
     } else {
       test_print_job_worker_callbacks_.did_use_default_settings_callback =
@@ -2792,8 +2801,6 @@ class SystemAccessProcessPrintBrowserTestBase : public PrintBrowserTest,
     return document_done_result_;
   }
 
-  bool error_dialog_shown() const { return error_dialog_shown_; }
-
   int print_job_construction_count() const {
     return print_job_construction_count_;
   }
@@ -2882,11 +2889,6 @@ class SystemAccessProcessPrintBrowserTestBase : public PrintBrowserTest,
     CheckForQuit();
   }
 
-  void OnDidShowErrorDialog() {
-    error_dialog_shown_ = true;
-    CheckForQuit();
-  }
-
   void OnDidDestroyPrintJob() {
     ++print_job_destruction_count_;
     CheckForQuit();
@@ -2935,7 +2937,6 @@ class SystemAccessProcessPrintBrowserTestBase : public PrintBrowserTest,
   mojom::ResultCode render_printed_document_result_ =
       mojom::ResultCode::kFailed;
   mojom::ResultCode document_done_result_ = mojom::ResultCode::kFailed;
-  bool error_dialog_shown_ = false;
   int print_job_construction_count_ = 0;
   int print_job_destruction_count_ = 0;
 };
@@ -2949,6 +2950,8 @@ class SystemAccessProcessSandboxedServicePrintBrowserTest
   bool UseService() override { return true; }
   bool SandboxService() override { return true; }
 };
+
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
 
 class SystemAccessProcessServicePrintBrowserTest
     : public SystemAccessProcessPrintBrowserTestBase,
@@ -2964,6 +2967,8 @@ class SystemAccessProcessServicePrintBrowserTest
 INSTANTIATE_TEST_SUITE_P(All,
                          SystemAccessProcessServicePrintBrowserTest,
                          testing::Bool());
+
+#endif
 
 class SystemAccessProcessInBrowserPrintBrowserTest
     : public SystemAccessProcessPrintBrowserTestBase {
@@ -3079,6 +3084,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
   EXPECT_EQ(render_printed_document_result(), mojom::ResultCode::kSuccess);
 #endif
   EXPECT_EQ(document_done_result(), mojom::ResultCode::kSuccess);
+  EXPECT_EQ(error_dialog_shown_count(), 0u);
   EXPECT_EQ(print_job_destruction_count(), 1);
 }
 
@@ -3120,6 +3126,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
   EXPECT_EQ(render_printed_document_result(), mojom::ResultCode::kSuccess);
 #endif
   EXPECT_EQ(document_done_result(), mojom::ResultCode::kSuccess);
+  EXPECT_EQ(error_dialog_shown_count(), 0u);
   EXPECT_EQ(print_job_destruction_count(), 1);
 }
 
@@ -3150,7 +3157,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
   PrintAfterPreviewIsReadyAndLoaded();
 
   EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
-  EXPECT_TRUE(error_dialog_shown());
+  EXPECT_EQ(error_dialog_shown_count(), 1u);
   EXPECT_EQ(print_job_destruction_count(), 1);
 }
 
@@ -3188,6 +3195,7 @@ IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
   EXPECT_EQ(render_printed_document_result(), mojom::ResultCode::kSuccess);
 #endif
   EXPECT_EQ(document_done_result(), mojom::ResultCode::kSuccess);
+  EXPECT_EQ(error_dialog_shown_count(), 0u);
   EXPECT_EQ(print_job_destruction_count(), 1);
 }
 
@@ -3218,7 +3226,7 @@ IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
   PrintAfterPreviewIsReadyAndLoaded();
 
   EXPECT_EQ(start_printing_result(), mojom::ResultCode::kAccessDenied);
-  EXPECT_TRUE(error_dialog_shown());
+  EXPECT_EQ(error_dialog_shown_count(), 1u);
   EXPECT_EQ(print_job_destruction_count(), 1);
 }
 
@@ -3251,7 +3259,7 @@ IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
   EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
   EXPECT_EQ(render_printed_page_result(), mojom::ResultCode::kAccessDenied);
   EXPECT_EQ(render_printed_page_count(), 0);
-  EXPECT_TRUE(error_dialog_shown());
+  EXPECT_EQ(error_dialog_shown_count(), 1u);
   EXPECT_EQ(print_job_destruction_count(), 1);
 }
 
@@ -3320,7 +3328,7 @@ IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
 
   EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
   EXPECT_EQ(render_printed_document_result(), mojom::ResultCode::kAccessDenied);
-  EXPECT_TRUE(error_dialog_shown());
+  EXPECT_EQ(error_dialog_shown_count(), 1u);
   EXPECT_EQ(print_job_destruction_count(), 1);
 }
 #endif  // !BUILDFLAG(IS_WIN)
@@ -3360,7 +3368,7 @@ IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
   EXPECT_EQ(render_printed_document_result(), mojom::ResultCode::kSuccess);
 #endif
   EXPECT_EQ(document_done_result(), mojom::ResultCode::kAccessDenied);
-  EXPECT_TRUE(error_dialog_shown());
+  EXPECT_EQ(error_dialog_shown_count(), 1u);
   EXPECT_EQ(print_job_destruction_count(), 1);
 }
 
@@ -3427,11 +3435,18 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
   EXPECT_EQ(render_printed_document_result(), mojom::ResultCode::kSuccess);
 #endif
   EXPECT_EQ(document_done_result(), mojom::ResultCode::kSuccess);
+  EXPECT_EQ(error_dialog_shown_count(), 0u);
   EXPECT_EQ(print_job_destruction_count(), 1);
 }
 
+// TODO(crbug.com/1375007): Very flaky on Mac and slightly on Linux.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#define MAYBE_StartBasicPrintCancel DISABLED_StartBasicPrintCancel
+#else
+#define MAYBE_StartBasicPrintCancel StartBasicPrintCancel
+#endif
 IN_PROC_BROWSER_TEST_F(SystemAccessProcessInBrowserPrintBrowserTest,
-                       StartBasicPrintCancel) {
+                       MAYBE_StartBasicPrintCancel) {
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
   PrimeForCancelInAskUserForSettings();
@@ -3458,6 +3473,7 @@ IN_PROC_BROWSER_TEST_F(SystemAccessProcessInBrowserPrintBrowserTest,
 
   EXPECT_TRUE(did_use_default_settings());
   EXPECT_TRUE(did_get_settings_with_ui());
+  EXPECT_EQ(error_dialog_shown_count(), 0u);
   EXPECT_EQ(print_job_destruction_count(), 0);
 
   // `PrintBackendService` should never be used when printing in-browser.
@@ -3469,6 +3485,7 @@ IN_PROC_BROWSER_TEST_F(SystemAccessProcessInBrowserPrintBrowserTest,
 // cases.
 // TODO(crbug.com/1374188)  Re-enable for Linux once `AskForUserSettings()` is
 // able to be pushed OOP for Linux.
+#undef MAYBE_StartBasicPrintCancel
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 #define MAYBE_StartBasicPrintCancel DISABLED_StartBasicPrintCancel
 #else
@@ -3502,6 +3519,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
 
   EXPECT_EQ(use_default_settings_result(), mojom::ResultCode::kSuccess);
   EXPECT_EQ(ask_user_for_settings_result(), mojom::ResultCode::kCanceled);
+  EXPECT_EQ(error_dialog_shown_count(), 0u);
   EXPECT_EQ(print_job_construction_count(), 0);
 }
 
@@ -3531,6 +3549,8 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
 #if BUILDFLAG(IS_LINUX)
   EXPECT_TRUE(*result);
 #else
+  // The denied concurrent print is silent without an error.
+  EXPECT_EQ(error_dialog_shown_count(), 0u);
   EXPECT_FALSE(*result);
 #endif
 
@@ -3538,9 +3558,8 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
   PrintBackendServiceManager::GetInstance().UnregisterClient(*client_id);
 }
 
-// https://crbug.com/1320681 flaky.
 IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
-                       DISABLED_StartBasicPrintUseDefaultFails) {
+                       StartBasicPrintUseDefaultFails) {
   PrimeForFailInUseDefaultSettings();
 
   ASSERT_TRUE(embedded_test_server()->Started());
@@ -3552,10 +3571,11 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
   ASSERT_TRUE(web_contents);
   SetUpPrintViewManager(web_contents);
 
-  // The test will fail getting the default settings, aborting the rest of
-  // printing.  Wait for the one print job to be destroyed to ensure printing
-  // finished cleanly before completing the test.  This results in a total of
-  // 2 calls.
+  // The test sequence for this is:
+  // - Get the default settings, which fails.
+  // - The print error dialog is shown.
+  // No print job is created from such an early failure.
+  // This results in a total of 2 calls.
   SetNumExpectedMessages(/*num=*/2);
 
   StartBasicPrint(web_contents);
@@ -3563,7 +3583,8 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
   WaitUntilCallbackReceived();
 
   EXPECT_EQ(use_default_settings_result(), mojom::ResultCode::kFailed);
-  EXPECT_EQ(print_job_construction_count(), 1);
+  EXPECT_EQ(error_dialog_shown_count(), 1u);
+  EXPECT_EQ(print_job_construction_count(), 0);
 }
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
 

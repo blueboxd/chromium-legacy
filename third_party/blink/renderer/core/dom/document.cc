@@ -1333,10 +1333,15 @@ Node* Document::importNode(Node* imported_node,
     return nullptr;
   }
 
-  // 2. Return a clone of node, with context object and the clone children flag
-  // set if deep is true.
+  // 2. Return a clone of node, with context object, the clone children flag set
+  // if deep is true, and the clone shadows flag set if this is a
+  // DocumentFragment whose host is an HTML template element.
+  auto* fragment = DynamicTo<DocumentFragment>(imported_node);
+  bool clone_shadows_flag = fragment && fragment->IsTemplateContent();
   return imported_node->Clone(
-      *this, deep ? CloneChildrenFlag::kClone : CloneChildrenFlag::kSkip);
+      *this, deep ? (clone_shadows_flag ? CloneChildrenFlag::kCloneWithShadows
+                                        : CloneChildrenFlag::kClone)
+                  : CloneChildrenFlag::kSkip);
 }
 
 Node* Document::adoptNode(Node* source, ExceptionState& exception_state) {
@@ -3461,20 +3466,13 @@ DocumentParser* Document::ImplicitOpen(
 }
 
 void Document::DispatchHandleLoadStart() {
-  if (AXObjectCache* cache = ExistingAXObjectCache()) {
-    // Don't fire load start for popup document.
-    if (this == &AXObjectCacheOwner())
-      cache->HandleLoadStart(this);
-  }
+  if (AXObjectCache* cache = ExistingAXObjectCache())
+    cache->HandleLoadStart(this);
 }
 
-void Document::DispatchHandleLoadOrLayoutComplete() {
-  if (AXObjectCache* cache = ExistingAXObjectCache()) {
-    if (this == &AXObjectCacheOwner())
-      cache->HandleLoadComplete(this);
-    else
-      cache->HandleLayoutComplete(this);
-  }
+void Document::DispatchHandleLoadComplete() {
+  if (AXObjectCache* cache = ExistingAXObjectCache())
+    cache->HandleLoadComplete(this);
 }
 
 HTMLElement* Document::body() const {
@@ -3713,7 +3711,7 @@ void Document::ImplicitClose() {
   load_event_progress_ = kLoadEventCompleted;
 
   if (GetFrame() && GetLayoutView()) {
-    DispatchHandleLoadOrLayoutComplete();
+    DispatchHandleLoadComplete();
     FontFaceSetDocument::DidLayout(*this);
   }
 
@@ -6161,7 +6159,9 @@ ScriptPromise Document::requestStorageAccessForOrigin(
 
     FireRequestStorageAccessForOriginHistogram(
         RequestStorageResult::REJECTED_NO_USER_GESTURE);
-    resolver->Reject();
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccessForOrigin not allowed"));
     return promise;
   }
 
@@ -6173,7 +6173,9 @@ ScriptPromise Document::requestStorageAccessForOrigin(
         "browsing contexts."));
     FireRequestStorageAccessForOriginHistogram(
         RequestStorageResult::REJECTED_INCORRECT_FRAME);
-    resolver->Reject();
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccessForOrigin not allowed"));
     return promise;
   }
 
@@ -6185,7 +6187,9 @@ ScriptPromise Document::requestStorageAccessForOrigin(
 
     FireRequestStorageAccessForOriginHistogram(
         RequestStorageResult::REJECTED_OPAQUE_ORIGIN);
-    resolver->Reject();
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccessForOrigin not allowed"));
     return promise;
   }
 
@@ -6199,7 +6203,9 @@ ScriptPromise Document::requestStorageAccessForOrigin(
         "requestStorageAccessForOrigin: Invalid origin parameter."));
     FireRequestStorageAccessForOriginHistogram(
         RequestStorageResult::REJECTED_OPAQUE_ORIGIN);
-    resolver->Reject();
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccessForOrigin not allowed"));
     return promise;
   }
 
@@ -6245,7 +6251,12 @@ ScriptPromise Document::requestStorageAccessForOrigin(
                   default:
                     FireRequestStorageAccessForOriginHistogram(
                         RequestStorageResult::REJECTED_GRANT_DENIED);
-                    resolver->Reject();
+                    ScriptState* state = resolver->GetScriptState();
+                    DCHECK(state->ContextIsValid());
+                    ScriptState::Scope scope(state);
+                    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+                        state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+                        "requestStorageAccessForOrigin not allowed"));
                 }
               },
               WrapPersistent(resolver), WrapPersistent(this)));
@@ -6282,7 +6293,9 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
     FireRequestStorageAccessHistogram(
         RequestStorageResult::REJECTED_NO_USER_GESTURE);
 
-    resolver->Reject();
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccess not allowed"));
     return promise;
   }
 
@@ -6294,7 +6307,9 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
     FireRequestStorageAccessHistogram(
         RequestStorageResult::REJECTED_OPAQUE_ORIGIN);
 
-    resolver->Reject();
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccess not allowed"));
     return promise;
   }
 
@@ -6314,7 +6329,9 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
           RequestStorageResult::REJECTED_SANDBOXED);
     }
 
-    resolver->Reject();
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccess not allowed"));
     return promise;
   }
 
@@ -6334,7 +6351,9 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
 
     // If a previous rejection has been received the promise can be immediately
     // rejected without further action.
-    resolver->Reject();
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+        "requestStorageAccess not allowed"));
     return promise;
   }
 
@@ -6365,7 +6384,12 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
                   default:
                     FireRequestStorageAccessHistogram(
                         RequestStorageResult::REJECTED_GRANT_DENIED);
-                    resolver->Reject();
+                    ScriptState* state = resolver->GetScriptState();
+                    DCHECK(state->ContextIsValid());
+                    ScriptState::Scope scope(state);
+                    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+                        state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
+                        "requestStorageAccess not allowed"));
                 }
               },
               WrapPersistent(resolver), WrapPersistent(this)));
@@ -7665,14 +7689,7 @@ HTMLDialogElement* Document::ActiveModalDialog() const {
   return nullptr;
 }
 
-void Document::SetPopupHintShowing(HTMLElement* element) {
-  DCHECK(!element || element->HasPopupAttribute());
-  popup_hint_showing_ = element;
-}
-
-HTMLElement* Document::TopmostPopupAutoOrHint() const {
-  if (PopupHintShowing())
-    return PopupHintShowing();
+HTMLElement* Document::TopmostPopUp() const {
   if (PopupStack().empty())
     return nullptr;
   return PopupStack().back();
@@ -8387,8 +8404,11 @@ scoped_refptr<base::SingleThreadTaskRunner> Document::GetTaskRunner(
   if (GetExecutionContext())
     return GetExecutionContext()->GetTaskRunner(type);
   // GetExecutionContext() can be nullptr in unit tests and after Shutdown().
-  // Fallback to the default task runner for this thread if all else fails.
-  return Thread::Current()->GetDeprecatedTaskRunner();
+  // Fallback to the Agent's default task runner for this thread if all else
+  // fails.
+  return To<WindowAgent>(GetAgent())
+      .GetAgentGroupScheduler()
+      .DefaultTaskRunner();
 }
 
 DOMFeaturePolicy* Document::featurePolicy() {
@@ -8438,7 +8458,6 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(lists_invalidated_at_document_);
   visitor->Trace(node_lists_);
   visitor->Trace(top_layer_elements_);
-  visitor->Trace(popup_hint_showing_);
   visitor->Trace(popup_stack_);
   visitor->Trace(pop_up_pointerdown_target_);
   visitor->Trace(popups_waiting_to_hide_);
@@ -8944,6 +8963,10 @@ const EventPath::NodePath& Document::GetOrCalculateEventNodePath(Node& node) {
   DCHECK_EQ(event_node_path_cache_.size(),
             event_node_path_cache_key_list_.size());
   return *event_node_path;
+}
+
+void Document::ResetAgent(Agent& agent) {
+  agent_ = agent;
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;

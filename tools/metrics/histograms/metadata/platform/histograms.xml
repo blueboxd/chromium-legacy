@@ -118,7 +118,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Chaps.ReinitializingToken"
-    enum="ChapsReinitializingToken" expires_after="2023-02-19">
+    enum="ChapsReinitializingToken" expires_after="2023-04-23">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -127,7 +127,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Chaps.TPMAvailability" enum="ChapsTPMAvailability"
-    expires_after="2023-02-19">
+    expires_after="2023-04-23">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>Each sample is the TPM Availability status.</summary>
@@ -456,6 +456,16 @@ chromium-metrics-reviews@google.com.
     True when kernel reports that the file system needed recovery at boot. It
     indicates the filesytem was not properly unmounted, but was recovered.
     Reported once per boot.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Firmware.Mismatch" enum="BooleanDetected"
+    expires_after="2023-10-01">
+  <owner>yuanpengni@chromium.org</owner>
+  <owner>chromeos-core-services@google.com</owner>
+  <summary>
+    Records if the system firmware mismatched OS bundled firmware. Reported once
+    per boot by dev_debug_vboot.
   </summary>
 </histogram>
 
@@ -1417,7 +1427,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.DictionaryAttackResetStatus"
-    enum="CrosTPMDictionaryAttackResetStatusEnum" expires_after="2023-02-19">
+    enum="CrosTPMDictionaryAttackResetStatusEnum" expires_after="2023-04-23">
   <owner>cylai@chromium.org</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -1474,7 +1484,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.PowerWashResult" enum="TPMPowerWashResult"
-    expires_after="2023-02-18">
+    expires_after="2023-04-23">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -1541,7 +1551,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Trunks.FirstTimeoutWritingCommand"
-    enum="TPMCommandCode" expires_after="2023-02-19">
+    enum="TPMCommandCode" expires_after="2023-04-23">
   <owner>chingkang@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>Command code of the first timeout writing TPM command</summary>
@@ -1565,7 +1575,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.U2F.Command" enum="Cr50U2FCommands"
-    expires_after="2023-02-19">
+    expires_after="2023-04-23">
   <owner>cylai@chromium.org</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>Records occurrences of U2F commands sent to cr50.</summary>

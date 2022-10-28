@@ -105,8 +105,8 @@ export class AcceleratorSubsectionElement extends PolymerElement {
       acceleratorInfos!.filter((accel) => {
         // Hide accelerators that are default and disabled.
         return !(
-            accel.type === AcceleratorType.DEFAULT &&
-            accel.state === AcceleratorState.DISABLED_BY_USER);
+            accel.type === AcceleratorType.kDefault &&
+            accel.state === AcceleratorState.kDisabledByUser);
       });
       const accel: Accelerator = {
         description:

@@ -176,23 +176,27 @@ PrerenderHost::PrerenderHost(const PrerenderAttributes& attributes,
 }
 
 PrerenderHost::~PrerenderHost() {
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
     observer.OnHostDestroyed(
         final_status_.value_or(PrerenderFinalStatus::kDestroyed));
+  }
 
-  if (!final_status_)
+  if (!final_status_) {
     RecordFinalStatus(PrerenderFinalStatus::kDestroyed,
                       attributes_.initiator_ukm_id, ukm::kInvalidSourceId);
+  }
 
   // If we are still waiting on test loop, we can assume the page loading step
   // has been cancelled and the PrerenderHost is being discarded without
   // completing loading the page.
-  if (on_wait_loading_finished_)
+  if (on_wait_loading_finished_) {
     std::move(on_wait_loading_finished_)
         .Run(PrerenderHost::LoadingOutcome::kPrerenderingCancelled);
+  }
 
-  if (frame_tree_)
+  if (frame_tree_) {
     frame_tree_->Shutdown();
+  }
 }
 
 void PrerenderHost::DidStopLoading() {
@@ -346,30 +350,6 @@ void PrerenderHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
 
     // Prerender is ready to activate. Set the status to kReady.
     SetTriggeringOutcome(PreloadingTriggeringOutcome::kReady);
-  }
-}
-
-void PrerenderHost::UpdateTimeoutTimer(Visibility visibility) {
-  switch (visibility) {
-    case Visibility::HIDDEN:
-      // Keep a prerendered page alive in the background when its visibility
-      // state changes to HIDDEN if the feature is enabled.
-      DCHECK(!timeout_timer_.IsRunning());
-
-      timeout_timer_.SetTaskRunner(GetTimerTaskRunner());
-      // Cancel PrerenderHost in the background when it exceeds a certain
-      // amount of time defined in `kTimeToLiveInBackground`.
-      timeout_timer_.Start(
-          FROM_HERE, kTimeToLiveInBackground,
-          base::BindOnce(&PrerenderHost::Cancel, base::Unretained(this),
-                         PrerenderFinalStatus::kTimeoutBackgrounded));
-      break;
-    case Visibility::OCCLUDED:
-      break;
-    case Visibility::VISIBLE:
-      // Stop the timer when a prerendered page gets visible to users.
-      timeout_timer_.Stop();
-      break;
   }
 }
 
@@ -904,8 +884,6 @@ void PrerenderHost::SetFailureReason(PrerenderFinalStatus status) {
       return;
     case PrerenderFinalStatus::kDestroyed:
     case PrerenderFinalStatus::kLowEndDevice:
-    case PrerenderFinalStatus::kCrossOriginRedirect:
-    case PrerenderFinalStatus::kCrossOriginNavigation:
     case PrerenderFinalStatus::kInvalidSchemeRedirect:
     case PrerenderFinalStatus::kInvalidSchemeNavigation:
     case PrerenderFinalStatus::kInProgressNavigation:
@@ -938,6 +916,13 @@ void PrerenderHost::SetFailureReason(PrerenderFinalStatus status) {
     case PrerenderFinalStatus::kInactivePageRestriction:
     case PrerenderFinalStatus::kStartFailed:
     case PrerenderFinalStatus::kTimeoutBackgrounded:
+    case PrerenderFinalStatus::kCrossSiteNavigation:
+    case PrerenderFinalStatus::kCrossSiteRedirect:
+    case PrerenderFinalStatus::kSameSiteCrossOriginRedirect:
+    case PrerenderFinalStatus::kSameSiteCrossOriginNavigation:
+    case PrerenderFinalStatus::kSameSiteCrossOriginRedirectNotOptIn:
+    case PrerenderFinalStatus::kSameSiteCrossOriginNavigationNotOptIn:
+    case PrerenderFinalStatus::kActivationNavigationParameterMismatch:
       attempt_->SetFailureReason(ToPreloadingFailureReason(status));
       // We reset the attempt to ensure we don't update once we have reported it
       // as failure or accidentally use it for any other prerender attempts as
@@ -987,17 +972,6 @@ void PrerenderHost::Cancel(PrerenderFinalStatus status) {
       host->delegate()->GetPrerenderHostRegistry();
   DCHECK(registry);
   registry->CancelHost(frame_tree_node_id_, status);
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-PrerenderHost::GetTimerTaskRunner() {
-  return timer_task_runner_for_testing_ ? timer_task_runner_for_testing_
-                                        : base::ThreadTaskRunnerHandle::Get();
-}
-
-void PrerenderHost::SetTaskRunnerForTesting(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  timer_task_runner_for_testing_ = std::move(task_runner);
 }
 
 }  // namespace content

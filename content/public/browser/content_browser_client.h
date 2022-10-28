@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/browsing_topics/common/common_types.h"
 #include "components/download/public/common/quarantine_connection.h"
 #include "components/file_access/scoped_file_access.h"
 #include "content/common/content_export.h"
@@ -542,8 +543,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // specific cases -- then the default non-isolated permissions policy will be
   // applied.
   virtual absl::optional<blink::ParsedPermissionsPolicy>
-  GetPermissionsPolicyForIsolatedApp(content::BrowserContext* browser_context,
-                                     const url::Origin& app_origin);
+  GetPermissionsPolicyForIsolatedWebApp(
+      content::BrowserContext* browser_context,
+      const url::Origin& app_origin);
 
   // Returns whether a new process should be created or an existing one should
   // be reused based on the URL we want to load. This should return false,
@@ -632,10 +634,17 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context,
       const GURL& url);
 
+  // Allows the embedder to enable access to Isolated Context Web APIs for the
+  // given |lock_url| -- the URL to which the renderer process is locked.
+  // See [IsolatedContext] IDL attribute for more details.
+  virtual bool IsIsolatedContextAllowedForUrl(BrowserContext* browser_context,
+                                              const GURL& lock_url);
+
   // Checks whether isolated apps developer mode is allowed by the
-  // AllowIsolatedAppsDeveloperMode policy (chrome-only, the respective override
-  // can be found in ChromeContentBrowserClient). Returns true by default.
-  virtual bool IsIsolatedAppsDeveloperModeAllowed(BrowserContext* context);
+  // AllowIsolatedWebAppsDeveloperMode policy (chrome-only, the respective
+  // override can be found in ChromeContentBrowserClient). Returns true by
+  // default.
+  virtual bool IsIsolatedWebAppsDeveloperModeAllowed(BrowserContext* context);
 
   // Check if applications whose origin is |origin| are allowed to perform
   // all-screens-auto-selection, which allows automatic capturing of all
@@ -2082,14 +2091,21 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool user_gesture,
       blink::NavigationDownloadPolicy* download_policy);
 
-  // Returns the browsing topics associated with the browser context of
-  // `main_frame`. If `observe` is true, record the observation
-  // (i.e. the <calling context site, top level site> pair) to the
-  // `BrowsingTopicsSiteDataStorage` database.
-  virtual std::vector<blink::mojom::EpochTopicPtr> GetBrowsingTopicsForJsApi(
+  // Writes the browsing topics for a particular requesting context into the
+  // output parameter `topics` and returns whether the access permission is
+  // allowed. `context_origin` and `main_frame` will potentially be used for the
+  // access permission check, for calculating the topics, and/or for the
+  // `BrowsingTopicsPageLoadDataTracker` to track the API usage. If `get_topics`
+  // is true, topics calculation result will be stored to `topics`. If `observe`
+  // is true, record the observation (i.e. the <calling context site,
+  // top level site> pair) to the `BrowsingTopicsSiteDataStorage` database.
+  virtual bool HandleTopicsWebApi(
       const url::Origin& context_origin,
-      RenderFrameHost* main_frame,
-      bool observe);
+      content::RenderFrameHost* main_frame,
+      browsing_topics::ApiCallerSource caller_source,
+      bool get_topics,
+      bool observe,
+      std::vector<blink::mojom::EpochTopicPtr>& topics);
 
   // Returns whether a site is blocked to use Bluetooth scanning API.
   virtual bool IsBluetoothScanningBlocked(

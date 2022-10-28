@@ -157,7 +157,7 @@ void LogErrorMessageToConsole(int frame_tree_node_id,
 
 base::expected<std::reference_wrapper<const WebApp>, std::string>
 FindIsolatedWebApp(Profile* profile, const IsolatedWebAppUrlInfo& url_info) {
-  // TODO(b/242738845): Defer navigation in IsolatedAppThrottle until
+  // TODO(b/242738845): Defer navigation in IsolatedWebAppThrottle until
   // WebAppProvider is ready to ensure we never fail this DCHECK.
   auto* web_app_provider = WebAppProvider::GetForWebApps(profile);
   DCHECK(web_app_provider->is_registry_ready());
@@ -367,22 +367,9 @@ void IsolatedWebAppURLLoaderFactory::CreateLoaderAndStart(
                   DCHECK_EQ(
                       web_bundle_id->type(),
                       web_package::SignedWebBundleId::Type::kEd25519PublicKey);
-                  auto* isolated_web_app_reader_registry =
-                      IsolatedWebAppReaderRegistryFactory::GetForProfile(
-                          profile_);
-                  if (!isolated_web_app_reader_registry) {
-                    LogErrorAndFail(
-                        "Support for Isolated Web Apps is not enabled.",
-                        std::move(loader_client));
-                    return;
-                  }
-                  mojo::MakeSelfOwnedReceiver(
-                      std::make_unique<IsolatedWebAppURLLoader>(
-                          isolated_web_app_reader_registry, content.path,
-                          *web_bundle_id, std::move(loader_client),
-                          resource_request, frame_tree_node_id_),
-                      mojo::PendingReceiver<network::mojom::URLLoader>(
-                          std::move(loader_receiver)));
+                  HandleSignedBundle(
+                      content.path, *web_bundle_id, std::move(loader_receiver),
+                      resource_request, std::move(loader_client));
                 },
                 [&](const IsolationData::DevModeBundle& content) {
                   DCHECK_EQ(

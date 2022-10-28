@@ -9,10 +9,12 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_suite.h"
-
+#include "ash/webui/diagnostics_ui/backend/event_watcher_factory.h"
+#include "ash/webui/diagnostics_ui/backend/input_data_event_watcher.h"
+#include "ash/webui/diagnostics_ui/backend/keyboard_input_data_event_watcher.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
@@ -22,6 +24,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
+#include "chromeos/ash/components/test/ash_test_suite.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "content/public/test/browser_task_environment.h"
@@ -231,7 +234,7 @@ class FakeInputDataEventWatcher : public InputDataEventWatcher {
  public:
   FakeInputDataEventWatcher(
       uint32_t id,
-      base::WeakPtr<InputDataEventWatcher::Dispatcher> dispatcher,
+      base::WeakPtr<KeyboardInputDataEventWatcher::Dispatcher> dispatcher,
       watchers_t& watchers)
       : id_(id), dispatcher_(dispatcher), watchers_(watchers) {
     EXPECT_EQ(0u, watchers_.count(id_));
@@ -247,14 +250,17 @@ class FakeInputDataEventWatcher : public InputDataEventWatcher {
       dispatcher_->SendInputKeyEvent(id_, evdev_code, scan_code, down);
   }
 
+  // ProcessEvent will not be triggered by test code.
+  void ProcessEvent(const input_event& event) override {}
+
  private:
   uint32_t id_;
-  base::WeakPtr<InputDataEventWatcher::Dispatcher> dispatcher_;
+  base::WeakPtr<KeyboardInputDataEventWatcher::Dispatcher> dispatcher_;
   watchers_t& watchers_;
 };
 
 // Utility to construct FakeInputDataEventWatcher for InputDataProvider.
-class FakeInputDataEventWatcherFactory : public InputDataEventWatcher::Factory {
+class FakeInputDataEventWatcherFactory : public EventWatcherFactory {
  public:
   FakeInputDataEventWatcherFactory(watchers_t& watchers)
       : watchers_(watchers) {}
@@ -264,9 +270,10 @@ class FakeInputDataEventWatcherFactory : public InputDataEventWatcher::Factory {
       const FakeInputDataEventWatcherFactory&) = delete;
   ~FakeInputDataEventWatcherFactory() override = default;
 
-  std::unique_ptr<InputDataEventWatcher> MakeWatcher(
+  std::unique_ptr<InputDataEventWatcher> MakeKeyboardEventWatcher(
       uint32_t id,
-      base::WeakPtr<InputDataEventWatcher::Dispatcher> dispatcher) override {
+      base::WeakPtr<KeyboardInputDataEventWatcher::Dispatcher> dispatcher)
+      override {
     return std::make_unique<FakeInputDataEventWatcher>(
         id, std::move(dispatcher), watchers_);
   }
@@ -322,6 +329,53 @@ class FakeKeyboardObserver : public mojom::KeyboardObserver {
   std::vector<std::pair<EventType, mojom::KeyEventPtr>> events_;
 
   mojo::Receiver<mojom::KeyboardObserver> receiver{this};
+};
+
+// A mock observer that records current tablet mode status and counts when
+// OnTabletModeChanged function is called.
+class FakeTabletModeObserver : public mojom::TabletModeObserver {
+ public:
+  uint32_t num_tablet_mode_change_calls() const {
+    return num_tablet_mode_change_calls_;
+  }
+
+  bool is_tablet_mode() { return is_tablet_mode_; }
+
+  // mojom::TabletModeObserver:
+  void OnTabletModeChanged(bool is_tablet_mode) override {
+    ++num_tablet_mode_change_calls_;
+    is_tablet_mode_ = is_tablet_mode;
+  }
+
+  mojo::Receiver<mojom::TabletModeObserver> receiver{this};
+
+ private:
+  uint32_t num_tablet_mode_change_calls_ = 0;
+  bool is_tablet_mode_ = false;
+};
+
+// A mock observer that records current internal display power state and counts
+// when OnInternalDisplayPowerStateChanged function is called.
+class FakeInternalDisplayPowerStateObserver
+    : public mojom::InternalDisplayPowerStateObserver {
+ public:
+  uint32_t num_display_state_change_calls() const {
+    return num_display_state_change_calls_;
+  }
+
+  bool is_display_on() { return is_display_on_; }
+
+  // mojom::InternalDisplayPowerStateObserver:
+  void OnInternalDisplayPowerStateChanged(bool is_display_on) override {
+    ++num_display_state_change_calls_;
+    is_display_on_ = is_display_on;
+  }
+
+  mojo::Receiver<mojom::InternalDisplayPowerStateObserver> receiver{this};
+
+ private:
+  uint32_t num_display_state_change_calls_ = 0;
+  bool is_display_on_ = true;
 };
 
 // A utility class that fakes obtaining information about an evdev.
@@ -2051,6 +2105,100 @@ TEST_F(InputDataProviderTest, KeyObservationTopRowExternalUSB) {
 
 // TODO(b/211780758): Test all Fx scancodes using
 // ui/events/keycodes/dom/dom_code_data.inc as source of truth.
+
+// Test the behavior when the tablet mode status has changed. The tablet mode is
+// initialized as "not-in-tablet-mode".
+TEST_F(InputDataProviderTest, TabletModeObservation) {
+  FakeTabletModeObserver fake_observer;
+  base::test::TestFuture<bool> future;
+
+  // Attach a tablet mode observer.
+  provider_->ObserveTabletMode(
+      fake_observer.receiver.BindNewPipeAndPassRemote(), future.GetCallback());
+
+  // Default initial state is "not-in-tablet-mode".
+  ASSERT_FALSE(future.Get<0>());
+
+  provider_->OnTabletModeStarted();
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(fake_observer.is_tablet_mode());
+  EXPECT_EQ(1u, fake_observer.num_tablet_mode_change_calls());
+
+  provider_->OnTabletModeEnded();
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(fake_observer.is_tablet_mode());
+  EXPECT_EQ(2u, fake_observer.num_tablet_mode_change_calls());
+}
+
+// Test the behavior when the tablet mode status has changed. The tablet mode is
+// initialized as "in-tablet-mode".
+TEST_F(InputDataProviderTest, TabletModeObservationInitAsTabletMode) {
+  FakeTabletModeObserver fake_observer;
+  base::test::TestFuture<bool> future;
+
+  // Set initial state as tablet mode.
+  TabletMode::Get()->SetEnabledForTest(true);
+
+  // Attach a tablet mode observer.
+  provider_->ObserveTabletMode(
+      fake_observer.receiver.BindNewPipeAndPassRemote(), future.GetCallback());
+
+  // Initial state is set to "in-tablet-mode".
+  ASSERT_TRUE(future.Get<0>());
+}
+
+// Test the behavior when the initial internal display power state is on.
+TEST_F(InputDataProviderTest, InternalDisplayPowerStateAsDefault) {
+  FakeInternalDisplayPowerStateObserver fake_observer;
+
+  // Attach a internal display power state observer.
+  provider_->ObserveInternalDisplayPowerState(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+
+  ASSERT_TRUE(provider_->is_internal_display_on());
+}
+
+// Test the behavior when the initial internal display power state is off.
+TEST_F(InputDataProviderTest, InternalDisplayPowerStateAsOff) {
+  FakeInternalDisplayPowerStateObserver fake_observer;
+
+  // Set initial display state as internal off and external on.
+  auto* displayConfigurator = Shell::Get()->display_configurator();
+  displayConfigurator->reset_requested_power_state_for_test();
+  displayConfigurator->SetInitialDisplayPower(
+      chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
+
+  // Attach a internal display power state observer.
+  provider_->ObserveInternalDisplayPowerState(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+
+  ASSERT_FALSE(provider_->is_internal_display_on());
+}
+
+// Test the behavior when the internal display power state has changed.
+TEST_F(InputDataProviderTest, InternalDisplayPowerStateObserver) {
+  FakeInternalDisplayPowerStateObserver fake_observer;
+
+  // Attach a internal display power state observer.
+  provider_->ObserveInternalDisplayPowerState(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+
+  provider_->OnPowerStateChanged(
+      chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(fake_observer.is_display_on());
+  EXPECT_EQ(1u, fake_observer.num_display_state_change_calls());
+
+  provider_->OnPowerStateChanged(
+      chromeos::DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(fake_observer.is_display_on());
+  EXPECT_EQ(2u, fake_observer.num_display_state_change_calls());
+}
 
 }  // namespace diagnostics
 }  // namespace ash

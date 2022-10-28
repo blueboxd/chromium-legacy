@@ -228,31 +228,46 @@ class PartialTranslateBubbleView : public LocationBarBubbleDelegateView,
   // the locale being used.
   void SetTextAlignmentForLocaleTextDirection(std::string locale);
 
+  // Forces announcement of translation state and conditionally also accounces
+  // the translated text.
+  void AnnounceForAccessibility(
+      PartialTranslateBubbleModel::ViewState view_state);
+
   static PartialTranslateBubbleView* partial_translate_bubble_view_;
 
-  raw_ptr<views::View> translate_view_waiting_ = nullptr;
-  raw_ptr<views::View> translate_view_ = nullptr;
-  raw_ptr<views::View> error_view_ = nullptr;
-  raw_ptr<views::View> advanced_view_source_ = nullptr;
-  raw_ptr<views::View> advanced_view_target_ = nullptr;
+  raw_ptr<views::View, DanglingUntriaged> translate_view_waiting_ = nullptr;
+  raw_ptr<views::View, DanglingUntriaged> translate_view_ = nullptr;
+  raw_ptr<views::View, DanglingUntriaged> error_view_ = nullptr;
+  raw_ptr<views::View, DanglingUntriaged> advanced_view_source_ = nullptr;
+  raw_ptr<views::View, DanglingUntriaged> advanced_view_target_ = nullptr;
 
   views::Throbber* throbber_;
 
-  raw_ptr<views::Combobox> source_language_combobox_ = nullptr;
-  raw_ptr<views::Combobox> target_language_combobox_ = nullptr;
+  raw_ptr<views::Combobox, DanglingUntriaged> source_language_combobox_ =
+      nullptr;
+  raw_ptr<views::Combobox, DanglingUntriaged> target_language_combobox_ =
+      nullptr;
 
-  raw_ptr<views::TabbedPane> tabbed_pane_ = nullptr;
-  raw_ptr<views::View> tab_view_top_row_ = nullptr;
-  raw_ptr<views::Label> partial_text_label_ = nullptr;
+  raw_ptr<views::TabbedPane, DanglingUntriaged> tabbed_pane_ = nullptr;
+  raw_ptr<views::View, DanglingUntriaged> tab_view_top_row_ = nullptr;
+  raw_ptr<views::Label, DanglingUntriaged> partial_text_label_ = nullptr;
 
-  raw_ptr<views::LabelButton> advanced_reset_button_source_ = nullptr;
-  raw_ptr<views::LabelButton> advanced_reset_button_target_ = nullptr;
-  raw_ptr<views::LabelButton> advanced_done_button_source_ = nullptr;
-  raw_ptr<views::LabelButton> advanced_done_button_target_ = nullptr;
+  raw_ptr<views::LabelButton, DanglingUntriaged> advanced_reset_button_source_ =
+      nullptr;
+  raw_ptr<views::LabelButton, DanglingUntriaged> advanced_reset_button_target_ =
+      nullptr;
+  raw_ptr<views::LabelButton, DanglingUntriaged> advanced_done_button_source_ =
+      nullptr;
+  raw_ptr<views::LabelButton, DanglingUntriaged> advanced_done_button_target_ =
+      nullptr;
 
   // Default source/target language without user interaction.
   size_t previous_source_language_index_;
   size_t previous_target_language_index_;
+
+  // Whether or not user changed target language and triggered translation from
+  // the advanced options.
+  bool target_language_changed_ = false;
 
   std::unique_ptr<ui::SimpleMenuModel> options_menu_model_;
   std::unique_ptr<views::MenuRunner> options_menu_runner_;

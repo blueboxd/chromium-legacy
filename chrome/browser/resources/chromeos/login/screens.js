@@ -13,7 +13,7 @@ import './screens/common/arc_terms_of_service.js';
 import './screens/common/assistant_optin.js';
 import './screens/common/autolaunch.js';
 import './screens/common/consolidated_consent.js';
-import './screens/common/device_disabled.m.js';
+import './screens/common/device_disabled.js';
 import './screens/common/enable_kiosk.js';
 import './screens/common/error_message.js';
 import './screens/common/family_link_notice.m.js';
@@ -25,7 +25,7 @@ import './screens/common/hw_data_collection.m.js';
 import './screens/common/local_state_error.js';
 import './screens/common/managed_terms_of_service.js';
 import './screens/common/marketing_opt_in.js';
-import './screens/common/multidevice_setup.m.js';
+import './screens/common/multidevice_setup.js';
 import './screens/common/offline_ad_login.js';
 import './screens/common/oobe_eula.js';
 import './screens/common/oobe_reset.js';
@@ -40,7 +40,7 @@ import './screens/common/smart_privacy_protection.m.js';
 import './screens/common/sync_consent.m.js';
 import './screens/common/theme_selection.js';
 import './screens/common/tpm_error.js';
-import './screens/common/user_creation.m.js';
+import './screens/common/user_creation.js';
 import './screens/common/wrong_hwid.js';
 // SCREENS USED DURING THE LOGIN FLOW
 import './screens/login/active_directory_password_change.js';
@@ -63,7 +63,7 @@ import './screens/oobe/oobe_network.js';
 import './screens/oobe/packaged_license.m.js';
 import './screens/oobe/quick_start.m.js';
 import './screens/oobe/update.js';
-import './screens/oobe/welcome.m.js';
+import './screens/oobe/welcome.js';
 
 /**
  * List of screens that are used for both `oobe` and `login` flows.

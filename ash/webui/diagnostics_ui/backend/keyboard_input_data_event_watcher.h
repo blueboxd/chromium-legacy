@@ -8,6 +8,7 @@
 #include "ash/webui/diagnostics_ui/backend/input_data_event_watcher.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
+#include "base/functional/callback.h"
 #include "base/message_loop/message_pump_for_ui.h"
 
 namespace ash::diagnostics {
@@ -20,17 +21,43 @@ namespace ash::diagnostics {
 class KeyboardInputDataEventWatcher : public InputDataEventWatcher,
                                       base::MessagePumpForUI::FdWatcher {
  public:
+  // `KeyboardInputDataEventWatcher` calls dispatcher when a key event is ready.
+  class Dispatcher {
+   public:
+    virtual ~Dispatcher() = default;
+
+    // Emits the components of a key event.
+    //  `id` maps to the evdev id.
+    //  `key_code` defined in <linux/input-event-codes.h>.`
+    //  `scan_code` additional key idetification data.
+    //  `down` whether key is identified is currently pressed.
+    virtual void SendInputKeyEvent(uint32_t id,
+                                   uint32_t key_code,
+                                   uint32_t scan_code,
+                                   bool down) = 0;
+  };
+
   KeyboardInputDataEventWatcher(
       uint32_t id,
-      base::WeakPtr<InputDataEventWatcher::Dispatcher> dispatcher);
+      base::WeakPtr<KeyboardInputDataEventWatcher::Dispatcher> dispatcher);
+
+  // Constructor for unittests.
+  KeyboardInputDataEventWatcher(
+      uint32_t id,
+      const base::FilePath& device_path,
+      const int fd,
+      base::WeakPtr<KeyboardInputDataEventWatcher::Dispatcher> dispatcher);
+
   ~KeyboardInputDataEventWatcher() override;
 
   void ConvertKeyEvent(uint32_t key_code,
                        uint32_t key_state,
                        uint32_t scan_code);
-  void ProcessEvent(const input_event& input);
+  void ProcessEvent(const input_event& input) override;
   void Start();
   void Stop();
+
+  void SetQuitClosureForTesting(base::OnceClosure quit_closure);
 
  protected:
   // base::MessagePumpForUI::FdWatcher:
@@ -53,11 +80,13 @@ class KeyboardInputDataEventWatcher : public InputDataEventWatcher,
   bool watching_ = false;
 
   // EV_ information pending for SYN_REPORT to dispatch.
-  uint32_t pending_scan_code_;
-  uint32_t pending_key_code_;
-  uint32_t pending_key_state_;
+  uint32_t pending_scan_code_ = 0;
+  uint32_t pending_key_code_ = 0;
+  uint32_t pending_key_state_ = 0;
 
-  base::WeakPtr<InputDataEventWatcher::Dispatcher> dispatcher_;
+  base::OnceClosure quit_closure_;
+
+  base::WeakPtr<KeyboardInputDataEventWatcher::Dispatcher> dispatcher_;
 
   // Controller for watching the input fd.
   base::MessagePumpForUI::FdWatchController controller_;

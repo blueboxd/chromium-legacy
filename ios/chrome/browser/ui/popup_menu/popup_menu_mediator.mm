@@ -49,8 +49,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_constants.h"
-#import "ios/chrome/browser/ui/icons/action_icon.h"
-#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_navigation_item.h"
@@ -938,12 +937,10 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
       UIImage* image;
       if (UseSymbols()) {
         if (@available(iOS 15, *)) {
-          image = CustomPaletteSymbol(
-              kIncognitoCircleFillSymbol, kSymbolActionPointSize,
-              UIImageSymbolWeightMedium, UIImageSymbolScaleMedium, @[
-                [UIColor colorNamed:kGrey400Color],
-                [UIColor colorNamed:kGrey100Color]
-              ]);
+          image = SymbolWithPalette(
+              CustomSymbolWithPointSize(kIncognitoCircleFillSymbol,
+                                        kSymbolActionPointSize),
+              SmallIncognitoPalette());
         } else {
           image = [UIImage imageNamed:@"incognito_badge_ios14"];
         }

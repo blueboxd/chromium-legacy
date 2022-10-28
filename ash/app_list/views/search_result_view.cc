@@ -955,20 +955,9 @@ void SearchResultView::OnQueryRemovalAccepted(bool accepted) {
     SetSelected(false, absl::nullopt);
   }
 
-  // Record different dialog action metric depending on productivity launcher
-  // state - productivity launcher does not show zero-state search results, so
-  // zero-state specific metric is not suitable. On the other hand, removal
-  // action outside of zero-state search UI is only allowed if the productivity
-  // launcher feature is on.
-  if (features::IsProductivityLauncherEnabled()) {
-    RecordSearchResultRemovalDialogDecision(
-        accepted ? SearchResultRemovalConfirmation::kRemovalConfirmed
-                 : SearchResultRemovalConfirmation::kRemovalCanceled);
-  } else {
-    RecordZeroStateSearchResultRemovalHistogram(
-        accepted ? SearchResultRemovalConfirmation::kRemovalConfirmed
-                 : SearchResultRemovalConfirmation::kRemovalCanceled);
-  }
+  RecordSearchResultRemovalDialogDecision(
+      accepted ? SearchResultRemovalConfirmation::kRemovalConfirmed
+               : SearchResultRemovalConfirmation::kRemovalCanceled);
 }
 
 void SearchResultView::OnSelectedResultChanged() {
@@ -1204,18 +1193,18 @@ void SearchResultView::OnThemeChanged() {
   const auto* app_list_widget = GetWidget();
   result_text_separator_label_->SetEnabledColor(
       AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
-          kDeprecatedSearchBoxTextDefaultColor, app_list_widget));
+          app_list_widget));
 
   rating_separator_label_->SetEnabledColor(
       AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
-          kDeprecatedSearchBoxTextDefaultColor, app_list_widget));
+          app_list_widget));
   rating_->SetEnabledColor(
       AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
-          kDeprecatedSearchBoxTextDefaultColor, app_list_widget));
+          app_list_widget));
   rating_star_->SetImage(gfx::CreateVectorIcon(
       kBadgeRatingIcon, kSearchRatingStarSize,
       AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
-          kDeprecatedSearchBoxTextDefaultColor, app_list_widget)));
+          app_list_widget)));
   views::View::OnThemeChanged();
 }
 

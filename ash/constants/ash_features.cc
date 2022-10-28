@@ -129,6 +129,10 @@ BASE_FEATURE(kAmbientModeThrottleAnimation,
              "ChromeOSAmbientModeThrottleAnimation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kAmbientSubpageUIChange,
+             "AmbientSubpageUIChange",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kApnRevamp, "ApnRevamp", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether to enable ARC ADB sideloading support.
@@ -433,14 +437,6 @@ BASE_FEATURE(kContextualNudges,
              "ContextualNudges",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kCrosLanguageSettingsUpdateJapanese,
-             "CrosLanguageSettingsUpdateJapanese",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kCrosJpSysPkSettingsMigrate,
-             "kCrosJpSysPkSettingsMigrate",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables or disables Crosh System Web App. When enabled, crosh (ChromeOS
 // Shell) will run as a tabbed System Web App rather than a normal browser tab.
 BASE_FEATURE(kCroshSWA, "CroshSWA", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -486,11 +482,6 @@ BASE_FEATURE(kCrostiniImeSupport,
 // Enables or disables Crostini Virtual Keyboard support.
 BASE_FEATURE(kCrostiniVirtualKeyboardSupport,
              "CrostiniVirtualKeyboardSupport",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables or disables generic guest OS installer infrastructure.
-BASE_FEATURE(kGuestOSGenericInstaller,
-             "GuestOSGenericInstaller",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables support for third party VMs.
@@ -631,7 +622,7 @@ BASE_FEATURE(kDockedMagnifier,
 // Enables dragging an unpinned open app to pinned app side to pin.
 BASE_FEATURE(kDragUnpinnedAppToPin,
              "DragUnpinnedAppToPin",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables dragging and dropping an existing window to new desk in overview.
 BASE_FEATURE(kDragWindowToNewDesk,
@@ -1006,7 +997,7 @@ BASE_FEATURE(kHandwritingLibraryDlc,
 // Enables new histogram logic for ChromeOS HaTS surveys.
 BASE_FEATURE(kHatsUseNewHistograms,
              "HatsUseNewHistograms",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the Background Page in the help app.
 BASE_FEATURE(kHelpAppBackgroundPage,
@@ -1723,11 +1714,6 @@ BASE_FEATURE(kSecondaryGoogleAccountUsage,
              "SecondaryGoogleAccountUsage",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Overrides semantic colors in ChromeOS for easier debugging.
-BASE_FEATURE(kSemanticColorsDebugOverride,
-             "SemanticColorDebugOverride",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables displaying separate network icons for different networks types.
 // https://crbug.com/902409
 BASE_FEATURE(kSeparateNetworkIcons,
@@ -1867,6 +1853,9 @@ BASE_FEATURE(kSmartLockUIRevamp,
              "SmartLockUIRevamp",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Controls whether the snap group feature is enabled or not.
+BASE_FEATURE(kSnapGroup, "SnapGroup", base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables battery indicator for styluses in the palette tray
 BASE_FEATURE(kStylusBatteryStatus,
              "StylusBatteryStatus",
@@ -1963,12 +1952,6 @@ BASE_FEATURE(kUploadOfficeToCloud,
              "UploadOfficeToCloud",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Uses new  AuthSession-based API in cryptohome to authenticate users during
-// sign-in.
-BASE_FEATURE(kUseAuthsessionAuthentication,
-             "UseAuthsessionAuthentication",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Uses new AuthFactor-based API when communicating with cryptohome.
 // This feature flag also affects usage of AuthSessions in QuickUnlock, but
 // only in case when cryptohome is used as backend.
@@ -2022,11 +2005,6 @@ BASE_FEATURE(kUserActivityPrediction,
 
 // Enable or disable the ChromeOS video conferencing controls UI.
 BASE_FEATURE(kVcControlsUi, "VcControlsUi", base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enable or disable bordered key for virtual keyboard on ChromeOS.
-BASE_FEATURE(kVirtualKeyboardBorderedKey,
-             "VirtualKeyboardBorderedKey",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable or disable multitouch for virtual keyboard on ChromeOS.
 BASE_FEATURE(kVirtualKeyboardMultitouch,
@@ -2232,6 +2210,10 @@ bool IsAmbientModePhotoPreviewEnabled() {
 
 bool IsAmbientModeThrottleAnimationEnabled() {
   return base::FeatureList::IsEnabled(kAmbientModeThrottleAnimation);
+}
+
+bool IsAmbientSubpageUIChangeEnabled() {
+  return base::FeatureList::IsEnabled(kAmbientSubpageUIChange);
 }
 
 bool IsApnRevampEnabled() {
@@ -2450,6 +2432,10 @@ bool IsExperimentalRgbKeyboardPatternsEnabled() {
 
 bool IsExternalKeyboardInDiagnosticsAppEnabled() {
   return base::FeatureList::IsEnabled(kEnableExternalKeyboardsInDiagnostics);
+}
+
+bool IsFaceMLSwaEnabled() {
+  return base::FeatureList::IsEnabled(kFaceMLApp);
 }
 
 bool IsFamilyLinkOnSchoolDeviceEnabled() {
@@ -2978,6 +2964,10 @@ bool IsShimlessRMADarkModeDisabled() {
 
 bool IsSimLockPolicyEnabled() {
   return base::FeatureList::IsEnabled(kSimLockPolicy);
+}
+
+bool IsSnapGroupEnabled() {
+  return base::FeatureList::IsEnabled(kSnapGroup);
 }
 
 bool IsSystemTrayShadowEnabled() {

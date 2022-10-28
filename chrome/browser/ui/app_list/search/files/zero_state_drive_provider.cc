@@ -156,17 +156,8 @@ ash::AppListSearchResultType ZeroStateDriveProvider::ResultType() const {
   return ash::AppListSearchResultType::kZeroStateDrive;
 }
 
-bool ZeroStateDriveProvider::ShouldBlockZeroState() const {
-  return true;
-}
-
-void ZeroStateDriveProvider::Start(const std::u16string& query) {
-  ClearResultsSilently();
-}
-
 void ZeroStateDriveProvider::StartZeroState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  ClearResultsSilently();
 
   query_start_time_ = base::TimeTicks::Now();
 

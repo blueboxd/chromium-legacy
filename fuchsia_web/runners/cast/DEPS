@@ -1,4 +1,8 @@
 include_rules = [
+  # CastRunner builds do not vary based on ENABLE_CAST_RECEIVER except in one
+  # way (see below).
+  "-build/chromecast_buildflags.h",
+
   "+components/cast",
   "+content/public/test",
   "+fuchsia_web/cast_streaming",
@@ -15,5 +19,13 @@ specific_include_rules = {
     # WebEngine test helpers.
     "+fuchsia_web/webengine/test/frame_for_test.h",
     "+fuchsia_web/webengine/test/web_engine_browser_test.h",
+  ],
+  "cast_runner_integration_test\.cc": [
+    # The expeted behavior of some tests depends on ENABLE_CAST_RECEIVER.
+    "+build/chromecast_buildflags.h",
+  ],
+  "main.cc": [
+    # Allow logging when !ENABLE_CAST_RECEIVER.
+    "+build/chromecast_buildflags.h",
   ],
 }

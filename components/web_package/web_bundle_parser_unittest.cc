@@ -4,6 +4,8 @@
 
 #include "components/web_package/web_bundle_parser.h"
 
+#include <algorithm>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -86,6 +88,12 @@ class TestDataSource : public mojom::BundleDataSource {
   mojo::ReceiverSet<mojom::BundleDataSource> receivers_;
 };
 
+template <typename... T>
+auto to_pair(std::tuple<T...>&& t)
+    -> decltype(std::make_pair(std::get<0>(t), std::get<1>(t))) {
+  return std::make_pair(std::move(std::get<0>(t)), std::move(std::get<1>(t)));
+}
+
 using ParseSignedBundleIntegrityBlockResult =
     std::pair<mojom::BundleIntegrityBlockPtr,
               mojom::BundleIntegrityBlockParseErrorPtr>;
@@ -105,7 +113,8 @@ ParseSignedBundleIntegrityBlockResult ParseSignedBundleIntegrityBlock(
                          mojom::BundleIntegrityBlockParseErrorPtr>
       integrity_block_future;
   parser.ParseIntegrityBlock(integrity_block_future.GetCallback());
-  ParseSignedBundleIntegrityBlockResult result = integrity_block_future.Take();
+  ParseSignedBundleIntegrityBlockResult result =
+      to_pair(integrity_block_future.Take());
   EXPECT_TRUE((result.first && !result.second) ||
               (!result.first && result.second));
   return result;
@@ -129,7 +138,7 @@ ParseUnsignedBundleResult ParseUnsignedBundle(TestDataSource* data_source,
                          mojom::BundleMetadataParseErrorPtr>
       future;
   parser.ParseMetadata(offset, future.GetCallback());
-  ParseUnsignedBundleResult result = future.Take();
+  ParseUnsignedBundleResult result = to_pair(future.Take());
   EXPECT_TRUE((result.first && !result.second) ||
               (!result.first && result.second));
   return result;

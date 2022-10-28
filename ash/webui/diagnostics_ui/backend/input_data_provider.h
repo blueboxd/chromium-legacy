@@ -6,10 +6,13 @@
 #define ASH_WEBUI_DIAGNOSTICS_UI_BACKEND_INPUT_DATA_PROVIDER_H_
 
 #include "ash/accelerators/accelerator_controller_impl.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
+#include "ash/webui/diagnostics_ui/backend/event_watcher_factory.h"
 #include "ash/webui/diagnostics_ui/backend/input_data_event_watcher.h"
 #include "ash/webui/diagnostics_ui/backend/input_data_provider_keyboard.h"
 #include "ash/webui/diagnostics_ui/backend/input_data_provider_touch.h"
 #include "ash/webui/diagnostics_ui/backend/input_device_information.h"
+#include "ash/webui/diagnostics_ui/backend/keyboard_input_data_event_watcher.h"
 #include "ash/webui/diagnostics_ui/mojom/input_data_provider.mojom.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
@@ -22,6 +25,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "ui/aura/window.h"
+#include "ui/display/manager/display_configurator.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_event_observer.h"
 #include "ui/events/ozone/device/device_manager.h"
@@ -36,14 +40,16 @@ namespace ash::diagnostics {
 // process, and eventually called by the Diagnostics SWA (a renderer process).
 class InputDataProvider : public mojom::InputDataProvider,
                           public ui::DeviceEventObserver,
-                          public InputDataEventWatcher::Dispatcher,
-                          public views::WidgetObserver {
+                          public KeyboardInputDataEventWatcher::Dispatcher,
+                          public views::WidgetObserver,
+                          public TabletModeObserver,
+                          public display::DisplayConfigurator::Observer {
  public:
   explicit InputDataProvider(aura::Window* window);
   explicit InputDataProvider(
       aura::Window* window,
       std::unique_ptr<ui::DeviceManager> device_manager,
-      std::unique_ptr<InputDataEventWatcher::Factory> watcher_factory);
+      std::unique_ptr<EventWatcherFactory> watcher_factory);
   InputDataProvider(const InputDataProvider&) = delete;
   InputDataProvider& operator=(const InputDataProvider&) = delete;
   ~InputDataProvider() override;
@@ -54,7 +60,7 @@ class InputDataProvider : public mojom::InputDataProvider,
   static mojom::ConnectionType ConnectionTypeFromInputDeviceType(
       ui::InputDeviceType type);
 
-  // InputDataEventWatcher::Dispatcher:
+  // KeyboardInputDataEventWatcher::Dispatcher:
   void SendInputKeyEvent(uint32_t id,
                          uint32_t key_code,
                          uint32_t scan_code,
@@ -70,12 +76,30 @@ class InputDataProvider : public mojom::InputDataProvider,
       uint32_t id,
       mojo::PendingRemote<mojom::KeyboardObserver> observer) override;
 
+  void ObserveTabletMode(
+      mojo::PendingRemote<mojom::TabletModeObserver> observer,
+      ObserveTabletModeCallback callback) override;
+
+  void ObserveInternalDisplayPowerState(
+      mojo::PendingRemote<mojom::InternalDisplayPowerStateObserver> observer)
+      override;
+
   // ui::DeviceEventObserver:
   void OnDeviceEvent(const ui::DeviceEvent& event) override;
 
   // views::WidgetObserver:
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
+
+  // TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
+
+  // display::DisplayConfigurator::Observer
+  void OnPowerStateChanged(chromeos::DisplayPowerState power_state) override;
+
+  // Get the value of is_internal_display_on_ for testing purpose.
+  bool is_internal_display_on() { return is_internal_display_on_; }
 
  protected:
   base::SequenceBound<InputDeviceInfoHelper> info_helper_{
@@ -115,6 +139,10 @@ class InputDataProvider : public mojom::InputDataProvider,
   // top-right key glyph).
   bool has_tablet_mode_switch_ = false;
 
+  // Whether the internal touchscreen is on, used to determine if the internal
+  // display is testable or not.
+  bool is_internal_display_on_ = true;
+
   // Map by evdev ids to information blocks.
   base::flat_map<int, mojom::KeyboardInfoPtr> keyboards_;
   base::flat_map<int, std::unique_ptr<InputDataProviderKeyboard::AuxData>>
@@ -132,11 +160,16 @@ class InputDataProvider : public mojom::InputDataProvider,
 
   mojo::RemoteSet<mojom::ConnectedDevicesObserver> connected_devices_observers_;
 
+  mojo::Remote<mojom::TabletModeObserver> tablet_mode_observer_;
+
+  mojo::Remote<mojom::InternalDisplayPowerStateObserver>
+      internal_display_power_state_observer_;
+
   mojo::Receiver<mojom::InputDataProvider> receiver_{this};
 
   std::unique_ptr<ui::DeviceManager> device_manager_;
 
-  std::unique_ptr<InputDataEventWatcher::Factory> watcher_factory_;
+  std::unique_ptr<EventWatcherFactory> watcher_factory_;
 
   base::WeakPtrFactory<InputDataProvider> weak_factory_{this};
 };

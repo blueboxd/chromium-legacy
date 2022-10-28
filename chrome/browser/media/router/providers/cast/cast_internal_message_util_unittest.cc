@@ -6,6 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/test/gtest_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/router/test/provider_test_helpers.h"
 #include "components/media_router/common/providers/cast/channel/cast_test_util.h"
 #include "components/media_router/common/test/test_helper.h"
@@ -83,8 +84,16 @@ class CastInternalMessageUtilDeathTest : public testing::Test {
 
 }  // namespace
 
+// TODO(crbug.com/1377730): This test sometimes times out on the Win bot.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_CastInternalMessageFromAppMessageString \
+  DISABLED_CastInternalMessageFromAppMessageString
+#else
+#define MAYBE_CastInternalMessageFromAppMessageString \
+  CastInternalMessageFromAppMessageString
+#endif
 TEST_F(CastInternalMessageUtilDeathTest,
-       CastInternalMessageFromAppMessageString) {
+       MAYBE_CastInternalMessageFromAppMessageString) {
   std::string message_str = R"({
     "type": "app_message",
     "clientId": "12345",
@@ -142,8 +151,16 @@ TEST_F(CastInternalMessageUtilDeathTest,
   EXPECT_DCHECK_DEATH(message->app_message_body());
 }
 
+// TODO(crbug.com/1378312): This test sometimes times out on the Win debug bot.
+#if BUILDFLAG(IS_WIN) && !defined(NDEBUG)
+#define MAYBE_CastInternalMessageFromClientConnectString \
+  DISABLED_CastInternalMessageFromClientConnectString
+#else
+#define MAYBE_CastInternalMessageFromClientConnectString \
+  CastInternalMessageFromClientConnectString
+#endif
 TEST_F(CastInternalMessageUtilDeathTest,
-       CastInternalMessageFromClientConnectString) {
+       MAYBE_CastInternalMessageFromClientConnectString) {
   std::string message_str = R"({
       "type": "client_connect",
       "clientId": "12345",

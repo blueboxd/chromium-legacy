@@ -10,9 +10,12 @@
 
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/shell.h"
+#include "ash/webui/diagnostics_ui/backend/event_watcher_factory.h"
 #include "ash/webui/diagnostics_ui/backend/input_data_event_watcher.h"
 #include "ash/webui/diagnostics_ui/backend/input_device_information.h"
+#include "ash/webui/diagnostics_ui/backend/keyboard_input_data_event_watcher.h"
 #include "ash/webui/diagnostics_ui/mojom/input_data_provider.mojom.h"
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
@@ -45,15 +48,14 @@ bool IsTouchInputDevice(InputDeviceInformation* device_info) {
 
 InputDataProvider::InputDataProvider(aura::Window* window)
     : device_manager_(ui::CreateDeviceManager()),
-      watcher_factory_(std::make_unique<
-                       ash::diagnostics::InputDataEventWatcherFactoryImpl>()) {
+      watcher_factory_(std::make_unique<EventWatcherFactoryImpl>()) {
   Initialize(window);
 }
 
 InputDataProvider::InputDataProvider(
     aura::Window* window,
     std::unique_ptr<ui::DeviceManager> device_manager_for_test,
-    std::unique_ptr<InputDataEventWatcher::Factory> watcher_factory)
+    std::unique_ptr<EventWatcherFactory> watcher_factory)
     : device_manager_(std::move(device_manager_for_test)),
       watcher_factory_(std::move(watcher_factory)) {
   Initialize(window);
@@ -63,6 +65,8 @@ InputDataProvider::~InputDataProvider() {
   BlockShortcuts(/*should_block=*/false);
   device_manager_->RemoveObserver(this);
   widget_->RemoveObserver(this);
+  TabletMode::Get()->RemoveObserver(this);
+  ash::Shell::Get()->display_configurator()->RemoveObserver(this);
 }
 
 // static
@@ -88,6 +92,8 @@ void InputDataProvider::Initialize(aura::Window* window) {
   device_manager_->AddObserver(this);
   device_manager_->ScanDevices(this);
   widget_->AddObserver(this);
+  TabletMode::Get()->AddObserver(this);
+  ash::Shell::Get()->display_configurator()->AddObserver(this);
   UpdateMaySendEvents();
 }
 
@@ -134,6 +140,49 @@ void InputDataProvider::OnWidgetActivationChanged(views::Widget* widget,
   UpdateEventObservers();
 }
 
+void InputDataProvider::ObserveTabletMode(
+    mojo::PendingRemote<mojom::TabletModeObserver> observer,
+    ObserveTabletModeCallback callback) {
+  tablet_mode_observer_ =
+      mojo::Remote<mojom::TabletModeObserver>(std::move(observer));
+  std::move(callback).Run(TabletMode::Get()->InTabletMode());
+}
+
+void InputDataProvider::OnTabletModeStarted() {
+  if (tablet_mode_observer_.is_bound()) {
+    tablet_mode_observer_->OnTabletModeChanged(/*is_tablet_mode=*/true);
+  }
+}
+
+void InputDataProvider::OnTabletModeEnded() {
+  if (tablet_mode_observer_.is_bound()) {
+    tablet_mode_observer_->OnTabletModeChanged(/*is_tablet_mode=*/false);
+  }
+}
+
+void InputDataProvider::ObserveInternalDisplayPowerState(
+    mojo::PendingRemote<mojom::InternalDisplayPowerStateObserver> observer) {
+  auto power_state =
+      Shell::Get()->display_configurator()->current_power_state();
+  is_internal_display_on_ =
+      power_state != chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON;
+  internal_display_power_state_observer_ =
+      mojo::Remote<mojom::InternalDisplayPowerStateObserver>(
+          std::move(observer));
+}
+
+void InputDataProvider::OnPowerStateChanged(
+    chromeos::DisplayPowerState power_state) {
+  if (internal_display_power_state_observer_.is_bound()) {
+    // Only when the internal display is off and external is on, we grey out the
+    // internal touchscreen test button.
+    is_internal_display_on_ =
+        power_state != chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON;
+    internal_display_power_state_observer_->OnInternalDisplayPowerStateChanged(
+        is_internal_display_on_);
+  }
+}
+
 void InputDataProvider::UpdateMaySendEvents() {
   const bool widget_open = !widget_->IsClosed();
   const bool widget_active = widget_->IsActive();
@@ -176,8 +225,8 @@ void InputDataProvider::ForwardKeyboardInput(uint32_t id) {
 
   // If we are going to send keyboard events, we need to block shortcuts
   BlockShortcuts(may_send_events_);
-  keyboard_watchers_[id] =
-      watcher_factory_->MakeWatcher(id, weak_factory_.GetWeakPtr());
+  keyboard_watchers_[id] = watcher_factory_->MakeKeyboardEventWatcher(
+      id, weak_factory_.GetWeakPtr());
 }
 
 void InputDataProvider::UnforwardKeyboardInput(uint32_t id) {
@@ -340,7 +389,7 @@ void InputDataProvider::ProcessDeviceInfo(
 void InputDataProvider::AddTouchDevice(
     const InputDeviceInformation* device_info) {
   touch_devices_[device_info->evdev_id] =
-      touch_helper_.ConstructTouchDevice(device_info);
+      touch_helper_.ConstructTouchDevice(device_info, is_internal_display_on_);
 
   for (const auto& observer : connected_devices_observers_) {
     observer->OnTouchDeviceConnected(

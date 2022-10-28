@@ -11,7 +11,6 @@
 
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
-#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/constants/notifier_catalogs.h"
@@ -344,8 +343,11 @@ class ExistingUserController::DeviceLocalAccountPolicyWaiter
  public:
   DeviceLocalAccountPolicyWaiter(
       policy::DeviceLocalAccountPolicyService* policy_service,
-      base::OnceClosure callback)
-      : policy_service_(policy_service), callback_(std::move(callback)) {
+      base::OnceClosure callback,
+      const std::string& user_id)
+      : policy_service_(policy_service),
+        callback_(std::move(callback)),
+        user_id_(user_id) {
     scoped_observation_.Observe(policy_service);
   }
   ~DeviceLocalAccountPolicyWaiter() override = default;
@@ -357,8 +359,10 @@ class ExistingUserController::DeviceLocalAccountPolicyWaiter
 
   // policy::DeviceLocalAccountPolicyService::Observer:
   void OnPolicyUpdated(const std::string& user_id) override {
-    if (!policy_service_->IsPolicyAvailableForUser(user_id))
+    if (user_id != user_id_ ||
+        !policy_service_->IsPolicyAvailableForUser(user_id)) {
       return;
+    }
     scoped_observation_.Reset();
     std::move(callback_).Run();
   }
@@ -369,6 +373,7 @@ class ExistingUserController::DeviceLocalAccountPolicyWaiter
   base::raw_ptr<policy::DeviceLocalAccountPolicyService> policy_service_ =
       nullptr;
   base::OnceClosure callback_;
+  std::string user_id_;
   base::ScopedObservation<policy::DeviceLocalAccountPolicyService,
                           policy::DeviceLocalAccountPolicyService::Observer>
       scoped_observation_{this};
@@ -854,42 +859,9 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
 
   StopAutoLoginTimer();
 
-  // If the hibernate service is supported, call it to initiate resume.
-#if BUILDFLAG(ENABLE_HIBERNATE)
-  if (features::IsHibernateEnabled() &&
-      !base::FeatureList::IsEnabled(
-          ash::features::kUseAuthsessionAuthentication)) {
-    HibermanClient::Get()->WaitForServiceToBeAvailable(
-        base::BindOnce(&ExistingUserController::OnHibernateServiceAvailable,
-                       weak_factory_.GetWeakPtr(), user_context));
-
-    return;
-  }
-#endif
-
   // The hibernate service is not supported, just continue directly.
   ContinueAuthSuccessAfterResumeAttempt(user_context, true);
-  return;
 }
-
-#if BUILDFLAG(ENABLE_HIBERNATE)
-void ExistingUserController::OnHibernateServiceAvailable(
-    const UserContext& user_context,
-    bool service_is_available) {
-  if (!service_is_available) {
-    LOG(ERROR) << "Hibernate service is unavailable";
-    ContinueAuthSuccessAfterResumeAttempt(user_context, false);
-  } else {
-    // In a successful resume case, this function never returns, as execution
-    // continues in the resumed hibernation image.
-    HibermanClient::Get()->ResumeFromHibernate(
-        user_context.GetAccountId().GetUserEmail(),
-        base::BindOnce(
-            &ExistingUserController::ContinueAuthSuccessAfterResumeAttempt,
-            weak_factory_.GetWeakPtr(), user_context));
-  }
-}
-#endif
 
 void ExistingUserController::ContinueAuthSuccessAfterResumeAttempt(
     const UserContext& user_context,
@@ -1267,15 +1239,16 @@ void ExistingUserController::LoginAsPublicSession(
       g_browser_process->platform_part()->browser_policy_connector_ash();
   policy::DeviceLocalAccountPolicyService* policy_service =
       connector->GetDeviceLocalAccountPolicyService();
-
-  if (policy_service && !policy_service->IsPolicyAvailableForUser(
-                            user_context.GetAccountId().GetUserEmail())) {
+  const auto& user_id = user_context.GetAccountId().GetUserEmail();
+  DCHECK(policy_service);
+  if (!policy_service->IsPolicyAvailableForUser(user_id)) {
     VLOG(2) << "Policies are not yet available for public session";
     policy_waiter_ = std::make_unique<DeviceLocalAccountPolicyWaiter>(
         policy_service,
         base::BindOnce(
             &ExistingUserController::LoginAsPublicSessionWhenPolicyAvailable,
-            base::Unretained(this), user_context));
+            base::Unretained(this), user_context),
+        user_id);
 
     return;
   }

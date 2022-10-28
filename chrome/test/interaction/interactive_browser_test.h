@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -20,6 +21,8 @@
 #include "chrome/test/interaction/interaction_test_util_browser.h"
 #include "chrome/test/interaction/interaction_test_util_mouse.h"
 #include "chrome/test/interaction/webcontents_interaction_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/base/interaction/element_identifier.h"
@@ -130,6 +133,72 @@ class InteractiveBrowserTest : public InProcessBrowserTest {
   using ElementSpecifier =
       absl::variant<ui::ElementIdentifier, base::StringPiece>;
 
+  // Naming views:
+  //
+  // The following methods name a view (to be referred to later in the test
+  // sequence by name) based on some kind of rule or relationship. The View need
+  // not have an ElementIdentifier assigned ahead of time, so this is useful for
+  // finding random or dynamically-created views.
+  //
+  // For example:
+  //
+  //   RunTestSequence(
+  //     ...
+  //     NameView(kThirdTabName,
+  //              base::BindLambdaForTesting([&](){
+  //                return browser_view->tabstrip()->tab_at(3);
+  //              }))
+  //     WithElement(kThirdTabName, ...)
+  //     ...
+  //   );
+  //
+  // How the view is named will depend on which version of the method you use;
+  // the
+
+  // Determines if a view matches some predicate.
+  using ViewMatcher = base::RepeatingCallback<bool(const views::View*)>;
+
+  // Specifies a View not relative to any particular other View.
+  using AbsoluteViewSpecifier = absl::variant<
+      // Specify a view that is known at the time the sequence is created. The
+      // View must persist until the step executes.
+      views::View*,
+      // Specify a view that will be valid by the time the step executes (i.e.
+      // is set in a previous step callback) but not at the time the test
+      // sequence is built. The view will be read from the target variable,
+      // which must point to a valid view.
+      views::View**,
+      // Find and return a view based on an arbitrary rule.
+      base::OnceCallback<views::View*()>>;
+
+  // Specifies a view relative to its parent.
+  using ChildViewSpecifier = absl::variant<
+      // The index of the child in the parent view. An out of bounds index will
+      // generate an error.
+      size_t,
+      // Specifies a filter that is applied to the children; the first child
+      // view to satisfy the filter (i.e. return true) is named.
+      ViewMatcher>;
+
+  // Specifies a view relative to another view `relative_to` based on an
+  // arbitrary rule. The resulting view does not need to be a descendant (or
+  // even an ancestor) of `relative_to`.
+  using FindViewCallback =
+      base::OnceCallback<views::View*(views::View* relative_to)>;
+
+  // Methods that name views.
+  [[nodiscard]] StepBuilder NameView(base::StringPiece name,
+                                     AbsoluteViewSpecifier spec);
+  [[nodiscard]] StepBuilder NameViewRelative(ElementSpecifier relative_to,
+                                             base::StringPiece name,
+                                             FindViewCallback find_callback);
+  [[nodiscard]] StepBuilder NameChildView(ElementSpecifier parent,
+                                          base::StringPiece name,
+                                          ChildViewSpecifier spec);
+  [[nodiscard]] StepBuilder NameDescendantView(ElementSpecifier ancestor,
+                                               base::StringPiece name,
+                                               ViewMatcher matcher);
+
   // Convenience methods for creating interaction steps of type kShown. The
   // resulting step's start callback is already set; therefore, do not try to
   // add additional logic. However, any other parameter on the step may be set,
@@ -147,6 +216,10 @@ class InteractiveBrowserTest : public InProcessBrowserTest {
       InputType input_type = InputType::kDontCare);
   [[nodiscard]] StepBuilder DoDefaultAction(
       ElementSpecifier element,
+      InputType input_type = InputType::kDontCare);
+  [[nodiscard]] StepBuilder SelectTab(
+      ElementSpecifier tab_collection,
+      size_t tab_index,
       InputType input_type = InputType::kDontCare);
   [[nodiscard]] StepBuilder Screenshot(ElementSpecifier element,
                                        const std::string& screenshot_name,
@@ -256,6 +329,30 @@ class InteractiveBrowserTest : public InProcessBrowserTest {
   // Does an action. Identical to Check() if check_callback always returns true.
   [[nodiscard]] StepBuilder Do(base::OnceClosure action);
 
+  // Checks that `check` returns true for element `element`. will fail the test
+  // sequence if `check` returns false - the callback should log any specific
+  // error before returning.
+  //
+  // Note that unless you add .SetMustBeVisibleAtStart(true), this test step
+  // will wait for `element` to be shown before proceeding.
+  [[nodiscard]] StepBuilder CheckElement(
+      ElementSpecifier element,
+      base::OnceCallback<bool(ui::TrackedElement* el)> check);
+
+  // As above, but `view` should resolve to a TrackedElementViews wrapping a
+  // view of type `V`.
+  template <class V>
+  [[nodiscard]] StepBuilder CheckView(ElementSpecifier view,
+                                      base::OnceCallback<bool(V* view)> check);
+
+  // As above, but check that `matcher` matches the value returned by fetching
+  // `property` from `view`. On failure, logs the matcher error before failing
+  // the test.
+  template <class V, typename T, typename U>
+  [[nodiscard]] StepBuilder CheckViewProperty(ElementSpecifier view,
+                                              T (V::*property)() const,
+                                              U&& matcher);
+
   // Shorthand methods for working with basic ElementTracker events. The element
   // will have `step_callback` called on it. You may specify additional
   // constraints such as SetMustBeVisibleAtStart(),
@@ -323,6 +420,16 @@ class InteractiveBrowserTest : public InProcessBrowserTest {
       AbsolutePositionSpecifier spec);
   static RelativePositionCallback GetPositionCallback(
       RelativePositionSpecifier spec);
+
+  static FindViewCallback GetFindViewCallback(AbsoluteViewSpecifier spec);
+  static FindViewCallback GetFindViewCallback(ChildViewSpecifier spec);
+
+  // Recursively finds an element that matches `matcher` starting with (but
+  // not including) `from`. If `recursive` is true, searches all descendants,
+  // otherwise searches children.
+  static views::View* FindMatchingView(const views::View* from,
+                                       ViewMatcher& matcher,
+                                       bool recursive);
 
   // Creates the follow-up step for a mouse action.
   StepBuilder CreateMouseFollowUpStep();
@@ -464,6 +571,37 @@ template <typename T>
 ui::InteractionSequence::StepBuilder InteractiveBrowserTest::InAnyContext(
     T&& step) {
   return std::move(step.SetFindElementInAnyContext(true));
+}
+
+template <typename V>
+ui::InteractionSequence::StepBuilder InteractiveBrowserTest::CheckView(
+    ElementSpecifier view,
+    base::OnceCallback<bool(V* view)> check) {
+  return CheckElement(view, base::BindOnce(
+                                [](base::OnceCallback<bool(V * view)> check,
+                                   ui::TrackedElement* el) {
+                                  return std::move(check).Run(AsView<V>(el));
+                                },
+                                std::move(check)));
+}
+
+template <class V, typename T, typename U>
+ui::InteractionSequence::StepBuilder InteractiveBrowserTest::CheckViewProperty(
+    ElementSpecifier view,
+    T (V::*property)() const,
+    U&& matcher) {
+  return CheckElement(
+      view, base::BindOnce(
+                [](T (V::*property)() const, testing::Matcher<T> matcher,
+                   ui::TrackedElement* el) {
+                  testing::StringMatchResultListener listener;
+                  const bool result = matcher.MatchAndExplain(
+                      (AsView<V>(el)->*property)(), &listener);
+                  if (!result)
+                    LOG(ERROR) << "CheckThat() failed: " << listener.str();
+                  return result;
+                },
+                property, std::forward<U>(matcher)));
 }
 
 #endif  // CHROME_TEST_INTERACTION_INTERACTIVE_BROWSER_TEST_H_

@@ -64,15 +64,19 @@ BASE_FEATURE(kAndroidAuxiliarySearch,
 // that may improve autocompletion stability. Feature params control which
 // tweaks specifically are enabled. Enabling this feature without params is a
 // no-op.
+// TODO(manukh) Enabled by default on 10/20/22 m109. Clean up feature code
+//  2/7/22, when m110 reaches stable.
 BASE_FEATURE(kAutocompleteStability,
              "OmniboxAutocompleteStability",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature to enable memoizing and filtering non-doc hosts for
 // `DocumentProvider::GetURLForDeduping()`.
+// TODO(manukh) Enabled by default on 10/20/22 m109. Clean up feature code
+//  2/7/22, when m110 reaches stable.
 BASE_FEATURE(kDocumentProviderDedupingOptimization,
              "OmniboxDocumentProviderDedupingOptimization",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature to tweak how the default suggestion is preserved. Feature params
 // control which tweaks specifically are enabled. Enabling this feature without
@@ -97,9 +101,11 @@ BASE_FEATURE(kOmniboxRemoveExcessiveRecycledViewClearCalls,
 
 // Feature to enable memoizing URLs when replacing search terms in
 // `AutocompleteMatch::GURLToStrippedGURL()`.
+// TODO(manukh) Enabled by default on 10/20/22 m109. Clean up feature code
+//  2/7/22, when m110 reaches stable.
 BASE_FEATURE(kStrippedGurlOptimization,
              "OmniboxStrippedGurlOptimization",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature to debounce `AutocompleteController::NotifyChanged()`.
 BASE_FEATURE(kUpdateResultDebounce,
@@ -294,6 +300,14 @@ BASE_FEATURE(kBookmarkPaths,
 // is expanded, if possible, to a complete word in the suggestion description.
 BASE_FEATURE(kShortcutExpanding,
              "OmniboxShortcutExpanding",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, the shortcut provider is more aggressive in scoring. The exact
+// details will change over time; but ATM, the shortcut provider will chose 1
+// candidate to compete with HUP's URL-what-you-typed suggestion for the default
+// slot.
+BASE_FEATURE(kShortcutBoost,
+             "OmniboxShortcutBoost",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, the relevant AutocompleteProviders will store "title" data in

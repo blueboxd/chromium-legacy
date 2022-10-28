@@ -764,8 +764,6 @@ def _make_blink_api_call(code_node,
         expr = "\n".join([
             # GCC extension: a compound statement enclosed in parentheses
             "({",
-            "ThreadState::NoAllocationScope nadc_no_allocation_scope"
-            "(ThreadState::Current());",
             "v8::Isolate::DisallowJavascriptExecutionScope "
             "nadc_disallow_js_exec_scope"
             "(${isolate}, "
@@ -775,10 +773,6 @@ def _make_blink_api_call(code_node,
             _format("{};", expr),
             "})",
         ])
-        code_node.accumulate(
-            CodeGenAccumulator.require_include_headers([
-                "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
-            ]))
     return expr
 
 
@@ -1460,24 +1454,21 @@ def make_report_high_entropy(cg_context):
     if ext_attrs is None:
         return None
 
+    if not ext_attrs.value_of("HighEntropy") == "Direct":
+        return None
+
     assert "Measure" in ext_attrs or "MeasureAs" in ext_attrs, "{}: {}".format(
         cg_context.idl_location_and_name,
-        "[HighEntropy] must be specified with either [Measure] or "
+        "[HighEntropy=Direct] must be specified with either [Measure] or "
         "[MeasureAs].")
 
-    if ext_attrs.value_of("HighEntropy") == "Direct":
-        text = _format(
-            "// [HighEntropy=Direct]\n"
-            "Dactyloscoper::RecordDirectSurface("
-            "${current_execution_context}, {measure_constant}, "
-            "${return_value});",
-            measure_constant=_make_measure_web_feature_constant(cg_context))
-    else:
-        text = _format(
-            "// [HighEntropy]\n"
-            "Dactyloscoper::Record("
-            "${current_execution_context}, {measure_constant});",
-            measure_constant=_make_measure_web_feature_constant(cg_context))
+    text = _format(
+        "// [HighEntropy=Direct]\n"
+        "Dactyloscoper::RecordDirectSurface("
+        "${current_execution_context}, {measure_constant}, "
+        "${return_value});",
+        measure_constant=_make_measure_web_feature_constant(cg_context))
+
     node = TextNode(text)
     node.accumulate(
         CodeGenAccumulator.require_include_headers(
@@ -2523,16 +2514,10 @@ def make_no_alloc_direct_call_callback_def(cg_context, function_name,
     bind_callback_local_vars(body, cg_context)
 
     body.extend([
-        T("ThreadState::NoAllocationScope "
-          "thread_no_alloc_scope(ThreadState::Current());"),
         T("blink::NoAllocDirectCallScope no_alloc_direct_call_scope("
           "${blink_receiver}, &${v8_arg_callback_options});"),
         EmptyNode(),
     ])
-    body.accumulate(
-        CodeGenAccumulator.require_include_headers([
-            "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
-        ]))
 
     blink_arguments = list(
         map(lambda arg: "${{{}}}".format(arg.blink_arg_name), arg_list))

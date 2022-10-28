@@ -57,6 +57,9 @@ void WebRuntimeApplication::Launch(
       task_runner(),
       base::BindOnce(&WebRuntimeApplication::OnAllBindingsReceived,
                      weak_factory_.GetWeakPtr())));
+
+  // Signal that application is launching.
+  std::move(callback).Run(true);
 }
 
 bool WebRuntimeApplication::IsStreamingApplication() const {
@@ -127,12 +130,11 @@ void WebRuntimeApplication::OnAllBindingsReceived(
   cast_receiver::PageStateObserver::Observe(
       cast_web_contents()->web_contents());
   bindings_manager_ = std::make_unique<BindingsManagerWebRuntime>(
-      delegate().CreateMessagePortService());
+      *this, delegate().CreateMessagePortService());
   for (auto& binding : bindings) {
     bindings_manager_->AddBinding(std::move(binding));
   }
-  cast_web_contents()->ConnectToBindingsService(
-      bindings_manager_->CreateRemote());
+  bindings_manager_->ConfigureWebContents(cast_web_contents()->web_contents());
 
   // Application is initialized now - we can load the URL.
   LoadPage(app_url_);
@@ -141,6 +143,11 @@ void WebRuntimeApplication::OnAllBindingsReceived(
 void WebRuntimeApplication::OnPageLoadComplete() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OnPageLoaded();
+}
+
+void WebRuntimeApplication::OnError() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  StopApplication(cast::common::StopReason::RUNTIME_ERROR, 0);
 }
 
 void WebRuntimeApplication::OnPageStopped(StopReason reason,

@@ -47,11 +47,11 @@
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state_manager_impl.h"
+#import "ios/chrome/browser/browser_state/ios_chrome_io_thread.h"
 #import "ios/chrome/browser/component_updater/ios_component_updater_configurator.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/application_breadcrumbs_logger.h"
 #import "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
-#import "ios/chrome/browser/ios_chrome_io_thread.h"
 #import "ios/chrome/browser/metrics/ios_chrome_metrics_services_manager_client.h"
 #import "ios/chrome/browser/paths/paths.h"
 #import "ios/chrome/browser/policy/browser_policy_connector_ios.h"
@@ -121,12 +121,14 @@ void BindNetworkChangeManagerReceiver(
 ApplicationContextImpl::ApplicationContextImpl(
     base::SequencedTaskRunner* local_state_task_runner,
     const base::CommandLine& command_line,
-    const std::string& locale)
+    const std::string& locale,
+    const std::string& country)
     : local_state_task_runner_(local_state_task_runner) {
   DCHECK(!GetApplicationContext());
   SetApplicationContext(this);
 
   SetApplicationLocale(locale);
+  application_country_ = country;
 
   update_client::UpdateQueryParams::SetDelegate(
       IOSChromeUpdateQueryParamsDelegate::GetInstance());
@@ -322,6 +324,12 @@ const std::string& ApplicationContextImpl::GetApplicationLocale() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!application_locale_.empty());
   return application_locale_;
+}
+
+const std::string& ApplicationContextImpl::GetApplicationCountry() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!application_country_.empty());
+  return application_country_;
 }
 
 ios::ChromeBrowserStateManager*

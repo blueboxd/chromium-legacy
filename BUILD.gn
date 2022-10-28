@@ -8,6 +8,7 @@
 # you add a new build file, there must be some path of dependencies from this
 # file to your new one or GN won't know about it.
 
+import("//build/config/chromecast_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/dcheck_always_on.gni")
@@ -220,7 +221,7 @@ group("gn_all") {
 
   if (is_android) {
     deps += [
-      "//weblayer/browser/android/javatests:browserfragment_support_instrumentation_test_apk",
+      "//weblayer/browser/android/javatests:webengine_support_instrumentation_test_apk",
       "//weblayer/browser/java:weblayer_junit_tests",
     ]
   }
@@ -458,7 +459,6 @@ group("gn_all") {
       "//ash/keyboard/ui:keyboard_unittests",
       "//ash/webui:ash_webui_unittests",
       "//chrome/browser/metrics/perf:profile_provider_unittest",
-      "//chrome/test:ash_crosapi_browsertests",
       "//chrome/test:ash_crosapi_tests",
       "//chrome/test:usage_time_limit_unittests",
       "//chromeos/ash/components/proximity_auth:proximity_auth_unittests",
@@ -582,8 +582,10 @@ group("gn_all") {
     # TODO(https://crbug.com/1299021): These dependencies might be
     # redundant given that we were able to disable them, apparently without
     # negative consequences, for the ARM32-NaCl-on-ARM64 case.
-    if (enable_nacl && target_cpu != "arm64") {
-      deps += [ "//components/nacl/loader:nacl_loader_unittests" ]
+    if (enable_nacl) {
+      if (target_cpu != "arm64") {
+        deps += [ "//components/nacl/loader:nacl_loader_unittests" ]
+      }
 
       if (is_linux || is_chromeos) {
         # TODO(dpranke): Figure out what platforms should actually have this.

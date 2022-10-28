@@ -309,15 +309,6 @@ void WebAppsCrosapi::LaunchAppWithFiles(const std::string& app_id,
   controller_->Launch(std::move(params), base::DoNothing());
 }
 
-void WebAppsCrosapi::Uninstall(const std::string& app_id,
-                               apps::mojom::UninstallSource uninstall_source,
-                               bool clear_site_data,
-                               bool report_abuse) {
-  Uninstall(app_id,
-            ConvertMojomUninstallSourceToUninstallSource(uninstall_source),
-            clear_site_data, report_abuse);
-}
-
 void WebAppsCrosapi::GetMenuModel(const std::string& app_id,
                                   apps::mojom::MenuType menu_type,
                                   int64_t display_id,
@@ -406,11 +397,6 @@ void WebAppsCrosapi::ExecuteContextMenuCommand(const std::string& app_id,
 
   controller_->ExecuteContextMenuCommand(app_id, shortcut_id,
                                          base::DoNothing());
-}
-
-void WebAppsCrosapi::SetPermission(const std::string& app_id,
-                                   apps::mojom::PermissionPtr permission) {
-  SetPermission(app_id, ConvertMojomPermissionToPermission(permission));
 }
 
 void WebAppsCrosapi::OnApps(std::vector<AppPtr> deltas) {

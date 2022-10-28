@@ -242,16 +242,10 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(ContentFeatures.FONT_MANAGER_EARLY_INIT,
                     "Whether to initialize the font manager when the renderer starts on a "
                             + "background thread."),
-            Flag.baseFeature(ContentFeatures.TREAT_BOOTSTRAP_AS_DEFAULT,
-                    "Executes tasks with  the kBootstrap task type on the default task queues "
-                            + "(based on priority of the task) rather than a dedicated "
-                            + "high-priority task queue."),
             Flag.baseFeature(BlinkFeatures.PREFETCH_ANDROID_FONTS,
                     "Enables prefetching Android fonts on renderer startup."),
             Flag.baseFeature(BlinkFeatures.INITIAL_NAVIGATION_ENTRY,
                     "Enables creation of initial NavigationEntries on WebContents creation."),
-            Flag.baseFeature(BlinkFeatures.CANVAS2D_STAYS_GPU_ON_READBACK,
-                    "Accelerated canvases that a read back from remain accelerated."),
             Flag.baseFeature(BlinkFeatures.EARLY_BODY_LOAD,
                     "Enables loading the response body earlier in navigation."),
             Flag.baseFeature(BlinkFeatures.DEFAULT_STYLE_SHEETS_EARLY_INIT,
@@ -383,6 +377,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.THREADED_BODY_LOADER,
                     "If enabled, reads and decodes navigation body data off the main thread."),
             Flag.baseFeature("PreconnectOnRedirect"),
+            Flag.baseFeature(BlinkFeatures.SEND_MOUSE_EVENTS_DISABLED_FORM_CONTROLS,
+                    "This changes event propagation for disabled form controls."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

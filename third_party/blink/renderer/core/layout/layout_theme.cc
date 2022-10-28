@@ -105,6 +105,26 @@ ControlPart AutoAppearanceFor(const Element& element) {
   return kNoControlPart;
 }
 
+void ResetBorder(ComputedStyleBuilder& builder) {
+  builder.ResetBorderImage();
+  builder.ResetBorderTopStyle();
+  builder.ResetBorderTopWidth();
+  builder.ResetBorderTopColor();
+  builder.ResetBorderRightStyle();
+  builder.ResetBorderRightWidth();
+  builder.ResetBorderRightColor();
+  builder.ResetBorderBottomStyle();
+  builder.ResetBorderBottomWidth();
+  builder.ResetBorderBottomColor();
+  builder.ResetBorderLeftStyle();
+  builder.ResetBorderLeftWidth();
+  builder.ResetBorderLeftColor();
+  builder.ResetBorderTopLeftRadius();
+  builder.ResetBorderTopRightRadius();
+  builder.ResetBorderBottomLeftRadius();
+  builder.ResetBorderBottomRightRadius();
+}
+
 }  // namespace
 
 LayoutTheme& LayoutTheme::GetTheme() {
@@ -197,7 +217,9 @@ ControlPart LayoutTheme::AdjustAppearanceWithElementType(
   return part;
 }
 
-void LayoutTheme::AdjustStyle(const Element* element, ComputedStyle& style) {
+void LayoutTheme::AdjustStyle(const Element* element,
+                              ComputedStyle& style,
+                              ComputedStyleBuilder& builder) {
   ControlPart original_part = style.Appearance();
   style.SetEffectiveAppearance(original_part);
   if (original_part == ControlPart::kNoControlPart)
@@ -230,15 +252,15 @@ void LayoutTheme::AdjustStyle(const Element* element, ComputedStyle& style) {
   // After this point, a Node must be non-null Element if
   // EffectiveAppearance() != kNoControlPart.
 
-  AdjustControlPartStyle(style);
+  AdjustControlPartStyle(style, builder);
 
   // Call the appropriate style adjustment method based off the appearance
   // value.
   switch (part) {
     case kMenulistPart:
-      return AdjustMenuListStyle(style);
+      return AdjustMenuListStyle(builder);
     case kMenulistButtonPart:
-      return AdjustMenuListButtonStyle(style);
+      return AdjustMenuListButtonStyle(builder);
     case kSliderThumbHorizontalPart:
     case kSliderThumbVerticalPart:
       return AdjustSliderThumbStyle(style);
@@ -249,7 +271,7 @@ void LayoutTheme::AdjustStyle(const Element* element, ComputedStyle& style) {
   }
 
   if (IsSliderContainer(*element))
-    AdjustSliderContainerStyle(*element, style);
+    AdjustSliderContainerStyle(*element, style, builder);
 }
 
 String LayoutTheme::ExtraDefaultStyleSheet() {
@@ -399,39 +421,43 @@ bool LayoutTheme::ShouldDrawDefaultFocusRing(const Node* node,
   return true;
 }
 
-void LayoutTheme::AdjustCheckboxStyle(ComputedStyle& style) const {
+void LayoutTheme::AdjustCheckboxStyle(ComputedStyle& style,
+                                      ComputedStyleBuilder& builder) const {
   // padding - not honored by WinIE, needs to be removed.
   style.ResetPadding();
 
   // border - honored by WinIE, but looks terrible (just paints in the control
   // box and turns off the Windows XP theme) for now, we will not honor it.
-  style.ResetBorder();
+  ResetBorder(builder);
 }
 
-void LayoutTheme::AdjustRadioStyle(ComputedStyle& style) const {
+void LayoutTheme::AdjustRadioStyle(ComputedStyle& style,
+                                   ComputedStyleBuilder& builder) const {
   // padding - not honored by WinIE, needs to be removed.
   style.ResetPadding();
 
   // border - honored by WinIE, but looks terrible (just paints in the control
   // box and turns off the Windows XP theme) for now, we will not honor it.
-  style.ResetBorder();
+  ResetBorder(builder);
 }
 
 void LayoutTheme::AdjustButtonStyle(ComputedStyle& style) const {}
 
 void LayoutTheme::AdjustInnerSpinButtonStyle(ComputedStyle&) const {}
 
-void LayoutTheme::AdjustMenuListStyle(ComputedStyle& style) const {
+void LayoutTheme::AdjustMenuListStyle(ComputedStyleBuilder& builder) const {
   // Menulists should have visible overflow
   // https://bugs.webkit.org/show_bug.cgi?id=21287
-  style.SetOverflowX(EOverflow::kVisible);
-  style.SetOverflowY(EOverflow::kVisible);
+  builder.SetOverflowX(EOverflow::kVisible);
+  builder.SetOverflowY(EOverflow::kVisible);
 }
 
-void LayoutTheme::AdjustMenuListButtonStyle(ComputedStyle&) const {}
+void LayoutTheme::AdjustMenuListButtonStyle(ComputedStyleBuilder&) const {}
 
-void LayoutTheme::AdjustSliderContainerStyle(const Element& element,
-                                             ComputedStyle& style) const {
+void LayoutTheme::AdjustSliderContainerStyle(
+    const Element& element,
+    ComputedStyle& style,
+    ComputedStyleBuilder& builder) const {
   DCHECK(IsSliderContainer(element));
 
   if (style.EffectiveAppearance() == kSliderVerticalPart) {
@@ -443,8 +469,8 @@ void LayoutTheme::AdjustSliderContainerStyle(const Element& element,
     style.SetTouchAction(TouchAction::kPanY);
     style.SetWritingMode(WritingMode::kHorizontalTb);
     if (To<HTMLInputElement>(element.OwnerShadowHost())->list()) {
-      style.SetAlignSelf(StyleSelfAlignmentData(ItemPosition::kCenter,
-                                                OverflowAlignment::kUnsafe));
+      builder.SetAlignSelf(StyleSelfAlignmentData(ItemPosition::kCenter,
+                                                  OverflowAlignment::kUnsafe));
     }
   }
   style.SetEffectiveAppearance(kNoControlPart);
@@ -781,14 +807,15 @@ bool LayoutTheme::SupportsCalendarPicker(const AtomicString& type) const {
          type == input_type_names::kMonth || type == input_type_names::kWeek;
 }
 
-void LayoutTheme::AdjustControlPartStyle(ComputedStyle& style) {
+void LayoutTheme::AdjustControlPartStyle(ComputedStyle& style,
+                                         ComputedStyleBuilder& builder) {
   // Call the appropriate style adjustment method based off the appearance
   // value.
   switch (style.EffectiveAppearance()) {
     case kCheckboxPart:
-      return AdjustCheckboxStyle(style);
+      return AdjustCheckboxStyle(style, builder);
     case kRadioPart:
-      return AdjustRadioStyle(style);
+      return AdjustRadioStyle(style, builder);
     case kPushButtonPart:
     case kSquareButtonPart:
     case kButtonPart:

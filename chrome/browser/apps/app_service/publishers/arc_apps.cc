@@ -1344,11 +1344,6 @@ void ArcApps::LaunchAppWithIntent(const std::string& app_id,
   std::move(callback).Run(/*success=*/true);
 }
 
-void ArcApps::SetPermission(const std::string& app_id,
-                            apps::mojom::PermissionPtr permission) {
-  SetPermission(app_id, ConvertMojomPermissionToPermission(permission));
-}
-
 void ArcApps::SetResizeLocked(const std::string& app_id,
                               apps::mojom::OptionalBool locked) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
@@ -1361,13 +1356,6 @@ void ArcApps::SetResizeLocked(const std::string& app_id,
   prefs->SetResizeLockState(app_id, locked == apps::mojom::OptionalBool::kTrue
                                         ? arc::mojom::ArcResizeLockState::ON
                                         : arc::mojom::ArcResizeLockState::OFF);
-}
-
-void ArcApps::Uninstall(const std::string& app_id,
-                        apps::mojom::UninstallSource uninstall_source,
-                        bool clear_site_data,
-                        bool report_abuse) {
-  arc::UninstallArcApp(app_id, profile_);
 }
 
 void ArcApps::PauseApp(const std::string& app_id) {

@@ -20,8 +20,8 @@
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/compound_image_backing.h"
-#include "gpu/command_buffer/service/shared_image/gl_image_backing_factory.h"
 #include "gpu/command_buffer/service/shared_image/gl_texture_image_backing_factory.h"
+#include "gpu/command_buffer/service/shared_image/iosurface_image_backing_factory.h"
 #include "gpu/command_buffer/service/shared_image/raw_draw_image_backing_factory.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_manager.h"
@@ -269,15 +269,12 @@ SharedImageFactory::SharedImageFactory(
 #endif  // defined(USE_OZONE)
 
 #if BUILDFLAG(IS_MAC)
-  // TODO(hitawala): Temporary factory that will be replaced with Ozone and
-  // other backings
-  if (use_gl) {
-    auto gl_image_backing_factory = std::make_unique<GLImageBackingFactory>(
-        gpu_preferences, workarounds, feature_info.get(), image_factory,
-        shared_context_state_ ? shared_context_state_->progress_reporter()
-                              : nullptr);
-    factories_.push_back(std::move(gl_image_backing_factory));
-  }
+  auto iosurface_backing_factory =
+      std::make_unique<IOSurfaceImageBackingFactory>(
+          gpu_preferences, workarounds, feature_info.get(), image_factory,
+          shared_context_state_ ? shared_context_state_->progress_reporter()
+                                : nullptr);
+  factories_.push_back(std::move(iosurface_backing_factory));
 #endif
 }
 
@@ -296,8 +293,10 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   DCHECK(format.is_single_plane());
   auto* factory = GetFactoryByUsage(usage, format, size,
                                     /*pixel_data=*/{}, gfx::EMPTY_BUFFER);
-  if (!factory)
+  if (!factory) {
+    LogGetFactoryFailed(usage, format, gfx::EMPTY_BUFFER);
     return false;
+  }
 
   auto backing = factory->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space, surface_origin,
@@ -324,8 +323,11 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   } else {
     factory = GetFactoryByUsage(usage, format, size, data, gfx::EMPTY_BUFFER);
   }
-  if (!factory)
+
+  if (!factory) {
+    LogGetFactoryFailed(usage, format, gfx::EMPTY_BUFFER);
     return false;
+  }
 
   auto backing =
       factory->CreateSharedImage(mailbox, format, size, color_space,
@@ -369,8 +371,10 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
                                 /*pixel_data=*/{}, gfx::EMPTY_BUFFER);
   }
 
-  if (!factory)
+  if (!factory) {
+    LogGetFactoryFailed(usage, si_format, gmb_type);
     return false;
+  }
 
   std::unique_ptr<SharedImageBacking> backing;
   if (use_compound) {
@@ -572,12 +576,18 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
     }
   }
 
+  return nullptr;
+}
+
+void SharedImageFactory::LogGetFactoryFailed(
+    uint32_t usage,
+    viz::SharedImageFormat format,
+    gfx::GpuMemoryBufferType gmb_type) {
   LOG(ERROR) << "Could not find SharedImageBackingFactory with params: usage: "
              << CreateLabelForSharedImageUsage(usage)
              << ", format: " << format.ToString()
-             << ", share_between_threads: " << share_between_threads
+             << ", share_between_threads: " << IsSharedBetweenThreads(usage)
              << ", gmb_type: " << GmbTypeToString(gmb_type);
-  return nullptr;
 }
 
 bool SharedImageFactory::RegisterBacking(
